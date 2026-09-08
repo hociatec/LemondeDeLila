@@ -28,17 +28,22 @@ void AppNavigator::ShowCatalog(std::size_t selectedIndex)
 
 void AppNavigator::ShowJoinRooms()
 {
+    const ViewId sourceViewId = currentViewId_;
     auto* view = GetOrCreateView(ViewId::JoinRooms);
     if (auto* panel = dynamic_cast<modules::rooms::presentation::JoinRoomsPanel*>(view))
     {
         focusTransition_.Forget(view);
+        view->Hide();
         panel->ResetForNextPrepare();
+        panel->Prepare(
+            [this, sourceViewId, view]()
+            {
+                if (currentViewId_ == sourceViewId)
+                    ReplaceView(ViewId::JoinRooms, view);
+            });
+        return;
     }
     ReplaceView(ViewId::JoinRooms, view);
-    if (auto* panel = dynamic_cast<modules::rooms::presentation::JoinRoomsPanel*>(view))
-    {
-        panel->Prepare({});
-    }
 }
 
 void AppNavigator::ShowVault()

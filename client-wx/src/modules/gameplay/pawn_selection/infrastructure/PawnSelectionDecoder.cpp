@@ -9,7 +9,7 @@ std::optional<domain::PawnSelection> PawnSelectionDecoder::Decode(
     domain::PawnSelection selection;
     selection.pendingType = pending->type;
     selection.label = pending->label;
-    if (selection.label.empty()) selection.label = "Votre pion.";
+    if (selection.label.empty()) selection.label = "Choisissez votre pion.";
     for (const auto& pendingChoice : pending->choices)
     {
         if (!pendingChoice.action || pendingChoice.action->type.empty() ||

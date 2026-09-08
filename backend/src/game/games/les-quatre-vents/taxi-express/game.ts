@@ -55,7 +55,7 @@ export default defineGame<TaxiState>()({
       handId: 'taxi-clients',
     }),
   ],
-  shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
+  shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   initialPhase: TAXI_PHASES.initialPhase,
   phases: TAXI_PHASES.phases,
   actions: TAXI_ACTIONS,

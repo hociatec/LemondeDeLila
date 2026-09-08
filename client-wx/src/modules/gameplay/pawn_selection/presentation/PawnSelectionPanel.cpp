@@ -19,13 +19,13 @@ PawnSelectionPanel::PawnSelectionPanel(wxWindow* parent)
 {
     SetBackgroundColour(lila::shared::ui::Theme::PanelBackground());
     auto* root = new wxBoxSizer(wxVERTICAL);
-    label_ = new wxStaticText(this, wxID_ANY, wxString(L"Votre pion."));
+    label_ = new wxStaticText(this, wxID_ANY, wxString(L"Choisissez votre pion."));
     label_->SetForegroundColour(lila::shared::ui::Theme::Accent());
     label_->SetFont(lila::shared::ui::Theme::TitleFont());
     root->Add(label_, 0, wxEXPAND | wxBOTTOM, 6);
     list_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
-    list_->SetName(wxString(L"Votre pion."));
+    list_->SetName(wxString(L"Choisissez votre pion."));
     list_->SetMinSize(wxSize(260, 120));
     root->Add(list_, 1, wxEXPAND);
     SetSizer(root);
@@ -38,9 +38,6 @@ PawnSelectionPanel::PawnSelectionPanel(wxWindow* parent)
             const int key = event.GetKeyCode();
             if (key == WXK_RETURN || key == WXK_NUMPAD_ENTER)
             {
-                // The Enter press that starts the room can still be held when
-                // this panel receives focus. Never let its auto-repeat choose
-                // the first preselected pawn.
                 if (event.IsAutoRepeat()) return;
                 Submit();
                 return;
@@ -92,7 +89,6 @@ void PawnSelectionPanel::Apply(const std::optional<domain::PawnSelection>& selec
     Show();
     if (becameVisible && onVisibilityChanged_) onVisibilityChanged_(true);
     Layout();
-    if (changed) static_cast<void>(FocusSelection());
 }
 
 void PawnSelectionPanel::Clear()
@@ -109,13 +105,6 @@ void PawnSelectionPanel::Clear()
 void PawnSelectionPanel::AllowRetry() { submitting_ = false; }
 
 bool PawnSelectionPanel::IsActive() const { return IsShown(); }
-
-bool PawnSelectionPanel::FocusSelection()
-{
-    if (!IsActive() || list_->GetCount() == 0) return false;
-    if (list_->GetSelection() == wxNOT_FOUND) list_->SetSelection(0);
-    return lila::shared::accessibility::NavigationController::Focus(list_);
-}
 
 wxWindow* PawnSelectionPanel::NavigationTarget() const noexcept
 {

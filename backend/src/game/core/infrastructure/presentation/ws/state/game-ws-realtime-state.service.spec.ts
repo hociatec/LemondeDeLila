@@ -47,7 +47,10 @@ describe('GameWsRealtimeStateService run isolation', () => {
       automation as never,
       {} as never,
       {} as never,
-      { buildPayload: jest.fn().mockResolvedValue(roomPayload(2)) } as never,
+      {
+        buildPayload: jest.fn().mockResolvedValue(roomPayload(2)),
+        refreshPayload: jest.fn().mockResolvedValue(roomPayload(2)),
+      } as never,
       execution() as never,
     );
 
@@ -90,10 +93,59 @@ describe('GameWsRealtimeStateService run isolation', () => {
     expect(automation.clear).not.toHaveBeenCalled();
   });
 
+  it('persists a missing start timestamp from the authoritative room', async () => {
+    const current = {
+      ...gameState({ roomRunId: 2, roomStartedAt: null }),
+      version: 4,
+    };
+    const startedAt = '2026-09-03T11:16:30.000Z';
+    const engine = {
+      exportInternalState: jest.fn().mockResolvedValue(current),
+      compareAndSetInternalState: jest.fn(
+        async (_roomId, _gameType, expectedVersion, state) => ({
+          committed: true,
+          version: expectedVersion + 1,
+          state: { ...state, version: expectedVersion + 1 },
+        }),
+      ),
+    };
+    const service = new GameWsRealtimeStateService(
+      {} as never,
+      engine as never,
+      { getHandler: jest.fn().mockReturnValue({}) } as never,
+      { clear: jest.fn() } as never,
+      {} as never,
+      {} as never,
+      {
+        buildPayload: jest.fn().mockResolvedValue({
+          room: {
+            ...roomPayload(2).room,
+            startedAt,
+          },
+        }),
+      } as never,
+      execution() as never,
+    );
+
+    const resolved = await service.resolve(4);
+
+    expect(resolved.state.metadata?.roomStartedAt).toBe(startedAt);
+    expect(resolved.state.version).toBe(5);
+    expect(resolved.commandRebaseFromVersion).toBe(4);
+    expect(engine.compareAndSetInternalState).toHaveBeenCalledWith(
+      4,
+      'lama',
+      4,
+      expect.objectContaining({
+        metadata: expect.objectContaining({ roomStartedAt: startedAt }),
+      }),
+    );
+  });
+
   it('rebuilds an unconfigured setup state after a bot is added', async () => {
     const current = {
       ...gameState({ roomRunId: 2 }),
-      status: 'setup',
+      status: 'playing',
       phase: 'setup',
       version: 1,
       players: [{ id: 1, username: 'Owner', isBot: false }],
@@ -122,6 +174,12 @@ describe('GameWsRealtimeStateService run isolation', () => {
         bots: [{ id: 9, name: 'Bot LAMA' }],
       },
     };
+    const rooms = {
+      buildPayload: jest.fn().mockResolvedValue({
+        room: { ...room.room, bots: [] },
+      }),
+      refreshPayload: jest.fn().mockResolvedValue(room),
+    };
     const service = new GameWsRealtimeStateService(
       new GameRoomStateFactory(),
       engine as never,
@@ -129,7 +187,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
       { clear: jest.fn() } as never,
       {} as never,
       {} as never,
-      { buildPayload: jest.fn().mockResolvedValue(room) } as never,
+      rooms as never,
       execution() as never,
     );
 
@@ -139,7 +197,8 @@ describe('GameWsRealtimeStateService run isolation', () => {
       { id: 1, username: 'Owner', isBot: false },
       { id: -9, username: 'Bot LAMA', isBot: true },
     ]);
-    expect(resolved.setupRosterRefreshedFromVersion).toBe(1);
+    expect(resolved.commandRebaseFromVersion).toBe(1);
+    expect(rooms.refreshPayload).toHaveBeenCalledWith(4);
     expect(handler.hydrateInitialState).toHaveBeenCalledTimes(1);
     expect(engine.compareAndSetInternalState).toHaveBeenCalledWith(
       4,
@@ -156,7 +215,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
   it('rebuilds a stale setup roster when the room starts with a newly added bot', async () => {
     const current = {
       ...gameState({ roomRunId: 2 }),
-      status: 'setup',
+      status: 'playing',
       phase: 'setup',
       version: 1,
       players: [{ id: 1, username: 'Owner', isBot: false }],
@@ -193,7 +252,10 @@ describe('GameWsRealtimeStateService run isolation', () => {
       { clear: jest.fn() } as never,
       {} as never,
       {} as never,
-      { buildPayload: jest.fn().mockResolvedValue(room) } as never,
+      {
+        buildPayload: jest.fn().mockResolvedValue(room),
+        refreshPayload: jest.fn().mockResolvedValue(room),
+      } as never,
       execution() as never,
     );
 
@@ -205,7 +267,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
         expect.objectContaining({ id: -9, isBot: true }),
       ]),
     );
-    expect(resolved.setupRosterRefreshedFromVersion).toBe(1);
+    expect(resolved.commandRebaseFromVersion).toBe(1);
     expect(handler.hydrateInitialState).toHaveBeenCalledTimes(1);
   });
 
@@ -258,6 +320,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
         .fn()
         .mockResolvedValueOnce(setupRoom)
         .mockResolvedValueOnce(startedRoom),
+      refreshPayload: jest.fn().mockResolvedValue(setupRoom),
     };
     const service = new GameWsRealtimeStateService(
       new GameRoomStateFactory(),
@@ -283,8 +346,12 @@ describe('GameWsRealtimeStateService run isolation', () => {
 
     const started = await service.resolve(4);
 
-    expect(started.state).toBe(configured);
+    expect(started.state).not.toBe(configured);
     expect(started.state.game).toEqual({ configured: true });
+    expect(started.state.metadata).toMatchObject({
+      roomRunId: 3,
+      roomStartedAt: new Date(0).toISOString(),
+    });
     expect(engine.clearInternalState).not.toHaveBeenCalled();
     expect(hydrateInitialState).toHaveBeenCalledTimes(1);
   });
@@ -306,7 +373,10 @@ describe('GameWsRealtimeStateService run isolation', () => {
       {} as never,
       {} as never,
       {} as never,
-      { buildPayload: jest.fn().mockResolvedValue(roomPayload(2)) } as never,
+      {
+        buildPayload: jest.fn().mockResolvedValue(roomPayload(2)),
+        refreshPayload: jest.fn().mockResolvedValue(roomPayload(2)),
+      } as never,
       execution() as never,
     );
 

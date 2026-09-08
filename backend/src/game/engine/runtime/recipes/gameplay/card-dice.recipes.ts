@@ -10,6 +10,7 @@ import type { CardValue } from '../../cards/cards-kit';
 export type DrawAndResolveOptions<TCard extends CardValue, TResult> = {
   deckId: string;
   playerId: number;
+  automatic?: boolean;
   recycle?: boolean;
   discard?: boolean | ((input: { card: TCard; result: TResult }) => boolean);
   eventData?: (card: TCard) => Record<string, unknown>;
@@ -22,6 +23,18 @@ export type DrawForPlayerOptions = {
   playerId: number;
   count?: number;
   recycle?: boolean;
+};
+
+type SequentialPawnSelectionOptions<TState extends object> = {
+  setId: string;
+  choiceId: string;
+  label?: (pawn: PawnDefinition) => string;
+  assigned?: (input: {
+    playerId: number;
+    pawnId: string;
+    ctx: GameContext<TState>;
+  }) => void;
+  complete: (input: { ctx: GameContext<TState> }) => void;
 };
 
 /** Pioche ciblée vers une main et enregistre sa provenance pour tout le tour. */
@@ -88,6 +101,7 @@ export function drawAndResolve<
       ctx.events.message('game.card.drawn', {
         playerId: options.playerId,
         deckId: options.deckId,
+        automatic: options.automatic ?? true,
         ...cardEventIdentity(card),
         ...options.eventData?.(card),
       });
@@ -100,12 +114,9 @@ export function drawAndResolve<
   );
 }
 
-export function sequentialPawnSelection<TState extends object>(options: {
-  setId: string;
-  choiceId: string;
-  label?: (pawn: PawnDefinition) => string;
-  complete: (input: { ctx: GameContext<TState> }) => void;
-}): {
+export function sequentialPawnSelection<TState extends object>(
+  options: SequentialPawnSelectionOptions<TState>,
+): {
   request: (playerId: number, ctx: GameContext<TState>) => void;
   requestAll: (playerIds: readonly number[], ctx: GameContext<TState>) => void;
   resolve: (playerId: number, pawnId: string, ctx: GameContext<TState>) => void;
@@ -119,29 +130,53 @@ export function sequentialPawnSelection<TState extends object>(options: {
       ? (options.label?.(pawn) ?? pawn.label ?? pawn.name ?? pawn.id)
       : pawnId;
   };
-  const request = (playerId: number, ctx: GameContext<TState>): void => {
+  const requestForPlayers = (
+    playerId: number,
+    playerIds: readonly number[],
+    ctx: GameContext<TState>,
+  ): void => {
     const available = ctx.pawns.available(options.setId);
+    ctx.events.message('game.pawn.selection-requested', { playerId });
     ctx.choice.pawn({
       id: options.choiceId,
       player: playerId,
       options: available.map((pawn) => pawn.id),
       label: (pawnId) => pawnLabel(available, pawnId),
+      data: { pawnSelectionPlayerIds: [...playerIds] },
     });
+  };
+  const request = (playerId: number, ctx: GameContext<TState>): void => {
+    requestForPlayers(
+      playerId,
+      ctx.players.all().map((player) => player.id),
+      ctx,
+    );
   };
   const requestAll = (
     playerIds: readonly number[],
     ctx: GameContext<TState>,
   ): void => {
-    const participants = [...new Set(playerIds)];
-    const available = ctx.pawns.available(options.setId);
-    ctx.choice.pawnsForPlayers({
-      id: options.choiceId,
-      players: participants,
-      options: available.map((pawn) => pawn.id),
-      label: (pawnId) => pawnLabel(available, pawnId),
-    });
+    const uniqueParticipants = [...new Set(playerIds)];
+    const playersById = new Map(
+      ctx.players.all().map((player) => [player.id, player] as const),
+    );
+    const participants = [
+      ...uniqueParticipants.filter(
+        (playerId) => !playersById.get(playerId)?.isBot,
+      ),
+      ...uniqueParticipants.filter(
+        (playerId) => playersById.get(playerId)?.isBot,
+      ),
+    ];
+    if (participants.length === 0) {
+      options.complete({ ctx });
+      return;
+    }
     const first = participants[0];
-    if (first != null) ctx.turn.to(first);
+    if (first != null) {
+      ctx.turn.to(first, { announce: false });
+      requestForPlayers(first, participants, ctx);
+    }
   };
   const resolve = (
     playerId: number,
@@ -149,35 +184,30 @@ export function sequentialPawnSelection<TState extends object>(options: {
     ctx: GameContext<TState>,
   ): void => {
     ctx.pawns.assign(options.setId, playerId, pawnId);
-    const collective = ctx.choice.current()?.playerIds?.length;
-    if (collective) {
-      if (ctx.pawns.selectionComplete(options.setId)) {
-        options.complete({ ctx });
-        return;
-      }
-      const available = ctx.pawns.available(options.setId);
-      ctx.choice.replaceOptions(
-        available.map((pawn) => pawn.id),
-        (availablePawnId) => pawnLabel(available, availablePawnId),
-      );
-      const pending = ctx.choice.current();
-      const next = pending?.playerIds?.find(
-        (candidateId) =>
-          !(pending.resolvedPlayerIds ?? []).includes(candidateId),
-      );
-      if (next != null) ctx.turn.to(next);
-      return;
-    }
-    const next = ctx.players
-      .all()
-      .find(
-        (player) =>
-          ctx.pawns.assigned(options.setId, player.id).length <
+    options.assigned?.({ playerId, pawnId, ctx });
+    const continuation = ctx.choice.continuation<{
+      pawnSelectionPlayerIds?: unknown;
+    }>();
+    const configuredPlayers = continuation?.pawnSelectionPlayerIds;
+    const participantIds = Array.isArray(configuredPlayers)
+      ? configuredPlayers.filter(
+          (candidate): candidate is number =>
+            typeof candidate === 'number' && Number.isInteger(candidate),
+        )
+      : ctx.players.all().map((player) => player.id);
+    const playersById = new Map(
+      ctx.players.all().map((player) => [player.id, player] as const),
+    );
+    const nextId = participantIds.find(
+      (candidate) =>
+        playersById.has(candidate) &&
+        ctx.pawns.assigned(options.setId, candidate).length <
           ctx.pawns.perPlayer(options.setId),
-      );
+    );
+    const next = nextId == null ? null : playersById.get(nextId);
     if (next) {
-      ctx.turn.to(next.id);
-      request(next.id, ctx);
+      ctx.turn.to(next.id, { announce: false });
+      requestForPlayers(next.id, participantIds, ctx);
       return;
     }
     options.complete({ ctx });

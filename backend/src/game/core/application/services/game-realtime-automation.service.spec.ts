@@ -41,8 +41,8 @@ describe('GameRealtimeAutomationService', () => {
       schedule: jest.fn(async (task: GameScheduledTask) => {
         scheduled.push(task);
       }),
-      cancel: jest.fn(async () => undefined),
-      cancelRoom: jest.fn(async () => undefined),
+      cancel: jest.fn(async (): Promise<void> => undefined),
+      cancelRoom: jest.fn(async (): Promise<void> => undefined),
     };
     const next = state({ version: 4, metadata: { resumed: true } });
     const engine = {
@@ -150,6 +150,24 @@ describe('GameRealtimeAutomationService', () => {
     );
   });
 
+  it('does not commit or reschedule an already applied automatic command', async () => {
+    const current = state();
+    const test = harness(current);
+    test.executor.execute.mockReturnValue(structuredClone(current));
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'example',
+      handler: test.runtime,
+      state: current,
+    });
+    await Promise.resolve();
+
+    await test.processor()(test.scheduled[0]!);
+
+    expect(test.engine.compareAndSetInternalState).not.toHaveBeenCalled();
+    expect(test.scheduler.schedule).toHaveBeenCalledTimes(1);
+  });
+
   it('executes a bot task when its persisted deadline is due', async () => {
     const botState = state({
       players: [{ id: -7, username: 'Bot LAMA', isBot: true }],
@@ -180,11 +198,53 @@ describe('GameRealtimeAutomationService', () => {
         actions: [
           expect.objectContaining({
             type: 'draw',
-            meta: expect.objectContaining({ actorId: -7 }),
+            meta: expect.objectContaining({
+              actorId: -7,
+              commandId: expect.stringContaining(':generation:4:'),
+            }),
           }),
         ],
       }),
     );
+  });
+
+  it('uses a fresh command identity for consecutive bot actions in the same turn', async () => {
+    const runtime = {
+      gameType: 'a-fond-les-ballons',
+      getAutomaticActions: () => null,
+    } as unknown as GameRuntime;
+    const botTurn = (version: number) =>
+      state({
+        version,
+        players: [{ id: -7, username: 'Pumbaa', isBot: true }],
+        turn: { currentPlayerId: -7, direction: 1, turnNumber: 3 },
+        engine: { round: { number: 2 } },
+      });
+    const test = harness(botTurn(4), runtime, [
+      { type: 'draw_card', payload: {} },
+    ]);
+    test.engine.exportInternalState
+      .mockResolvedValueOnce(botTurn(4))
+      .mockResolvedValueOnce(botTurn(5));
+    const baseTask = {
+      key: 'game-realtime:12:a-fond-les-ballons',
+      roomId: 12,
+      gameType: 'a-fond-les-ballons',
+      signature: 'bot:-7:play:round:2:turn:3',
+      dueAtMs: Date.now() - 1,
+    };
+
+    await test.processor()({ ...baseTask, generation: 4 });
+    await test.processor()({ ...baseTask, generation: 5 });
+
+    const commandIds = test.executor.execute.mock.calls.map(
+      ([input]) => input.actions[0].meta.commandId,
+    );
+    expect(commandIds).toEqual([
+      expect.stringContaining(':generation:4:'),
+      expect.stringContaining(':generation:5:'),
+    ]);
+    expect(commandIds[0]).not.toBe(commandIds[1]);
   });
 
   it('lets an unresolved bot answer a collective choice during a human turn', async () => {
@@ -240,6 +300,64 @@ describe('GameRealtimeAutomationService', () => {
     );
   });
 
+  it('does not let a late human-turn cancellation erase the next bot task', async () => {
+    let releaseCancellation: (() => void) | undefined;
+    const cancellation = new Promise<void>((resolve) => {
+      releaseCancellation = resolve;
+    });
+    const runtime = {
+      gameType: 'a-fond-les-ballons',
+      getAutomaticActions: () => null,
+    } as unknown as GameRuntime;
+    const test = harness(state(), runtime, [
+      { type: 'choice.resolve', payload: { value: 'red' } },
+    ]);
+    test.scheduler.cancel.mockImplementation(async () => cancellation);
+
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'a-fond-les-ballons',
+      handler: runtime,
+      state: state(),
+    });
+    await Promise.resolve();
+    expect(test.scheduler.cancel).toHaveBeenCalledTimes(1);
+
+    const botChoice = state({
+      version: 5,
+      players: [
+        { id: 1, username: 'Alice', isBot: false },
+        { id: -7, username: 'Bot Ballons', isBot: true },
+      ],
+      turn: { currentPlayerId: -7, direction: 1, turnNumber: 2 },
+      pending: {
+        type: 'choice',
+        playerId: -7,
+        data: {
+          choiceId: 'a-fond-les-ballons.pawn',
+          options: ['blue', 'red'],
+        },
+      },
+    });
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'a-fond-les-ballons',
+      handler: runtime,
+      state: botChoice,
+    });
+    await Promise.resolve();
+    expect(test.scheduler.schedule).not.toHaveBeenCalled();
+
+    releaseCancellation?.();
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    expect(test.scheduler.schedule).toHaveBeenCalledWith(
+      expect.objectContaining({
+        generation: 5,
+        signature: 'bot:-7:choice:a-fond-les-ballons.pawn:round:0:turn:2',
+      }),
+    );
+  });
+
   it('gives the same bot turn a distinct identity in the next round', async () => {
     const runtime = {
       gameType: 'lama',
@@ -265,7 +383,7 @@ describe('GameRealtimeAutomationService', () => {
       handler: runtime,
       state: botTurn(2),
     });
-    await Promise.resolve();
+    await new Promise<void>((resolve) => setImmediate(resolve));
 
     expect(test.scheduled.map((task) => task.signature)).toEqual([
       'bot:-7:play:round:1:turn:3',

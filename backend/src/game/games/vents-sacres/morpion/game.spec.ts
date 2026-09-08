@@ -1,8 +1,37 @@
-import { testGame } from '../../../engine/sdk/public-api';
+import {
+  testGame,
+  type StableGameKitsView,
+} from '../../../engine/sdk/public-api';
 import { MORPION_PAWNS } from './content';
 import gameDefinition from './game';
 
 describe('Morpion declarative game', () => {
+  it('requires a bot to resolve the same sequential pawn choice', async () => {
+    const game = testGame(gameDefinition)
+      .players(['Alice', { username: 'Bot Croix', isBot: true }])
+      .seed(3);
+    await game.start();
+
+    const assignments = () =>
+      (game.view(1) as unknown as { kits: StableGameKitsView }).kits.pawns?.sets
+        .morpion.assignments;
+    expect(assignments()?.['1']).toEqual([]);
+    expect(assignments()?.['-2']).toEqual([]);
+
+    const first = game.state().pending?.playerId;
+    expect(first).not.toBeNull();
+    await game.choose(first!, MORPION_PAWNS[0].id);
+    const second = game.state().pending?.playerId;
+    expect(second).not.toBe(first);
+    expect(game.availableActions(first!)).toEqual([]);
+    expect(game.availableActions(second!)).toContain('choice.resolve');
+    await game.choose(second!, MORPION_PAWNS[1].id);
+
+    expect(assignments()?.[String(first)]).toEqual([MORPION_PAWNS[0].id]);
+    expect(assignments()?.[String(second)]).toEqual([MORPION_PAWNS[1].id]);
+    expect(game.state().pending).toBeNull();
+  });
+
   it('handles pawn choices, available cells, victory, logs and replay', async () => {
     const game = testGame(gameDefinition).players(['Alice', 'Bob']).seed(3);
     await game.start();

@@ -54,8 +54,12 @@ void GamePlayPanel::SetRoomStarted(bool started)
         roomStartFlowRequested_ = false;
         roomStartPending_ = false;
         startConfigurationFlow_.Reset();
+        // Setup already prepares the viewer's pawn choices. Reveal that
+        // projection immediately when the room starts; the server rebases it
+        // against its authoritative roster before accepting the command.
         pawnSelectionPanel_->Apply(pawnSelection_);
         SyncContentVisibility();
+        if (becameStarted && state_.roomId <= 0) StartJoin();
     }
     else if (becameSetup)
     {

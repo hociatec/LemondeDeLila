@@ -11,6 +11,7 @@ namespace lila::modules::rooms::presentation::history
 namespace
 {
 constexpr int AnnouncementSpacingMs = 150;
+const wxString AnnouncementAccessibleName(L"Annonces du jeu");
 }
 
 HistoryAnnouncementQueue::HistoryAnnouncementQueue(wxWindow* parent)
@@ -19,7 +20,7 @@ HistoryAnnouncementQueue::HistoryAnnouncementQueue(wxWindow* parent)
       screenReader_(std::make_unique<
           lila::shared::accessibility::NvdaScreenReaderAnnouncer>())
 {
-    liveRegion_->SetName(wxString(L"Annonces du jeu"));
+    liveRegion_->SetName(AnnouncementAccessibleName);
     liveRegion_->SetMinSize(wxSize(1, 1));
     liveRegion_->SetMaxSize(wxSize(1, 1));
     Bind(wxEVT_TIMER, [this](wxTimerEvent&) { AnnounceNext(); }, timer_.GetId());
@@ -65,6 +66,6 @@ void HistoryAnnouncementQueue::Reset()
     pending_.clear();
     lastAnnounced_.clear();
     liveRegion_->SetLabel(wxString{});
-    liveRegion_->SetName(wxString{});
+    liveRegion_->SetName(AnnouncementAccessibleName);
 }
 }

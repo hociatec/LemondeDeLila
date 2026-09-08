@@ -6,6 +6,7 @@
 #include <wx/event.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
+#include <wx/toplevel.h>
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/accessibility/application/NavigationController.h"
@@ -68,10 +69,16 @@ void GameActionConfirmationPanel::ShowConfirmation(domain::GameAction action)
 
 void GameActionConfirmationPanel::HideConfirmation()
 {
+    auto* focused = wxWindow::FindFocus();
+    const bool ownedFocus =
+        lila::shared::accessibility::NavigationController::IsDescendantOf(
+            focused, this);
     Hide();
     action_.reset();
     if (onVisibilityChanged_) onVisibilityChanged_(false);
-    if (previousFocus_)
+    auto* topLevel = dynamic_cast<wxTopLevelWindow*>(wxGetTopLevelParent(this));
+    if (ownedFocus && previousFocus_ &&
+        (topLevel == nullptr || topLevel->IsActive()))
         lila::shared::accessibility::NavigationController::Focus(previousFocus_.get());
     previousFocus_ = nullptr;
 }

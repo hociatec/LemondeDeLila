@@ -13,4 +13,3 @@ Aligner 3 symboles (horizontal, vertical ou diagonal) sur une grille **3×3**.
 ## Commandes
 - Flèches : déplacer le focus sur la grille.
 - Entrée : jouer sur la case focus.
-

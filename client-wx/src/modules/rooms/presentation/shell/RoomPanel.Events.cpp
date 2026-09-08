@@ -2,6 +2,7 @@
 
 #include <wx/event.h>
 #include <wx/textctrl.h>
+#include <wx/toplevel.h>
 
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
@@ -43,6 +44,8 @@ void RoomPanel::BindEvents()
     gamePlayPanel_->SetZoneFocusRequestedHandler(
         [this]()
         {
+            auto* topLevel = dynamic_cast<wxTopLevelWindow*>(wxGetTopLevelParent(this));
+            if (topLevel != nullptr && !topLevel->IsActive()) return;
             auto* focused = wxWindow::FindFocus();
             const bool focusInsideGame = focused == nullptr || focused == gameZoneAnchor_ ||
                 lila::shared::accessibility::NavigationController::IsDescendantOf(

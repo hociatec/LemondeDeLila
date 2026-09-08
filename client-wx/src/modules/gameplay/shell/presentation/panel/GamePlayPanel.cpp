@@ -7,7 +7,6 @@
 #include <wx/choice.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
-#include "modules/gameplay/dice/application/GameDiceActionResolver.h"
 #include "modules/gameplay/session/application/GameSessionService.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
@@ -150,6 +149,13 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     // movement row such as "player, track, square, progress". When it becomes
     // this viewer's turn, the actionable pawn panel above takes priority.
     if (state_.pending && state_.pending->workflowKind == "pawn") return nullptr;
+    // A blocking generic choice must take priority over the stable dice-game
+    // anchor. Otherwise a human can receive an effect choice (for example a
+    // Tornado target) without keyboard or screen-reader focus reaching it.
+    if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
+        return choicesList_;
+    if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
+        return orderingChoices_;
     // Leaving a round hides the viewer's hand. Do not then move focus to the
     // read-only results list: screen readers would recite every score and empty
     // capability section after the leave announcement. Returning no target
@@ -160,12 +166,11 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     {
         if (auto* target = handPanel_->NavigationTarget()) return target;
     }
-    // A dice roll is activated from the stable room game-zone anchor. Scores
-    // and other read-only capability lists must not steal the initial focus.
-    if (const auto* dice = state_.kits.Dice();
-        dice != nullptr && application::dice::GameDiceActionResolver::Resolve(
-            *dice, state_.actions).has_value())
-        return nullptr;
+    // Dice games are always represented by the stable room game-zone anchor,
+    // including while a bot owns the turn and no roll action is projected for
+    // this viewer. Falling through here would replace that anchor with the
+    // read-only movement/pawn list until the bot finishes playing.
+    if (state_.kits.Dice() != nullptr) return nullptr;
     if (gridPanel_ != nullptr)
     {
         if (auto* target = gridPanel_->NavigationTarget(); target && gridPanel_->IsShown())
@@ -177,10 +182,6 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
         if (auto* target = resourcesPanel_->NavigationTarget()) return target;
     if (workflowPanel_ != nullptr)
         if (auto* target = workflowPanel_->NavigationTarget()) return target;
-    if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
-        return choicesList_;
-    if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
-        return orderingChoices_;
     if (linesList_ != nullptr && linesList_->IsShown() && linesList_->GetCount() > 0)
         return linesList_;
     if (infoPanelChoice_ != nullptr && infoPanelChoice_->IsShown() &&

@@ -20,7 +20,7 @@ export type ResolvedGameState = {
   gameType: string;
   state: GameStateEntity;
   handler: GameRuntime;
-  setupRosterRefreshedFromVersion?: number;
+  commandRebaseFromVersion?: number;
 };
 
 @Injectable()
@@ -47,12 +47,23 @@ export class GameWsRealtimeStateService {
   }
 
   async resolve(roomId: number): Promise<ResolvedGameState> {
-    const room = await this.rooms.buildPayload(roomId);
-    const gameType = stringOrEmpty(room.room.gameType).trim();
+    const cachedRoom = await this.rooms.buildPayload(roomId);
+    const gameType = stringOrEmpty(cachedRoom.room.gameType).trim();
     const handler = this.registry.getHandler(gameType);
     if (!handler) throw new NotFoundException(`Jeu introuvable: ${gameType}`);
 
     const existing = await this.engine.exportInternalState(roomId, gameType);
+    // A cached lobby payload is sufficient during ordinary turns, but never
+    // for creating or reconfiguring a game roster. Bot/human mutations and a
+    // start command can be handled concurrently by separate WS connections.
+    // Reading the relations from the database closes that last race even when
+    // the cache itself is new.
+    const room =
+      !existing ||
+      !this.belongsToCurrentRun(existing, cachedRoom.room) ||
+      this.isRosterConfigurationState(existing)
+        ? await this.rooms.refreshPayload(roomId)
+        : cachedRoom;
     if (existing && this.belongsToCurrentRun(existing, room.room)) {
       this.ensureVersion(existing);
       const refreshed = await this.refreshSetupRoster(
@@ -62,7 +73,20 @@ export class GameWsRealtimeStateService {
         room,
         handler,
       );
-      return { gameType, handler, ...refreshed };
+      const started = await this.refreshRoomStartedAt(
+        roomId,
+        gameType,
+        refreshed.state,
+        room.room.startedAt,
+      );
+      return {
+        gameType,
+        handler,
+        state: started.state,
+        commandRebaseFromVersion:
+          refreshed.commandRebaseFromVersion ??
+          started.commandRebaseFromVersion,
+      };
     }
     if (existing) await this.clear(roomId, gameType);
 
@@ -172,6 +196,41 @@ export class GameWsRealtimeStateService {
     target.metadata = { ...(target.metadata ?? {}), roomRunId };
   }
 
+  private async refreshRoomStartedAt(
+    roomId: number,
+    gameType: string,
+    existing: GameStateEntity,
+    roomStartedAt: Date | string | null | undefined,
+  ): Promise<{
+    state: GameStateEntity;
+    commandRebaseFromVersion?: number;
+  }> {
+    if (existing.metadata?.roomStartedAt != null || roomStartedAt == null) {
+      return { state: existing };
+    }
+    const normalizedStartedAt =
+      roomStartedAt instanceof Date
+        ? roomStartedAt.toISOString()
+        : roomStartedAt;
+    const next = structuredClone(existing);
+    next.metadata = {
+      ...(next.metadata ?? {}),
+      roomStartedAt: normalizedStartedAt,
+    };
+    const result = await this.engine.compareAndSetInternalState(
+      roomId,
+      gameType,
+      this.ensureVersion(existing),
+      next,
+    );
+    return result.committed
+      ? {
+          state: result.state,
+          commandRebaseFromVersion: this.ensureVersion(existing),
+        }
+      : { state: result.state };
+  }
+
   private async refreshSetupRoster(
     roomId: number,
     gameType: string,
@@ -180,12 +239,11 @@ export class GameWsRealtimeStateService {
     handler: GameRuntime,
   ): Promise<{
     state: GameStateEntity;
-    setupRosterRefreshedFromVersion?: number;
+    commandRebaseFromVersion?: number;
   }> {
     const roomStatus = stringOrEmpty(room.room.status).toLowerCase();
     if (
       (roomStatus !== 'setup' && roomStatus !== 'started') ||
-      stringOrEmpty(existing.status).toLowerCase() !== 'setup' ||
       stringOrEmpty(existing.phase).toLowerCase() !== 'setup'
     ) {
       return { state: existing };
@@ -208,7 +266,7 @@ export class GameWsRealtimeStateService {
     return result.committed
       ? {
           state: result.state,
-          setupRosterRefreshedFromVersion: this.ensureVersion(existing),
+          commandRebaseFromVersion: this.ensureVersion(existing),
         }
       : { state: result.state };
   }
@@ -229,6 +287,13 @@ export class GameWsRealtimeStateService {
         );
       })
     );
+  }
+
+  private isRosterConfigurationState(state: GameStateEntity): boolean {
+    // Declarative games start the match lifecycle before asynchronous setup
+    // choices (pawns, roles, etc.) have finished. Their public status is thus
+    // already "playing" while the phase remains "setup".
+    return stringOrEmpty(state.phase).toLowerCase() === 'setup';
   }
 
   private ensureVersion(state: GameStateEntity): number {

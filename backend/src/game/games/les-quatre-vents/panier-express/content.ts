@@ -133,15 +133,67 @@ const EXCHANGE_EFFECTS: PanierExchangeEffect[] = [
   'random-swap',
 ];
 
-export const PANIER_EVENTS = eventsContent.events.map((id, index) => ({
-  id,
-  effects: eventInstructions(requiredEventEffect(index, id)),
-}));
+export const PANIER_EVENTS = eventsContent.events.map((id, index) => {
+  const effect = requiredEventEffect(index, id);
+  return {
+    id,
+    label: cardLabel(id),
+    effectDescription: eventEffectDescription(effect),
+    effects: eventInstructions(effect),
+  };
+});
 
-export const PANIER_EXCHANGES = exchangesContent.exchanges.map((id, index) => ({
-  id,
-  effects: exchangeInstructions(requiredExchangeEffect(index, id)),
-}));
+export const PANIER_EXCHANGES = exchangesContent.exchanges.map((id, index) => {
+  const effect = requiredExchangeEffect(index, id);
+  return {
+    id,
+    label: cardLabel(id),
+    effectDescription: exchangeEffectDescription(effect),
+    effects: exchangeInstructions(effect),
+  };
+});
+
+function cardLabel(id: string): string {
+  const text = id.replace(/-/g, ' ');
+  return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
+}
+
+function eventEffectDescription(effect: PanierEventEffect): string {
+  if (effect.kind === 'draw') {
+    const subject = effect.everyone ? 'Tout le monde pioche' : 'Piochez';
+    return `${subject} ${effect.count} carte${effect.count === 1 ? '' : 's'} Courses`;
+  }
+  if (effect.kind === 'move')
+    return effect.delta >= 0
+      ? `Avancez de ${effect.delta} cases`
+      : `Reculez de ${Math.abs(effect.delta)} cases`;
+  if (effect.kind === 'skip')
+    return `Passez ${effect.turns} tour${effect.turns === 1 ? '' : 's'}`;
+  if (effect.kind === 'extra-turn') return 'Rejouez immédiatement';
+  if (effect.kind === 'discard')
+    return effect.everyone
+      ? `Tout le monde perd ${effect.count} légume${effect.count === 1 ? '' : 's'} de son inventaire`
+      : `Perdez ${effect.count} légume${effect.count === 1 ? '' : 's'} de votre inventaire`;
+  if (effect.kind === 'reverse') return 'Inversez le sens du jeu';
+  if (effect.kind === 'quiz') return 'Répondez à une question du marché';
+  if (effect.kind === 'nearest-stand') return 'Avancez jusqu’au prochain stand';
+  if (effect.kind === 'reveal')
+    return 'Révélez votre inventaire pendant un tour';
+  return effect.kind === 'steal'
+    ? 'Choisissez un adversaire et prenez-lui un légume'
+    : 'Choisissez un adversaire et échangez vos inventaires';
+}
+
+function exchangeEffectDescription(effect: PanierExchangeEffect): string {
+  if (effect === 'discard') return 'Perdez un légume de votre inventaire';
+  if (effect === 'steal')
+    return 'Choisissez un adversaire et prenez-lui un légume';
+  if (effect === 'swap-inventories')
+    return 'Choisissez un adversaire et échangez vos inventaires';
+  if (effect === 'random-swap')
+    return 'Échangez un légume au hasard avec un adversaire';
+  return 'Choisissez un adversaire puis les légumes à échanger';
+}
 
 function eventInstructions(
   effect: PanierEventEffect,

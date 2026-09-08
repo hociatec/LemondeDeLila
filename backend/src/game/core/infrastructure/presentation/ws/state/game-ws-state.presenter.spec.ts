@@ -49,6 +49,7 @@ describe('GameWsStatePresenter', () => {
       'Scores',
     ]);
     expect(payload.runId).toBe(7);
+    expect(payload.viewerPlayerId).toBe(1);
     expect(payload.state).toBeUndefined();
   });
 
@@ -134,6 +135,53 @@ describe('GameWsStatePresenter', () => {
 
     expect((payload.system as any).shortcuts).toEqual([
       { key: 'S', type: 'interface', id: 'score', label: 'Scores' },
+    ]);
+  });
+
+  it('lets a scored game reserve S for a declared interface panel', () => {
+    const state = {
+      status: 'playing',
+      players: [{ id: 1, username: 'Lila' }],
+      metadata: {},
+    } as unknown as GameStateEntity;
+    const handler = {
+      exposeStateForUser: () => ({
+        system: { match: { status: 'playing' } },
+        kits: {
+          score: {
+            byPlayer: { '1': 0 },
+            leaderboard: [{ playerId: 1, score: 0, rank: 1 }],
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [
+        {
+          key: 'S',
+          type: 'interface',
+          id: 'inventory:shopping-baskets',
+          label: 'Panier',
+        },
+      ],
+      getDescriptor: () => ({ presentation: {} }),
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state,
+      handler,
+      roomId: 6,
+      gameType: 'panier-express',
+      version: 1,
+      viewerPlayerId: 1,
+    });
+
+    expect((payload.system as any).shortcuts).toEqual([
+      {
+        key: 'S',
+        type: 'interface',
+        id: 'inventory:shopping-baskets',
+        label: 'Panier',
+      },
     ]);
   });
 
@@ -234,6 +282,103 @@ describe('GameWsStatePresenter', () => {
     expect((payload.system as any).events.recent[0].data.message).toBe(
       'Vous rendez 10 jetons et en avez maintenant 2.',
     );
+  });
+
+  it('announces a pawn choice to its author and to every other player', () => {
+    const state = {
+      status: 'playing',
+      players: [
+        { id: 1, username: 'Hacene' },
+        { id: 2, username: 'Mina' },
+      ],
+      metadata: {},
+    } as unknown as GameStateEntity;
+    const exposed = {
+      system: {
+        match: { status: 'playing' },
+        players: { all: state.players },
+        events: {
+          recent: [
+            {
+              id: '4:0',
+              type: 'pawn.assigned',
+              actorId: 1,
+              data: {
+                playerId: 1,
+                pawnId: 'capitaine-cacahuete',
+                pawnLabel: 'Capitaine Cacahuète',
+              },
+            },
+          ],
+          latestByType: {},
+        },
+      },
+      kits: {},
+      actions: [],
+    };
+    const handler = {
+      exposeStateForUser: () => exposed,
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+    const presentFor = (viewerPlayerId: number) =>
+      (
+        createPresenter().present({
+          state,
+          handler,
+          roomId: 8,
+          gameType: 'a-fond-les-ballons',
+          version: 4,
+          viewerPlayerId,
+        }).system as any
+      ).events.recent[0].data.message;
+
+    expect(presentFor(1)).toBe('Vous avez choisi « Capitaine Cacahuète ».');
+    expect(presentFor(2)).toBe('Hacene a choisi « Capitaine Cacahuète ».');
+  });
+
+  it('announces who must choose a pawn without calling it a turn', () => {
+    const players = [
+      { id: 1, username: 'Hacene' },
+      { id: 2, username: 'Mina' },
+    ];
+    const event = {
+      id: '4:1',
+      type: 'game.message',
+      data: {
+        key: 'game.pawn.selection-requested',
+        params: { playerId: 1 },
+      },
+    };
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'playing' },
+          players: { all: players },
+          events: { recent: [event], latestByType: { 'game.message': event } },
+        },
+        kits: {},
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+    const presentFor = (viewerPlayerId: number) =>
+      (
+        createPresenter().present({
+          state: {
+            status: 'playing',
+            players,
+            metadata: {},
+          } as unknown as GameStateEntity,
+          handler,
+          roomId: 8,
+          gameType: 'a-fond-les-ballons',
+          version: 4,
+          viewerPlayerId,
+        }).system as any
+      ).events.recent[0].data.message;
+
+    expect(presentFor(1)).toBe('Vous devez choisir votre pion.');
+    expect(presentFor(2)).toBe('Hacene doit choisir son pion.');
   });
 
   it('announces the drawn card value only to the player who drew it', () => {
@@ -356,6 +501,57 @@ describe('GameWsStatePresenter', () => {
     ).toBe('Lila pioche une carte.');
   });
 
+  it('announces a revealed card and its effect', () => {
+    const state = {
+      status: 'started',
+      players: [
+        { id: 1, username: 'Lila' },
+        { id: 2, username: 'Mina' },
+      ],
+    } as unknown as GameStateEntity;
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'started' },
+          players: { all: state.players },
+          events: {
+            latestByType: {
+              'game.message': {
+                id: '4:0',
+                type: 'game.message',
+                data: {
+                  key: 'game.card.drawn',
+                  params: {
+                    playerId: 1,
+                    revealed: true,
+                    cardLabel: 'Coup de chance',
+                    effectDescription: 'Avancez de 2 cases',
+                  },
+                },
+              },
+            },
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state,
+      handler,
+      roomId: 6,
+      gameType: 'panier-express',
+      version: 4,
+      viewerPlayerId: 1,
+    });
+
+    expect(
+      ((payload.system as any).events.latestByType['game.message'] as any).data
+        .message,
+    ).toBe('Vous piochez « Coup de chance ». Effet : Avancez de 2 cases.');
+  });
+
   it('announces a player leaving a round through the standard event', () => {
     const state = {
       status: 'started',
@@ -408,16 +604,23 @@ describe('GameWsStatePresenter', () => {
   });
 
   it.each([
-    ['game.player.passed', 'Vous passez votre tour.'],
-    ['game.card.drawn', 'Vous piochez une carte.'],
+    ['game.player.passed', 'Vous passez votre tour.', false],
+    [
+      'game.card.drawn',
+      'Vous piochez une carte. Son effet est appliqué automatiquement.',
+      true,
+    ],
   ])(
     'announces the next player in the same utterance after %s',
-    (messageKey, actionMessage) => {
+    (messageKey, actionMessage, automatic) => {
       const events = [
         {
           id: '10:0',
           type: 'game.message',
-          data: { key: messageKey, params: { playerId: 1 } },
+          data: {
+            key: messageKey,
+            params: { playerId: 1, ...(automatic ? { automatic: true } : {}) },
+          },
         },
         {
           id: '10:1',
@@ -469,6 +672,133 @@ describe('GameWsStatePresenter', () => {
       expect(messages).toEqual([`${actionMessage}\nC'est au tour de Mina.`]);
     },
   );
+
+  it('does not repeat two consecutive announcements for the same turn', () => {
+    const events = [
+      {
+        id: '10:0',
+        type: 'turn.started',
+        data: { playerId: 1 },
+      },
+      {
+        id: '10:1',
+        type: 'turn.started',
+        data: { playerId: 1 },
+      },
+    ];
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'started' },
+          players: { all: [{ id: 1, username: 'Hacene' }] },
+          events: {
+            recent: events,
+            latestByType: { 'turn.started': events[1] },
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state: {
+        status: 'started',
+        players: [{ id: 1, username: 'Hacene' }],
+      } as unknown as GameStateEntity,
+      handler,
+      roomId: 6,
+      gameType: 'panier-express',
+      version: 10,
+      viewerPlayerId: 1,
+    });
+    const messages = (payload.system as any).events.recent
+      .map((event: any) => event.data.message)
+      .filter(Boolean);
+
+    expect(messages).toEqual(["C'est au tour de Hacene."]);
+  });
+
+  it('explains manual draws and movement bonuses to players and spectators', () => {
+    const events = [
+      {
+        id: '11:0',
+        type: 'game.message',
+        data: {
+          key: 'game.card.draw-required',
+          params: { playerId: 1 },
+        },
+      },
+      {
+        id: '11:1',
+        type: 'game.message',
+        data: {
+          key: 'game.pawn.bonus-advance',
+          params: { playerId: 1, spaces: 2 },
+        },
+      },
+      {
+        id: '11:2',
+        type: 'game.message',
+        data: {
+          key: 'game.card.draw-required',
+          params: { playerId: 2 },
+        },
+      },
+      {
+        id: '11:3',
+        type: 'game.message',
+        data: {
+          key: 'game.pawn.bonus-advance',
+          params: { playerId: 2, spaces: 2 },
+        },
+      },
+    ];
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'started' },
+          players: {
+            all: [
+              { id: 1, username: 'Lila' },
+              { id: 2, username: 'Mina' },
+            ],
+          },
+          events: {
+            recent: events,
+            latestByType: { 'game.message': events.at(-1) },
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state: {
+        status: 'started',
+        players: [
+          { id: 1, username: 'Lila' },
+          { id: 2, username: 'Mina' },
+        ],
+      } as unknown as GameStateEntity,
+      handler,
+      roomId: 6,
+      gameType: 'example',
+      version: 11,
+      viewerPlayerId: 1,
+    });
+    const messages = (payload.system as any).events.recent.map(
+      (event: any) => event.data.message,
+    );
+
+    expect(messages).toEqual([
+      'Vous devez piocher une carte. Appuyez sur Espace.',
+      'Bonus : vous avancez de 2 cases.',
+      'Mina doit piocher une carte.',
+      'Bonus : Mina avance de 2 cases.',
+    ]);
+  });
 
   it('presents a LAMA round start as one player-facing narrative', () => {
     const state = {

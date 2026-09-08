@@ -42,7 +42,9 @@ public:
     void SetVisibilityChangedHandler(VisibilityChangedHandler handler);
     void SetCandidatesRequestHandler(CandidatesRequestHandler handler);
 
-    void ShowPrompt(const domain::GamePrompt& prompt, domain::GameAction action);
+    [[nodiscard]] bool ShowPrompt(
+        const domain::GamePrompt& prompt,
+        domain::GameAction action);
     void HidePrompt(bool clearSignature = false);
     void ApplyCandidates(const domain::GameActionCandidatesResult& result);
     void RejectCandidatesRequest();
@@ -65,7 +67,6 @@ private:
     void RebuildFields(const domain::GamePrompt& prompt);
     void Submit();
     void Cancel();
-    void FocusFirst();
     void ReportValidationError(const wxString& message, wxWindow* target);
     void RequestCandidates(bool reset);
     [[nodiscard]] static std::string BuildSignature(const domain::GamePrompt& prompt);

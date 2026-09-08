@@ -114,8 +114,16 @@ export function deriveGameShortcuts<
   TState extends object,
   TActions extends GameActionMap<TState>,
 >(definition: CompiledGameDefinition<TState, TActions>): GameShortcutHint[] {
-  const shortcuts = [...structuredClone(definition.shortcuts ?? [])];
-  const usedKeys = new Set(shortcuts.map((shortcut) => shortcut.key));
+  const shortcuts: GameShortcutHint[] = [];
+  const usedKeys = new Set<string>();
+  for (const declared of structuredClone(definition.shortcuts ?? [])) {
+    const shortcut = safeGameplayShortcut(declared);
+    if (!shortcut) continue;
+    const normalizedKey = shortcut.key.trim().toUpperCase();
+    if (usedKeys.has(normalizedKey)) continue;
+    shortcuts.push(shortcut);
+    usedKeys.add(normalizedKey);
+  }
   const actionTypes = new Set(
     shortcuts.flatMap((shortcut) =>
       shortcut.type === 'action' ? [shortcut.actionType] : [],
@@ -125,17 +133,34 @@ export function deriveGameShortcuts<
     if (actionTypes.has(type)) continue;
     const key =
       action.ui?.shortcut ?? inferShortcut(type, action.input.describe());
-    if (!key || usedKeys.has(key)) continue;
-    shortcuts.push({
+    if (!key) continue;
+    const shortcut = safeGameplayShortcut({
       key,
       type: 'action',
       actionType: type,
       ...(action.ui?.label ? { label: action.ui.label } : {}),
     });
-    usedKeys.add(key);
+    if (!shortcut) continue;
+    const normalizedKey = shortcut.key.trim().toUpperCase();
+    if (usedKeys.has(normalizedKey)) continue;
+    shortcuts.push(shortcut);
+    usedKeys.add(normalizedKey);
     actionTypes.add(type);
   }
   return shortcuts;
+}
+
+function safeGameplayShortcut(
+  shortcut: GameShortcutHint,
+): GameShortcutHint | null {
+  const key = shortcut.key.trim().toUpperCase();
+  // Enter is handled by the client's dedicated dice control. It must not be
+  // exposed as a server shortcut or compete with form validation.
+  if (key === 'ENTER' || key === 'RETURN') return null;
+  if (shortcut.type === 'action' && isDiceRollAction(shortcut.actionType)) {
+    return null;
+  }
+  return shortcut;
 }
 
 function deriveUi(
@@ -210,21 +235,22 @@ function inferShortcut(
 ): string | null {
   if (inferControl(input) !== 'button') return null;
   const normalized = actionType.toLowerCase().replaceAll('_', '-');
-  if (
-    normalized.includes('roll') ||
-    normalized.includes('launch') ||
-    normalized.includes('draw') ||
-    normalized.includes('pick')
-  )
+  if (isDiceRollAction(normalized)) return null;
+  if (normalized.includes('draw') || normalized.includes('pick'))
     return 'Space';
   if (
     normalized.includes('pass') ||
     normalized.includes('end-turn') ||
     normalized.includes('confirm')
   ) {
-    return 'Enter';
+    return null;
   }
   return null;
+}
+
+function isDiceRollAction(actionType: string): boolean {
+  const normalized = actionType.trim().toLowerCase().replaceAll('_', '-');
+  return normalized.includes('roll') || normalized.includes('launch');
 }
 
 function humanize(value: string): string {

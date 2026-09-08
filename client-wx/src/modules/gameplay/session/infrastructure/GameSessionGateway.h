@@ -28,6 +28,7 @@ public:
         int roomId,
         std::string_view gameType,
         std::stop_token stopToken) override;
+    [[nodiscard]] domain::GameState Reconnect(std::stop_token stopToken) override;
     void RequestState(std::stop_token stopToken) override;
     void RequestRules(std::stop_token stopToken) override;
     void SendKey(std::string_view key, std::stop_token stopToken) override;

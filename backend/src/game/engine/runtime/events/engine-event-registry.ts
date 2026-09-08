@@ -9,7 +9,11 @@ export type EventValue =
   | { [key: string]: EventValue };
 
 export type EngineEventMap = {
-  'turn.started': { playerId: number | null; turnNumber: number };
+  'turn.started': {
+    playerId: number | null;
+    turnNumber: number;
+    announce?: boolean;
+  };
   'turn.ended': { playerId: number | null; turnNumber: number };
   'turn.replaced': { slotOwnerId: number; replacementPlayerId: number };
   'turn.simultaneous.waiting': {
@@ -69,8 +73,19 @@ export type EngineEventMap = {
         to: number;
         distance: number;
       };
-  'pawn.landed': { trackId: string; playerId: number; position: number };
-  'pawn.assigned': { setId: string; pawnId: string; playerId: number };
+  'pawn.landed': {
+    trackId: string;
+    playerId: number;
+    position: number;
+    tileLabel?: string;
+    tileDescription?: string;
+  };
+  'pawn.assigned': {
+    setId: string;
+    pawnId: string;
+    pawnLabel?: string;
+    playerId: number;
+  };
   'score.changed': {
     playerId: number;
     previous: number;

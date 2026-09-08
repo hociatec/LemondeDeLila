@@ -31,7 +31,6 @@ public:
     void AllowRetry();
     [[nodiscard]] bool IsActive() const;
     [[nodiscard]] bool HandleKey(wxKeyEvent& event);
-    [[nodiscard]] bool FocusSelection();
     [[nodiscard]] wxWindow* NavigationTarget() const noexcept;
 
 private:

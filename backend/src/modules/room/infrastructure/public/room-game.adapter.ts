@@ -16,6 +16,10 @@ export class RoomGameAdapter implements RoomGamePort {
     return this.roomState.getRoomPayload(roomId);
   }
 
+  refreshRoomPayload(roomId: number) {
+    return this.roomState.refreshRoomPayload(roomId);
+  }
+
   async resetRoom(roomId: number, userId: number): Promise<void> {
     await this.lifecycle.resetRoom(roomId, userId);
   }

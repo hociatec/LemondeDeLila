@@ -20,7 +20,7 @@ export function genericGameEventMessage(
   const actor = player(input.actorId);
   return (
     cardAndTurnMessage(input, player, actor, value) ||
-    boardAndPlayerMessage(input, player, actor, value) ||
+    boardAndPlayerMessage(input, player, value) ||
     activityMessage(input, player, value)
   );
 }
@@ -37,8 +37,15 @@ function cardAndTurnMessage(
     const name = id == null ? '' : (players.get(id) ?? `Joueur ${id}`);
     return name ? `C'est au tour de ${name}.` : '';
   }
-  if (type === 'dice.rolled' && actor)
-    return `${actor} lance les dés${value('total') ? ` : ${value('total')}` : ''}.`;
+  if (type === 'dice.rolled' && actor) {
+    const multipleDice = Array.isArray(data.values) && data.values.length > 1;
+    const roll = multipleDice ? 'les dés' : 'le dé';
+    const verb = actor === 'Vous' ? 'lancez' : 'lance';
+    const resultVerb = actor === 'Vous' ? 'obtenez' : 'obtient';
+    return value('total')
+      ? `${actor} ${verb} ${roll} et ${resultVerb} ${value('total')}.`
+      : `${actor} ${verb} ${roll}.`;
+  }
   if (type === 'card.drawn' && actor)
     return `${actor} ${actor === 'Vous' ? 'piochez' : 'pioche'} une carte.`;
   if (type === 'card.received') {
@@ -63,7 +70,6 @@ function cardAndTurnMessage(
 function boardAndPlayerMessage(
   input: GenericEventMessageInput,
   player: (value: unknown) => string,
-  actor: string,
   value: (key: string) => string,
 ): string {
   const { type, data } = input;
@@ -82,18 +88,27 @@ function boardAndPlayerMessage(
       ? `${from} transfère ${value('amount')} ${resource} à ${to}.`
       : '';
   }
-  if (type === 'pawn.moved' && actor && value('from') && value('to'))
-    return `${actor} déplace son pion de la case ${value('from')} à la case ${value('to')}.`;
+  if (type === 'pawn.moved') return '';
   if (type === 'pawn.landed') {
     const name = player(data.playerId);
-    return name && value('position')
-      ? `${name} arrive sur la case ${value('position')}.`
-      : '';
+    if (!name || !value('position')) return '';
+    const verb = name === 'Vous' ? 'arrivez' : 'arrive';
+    const label = tileLabel(value('tileLabel'));
+    const description = value('tileDescription');
+    return [
+      `${name} ${verb} sur la case ${value('position')}${label ? ` : ${label}` : ''}.`,
+      description ? `Description : ${description}` : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
   }
   if (type === 'pawn.assigned') {
     const name = player(data.playerId);
-    const pawn = humanLabel(value('pawnId'));
-    return name && pawn ? `${pawn} est attribué à ${name}.` : '';
+    const pawn = value('pawnLabel') || humanLabel(value('pawnId'));
+    if (!name || !pawn) return '';
+    return name === 'Vous'
+      ? `Vous avez choisi « ${pawn} ».`
+      : `${name} a choisi « ${pawn} ».`;
   }
   if (type === 'player.eliminated') {
     const name = player(data.playerId);
@@ -101,7 +116,11 @@ function boardAndPlayerMessage(
   }
   if (type === 'player.skipped') {
     const name = player(data.playerId);
-    return name ? `${name} passe son tour.` : '';
+    return name
+      ? name === 'Vous'
+        ? 'Vous passez votre tour.'
+        : `${name} passe son tour.`
+      : '';
   }
   if (type === 'round.player-left') {
     const name = player(data.playerId);
@@ -110,6 +129,10 @@ function boardAndPlayerMessage(
       : '';
   }
   return '';
+}
+
+function tileLabel(value: string): string {
+  return humanLabel(value.replace(/^case\s+\d+\s*(?:[—–:-]\s*)?/iu, '').trim());
 }
 
 function activityMessage(
@@ -138,6 +161,16 @@ function activityMessage(
   }
   if (type === 'inventory.item-added' || type === 'inventory.item-removed')
     return inventoryMessage(type, data, player, value);
+  if (type === 'panier.shopping-list.announced') {
+    const name = player(data.playerId);
+    const items = Array.isArray(data.items)
+      ? data.items.map((item) => humanLabel(scalarText(item))).filter(Boolean)
+      : [];
+    if (!name) return '';
+    return name === 'Vous'
+      ? `Votre liste de courses : ${items.join(', ')}.`
+      : `Liste de courses de ${name} : ${items.join(', ')}.`;
+  }
   if (type === 'economy.item-bought' || type === 'economy.item-sold')
     return economyMessage(type, data, player, value);
   return '';

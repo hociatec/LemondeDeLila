@@ -83,7 +83,6 @@ export default defineGame<NoGameState>()({
   ],
   shortcuts: [
     { key: 'Space', type: 'action', actionType: 'draw' },
-    { key: 'Enter', type: 'action', actionType: 'play_card' },
     { key: 'D', type: 'action', actionType: 'discard_card' },
   ],
   initialPhase: CAT_PATTES_PHASES.initialPhase,

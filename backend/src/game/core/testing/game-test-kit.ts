@@ -31,6 +31,7 @@ type DriverActionInput<TActions, TType> = TType extends keyof TActions
   : Record<string, unknown>;
 
 const DEFAULT_NAMES = ['alice', 'bob', 'charlie', 'diana', 'eve', 'frank'];
+type TestPlayer = string | { username: string; isBot?: boolean };
 
 export class GameTestKit<
   TState extends object,
@@ -46,7 +47,7 @@ export class GameTestKit<
     this.sessionStore,
   );
   private readonly clock = new FixedGameClock(1_700_000_000_000);
-  private playerNames = DEFAULT_NAMES.slice(0, 2);
+  private testPlayers: TestPlayer[] = DEFAULT_NAMES.slice(0, 2);
   private randomSeed = 1;
   private current: GameStateEntity | null = null;
 
@@ -60,15 +61,15 @@ export class GameTestKit<
     this.adapter = new DeclarativeGameRuntime(definition);
   }
 
-  players(countOrNames: number | readonly string[]): this {
+  players(countOrPlayers: number | readonly TestPlayer[]): this {
     this.ensureNotStarted();
-    this.playerNames =
-      typeof countOrNames === 'number'
+    this.testPlayers =
+      typeof countOrPlayers === 'number'
         ? Array.from(
-            { length: countOrNames },
+            { length: countOrPlayers },
             (_, index) => DEFAULT_NAMES[index] ?? `player-${index + 1}`,
           )
-        : [...countOrNames];
+        : [...countOrPlayers];
     return this;
   }
 
@@ -228,6 +229,10 @@ export class GameTestKit<
     return replayed;
   }
 
+  async events() {
+    return this.sessionStore.listEvents(1, this.definition.id);
+  }
+
   result(): MatchResult | null {
     const state = this.requireState() as GameStateEntity & {
       engine?: { match?: { result?: MatchResult | null } };
@@ -307,9 +312,10 @@ export class GameTestKit<
   }
 
   private baseState(): GameStateEntity {
-    const players = this.playerNames.map((username, index) => ({
-      id: index + 1,
-      username,
+    const players = this.testPlayers.map((player, index) => ({
+      id: typeof player !== 'string' && player.isBot ? -(index + 1) : index + 1,
+      username: typeof player === 'string' ? player : player.username,
+      ...(typeof player !== 'string' && player.isBot ? { isBot: true } : {}),
     }));
     if (
       players.length < this.definition.players.min ||

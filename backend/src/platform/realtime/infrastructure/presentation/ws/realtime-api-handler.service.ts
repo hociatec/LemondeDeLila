@@ -186,15 +186,7 @@ export class RealtimeApiHandlerService {
         () => handler(session, payload),
       );
       const elapsedMs = Date.now() - start;
-      if (elapsedMs >= 2000) {
-        this.logger.warn(
-          `WS handler lent: ${type} (${elapsedMs}ms) requestId=${requestId ?? 'n/a'}`,
-        );
-      } else {
-        this.logger.debug(
-          `WS handler ok: ${type} (${elapsedMs}ms) requestId=${requestId ?? 'n/a'}`,
-        );
-      }
+      this.logHandlerDuration(type, requestId, elapsedMs);
       const responseItems = response ? [response] : [];
       const frames: RealtimeResponseFrame[] = responseItems.map((item) => ({
         requestId,
@@ -226,6 +218,16 @@ export class RealtimeApiHandlerService {
       replay.complete([frame]);
       this.safeSend(client, frame);
     }
+  }
+
+  private logHandlerDuration(
+    type: string,
+    requestId: string | undefined,
+    elapsedMs: number,
+  ): void {
+    const message = `WS handler ${elapsedMs >= 2000 ? 'lent' : 'ok'}: ${type} (${elapsedMs}ms) requestId=${requestId ?? 'n/a'}`;
+    if (elapsedMs >= 2000) this.logger.warn(message);
+    else this.logger.debug(message);
   }
 
   private async rejectOutdatedClient(

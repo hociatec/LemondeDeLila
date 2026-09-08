@@ -59,6 +59,7 @@ export class GameWsStatePresenter {
       kits,
       roomId: input.roomId,
       gameType: input.gameType,
+      viewerPlayerId: Number(input.viewerPlayerId ?? 0) || null,
       runId:
         typeof input.state.metadata?.roomRunId === 'number'
           ? input.state.metadata.roomRunId
@@ -100,11 +101,18 @@ export class GameWsStatePresenter {
     });
     const score = this.asRecord(kits.score);
     const hasScore = Object.keys(score).length > 0;
+    const declaredScoreKey = declaredShortcuts.find(
+      (shortcut) =>
+        this.stringValue(shortcut.key).toUpperCase() === 'S' &&
+        shortcut.type === 'interface',
+    );
     const shortcuts = declaredShortcuts.filter(
       (shortcut) =>
-        !hasScore || this.stringValue(shortcut.key).toUpperCase() !== 'S',
+        !hasScore ||
+        this.stringValue(shortcut.key).toUpperCase() !== 'S' ||
+        shortcut === declaredScoreKey,
     );
-    if (hasScore) {
+    if (hasScore && !declaredScoreKey) {
       shortcuts.push({
         key: 'S',
         type: 'interface',
@@ -243,11 +251,39 @@ export class GameWsStatePresenter {
     for (const [key, rawEvent] of Object.entries(latestByType)) {
       presented[key] = presentEvent(rawEvent);
     }
-    const recent = recentEvents.map((event) => presentEvent(event));
+    const recent = this.withoutRepeatedTurnAnnouncements(
+      recentEvents.map((event) => presentEvent(event)),
+    );
     return {
       ...system,
       events: { ...events, recent, latestByType: presented },
     };
+  }
+
+  private withoutRepeatedTurnAnnouncements(
+    events: Record<string, unknown>[],
+  ): Record<string, unknown>[] {
+    let previousLastLine = '';
+    return events.map((event) => {
+      const data = this.asRecord(event.data);
+      const message = this.stringValue(data.message);
+      if (!message) return event;
+      const lines = message
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const isRepeatedTurn =
+        lines.length === 1 &&
+        lines[0].startsWith("C'est au tour de ") &&
+        lines[0] === previousLastLine;
+      if (isRepeatedTurn) {
+        const remainingData = { ...data };
+        delete remainingData.message;
+        return { ...event, data: remainingData };
+      }
+      previousLastLine = lines.at(-1) ?? previousLastLine;
+      return event;
+    });
   }
 
   private eventMessage(
@@ -315,11 +351,33 @@ export class GameWsStatePresenter {
         namedPlayer === 'Vous' && drawnForPlayer === receivedByPlayer
           ? cardMessageLabel(receivedCardData.card)
           : '';
+      const revealedCard = params.revealed === true ? card : '';
+      const displayedCard = revealedCard
+        ? `« ${revealedCard} »`
+        : privateCard || 'une carte';
+      const effectDescription = scalarMessageText(params.effectDescription);
+      const effectAnnouncement = effectDescription
+        ? ` Effet : ${effectDescription.replace(/[.!?]+$/u, '')}.`
+        : '';
+      const automatic = params.automatic === true;
       return this.withNextTurn(
-        `${namedPlayer} ${namedPlayer === 'Vous' ? 'piochez' : 'pioche'} ${privateCard || 'une carte'}.`,
+        `${namedPlayer} ${namedPlayer === 'Vous' ? 'piochez' : 'pioche'} ${displayedCard}.${effectAnnouncement}${automatic ? ' Son effet est appliqué automatiquement.' : ''}`,
         nextTurnData,
         players,
       );
+    }
+    if (messageKey === 'game.card.draw-required' && namedPlayer)
+      return namedPlayer === 'Vous'
+        ? 'Vous devez piocher une carte. Appuyez sur Espace.'
+        : `${namedPlayer} doit piocher une carte.`;
+    if (messageKey === 'game.pawn.selection-requested' && namedPlayer)
+      return namedPlayer === 'Vous'
+        ? 'Vous devez choisir votre pion.'
+        : `${namedPlayer} doit choisir son pion.`;
+    if (messageKey === 'game.pawn.bonus-advance' && namedPlayer) {
+      const spaces = this.numberValue(params.spaces) ?? 0;
+      const distance = `${spaces} case${Math.abs(spaces) === 1 ? '' : 's'}`;
+      return `Bonus : ${namedPlayer === 'Vous' ? 'vous avancez' : `${namedPlayer} avance`} de ${distance}.`;
     }
     if (messageKey === 'game.player.passed' && namedPlayer)
       return this.withNextTurn(

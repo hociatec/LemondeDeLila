@@ -16,6 +16,7 @@ export const GAME_ROOM_CONTEXT_PORT = Symbol('GAME_ROOM_CONTEXT_PORT');
 
 export interface GameRoomContextPort {
   getRoomPayload(roomId: number): Promise<GameRoomPayload>;
+  refreshRoomPayload(roomId: number): Promise<GameRoomPayload>;
   resetRoom(roomId: number, userId: number): Promise<void>;
   startRoom(roomId: number, userId: number): Promise<void>;
   prepareNextRun(roomId: number): Promise<void>;

@@ -27,7 +27,8 @@ void TestServerDrivenPawnSelection()
     const auto selection = lila::modules::gameplay::infrastructure::PawnSelectionDecoder::Decode(
         state.pending);
     Expect(selection.has_value(), "Le choix de pion actif doit etre decode.");
-    Expect(selection->label == "Votre pion.", "Le libelle WPF du choix de pion est attendu.");
+    Expect(selection->label == "Choisissez votre pion.",
+        "Le libelle accessible du choix de pion est attendu.");
     Expect(selection->choices.size() == 2, "Tous les pions serveur doivent etre proposes.");
     Expect(selection->choices[1].label == "Un caillou", "Le libelle serveur doit rester intact.");
     Expect(selection->choices[1].action.payload.at("pawnId") == "stone",
@@ -72,6 +73,18 @@ void TestGameLogCursor()
     cursor.Reset();
     Expect(cursor.ExtractNew({"D"}) == std::vector<std::string>({"D"}),
         "La reinitialisation doit ouvrir une nouvelle session.");
+
+    cursor.Reset();
+    Expect(cursor.RestoreInitialBaseline({"initial|Configuration"}, 1),
+        "Le premier etat de base doit seulement initialiser le curseur.");
+    Expect(cursor.ExtractNew({"initial|Configuration"}).empty(),
+        "Les evenements de configuration initiaux ne doivent pas etre annonces.");
+    cursor.Reset();
+    Expect(!cursor.RestoreInitialBaseline({"choice|Baloo a choisi un pion"}, 2),
+        "Une mise a jour recue pendant la connexion ne doit pas etre masquee.");
+    Expect(cursor.ExtractNew({"choice|Baloo a choisi un pion"}) ==
+            std::vector<std::string>({"choice|Baloo a choisi un pion"}),
+        "Le choix concurrent d'un autre joueur doit rester annoncable.");
 }
 
 void TestOlderGameStateCannotRestoreSetupPrompt()
@@ -130,6 +143,7 @@ void TestCapabilityInformationIsInspectable()
     using lila::modules::gameplay::application::info::GameCapabilityTextBuilder;
     lila::modules::gameplay::domain::GameState state;
     state.system.players.push_back({7, "Lila", false, true});
+    state.system.players.push_back({8, "Mina", false, true});
     state.system.match.status = "playing";
     state.system.round.number = 2;
     state.system.round.status = "playing";
@@ -139,10 +153,44 @@ void TestCapabilityInformationIsInspectable()
     lila::modules::gameplay::domain::GameResourcesView resources;
     resources.players.push_back({7, {{"coins", 3}}});
     state.kits.resources = std::move(resources);
+    lila::modules::gameplay::domain::GameInventoryView inventory;
+    inventory.sets.push_back({"shopping-lists", "owner", {
+        {7, {{"melon", 1}, {"jeune-pousse-d-ortie", 1}}, std::nullopt},
+        {8, {}, 5}}});
+    inventory.sets.push_back({"shopping-baskets", "owner", {
+        {7, {{"melon", 1}}, std::nullopt}, {8, {}, 2}}});
+    inventory.sets.push_back({"market-items", "owner", {
+        {7, {{"epinard", 2}}, std::nullopt}, {8, {}, 4}}});
+    state.kits.inventory = std::move(inventory);
     Expect(GameCapabilityTextBuilder::Build(state, "match").find("En cours") != std::string::npos,
         "L'état du match doit être inspectable.");
     Expect(GameCapabilityTextBuilder::Build(state, "setup").find("Lila") != std::string::npos,
         "La configuration doit nommer son propriétaire.");
     Expect(GameCapabilityTextBuilder::Build(state, "resources").find("Pièces") != std::string::npos,
         "Chaque capability doit conserver une présentation générique.");
+    Expect(GameCapabilityTextBuilder::Build(state, "inventory:shopping-lists").find(
+            "Liste de courses de Lila") != std::string::npos,
+        "L doit pouvoir annoncer seulement la liste de courses privée.");
+    Expect(GameCapabilityTextBuilder::Build(state, "inventory:shopping-baskets").find(
+            "Panier de Lila") != std::string::npos,
+        "S doit pouvoir annoncer seulement le panier privé.");
+    const auto privateList = GameCapabilityTextBuilder::Build(
+        state, "inventory:shopping-lists");
+    Expect(privateList.find("Mina") == std::string::npos &&
+            privateList.find("masqué") == std::string::npos,
+        "L ne doit jamais annoncer les inventaires masqués des autres joueurs.");
+    const auto privateInventory = GameCapabilityTextBuilder::Build(
+        state, "inventory:market-items");
+    Expect(privateInventory.find("Inventaire de Lila") != std::string::npos &&
+            privateInventory.find("Epinard : 2") != std::string::npos &&
+            privateInventory.find("Mina") == std::string::npos,
+        "I doit annoncer uniquement l'inventaire privé du joueur.");
+
+    state.kits.score = lila::modules::gameplay::domain::GameScoreView{};
+    state.system.shortcuts.push_back({"S", "S",
+        lila::modules::gameplay::domain::GameShortcutKind::Interface,
+        "inventory:shopping-baskets", "", "Panier"});
+    Expect(lila::modules::gameplay::application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(
+            state, "S").empty(),
+        "Un raccourci S explicite du jeu doit remplacer le raccourci générique des scores.");
 }

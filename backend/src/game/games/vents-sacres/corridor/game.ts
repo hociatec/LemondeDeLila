@@ -61,10 +61,7 @@ export default defineGame<NoGameState>()({
     resources: { [CORRIDOR_WALLS]: CORRIDOR_DEFAULT_WALLS },
     startRound: false,
   },
-  shortcuts: [
-    { key: 'Enter', type: 'action', actionType: 'corridor_move' },
-    { key: 'M', type: 'action', actionType: 'corridor_place_wall' },
-  ],
+  shortcuts: [{ key: 'M', type: 'action', actionType: 'corridor_place_wall' }],
   setup: ({ players, ctx }) => {
     const center = Math.floor(CORRIDOR_SIZE / 2);
     ctx.grid.set('corridor', { x: center, y: 0 }, players[0].id);

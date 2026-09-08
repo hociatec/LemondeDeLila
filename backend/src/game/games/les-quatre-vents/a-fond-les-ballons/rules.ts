@@ -1,10 +1,12 @@
 import {
+  defineAction,
   defineEffect,
   drawAndResolve,
   drawEvent,
   gameEffects,
   gameInput,
   positionOf,
+  rejectRule,
   rollDice,
   sequentialPawnSelection,
   setupPlayingPhases,
@@ -16,7 +18,9 @@ import {
   type BalloonCard,
   type BalloonTileType,
 } from './content';
-import type { NoGameState as AFondLesBallonsState } from '../../../engine/sdk/public-api';
+export type AFondLesBallonsState = {
+  awaitingCardDraw: boolean;
+};
 
 type RuleContext = GameContext<AFondLesBallonsState>;
 export const A_FOND_LES_BALLONS_PHASES =
@@ -29,14 +33,39 @@ const TRAP_IMMUNITY = 'a-fond-les-ballons.trap-immunity';
 
 export const roll = rollDice<AFondLesBallonsState>({
   documentation: 'Lance le dé et résout toute la chaîne de cases et cartes.',
-  available: ({ ctx }) => A_FOND_LES_BALLONS_PHASES.is(ctx, 'playing'),
+  available: ({ state, ctx }) =>
+    A_FOND_LES_BALLONS_PHASES.is(ctx, 'playing') && !state.awaitingCardDraw,
   execute: ({ state, playerId, total, ctx }) => {
     moveBy(state, playerId, total, 0, ctx);
+    if (state.awaitingCardDraw) return;
     ctx.turn.complete({ waiting: ctx.choice.current() != null });
   },
 });
 
-export const A_FOND_LES_BALLONS_ACTIONS = { roll };
+export const drawCard = defineAction<
+  AFondLesBallonsState,
+  Record<string, never>
+>({
+  ui: { label: 'Piocher', control: 'button', shortcut: 'Space' },
+  input: gameInput.object({}),
+  documentation:
+    'Pioche manuellement la carte demandée par une case Folie loufoque.',
+  available: ({ state, actor, ctx }) =>
+    A_FOND_LES_BALLONS_PHASES.is(ctx, 'playing') &&
+    state.awaitingCardDraw &&
+    ctx.players.current()?.id === actor.id,
+  execute: ({ state, actor, ctx }) => {
+    if (!state.awaitingCardDraw || ctx.players.current()?.id !== actor.id) {
+      rejectRule('Aucune carte Folie loufoque à piocher');
+    }
+    state.awaitingCardDraw = false;
+    drawBalloonCard(state, actor.id, 0, ctx);
+    if (state.awaitingCardDraw) return;
+    ctx.turn.complete({ waiting: ctx.choice.current() != null });
+  },
+});
+
+export const A_FOND_LES_BALLONS_ACTIONS = { roll, draw_card: drawCard };
 
 const pawnSelection = sequentialPawnSelection<AFondLesBallonsState>({
   setId: PAWNS,
@@ -48,7 +77,6 @@ const pawnSelection = sequentialPawnSelection<AFondLesBallonsState>({
   },
 });
 
-export const requestPawn = pawnSelection.request;
 export const requestPawns = pawnSelection.requestAll;
 export const resolvePawn = pawnSelection.resolve;
 
@@ -69,6 +97,7 @@ function moveBy(
     trackId: TRACK,
     playerId,
     distance: delta,
+    tiles: A_FOND_LES_BALLONS_TILES,
     depth: depth + 1,
     maxDepth: MAX_DEPTH,
     blocked: () => ctx.match.lifecycle() === 'finished',
@@ -85,10 +114,11 @@ function landOn(
   ctx: RuleContext,
 ): void {
   if (depth > MAX_DEPTH || ctx.match.lifecycle() === 'finished') return;
-  ctx.movement.moveTo(TRACK, playerId, target);
-  ctx.movement.resolveLanding({
+  ctx.movement.moveAndResolve({
     trackId: TRACK,
     playerId,
+    distance: target - ctx.movement.position(TRACK, playerId),
+    tiles: A_FOND_LES_BALLONS_TILES,
     depth,
     maxDepth: MAX_DEPTH,
     blocked: () => ctx.match.lifecycle() === 'finished',
@@ -105,11 +135,12 @@ function resolveLandedTile(
   ctx: RuleContext,
 ): void {
   const tile = A_FOND_LES_BALLONS_TILES[target];
-  ctx.events.message('game.pawn.landed', { playerId, tileId: target });
   if (tile.type === 'finish') {
     ctx.match.finish({ winners: [playerId], reason: 'golden-nut' });
-  } else if (tile.type === 'bonus') moveBy(state, playerId, 2, depth, ctx);
-  else if (tile.type === 'piege') {
+  } else if (tile.type === 'bonus') {
+    ctx.events.message('game.pawn.bonus-advance', { playerId, spaces: 2 });
+    moveBy(state, playerId, 2, depth, ctx);
+  } else if (tile.type === 'piege') {
     if (ctx.status.has(playerId, TRAP_IMMUNITY)) {
       ctx.events.message('a-fond-les-ballons.trap.ignored', { playerId });
     } else {
@@ -124,12 +155,15 @@ function resolveLandedTile(
       gameEffects.custom(
         'a-fond-les-ballons.swap',
         {},
-        gameEffects.target.chosenOpponent('a-fond-les-ballons.swap', true),
+        gameEffects.target.chosenOpponent('a-fond-les-ballons.swap'),
       ),
       gameEffects.completeTurn(),
     );
   } else if (tile.type === 'chaton') landOn(state, playerId, 0, depth + 1, ctx);
-  else if (tile.type === 'folie') drawBalloonCard(state, playerId, depth, ctx);
+  else if (tile.type === 'folie') {
+    state.awaitingCardDraw = true;
+    ctx.events.message('game.card.draw-required', { playerId });
+  }
 }
 
 function drawBalloonCard(
@@ -141,10 +175,20 @@ function drawBalloonCard(
   drawAndResolve<AFondLesBallonsState, BalloonCard>(ctx, {
     deckId: DECK,
     playerId,
+    eventData: (card) => balloonCardAnnouncement(card),
     resolve: (card) => {
       ctx.effects.schedule(...card.effects);
     },
   });
+}
+
+function balloonCardAnnouncement(card: BalloonCard): Record<string, unknown> {
+  const separator = card.text.indexOf(':');
+  const cardLabel =
+    separator >= 0 ? card.text.slice(0, separator).trim() : card.text.trim();
+  const effectDescription =
+    separator >= 0 ? card.text.slice(separator + 1).trim() : card.text.trim();
+  return { revealed: true, cardLabel, effectDescription };
 }
 
 function moveToNextTile(

@@ -50,6 +50,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     const wxWeakRef<wxWindow> focusedBefore(wxWindow::FindFocus());
     const bool hadVisibleHand = !state_.kits.VisibleHand().empty();
     const bool receivesVisibleHand = !state.kits.VisibleHand().empty();
+    const bool hadActivePawnSelection = pawnSelectionPanel_->IsActive();
     const bool focusWasInsideGame =
         lila::shared::accessibility::NavigationController::IsDescendantOf(
             focusedBefore.get(), this);
@@ -102,8 +103,9 @@ void GamePlayPanel::ApplyState(domain::GameState state)
                         ? state_.system.match.result->winnerPlayerIds : std::vector<int>{});
     }
     UpdateStatus(wxString{});
-    if (initialState) logCursor_.Restore(nextLogMessages);
-    else PublishLogMessages(nextLogMessages);
+    if (!initialState ||
+        !logCursor_.RestoreInitialBaseline(nextLogMessages, state_.version))
+        PublishLogMessages(nextLogMessages);
     if (IsFinished())
     {
         confirmationPanel_->HideConfirmation();
@@ -187,22 +189,18 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     const bool pawnSelectionCompleted =
         pawnSelectionPanel_->IsActive() && !visiblePawnSelection.has_value();
     pawnSelectionPanel_->Apply(visiblePawnSelection);
-    if (pawnSelectionCompleted && onZoneFocusRequested_) onZoneFocusRequested_();
+    const bool pawnSelectionBecameActive =
+        !hadActivePawnSelection && pawnSelectionPanel_->IsActive();
     SyncContentVisibility();
     Layout();
     if (GetParent()) GetParent()->Layout();
     const bool focusPreserved = focusedBefore && focusedBefore->IsShownOnScreen() &&
         focusedBefore->IsEnabled() && focusedBefore->AcceptsFocus();
-    if (!focusPreserved && focusWasInsideGame)
-    {
-        auto* target = PreferredNavigationTarget();
-        if (target != nullptr)
-            static_cast<void>(
-                lila::shared::accessibility::NavigationController::Focus(target));
-        else if (onZoneFocusRequested_)
-            onZoneFocusRequested_();
-    }
-    if (!hadVisibleHand && receivesVisibleHand && onZoneFocusRequested_)
+    const bool shouldRefreshZoneFocus =
+        (!focusPreserved && focusWasInsideGame) ||
+        (!hadVisibleHand && receivesVisibleHand) ||
+        pawnSelectionCompleted || pawnSelectionBecameActive;
+    if (shouldRefreshZoneFocus && onZoneFocusRequested_)
         onZoneFocusRequested_();
     const bool setupProjectionCompleted = startConfigurationFlow_.ObserveSetup(
         state_.system.setup);

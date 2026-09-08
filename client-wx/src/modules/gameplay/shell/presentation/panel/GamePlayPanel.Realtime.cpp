@@ -95,6 +95,9 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         UpdateInfoPanel();
         if (onHistoryMessage_) onHistoryMessage_(BuildInfoText("rules"), false);
         return;
+    case domain::GameEventType::ConnectionStatus:
+        UpdateStatus(FromUtf8(event.message), event.isError, true);
+        return;
     case domain::GameEventType::Error:
         inputSubmissionGuard_.Reset();
         promptPanel_->RejectCandidatesRequest();

@@ -113,11 +113,10 @@ export function startCorridorSetup(
   }
   for (const player of ctx.players.all())
     ctx.resources.set(player.id, CORRIDOR_WALLS, wallsPerPlayer);
-  const first = ctx.players.all()[0];
-  if (first) {
-    ctx.turn.to(first.id);
-    pawnSelection.request(first.id, ctx);
-  }
+  pawnSelection.requestAll(
+    ctx.players.all().map((player) => player.id),
+    ctx,
+  );
 }
 
 export const resolvePawn = pawnSelection.resolve;

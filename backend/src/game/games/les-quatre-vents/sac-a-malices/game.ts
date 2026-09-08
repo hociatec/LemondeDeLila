@@ -99,7 +99,7 @@ export default defineGame<SacState>()({
     ...cardSchema.components,
   ],
   initialization: { counters: { [SAC_POT]: 0 }, startRound: false },
-  shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
+  shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   setup: () => ({ buildings: {} }),
   initialPhase: SAC_PHASES.initialPhase,
   phases: SAC_PHASES.phases,

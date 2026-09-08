@@ -61,7 +61,8 @@ export class GameTurnController<TState extends object> {
       this.runtime.turn?.scheduledTurnReplacements?.[String(playerId)] ?? null,
     spend: (points = 1) => this.spendActionPoints(points),
     remaining: () => this.runtime.turn?.actionPointsRemaining ?? null,
-    to: (playerId: number) => this.moveTurnTo(playerId),
+    to: (playerId: number, options: { announce?: boolean } = {}) =>
+      this.moveTurnTo(playerId, options),
     waitForAll: (sessionId: string) => this.waitForAll(sessionId),
     waitingSession: () => this.runtime.turn?.simultaneousSessionId ?? null,
     waitingPlayers: (sessionId?: string) => this.waitingPlayers(sessionId),
@@ -225,7 +226,10 @@ export class GameTurnController<TState extends object> {
     this.runtime.turn.direction = this.runtime.turn.direction === 1 ? -1 : 1;
   }
 
-  private moveTurnTo(playerId: number): void {
+  private moveTurnTo(
+    playerId: number,
+    options: { announce?: boolean } = {},
+  ): void {
     if (
       !(this.runtime.players ?? []).some((player) => player.id === playerId)
     ) {
@@ -241,6 +245,7 @@ export class GameTurnController<TState extends object> {
     this.events.engine('turn.started', {
       playerId,
       turnNumber: turn.turnNumber ?? 1,
+      ...(options.announce === false ? { announce: false } : {}),
     });
     this.runBeforeCurrentTurnHook();
   }

@@ -56,7 +56,7 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     const bool tableShortcutHasPriority =
         event.ControlDown() || event.AltDown() || event.MetaDown() ||
         keyCode == 'B' || keyCode == 'b' || keyCode == 'W' || keyCode == 'w' ||
-        keyCode == 'I' || keyCode == 'i' || keyCode == 'R' || keyCode == 'r' ||
+        keyCode == 'R' || keyCode == 'r' ||
         keyCode == 'Q' || keyCode == 'q' || keyCode == 'X' || keyCode == 'x';
     if (tableShortcutHasPriority && onTableShortcut_ && onTableShortcut_(event)) return true;
 
@@ -80,35 +80,23 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
 
     if (key == "ENTER")
     {
-        // Match WPF: the visible hand/choice owns Enter even when focus still
-        // sits on the stable game-zone anchor.
-        if (handPanel_->IsShown() && !state_.kits.VisibleHand().empty())
-        {
-            static_cast<void>(ActivateSelectedHandCard());
-            return true;
-        }
-        if (choicesList_->IsShown() && choicesList_->GetCount() > 0)
-        {
-            static_cast<void>(ActivateSelectedPendingChoice());
-            return true;
-        }
+        // Enter activates only the control that actually owns focus. It must
+        // never fall through to an arbitrary visible list.
         auto* focused = wxWindow::FindFocus();
-        if (focused == infoPanelChoice_) return false;
+        if (handPanel_->IsShown() && focused == handPanel_->NavigationTarget())
+            return ActivateSelectedHandCard();
+        if (choicesList_->IsShown() && focused == choicesList_)
+            return ActivateSelectedPendingChoice();
         if (focused == gridPanel_->NavigationTarget())
-        {
-            static_cast<void>(ActivateSelectedGridCell());
-            return true;
-        }
+            return ActivateSelectedGridCell();
         if (focused == linesList_ && linesList_->IsShown())
         {
             ActivateSelectedLine();
             return true;
         }
+        // The dice control is the default action of the gameplay zone when no
+        // selectable list owns Enter. Space is never routed here.
         if (ActivateDiceRoll()) return true;
-        if (const auto* prompt = ActivePrompt();
-            prompt && submittedPromptActionType_ == prompt->actionType)
-            return true;
-        SendKey(key);
         return true;
     }
     if (key == "F5")
@@ -117,6 +105,9 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         return true;
     }
     if (HandleShortcut(key)) return true;
+    // A game may reserve I for its own inventory. Without such a declaration,
+    // let RoomPanel keep its usual information shortcut.
+    if (key == "I") return false;
     // An unconfigured key is deliberately silent and must not create a
     // protocol request or a generic server error.
     return true;

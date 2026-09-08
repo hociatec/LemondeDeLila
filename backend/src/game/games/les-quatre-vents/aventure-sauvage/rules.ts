@@ -32,7 +32,7 @@ const pawnSelection = sequentialPawnSelection<AventureSauvageState>({
   },
 });
 
-export const requestPawn = pawnSelection.request;
+export const requestPawns = pawnSelection.requestAll;
 export const resolvePawnChoice = pawnSelection.resolve;
 
 export function resolveAventureTile(playerId: number, ctx: RuleContext): void {

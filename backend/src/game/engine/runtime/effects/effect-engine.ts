@@ -157,6 +157,8 @@ export class GameEffectEngineController<TState extends object> {
   }
 
   private drain(): void {
+    let completeTurnAfterDrain = false;
+    let drained = false;
     this.draining = true;
     try {
       for (
@@ -166,10 +168,10 @@ export class GameEffectEngineController<TState extends object> {
       ) {
         const instruction = this.state.queue.shift();
         if (!instruction) {
-          const completeTurn = this.state.completeTurnWhenDrained === true;
+          completeTurnAfterDrain = this.state.completeTurnWhenDrained === true;
           this.reset();
-          if (completeTurn) this.context.turn.complete();
-          return;
+          drained = true;
+          break;
         }
         if (!this.execute(instruction)) return;
         if (
@@ -179,16 +181,24 @@ export class GameEffectEngineController<TState extends object> {
           return;
         }
       }
-      throw new GameStateViolationError('Chaîne d’effets non convergente', {
-        remaining: this.state.queue.length,
-        source: structuredClone(this.state.source ?? null),
-        actorPlayerId: this.state.actorPlayerId,
-        awaitingChoiceId: this.state.awaitingChoiceId,
-        queuedKinds: this.state.queue.slice(0, 12).map((effect) => effect.kind),
-      });
+      if (!drained) {
+        throw new GameStateViolationError('Chaîne d’effets non convergente', {
+          remaining: this.state.queue.length,
+          source: structuredClone(this.state.source ?? null),
+          actorPlayerId: this.state.actorPlayerId,
+          awaitingChoiceId: this.state.awaitingChoiceId,
+          queuedKinds: this.state.queue
+            .slice(0, 12)
+            .map((effect) => effect.kind),
+        });
+      }
     } finally {
       this.draining = false;
     }
+    // GameTurnController deliberately refuses to finish a turn while effects
+    // are resolving. Run this deferred transition only after the engine has
+    // left its draining state and cleared the completed chain.
+    if (completeTurnAfterDrain) this.context.turn.complete();
   }
 
   private execute(instruction: GameEffectInstruction): boolean {
@@ -242,11 +252,10 @@ export class GameEffectEngineController<TState extends object> {
       return false;
     }
     if (instruction.kind === 'choose-player') {
-      this.targetResolver.requestPlayerChoice(
+      return this.targetResolver.requestPlayerChoice(
         instruction.choiceId ?? 'engine.effect.player',
         instruction.candidates ?? 'opponents',
       );
-      return false;
     }
     if (instruction.kind === 'custom') {
       return executeCustomEffect({

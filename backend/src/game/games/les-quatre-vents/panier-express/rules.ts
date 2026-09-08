@@ -24,6 +24,7 @@ const SHOPPING_LISTS = 'shopping-lists';
 const BASKETS = 'shopping-baskets';
 const MAX_DEPTH = 24;
 const RESOLVING_PLAYER_FLAG = 'panier.resolving-player';
+const PENDING_CARD_DRAW_FLAG = 'panier.pending-card-draw';
 export const PANIER_REVERSED = 'panier.reversed-until-owner-turn';
 export const PANIER_REVEAL = 'panier.reveal';
 
@@ -47,11 +48,50 @@ export const roll = defineAction<PanierState, Record<string, never>>({
   },
 });
 
-export const PANIER_ACTIONS = { roll };
+export const drawCard = defineAction<PanierState, Record<string, never>>({
+  input: gameInput.object({}),
+  documentation: 'Pioche la carte demandée par la case du marché.',
+  available: ({ actor, ctx }) => {
+    const pending = ctx.turn.flags.get<PendingCardDraw>(PENDING_CARD_DRAW_FLAG);
+    return (
+      PANIER_PHASES.is(ctx, 'playing') &&
+      pending?.playerId === actor.id &&
+      ctx.choice.current() == null &&
+      !ctx.effects.isResolving() &&
+      ctx.match.lifecycle() !== 'finished'
+    );
+  },
+  execute: ({ actor, ctx }) => {
+    const pending = ctx.turn.flags.get<PendingCardDraw>(PENDING_CARD_DRAW_FLAG);
+    if (!pending || pending.playerId !== actor.id)
+      rejectRule('Aucune carte à piocher');
+    ctx.turn.flags.consume(PENDING_CARD_DRAW_FLAG);
+    if (pending.deckId === 'events') resolvePanierEvent(actor.id, ctx);
+    else drawExchange(actor.id, ctx);
+    finishResolution(ctx);
+  },
+});
+
+export const PANIER_ACTIONS = { roll, draw_card: drawCard };
+
+type PendingCardDraw = {
+  playerId: number;
+  deckId: 'events' | 'exchanges';
+};
 
 const pawnSelection = sequentialPawnSelection<PanierState>({
   setId: 'panier',
   choiceId: 'panier.pawn',
+  assigned: ({ playerId, ctx }) => {
+    ctx.events.emit(
+      'panier.shopping-list.announced',
+      {
+        playerId,
+        items: ctx.inventory.items(SHOPPING_LISTS, playerId),
+      },
+      { kind: 'private', playerIds: [playerId] },
+    );
+  },
   complete: ({ ctx }) => {
     PANIER_PHASES.transition(ctx, 'playing');
     const starterId = ctx.round.starter();
@@ -59,7 +99,7 @@ const pawnSelection = sequentialPawnSelection<PanierState>({
   },
 });
 
-export const requestPawn = pawnSelection.request;
+export const requestPawns = pawnSelection.requestAll;
 export const resolvePawn = pawnSelection.resolve;
 
 export function resolveDirection(
@@ -69,7 +109,11 @@ export function resolveDirection(
   ctx: RuleContext,
 ): void {
   const pending = ctx.choice.consumeContinuation<PanierPending>();
-  if (!pending || pending.kind !== 'direction' || pending.actorId !== actorId)
+  if (
+    !pending ||
+    pending.panierKind !== 'direction' ||
+    pending.actorId !== actorId
+  )
     rejectRule('Choix de direction absent');
   moveAndResolve(
     state,
@@ -88,7 +132,7 @@ export function resolveQuiz(
   ctx: RuleContext,
 ): void {
   const pending = ctx.choice.consumeContinuation<PanierPending>();
-  if (!pending || pending.kind !== 'quiz' || pending.actorId !== actorId)
+  if (!pending || pending.panierKind !== 'quiz' || pending.actorId !== actorId)
     rejectRule('Quiz Panier absent');
   const { correct } = ctx.quiz.answer(pending.sessionId, actorId, answerIndex);
   ctx.quiz.close(pending.sessionId);
@@ -107,7 +151,7 @@ export function resolveTake(
   ctx: RuleContext,
 ): void {
   const pending = ctx.choice.consumeContinuation<PanierPending>();
-  if (!pending || pending.kind !== 'take' || pending.actorId !== actorId)
+  if (!pending || pending.panierKind !== 'take' || pending.actorId !== actorId)
     rejectRule('Choix de carte adverse absent');
   if (!ctx.inventory.items(INVENTORY, pending.targetId).includes(card)) {
     rejectRule('Carte adverse absente');
@@ -119,7 +163,7 @@ export function resolveTake(
     return;
   }
   const nextPending: PanierPending = {
-    kind: 'give',
+    panierKind: 'give',
     actorId,
     targetId: pending.targetId,
     take: card,
@@ -138,7 +182,7 @@ export function resolveGive(
   ctx: RuleContext,
 ): void {
   const pending = ctx.choice.consumeContinuation<PanierPending>();
-  if (!pending || pending.kind !== 'give' || pending.actorId !== actorId)
+  if (!pending || pending.panierKind !== 'give' || pending.actorId !== actorId)
     rejectRule('Choix de carte à donner absent');
   if (!ctx.inventory.items(INVENTORY, actorId).includes(card)) {
     rejectRule('Carte à donner absente');
@@ -173,9 +217,19 @@ export function moveAndResolve(
     return;
   const before = positionOf(ctx, TRACK, playerId);
   const raw = before + distance;
-  ctx.movement.move(TRACK, playerId, distance);
-  if (distance > 0 && raw >= PANIER_TILES.length) ctx.score.add(playerId, 1);
-  resolveTile(state, playerId, depth + 1, ctx);
+  ctx.movement.moveAndResolve({
+    trackId: TRACK,
+    playerId,
+    distance,
+    tiles: PANIER_TILES,
+    depth,
+    maxDepth: MAX_DEPTH,
+    onLand: () => {
+      if (distance > 0 && raw >= PANIER_TILES.length)
+        ctx.score.add(playerId, 1);
+      resolveTile(state, playerId, depth + 1, ctx);
+    },
+  });
 }
 
 function resolveTile(
@@ -185,15 +239,12 @@ function resolveTile(
   ctx: RuleContext,
 ): void {
   const tile = PANIER_TILES[positionOf(ctx, TRACK, playerId)];
-  ctx.events.message('game.pawn.landed', {
-    playerId,
-    tileId: positionOf(ctx, TRACK, playerId),
-  });
   if (tile.type === 'start') checkVictory(playerId, ctx);
   else if (tile.type === 'stand') drawCourse(playerId, tile.standId, ctx);
   else if (tile.type === 'bonus_course') drawCourse(playerId, 'bonus', ctx);
-  else if (tile.type === 'event') resolvePanierEvent(playerId, ctx);
-  else if (tile.type === 'exchange') drawExchange(playerId, ctx);
+  else if (tile.type === 'event') requestCardDraw(playerId, 'events', ctx);
+  else if (tile.type === 'exchange')
+    requestCardDraw(playerId, 'exchanges', ctx);
   else if (tile.type === 'quiz') requestQuiz(playerId, ctx);
   else if (tile.type === 'move_choice')
     requestDirection(playerId, tile.delta ?? 2, ctx);
@@ -235,8 +286,14 @@ function resolvePanierEvent(playerId: number, ctx: RuleContext): void {
   drawAndResolve<PanierState, (typeof PANIER_EVENTS)[number]>(ctx, {
     deckId: 'events',
     playerId,
+    automatic: false,
     recycle: true,
     discard: true,
+    eventData: (event) => ({
+      revealed: true,
+      cardLabel: event.label,
+      effectDescription: event.effectDescription,
+    }),
     resolve: (event) => ctx.effects.schedule(...event.effects),
   });
 }
@@ -245,10 +302,24 @@ function drawExchange(playerId: number, ctx: RuleContext): void {
   drawAndResolve<PanierState, (typeof PANIER_EXCHANGES)[number]>(ctx, {
     deckId: 'exchanges',
     playerId,
+    automatic: false,
     recycle: true,
     discard: true,
+    eventData: (exchange) => ({
+      revealed: true,
+      cardLabel: exchange.label,
+      effectDescription: exchange.effectDescription,
+    }),
     resolve: (exchange) => ctx.effects.schedule(...exchange.effects),
   });
+}
+
+function requestCardDraw(
+  playerId: number,
+  deckId: PendingCardDraw['deckId'],
+  ctx: RuleContext,
+): void {
+  ctx.turn.flags.set(PENDING_CARD_DRAW_FLAG, { playerId, deckId });
 }
 
 export function requestStrategicSwap(
@@ -267,7 +338,7 @@ function requestTake(
   const targetCards = ctx.inventory.items(INVENTORY, targetId);
   if (targetCards.length === 0) return;
   const pending: PanierPending = {
-    kind: 'take',
+    panierKind: 'take',
     actorId,
     targetId,
   };
@@ -284,7 +355,7 @@ export function requestQuiz(playerId: number, ctx: RuleContext): void {
   if (!session) return;
   const question = session.question;
   const pending: PanierPending = {
-    kind: 'quiz',
+    panierKind: 'quiz',
     actorId: playerId,
     sessionId: session.id,
   };
@@ -307,7 +378,7 @@ function requestDirection(
   ctx: RuleContext,
 ): void {
   const pending: PanierPending = {
-    kind: 'direction',
+    panierKind: 'direction',
     actorId: playerId,
     distance,
   };
@@ -345,7 +416,13 @@ function checkVictory(playerId: number, ctx: RuleContext): void {
 }
 
 function finishResolution(ctx: RuleContext): void {
-  if (ctx.choice.current() || ctx.match.lifecycle() === 'finished') return;
-  ctx.turn.flags.consume(RESOLVING_PLAYER_FLAG);
+  if (
+    ctx.choice.current() ||
+    ctx.effects.isResolving() ||
+    ctx.turn.flags.get(PENDING_CARD_DRAW_FLAG) != null ||
+    ctx.match.lifecycle() === 'finished' ||
+    !ctx.turn.flags.consume(RESOLVING_PLAYER_FLAG)
+  )
+    return;
   ctx.turn.end();
 }

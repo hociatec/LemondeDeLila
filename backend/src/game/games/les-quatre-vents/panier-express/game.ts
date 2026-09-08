@@ -21,7 +21,7 @@ import {
 import {
   PANIER_ACTIONS,
   PANIER_PHASES,
-  requestPawn,
+  requestPawns,
   resolveDirection,
   resolveGive,
   resolvePawn,
@@ -76,7 +76,33 @@ export default defineGame<PanierState>()({
     inventory.set({ id: 'shopping-lists', visibility: 'owner' }),
     inventory.set({ id: 'shopping-baskets', visibility: 'owner' }),
   ],
-  shortcuts: [{ key: 'Space', type: 'action', actionType: 'roll' }],
+  shortcuts: [
+    { key: 'D', type: 'action', actionType: 'roll' },
+    {
+      key: 'Space',
+      type: 'action',
+      actionType: 'draw_card',
+      label: 'Piocher la carte',
+    },
+    {
+      key: 'S',
+      type: 'interface',
+      id: 'inventory:shopping-baskets',
+      label: 'Panier',
+    },
+    {
+      key: 'L',
+      type: 'interface',
+      id: 'inventory:shopping-lists',
+      label: 'Liste de courses',
+    },
+    {
+      key: 'I',
+      type: 'interface',
+      id: 'inventory:market-items',
+      label: 'Inventaire',
+    },
+  ],
   setup: ({ players, ctx }) => {
     const selectedLists = ctx.random.shuffle(PANIER_LISTS);
     const starter = ctx.random.pick(players) ?? players[0];
@@ -86,7 +112,10 @@ export default defineGame<PanierState>()({
         ctx.inventory.add('shopping-lists', player.id, item);
       }
     }
-    requestPawn(players[0].id, ctx);
+    requestPawns(
+      players.map((player) => player.id),
+      ctx,
+    );
     return {};
   },
   initialPhase: PANIER_PHASES.initialPhase,
@@ -134,5 +163,10 @@ export default defineGame<PanierState>()({
       },
     ),
   ],
-  bot: { choose: () => ({ type: 'roll', payload: {} }) },
+  bot: {
+    choose: ({ availableActions }) => ({
+      type: availableActions.includes('draw_card') ? 'draw_card' : 'roll',
+      payload: {},
+    }),
+  },
 });
