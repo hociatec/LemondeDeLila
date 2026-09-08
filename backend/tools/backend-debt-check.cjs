@@ -36,7 +36,7 @@ let explicitAny = 0;
 let unjustifiedEmptyCatches = 0;
 
 const environmentFile = path.join(root, '.env');
-if (fs.existsSync(environmentFile)) {
+if (fs.existsSync(environmentFile) && process.platform !== 'win32') {
   const unsafePermissions = fs.statSync(environmentFile).mode & 0o077;
   if (unsafePermissions !== 0) {
     violations.push('.env: permissions groupe/autres interdites (attendu 600)');
