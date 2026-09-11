@@ -1,8 +1,11 @@
+import { assertGameScheduler } from '../automation/scheduler-contracts';
+import { assertSerializableState } from './assert-serializable-state';
+import {
+  assertGameCount,
+  assertPlayerValues,
+} from '../kits/numeric-invariants';
 import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
-import type {
-  DeclarativeState,
-  EngineKitsState,
-} from '../definitions/game-definition';
+import type { DeclarativeState, EngineKitsState } from './declarative-state';
 import type { GameComponentDefinition } from '../definitions/component-kit';
 import type {
   CardSetsDefinition,
@@ -11,6 +14,7 @@ import type {
 } from '../cards/cards-kit';
 import type { TrackDefinition } from '../kits/movement-kit';
 import type { DiceDefinition } from '../kits/dice-kit';
+import { assertDiceRoll } from '../kits/dice-roll-contract';
 import type { GridDefinition } from '../kits/grid-kit';
 import type { PawnSetDefinition } from '../kits/pawn-kit';
 
@@ -18,29 +22,10 @@ export function assertValidGameSession<TState extends object>(
   runtime: DeclarativeState<TState>,
   components: readonly GameComponentDefinition[] = [],
 ): void {
+  assertSerializableState(runtime);
+  assertPlayerValues(runtime.engine.playerValues);
   assertValidEngineKits(runtime.engine.kits, components);
-  for (const [taskId, task] of Object.entries(runtime.engine.scheduler.tasks)) {
-    invariant(task.id === taskId && taskId.trim().length > 0, 'timer.id', {
-      taskId,
-      id: task.id,
-    });
-    invariant(Number.isFinite(task.dueAtMs), 'timer.deadline', {
-      taskId,
-      dueAtMs: task.dueAtMs,
-    });
-    invariant(
-      ['public', 'private', 'internal'].includes(task.visibility.kind),
-      'timer.visibility',
-      { taskId, visibility: task.visibility.kind },
-    );
-    if (task.action) {
-      invariant(
-        typeof task.action.type === 'string' && task.action.type.length > 0,
-        'timer.action',
-        { taskId },
-      );
-    }
-  }
+  assertGameScheduler(runtime.engine.scheduler);
   invariant(
     typeof runtime.engine.configuration.complete === 'boolean',
     'configuration.complete',
@@ -54,19 +39,6 @@ export function assertValidGameSession<TState extends object>(
     'configuration.owner',
     { ownerPlayerId: runtime.engine.configuration.ownerPlayerId },
   );
-  const seen = new WeakSet<object>();
-  for (const [path, value] of Object.entries({
-    game: runtime.game,
-    engine: runtime.engine,
-    players: runtime.players,
-    turn: runtime.turn,
-    pending: runtime.pending,
-    extras: runtime.extras,
-    board: runtime.board,
-    log: runtime.log,
-  })) {
-    assertSerializable(value, path, seen);
-  }
 }
 
 export function assertValidEngineKits(
@@ -198,6 +170,7 @@ function assertValidDiceKit(
   components: readonly GameComponentDefinition[],
 ): void {
   const diceKit = kits.dice;
+  if (diceKit?.sequence != null) assertGameCount(diceKit.sequence);
   const diceDefinitions = new Map(
     components
       .filter(
@@ -206,7 +179,13 @@ function assertValidDiceKit(
       )
       .map((definition) => [definition.id, definition]),
   );
-  for (const [diceId, roll] of Object.entries(diceKit?.rolls ?? {})) {
+  const rolls = [
+    diceKit?.rolls ?? {},
+    ...Object.values(diceKit?.rollsByPlayer ?? {}),
+  ];
+  for (const [diceId, roll] of rolls.flatMap((collection) =>
+    Object.entries(collection),
+  )) {
     const definition = diceDefinitions.get(diceId);
     invariant(
       definition != null &&
@@ -217,16 +196,7 @@ function assertValidDiceKit(
       'dice.definition',
       { diceId },
     );
-    invariant(
-      roll.values.length === definition.count &&
-        roll.values.every(
-          (value) =>
-            Number.isInteger(value) && value >= 1 && value <= definition.sides,
-        ) &&
-        roll.total === roll.values.reduce((sum, value) => sum + value, 0),
-      'dice.roll',
-      { diceId, roll },
-    );
+    assertDiceRoll(diceId, roll, definition);
   }
 }
 
@@ -310,55 +280,6 @@ function assertValidCardZones(
     });
     invariant(Array.isArray(cards), 'cards.zone', { zoneId });
   }
-}
-
-function assertSerializable(
-  value: unknown,
-  path: string,
-  seen: WeakSet<object>,
-): void {
-  if (
-    value === undefined ||
-    value === null ||
-    typeof value === 'string' ||
-    typeof value === 'boolean'
-  ) {
-    return;
-  }
-  if (typeof value === 'number') {
-    invariant(Number.isFinite(value), 'serializable.number', { path, value });
-    return;
-  }
-  invariant(typeof value === 'object', 'serializable.type', {
-    path,
-    type: typeof value,
-  });
-  if (seen.has(value)) {
-    invariant(false, 'serializable.cycle', { path });
-  }
-  seen.add(value);
-  if (Array.isArray(value)) {
-    value.forEach((entry, index) =>
-      assertSerializable(entry, `${path}[${index}]`, seen),
-    );
-  } else {
-    const prototype = Reflect.getPrototypeOf(value);
-    invariant(isPlainObjectPrototype(prototype), 'serializable.prototype', {
-      path,
-    });
-    for (const [key, entry] of Object.entries(value)) {
-      assertSerializable(entry, `${path}.${key}`, seen);
-    }
-  }
-  seen.delete(value);
-}
-
-function isPlainObjectPrototype(prototype: object | null): boolean {
-  return (
-    prototype === null ||
-    prototype === Object.prototype ||
-    prototype.constructor?.name === 'Object'
-  );
 }
 
 function invariant(

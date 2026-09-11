@@ -4,13 +4,14 @@ import {
   CatalogGame,
   CategoryNode,
   FlatCategory,
-} from '../contracts/catalog-game.record';
-import { CatalogSourceGame } from '../contracts/catalog-source-game.record';
+} from '../read-models/catalog-game.record';
+import { CatalogSourceGame } from '../read-models/catalog-source-game.record';
+import { compareCanonicalText } from '@shared/utils/public-api';
 
 @Injectable()
 export class CatalogMapperService {
   toCatalogGames(definitions: CatalogSourceGame[]): CatalogGame[] {
-    const mapped = definitions.map((definition) => {
+    const mapped = definitions.slice(0, 2_000).map((definition) => {
       const rawCategory = this.formatCategoryName(
         definition.category || 'Catalogue',
       );
@@ -28,8 +29,12 @@ export class CatalogMapperService {
       );
 
       return {
-        id: definition.id,
-        name: definition.name,
+        id: String(definition.id ?? '')
+          .trim()
+          .slice(0, 128),
+        name: String(definition.name ?? '')
+          .trim()
+          .slice(0, 255),
         status,
         minPlayers,
         maxPlayers,
@@ -41,7 +46,7 @@ export class CatalogMapperService {
           typeof definition.chatSoundsEnabled === 'boolean'
             ? definition.chatSoundsEnabled
             : true,
-        summary: definition.description ?? '',
+        summary: String(definition.description ?? '').slice(0, 4_000),
         engine: definition.id,
         category,
         subcategory,
@@ -60,7 +65,9 @@ export class CatalogMapperService {
       byId.set(id, game);
     }
 
-    return Array.from(byId.values());
+    return Array.from(byId.values()).sort((left, right) =>
+      compareCanonicalText(left.id, right.id),
+    );
   }
 
   listCategoryNames(games: CatalogGame[]): string[] {
@@ -68,7 +75,7 @@ export class CatalogMapperService {
     for (const game of games) {
       categories.add(game.category);
     }
-    return Array.from(categories);
+    return Array.from(categories).sort(compareCanonicalText).slice(0, 512);
   }
 
   buildCategoryTree(games: CatalogGame[]): CategoryNode[] {
@@ -77,12 +84,13 @@ export class CatalogMapperService {
       { id: string; name: string; childrenMap: Record<string, CategoryNode> }
     > = {};
 
-    for (const game of games) {
+    for (const game of games.slice(0, 2_000)) {
       const categoryName = game.category || 'Catalogue';
       const subcategoryName = game.subcategory || '';
       const categoryId = this.slugify(categoryName);
 
       if (!categories[categoryId]) {
+        if (Object.keys(categories).length >= 512) continue;
         categories[categoryId] = {
           id: categoryId,
           name: categoryName,
@@ -97,6 +105,8 @@ export class CatalogMapperService {
       const subSlug = this.slugify(subcategoryName);
       const subId = `${categoryId}/${subSlug}`;
       if (!categories[categoryId].childrenMap[subId]) {
+        if (Object.keys(categories[categoryId].childrenMap).length >= 512)
+          continue;
         categories[categoryId].childrenMap[subId] = {
           id: subId,
           name: subcategoryName,
@@ -105,24 +115,29 @@ export class CatalogMapperService {
       }
     }
 
-    return Object.values(categories).map((node) => ({
-      id: node.id,
-      name: node.name,
-      children: Object.values(node.childrenMap).map((child) => ({
-        id: child.id,
-        name: child.name,
-        children: [],
-      })),
-    }));
+    return Object.values(categories)
+      .sort((left, right) => compareCanonicalText(left.id, right.id))
+      .map((node) => ({
+        id: node.id,
+        name: node.name,
+        children: Object.values(node.childrenMap)
+          .sort((left, right) => compareCanonicalText(left.id, right.id))
+          .map((child) => ({
+            id: child.id,
+            name: child.name,
+            children: [],
+          })),
+      }));
   }
 
   buildFlatCategories(games: CatalogGame[]): FlatCategory[] {
     const categories: Record<string, FlatCategory> = {};
 
-    for (const game of games) {
+    for (const game of games.slice(0, 2_000)) {
       const categoryName = game.category || 'Catalogue';
       const categoryId = this.slugify(categoryName);
       if (!categories[categoryId]) {
+        if (Object.keys(categories).length >= 1_024) continue;
         categories[categoryId] = {
           id: categoryId,
           name: categoryName,
@@ -138,6 +153,7 @@ export class CatalogMapperService {
       const subSlug = this.slugify(subcategoryName);
       const subId = `${categoryId}/${subSlug}`;
       if (!categories[subId]) {
+        if (Object.keys(categories).length >= 1_024) continue;
         categories[subId] = {
           id: subId,
           name: subcategoryName,
@@ -146,10 +162,13 @@ export class CatalogMapperService {
       }
     }
 
-    return Object.values(categories);
+    return Object.values(categories).sort((left, right) =>
+      compareCanonicalText(left.id, right.id),
+    );
   }
 
   normalizeCategoryId(raw: string): string | null {
+    if (typeof raw !== 'string' || raw.length > 512) return null;
     const cleaned = raw.replace(/\\/g, '/').trim();
     if (!cleaned) {
       return null;

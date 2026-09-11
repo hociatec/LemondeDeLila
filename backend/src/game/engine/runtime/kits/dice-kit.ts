@@ -1,39 +1,26 @@
-import type { GameRng } from '../../../core/application/contracts/game-execution-context.model';
-import {
-  GameConfigurationError,
-  GameStateViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+import type { GameRng } from '../../../core/application/models/game-execution-context.model';
+import { assertGameCount, assertGameValue } from './numeric-invariants';
+import { assertDiceRoll } from './dice-roll-contract';
+import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import type {
+  DiceDefinition,
+  DiceRollPolicy,
+  DiceRollResult,
+  PersistedDiceRoll,
+} from './dice-contracts';
 
-export type DiceDefinition = {
-  readonly component: 'dice.set';
-  readonly id: string;
-  readonly count: number;
-  readonly sides: number;
-};
+export type {
+  DiceDefinition,
+  DiceRollPolicy,
+  DiceRollResult,
+  PersistedDiceRoll,
+} from './dice-contracts';
 
 export type DiceKitState = {
-  rolls: Record<string, { values: number[]; total: number }>;
-  rollsByPlayer: Record<
-    string,
-    Record<string, { values: number[]; total: number }>
-  >;
+  rolls: Record<string, PersistedDiceRoll>;
+  rollsByPlayer: Record<string, Record<string, PersistedDiceRoll>>;
   lastRollId: string | null;
   sequence: number;
-};
-
-export type DiceRollResult = { values: number[]; total: number };
-
-export type DiceRollPolicy = {
-  extraDice?: number;
-  attempts?: number;
-  select?: 'first' | 'last' | 'best' | 'worst';
-  keep?: 'all' | 'highest' | 'lowest';
-  modifier?: number;
-  multiplier?: number;
-  reroll?: {
-    while(result: Readonly<DiceRollResult>): boolean;
-    max?: number;
-  };
 };
 
 export function diceKit(options: {
@@ -43,7 +30,14 @@ export function diceKit(options: {
 }): DiceDefinition {
   const count = Math.floor(options.count);
   const sides = Math.floor(options.sides);
-  if (count < 1 || sides < 2) {
+  if (
+    !Number.isSafeInteger(options.count) ||
+    !Number.isSafeInteger(options.sides) ||
+    count < 1 ||
+    count > 100 ||
+    sides < 2 ||
+    sides > 1_000_000
+  ) {
     throw new GameConfigurationError('Configuration de dés invalide');
   }
   return Object.freeze({
@@ -82,25 +76,24 @@ export class GameDiceController {
   reset(id: string): void {
     this.definitions.delete(id);
     delete this.state.rolls[id];
+    for (const rolls of Object.values(this.state.rollsByPlayer))
+      delete rolls[id];
     if (this.state.lastRollId === id) {
       this.state.lastRollId = Object.keys(this.state.rolls).at(-1) ?? null;
     }
   }
 
   assertValid(): void {
-    for (const [id, roll] of Object.entries(this.state.rolls)) {
+    assertGameCount(this.state.sequence);
+    const rolls = [
+      this.state.rolls,
+      ...Object.values(this.state.rollsByPlayer),
+    ];
+    for (const [id, roll] of rolls.flatMap((collection) =>
+      Object.entries(collection),
+    )) {
       const definition = this.definitions.get(id) ?? { count: 1, sides: 6 };
-      if (
-        !Array.isArray(roll.values) ||
-        roll.values.length < 1 ||
-        roll.values.some(
-          (value) =>
-            !Number.isInteger(value) || value < 1 || value > definition.sides,
-        ) ||
-        !Number.isFinite(roll.total)
-      ) {
-        throw new GameStateViolationError('Résultat de dés invalide', { id });
-      }
+      assertDiceRoll(id, roll, definition);
     }
   }
 
@@ -110,6 +103,28 @@ export class GameDiceController {
 
   rollWith(id = 'main', policy: DiceRollPolicy = {}): DiceRollResult {
     const definition = this.definitions.get(id) ?? { id, count: 1, sides: 6 };
+    assertGameCount(this.state.sequence, Number.MAX_SAFE_INTEGER - 1);
+    assertGameCount(definition.count, 100);
+    assertGameCount(definition.sides, 1_000_000);
+    assertGameCount(policy.extraDice ?? 0, 100);
+    assertGameCount(policy.attempts ?? 1, 100);
+    assertGameCount(policy.reroll?.max ?? 0, 100);
+    assertGameValue(policy.modifier ?? 0);
+    assertGameValue(policy.multiplier ?? 1);
+    assertGameValue(
+      (definition.count + (policy.extraDice ?? 0)) *
+        definition.sides *
+        Math.abs(policy.multiplier ?? 1) +
+        Math.abs(policy.modifier ?? 0),
+    );
+    if (
+      definition.count < 1 ||
+      definition.sides < 2 ||
+      (policy.attempts ?? 1) < 1 ||
+      !['all', 'highest', 'lowest'].includes(policy.keep ?? 'all') ||
+      !['first', 'last', 'best', 'worst'].includes(policy.select ?? 'last')
+    )
+      throw new GameConfigurationError('Configuration de dés invalide');
     const results = Array.from(
       { length: Math.max(1, Math.floor(policy.attempts ?? 1)) },
       () =>
@@ -120,9 +135,14 @@ export class GameDiceController {
     );
     const maximumRerolls = Math.max(0, Math.floor(policy.reroll?.max ?? 0));
     for (let rerolls = 0; rerolls < maximumRerolls; rerolls += 1) {
-      const current = results.at(-1)!;
-      if (!policy.reroll?.while(current)) break;
-      results.push(this.rawRoll(definition.count, definition.sides));
+      const current = selectRoll(results, 'last');
+      if (!policy.reroll?.while(structuredClone(current))) break;
+      results.push(
+        this.rawRoll(
+          definition.count + (policy.extraDice ?? 0),
+          definition.sides,
+        ),
+      );
     }
     const selected = selectRoll(results, policy.select ?? 'last');
     const values = keepValues(selected.values, policy.keep ?? 'all');
@@ -133,11 +153,21 @@ export class GameDiceController {
           (policy.multiplier ?? 1) +
         (policy.modifier ?? 0),
     };
-    this.state.rolls[id] = result;
+    const persisted: PersistedDiceRoll = {
+      ...result,
+      policy: {
+        extraDice: policy.extraDice ?? 0,
+        keep: policy.keep ?? 'all',
+        multiplier: policy.multiplier ?? 1,
+        modifier: policy.modifier ?? 0,
+      },
+    };
+    assertDiceRoll(id, persisted, definition);
+    this.state.rolls[id] = persisted;
     const actorPlayerId = this.actorPlayerId();
     if (actorPlayerId != null) {
       (this.state.rollsByPlayer[String(actorPlayerId)] ??= {})[id] =
-        structuredClone(result);
+        structuredClone(persisted);
     }
     this.state.lastRollId = id;
     this.state.sequence += 1;
@@ -159,7 +189,8 @@ export class GameDiceController {
   }
 
   last(id = 'main'): { values: number[]; total: number } | null {
-    return structuredClone(this.state.rolls[id] ?? null);
+    const result = this.state.rolls[id];
+    return result ? { values: [...result.values], total: result.total } : null;
   }
 
   private rawRoll(count: number, sides: number): DiceRollResult {
@@ -175,6 +206,8 @@ function selectRoll(
   results: readonly DiceRollResult[],
   selection: NonNullable<DiceRollPolicy['select']>,
 ): DiceRollResult {
+  if (results.length === 0)
+    throw new GameConfigurationError('Aucun lancer de dés à sélectionner');
   if (selection === 'first') return results[0];
   if (selection === 'best') {
     return results.reduce((best, current) =>
@@ -186,7 +219,7 @@ function selectRoll(
       current.total < worst.total ? current : worst,
     );
   }
-  return results.at(-1)!;
+  return results[results.length - 1];
 }
 
 function keepValues(

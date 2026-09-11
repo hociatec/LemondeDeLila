@@ -4,14 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as fs from 'fs';
-import { writeFileAtomic } from '../../../../shared/utils/public-api';
+import { writeFileAtomic } from '../../../../platform/filesystem/public-api';
 import {
   SOUND_KEYS,
   type SoundKey,
   type TableAmbienceDefinition,
   type TableAmbienceDefinitionsFile,
   type TableAmbienceSoundKey,
-} from '../../application/contracts/sound-manifest.record';
+} from '../../application/read-models/sound-manifest.record';
 import { toTableAmbienceDefinition } from './sounds-storage.utils';
 
 type SoundsTableAmbiencesManagerDeps = {
@@ -157,10 +157,17 @@ export class SoundsTableAmbiencesManager {
   private async read(): Promise<TableAmbienceDefinitionsFile> {
     const filePath = this.deps.filePath();
     try {
+      const stat = await fs.promises.stat(filePath);
+      if (!stat.isFile() || stat.size > 256 * 1024) {
+        throw new BadRequestException('Configuration audio trop volumineuse.');
+      }
       const raw = await fs.promises.readFile(filePath, 'utf-8');
       const parsed: unknown = JSON.parse(raw.replace(/^\uFEFF/, ''));
       const record = isRecord(parsed) ? parsed : {};
-      const itemsRaw = Array.isArray(record.items) ? record.items : [];
+      const itemsRaw =
+        Array.isArray(record.items) && record.items.length <= 64
+          ? record.items
+          : [];
       const items: TableAmbienceDefinition[] = itemsRaw
         .map((value) =>
           toTableAmbienceDefinition(value, (input) =>

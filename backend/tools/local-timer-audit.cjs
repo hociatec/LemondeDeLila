@@ -8,6 +8,10 @@ const ts = require('typescript');
 const root = path.resolve(__dirname, '..');
 const src = path.join(root, 'src');
 const allowedCalls = new Map([
+  // Recovery poll only: durable intent is the SQL session, never the local timer.
+  ['game/core/infrastructure/scheduling/game-automation-recovery.service.ts', 1],
+  // Transport shutdown: bounded close handshake before forced termination.
+  ['platform/ws/infrastructure/platform/lila-ws.adapter.ts', 1],
   [
     'modules/admin/infrastructure/system/admin-maintenance-runtime.service.ts',
     1,
@@ -37,6 +41,12 @@ const allowedCalls = new Map([
     1,
   ],
   ['modules/sounds/infrastructure/storage/sounds-audio-process.ts', 1],
+  // Readiness I/O deadline: 2 seconds, cleared in finally; no durable business task.
+  ['modules/health/infrastructure/checks/health-check-timeout.ts', 1],
+  // Windows atomic rename: at most five waits, 150 ms total, no business replay.
+  ['platform/filesystem/infrastructure/atomic-file.utils.ts', 1],
+  // Redis lease renewal: local handle for a distributed PEXPIRE heartbeat.
+  ['platform/redis/infrastructure/redis-distributed-lease.service.ts', 1],
 ]);
 
 function walk(directory) {

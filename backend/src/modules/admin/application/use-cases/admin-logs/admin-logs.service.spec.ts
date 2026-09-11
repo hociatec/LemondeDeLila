@@ -3,9 +3,10 @@ import * as fs from 'fs';
 import { AdminLogsService } from '../../../infrastructure/filesystem/admin-logs.service';
 
 jest.mock('fs', () => ({
-  promises: {
-    readdir: jest.fn(),
-    stat: jest.fn(),
+    promises: {
+      readdir: jest.fn(),
+      lstat: jest.fn(),
+      stat: jest.fn(),
     readFile: jest.fn(),
   },
 }));
@@ -21,6 +22,9 @@ describe('AdminLogsService', () => {
     mockedFs.stat
       .mockResolvedValueOnce({ mtimeMs: 10 } as any)
       .mockResolvedValueOnce({ mtimeMs: 20 } as any);
+    mockedFs.lstat
+      .mockResolvedValueOnce({ isFile: () => true, mtimeMs: 10 } as any)
+      .mockResolvedValueOnce({ isFile: () => true, mtimeMs: 20 } as any);
     mockedFs.readFile.mockResolvedValue('one\ntwo\nERR three\nERR four' as any);
 
     const service = new AdminLogsService({

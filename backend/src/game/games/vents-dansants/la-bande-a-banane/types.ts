@@ -1,4 +1,5 @@
-import type { BandeABananeMonkeySpecies } from './content';
+export type BandeABananeMonkeySpecies =
+  'capucin' | 'mandrill' | 'gibbon' | 'babouin' | 'macaque';
 
 export interface BandeABananeTroopEntry {
   cardId: string;

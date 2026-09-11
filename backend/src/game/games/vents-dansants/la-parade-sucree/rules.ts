@@ -1,13 +1,14 @@
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
-  rejectRule,
   defineAction,
   gameInput,
   playCard as playCardAction,
+  rejectRule,
+  victoryWhen,
 } from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
 import {
-  CANDY_VALUES,
   CANDY_TYPES,
+  CANDY_VALUES,
   PARADE_CARD_BY_ID,
   PARADE_SEQUENCE,
   SPECIAL_REWARDS,
@@ -101,3 +102,14 @@ export function candyCounts(playerId: number, ctx: RuleContext): CandyCounts {
 function candyResource(type: keyof CandyCounts): string {
   return `parade.candy.${type}`;
 }
+
+export const GAME_VICTORY = victoryWhen<LaParadeSucreeState>(({ ctx }) => {
+  const complete =
+    sequenceIndex(ctx) >= PARADE_SEQUENCE.length ||
+    ctx.players
+      .all()
+      .every((player) => ctx.cards.hand('players', player.id).length === 0);
+  return complete
+    ? { winnerPlayerIds: winners(ctx), reason: 'parade-complete' }
+    : null;
+});

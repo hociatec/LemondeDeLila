@@ -1,19 +1,22 @@
+import type {
+  NoGameState as FrousseState,
+  GameContext,
+} from '../../../engine/sdk/public-api';
 import {
   defineAction,
+  defineChoice,
   defineEffect,
   drawAndResolve,
   gameInput,
   sequentialPawnSelection,
   setupPlayingPhases,
 } from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   FROUSSE_TILES,
   type FrousseBlock,
   type FrousseCard,
   type FrousseCategory,
 } from './content';
-import type { NoGameState as FrousseState } from '../../../engine/sdk/public-api';
 
 type RuleContext = GameContext<FrousseState>;
 export const FROUSSE_PHASES = setupPlayingPhases<FrousseState>();
@@ -90,7 +93,7 @@ const pawnSelection = sequentialPawnSelection<FrousseState>({
   },
 });
 
-export const requestPawns = pawnSelection.requestAll;
+export const setupGame = pawnSelection.setup(() => ({}));
 export const resolvePawn = pawnSelection.resolve;
 
 function modifiedRoll(playerId: number, ctx: RuleContext): number {
@@ -282,3 +285,10 @@ export const FROUSSE_EFFECTS = {
     },
   }),
 } as const;
+
+export const GAME_CHOICES = {
+  'frousse.pawn': defineChoice<FrousseState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+  }),
+};

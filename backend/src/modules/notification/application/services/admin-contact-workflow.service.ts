@@ -1,6 +1,14 @@
+import {
+  allCompleted,
+  businessMsToIso,
+} from '../../../../shared/utils/public-api';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { getErrorMessage } from '@shared/utils/public-api';
-import type { WsAuthPayload } from '../../../../shared/interfaces/public-api';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+  type WsAuthPayload,
+} from '../../../../shared/interfaces/public-api';
 import {
   NOTIFICATION_INBOX_REPOSITORY,
   type NotificationInboxRepository,
@@ -21,7 +29,7 @@ import {
 import type {
   AdminContactItem,
   AdminContactStatus,
-} from '../contracts/admin-contact.model';
+} from '../models/admin-contact.model';
 import {
   ADMIN_CONTACT_KIND,
   normalizeAdminContactPayload,
@@ -41,6 +49,7 @@ export class AdminContactWorkflowService {
     private readonly notifier: NotificationInboxNotifier,
     @Inject(USER_BADGE_COUNTS_NOTIFIER)
     private readonly counts: UserBadgeCountsNotifier,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async cycleForContact(
@@ -96,9 +105,9 @@ export class AdminContactWorkflowService {
     const normalizedStatus = normalizeAdminContactStatus(status);
     const rows = await this.inbox.listByContactId(ADMIN_CONTACT_KIND, cid);
     if (rows.length === 0) return;
-    const now = new Date().toISOString();
+    const now = businessMsToIso(this.clock.now());
     const handled = normalizedStatus === 'handled';
-    await Promise.all(
+    await allCompleted(
       rows.map(async (row) => {
         const payload = {
           ...(row.payload ?? {}),
@@ -116,8 +125,12 @@ export class AdminContactWorkflowService {
           kind: 'admin_contact',
           id: row.id,
           contactId: cid,
-          createdAt: row.createdAt.toISOString(),
-          readAt: row.readAt?.toISOString?.() ?? null,
+          createdAt:
+            row.createdAt instanceof Date &&
+            Number.isFinite(row.createdAt.getTime())
+              ? row.createdAt.toISOString()
+              : new Date(0).toISOString(),
+          readAt: serializeOptionalDate(row.readAt),
           fromUserId: row.fromUserId ?? 0,
           fromUsername: row.fromUsername ?? '',
           toUserId: row.toUserId ?? undefined,
@@ -147,7 +160,7 @@ export class AdminContactWorkflowService {
       byUser.set(row.userId, ids);
     }
     await this.inbox.deleteManyByIds(rows.map((row) => row.id));
-    await Promise.all(
+    await allCompleted(
       [...byUser].map(async ([userId, ids]) => {
         await this.bestEffort(
           () =>
@@ -175,7 +188,9 @@ export class AdminContactWorkflowService {
 
   private contactId(value: string): string {
     const contactId = String(value || '').trim();
-    if (!contactId) throw new NotificationContactIdRequiredError();
+    if (!contactId || contactId.length > 128) {
+      throw new NotificationContactIdRequiredError();
+    }
     return contactId;
   }
 
@@ -201,3 +216,4 @@ export class AdminContactWorkflowService {
     }
   }
 }
+import { serializeOptionalDate } from '../../../../shared/utils/public-api';

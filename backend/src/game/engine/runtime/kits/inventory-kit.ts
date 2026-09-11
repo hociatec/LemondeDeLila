@@ -4,7 +4,10 @@ import {
   GameRuleViolationError,
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
-import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
+import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import { assertGameCount } from './numeric-invariants';
+
+const MAX_INVENTORY_ITEMS = 100_000;
 
 export type InventoryDefinition = {
   readonly component: 'inventory.set';
@@ -81,6 +84,7 @@ export class GameInventoryController {
       for (const items of Object.values(inventories)) {
         if (
           !Array.isArray(items) ||
+          items.length > MAX_INVENTORY_ITEMS ||
           (allowed && items.some((itemId) => !allowed.has(itemId)))
         ) {
           throw new GameStateViolationError('Contenu d’inventaire invalide', {
@@ -98,18 +102,32 @@ export class GameInventoryController {
   }
 
   add(inventoryId: string, playerId: number, itemId: string, count = 1): void {
-    this.requireItem(inventoryId, itemId);
+    this.assertCanAdd(inventoryId, playerId, itemId, count);
     const items = this.items(inventoryId, playerId);
-    for (let index = 0; index < Math.max(0, count); index += 1) {
+    for (let index = 0; index < count; index += 1) {
       items.push(itemId);
     }
     if (count > 0) {
       this.emit(
         'inventory.item-added',
         { inventoryId, playerId, itemId, count },
-        this.eventVisibility(inventoryId, [playerId]),
+        inventoryEventVisibility(this.requireDefinition(inventoryId), [
+          playerId,
+        ]),
       );
     }
+  }
+
+  assertCanAdd(
+    inventoryId: string,
+    playerId: number,
+    itemId: string,
+    count = 1,
+  ): void {
+    assertGameCount(count, MAX_INVENTORY_ITEMS);
+    this.requireItem(inventoryId, itemId);
+    const items = this.state.byPlayer[inventoryId]?.[String(playerId)] ?? [];
+    assertGameCount(items.length + count, MAX_INVENTORY_ITEMS);
   }
 
   remove(
@@ -118,6 +136,8 @@ export class GameInventoryController {
     itemId: string,
     count = 1,
   ): void {
+    assertGameCount(count, MAX_INVENTORY_ITEMS);
+    this.requireItem(inventoryId, itemId);
     const items = this.items(inventoryId, playerId);
     if (this.quantity(inventoryId, playerId, itemId) < count) {
       throw new GameRuleViolationError('INSUFFICIENT_INVENTORY', {
@@ -134,7 +154,9 @@ export class GameInventoryController {
       this.emit(
         'inventory.item-removed',
         { inventoryId, playerId, itemId, count },
-        this.eventVisibility(inventoryId, [playerId]),
+        inventoryEventVisibility(this.requireDefinition(inventoryId), [
+          playerId,
+        ]),
       );
     }
   }
@@ -180,12 +202,22 @@ export class GameInventoryController {
     itemId: string,
     count = 1,
   ): void {
+    assertGameCount(count, MAX_INVENTORY_ITEMS);
+    this.requireItem(inventoryId, itemId);
+    if (fromPlayerId !== toPlayerId)
+      assertGameCount(
+        this.count(inventoryId, toPlayerId) + count,
+        MAX_INVENTORY_ITEMS,
+      );
     this.remove(inventoryId, fromPlayerId, itemId, count);
     this.add(inventoryId, toPlayerId, itemId, count);
     this.emit(
       'inventory.transferred',
       { inventoryId, fromPlayerId, toPlayerId, itemId, count },
-      this.eventVisibility(inventoryId, [fromPlayerId, toPlayerId]),
+      inventoryEventVisibility(this.requireDefinition(inventoryId), [
+        fromPlayerId,
+        toPlayerId,
+      ]),
     );
   }
 
@@ -196,6 +228,8 @@ export class GameInventoryController {
     rightPlayerId: number,
     rightItemId: string,
   ): void {
+    this.requireItem(inventoryId, leftItemId);
+    this.requireItem(inventoryId, rightItemId);
     if (!this.has(inventoryId, leftPlayerId, leftItemId)) {
       throw new GameRuleViolationError('INSUFFICIENT_INVENTORY', {
         inventoryId,
@@ -210,6 +244,7 @@ export class GameInventoryController {
         itemId: rightItemId,
       });
     }
+    if (leftPlayerId === rightPlayerId && leftItemId === rightItemId) return;
     this.remove(inventoryId, leftPlayerId, leftItemId);
     this.remove(inventoryId, rightPlayerId, rightItemId);
     this.add(inventoryId, leftPlayerId, rightItemId);
@@ -217,11 +252,15 @@ export class GameInventoryController {
     this.emit(
       'inventory.exchanged',
       { inventoryId, leftPlayerId, rightPlayerId },
-      this.eventVisibility(inventoryId, [leftPlayerId, rightPlayerId]),
+      inventoryEventVisibility(this.requireDefinition(inventoryId), [
+        leftPlayerId,
+        rightPlayerId,
+      ]),
     );
   }
 
   swap(inventoryId: string, leftPlayerId: number, rightPlayerId: number): void {
+    const definition = this.requireDefinition(inventoryId);
     const byPlayer = (this.state.byPlayer[inventoryId] ??= {});
     const left = byPlayer[String(leftPlayerId)] ?? [];
     const right = byPlayer[String(rightPlayerId)] ?? [];
@@ -230,7 +269,7 @@ export class GameInventoryController {
     this.emit(
       'inventory.swapped',
       { inventoryId, leftPlayerId, rightPlayerId },
-      this.eventVisibility(inventoryId, [leftPlayerId, rightPlayerId]),
+      inventoryEventVisibility(definition, [leftPlayerId, rightPlayerId]),
     );
   }
 
@@ -280,15 +319,6 @@ export class GameInventoryController {
     return itemId;
   }
 
-  private eventVisibility(
-    inventoryId: string,
-    playerIds: readonly number[],
-  ): EventVisibility {
-    return this.requireDefinition(inventoryId).visibility === 'owner'
-      ? { kind: 'private', playerIds: [...new Set(playerIds)] }
-      : { kind: 'public' };
-  }
-
   private requireDefinition(inventoryId: string): InventoryDefinition {
     const definition = this.definitions.get(inventoryId);
     if (!definition) {
@@ -303,6 +333,15 @@ export class GameInventoryController {
       throw new GameNotFoundError(`Objet d’inventaire inconnu: ${itemId}`);
     }
   }
+}
+
+function inventoryEventVisibility(
+  definition: InventoryDefinition,
+  playerIds: readonly number[],
+): EventVisibility {
+  return definition.visibility === 'owner'
+    ? { kind: 'private', playerIds: [...new Set(playerIds)] }
+    : { kind: 'public' };
 }
 
 export function projectInventoryKitState(

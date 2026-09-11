@@ -113,11 +113,11 @@ function audit() {
     ],
     [
       'modules/social/infrastructure/presentation/ws/social-ws.handler.ts',
-      /social\.getProfile\(user\.id,\s*targetId\)/,
+      /profiles\.getProfile\(user\.id,\s*targetId\)/,
     ],
     [
       'modules/stats/infrastructure/presentation/ws/stats-ws.handler.ts',
-      /social\.getProfile\(user\.id,\s*dto\.userId\)/,
+      /profiles\.getProfile\(user\.id,\s*dto\.userId\)/,
     ],
     [
       'modules/vault/infrastructure/presentation/ws/vault-ws.handler.ts',
@@ -146,6 +146,11 @@ function audit() {
       violations.push(`${name}: garde ownership/IDOR absente`);
   }
   const inputContracts = [
+    ['main.ts', /isBoundedJsonInput\(request\.body\)/],
+    ['platform/ws/infrastructure/presentation/ws/ws-message-codec.ts', /isBoundedJsonInput\(parsed\)/],
+    ['modules/presence/application/services/presence-client-message.service.ts', /isBoundedJsonInput\(value\)/],
+    ['modules/notification/infrastructure/presentation/ws/notification-ws-connection.service.ts', /isBoundedJsonInput\(value\)/],
+    ['platform/ws/infrastructure/platform/lila-ws.adapter.ts', /isAllowedWsOrigin/],
     ['main.ts', /json\(\{ limit: '256kb' \}\)/],
     ['main.ts', /parameterLimit: 200/],
     [
@@ -156,9 +161,9 @@ function audit() {
       'modules/update/infrastructure/persistence/wx-update-upload.service.ts',
       /ENOSPC/,
     ],
-    ['shared/utils/atomic-file.utils.ts', /handle\.sync\(\)[\s\S]*fs\.rename/],
+    ['platform/filesystem/infrastructure/atomic-file.utils.ts', /handle\.sync\(\)[\s\S]*fs\.rename/],
     [
-      'shared/utils/atomic-file.utils.ts',
+      'platform/filesystem/infrastructure/atomic-file.utils.ts',
       /fsSync\.fsyncSync[\s\S]*fsSync\.renameSync/,
     ],
     [

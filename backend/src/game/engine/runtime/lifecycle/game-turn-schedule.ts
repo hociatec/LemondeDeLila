@@ -1,9 +1,7 @@
-import type { DeclarativeState } from '../definitions/game-definition';
+import type { TurnScheduleState } from '../contracts/turn-runtime-state';
 import type { TurnPolicy } from '../kits/turn-kit';
 
-type TurnState<TState extends object> = NonNullable<
-  DeclarativeState<TState>['turn']
->;
+type TurnState = NonNullable<TurnScheduleState['turn']>;
 
 type TurnScheduleCallbacks = {
   hasPlayer(playerId: number): boolean;
@@ -17,9 +15,9 @@ type TurnScheduleCallbacks = {
 };
 
 /** Manages deferred skips, extra turns and replacements independently of hooks. */
-export class GameTurnSchedule<TState extends object> {
+export class GameTurnSchedule {
   constructor(
-    private readonly runtime: DeclarativeState<TState>,
+    private readonly runtime: TurnScheduleState,
     private readonly turnPolicy: TurnPolicy,
     private readonly callbacks: TurnScheduleCallbacks,
   ) {}
@@ -65,7 +63,7 @@ export class GameTurnSchedule<TState extends object> {
     this.runtime.engine.playerValues.scheduledExtraTurns[String(targetId)] = 0;
   }
 
-  consumeExtra(turn: TurnState<TState>, playerId: number | null): boolean {
+  consumeExtra(turn: TurnState, playerId: number | null): boolean {
     const key = String(playerId ?? '');
     const scheduled =
       this.runtime.engine.playerValues.scheduledExtraTurns?.[key] ?? 0;
@@ -87,7 +85,7 @@ export class GameTurnSchedule<TState extends object> {
     this.runtime.turn = turn;
   }
 
-  applyReplacement(turn: TurnState<TState>): void {
+  applyReplacement(turn: TurnState): void {
     if (turn.replacedSlotOwnerId != null || turn.currentPlayerId == null)
       return;
     const key = String(turn.currentPlayerId);
@@ -118,7 +116,7 @@ export class GameTurnSchedule<TState extends object> {
     return remaining;
   }
 
-  advancePastSkipped(turn: TurnState<TState>): TurnState<TState> {
+  advancePastSkipped(turn: TurnState): TurnState {
     let next = turn;
     for (
       let checked = 0;

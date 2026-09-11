@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { RoomRecord } from '../../contracts/room-record.model';
+import type { RoomRecord } from '../../models/room-record.model';
 import { RoomAdminContextService } from '../maintenance/room-admin-context.service';
 import { RoomAdminMaintenanceService } from '../maintenance/room-admin-maintenance.service';
 

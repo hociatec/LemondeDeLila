@@ -1,6 +1,9 @@
+import { stableContentVersion } from './content-version';
+import { deepFreeze, cloneStaticContent } from './content-immutability';
 import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
-import type { QuizQuestion } from '../kits/quiz-kit';
+import type { QuizQuestion } from './quiz-content-contract';
 import { loadExternalGameContent } from './external-content-release';
+import { parseContentJson } from './content-parser';
 
 export const GAME_CONTENT_KIND = 'lila.game-content' as const;
 
@@ -12,23 +15,34 @@ export type LinkedBoardContent = IdentifiedGameContent & {
   links?: readonly (string | number)[];
 };
 
+/** Explicit compatibility for a content-only change that leaves saved state valid. */
+export type ContentSnapshotMigration = {
+  readonly fromVersion: string;
+  readonly toVersion: string;
+};
+
 export type GameContent<TData extends object = Record<string, unknown>> = {
   readonly kind: typeof GAME_CONTENT_KIND;
   readonly gameId: string;
   readonly version: string;
+  readonly formatVersion: number;
   readonly data: Readonly<TData>;
+  readonly snapshotMigrations?: readonly ContentSnapshotMigration[];
 };
 
 export interface GameContentShape {
   readonly kind: typeof GAME_CONTENT_KIND;
   readonly gameId: string;
   readonly version: string;
+  readonly formatVersion?: number;
   readonly data: Readonly<object>;
+  readonly snapshotMigrations?: readonly ContentSnapshotMigration[];
 }
 
 export type GameContentManifest = {
   readonly gameId: string;
   readonly version: string;
+  readonly formatVersion: number;
   readonly sections: readonly string[];
 };
 
@@ -36,30 +50,45 @@ export type GameContentSchema<TData extends object> = {
   parse(value: unknown, path?: string): TData;
 };
 
-/** Shared typed boundary for JSON modules, files and already parsed content. */
-export function loadGameContent<TData extends object>(
+type GameContentOptions = {
+  version?: string;
+  formatVersion?: number;
+  snapshotMigrations?: readonly ContentSnapshotMigration[];
+};
+
+/** One authoring boundary for embedded objects, decoded assets and releases. */
+export function defineGameContent<TData extends object>(
   gameId: string,
   source: unknown,
-  schema: GameContentSchema<TData>,
+  options: GameContentOptions & { schema: GameContentSchema<TData> },
+): GameContent<TData>;
+export function defineGameContent<TData extends object>(
+  gameId: string,
+  source: TData,
+  options?: GameContentOptions,
+): GameContent<TData>;
+export function defineGameContent<TData extends object>(
+  gameId: string,
+  source: unknown,
+  options: GameContentOptions & { schema?: GameContentSchema<TData> } = {},
 ): GameContent<TData> {
   const external = loadExternalGameContent(gameId);
   let candidate = external?.source ?? source;
-  if (typeof source === 'string') {
-    try {
-      candidate = JSON.parse(source) as unknown;
-    } catch (error) {
-      throw new GameContentValidationError(
-        `JSON de contenu invalide pour ${gameId}`,
-        {
-          gameId,
-          cause: error instanceof Error ? error.message : String(error),
-        },
-      );
-    }
+  if (typeof candidate === 'string') {
+    candidate = parseContentJson(candidate, gameId);
   }
   try {
-    return createGameContent(gameId, schema.parse(candidate, 'content'), {
-      ...(external ? { version: external.version } : {}),
+    const data = options.schema
+      ? options.schema.parse(candidate, 'content')
+      : candidate;
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new GameContentValidationError(`Contenu invalide pour ${gameId}`);
+    }
+    return createGameContent(gameId, data as TData, {
+      ...options,
+      ...(external
+        ? { version: external.version, snapshotMigrations: [] }
+        : {}),
     });
   } catch (error) {
     if (error instanceof GameContentValidationError) throw error;
@@ -70,39 +99,53 @@ export function loadGameContent<TData extends object>(
   }
 }
 
-export function defineGameContent<TData extends object>(
-  gameId: string,
-  data: TData,
-  options: { version?: string } = {},
-): GameContent<TData> {
-  const external = loadExternalGameContent(gameId);
-  const candidate = external?.source ?? data;
-  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
-    throw new GameContentValidationError(`Contenu invalide pour ${gameId}`);
-  }
-  return createGameContent(gameId, candidate as TData, {
-    ...(external ? { version: external.version } : options),
-  });
-}
-
 function createGameContent<TData extends object>(
   gameId: string,
   data: TData,
-  options: { version?: string },
+  options: GameContentOptions,
 ): GameContent<TData> {
   if (!gameId.trim()) {
     throw new GameContentValidationError('Identifiant de contenu vide');
   }
-  const version = options.version ?? stableContentVersion(gameId, data);
-  if (!version.trim()) {
+  validateStaticContent(data, `${gameId}.content`);
+  const formatVersion = options.formatVersion ?? 1;
+  if (!Number.isSafeInteger(formatVersion) || formatVersion < 1) {
+    throw new GameContentValidationError(
+      'Version de format de contenu invalide',
+    );
+  }
+  const sourceVersion = options.version ?? stableContentVersion(gameId, data);
+  if (!sourceVersion.trim()) {
     throw new GameContentValidationError('Version de contenu vide');
   }
-  validateStaticContent(data, `${gameId}.content`);
+  const version =
+    formatVersion === 1
+      ? sourceVersion
+      : `${sourceVersion}@format:${formatVersion}`;
+  const migrations = options.snapshotMigrations ?? [];
+  if (
+    migrations.length > 64 ||
+    migrations.some(
+      (migration) =>
+        typeof migration.fromVersion !== 'string' ||
+        !migration.fromVersion.trim() ||
+        typeof migration.toVersion !== 'string' ||
+        !migration.toVersion.trim() ||
+        migration.fromVersion === migration.toVersion,
+    )
+  )
+    throw new GameContentValidationError(
+      'Migration de version de contenu invalide',
+    );
   return deepFreeze({
     kind: GAME_CONTENT_KIND,
     gameId,
     version,
-    data: structuredClone(data),
+    formatVersion,
+    data: cloneContent(data),
+    ...(migrations.length
+      ? { snapshotMigrations: cloneContent(migrations) }
+      : {}),
   });
 }
 
@@ -112,13 +155,14 @@ export function contentManifest(
   return deepFreeze({
     gameId: content.gameId,
     version: content.version,
+    formatVersion: content.formatVersion ?? 1,
     sections: Object.keys(content.data).sort(),
   });
 }
 
 /**
- * Freezes a module-owned catalogue in place so every rule and component shares
- * the same immutable source instead of a mutable export beside a frozen copy.
+ * Freezes mutable records in place. Retain the returned value: collections and
+ * already sealed records require isolated replacements to prevent mutation.
  */
 export function freezeGameContent<TValue>(value: TValue): TValue {
   validateStaticContent(value, 'content');
@@ -129,12 +173,15 @@ export function cardContent<TCard extends IdentifiedGameContent>(
   cards: readonly TCard[],
 ): readonly Readonly<TCard>[] {
   assertUniqueContentIds(cards, 'carte');
-  return deepFreeze(structuredClone(cards));
+  return deepFreeze(cloneContent(cards));
 }
 
 export function quizContent<TQuestion extends QuizQuestion>(
   questions: readonly TQuestion[],
 ): readonly Readonly<TQuestion>[] {
+  if (questions.length > 10_000) {
+    throw new GameContentValidationError('Trop de questions dans le contenu');
+  }
   assertUniqueContentIds(questions, 'question');
   for (const question of questions) {
     if (
@@ -149,12 +196,15 @@ export function quizContent<TQuestion extends QuizQuestion>(
       );
     }
   }
-  return deepFreeze(structuredClone(questions));
+  return deepFreeze(cloneContent(questions));
 }
 
 export function boardContent<TTile extends LinkedBoardContent>(
   tiles: readonly TTile[],
 ): readonly Readonly<TTile>[] {
+  if (tiles.length > 20_000) {
+    throw new GameContentValidationError('Trop de cases dans le contenu');
+  }
   assertUniqueContentIds(tiles, 'case');
   const ids = new Set(tiles.map((tile) => contentIdKey(tile.id)));
   for (const tile of tiles) {
@@ -167,24 +217,33 @@ export function boardContent<TTile extends LinkedBoardContent>(
       }
     }
   }
-  return deepFreeze(structuredClone(tiles));
+  return deepFreeze(cloneContent(tiles));
 }
 
 export function trackContent<TTile extends IdentifiedGameContent>(
   tiles: readonly TTile[],
 ): readonly Readonly<TTile>[] {
   assertUniqueContentIds(tiles, 'case de piste');
-  return deepFreeze(structuredClone(tiles));
+  return deepFreeze(cloneContent(tiles));
 }
 
 export function assertUniqueContentIds(
   entries: readonly IdentifiedGameContent[],
   kind: string,
 ): void {
+  if (entries.length > 20_000) {
+    throw new GameContentValidationError(
+      `Trop d'éléments dans le contenu ${kind}`,
+    );
+  }
   const ids = new Set<string>();
   for (const entry of entries) {
     const id = typeof entry.id === 'string' ? entry.id.trim() : entry.id;
-    if (id === '') {
+    if (
+      id === '' ||
+      (typeof id === 'string' && id.length > 128) ||
+      (typeof id === 'number' && !Number.isSafeInteger(id))
+    ) {
       throw new GameContentValidationError(`Identifiant de ${kind} vide`);
     }
     const key = contentIdKey(id);
@@ -202,48 +261,32 @@ function contentIdKey(id: string | number): string {
   return `${typeof id}:${String(id)}`;
 }
 
-function stableContentVersion(gameId: string, data: object): string {
-  return `${gameId}@content:${hashString(stableJson(data))}`;
-}
-
-function stableJson(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  if (value != null && typeof value === 'object') {
-    return `{${Object.entries(value as Record<string, unknown>)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, nested]) => `${JSON.stringify(key)}:${stableJson(nested)}`)
-      .join(',')}}`;
-  }
-  return JSON.stringify(value);
-}
-
-function hashString(value: string): string {
-  let hash = 0x811c9dc5;
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 0x01000193) >>> 0;
-  }
-  return hash.toString(16).padStart(8, '0');
-}
-
-function validateStaticContent(
+export function validateStaticContent(
   value: unknown,
   path: string,
   visited = new Set<object>(),
 ): void {
   if (value == null || typeof value !== 'object') {
+    if (['function', 'symbol', 'bigint'].includes(typeof value)) {
+      throw new GameContentValidationError(`Valeur non statique dans ${path}`);
+    }
     if (typeof value === 'number' && !Number.isFinite(value)) {
       throw new GameContentValidationError(`Nombre invalide dans ${path}`);
     }
     return;
   }
-  if (visited.has(value)) return;
+  if (visited.has(value) || visited.size >= 128) {
+    throw new GameContentValidationError(
+      `Contenu cyclique ou trop profond dans ${path}`,
+    );
+  }
   visited.add(value);
   if (value instanceof Map) {
     for (const [key, nested] of value) {
       validateStaticContent(key, `${path}.<key>`, visited);
       validateStaticContent(nested, `${path}.${String(key)}`, visited);
     }
+    visited.delete(value);
     return;
   }
   if (value instanceof Set) {
@@ -252,6 +295,7 @@ function validateStaticContent(
       validateStaticContent(nested, `${path}[${index}]`, visited);
       index += 1;
     }
+    visited.delete(value);
     return;
   }
   if (Array.isArray(value)) {
@@ -259,7 +303,32 @@ function validateStaticContent(
     for (const [index, nested] of value.entries()) {
       validateStaticContent(nested, `${path}[${index}]`, visited);
     }
+    visited.delete(value);
     return;
+  }
+  const prototype: object | null = Reflect.getPrototypeOf(value);
+  if (
+    prototype !== null &&
+    prototype !== Object.prototype &&
+    !(
+      Object.getPrototypeOf(prototype) === null &&
+      prototype.constructor?.name === 'Object'
+    )
+  ) {
+    throw new GameContentValidationError(`Objet non statique dans ${path}`);
+  }
+  for (const key of Reflect.ownKeys(value)) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (
+      !descriptor ||
+      typeof key === 'symbol' ||
+      descriptor.get ||
+      descriptor.set
+    ) {
+      throw new GameContentValidationError(
+        `Propriete non statique dans ${path}`,
+      );
+    }
   }
   const record = value as Record<string, unknown>;
   if ('id' in record && !isContentId(record.id)) {
@@ -269,6 +338,7 @@ function validateStaticContent(
   for (const [key, nested] of Object.entries(record)) {
     validateStaticContent(nested, `${path}.${key}`, visited);
   }
+  visited.delete(value);
 }
 
 function validateIdentifiedCollection(
@@ -322,7 +392,10 @@ function validateQuestion(
     !question.choices.every(
       (choice) => typeof choice === 'string' && choice.trim().length > 0,
     ) ||
-    !Number.isInteger(question.answerIndex) ||
+    question.choices.some(
+      (choice: unknown) => typeof choice === 'string' && choice.length > 2_000,
+    ) ||
+    !Number.isSafeInteger(question.answerIndex) ||
     Number(question.answerIndex) < 0 ||
     Number(question.answerIndex) >= question.choices.length
   ) {
@@ -333,7 +406,7 @@ function validateQuestion(
 function isContentId(value: unknown): value is string | number {
   return (
     (typeof value === 'string' && value.trim().length > 0) ||
-    (typeof value === 'number' && Number.isFinite(value))
+    (typeof value === 'number' && Number.isSafeInteger(value))
   );
 }
 
@@ -341,45 +414,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
 
-function deepFreeze<TValue>(value: TValue): TValue {
-  if (value == null || typeof value !== 'object') {
-    return value;
-  }
-  if (value instanceof Map) {
-    for (const [key, nested] of value) {
-      deepFreeze(key);
-      deepFreeze(nested);
-    }
-    if (!Object.isFrozen(value)) {
-      disableCollectionMutators(value, ['set', 'delete', 'clear']);
-      Object.freeze(value);
-    }
-    return value;
-  }
-  if (value instanceof Set) {
-    for (const nested of value) deepFreeze(nested);
-    if (!Object.isFrozen(value)) {
-      disableCollectionMutators(value, ['add', 'delete', 'clear']);
-      Object.freeze(value);
-    }
-    return value;
-  }
-  for (const nested of Object.values(value)) deepFreeze(nested);
-  return Object.isFrozen(value) ? value : Object.freeze(value);
-}
-
-function disableCollectionMutators(
-  value: object,
-  methodNames: readonly string[],
-): void {
-  for (const methodName of methodNames) {
-    Object.defineProperty(value, methodName, {
-      configurable: false,
-      enumerable: false,
-      writable: false,
-      value: () => {
-        throw new TypeError('Le contenu statique du jeu est immuable');
-      },
+function cloneContent<T>(value: T): T {
+  validateStaticContent(value, 'content');
+  try {
+    return cloneStaticContent(value);
+  } catch (error) {
+    throw new GameContentValidationError('Contenu non clonable', {
+      cause: error instanceof Error ? error.message : String(error),
     });
   }
 }

@@ -1,14 +1,15 @@
-import {
-  rejectRule,
-  defineAction,
-  gameInput,
-  sequentialPawnSelection,
-  setupPlayingPhases,
-} from '../../../engine/sdk/public-api';
 import type {
   GameContext,
   NoGameState,
   PlayerMap,
+} from '../../../engine/sdk/public-api';
+import {
+  defineAction,
+  defineChoice,
+  gameInput,
+  rejectRule,
+  sequentialPawnSelection,
+  setupPlayingPhases,
 } from '../../../engine/sdk/public-api';
 import { CORRIDOR_SIZE } from './content';
 import type {
@@ -289,12 +290,6 @@ export function corridorPositions(
   );
 }
 
-export function corridorWallsRemaining(ctx: RuleContext): PlayerMap<number> {
-  return ctx.players.byId((player) =>
-    ctx.resources.get(player.id, CORRIDOR_WALLS),
-  );
-}
-
 function goalY(playerId: number, ctx: RuleContext): number {
   return ctx.players.all()[0]?.id === playerId ? CORRIDOR_SIZE - 1 : 0;
 }
@@ -327,3 +322,10 @@ function uniquePositions(positions: CorridorPosition[]): CorridorPosition[] {
     return true;
   });
 }
+
+export const GAME_CHOICES = {
+  'corridor.pawn': defineChoice<NoGameState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+  }),
+};

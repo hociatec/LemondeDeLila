@@ -50,6 +50,7 @@ export type WxUpdateSignatureFields = Pick<
 > & {
   artifactSize: number;
   artifactSha256: string;
+  installerSha256: string | null;
 };
 
 export function canonicalizeWxUpdateSignature(
@@ -69,5 +70,6 @@ export function canonicalizeWxUpdateSignature(
     `minimumVersion=${fields.minimumVersion ?? '-'}`,
     `artifactSize=${fields.artifactSize}`,
     `artifactSha256=${fields.artifactSha256.toLowerCase()}`,
+    `installerSha256=${fields.installerSha256?.toLowerCase() ?? '-'}`,
   ].join('\n');
 }

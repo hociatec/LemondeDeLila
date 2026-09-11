@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { RoomInviteService } from '../../../application/services/membership/room-invite.service';
 import { RoomRealtimeTrackerService } from '../../../application/services/state/room-realtime-tracker.service';
-import type { RoomPayload } from '../../../public-api';
+import type { RoomPayload } from '../../../application/models/room-payload.model';
 import { RoomEventsBusService } from '../../system/room-events-bus.service';
 import type { RoomIntent } from './dto/room-intent.ws.dto';
 import { RoomGatewayLifecycleService } from './room-gateway-lifecycle.service';
@@ -104,8 +104,6 @@ export class RoomGatewayContextService {
       sendError: this.runtime.sendError.bind(this.runtime),
       safeSend: this.runtime.safeSend.bind(this.runtime),
       broadcast: this.runtime.broadcast.bind(this.runtime),
-      applySpectators: (roomId: number, payload: RoomPayload) =>
-        this.state.applySpectators(this.stateContext(), roomId, payload),
     };
   }
 

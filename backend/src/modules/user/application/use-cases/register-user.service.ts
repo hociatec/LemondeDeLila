@@ -14,6 +14,9 @@ import {
   assertPasswordPolicy,
   normalizeEmail,
   normalizeUsername,
+  PASSWORD_MAX_LENGTH,
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
   usernameIdentity,
 } from '../../domain/policies/user-credentials.policy';
 
@@ -31,13 +34,31 @@ export class RegisterUserService {
     password: string;
     avatar?: string | null;
   }): Promise<void> {
+    if (
+      typeof input.email !== 'string' ||
+      typeof input.username !== 'string' ||
+      typeof input.password !== 'string'
+    ) {
+      throw new BadRequestException('Identifiants invalides');
+    }
     const normalizedEmail = normalizeEmail(input.email);
     const normalizedUsername = normalizeUsername(input.username);
+    if (
+      normalizedUsername.length < USERNAME_MIN_LENGTH ||
+      normalizedUsername.length > USERNAME_MAX_LENGTH ||
+      normalizedEmail.length === 0 ||
+      normalizedEmail.length > 320
+    ) {
+      throw new BadRequestException('Identifiants invalides');
+    }
     await this.ensureUsernameAvailable(normalizedUsername);
     await this.ensureEmailAvailable(normalizedEmail);
 
     if (!input.password || input.password.trim() === '') {
       throw new BadRequestException('Mot de passe requis');
+    }
+    if (input.password.length > PASSWORD_MAX_LENGTH) {
+      throw new BadRequestException('Mot de passe invalide');
     }
     try {
       assertPasswordPolicy(input.password);
@@ -48,6 +69,10 @@ export class RegisterUserService {
     }
 
     const passwordHash = await this.passwordHasher.hash(input.password);
+    const avatar = input.avatar?.trim() || null;
+    if (avatar && avatar.length > 2048) {
+      throw new BadRequestException('Avatar invalide');
+    }
     await mapUniqueConstraintViolation(
       () =>
         this.users.create({
@@ -55,7 +80,7 @@ export class RegisterUserService {
           username: normalizedUsername,
           password: passwordHash,
           roles: [],
-          avatar: input.avatar?.trim() ? input.avatar.trim() : null,
+          avatar,
           preferences: null,
           bannedUntil: null,
           banReason: null,

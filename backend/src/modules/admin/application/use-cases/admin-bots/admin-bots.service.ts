@@ -1,20 +1,23 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import {
-  BotApplicationError,
-  CreateBotNameService,
-  DeleteBotNameService,
-  ListBotNamesService,
-  UpdateBotNameService,
-} from '../../../../bot/public-api';
-import { BotSettingsService } from '../../../../../game/public-api';
-
+  ADMIN_BOT_PORT,
+  type AdminBotPort,
+} from '../../ports/admin-bot.port';
 function mapBotApplicationError(error: unknown): unknown {
-  if (!(error instanceof BotApplicationError)) {
+  if (
+    error == null ||
+    typeof error !== 'object' ||
+    !('code' in error) ||
+    !('message' in error) ||
+    typeof error.code !== 'string' ||
+    typeof error.message !== 'string'
+  ) {
     return error;
   }
 
@@ -32,15 +35,12 @@ function mapBotApplicationError(error: unknown): unknown {
 @Injectable()
 export class AdminBotsService {
   constructor(
-    private readonly listBotNamesUseCase: ListBotNamesService,
-    private readonly createBotNameUseCase: CreateBotNameService,
-    private readonly updateBotNameUseCase: UpdateBotNameService,
-    private readonly deleteBotNameUseCase: DeleteBotNameService,
-    private readonly botSettings: BotSettingsService,
+    @Inject(ADMIN_BOT_PORT)
+    private readonly bots: AdminBotPort,
   ) {}
 
   async listNames() {
-    const names = await this.listBotNamesUseCase.execute();
+    const names = await this.bots.listNames();
     return {
       names: names.map((name) => ({
         id: name.id,
@@ -52,7 +52,7 @@ export class AdminBotsService {
   }
 
   getSettings() {
-    return this.botSettings.getSettings();
+    return this.bots.getSettings();
   }
 
   async updateSettings(update: {
@@ -60,12 +60,25 @@ export class AdminBotsService {
     botStartDelayMs?: number;
     botDrawDelayMs?: number;
   }) {
-    return this.botSettings.updateSettings(update);
+    for (const value of [
+      update.botTurnDelayMs,
+      update.botStartDelayMs,
+      update.botDrawDelayMs,
+    ]) {
+      if (
+        value !== undefined &&
+        (!Number.isSafeInteger(value) || value < 0 || value > 600_000)
+      ) {
+        throw new BadRequestException('Délai de bot invalide.');
+      }
+    }
+    return this.bots.updateSettings(update);
   }
 
   async createName(name: string, enabled = true) {
+    const normalizedName = normalizeBotName(name);
     try {
-      await this.createBotNameUseCase.execute(name, enabled);
+      await this.bots.createName(normalizedName, enabled === true);
     } catch (error) {
       throw mapBotApplicationError(error);
     }
@@ -73,8 +86,15 @@ export class AdminBotsService {
   }
 
   async updateName(id: number, update: { name?: string; enabled?: boolean }) {
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      throw new BadRequestException('Identifiant de nom de bot invalide.');
+    }
+    const normalizedUpdate = {
+      ...(update.name === undefined ? {} : { name: normalizeBotName(update.name) }),
+      ...(update.enabled === undefined ? {} : { enabled: update.enabled === true }),
+    };
     try {
-      await this.updateBotNameUseCase.execute(id, update);
+      await this.bots.updateName(id, normalizedUpdate);
     } catch (error) {
       throw mapBotApplicationError(error);
     }
@@ -82,11 +102,22 @@ export class AdminBotsService {
   }
 
   async deleteName(id: number) {
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      throw new BadRequestException('Identifiant de nom de bot invalide.');
+    }
     try {
-      await this.deleteBotNameUseCase.execute(id);
+      await this.bots.deleteName(id);
     } catch (error) {
       throw mapBotApplicationError(error);
     }
     return this.listNames();
   }
+}
+
+function normalizeBotName(value: unknown): string {
+  const normalized = typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
+  if (!normalized || normalized.length > 150) {
+    throw new BadRequestException('Nom de bot invalide.');
+  }
+  return normalized;
 }

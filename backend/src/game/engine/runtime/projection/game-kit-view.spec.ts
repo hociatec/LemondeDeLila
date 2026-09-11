@@ -4,14 +4,93 @@ import {
   type HandsDefinition,
 } from '../cards/cards-kit';
 import { createDiceKitState, type DiceDefinition } from '../kits/dice-kit';
-import type { EngineKitsState } from '../definitions/game-definition';
+import type { EngineKitsState } from '../state/declarative-state';
 import { projectGameKits } from './game-kit-view';
 import { createGridKitState } from '../kits/grid-kit';
 import { createMovementKitState } from '../kits/movement-kit';
-import { createQuizKitState } from '../kits/quiz-kit';
+import {
+  createQuizKitState,
+  GameQuizController,
+  type QuizSessionState,
+} from '../kits/quiz-kit';
 import { createPawnKitState, type PawnSetDefinition } from '../kits/pawn-kit';
 
 describe('projectGameKits', () => {
+  it('uses the same question whitelist in quiz controller results without retaining choices', () => {
+    const state = createQuizKitState();
+    const quiz = new GameQuizController(state, {} as never);
+    const question = {
+      id: 'q',
+      prompt: 'Question',
+      choices: ['A', 'B'],
+      answerIndex: 1,
+      explanation: 'Secret answer B',
+    };
+    const definition = {
+      component: 'quiz.bank' as const,
+      id: 'bank',
+      questions: [question],
+    };
+    quiz.create(definition);
+    const next = quiz.next('bank');
+    expect(next).toEqual({ id: 'q', prompt: 'Question', choices: ['A', 'B'] });
+    expect(next?.choices).not.toBe(question.choices);
+    quiz.create(definition);
+    expect(quiz.ask('bank', [1])?.question).toEqual({
+      id: 'q',
+      prompt: 'Question',
+      choices: ['A', 'B'],
+    });
+    expect(question.explanation).toBe('Secret answer B');
+  });
+  it('publishes only declared quiz question fields before and after revelation', () => {
+    const kits = createKits();
+    const question = {
+      id: 'q',
+      prompt: 'Question',
+      choices: ['A', 'B'],
+      answerIndex: 1,
+      explanation: 'Secret answer B',
+    };
+    kits.quiz.orders.bank = ['q'];
+    kits.quiz.cursors.bank = 1;
+    const session: QuizSessionState = (kits.quiz.sessions.round = {
+      id: 'round',
+      bankId: 'bank',
+      questionId: 'q',
+      participantPlayerIds: [1, -2],
+      answers: { '1': 0, '-2': 1 },
+      phase: 'answering',
+      scored: false,
+    });
+    const definition = {
+      component: 'quiz.bank' as const,
+      id: 'bank',
+      questions: [question],
+    };
+    for (const viewer of [null, 1, -2]) {
+      const view = projectGameKits(kits, viewer, 0, [definition]);
+      expect(view.quiz).toMatchObject({
+        sessions: {
+          round: {
+            question: { id: 'q', prompt: 'Question', choices: ['A', 'B'] },
+          },
+        },
+      });
+      expect(JSON.stringify(view)).not.toContain('explanation');
+      expect(JSON.stringify(view)).not.toContain('answerIndex');
+      expect(JSON.stringify(view)).not.toContain('correctAnswerIndex');
+    }
+    session.phase = 'revealed';
+    session.correctAnswerIndex = 1;
+    const view = projectGameKits(kits, null, 0, [definition]);
+    expect(view.quiz).toMatchObject({
+      sessions: {
+        round: { answers: { '1': 0, '-2': 1 }, correctAnswerIndex: 1 },
+      },
+    });
+    expect(JSON.stringify(view)).not.toContain('explanation');
+  });
   it('reveals owner hands and redacts every other private hand', () => {
     const kits = createKits();
     const handDefinition = {

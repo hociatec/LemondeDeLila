@@ -1,10 +1,10 @@
 function formatPlayerName(name: string): string {
-  const trimmed = (name ?? '').trim();
+  const trimmed = (name ?? '').trim().slice(0, 255);
   return trimmed.length > 0 ? trimmed : 'Un joueur';
 }
 
 function formatBotName(name: string): string {
-  const trimmed = (name ?? '').trim();
+  const trimmed = (name ?? '').trim().slice(0, 255);
   return trimmed.length > 0 ? trimmed : 'Un bot';
 }
 

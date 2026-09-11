@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
   ADMIN_MNEMO_QUIZ_STORE_PORT,
   type AdminMnemoQuizStorePort,
@@ -39,43 +39,48 @@ export class AdminMnemoQuizQuestionsService {
   }
 
   create(command: CreateAdminMnemoQuestionCommand) {
-    const answers = (command.answers ?? []).map((answer) =>
-      String(answer ?? '').trim(),
-    );
-    const correctIndex = Number(command.correctIndex);
+    const answers = normalizeAnswers(command.answers);
+    const correctIndex = normalizeCorrectIndex(command.correctIndex);
+    const categoryId = normalizeCategoryId(command.categoryId);
+    const question = normalizeQuestion(command.question);
+    const status = this.normalizeStatus(command.status);
+    if (!status) throw new BadRequestException('Statut de question invalide.');
     const correct = answers[correctIndex] ?? '';
     const wrong = answers.filter((_, index) => index !== correctIndex);
 
     this.store.createQuestion({
-      categoryId: command.categoryId,
-      question: command.question,
+      categoryId,
+      question,
       correct,
       wrong1: wrong[0] ?? '',
       wrong2: wrong[1] ?? '',
       wrong3: wrong[2] ?? '',
-      status: command.status ?? 'validated',
+      status,
     });
   }
 
   update(command: UpdateAdminMnemoQuestionCommand) {
+    if (typeof command.id !== 'string' || !command.id.trim() || command.id.length > 128) {
+      throw new BadRequestException('Identifiant de question invalide.');
+    }
+    const patch: MnemoQuestionPatch = {};
     if (command.categoryId) {
-      this.store.updateQuestion(command.id, {
-        categoryId: String(command.categoryId).trim(),
-      });
+      patch.categoryId = normalizeCategoryId(command.categoryId);
     }
 
-    const patch: MnemoQuestionPatch = {};
     if (command.question !== undefined) {
-      patch.question = command.question;
+      patch.question = normalizeQuestion(command.question);
     }
     if (command.status !== undefined) {
-      patch.status = command.status;
+      const status = this.normalizeStatus(command.status);
+      if (!status) throw new BadRequestException('Statut de question invalide.');
+      patch.status = status;
     }
 
     if (command.answers !== undefined || command.correctIndex !== undefined) {
       const existing = this.requireQuestion(command.id);
       const baseAnswers = command.answers
-        ? command.answers.map((answer) => String(answer ?? '').trim())
+        ? normalizeAnswers(command.answers)
         : [
             existing.correct,
             existing.wrong1,
@@ -83,7 +88,9 @@ export class AdminMnemoQuizQuestionsService {
             existing.wrong3,
           ].map((answer) => String(answer ?? '').trim());
       const correctIndex =
-        command.correctIndex != null ? Number(command.correctIndex) : 0;
+        command.correctIndex != null
+          ? normalizeCorrectIndex(command.correctIndex)
+          : 0;
       const correct = baseAnswers[correctIndex] ?? '';
       const wrong = baseAnswers.filter((_, index) => index !== correctIndex);
       patch.correct = correct;
@@ -96,6 +103,9 @@ export class AdminMnemoQuizQuestionsService {
   }
 
   delete(id: string) {
+    if (typeof id !== 'string' || !id.trim() || id.length > 128) {
+      throw new BadRequestException('Identifiant de question invalide.');
+    }
     this.store.deleteQuestion(id);
   }
 
@@ -108,4 +118,48 @@ export class AdminMnemoQuizQuestionsService {
     }
     return existing;
   }
+}
+
+const MAX_MNEMO_TEXT_LENGTH = 2_000;
+const MAX_MNEMO_CATEGORY_LENGTH = 255;
+
+function normalizeAnswers(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length !== 4) {
+    throw new BadRequestException('Quatre réponses sont requises.');
+  }
+  const answers = value.map((answer) =>
+    typeof answer === 'string' ? answer.trim() : '',
+  );
+  if (
+    answers.some(
+      (answer) => !answer || answer.length > MAX_MNEMO_TEXT_LENGTH,
+    )
+  ) {
+    throw new BadRequestException('Réponse Mnemo invalide.');
+  }
+  return answers;
+}
+
+function normalizeCorrectIndex(value: unknown): number {
+  const index = typeof value === 'number' ? value : Number.NaN;
+  if (!Number.isSafeInteger(index) || index < 0 || index > 3) {
+    throw new BadRequestException('Index de réponse invalide.');
+  }
+  return index;
+}
+
+function normalizeCategoryId(value: unknown): string {
+  const normalized = typeof value === 'string' ? value.trim() : '';
+  if (!normalized || normalized.length > MAX_MNEMO_CATEGORY_LENGTH) {
+    throw new BadRequestException('Catégorie Mnemo invalide.');
+  }
+  return normalized;
+}
+
+function normalizeQuestion(value: unknown): string {
+  const normalized = typeof value === 'string' ? value.trim() : '';
+  if (!normalized || normalized.length > MAX_MNEMO_TEXT_LENGTH) {
+    throw new BadRequestException('Question Mnemo invalide.');
+  }
+  return normalized;
 }

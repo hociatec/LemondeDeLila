@@ -1,7 +1,5 @@
-import {
-  testGame,
-  type StableGameKitsView,
-} from '../../../engine/sdk/public-api';
+import { testGame } from '../../../engine/testing/public-api';
+import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import gameDefinition from './game';
 
 describe('Olympia declarative game', () => {

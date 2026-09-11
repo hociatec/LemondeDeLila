@@ -24,8 +24,9 @@ export class GameRuleViolationError extends GameDomainError {
 export function rejectRule(
   message: string,
   details: Readonly<Record<string, unknown>> = {},
+  code = 'GAME_RULE_VIOLATION',
 ): never {
-  throw new GameRuleViolationError('GAME_RULE_VIOLATION', details, message);
+  throw new GameRuleViolationError(code, details, message);
 }
 
 export class GameRoomNotFoundError extends GameDomainError {

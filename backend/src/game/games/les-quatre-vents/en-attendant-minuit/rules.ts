@@ -1,5 +1,7 @@
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   defineAction,
+  defineChoice,
   defineEffect,
   drawAndResolve,
   gameInput,
@@ -8,7 +10,6 @@ import {
   sequentialPawnSelection,
   setupPlayingPhases,
 } from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
 import { MINUIT_CARDS, MINUIT_TILES, type MinuitCard } from './content';
 import type { MinuitPending, MinuitState } from './types';
 
@@ -54,7 +55,7 @@ const pawnSelection = sequentialPawnSelection<MinuitState>({
   },
 });
 
-export const requestPawns = pawnSelection.requestAll;
+export const setupGame = pawnSelection.setup(() => ({}));
 export const resolvePawn = pawnSelection.resolve;
 
 export function resolvePending(
@@ -228,36 +229,25 @@ export function applyGift(
   targetId: number,
   ctx: RuleContext,
 ): void {
-  moveDirect(targetId, 1, ctx);
+  ctx.movement.move(TRACK, targetId, 1);
   moveMinuitAndResolve(state, actorId, 2, 0, ctx);
-}
-
-export function applySwap(
-  actorId: number,
-  targetId: number,
-  ctx: RuleContext,
-): void {
-  ctx.movement.swap(TRACK, actorId, targetId);
 }
 
 function swapWithBehind(actorId: number, ctx: RuleContext): void {
   const actorPosition = positionOf(ctx, TRACK, actorId);
-  const behind = ctx.players
+  const candidates = ctx.players
     .all()
     .filter(
       (player) =>
         player.id !== actorId &&
         positionOf(ctx, TRACK, player.id) < actorPosition,
     )
-    .sort(
-      (left, right) =>
-        positionOf(ctx, TRACK, right.id) - positionOf(ctx, TRACK, left.id),
-    )[0];
-  if (behind) ctx.movement.swap(TRACK, actorId, behind.id);
-}
-
-function moveDirect(playerId: number, delta: number, ctx: RuleContext): void {
-  ctx.movement.move(TRACK, playerId, delta);
+    .map((player) => player.id);
+  const behind = ctx.ranking.rank(candidates, {
+    value: (id) => positionOf(ctx, TRACK, id),
+    direction: 'desc',
+  })[0];
+  if (behind) ctx.movement.swap(TRACK, actorId, behind.playerId);
 }
 
 export const MINUIT_EFFECTS = {
@@ -320,7 +310,7 @@ export const MINUIT_EFFECTS = {
     apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
       const targetId = targetPlayerIds[0];
       if (actorPlayerId != null && targetId != null) {
-        applySwap(actorPlayerId, targetId, ctx);
+        ctx.movement.swap(TRACK, actorPlayerId, targetId);
       }
     },
   }),
@@ -331,3 +321,14 @@ export const MINUIT_EFFECTS = {
     },
   }),
 } as const;
+
+export const GAME_CHOICES = {
+  'minuit.pawn': defineChoice<MinuitState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+  }),
+  'minuit.resolve': defineChoice<MinuitState, number>({
+    input: gameInput.number({ integer: true }),
+    resolve: ({ state, value, ctx }) => resolvePending(state, value, ctx),
+  }),
+};

@@ -6,6 +6,11 @@ import {
   Logger,
 } from '@nestjs/common';
 import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
+import { businessMsToDate } from '@shared/utils/public-api';
+import {
   ROOM_EVENT_PUBLISHER,
   type RoomEventPublisherPort,
 } from '../../ports/room-event-publisher.port';
@@ -17,16 +22,26 @@ import {
   ROOM_REPOSITORY,
   type RoomRepository,
 } from '../../ports/room.repository';
-import type { RoomRecord } from '../../contracts/room-record.model';
+import type { RoomRecord } from '../../models/room-record.model';
+import type { RoomCreateCommand } from '../../models/room-create-command';
 import type {
   RoomLeaveOptions,
   RoomMembershipContext,
-} from '../../contracts/room-membership-context.model';
-export type { RoomMembershipContext } from '../../contracts/room-membership-context.model';
-import { PresenceService } from '../../../../presence/public-api';
-import { CatalogService } from '../../../../catalog/public-api';
-import { GameStatsService } from '../../../../stats/public-api';
-import { bestEffort } from '../../../../../shared/utils/public-api';
+} from '../../models/room-membership-context.model';
+export type { RoomMembershipContext } from '../../models/room-membership-context.model';
+import {
+  ROOM_PRESENCE_PORT,
+  type RoomPresencePort,
+} from '../../ports/room-presence.port';
+import {
+  ROOM_CATALOG_PORT,
+  type RoomCatalogPort,
+} from '../../ports/room-catalog.port';
+import {
+  ROOM_STATS_PORT,
+  type RoomStatsPort,
+} from '../../ports/room-stats.port';
+import { bestEffort } from '../../../../../platform/observability/public-api';
 import { RoomLeaveService } from './room-leave.service';
 import {
   getRoomManifestStatus,
@@ -47,30 +62,37 @@ export class RoomMembershipService {
     private readonly rooms: RoomRepository,
     @Inject(ROOM_PARTICIPANT_REPOSITORY)
     private readonly participants: RoomParticipantRepository,
-    private readonly presenceService: PresenceService,
-    private readonly catalog: CatalogService,
-    private readonly stats: GameStatsService,
+    @Inject(ROOM_PRESENCE_PORT)
+    private readonly presenceService: RoomPresencePort,
+    @Inject(ROOM_CATALOG_PORT)
+    private readonly catalog: RoomCatalogPort,
+    @Inject(ROOM_STATS_PORT)
+    private readonly stats: RoomStatsPort,
     @Inject(ROOM_EVENT_PUBLISHER)
     private readonly roomEvents: RoomEventPublisherPort,
     private readonly roomLeave: RoomLeaveService,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async createRoom(
     context: RoomMembershipContext,
-    userId: number,
-    gameType: string,
-    name?: string | null,
-    maxPlayers?: number | null,
-    isPrivate = false,
-    invalidateCache = true,
+    command: RoomCreateCommand,
   ): Promise<RoomRecord> {
-    const startedAt = Date.now();
+    const {
+      userId,
+      gameType,
+      name,
+      maxPlayers,
+      isPrivate = false,
+      invalidateCache = true,
+    } = command;
+    validateCreateRoomInput(userId, gameType, maxPlayers);
+    const startedAt = this.now();
     const owner = await context.requireUser(userId);
-    const afterOwnerAt = Date.now();
+    const afterOwnerAt = this.now();
     if (!gameType || gameType.trim() === '') {
       throw new BadRequestException('Type de jeu requis');
     }
-
     await bestEffort(
       context.leaveAllRoomsForUser(userId),
       `sortie des anciennes rooms user=${userId}`,
@@ -78,16 +100,14 @@ export class RoomMembershipService {
     );
 
     const gameId = gameType.trim();
-    const known =
-      (await this.catalog.getGame(gameId)) ??
-      ({
-        id: gameId,
-        name: gameId,
-        minPlayers: 2,
-        maxPlayers: maxPlayers ?? 4,
-        status: 'finished',
-      } as NonNullable<Awaited<ReturnType<CatalogService['getGame']>>>);
-    const afterCatalogAt = Date.now();
+    const known = (await this.catalog.getGame(gameId)) ?? {
+      id: gameId,
+      name: gameId,
+      minPlayers: 2,
+      maxPlayers: maxPlayers ?? 4,
+      status: 'finished',
+    };
+    const afterCatalogAt = this.now();
     const status = getRoomManifestStatus(known);
     if (status === 'construction' && !hasAdminRoomRole(owner.roles)) {
       throw new ForbiddenException('Jeu en construction: réservé aux admins');
@@ -105,17 +125,16 @@ export class RoomMembershipService {
       isPrivate: isPrivate === true,
       status: 'setup',
       owner,
-      createdAt: new Date(),
+      createdAt: businessMsToDate(this.now()),
     });
-
     if (invalidateCache) {
       await context.invalidateRoomPayloadCache(room.id);
     }
     await this.roomEvents.publishLobbyChanged(room.id, 'created');
 
-    const elapsedMs = Date.now() - startedAt;
+    const elapsedMs = this.now() - startedAt;
     if (elapsedMs >= 1500) {
-      const now = Date.now();
+      const now = this.now();
       this.logger.warn(
         `createRoom lent ${JSON.stringify({
           userId,
@@ -140,6 +159,16 @@ export class RoomMembershipService {
     userId: number,
     opts?: { allowPrivate?: boolean },
   ): Promise<RoomRecord> {
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      !Number.isSafeInteger(userId) ||
+      userId <= 0
+    ) {
+      throw new BadRequestException(
+        'Identifiant de table ou utilisateur invalide',
+      );
+    }
     const room = await context.requireRoom(roomId);
     if (room.isPrivate && !opts?.allowPrivate) {
       throw new BadRequestException('Table privée');
@@ -157,14 +186,7 @@ export class RoomMembershipService {
       user.id,
     );
 
-    if (!isOpenRoom(room)) {
-      if (existing) {
-        await context.leaveAllRoomsForUser(userId, { exceptRoomId: room.id });
-        await context.invalidateRoomPayloadCache(room.id);
-        this.presenceService.broadcastPresence();
-        await this.roomEvents.publishLobbyChanged(room.id, 'joined');
-        return room;
-      }
+    if (!isOpenRoom(room) && !existing) {
       throw new BadRequestException('Table déjà démarrée');
     }
 
@@ -214,6 +236,11 @@ export class RoomMembershipService {
     userId: number,
     opts?: RoomLeaveOptions,
   ): Promise<RoomRecord | null> {
+    if (!isPositiveSafeId(roomId) || !isPositiveSafeId(userId)) {
+      throw new BadRequestException(
+        'Identifiant de table ou utilisateur invalide',
+      );
+    }
     return this.roomLeave.leave(context, roomId, userId, opts);
   }
 
@@ -222,6 +249,7 @@ export class RoomMembershipService {
     userId: number,
     opts?: { exceptRoomId?: number },
   ): Promise<void> {
+    if (!isPositiveSafeId(userId)) return;
     const except = normalizeExceptRoomId(opts?.exceptRoomId);
 
     const activeParticipations =
@@ -231,12 +259,9 @@ export class RoomMembershipService {
       ...new Set(
         activeParticipations
           .map((participation) => participation?.room?.id ?? 0)
-          .filter(
-            (roomId) =>
-              Number.isFinite(roomId) && roomId > 0 && roomId !== except,
-          ),
+          .filter((roomId) => isPositiveSafeId(roomId) && roomId !== except),
       ),
-    ];
+    ].slice(0, 1_000);
     await Promise.allSettled(
       roomIds.map((roomId) =>
         context.leaveRoom(roomId, userId, {
@@ -252,6 +277,7 @@ export class RoomMembershipService {
     roomId: number,
     userId: number,
   ): Promise<void> {
+    if (!isPositiveSafeId(roomId) || !isPositiveSafeId(userId)) return;
     const room = await this.rooms.findByIdWithOwner(roomId);
     if (!room?.owner || room.owner.id !== userId) {
       return;
@@ -267,6 +293,33 @@ export class RoomMembershipService {
     await context.invalidateRoomPayloadCache(room.id);
     this.presenceService.broadcastPresence();
     await this.roomEvents.publishLobbyChanged(room.id, 'left');
+  }
+
+  private now(): number {
+    return this.clock.now();
+  }
+}
+
+function isPositiveSafeId(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
+}
+
+function validateCreateRoomInput(
+  userId: number,
+  gameType: string,
+  maxPlayers?: number | null,
+): void {
+  if (
+    !Number.isSafeInteger(userId) ||
+    userId <= 0 ||
+    typeof gameType !== 'string' ||
+    !gameType.trim() ||
+    gameType.length > 128 ||
+    (maxPlayers !== undefined &&
+      maxPlayers !== null &&
+      (!Number.isSafeInteger(maxPlayers) || maxPlayers < 1 || maxPlayers > 64))
+  ) {
+    throw new BadRequestException('Parametres de table invalides');
   }
 }
 /** Room application capability boundary. */

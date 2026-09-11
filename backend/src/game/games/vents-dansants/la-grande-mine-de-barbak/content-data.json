@@ -2,570 +2,932 @@
   "cards": [
     {
       "id": "barbak-tresor-1",
-      "category": "tresor",
       "name": "Lingot d’or étincelant",
+      "category": "tresor",
       "description": "(+2 points.)",
-      "points": 2
+      "points": 2,
+      "effects": []
     },
     {
       "id": "barbak-tresor-2",
-      "category": "tresor",
       "name": "Sac de gemmes multicolores",
+      "category": "tresor",
       "description": "(+3 points.)",
-      "points": 3
+      "points": 3,
+      "effects": []
     },
     {
       "id": "barbak-tresor-3",
-      "category": "tresor",
       "name": "Morceau de mithril pur – trésor rare,",
+      "category": "tresor",
       "description": "(+5 points.)",
-      "points": 5
+      "points": 5,
+      "effects": []
     },
     {
       "id": "barbak-tresor-4",
-      "category": "tresor",
       "name": "Lingot d’or terni",
+      "category": "tresor",
       "description": "(+1 point.)",
-      "points": 1
+      "points": 1,
+      "effects": []
     },
     {
       "id": "barbak-tresor-5",
-      "category": "tresor",
       "name": "Coffre piégé",
+      "category": "tresor",
       "description": "(si vous n'avez pas d’arme devant vous, vous perdez une carte au hasard. Sinon, vous gagnez +3 points.)",
-      "points": 3
+      "points": 3,
+      "effects": []
     },
     {
       "id": "barbak-tresor-6",
-      "category": "tresor",
       "name": "Pierre philosophale en plâtre",
+      "category": "tresor",
       "description": "(faux trésor, vaut 0 point et ne sera révélé qu’au décompte final.)",
-      "points": 0
+      "points": 0,
+      "effects": []
     },
     {
       "id": "barbak-tresor-7",
-      "category": "tresor",
       "name": "Champignon lumineux",
+      "category": "tresor",
       "description": "(vous gagnez +2 points seulement si vous possédez déjà une carte Bière.)",
-      "points": 2
+      "points": 2,
+      "effects": []
     },
     {
       "id": "barbak-tresor-8",
-      "category": "tresor",
       "name": "Trésor ancien – trésor rare,",
+      "category": "tresor",
       "description": "(+6 points, mais il attire automatiquement les monstres.)",
-      "points": 6
+      "points": 6,
+      "effects": []
     },
     {
       "id": "barbak-tresor-9",
-      "category": "tresor",
       "name": "Sceptre en mithril – trésor royal,",
+      "category": "tresor",
       "description": "(+7 points.)",
-      "points": 7
+      "points": 7,
+      "effects": []
     },
     {
       "id": "barbak-tresor-10",
-      "category": "tresor",
       "name": "Fourrure de troll – trésor étrange,",
+      "category": "tresor",
       "description": "(+2 points ou -2 points (tirage automatique).)",
-      "points": 2
+      "points": 2,
+      "effects": []
     },
     {
       "id": "barbak-tresor-11",
-      "category": "tresor",
       "name": "Mine de sel",
+      "category": "tresor",
       "description": "(vous gagnez +2 points, mais si vous possédez la carte “Bière renversée”, vous perdez 1 point.)",
-      "points": 2
+      "points": 2,
+      "effects": []
     },
     {
       "id": "barbak-tresor-12",
-      "category": "tresor",
       "name": "Diamant chantant – trésor rare,",
+      "category": "tresor",
       "description": "(+5 points et vous pouvez regarder la carte du dessus de la pioche.)",
-      "points": 5
+      "points": 5,
+      "effects": []
     },
     {
       "id": "barbak-tresor-13",
-      "category": "tresor",
       "name": "Rune perdue – trésor mystique,",
+      "category": "tresor",
       "description": "(+4 points.)",
-      "points": 4
+      "points": 4,
+      "effects": []
     },
     {
       "id": "barbak-tresor-14",
-      "category": "tresor",
       "name": "Couronne en or massif – trésor royal,",
+      "category": "tresor",
       "description": "(+8 points.)",
-      "points": 8
+      "points": 8,
+      "effects": []
     },
     {
       "id": "barbak-tresor-15",
-      "category": "tresor",
       "name": "Idole naine brisée",
+      "category": "tresor",
       "description": "(+2 points, ou +5 points si vous possédez déjà 3 Runes.)",
-      "points": 2
+      "points": 2,
+      "effects": []
     },
     {
       "id": "barbak-tresor-16",
-      "category": "tresor",
       "name": "Pierre précieuse maudite",
+      "category": "tresor",
       "description": "(+3 points mais vous perdez 1 point pour chaque carte Bière que vous avez.)",
-      "points": 3
+      "points": 3,
+      "effects": []
     },
     {
       "id": "barbak-tresor-17",
-      "category": "tresor",
       "name": "Rune de l’Aube – trésor mystique,",
+      "category": "tresor",
       "description": "(+4 points et vous êtes immunisé contre “Barbe en feu”.)",
-      "points": 4
+      "points": 4,
+      "effects": []
     },
     {
       "id": "barbak-tresor-18",
-      "category": "tresor",
       "name": "Talisman de Barbe-Vie – trésor rare,",
+      "category": "tresor",
       "description": "(+3 points et il protège automatiquement votre carte “Barbe sacrée”.)",
-      "points": 3
+      "points": 3,
+      "effects": []
     },
     {
       "id": "barbak-objet-1",
-      "category": "objet",
       "name": "Brouette percée",
+      "category": "objet",
       "description": "(vous pouvez transporter 2 trésors, mais vous perdez 1 point.)",
-      "points": 1
+      "points": 1,
+      "effects": []
     },
     {
       "id": "barbak-objet-2",
-      "category": "objet",
       "name": "Pioche runique",
+      "category": "objet",
       "description": "(le prochain trésor que vous posez voit sa valeur doublée automatiquement.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-objet-3",
-      "category": "objet",
       "name": "Casque cabossé",
+      "category": "objet",
       "description": "(protège un trésor ou un objet contre un monstre, mais se casse après usage.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-objet-4",
-      "category": "objet",
       "name": "Barbe postiche en mousse",
+      "category": "objet",
       "description": "(vous êtes protégé contre les effets du “Concours de barbes”.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-objet-5",
-      "category": "objet",
       "name": "Amulette de pierre runique",
+      "category": "objet",
       "description": "(+1 point, permanent.)",
-      "points": 1
+      "points": 1,
+      "effects": []
     },
     {
       "id": "barbak-objet-6",
-      "category": "objet",
       "name": "Marteau de forge légendaire",
+      "category": "objet",
       "description": "(+2 points et vous êtes protégé contre un monstre.)",
-      "points": 2
+      "points": 2,
+      "effects": []
     },
     {
       "id": "barbak-objet-7",
-      "category": "objet",
       "name": "Bière naine explosive",
+      "category": "objet",
       "description": "(vous pouvez repousser un monstre, mais vous perdez 1 point.)",
-      "points": 1
+      "points": 1,
+      "effects": []
     },
     {
       "id": "barbak-objet-8",
-      "category": "objet",
       "name": "Épée rouillée",
+      "category": "objet",
       "description": "(protège une fois contre un goblin.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-objet-9",
-      "category": "objet",
       "name": "Casque du Houblon Royal",
+      "category": "objet",
       "description": "(+1 point, et +1 supplémentaire si vous possédez une carte Bière.)",
-      "points": 1
+      "points": 1,
+      "effects": []
     },
     {
       "id": "barbak-objet-10",
-      "category": "objet",
       "name": "Pioche des Ancêtres",
+      "category": "objet",
       "description": "(défaussez un trésor, mais choisissez celui que vous voulez perdre.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-objet-11",
-      "category": "objet",
       "name": "Choppe sans fond",
+      "category": "objet",
       "description": "(+2 points automatiquement à chaque tour où vous jouez un Objet.)",
-      "points": 2
+      "points": 2,
+      "effects": []
     },
     {
       "id": "barbak-objet-12",
-      "category": "objet",
       "name": "Cape de Forge Ardente – objet rare,",
+      "category": "objet",
       "description": "(+2 points et vous êtes protégé contre “Explosion de mine”.)",
-      "points": 2
+      "points": 2,
+      "effects": []
     },
     {
       "id": "barbak-objet-13",
-      "category": "objet",
       "name": "Bière enchantée",
+      "category": "objet",
       "description": "(annule automatiquement l’effet d’un monstre sur vous.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-objet-14",
-      "category": "objet",
       "name": "Chapeau pointu ridicule",
+      "category": "objet",
       "description": "(vous êtes protégé contre un événement, mais cette carte ne rapporte aucun point.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-objet-15",
-      "category": "objet",
       "name": "Bouclier cabossé",
+      "category": "objet",
       "description": "(annule une attaque de monstre ciblant votre trésor ou objet.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-objet-16",
-      "category": "objet",
       "name": "Marteau de Gloire",
+      "category": "objet",
       "description": "(+1 point et effrayez tous les goblins ciblant votre domaine ce tour-ci.)",
-      "points": 1
+      "points": 1,
+      "effects": []
     },
     {
       "id": "barbak-objet-17",
-      "category": "objet",
       "name": "Hache de guerre",
+      "category": "objet",
       "description": "(+2 points et êtes protégé contre un troll.)",
-      "points": 2
+      "points": 2,
+      "effects": []
     },
     {
       "id": "barbak-objet-18",
-      "category": "objet",
       "name": "Rune protectrice",
+      "category": "objet",
       "description": "(annule automatiquement la prochaine attaque contre vous.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-objet-19",
-      "category": "objet",
       "name": "Corne de bataille",
+      "category": "objet",
       "description": "(+1 point et annule un effet d’Éboulement mineur.)",
-      "points": 1
+      "points": 1,
+      "effects": []
     },
     {
       "id": "barbak-objet-20",
-      "category": "objet",
       "name": "Lanterne magique",
+      "category": "objet",
       "description": "(vous révélez les 3 prochaines cartes de la pioche.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-objet-21",
-      "category": "objet",
       "name": "Bière éternelle –",
+      "category": "objet",
       "description": "(objet rare, (+3 points si vous possédez au moins une autre Bière.)",
-      "points": 3
+      "points": 3,
+      "effects": []
     },
     {
       "id": "barbak-objet-22",
-      "category": "objet",
       "name": "Ceinture Tressée de Forge",
+      "category": "objet",
       "description": "(+2 points si vous possédez au moins un autre outil.)",
-      "points": 2
+      "points": 2,
+      "effects": []
     },
     {
       "id": "barbak-event-1",
-      "category": "event",
       "name": "Choppe géante de bière",
+      "category": "event",
       "description": "(vous rejouez immédiatement.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
     },
     {
       "id": "barbak-event-2",
-      "category": "event",
       "name": "Tonneau percé",
+      "category": "event",
       "description": "(vous devez défausser une carte au hasard.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "discard-random",
+          "deckId": "mine",
+          "handId": "players",
+          "count": 1
+        }
+      ]
     },
     {
       "id": "barbak-event-3",
-      "category": "event",
       "name": "Concours de rots",
+      "category": "event",
       "description": "(le joueur le plus bruyant gagne un trésor. (effet automatisé par une simulation sonore aléatoire))",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-event-4",
-      "category": "event",
       "name": "Concours de barbes",
+      "category": "event",
       "description": "(le joueur à la plus longue barbe gagne +1 point. (effet automatisé par un aléatoire du système.))",
-      "points": 1
+      "points": 1,
+      "effects": []
     },
     {
       "id": "barbak-event-5",
-      "category": "event",
       "name": "Festin gargantuesque",
+      "category": "event",
       "description": "(vous récupérez une carte depuis la défausse.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.recover-discard",
+          "data": {}
+        }
+      ]
     },
     {
       "id": "barbak-event-6",
-      "category": "event",
       "name": "Rot magique",
+      "category": "event",
       "description": "(annule l’effet de la dernière carte jouée.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-event-7",
-      "category": "event",
       "name": "Barbe en feu",
+      "category": "event",
       "description": "(votre héros est posé face cachée jusqu’à votre prochain tour.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-event-8",
-      "category": "event",
       "name": "Chant de taverne",
+      "category": "event",
       "description": "(tous les joueurs perdent aléatoirement une carte (sauf si vous possédez un objet protecteur).)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "discard-random",
+          "deckId": "mine",
+          "handId": "players",
+          "count": 1
+        },
+        {
+          "kind": "discard-random",
+          "deckId": "mine",
+          "handId": "players",
+          "count": 1,
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
     },
     {
       "id": "barbak-event-9",
-      "category": "event",
       "name": "Tabouret cassé",
+      "category": "event",
       "description": "(vous perdez votre prochain tour.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
     },
     {
       "id": "barbak-event-10",
-      "category": "event",
       "name": "Chèvre têtue",
+      "category": "event",
       "description": "(vous donnez une carte aléatoirement de votre main au joueur suivant.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "steal-card",
+          "handId": "players",
+          "from": {
+            "kind": "self"
+          },
+          "to": {
+            "kind": "next"
+          }
+        }
+      ]
     },
     {
       "id": "barbak-event-11",
-      "category": "event",
       "name": "Explosion de mine",
+      "category": "event",
       "description": "(tous les joueurs défaussent un trésor.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-treasure-all",
+          "data": {
+            "count": 1
+          }
+        }
+      ]
     },
     {
       "id": "barbak-event-12",
-      "category": "event",
       "name": "Concours de bras de fer",
+      "category": "event",
       "description": "(deux joueurs s’affrontent automatiquement. Celui qui possède le plus de points de Trésors devant lui gagne et prend une carte au perdant. En cas d’égalité, le gagnant est choisi aléatoirement.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-event-13",
-      "category": "event",
       "name": "Taverne itinérante",
+      "category": "event",
       "description": "(tous les joueurs piochent une carte supplémentaire.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.draw-passive",
+          "data": {
+            "count": 1
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "mine.draw-passive",
+          "data": {
+            "count": 1
+          },
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
     },
     {
       "id": "barbak-event-14",
-      "category": "event",
       "name": "Chant épique des Ancêtres",
+      "category": "event",
       "description": "(vous piochez 2 cartes, puis en donnez 1 à un adversaire.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.draw-passive",
+          "data": {
+            "count": 2
+          }
+        },
+        {
+          "kind": "steal-card",
+          "handId": "players",
+          "from": {
+            "kind": "self"
+          },
+          "to": {
+            "kind": "random-opponent"
+          }
+        }
+      ]
     },
     {
       "id": "barbak-event-15",
-      "category": "event",
       "name": "Bière renversée",
+      "category": "event",
       "description": "(votre prochaine pioche est défaussée automatiquement.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "mine.discard-next-draw",
+          "scope": "until-used"
+        }
+      ]
     },
     {
       "id": "barbak-event-16",
-      "category": "event",
       "name": "Concours de cuisine naine",
+      "category": "event",
       "description": "(vous échangez un trésor avec un joueur de votre choix.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-event-17",
-      "category": "event",
       "name": "Taverne effondrée",
+      "category": "event",
       "description": "(tous les joueurs perdent une carte Bière.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-event-18",
-      "category": "event",
       "name": "Marchand louche",
+      "category": "event",
       "description": "(vous piochez 3 cartes, puis devez en défausser 2 de votre main.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.draw-passive",
+          "data": {
+            "count": 3
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "mine.trim-hand",
+          "data": {}
+        }
+      ]
     },
     {
       "id": "barbak-event-19",
-      "category": "event",
       "name": "Caverne écho",
+      "category": "event",
       "description": "(le prochain joueur doit jouer deux fois consécutivement.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.double-next-player",
+          "data": {}
+        }
+      ]
     },
     {
       "id": "barbak-event-20",
-      "category": "event",
       "name": "Champignon explosif",
+      "category": "event",
       "description": "(un joueur de votre choix défausse une carte au hasard.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "discard-random",
+          "deckId": "mine",
+          "handId": "players",
+          "count": 1,
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "mine.event-target",
+            "optional": false
+          }
+        }
+      ]
     },
     {
       "id": "barbak-event-21",
-      "category": "event",
       "name": "Festin de la Forge",
+      "category": "event",
       "description": "(chaque joueur donne une carte au plus faible (le dernier.))",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-event-22",
-      "category": "event",
       "name": "Coup de pioche raté",
+      "category": "event",
       "description": "(vous ne jouez rien ce tour-ci.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-event-23",
-      "category": "event",
       "name": "Piolet bancal",
+      "category": "event",
       "description": "(si vous trouvez un trésor, lancez un dé : 1 à 3 = vous cassez le trésor, 4 à 6 = vous le gardez.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-event-24",
-      "category": "event",
       "name": "Explosifs instables",
+      "category": "event",
       "description": "(vous détruisez un monstre, mais perdez un trésor au hasard.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-treasure",
+          "data": {}
+        }
+      ]
     },
     {
       "id": "barbak-event-25",
-      "category": "event",
       "name": "Malédiction du Houblon Aigre",
+      "category": "event",
       "description": "(votre prochaine Bière vaut 0 point.)",
-      "points": 0
+      "points": 0,
+      "effects": []
     },
     {
       "id": "barbak-event-26",
-      "category": "event",
       "name": "Tonneau des Mille Échos",
+      "category": "event",
       "description": "(l’effet d’une carte jouée ce tour est reproduit automatiquement deux fois.)",
-      "points": null
+      "points": null,
+      "effects": []
     },
     {
       "id": "barbak-monster-1",
-      "category": "monster",
       "name": "Troll des cavernes",
+      "category": "monster",
       "description": "(si vous n’avez pas d’arme, vous perdez 1 trésor.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "mine.monster-target",
+            "optional": false
+          }
+        }
+      ]
     },
     {
       "id": "barbak-monster-2",
-      "category": "monster",
       "name": "Goblin chapardeur",
+      "category": "monster",
       "description": "(il vole la première carte de votre domaine.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "mine.monster-target",
+            "optional": false
+          }
+        }
+      ]
     },
     {
       "id": "barbak-monster-3",
-      "category": "monster",
       "name": "Dragon enrhumé",
+      "category": "monster",
       "description": "(tous les joueurs perdent une carte au hasard.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain-all",
+          "data": {}
+        }
+      ]
     },
     {
       "id": "barbak-monster-4",
-      "category": "monster",
       "name": "Goblin des tunnels",
+      "category": "monster",
       "description": "(il échange deux cartes de votre domaine au hasard.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "mine.monster-target",
+            "optional": false
+          }
+        }
+      ]
     },
     {
       "id": "barbak-monster-5",
-      "category": "monster",
       "name": "Orc grincheux",
+      "category": "monster",
       "description": "(-2 points sauf si vous possédez une arme.)",
-      "points": -2
+      "points": -2,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "mine.monster-target",
+            "optional": false
+          }
+        }
+      ]
     },
     {
       "id": "barbak-monster-6",
-      "category": "monster",
       "name": "Troll ivre",
+      "category": "monster",
       "description": "(attaque ratée une fois sur deux.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "mine.monster-target",
+            "optional": false
+          }
+        }
+      ]
     },
     {
       "id": "barbak-monster-7",
-      "category": "monster",
       "name": "Dragon somnolent",
+      "category": "monster",
       "description": "(tous perdent un trésor sauf celui ayant le plus de Bière.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain-all",
+          "data": {}
+        }
+      ]
     },
     {
       "id": "barbak-monster-8",
-      "category": "monster",
       "name": "Troll qui rote",
+      "category": "monster",
       "description": "(tous les joueurs défaussent une carte de Taverne.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "mine.monster-target",
+            "optional": false
+          }
+        }
+      ]
     },
     {
       "id": "barbak-monster-9",
-      "category": "monster",
       "name": "Goblin farceur",
+      "category": "monster",
       "description": "(il échange une carte entre deux autres joueurs.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "mine.monster-target",
+            "optional": false
+          }
+        }
+      ]
     },
     {
       "id": "barbak-monster-10",
-      "category": "monster",
       "name": "Squelette barbu",
+      "category": "monster",
       "description": "(vous perdez la carte la plus ancienne de votre domaine.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "mine.monster-target",
+            "optional": false
+          }
+        }
+      ]
     },
     {
       "id": "barbak-monster-11",
-      "category": "monster",
       "name": "Orc bossu",
+      "category": "monster",
       "description": "(-1 point et devez défausser un objet au hasard.)",
-      "points": -1
+      "points": -1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-domain",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "mine.monster-target",
+            "optional": false
+          }
+        }
+      ]
     },
     {
       "id": "barbak-collapse-1",
-      "category": "collapse",
       "name": "Éboulement mineur",
+      "category": "collapse",
       "description": "(chaque joueur défausse une carte de son choix. (x2))",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "discard-random",
+          "deckId": "mine",
+          "handId": "players",
+          "count": 1,
+          "target": {
+            "kind": "all-players"
+          }
+        }
+      ]
     },
     {
       "id": "barbak-collapse-2",
-      "category": "collapse",
       "name": "Éboulement majeur",
+      "category": "collapse",
       "description": "(fin de partie imminente, chaque joueur défausse 2 trésors au hasard. (x3))",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.remove-treasure-all",
+          "data": {
+            "count": 2
+          }
+        }
+      ]
     },
     {
       "id": "barbak-collapse-3",
-      "category": "collapse",
       "name": "Effondrement final",
+      "category": "collapse",
       "description": "(la partie se termine immédiatement.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.finish",
+          "data": {}
+        }
+      ]
     },
     {
       "id": "barbak-collapse-4",
-      "category": "collapse",
       "name": "Effondrement final",
+      "category": "collapse",
       "description": "(la partie se termine immédiatement.)",
-      "points": null
+      "points": null,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mine.finish",
+          "data": {}
+        }
+      ]
     }
   ]
 }

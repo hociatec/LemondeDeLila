@@ -12,7 +12,7 @@ export class WxUpdateManifestController {
   getManifest(@Query('current') current?: string, @Req() req?: Request) {
     const origin = req ? getUpdateRequestOrigin(req) : null;
     return this.updates.getForClient(
-      typeof current === 'string' ? current : null,
+      typeof current === 'string' && current.length <= 128 ? current : null,
       origin,
     );
   }

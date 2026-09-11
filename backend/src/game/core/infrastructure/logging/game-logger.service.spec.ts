@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { GameError } from '../../domain/errors/game-errors';
 import { GameLoggerService } from './game-logger.service';
+import { runWithCorrelationId } from '../../../../platform/observability/public-api';
 
 describe('GameLoggerService', () => {
   let service: GameLoggerService;
@@ -44,6 +45,24 @@ describe('GameLoggerService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('propagates request correlation and redacts private action payloads', () => {
+    runWithCorrelationId('request-123', () => {
+      service.info('Action', {
+        roomId: 7,
+        correlationId: 'spoofed',
+        payload: { hand: ['secret'] },
+      });
+    });
+    expect(infoSpy).toHaveBeenCalledWith({
+      message: 'Action',
+      context: {
+        roomId: 7,
+        correlationId: 'request-123',
+        payload: '[REDACTED]',
+      },
+    });
   });
 
   it('logs an error message with context', () => {

@@ -1,1 +1,4 @@
-export { RedisPubSubTransport } from './redis-pubsub.transport';
+export {
+  RedisPubSubTransport,
+  type PubSubEventMetadata,
+} from './redis-pubsub.transport';

@@ -1,35 +1,20 @@
-import {
-  defineChoice,
-  defineGame,
-  defineGameContent,
-  gameInput,
-  pawnRace,
-} from '../../../engine/sdk/public-api';
-import { FOULEES_BOARD, FOULEES_FAMILIES, FOULEES_PAWNS } from './content';
-import {
-  FOULEES_ACTIONS,
-  FOULEES_PHASES,
-  requestFamily,
-  resolveFamilyChoice,
-  resolvePawnChoice,
-} from './rules';
+import { defineGame, pawnRace } from '../../../engine/sdk/public-api';
+import { FOULEES_BOARD, FOULEES_GAME_CONTENT, FOULEES_PAWNS } from './content';
+import manifest from './manifest.json';
+import { GAME_CHOICES } from './rules';
+
+import { FOULEES_ACTIONS, FOULEES_PHASES } from './rules';
+import { setupGame } from './rules';
 import type { FouleesState } from './types';
 
-const COLORS = ['Rouge', 'Bleu', 'Vert', 'Jaune'] as const;
-
 export default defineGame<FouleesState>()({
-  id: 'foulees-fantastiques',
-  displayName: 'Foulées Fantastiques !',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsSacres',
-  description: 'Une course de quatre familles animales vers leur abri.',
-  players: { min: 2, max: 4 },
-  content: defineGameContent('foulees-fantastiques', {
-    board: FOULEES_BOARD,
-    families: FOULEES_FAMILIES,
-    pawns: FOULEES_PAWNS,
-    seatColors: COLORS,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: FOULEES_GAME_CONTENT,
   patterns: [
     pawnRace({
       pawnSetId: 'foulees',
@@ -41,25 +26,10 @@ export default defineGame<FouleesState>()({
     }),
   ],
   shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
-  setup: ({ players, ctx }) => {
-    const state: FouleesState = {};
-    const first = players[0];
-    if (first) requestFamily(state, first.id, ctx);
-    return state;
-  },
+  setup: setupGame,
   initialPhase: FOULEES_PHASES.initialPhase,
   phases: FOULEES_PHASES.phases,
   actions: FOULEES_ACTIONS,
-  choices: {
-    'foulees.family': defineChoice<FouleesState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ state, actor, value, ctx }) =>
-        resolveFamilyChoice(state, value, actor.id, ctx),
-    }),
-    'foulees.move': defineChoice<FouleesState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ state, value, ctx }) => resolvePawnChoice(state, value, ctx),
-    }),
-  },
+  choices: GAME_CHOICES,
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

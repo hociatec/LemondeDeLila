@@ -1,7 +1,7 @@
 import { RoomAutoCleanupService } from './room-auto-cleanup.service';
 
 describe('RoomAutoCleanupService durability policy', () => {
-  function createService(cleanup: jest.Mock) {
+  function createService(cleanup: jest.Mock, now: () => number = Date.now) {
     return new RoomAutoCleanupService(
       { createContext: () => ({ actor: 'system' }) } as never,
       { adminCleanupRooms: cleanup } as never,
@@ -13,8 +13,25 @@ describe('RoomAutoCleanupService durability policy', () => {
           autoCleanupLimit: 100,
         }),
       } as never,
+      undefined,
+      { now },
     );
   }
+
+  it('respects the cleanup interval even when the first run is at epoch zero', async () => {
+    let now = 0;
+    const cleanup = jest.fn().mockResolvedValue({ deleted: 0, matched: 0 });
+    const service = createService(cleanup, () => now);
+    const tick = () =>
+      (service as unknown as { tick: () => Promise<void> }).tick();
+    await tick();
+    now = 299_999;
+    await tick();
+    expect(cleanup).toHaveBeenCalledTimes(1);
+    now = 300_000;
+    await tick();
+    expect(cleanup).toHaveBeenCalledTimes(2);
+  });
 
   it('recomputes eligible rooms from durable state on every fresh instance', async () => {
     const cleanup = jest.fn().mockResolvedValue({ deleted: 0, matched: 0 });

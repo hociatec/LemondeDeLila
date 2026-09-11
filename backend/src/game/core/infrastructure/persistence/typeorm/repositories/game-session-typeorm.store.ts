@@ -1,4 +1,5 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, type EntityManager, type Repository } from 'typeorm';
 import {
@@ -16,17 +17,43 @@ import type {
   GameEvent,
   GameSnapshot,
   GameTimeline,
-} from '../../../../application/contracts/game-event.model';
-import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
+} from '../../../../application/models/game-event.model';
+import type { GameState } from '../../../../application/models/game-state.model';
 import {
   appendGameTimelineCommit,
   assertGameStateSize,
   createGameTimeline,
   replayTimeline,
-} from '../../../../application/services/game-event-log.helper';
+} from '../../../../application/services/game-timeline';
 import { GameSessionEntity } from '../entities/game-session.entity';
 import { GameSessionEventEntity } from '../entities/game-session-event.entity';
 import { GameSessionSnapshotEntity } from '../entities/game-session-snapshot.entity';
+
+function isCurrentSession(
+  row: GameSessionEntity | null,
+  commit: GameStateCommit,
+): boolean {
+  return (
+    row !== null &&
+    row.version === commit.expectedVersion &&
+    (commit.expectedRestoreId === undefined ||
+      (row.state.metadata?.restoreId ?? null) === commit.expectedRestoreId)
+  );
+}
+
+function nextSessionState(
+  row: GameSessionEntity,
+  commit: GameStateCommit,
+): GameState & { version: number } {
+  const next = structuredClone(commit.next);
+  if (row.state.metadata?.restoreId) {
+    next.metadata = {
+      ...next.metadata,
+      restoreId: row.state.metadata.restoreId,
+    };
+  }
+  return { ...next, version: commit.expectedVersion + 1 };
+}
 
 /**
  * Production session store. Current state, events and snapshots use separate
@@ -51,10 +78,8 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     };
   }
 
-  async load(
-    roomId: number,
-    gameType: string,
-  ): Promise<GameStateEntity | null> {
+  async load(roomId: number, gameType: string): Promise<GameState | null> {
+    this.assertKey(roomId, gameType);
     const row = await this.repository.findOne({ where: { roomId, gameType } });
     return row ? structuredClone(row.state) : null;
   }
@@ -62,9 +87,11 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
   async restore(
     roomId: number,
     gameType: string,
-    state: GameStateEntity,
-  ): Promise<void> {
+    state: GameState,
+  ): Promise<GameState> {
+    this.assertKey(roomId, gameType);
     const restored = structuredClone(state);
+    restored.metadata = { ...restored.metadata, restoreId: randomUUID() };
     assertGameStateSize(restored, this.snapshotPolicy.maxStateBytes);
     await this.repository.manager.transaction(async (manager) => {
       await this.clearTimeline(manager, roomId, gameType);
@@ -83,16 +110,24 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
         state: initial.state,
       });
     });
+    return structuredClone(restored);
   }
 
   async compareAndSet(commit: GameStateCommit): Promise<GameStateCommitResult> {
+    this.assertKey(commit.roomId, commit.gameType);
+    if (
+      !Number.isSafeInteger(commit.expectedVersion) ||
+      commit.expectedVersion < 1
+    ) {
+      throw new RangeError('Invalid game session version');
+    }
     return this.repository.manager.transaction(async (manager) => {
       const repository = manager.getRepository(GameSessionEntity);
       const row = await repository.findOne({
         where: { roomId: commit.roomId, gameType: commit.gameType },
         lock: { mode: 'pessimistic_write' },
       });
-      if (!row || row.version !== commit.expectedVersion) {
+      if (!row || !isCurrentSession(row, commit)) {
         return {
           committed: false,
           version: row?.version ?? 0,
@@ -100,8 +135,7 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
         };
       }
 
-      const next = structuredClone(commit.next);
-      next.version = commit.expectedVersion + 1;
+      const next = nextSessionState(row, commit);
       const previousTimeline = await this.timeline(
         manager,
         commit.roomId,
@@ -119,41 +153,12 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
       row.version = next.version;
       row.state = next;
       await repository.save(row);
-      const previousSequence = previousTimeline.events.at(-1)?.seq ?? 0;
-      const addedEvents = timeline.events.filter(
-        (event) => event.seq > previousSequence,
+      await this.persistTimelineAppend(
+        manager,
+        commit,
+        previousTimeline,
+        timeline,
       );
-      if (addedEvents.length > 0) {
-        await manager.getRepository(GameSessionEventEntity).save(
-          addedEvents.map((event) =>
-            Object.assign(new GameSessionEventEntity(), {
-              roomId: commit.roomId,
-              gameType: commit.gameType,
-              seq: event.seq,
-              version: event.version,
-              event,
-            }),
-          ),
-        );
-      }
-      const previousSnapshotSequence =
-        previousTimeline.snapshots.at(-1)?.seq ?? -1;
-      const addedSnapshots = timeline.snapshots.filter(
-        (snapshot) => snapshot.seq > previousSnapshotSequence,
-      );
-      if (addedSnapshots.length > 0) {
-        await manager.getRepository(GameSessionSnapshotEntity).save(
-          addedSnapshots.map((snapshot) =>
-            Object.assign(new GameSessionSnapshotEntity(), {
-              roomId: commit.roomId,
-              gameType: commit.gameType,
-              seq: snapshot.seq,
-              version: snapshot.version,
-              state: snapshot.state,
-            }),
-          ),
-        );
-      }
       return {
         committed: true,
         version: next.version,
@@ -163,6 +168,7 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
   }
 
   async clear(roomId: number, gameType: string): Promise<void> {
+    this.assertKey(roomId, gameType);
     await this.repository.manager.transaction(async (manager) => {
       await this.clearTimeline(manager, roomId, gameType);
       await manager
@@ -176,6 +182,10 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     gameType: string,
     expectedVersion: number,
   ): Promise<void> {
+    this.assertKey(roomId, gameType);
+    if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 1) {
+      throw new RangeError('Invalid game session version');
+    }
     await this.repository.manager.transaction(async (manager) => {
       const result = await manager.getRepository(GameSessionEntity).delete({
         roomId,
@@ -189,6 +199,9 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
   }
 
   async clearRoom(roomId: number): Promise<void> {
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) {
+      throw new RangeError('Invalid room id');
+    }
     await this.repository.manager.transaction(async (manager) => {
       await manager.getRepository(GameSessionEventEntity).delete({ roomId });
       await manager.getRepository(GameSessionSnapshotEntity).delete({ roomId });
@@ -202,12 +215,19 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     afterSequence = 0,
     limit = 500,
   ): Promise<GameEvent[]> {
+    this.assertKey(roomId, gameType);
+    if (!Number.isSafeInteger(afterSequence) || afterSequence < 0) {
+      throw new RangeError('Invalid event sequence');
+    }
     const rows = await this.repository.manager
       .getRepository(GameSessionEventEntity)
       .find({
         where: { roomId, gameType, seq: MoreThan(afterSequence) },
         order: { seq: 'ASC' },
-        take: Math.max(1, Math.min(1_000, Math.trunc(limit))),
+        take:
+          Number.isSafeInteger(limit) && limit > 0
+            ? Math.min(1_000, limit)
+            : 500,
       });
     return rows.map((row) => structuredClone(row.event));
   }
@@ -216,6 +236,7 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     roomId: number,
     gameType: string,
   ): Promise<GameSnapshot | null> {
+    this.assertKey(roomId, gameType);
     const row = await this.repository.manager
       .getRepository(GameSessionSnapshotEntity)
       .findOne({ where: { roomId, gameType }, order: { seq: 'DESC' } });
@@ -232,7 +253,14 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     roomId: number,
     gameType: string,
     untilSequence?: number,
-  ): Promise<GameStateEntity | null> {
+  ): Promise<GameState | null> {
+    this.assertKey(roomId, gameType);
+    if (
+      untilSequence !== undefined &&
+      (!Number.isSafeInteger(untilSequence) || untilSequence < 0)
+    ) {
+      throw new RangeError('Invalid replay sequence');
+    }
     const row = await this.repository.findOne({ where: { roomId, gameType } });
     return row
       ? replayTimeline(
@@ -247,11 +275,54 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
       : null;
   }
 
+  private async persistTimelineAppend(
+    manager: EntityManager,
+    commit: GameStateCommit,
+    previousTimeline: GameTimeline,
+    timeline: GameTimeline,
+  ): Promise<void> {
+    const previousSequence = previousTimeline.events.at(-1)?.seq ?? 0;
+    const addedEvents = timeline.events.filter(
+      (event) => event.seq > previousSequence,
+    );
+    if (addedEvents.length > 0) {
+      await manager.getRepository(GameSessionEventEntity).save(
+        addedEvents.map((event) =>
+          Object.assign(new GameSessionEventEntity(), {
+            roomId: commit.roomId,
+            gameType: commit.gameType,
+            seq: event.seq,
+            version: event.version,
+            event,
+          }),
+        ),
+      );
+    }
+    const previousSnapshotSequence =
+      previousTimeline.snapshots.at(-1)?.seq ?? -1;
+    const addedSnapshots = timeline.snapshots.filter(
+      (snapshot) => snapshot.seq > previousSnapshotSequence,
+    );
+    if (addedSnapshots.length > 0) {
+      await manager.getRepository(GameSessionSnapshotEntity).save(
+        addedSnapshots.map((snapshot) =>
+          Object.assign(new GameSessionSnapshotEntity(), {
+            roomId: commit.roomId,
+            gameType: commit.gameType,
+            seq: snapshot.seq,
+            version: snapshot.version,
+            state: snapshot.state,
+          }),
+        ),
+      );
+    }
+  }
+
   private async timeline(
     manager: EntityManager,
     roomId: number,
     gameType: string,
-    fallbackState: GameStateEntity,
+    fallbackState: GameState,
   ): Promise<GameTimeline> {
     const [eventRows, snapshotRows] = await Promise.all([
       manager.getRepository(GameSessionEventEntity).find({
@@ -289,5 +360,17 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     await manager
       .getRepository(GameSessionSnapshotEntity)
       .delete({ roomId, gameType });
+  }
+
+  private assertKey(roomId: number, gameType: string): void {
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      typeof gameType !== 'string' ||
+      gameType.length === 0 ||
+      gameType.length > 128
+    ) {
+      throw new RangeError('Invalid game session key');
+    }
   }
 }

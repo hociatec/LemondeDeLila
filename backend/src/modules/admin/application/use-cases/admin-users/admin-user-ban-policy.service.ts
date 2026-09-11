@@ -1,4 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  parseUserBanUntil,
+  userBanUntilAfterDays,
+} from '../../../../user/public-api';
 
 @Injectable()
 export class AdminUserBanPolicyService {
@@ -12,21 +16,24 @@ export class AdminUserBanPolicyService {
   }
 
   resolveBannedUntil(
+    nowMs: number,
     durationDays?: number,
     bannedUntil?: string | null,
   ): Date | null {
-    if (bannedUntil) {
-      const parsed = new Date(bannedUntil);
-      if (Number.isNaN(parsed.getTime())) {
-        throw new BadRequestException('Date de fin invalide');
+    try {
+      if (!Number.isFinite(nowMs) || nowMs < 0) {
+        throw new Error('nowMs invalide');
       }
-      return parsed;
-    }
-
-    if (durationDays && durationDays > 0) {
-      const until = new Date();
-      until.setDate(until.getDate() + durationDays);
-      return until;
+      if (bannedUntil) return parseUserBanUntil(bannedUntil);
+      if (
+        durationDays !== undefined &&
+        Number.isSafeInteger(durationDays) &&
+        durationDays >= 0 &&
+        durationDays <= 36500
+      )
+        return userBanUntilAfterDays(durationDays, nowMs);
+    } catch {
+      throw new BadRequestException('Durée ou date de fin invalide');
     }
 
     throw new BadRequestException('Durée ou date de fin requise');

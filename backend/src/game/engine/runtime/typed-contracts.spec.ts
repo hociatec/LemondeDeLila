@@ -10,7 +10,7 @@ import type { PlayerValuesKitState } from './kits/player-values-kit';
 import type { GridKitState } from './kits/grid-kit';
 import type { SubmissionKitState } from './submissions/submission-kit';
 import { defineCardsSchema, type CardOfDeck } from './cards/typed-cards';
-import { defineAction } from './definitions/game-definition-builders';
+import { defineAction } from './actions/action-builders';
 import { defineGame } from './definitions/game-definition-compiler';
 import { gameInput } from './actions/game-input-schema';
 import { defineEvent } from './events/game-event-definition';

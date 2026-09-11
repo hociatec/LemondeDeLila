@@ -1,22 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import { serializeDate } from '../../../../shared/utils/public-api';
 import {
   ChatMessageRecord,
   ChatNormalizedMessage,
-} from '../contracts/chat-message.record';
+} from '../read-models/chat-message.record';
 
 @Injectable()
 export class ChatMessagePresenterService {
   normalize(message: ChatMessageRecord): ChatNormalizedMessage {
-    const created =
-      message.createdAt instanceof Date ? message.createdAt : new Date();
-    const createdAt = isFinite(created.getTime())
-      ? created.toISOString()
-      : new Date().toISOString();
-
     return {
       id: message.messageId,
       text: message.message,
-      createdAt,
+      createdAt: serializeDate(message.createdAt),
       user: {
         id: message.user?.id,
         username: message.user?.username,
@@ -26,6 +21,6 @@ export class ChatMessagePresenterService {
   }
 
   normalizeMany(messages: ChatMessageRecord[]): ChatNormalizedMessage[] {
-    return messages.map((message) => this.normalize(message));
+    return messages.slice(0, 500).map((message) => this.normalize(message));
   }
 }

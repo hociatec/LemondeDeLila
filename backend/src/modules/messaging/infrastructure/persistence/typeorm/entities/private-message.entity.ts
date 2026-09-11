@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { User } from '../../../../../user/public-api';
+import type { MessageUserPersistenceRef } from './message-user.persistence-ref';
 
 @Entity({ name: 'messaging_private_messages' })
 @Unique('uniq_messaging_private_messages_message_id', ['messageId'])
@@ -24,13 +24,13 @@ export class PrivateMessageEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
+  @ManyToOne('User', { eager: true })
   @JoinColumn({ name: 'sender_id' })
-  sender!: User;
+  sender!: MessageUserPersistenceRef;
 
-  @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
+  @ManyToOne('User', { eager: true })
   @JoinColumn({ name: 'recipient_id' })
-  recipient!: User;
+  recipient!: MessageUserPersistenceRef;
 
   @Column({ name: 'message_id', type: 'varchar', length: 36, unique: true })
   messageId!: string;

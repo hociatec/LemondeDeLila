@@ -21,6 +21,7 @@ import type {
   PublishWxUpdateInput,
   ValidatedWxArtifact,
 } from './wx-update-publication.model';
+import { parseExplicitInstant } from '../../../../shared/utils/public-api';
 
 @Injectable()
 export class WxUpdateArtifactValidatorService {
@@ -34,11 +35,7 @@ export class WxUpdateArtifactValidatorService {
         'Archive WX absente, vide ou trop volumineuse.',
       );
     }
-    await this.assertHeader(
-      input.zipPath,
-      [0x50, 0x4b],
-      'Archive WX invalide.',
-    );
+    await this.assertZipStructure(input.zipPath, stat.size);
     const sha256 = await this.sha256(input.zipPath);
     if ((input.expectedSha256 || '').trim().toLowerCase() !== sha256) {
       throw new BadRequestException(
@@ -60,11 +57,7 @@ export class WxUpdateArtifactValidatorService {
         'Installateur WX absent, vide ou trop volumineux.',
       );
     }
-    await this.assertHeader(
-      installerPath,
-      [0x4d, 0x5a],
-      'Installateur WX invalide.',
-    );
+    await this.assertPortableExecutable(installerPath, stat.size);
     const sha256 = await this.sha256(installerPath);
     const expected = (input.expectedInstallerSha256 || '').trim().toLowerCase();
     if (expected && expected !== sha256) {
@@ -75,7 +68,10 @@ export class WxUpdateArtifactValidatorService {
     return { size: stat.size, sha256 };
   }
 
-  verifyManifest(manifest: WxUpdateManifest, maxBytes: number): boolean {
+  verifyManifest(
+    manifest: unknown,
+    maxBytes: number,
+  ): manifest is WxUpdateManifest {
     if (!this.isManifest(manifest, maxBytes)) return false;
     return this.verifySignature(
       canonicalizeWxUpdateSignature({
@@ -87,13 +83,20 @@ export class WxUpdateArtifactValidatorService {
         minimumVersion: manifest.minimumVersion,
         artifactSize: manifest.artifact.size,
         artifactSha256: manifest.artifact.sha256,
+        installerSha256: manifest.installer?.sha256 ?? null,
       }),
       manifest.artifact.signature,
     );
   }
 
   verifySignature(payload: string, signature: string): boolean {
-    if (readEnvironment('CLIENT_WX_ALLOW_UNSIGNED').trim() === '1') return true;
+    const environment = readEnvironment('NODE_ENV').trim().toLowerCase();
+    if (
+      environment !== 'production' &&
+      readEnvironment('CLIENT_WX_ALLOW_UNSIGNED').trim() === '1'
+    ) {
+      return true;
+    }
     try {
       const base64 = readEnvironment(
         'CLIENT_WX_SIGNATURE_PUBLIC_KEY_DER_BASE64',
@@ -141,7 +144,7 @@ export class WxUpdateArtifactValidatorService {
 
   requireDate(value: string, message: string): string {
     const date = (value || '').trim();
-    if (!date || !Number.isFinite(Date.parse(date))) {
+    if (!date || parseExplicitInstant(date) === null) {
       throw new BadRequestException(message);
     }
     return new Date(date).toISOString();
@@ -158,17 +161,57 @@ export class WxUpdateArtifactValidatorService {
     return hash.digest('hex');
   }
 
-  private async assertHeader(
-    filePath: string,
-    expected: number[],
-    message: string,
-  ): Promise<void> {
+  private async assertZipStructure(filePath: string, fileSize: number): Promise<void> {
+    const readSize = Math.min(fileSize, 65_557);
     const handle = await fs.promises.open(filePath, 'r');
     try {
-      const header = Buffer.alloc(expected.length);
+      const buffer = Buffer.alloc(readSize);
+      await handle.read(buffer, 0, buffer.length, fileSize - readSize);
+      const eocd = lastSignature(buffer, 0x06054b50);
+      if (eocd < 0 || eocd + 22 > buffer.length) {
+        throw new BadRequestException('Archive WX invalide.');
+      }
+      const entries = buffer.readUInt16LE(eocd + 10);
+      const centralSize = buffer.readUInt32LE(eocd + 12);
+      const centralOffset = buffer.readUInt32LE(eocd + 16);
+      const eocdAbsolute = fileSize - readSize + eocd;
+      if (
+        entries < 1 ||
+        centralSize < 46 ||
+        centralOffset + centralSize > eocdAbsolute ||
+        centralOffset + 46 > fileSize
+      ) {
+        throw new BadRequestException('Archive WX invalide.');
+      }
+      const centralHeader = Buffer.alloc(46);
+      await handle.read(centralHeader, 0, centralHeader.length, centralOffset);
+      if (centralHeader.readUInt32LE(0) !== 0x02014b50) {
+        throw new BadRequestException('Archive WX invalide.');
+      }
+    } finally {
+      await handle.close();
+    }
+  }
+
+  private async assertPortableExecutable(
+    filePath: string,
+    fileSize: number,
+  ): Promise<void> {
+    if (fileSize < 0x100) throw new BadRequestException('Installateur WX invalide.');
+    const handle = await fs.promises.open(filePath, 'r');
+    try {
+      const header = Buffer.alloc(0x100);
       await handle.read(header, 0, header.length, 0);
-      if (expected.some((value, index) => header[index] !== value)) {
-        throw new BadRequestException(message);
+      const peOffset = header.readUInt32LE(0x3c);
+      if (
+        peOffset < 0x40 ||
+        peOffset + 24 > fileSize ||
+        peOffset + 24 > header.length ||
+        header.readUInt32LE(peOffset) !== 0x00004550 ||
+        header.readUInt16LE(peOffset + 4) !== 0x8664 ||
+        header.readUInt16LE(peOffset + 6) < 1
+      ) {
+        throw new BadRequestException('Installateur WX invalide.');
       }
     } finally {
       await handle.close();
@@ -197,9 +240,9 @@ export class WxUpdateArtifactValidatorService {
       Number.isSafeInteger(item.sequence) &&
       item.sequence > 0 &&
       typeof item.publishedAt === 'string' &&
-      Number.isFinite(Date.parse(item.publishedAt)) &&
+      parseExplicitInstant(item.publishedAt) !== null &&
       (item.mandatoryAt == null ||
-        Number.isFinite(Date.parse(item.mandatoryAt))) &&
+        parseExplicitInstant(item.mandatoryAt) !== null) &&
       (item.minimumVersion == null ||
         parseUpdateVersion(item.minimumVersion) != null) &&
       typeof artifact?.url === 'string' &&
@@ -231,4 +274,11 @@ export class WxUpdateArtifactValidatorService {
       /^[a-f0-9]{64}$/i.test(value.sha256)
     );
   }
+}
+
+function lastSignature(buffer: Buffer, signature: number): number {
+  for (let index = buffer.length - 4; index >= 0; index -= 1) {
+    if (buffer.readUInt32LE(index) === signature) return index;
+  }
+  return -1;
 }

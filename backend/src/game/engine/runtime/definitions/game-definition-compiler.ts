@@ -1,36 +1,50 @@
+import {
+  mergeInitialization,
+  mergeComponents,
+  resolveTurnPolicy,
+  mergeLifecycleHooks,
+  mergeVictoryRules,
+} from './game-definition-composition';
 import type {
   GameComponentDefinition,
   GameInitialization,
 } from './component-kit';
-import type { GameLifecycleHooks } from '../lifecycle/game-lifecycle-hooks';
-import type { TurnPolicy } from '../kits/turn-kit';
 import { assertGameDefinition } from './game-definition-validator';
 import { composeGameConfigurations } from '../configuration/configuration-kit';
 import { defineGameContent } from '../content/game-content';
-import {
-  composePatterns,
-  type GamePattern,
-} from '../patterns/gameplay-patterns';
+import { contentDigest } from '../content/content-digest';
+import { deepFreeze as freezeStaticGraph } from '../content/content-immutability';
+import { composePatterns } from '../patterns/gameplay-patterns';
+import { type GamePattern } from '../contracts/pattern-definition';
 import {
   assertNoImplicitActionOverrides,
   assertNoImplicitComponentOverrides,
-  assertNoImplicitInitializationOverrides,
   assertNoImplicitTurnOverride,
 } from './game-definition-override-validator';
 import { GAME_DEFINITION_KIND } from './game-definition-contracts';
 import type {
   CompiledGameDefinition,
-  GameActionMap,
   GameDefinitionInput,
-  NoGameState,
-  VictoryRule,
 } from './game-definition-contracts';
+import type {
+  GameActionMap,
+  NoGameState,
+} from '../contracts/author-rule-contracts';
 import type { GameEventDefinition } from '../events/game-event-definition';
 import {
   describeCompiledGameDefinition,
   type CompiledDescriptorInput,
 } from './compiled-game-diagnostics';
-import type { DefinitionToValidate } from './game-definition-validator';
+import type { DefinitionToValidate } from '../contracts/definition-validation';
+import { markCompiledGameDefinition } from './compiled-game-definition-brand';
+import type {
+  componentCapabilities,
+  mechanicCapabilities,
+} from '../contracts/compiled-game-plan';
+import { compileGamePlan } from './game-plan-compiler';
+import type { OptionalGameCapability } from '../contracts/compiled-game-plan';
+
+const compiledDefinitions = new WeakMap<object, unknown>();
 
 type GameDefinitionBuilder<TState extends object> = <
   const TActions extends GameActionMap<TState>,
@@ -39,8 +53,27 @@ type GameDefinitionBuilder<TState extends object> = <
   const TEvents extends readonly GameEventDefinition<string, object>[] =
     readonly [],
   const TPatterns extends readonly GamePattern<TState>[] = readonly [],
+  const TComponents extends readonly GameComponentDefinition[] = readonly [],
+  const TResourceIds extends readonly string[] = readonly [],
+  const TCapabilities extends readonly OptionalGameCapability[] = readonly [],
 >(
-  definition: GameDefinitionInput<
+  definition: Omit<
+    GameDefinitionInput<
+      TState,
+      TActions,
+      TViewExtension,
+      TInitialization,
+      TEvents,
+      TPatterns
+    >,
+    'components' | 'resourceIds' | 'capabilities'
+  > & {
+    readonly components?: TComponents;
+    readonly resourceIds?: TResourceIds;
+    readonly capabilities?: TCapabilities;
+  },
+) => Omit<
+  CompiledGameDefinition<
     TState,
     TActions,
     TViewExtension,
@@ -48,14 +81,53 @@ type GameDefinitionBuilder<TState extends object> = <
     TEvents,
     TPatterns
   >,
-) => CompiledGameDefinition<
-  TState,
-  TActions,
-  TViewExtension,
-  TInitialization,
-  TEvents,
-  TPatterns
->;
+  'components' | 'resourceIds' | 'capabilities' | 'initialization'
+> & {
+  readonly resourceIds: readonly (
+    TResourceIds[number] | PatternResourceId<TPatterns[number]>
+  )[];
+  readonly initialization?: TInitialization &
+    PatternInitialization<TPatterns[number]>;
+  readonly capabilities: readonly (
+    | TCapabilities[number]
+    | CapabilityForComponent<
+        TComponents[number] | PatternComponent<TPatterns[number]>
+      >
+    | CapabilityForPattern<TPatterns[number]>
+  )[];
+  readonly components: readonly (
+    TComponents[number] | PatternComponent<TPatterns[number]>
+  )[];
+};
+
+type PatternResourceId<T> = T extends {
+  readonly resourceIds?: readonly (infer Id extends string)[];
+}
+  ? Id
+  : never;
+type PatternInitialization<T> = [T] extends [never]
+  ? Record<never, never>
+  : T extends { readonly initialization?: infer I }
+    ? NonNullable<I>
+    : Record<never, never>;
+type CapabilityForComponent<T> = T extends { readonly component: infer K }
+  ? K extends keyof typeof componentCapabilities
+    ? (typeof componentCapabilities)[K]
+    : never
+  : never;
+type CapabilityForPattern<T> = T extends {
+  readonly mechanics: readonly (infer K)[];
+}
+  ? K extends keyof typeof mechanicCapabilities
+    ? (typeof mechanicCapabilities)[K][number]
+    : never
+  : never;
+
+type PatternComponent<TPattern> = TPattern extends {
+  readonly components?: readonly (infer TComponent)[];
+}
+  ? TComponent
+  : never;
 
 /**
  * Curried form (`defineGame<State>()({...})`) keeps definition-owned literals
@@ -67,20 +139,80 @@ export function defineGame<
 >(): GameDefinitionBuilder<TState>;
 export function defineGame<
   TState extends object = NoGameState,
-  TActions extends GameActionMap<TState> = GameActionMap<TState>,
-  TViewExtension extends object = object,
+  const TActions extends GameActionMap<TState> = GameActionMap<TState>,
+  const TViewExtension extends object = object,
+  const TInitialization extends GameInitialization = Record<never, never>,
+  const TEvents extends readonly GameEventDefinition<string, object>[] =
+    readonly [],
+  const TPatterns extends readonly GamePattern<TState>[] = readonly [],
+  const TComponents extends readonly GameComponentDefinition[] = readonly [],
+  const TResourceIds extends readonly string[] = readonly [],
+  const TCapabilities extends readonly OptionalGameCapability[] = readonly [],
 >(
-  definition: GameDefinitionInput<TState, TActions, TViewExtension>,
-): CompiledGameDefinition<TState, TActions, TViewExtension>;
+  definition: Omit<
+    GameDefinitionInput<
+      TState,
+      TActions,
+      TViewExtension,
+      TInitialization,
+      TEvents,
+      TPatterns
+    >,
+    'components' | 'resourceIds' | 'capabilities'
+  > & {
+    readonly components?: TComponents;
+    readonly resourceIds?: TResourceIds;
+    readonly capabilities?: TCapabilities;
+  },
+): Omit<
+  CompiledGameDefinition<
+    TState,
+    TActions,
+    TViewExtension,
+    TInitialization,
+    TEvents,
+    TPatterns
+  >,
+  'components' | 'resourceIds' | 'capabilities' | 'initialization'
+> & {
+  readonly resourceIds: readonly (
+    TResourceIds[number] | PatternResourceId<TPatterns[number]>
+  )[];
+  readonly initialization?: TInitialization &
+    PatternInitialization<TPatterns[number]>;
+  readonly capabilities: readonly (
+    | TCapabilities[number]
+    | CapabilityForComponent<
+        TComponents[number] | PatternComponent<TPatterns[number]>
+      >
+    | CapabilityForPattern<TPatterns[number]>
+  )[];
+  readonly components: readonly (
+    TComponents[number] | PatternComponent<TPatterns[number]>
+  )[];
+};
 export function defineGame(definition?: unknown): unknown {
   if (definition == null) {
     return (
       input: GameDefinitionInput<object, GameActionMap<object>, object>,
-    ) => compileGameDefinition(input);
+    ) => compileOnce(input);
   }
-  return compileGameDefinition(
+  return compileOnce(
     definition as GameDefinitionInput<object, GameActionMap<object>, object>,
   );
+}
+
+function compileOnce(
+  definition: GameDefinitionInput<object, GameActionMap<object>, object>,
+): unknown {
+  const cached = compiledDefinitions.get(definition);
+  if (cached) return cached;
+  const compiled = compileGameDefinition(definition);
+  Object.freeze(definition);
+  compiledDefinitions.set(definition, compiled);
+  compiledDefinitions.set(compiled, compiled);
+  markCompiledGameDefinition(compiled);
+  return compiled;
 }
 
 function compileGameDefinition<
@@ -114,10 +246,17 @@ function compileGameDefinition<
     stateVersion: 1,
     rulesVersion: '1',
     ...definition,
+    automatic: orderAutomaticRules(definition.automatic ?? []),
     content,
     contentVersion: definition.contentVersion ?? content.version,
     patterns: [...(definition.patterns ?? [])],
     components,
+    resourceIds: [
+      ...new Set([
+        ...(patterns.resourceIds ?? []),
+        ...(definition.resourceIds ?? []),
+      ]),
+    ],
     actions: {
       ...(patterns.actions ?? {}),
       ...definition.actions,
@@ -135,10 +274,12 @@ function compileGameDefinition<
       Object.keys(definition.phases ?? {})[0] ??
       'playing',
     phases: definition.phases ?? {
-      [definition.initialPhase ?? 'playing']: {},
+      [definition.initialPhase ?? 'playing']: { terminal: true },
     },
   };
-  return finalizeCompiledDefinition(normalizedBase) as CompiledGameDefinition<
+  const compiled = finalizeCompiledDefinition(
+    normalizedBase,
+  ) as CompiledGameDefinition<
     TState,
     TActions,
     TViewExtension,
@@ -146,6 +287,7 @@ function compileGameDefinition<
     TEvents,
     TPatterns
   >;
+  return compiled;
 }
 
 function prepareDefinitionComposition<
@@ -187,144 +329,54 @@ function prepareDefinitionComposition<
 }
 
 function finalizeCompiledDefinition<TState extends object>(
-  normalizedBase: DefinitionToValidate & CompiledDescriptorInput<TState>,
+  normalizedBase: DefinitionToValidate &
+    CompiledDescriptorInput<TState> & {
+      capabilities?: readonly OptionalGameCapability[];
+    },
 ): unknown {
   const normalized = {
     ...normalizedBase,
     compiled: describeCompiledGameDefinition(normalizedBase),
   };
   assertGameDefinition(normalized);
-  return deepFreeze({ ...normalized, kind: GAME_DEFINITION_KIND });
-}
-
-function mergeInitialization(
-  pattern?: GameInitialization,
-  game?: GameInitialization,
-): GameInitialization | undefined {
-  if (!pattern) return game;
-  if (!game) return pattern;
-  assertNoImplicitInitializationOverrides(pattern, game);
-  const overriddenPawnSets = new Set(
-    (game.overrides ?? [])
-      .filter((key) => key.startsWith('pawns.'))
-      .map((key) => key.slice('pawns.'.length)),
+  const plan = compileGamePlan(normalized);
+  return deepFreeze(
+    freezeStaticGraph({
+      ...normalized,
+      contentDigest: contentDigest(normalized.content),
+      patterns: plan.patterns,
+      capabilities: plan.capabilities,
+      plan,
+      kind: GAME_DEFINITION_KIND,
+    }),
   );
-  const pawns = [
-    ...(pattern.pawns ?? []).filter(
-      (pawn) => !overriddenPawnSets.has(pawn.setId),
-    ),
-    ...(game.pawns ?? []),
-  ];
-  return compactInitialization({
-    firstPlayer: game.firstPlayer ?? pattern.firstPlayer,
-    startRound: game.startRound ?? pattern.startRound,
-    scores: game.scores ?? pattern.scores,
-    resources: mergeInitializationRecords(pattern.resources, game.resources),
-    counters: mergeInitializationRecords(pattern.counters, game.counters),
-    tracks: mergeInitializationRecords(pattern.tracks, game.tracks),
-    pawns,
-  });
 }
 
-function compactInitialization(value: GameInitialization): GameInitialization {
-  const compact: GameInitialization = {};
-  if (value.firstPlayer != null) compact.firstPlayer = value.firstPlayer;
-  if (value.startRound != null) compact.startRound = value.startRound;
-  if (value.scores != null) compact.scores = value.scores;
-  if (value.resources && Object.keys(value.resources).length > 0)
-    compact.resources = value.resources;
-  if (value.counters && Object.keys(value.counters).length > 0)
-    compact.counters = value.counters;
-  if (value.tracks && Object.keys(value.tracks).length > 0)
-    compact.tracks = value.tracks;
-  if (value.pawns && value.pawns.length > 0) compact.pawns = value.pawns;
-  return compact;
-}
-
-function mergeInitializationRecords<TValue>(
-  inherited: Readonly<Record<string, TValue>> | undefined,
-  local: Readonly<Record<string, TValue>> | undefined,
-): Record<string, TValue> | undefined {
-  if (!inherited) return local ? { ...local } : undefined;
-  if (!local) return { ...inherited };
-  return { ...inherited, ...local };
-}
-
-function mergeComponents(
-  patternComponents: readonly GameComponentDefinition[],
-  gameComponents: readonly GameComponentDefinition[],
-): GameComponentDefinition[] {
-  const replaced = new Set(
-    gameComponents
-      .map((component) => component.overrides)
-      .filter((key): key is string => Boolean(key)),
-  );
-  return [
-    ...patternComponents.filter(
-      (component) => !replaced.has(`${component.component}:${component.id}`),
-    ),
-    ...gameComponents.map(({ overrides: _overrides, ...component }) =>
-      Object.freeze(component as GameComponentDefinition),
-    ),
-  ];
-}
-
-function resolveTurnPolicy(
-  pattern: TurnPolicy | undefined,
-  game: TurnPolicy | undefined,
-): TurnPolicy | undefined {
-  const selected = game ?? pattern;
-  if (!selected) return undefined;
-  const { overrides: _overrides, ...policy } = selected;
-  return Object.freeze(policy as TurnPolicy);
-}
-
-function mergeLifecycleHooks<TState extends object>(
-  patternHooks?: GameLifecycleHooks<TState>,
-  gameHooks?: GameLifecycleHooks<TState>,
-): GameLifecycleHooks<TState> | undefined {
-  if (!patternHooks) return gameHooks;
-  if (!gameHooks) return patternHooks;
-  return {
-    beforeTurn: mergeHook(patternHooks.beforeTurn, gameHooks.beforeTurn),
-    afterTurn: mergeHook(patternHooks.afterTurn, gameHooks.afterTurn),
-    onRoundStart: mergeHook(patternHooks.onRoundStart, gameHooks.onRoundStart),
-    onRoundEnd: mergeHook(patternHooks.onRoundEnd, gameHooks.onRoundEnd),
-  };
-}
-
-function mergeHook<TInput>(
-  first?: (input: TInput) => void,
-  second?: (input: TInput) => void,
-): ((input: TInput) => void) | undefined {
-  if (!first) return second;
-  if (!second) return first;
-  return (input) => {
-    first(input);
-    second(input);
-  };
-}
-
-function mergeVictoryRules<TState extends object>(
-  gameRule?: VictoryRule<TState>,
-  patternRule?: VictoryRule<TState>,
-): VictoryRule<TState> | undefined {
-  if (!gameRule) return patternRule;
-  if (!patternRule) return gameRule;
-  return {
-    evaluate: (input) =>
-      gameRule.evaluate(input) ?? patternRule.evaluate(input),
-  };
-}
-
-function deepFreeze<TValue>(value: TValue): TValue {
+function deepFreeze<TValue>(
+  value: TValue,
+  visited = new WeakSet<object>(),
+): TValue {
   if (
     value == null ||
     (typeof value !== 'object' && typeof value !== 'function') ||
-    Object.isFrozen(value)
+    visited.has(value)
   ) {
     return value;
   }
-  for (const nested of Object.values(value)) deepFreeze(nested);
+  visited.add(value);
+  for (const nested of Object.values(value)) deepFreeze(nested, visited);
   return Object.freeze(value);
+}
+
+function orderAutomaticRules<T extends { priority?: number }>(
+  rules: readonly T[],
+): T[] {
+  return rules
+    .map((rule, declarationIndex) => ({ rule, declarationIndex }))
+    .sort(
+      (left, right) =>
+        (right.rule.priority ?? 0) - (left.rule.priority ?? 0) ||
+        left.declarationIndex - right.declarationIndex,
+    )
+    .map(({ rule }) => rule);
 }

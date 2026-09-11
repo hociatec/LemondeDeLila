@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import type { RoomPayload } from '../../contracts/room-payload.model';
-import { RoomWsInvalidRoomIdError } from '../../../domain/errors/room-ws.errors';
+import type { RoomPayload } from '../../models/room-payload.model';
+import { RoomInvalidRoomIdError } from '../../../domain/errors/room-domain.errors';
 
 @Injectable()
 export class RoomJoinPolicyService {
   /** Validates transport identity before membership orchestration. */
   requireValidRoomId(roomId: number): number {
-    if (!Number.isFinite(roomId) || roomId <= 0) {
-      throw new RoomWsInvalidRoomIdError();
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) {
+      throw new RoomInvalidRoomIdError();
     }
     return roomId;
   }

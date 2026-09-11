@@ -1,5 +1,5 @@
 import { projectEventsForPlayer } from './game-system-view';
-import type { GamePendingEvent } from '../../../core/application/contracts/game-event.model';
+import type { GamePendingEvent } from '../../../core/application/models/game-event.model';
 
 describe('game system view event visibility', () => {
   const event = (

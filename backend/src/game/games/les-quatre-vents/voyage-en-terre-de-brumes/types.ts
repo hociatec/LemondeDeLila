@@ -11,15 +11,6 @@ export type VoyageTileType =
   | 'treasure'
   | 'landscape';
 
-export interface VoyageTile {
-  id: number;
-  title: string;
-  type: VoyageTileType;
-  label?: string;
-  description?: string;
-  passageEffect?: { kind: 'swap-position' } | { kind: 'move'; delta: number };
-}
-
 export interface VoyageCard {
   id: number;
   title: string;
@@ -32,8 +23,8 @@ export interface VoyageCard {
 }
 
 export type VoyageQuiz = {
-  choices: string[];
-  answer: string;
+  choices: { id: string; label: string }[];
+  answerId: string;
   successDelta: number;
 };
 
@@ -49,3 +40,5 @@ export type VoyagePendingChoice = {
 };
 
 export type VoyageState = import('../../../engine/sdk/public-api').NoGameState;
+
+export type VoyageTargetEffect = 'swap-position' | 'skip-turn' | 'swap-card';

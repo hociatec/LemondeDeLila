@@ -6,3 +6,5 @@ export type RitesPendingChoice =
 
 export type EntreRitesState =
   import('../../../engine/sdk/public-api').NoGameState;
+
+export type RitesStealChoice = { targetPlayerId: number; cardId: string };

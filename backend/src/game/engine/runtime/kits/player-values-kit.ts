@@ -1,70 +1,24 @@
 import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
-import type { VisibilityRule } from './visibility-kit';
-
-export type StatusScope =
-  'turn' | 'global-turn' | 'round' | 'match' | 'until-used';
-
-export const commonStatuses = {
-  blocked: 'blocked',
-  doubleMove: 'double-move',
-  doubleRoll: 'double-roll',
-  forcedRoll: 'forced-roll',
-  immunity: 'immunity',
-  protected: 'protected',
-  reverse: 'reverse',
-  shield: 'shield',
-  skip: 'skip',
-} as const;
-
-export type CommonStatusId =
-  (typeof commonStatuses)[keyof typeof commonStatuses];
-
-export type PlayerStatus<TData extends object = Record<string, unknown>> = {
-  id: string;
-  remaining: number | null;
-  scope: StatusScope;
-  data: TData;
-};
-
-export type PlayerValuesKitState<
-  TResourceId extends string = string,
-  TCounterId extends string = string,
-  TStatusData extends object = Record<string, unknown>,
-  TTurnFlags extends Record<string, unknown> = Record<string, unknown>,
-> = {
-  scores: Record<string, number>;
-  resources: Record<TResourceId, Record<string, number>>;
-  counters?: Record<TCounterId, number>;
-  statuses: Record<string, PlayerStatus<TStatusData>[]>;
-  turnFlags: TTurnFlags;
-  scheduledSkips: Record<string, number>;
-  scheduledExtraTurns: Record<string, number>;
-};
-
-export type PlayerValuesPlayerView<
-  TResourceId extends string = string,
-  TCounterId extends string = string,
-  TStatusData extends object = Record<string, unknown>,
-> = {
-  scores: Record<string, number>;
-  scoring: ScorePlayerView;
-  resources: Record<TResourceId, Record<string, number>>;
-  counters: Record<TCounterId, number>;
-  statuses: PlayerStatus<TStatusData>[];
-};
-
-export type ScorePlayerView = {
-  byPlayer: Record<string, number>;
-  leaderboard: Array<{ playerId: number; score: number; rank: number }>;
-};
-
-/** Projection policy for values held by the player-values kit. */
-export type PlayerValuesVisibility = {
-  scores?: VisibilityRule;
-  resources?: Readonly<Record<string, VisibilityRule>>;
-  counters?: Readonly<Record<string, VisibilityRule>>;
-  statuses?: VisibilityRule;
-};
+import {
+  assertGameCount,
+  assertGameValue,
+  assertPlayerValueId,
+} from './numeric-invariants';
+import type {
+  PlayerStatus,
+  PlayerValuesKitState,
+  StatusScope,
+} from './player-values-contracts';
+export type {
+  CommonStatusId,
+  PlayerStatus,
+  PlayerValuesKitState,
+  PlayerValuesPlayerView,
+  PlayerValuesVisibility,
+  ScorePlayerView,
+  StatusScope,
+} from './player-values-contracts';
+export { commonStatuses } from './player-values-contracts';
 
 export function createPlayerValuesKitState<
   TResourceId extends string = string,
@@ -82,13 +36,6 @@ export function createPlayerValuesKitState<
     scheduledExtraTurns: {},
   } as PlayerValuesKitState<TResourceId, TCounterId, TStatusData, TTurnFlags>;
 }
-
-export {
-  projectPlayerValues,
-  projectScores,
-  projectStatusesByPlayer,
-  projectStatusViews,
-} from '../projection/player-values-projection';
 
 export class GameScoreController {
   constructor(
@@ -109,6 +56,9 @@ export class GameScoreController {
     options: { announce?: boolean } = {},
   ): number {
     const previous = this.get(playerId);
+    assertGameValue(value);
+    assertGameValue(previous);
+    assertGameValue(value - previous);
     this.state.scores[String(playerId)] = value;
     this.emit('score.changed', {
       playerId,
@@ -139,7 +89,8 @@ export class GameScoreController {
   ranking(direction: 'asc' | 'desc' = 'desc'): number[][] {
     const factor = direction === 'desc' ? -1 : 1;
     const sorted = Object.entries(this.state.scores).sort(
-      (left, right) => factor * (left[1] - right[1]),
+      (left, right) =>
+        factor * (left[1] - right[1]) || Number(left[0]) - Number(right[0]),
     );
     const ranks: number[][] = [];
     for (const [playerId, score] of sorted) {
@@ -164,11 +115,15 @@ export class GameResourcesController<TResourceId extends string = string> {
   ) {}
 
   get(playerId: number, resource: TResourceId): number {
+    assertPlayerValueId(resource);
     return this.state.resources[resource]?.[String(playerId)] ?? 0;
   }
 
   set(playerId: number, resource: TResourceId, value: number): number {
     const previous = this.get(playerId, resource);
+    assertGameValue(value);
+    assertGameValue(previous);
+    assertGameValue(value - previous);
     const stateResources = this.state.resources as Record<
       string,
       Record<string, number>
@@ -189,6 +144,8 @@ export class GameResourcesController<TResourceId extends string = string> {
   }
 
   has(playerId: number, resource: TResourceId, amount: number): boolean {
+    assertGameValue(amount);
+    if (amount < 0) throw new GameRuleViolationError('RESOURCE_AMOUNT_INVALID');
     return this.get(playerId, resource) >= amount;
   }
 
@@ -210,14 +167,15 @@ export class GameResourcesController<TResourceId extends string = string> {
     amount: number,
   ): void {
     const normalizedAmount = this.normalizePositiveAmount(amount);
-    if (normalizedAmount === 0 || from === to) return;
+    assertPlayerValueId(resource);
+    if (from === to) return;
     const fromKey = String(from);
     const toKey = String(to);
     const stateResources = this.state.resources as Record<
       string,
       Record<string, number>
     >;
-    const resources = (stateResources[resource] ??= {});
+    const resources = stateResources[resource] ?? {};
     const sourceAmount = resources[fromKey] ?? 0;
     if (sourceAmount < normalizedAmount) {
       throw new GameRuleViolationError(
@@ -227,6 +185,10 @@ export class GameResourcesController<TResourceId extends string = string> {
       );
     }
     const destinationAmount = resources[toKey] ?? 0;
+    assertGameValue(sourceAmount);
+    assertGameValue(destinationAmount);
+    assertGameValue(destinationAmount + normalizedAmount);
+    stateResources[resource] = resources;
     resources[fromKey] = sourceAmount - normalizedAmount;
     resources[toKey] = destinationAmount + normalizedAmount;
     this.emit('resource.changed', {
@@ -252,7 +214,7 @@ export class GameResourcesController<TResourceId extends string = string> {
   }
 
   private normalizePositiveAmount(amount: number): number {
-    if (!Number.isInteger(amount) || amount < 1) {
+    if (!Number.isSafeInteger(amount) || amount < 1) {
       throw new GameRuleViolationError(
         'RESOURCE_TRANSFER_AMOUNT',
         { amount },
@@ -273,11 +235,15 @@ export class GameCountersController<TCounterId extends string = string> {
   ) {}
 
   get(counter: TCounterId): number {
+    assertPlayerValueId(counter);
     return this.state.counters?.[counter] ?? 0;
   }
 
   set(counter: TCounterId, value: number): number {
     const previous = this.get(counter);
+    assertGameValue(value);
+    assertGameValue(previous);
+    assertGameValue(value - previous);
     const counters = (this.state.counters ??= {} as Record<TCounterId, number>);
     counters[counter] = value;
     this.emit('counter.changed', {
@@ -314,6 +280,7 @@ export class GameStatusController<
       data?: TStatusData;
     } = {},
   ): void {
+    if (options.turns != null) assertGameCount(options.turns);
     const statuses = (this.state.statuses[String(playerId)] ??= []);
     const status: PlayerStatus<TStatusData> = {
       id,

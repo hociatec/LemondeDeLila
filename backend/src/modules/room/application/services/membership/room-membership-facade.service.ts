@@ -3,30 +3,33 @@ import {
   ROOM_PARTICIPANT_REPOSITORY,
   type RoomParticipantRepository,
 } from '../../ports/room-participant.repository';
-import type { RoomRecord } from '../../contracts/room-record.model';
-import { CountRoomBotsService } from '../../../../bot/public-api';
+import type { RoomRecord } from '../../models/room-record.model';
+import type { RoomCreateCommand } from '../../models/room-create-command';
+import {
+  ROOM_BOT_COUNTER_PORT,
+  type RoomBotCounterPort,
+} from '../../ports/room-bot-counter.port';
 import { RoomAdminContextService } from '../maintenance/room-admin-context.service';
 import { RoomAccessService } from './room-access.service';
 import { RoomMembershipService } from './room-membership.service';
-import { RoomStateService } from '../state/room-state.service';
+import { RoomPayloadService } from '../state/room-payload.service';
 
 @Injectable()
 export class RoomMembershipFacadeService {
   constructor(
     @Inject(ROOM_PARTICIPANT_REPOSITORY)
     private readonly participants: RoomParticipantRepository,
-    private readonly countRoomBotsUseCase: CountRoomBotsService,
+    @Inject(ROOM_BOT_COUNTER_PORT)
+    private readonly countRoomBotsUseCase: RoomBotCounterPort,
     private readonly roomAdminContext: RoomAdminContextService,
     private readonly roomAccess: RoomAccessService,
     private readonly membership: RoomMembershipService,
-    private readonly state: RoomStateService,
+    private readonly payloads: RoomPayloadService,
   ) {}
 
   private buildContext() {
     return {
-      invalidateRoomPayloadCache: this.state.invalidateRoomPayloadCache.bind(
-        this.state,
-      ),
+      invalidateRoomPayloadCache: this.payloads.invalidate.bind(this.payloads),
       requireRoom: this.roomAdminContext.requireRoom.bind(
         this.roomAdminContext,
       ),
@@ -41,23 +44,8 @@ export class RoomMembershipFacadeService {
     };
   }
 
-  async createRoom(
-    userId: number,
-    gameType: string,
-    name?: string | null,
-    maxPlayers?: number | null,
-    isPrivate = false,
-    invalidateCache = true,
-  ): Promise<RoomRecord> {
-    return this.membership.createRoom(
-      this.buildContext(),
-      userId,
-      gameType,
-      name,
-      maxPlayers,
-      isPrivate,
-      invalidateCache,
-    );
+  async createRoom(command: RoomCreateCommand): Promise<RoomRecord> {
+    return this.membership.createRoom(this.buildContext(), command);
   }
 
   async joinRoom(
@@ -103,7 +91,7 @@ export class RoomMembershipFacadeService {
   async findLatestActiveRoomForUser(
     userId: number,
   ): Promise<{ roomId: number; gameType: string } | null> {
-    if (!Number.isFinite(userId) || userId <= 0) return null;
+    if (!Number.isSafeInteger(userId) || userId <= 0) return null;
     return this.participants.findLatestActiveRoomForUser(userId);
   }
 

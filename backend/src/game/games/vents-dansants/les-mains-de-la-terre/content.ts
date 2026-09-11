@@ -1,4 +1,14 @@
-import { freezeGameContent, gameEffects } from '../../../engine/sdk/public-api';
+import canonicalContent from './catalogue.json';
+import manifest from './manifest.json';
+
+import {
+  defineGameContent,
+  gameInput,
+  cardContent,
+  effectContentSchema,
+  rejectContent,
+} from '../../../engine/sdk/public-api';
+
 import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 
 export type LesMainsFamily =
@@ -6,7 +16,7 @@ export type LesMainsFamily =
 
 export type LesMainsCardType = 'metier' | 'special';
 
-export const LES_MAINS_FAMILIES: readonly LesMainsFamily[] = [
+export const LES_MAINS_FAMILIES: readonly LesMainsFamily[] = Object.freeze([
   'tradition',
   'nature',
   'mer',
@@ -14,7 +24,7 @@ export const LES_MAINS_FAMILIES: readonly LesMainsFamily[] = [
   'insolites',
   'innovation',
   'sante',
-];
+]);
 
 export interface LesMainsCardDefinition {
   id: string;
@@ -24,149 +34,81 @@ export interface LesMainsCardDefinition {
   effects: readonly GameEffectInstruction[];
 }
 
-type RawLesMainsCardDefinition = Omit<LesMainsCardDefinition, 'effects'>;
-
-const familyCards: Record<LesMainsFamily, string[]> = {
-  tradition: [
-    'isserande-berbere',
-    'forgeron-dogon',
-    'potier-zapoteque',
-    'tanneur-de-fez',
-    'charpentier-japonais',
-    'sculptrice-de-calebasses',
-  ],
-  nature: [
-    'cueilleur-de-the',
-    'berger-nomade',
-    'apiculteur-traditionnel',
-    'cueilleur-de-champignons',
-    'chasseur-cueilleur-pygmee',
-    'eleveuse-de-yaks',
-  ],
-  mer: [
-    'pecheur-sur-echasses',
-    'plongeuse-de-perles',
-    'chasseur-inuit',
-    'constructeur-de-pirogues',
-    'ramasseur-dalgues',
-    'capitaine-de-boutre',
-  ],
-  art: [
-    'calligraphe-chinois',
-    'sculpteur-inuit',
-    'masqueur-balinais',
-    'peintre-dicones',
-    'fabricante-de-poupees-kokeshi',
-    'brodeur-touareg',
-  ],
-  insolites: [
-    'fauconnier-kazakh',
-    'gardien-de-temple',
-    'dompteur-de-serpents',
-    'maitre-de-the',
-    'marionnettiste-wayang',
-    'ramasseur-de-truffes',
-  ],
-  innovation: [
-    'developpeur-de-jeux-video',
-    'specialiste-en-drones',
-    'concepteur-denergies-renouvelables',
-    'bio-architecte',
-    'imprimeuse-3d-medicale',
-    'concepteur-de-textiles-ecologiques',
-  ],
-  sante: [
-    'medecin-ayurvedique',
-    'guerisseur-traditionnel',
-    'rebouteux-andin',
-    'chaman-siberien',
-    'accoucheuse-bedouine',
-    'herboriste-coreenne',
-  ],
-};
-
-const mainCards: LesMainsCardDefinition[] = LES_MAINS_FAMILIES.flatMap(
-  (family) =>
-    familyCards[family].map((id) => ({
-      id: `metier-${id}`,
-      name: id.replace(/-/g, ' '),
-      type: 'metier',
-      family,
-      effects: [],
-    })),
-);
-
-const rawSpecialCards: RawLesMainsCardDefinition[] = [
-  {
-    id: 'special-voyage-autour-du-monde',
-    name: 'Voyage autour du monde',
-    type: 'special',
-  },
-  { id: 'special-metier-disparu', name: 'Métier disparu', type: 'special' },
-  {
-    id: 'special-formation-express',
-    name: 'Formation express',
-    type: 'special',
-  },
-  { id: 'special-greve-mondiale', name: 'Grève mondiale', type: 'special' },
-  { id: 'special-boussole-perdue', name: 'Boussole perdue', type: 'special' },
-  {
-    id: 'special-passation-de-savoir',
-    name: 'Passation de savoir',
-    type: 'special',
-  },
-  { id: 'special-fete-du-metier', name: 'Fête du métier', type: 'special' },
-];
-
-const SPECIAL_EFFECTS: Readonly<
-  Record<string, readonly GameEffectInstruction[]>
-> = {
-  'special-voyage-autour-du-monde': [
-    gameEffects.custom('les-mains.exchange-random'),
-  ],
-  'special-metier-disparu': [gameEffects.custom('les-mains.complete-vanished')],
-  'special-formation-express': [
-    gameEffects.gainResource('les-mains.extra-draws', 1),
-  ],
-  'special-greve-mondiale': [
-    gameEffects.skipTurn(1, gameEffects.target.allOpponents()),
-  ],
-  'special-boussole-perdue': [gameEffects.custom('les-mains.mix-hands')],
-  'special-passation-de-savoir': [
-    gameEffects.custom('les-mains.pass-knowledge'),
-  ],
-  'special-fete-du-metier': [
-    gameEffects.addStatus({
-      status: 'les-mains.free-family-request',
-      scope: 'until-used',
-    }),
-  ],
-};
-
-const specialCards: LesMainsCardDefinition[] = rawSpecialCards.map((card) => ({
-  ...card,
-  effects: [
-    ...(SPECIAL_EFFECTS[card.id] ?? []),
-    gameEffects.custom('les-mains.log-special', { cardId: card.id }),
-  ],
-}));
-
-export const LES_MAINS_METIER_CARDS = mainCards;
-export const LES_MAINS_SPECIAL_CARDS = specialCards;
-export const LES_MAINS_DECK = [...mainCards, ...specialCards];
-export const LES_MAINS_CARD_BY_ID: Record<string, LesMainsCardDefinition> =
-  Object.fromEntries(LES_MAINS_DECK.map((card) => [card.id, card]));
-
 export const LES_MAINS_FAMILY_SIZE = 6;
-export const LES_MAINS_SPECIAL_CARD_IDS = new Set(
-  specialCards.map((card) => card.id),
-);
-export const isLesMainsSpecialCard = (cardId: string): boolean =>
-  LES_MAINS_SPECIAL_CARD_IDS.has(cardId);
 
-freezeGameContent(LES_MAINS_METIER_CARDS);
-freezeGameContent(LES_MAINS_SPECIAL_CARDS);
-freezeGameContent(LES_MAINS_DECK);
-freezeGameContent(LES_MAINS_CARD_BY_ID);
-freezeGameContent(LES_MAINS_FAMILIES);
-freezeGameContent(LES_MAINS_SPECIAL_CARD_IDS);
+const deckSchema = gameInput.object({
+  cards: gameInput.array(
+    gameInput.object({
+      id: gameInput.string({ min: 1, max: 128 }),
+      name: gameInput.string({ min: 1, max: 200 }),
+      type: gameInput.enum(['metier', 'special']),
+      family: gameInput.optional(
+        gameInput.enum([
+          'tradition',
+          'nature',
+          'mer',
+          'art',
+          'insolites',
+          'innovation',
+          'sante',
+        ]),
+      ),
+      effects: effectContentSchema({
+        effects: [
+          'les-mains.exchange-random',
+          'les-mains.complete-vanished',
+          'les-mains.mix-hands',
+          'les-mains.pass-knowledge',
+          'les-mains.log-special',
+        ],
+      }),
+    }),
+    { min: 1, max: 10000 },
+  ),
+});
+
+export const LES_MAINS_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  canonicalContent,
+  {
+    schema: {
+      parse(value: unknown) {
+        const parsed = deckSchema.parse(value);
+        for (const card of parsed.cards) {
+          if (card.type === 'metier' && !card.family)
+            rejectContent('Famille requise');
+          if (card.type === 'special' && card.family)
+            rejectContent('Une carte spéciale ne fait pas partie des métiers');
+        }
+        for (const family of LES_MAINS_FAMILIES) {
+          if (
+            parsed.cards.filter(
+              (card) => card.type === 'metier' && card.family === family,
+            ).length !== LES_MAINS_FAMILY_SIZE
+          )
+            rejectContent('Chaque famille doit contenir six métiers');
+        }
+        return { cards: cardContent(parsed.cards) };
+      },
+    },
+  },
+);
+
+export const LES_MAINS_DECK = LES_MAINS_GAME_CONTENT.data.cards;
+
+export const LES_MAINS_METIER_CARDS = Object.freeze(
+  LES_MAINS_DECK.filter((card) => card.type === 'metier'),
+);
+
+export const LES_MAINS_SPECIAL_CARDS = Object.freeze(
+  LES_MAINS_DECK.filter((card) => card.type === 'special'),
+);
+
+export const LES_MAINS_CARD_BY_ID: Readonly<
+  Record<string, LesMainsCardDefinition>
+> = Object.freeze(
+  Object.fromEntries(LES_MAINS_DECK.map((card) => [card.id, card])),
+);
+
+export const isLesMainsSpecialCard = (cardId: string): boolean =>
+  LES_MAINS_SPECIAL_CARDS.some((card) => card.id === cardId);

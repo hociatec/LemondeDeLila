@@ -13,6 +13,7 @@ type WsSocketLike = {
 };
 
 const SHUTDOWN_SOCKET_GRACE_MS = 1_000;
+const MAX_OUTBOUND_MESSAGE_BYTES = 1 * 1024 * 1024;
 
 export type WsApiHubConnectionMeta = {
   scope?: string;
@@ -97,7 +98,7 @@ export class WsApiHubService implements OnModuleDestroy {
     const socket = this.socketsByConnectionId.get(connectionId);
     if (!socket) return false;
     if (socket.readyState !== 1 /* OPEN */) {
-      this.socketsByConnectionId.delete(connectionId);
+      this.unregister(connectionId);
       return false;
     }
     if ((socket.bufferedAmount ?? 0) > this.config.maxBufferedBytes) {
@@ -114,7 +115,18 @@ export class WsApiHubService implements OnModuleDestroy {
       return false;
     }
     try {
-      socket.send(JSON.stringify(message));
+      const serialized = JSON.stringify(message);
+      if (
+        Buffer.byteLength(serialized, 'utf8') > MAX_OUTBOUND_MESSAGE_BYTES
+      ) {
+        this.logger.warn(
+          `Message WS sortant trop volumineux connectionId=${connectionId}`,
+        );
+        this.unregister(connectionId);
+        socket.close(1009, 'Message too large');
+        return false;
+      }
+      socket.send(serialized);
       return true;
     } catch (err) {
       const error = err instanceof Error ? err : undefined;
@@ -122,7 +134,7 @@ export class WsApiHubService implements OnModuleDestroy {
         `Echec envoi WS push connectionId=${connectionId}`,
         error,
       );
-      this.socketsByConnectionId.delete(connectionId);
+      this.unregister(connectionId);
       try {
         socket.close();
       } catch {

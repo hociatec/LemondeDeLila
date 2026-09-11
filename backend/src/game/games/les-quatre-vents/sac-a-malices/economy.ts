@@ -7,7 +7,6 @@ import {
   type SacVariantId,
 } from './content';
 import type { SacBuilding, SacState } from './state';
-import { normalize } from './text-parser';
 
 type RuleContext = GameContext<SacState>;
 const TRACK = 'city';
@@ -32,7 +31,10 @@ export function changeMoney(
   ctx.resources.set(playerId, 'money', 0);
   ctx.match.eliminate(playerId, 'bankruptcy');
   for (const assetId of ctx.ownership.releaseAll(PROPERTIES, playerId)) {
-    delete state.buildings[Number(assetId)];
+    const index = currentSacVariant(ctx).tiles.findIndex(
+      (tile) => tile.id === assetId,
+    );
+    delete state.buildings[index];
   }
   ctx.events.message('sac.player.bankrupt', { playerId });
   updateWinner(state, ctx);
@@ -51,7 +53,9 @@ export function sendToJail(
   ctx: RuleContext,
 ): void {
   const variant = currentSacVariant(ctx);
-  const jail = variant.tiles.findIndex((tile) => tile.type === 'jail');
+  const jail = variant.tiles.findIndex(
+    (tile) => tile.id === variant.rules.jail.tileId,
+  );
   if (jail >= 0) moveTo(playerId, jail, ctx);
   ctx.resources.set(playerId, SAC_JAIL_TURNS, variant.rules.jail.maxTurns);
   ctx.turn.clearExtra(playerId);
@@ -75,9 +79,7 @@ export function payTax(
   tile: SacTile,
   ctx: RuleContext,
 ): void {
-  const amount = Number(
-    `${tile.title} ${tile.description ?? ''}`.match(/(\d+)/)?.[1] ?? 0,
-  );
+  const amount = tile.taxAmount ?? 0;
   if (amount > 0) changeMoney(state, playerId, -amount, true, ctx);
 }
 
@@ -89,7 +91,11 @@ export function loseInfrastructure(
   const candidates = Object.entries(state.buildings)
     .filter(
       ([tileIndex, building]) =>
-        ctx.ownership.isOwner(PROPERTIES, tileIndex, playerId) &&
+        ctx.ownership.isOwner(
+          PROPERTIES,
+          currentSacVariant(ctx).tiles[Number(tileIndex)]?.id ?? '',
+          playerId,
+        ) &&
         (building.hotel || building.houses > 0),
     )
     .map(([tileIndex]) => Number(tileIndex));
@@ -104,7 +110,7 @@ export function purchasePrice(variant: SacVariant, tile: SacTile): number {
   if (tile.type === 'station') return variant.stations.purchasePrice;
   if (tile.type === 'utility')
     return (
-      variant.utilities.find((utility) => sameName(utility.name, tile.title))
+      variant.utilities.find((utility) => utility.tileId === tile.id)
         ?.purchasePrice ?? 0
     );
   return groupFor(variant, tile)?.purchasePrice ?? 0;
@@ -121,20 +127,20 @@ export function rentFor(
 ): number {
   if (tile.type === 'station') {
     const count = variant.tiles.filter(
-      (candidate, index) =>
+      (candidate) =>
         candidate.type === 'station' &&
-        ctx.ownership.isOwner(PROPERTIES, String(index), ownerId),
+        ctx.ownership.isOwner(PROPERTIES, candidate.id, ownerId),
     ).length;
     return variant.stations.rents[cappedLevel(count)];
   }
   if (tile.type === 'utility') {
     const owned = variant.tiles.filter(
-      (candidate, index) =>
+      (candidate) =>
         candidate.type === 'utility' &&
-        ctx.ownership.isOwner(PROPERTIES, String(index), ownerId),
+        ctx.ownership.isOwner(PROPERTIES, candidate.id, ownerId),
     ).length;
-    const utility = variant.utilities.find((candidate) =>
-      sameName(candidate.name, tile.title),
+    const utility = variant.utilities.find(
+      (candidate) => candidate.tileId === tile.id,
     );
     return (
       lastRoll *
@@ -159,36 +165,26 @@ export function currentSacVariant(ctx: RuleContext): SacVariant {
 }
 
 export function groupFor(variant: SacVariant, tile: SacTile): SacGroup | null {
-  return (
-    variant.groups.find(
-      (group) => normalize(group.color) === normalize(tile.group ?? ''),
-    ) ?? null
-  );
+  return variant.groups.find((group) => group.id === tile.groupId) ?? null;
 }
 
 export function ownsGroup(
   _state: SacState,
   playerId: number,
-  variant: SacVariant,
+  _variant: SacVariant,
   group: SacGroup,
   ctx: RuleContext,
 ): boolean {
-  return group.properties.every((name) => {
-    const tileIndex = variant.tiles.findIndex((tile) =>
-      sameName(name, tile.title),
-    );
-    return (
-      tileIndex >= 0 &&
-      ctx.ownership.isOwner(PROPERTIES, String(tileIndex), playerId)
-    );
-  });
+  return group.propertyIds.every((id) =>
+    ctx.ownership.isOwner(PROPERTIES, id, playerId),
+  );
 }
 
 export function mortgageValue(variant: SacVariant, tile: SacTile): number {
   if (tile.type === 'station') return variant.stations.mortgage;
   if (tile.type === 'utility')
     return (
-      variant.utilities.find((utility) => sameName(utility.name, tile.title))
+      variant.utilities.find((utility) => utility.tileId === tile.id)
         ?.mortgage ?? 0
     );
   return groupFor(variant, tile)?.mortgage ?? 0;
@@ -198,7 +194,7 @@ export function unmortgageCost(variant: SacVariant, tile: SacTile): number {
   if (tile.type === 'station') return variant.stations.unmortgageCost;
   if (tile.type === 'utility')
     return (
-      variant.utilities.find((utility) => sameName(utility.name, tile.title))
+      variant.utilities.find((utility) => utility.tileId === tile.id)
         ?.unmortgageCost ?? 0
     );
   return groupFor(variant, tile)?.unmortgageCost ?? 0;
@@ -246,27 +242,18 @@ export function nextTileOfType(
 export function nextGroupTile(
   variant: SacVariant,
   current: number,
-  group: string,
+  groupId: string,
 ): number | null {
   for (let distance = 1; distance < variant.tiles.length; distance += 1) {
     const index = modulo(current + distance, variant.tiles.length);
-    if (normalize(variant.tiles[index].group ?? '') === normalize(group))
-      return index;
+    if (variant.tiles[index].groupId === groupId) return index;
   }
   return null;
 }
 
-export function findTile(
-  variant: SacVariant,
-  name: string,
-  direction: number,
-): number | null {
-  const normalized = normalize(name).replace(/^(case|gare de) /, '');
-  const index = variant.tiles.findIndex((tile) =>
-    normalize(tile.title).includes(normalized),
-  );
+export function findTile(variant: SacVariant, tileId: string): number | null {
+  const index = variant.tiles.findIndex((tile) => tile.id === tileId);
   if (index >= 0) return index;
-  if (direction < 0) return nextTileOfType(variant, 0, 'chance', -1);
   return null;
 }
 
@@ -292,15 +279,4 @@ export function moveTo(
 
 export function modulo(value: number, divisor: number): number {
   return ((value % divisor) + divisor) % divisor;
-}
-
-function sameName(left: string, right: string): boolean {
-  const normalizedLeft = normalize(left);
-  const normalizedRight = normalize(right)
-    .replace(/\([^)]*\)/g, '')
-    .trim();
-  return (
-    normalizedLeft === normalizedRight ||
-    normalizedRight.includes(normalizedLeft)
-  );
 }

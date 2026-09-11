@@ -1,4 +1,4 @@
-import type { GameRuntimeDescriptor } from '../../../../application/contracts/game-runtime.interface';
+import type { GameRuntimeDescriptor } from '../../../../application/ports/game-runtime.port';
 import { genericGameEventMessage } from './game-ws-generic-event-message';
 import { cardMessageLabel, scalarMessageText } from './game-ws-message-values';
 
@@ -53,11 +53,11 @@ export class GameWsStateMessagesPresenter {
   private playerNames(system: Record<string, unknown>): Map<number, string> {
     const players = this.asRecord(system.players).all;
     const names = new Map<number, string>();
-    for (const value of Array.isArray(players) ? players : []) {
+    for (const value of (Array.isArray(players) ? players : []).slice(0, 128)) {
       const player = this.asRecord(value);
       const id = this.numberValue(player.id);
       const username = this.stringValue(player.username);
-      if (id != null && username) names.set(id, username);
+      if (id != null && username) names.set(id, username.slice(0, 255));
     }
     return names;
   }
@@ -73,7 +73,7 @@ export class GameWsStateMessagesPresenter {
     presentEvent: (rawEvent: unknown) => Record<string, unknown>,
   ): Record<string, unknown> {
     const presented: Record<string, unknown> = {};
-    for (const [key, rawEvent] of Object.entries(latestByType)) {
+    for (const [key, rawEvent] of Object.entries(latestByType).slice(0, 512)) {
       presented[key] = presentEvent(rawEvent);
     }
     return presented;
@@ -392,12 +392,12 @@ export class GameWsStateMessagesPresenter {
   }
 
   private stringValue(value: unknown): string {
-    return typeof value === 'string' ? value.trim() : '';
+    return typeof value === 'string' ? value.trim().slice(0, 2_000) : '';
   }
 
   private numberValue(value: unknown): number | null {
     const number = typeof value === 'number' ? value : Number.NaN;
-    return Number.isFinite(number) ? number : null;
+    return Number.isSafeInteger(number) ? number : null;
   }
 }
 

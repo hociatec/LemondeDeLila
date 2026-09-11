@@ -1,33 +1,24 @@
 import {
   cards,
   defineCardsSchema,
-  defineChoice,
-  defineConfiguration,
-  defineEvent,
   defineGame,
-  defineGameContent,
-  gameInput,
   ownership,
   raceGame,
-  setupPlayingPhases,
 } from '../../../engine/sdk/public-api';
-import { SAC_VARIANTS, type SacVariantId } from './content';
 import { SAC_ACTIONS } from './actions';
-import { SAC_POT } from './economy';
-import { resolveManagement, resolvePurchase } from './rules';
+import { GAME_BOT } from './bot-rules';
+import {
+  GAME_CONFIGURATION,
+  SAC_PHASES,
+  VARIANT_SELECTED,
+} from './configuration';
+import { SAC_GAME_CONTENT, SAC_VARIANTS } from './content';
+import { SAC_JAIL_CARDS, SAC_POT } from './economy';
 import { SAC_EFFECTS } from './effects';
-import type { SacBuilding, SacState } from './state';
+import manifest from './manifest.json';
+import { GAME_RULES } from './rule-bindings';
+import type { SacState } from './state';
 
-type SacPlayerView = {
-  buildings: Record<number, SacBuilding>;
-};
-
-const SAC_VARIANT_IDS = SAC_VARIANTS.map((variant) => variant.id);
-const SAC_PHASES = setupPlayingPhases<SacState>();
-const VARIANT_SELECTED = defineEvent({
-  type: 'game.variant.selected',
-  data: gameInput.object({ variantId: gameInput.enum(SAC_VARIANT_IDS) }),
-});
 const cardSchema = defineCardsSchema({
   decks: Object.fromEntries(
     SAC_VARIANTS.flatMap((variant) =>
@@ -37,7 +28,7 @@ const cardSchema = defineCardsSchema({
           id,
           cards.deck({
             id,
-            cards: uniqueDeckCards(variant.id, kind, variant[kind]),
+            cards: variant[kind],
             shuffle: true,
             empty: 'recycle',
           }),
@@ -49,39 +40,16 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<SacState>()({
-  id: 'sac-a-malices',
-  displayName: 'Sac à Malices !',
+  rulesVersion: '2',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Jeu immobilier décliné sur sept plateaux thématiques.',
-  players: { min: 2, max: 8 },
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
   events: [VARIANT_SELECTED],
-  content: defineGameContent('sac-a-malices', { variants: SAC_VARIANTS }),
-  config: defineConfiguration<SacState, { variantId: SacVariantId }>({
-    input: gameInput.object({
-      variantId: gameInput.enum(SAC_VARIANT_IDS),
-    }),
-    defaults: { variantId: 'classic' },
-    phase: SAC_PHASES.initialPhase,
-    permission: 'owner',
-    ui: {
-      title: 'Variante du plateau',
-      submitLabel: 'Démarrer la partie',
-    },
-    onConfigured: ({ state: _state, config, ctx }) => {
-      const selected = SAC_VARIANTS.find(
-        (variant) => variant.id === config.variantId,
-      );
-      if (!selected) return ctx.reject('UNKNOWN_VARIANT', config);
-      for (const player of ctx.players.all()) {
-        ctx.resources.set(player.id, 'money', selected.rules.startMoney);
-      }
-      SAC_PHASES.transition(ctx, 'playing');
-      VARIANT_SELECTED.emit(ctx, {
-        variantId: selected.id,
-      });
-    },
-  }),
+  content: SAC_GAME_CONTENT,
+  config: GAME_CONFIGURATION,
   patterns: [
     raceGame({
       trackId: 'city',
@@ -93,11 +61,18 @@ export default defineGame<SacState>()({
   components: [
     ownership.registry({
       id: 'properties',
-      assets: Array.from({ length: 40 }, (_, index) => String(index)),
+      assets: [
+        ...new Set(
+          SAC_VARIANTS.flatMap((variant) =>
+            variant.tiles.map((tile) => tile.id),
+          ),
+        ),
+      ],
       visibility: 'public',
     }),
     ...cardSchema.components,
   ],
+  resourceIds: ['money', SAC_JAIL_CARDS],
   initialization: { counters: { [SAC_POT]: 0 }, startRound: false },
   shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
   setup: () => ({ buildings: {} }),
@@ -105,48 +80,7 @@ export default defineGame<SacState>()({
   phases: SAC_PHASES.phases,
   actions: SAC_ACTIONS,
   effects: SAC_EFFECTS,
-  choices: {
-    'sac.purchase': defineChoice<SacState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ state, value, ctx }) => resolvePurchase(state, value, ctx),
-    }),
-    'sac.management': defineChoice<SacState, number>({
-      input: gameInput.number({ integer: true }),
-      resolve: ({ state, value, ctx }) => resolveManagement(state, value, ctx),
-    }),
-  },
-  viewExtension: ({ state }): SacPlayerView => ({
-    buildings: Object.fromEntries(
-      Object.entries(state.buildings).map(([position, building]) => [
-        position,
-        {
-          houses: building.houses,
-          hotel: building.hotel,
-          mortgaged: building.mortgaged,
-        },
-      ]),
-    ),
-  }),
-  bot: {
-    choose: ({ availableActions }) => {
-      if (availableActions.includes('use_jail_card'))
-        return { type: 'use_jail_card', payload: {} };
-      if (availableActions.includes('pay_fine'))
-        return { type: 'pay_fine', payload: {} };
-      return availableActions.includes('roll')
-        ? { type: 'roll', payload: {} }
-        : null;
-    },
-  },
-});
+  ...GAME_RULES,
 
-function uniqueDeckCards(
-  variantId: SacVariantId,
-  deck: 'chance' | 'community',
-  source: (typeof SAC_VARIANTS)[number]['chance'],
-): (typeof SAC_VARIANTS)[number]['chance'] {
-  return source.map((card, index) => ({
-    ...card,
-    id: `${variantId}:${deck}:${card.id}:${index}`,
-  }));
-}
+  bot: GAME_BOT,
+});

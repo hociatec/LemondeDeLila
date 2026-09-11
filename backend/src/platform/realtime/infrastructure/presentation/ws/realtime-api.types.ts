@@ -16,5 +16,5 @@ export type RealtimeClientSession = {
   scope?: string;
   roomId?: number | null;
   gameType?: string | null;
-  rateLimit?: { windowStartedAtMs: number; count: number };
+  peerAddress?: string;
 };

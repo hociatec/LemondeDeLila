@@ -1,128 +1,87 @@
+import manifest from './manifest.json';
+import embeddedCatalogue from './catalogue.json';
+
 import {
-  freezeGameContent,
+  defineGameContent,
+  gameInput,
+  cardContent,
+  trackContent,
   rejectContent,
 } from '../../../engine/sdk/public-api';
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import type { FouleesFamily } from './types';
 
-type Board = {
-  trackLength: number;
-  homeLength: number;
-  tiles: Array<{ id: string; label: string }>;
-  safeTiles: number[];
-};
-
-export const FOULEES_FAMILIES: readonly FouleesFamily[] = [
+const labelSchema = gameInput.string({ min: 1, max: 200 });
+const idSchema = gameInput.string({ min: 1, max: 128 });
+const fouleesSchema = gameInput.object({
+  board: gameInput.object({
+    trackLength: gameInput.number({ integer: true, min: 4, max: 1000 }),
+    homeLength: gameInput.number({ integer: true, min: 1, max: 6 }),
+    tiles: gameInput.array(
+      gameInput.object({ id: idSchema, label: labelSchema }),
+      { min: 4, max: 1000 },
+    ),
+    safeTiles: gameInput.array(
+      gameInput.number({ integer: true, min: 0, max: 999 }),
+      { max: 1000 },
+    ),
+  }),
+  families: gameInput.array(
+    gameInput.object({
+      id: idSchema,
+      family: labelSchema,
+      habitat: labelSchema,
+      pawns: gameInput.array(labelSchema, { min: 4, max: 4 }),
+    }),
+    { min: 4, max: 4 },
+  ),
+  pawns: gameInput.array(
+    gameInput.object({ id: idSchema, label: labelSchema }),
+    { min: 16, max: 16 },
+  ),
+  seatColors: gameInput.array(labelSchema, { min: 4, max: 4 }),
+});
+export const FOULEES_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  embeddedCatalogue,
   {
-    id: 'equides',
-    family: 'Equidés',
-    habitat: 'écurie',
-    pawns: ['Akhal-teke', 'Andalou', 'Frison', 'Pur-sang'],
+    schema: {
+      parse(value: unknown) {
+        const parsed = fouleesSchema.parse(value);
+        if (
+          parsed.board.tiles.length !== parsed.board.trackLength ||
+          parsed.board.safeTiles.some(
+            (index) => index >= parsed.board.trackLength,
+          ) ||
+          new Set(parsed.board.safeTiles).size !== parsed.board.safeTiles.length
+        )
+          rejectContent('Cases de piste incohérentes');
+        const families = cardContent(parsed.families);
+        if (families.some((family) => family.id.includes(':')))
+          rejectContent('Identifiant de famille invalide');
+        const expectedPawns = families.flatMap((family) =>
+          family.pawns.map((label, index) => ({
+            id: `${family.id}:${index}`,
+            label,
+          })),
+        );
+        if (
+          parsed.pawns.length !== expectedPawns.length ||
+          parsed.pawns.some(
+            (pawn, index) =>
+              pawn.id !== expectedPawns[index].id ||
+              pawn.label !== expectedPawns[index].label,
+          )
+        )
+          rejectContent('Les pions doivent correspondre aux familles');
+        return {
+          ...parsed,
+          families,
+          pawns: cardContent(parsed.pawns),
+          board: { ...parsed.board, tiles: trackContent(parsed.board.tiles) },
+        };
+      },
+    },
   },
-  {
-    id: 'primates',
-    family: 'Primates',
-    habitat: 'primaterie',
-    pawns: ['Douc', 'Gibbon', 'Mandrill', 'Sakis'],
-  },
-  {
-    id: 'oiseaux',
-    family: 'Oiseaux',
-    habitat: 'volière',
-    pawns: ['Cygne', 'Héron', 'Paon', 'Perroquet'],
-  },
-  {
-    id: 'poissons',
-    family: 'Poissons',
-    habitat: 'aquarium',
-    pawns: ['Anthias', 'Discus', 'Mandarin', 'Mérou'],
-  },
-];
-
-export const FOULEES_PAWNS = FOULEES_FAMILIES.flatMap((family) =>
-  family.pawns.map((label, pawnIndex) => ({
-    id: `${family.id}:${pawnIndex}`,
-    label,
-  })),
 );
-
-export const FOULEES_BOARD = loadBoard();
-
-function loadBoard(): Board {
-  const directory = contentDirectory();
-  const raw: unknown = JSON.parse(
-    readFileSync(resolve(directory, 'board.json'), 'utf8').replace(
-      /^\uFEFF/,
-      '',
-    ),
-  );
-  if (
-    !isRecord(raw) ||
-    raw.version !== 1 ||
-    !Number.isInteger(raw.trackLength) ||
-    Number(raw.trackLength) < 1 ||
-    !Number.isInteger(raw.homeLength) ||
-    Number(raw.homeLength) < 1 ||
-    !isArrayOf(raw.tiles, isTile) ||
-    raw.tiles.length !== raw.trackLength ||
-    !isArrayOf(raw.safeTiles, isInteger)
-  ) {
-    rejectContent('Plateau Foulées Fantastiques invalide');
-  }
-  return {
-    trackLength: Number(raw.trackLength),
-    homeLength: Number(raw.homeLength),
-    tiles: raw.tiles.map((tile, index) => ({
-      id: tile.id ?? `c${index}`,
-      label: tile.label ?? (index === 0 ? 'Départ' : `Case ${index + 1}`),
-    })),
-    safeTiles: raw.safeTiles,
-  };
-}
-
-function contentDirectory(): string {
-  const candidates = [
-    resolve(__dirname, 'model/content'),
-    resolve(
-      process.cwd(),
-      'src/game/games/vents-sacres/foulees-fantastiques/model/content',
-    ),
-    resolve(
-      process.cwd(),
-      'dist/game/games/vents-sacres/foulees-fantastiques/model/content',
-    ),
-  ];
-  const found = candidates.find((directory) =>
-    existsSync(resolve(directory, 'board.json')),
-  );
-  if (!found) rejectContent('Contenu Foulées Fantastiques introuvable');
-  return found;
-}
-
-function isTile(value: unknown): value is { id?: string; label?: string } {
-  return (
-    isRecord(value) &&
-    (value.id == null || typeof value.id === 'string') &&
-    (value.label == null || typeof value.label === 'string')
-  );
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value != null && typeof value === 'object' && !Array.isArray(value);
-}
-
-function isArrayOf<T>(
-  value: unknown,
-  guard: (item: unknown) => item is T,
-): value is T[] {
-  return Array.isArray(value) && value.every(guard);
-}
-
-function isInteger(value: unknown): value is number {
-  return typeof value === 'number' && Number.isInteger(value);
-}
-
-freezeGameContent(FOULEES_FAMILIES);
-freezeGameContent(FOULEES_PAWNS);
-freezeGameContent(FOULEES_BOARD);
+export const FOULEES_FAMILIES = FOULEES_GAME_CONTENT.data.families;
+export const FOULEES_PAWNS = FOULEES_GAME_CONTENT.data.pawns;
+export const FOULEES_BOARD = FOULEES_GAME_CONTENT.data.board;

@@ -41,10 +41,14 @@ export class ServLoggerService implements LoggerService {
           const ctx = context ? ` [${context}]` : '';
           const rest = { ...meta };
           delete rest.context;
-          const metaStr =
-            rest && Object.keys(rest).length > 0
-              ? ` ${JSON.stringify(rest)}`
-              : '';
+          let metaStr = '';
+          if (rest && Object.keys(rest).length > 0) {
+            try {
+              metaStr = ` ${JSON.stringify(rest).slice(0, 16_384)}`;
+            } catch {
+              metaStr = ' [metadata-unserializable]';
+            }
+          }
           return `${String(timestamp)} [${String(level)}]${ctx} ${String(message)}${metaStr}`;
         }),
       ),
@@ -53,26 +57,26 @@ export class ServLoggerService implements LoggerService {
   }
 
   log(message: unknown, context?: string) {
-    this.logger.info(sanitizeLogText(String(message)), this.meta(context));
+    this.logger.info(sanitizeLogText(message), this.meta(context));
   }
 
   error(message: unknown, trace?: unknown, context?: string) {
-    this.logger.error(sanitizeLogText(String(message)), {
+    this.logger.error(sanitizeLogText(message), {
       ...this.meta(context),
       trace: trace ? sanitizeLogText(trace) : trace,
     });
   }
 
   warn(message: unknown, context?: string) {
-    this.logger.warn(sanitizeLogText(String(message)), this.meta(context));
+    this.logger.warn(sanitizeLogText(message), this.meta(context));
   }
 
   debug(message: unknown, context?: string) {
-    this.logger.debug(sanitizeLogText(String(message)), this.meta(context));
+    this.logger.debug(sanitizeLogText(message), this.meta(context));
   }
 
   verbose(message: unknown, context?: string) {
-    this.logger.verbose(sanitizeLogText(String(message)), this.meta(context));
+    this.logger.verbose(sanitizeLogText(message), this.meta(context));
   }
 
   setLogLevels(levels: LogLevel[]) {
@@ -97,7 +101,10 @@ export class ServLoggerService implements LoggerService {
   }
 
   private meta(context?: string): { context?: string; correlationId?: string } {
-    return { context, correlationId: currentCorrelationId() };
+    return {
+      context: typeof context === 'string' ? context.slice(0, 256) : undefined,
+      correlationId: currentCorrelationId()?.slice(0, 128),
+    };
   }
 
   private resolveLevel(): string {
@@ -125,7 +132,7 @@ export class ServLoggerService implements LoggerService {
       return { enabled: false, logFilePath: null };
     }
 
-    const configuredDir = readEnvironment('LOG_DIR').trim();
+    const configuredDir = readEnvironment('LOG_DIR').trim().slice(0, 4096);
     const logDir = configuredDir
       ? path.isAbsolute(configuredDir)
         ? configuredDir

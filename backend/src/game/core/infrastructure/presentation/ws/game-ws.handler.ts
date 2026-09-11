@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { parseStrictInteger } from '../../../../../shared/utils/public-api';
 import { requireUser } from '../../../../../platform/realtime/public-api';
 import type { WsSession } from '../../../../../platform/realtime/public-api';
 import { PayloadValidationService } from '../../../../../platform/validation/public-api';
 import { GameContentService } from '../../../../engine/public-api';
-import type { GameSingleActionDto } from '../../../application/contracts/game-action.model';
+import type { GameSingleActionDto } from '../../../application/models/game-action.model';
 import { GameRulesDto } from './dto/game-rules.ws.dto';
 import { GameWsCommandMapper } from './game-ws-command.mapper';
 import {
@@ -235,7 +236,10 @@ export class GameWsHandler {
       return actions;
     }
     return actions.map((action) => {
-      if (Number(action.meta?.knownVersion) !== refreshedFrom) {
+      if (
+        parseStrictInteger(action.meta?.knownVersion, { min: 0 }) !==
+        refreshedFrom
+      ) {
         return action;
       }
       return {

@@ -1,9 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
-  ROOM_VAULT_PORT,
-  type RoomVaultPort,
-  type RoomVaultRoomRecord,
-} from '../../../room/public-api';
+  VAULT_ROOM_PORT,
+  type VaultRoomPort,
+  type VaultRoomRecord,
+} from '../ports/vault-room.port';
 import type { VaultRoomSnapshot } from '../../vault.types';
 import { VAULT_BOT_PORT, type VaultBotPort } from '../ports/vault-bot.port';
 import { VAULT_GAME_PORT, type VaultGamePort } from '../ports/vault-game.port';
@@ -21,7 +21,7 @@ import {
 } from '../ports/vault-user-notifier.port';
 import { remapVaultGameState } from './vault-game-state-remapper';
 import { decodeVaultRoomSnapshot } from './vault-snapshot.decoder';
-import { bestEffort } from '../../../../shared/utils/public-api';
+import { bestEffort } from '../../../../platform/observability/public-api';
 
 type RosterUser = { id: number; username: string };
 type RestoredBots = {
@@ -30,6 +30,12 @@ type RestoredBots = {
 };
 
 function parseSnapshot(raw: string): VaultRoomSnapshot {
+  if (typeof raw !== 'string') {
+    throw new BadRequestException('Sauvegarde invalide.');
+  }
+  if (Buffer.byteLength(raw, 'utf8') > 5 * 1024 * 1024) {
+    throw new BadRequestException('Sauvegarde trop volumineuse.');
+  }
   let parsed: unknown;
   try {
     parsed = JSON.parse(String(raw ?? ''));
@@ -47,13 +53,18 @@ function uniqueUsers(
   users: Array<{ id: number; username?: string }>,
 ): RosterUser[] {
   const namesById = new Map<number, string>();
-  for (const user of users) {
-    if (!user || !Number.isFinite(user.id) || user.id <= 0) {
+  for (const user of users.slice(0, 64)) {
+    if (!user || !Number.isSafeInteger(user.id) || user.id <= 0) {
       continue;
     }
     const id = Math.floor(user.id);
     if (!namesById.has(id)) {
-      namesById.set(id, String(user.username ?? '').trim() || `joueur ${id}`);
+      namesById.set(
+        id,
+        (typeof user.username === 'string'
+          ? user.username.trim().slice(0, 255)
+          : '') || `joueur ${id}`,
+      );
     }
   }
   return Array.from(namesById, ([id, username]) => ({ id, username }));
@@ -64,8 +75,8 @@ export class VaultSnapshotRestoreService {
   constructor(
     @Inject(VAULT_ROOM_SNAPSHOT_REPOSITORY)
     private readonly snapshots: VaultRoomSnapshotRepository,
-    @Inject(ROOM_VAULT_PORT)
-    private readonly rooms: RoomVaultPort,
+    @Inject(VAULT_ROOM_PORT)
+    private readonly rooms: VaultRoomPort,
     @Inject(VAULT_BOT_PORT)
     private readonly bots: VaultBotPort,
     @Inject(VAULT_USER_NOTIFIER)
@@ -81,7 +92,7 @@ export class VaultSnapshotRestoreService {
     snapshotId: string,
   ): Promise<{ roomId: number }> {
     const id = String(snapshotId ?? '').trim();
-    if (!id) {
+    if (!id || id.length > 128 || !Number.isSafeInteger(ownerUserId) || ownerUserId <= 0) {
       throw new BadRequestException('id requis');
     }
     const entity = await this.snapshots.findByIdForOwner(id, ownerUserId);
@@ -89,20 +100,28 @@ export class VaultSnapshotRestoreService {
       throw new BadRequestException('Sauvegarde introuvable');
     }
     const snapshot = parseSnapshot(entity.snapshotJson);
-    const humans = (snapshot.roster.players ?? []).filter(
-      (player) => typeof player?.id === 'number' && player.id > 0,
+    const humans = (snapshot.roster.players ?? []).slice(0, 64).filter(
+      (player) =>
+        typeof player?.id === 'number' &&
+        Number.isSafeInteger(player.id) &&
+        player.id > 0,
     );
     if (humans.length === 0) {
       throw new BadRequestException('Sauvegarde invalide : aucun joueur');
     }
     await this.ensureRosterAvailable(ownerUserId, snapshot, humans);
-    const room = await this.createRoom(ownerUserId, id, snapshot, humans);
+    const room = await this.createRoom(ownerUserId, id, snapshot);
     try {
+      for (const player of humans) {
+        if (player.id !== ownerUserId) {
+          await this.rooms.joinRoom(room.id, player.id, {
+            allowPrivate: snapshot.room.isPrivate,
+          });
+        }
+      }
       const restoredBots = await this.restoreBots(room.id, snapshot);
       await this.restoreAmbience(room.id, ownerUserId, snapshot);
       await this.restoreGame(room.id, ownerUserId, snapshot, restoredBots);
-      await this.notifyPlayers(room.id, ownerUserId, snapshot, humans);
-      return { roomId: room.id };
     } catch (error) {
       await bestEffort(
         this.rooms.adminDestroyRoom(room.id),
@@ -110,6 +129,9 @@ export class VaultSnapshotRestoreService {
       );
       throw error;
     }
+    // The game is committed. A notification failure must not destroy it.
+    await this.notifyPlayers(room.id, ownerUserId, snapshot, humans);
+    return { roomId: room.id };
   }
 
   private async ensureRosterAvailable(
@@ -120,7 +142,7 @@ export class VaultSnapshotRestoreService {
     const owner = Number(snapshot.roster.ownerUserId);
     const roster = uniqueUsers([
       ...humans,
-      ...(Number.isFinite(owner)
+      ...(Number.isSafeInteger(owner) && owner > 0
         ? [{ id: owner, username: 'proprietaire' }]
         : []),
     ]);
@@ -155,15 +177,14 @@ export class VaultSnapshotRestoreService {
     ownerUserId: number,
     snapshotId: string,
     snapshot: VaultRoomSnapshot,
-    humans: RosterUser[],
-  ): Promise<RoomVaultRoomRecord> {
-    const room = await this.rooms.createRoom(
-      ownerUserId,
-      snapshot.game.gameType,
-      `${snapshot.room.name} (restaurée)`,
-      snapshot.room.maxPlayers,
-      snapshot.room.isPrivate,
-    );
+  ): Promise<VaultRoomRecord> {
+    const room = await this.rooms.createRoom({
+      userId: ownerUserId,
+      gameType: snapshot.game.gameType,
+      name: `${snapshot.room.name} (restaurée)`,
+      maxPlayers: snapshot.room.maxPlayers,
+      isPrivate: snapshot.room.isPrivate,
+    });
     try {
       const persisted = await this.rooms.requireRoomForOwnerAction(
         room.id,
@@ -172,15 +193,12 @@ export class VaultSnapshotRestoreService {
       persisted.restoredFromSnapshotId = snapshotId;
       persisted.restoredOwnerUserId = ownerUserId;
       await this.rooms.saveRoom(persisted);
-    } catch {
-      // Best effort: restoring the game can continue without the overwrite link.
-    }
-    for (const player of humans) {
-      if (player.id !== ownerUserId) {
-        await this.rooms.joinRoom(room.id, player.id, {
-          allowPrivate: snapshot.room.isPrivate,
-        });
-      }
+    } catch (error) {
+      await bestEffort(
+        this.rooms.adminDestroyRoom(room.id),
+        `compensation metadata restauration vault room=${room.id}`,
+      );
+      throw error;
     }
     return room;
   }
@@ -191,7 +209,7 @@ export class VaultSnapshotRestoreService {
   ): Promise<RestoredBots> {
     const idMap = new Map<number, number>();
     const namesByNewId = new Map<number, string>();
-    for (const oldBot of snapshot.roster.bots ?? []) {
+    for (const oldBot of (snapshot.roster.bots ?? []).slice(0, 64)) {
       let added: { id: number };
       try {
         added = await this.bots.addSystemBot(roomId);
@@ -206,8 +224,18 @@ export class VaultSnapshotRestoreService {
           // Best effort: the restored bot remains usable with its generated name.
         }
       }
-      const oldPlayerId = -Math.abs(Number(oldBot.id));
-      const newPlayerId = -Math.abs(Number(added.id));
+      const oldBotId = Number(oldBot?.id);
+      const newBotId = Number(added?.id);
+      if (
+        !Number.isSafeInteger(oldBotId) ||
+        oldBotId <= 0 ||
+        !Number.isSafeInteger(newBotId) ||
+        newBotId <= 0
+      ) {
+        throw new BadRequestException('Identifiant de bot restauré invalide.');
+      }
+      const oldPlayerId = -oldBotId;
+      const newPlayerId = -newBotId;
       idMap.set(oldPlayerId, newPlayerId);
       namesByNewId.set(newPlayerId, name || 'Bot');
     }
@@ -243,7 +271,10 @@ export class VaultSnapshotRestoreService {
       roomId,
       roomOwnerId: ownerUserId,
       roomStartedAt: started.startedAt?.toISOString() ?? null,
-      roomRunId: Number.isFinite(started.runId) ? Number(started.runId) : null,
+      roomRunId:
+        Number.isSafeInteger(started.runId) && started.runId >= 0
+          ? started.runId
+          : null,
       botIdMap: bots.idMap,
       botNamesByNewId: bots.namesByNewId,
     });
@@ -257,12 +288,15 @@ export class VaultSnapshotRestoreService {
     humans: RosterUser[],
   ): Promise<void> {
     for (const player of humans) {
-      await this.notifier.notifyRoomRestoreReady({
-        userId: player.id,
-        roomId,
-        roomName: `${snapshot.room.name} (restaurée)`,
-        ownerUserId,
-      });
+      await bestEffort(
+        this.notifier.notifyRoomRestoreReady({
+          userId: player.id,
+          roomId,
+          roomName: `${snapshot.room.name} (restaurée)`,
+          ownerUserId,
+        }),
+        `notification restauration vault room=${roomId} user=${player.id}`,
+      );
     }
   }
 
@@ -273,6 +307,6 @@ export class VaultSnapshotRestoreService {
   private throwBotError(error: unknown): never {
     const message =
       error instanceof Error ? error.message : 'Erreur bot inconnue';
-    throw new BadRequestException(message);
+    throw new BadRequestException(message.slice(0, 512));
   }
 }

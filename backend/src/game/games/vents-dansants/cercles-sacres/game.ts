@@ -1,12 +1,13 @@
 import {
-  cards,
   cardGame,
+  cards,
   defineCardsSchema,
   defineGame,
-  defineGameContent,
   inventory,
 } from '../../../engine/sdk/public-api';
-import { CERCLES_SACRES_DECK } from './content';
+import { GAME_BOT } from './bot-rules';
+import { CERCLES_SACRES_DECK, CERCLES_SACRES_GAME_CONTENT } from './content';
+import manifest from './manifest.json';
 import { CERCLES_SACRES_ACTIONS, drawAtTurnStart } from './rules';
 import type { CerclesSacresState } from './types';
 
@@ -30,15 +31,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<CerclesSacresState>()({
-  id: 'cercles-sacres',
-  displayName: 'Cercles Sacrés',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
-  description: 'Réunissez les six thèmes pour former trois cercles sacrés.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('cercles-sacres', {
-    cards: CERCLES_SACRES_DECK,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: CERCLES_SACRES_GAME_CONTENT,
   patterns: [
     cardGame({
       schema: cardSchema,
@@ -56,20 +55,5 @@ export default defineGame<CerclesSacresState>()({
     { key: 'S', type: 'action', actionType: 'pass' },
   ],
   actions: CERCLES_SACRES_ACTIONS,
-  bot: {
-    choose: ({ actor, ctx }) => {
-      const available = CERCLES_SACRES_ACTIONS.form_circle.enumerate?.({
-        state: ctx.state,
-        actor,
-        ctx,
-      });
-      if (available?.[0]) {
-        return { type: 'form_circle', payload: available[0] };
-      }
-      const hand = ctx.cards.hand<string>('players', actor.id);
-      return hand.length > 8
-        ? { type: 'discard_card', payload: { cardId: hand[0] } }
-        : { type: 'pass', payload: {} };
-    },
-  },
+  bot: GAME_BOT,
 });

@@ -1,3 +1,4 @@
+import manifest from './manifest.json';
 import {
   cards,
   defineCardsSchema,
@@ -21,12 +22,12 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<ToutPresDeMamanState>()({
-  id: 'tout-pres-de-maman',
-  displayName: 'Tout près de Maman !',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Collectez les eucalyptus et retrouvez maman.',
-  players: { min: 2, max: 6 },
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
   content: MAMAN_GAME_CONTENT,
   patterns: [
     raceGame({ trackId: 'forest', spaces: MAMAN_CONTENT.tiles.length }),

@@ -2,10 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { getErrorDetails, getErrorMessage } from '@shared/utils/public-api';
 import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
-import { UpdatePolicyService } from '../../../../update/public-api';
+import { ClientUpdateQueryService } from '../../../../update/public-api';
 import type { NotificationClientMeta } from './notification-ws.types';
 import { NotificationWsInboxHandler } from './notification-ws-inbox.handler';
-import { operationalPolicy } from '../../../../../platform/config/public-api';
+import { operationalSettings } from '../../../../../platform/config/public-api';
+
+const MAX_NOTIFICATION_WS_OUTBOUND_BYTES = 1 * 1024 * 1024;
 
 @Injectable()
 export class NotificationWsHandler {
@@ -13,7 +15,7 @@ export class NotificationWsHandler {
 
   constructor(
     private readonly inbox: NotificationWsInboxHandler,
-    private readonly updates: UpdatePolicyService,
+    private readonly updates: ClientUpdateQueryService,
   ) {}
 
   async handle(
@@ -58,7 +60,7 @@ export class NotificationWsHandler {
       if (notice.updateRequired && notice.minimumVersion) {
         this.sendRequiredUpdate(client, version, notice);
         await new Promise((resolve) =>
-          setTimeout(resolve, operationalPolicy.wsReconnectBackoffMs),
+          setTimeout(resolve, operationalSettings.wsReconnectBackoffMs),
         );
         try {
           client.close(4406, 'update required');
@@ -89,7 +91,7 @@ export class NotificationWsHandler {
   private sendRequiredUpdate(
     client: WebSocket,
     currentVersion: string,
-    notice: Awaited<ReturnType<UpdatePolicyService['getNotice']>>,
+    notice: Awaited<ReturnType<ClientUpdateQueryService['getNotice']>>,
   ): void {
     this.safeSend(client, {
       type: WS_EVENTS.clientUpdate.required,
@@ -108,7 +110,15 @@ export class NotificationWsHandler {
   private safeSend(client: WebSocket, payload: unknown): void {
     if (client.readyState !== WebSocket.OPEN) return;
     try {
-      client.send(JSON.stringify(payload));
+      const serialized = JSON.stringify(payload);
+      if (
+        Buffer.byteLength(serialized, 'utf8') >
+        MAX_NOTIFICATION_WS_OUTBOUND_BYTES
+      ) {
+        client.close(1009, 'Message too large');
+        return;
+      }
+      client.send(serialized);
     } catch (error) {
       const record = payload as Record<string, unknown> | null;
       const type =
@@ -137,7 +147,7 @@ export class NotificationWsHandler {
   }
 
   private readPayload(value: unknown): Record<string, unknown> {
-    return value && typeof value === 'object'
+    return value && typeof value === 'object' && !Array.isArray(value)
       ? (value as Record<string, unknown>)
       : {};
   }

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { ChatMessageRecord } from '../../contracts/chat-message.record';
+import { ChatMessageRecord } from '../../read-models/chat-message.record';
 import {
   CHAT_MESSAGE_REPOSITORY,
   type ChatMessageRepository,
@@ -18,9 +18,9 @@ export class AdminListChatMessagesService {
     limit = 200,
     includeDeleted = false,
   ): Promise<ChatMessageRecord[]> {
-    return this.messages.listForAdmin(
-      Math.min(Math.max(limit, 1), ChatMessageCacheService.CACHE_LIMIT),
-      includeDeleted,
-    );
+    const safeLimit = Number.isSafeInteger(limit)
+      ? Math.min(Math.max(limit, 1), ChatMessageCacheService.CACHE_LIMIT)
+      : 200;
+    return this.messages.listForAdmin(safeLimit, includeDeleted);
   }
 }

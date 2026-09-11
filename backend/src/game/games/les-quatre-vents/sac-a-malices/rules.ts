@@ -168,7 +168,7 @@ function resolveOwnable(
   tile: SacTile,
   ctx: RuleContext,
 ): void {
-  const ownerId = ctx.ownership.ownerOf(PROPERTIES, String(tileIndex));
+  const ownerId = ctx.ownership.ownerOf(PROPERTIES, tile.id);
   if (ownerId == null) {
     const price = purchasePrice(currentSacVariant(ctx), tile);
     ctx.choice.one({
@@ -283,15 +283,11 @@ function movementTarget(
     return nextGroupTile(
       variant,
       sacBoardPosition(playerId, ctx),
-      movement.group,
+      movement.groupId,
     );
   }
-  if (movement.kind !== 'named') return null;
-  return findTile(
-    variant,
-    movement.name,
-    movement.direction === 'forward' ? 1 : -1,
-  );
+  if (movement.kind !== 'tile') return null;
+  return findTile(variant, movement.tileId);
 }
 
 function buyTile(
@@ -304,13 +300,13 @@ function buyTile(
   const tile = variant.tiles[tileIndex];
   const price = purchasePrice(variant, tile);
   if (
-    ctx.ownership.isOwned(PROPERTIES, String(tileIndex)) ||
+    ctx.ownership.isOwned(PROPERTIES, tile.id) ||
     price <= 0 ||
     !ctx.resources.has(playerId, 'money', price)
   )
     return;
   changeMoney(state, playerId, -price, false, ctx);
-  ctx.ownership.claim(PROPERTIES, String(tileIndex), playerId);
+  ctx.ownership.claim(PROPERTIES, tile.id, playerId);
   state.buildings[tileIndex] = { houses: 0, hotel: false, mortgaged: false };
   ctx.events.message('sac.property.bought', {
     playerId,
@@ -327,7 +323,7 @@ export function managementOptions(
 ): number[] {
   const variant = currentSacVariant(ctx);
   return variant.tiles.flatMap((tile, tileIndex) => {
-    if (!ctx.ownership.isOwner(PROPERTIES, String(tileIndex), playerId)) {
+    if (!ctx.ownership.isOwner(PROPERTIES, tile.id, playerId)) {
       return [];
     }
     const building = buildingAt(state, tileIndex);

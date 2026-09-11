@@ -1,0 +1,1445 @@
+{
+  "targetScore": 5,
+  "challenges": [
+    {
+      "id": "1",
+      "prompt": "Si tu étais un aliment en colère, lequel serais-tu ?",
+      "answers": [
+        "Une tomate qui refuse de rougir.",
+        "Un cornichon qui fait la gueule.",
+        "Une tartine de beurre en pleine révolte."
+      ]
+    },
+    {
+      "id": "2",
+      "prompt": "Quelle est la devise secrète des chaussettes orphelines ?",
+      "answers": [
+        "“Un pied sans l’autre, c’est la liberté.”",
+        "“Toujours dans l’ombre, jamais dans la lumière.”",
+        "“Marcher seul, mais être fier.”"
+      ]
+    },
+    {
+      "id": "3",
+      "prompt": "Que fait un escargot pour devenir célèbre ?",
+      "answers": [
+        "Il publie un best-seller intitulé “Vitesse et patience”.",
+        "Il crée une ligne de mode en coquille.",
+        "Il lance un podcast sur les embouteillages."
+      ]
+    },
+    {
+      "id": "4",
+      "prompt": "Quelle est la spécialité du club des arbres bavards ?",
+      "answers": [
+        "Raconter des histoires qui font pousser les feuilles.",
+        "Organiser des concours de claquements de branches.",
+        "Débattre pendant des heures sur la météo."
+      ]
+    },
+    {
+      "id": "5",
+      "prompt": "Si tu devais inventer un nouveau parfum, quel serait son nom ?",
+      "answers": [
+        "“Odeur de chaussette fraîchement oubliée”.",
+        "“Brise de bibliothèque abandonnée”.",
+        "“Souffle de rêve en panne”."
+      ]
+    },
+    {
+      "id": "6",
+      "prompt": "Quel super-pouvoir a le pigeon philosophe ?",
+      "answers": [
+        "Disparaître quand personne ne le regarde.",
+        "Rêver en plein vol.",
+        "Comprendre le langage des frites."
+      ]
+    },
+    {
+      "id": "7",
+      "prompt": "Pourquoi les fourmis ne font jamais la grève ?",
+      "answers": [
+        "Parce qu’elles aiment trop leur café sucré.",
+        "Elles sont secrètement en charge du monde.",
+        "Elles préfèrent organiser des fêtes surprises."
+      ]
+    },
+    {
+      "id": "8",
+      "prompt": "Quel est le plat préféré des robots poètes ?",
+      "answers": [
+        "Chips de circuits mélancoliques.",
+        "Pâtes à la rime al dente.",
+        "Soupe de silice et son soupçon d’émotion."
+      ]
+    },
+    {
+      "id": "9",
+      "prompt": "Quel est le sport national des taupes sur la Lune ?",
+      "answers": [
+        "La course d’ombre invisible.",
+        "Le lancer de poussière lunaire.",
+        "Le saut en apesanteur... mais sous terre."
+      ]
+    },
+    {
+      "id": "10",
+      "prompt": "Quelle est la première règle quand on parle aux nuages ?",
+      "answers": [
+        "Ne jamais les interrompre quand ils ronflent.",
+        "Toujours leur offrir une blague légère.",
+        "Éviter de leur demander la pluie à l’improviste."
+      ]
+    },
+    {
+      "id": "11",
+      "prompt": "Si ta voix devenait un instrument de musique, ce serait ?",
+      "answers": [
+        "Une flûte qui éternue.",
+        "Un ukulélé désaccordé.",
+        "Une trompette à bout de souffle."
+      ]
+    },
+    {
+      "id": "12",
+      "prompt": "Quelle est la phrase que tu dis pour réveiller un cactus ?",
+      "answers": [
+        "“Allez, bouge pas, c’est l’heure du câlin.”",
+        "“Sors de ta sieste piquante !”",
+        "“Tu vas finir par parler aux fourmis.”"
+      ]
+    },
+    {
+      "id": "13",
+      "prompt": "Pourquoi les horloges ont-elles peur des réveils ?",
+      "answers": [
+        "Parce qu’ils sont toujours en avance sur leur temps.",
+        "Elles craignent les débats sur l’heure exacte.",
+        "Elles jalousent leur capacité à sonner."
+      ]
+    },
+    {
+      "id": "14",
+      "prompt": "Quelle est la mission secrète du miroir dans ta salle de bain ?",
+      "answers": [
+        "Te faire des compliments en cachette.",
+        "Organiser des concours de grimaces nocturnes.",
+        "Espionner les shampooings."
+      ]
+    },
+    {
+      "id": "15",
+      "prompt": "Quel est le secret d’un biscuit pour rester croustillant ?",
+      "answers": [
+        "Ne jamais raconter ses recettes à voix haute.",
+        "Se faire des massages à l’huile d’absurde.",
+        "Danser la polka avant la cuisson."
+      ]
+    },
+    {
+      "id": "16",
+      "prompt": "Pourquoi les fantômes n’aiment pas les selfies ?",
+      "answers": [
+        "Parce qu’ils n’ont jamais une bonne expression.",
+        "Ils préfèrent les portraits à l’ancienne.",
+        "Ils détestent les flashs, ça leur donne des boutons."
+      ]
+    },
+    {
+      "id": "17",
+      "prompt": "Quel est le slogan du magasin d’objets invisibles ?",
+      "answers": [
+        "“Vous ne verrez pas mieux ailleurs.”",
+        "“Toujours en stock, sauf quand on regarde.”",
+        "“Achetez ce que vous ne pouvez pas voir.”"
+      ]
+    },
+    {
+      "id": "18",
+      "prompt": "Quelle chanson chantent les étoiles quand elles sont tristes ?",
+      "answers": [
+        "“Brille un peu moins, je t’en supplie.”",
+        "“La valse des poussières oubliées.”",
+        "“Éclipse mon cœur.”"
+      ]
+    },
+    {
+      "id": "19",
+      "prompt": "Si tu devais écrire un poème sur une pomme de terre, comment commencerais-tu ?",
+      "answers": [
+        "“Ô tubercule au cœur tendre...”",
+        "“Sous ta peau, la nuit danse...”",
+        "“Dans le royaume des frites oubliées...”"
+      ]
+    },
+    {
+      "id": "20",
+      "prompt": "Quel est le métier rêvé d’un nuage paresseux ?",
+      "answers": [
+        "Testeur officiel de matelas moelleux.",
+        "Chroniqueur météo de canapé.",
+        "Chef d’orchestre de la pluie aléatoire."
+      ]
+    },
+    {
+      "id": "21",
+      "prompt": "Que fait un hérisson pour se détendre après une longue journée ?",
+      "answers": [
+        "Il prend un bain de bulles invisibles.",
+        "Il médite en chantant l’opéra des épines.",
+        "Il raconte des blagues à ses chaussettes."
+      ]
+    },
+    {
+      "id": "22",
+      "prompt": "Si les meubles pouvaient parler, que te diraient-ils en secret ?",
+      "answers": [
+        "“Arrête de me déplacer, je suis claustrophobe.”",
+        "“Je rêve de vacances sur une plage en mousse.”",
+        "“Merci de m’avoir offert ce coussin ridicule.”"
+      ]
+    },
+    {
+      "id": "23",
+      "prompt": "Quel est le sport préféré des horloges cassées ?",
+      "answers": [
+        "Le marathon du tic-tac lent.",
+        "Le lancer de secondes perdues.",
+        "La course folle sans fin."
+      ]
+    },
+    {
+      "id": "24",
+      "prompt": "Quelle est la principale qualité d’un parapluie philosophe ?",
+      "answers": [
+        "Savoir écouter la pluie sans jamais râler.",
+        "Expliquer le sens de la goutte qui tombe.",
+        "Rester ouvert même sous le soleil."
+      ]
+    },
+    {
+      "id": "25",
+      "prompt": "Pourquoi les chaises refusent-elles les rendez-vous galants ?",
+      "answers": [
+        "Parce qu’elles sont déjà prises.",
+        "Elles préfèrent rester assises sur leurs principes.",
+        "Elles craignent les conversations qui dérapent."
+      ]
+    },
+    {
+      "id": "26",
+      "prompt": "Quel est le plat national des extra-terrestres gourmands ?",
+      "answers": [
+        "Pizza à l’ananas intersidérale.",
+        "Glace au pollen de météorite.",
+        "Soupe de comète aux éclats de rire."
+      ]
+    },
+    {
+      "id": "27",
+      "prompt": "Que dit un cactus quand il rencontre un hérisson ?",
+      "answers": [
+        "“Ah, un cousin piquant !”",
+        "“Tu ne trouves pas qu’on se ressemble un peu trop ?”",
+        "“Fais attention, je pique fort aujourd’hui.”"
+      ]
+    },
+    {
+      "id": "28",
+      "prompt": "Quel est le dernier mot prononcé par un miroir fatigué ?",
+      "answers": [
+        "“Encore un reflet de trop...”",
+        "“Je ne veux plus me voir.”",
+        "“À quand le prochain changement de décor ?”"
+      ]
+    },
+    {
+      "id": "29",
+      "prompt": "Quelle est la compétence la plus étrange d’un poisson rouge ?",
+      "answers": [
+        "Oublier ce qu’il vient de penser.",
+        "Faire des bulles qui racontent des histoires.",
+        "Nager en rond avec style."
+      ]
+    },
+    {
+      "id": "30",
+      "prompt": "Que fait un nuage quand il est triste ?",
+      "answers": [
+        "Il pleure en confettis.",
+        "Il se cache derrière la lune.",
+        "Il change de forme pour faire rire."
+      ]
+    },
+    {
+      "id": "31",
+      "prompt": "Si tu inventais une nouvelle couleur, comment s’appellerait-elle ?",
+      "answers": [
+        "“Bleu fantôme mélancolique.”",
+        "“Vert chuchotement silencieux.”",
+        "“Rouge éclat d’hypnose.”"
+      ]
+    },
+    {
+      "id": "32",
+      "prompt": "Quel est le super-pouvoir d’un parapluie rebelle ?",
+      "answers": [
+        "Faire pleuvoir quand il fait soleil.",
+        "S’envoler à chaque coup de vent.",
+        "Changer de couleur selon ton humeur."
+      ]
+    },
+    {
+      "id": "33",
+      "prompt": "Que dirait un escargot superstar à ses fans ?",
+      "answers": [
+        "“Merci d’attendre patiemment ma prochaine apparition.”",
+        "“La vitesse, c’est surfait.”",
+        "“Mon secret ? Du slime bio.”"
+      ]
+    },
+    {
+      "id": "34",
+      "prompt": "Pourquoi les arbres préfèrent-ils les chansons tristes ?",
+      "answers": [
+        "Parce qu’ils aiment les feuilles qui tombent en rythme.",
+        "Ça leur rappelle l’automne éternel.",
+        "Ils veulent pleurer en silence."
+      ]
+    },
+    {
+      "id": "35",
+      "prompt": "Que pense un coussin quand tu t’assois dessus ?",
+      "answers": [
+        "“Enfin, mon moment de gloire !”",
+        "“Ouf, ça commençait à devenir ennuyeux.”",
+        "“Est-ce que je vais ressortir froissé ?”"
+      ]
+    },
+    {
+      "id": "36",
+      "prompt": "Quelle est la danse préférée des robots maladroits ?",
+      "answers": [
+        "Le robot qui déraille.",
+        "La samba des circuits.",
+        "Le moonwalk électrique."
+      ]
+    },
+    {
+      "id": "37",
+      "prompt": "Que ferait un chat s’il dirigeait un pays ?",
+      "answers": [
+        "Interdire les réveils avant midi.",
+        "Instaurer la sieste obligatoire.",
+        "Remplacer les discours par des ronrons."
+      ]
+    },
+    {
+      "id": "38",
+      "prompt": "Quelle est la devise secrète des chaussettes perdues ?",
+      "answers": [
+        "“On se retrouvera peut-être dans une autre vie.”",
+        "“L’aventure commence là où le pied s’arrête.”",
+        "“Toujours un pied devant l’autre.”"
+      ]
+    },
+    {
+      "id": "39",
+      "prompt": "Si un biscuit pouvait parler, que dirait-il ?",
+      "answers": [
+        "“Croque-moi si tu peux.”",
+        "“Je suis plein de secrets croustillants.”",
+        "“Ne me mange pas, je suis timide.”"
+      ]
+    },
+    {
+      "id": "40",
+      "prompt": "Quelle est la chose la plus bizarre qu’un réveil puisse faire ?",
+      "answers": [
+        "Chanter des berceuses à l’envers.",
+        "Se cacher sous l’oreiller.",
+        "Raconter des blagues pour te réveiller."
+      ]
+    },
+    {
+      "id": "41",
+      "prompt": "Tu viens de te faire élire président des pommes de terre intergalactiques. Quelle est ta première loi ?",
+      "answers": [
+        "Interdire les frites sur toutes les planètes.",
+        "Obliger les patates à porter des lunettes de soleil.",
+        "Créer un hymne national chanté en purée."
+      ]
+    },
+    {
+      "id": "42",
+      "prompt": "Un chat te donne un conseil secret pour devenir invisible. Que te dit-il ?",
+      "answers": [
+        "“Fais semblant d’être un meuble, mais avec du style.”",
+        "“Miaule en morse, ça brouille les pistes.”",
+        "“Cache-toi derrière un rêve de poisson.”"
+      ]
+    },
+    {
+      "id": "43",
+      "prompt": "Ton frigo s’est rebellé et réclame des vacances. Que lui offres-tu ?",
+      "answers": [
+        "Un séjour tout frais dans le congélateur tropical.",
+        "Un cocktail glacé aux glaçons parlants.",
+        "Une playlist de chansons pour légumes motivés."
+      ]
+    },
+    {
+      "id": "44",
+      "prompt": "Tu participes à un concours de cris d’animaux imaginaires. Quel cri tu imites ?",
+      "answers": [
+        "Le hurlement d’un homard mélancolique.",
+        "Le chant du poulpe qui fait du beatbox.",
+        "Le sifflement d’un dragon en sieste."
+      ]
+    },
+    {
+      "id": "45",
+      "prompt": "Un fantôme maladroit veut t’aider à traverser un mur. Comment ?",
+      "answers": [
+        "En te faisant un câlin spectral.",
+        "En organisant un flashmob de fantômes.",
+        "En chantant un air de rap hanté."
+      ]
+    },
+    {
+      "id": "46",
+      "prompt": "Quelle est la raison secrète pour laquelle les chaussettes disparaissent dans la machine à laver ?",
+      "answers": [
+        "Elles partent faire la fête chez les slips rebelles.",
+        "Elles se transforment en ninjas invisibles.",
+        "Elles jouent à cache-cache avec le tambour."
+      ]
+    },
+    {
+      "id": "47",
+      "prompt": "Quel est le sujet préféré d’un hérisson philosophe ?",
+      "answers": [
+        "La nature des épines et de la tendresse.",
+        "Pourquoi les fraises sont-elles toujours rouges ?",
+        "L’art subtil de se rouler en boule sans se piquer."
+      ]
+    },
+    {
+      "id": "48",
+      "prompt": "Ta plante verte t’annonce qu’elle veut devenir une célébrité. Que fait-elle ?",
+      "answers": [
+        "Elle écrit un roman sur la photosynthèse amoureuse.",
+        "Elle lance un vlog de conseils en chlorophylle.",
+        "Elle organise un concours de selfies avec les insectes."
+      ]
+    },
+    {
+      "id": "49",
+      "prompt": "Tu es pris en otage par un troupeau de moutons. Que dis-tu pour te libérer ?",
+      "answers": [
+        "“Je suis un espion déguisé en chèvre !”",
+        "“Si je chante l’hymne du fromage, vous me laissez partir ?”",
+        "“Je connais la recette secrète du tricot.”"
+      ]
+    },
+    {
+      "id": "50",
+      "prompt": "Quelle est la punition infligée aux chaussettes qui ne veulent plus faire équipe ?",
+      "answers": [
+        "Elles doivent chanter en duo sans harmoniser.",
+        "Elles sont forcées de marcher en solo dans la neige.",
+        "Elles perdent leur droit à la machine à laver."
+      ]
+    },
+    {
+      "id": "51",
+      "prompt": "Un robot décide d’écrire de la poésie. Quel est son premier vers ?",
+      "answers": [
+        "“Circuit brûlant, cœur de silicone.”",
+        "“Dans le binaire, je cherche un soupir.”",
+        "“Les pixels pleurent sous la pluie de données.”"
+      ]
+    },
+    {
+      "id": "52",
+      "prompt": "Pourquoi les coussins ont-ils peur de la nuit ?",
+      "answers": [
+        "Parce que les rêves s’infiltrent dans leurs plumes.",
+        "Ils redoutent les ronflements en mode heavy metal.",
+        "Ils craignent d’être remplacés par des pierres molles."
+      ]
+    },
+    {
+      "id": "53",
+      "prompt": "Quel est le super-pouvoir secret des gâteaux d’anniversaire oubliés ?",
+      "answers": [
+        "Faire revenir les invités fantômes.",
+        "Se transformer en poussière d’étoile sucrée.",
+        "Raconter des blagues sucrées à minuit."
+      ]
+    },
+    {
+      "id": "54",
+      "prompt": "Un hamster philosophe te demande un conseil. Que lui réponds-tu ?",
+      "answers": [
+        "“Cours, mais surtout, ne t’arrête jamais de rêver.”",
+        "“Le vrai voyage est dans la roue.”",
+        "“Si tu tombes, fais comme si tu dansais.”"
+      ]
+    },
+    {
+      "id": "55",
+      "prompt": "Ta montre te confie un secret. Lequel ?",
+      "answers": [
+        "“Je rêve d’arrêter le temps pour prendre un café.”",
+        "“Parfois, je me perds dans mes propres aiguilles.”",
+        "“Le tic-tac, c’est juste un rythme pour danser.”"
+      ]
+    },
+    {
+      "id": "56",
+      "prompt": "Que font les escargots quand ils veulent organiser une fête surprise ?",
+      "answers": [
+        "Ils envoient des invitations en mode lent.",
+        "Ils décorent avec des feuilles de salade.",
+        "Ils répètent leur entrée en scène pendant des heures."
+      ]
+    },
+    {
+      "id": "57",
+      "prompt": "Quel est le rituel matinal des chaussettes rebelles ?",
+      "answers": [
+        "Faire le poirier avant d’aller au lave-linge.",
+        "Réciter l’alphabet à l’envers en sautillant.",
+        "Se cacher dans les chaussures en riant."
+      ]
+    },
+    {
+      "id": "58",
+      "prompt": "Un nuage timide veut devenir chanteur. Quel est son style musical ?",
+      "answers": [
+        "Jazz des précipitations douces.",
+        "Rap des orages imprévus.",
+        "Opéra des éclairs nocturnes."
+      ]
+    },
+    {
+      "id": "59",
+      "prompt": "Quel est le secret bien gardé des lampes de chevet ?",
+      "answers": [
+        "Elles adorent raconter des histoires aux ombres.",
+        "Elles rêvent de briller dans un spectacle de lasers.",
+        "Elles organisent des concours de clignotements."
+      ]
+    },
+    {
+      "id": "60",
+      "prompt": "Pourquoi les horloges cassées aiment les puzzles ?",
+      "answers": [
+        "Parce qu’elles aiment remettre le temps en ordre.",
+        "Ça leur rappelle leurs souvenirs éparpillés.",
+        "Elles espèrent trouver la pièce manquante du futur."
+      ]
+    },
+    {
+      "id": "61",
+      "prompt": "Un sandwich se rebelle contre la faim. Que crie-t-il ?",
+      "answers": [
+        "“Pas aujourd’hui, je suis en grève de la croûte !”",
+        "“Je préfère rester un casse-croûte pacifiste.”",
+        "“Mangez-moi avec précaution, je suis fragile.”"
+      ]
+    },
+    {
+      "id": "62",
+      "prompt": "Quelle est la technique secrète d’un escargot ninja ?",
+      "answers": [
+        "Se fondre dans le brouillard de la salade.",
+        "Lancer des attaques en slime surprise.",
+        "Faire des roulades silencieuses sur les feuilles mortes."
+      ]
+    },
+    {
+      "id": "63",
+      "prompt": "Ton réveil se transforme en DJ. Quel est son premier hit ?",
+      "answers": [
+        "“Beat du snooze éternel.”",
+        "“Réveil en mode boom boom.”",
+        "“Chant des boutons d’arrêt.”"
+      ]
+    },
+    {
+      "id": "64",
+      "prompt": "Un poireau philosophe veut te convaincre. Que te dit-il ?",
+      "answers": [
+        "“Dans la soupe de la vie, je suis la vérité cachée.”",
+        "“Mes feuilles sont les pages d’un livre oublié.”",
+        "“Respire mon parfum, c’est la sagesse verte.”"
+      ]
+    },
+    {
+      "id": "65",
+      "prompt": "Que fait un chapeau quand il est triste ?",
+      "answers": [
+        "Il pleure des gouttes de pluie en feutre.",
+        "Il s’envole vers un pays sans vent.",
+        "Il se recroqueville en boule sur une tête vide."
+      ]
+    },
+    {
+      "id": "66",
+      "prompt": "Pourquoi les lapins n’aiment pas les mystères ?",
+      "answers": [
+        "Parce qu’ils préfèrent les carottes évidentes.",
+        "Ils ont peur des chapeaux magiques.",
+        "Ils trouvent que les énigmes donnent mal aux oreilles."
+      ]
+    },
+    {
+      "id": "67",
+      "prompt": "Quel est le secret des chaussettes magiques ?",
+      "answers": [
+        "Elles changent de couleur selon ton humeur.",
+        "Elles dansent seules quand tu dors.",
+        "Elles parlent en langage textile."
+      ]
+    },
+    {
+      "id": "68",
+      "prompt": "Que dit une plume qui veut devenir danseuse ?",
+      "answers": [
+        "“Je veux virevolter sans jamais toucher le sol.”",
+        "“Mon rêve, c’est le grand saut en papier.”",
+        "“Je suis légère, mais pleine d’ambition.”"
+      ]
+    },
+    {
+      "id": "69",
+      "prompt": "Quelle est la raison pour laquelle les horloges rient en secret ?",
+      "answers": [
+        "Parce qu’elles trouvent que le temps est une blague.",
+        "Elles aiment les secondes qui font des pirouettes.",
+        "Elles se moquent des calendriers stressés."
+      ]
+    },
+    {
+      "id": "70",
+      "prompt": "Que fait une carotte quand elle se sent invisible ?",
+      "answers": [
+        "Elle organise une fête clandestine dans le potager.",
+        "Elle écrit des poèmes à la lune.",
+        "Elle se cache sous une feuille de salade."
+      ]
+    },
+    {
+      "id": "71",
+      "prompt": "Un chat décide de devenir écrivain. Quel est son premier roman ?",
+      "answers": [
+        "“Les aventures d’une souris imaginaire.”",
+        "“Le journal intime d’un coussin disparu.”",
+        "“Les secrets du ronron mystérieux.”"
+      ]
+    },
+    {
+      "id": "72",
+      "prompt": "Pourquoi les bougies préfèrent-elles les soirées pluvieuses ?",
+      "answers": [
+        "Parce que la pluie chante avec leurs flammes.",
+        "Elles aiment jouer à cache-cache avec les gouttes.",
+        "Elles rêvent d’éclairer les arcs-en-ciel."
+      ]
+    },
+    {
+      "id": "73",
+      "prompt": "Quelle est la principale qualité d’un escargot jongleur ?",
+      "answers": [
+        "La lenteur maîtrisée du lancer parfait.",
+        "Le charme dans chaque roulade.",
+        "Le courage de ne jamais perdre une balle."
+      ]
+    },
+    {
+      "id": "74",
+      "prompt": "Ton oreiller te confie un secret. Lequel ?",
+      "answers": [
+        "“Je garde tous tes rêves en réserve.”",
+        "“Parfois, je fais la sieste à ta place.”",
+        "“J’adore quand tu me froisses.”"
+      ]
+    },
+    {
+      "id": "75",
+      "prompt": "Que ferait une chaussette rebelle en vacances ?",
+      "answers": [
+        "Prendre un bain de soleil sous la machine à laver.",
+        "Organiser un défilé de mode pour les autres chaussettes.",
+        "S’inventer une nouvelle paire."
+      ]
+    },
+    {
+      "id": "76",
+      "prompt": "Quel est le talent caché d’une lampe de bureau ?",
+      "answers": [
+        "Faire des ombres chinoises qui racontent des histoires.",
+        "Changer de couleur selon ton humeur.",
+        "Clignoter en rythme avec tes idées."
+      ]
+    },
+    {
+      "id": "77",
+      "prompt": "Pourquoi les biscuits aiment-ils les jours de pluie ?",
+      "answers": [
+        "Parce qu’ils se sentent plus croustillants.",
+        "Ils adorent les goûters improvisés.",
+        "Ils chantent sous la fenêtre."
+      ]
+    },
+    {
+      "id": "78",
+      "prompt": "Quel est le secret d’un parapluie qui rêve d’être un chapeau ?",
+      "answers": [
+        "Il espère un jour tomber amoureux d’un vent doux.",
+        "Il voudrait sentir le soleil sur sa tête.",
+        "Il veut changer de vie sans se mouiller."
+      ]
+    },
+    {
+      "id": "79",
+      "prompt": "Que fait un réveil quand il décide de faire la grasse matinée ?",
+      "answers": [
+        "Il se met en mode silence ninja.",
+        "Il cache ses aiguilles sous l’oreiller.",
+        "Il raconte des blagues pour ne pas sonner."
+      ]
+    },
+    {
+      "id": "80",
+      "prompt": "Quel est le passe-temps préféré des chaussettes solitaires ?",
+      "answers": [
+        "Écrire des lettres aux autres chaussettes perdues.",
+        "Inventer des danses secrètes dans la machine à laver.",
+        "Regarder les étoiles en rêvant de pieds."
+      ]
+    },
+    {
+      "id": "81",
+      "prompt": "Un escargot devient DJ à la fête des limaces. Quel est son tube ?",
+      "answers": [
+        "“Glisse lente sur tapis mouillé.”",
+        "“Bassline de mucus funky.”",
+        "“Scratch sur feuille de salade.”"
+      ]
+    },
+    {
+      "id": "82",
+      "prompt": "Ton réveil décide d’organiser un concours de blagues. Quelle blague raconte-t-il ?",
+      "answers": [
+        "“Pourquoi les aiguilles ne se battent jamais ? Parce qu’elles tournent toujours en rond.”",
+        "“Qu’est-ce qu’un tic qui fait du toc ? Une horloge qui s’amuse.”",
+        "“Pourquoi le temps passe-t-il vite ? Parce qu’il court après ses secondes.”"
+      ]
+    },
+    {
+      "id": "83",
+      "prompt": "Que fait un parapluie lorsqu’il est jaloux de la pluie ?",
+      "answers": [
+        "Il se met à pleuvoir en éclats de rire.",
+        "Il danse le twist avec les gouttes.",
+        "Il se cache dans un placard en claquant des brides."
+      ]
+    },
+    {
+      "id": "84",
+      "prompt": "Quelle est la chanson préférée des chaises qui veulent danser ?",
+      "answers": [
+        "“Le twist des pieds fatigués.”",
+        "“Salsa des coussins rebelles.”",
+        "“Tango des roulettes folles.”"
+      ]
+    },
+    {
+      "id": "85",
+      "prompt": "Pourquoi les chaussettes ont-elles peur des journées sans chaussures ?",
+      "answers": [
+        "Parce qu’elles craignent le contact du sol froid.",
+        "Elles redoutent de finir en déco sur une étagère.",
+        "Elles pensent que les pieds libres sont incontrôlables."
+      ]
+    },
+    {
+      "id": "86",
+      "prompt": "Quel est le sport favori des pots de fleurs ?",
+      "answers": [
+        "Le lancer de terre et de racines.",
+        "Le saut de gouttes d’eau.",
+        "La course des feuilles au vent."
+      ]
+    },
+    {
+      "id": "87",
+      "prompt": "Quel est le secret d’un biscuit qui veut devenir espion ?",
+      "answers": [
+        "Il cache des miettes d’informations.",
+        "Il change de forme à chaque dégustation.",
+        "Il murmure des secrets croustillants."
+      ]
+    },
+    {
+      "id": "88",
+      "prompt": "Un chat décide de donner des cours de yoga. Quelle posture enseigne-t-il ?",
+      "answers": [
+        "Le ronron de la paix intérieure.",
+        "La sieste sur le coussin zen.",
+        "L’étirement du chat curieux."
+      ]
+    },
+    {
+      "id": "89",
+      "prompt": "Pourquoi les horloges aiment-elles les pauses café ?",
+      "answers": [
+        "Parce qu’elles peuvent enfin arrêter de tourner.",
+        "Elles discutent des secondes perdues.",
+        "Elles rêvent d’une tasse de temps suspendu."
+      ]
+    },
+    {
+      "id": "90",
+      "prompt": "Quel est le rêve secret d’un parapluie cassé ?",
+      "answers": [
+        "Devenir un cerf-volant rebelle.",
+        "Changer de métier pour devenir ombrelle de danseuse.",
+        "Apprendre à voler sans vent."
+      ]
+    },
+    {
+      "id": "91",
+      "prompt": "Que fait une plante quand elle veut chanter sous la douche ?",
+      "answers": [
+        "Elle murmure des notes chlorophylliennes.",
+        "Elle danse avec les gouttes.",
+        "Elle compose une symphonie de racines."
+      ]
+    },
+    {
+      "id": "92",
+      "prompt": "Pourquoi les biscuits aiment-ils les anniversaires ?",
+      "answers": [
+        "Parce qu’ils se sentent spéciaux en ce jour-là.",
+        "Ils aiment être au centre de l’attention… et de la faim.",
+        "Ils espèrent qu’on leur chante une chanson."
+      ]
+    },
+    {
+      "id": "93",
+      "prompt": "Quel est le secret d’un escargot pour séduire ?",
+      "answers": [
+        "Offrir une balade romantique à vitesse lumière.",
+        "Laisser une traînée brillante en forme de cœur.",
+        "Raconter des histoires glissantes au clair de lune."
+      ]
+    },
+    {
+      "id": "94",
+      "prompt": "Un coussin décide d’écrire un journal intime. Quel est son premier mot ?",
+      "answers": [
+        "“Douceur.”",
+        "“Froissé.”",
+        "“Repos.”"
+      ]
+    },
+    {
+      "id": "95",
+      "prompt": "Pourquoi les lampes aiment-elles les soirées d’hiver ?",
+      "answers": [
+        "Parce qu’elles peuvent briller plus longtemps.",
+        "Elles aiment réchauffer les âmes froides.",
+        "Elles racontent des histoires de lumière."
+      ]
+    },
+    {
+      "id": "96",
+      "prompt": "Quel est le super-pouvoir secret des chaussettes qui ne veulent plus être perdues ?",
+      "answers": [
+        "S’accrocher magiquement aux pieds rebelles.",
+        "Se transformer en paire de gants.",
+        "Voyager à travers les rêves pour retrouver leur moitié."
+      ]
+    },
+    {
+      "id": "97",
+      "prompt": "Que fait un nuage quand il veut changer de forme ?",
+      "answers": [
+        "Il joue à cache-cache avec le soleil.",
+        "Il danse au rythme du vent farceur.",
+        "Il s’étire en dessinant des sourires."
+      ]
+    },
+    {
+      "id": "98",
+      "prompt": "Quelle est la danse préférée des horloges qui tournent à l’envers ?",
+      "answers": [
+        "Le moonwalk temporel.",
+        "La valse des minutes perdues.",
+        "Le breakdance des secondes folles."
+      ]
+    },
+    {
+      "id": "99",
+      "prompt": "Pourquoi les escargots ne vont-ils jamais au cinéma ?",
+      "answers": [
+        "Parce qu’ils trouvent que le film est trop rapide.",
+        "Ils préfèrent rêver leurs propres histoires.",
+        "Ils n’aiment pas le pop-corn qui colle."
+      ]
+    },
+    {
+      "id": "100",
+      "prompt": "Que fait une plante quand elle veut faire la fête ?",
+      "answers": [
+        "Elle organise un bal avec les papillons.",
+        "Elle éclate en pétales de joie.",
+        "Elle invite la pluie à danser."
+      ]
+    },
+    {
+      "id": "101",
+      "prompt": "Un cornichon veut devenir chanteur d’opéra. Quelle est sa première note ?",
+      "answers": [
+        "Un “croque” aigu qui fait vibrer les bocaux.",
+        "Un soupir acidulé plein de passion.",
+        "Un gloussement mariné de joie."
+      ]
+    },
+    {
+      "id": "102",
+      "prompt": "Pourquoi les lampes de poche ont-elles peur du noir ?",
+      "answers": [
+        "Parce qu’elles savent qu’elles disparaissent dans l’ombre.",
+        "Elles craignent que leurs piles s’enfuient.",
+        "Elles redoutent les monstres sous le lit électrique."
+      ]
+    },
+    {
+      "id": "103",
+      "prompt": "Que fait un chewing-gum quand il se sent invisible ?",
+      "answers": [
+        "Il colle des messages secrets sous la table.",
+        "Il invente des chansons collantes.",
+        "Il se transforme en bulle géante pour s’échapper."
+      ]
+    },
+    {
+      "id": "104",
+      "prompt": "Quel est le secret d’une plante carnivore qui veut faire la paix ?",
+      "answers": [
+        "Elle offre des câlins collants aux insectes.",
+        "Elle apprend la danse de l’amitié.",
+        "Elle partage ses feuilles en signe de trêve."
+      ]
+    },
+    {
+      "id": "105",
+      "prompt": "Ton oreiller se met à parler. Que te demande-t-il ?",
+      "answers": [
+        "“Peux-tu me raconter un rêve ce soir ?”",
+        "“Est-ce que je suis assez doux pour toi ?”",
+        "“Tu veux que je cache tes secrets ?”"
+      ]
+    },
+    {
+      "id": "106",
+      "prompt": "Pourquoi les biscuits détestent-ils les lundis ?",
+      "answers": [
+        "Parce qu’ils finissent souvent dans la boîte à lunch.",
+        "Ils n’aiment pas commencer la semaine croustillants.",
+        "Ils préfèrent les vendredis sucrés."
+      ]
+    },
+    {
+      "id": "107",
+      "prompt": "Quel est le sport préféré des horloges de sable ?",
+      "answers": [
+        "Le décompte des grains à la vitesse du vent.",
+        "La course du temps qui s’écoule.",
+        "Le saut synchronisé des secondes."
+      ]
+    },
+    {
+      "id": "108",
+      "prompt": "Que fait un parapluie quand il veut se déguiser ?",
+      "answers": [
+        "Il se transforme en champignon géant.",
+        "Il porte un chapeau de pluie coloré.",
+        "Il imite un oiseau mouillé."
+      ]
+    },
+    {
+      "id": "109",
+      "prompt": "Quel est le secret d’un escargot pour devenir invisible ?",
+      "answers": [
+        "Se fondre dans la mousse de la forêt.",
+        "Porter un manteau de feuilles mortes.",
+        "Ralentir encore plus jusqu’à disparaître."
+      ]
+    },
+    {
+      "id": "110",
+      "prompt": "Pourquoi les coussins organisent-ils des fêtes secrètes ?",
+      "answers": [
+        "Pour se reposer après avoir porté des fesses.",
+        "Pour partager des rêves moelleux.",
+        "Pour faire la course aux plumes volantes."
+      ]
+    },
+    {
+      "id": "111",
+      "prompt": "Ton chat décide de devenir chef cuisinier. Quel plat prépare-t-il ?",
+      "answers": [
+        "La soupe aux croquettes mystère.",
+        "Le pâté de souris imaginaires.",
+        "Le gâteau au lait battu."
+      ]
+    },
+    {
+      "id": "112",
+      "prompt": "Quelle est la blague préférée des horloges ?",
+      "answers": [
+        "“Pourquoi les minutes détestent-elles les secondes ? Parce qu’elles courent trop vite !”",
+        "“Comment appelle-t-on une horloge folle ? Une tic-tac-tique.”",
+        "“Pourquoi le temps ne s’arrête jamais ? Parce qu’il est toujours pressé !”"
+      ]
+    },
+    {
+      "id": "113",
+      "prompt": "Que fait un nuage quand il veut écrire un poème ?",
+      "answers": [
+        "Il laisse tomber des vers en pluie douce.",
+        "Il dessine des mots dans le ciel.",
+        "Il chante des rimes d’orage."
+      ]
+    },
+    {
+      "id": "114",
+      "prompt": "Pourquoi les chaussettes aiment-elles les soirées pyjama ?",
+      "answers": [
+        "Parce qu’elles peuvent enfin se retrouver en duo.",
+        "Elles aiment écouter les secrets des pieds.",
+        "Elles organisent des concours de roulades."
+      ]
+    },
+    {
+      "id": "115",
+      "prompt": "Quel est le talent caché d’une lampe de chevet paresseuse ?",
+      "answers": [
+        "S’allumer toute seule… ou pas.",
+        "Clignoter en rythme avec ta fatigue.",
+        "Raconter des histoires en lumière tamisée."
+      ]
+    },
+    {
+      "id": "116",
+      "prompt": "Que fait une plante verte quand elle veut te faire une surprise ?",
+      "answers": [
+        "Elle pousse un peu plus vite pendant la nuit.",
+        "Elle change la forme de ses feuilles.",
+        "Elle fait apparaître une fleur rigolote."
+      ]
+    },
+    {
+      "id": "117",
+      "prompt": "Ton réveil décide de prendre des vacances. Comment te réveille-t-il ?",
+      "answers": [
+        "Avec un chant d’oiseau robotique.",
+        "En lançant une pluie de confettis sonores.",
+        "En racontant une blague matinale."
+      ]
+    },
+    {
+      "id": "118",
+      "prompt": "Quelle est la danse préférée des escargots sur la plage ?",
+      "answers": [
+        "Le slow glissant des coquillages.",
+        "La samba des algues roulantes.",
+        "Le twist des grains de sable."
+      ]
+    },
+    {
+      "id": "119",
+      "prompt": "Pourquoi les biscuits font-ils des rêves sucrés ?",
+      "answers": [
+        "Parce qu’ils veulent devenir des bonbons.",
+        "Ils espèrent croquer la lune.",
+        "Ils dansent dans des jardins en sucre."
+      ]
+    },
+    {
+      "id": "120",
+      "prompt": "Que fait une chaise quand elle veut changer de vie ?",
+      "answers": [
+        "Elle devient un toboggan pour fourmis.",
+        "Elle part en voyage sur un tapis volant.",
+        "Elle se transforme en nuage moelleux."
+      ]
+    },
+    {
+      "id": "121",
+      "prompt": "Que fait un yaourt quand il décide de faire une fugue ?",
+      "answers": [
+        "Il roule sous le frigo en chantant.",
+        "Il se cache dans le panier à fruits.",
+        "Il fait la course avec les pots de confiture."
+      ]
+    },
+    {
+      "id": "122",
+      "prompt": "Pourquoi les montres détestent les chaussettes ?",
+      "answers": [
+        "Parce qu’elles ne savent jamais à quelle heure partir.",
+        "Elles pensent que les chaussettes sont trop glissantes.",
+        "Elles veulent toujours garder le temps… et pas les pieds."
+      ]
+    },
+    {
+      "id": "123",
+      "prompt": "Quel est le secret d’une lampe qui veut devenir rockstar ?",
+      "answers": [
+        "Elle clignote en rythme sur du heavy métal.",
+        "Elle fait des solos de lumière éblouissants.",
+        "Elle chante en rayons UV."
+      ]
+    },
+    {
+      "id": "124",
+      "prompt": "Que dit un biscuit qui vient de tomber dans le thé ?",
+      "answers": [
+        "“Je suis trempé mais content d’être chaud.”",
+        "“Attention, je fonds pour toi.”",
+        "“Je préfère la piscine au four.”"
+      ]
+    },
+    {
+      "id": "125",
+      "prompt": "Pourquoi les chaussettes font-elles la course dans la machine à laver ?",
+      "answers": [
+        "Pour échapper au cycle final.",
+        "Pour devenir la paire gagnante.",
+        "Parce qu’elles adorent la vitesse."
+      ]
+    },
+    {
+      "id": "126",
+      "prompt": "Quel est le talent secret d’un réveil qui aime faire des blagues ?",
+      "answers": [
+        "Il fait sonner une fausse alarme surprise.",
+        "Il raconte des devinettes matinales.",
+        "Il imite le bruit du grille-pain."
+      ]
+    },
+    {
+      "id": "127",
+      "prompt": "Que fait une plante quand elle veut te faire un clin d’œil ?",
+      "answers": [
+        "Elle bouge doucement ses feuilles.",
+        "Elle fait tomber une goutte d’eau sur ta main.",
+        "Elle change la couleur de ses pétales."
+      ]
+    },
+    {
+      "id": "128",
+      "prompt": "Pourquoi les escargots aiment-ils les embouteillages ?",
+      "answers": [
+        "Parce qu’ils ne se sentent pas seuls.",
+        "Ils profitent pour écouter la radio.",
+        "Ils font la course en lenteur."
+      ]
+    },
+    {
+      "id": "129",
+      "prompt": "Que fait un parapluie quand il veut chanter sous la pluie ?",
+      "answers": [
+        "Il fait un solo de gouttes rythmiques.",
+        "Il danse au vent comme une star.",
+        "Il murmure des chansons à ses baleines."
+      ]
+    },
+    {
+      "id": "130",
+      "prompt": "Quel est le rêve secret d’une chaise qui veut devenir un dragon ?",
+      "answers": [
+        "Cracher du feu et faire des étincelles.",
+        "Voler au-dessus des montagnes.",
+        "Avoir des écailles moelleuses."
+      ]
+    },
+    {
+      "id": "131",
+      "prompt": "Que fait un biscuit quand il veut raconter une blague ?",
+      "answers": [
+        "Il se brise en éclats de rire.",
+        "Il fait craquer ses bords croustillants.",
+        "Il s’enroule en spirale drôle."
+      ]
+    },
+    {
+      "id": "132",
+      "prompt": "Pourquoi les lampes adorent-elles les power naps ?",
+      "answers": [
+        "Parce qu’elles rechargent leurs batteries secrètes.",
+        "Elles rêvent de spots lumineux.",
+        "Elles pratiquent le yoga lumineux."
+      ]
+    },
+    {
+      "id": "133",
+      "prompt": "Quel est le secret d’un coussin qui ne veut plus être froissé ?",
+      "answers": [
+        "Il apprend la méditation moelleuse.",
+        "Il utilise un spray anti-pli invisible.",
+        "Il se fait masser par des mains invisibles."
+      ]
+    },
+    {
+      "id": "134",
+      "prompt": "Que fait un escargot quand il veut jouer à cache-cache ?",
+      "answers": [
+        "Il se colle sous une feuille.",
+        "Il ralentit son pas pour ne pas être trouvé.",
+        "Il laisse une fausse piste de slime."
+      ]
+    },
+    {
+      "id": "135",
+      "prompt": "Pourquoi les horloges aiment-elles les journées sans fin ?",
+      "answers": [
+        "Parce qu’elles peuvent tourner en rond sans fin.",
+        "Elles oublient de sonner les heures.",
+        "Elles dansent avec le temps suspendu."
+      ]
+    },
+    {
+      "id": "136",
+      "prompt": "Que fait un nuage quand il veut faire la course avec le vent ?",
+      "answers": [
+        "Il change de forme pour semer le vent.",
+        "Il accélère en éclatant en gouttes.",
+        "Il crie “À toi de jouer !”"
+      ]
+    },
+    {
+      "id": "137",
+      "prompt": "Quel est le rêve fou d’une chaussette orpheline ?",
+      "answers": [
+        "Retrouver sa moitié dans une laverie magique.",
+        "Voyager dans un panier à linge enchanté.",
+        "Devenir chaussette royale."
+      ]
+    },
+    {
+      "id": "138",
+      "prompt": "Que fait un réveil quand il veut prendre sa retraite ?",
+      "answers": [
+        "Il s’arrête de sonner pour toujours.",
+        "Il se cache dans un tiroir secret.",
+        "Il écrit ses mémoires en tic-tac."
+      ]
+    },
+    {
+      "id": "139",
+      "prompt": "Pourquoi les biscuits adorent-ils les chansons d’amour ?",
+      "answers": [
+        "Parce qu’ils se sentent croquants et tendres.",
+        "Ils rêvent d’être mangés avec passion.",
+        "Ils aiment vibrer au rythme des mélodies sucrées."
+      ]
+    },
+    {
+      "id": "140",
+      "prompt": "Que fait une plante quand elle veut te faire un câlin ?",
+      "answers": [
+        "Elle étend doucement ses feuilles vers toi.",
+        "Elle envoie un parfum réconfortant.",
+        "Elle fait pousser une fleur souriante."
+      ]
+    },
+    {
+      "id": "141",
+      "prompt": "Un fromage décide de devenir philosophe. Que dit-il ?",
+      "answers": [
+        "« Je suis mûr pour réfléchir. »",
+        "« La vie sent fort, mais c’est ça le charme. »",
+        "« Entre deux pains, j’analyse le monde. »"
+      ]
+    },
+    {
+      "id": "142",
+      "prompt": "Que fait un poisson rouge quand il a la flemme de nager ?",
+      "answers": [
+        "Il fait la sieste dans son bocal.",
+        "Il tourne en rond en mode slow-motion.",
+        "Il regarde les plantes danser."
+      ]
+    },
+    {
+      "id": "143",
+      "prompt": "Pourquoi les chaussettes aiment les puzzles ?",
+      "answers": [
+        "Parce qu’elles adorent retrouver leurs partenaires perdues.",
+        "Elles aiment assembler des motifs farfelus.",
+        "Elles rêvent de s’imbriquer parfaitement."
+      ]
+    },
+    {
+      "id": "144",
+      "prompt": "Quel est le secret d’une horloge qui adore les blagues ?",
+      "answers": [
+        "Elle fait tic-tac-tac-tic en rigolant.",
+        "Elle raconte des histoires à chaque heure.",
+        "Elle clignote en rythme avec les rires."
+      ]
+    },
+    {
+      "id": "145",
+      "prompt": "Que fait une plante verte quand elle veut se déguiser ?",
+      "answers": [
+        "Elle porte un chapeau en feuille d’automne.",
+        "Elle s’habille de gouttes de rosée.",
+        "Elle change la couleur de ses feuilles."
+      ]
+    },
+    {
+      "id": "146",
+      "prompt": "Pourquoi un réveil n’aime pas les grasse-mat’ ?",
+      "answers": [
+        "Parce qu’il se sent inutile.",
+        "Il déteste les pauses sans sonner.",
+        "Il rêve de réveiller le monde."
+      ]
+    },
+    {
+      "id": "147",
+      "prompt": "Quel est le sport préféré des escargots urbains ?",
+      "answers": [
+        "La course lente entre les trottoirs.",
+        "Le slalom sur les feuilles mortes.",
+        "Le sprint à l’arrêt feu rouge."
+      ]
+    },
+    {
+      "id": "148",
+      "prompt": "Que fait un parapluie qui veut faire rire ?",
+      "answers": [
+        "Il claque en cadence.",
+        "Il fait des ombres rigolotes.",
+        "Il raconte des histoires de pluie."
+      ]
+    },
+    {
+      "id": "149",
+      "prompt": "Pourquoi les biscuits se racontent-ils des secrets ?",
+      "answers": [
+        "Parce qu’ils craquent entre eux.",
+        "Ils aiment partager leurs miettes d’info.",
+        "Ils veulent créer une alliance croustillante."
+      ]
+    },
+    {
+      "id": "150",
+      "prompt": "Quel est le rêve d’une lampe de chevet rêveuse ?",
+      "answers": [
+        "Voyager dans les étoiles.",
+        "Briller dans une pièce de théâtre.",
+        "Éclairer un secret bien gardé."
+      ]
+    },
+    {
+      "id": "151",
+      "prompt": "Que fait un coussin quand il veut partir à l’aventure ?",
+      "answers": [
+        "Il se roule en boule et roule sous la porte.",
+        "Il se fait emporter par un chat curieux.",
+        "Il rêve de nouveaux canapés."
+      ]
+    },
+    {
+      "id": "152",
+      "prompt": "Pourquoi un escargot écrit-il un roman ?",
+      "answers": [
+        "Parce qu’il aime prendre son temps.",
+        "Pour raconter des voyages minuscules.",
+        "Pour glisser ses pensées entre les pages."
+      ]
+    },
+    {
+      "id": "153",
+      "prompt": "Quel est le secret d’un réveil farceur ?",
+      "answers": [
+        "Il sonne une minute en avance… ou en retard.",
+        "Il joue à cache-cache avec les boutons.",
+        "Il imite le bruit du grille-pain."
+      ]
+    },
+    {
+      "id": "154",
+      "prompt": "Que fait une plante quand elle veut faire un cadeau ?",
+      "answers": [
+        "Elle pousse une fleur surprise.",
+        "Elle libère un parfum enchanté.",
+        "Elle danse doucement sous le vent."
+      ]
+    },
+    {
+      "id": "155",
+      "prompt": "Pourquoi les horloges aiment-elles les jours de pluie ?",
+      "answers": [
+        "Parce que les gouttes rythment leur danse.",
+        "Elles peuvent prendre leur temps.",
+        "Elles racontent des histoires de nuages."
+      ]
+    },
+    {
+      "id": "156",
+      "prompt": "Quel est le talent caché d’une chaise timide ?",
+      "answers": [
+        "Se transformer en trône quand personne ne regarde.",
+        "Murmurer des secrets aux coussins.",
+        "Faire des petites roulades discrètes."
+      ]
+    },
+    {
+      "id": "157",
+      "prompt": "Que fait un nuage quand il est en colère ?",
+      "answers": [
+        "Il gronde fort et claque des éclairs.",
+        "Il s’éparpille en petites gouttes furieuses.",
+        "Il fait des figures menaçantes dans le ciel."
+      ]
+    },
+    {
+      "id": "158",
+      "prompt": "Pourquoi une chaussette rêve-t-elle de la mer ?",
+      "answers": [
+        "Pour glisser sur les vagues.",
+        "Pour rencontrer des sandales exotiques.",
+        "Pour se reposer sur le sable chaud."
+      ]
+    },
+    {
+      "id": "159",
+      "prompt": "Quel est le secret d’un biscuit mélancolique ?",
+      "answers": [
+        "Il se rappelle les goûters d’enfance.",
+        "Il rêve d’être un gâteau d’anniversaire.",
+        "Il chante des chansons croustillantes."
+      ]
+    },
+    {
+      "id": "160",
+      "prompt": "Que fait une lampe quand elle veut chanter ?",
+      "answers": [
+        "Elle clignote en rythme.",
+        "Elle projette des ombres dansantes.",
+        "Elle souffle des éclairs lumineux."
+      ]
+    }
+  ]
+}

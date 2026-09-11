@@ -1,3 +1,5 @@
+import { allCompleted } from '../../../../shared/utils/public-api';
+import { bestEffort } from '../../../../platform/observability/public-api';
 import { BadRequestException, HttpException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -5,8 +7,11 @@ import {
   assertStorageCapacity,
   StorageCapacityError,
   writeFileAtomic,
-} from '../../../../shared/utils/public-api';
+} from '../../../../platform/filesystem/public-api';
 import { readEnvironment } from '../../../../platform/config/public-api';
+import { parseStrictInteger } from '../../../../shared/utils/public-api';
+
+const MAX_UPLOAD_DIRECTORY_ENTRIES = 10_000;
 
 export type WxUploadMeta = {
   uploadId: string;
@@ -36,11 +41,11 @@ export class WxUpdateUploadStorage {
   }
 
   uploadDir(uploadId: string): string {
-    return path.join(this.uploadsRoot, uploadId);
+    return path.join(this.uploadsRoot, this.requireUploadId(uploadId));
   }
 
   requireUploadId(value: string): string {
-    const uploadId = (value || '').trim();
+    const uploadId = typeof value === 'string' ? value.trim() : '';
     if (!/^[0-9a-f-]{36}$/i.test(uploadId)) {
       throw new BadRequestException('Identifiant upload WX invalide.');
     }
@@ -76,9 +81,17 @@ export class WxUpdateUploadStorage {
 
   async readMeta(metaPath: string): Promise<WxUploadMeta> {
     try {
-      return JSON.parse(
+      const stat = await fs.promises.stat(metaPath);
+      if (!stat.isFile() || stat.size > 64 * 1024) {
+        throw new Error('metadata too large');
+      }
+      const parsed: unknown = JSON.parse(
         await fs.promises.readFile(metaPath, 'utf-8'),
-      ) as WxUploadMeta;
+      );
+      if (!isWxUploadMeta(parsed)) {
+        throw new Error('invalid metadata');
+      }
+      return parsed;
     } catch {
       throw new BadRequestException('Upload WX introuvable ou corrompu.');
     }
@@ -86,6 +99,32 @@ export class WxUpdateUploadStorage {
 
   async writeMeta(filePath: string, value: WxUploadMeta): Promise<void> {
     await writeFileAtomic(filePath, JSON.stringify(value, null, 2));
+  }
+
+  async initialize(meta: WxUploadMeta): Promise<void> {
+    const uploadId = this.requireUploadId(meta.uploadId);
+    const dir = this.uploadDir(uploadId);
+    await fs.promises.mkdir(dir, { recursive: true });
+    try {
+      await this.writeMeta(path.join(dir, 'meta.json'), meta);
+    } catch (error) {
+      await bestEffort(
+        fs.promises.rm(dir, { recursive: true, force: true }),
+        `suppression de l'upload WX non initialisé upload=${uploadId}`,
+      );
+      throw error;
+    }
+  }
+
+  async cleanupCompletion(dir: string): Promise<void> {
+    await Promise.all(
+      ['.complete.lock', 'combined.zip', 'installer.zip'].map((name) =>
+        bestEffort(
+          fs.promises.rm(path.join(dir, name), { force: true }),
+          `suppression du temporaire WX ${name} upload=${path.basename(dir)}`,
+        ),
+      ),
+    );
   }
 
   async combineParts(input: {
@@ -97,8 +136,15 @@ export class WxUpdateUploadStorage {
     overflowMessage: string;
     sizeMessage: string;
   }): Promise<void> {
+    if (
+      !Number.isSafeInteger(input.expectedBytes) ||
+      input.expectedBytes < 0
+    ) {
+      throw new BadRequestException('Taille attendue du chunk WX invalide.');
+    }
     const prefix = `${input.kind}.`;
     const parts = (await fs.promises.readdir(input.dir))
+      .slice(0, MAX_UPLOAD_DIRECTORY_ENTRIES)
       .filter(
         (name) =>
           name.startsWith(prefix) &&
@@ -106,7 +152,8 @@ export class WxUpdateUploadStorage {
       )
       .map((name) => ({
         name,
-        index: Number.parseInt(name.slice(prefix.length), 10),
+        index:
+          parseStrictInteger(name.slice(prefix.length, -5), { min: 0 }) ?? -1,
       }))
       .sort((left, right) => left.index - right.index);
     if (parts.length === 0) throw new BadRequestException(input.missingMessage);
@@ -127,8 +174,9 @@ export class WxUpdateUploadStorage {
   }
 
   async removeParts(dir: string): Promise<void> {
-    const entries = await fs.promises.readdir(dir).catch(() => []);
-    await Promise.all(
+    const entries = (await fs.promises.readdir(dir).catch(() => []))
+      .slice(0, MAX_UPLOAD_DIRECTORY_ENTRIES);
+    await allCompleted(
       entries
         .filter((name) => /^(artifact|installer)\.\d+\.part$/.test(name))
         .map((name) => fs.promises.rm(path.join(dir, name), { force: true })),
@@ -137,10 +185,11 @@ export class WxUpdateUploadStorage {
 
   async pruneExpired(): Promise<void> {
     const expiration = Date.now() - 24 * 60 * 60 * 1000;
-    const entries = await fs.promises
+    const entries = (await fs.promises
       .readdir(this.uploadsRoot, { withFileTypes: true })
-      .catch(() => []);
-    await Promise.all(
+      .catch(() => []))
+      .slice(0, MAX_UPLOAD_DIRECTORY_ENTRIES);
+    await allCompleted(
       entries
         .filter((entry) => entry.isDirectory())
         .map(async (entry) => {
@@ -184,6 +233,47 @@ export class WxUpdateUploadStorage {
       await output.close();
     }
   }
+}
+
+function isWxUploadMeta(value: unknown): value is WxUploadMeta {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const item = value as Record<string, unknown>;
+  return (
+    typeof item.uploadId === 'string' &&
+    /^[0-9a-f-]{36}$/i.test(item.uploadId) &&
+    typeof item.releaseId === 'string' &&
+    item.releaseId.length > 0 &&
+    item.releaseId.length <= 128 &&
+    typeof item.version === 'string' &&
+    item.version.length > 0 &&
+    item.version.length <= 128 &&
+    typeof item.sequence === 'number' && Number.isSafeInteger(item.sequence) &&
+    item.sequence >= 0 &&
+    typeof item.publishedAt === 'string' &&
+    item.publishedAt.length <= 64 &&
+    (item.message === null ||
+      (typeof item.message === 'string' && item.message.length <= 2_000)) &&
+    (item.minimumVersion === null ||
+      (typeof item.minimumVersion === 'string' &&
+        item.minimumVersion.length <= 128)) &&
+    (item.mandatoryAt === null ||
+      (typeof item.mandatoryAt === 'string' && item.mandatoryAt.length <= 64)) &&
+    typeof item.sha256 === 'string' &&
+    /^[a-f0-9]{64}$/i.test(item.sha256) &&
+    typeof item.signature === 'string' &&
+    item.signature.length > 0 &&
+    item.signature.length <= 4096 &&
+    typeof item.totalBytes === 'number' && Number.isSafeInteger(item.totalBytes) &&
+    item.totalBytes >= 0 &&
+    (item.installerSha256 === null ||
+      (typeof item.installerSha256 === 'string' &&
+        /^[a-f0-9]{64}$/i.test(item.installerSha256))) &&
+    (item.installerTotalBytes === null ||
+      (typeof item.installerTotalBytes === 'number' && Number.isSafeInteger(item.installerTotalBytes) &&
+        item.installerTotalBytes >= 0)) &&
+    (item.completedAt === null ||
+      (typeof item.completedAt === 'string' && item.completedAt.length <= 64))
+  );
 }
 
 function environmentBytes(

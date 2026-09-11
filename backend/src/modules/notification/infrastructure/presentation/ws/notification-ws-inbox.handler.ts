@@ -220,6 +220,8 @@ function sendInboxError(
   send: NotificationInboxResponseSender,
 ): void {
   const message =
-    error instanceof Error && error.message ? error.message : 'Erreur';
+    error instanceof Error && error.message
+      ? error.message.slice(0, 512)
+      : 'Erreur';
   send(client, WS_EVENTS.notify.inbox.error, { message }, requestId);
 }

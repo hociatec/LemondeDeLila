@@ -1,8 +1,8 @@
-import type { GameSingleActionDto } from '../../../core/application/contracts/game-action.model';
-import type { GameRuntime } from '../../../core/application/contracts/game-runtime.interface';
-import { FixedGameClock } from '../../../core/application/contracts/game-execution-context.model';
-import type { GameStateEntity } from '../../../core/application/contracts/game-state.model';
-import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
+import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
+import type { GameRuntime } from '../../../core/application/ports/game-runtime.port';
+import { FixedGameClock } from '../../../core/application/models/game-execution-context.model';
+import type { GameState } from '../../../core/application/models/game-state.model';
+import { ContractGameRuntime } from './game-stability-auditor';
 import type {
   CompiledGameDefinition,
   GameActionMap,
@@ -11,6 +11,8 @@ import { GameCommandExecutorService } from '../../../core/application/services/g
 import { GameEngineService } from '../../../core/application/services/game-engine.service';
 import { InMemoryGameSessionStore } from '../../../core/infrastructure/persistence/memory/in-memory-game-session.store';
 import { GameExecutionScopeService } from '../../../core/application/services/game-execution-scope.service';
+import { assertContentReferences } from './game-content-storage-auditor';
+import { assertSerializableState } from '../../../engine/runtime/state/assert-serializable-state';
 
 const PROPERTY_SEEDS = [0, 1, 2, 7, 17, 42, 255, 65_535] as const;
 const FORBIDDEN_VIEW_KEYS = new Set([
@@ -66,7 +68,7 @@ async function auditSeed<
   definition: CompiledGameDefinition<TState, TActions, TPlayerView>,
   seed: number,
 ): Promise<void> {
-  const adapter = new DeclarativeGameRuntime(definition);
+  const adapter = new ContractGameRuntime(definition);
   const scope = new GameExecutionScopeService();
   const executor = new GameCommandExecutorService(scope);
   const clock = new FixedGameClock(1_700_000_000_000 + seed);
@@ -85,6 +87,9 @@ async function auditSeed<
     'setup/RNG non reproductible',
   );
   invariant(isValidState(state), 'setup a produit un état invalide');
+  assertContentReferences(state);
+  assertSerializableState(state);
+  adapter.assertStabilized(state, clock);
   invariant(
     stableJson(JSON.parse(stableJson(state))) === stableJson(state),
     'sérialisation instable',
@@ -126,7 +131,7 @@ async function auditSeed<
   );
 }
 
-function auditViews(adapter: GameRuntime, state: GameStateEntity): void {
+function auditViews(adapter: GameRuntime, state: GameState): void {
   for (const player of state.players ?? []) {
     const view = adapter.exposeStateForUser(state, player.id);
     const leaked = findForbiddenKey(view);
@@ -136,7 +141,7 @@ function auditViews(adapter: GameRuntime, state: GameStateEntity): void {
 
 function auditInvalidAction(
   adapter: GameRuntime,
-  state: GameStateEntity,
+  state: GameState,
   actorId: number,
 ): void {
   const before = stableJson(state);
@@ -154,10 +159,7 @@ function auditInvalidAction(
   invariant(stableJson(state) === before, 'une action invalide mute l’état');
 }
 
-function auditPendingIsolation(
-  adapter: GameRuntime,
-  state: GameStateEntity,
-): void {
+function auditPendingIsolation(adapter: GameRuntime, state: GameState): void {
   const pending = state.pending;
   if (!pending) return;
   const expectedPlayerIds = new Set(
@@ -186,7 +188,7 @@ function auditPendingIsolation(
   }
 }
 
-function auditBotActions(adapter: GameRuntime, state: GameStateEntity): void {
+function auditBotActions(adapter: GameRuntime, state: GameState): void {
   for (const bot of (state.players ?? []).filter((player) => player.isBot)) {
     const before = stableJson(state);
     const actions = adapter.getBotActions(state, bot.id) ?? [];
@@ -198,7 +200,7 @@ function auditBotActions(adapter: GameRuntime, state: GameStateEntity): void {
 function auditFinishedState(
   adapter: GameRuntime,
   executor: GameCommandExecutorService,
-  state: GameStateEntity,
+  state: GameState,
   fallback: GameSingleActionDto,
   actorId: number,
   clock: FixedGameClock,
@@ -228,9 +230,9 @@ async function auditCommand<
   TState extends object,
   TActions extends GameActionMap<TState>,
 >(
-  adapter: DeclarativeGameRuntime<TState, TActions>,
+  adapter: ContractGameRuntime<TState, TActions>,
   executor: GameCommandExecutorService,
-  state: GameStateEntity,
+  state: GameState,
   action: GameSingleActionDto,
   actorId: number,
   clock: FixedGameClock,
@@ -250,6 +252,9 @@ async function auditCommand<
     actorId,
     clock: new FixedGameClock(clock.nowMs()),
   });
+  assertContentReferences(next);
+  assertSerializableState(next);
+  adapter.assertStabilized(next, clock);
   invariant(
     stableJson(next) === stableJson(deterministic),
     'commande/RNG non reproductible',
@@ -282,7 +287,7 @@ async function auditCommand<
 function baseState(
   definition: { id: string; players: { min: number; max: number } },
   seed: number,
-): GameStateEntity {
+): GameState {
   const count = Math.min(
     definition.players.max,
     Math.max(2, definition.players.min),
@@ -314,7 +319,7 @@ function firstAction(definition: {
   return { type: Object.keys(definition.actions)[0] ?? 'invalid', payload: {} };
 }
 
-function isValidState(state: GameStateEntity): boolean {
+function isValidState(state: GameState): boolean {
   return (
     state != null &&
     typeof state === 'object' &&

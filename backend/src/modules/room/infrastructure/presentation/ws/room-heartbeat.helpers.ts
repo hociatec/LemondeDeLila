@@ -7,7 +7,13 @@ export class RoomSocketHeartbeat {
   >();
   private readonly lastPong = new WeakMap<WebSocket, number>();
 
-  constructor(private readonly pingIntervalMs: number) {}
+  private readonly pingIntervalMs: number;
+
+  constructor(pingIntervalMs: number) {
+    this.pingIntervalMs = Number.isSafeInteger(pingIntervalMs)
+      ? Math.min(Math.max(pingIntervalMs, 1_000), 300_000)
+      : 25_000;
+  }
 
   start(client: WebSocket): void {
     this.stop(client);

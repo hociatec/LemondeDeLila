@@ -1,4 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
+import { GameOperationMetrics } from './game-operation-metrics';
+import { BoundedMetricLabel } from './bounded-metric-label';
 import {
   collectDefaultMetrics,
   Counter,
@@ -9,6 +11,23 @@ import {
 
 export class PrometheusMetrics {
   readonly registry = new Registry();
+  readonly game = new GameOperationMetrics(this.registry);
+  private readonly routes = new BoundedMetricLabel(
+    256,
+    /^\/[\w/.:*{}?-]{0,255}$/,
+  );
+  private readonly wsTypes = new BoundedMetricLabel(
+    256,
+    /^[a-z][a-z0-9_.-]{0,127}$/,
+  );
+  private readonly resources = new BoundedMetricLabel(
+    16,
+    /^[a-z][a-z0-9_.-]{0,63}$/,
+  );
+  private readonly queues = new BoundedMetricLabel(
+    16,
+    /^[a-z][a-z0-9_.-]{0,127}$/,
+  );
   private readonly requests = new Counter({
     name: 'lila_http_requests_total',
     help: 'Nombre de requêtes HTTP terminées.',
@@ -53,6 +72,11 @@ export class PrometheusMetrics {
     labelNames: ['queue', 'state'] as const,
     registers: [this.registry],
   });
+  private readonly activeRooms = new Gauge({
+    name: 'lila_active_rooms',
+    help: 'Nombre de salles avec au moins un joueur connecté.',
+    registers: [this.registry],
+  });
   constructor() {
     collectDefaultMetrics({ prefix: 'lila_', register: this.registry });
   }
@@ -68,11 +92,30 @@ export class PrometheusMetrics {
           : null;
       const routePath =
         typeof routePathValue === 'string' ? routePathValue : '';
-      const route = routePath ? `${request.baseUrl}${routePath}` : 'unmatched';
+      const route = routePath
+        ? this.routes.resolve(`${request.baseUrl}${routePath}`)
+        : 'unmatched';
       const labels = {
-        method: request.method,
+        method: [
+          'GET',
+          'HEAD',
+          'POST',
+          'PUT',
+          'PATCH',
+          'DELETE',
+          'OPTIONS',
+          'CONNECT',
+          'TRACE',
+        ].includes(request.method)
+          ? request.method
+          : 'OTHER',
         route,
-        status: String(response.statusCode),
+        status:
+          Number.isInteger(response.statusCode) &&
+          response.statusCode >= 100 &&
+          response.statusCode <= 599
+            ? String(response.statusCode)
+            : 'unknown',
       };
       this.requests.inc(labels);
       this.latency.observe(
@@ -88,9 +131,15 @@ export class PrometheusMetrics {
     outcome: 'success' | 'error' | 'rejected',
     durationSeconds: number,
   ): void {
-    const labels = { type, outcome };
+    const safeType = this.wsTypes.resolve(type);
+    const labels = { type: safeType, outcome };
     this.websocketMessages.inc(labels);
-    this.websocketLatency.observe(labels, Math.max(0, durationSeconds));
+    this.websocketLatency.observe(
+      labels,
+      Number.isFinite(durationSeconds)
+        ? Math.min(86_400, Math.max(0, durationSeconds))
+        : 0,
+    );
   }
 
   setDependencyUp(dependency: 'database' | 'redis' | 'bullmq', up: boolean) {
@@ -103,8 +152,8 @@ export class PrometheusMetrics {
     ratio: number,
   ): void {
     this.dependencySaturation.set(
-      { dependency, resource },
-      Math.max(0, Math.min(1, ratio)),
+      { dependency, resource: this.resources.resolve(resource) },
+      Number.isFinite(ratio) ? Math.max(0, Math.min(1, ratio)) : 0,
     );
   }
 
@@ -112,9 +161,18 @@ export class PrometheusMetrics {
     queue: string,
     counts: Record<'waiting' | 'active' | 'delayed' | 'failed', number>,
   ): void {
-    for (const [state, count] of Object.entries(counts)) {
-      this.bullmqJobs.set({ queue, state }, count);
+    queue = this.queues.resolve(queue);
+    for (const state of ['waiting', 'active', 'delayed', 'failed'] as const) {
+      const count = counts[state];
+      this.bullmqJobs.set(
+        { queue, state },
+        Number.isFinite(count) && count >= 0 ? count : 0,
+      );
     }
+  }
+
+  setActiveRooms(count: number): void {
+    this.activeRooms.set(Number.isSafeInteger(count) && count >= 0 ? count : 0);
   }
 }
 

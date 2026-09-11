@@ -1,12 +1,7 @@
-import type { BotSettingsRepository } from '../contracts/bot-settings.repository';
+import type { BotSettingsRepository } from '../ports/bot-settings.repository';
 import { BotSettingsService } from './bot-settings.service';
 
 describe('BotSettingsService', () => {
-  beforeEach(() => {
-    (BotSettingsService as unknown as { sharedCache: unknown }).sharedCache =
-      null;
-  });
-
   it('seeds defaults when repository is empty', async () => {
     const findSettings = jest.fn(async () => null);
     const saveSettings = jest.fn(async () => undefined);
@@ -58,5 +53,40 @@ describe('BotSettingsService', () => {
       botDrawDelayMs: 150,
     });
     expect(saveSettings).toHaveBeenLastCalledWith(updated);
+  });
+
+  it('does not share settings between service instances', async () => {
+    const firstRepo: BotSettingsRepository = {
+      findSettings: jest.fn(async () => ({
+        botTurnDelayMs: 1,
+        botStartDelayMs: 2,
+        botDrawDelayMs: 3,
+      })),
+      saveSettings: jest.fn(async () => undefined),
+    };
+    const secondRepo: BotSettingsRepository = {
+      findSettings: jest.fn(async () => ({
+        botTurnDelayMs: 11,
+        botStartDelayMs: 12,
+        botDrawDelayMs: 13,
+      })),
+      saveSettings: jest.fn(async () => undefined),
+    };
+
+    const first = new BotSettingsService(firstRepo);
+    const second = new BotSettingsService(secondRepo);
+    await first.onModuleInit();
+    await second.onModuleInit();
+
+    expect(first.getSettings()).toEqual({
+      botTurnDelayMs: 1,
+      botStartDelayMs: 2,
+      botDrawDelayMs: 3,
+    });
+    expect(second.getSettings()).toEqual({
+      botTurnDelayMs: 11,
+      botStartDelayMs: 12,
+      botDrawDelayMs: 13,
+    });
   });
 });

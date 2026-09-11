@@ -8,20 +8,27 @@ import type {
 
 @Injectable()
 export class RoomEventsBusService implements RoomEventsPort {
-  private readonly roomStateUpdatedListeners: RoomStateUpdatedListener[] = [];
-  private readonly roomDeletedListeners: RoomDeletedListener[] = [];
-  private readonly lobbyChangedListeners: LobbyChangedListener[] = [];
+  private static readonly MAX_LISTENERS = 128;
+  private readonly roomStateUpdatedListeners = new Set<RoomStateUpdatedListener>();
+  private readonly roomDeletedListeners = new Set<RoomDeletedListener>();
+  private readonly lobbyChangedListeners = new Set<LobbyChangedListener>();
 
   onRoomStateUpdated(listener: RoomStateUpdatedListener): void {
-    this.roomStateUpdatedListeners.push(listener);
+    if (this.roomStateUpdatedListeners.size < RoomEventsBusService.MAX_LISTENERS) {
+      this.roomStateUpdatedListeners.add(listener);
+    }
   }
 
   onRoomDeleted(listener: RoomDeletedListener): void {
-    this.roomDeletedListeners.push(listener);
+    if (this.roomDeletedListeners.size < RoomEventsBusService.MAX_LISTENERS) {
+      this.roomDeletedListeners.add(listener);
+    }
   }
 
   onLobbyChanged(listener: LobbyChangedListener): void {
-    this.lobbyChangedListeners.push(listener);
+    if (this.lobbyChangedListeners.size < RoomEventsBusService.MAX_LISTENERS) {
+      this.lobbyChangedListeners.add(listener);
+    }
   }
 
   async publishRoomStateUpdated(roomId: number): Promise<void> {

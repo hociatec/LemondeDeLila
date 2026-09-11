@@ -1,27 +1,17 @@
 import {
-  cards,
   cardGame,
+  cards,
   defineCardsSchema,
-  defineChoice,
   defineGame,
-  defineGameContent,
-  gameInput,
   inventory,
 } from '../../../engine/sdk/public-api';
-import { ENTRE_RITES_DECK } from './content';
-import {
-  dealFamilyHands,
-  ENTRE_RITES_ACTIONS,
-  enumerateRequests,
-  RITES_PEACE,
-  RITES_SILENCE,
-  RITES_SPECIALS,
-  resolveRitesCardChoice,
-  resolveRitesFamilyChoice,
-  resolveRitesStealChoice,
-  type RitesStealChoice,
-} from './rules';
+import { GAME_BOT } from './bot-rules';
+import { ENTRE_RITES_DECK, ENTRE_RITES_GAME_CONTENT } from './content';
 import { ENTRE_RITES_EFFECTS } from './effects';
+import manifest from './manifest.json';
+import { GAME_RULES } from './rule-bindings';
+import { ENTRE_RITES_ACTIONS, RITES_SPECIALS } from './rules';
+import { setupGame } from './setup-rules';
 import type { EntreRitesState } from './types';
 
 const familySets = cards.sets({
@@ -54,15 +44,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<EntreRitesState>()({
-  id: 'entre-rites-et-lumieres',
-  displayName: 'Entre Rites & Lumières !',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
-  description: 'Rassemblez les cinq familles pascales.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('entre-rites-et-lumieres', {
-    cards: ENTRE_RITES_DECK,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: ENTRE_RITES_GAME_CONTENT,
   patterns: [
     cardGame({
       schema: cardSchema,
@@ -78,53 +66,10 @@ export default defineGame<EntreRitesState>()({
     { key: 'D', type: 'action', actionType: 'ask_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
   ],
-  setup: ({ players, ctx }) => {
-    dealFamilyHands(
-      players.map((player) => player.id),
-      ctx,
-    );
-    return {};
-  },
-  lifecycle: {
-    beforeTurn: ({ ctx, player }) => {
-      if (player) ctx.status.remove(player.id, RITES_SILENCE);
-    },
-  },
+  setup: setupGame,
+  ...GAME_RULES,
   actions: ENTRE_RITES_ACTIONS,
   effects: ENTRE_RITES_EFFECTS,
-  choices: {
-    'rites.card': defineChoice<EntreRitesState, string>({
-      input: gameInput.cardId(),
-      resolve: ({ state, value, ctx }) =>
-        resolveRitesCardChoice(state, value, ctx),
-    }),
-    'rites.family': defineChoice<EntreRitesState, string[]>({
-      input: gameInput.array(gameInput.cardId(), { min: 1 }),
-      resolve: ({ state, value, ctx }) =>
-        resolveRitesFamilyChoice(state, value, ctx),
-    }),
-    'rites.steal': defineChoice<EntreRitesState, RitesStealChoice>({
-      input: gameInput.object({
-        targetPlayerId: gameInput.playerId(),
-        cardId: gameInput.cardId(),
-      }),
-      resolve: ({ state, value, ctx }) =>
-        resolveRitesStealChoice(state, value, ctx),
-    }),
-  },
-  bot: {
-    choose: ({ actor, ctx }) => {
-      const request = ctx.players
-        .all()
-        .every(
-          (player) =>
-            (ctx.status.get(player.id, RITES_PEACE)?.remaining ?? 0) === 0,
-        )
-        ? enumerateRequests(actor.id, ctx)[0]
-        : null;
-      return request
-        ? { type: 'ask_card', payload: request }
-        : { type: 'pass', payload: {} };
-    },
-  },
+
+  bot: GAME_BOT,
 });

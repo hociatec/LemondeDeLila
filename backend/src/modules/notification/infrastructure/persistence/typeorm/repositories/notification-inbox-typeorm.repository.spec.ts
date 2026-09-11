@@ -20,7 +20,9 @@ describe('NotificationInboxTypeormRepository ownership', () => {
       createQueryBuilder: jest.fn().mockReturnValue(query),
       findOne: jest.fn(),
     } as unknown as Repository<NotificationInboxItemEntity>;
-    const inbox = new NotificationInboxTypeormRepository(repository);
+    const inbox = new NotificationInboxTypeormRepository(repository, {
+      now: () => Date.now(),
+    });
 
     await expect(inbox.delete(7, 'owned-by-another-user')).resolves.toBe(false);
 

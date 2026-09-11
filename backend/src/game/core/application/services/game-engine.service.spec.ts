@@ -1,6 +1,6 @@
 import { GameEngineService } from './game-engine.service';
-import type { GameStateEntity } from '../contracts/game-state.model';
-import { appendPendingGameEvent } from './game-event-log.helper';
+import type { GameState } from '../models/game-state.model';
+import { appendPendingGameEvent } from './game-event-buffer';
 import { InMemoryGameSessionStore } from '../../infrastructure/persistence/memory/in-memory-game-session.store';
 
 function createEngine(): GameEngineService {
@@ -9,13 +9,37 @@ function createEngine(): GameEngineService {
 }
 
 describe('GameEngineService room cleanup', () => {
+  it('renews the restore identity and refuses a pre-restore task CAS even when the numeric version is reused', async () => {
+    const engine = createEngine();
+    const initial: GameState = {
+      status: 'started',
+      phase: 'playing',
+      log: [],
+      version: 4,
+    };
+    await engine.restoreInternalState(4, 'example', initial);
+    const original = structuredClone(initial);
+    await engine.restoreInternalState(4, 'example', initial);
+    expect(initial.metadata?.restoreId).toEqual(expect.any(String));
+    expect(initial.metadata?.restoreId).not.toBe(original.metadata?.restoreId);
+    const result = await engine.compareAndSetInternalState(
+      4,
+      'example',
+      4,
+      original,
+      original.metadata?.restoreId ?? null,
+    );
+    expect(result.committed).toBe(false);
+    expect(await engine.exportInternalState(4, 'example')).toEqual(initial);
+  });
+
   const state = (label: string) =>
     ({
       status: 'started',
       phase: 'playing',
       log: [],
       game: { label },
-    }) satisfies GameStateEntity;
+    }) satisfies GameState;
 
   it('clears every game snapshot for one room only', async () => {
     const engine = createEngine();
@@ -71,7 +95,7 @@ describe('GameEngineService room cleanup', () => {
 
   it('records commands atomically and replays snapshots plus events', async () => {
     const engine = createEngine();
-    let current: GameStateEntity = { ...state('initial'), version: 1 };
+    let current: GameState = { ...state('initial'), version: 1 };
     await engine.restoreInternalState(9, 'replayable', current);
 
     for (let index = 1; index <= 13; index += 1) {

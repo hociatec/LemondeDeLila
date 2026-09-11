@@ -1,5 +1,8 @@
+import { ROOM_BOTS_REPOSITORY } from '../application/ports/room-bots.repository';
+import { RoomBotsTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-bots-typeorm.repository';
 import { ConfigService } from '@nestjs/config';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { ACTIVE_ROOM_PARTICIPANTS_READER } from '../application/ports/active-room-participants-reader.port';
+import { ActiveRoomParticipantsTypeormReader } from '../infrastructure/persistence/typeorm/repositories/active-room-participants-typeorm.reader';
 import { RoomAdminMaintenanceService } from '../application/services/maintenance/room-admin-maintenance.service';
 import { RoomAccessService } from '../application/services/membership/room-access.service';
 import { RoomAdminContextService } from '../application/services/maintenance/room-admin-context.service';
@@ -33,7 +36,6 @@ import { ROOM_PAYLOAD_CACHE } from '../application/ports/room-payload-cache.port
 import { ROOM_REPOSITORY } from '../application/ports/room.repository';
 import { ROOM_VAULT_PORT } from '../application/ports/room-vault.port';
 import { ROOM_USER_REPOSITORY } from '../application/ports/room-user.repository';
-import { ROOM_VAULT_SNAPSHOT_REPOSITORY } from '../application/ports/room-vault-snapshot.repository';
 import { RoomPayloadCacheService } from '../infrastructure/cache/room-payload-cache.service';
 import { RoomRealtimeTrackerService } from '../application/services/state/room-realtime-tracker.service';
 import { RoomRuntimeStateService } from '../application/services/state/room-runtime-state.service';
@@ -45,23 +47,17 @@ import { RoomLobbyTypeormRepository } from '../infrastructure/persistence/typeor
 import { RoomParticipantTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-participant-typeorm.repository';
 import { RoomTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-typeorm.repository';
 import { RoomUserTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-user-typeorm.repository';
-import { VaultRoomSnapshotEntity } from '../../vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity';
-import {
-  ROOM_VAULT_SNAPSHOTS_TYPEORM_REPOSITORY,
-  RoomVaultSnapshotTypeormRepository,
-} from '../infrastructure/persistence/typeorm/repositories/room-vault-snapshot-typeorm.repository';
 import { RoomEventPublisherAdapter } from '../infrastructure/system/room-event-publisher.adapter';
 import { RoomEventsBusService } from '../infrastructure/system/room-events-bus.service';
 import { createRoomMaintenanceDefaults } from '../infrastructure/config/room-maintenance-defaults.config';
-import {
-  GAME_ROOM_CONTEXT_PORT,
-  GAME_ROOM_EVENTS_PORT,
-} from '../../../game/public-api';
 
 export const ROOM_CORE_PROVIDERS = [
+  RoomBotsTypeormRepository,
+  { provide: ROOM_BOTS_REPOSITORY, useExisting: RoomBotsTypeormRepository },
+  ActiveRoomParticipantsTypeormReader,
   {
-    provide: ROOM_VAULT_SNAPSHOTS_TYPEORM_REPOSITORY,
-    useExisting: getRepositoryToken(VaultRoomSnapshotEntity),
+    provide: ACTIVE_ROOM_PARTICIPANTS_READER,
+    useExisting: ActiveRoomParticipantsTypeormReader,
   },
   RoomEventsBusService,
   RoomEventPublisherAdapter,
@@ -72,7 +68,6 @@ export const ROOM_CORE_PROVIDERS = [
   RoomLobbyTypeormRepository,
   RoomParticipantTypeormRepository,
   RoomUserTypeormRepository,
-  RoomVaultSnapshotTypeormRepository,
   RoomMaintenanceSettingsTypeormRepository,
   {
     provide: ROOM_EVENT_PUBLISHER,
@@ -89,14 +84,6 @@ export const ROOM_CORE_PROVIDERS = [
   {
     provide: ROOM_GAME_PORT,
     useExisting: RoomGameAdapter,
-  },
-  {
-    provide: GAME_ROOM_CONTEXT_PORT,
-    useExisting: RoomGameAdapter,
-  },
-  {
-    provide: GAME_ROOM_EVENTS_PORT,
-    useExisting: RoomEventsBusService,
   },
   {
     provide: ROOM_VAULT_PORT,
@@ -117,10 +104,6 @@ export const ROOM_CORE_PROVIDERS = [
   {
     provide: ROOM_USER_REPOSITORY,
     useExisting: RoomUserTypeormRepository,
-  },
-  {
-    provide: ROOM_VAULT_SNAPSHOT_REPOSITORY,
-    useExisting: RoomVaultSnapshotTypeormRepository,
   },
   {
     provide: ROOM_MAINTENANCE_SETTINGS_REPOSITORY,

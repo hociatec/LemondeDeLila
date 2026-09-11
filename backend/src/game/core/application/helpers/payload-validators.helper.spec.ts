@@ -8,6 +8,20 @@ import {
 } from './payload-validators.helper';
 
 describe('payload-validators.helper', () => {
+  it.each([
+    true,
+    false,
+    [],
+    [1],
+    {},
+    '0x10',
+    '1e3',
+    '12tail',
+    Number.MAX_SAFE_INTEGER + 1,
+  ])('rejects integer coercion of %p', (value) => {
+    expect(() => requiredInt({ value }, 'value')).toThrow();
+    expect(() => optionalInt({ value }, 'value')).toThrow();
+  });
   it('reads required and optional integers', () => {
     expect(requiredInt({ value: '12' }, 'value')).toBe(12);
     expect(optionalInt({ value: '3' }, 'value')).toBe(3);

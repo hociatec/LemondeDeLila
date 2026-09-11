@@ -38,7 +38,9 @@ export class NotificationWsInboxThreadHandler {
       send(client, type, result, requestId);
     } catch (error) {
       const message =
-        error instanceof Error && error.message ? error.message : 'Erreur';
+        error instanceof Error && error.message
+          ? error.message.slice(0, 512)
+          : 'Erreur';
       send(client, WS_EVENTS.notify.inbox.error, { message }, requestId);
     }
   }
@@ -95,7 +97,9 @@ export class NotificationWsInboxThreadHandler {
       return { ok: true };
     }
     const limitThreads =
-      typeof payload.limit === 'number' ? payload.limit : undefined;
+      typeof payload.limit === 'number' && Number.isSafeInteger(payload.limit)
+        ? Math.min(Math.max(payload.limit, 1), 200)
+        : undefined;
     const threads = await this.contacts.listThreads(meta.userId, {
       limitThreads,
     });

@@ -7,11 +7,12 @@ import { verify as jwtVerify } from 'jsonwebtoken';
 import type { IncomingHttpHeaders, IncomingMessage } from 'http';
 
 import type { WsAuthPayload } from '../../../../shared/interfaces/public-api';
+import { asUserId } from '../../../../shared/interfaces/public-api';
 import {
   WS_RUNTIME_CONFIG,
   type WsRuntimeConfig,
 } from '../ports/ws-runtime-config.port';
-import { requireJwtVerifyKey } from '../../../auth/public-api';
+import { jwtUserId, requireJwtVerifyKey } from '../../../auth/public-api';
 
 export type WsRequestLike = IncomingMessage & {
   url?: string;
@@ -66,6 +67,9 @@ export class WsJwtAuthService {
   }
 
   verify(token: string): WsAuthPayload {
+    if (typeof token !== 'string' || token.length > 16_384) {
+      throw new UnauthorizedException('Token invalide');
+    }
     const key = requireJwtVerifyKey(this.config);
     const issuer = this.config.jwtIssuer;
     const audience = this.config.jwtAudience ?? undefined;
@@ -87,12 +91,25 @@ export class WsJwtAuthService {
       const id = WsJwtAuthService.getNumber(record, 'id');
       const exp = WsJwtAuthService.getNumber(record, 'exp');
       const iat = WsJwtAuthService.getNumber(record, 'iat');
-      if (!sub || !username || id == null || exp == null || iat == null) {
+      if (
+        !sub ||
+        sub.length > 128 ||
+        !username ||
+        username.length > 255 ||
+        id == null ||
+        !Number.isSafeInteger(id) ||
+        id <= 0 ||
+        exp == null ||
+        !Number.isSafeInteger(exp) ||
+        iat == null ||
+        !Number.isSafeInteger(iat) ||
+        jwtUserId(record) === null
+      ) {
         throw new UnauthorizedException('Token invalide');
       }
       return WsJwtAuthService.buildVerifiedPayload(
         record,
-        id,
+        asUserId(id),
         username,
         sub,
         exp,
@@ -175,7 +192,7 @@ export class WsJwtAuthService {
   ): string | undefined {
     const value = record[key];
     return typeof value === 'string' && value.trim().length > 0
-      ? value.trim()
+      ? value.trim().slice(0, 320)
       : undefined;
   }
 
@@ -195,10 +212,16 @@ export class WsJwtAuthService {
     if (!Array.isArray(value)) {
       return undefined;
     }
-    const strings = value.filter(
-      (item): item is string => typeof item === 'string',
-    );
-    return strings.length > 0 ? strings : undefined;
+    if (
+      value.length > 32 ||
+      !value.every(
+        (item): item is string =>
+          typeof item === 'string' && item.length > 0 && item.length <= 64,
+      )
+    ) {
+      return undefined;
+    }
+    return value.length > 0 ? value : undefined;
   }
 
   private static buildVerifiedPayload(

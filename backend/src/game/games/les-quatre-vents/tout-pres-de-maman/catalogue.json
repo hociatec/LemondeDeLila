@@ -1,0 +1,717 @@
+{
+  "tiles": [
+    {
+      "id": 1,
+      "title": "Case départ",
+      "type": "start",
+      "description": "Vous sortez de la poche de maman et gagnez deux jetons eucalyptus."
+    },
+    {
+      "id": 2,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous observez les fleurs colorées et un petit lézard."
+    },
+    {
+      "id": 3,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous découvrez un jeton d’eucalyptus."
+    },
+    {
+      "id": 4,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte et suivez les instructions."
+    },
+    {
+      "id": 5,
+      "title": "Case bonds",
+      "type": "bonds",
+      "description": "Vous bondissez de deux cases."
+    },
+    {
+      "id": 6,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous franchissez un bosquet et écoutez les oiseaux."
+    },
+    {
+      "id": 7,
+      "title": "Case glissade",
+      "type": "slide",
+      "description": "La boue glisse : reculez de deux cases."
+    },
+    {
+      "id": 8,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous avancez au milieu des herbes séchées."
+    },
+    {
+      "id": 9,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 10,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Une coccinelle vous accompagn? sur une feuille."
+    },
+    {
+      "id": 11,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous trouvez un jeton eucalyptus."
+    },
+    {
+      "id": 12,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Un papillon se pose sur une fleur d’acacia."
+    },
+    {
+      "id": 13,
+      "title": "Tempête",
+      "type": "storm",
+      "description": "Un vent secoue les arbres : passez votre prochain tour."
+    },
+    {
+      "id": 14,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous trouvez un bosquet d’eucalyptus."
+    },
+    {
+      "id": 15,
+      "title": "Case bonds",
+      "type": "bonds",
+      "description": "Vos bonds vous font virevolter de deux cases."
+    },
+    {
+      "id": 16,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 17,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous sentez le parfum des fleurs jaunes."
+    },
+    {
+      "id": 18,
+      "title": "Case glissade",
+      "type": "slide",
+      "description": "Une flaque boueuse vous fait reculer de deux cases."
+    },
+    {
+      "id": 19,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous découvrez un jeton près d’un rocher."
+    },
+    {
+      "id": 20,
+      "title": "Nid d’oiseaux",
+      "type": "nest",
+      "description": "Écoutez les oisillons : passez votre prochain tour."
+    },
+    {
+      "id": 21,
+      "title": "Case bonds",
+      "type": "bonds",
+      "description": "Vous bondissez avec légèreté de deux cases."
+    },
+    {
+      "id": 22,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous poursuivez votre chemin à l’ombre des grands arbres."
+    },
+    {
+      "id": 23,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 24,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous trouvez un jeton eucalyptus."
+    },
+    {
+      "id": 25,
+      "title": "Case glissade",
+      "type": "slide",
+      "description": "Un ravin boueux vous fait reculer de deux cases."
+    },
+    {
+      "id": 26,
+      "title": "Case rencontre",
+      "type": "meeting",
+      "description": "Choisissez un autre joueur : avancez tous les deux d’une case."
+    },
+    {
+      "id": 27,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Une prairie ondulante et des insectes colorés."
+    },
+    {
+      "id": 28,
+      "title": "Case bonds",
+      "type": "bonds",
+      "description": "Vous sautez de deux cases."
+    },
+    {
+      "id": 29,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 30,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Une clairière baignée de soleil."
+    },
+    {
+      "id": 31,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous trouvez un jeton eucalyptus."
+    },
+    {
+      "id": 32,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Un sentier bordé de petits cailloux."
+    },
+    {
+      "id": 33,
+      "title": "Case glissade",
+      "type": "slide",
+      "description": "Une flaque vous fait reculer de deux cases."
+    },
+    {
+      "id": 34,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 35,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous découvrez un jeton eucalyptus."
+    },
+    {
+      "id": 36,
+      "title": "Case bonds",
+      "type": "bonds",
+      "description": "Avancez de deux cases."
+    },
+    {
+      "id": 37,
+      "title": "Case carte",
+      "type": "card",
+      "description": "Piochez une carte."
+    },
+    {
+      "id": 38,
+      "title": "Case neutre",
+      "type": "neutral",
+      "description": "Vous continuez parmi les herbes odorantes."
+    },
+    {
+      "id": 39,
+      "title": "Case jeton",
+      "type": "token",
+      "description": "Vous trouvez un jeton eucalyptus."
+    },
+    {
+      "id": 40,
+      "title": "Case maman",
+      "type": "finish",
+      "description": "Votre maman vous attend dans une clairière lumineuse."
+    }
+  ],
+  "cards": [
+    {
+      "id": 1,
+      "text": "Vous sentez une odeur agréable de plantes sauvages. Avancez de 1 case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "Vous trébuchez légèrement sur une racine sèche. Reculez d’1 case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": -1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "text": "Vous aidez un bandicoot. Gagnez 1 jeton eucalyptus.",
+      "effects": [
+        {
+          "kind": "gain-resource",
+          "resource": "eucalyptus",
+          "amount": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "text": "Vous faites un bond intérieur. Avancez de 2 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": 2
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "text": "Vous vous reposez. Passez votre prochain tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "text": "Un bruissement vous inquiète. Reculez de 2 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": -2
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "text": "Un raccourci naturel vous attire. Avancez jusqu’à la prochaine case Carte.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move-to-type",
+          "data": {
+            "type": "card",
+            "direction": "forward"
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "text": "Vous partagez vos feuilles. Donnez 1 jeton eucalyptus à un autre joueur.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.transfer-token",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "maman.transfer-token",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "text": "Vous prenez trop d’élan. Reculez jusqu’à la dernière case jeton.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move-to-type",
+          "data": {
+            "type": "token",
+            "direction": "backward"
+          }
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "text": "Une bourrasque traverse la forêt. Tous les joueurs reculent d’1 case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": -1
+          },
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": -1
+          },
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "text": "Un fruit vous inspire confiance. Au prochain tour, vous pouvez relancer le dé.",
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "maman.bonus-reroll",
+          "scope": "until-used"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "text": "Vous aidez un échidné. Gagnez 1 jeton eucalyptus.",
+      "effects": [
+        {
+          "kind": "gain-resource",
+          "resource": "eucalyptus",
+          "amount": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "text": "Vous marchez dans une zone humide. Passez votre prochain tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "text": "Un appel réconfortant vous guide. Avancez de 3 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": 3
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "text": "Un bruit vous surprend. Reculez jusqu’à la dernière case bonds.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move-to-type",
+          "data": {
+            "type": "bonds",
+            "direction": "backward"
+          }
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "text": "Vous jouez avec un diable de Tasmanie. Lancez le dé et avancez du nombre obtenu.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.roll-move",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "text": "Vous vous sentez fatigué. Reculez d’1 case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": -1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "text": "Une brise vous redonne courage. Avancez de 2 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": 2
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "text": "Vous empruntez un mauvais chemin. Reculez de 2 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": -2
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "text": "Vous accompagnez un quokka. Gagnez 1 jeton eucalyptus.",
+      "effects": [
+        {
+          "kind": "gain-resource",
+          "resource": "eucalyptus",
+          "amount": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "text": "Un rire de kookaburra résonne. Tous les joueurs avancent de 1 case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "text": "Vous écoutez les sons de la forêt. Restez sur place ce tour-ci.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "text": "Un oiseau vous encourage. Lancez le dé : si vous faites 4 ou plus, avancez d’1 case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.roll-threshold-move",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "text": "Un tronc creux rappelle un passage rapide. Avancez jusqu’à la prochaine case bonds.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move-to-type",
+          "data": {
+            "type": "bonds",
+            "direction": "forward"
+          }
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "text": "Vous perdez un jeton eucalyptus. Défaussez-en un si vous en avez.",
+      "effects": [
+        {
+          "kind": "lose-resource",
+          "resource": "eucalyptus",
+          "amount": 1,
+          "target": {
+            "kind": "self"
+          },
+          "allowPartial": true
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "text": "Un koala vous invite à avancer à deux. Avancez de 1 case et choisissez un joueur pour avancer aussi.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "maman.share-advance",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "maman.share-advance",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "text": "Une pierre arrondie vous amuse. Aucun effet.",
+      "effects": []
+    },
+    {
+      "id": 28,
+      "text": "Vous vous abritez. Passez votre prochain tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "text": "Vous trouvez des feuilles savoureuses. Avancez de 2 cases et gagnez 1 jeton eucalyptus.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": 2
+          },
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "gain-resource",
+          "resource": "eucalyptus",
+          "amount": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "text": "Vous ressentez une grande fierté. Avancez de 1 case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "maman.move",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    }
+  ]
+}

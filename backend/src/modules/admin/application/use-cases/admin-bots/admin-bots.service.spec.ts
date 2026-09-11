@@ -2,8 +2,8 @@ import { AdminBotsService } from './admin-bots.service';
 
 describe('AdminBotsService', () => {
   it('maps bot names to the admin payload shape', async () => {
-    const listBotNamesUseCase = {
-      execute: jest.fn(async () => [
+    const bots = {
+      listNames: jest.fn(async () => [
         {
           id: 1,
           name: 'Alpha',
@@ -13,14 +13,7 @@ describe('AdminBotsService', () => {
         },
       ]),
     };
-    const settings = {} as any;
-    const service = new AdminBotsService(
-      listBotNamesUseCase as any,
-      {} as any,
-      {} as any,
-      {} as any,
-      settings,
-    );
+    const service = new AdminBotsService(bots as any);
 
     const result = await service.listNames();
 

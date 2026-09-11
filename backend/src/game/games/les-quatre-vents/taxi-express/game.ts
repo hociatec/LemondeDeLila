@@ -1,19 +1,24 @@
+import manifest from './manifest.json';
 import {
   cards,
   cardGame,
   defineCardsSchema,
   defineGamePhases,
   defineGame,
-  defineGameContent,
   raceGame,
 } from '../../../engine/sdk/public-api';
-import { TAXI_CLIENTS, TAXI_EVENTS, TAXI_TILES } from './content';
+import {
+  TAXI_CLIENTS,
+  TAXI_EVENTS,
+  TAXI_TILES,
+  TAXI_GAME_CONTENT,
+} from './content';
 import { TAXI_ACTIONS } from './rules';
 import type { NoGameState as TaxiState } from '../../../engine/sdk/public-api';
 
 const TAXI_PHASES = defineGamePhases<TaxiState>()({
   initialPhase: 'playing',
-  phases: { playing: {} },
+  phases: { playing: { terminal: true } },
 });
 const cardSchema = defineCardsSchema({
   decks: {
@@ -36,17 +41,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<TaxiState>()({
-  id: 'taxi-express',
-  displayName: 'Taxi Express',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Déposez cinq clients en évitant les rues bloquées.',
-  players: { min: 2, max: 5 },
-  content: defineGameContent('taxi-express', {
-    clients: TAXI_CLIENTS,
-    events: TAXI_EVENTS,
-    tiles: TAXI_TILES,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: TAXI_GAME_CONTENT,
   patterns: [
     raceGame({ trackId: 'city', spaces: TAXI_TILES.length }),
     cardGame({

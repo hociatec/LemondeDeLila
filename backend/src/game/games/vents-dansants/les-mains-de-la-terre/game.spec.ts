@@ -1,4 +1,5 @@
-import { testGame } from '../../../engine/sdk/public-api';
+import { testGame } from '../../../engine/testing/public-api';
+
 import { LES_MAINS_CARD_BY_ID, LES_MAINS_METIER_CARDS } from './content';
 import gameDefinition from './game';
 

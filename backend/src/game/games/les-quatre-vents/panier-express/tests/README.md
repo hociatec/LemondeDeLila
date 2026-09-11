@@ -1,13 +1,22 @@
 Tests spécifiques à Panier Express
 =================================
 
-Ce dossier regroupe les tests liés au moteur Panier Express.
+Panier Express est défini intégralement par `../game.json`.
 
-Les tests principaux sont actuellement dans `tests/panier-express.service.spec.ts` et valident :
-- l'exposition d'état (`exposeState`) et le Presenter,
-- la pioche (stand/bonus) et le refill des decks,
-- le blocage quiz, le skip de tour et la victoire,
-- les échanges (choix cible + carte, cas impossible, résolution).
+Les tests de comportement sont dans `../game.spec.ts`. Ils compilent le JSON
+avec l'entrée publique du moteur et vérifient notamment l'initialisation,
+les inventaires privés, les déplacements et la pioche manuelle.
 
-Les nouveaux tests propres à Panier Express peuvent être ajoutés ici ou à côté des services concernés, tant qu'ils suivent la convention `*.spec.ts`.
+Les tests transversaux sont dans :
+
+- `game/testing/architecture-tests/game/panier-json-parity.spec.ts` : trois
+  traces de 150 commandes comparées aux événements de l'ancienne implémentation ;
+- `game/engine/runtime/definitions/json-board-schema.spec.ts` : refus des
+  collisions, références invalides, capacités absentes et cartes mal formées ;
+- `game/testing/architecture-tests/game/content-snapshot-migrations.spec.ts` :
+  refus des snapshots de règles 1 dont les continuations ne sont plus compatibles.
+
+Les audits `panier:effects:audit`, `panier:wiring:audit` et
+`panier:surface:audit` contrôlent le catalogue, le registre et l'absence de
+TypeScript de production dans ce paquet.
 

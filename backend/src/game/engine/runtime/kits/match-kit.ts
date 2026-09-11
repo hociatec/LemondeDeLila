@@ -1,4 +1,4 @@
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
 import { GameNotFoundError } from '../../../core/domain/errors/game-domain.errors';
 
 export type MatchLifecycleStatus =
@@ -22,7 +22,7 @@ export type MatchKitState = {
 };
 
 export function createMatchKitState(
-  players: readonly PlayerStateEntity[],
+  players: readonly PlayerState[],
   nowMs: number,
 ): MatchKitState {
   return {
@@ -39,7 +39,7 @@ export function createMatchKitState(
 export class GameMatchController {
   constructor(
     private readonly state: MatchKitState,
-    private readonly players: readonly PlayerStateEntity[],
+    private readonly players: readonly PlayerState[],
     private readonly nowMs: () => number,
     private readonly emit: (
       type: string,
@@ -114,7 +114,7 @@ export class GameMatchController {
     return this.state.playerStatuses[String(playerId)] ?? null;
   }
 
-  activePlayers(): PlayerStateEntity[] {
+  activePlayers(): PlayerState[] {
     return this.players.filter(
       (player) => this.playerStatus(player.id) === 'active',
     );
@@ -133,7 +133,7 @@ export class GameMatchController {
 
 function uniqueKnownPlayers(
   playerIds: readonly number[],
-  players: readonly PlayerStateEntity[],
+  players: readonly PlayerState[],
 ): number[] {
   const known = new Set(players.map((player) => player.id));
   return [...new Set(playerIds)].filter((playerId) => known.has(playerId));

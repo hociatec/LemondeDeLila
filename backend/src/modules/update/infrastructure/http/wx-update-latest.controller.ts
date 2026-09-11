@@ -24,16 +24,16 @@ export class WxUpdateLatestController {
     @Query('arch') architecture?: string,
     @Req() request?: Request,
   ) {
-    if (platform && platform.toLowerCase() !== 'windows') {
+    if (platform && (platform.length > 32 || platform.toLowerCase() !== 'windows')) {
       throw new BadRequestException('Plateforme de mise à jour non supportée.');
     }
-    if (architecture && architecture.toLowerCase() !== 'x64') {
+    if (architecture && (architecture.length > 32 || architecture.toLowerCase() !== 'x64')) {
       throw new BadRequestException(
         'Architecture de mise à jour non supportée.',
       );
     }
     return this.updates.getForClient(
-      typeof current === 'string' ? current : null,
+      typeof current === 'string' && current.length <= 128 ? current : null,
       request ? getUpdateRequestOrigin(request) : null,
     );
   }

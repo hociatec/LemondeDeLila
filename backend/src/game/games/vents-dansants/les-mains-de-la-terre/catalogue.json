@@ -1,0 +1,436 @@
+{
+  "cards": [
+    {
+      "id": "metier-isserande-berbere",
+      "name": "isserande berbere",
+      "type": "metier",
+      "family": "tradition",
+      "effects": []
+    },
+    {
+      "id": "metier-forgeron-dogon",
+      "name": "forgeron dogon",
+      "type": "metier",
+      "family": "tradition",
+      "effects": []
+    },
+    {
+      "id": "metier-potier-zapoteque",
+      "name": "potier zapoteque",
+      "type": "metier",
+      "family": "tradition",
+      "effects": []
+    },
+    {
+      "id": "metier-tanneur-de-fez",
+      "name": "tanneur de fez",
+      "type": "metier",
+      "family": "tradition",
+      "effects": []
+    },
+    {
+      "id": "metier-charpentier-japonais",
+      "name": "charpentier japonais",
+      "type": "metier",
+      "family": "tradition",
+      "effects": []
+    },
+    {
+      "id": "metier-sculptrice-de-calebasses",
+      "name": "sculptrice de calebasses",
+      "type": "metier",
+      "family": "tradition",
+      "effects": []
+    },
+    {
+      "id": "metier-cueilleur-de-the",
+      "name": "cueilleur de the",
+      "type": "metier",
+      "family": "nature",
+      "effects": []
+    },
+    {
+      "id": "metier-berger-nomade",
+      "name": "berger nomade",
+      "type": "metier",
+      "family": "nature",
+      "effects": []
+    },
+    {
+      "id": "metier-apiculteur-traditionnel",
+      "name": "apiculteur traditionnel",
+      "type": "metier",
+      "family": "nature",
+      "effects": []
+    },
+    {
+      "id": "metier-cueilleur-de-champignons",
+      "name": "cueilleur de champignons",
+      "type": "metier",
+      "family": "nature",
+      "effects": []
+    },
+    {
+      "id": "metier-chasseur-cueilleur-pygmee",
+      "name": "chasseur cueilleur pygmee",
+      "type": "metier",
+      "family": "nature",
+      "effects": []
+    },
+    {
+      "id": "metier-eleveuse-de-yaks",
+      "name": "eleveuse de yaks",
+      "type": "metier",
+      "family": "nature",
+      "effects": []
+    },
+    {
+      "id": "metier-pecheur-sur-echasses",
+      "name": "pecheur sur echasses",
+      "type": "metier",
+      "family": "mer",
+      "effects": []
+    },
+    {
+      "id": "metier-plongeuse-de-perles",
+      "name": "plongeuse de perles",
+      "type": "metier",
+      "family": "mer",
+      "effects": []
+    },
+    {
+      "id": "metier-chasseur-inuit",
+      "name": "chasseur inuit",
+      "type": "metier",
+      "family": "mer",
+      "effects": []
+    },
+    {
+      "id": "metier-constructeur-de-pirogues",
+      "name": "constructeur de pirogues",
+      "type": "metier",
+      "family": "mer",
+      "effects": []
+    },
+    {
+      "id": "metier-ramasseur-dalgues",
+      "name": "ramasseur dalgues",
+      "type": "metier",
+      "family": "mer",
+      "effects": []
+    },
+    {
+      "id": "metier-capitaine-de-boutre",
+      "name": "capitaine de boutre",
+      "type": "metier",
+      "family": "mer",
+      "effects": []
+    },
+    {
+      "id": "metier-calligraphe-chinois",
+      "name": "calligraphe chinois",
+      "type": "metier",
+      "family": "art",
+      "effects": []
+    },
+    {
+      "id": "metier-sculpteur-inuit",
+      "name": "sculpteur inuit",
+      "type": "metier",
+      "family": "art",
+      "effects": []
+    },
+    {
+      "id": "metier-masqueur-balinais",
+      "name": "masqueur balinais",
+      "type": "metier",
+      "family": "art",
+      "effects": []
+    },
+    {
+      "id": "metier-peintre-dicones",
+      "name": "peintre dicones",
+      "type": "metier",
+      "family": "art",
+      "effects": []
+    },
+    {
+      "id": "metier-fabricante-de-poupees-kokeshi",
+      "name": "fabricante de poupees kokeshi",
+      "type": "metier",
+      "family": "art",
+      "effects": []
+    },
+    {
+      "id": "metier-brodeur-touareg",
+      "name": "brodeur touareg",
+      "type": "metier",
+      "family": "art",
+      "effects": []
+    },
+    {
+      "id": "metier-fauconnier-kazakh",
+      "name": "fauconnier kazakh",
+      "type": "metier",
+      "family": "insolites",
+      "effects": []
+    },
+    {
+      "id": "metier-gardien-de-temple",
+      "name": "gardien de temple",
+      "type": "metier",
+      "family": "insolites",
+      "effects": []
+    },
+    {
+      "id": "metier-dompteur-de-serpents",
+      "name": "dompteur de serpents",
+      "type": "metier",
+      "family": "insolites",
+      "effects": []
+    },
+    {
+      "id": "metier-maitre-de-the",
+      "name": "maitre de the",
+      "type": "metier",
+      "family": "insolites",
+      "effects": []
+    },
+    {
+      "id": "metier-marionnettiste-wayang",
+      "name": "marionnettiste wayang",
+      "type": "metier",
+      "family": "insolites",
+      "effects": []
+    },
+    {
+      "id": "metier-ramasseur-de-truffes",
+      "name": "ramasseur de truffes",
+      "type": "metier",
+      "family": "insolites",
+      "effects": []
+    },
+    {
+      "id": "metier-developpeur-de-jeux-video",
+      "name": "developpeur de jeux video",
+      "type": "metier",
+      "family": "innovation",
+      "effects": []
+    },
+    {
+      "id": "metier-specialiste-en-drones",
+      "name": "specialiste en drones",
+      "type": "metier",
+      "family": "innovation",
+      "effects": []
+    },
+    {
+      "id": "metier-concepteur-denergies-renouvelables",
+      "name": "concepteur denergies renouvelables",
+      "type": "metier",
+      "family": "innovation",
+      "effects": []
+    },
+    {
+      "id": "metier-bio-architecte",
+      "name": "bio architecte",
+      "type": "metier",
+      "family": "innovation",
+      "effects": []
+    },
+    {
+      "id": "metier-imprimeuse-3d-medicale",
+      "name": "imprimeuse 3d medicale",
+      "type": "metier",
+      "family": "innovation",
+      "effects": []
+    },
+    {
+      "id": "metier-concepteur-de-textiles-ecologiques",
+      "name": "concepteur de textiles ecologiques",
+      "type": "metier",
+      "family": "innovation",
+      "effects": []
+    },
+    {
+      "id": "metier-medecin-ayurvedique",
+      "name": "medecin ayurvedique",
+      "type": "metier",
+      "family": "sante",
+      "effects": []
+    },
+    {
+      "id": "metier-guerisseur-traditionnel",
+      "name": "guerisseur traditionnel",
+      "type": "metier",
+      "family": "sante",
+      "effects": []
+    },
+    {
+      "id": "metier-rebouteux-andin",
+      "name": "rebouteux andin",
+      "type": "metier",
+      "family": "sante",
+      "effects": []
+    },
+    {
+      "id": "metier-chaman-siberien",
+      "name": "chaman siberien",
+      "type": "metier",
+      "family": "sante",
+      "effects": []
+    },
+    {
+      "id": "metier-accoucheuse-bedouine",
+      "name": "accoucheuse bedouine",
+      "type": "metier",
+      "family": "sante",
+      "effects": []
+    },
+    {
+      "id": "metier-herboriste-coreenne",
+      "name": "herboriste coreenne",
+      "type": "metier",
+      "family": "sante",
+      "effects": []
+    },
+    {
+      "id": "special-voyage-autour-du-monde",
+      "name": "Voyage autour du monde",
+      "type": "special",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "les-mains.exchange-random",
+          "data": {}
+        },
+        {
+          "kind": "custom",
+          "effectId": "les-mains.log-special",
+          "data": {
+            "cardId": "special-voyage-autour-du-monde"
+          }
+        }
+      ]
+    },
+    {
+      "id": "special-metier-disparu",
+      "name": "Métier disparu",
+      "type": "special",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "les-mains.complete-vanished",
+          "data": {}
+        },
+        {
+          "kind": "custom",
+          "effectId": "les-mains.log-special",
+          "data": {
+            "cardId": "special-metier-disparu"
+          }
+        }
+      ]
+    },
+    {
+      "id": "special-formation-express",
+      "name": "Formation express",
+      "type": "special",
+      "effects": [
+        {
+          "kind": "gain-resource",
+          "resource": "les-mains.extra-draws",
+          "amount": 1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "les-mains.log-special",
+          "data": {
+            "cardId": "special-formation-express"
+          }
+        }
+      ]
+    },
+    {
+      "id": "special-greve-mondiale",
+      "name": "Grève mondiale",
+      "type": "special",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "all-opponents"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "les-mains.log-special",
+          "data": {
+            "cardId": "special-greve-mondiale"
+          }
+        }
+      ]
+    },
+    {
+      "id": "special-boussole-perdue",
+      "name": "Boussole perdue",
+      "type": "special",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "les-mains.mix-hands",
+          "data": {}
+        },
+        {
+          "kind": "custom",
+          "effectId": "les-mains.log-special",
+          "data": {
+            "cardId": "special-boussole-perdue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "special-passation-de-savoir",
+      "name": "Passation de savoir",
+      "type": "special",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "les-mains.pass-knowledge",
+          "data": {}
+        },
+        {
+          "kind": "custom",
+          "effectId": "les-mains.log-special",
+          "data": {
+            "cardId": "special-passation-de-savoir"
+          }
+        }
+      ]
+    },
+    {
+      "id": "special-fete-du-metier",
+      "name": "Fête du métier",
+      "type": "special",
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "les-mains.free-family-request",
+          "scope": "until-used"
+        },
+        {
+          "kind": "custom",
+          "effectId": "les-mains.log-special",
+          "data": {
+            "cardId": "special-fete-du-metier"
+          }
+        }
+      ]
+    }
+  ]
+}

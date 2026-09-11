@@ -1,5 +1,5 @@
-import type { RoomRecord } from '../../contracts/room-record.model';
-import { OPEN_ROOM_STATUSES } from '../../contracts/room-status.model';
+import type { RoomRecord } from '../../models/room-record.model';
+import { resolveRoomLifecycleState } from '../../models/room-lifecycle-state.model';
 import { stringOrEmpty } from '@shared/utils/public-api';
 
 export function hasAdminRoomRole(roles: unknown): boolean {
@@ -20,12 +20,20 @@ export function resolveRoomMaxPlayers(params: {
   defaultMaxPlayers?: number | null;
 }): number {
   const requested = params.requestedMaxPlayers;
-  if (requested && requested > 0) {
-    return requested;
+  if (
+    typeof requested === 'number' &&
+    Number.isSafeInteger(requested) &&
+    requested > 0
+  ) {
+    return Math.min(requested, 64);
   }
   const fallback = params.defaultMaxPlayers;
-  if (fallback && fallback > 0) {
-    return fallback;
+  if (
+    typeof fallback === 'number' &&
+    Number.isSafeInteger(fallback) &&
+    fallback > 0
+  ) {
+    return Math.min(fallback, 64);
   }
   return 4;
 }
@@ -34,32 +42,24 @@ export function resolveRoomName(params: {
   providedName?: string | null;
   gameType: string;
 }): string {
-  const trimmed = String(params.providedName ?? '').trim();
-  return trimmed || `Table ${params.gameType}`;
+  const trimmed =
+    typeof params.providedName === 'string' ? params.providedName.trim() : '';
+  return (trimmed || `Table ${params.gameType}`).slice(0, 255);
 }
 
 export function normalizeExceptRoomId(exceptRoomId?: number): number {
   return typeof exceptRoomId === 'number' &&
-    Number.isFinite(exceptRoomId) &&
+    Number.isSafeInteger(exceptRoomId) &&
     exceptRoomId > 0
-    ? Math.floor(exceptRoomId)
+    ? exceptRoomId
     : 0;
 }
 
 export function isOpenRoom(room: RoomRecord): boolean {
-  if (room.startedAt) {
-    return false;
-  }
-  const status = String(room.status ?? '').toLowerCase();
-  return OPEN_ROOM_STATUSES.includes(
-    status as (typeof OPEN_ROOM_STATUSES)[number],
-  );
+  return resolveRoomLifecycleState(room).kind === 'open';
 }
 
 export function isStartedRoom(room: RoomRecord): boolean {
-  return (
-    String(room.status ?? '').toLowerCase() === 'started' ||
-    Boolean(room.startedAt)
-  );
+  return resolveRoomLifecycleState(room).kind === 'started';
 }
 /** Room application capability boundary. */

@@ -3,7 +3,12 @@ import type {
   RoomBotState,
   RoomPayload,
   RoomPlayer,
-} from '../../application/contracts/room-payload.model';
+} from '../../application/models/room-payload.model';
+import {
+  asGameId,
+  asRoomId,
+  asUserId,
+} from '../../../../shared/interfaces/public-api';
 
 export function decodeRoomPayload(value: unknown): RoomPayload | null {
   if (
@@ -27,19 +32,28 @@ export function decodeRoomPayload(value: unknown): RoomPayload | null {
     !bots ||
     typeof room.id !== 'number' ||
     !Number.isSafeInteger(room.id) ||
+    room.id <= 0 ||
     typeof room.name !== 'string' ||
+    room.name.length > 255 ||
     typeof room.isPrivate !== 'boolean' ||
     typeof room.maxPlayers !== 'number' ||
     !Number.isSafeInteger(room.maxPlayers) ||
+    room.maxPlayers < 1 ||
+    room.maxPlayers > 64 ||
     typeof room.status !== 'string' ||
+    room.status.length > 64 ||
     typeof room.gameType !== 'string' ||
+    !isGameId(room.gameType) ||
     !isRecord(room.counts) ||
-    typeof room.counts.players !== 'number' ||
-    typeof room.counts.spectators !== 'number' ||
+    !isNonNegativeSafeInteger(room.counts.players) ||
+    !isNonNegativeSafeInteger(room.counts.spectators) ||
     !isOptionalNullableString(room.startedAt) ||
-    !isOptionalNullableNumber(room.runId) ||
+    !isOptionalNullableRunId(room.runId) ||
     !isOptionalNullableString(room.tableAmbienceSoundId) ||
-    !isOptionalStringArray(room.allowedActions)
+    !isOptionalStringArray(room.allowedActions) ||
+    players.length > room.maxPlayers ||
+    spectators.length > 1000 ||
+    bots.length > 64
   ) {
     return null;
   }
@@ -47,12 +61,12 @@ export function decodeRoomPayload(value: unknown): RoomPayload | null {
     manifest,
     generatedAt: value.generatedAt,
     room: {
-      id: room.id,
+      id: asRoomId(room.id),
       name: room.name,
       isPrivate: room.isPrivate,
       maxPlayers: room.maxPlayers,
       status: room.status,
-      gameType: room.gameType,
+      gameType: asGameId(room.gameType),
       startedAt: room.startedAt,
       runId: room.runId,
       tableAmbienceSoundId: room.tableAmbienceSoundId,
@@ -74,16 +88,23 @@ function decodeManifest(value: unknown): GameManifest | null {
   if (
     !isRecord(value) ||
     typeof value.id !== 'string' ||
+    !isGameId(value.id) ||
     typeof value.name !== 'string' ||
+    value.name.length > 128 ||
     typeof value.minPlayers !== 'number' ||
     typeof value.maxPlayers !== 'number' ||
+    !Number.isSafeInteger(value.minPlayers) ||
+    !Number.isSafeInteger(value.maxPlayers) ||
+    value.minPlayers < 1 ||
+    value.maxPlayers < value.minPlayers ||
+    value.maxPlayers > 64 ||
     typeof value.chatEnabled !== 'boolean' ||
     typeof value.chatSoundsEnabled !== 'boolean'
   ) {
     return null;
   }
   return {
-    id: value.id,
+    id: asGameId(value.id),
     name: value.name,
     minPlayers: value.minPlayers,
     maxPlayers: value.maxPlayers,
@@ -100,8 +121,10 @@ function decodePlayer(value: unknown): RoomPlayer | null {
   return isRecord(value) &&
     typeof value.id === 'number' &&
     Number.isSafeInteger(value.id) &&
-    typeof value.username === 'string'
-    ? { id: value.id, username: value.username }
+    value.id > 0 &&
+    typeof value.username === 'string' &&
+    value.username.length <= 255
+    ? { id: asUserId(value.id), username: value.username }
     : null;
 }
 
@@ -109,7 +132,8 @@ function decodeBot(value: unknown): RoomBotState | null {
   return isRecord(value) &&
     typeof value.id === 'number' &&
     Number.isSafeInteger(value.id) &&
-    typeof value.name === 'string'
+    typeof value.name === 'string' &&
+    value.name.length <= 255
     ? { id: value.id, name: value.name }
     : null;
 }
@@ -129,21 +153,31 @@ function isOptionalNullableString(
   return value === undefined || value === null || typeof value === 'string';
 }
 
-function isOptionalNullableNumber(
+function isOptionalNullableRunId(
   value: unknown,
 ): value is number | null | undefined {
   return (
     value === undefined ||
     value === null ||
-    (typeof value === 'number' && Number.isFinite(value))
+    (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0)
   );
 }
 
 function isOptionalStringArray(value: unknown): value is string[] | undefined {
   return (
     value === undefined ||
-    (Array.isArray(value) && value.every((item) => typeof item === 'string'))
+    (Array.isArray(value) &&
+      value.length <= 128 &&
+      value.every((item) => typeof item === 'string' && item.length <= 128))
   );
+}
+
+function isNonNegativeSafeInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+}
+
+function isGameId(value: string): boolean {
+  return /^[a-z][a-z0-9-]{0,95}$/.test(value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

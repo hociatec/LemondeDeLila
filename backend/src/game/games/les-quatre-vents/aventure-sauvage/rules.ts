@@ -1,9 +1,13 @@
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
+  drawEvent,
+  defineChoice,
+  defineEffect,
+  gameInput,
   raceTurn,
   sequentialPawnSelection,
   setupPlayingPhases,
 } from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
 import { AVENTURE_TILES } from './content';
 import type { AventureCard, AventureSauvageState } from './types';
 
@@ -32,7 +36,7 @@ const pawnSelection = sequentialPawnSelection<AventureSauvageState>({
   },
 });
 
-export const requestPawns = pawnSelection.requestAll;
+export const setupGame = pawnSelection.setup(() => ({}));
 export const resolvePawnChoice = pawnSelection.resolve;
 
 export function resolveAventureTile(playerId: number, ctx: RuleContext): void {
@@ -45,9 +49,14 @@ export function resolveAventureTile(playerId: number, ctx: RuleContext): void {
       if (!tile) return;
       ctx.events.message('game.pawn.landed', { playerId, tileId: position });
       if (tile.type === 'animal' || tile.type === 'patte') {
-        const card = ctx.cards.drawOrRecycle<AventureCard>(tile.type);
+        const card = drawEvent<AventureSauvageState, AventureCard>(ctx, {
+          deckId: tile.type,
+          playerId: playerId,
+          recycle: true,
+          discard: true,
+        });
         if (!card) return;
-        ctx.cards.discard(tile.type, card);
+
         applyCard(playerId, card, ctx);
       }
     },
@@ -66,3 +75,22 @@ function applyCard(
   });
   ctx.effects.schedule(...card.effects);
 }
+
+export const GAME_CHOICES = {
+  'aventure.pawn': defineChoice<AventureSauvageState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ actor, value, ctx }) => resolvePawnChoice(actor.id, value, ctx),
+  }),
+};
+
+export const GAME_EFFECTS = {
+  'aventure.resolve-landing': defineEffect<
+    AventureSauvageState,
+    Record<string, never>
+  >({
+    input: gameInput.object({}),
+    apply: ({ actorPlayerId, ctx }) => {
+      if (actorPlayerId != null) resolveAventureTile(actorPlayerId, ctx);
+    },
+  }),
+};

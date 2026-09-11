@@ -1,19 +1,17 @@
 import {
   cards,
   defineCardsSchema,
-  defineChoice,
-  defineGameContent,
   defineGame,
-  gameInput,
   raceGame,
 } from '../../../engine/sdk/public-api';
-import { MISSION_GALAXIE_CONTENT } from './content';
 import {
-  MISSION_GALAXIE_ACTIONS,
-  MISSION_GALAXIE_EFFECTS,
-  resolveMissionAnswer,
-  resolveMissionEventMove,
-} from './rules';
+  MISSION_GALAXIE_CONTENT,
+  MISSION_GALAXIE_GAME_CONTENT,
+} from './content';
+import manifest from './manifest.json';
+import { GAME_CHOICES, MISSION_GALAXIE_EFFECTS } from './rules';
+
+import { MISSION_GALAXIE_ACTIONS } from './rules';
 import type { MissionGalaxieState } from './types';
 
 const cardSchema = defineCardsSchema({
@@ -38,14 +36,14 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<MissionGalaxieState>()({
-  id: 'mission-galaxie',
-  displayName: 'Mission Galaxie',
+  id: manifest.code,
+  rulesVersion: '2',
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description:
-    'Une course cosmique rythmée par questions, défis et événements.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('mission-galaxie', MISSION_GALAXIE_CONTENT),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: MISSION_GALAXIE_GAME_CONTENT,
   patterns: [
     raceGame({
       trackId: 'galaxy',
@@ -59,17 +57,6 @@ export default defineGame<MissionGalaxieState>()({
   ],
   actions: MISSION_GALAXIE_ACTIONS,
   effects: MISSION_GALAXIE_EFFECTS,
-  choices: {
-    'mission-galaxie.answer': defineChoice<MissionGalaxieState, number>({
-      input: gameInput.number({ integer: true, min: 0 }),
-      resolve: ({ state, value, ctx }) =>
-        resolveMissionAnswer(state, value, ctx),
-    }),
-    'mission-galaxie.event-move': defineChoice<MissionGalaxieState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ state, value, ctx }) =>
-        resolveMissionEventMove(state, value, ctx),
-    }),
-  },
+  choices: GAME_CHOICES,
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

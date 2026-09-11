@@ -1,4 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { allCompleted } from '../../../../../shared/utils/public-api';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '@shared/interfaces/public-api';
+import { businessMsToIso } from '@shared/utils/public-api';
 import {
   ADMIN_NOTIFICATION_PORT,
   type AdminNotificationPort,
@@ -19,28 +25,45 @@ export interface AdminBroadcastCommand {
 export class AdminBroadcastService {
   constructor(
     @Inject(ADMIN_USER_REPOSITORY)
-    private readonly users: AdminUserRepository,
+    private readonly users: Pick<AdminUserRepository, 'scanIdBatches'>,
     @Inject(ADMIN_NOTIFICATION_PORT)
     private readonly notifications: AdminNotificationPort,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async broadcast(
     command: AdminBroadcastCommand,
   ): Promise<{ delivered: number }> {
-    const userIds = await this.users.listIds();
+    if (
+      !Number.isSafeInteger(command.fromUserId) ||
+      command.fromUserId <= 0 ||
+      typeof command.message !== 'string' ||
+      command.message.trim().length === 0 ||
+      command.message.length > 2_000 ||
+      typeof command.fromUsername !== 'string' ||
+      command.fromUsername.length > 100 ||
+      typeof command.eventType !== 'string' ||
+      command.eventType.trim().length === 0 ||
+      command.eventType.length > 128
+    ) {
+      throw new BadRequestException('Broadcast administrateur invalide.');
+    }
     const payload = {
-      message: command.message,
+      message: command.message.trim(),
       fromUserId: command.fromUserId,
-      fromUsername: command.fromUsername,
-      timestamp: new Date().toISOString(),
+      fromUsername: command.fromUsername.trim(),
+      timestamp: businessMsToIso(this.clock.now()),
     };
 
-    await Promise.all(
-      userIds.map((userId) =>
-        this.notifications.notifyUser(userId, command.eventType, payload),
-      ),
-    );
-
-    return { delivered: userIds.length };
+    let delivered = 0;
+    for await (const userIds of this.users.scanIdBatches()) {
+      await allCompleted(
+        userIds.map((userId) =>
+          this.notifications.notifyUser(userId, command.eventType, payload),
+        ),
+      );
+      delivered += userIds.length;
+    }
+    return { delivered };
   }
 }

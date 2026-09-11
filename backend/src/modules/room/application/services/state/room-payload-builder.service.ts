@@ -1,12 +1,22 @@
-import { Injectable } from '@nestjs/common';
-import { RoomPayload } from '../../contracts/room-payload.model';
-import type { RoomRecord } from '../../contracts/room-record.model';
-import { CatalogService } from '../../../../catalog/public-api';
+import { presentationTimestamp } from '../../../../../platform/serialization/public-api';
+import { Inject, Injectable } from '@nestjs/common';
+import { RoomPayload } from '../../models/room-payload.model';
+import type { RoomRecord } from '../../models/room-record.model';
+import {
+  ROOM_CATALOG_PORT,
+  type RoomCatalogPort,
+} from '../../ports/room-catalog.port';
 import { buildUniqueActiveRoomPlayers } from '../membership/room-participant-roster';
+import {
+  asGameId,
+  asRoomId,
+} from '../../../../../shared/interfaces/public-api';
 
 @Injectable()
 export class RoomPayloadBuilderService {
-  constructor(private readonly catalog: CatalogService) {}
+  constructor(
+    @Inject(ROOM_CATALOG_PORT) private readonly catalog: RoomCatalogPort,
+  ) {}
 
   async build(room: RoomRecord): Promise<RoomPayload> {
     const manifest = await this.catalog.getGame(room.gameType);
@@ -14,7 +24,7 @@ export class RoomPayloadBuilderService {
     return {
       manifest: manifest
         ? {
-            id: manifest.id,
+            id: asGameId(manifest.id),
             name: manifest.name,
             minPlayers: manifest.minPlayers ?? 2,
             maxPlayers: manifest.maxPlayers ?? room.maxPlayers,
@@ -23,12 +33,12 @@ export class RoomPayloadBuilderService {
           }
         : null,
       room: {
-        id: room.id,
+        id: asRoomId(room.id),
         name: room.name,
         isPrivate: room.isPrivate,
         maxPlayers: room.maxPlayers,
         status: room.status,
-        gameType: room.gameType,
+        gameType: asGameId(room.gameType),
         startedAt: room.startedAt ? room.startedAt.toISOString() : null,
         runId: room.runId,
         tableAmbienceSoundId: room.tableAmbienceSoundId,
@@ -43,7 +53,7 @@ export class RoomPayloadBuilderService {
         spectators: [],
         bots: (room.bots || []).map((bot) => ({ id: bot.id, name: bot.name })),
       },
-      generatedAt: new Date().toISOString(),
+      generatedAt: presentationTimestamp(),
     };
   }
 }

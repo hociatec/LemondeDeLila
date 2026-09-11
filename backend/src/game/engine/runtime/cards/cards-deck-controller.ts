@@ -1,6 +1,7 @@
 import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
 import { GameCardsStateController } from './cards-state-controller';
 import type { CardValue } from './cards-contracts';
+import { sameSerializableValue } from '../state/serializable-value';
 
 export abstract class GameCardsDeckController extends GameCardsStateController {
   discard<TCard extends CardValue>(deckId: string, card: TCard): void {
@@ -28,7 +29,7 @@ export abstract class GameCardsDeckController extends GameCardsStateController {
     const discard = this.state.discards[deckId] ?? [];
     const persistentCard = this.toPersistentCard(deckId, card);
     const index = discard.findIndex((candidate) =>
-      Object.is(candidate, persistentCard),
+      sameSerializableValue(candidate, persistentCard),
     );
     if (index < 0) {
       throw new GameRuleViolationError(

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { WebSocket } from 'ws';
+import { prometheusMetrics } from '../../../../../platform/observability/public-api';
 
 @Injectable()
 export class RoomRealtimeTrackerService {
@@ -13,8 +14,8 @@ export class RoomRealtimeTrackerService {
    */
   setSocketParticipantRoom(socket: WebSocket, roomId: number | null): void {
     const nextRoomId =
-      typeof roomId === 'number' && Number.isFinite(roomId) && roomId > 0
-        ? Math.floor(roomId)
+      typeof roomId === 'number' && Number.isSafeInteger(roomId) && roomId > 0
+        ? roomId
         : 0;
     const prevRoomId = this.participantRoomBySocket.get(socket) ?? 0;
     if (prevRoomId === nextRoomId) {
@@ -28,6 +29,7 @@ export class RoomRealtimeTrackerService {
       this.increment(nextRoomId);
     }
     this.participantRoomBySocket.set(socket, nextRoomId);
+    prometheusMetrics.setActiveRooms(this.activePlayerSocketsByRoomId.size);
   }
 
   clearSocket(socket: WebSocket): void {
@@ -36,7 +38,7 @@ export class RoomRealtimeTrackerService {
 
   private increment(roomId: number) {
     const current = this.activePlayerSocketsByRoomId.get(roomId) ?? 0;
-    this.activePlayerSocketsByRoomId.set(roomId, current + 1);
+    if (current < 64) this.activePlayerSocketsByRoomId.set(roomId, current + 1);
   }
 
   private decrement(roomId: number) {

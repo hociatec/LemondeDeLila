@@ -1,7 +1,7 @@
 import type {
   DefinitionToValidate,
   ValidationFailure,
-} from './game-definition-validator';
+} from '../contracts/definition-validation';
 
 export function assertAuxiliaryDefinitions(
   definition: DefinitionToValidate,
@@ -9,6 +9,11 @@ export function assertAuxiliaryDefinitions(
 ): void {
   const automaticIds = new Set<string>();
   for (const automatic of definition.automatic ?? []) {
+    if (
+      typeof automatic.when !== 'function' ||
+      typeof automatic.apply !== 'function'
+    )
+      fail(`automatic.${automatic.id}`, 'predicate et application requis');
     if (!automatic.id.trim())
       fail('automatic', 'identifiant de règle automatique vide');
     if (automaticIds.has(automatic.id))

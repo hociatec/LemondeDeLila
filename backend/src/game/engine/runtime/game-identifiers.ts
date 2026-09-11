@@ -1,4 +1,4 @@
-import type { PlayerStateEntity } from '../../core/application/contracts/game-state.model';
+import type { PlayerState } from '../../core/application/models/game-state.model';
 import { GamePayloadValidationError } from '../../core/domain/errors/game-domain.errors';
 
 declare const playerIdBrand: unique symbol;
@@ -13,7 +13,7 @@ export type TileId = string & { readonly [tileIdBrand]: true };
 export type PlayerMap<TValue> = Record<string, TValue>;
 
 export function playerId(value: number): PlayerId {
-  if (!Number.isInteger(value) || value < 1) {
+  if (!Number.isSafeInteger(value) || value < 1) {
     throw new GamePayloadValidationError(
       `Identifiant de joueur invalide: ${value}`,
     );
@@ -34,15 +34,30 @@ export function tileId(value: string): TileId {
 }
 
 export function playerMap<TValue>(
-  players: readonly PlayerStateEntity[],
-  initial: TValue | ((player: PlayerStateEntity) => TValue),
+  players: readonly PlayerState[],
+  initial: TValue | ((player: PlayerState) => TValue),
 ): PlayerMap<TValue> {
+  if (!Array.isArray(players) || players.length > 128) {
+    throw new GamePayloadValidationError('Liste de joueurs invalide');
+  }
+  if (
+    players.some(
+      (player) =>
+        !player ||
+        !Number.isSafeInteger(player.id) ||
+        player.id < 1 ||
+        typeof player.username !== 'string' ||
+        player.username.length > 255,
+    )
+  ) {
+    throw new GamePayloadValidationError('Joueur invalide');
+  }
   return Object.fromEntries(
     players.map((player) => [
       String(player.id),
       structuredClone(
         typeof initial === 'function'
-          ? (initial as (player: PlayerStateEntity) => TValue)(player)
+          ? (initial as (player: PlayerState) => TValue)(player)
           : initial,
       ),
     ]),
@@ -50,6 +65,9 @@ export function playerMap<TValue>(
 }
 
 function nonEmptyId(value: string, kind: string): string {
+  if (typeof value !== 'string' || value.length > 128) {
+    throw new GamePayloadValidationError(`Identifiant de ${kind} trop long`);
+  }
   const normalized = value.trim();
   if (!normalized) {
     throw new GamePayloadValidationError(`Identifiant de ${kind} vide`);

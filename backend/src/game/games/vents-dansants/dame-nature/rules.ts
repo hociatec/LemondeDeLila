@@ -25,15 +25,12 @@ type RuleContext = GameContext<DameNatureState>;
 export const askCard = requestCardFromPlayer<DameNatureState>({
   handId: HANDS,
   requests: ({ playerId, ctx }) =>
-    ctx.players
-      .all()
-      .filter((player) => player.id !== playerId)
-      .flatMap((player) =>
-        DAME_NATURE_FAMILY_CARD_DEFINITIONS.map((card) => ({
-          cardId: card.id,
-          targetPlayerId: player.id,
-        })),
-      ),
+    ctx.players.others(playerId).flatMap((player) =>
+      DAME_NATURE_FAMILY_CARD_DEFINITIONS.map((card) => ({
+        cardId: card.id,
+        targetPlayerId: player.id,
+      })),
+    ),
   onReceived: ({ playerId, cardId, ctx }) => {
     const card = familyCard(cardId);
     ctx.events.message('dame-nature.family-card.received', {
@@ -86,10 +83,7 @@ function applyPollution(
     total: pollutionTokens,
   });
   if (pollutionTokens < 12) return;
-  const winnerIds = ctx.players
-    .all()
-    .filter((player) => player.id !== playerId)
-    .map((player) => player.id);
+  const winnerIds = ctx.players.others(playerId).map((player) => player.id);
   ctx.match.finish({ winners: winnerIds, reason: 'pollution-limit' });
 }
 

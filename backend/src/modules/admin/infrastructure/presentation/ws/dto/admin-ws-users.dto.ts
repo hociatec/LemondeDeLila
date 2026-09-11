@@ -5,6 +5,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -37,11 +38,13 @@ export class AdminListUsersWsDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(100000)
   page?: number;
 
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(100)
   limit?: number;
 }
 
@@ -54,10 +57,12 @@ export class AdminBanUserWsDto extends AdminUserIdWsDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(36500)
   durationDays?: number;
 
   @IsOptional()
   @IsString()
+  @MaxLength(64)
   bannedUntil?: string | null;
 }
 
@@ -70,6 +75,7 @@ export class AdminChatBanWsDto extends AdminUserIdWsDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(36500)
   durationDays?: number;
 }
 

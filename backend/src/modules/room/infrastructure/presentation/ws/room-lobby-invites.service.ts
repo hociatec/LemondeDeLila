@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { bestEffort, getErrorMessage } from '@shared/utils/public-api';
+import { bestEffort } from '../../../../../platform/observability/public-api';
+import { getErrorMessage } from '../../../../../shared/utils/public-api';
 import {
   NOTIFICATION_DISPATCHER,
   type NotificationDispatcher,
 } from '../../../../notification/public-api';
 import { PresenceService } from '../../../../presence/public-api';
-import type { RoomPayload } from '../../../application/contracts/room-payload.model';
+import type { RoomPayload } from '../../../application/models/room-payload.model';
 import {
   ROOM_LOBBY_REPOSITORY,
   type RoomLobbyRepository,
@@ -59,7 +60,7 @@ export class RoomLobbyInvitesService {
       );
     }
     const invite = this.invites.create(room.id, user.id, dto.userId);
-    void this.notifications.notifyUser(
+    await this.notifications.notifyUser(
       dto.userId,
       'room.lobby.invite.received',
       {
@@ -95,6 +96,7 @@ export class RoomLobbyInvitesService {
       .filter((player) => player.id !== user.id)
       .filter((player) => player.availability !== 'absent')
       .filter((player) => !activeIds.has(player.id))
+      .slice(0, 1_000)
       .map((player) => ({
         id: player.id,
         username: player.username,
@@ -127,7 +129,7 @@ export class RoomLobbyInvitesService {
       return this.accept(user, invite, dto.invitationId);
     }
     this.invites.delete(dto.invitationId);
-    this.notifyResponse(invite, dto.invitationId, user, false);
+    await this.notifyResponse(invite, dto.invitationId, user, false);
     return this.presenter.presentInviteResponded({
       invitationId: dto.invitationId,
       accepted: false,
@@ -157,7 +159,7 @@ export class RoomLobbyInvitesService {
       return this.acceptAsSpectator(user, invite, invitationId, state.room);
     }
     const state = await this.roomState.getRoomPayload(invite.roomId);
-    this.notifyResponse(invite, invitationId, user, true);
+    await this.notifyResponse(invite, invitationId, user, true);
     return this.presenter.presentInviteAccepted(
       invite.roomId,
       state.room,
@@ -173,17 +175,17 @@ export class RoomLobbyInvitesService {
   ) {
     this.invites.consume(invitationId, { keep: true });
     await this.refreshRoom(invite.roomId);
-    this.notifyResponse(invite, invitationId, user, true);
+    await this.notifyResponse(invite, invitationId, user, true);
     return this.presenter.presentInviteAccepted(invite.roomId, room, true);
   }
 
-  private notifyResponse(
+  private async notifyResponse(
     invite: RoomInvite,
     invitationId: string,
     user: LobbyUser,
     accepted: boolean,
-  ): void {
-    void this.notifications.notifyUser(
+  ): Promise<void> {
+    await this.notifications.notifyUser(
       invite.fromUserId,
       'room.lobby.invite.responded',
       {

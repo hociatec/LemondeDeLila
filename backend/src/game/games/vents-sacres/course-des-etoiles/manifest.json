@@ -1,0 +1,8 @@
+{
+  "code": "course-des-etoiles",
+  "engine": "course-des-etoiles",
+  "name": "Course des étoiles",
+  "summary": "Avancez et récoltez trois étoiles pour remporter la course.",
+  "minPlayers": 2,
+  "maxPlayers": 4
+}

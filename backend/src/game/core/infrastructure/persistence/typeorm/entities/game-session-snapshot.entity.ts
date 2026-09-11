@@ -1,5 +1,5 @@
 import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
-import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
+import type { GameState } from '../../../../application/models/game-state.model';
 
 @Entity({ name: 'game_session_snapshots' })
 @Index('IDX_game_session_snapshots_version', ['roomId', 'gameType', 'version'])
@@ -17,5 +17,5 @@ export class GameSessionSnapshotEntity {
   version!: number;
 
   @Column({ type: 'json' })
-  state!: GameStateEntity;
+  state!: GameState;
 }

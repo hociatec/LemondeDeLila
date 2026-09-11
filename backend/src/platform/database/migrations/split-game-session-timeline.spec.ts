@@ -29,6 +29,7 @@ describe('SplitGameSessionTimeline migration', () => {
       query: jest.fn(async (sql: string, params?: unknown[]) => {
         executed.push({ sql, params });
         if (sql.startsWith('SELECT room_id')) {
+          if (params?.[1] !== 0) return [];
           return [
             {
               room_id: 4,

@@ -16,9 +16,6 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
     case domain::GameEventType::StateUpdated:
         if (event.state)
         {
-            retryableActionCommand_.reset();
-            inputSubmissionGuard_.ObserveState(
-                event.state->version, event.state->runId);
             lila::shared::logging::LogInfo(
                 "GameInput",
                 "State received: version=" + std::to_string(event.state->version) +

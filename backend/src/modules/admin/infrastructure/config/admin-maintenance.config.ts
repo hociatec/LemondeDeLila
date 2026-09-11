@@ -5,15 +5,21 @@ export function createAdminMaintenanceConfig(
   config: ConfigService,
 ): AdminMaintenanceConfig {
   const healthPortCandidate = Number(config.get<string>('PORT') ?? '3000');
-  return {
-    deployUnit:
-      config.get<string>('ADMIN_MAINTENANCE_DEPLOY_UNIT') ??
+  const deployUnit = String(
+    config.get<string>('ADMIN_MAINTENANCE_DEPLOY_UNIT') ??
       'lila-backend-deploy.service',
-    backendService:
-      config.get<string>('ADMIN_MAINTENANCE_BACKEND_SERVICE') ??
+  ).trim();
+  const backendService = String(
+    config.get<string>('ADMIN_MAINTENANCE_BACKEND_SERVICE') ??
       'lila-backend.service',
+  ).trim();
+  return {
+    deployUnit: deployUnit.slice(0, 128) || 'lila-backend-deploy.service',
+    backendService: backendService.slice(0, 128) || 'lila-backend.service',
     healthPort:
-      Number.isFinite(healthPortCandidate) && healthPortCandidate > 0
+      Number.isSafeInteger(healthPortCandidate) &&
+      healthPortCandidate > 0 &&
+      healthPortCandidate <= 65535
         ? healthPortCandidate
         : 3000,
   };

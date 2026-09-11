@@ -1,3 +1,5 @@
+import { parseStrictInteger } from '../../../../shared/utils/public-api';
+
 /** Persisted deterministic RNG cursor owned by the game runtime. */
 export type SeededRngState = {
   seed: number;
@@ -15,8 +17,8 @@ export type SeededRngMetadata = {
 function normalizeSeed(
   value: string | number | null | undefined,
 ): number | null {
-  const n = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(n)) return null;
+  const n = parseStrictInteger(value);
+  if (n === null) return null;
   return n >>> 0;
 }
 
@@ -47,7 +49,14 @@ function deriveSeedFromContext(meta: SeededRngMetadata): number | null {
   const runIdRaw = meta.roomRunId;
   const runId =
     typeof runIdRaw === 'number' ? runIdRaw : Number(runIdRaw ?? NaN);
-  if (roomId == null || (startedAt == null && runIdRaw == null)) return null;
+  if (
+    roomId == null ||
+    !Number.isSafeInteger(roomId) ||
+    roomId <= 0 ||
+    (startedAt == null && runIdRaw == null) ||
+    (runIdRaw != null && !Number.isSafeInteger(runId))
+  )
+    return null;
   const input = `${toStablePart(gameType)}|${toStablePart(roomId)}|${toStablePart(
     startedAt,
   )}|${Number.isFinite(runId) ? String(runId) : ''}`;
@@ -73,7 +82,10 @@ export function ensureSeededRng(meta: SeededRngMetadata): SeededRngState {
       'Contexte RNG déterministe absent: fournir rng ou roomId/roomStartedAt.',
     );
   }
-  const counter = Math.max(0, normalizeSeed(current?.counter) ?? 0);
+  const counter = Math.min(
+    0xffff_ffff,
+    Math.max(0, normalizeSeed(current?.counter) ?? 0),
+  );
   return { seed, counter };
 }
 
@@ -86,7 +98,10 @@ export function nextRngFloat<T extends SeededRngMetadata>(
   const rng = ensureSeededRng(meta);
   const generator = mulberry32((rng.seed + rng.counter) >>> 0);
   const value = generator();
-  const next: SeededRngState = { seed: rng.seed, counter: rng.counter + 1 };
+  const next: SeededRngState = {
+    seed: rng.seed,
+    counter: (rng.counter + 1) >>> 0,
+  };
   return { value, meta: { ...meta, rng: next } };
 }
 

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { readEnvironment } from '../../../../platform/config/public-api';
-import { constantTimeSecretEquals } from '../../../../shared/utils/public-api';
+import { constantTimeSecretEquals } from '../../../../platform/security/public-api';
 
 @Injectable()
 export class UpdateUploadTokenGuard implements CanActivate {

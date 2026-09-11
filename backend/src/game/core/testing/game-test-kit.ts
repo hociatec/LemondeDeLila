@@ -1,12 +1,12 @@
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../application/contracts/game-action.model';
-import { FixedGameClock } from '../application/contracts/game-execution-context.model';
+} from '../application/models/game-action.model';
+import { FixedGameClock } from '../application/models/game-execution-context.model';
 import type {
-  GameStateEntity,
-  PlayerStateEntity,
-} from '../application/contracts/game-state.model';
+  GameState,
+  PlayerState,
+} from '../application/models/game-state.model';
 import { DeclarativeGameRuntime } from '../../engine/runtime/declarative-game.runtime';
 import type {
   CompiledGameDefinition,
@@ -31,7 +31,7 @@ type DriverActionInput<TActions, TType> = TType extends keyof TActions
   : Record<string, unknown>;
 
 const DEFAULT_NAMES = ['alice', 'bob', 'charlie', 'diana', 'eve', 'frank'];
-type TestPlayer = string | { username: string; isBot?: boolean };
+import { createTestGameState, type TestPlayer } from './game-test-state';
 
 export class GameTestKit<
   TState extends object,
@@ -49,7 +49,7 @@ export class GameTestKit<
   private readonly clock = new FixedGameClock(1_700_000_000_000);
   private testPlayers: TestPlayer[] = DEFAULT_NAMES.slice(0, 2);
   private randomSeed = 1;
-  private current: GameStateEntity | null = null;
+  private current: GameState | null = null;
 
   constructor(
     private readonly definition: CompiledGameDefinition<
@@ -81,7 +81,12 @@ export class GameTestKit<
 
   async start(): Promise<this> {
     this.ensureNotStarted();
-    const base = this.baseState();
+    const base = createTestGameState({
+      definition: this.definition,
+      players: this.testPlayers,
+      seed: this.randomSeed,
+      startedAt: this.clock.nowIso(),
+    });
     const context = this.execution.create(base, null, this.clock);
     const initial = this.execution.run(context, () =>
       this.adapter.hydrateInitialState(base, context),
@@ -97,7 +102,7 @@ export class GameTestKit<
     return new GameActorTestDriver(this, this.playerId(player));
   }
 
-  player(player: string | number): PlayerStateEntity & { hand: unknown[] } {
+  player(player: string | number): PlayerState & { hand: unknown[] } {
     const playerId = this.playerId(player);
     const found = this.requireState().players?.find(
       (candidate) => candidate.id === playerId,
@@ -108,7 +113,7 @@ export class GameTestKit<
   }
 
   resource(player: string | number, resourceId: string): number {
-    const state = this.requireState() as GameStateEntity & {
+    const state = this.requireState() as GameState & {
       engine?: {
         playerValues?: {
           scores?: Record<string, number>;
@@ -124,7 +129,7 @@ export class GameTestKit<
   }
 
   inventory(player: string | number, inventoryId: string): unknown[] {
-    const state = this.requireState() as GameStateEntity & {
+    const state = this.requireState() as GameState & {
       engine?: {
         kits?: {
           inventory?: {
@@ -147,6 +152,7 @@ export class GameTestKit<
     const exposed = this.adapter.exposeStateForUser(
       this.requireState(),
       playerId,
+      this.execution.create(this.requireState(), playerId, this.clock),
     );
     const { game, ...genericView } = exposed;
     return structuredClone({
@@ -178,7 +184,7 @@ export class GameTestKit<
       );
     },
     positions: (trackId?: string): Record<string, number> => {
-      const state = this.requireState() as GameStateEntity & {
+      const state = this.requireState() as GameState & {
         engine?: {
           kits?: {
             movement?: {
@@ -193,13 +199,13 @@ export class GameTestKit<
       );
     },
     scores: (): Record<string, number> => {
-      const state = this.requireState() as GameStateEntity & {
+      const state = this.requireState() as GameState & {
         engine?: { playerValues?: { scores?: Record<string, number> } };
       };
       return structuredClone(state.engine?.playerValues?.scores ?? {});
     },
     lastRoll: (diceSetId?: string): number | null => {
-      const state = this.requireState() as GameStateEntity & {
+      const state = this.requireState() as GameState & {
         engine?: {
           kits?: {
             dice?: {
@@ -217,13 +223,13 @@ export class GameTestKit<
     setupComplete: (): boolean => this.requireState().phase !== 'setup',
   };
 
-  state(): GameStateEntity & { game: TState } {
-    return structuredClone(this.requireState()) as GameStateEntity & {
+  state(): GameState & { game: TState } {
+    return structuredClone(this.requireState()) as GameState & {
       game: TState;
     };
   }
 
-  async replay(): Promise<GameStateEntity> {
+  async replay(): Promise<GameState> {
     const replayed = await this.engine.replay(1, this.definition.id);
     if (!replayed) throw new Error('Aucune timeline à rejouer');
     return replayed;
@@ -234,7 +240,7 @@ export class GameTestKit<
   }
 
   result(): MatchResult | null {
-    const state = this.requireState() as GameStateEntity & {
+    const state = this.requireState() as GameState & {
       engine?: { match?: { result?: MatchResult | null } };
     };
     return structuredClone(state.engine?.match?.result ?? null);
@@ -247,7 +253,11 @@ export class GameTestKit<
 
   readonly availableActions = (playerId: number): string[] =>
     this.adapter
-      .getAvailableActions(this.requireState(), playerId)
+      .getAvailableActions(
+        this.requireState(),
+        playerId,
+        this.execution.create(this.requireState(), playerId, this.clock),
+      )
       .map((action) => action.type);
 
   async execute<K extends keyof TActions & string>(
@@ -311,43 +321,12 @@ export class GameTestKit<
     return this;
   }
 
-  private baseState(): GameStateEntity {
-    const players = this.testPlayers.map((player, index) => ({
-      id: typeof player !== 'string' && player.isBot ? -(index + 1) : index + 1,
-      username: typeof player === 'string' ? player : player.username,
-      ...(typeof player !== 'string' && player.isBot ? { isBot: true } : {}),
-    }));
-    if (
-      players.length < this.definition.players.min ||
-      players.length > this.definition.players.max
-    ) {
-      throw new Error(
-        `Nombre de joueurs hors limites pour ${this.definition.id}: ${players.length}`,
-      );
-    }
-    return {
-      version: 1,
-      status: 'started',
-      phase: 'setup',
-      log: [],
-      players,
-      pending: null,
-      metadata: {
-        gameType: this.definition.id,
-        roomId: 1,
-        roomRunId: 1,
-        roomStartedAt: this.clock.nowIso(),
-        rng: { seed: this.randomSeed, counter: 0 },
-      },
-    };
-  }
-
   private cardsState(): {
     decks?: Record<string, unknown[]>;
     discards?: Record<string, unknown[]>;
     hands?: Record<string, Record<string, unknown[]>>;
   } {
-    const state = this.requireState() as GameStateEntity & {
+    const state = this.requireState() as GameState & {
       engine?: {
         kits?: {
           cards?: {
@@ -370,7 +349,7 @@ export class GameTestKit<
     return found.id;
   }
 
-  private requireState(): GameStateEntity {
+  private requireState(): GameState {
     if (!this.current) throw new Error('Appelez start() avant de jouer');
     return this.current;
   }

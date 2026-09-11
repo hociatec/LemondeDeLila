@@ -1,17 +1,17 @@
 import {
   completeRound,
+  thresholdVictory,
   defineAction,
   defineEvent,
   gameInput,
 } from '../../../engine/sdk/public-api';
 import type { GameContext, PlayerMap } from '../../../engine/sdk/public-api';
-import { NAWAK_CHALLENGES } from './content';
+import { NAWAK_CHALLENGES, NAWAK_TARGET_SCORE } from './content';
 import type { NawakRoundState, NawakStage, NawakState } from './state';
 
 const ANSWERS = 'nawak.answers';
 const VOTES = 'nawak.votes';
 type RuleContext = GameContext<NawakState>;
-export const NAWAK_TARGET_SCORE = 5;
 export const ANSWERS_REVEALED = defineEvent({
   type: 'nawak.answers.revealed',
   data: gameInput.object({
@@ -84,18 +84,24 @@ export function nawakStage(ctx: RuleContext): NawakStage {
     : 'choose';
 }
 
+const nawakVictory = thresholdVictory<NawakState>({
+  kind: 'score-at-least',
+  amount: NAWAK_TARGET_SCORE,
+  participants: 'all',
+  selection: 'all-qualified',
+});
+
 function resolveNawakRound(state: NawakState, ctx: RuleContext): void {
   const submissions = ctx.submissions.values<number>(ANSWERS);
   const votes = ctx.submissions.values<number>(VOTES);
   const pointsAwarded: PlayerMap<number> = {};
-  for (const target of Object.values(votes)) {
-    ctx.score.add(target, 1);
-    pointsAwarded[target] = (pointsAwarded[target] ?? 0) + 1;
+  for (const result of ctx.voting.tally(VOTES)) {
+    const target = gameInput.playerId().parse(result.value);
+    ctx.score.add(target, result.votes);
+    pointsAwarded[target] = result.votes;
   }
-  const qualified = ctx.players
-    .all()
-    .map((player) => player.id)
-    .filter((playerId) => ctx.score.get(playerId) >= NAWAK_TARGET_SCORE);
+  const qualified =
+    nawakVictory.evaluate({ state, ctx })?.winnerPlayerIds ?? [];
   const tie = qualified.length > 1;
   const summary: NawakRoundState = {
     challengeId: state.currentChallengeId,

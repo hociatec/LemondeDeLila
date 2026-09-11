@@ -2,7 +2,7 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import {
   SocialProfileVisibility,
   type SocialProfileRecord,
-} from '../contracts/social-profile.model';
+} from '../models/social-profile.model';
 import {
   SOCIAL_PROFILE_REPOSITORY,
   type SocialProfileRepository,
@@ -20,6 +20,7 @@ const PROFILE_VISIBILITY: SocialProfileVisibility[] = [
   'private',
 ];
 const PROFILE_ENDGAME_MESSAGE_MAX_LENGTH = 280;
+const PROFILE_SEARCH_MAX_LENGTH = 255;
 
 @Injectable()
 export class SocialProfileService {
@@ -106,7 +107,7 @@ export class SocialProfileService {
   }
 
   async searchUsers(query: string, userId: number) {
-    const sanitized = query.trim();
+    const sanitized = query.trim().slice(0, PROFILE_SEARCH_MAX_LENGTH);
     if (!sanitized) {
       return [];
     }

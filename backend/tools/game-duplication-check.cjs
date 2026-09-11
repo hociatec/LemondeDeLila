@@ -8,13 +8,13 @@ const ts = require('typescript');
 
 const gamesRoot = path.resolve(__dirname, '..', 'src', 'game', 'games');
 const minimumTokens = 160;
-const requiredGames = 3;
+const requiredGames = 2;
 
 function walk(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const target = path.join(directory, entry.name);
     if (entry.isDirectory()) return walk(target);
-    return /\/(game|rules)\.ts$/.test(target.replaceAll(path.sep, '/'))
+    return target.endsWith('.ts') && !/\.(spec|test)\.ts$/.test(target)
       ? [target]
       : [];
   });
@@ -32,7 +32,11 @@ function signature(source) {
     source,
   );
   const tokens = [];
-  for (let token = scanner.scan(); token !== ts.SyntaxKind.EndOfFileToken; token = scanner.scan()) {
+  for (
+    let token = scanner.scan();
+    token !== ts.SyntaxKind.EndOfFileToken;
+    token = scanner.scan()
+  ) {
     if (
       token === ts.SyntaxKind.WhitespaceTrivia ||
       token === ts.SyntaxKind.NewLineTrivia ||
@@ -53,62 +57,82 @@ function signature(source) {
   return tokens.length >= minimumTokens
     ? {
         tokens: tokens.length,
-        hash: crypto.createHash('sha256').update(tokens.join(',')).digest('hex'),
+        hash: crypto
+          .createHash('sha256')
+          .update(tokens.join(','))
+          .digest('hex'),
       }
     : null;
 }
 
-const groups = new Map();
-for (const file of walk(gamesRoot)) {
-  const source = fs.readFileSync(file, 'utf8');
-  const sourceFile = ts.createSourceFile(
-    file,
-    source,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  );
-  function visit(node) {
-    if (
-      ts.isFunctionDeclaration(node) ||
-      ts.isFunctionExpression(node) ||
-      ts.isArrowFunction(node) ||
-      ts.isMethodDeclaration(node)
-    ) {
-      const candidate = signature(node.getText(sourceFile));
-      if (candidate) {
-        const group = groups.get(candidate.hash) ?? {
-          tokens: candidate.tokens,
-          occurrences: [],
-        };
-        group.occurrences.push({
-          game: gameId(file),
-          file: path.relative(path.resolve(__dirname, '..'), file),
-          line:
-            sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1,
-        });
-        groups.set(candidate.hash, group);
+function inspectDuplicates(root = gamesRoot) {
+  const groups = new Map();
+  for (const file of walk(root)) {
+    const source = fs.readFileSync(file, 'utf8');
+    const sourceFile = ts.createSourceFile(
+      file,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TS,
+    );
+    function visit(node) {
+      if (
+        ts.isFunctionDeclaration(node) ||
+        ts.isFunctionExpression(node) ||
+        ts.isArrowFunction(node) ||
+        ts.isMethodDeclaration(node)
+      ) {
+        const candidate = signature(node.getText(sourceFile));
+        if (candidate) {
+          const group = groups.get(candidate.hash) ?? {
+            tokens: candidate.tokens,
+            occurrences: [],
+          };
+          group.occurrences.push({
+            game: gameId(file),
+            file: path.relative(path.resolve(__dirname, '..'), file),
+            line:
+              sourceFile.getLineAndCharacterOfPosition(
+                node.getStart(sourceFile),
+              ).line + 1,
+          });
+          groups.set(candidate.hash, group);
+        }
       }
+      ts.forEachChild(node, visit);
     }
-    ts.forEachChild(node, visit);
+    visit(sourceFile);
   }
-  visit(sourceFile);
+
+  return [...groups.values()].filter(
+    (group) =>
+      new Set(group.occurrences.map((entry) => entry.game)).size >=
+      requiredGames,
+  );
 }
 
-const violations = [...groups.values()].filter(
-  (group) =>
-    new Set(group.occurrences.map((entry) => entry.game)).size >= requiredGames,
-);
-if (violations.length === 0) process.exit(0);
-for (const violation of violations) {
-  console.error(
-    `Mécanique dupliquée (${violation.tokens} tokens) dans au moins ${requiredGames} jeux:`,
-  );
-  for (const occurrence of violation.occurrences) {
-    console.error(`  ${occurrence.file}:${occurrence.line}`);
+function main() {
+  const violations = inspectDuplicates();
+  if (violations.length === 0) {
+    console.log(
+      'game-duplication: OK (fonctions normalisees, tous les fichiers TS, seuil de deux jeux)',
+    );
+    return;
   }
+  for (const violation of violations) {
+    console.error(
+      `Mécanique dupliquée (${violation.tokens} tokens) dans au moins ${requiredGames} jeux:`,
+    );
+    for (const occurrence of violation.occurrences) {
+      console.error(`  ${occurrence.file}:${occurrence.line}`);
+    }
+  }
+  console.error(
+    'Revue moteur requise dès le deuxième jeu : extraire la mécanique commune ou préciser les différences métier.',
+  );
+  process.exitCode = 1;
 }
-console.error(
-  'Évaluer une extraction en recipe, pattern ou kit avant de dupliquer une quatrième fois.',
-);
-process.exit(1);
+
+module.exports = { inspectDuplicates, signature };
+if (require.main === module) main();

@@ -1,3 +1,7 @@
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
 import { Inject, Injectable } from '@nestjs/common';
 
 import {
@@ -11,6 +15,7 @@ import {
   ChatMessageNotFoundError,
 } from '../../../domain/errors/chat-domain.errors';
 import { ChatSettingsService } from './chat-settings.service';
+import { isChatMutationWindowOpen } from '../../../domain/policies/chat-mutation-window';
 
 @Injectable()
 export class DeleteOwnChatMessageService {
@@ -19,11 +24,18 @@ export class DeleteOwnChatMessageService {
     private readonly messages: ChatMessageRepository,
     private readonly settings: ChatSettingsService,
     private readonly cache: ChatMessageCacheService,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async execute(userId: number, messageId: string): Promise<boolean> {
-    const id = (messageId || '').trim();
-    if (!id) return false;
+    const id = typeof messageId === 'string' ? messageId.trim() : '';
+    if (
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      !id ||
+      id.length > 128
+    )
+      return false;
     const message = await this.messages.findByMessageId(id);
     if (!message || !message.user?.id) {
       throw new ChatMessageNotFoundError();
@@ -36,9 +48,13 @@ export class DeleteOwnChatMessageService {
     if (message.deletedAt) {
       return true;
     }
-    const ageMs = Date.now() - message.createdAt.getTime();
-    const windowMs = this.settings.getEditWindowSeconds() * 1000;
-    if (windowMs <= 0 || ageMs > windowMs) {
+    if (
+      !isChatMutationWindowOpen(
+        message.createdAt.getTime(),
+        this.clock.now(),
+        this.settings.getEditWindowSeconds(),
+      )
+    ) {
       throw new ChatMessageDeleteWindowExpiredError(
         'Message trop ancien pour être supprimé.',
       );

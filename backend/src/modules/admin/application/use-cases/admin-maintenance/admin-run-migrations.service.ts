@@ -7,7 +7,7 @@ import {
   ADMIN_MAINTENANCE_RUNTIME_PORT,
   type AdminMaintenanceRuntimePort,
 } from '../../ports/admin-maintenance-runtime.port';
-import { operationalPolicy } from '../../../../../platform/config/public-api';
+import { operationalSettings } from '../../../../../platform/config/public-api';
 
 @Injectable()
 export class AdminRunMigrationsService {
@@ -21,7 +21,7 @@ export class AdminRunMigrationsService {
   execute() {
     const res = this.runtime.runCommand(['npm', 'run', 'migration:run'], {
       cwd: this.backendCwd,
-      timeoutMs: operationalPolicy.maintenanceCommandTimeoutMs,
+      timeoutMs: operationalSettings.maintenanceCommandTimeoutMs,
     });
     if (res.status !== 0) {
       throw new InternalServerErrorException({

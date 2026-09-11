@@ -16,6 +16,9 @@ export class JwksDocumentService {
   }
 
   buildDocument() {
+    if (!this.config || typeof this.config !== 'object') {
+      throw new Error('Configuration JWT invalide');
+    }
     const publicKeyPem = requireJwtVerifyKey(this.config);
     const keyObject = createPublicKey(publicKeyPem);
     const jwk = keyObject.export({ format: 'jwk' });

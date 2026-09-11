@@ -1,4 +1,5 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import {
   DEFAULT_GAME_SNAPSHOT_POLICY,
   GAME_SNAPSHOT_POLICY,
@@ -14,22 +15,23 @@ import type {
   GameEvent,
   GameSnapshot,
   GameTimeline,
-} from '../../../application/contracts/game-event.model';
-import type { GameStateEntity } from '../../../application/contracts/game-state.model';
+} from '../../../application/models/game-event.model';
+import type { GameState } from '../../../application/models/game-state.model';
 import {
   appendGameTimelineCommit,
   assertGameStateSize,
   createGameTimeline,
   replayTimeline,
-} from '../../../application/services/game-event-log.helper';
+} from '../../../application/services/game-timeline';
 
 @Injectable()
 export class InMemoryGameSessionStore
   implements GameStateStore, GameEventStore
 {
-  private readonly states = new Map<string, GameStateEntity>();
+  private readonly states = new Map<string, GameState>();
   private readonly timelines = new Map<string, GameTimeline>();
   private readonly snapshotPolicy: Readonly<GameSnapshotPolicy>;
+  private static readonly MAX_SESSIONS = 10_000;
 
   constructor(
     @Optional()
@@ -42,10 +44,7 @@ export class InMemoryGameSessionStore
     };
   }
 
-  async load(
-    roomId: number,
-    gameType: string,
-  ): Promise<GameStateEntity | null> {
+  async load(roomId: number, gameType: string): Promise<GameState | null> {
     const state = this.states.get(this.key(roomId, gameType));
     return state ? structuredClone(state) : null;
   }
@@ -53,20 +52,33 @@ export class InMemoryGameSessionStore
   async restore(
     roomId: number,
     gameType: string,
-    state: GameStateEntity,
-  ): Promise<void> {
+    state: GameState,
+  ): Promise<GameState> {
     const key = this.key(roomId, gameType);
     const restored = structuredClone(state);
+    restored.metadata = { ...restored.metadata, restoreId: randomUUID() };
     assertGameStateSize(restored, this.snapshotPolicy.maxStateBytes);
+    if (
+      !this.states.has(key) &&
+      this.states.size >= InMemoryGameSessionStore.MAX_SESSIONS
+    ) {
+      throw new Error('In-memory game session capacity exceeded');
+    }
     this.states.set(key, restored);
     this.timelines.set(key, createGameTimeline(restored));
+    return structuredClone(restored);
   }
 
   async compareAndSet(commit: GameStateCommit): Promise<GameStateCommitResult> {
     const key = this.key(commit.roomId, commit.gameType);
     const current = this.states.get(key);
     const currentVersion = current?.version ?? 0;
-    if (!current || currentVersion !== commit.expectedVersion) {
+    if (
+      !current ||
+      currentVersion !== commit.expectedVersion ||
+      (commit.expectedRestoreId !== undefined &&
+        (current.metadata?.restoreId ?? null) !== commit.expectedRestoreId)
+    ) {
       return {
         committed: false,
         version: currentVersion,
@@ -75,6 +87,11 @@ export class InMemoryGameSessionStore
     }
 
     const next = structuredClone(commit.next);
+    if (current.metadata?.restoreId)
+      next.metadata = {
+        ...next.metadata,
+        restoreId: current.metadata.restoreId,
+      };
     const committedVersion = commit.expectedVersion + 1;
     next.version = committedVersion;
     const timeline = appendGameTimelineCommit({
@@ -146,7 +163,7 @@ export class InMemoryGameSessionStore
     roomId: number,
     gameType: string,
     untilSequence?: number,
-  ): Promise<GameStateEntity | null> {
+  ): Promise<GameState | null> {
     const timeline = this.timelines.get(this.key(roomId, gameType));
     return timeline
       ? replayTimeline(structuredClone(timeline), untilSequence)
@@ -154,10 +171,13 @@ export class InMemoryGameSessionStore
   }
 
   private key(roomId: number, gameType: string): string {
+    if (!Number.isSafeInteger(roomId) || roomId <= 0 || gameType.length > 128) {
+      throw new Error('Invalid in-memory game session key');
+    }
     return `${roomId}:${gameType}`;
   }
 
-  private timelineForCommit(key: string, state: GameStateEntity): GameTimeline {
+  private timelineForCommit(key: string, state: GameState): GameTimeline {
     const existing = this.timelines.get(key);
     if (existing) return structuredClone(existing);
     return createGameTimeline(state);

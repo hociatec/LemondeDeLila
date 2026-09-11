@@ -1,5 +1,5 @@
-import type { GameContext } from '../game-rule-context';
-import type { EffectEngineState } from './effects-kit';
+import type { GameContext } from '../definitions/game-author-context';
+import type { EffectEngineState } from '../contracts/effect-ir';
 import type { PrimitiveEffectHandlers } from './effect-primitive-executor';
 import type { EffectTargetResolver } from './effect-target-resolver';
 

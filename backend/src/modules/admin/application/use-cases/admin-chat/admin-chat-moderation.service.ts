@@ -1,4 +1,9 @@
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { userBanUntilAfterDays } from '../../../../user/public-api';
 import {
   ADMIN_USER_REPOSITORY,
   type AdminUserRepository,
@@ -21,19 +26,27 @@ export class AdminChatModerationService {
   constructor(
     @Inject(ADMIN_USER_REPOSITORY)
     private readonly users: AdminUserRepository,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async ban(command: BanAdminChatUserCommand) {
+    assertUserId(command.userId);
+    assertUserId(command.byUserId);
+    assertDuration(command.durationDays);
     const user = await this.users.findById(command.userId);
     if (!user) {
       throw new BadRequestException('Utilisateur introuvable');
     }
 
-    const days =
-      command.durationDays && command.durationDays > 0
-        ? command.durationDays
-        : 3650;
-    const until = new Date(Date.now() + days * 24 * 60 * 60_000);
+    let until: Date;
+    try {
+      until = userBanUntilAfterDays(
+        command.durationDays ?? 3650,
+        this.clock.now(),
+      );
+    } catch {
+      throw new BadRequestException('Durée de bannissement invalide');
+    }
     user.chatBannedUntil = until;
     user.chatBanReason = this.normalizeReason(command.reason);
     await this.users.save(user);
@@ -48,6 +61,8 @@ export class AdminChatModerationService {
   }
 
   async unban(command: UnbanAdminChatUserCommand) {
+    assertUserId(command.userId);
+    assertUserId(command.byUserId);
     const user = await this.users.findById(command.userId);
     if (!user) {
       throw new BadRequestException('Utilisateur introuvable');
@@ -66,6 +81,23 @@ export class AdminChatModerationService {
 
   private normalizeReason(reason?: string | null): string | null {
     const normalized = (reason ?? '').trim();
-    return normalized.length > 0 ? normalized : null;
+    if (!normalized) return null;
+    return normalized.length > 255 ? normalized.substring(0, 255) : normalized;
+  }
+}
+
+function assertUserId(value: unknown): asserts value is number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+    throw new BadRequestException('Identifiant utilisateur invalide');
+  }
+}
+
+function assertDuration(value: unknown): asserts value is number | null | undefined {
+  if (
+    value !== undefined &&
+    value !== null &&
+    (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0 || value > 36_500)
+  ) {
+    throw new BadRequestException('Durée de bannissement invalide');
   }
 }

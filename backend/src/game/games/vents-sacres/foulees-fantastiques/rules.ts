@@ -1,16 +1,19 @@
-import {
-  rejectRule,
-  defineGamePhases,
-  rollDice,
-} from '../../../engine/sdk/public-api';
 import type { GameContext, PawnMove } from '../../../engine/sdk/public-api';
+import {
+  defineChoice,
+  defineGamePhases,
+  gameInput,
+  rejectRule,
+  rollDice,
+  sequentialPawnSelection,
+} from '../../../engine/sdk/public-api';
 import { FOULEES_BOARD, FOULEES_FAMILIES } from './content';
 import type { FouleesPawn, FouleesPendingMove, FouleesState } from './types';
 
 type RuleContext = GameContext<FouleesState>;
 export const FOULEES_PHASES = defineGamePhases<FouleesState>()({
   initialPhase: 'setup',
-  phases: { setup: {}, turn: {} },
+  phases: { setup: { transitions: ['turn'] }, turn: { terminal: true } },
 });
 const PAWN_SET = 'foulees';
 
@@ -35,7 +38,7 @@ export const roll = rollDice<FouleesState>({
       id: 'foulees.move',
       player: playerId,
       options: moves.map(encodeMove),
-      data: { actorId: playerId, roll: total },
+      data: { actorId: playerId },
       label: (encoded) => describeMove(playerId, encoded, ctx),
     });
   },
@@ -43,38 +46,22 @@ export const roll = rollDice<FouleesState>({
 
 export const FOULEES_ACTIONS = { roll };
 
-export function resolveFamilyChoice(
-  _state: FouleesState,
-  familyId: string,
-  actorId: number,
-  ctx: RuleContext,
-): void {
-  const family = FOULEES_FAMILIES.find(
-    (candidate) => candidate.id === familyId,
-  );
-  if (!family) rejectRule('Famille Foulées invalide');
-  if (
-    ctx.players
-      .all()
-      .some((player) => selectedFamilyId(player.id, ctx) === familyId)
-  ) {
-    rejectRule('Cette famille est déjà choisie');
-  }
-  for (const pawnIndex of family.pawns.keys()) {
-    ctx.pawns.assign(PAWN_SET, actorId, `${familyId}:${pawnIndex}`);
-  }
-  const next = ctx.players
-    .all()
-    .find((player) => ctx.pawns.assigned(PAWN_SET, player.id).length === 0);
-  if (next) {
-    ctx.turn.to(next.id);
-    requestFamily(_state, next.id, ctx);
-  } else {
+const familySelection = sequentialPawnSelection<FouleesState>({
+  setId: PAWN_SET,
+  choiceId: 'foulees.family',
+  groups: FOULEES_FAMILIES.map((family) => ({
+    id: family.id,
+    label: family.family + ' (' + family.habitat + ')',
+    pawnIds: family.pawns.map((_, index) => family.id + ':' + index),
+  })),
+  complete: ({ ctx }) => {
     FOULEES_PHASES.transition(ctx, 'turn');
     const first = ctx.players.all()[0];
     if (first) ctx.turn.to(first.id);
-  }
-}
+  },
+});
+
+export const setupGame = familySelection.setup(() => ({}));
 
 export function resolvePawnChoice(
   _state: FouleesState,
@@ -83,36 +70,15 @@ export function resolvePawnChoice(
 ): void {
   const pending = ctx.choice.consumeContinuation<FouleesPendingMove>();
   if (!pending) rejectRule('Déplacement Foulées introuvable');
-  const move = fouleesMoves(pending.actorId, pending.roll, ctx).find(
+  const total = ctx.dice.last('main')?.total;
+  if (total == null) rejectRule('Lancer Foulées introuvable');
+  const move = fouleesMoves(pending.actorId, total, ctx).find(
     (candidate) => encodeMove(candidate) === value,
   );
   if (!move) rejectRule('Déplacement Foulées invalide');
   moveFouleesPawn(pending.actorId, move, ctx);
-  if (pending.roll === 6) ctx.turn.extra();
+  if (total === 6) ctx.turn.extra();
   ctx.turn.complete();
-}
-
-export function requestFamily(
-  _state: FouleesState,
-  playerId: number,
-  ctx: RuleContext,
-): void {
-  const taken = new Set(
-    ctx.players
-      .all()
-      .map((player) => selectedFamilyId(player.id, ctx))
-      .filter((familyId): familyId is string => familyId != null),
-  );
-  const options = FOULEES_FAMILIES.filter((family) => !taken.has(family.id));
-  ctx.choice.one({
-    id: 'foulees.family',
-    player: playerId,
-    options: options.map((family) => family.id),
-    label: (familyId) => {
-      const family = FOULEES_FAMILIES.find((entry) => entry.id === familyId);
-      return family ? `${family.family} (${family.habitat})` : familyId;
-    },
-  });
 }
 
 function fouleesMoves(
@@ -279,3 +245,15 @@ function playerOffset(playerId: number, ctx: RuleContext): number {
     Math.floor((FOULEES_BOARD.trackLength * 3) / 4),
   ][Math.max(0, index)];
 }
+
+export const GAME_CHOICES = {
+  'foulees.family': defineChoice<FouleesState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ actor, value, ctx }) =>
+      familySelection.resolve(actor.id, value, ctx),
+  }),
+  'foulees.move': defineChoice<FouleesState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ state, value, ctx }) => resolvePawnChoice(state, value, ctx),
+  }),
+};

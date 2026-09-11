@@ -1,10 +1,12 @@
-import type { GameRuntime } from '../application/contracts/game-runtime.interface';
-import type { GameSingleActionDto } from '../application/contracts/game-action.model';
+import type { GamePendingEvent } from '../application/models/game-event.model';
+import { drainPendingGameEvents } from '../application/services/game-event-buffer';
+import type { GameRuntime } from '../application/ports/game-runtime.port';
+import type { GameSingleActionDto } from '../application/models/game-action.model';
 import {
   FixedGameClock,
   StateGameRng,
-} from '../application/contracts/game-execution-context.model';
-import type { GameStateEntity } from '../application/contracts/game-state.model';
+} from '../application/models/game-execution-context.model';
+import type { GameState } from '../application/models/game-state.model';
 import { GameExecutionScopeService } from '../application/services/game-execution-scope.service';
 
 export type GameSimulationStatus =
@@ -19,7 +21,8 @@ export type GameSimulationResult = {
   eventFrequency: Record<string, number>;
   cardFrequency: Record<string, number>;
   error?: string;
-  finalState: GameStateEntity;
+  finalState: GameState;
+  events: GamePendingEvent[];
 };
 
 export type GameSimulationReport = {
@@ -36,7 +39,7 @@ export type GameSimulationReport = {
   results: GameSimulationResult[];
 };
 
-type RuntimeState = GameStateEntity & {
+type RuntimeState = GameState & {
   engine?: {
     pendingEvents?: Array<{ type?: unknown; data?: unknown }>;
     match?: { result?: { winnerPlayerIds?: number[] } | null };
@@ -48,7 +51,7 @@ type SimulationContext = {
   clock: FixedGameClock;
   startedAtMs: number;
   maxCommands: number;
-  observedEvents: number;
+  events: GamePendingEvent[];
   eventFrequency: Record<string, number>;
   cardFrequency: Record<string, number>;
 };
@@ -59,7 +62,7 @@ export class GameSimulator {
 
   run(
     runtime: GameRuntime,
-    initialState: GameStateEntity,
+    initialState: GameState,
     options: { maxCommands?: number; startAtMs?: number } = {},
   ): GameSimulationResult {
     const state = structuredClone(initialState) as RuntimeState;
@@ -77,7 +80,7 @@ export class GameSimulator {
       clock: new FixedGameClock(startedAtMs),
       startedAtMs,
       maxCommands: Math.max(1, options.maxCommands ?? 2_000),
-      observedEvents: 0,
+      events: [],
       eventFrequency: {},
       cardFrequency: {},
     };
@@ -99,11 +102,10 @@ export class GameSimulator {
     for (let commands = 0; commands < context.maxCommands; commands += 1) {
       this.collectEvents(
         context.state,
-        context.observedEvents,
+        context.events,
         context.eventFrequency,
         context.cardFrequency,
       );
-      context.observedEvents = context.state.engine?.pendingEvents?.length ?? 0;
       if (this.finished(context.state)) {
         return this.simulationResult(context, 'finished', commands);
       }
@@ -151,12 +153,13 @@ export class GameSimulator {
       context.state,
       context.eventFrequency,
       context.cardFrequency,
+      context.events,
     );
   }
 
   runMany(
     runtime: GameRuntime,
-    createInitialState: (simulationIndex: number) => GameStateEntity,
+    createInitialState: (simulationIndex: number) => GameState,
     options: {
       games?: number;
       maxCommands?: number;
@@ -202,7 +205,7 @@ export class GameSimulator {
 
   private nextBotAction(
     runtime: GameRuntime,
-    state: GameStateEntity,
+    state: GameState,
   ): GameSingleActionDto | null {
     const players = state.players ?? [];
     const currentPlayerId = state.turn?.currentPlayerId;
@@ -261,11 +264,13 @@ export class GameSimulator {
 
   private collectEvents(
     state: RuntimeState,
-    from: number,
+    events: GamePendingEvent[],
     eventFrequency: Record<string, number>,
     cardFrequency: Record<string, number>,
   ): void {
-    for (const event of state.engine?.pendingEvents?.slice(from) ?? []) {
+    const pending = drainPendingGameEvents(state);
+    events.push(...pending);
+    for (const event of pending) {
       const type = typeof event.type === 'string' ? event.type : 'unknown';
       eventFrequency[type] = (eventFrequency[type] ?? 0) + 1;
       if (!event.data || typeof event.data !== 'object') continue;
@@ -291,13 +296,9 @@ export class GameSimulator {
     state: RuntimeState,
     eventFrequency: Record<string, number>,
     cardFrequency: Record<string, number>,
+    events: GamePendingEvent[],
   ): GameSimulationResult {
-    this.collectEvents(
-      state,
-      Object.values(eventFrequency).reduce((total, count) => total + count, 0),
-      eventFrequency,
-      cardFrequency,
-    );
+    this.collectEvents(state, events, eventFrequency, cardFrequency);
     const winnerPlayerIds = [
       ...(state.engine?.match?.result?.winnerPlayerIds ?? []),
     ];
@@ -313,6 +314,7 @@ export class GameSimulator {
       eventFrequency,
       cardFrequency,
       finalState: structuredClone(state),
+      events: structuredClone(events),
     };
   }
 }

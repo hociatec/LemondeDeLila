@@ -12,6 +12,7 @@ import {
 import { RedisHealthIndicator } from '../../../checks/redis.health';
 import { BullmqHealthIndicator } from '../../../checks/bullmq.health';
 import { RuntimeHealthIndicator } from '../../../checks/runtime.health';
+import { databasePoolSaturation } from '../../../checks/database-pool-saturation';
 
 @Controller('health')
 export class HealthController {
@@ -67,21 +68,12 @@ export class HealthController {
   }
 
   private recordDatabasePoolSaturation(): void {
-    const driver = this.dataSource.driver as unknown as {
-      pool?: {
-        _allConnections?: { length: number };
-        _freeConnections?: { length: number };
-        config?: { connectionLimit?: number };
-      };
-    };
-    const pool = driver.pool;
-    const total = pool?._allConnections?.length ?? 0;
-    const free = pool?._freeConnections?.length ?? 0;
-    const limit = pool?.config?.connectionLimit ?? total;
+    const saturation = databasePoolSaturation(this.dataSource.driver);
+    if (saturation === null) return;
     prometheusMetrics.setDependencySaturation(
       'database',
       'connection-pool',
-      limit > 0 ? (total - free) / limit : 0,
+      saturation,
     );
   }
 }

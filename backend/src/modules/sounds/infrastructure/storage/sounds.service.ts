@@ -13,13 +13,13 @@ import {
   assertStorageCapacity,
   StorageCapacityError,
   writeFileAtomic,
-} from '../../../../shared/utils/public-api';
+} from '../../../../platform/filesystem/public-api';
 import { readEnvironment } from '../../../../platform/config/public-api';
 import {
   SOUND_KEYS,
   SoundKey,
   SoundManifest,
-} from '../../application/contracts/sound-manifest.record';
+} from '../../application/read-models/sound-manifest.record';
 import {
   NOTIFICATION_DISPATCHER,
   type NotificationDispatcher,
@@ -34,7 +34,12 @@ import {
   probeSoundDurationSeconds,
   transcodeSoundToStableWav,
 } from './sounds-audio.utils';
-import { SoundsMaintenanceManager } from './sounds-maintenance.manager';
+import {
+  SoundsReencoder,
+  type SoundsMaintenanceDeps,
+} from './sounds-reencoder';
+import { diagnoseSounds } from './sounds-diagnostics';
+import { cleanupUnusedSounds } from './sounds-cleanup';
 import { SoundsTableAmbiencesManager } from './sounds-table-ambiences.manager';
 import { SoundsUploadManager } from './sounds-upload.manager';
 
@@ -42,7 +47,8 @@ import { SoundsUploadManager } from './sounds-upload.manager';
 export class SoundsService {
   private readonly logger = new Logger(SoundsService.name);
   private readonly storageRoot: string;
-  private readonly maintenance: SoundsMaintenanceManager;
+  private readonly reencoder: SoundsReencoder;
+  private readonly maintenanceDeps: SoundsMaintenanceDeps;
   private readonly tableAmbiences: SoundsTableAmbiencesManager;
   private readonly uploads: SoundsUploadManager;
 
@@ -51,7 +57,7 @@ export class SoundsService {
     private readonly notifications: NotificationDispatcher,
   ) {
     this.storageRoot = resolveSoundsDataRoot();
-    this.maintenance = new SoundsMaintenanceManager({
+    this.maintenanceDeps = {
       dataRoot: () => this.storageRoot,
       readManifest: () => this.readManifest(),
       writeManifest: (manifest) => this.writeManifest(manifest),
@@ -75,7 +81,8 @@ export class SoundsService {
         }),
       warn: (message) => this.logger.warn(message),
       now: () => new Date().toISOString(),
-    });
+    };
+    this.reencoder = new SoundsReencoder(this.maintenanceDeps);
     this.tableAmbiences = new SoundsTableAmbiencesManager({
       filePath: () => path.join(this.storageRoot, 'table-ambiences.json'),
       normalizeSoundKey,
@@ -173,6 +180,10 @@ export class SoundsService {
   private async readManifest(): Promise<SoundManifest> {
     const file = path.join(this.storageRoot, 'manifest.json');
     try {
+      const stat = await fs.promises.stat(file);
+      if (!stat.isFile() || stat.size > 1 * 1024 * 1024) {
+        throw new BadRequestException('manifest audio trop volumineux');
+      }
       const raw = await fs.promises.readFile(file, 'utf-8');
       const parsed = decodeSoundManifest(
         JSON.parse(raw.replace(/^\uFEFF/, '')),
@@ -255,8 +266,14 @@ export class SoundsService {
     soundIdRaw: string,
     tempFilePath: string,
     originalName?: string,
+    mimeType?: string,
   ) {
-    return this.uploads.setSound(soundIdRaw, tempFilePath, originalName);
+    return this.uploads.setSound(
+      soundIdRaw,
+      tempFilePath,
+      originalName,
+      mimeType,
+    );
   }
 
   async clearSound(soundIdRaw: string): Promise<{ ok: true }> {
@@ -294,19 +311,19 @@ export class SoundsService {
   }
 
   async reencodeAllSounds() {
-    return this.maintenance.reencodeAll();
+    return this.reencoder.reencodeAll();
   }
 
   async reencodeInvalidSounds() {
-    return this.maintenance.reencodeInvalid();
+    return this.reencoder.reencodeInvalid();
   }
 
   async diagnoseSounds() {
-    return this.maintenance.diagnose();
+    return diagnoseSounds(this.maintenanceDeps);
   }
 
   async cleanupUnusedSounds() {
-    return this.maintenance.cleanupUnused();
+    return cleanupUnusedSounds(this.maintenanceDeps);
   }
 
   async resolveSoundFile(soundIdRaw: string, shaFromUrl?: string | null) {

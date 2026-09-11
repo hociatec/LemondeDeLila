@@ -1,5 +1,5 @@
-import type { GameSingleActionDto } from '../../../core/application/contracts/game-action.model';
-import type { GameRng } from '../../../core/application/contracts/game-execution-context.model';
+import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
+import type { GameRng } from '../../../core/application/models/game-execution-context.model';
 
 export function randomLegalAction(
   actions: readonly GameSingleActionDto[],

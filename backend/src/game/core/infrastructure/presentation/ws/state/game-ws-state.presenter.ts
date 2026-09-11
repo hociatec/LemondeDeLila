@@ -2,16 +2,16 @@ import { Injectable } from '@nestjs/common';
 import type {
   GameRuntime,
   GameRuntimeDescriptor,
-} from '../../../../application/contracts/game-runtime.interface';
-import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
-import type { GameStateWithActions } from '../../../../application/contracts/game-action.model';
+} from '../../../../application/ports/game-runtime.port';
+import type { GameState } from '../../../../application/models/game-state.model';
+import type { GameStateWithActions } from '../../../../application/models/game-action.model';
 import type { GameShortcutHint } from '../../../../../shortcuts/public-api';
 import { projectDiceActionView } from '../../../../../engine/runtime/projection/dice-action-view';
 import { GameVisibilityService } from '../../../../application/services/game-visibility.service';
 import { GameWsStateMessagesPresenter } from './game-ws-state-messages.presenter';
 
 type PresentStateInput = {
-  state: GameStateEntity;
+  state: GameState;
   handler: GameRuntime;
   roomId: number;
   gameType: string;
@@ -41,7 +41,7 @@ export class GameWsStatePresenter {
       this.visibility.project(
         input.state,
         exposedByGame,
-        Number(input.viewerPlayerId ?? 0) || null,
+        this.safeViewerId(input.viewerPlayerId),
       ),
     );
     const presentation = this.presentation(input.handler);
@@ -52,7 +52,7 @@ export class GameWsStatePresenter {
     );
     const system = this.messages.withServerMessages(
       this.asRecord(exposed.system),
-      Number(input.viewerPlayerId ?? 0) || null,
+      this.safeViewerId(input.viewerPlayerId),
       presentation,
     );
     return {
@@ -60,7 +60,7 @@ export class GameWsStatePresenter {
       kits,
       roomId: input.roomId,
       gameType: input.gameType,
-      viewerPlayerId: Number(input.viewerPlayerId ?? 0) || null,
+      viewerPlayerId: this.safeViewerId(input.viewerPlayerId),
       runId:
         typeof input.state.metadata?.roomRunId === 'number'
           ? input.state.metadata.roomRunId
@@ -80,11 +80,11 @@ export class GameWsStatePresenter {
 
   private expose(
     handler: GameRuntime,
-    state: GameStateEntity,
+    state: GameState,
     viewerPlayerId?: number | null,
   ): GameStateWithActions {
-    const viewerId = Number(viewerPlayerId ?? 0);
-    if (Number.isFinite(viewerId) && viewerId > 0) {
+    const viewerId = this.safeViewerId(viewerPlayerId);
+    if (viewerId !== null) {
       return handler.exposeStateForUser(state, viewerId);
     }
     return handler.exposeStateForUser(state, null);
@@ -92,7 +92,7 @@ export class GameWsStatePresenter {
 
   private resolveShortcuts(
     handler: GameRuntime,
-    state: GameStateEntity,
+    state: GameState,
     exposed: GameStateWithActions,
     kits: Record<string, unknown>,
   ): GameShortcutHint[] {
@@ -208,5 +208,10 @@ export class GameWsStatePresenter {
   private isActiveMatchStatus(value: unknown): boolean {
     const status = this.stringValue(value).toLowerCase();
     return status === 'started' || status === 'playing';
+  }
+
+  private safeViewerId(value: unknown): number | null {
+    const id = Number(value ?? 0);
+    return Number.isSafeInteger(id) && id > 0 ? id : null;
   }
 }

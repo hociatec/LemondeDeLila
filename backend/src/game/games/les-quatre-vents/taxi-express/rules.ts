@@ -1,5 +1,6 @@
 import {
   defineAction,
+  thresholdVictory,
   drawEvent,
   gameInput,
 } from '../../../engine/sdk/public-api';
@@ -56,13 +57,18 @@ export const roll = defineAction<TaxiState, Record<string, never>>({
       ctx.movement.move(TRACK, actor.id, -destination);
       discardClient(actor.id, client, ctx);
     } else if (destination === client.destinationId - 1) {
-      const completedTrips = ctx.score.add(actor.id, 1);
+      ctx.score.add(actor.id, 1);
       ctx.events.message('taxi.client.delivered', {
         playerId: actor.id,
         clientId: client.id,
       });
       discardClient(actor.id, client, ctx);
-      if (completedTrips >= TAXI_TARGET_TRIPS) {
+      const outcome = thresholdVictory<TaxiState>({
+        kind: 'score-at-least',
+        amount: TAXI_TARGET_TRIPS,
+        participants: 'all',
+      }).evaluate({ state: {}, ctx });
+      if (outcome?.winnerPlayerIds.includes(actor.id)) {
         ctx.match.finish({ winners: [actor.id], reason: 'five-trips' });
       } else ensureClient(actor.id, ctx);
     }

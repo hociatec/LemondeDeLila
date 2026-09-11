@@ -14,10 +14,23 @@ export class GameRankingController {
     playerIds: readonly number[],
     ...criteria: readonly RankingCriterion[]
   ): RankingEntry[] {
+    if (
+      new Set(playerIds).size !== playerIds.length ||
+      playerIds.some((id) => !Number.isSafeInteger(id) || id === 0)
+    ) {
+      throw new GameRuleViolationError('RANKING_PARTICIPANTS_INVALID');
+    }
     const entries = playerIds.map((playerId) => ({
       playerId,
       values: criteria.map((criterion) => criterion.value(playerId)),
     }));
+    if (
+      entries.some((entry) =>
+        entry.values.some((value) => !Number.isFinite(value)),
+      )
+    ) {
+      throw new GameRuleViolationError('RANKING_CRITERION_INVALID');
+    }
     entries.sort((left, right) => {
       for (const [index, criterion] of criteria.entries()) {
         const factor = criterion.direction === 'asc' ? 1 : -1;
@@ -61,3 +74,4 @@ export class GameRankingController {
     return this.tiers(playerIds, ...criteria)[0] ?? [];
   }
 }
+import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';

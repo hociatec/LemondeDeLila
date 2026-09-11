@@ -3,7 +3,7 @@ import { getErrorMessage } from '@shared/utils/public-api';
 import {
   BOT_SETTINGS_REPOSITORY,
   type BotSettingsRepository,
-} from '../contracts/bot-settings.repository';
+} from '../ports/bot-settings.repository';
 
 export type BotSettings = {
   botTurnDelayMs: number;
@@ -20,7 +20,7 @@ type BotSettingsRoot = {
 @Injectable()
 export class BotSettingsService implements OnModuleInit {
   private readonly logger = new Logger(BotSettingsService.name);
-  private static sharedCache: BotSettingsRoot | null = null;
+  private cache: BotSettingsRoot | null = null;
 
   private static readonly DEFAULT_TURN_DELAY_MS = 600;
   private static readonly DEFAULT_START_DELAY_MS = 250;
@@ -81,7 +81,7 @@ export class BotSettingsService implements OnModuleInit {
       botStartDelayMs: root.botStartDelayMs,
       botDrawDelayMs: root.botDrawDelayMs,
     });
-    BotSettingsService.sharedCache = {
+    this.cache = {
       botTurnDelayMs: root.botTurnDelayMs,
       botStartDelayMs: root.botStartDelayMs,
       botDrawDelayMs: root.botDrawDelayMs,
@@ -95,7 +95,7 @@ export class BotSettingsService implements OnModuleInit {
 
   private clampDelay(value: number): number {
     const candidate = Number(value);
-    if (!Number.isFinite(candidate)) {
+    if (!Number.isSafeInteger(candidate)) {
       return BotSettingsService.DEFAULT_TURN_DELAY_MS;
     }
     const rounded = Math.round(candidate);
@@ -109,8 +109,8 @@ export class BotSettingsService implements OnModuleInit {
   }
 
   private getRoot(): BotSettingsRoot {
-    if (BotSettingsService.sharedCache) {
-      return BotSettingsService.sharedCache;
+    if (this.cache) {
+      return this.cache;
     }
     return {
       botTurnDelayMs: BotSettingsService.DEFAULT_TURN_DELAY_MS,
@@ -120,12 +120,12 @@ export class BotSettingsService implements OnModuleInit {
   }
 
   private async ensureSeeded(): Promise<void> {
-    if (BotSettingsService.sharedCache) return;
+    if (this.cache) return;
 
     try {
       const existing = await this.repo.findSettings();
       if (existing) {
-        BotSettingsService.sharedCache = {
+        this.cache = {
           botTurnDelayMs: this.clampDelay(existing.botTurnDelayMs),
           botStartDelayMs: this.clampDelay(existing.botStartDelayMs),
           botDrawDelayMs: this.clampDelay(existing.botDrawDelayMs),
@@ -141,7 +141,7 @@ export class BotSettingsService implements OnModuleInit {
         botStartDelayMs: startDelay,
         botDrawDelayMs: drawDelay,
       });
-      BotSettingsService.sharedCache = {
+      this.cache = {
         botTurnDelayMs: delay,
         botStartDelayMs: startDelay,
         botDrawDelayMs: drawDelay,
@@ -150,7 +150,7 @@ export class BotSettingsService implements OnModuleInit {
       this.logger.warn(
         `Impossible de charger/initialiser bot_settings: ${getErrorMessage(error)}`,
       );
-      BotSettingsService.sharedCache = {
+      this.cache = {
         botTurnDelayMs: BotSettingsService.DEFAULT_TURN_DELAY_MS,
         botStartDelayMs: BotSettingsService.DEFAULT_START_DELAY_MS,
         botDrawDelayMs: BotSettingsService.DEFAULT_DRAW_DELAY_MS,

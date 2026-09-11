@@ -1,15 +1,15 @@
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
-import type { DeclarativeState } from '../definitions/game-definition';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
+import type { TurnRuntimeState } from '../contracts/turn-runtime-state';
 import type { GameLifecycleHooks } from './game-lifecycle-hooks';
-import type { GameContext } from '../game-rule-context';
+import type { GameContext } from '../definitions/game-author-context';
 import type { TurnPolicy } from '../kits/turn-kit';
 import { GameTurnSchedule } from './game-turn-schedule';
 
 export class GameTurnController<TState extends object> {
-  private readonly schedule: GameTurnSchedule<TState>;
+  private readonly schedule: GameTurnSchedule;
 
   constructor(
-    private readonly runtime: DeclarativeState<TState>,
+    private readonly runtime: TurnRuntimeState<TState>,
     private readonly turnPolicy: TurnPolicy,
     private readonly lifecycleHooks: GameLifecycleHooks<TState>,
     private readonly contextProvider: () => GameContext<TState>,
@@ -33,6 +33,15 @@ export class GameTurnController<TState extends object> {
 
   readonly api = {
     is: (playerId: number) => this.runtime.turn?.currentPlayerId === playerId,
+    requireCurrent: (playerId: number) => {
+      if (this.runtime.turn?.currentPlayerId !== playerId) {
+        this.reject(
+          'NOT_CURRENT_PLAYER',
+          { playerId },
+          "Ce n'est pas votre tour",
+        );
+      }
+    },
     number: () => this.runtime.turn?.turnNumber ?? 0,
     direction: () => this.runtime.turn?.direction ?? 1,
     end: () => this.endTurn(),
@@ -214,7 +223,7 @@ export class GameTurnController<TState extends object> {
   }
 
   private resetActionPoints(
-    turn: NonNullable<DeclarativeState<TState>['turn']>,
+    turn: NonNullable<TurnRuntimeState<TState>['turn']>,
   ): void {
     if (this.turnPolicy.kind === 'action-points') {
       turn.actionPointsRemaining = this.turnPolicy.actionPoints ?? 1;
@@ -279,9 +288,9 @@ export class GameTurnController<TState extends object> {
   }
 
   private completeWaiting(sessionId?: string): boolean {
+    if (this.runtime.turn?.simultaneousSessionId == null) return false;
     const target =
       sessionId ?? this.runtime.turn?.simultaneousSessionId ?? null;
-    if (target == null || this.waitingPlayers(target).length > 0) return false;
     if (
       this.runtime.turn?.simultaneousSessionId != null &&
       this.runtime.turn.simultaneousSessionId !== target
@@ -291,6 +300,7 @@ export class GameTurnController<TState extends object> {
         received: target,
       });
     }
+    if (target == null || this.waitingPlayers(target).length > 0) return false;
     const turn =
       this.runtime.turn ??
       this.turnPolicy.initialize(this.runtime.players ?? []);
@@ -304,7 +314,7 @@ export class GameTurnController<TState extends object> {
     return true;
   }
 
-  readonly adjacentPlayer = (offset: 1 | -1): PlayerStateEntity | null => {
+  readonly adjacentPlayer = (offset: 1 | -1): PlayerState | null => {
     const players = this.match.activePlayers();
     if (players.length === 0) return null;
     const currentId = this.runtime.turn?.currentPlayerId;
@@ -318,7 +328,7 @@ export class GameTurnController<TState extends object> {
   readonly playerAtOffset = (
     playerId: number,
     offset: number,
-  ): PlayerStateEntity | null => {
+  ): PlayerState | null => {
     const players = this.runtime.players ?? [];
     if (players.length === 0) return null;
     const index = players.findIndex((player) => player.id === playerId);
@@ -332,7 +342,7 @@ export class GameTurnController<TState extends object> {
   private emitTurnTransition(
     endedPlayerId: number | null,
     endedTurnNumber: number,
-    next: NonNullable<DeclarativeState<TState>['turn']>,
+    next: NonNullable<TurnRuntimeState<TState>['turn']>,
   ): void {
     this.events.engine('turn.ended', {
       playerId: endedPlayerId,

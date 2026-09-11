@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import {
   ROLE_DEFINITION_REPOSITORY,
   type RoleDefinitionRepository,
@@ -29,21 +29,23 @@ export class AdminRoleDefinitionsCatalogService implements OnModuleInit {
 
     await this.ensureSeeded();
     const all = await this.roles.findAll();
-    const definitions = all.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+    if (all.length > MAX_ROLE_DEFINITIONS) {
+      throw new BadRequestException('Trop de définitions de rôles.');
+    }
+    const definitions = all
+      .map((definition) => normalizeRoleDefinition(definition))
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
     this.cache = definitions;
     return definitions;
   }
 
   async create(definition: RoleDefinition): Promise<void> {
+    const normalized = normalizeRoleDefinition(definition);
     const current = await this.list();
-    if (current.some((role) => role.name === definition.name)) {
-      throw new AdminRoleAlreadyExistsError(definition.name);
+    if (current.some((role) => role.name === normalized.name)) {
+      throw new AdminRoleAlreadyExistsError(normalized.name);
     }
-    await this.roles.insert({
-      name: definition.name,
-      description: definition.description,
-      permissions: definition.permissions ?? [],
-    });
+    await this.roles.insert(normalized);
     this.cache = null;
   }
 
@@ -57,7 +59,10 @@ export class AdminRoleDefinitionsCatalogService implements OnModuleInit {
       throw new AdminRoleNotFoundError(name);
     }
 
-    const nextName = update.name ?? current.name;
+    const nextName =
+      update.name === undefined
+        ? current.name
+        : normalizeRoleName(update.name);
     if (nextName !== name) {
       const existing = await this.roles.findByName(nextName);
       if (existing) {
@@ -67,8 +72,14 @@ export class AdminRoleDefinitionsCatalogService implements OnModuleInit {
 
     await this.roles.update(name, {
       name: nextName,
-      description: update.description ?? current.description,
-      permissions: update.permissions ?? current.permissions ?? [],
+      description:
+        update.description === undefined
+          ? current.description
+          : normalizeRoleDescription(update.description),
+      permissions:
+        update.permissions === undefined
+          ? current.permissions
+          : normalizeRolePermissions(update.permissions),
     });
     this.cache = null;
   }
@@ -117,4 +128,52 @@ export class AdminRoleDefinitionsCatalogService implements OnModuleInit {
     await this.roles.saveMany(definitions);
     this.cache = null;
   }
+}
+
+const MAX_ROLE_DEFINITIONS = 128;
+const MAX_ROLE_NAME_LENGTH = 100;
+const MAX_ROLE_DESCRIPTION_LENGTH = 255;
+const MAX_ROLE_PERMISSIONS = 64;
+const MAX_ROLE_PERMISSION_LENGTH = 100;
+
+function normalizeRoleDefinition(definition: RoleDefinition): RoleDefinition {
+  return {
+    name: normalizeRoleName(definition?.name),
+    description: normalizeRoleDescription(definition?.description),
+    permissions: normalizeRolePermissions(definition?.permissions),
+  };
+}
+
+function normalizeRoleName(value: unknown): string {
+  const normalized = typeof value === 'string' ? value.trim() : '';
+  if (!normalized || normalized.length > MAX_ROLE_NAME_LENGTH) {
+    throw new BadRequestException('Nom de rôle invalide.');
+  }
+  return normalized;
+}
+
+function normalizeRoleDescription(value: unknown): string {
+  const normalized = typeof value === 'string' ? value.trim() : '';
+  if (normalized.length > MAX_ROLE_DESCRIPTION_LENGTH) {
+    throw new BadRequestException('Description de rôle trop longue.');
+  }
+  return normalized;
+}
+
+function normalizeRolePermissions(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length > MAX_ROLE_PERMISSIONS) {
+    throw new BadRequestException('Permissions de rôle invalides.');
+  }
+  const permissions = value.map((permission) =>
+    typeof permission === 'string' ? permission.trim() : '',
+  );
+  if (
+    permissions.some(
+      (permission) =>
+        !permission || permission.length > MAX_ROLE_PERMISSION_LENGTH,
+    )
+  ) {
+    throw new BadRequestException('Permissions de rôle invalides.');
+  }
+  return [...new Set(permissions)];
 }

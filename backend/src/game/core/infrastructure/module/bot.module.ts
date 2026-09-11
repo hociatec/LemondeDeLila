@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BOT_SETTINGS_REPOSITORY } from '../../application/contracts/bot-settings.repository';
+import { BOT_SETTINGS_REPOSITORY } from '../../application/ports/bot-settings.repository';
 import { BotRunnerService } from '../../application/services/bot-runner.service';
 import { BotSettingsService } from '../../application/services/bot-settings.service';
 import { BotSettingsEntity } from '../persistence/typeorm/entities/bot-settings.entity';

@@ -18,7 +18,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as os from 'os';
 import * as path from 'path';
-import { bestEffort } from '../../../../../../shared/utils/public-api';
+import { bestEffort } from '../../../../../../platform/observability/public-api';
 import {
   AdminRoleGuard,
   HttpJwtGuard,
@@ -37,6 +37,7 @@ type TableAmbienceEnabledBody = {
 type UploadedFileLike = {
   path?: string;
   originalname?: string;
+  mimetype?: string;
 };
 
 @Controller('api/admin/sounds')
@@ -135,6 +136,7 @@ export class AdminSoundsController {
         soundId,
         file.path,
         file.originalname,
+        file.mimetype,
       );
       return { ok: true, sound: entry };
     } catch (err) {

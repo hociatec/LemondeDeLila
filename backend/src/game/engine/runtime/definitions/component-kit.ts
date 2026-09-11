@@ -1,5 +1,5 @@
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
-import type { GameContext } from '../game-rule-context';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
+import type { GameContext } from './game-author-context';
 import type {
   CardSetsDefinition,
   CardZoneDefinition,
@@ -100,7 +100,7 @@ export function overrideInitialization(
 
 export function installGameComponents<TState extends object>(
   components: readonly GameComponentDefinition[],
-  players: readonly PlayerStateEntity[],
+  players: readonly PlayerState[],
   context: GameContext<TState>,
 ): void {
   for (const component of components) {
@@ -144,7 +144,7 @@ export function installGameComponents<TState extends object>(
 export function resetGameComponents<TState extends object>(
   scope: GameComponentScope,
   components: readonly GameComponentDefinition[],
-  players: readonly PlayerStateEntity[],
+  players: readonly PlayerState[],
   context: GameContext<TState>,
 ): void {
   const scoped = components.filter(
@@ -187,7 +187,7 @@ export function resetGameComponents<TState extends object>(
 
 export function initializeGameComponents<TState extends object>(
   initialization: GameInitialization | undefined,
-  players: readonly PlayerStateEntity[],
+  players: readonly PlayerState[],
   context: GameContext<TState>,
 ): void {
   if (!initialization) return;

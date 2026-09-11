@@ -1,3 +1,4 @@
+import { CONTES_TRACK } from './constants';
 import { defineEffect, gameInput } from '../../../engine/sdk/public-api';
 import {
   applyTarget,
@@ -6,13 +7,11 @@ import {
   drainResolution,
   extendTurnStatus,
   moveContesAndResolve,
-  contesPosition,
   previousMalus,
   queueDraws,
   requestAbundance,
   requestLaughter,
   requestOption,
-  rollDie,
   scheduleContesTarget,
   swapClosestBehind,
 } from './resolution';
@@ -38,7 +37,7 @@ export const CONTES_EFFECTS = {
     }),
     apply: ({ state, targetPlayerIds, data, ctx }) => {
       for (const playerId of targetPlayerIds) {
-        const roll = rollDie(ctx);
+        const roll = ctx.dice.roll('main').total;
         const delta =
           data.mode === 'double'
             ? roll * 2
@@ -143,7 +142,7 @@ export const CONTES_EFFECTS = {
       if (playerId == null) return;
       ctx.status.add(playerId, CONTES_STATUSES.blocked, {
         scope: 'until-used',
-        data: { position: contesPosition(playerId, ctx) },
+        data: { position: ctx.movement.position(CONTES_TRACK, playerId) },
       });
     },
   }),
@@ -158,7 +157,8 @@ export const CONTES_EFFECTS = {
     input: gameInput.object({}),
     apply: ({ targetPlayerIds, ctx }) => {
       const playerId = targetPlayerIds[0];
-      if (playerId != null && rollDie(ctx) < 4) ctx.turn.skip(playerId, 1);
+      if (playerId != null && ctx.dice.roll('main').total < 4)
+        ctx.turn.skip(playerId, 1);
     },
   }),
   'contes.previous-malus': defineEffect<ContesState, Record<string, never>>({

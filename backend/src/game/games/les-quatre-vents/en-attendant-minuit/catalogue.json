@@ -1,0 +1,1277 @@
+{
+  "tiles": [
+    {
+      "n": 1,
+      "title": "Village du Père Noël",
+      "type": "start",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 2,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 3,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 4,
+      "title": "Événement de Noël",
+      "type": "move",
+      "delta": 3,
+      "skipTurns": 0
+    },
+    {
+      "n": 5,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 6,
+      "title": "Événement de Noël",
+      "type": "move",
+      "delta": -1,
+      "skipTurns": 0
+    },
+    {
+      "n": 7,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 8,
+      "title": "Obstacle de Noël",
+      "type": "skip",
+      "delta": 0,
+      "skipTurns": 1
+    },
+    {
+      "n": 9,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 10,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 11,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 12,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 13,
+      "title": "Obstacle de Noël",
+      "type": "skip",
+      "delta": 0,
+      "skipTurns": 1
+    },
+    {
+      "n": 14,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 15,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 16,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 17,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 18,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 19,
+      "title": "Événement de Noël",
+      "type": "move",
+      "delta": -3,
+      "skipTurns": 0
+    },
+    {
+      "n": 20,
+      "title": "Événement de Noël",
+      "type": "move",
+      "delta": 2,
+      "skipTurns": 0
+    },
+    {
+      "n": 21,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 22,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 23,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 24,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 25,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 26,
+      "title": "Obstacle de Noël",
+      "type": "skip",
+      "delta": 0,
+      "skipTurns": 1
+    },
+    {
+      "n": 27,
+      "title": "Événement de Noël",
+      "type": "move",
+      "delta": 1,
+      "skipTurns": 0
+    },
+    {
+      "n": 28,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 29,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 30,
+      "title": "Événement de Noël",
+      "type": "move",
+      "delta": -1,
+      "skipTurns": 0
+    },
+    {
+      "n": 31,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 32,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 33,
+      "title": "Événement de Noël",
+      "type": "move",
+      "delta": -2,
+      "skipTurns": 0
+    },
+    {
+      "n": 34,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 35,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 36,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 37,
+      "title": "Événement de Noël",
+      "type": "move",
+      "delta": 2,
+      "skipTurns": 0
+    },
+    {
+      "n": 38,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 39,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 40,
+      "title": "Obstacle de Noël",
+      "type": "skip",
+      "delta": 0,
+      "skipTurns": 1
+    },
+    {
+      "n": 41,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 42,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 43,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 44,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 45,
+      "title": "Événement de Noël",
+      "type": "move",
+      "delta": -1,
+      "skipTurns": 0
+    },
+    {
+      "n": 46,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 47,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 48,
+      "title": "Événement de Noël",
+      "type": "move",
+      "delta": 1,
+      "skipTurns": 0
+    },
+    {
+      "n": 49,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 50,
+      "title": "Obstacle de Noël",
+      "type": "skip",
+      "delta": 0,
+      "skipTurns": 1
+    },
+    {
+      "n": 51,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 52,
+      "title": "Carte Noël",
+      "type": "card",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 53,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 54,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 55,
+      "title": "Chemin enneigé",
+      "type": "neutral",
+      "delta": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 56,
+      "title": "La Grande Fête de Noël",
+      "type": "finish",
+      "delta": 0,
+      "skipTurns": 0
+    }
+  ],
+  "pawns": [
+    {
+      "id": "lutin",
+      "name": "Le Lutin"
+    },
+    {
+      "id": "bonhomme-de-neige",
+      "name": "Le Bonhomme de Neige"
+    },
+    {
+      "id": "fee-des-flocons",
+      "name": "La Fée des Flocons"
+    },
+    {
+      "id": "pere-noel",
+      "name": "Le Père Noël"
+    },
+    {
+      "id": "renne",
+      "name": "Le Renne"
+    },
+    {
+      "id": "bonhomme-pain-epices",
+      "name": "Le Petit Bonhomme en Pain d’Épices"
+    }
+  ],
+  "cards": [
+    {
+      "id": 1,
+      "title": "Traîneau miniature",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Bonnet du Père Noël",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.roll",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Chocolat magique",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Gant chauffant",
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "minuit.ignore-next-malus",
+          "scope": "until-used"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Luge de vitesse",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move-to-type",
+          "data": {
+            "type": "card",
+            "direction": "forward"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Sac à jouets",
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Chaussures de lutin",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Cadeau-surprise",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.gift",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "minuit.gift",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Écharpe magique",
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "minuit.ignore-next-skip",
+          "scope": "until-used"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Baguette des fées",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.swap",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "minuit.swap",
+            "optional": true
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Lettre bien rédigée",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Bougie de l’Avent",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Bonnet envolé",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Étoile filante",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Bonhomme joueur",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Dessin d’enfant",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Renne enrhumé",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Guirlande facétieuse",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Chocolat chaud",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Cadeau perdu",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Carte de vœux",
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Labyrinthe de sucre",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move-to-type",
+          "data": {
+            "type": "card",
+            "direction": "backward"
+          }
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "Chant d’enfants",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "title": "Traîneau bloqué",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "title": "Panneaux échangés",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": -3
+          }
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "title": "Dé caché",
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "minuit.force-draw-next-turn",
+          "scope": "until-used"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "title": "Farce dans les bottes",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "title": "Glissade provoquée",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "title": "Faux cadeau",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "title": "Avancée volée",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.swap-behind",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "title": "Lutin farceur",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "title": "Moustache en sucre",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "title": "Danse de lutins",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 3,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "title": "Chapeau de clown",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "minuit",
+          "spaces": 1,
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "title": "Sapin surprise",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move",
+          "data": {
+            "delta": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "title": "Chemin embrouillé",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "minuit.move-to-type",
+          "data": {
+            "type": "neutral",
+            "direction": "backward"
+          }
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "title": "Petit Papa Noël",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quelle est la deuxième phrase ?",
+        "choices": [
+          "Il me tarde tant",
+          "Quand tu descendras du ciel",
+          "Avec des jouets"
+        ],
+        "correctIndex": 1,
+        "successDelta": 2,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 38,
+      "title": "Vive le vent",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quel est le titre original ?",
+        "choices": [
+          "Winter Wonderland",
+          "Silent Night",
+          "Jingle Bells"
+        ],
+        "correctIndex": 2,
+        "successDelta": 3,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 39,
+      "title": "Douce nuit",
+      "effects": [],
+      "quiz": {
+        "prompt": "En quelle année fut-elle composée ?",
+        "choices": [
+          "1808",
+          "1818",
+          "1828"
+        ],
+        "correctIndex": 1,
+        "successDelta": 2,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 40,
+      "title": "Mon beau sapin",
+      "effects": [],
+      "quiz": {
+        "prompt": "De quel pays vient la chanson ?",
+        "choices": [
+          "Allemagne",
+          "Suède",
+          "Italie"
+        ],
+        "correctIndex": 0,
+        "successDelta": 2,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 41,
+      "title": "Minuit, chrétiens",
+      "effects": [],
+      "quiz": {
+        "prompt": "Qui en est le compositeur ?",
+        "choices": [
+          "Schubert",
+          "Beethoven",
+          "Adolphe Adam"
+        ],
+        "correctIndex": 2,
+        "successDelta": 3,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 42,
+      "title": "Petit renne",
+      "effects": [],
+      "quiz": {
+        "prompt": "En quelle année fut-elle publiée ?",
+        "choices": [
+          "1939",
+          "1949",
+          "1955"
+        ],
+        "correctIndex": 1,
+        "successDelta": 1,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 43,
+      "title": "Noël blanc",
+      "effects": [],
+      "quiz": {
+        "prompt": "Qui popularisa White Christmas ?",
+        "choices": [
+          "Frank Sinatra",
+          "Bing Crosby",
+          "Dean Martin"
+        ],
+        "correctIndex": 1,
+        "successDelta": 2,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 44,
+      "title": "Les anges",
+      "effects": [],
+      "quiz": {
+        "prompt": "Dans quelle langue était l’original ?",
+        "choices": [
+          "Français",
+          "Italien",
+          "Espagnol"
+        ],
+        "correctIndex": 0,
+        "successDelta": 1,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 45,
+      "title": "Divin enfant",
+      "effects": [],
+      "quiz": {
+        "prompt": "De quel siècle date le chant ?",
+        "choices": [
+          "19e",
+          "18e",
+          "17e"
+        ],
+        "correctIndex": 1,
+        "successDelta": 2,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 46,
+      "title": "Gloria",
+      "effects": [],
+      "quiz": {
+        "prompt": "Que signifie Gloria in excelsis Deo ?",
+        "choices": [
+          "Gloire au monde",
+          "Chantons",
+          "Gloire à Dieu"
+        ],
+        "correctIndex": 2,
+        "successDelta": 3,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 47,
+      "title": "Tambourin",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quel instrument accompagne les bergers ?",
+        "choices": [
+          "Claves",
+          "Triangle",
+          "Tambourin"
+        ],
+        "correctIndex": 2,
+        "successDelta": 2,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 48,
+      "title": "All I Want",
+      "effects": [],
+      "quiz": {
+        "prompt": "Qui interprète ce tube ?",
+        "choices": [
+          "Mariah Carey",
+          "Whitney Houston",
+          "Céline Dion"
+        ],
+        "correctIndex": 0,
+        "successDelta": 1,
+        "failureDelta": 0
+      }
+    },
+    {
+      "id": 49,
+      "title": "Renne guide",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quel est son nom ?",
+        "choices": [
+          "Rudolph",
+          "Dasher",
+          "Comet"
+        ],
+        "correctIndex": 0,
+        "successDelta": 1,
+        "failureDelta": -2
+      }
+    },
+    {
+      "id": 50,
+      "title": "Partage",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quelle action est généreuse ?",
+        "choices": [
+          "Garder",
+          "Offrir",
+          "Cacher"
+        ],
+        "correctIndex": 1,
+        "successDelta": 1,
+        "failureDelta": -1
+      }
+    },
+    {
+      "id": 51,
+      "title": "Sapin",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quelle couleur n’est pas citée ?",
+        "choices": [
+          "Rouge",
+          "Argent",
+          "Bleu"
+        ],
+        "correctIndex": 1,
+        "successDelta": 1,
+        "failureDelta": -1
+      }
+    },
+    {
+      "id": 52,
+      "title": "Rennes",
+      "effects": [],
+      "quiz": {
+        "prompt": "Lequel n’est pas un renne ?",
+        "choices": [
+          "Fringant",
+          "Comète",
+          "Frosty"
+        ],
+        "correctIndex": 2,
+        "successDelta": 2,
+        "failureDelta": -2
+      }
+    },
+    {
+      "id": 53,
+      "title": "Couleurs",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quel objet n’est pas rouge ?",
+        "choices": [
+          "Flocon",
+          "Houx",
+          "Boule"
+        ],
+        "correctIndex": 0,
+        "successDelta": 1,
+        "failureDelta": -1
+      }
+    },
+    {
+      "id": 54,
+      "title": "Dessert",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quel dessert français ?",
+        "choices": [
+          "Bûche",
+          "Tarte Tatin",
+          "Crêpe"
+        ],
+        "correctIndex": 0,
+        "successDelta": 1,
+        "failureDelta": -2
+      }
+    },
+    {
+      "id": 55,
+      "title": "Pied du sapin",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quel objet ne s’y trouve pas ?",
+        "choices": [
+          "Cadeau",
+          "Bougie allumée",
+          "Carte"
+        ],
+        "correctIndex": 1,
+        "successDelta": 2,
+        "failureDelta": -3
+      }
+    },
+    {
+      "id": 56,
+      "title": "Cloche",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quel est son rôle ?",
+        "choices": [
+          "Appeler les enfants",
+          "Décorer",
+          "Mesurer"
+        ],
+        "correctIndex": 0,
+        "successDelta": 1,
+        "failureDelta": -1
+      }
+    },
+    {
+      "id": 57,
+      "title": "Magie",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quel élément crée la magie ?",
+        "choices": [
+          "Guirlandes",
+          "Chocolat",
+          "Bottes"
+        ],
+        "correctIndex": 0,
+        "successDelta": 1,
+        "failureDelta": -1
+      }
+    },
+    {
+      "id": 58,
+      "title": "Bonne action",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quelle action est généreuse ?",
+        "choices": [
+          "Partager",
+          "Aider",
+          "Sourire"
+        ],
+        "correctIndex": 0,
+        "successDelta": 3,
+        "failureDelta": 0,
+        "anyCorrect": true
+      }
+    },
+    {
+      "id": 59,
+      "title": "Cadeau au Père Noël",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quel cadeau choisir ?",
+        "choices": [
+          "Un poème",
+          "Une chaussette",
+          "Du lait"
+        ],
+        "correctIndex": 0,
+        "successDelta": 2,
+        "failureDelta": -2
+      }
+    },
+    {
+      "id": 60,
+      "title": "Moment préféré",
+      "effects": [],
+      "quiz": {
+        "prompt": "Quel moment attendent les enfants ?",
+        "choices": [
+          "Cadeaux",
+          "Dîner",
+          "Dormir"
+        ],
+        "correctIndex": 0,
+        "successDelta": 1,
+        "failureDelta": -1
+      }
+    }
+  ]
+}

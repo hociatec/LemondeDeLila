@@ -1,17 +1,24 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
-import { getErrorMessage } from '@shared/utils/public-api';
+import {
+  businessMsToDate,
+  getErrorMessage,
+  requireStrictInteger,
+} from '@shared/utils/public-api';
 import type { NotificationInboxRepository } from '../../../../application/ports/notification-inbox.repository';
 import type {
   CreateNotificationInboxItemInput,
   NotificationInboxContactRow,
   NotificationInboxItemRecord,
   NotificationInboxPayload,
-} from '../../../../application/contracts/notification-inbox-item.model';
+} from '../../../../application/models/notification-inbox-item.model';
 import { NotificationInboxItemNotFoundError } from '../../../../domain/errors/notification-domain.errors';
-import { User } from '../../../../../user/public-api';
 import { NotificationInboxItemEntity } from '../entities/notification-inbox-item.entity';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../../shared/interfaces/public-api';
 
 type NotificationInboxContactRawRow = {
   id: unknown;
@@ -27,6 +34,10 @@ type NotificationInboxContactRawRow = {
   readAt: unknown;
 };
 
+const MAX_NOTIFICATION_LIST_LIMIT = 200;
+const MAX_NOTIFICATION_IDENTIFIER_LENGTH = 128;
+const MAX_NOTIFICATION_PAYLOAD_BYTES = 256 * 1024;
+
 @Injectable()
 export class NotificationInboxTypeormRepository implements NotificationInboxRepository {
   private readonly logger = new Logger(NotificationInboxTypeormRepository.name);
@@ -34,6 +45,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
   constructor(
     @InjectRepository(NotificationInboxItemEntity)
     private readonly repo: Repository<NotificationInboxItemEntity>,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async create(
@@ -41,7 +53,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
   ): Promise<NotificationInboxItemRecord> {
     const entity = this.repo.create({
       id: input.id,
-      user: { id: input.userId } as User,
+      user: { id: input.userId },
       kind: input.kind,
       contactId: input.contactId ?? null,
       fromUserId: input.fromUserId ?? null,
@@ -61,14 +73,14 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
     userId: number,
     limit = 200,
   ): Promise<NotificationInboxItemRecord[]> {
+    const safeLimit = normalizeLimit(limit, MAX_NOTIFICATION_LIST_LIMIT);
     const items = await this.repo.find({
       where: {
         user: { id: userId },
         deletedAt: IsNull(),
       },
-      order: { createdAt: 'DESC' },
-      take: limit,
-      relations: { user: true },
+      order: { createdAt: 'DESC', id: 'DESC' },
+      take: safeLimit,
     });
     return items.filter((it) => !it.deletedAt).map((it) => this.toModel(it));
   }
@@ -78,7 +90,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
     id: string,
   ): Promise<NotificationInboxItemRecord | null> {
     const cleanId = String(id || '').trim();
-    if (!cleanId) {
+    if (!cleanId || cleanId.length > MAX_NOTIFICATION_IDENTIFIER_LENGTH) {
       return null;
     }
     const item = await this.repo.findOne({
@@ -87,13 +99,12 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
         user: { id: userId },
         deletedAt: IsNull(),
       },
-      relations: { user: true },
     });
     return item ? this.toModel(item) : null;
   }
 
   async markRead(userId: number, id: string): Promise<boolean> {
-    const now = new Date();
+    const now = businessMsToDate(this.clock.now());
     const res = await this.repo
       .createQueryBuilder()
       .update(NotificationInboxItemEntity)
@@ -133,7 +144,12 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
   ): Promise<NotificationInboxContactRow[]> {
     const cleanKind = String(kind || '').trim();
     const cid = String(contactId || '').trim();
-    if (!cleanKind || !cid) {
+    if (
+      !cleanKind ||
+      !cid ||
+      cleanKind.length > MAX_NOTIFICATION_IDENTIFIER_LENGTH ||
+      cid.length > MAX_NOTIFICATION_IDENTIFIER_LENGTH
+    ) {
       return [];
     }
 
@@ -161,15 +177,29 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
       return rows
         .map((row) => ({
           id: toText(row.id),
-          userId: Number(row?.userId ?? 0),
+          userId: requireStrictInteger(row.userId, 'notification.userId', {
+            min: 1,
+          }),
           kind: toText(row.kind),
           contactId: toNullableText(row.contactId),
-          fromUserId: row?.fromUserId == null ? null : Number(row.fromUserId),
+          fromUserId:
+            row.fromUserId == null
+              ? null
+              : requireStrictInteger(
+                  row.fromUserId,
+                  'notification.fromUserId',
+                  { min: 1 },
+                ),
           fromUsername: toNullableText(row.fromUsername),
-          toUserId: row?.toUserId == null ? null : Number(row.toUserId),
+          toUserId:
+            row.toUserId == null
+              ? null
+              : requireStrictInteger(row.toUserId, 'notification.toUserId', {
+                  min: 1,
+                }),
           message: toNullableText(row.message),
           payload: this.normalizePayload(row?.payload),
-          createdAt: toDate(row.createdAt) ?? new Date(),
+          createdAt: requireStoredDate(toDate(row.createdAt)),
           readAt: toDate(row.readAt),
         }))
         .filter((row) => row.id && row.userId > 0);
@@ -186,7 +216,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
     payload: NotificationInboxPayload,
   ): Promise<boolean> {
     const clean = String(id || '').trim();
-    if (!clean) {
+    if (!clean || clean.length > MAX_NOTIFICATION_IDENTIFIER_LENGTH) {
       return false;
     }
     const item = await this.repo.findOne({
@@ -204,7 +234,13 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
   async deleteManyByIds(ids: string[]): Promise<number> {
     const clean = Array.from(
       new Set((ids ?? []).map((value) => String(value || '').trim())),
-    ).filter(Boolean);
+    )
+      .filter(
+        (value) =>
+          value.length > 0 &&
+          value.length <= MAX_NOTIFICATION_IDENTIFIER_LENGTH,
+      )
+      .slice(0, 128);
     if (clean.length === 0) {
       return 0;
     }
@@ -222,7 +258,6 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
   ): Promise<NotificationInboxItemRecord> {
     const item = await this.repo.findOne({
       where: { id },
-      relations: { user: true },
     });
     if (!item) {
       throw new NotificationInboxItemNotFoundError(
@@ -237,7 +272,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
   ): NotificationInboxItemRecord {
     return {
       id: entity.id,
-      userId: entity.user?.id ?? 0,
+      userId: entity.userId,
       kind: entity.kind,
       contactId: entity.contactId ?? null,
       fromUserId: entity.fromUserId ?? null,
@@ -252,9 +287,17 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
   }
 
   private normalizePayload(value: unknown): NotificationInboxPayload {
-    return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
-      : null;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return null;
+    }
+    try {
+      return Buffer.byteLength(JSON.stringify(value), 'utf8') <=
+        MAX_NOTIFICATION_PAYLOAD_BYTES
+        ? (value as Record<string, unknown>)
+        : null;
+    } catch {
+      return null;
+    }
   }
 }
 
@@ -270,8 +313,17 @@ function toNullableText(value: unknown): string | null {
 }
 
 function toDate(value: unknown): Date | null {
-  if (value instanceof Date) return value;
-  if (typeof value !== 'string' && typeof value !== 'number') return null;
+  if (value == null) return null;
+  if (value instanceof Date) return requireStoredDate(value);
+  if (typeof value !== 'string' && typeof value !== 'number')
+    throw new RangeError('Date persistée invalide');
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  return requireStoredDate(parsed);
 }
+
+function normalizeLimit(value: number, maximum: number): number {
+  return Number.isSafeInteger(value) && value > 0
+    ? Math.min(value, maximum)
+    : maximum;
+}
+import { requireStoredDate } from '../../../../../../shared/utils/public-api';

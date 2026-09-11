@@ -34,14 +34,14 @@ describe('RoomGateway lifecycle scenarios', () => {
       Date.now(),
     );
 
-    expect(deps.roomsService.createRoom).toHaveBeenCalledWith(
-      1,
-      'lama',
-      'Ma table',
-      5,
-      false,
-      false,
-    );
+    expect(deps.roomsService.createRoom).toHaveBeenCalledWith({
+      userId: 1,
+      gameType: 'lama',
+      name: 'Ma table',
+      maxPlayers: 5,
+      isPrivate: false,
+      invalidateCache: false,
+    });
     expect(meta.roomId).toBe(10);
     expect(meta.role).toBe('participant');
     expect(deps.roomsService.primeRoomPayloadCache).toHaveBeenCalled();

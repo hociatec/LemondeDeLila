@@ -1,4 +1,4 @@
-/** Stable V2 authoring surface for concrete games. Keep it explicit. */
+/** V6 declaration contract for concrete games. Keep the exported names explicit. */
 export {
   defineAction,
   defineChoice,
@@ -6,6 +6,8 @@ export {
 } from '../runtime/definitions/game-definition';
 export type {
   GameActionDefinition,
+  GameBotDefinition,
+  GameRuleBindings,
   NoGameState,
 } from '../runtime/definitions/game-definition';
 
@@ -13,21 +15,27 @@ export {
   boardContent,
   cardContent,
   defineGameContent,
-  freezeGameContent,
-  loadGameContent,
   quizContent,
   trackContent,
 } from '../runtime/content/game-content';
-export type { GameContent } from '../runtime/content/game-content';
+export type {
+  GameContent,
+  ContentSnapshotMigration,
+} from '../runtime/content/game-content';
+export {
+  effectContent,
+  effectContentSchema,
+} from '../runtime/content/effect-content';
+export type { EffectContentReferences } from '../runtime/content/effect-content';
 export { gameInput } from '../runtime/actions/game-input-schema';
 export { defineEvent } from '../runtime/events/game-event-definition';
 export { defineConfiguration } from '../runtime/configuration/configuration-kit';
 export type {
-  GameContext,
   GameContextFor,
   GameCounterIdOf,
   GameResourceIdOf,
 } from '../runtime/game-rule-context';
+export type { GameContext } from '../runtime/definitions/game-author-context';
 
 export { commonStatuses } from '../runtime/kits/player-values-kit';
 export {
@@ -35,6 +43,8 @@ export {
   setupPlayingPhases,
 } from '../runtime/kits/phase-kit';
 export { when, victoryWhen } from '../runtime/automation/automatic-kit';
+export { thresholdVictory } from '../runtime/automation/threshold-victory';
+export type { ThresholdVictory } from '../runtime/automation/threshold-victory';
 export { cards } from '../runtime/cards/cards-kit';
 export { defineCardsSchema } from '../runtime/cards/typed-cards';
 export { inventory } from '../runtime/kits/inventory-kit';
@@ -66,10 +76,12 @@ export {
   drawForPlayer,
   playCard,
   positionOf,
+  resolveTrackMovement,
   raceTurn,
   requestCardFromPlayer,
   rollDice,
   sequentialPawnSelection,
+  shuffledPlayerIds,
 } from '../runtime/recipes/gameplay-recipes';
 export {
   cardGame,
@@ -96,4 +108,8 @@ export {
   rejectContent,
   rejectRule,
 } from '../../core/domain/errors/game-domain.errors';
-export { testGame } from '../../core/testing/game-test-kit';
+export {
+  isRecord,
+  isArrayOf,
+  optionalNumber,
+} from '../runtime/content/content-guards';

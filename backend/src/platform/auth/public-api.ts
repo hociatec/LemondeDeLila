@@ -7,3 +7,4 @@ export {
 export type { AuthRuntimeConfig } from './application/ports/auth-runtime-config.port';
 export { AdminRoleGuard } from './infrastructure/presentation/http/admin-role.guard';
 export { HttpJwtGuard } from './infrastructure/presentation/http/http-jwt.guard';
+export { jwtUserId } from './application/services/jwt-user-identity';

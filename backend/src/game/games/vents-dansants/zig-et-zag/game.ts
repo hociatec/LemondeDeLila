@@ -1,30 +1,17 @@
 import {
-  cards,
   cardGame,
+  cards,
   defineCardsSchema,
   defineGame,
-  defineGameContent,
 } from '../../../engine/sdk/public-api';
-import { ZIG_ET_ZAG_DECK } from './content';
-import {
-  createRound,
-  ZIG_ET_ZAG_ACTIONS,
-  ZIG_ET_ZAG_PHASES,
-  zigRoundPlays,
-} from './rules';
-import type { ZigEtZagRoundSummary, ZigEtZagState } from './state';
+import { ZIG_ET_ZAG_DECK, ZIG_ET_ZAG_GAME_CONTENT } from './content';
+import manifest from './manifest.json';
+import { GAME_RULES } from './rule-bindings';
+import { ZIG_ET_ZAG_ACTIONS, ZIG_ET_ZAG_PHASES } from './rules';
+import { setupGame } from './setup-rules';
+import type { ZigEtZagState } from './state';
 
-type ZigEtZagBattleLogEntry = {
-  key: 'zig.battle.started' | 'zig.battle.continues';
-  params: { roundNumber: number };
-};
-
-type ZigEtZagPlayerView = {
-  lastRound:
-    (ZigEtZagRoundSummary & { battleLog: ZigEtZagBattleLogEntry[] }) | null;
-};
-
-const INITIAL_HAND_SIZE = 27;
+const INITIAL_HAND_SIZE = ZIG_ET_ZAG_DECK.length / 2;
 const cardSchema = defineCardsSchema({
   decks: {
     battle: cards.deck({
@@ -45,13 +32,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<ZigEtZagState>()({
-  id: 'zig-et-zag',
-  displayName: 'Zig et Zag !',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
-  description: 'Une bataille à familles, figures et jokers colorés.',
-  players: { min: 2, max: 2 },
-  content: defineGameContent('zig-et-zag', { cards: ZIG_ET_ZAG_DECK }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: ZIG_ET_ZAG_GAME_CONTENT,
   patterns: [
     cardGame({
       schema: cardSchema,
@@ -61,47 +48,10 @@ export default defineGame<ZigEtZagState>()({
   ],
   shortcuts: [{ key: 'Space', type: 'action', actionType: 'draw_card' }],
   initialization: { firstPlayer: 'first', startRound: true },
-  setup: ({ ctx }) => {
-    const round = createRound(ctx);
-    return {
-      battle: round,
-      lastRound: null,
-    };
-  },
+  setup: setupGame,
   initialPhase: ZIG_ET_ZAG_PHASES.initialPhase,
   phases: ZIG_ET_ZAG_PHASES.phases,
   actions: ZIG_ET_ZAG_ACTIONS,
-  viewExtension: ({ state, ctx }): ZigEtZagPlayerView => {
-    const summary = state.lastRound;
-    const lastRound = summary
-      ? {
-          roundNumber: summary.roundNumber,
-          roundWinnerPlayerId: summary.roundWinnerPlayerId,
-          cardsWon: summary.cardsWon,
-          plays: zigRoundPlays({
-            plays: summary.plays,
-            tiedPlayers: [],
-          }),
-          battleLog: ctx.events
-            .messages()
-            .flatMap((entry): ZigEtZagBattleLogEntry[] => {
-              if (
-                (entry.key !== 'zig.battle.started' &&
-                  entry.key !== 'zig.battle.continues') ||
-                entry.params.roundNumber !== summary.roundNumber
-              ) {
-                return [];
-              }
-              return [
-                {
-                  key: entry.key,
-                  params: { roundNumber: summary.roundNumber },
-                },
-              ];
-            }),
-        }
-      : null;
-    return { lastRound };
-  },
+  ...GAME_RULES,
   bot: { choose: () => ({ type: 'draw_card', payload: {} }) },
 });

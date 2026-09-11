@@ -1,13 +1,12 @@
-import type { GameSingleActionDto } from '../../../core/application/contracts/game-action.model';
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
+import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
 import { GameActionRejectedError } from '../../../core/domain/errors/game-domain.errors';
-import type {
-  CompiledGameDefinition,
-  DeclarativeState,
-  GameActionMap,
-} from '../definitions/game-definition';
+import type { CompiledGameDefinition } from '../contracts/compiled-game-definition';
+import type { DeclarativeState } from '../state/declarative-state';
+import type { GameActionMap } from '../contracts/author-rule-contracts';
 import type { GameContext } from '../game-rule-context';
 import { sameSerializableValue } from '../state/serializable-value';
+import { parseStrictInteger } from '../../../../shared/utils/public-api';
 
 export class DeclarativeChoiceRuntime<
   TState extends object,
@@ -19,19 +18,22 @@ export class DeclarativeChoiceRuntime<
 
   resolve(
     runtime: DeclarativeState<TState>,
-    actor: PlayerStateEntity,
+    actor: PlayerState,
     action: GameSingleActionDto,
     context: GameContext<TState>,
     timeout: boolean,
   ): void {
     this.ensureActor(runtime, actor, timeout, context.clock.nowMs());
     const data = asRecord(runtime.pending?.data);
-    const options = Array.isArray(data.options) ? data.options : [];
+    const options = Array.isArray(data.options)
+      ? data.options.slice(0, 10_000)
+      : [];
     const value = timeout
       ? timeoutValue(data, options, context)
       : asRecord(action.payload).value;
     ensureValidValue(data, options, value, timeout);
-    const choiceId = typeof data.choiceId === 'string' ? data.choiceId : '';
+    const choiceId =
+      typeof data.choiceId === 'string' ? data.choiceId.slice(0, 128) : '';
     if (context.effects.awaitsChoice(choiceId)) {
       context.choice.clear();
       context.effects.resumeChoice(choiceId, value);
@@ -51,22 +53,23 @@ export class DeclarativeChoiceRuntime<
 
   actions(
     runtime: DeclarativeState<TState>,
-    actor: PlayerStateEntity,
+    actor: PlayerState,
   ): GameSingleActionDto[] {
     if (!runtime.pending || !isExpectedActor(runtime.pending, actor.id))
       return [];
     const options = asRecord(runtime.pending.data).options;
     if (!isUnknownArray(options)) return [];
     if (isMultiChoice(asRecord(runtime.pending.data).kind)) {
+      const { minimum } = choiceBounds(asRecord(runtime.pending.data));
       return [
         {
           type: 'choice.resolve',
-          payload: { value: [] },
+          payload: { value: options.slice(0, minimum) },
           meta: { actorId: actor.id },
         },
       ];
     }
-    return options.map((value) => ({
+    return options.slice(0, 128).map((value) => ({
       type: 'choice.resolve',
       payload: { value },
       meta: { actorId: actor.id },
@@ -75,7 +78,7 @@ export class DeclarativeChoiceRuntime<
 
   ensureActor(
     runtime: DeclarativeState<TState>,
-    actor: PlayerStateEntity,
+    actor: PlayerState,
     timeout: boolean,
     nowMs: number,
   ): void {
@@ -83,8 +86,11 @@ export class DeclarativeChoiceRuntime<
       throw new GameActionRejectedError('Aucun choix pour cet acteur');
     }
     if (!timeout) return;
-    const deadline = Number(asRecord(runtime.pending.data).deadlineMs);
-    if (!Number.isFinite(deadline) || deadline > nowMs) {
+    const deadline = parseStrictInteger(
+      asRecord(runtime.pending.data).deadlineMs,
+      { min: 0 },
+    );
+    if (deadline === null || deadline > nowMs) {
       throw new GameActionRejectedError('Le choix n’a pas expiré');
     }
   }
@@ -95,9 +101,9 @@ function isExpectedActor(
   playerId: number,
 ): boolean {
   return pending.playerIds?.length
-    ? pending.playerIds.includes(playerId) &&
-        !(pending.resolvedPlayerIds ?? []).includes(playerId)
-    : pending.playerId === playerId;
+    ? pending.playerIds.some((id) => Number(id) === playerId) &&
+        !(pending.resolvedPlayerIds ?? []).some((id) => Number(id) === playerId)
+    : Number(pending.playerId) === playerId;
 }
 
 function timeoutValue<TState extends object>(
@@ -110,7 +116,7 @@ function timeoutValue<TState extends object>(
   if (data.timeoutStrategy === 'last') return options.at(-1);
   if (data.timeoutStrategy === 'random') return context.random.pick(options);
   if (!isMultiChoice(data.kind)) return options[0];
-  const minimum = Math.max(0, Number(data.min ?? 0));
+  const { minimum } = choiceBounds(data);
   return options.slice(0, minimum);
 }
 
@@ -130,8 +136,7 @@ function ensureValidValue(
   if (!Array.isArray(value))
     throw new GameActionRejectedError('Liste attendue');
   const unique = [...new Set(value)];
-  const minimum = Math.max(0, Number(data.min ?? 0));
-  const maximum = Math.max(minimum, Number(data.max ?? minimum));
+  const { minimum, maximum } = choiceBounds(data);
   if (
     unique.length !== value.length ||
     value.length < minimum ||
@@ -153,6 +158,23 @@ function ensureValidValue(
   }
 }
 
+function choiceBounds(data: Record<string, unknown>): {
+  minimum: number;
+  maximum: number;
+} {
+  const minimum = parseStrictInteger(data.min ?? 0, { min: 0 });
+  const maximum = parseStrictInteger(data.max ?? minimum, {
+    min: minimum ?? 0,
+  });
+  if (minimum === null || maximum === null) {
+    throw new GameActionRejectedError('Bornes de choix invalides');
+  }
+  if (maximum > 10_000) {
+    throw new GameActionRejectedError('Bornes de choix excessives');
+  }
+  return { minimum, maximum };
+}
+
 function isMultiChoice(kind: unknown): boolean {
   return kind === 'players' || kind === 'many' || kind === 'ordering';
 }
@@ -160,7 +182,7 @@ function isMultiChoice(kind: unknown): boolean {
 const sameValue = sameSerializableValue;
 
 function isUnknownArray(value: unknown): value is unknown[] {
-  return Array.isArray(value);
+  return Array.isArray(value) && value.length <= 10_000;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

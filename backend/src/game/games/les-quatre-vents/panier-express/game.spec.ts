@@ -1,17 +1,21 @@
-import {
-  testGame,
-  type StableGameKitsView,
-} from '../../../engine/sdk/public-api';
-import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
-import { GameSimulator } from '../../../core/testing/game-simulator';
-import {
-  PANIER_EVENTS,
-  PANIER_EXCHANGES,
-  PANIER_PAWNS,
-  PANIER_QUIZZES,
-  PANIER_TILES,
-} from './content';
-import gameDefinition from './game';
+import { testGame } from '../../../engine/testing/public-api';
+import { type StableGameKitsView } from '../../../engine/sdk/public-api';
+import { DeclarativeGameRuntime } from '../../../engine/testing/public-api';
+import { GameSimulator } from '../../../engine/testing/public-api';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import manifest from './manifest.json';
+import document from './game.json';
+
+const gameDefinition = compileJsonGame(manifest, document);
+const PANIER_TILES = document.board.tiles;
+const PANIER_EVENTS =
+  document.components.find((c) => c.id === 'events')?.cards ?? [];
+const PANIER_EXCHANGES =
+  document.components.find((c) => c.id === 'exchanges')?.cards ?? [];
+const PANIER_PAWNS =
+  document.components.find((c) => c.component === 'pawn.set')?.pawns ?? [];
+const PANIER_QUIZZES =
+  document.components.find((c) => c.component === 'quiz.bank')?.questions ?? [];
 
 describe('Panier Express declarative game', () => {
   it('declares the private information and manual draw shortcuts', () => {
@@ -159,6 +163,7 @@ describe('Panier Express declarative game', () => {
     await game.as(actor).do('roll', {});
 
     expect(game.availableActions(actor)).toContain('draw_card');
+    expect(game.availableActions(actor)).not.toContain('roll');
     expect(game.state().turn?.currentPlayerId).toBe(actor);
     expect(
       game.inspect.deckCount('events') + game.inspect.deckCount('exchanges'),
@@ -181,10 +186,11 @@ describe('Panier Express declarative game', () => {
       cardLabel: expect.any(String),
       effectDescription: expect.any(String),
     });
-    expect(game.state().pending).toMatchObject({
-      type: 'engine.choice.player',
-      playerId: actor,
-    });
+    // The sole opponent is selected automatically and has no items to swap.
+    expect(drawMessage?.data.params).toHaveProperty('cardId', 'echange-masque');
+    expect(game.state().pending).toBeNull();
+    expect(game.state().turn?.currentPlayerId).toBe(actor === 1 ? 2 : 1);
+    expect(game.availableActions(actor)).not.toContain('draw_card');
   });
 
   it('keeps bots playing through automatic cards and intermediate choices', async () => {
@@ -201,16 +207,14 @@ describe('Panier Express declarative game', () => {
     expect(result.status).not.toBe('deadlock');
     expect(result.error).toBeUndefined();
     expect(result.eventFrequency['card.drawn']).toBeGreaterThan(0);
-    const manualDrawMessages = (
-      result.finalState as unknown as {
-        engine?: {
-          pendingEvents?: Array<{
-            type: string;
-            data?: { key?: string; params?: object };
-          }>;
-        };
-      }
-    ).engine?.pendingEvents?.filter(
+    expect(result.events.length).toBeGreaterThan(128);
+    expect(
+      Object.values(result.eventFrequency).reduce(
+        (total, count) => total + count,
+        0,
+      ),
+    ).toBe(result.events.length);
+    const manualDrawMessages = result.events.filter(
       (event) =>
         event.type === 'game.message' && event.data?.key === 'game.card.drawn',
     );

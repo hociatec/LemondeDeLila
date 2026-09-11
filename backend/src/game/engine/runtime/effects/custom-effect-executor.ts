@@ -1,11 +1,11 @@
 import { GameNotFoundError } from '../../../core/domain/errors/game-domain.errors';
+import type { GameEffectResolverShape } from '../contracts/effect-resolver';
 import type {
   EffectEngineState,
   EffectSource,
   GameEffectInstruction,
-  GameEffectResolverShape,
-} from './effects-kit';
-import type { GameContext } from '../game-rule-context';
+} from '../contracts/effect-ir';
+import type { GameContext } from '../definitions/game-author-context';
 
 export function executeCustomEffect<TState extends object>(input: {
   instruction: Extract<GameEffectInstruction, { kind: 'custom' }>;

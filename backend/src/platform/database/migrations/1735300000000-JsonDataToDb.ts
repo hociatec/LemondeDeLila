@@ -1,6 +1,4 @@
 import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
-import * as fs from 'fs';
-import * as path from 'path';
 
 type RoleDefinition = {
   name: string;
@@ -297,17 +295,12 @@ export class JsonDataToDb1735300000000 implements MigrationInterface {
   }
 
   private dataPath(filename: string): string {
-    return path.resolve(process.cwd(), 'data', filename);
+    return filename;
   }
 
-  private tryReadJson<T>(filePath: string): T | null {
-    try {
-      if (!fs.existsSync(filePath)) return null;
-      const raw = fs.readFileSync(filePath, 'utf-8');
-      return JSON.parse(raw.replace(/^\uFEFF/, '')) as T;
-    } catch {
-      return null;
-    }
+  private tryReadJson<T>(_filePath: string): T | null {
+    // Migrations are autonomous: runtime files are not migration inputs.
+    return null;
   }
 
   private clampInt(

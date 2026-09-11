@@ -2,8 +2,8 @@ import type {
   AutomaticRule,
   GameActionDefinition,
   VictoryRule,
-} from '../../definitions/game-definition';
-import { defineAction } from '../../definitions/game-definition';
+} from '../../contracts/author-rule-contracts';
+import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
 import type { GameInputSchema } from '../../actions/game-input-schema';
 

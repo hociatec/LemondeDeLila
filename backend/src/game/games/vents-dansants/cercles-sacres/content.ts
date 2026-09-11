@@ -1,7 +1,12 @@
-import { freezeGameContent } from '../../../engine/sdk/public-api';
+import manifest from './manifest.json';
+import {
+  defineGameContent,
+  gameInput,
+  cardContent,
+} from '../../../engine/sdk/public-api';
 
-export type CerclesSacresTheme =
-  'totem' | 'nature' | 'plante' | 'esprit' | 'parole' | 'nation';
+import type { CerclesSacresTheme } from './types';
+export type { CerclesSacresTheme } from './types';
 
 export interface CerclesSacresCardDefinition {
   id: string;
@@ -136,10 +141,39 @@ const deck: CerclesSacresCardDefinition[] = [
   ...createThemeCards('nation', NATION_NAMES),
 ];
 
-export const CERCLES_SACRES_DECK = deck;
-export const CERCLES_SACRES_CARD_BY_ID = Object.fromEntries(
-  deck.map((card) => [card.id, card]),
-);
+const deckSchema = gameInput.object({
+  cards: gameInput.array(
+    gameInput.object({
+      id: gameInput.string({ min: 1, max: 128 }),
+      name: gameInput.string({ min: 1, max: 200 }),
+      theme: gameInput.enum([
+        'totem',
+        'nature',
+        'plante',
+        'esprit',
+        'parole',
+        'nation',
+      ]),
+    }),
+    { min: 1, max: 10000 },
+  ),
+});
+export const CERCLES_SACRES_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  { cards: deck },
+  {
+    schema: {
+      parse(value: unknown) {
+        const parsed = deckSchema.parse(value);
 
-freezeGameContent(CERCLES_SACRES_DECK);
-freezeGameContent(CERCLES_SACRES_CARD_BY_ID);
+        return { cards: cardContent(parsed.cards) };
+      },
+    },
+  },
+);
+export const CERCLES_SACRES_DECK = CERCLES_SACRES_GAME_CONTENT.data.cards;
+export const CERCLES_SACRES_CARD_BY_ID: Readonly<
+  Record<string, CerclesSacresCardDefinition>
+> = Object.freeze(
+  Object.fromEntries(CERCLES_SACRES_DECK.map((card) => [card.id, card])),
+);

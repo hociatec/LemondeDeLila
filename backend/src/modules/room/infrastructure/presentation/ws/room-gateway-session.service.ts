@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import type { RoomPayload } from '../../../application/contracts/room-payload.model';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
+import { businessMsToIso } from '@shared/utils/public-api';
 import { RoomClientPolicyService } from '../../../application/services/membership/room-client-policy.service';
 import { RoomStateService } from '../../../application/services/state/room-state.service';
 import { RoomChatStore } from './room-chat-state';
@@ -8,6 +12,7 @@ import { RoomGatewaySessionPresenter } from './room-gateway-session.presenter';
 import type { ClientMeta } from './room-gateway.types';
 import { buildRoomInfoMessage } from './room-info.helpers';
 import { listVisibleSpectators } from './room-roster';
+import { projectRoomRoster } from './room-roster-projection';
 
 type SessionContext = {
   clients: Map<WebSocket, ClientMeta>;
@@ -17,7 +22,6 @@ type SessionContext = {
   sendError: (client: WebSocket, message: string) => Promise<void>;
   safeSend: (client: WebSocket, payload: unknown) => void;
   broadcast: (roomId: number, type: string, payload: unknown) => Promise<void>;
-  applySpectators: (roomId: number, payload: RoomPayload) => void;
 };
 
 @Injectable()
@@ -26,6 +30,7 @@ export class RoomGatewaySessionService {
     private readonly clientPolicy: RoomClientPolicyService,
     private readonly roomState: RoomStateService,
     private readonly presenter: RoomGatewaySessionPresenter,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async sendChatHistoryToClient(
@@ -49,7 +54,7 @@ export class RoomGatewaySessionService {
     client: WebSocket,
     meta: ClientMeta,
   ): Promise<void> {
-    if (!meta.roomId || meta.roomId <= 0) {
+    if (!Number.isSafeInteger(meta.roomId) || meta.roomId <= 0) {
       await ctx.sendError(client, this.presenter.presentNoRoomError());
       return;
     }
@@ -68,7 +73,7 @@ export class RoomGatewaySessionService {
     data: unknown,
     asRecord: (value: unknown) => Record<string, unknown>,
   ): Promise<void> {
-    if (!meta.roomId || meta.roomId <= 0) {
+    if (!Number.isSafeInteger(meta.roomId) || meta.roomId <= 0) {
       await ctx.sendError(client, this.presenter.presentNoRoomError());
       return;
     }
@@ -82,7 +87,7 @@ export class RoomGatewaySessionService {
       return;
     }
 
-    const now = Date.now();
+    const now = this.clock.now();
     if (!ctx.roomChat.tryConsumeCooldown(client, now)) {
       await ctx.sendError(
         client,
@@ -96,11 +101,15 @@ export class RoomGatewaySessionService {
       return;
     }
 
-    const chatMessage = ctx.roomChat.appendMessage(meta.roomId, {
-      userId: meta.userId,
-      username: meta.username,
-      message,
-    });
+    const chatMessage = ctx.roomChat.appendMessage(
+      meta.roomId,
+      {
+        userId: meta.userId,
+        username: meta.username,
+        message,
+      },
+      businessMsToIso(this.clock.now()),
+    );
 
     await ctx.broadcast(meta.roomId, 'room.chat.message', chatMessage);
   }
@@ -111,11 +120,11 @@ export class RoomGatewaySessionService {
     meta: ClientMeta,
   ): Promise<void> {
     const roomId = meta.roomId;
-    if (!Number.isFinite(roomId) || roomId <= 0) {
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) {
       return;
     }
 
-    const state = await this.roomState.getRoomPayload(roomId);
+    const state = structuredClone(await this.roomState.getRoomPayload(roomId));
     state.room.spectators = listVisibleSpectators(ctx.clients.values(), roomId);
     state.room.counts.spectators = state.room.spectators.length;
 
@@ -133,9 +142,10 @@ export class RoomGatewaySessionService {
         return false;
       }
       const state = await this.roomState.getRoomPayload(roomId);
-      return this.clientPolicy.canSpectate(state, userId, () =>
-        invitesCanSpectate(roomId, userId),
-      );
+      const access = this.clientPolicy.spectatorAccess(state, userId);
+      return access === 'invitation'
+        ? invitesCanSpectate(roomId, userId)
+        : access === 'allow';
     } catch {
       return false;
     }
@@ -153,8 +163,11 @@ export class RoomGatewaySessionService {
     roomId: number,
   ): Promise<void> {
     try {
-      const leftPayload = await this.roomState.getRoomPayload(roomId);
-      ctx.applySpectators(roomId, leftPayload);
+      const leftPayload = projectRoomRoster(
+        await this.roomState.getRoomPayload(roomId),
+        ctx.clients.values(),
+        roomId,
+      );
       ctx.safeSend(socket, this.presenter.presentRoomLeft(roomId, leftPayload));
     } catch {
       ctx.safeSend(socket, this.presenter.presentRoomDeleted(roomId));

@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import type { Relation } from 'typeorm';
-import { User } from '../../../../../user/public-api';
-import { Room } from './room.entity';
+import type { RoomPersistenceRef } from './room.persistence-ref';
+import type { RoomUserPersistenceRef } from './room-user.persistence-ref';
 
 @Entity({ name: 'room_participants' })
 @Index('idx_room_participants_room_active_joined', [
@@ -22,13 +22,13 @@ export class RoomParticipant {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => Room, { onDelete: 'CASCADE' })
+  @ManyToOne('Room', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'room_id' })
-  room!: Relation<Room>;
+  room!: Relation<RoomPersistenceRef>;
 
-  @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
+  @ManyToOne('User', { eager: true })
   @JoinColumn({ name: 'user_id' })
-  user!: Relation<User>;
+  user!: Relation<RoomUserPersistenceRef>;
 
   @Column({ type: 'varchar', length: 20, default: 'player' })
   role!: string;

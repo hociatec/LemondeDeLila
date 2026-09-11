@@ -1,0 +1,12 @@
+'use strict';
+const assert = require('node:assert/strict');
+require('ts-node').register({ transpileOnly: true });
+const { compileJsonGame } = require('../src/game/engine/runtime/definitions/json-game-compiler');
+const manifest = require('../src/game/games/les-quatre-vents/panier-express/manifest.json');
+const document = require('../src/game/games/les-quatre-vents/panier-express/game.json');
+const definition = compileJsonGame(manifest, document);
+const decks = definition.components.filter(c => c.component === 'cards.deck');
+assert.equal(decks.reduce((sum, deck) => sum + deck.cards.length, 0), 58);
+for (const deck of decks) for (const card of deck.cards) assert.ok(Array.isArray(card.effects));
+assert.equal(Object.keys(document.board.bindings).length, 5);
+console.log('Panier effects: 58 canonical cards, 5 engine-owned declarative bindings; references validated');

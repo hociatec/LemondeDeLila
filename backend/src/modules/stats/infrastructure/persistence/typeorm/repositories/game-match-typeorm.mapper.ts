@@ -1,9 +1,9 @@
 import type { Repository } from 'typeorm';
-import type { GameMatchRecord } from '../../../../application/contracts/game-match.model';
+import type { GameMatchRecord } from '../../../../application/models/game-match.model';
 import type {
   GameMatchPlayerRecord,
   GameMatchSummary,
-} from '../../../../application/contracts/game-match-player.model';
+} from '../../../../application/models/game-match-player.model';
 import { GameMatchEntity } from '../entities/game-match.entity';
 import { GameMatchPlayerEntity } from '../entities/game-match-player.entity';
 

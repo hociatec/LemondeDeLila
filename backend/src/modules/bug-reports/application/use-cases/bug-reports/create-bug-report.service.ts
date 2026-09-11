@@ -1,12 +1,26 @@
 import { randomUUID } from 'crypto';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
 import type { BugReportRepository } from '../../ports/bug-report.repository';
 import type {
   BugReportRecord,
   BugReportStatus,
-} from '../../contracts/bug-report.record';
+} from '../../read-models/bug-report.record';
+import { businessMsToDate } from '../../../../../shared/utils/public-api';
 
+const MAX_BUG_REPORT_SUBJECT_LENGTH = 200;
+const MAX_BUG_REPORT_CONTENT_LENGTH = 20_000;
+const MAX_BUG_REPORT_USERNAME_LENGTH = 100;
+
+@Injectable()
 export class CreateBugReportService {
-  constructor(private readonly repo: BugReportRepository) {}
+  constructor(
+    private readonly repo: BugReportRepository,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
+  ) {}
 
   async execute(input: {
     subject: string;
@@ -14,15 +28,27 @@ export class CreateBugReportService {
     createdByUserId: number;
     createdByUsername: string;
   }): Promise<BugReportRecord> {
-    const now = new Date();
+    const now = businessMsToDate(this.clock.now());
+    const subject = String(input.subject ?? '').trim();
+    const content = String(input.content ?? '').trim();
+    const createdByUsername =
+      String(input.createdByUsername ?? '').trim() || 'admin';
+    if (
+      subject.length > MAX_BUG_REPORT_SUBJECT_LENGTH ||
+      content.length > MAX_BUG_REPORT_CONTENT_LENGTH ||
+      createdByUsername.length > MAX_BUG_REPORT_USERNAME_LENGTH ||
+      !Number.isSafeInteger(input.createdByUserId) ||
+      input.createdByUserId <= 0
+    ) {
+      throw new Error('Données de signalement invalides.');
+    }
     return this.repo.save({
       id: randomUUID(),
-      subject: String(input.subject ?? '').trim(),
-      content: String(input.content ?? '').trim(),
+      subject,
+      content,
       status: 'pending' satisfies BugReportStatus,
-      createdByUserId: Number(input.createdByUserId || 0),
-      createdByUsername:
-        String(input.createdByUsername ?? '').trim() || 'admin',
+      createdByUserId: input.createdByUserId,
+      createdByUsername,
       createdAt: now,
       updatedAt: now,
     });

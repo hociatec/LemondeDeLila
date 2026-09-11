@@ -1,18 +1,14 @@
 import { ConfigModule } from '@nestjs/config';
+import { BusinessClockModule } from '../../../platform/time/public-api';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UpdateModule } from '../../update/public-api';
-import { PrivateMessageEntity } from '../../messaging/infrastructure/persistence/typeorm/entities/private-message.entity';
-import { SocialRelationshipEntity } from '../../social/infrastructure/persistence/typeorm/entities/social-relationship.entity';
-import { UserModule } from '../../user/public-api';
+import { UpdateModule } from '../../update/composition-api';
+import { UserModule } from '../../user/composition-api';
 import { NotificationInboxItemEntity } from '../infrastructure/persistence/typeorm/entities/notification-inbox-item.entity';
 
 export const NOTIFICATION_MODULE_IMPORTS = [
+  BusinessClockModule,
   ConfigModule,
   UpdateModule,
   UserModule,
-  TypeOrmModule.forFeature([
-    SocialRelationshipEntity,
-    NotificationInboxItemEntity,
-    PrivateMessageEntity,
-  ]),
+  TypeOrmModule.forFeature([NotificationInboxItemEntity]),
 ];

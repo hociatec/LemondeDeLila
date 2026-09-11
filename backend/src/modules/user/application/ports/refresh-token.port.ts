@@ -9,4 +9,5 @@ export interface RefreshTokenServicePort {
   issue(userId: number): Promise<string>;
   rotate(refreshToken: string): Promise<RefreshTokenRotation | null>;
   revoke(refreshToken: string): Promise<void>;
+  revokeAllForUser?(userId: number): Promise<void>;
 }

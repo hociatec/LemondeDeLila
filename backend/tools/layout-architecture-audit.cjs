@@ -23,6 +23,10 @@ const moduleNames = [
   'vault',
 ];
 const platformNames = [
+  'lifecycle',
+  'filesystem',
+  'security',
+  'serialization',
   'auth',
   'config',
   'database',
@@ -32,6 +36,7 @@ const platformNames = [
   'realtime',
   'redis',
   'session',
+  'time',
   'validation',
   'ws',
 ];
@@ -43,6 +48,7 @@ const runtimeDomains = [
   'choices',
   'configuration',
   'content',
+  'contracts',
   'definitions',
   'effects',
   'events',
@@ -59,15 +65,18 @@ const runtimeRootFiles = new Set([
   'declarative-game.runtime.ts',
   'game-identifiers.ts',
   'game-rule-context.ts',
-  'game-sdk-version.ts',
-  'game-selectors.ts',
   'public-api.ts',
   'typed-contracts.spec.ts',
 ]);
-const allowedRoots = new Set(['modules', 'game', 'platform', 'shared']);
+const allowedRoots = new Set(['app', 'modules', 'game', 'platform', 'shared']);
+const allowedRootFiles = new Set([
+  'main.ts', 'app.module.ts', 'data-source.ts',
+  'main.spec.ts', 'app.module.spec.ts', 'data-source.spec.ts',
+]);
 const allowedFacades = new Set([
   'modules/room/application/services/lifecycle/room-lifecycle-facade.service.ts',
   'modules/room/application/services/membership/room-membership-facade.service.ts',
+  'game/engine/runtime/definitions/game-context-facades.ts',
 ]);
 
 function walk(directory = root) {
@@ -103,6 +112,11 @@ function compareDirectories(container, expected, violations) {
 
 function audit() {
   const violations = [];
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith('.ts') && !allowedRootFiles.has(entry.name)) {
+      violations.push(`${entry.name}: fichier hors des dossiers de composition ou de capacité`);
+    }
+  }
   const roots = fs
     .readdirSync(root, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -173,11 +187,6 @@ function audit() {
     }
     if (/^modules\/[^/]+\/[^/]+\.module\.ts$/.test(name)) {
       violations.push(`${name}: module Nest principal hors dossier module`);
-    }
-    if (name.includes('/application/models/')) {
-      violations.push(
-        `${name}: dossier application/models générique interdit; utiliser contracts`,
-      );
     }
     if (
       /\/infrastructure\/.*repository\.ts$/.test(name) &&

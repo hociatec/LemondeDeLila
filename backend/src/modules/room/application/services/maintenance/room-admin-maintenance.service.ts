@@ -1,3 +1,4 @@
+import { allCompleted } from '../../../../../shared/utils/public-api';
 import {
   BadRequestException,
   Inject,
@@ -12,9 +13,9 @@ import {
   ROOM_REPOSITORY,
   type RoomRepository,
 } from '../../ports/room.repository';
-import { OPEN_ROOM_STATUSES } from '../../contracts/room-status.model';
-import type { RoomRecord } from '../../contracts/room-record.model';
-import type { RoomUserRecord } from '../../contracts/room-user.model';
+import { OPEN_ROOM_STATUSES } from '../../models/room-status.model';
+import type { RoomRecord } from '../../models/room-record.model';
+import type { RoomUserRecord } from '../../models/room-user.model';
 import { RoomRealtimeTrackerService } from '../state/room-realtime-tracker.service';
 import { RoomRuntimeStateService } from '../state/room-runtime-state.service';
 
@@ -54,13 +55,7 @@ export class RoomAdminMaintenanceService {
     ctx: RoomAdminContext,
     roomId: number,
   ): Promise<{ ok: true; roomId: number }> {
-    const id =
-      typeof roomId === 'number' && Number.isFinite(roomId) && roomId > 0
-        ? Math.floor(roomId)
-        : 0;
-    if (id <= 0) {
-      throw new BadRequestException('roomId invalide.');
-    }
+    const id = requirePositiveSafeId(roomId, 'roomId invalide.');
 
     const existing = await this.rooms.exists(id);
     if (!existing) {
@@ -82,6 +77,9 @@ export class RoomAdminMaintenanceService {
     userId: number,
     newOwnerId: number,
   ): Promise<RoomRecord> {
+    requirePositiveSafeId(roomId, 'roomId invalide.');
+    requirePositiveSafeId(userId, 'userId invalide.');
+    requirePositiveSafeId(newOwnerId, 'newOwnerId invalide.');
     const room = await ctx.requireRoom(roomId);
     ctx.ensureOwner(room, userId);
     const user = await ctx.requireUser(newOwnerId);
@@ -98,12 +96,15 @@ export class RoomAdminMaintenanceService {
     roomId: number,
     userId: number,
   ): Promise<RoomRecord> {
+    requirePositiveSafeId(roomId, 'roomId invalide.');
+    requirePositiveSafeId(userId, 'userId invalide.');
     const room = await ctx.requireRoom(roomId);
     ctx.ensureOwner(room, userId);
     return room;
   }
 
   async saveRoom(ctx: RoomAdminContext, room: RoomRecord): Promise<RoomRecord> {
+    requirePositiveSafeId(room?.id, 'roomId invalide.');
     const saved = await this.rooms.save(room);
     await ctx.invalidateRoomPayloadCache(saved.id);
     await this.roomEvents.publishLobbyChanged(saved.id, 'updated');
@@ -119,7 +120,10 @@ export class RoomAdminMaintenanceService {
     const includePrivate = opts?.includePrivate !== false;
     const joinableOnly = opts?.joinableOnly === true;
     const includeStarted = joinableOnly ? false : opts?.includeStarted === true;
-    const limit = Math.min(Math.max(1, opts?.limit ?? 200), 1000);
+    const requestedLimit = opts?.limit ?? 200;
+    const limit = Number.isSafeInteger(requestedLimit)
+      ? Math.min(Math.max(1, requestedLimit), 1000)
+      : 200;
 
     const rooms = await this.rooms.listForAdmin({
       includePrivate,
@@ -173,13 +177,16 @@ export class RoomAdminMaintenanceService {
     const includeStarted = opts?.includeStarted === true;
     const dryRun = opts?.dryRun === true;
     const excludeActivePlayers = opts?.excludeActivePlayers !== false;
-    const limit = Math.min(Math.max(1, opts?.limit ?? 1000), 5000);
+    const requestedLimit = opts?.limit ?? 1000;
+    const limit = Number.isSafeInteger(requestedLimit)
+      ? Math.min(Math.max(1, requestedLimit), 5000)
+      : 1000;
 
     const olderThanMinutes =
       typeof opts?.olderThanMinutes === 'number' &&
-      Number.isFinite(opts.olderThanMinutes) &&
+      Number.isSafeInteger(opts.olderThanMinutes) &&
       opts.olderThanMinutes > 0
-        ? Math.floor(opts.olderThanMinutes)
+        ? Math.min(opts.olderThanMinutes, 365 * 24 * 60)
         : null;
 
     const roomIds = await this.rooms.listCleanupCandidateIds({
@@ -189,9 +196,12 @@ export class RoomAdminMaintenanceService {
       limit,
     });
 
+    const safeRoomIds = roomIds.filter(
+      (id): id is number => Number.isSafeInteger(id) && id > 0,
+    );
     const filteredRoomIds = excludeActivePlayers
-      ? roomIds.filter((id) => !this.realtimeTracker.hasActivePlayers(id))
-      : roomIds;
+      ? safeRoomIds.filter((id) => !this.realtimeTracker.hasActivePlayers(id))
+      : safeRoomIds;
 
     if (dryRun) {
       return {
@@ -206,7 +216,7 @@ export class RoomAdminMaintenanceService {
     }
 
     await this.rooms.delete(filteredRoomIds);
-    await Promise.all(
+    await allCompleted(
       filteredRoomIds.map(async (id) => {
         await ctx.invalidateRoomPayloadCache(id);
         await this.roomEvents.publishLobbyChanged(id, 'deleted');
@@ -220,5 +230,12 @@ export class RoomAdminMaintenanceService {
       roomIds: filteredRoomIds,
     };
   }
+}
+
+function requirePositiveSafeId(value: unknown, message: string): number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+    throw new BadRequestException(message);
+  }
+  return value;
 }
 /** Room application capability boundary. */

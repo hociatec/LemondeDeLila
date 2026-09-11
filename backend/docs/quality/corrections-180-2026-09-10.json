@@ -1,0 +1,2069 @@
+{
+  "snapshot": "corriger.txt supplied for the 2026-09-10 request; IDs are not those of earlier 744-point reports",
+  "requested": 180,
+  "validated": 124,
+  "open": 56,
+  "lots": [
+    {
+      "lot": 1,
+      "requested": 60,
+      "validated": 51
+    },
+    {
+      "lot": 2,
+      "requested": 60,
+      "validated": 55
+    },
+    {
+      "lot": 3,
+      "requested": 60,
+      "validated": 18
+    }
+  ],
+  "validation": {
+    "typecheck": "passed",
+    "build": "passed after final compiler changes; compiled AppModule loads",
+    "jest": "280 suites / 1323 tests passed; 80 engine/game suites / 366 tests passed after final compiler graph protection",
+    "architecture": "0 violations; baseline not expanded",
+    "limitations": [
+      "No live MySQL/Redis multi-instance integration campaign run.",
+      "First three lots are not complete."
+    ],
+    "afterFinalLoaderOptimization": "50 targeted restoration/runtime/JSON integration tests passed; typecheck and build rerun successfully",
+    "toolTests": "57 tool regression tests passed: 29 SDK/game architecture and 28 architecture/double-cast/runtime graph/separation",
+    "runtimeCycles": "0 cycles across 152 production runtime files, including type imports, re-exports, dynamic imports and aliases; 0 execution-to-compiler dependency paths",
+    "jsonSmoke": "Actual generated JSON package compiled and played to victory with the production build",
+    "sdk": "79 public exports preserved; 105 declaration files reviewed and refreshed for internal contract moves at SDK 5.2.0; SDK contract check passed"
+  },
+  "points": [
+    {
+      "id": 1,
+      "point": "**Le gros cycle du runtime moteur existe toujours** : j’en détecte encore un sur **49 fichiers** dans `game/engine/runtime`, autour de `game-definition-*`, `game-context-*`, `effects-*`, `patterns/*`, `recipes/*`, `movement-kit`, `pawn-kit`, `phase-kit`, lifecycle et configuration. C’est actuellement le principal point empêchant de considérer l’architecture moteur comme complètement découplée.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Removed the runtime strongly connected component. All 152 production files form an acyclic graph including type imports, re-exports, dynamic imports and TypeScript aliases. A regression audit rejects every cycle without a baseline.",
+      "evidence": [
+        "tools/runtime-dependency-graph.cjs",
+        "tools/runtime-dependency-graph.spec.cjs",
+        "logs/corrections-runtime-dependency-graph.json"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 2,
+      "point": "**Le cycle `player-values-kit.ts ↔ numeric-invariants.ts` existe toujours** : les invariants numériques doivent devenir totalement indépendants du kit qui les consomme.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "numeric-invariants depends on player-values-contracts, never on its consuming controller.",
+      "evidence": [
+        "src/game/engine/runtime/kits/numeric-invariants.ts",
+        "src/game/engine/runtime/kits/numeric-invariants.spec.ts"
+      ]
+    },
+    {
+      "id": 3,
+      "point": "**Le cycle TypeORM `RoomEntity ↔ RoomParticipantEntity ↔ RoomBotEntity` existe toujours** : il faut décider si les relations bidirectionnelles sont réellement nécessaires ; sinon privilégier des références par ID et des chargements explicites.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Room child relations use a structural persistence projection and the named ORM target; metadata tests preserve inverse relations and cascading foreign keys.",
+      "evidence": [
+        "src/modules/room/infrastructure/persistence/typeorm/entities/room.persistence-ref.ts",
+        "src/modules/room/infrastructure/persistence/typeorm/entities/room-relations.spec.ts"
+      ]
+    },
+    {
+      "id": 4,
+      "point": "**La direction des dépendances internes du moteur n’est toujours pas strictement descendante** : plusieurs couches bas niveau connaissent encore des structures de définition/compilation qui redépendent ensuite d’elles.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Execution entry points no longer depend transitively on the definition compiler, definition validator, pattern builders or recipe builders. Low-level author commands and independently owned contracts establish a descending acyclic dependency graph. The audit also rejects indirect upward paths.",
+      "evidence": [
+        "tools/runtime-dependency-graph.cjs",
+        "tools/runtime-separation-audit.cjs",
+        "docs/architecture/runtime-contract-direction.md"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 5,
+      "point": "**Il manque toujours une séparation plus nette `AuthorGameDefinition -> CompiledGameDefinition -> Runtime`** : les structures d’authoring et d’exécution restent encore trop proches.",
+      "lot": 1,
+      "status": "open",
+      "analysis": "Author/compiled/runtime contracts still share callback structures; no full separation completed.",
+      "evidence": []
+    },
+    {
+      "id": 6,
+      "point": "**Il manque toujours une IR compilée neutre** : une représentation intermédiaire indépendante des builders, patterns, recipes et executors permettrait probablement de casser une grande partie du cycle de 49 fichiers.",
+      "lot": 1,
+      "status": "open",
+      "analysis": "Neutral effect IR exists, but a complete compiled game IR independent of all builders/executors is still missing.",
+      "evidence": []
+    },
+    {
+      "id": 7,
+      "point": "**`game-definition-contracts.ts` reste trop central** : il concentre encore de nombreux concepts et participe directement au grand cycle.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Split author rules, pattern fragments, effect resolvers, validation input, configuration state and persistent runtime state out of the compiled definition contract. The remaining definition contract no longer participates in any cycle.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/author-rule-contracts.ts",
+        "src/game/engine/runtime/contracts/pattern-definition.ts",
+        "src/game/engine/runtime/contracts/definition-validation.ts",
+        "src/game/engine/runtime/state/declarative-state.ts",
+        "src/game/engine/runtime/definitions/game-definition-contracts.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 8,
+      "point": "**Les patterns restent trop liés au runtime/definition compiler** : idéalement ils devraient produire des fragments déclaratifs sans connaître la couche d’exécution.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Pattern fragments now depend on independent author rule/context contracts and kit primitives. They no longer acquire the execution context class or compiler through these contracts. Existing composition behavior is preserved.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/pattern-definition.ts",
+        "src/game/engine/runtime/definitions/game-author-context.ts",
+        "tools/runtime-dependency-graph.cjs"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 9,
+      "point": "**Les recipes restent trop liées aux structures supérieures du moteur** : elles devraient dépendre uniquement de primitives/contracts suffisamment bas niveau.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Recipes import low-level action builders and author rule contracts directly. Action and choice builders and their typed handler adapter no longer import the compiled definition or definition compiler.",
+      "evidence": [
+        "src/game/engine/runtime/actions/action-builders.ts",
+        "src/game/engine/runtime/actions/typed-runtime-handler.ts",
+        "src/game/engine/runtime/contracts/author-rule-contracts.ts",
+        "tools/runtime-separation-audit.cjs"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 10,
+      "point": "**Les effects restent fortement interconnectés avec definitions, validators et runtime execution** : définition, validation et exécution doivent être séparées plus strictement.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Effect instruction/resolver contracts, author effect capability, typed builder adapter, validation inputs and execution are separate. Effect execution cannot reach the game compiler/validator/pattern/recipe builders through its imports.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/effect-resolver.ts",
+        "src/game/engine/runtime/contracts/context-effect-capability.ts",
+        "src/game/engine/runtime/contracts/definition-validation.ts",
+        "src/game/engine/runtime/actions/typed-runtime-handler.ts",
+        "tools/runtime-dependency-graph.cjs"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 11,
+      "point": "**Le lifecycle reste pris dans le même graphe cyclique** : `game-turn-controller`, `game-turn-schedule` et hooks devraient dépendre d’un modèle compilé minimal plutôt que de structures qui redépendent du lifecycle.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Turn controller and turn schedule use minimal TurnRuntimeState and TurnScheduleState contracts instead of the full declarative state/compiled definition. Lifecycle hooks use the independently owned author context. Their transitive imports are acyclic.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/turn-runtime-state.ts",
+        "src/game/engine/runtime/lifecycle/game-turn-controller.ts",
+        "src/game/engine/runtime/lifecycle/game-turn-schedule.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 12,
+      "point": "**`GameRuleContext` reste au centre du gros cycle** : même s’il a été amélioré, il reste une façade très large du runtime.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "The runtime context implements the independently owned GameContextCapabilities interface. Author context no longer derives its contract by importing the runtime class. Compile-time bidirectional compatibility and forbidden orchestration API assertions preserve the existing public surface.",
+      "evidence": [
+        "src/game/engine/runtime/game-rule-context.ts",
+        "src/game/engine/runtime/definitions/game-context-capabilities.ts",
+        "src/game/engine/runtime/definitions/game-author-context.ts",
+        "src/game/engine/runtime/definitions/game-author-context.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 13,
+      "point": "**Les capacités de `GameRuleContext` devraient encore être davantage segmentées** : lifecycle, players, components, interactions, effects, scheduling et values devraient être des sous-capabilities plus indépendantes.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Segmented player, lifecycle, value, component, interaction, effect and scheduling capabilities into independently owned contracts. Turn/configuration/effect command ports are explicit; other controllers expose structural public views. Existing facade aliases remain compatible.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/context-players-capability.ts",
+        "src/game/engine/runtime/contracts/context-lifecycle-capability.ts",
+        "src/game/engine/runtime/contracts/context-values-capability.ts",
+        "src/game/engine/runtime/contracts/context-components-capability.ts",
+        "src/game/engine/runtime/contracts/context-interactions-capability.ts",
+        "src/game/engine/runtime/contracts/context-effect-capability.ts",
+        "src/game/engine/runtime/contracts/context-scheduling-capability.ts",
+        "src/game/engine/runtime/definitions/game-context-facades.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 14,
+      "point": "**`GameContextFor` peut encore être renforcé** : le type devrait exposer uniquement les capabilities réellement activées par la définition compilée du jeu.",
+      "lot": 1,
+      "status": "open",
+      "analysis": "Component filtering is verified, but scheduler and other capability inference are incomplete.",
+      "evidence": []
+    },
+    {
+      "id": 15,
+      "point": "**Un jeu n’utilisant pas Cards devrait idéalement ne pas avoir `ctx.cards` dans son contexte typé**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "GameContextFor removes Cards for definitions without Cards components; negative type assertions compile and Cards remains available when declared.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/optional-capabilities.spec.ts"
+      ]
+    },
+    {
+      "id": 16,
+      "point": "**Même principe pour Movement, Inventory, Economy, Quiz, Voting, Scheduler et les autres kits optionnels**.",
+      "lot": 1,
+      "status": "open",
+      "analysis": "Cards/Movement/Inventory/Economy/Quiz/Voting filters are tested; Scheduler remains exposed.",
+      "evidence": []
+    },
+    {
+      "id": 17,
+      "point": "**Il n’existe toujours aucun `game.json` dans les jeux** : la cible d’un jeu standard entièrement déclaratif n’est pas encore atteinte.",
+      "lot": 1,
+      "status": "open",
+      "analysis": "No installed game.json-only game added.",
+      "evidence": [],
+      "continuation": "JSON authoring now has an executable closed version-1 profile, but production games, all optional components, patterns and the complete Panier Express rules are not migrated. This broader point remains open."
+    },
+    {
+      "id": 18,
+      "point": "**Le compiler `game.json -> CompiledGameDefinition` reste donc absent ou incomplet**.",
+      "lot": 1,
+      "status": "open",
+      "analysis": "JSON loader still implements only the minimal profile and does not compile a full declarative game.",
+      "evidence": [],
+      "continuation": "JSON authoring now has an executable closed version-1 profile, but production games, all optional components, patterns and the complete Panier Express rules are not migrated. This broader point remains open."
+    },
+    {
+      "id": 19,
+      "point": "**Il reste à formaliser le schema de `game.json`** : components, setup, phases, actions, patterns, victory, effects, conditions et selectors.",
+      "lot": 1,
+      "status": "open",
+      "analysis": "Full versioned game.json schema remains to be implemented.",
+      "evidence": [],
+      "continuation": "JSON authoring now has an executable closed version-1 profile, but production games, all optional components, patterns and the complete Panier Express rules are not migrated. This broader point remains open."
+    },
+    {
+      "id": 20,
+      "point": "**Les effects déclaratifs JSON doivent encore disposer d’un schema canonique stable**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Versioned closed effect grammar covers every EffectInstruction discriminant, validates shape before reference checks, and preserves optional TypeScript builder fields without changing existing content fingerprints.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/effect-json-schema.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.spec.ts",
+        "src/game/engine/runtime/content/effect-content.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 21,
+      "point": "**Les conditions déclaratives JSON doivent encore disposer d’un schema canonique stable**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Canonical recursive condition grammar covers all condition variants and rejects unknown fields, malformed values and unbounded trees.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/effect-json-schema.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.spec.ts",
+        "src/game/engine/runtime/content/effect-content.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 22,
+      "point": "**Les selectors/targets déclaratifs JSON doivent encore disposer d’un schema canonique stable**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Canonical target grammar covers every target discriminant, with typed player lists and closed fields; independent target validation is tested.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/effect-json-schema.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.spec.ts",
+        "src/game/engine/runtime/content/effect-content.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 23,
+      "point": "**Les références JSON entre composants doivent être validées avant runtime** : deck IDs, track IDs, resource IDs, phase IDs, effects, actions, pawns, etc.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "The supported closed JSON grammar rejects unsupported components. JSON compilation now delegates all static reference checks to the common definition validator, removing its divergent reference index. Actions, card content, track landing effects, nested conditions and reaction branches/options are checked against component/resource/action/phase/effect catalogues before runtime. Added regression tests for missing references inside cards and reaction availability, and for numeric/string card identity separation. Extending the JSON language remains tracked by 18/19.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/game-definition-component-validator.ts",
+        "src/game/engine/runtime/definitions/static-effect-references.ts",
+        "src/game/engine/runtime/definitions/component-initialization-references.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "continuation": "JSON authoring now has an executable closed version-1 profile, but production games, all optional components, patterns and the complete Panier Express rules are not migrated. This broader point remains open.",
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 24,
+      "point": "**Les incompatibilités de capability doivent être détectées à compilation** : par exemple un effet Cards dans un jeu qui n’a pas de composant Cards.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Static declarative effects and conditions cannot compile without their required hand/deck/track/dice/inventory/resource catalogues. Reaction availability now validates each option against the hand card catalogue or declared resources. The common validator owns this rule for both authoring paths. Unsupported JSON components are rejected by the closed grammar; dynamic TypeScript callback capability inference remains separately tracked by 14/16.",
+      "evidence": [
+        "src/game/engine/runtime/effects/game-effect-definition-validator.ts",
+        "src/game/engine/runtime/effects/game-effect-reference-validator.ts",
+        "src/game/engine/runtime/definitions/game-definition-component-validator.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "continuation": "JSON authoring now has an executable closed version-1 profile, but production games, all optional components, patterns and the complete Panier Express rules are not migrated. This broader point remains open.",
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 25,
+      "point": "**Le langage JSON auteur doit rester fermé et typé** : pas d’expression JavaScript ou pseudo-code dans des strings.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "The author JSON boundary accepts only bounded plain JSON data and an explicit closed grammar. No strings are interpreted as code; custom effects without engine resolvers are rejected.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 26,
+      "point": "**Le schema auteur JSON doit être versionné**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Author documents require schemaVersion 1. Missing or unsupported versions are rejected before compilation.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 27,
+      "point": "**La version du contenu doit rester distincte de la version du runtime**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Author schema, content label/fingerprint, game-state schema and engine algorithm version are distinct. Changing JSON with unchanged labels changes the effective content fingerprint.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 28,
+      "point": "**La version de définition du jeu doit être explicitement distinguée des autres versions si nécessaire**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "JSON definitionVersion explicitly feeds compiled rulesVersion, separately from the author schema, content fingerprint and engine algorithm.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 29,
+      "point": "**Les snapshots doivent embarquer suffisamment d’information de version pour garantir leur restauration future**.",
+      "lot": 1,
+      "status": "open",
+      "analysis": "Snapshot headers are verified, but migration/restore guarantees for future incompatible runtimes remain incomplete.",
+      "evidence": []
+    },
+    {
+      "id": 30,
+      "point": "**Les migrations de snapshot doivent être prévues pour les changements runtime incompatibles**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Engine-owned snapshot migration registry resolves a bounded unambiguous path before transforming a clone. Real multi-step transformations, missing paths, cycles, invalid output and identity preservation are tested. Headerless legacy snapshots remain tied to engine 1, never to an arbitrary future current version. No incompatible engine version is being introduced.",
+      "evidence": [
+        "src/game/engine/runtime/content/engine-snapshot-migrations.ts",
+        "src/game/engine/runtime/content/engine-snapshot-migrations.spec.ts",
+        "src/game/engine/runtime/content/game-state-loader.spec.ts",
+        "docs/architecture/engine-snapshot-migrations.md"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 31,
+      "point": "**Une partie sauvegardée doit rester liée à la bonne version de contenu** : un remplacement des JSON lors d’un déploiement ne doit pas modifier silencieusement son comportement.",
+      "lot": 1,
+      "status": "open",
+      "analysis": "Incompatible content is rejected, but retention and selection of historical content per saved game remain incomplete.",
+      "evidence": []
+    },
+    {
+      "id": 32,
+      "point": "**`application/contracts/` reste encore très largement utilisé comme dossier généraliste** : la normalisation précédente n’a pas encore été appliquée.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 33,
+      "point": "**`game/core/application/contracts/` contient toujours 14 fichiers de rôles différents**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 34,
+      "point": "**`bot-settings.repository.ts` est toujours rangé dans `contracts/` alors qu’il s’agit d’un port**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 35,
+      "point": "**`game-runtime.interface.ts` est toujours dans `contracts/` alors qu’il s’agit davantage d’un port/capability**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 36,
+      "point": "**`game-action.model.ts` est toujours dans `contracts/` au lieu d’un espace de modèles**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 37,
+      "point": "**`game-state.model.ts` est toujours dans `contracts/`**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 38,
+      "point": "**`game-event.model.ts` est toujours dans `contracts/`**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 39,
+      "point": "**`game-automation.model.ts` est toujours dans `contracts/`**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 40,
+      "point": "**`tile-definition.model.ts` est toujours dans `contracts/`**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 41,
+      "point": "**`game/engine/application/contracts/` contient encore principalement des modèles de catalogue**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 42,
+      "point": "**`bot/application/contracts/` contient encore records/status plutôt que des contrats stricts**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 43,
+      "point": "**`bug-reports/application/contracts/` contient encore des records**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 44,
+      "point": "**`catalog/application/contracts/` contient encore des records**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 45,
+      "point": "**`chat/application/contracts/` contient encore des records**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 46,
+      "point": "**`notification/application/contracts/` contient encore des modèles**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 47,
+      "point": "**`presence/application/contracts/` contient encore des modèles**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 48,
+      "point": "**`room/application/contracts/` reste encore très hétérogène avec 10 fichiers**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 49,
+      "point": "**`social/application/contracts/` contient encore essentiellement des modèles**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 50,
+      "point": "**`sounds/application/contracts/` contient encore un record**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 51,
+      "point": "**`stats/application/contracts/` contient encore des modèles**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 52,
+      "point": "**`vault/application/contracts/` contient encore modèles et snapshot source**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 53,
+      "point": "**`platform/ws/application/contracts/` contient encore `ws-route.model.ts` et `ws-ticket.model.ts`**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 54,
+      "point": "**La convention `ports / models / commands / queries / read-models / events` reste donc à mettre réellement en place**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Application definitions now live in models, read-models or ports. Removed 32 forwarding contracts, moved 21 definitions/tests and rewrote consumers. The placement audit also covers game and platform and rejects forwarding files.",
+      "evidence": [
+        "tools/application-contract-placement-audit.cjs",
+        "docs/architecture/application-contract-roles.md"
+      ]
+    },
+    {
+      "id": 55,
+      "point": "**Le sens de `Record` reste à formaliser précisément**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Documented precise roles; GameState/PlayerState/TurnState replace their misleading Entity aliases in declarations and consumers.",
+      "evidence": [
+        "docs/architecture/application-contract-roles.md",
+        "docs/architecture/module-conventions.md",
+        "src/game/core/application/models/game-state.model.ts"
+      ]
+    },
+    {
+      "id": 56,
+      "point": "**Le sens de `Model` reste à formaliser précisément**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Documented precise roles; GameState/PlayerState/TurnState replace their misleading Entity aliases in declarations and consumers.",
+      "evidence": [
+        "docs/architecture/application-contract-roles.md",
+        "docs/architecture/module-conventions.md",
+        "src/game/core/application/models/game-state.model.ts"
+      ]
+    },
+    {
+      "id": 57,
+      "point": "**Le sens de `Entity` reste à formaliser précisément**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Documented precise roles; GameState/PlayerState/TurnState replace their misleading Entity aliases in declarations and consumers.",
+      "evidence": [
+        "docs/architecture/application-contract-roles.md",
+        "docs/architecture/module-conventions.md",
+        "src/game/core/application/models/game-state.model.ts"
+      ]
+    },
+    {
+      "id": 58,
+      "point": "**Les types comme `GameStateEntity` restent ambigus si ce ne sont pas de vraies entities DDD/ORM**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Documented precise roles; GameState/PlayerState/TurnState replace their misleading Entity aliases in declarations and consumers.",
+      "evidence": [
+        "docs/architecture/application-contract-roles.md",
+        "docs/architecture/module-conventions.md",
+        "src/game/core/application/models/game-state.model.ts"
+      ]
+    },
+    {
+      "id": 59,
+      "point": "**Plusieurs `public-api.ts` réexportent encore directement de l’infrastructure**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Business public APIs no longer re-export infrastructure or Nest modules. Composition entries own wiring; architecture tests reject business consumers of those entries. Sounds is consumed through a narrow reader.",
+      "evidence": [
+        "tools/architecture-check.cjs",
+        "tools/architecture-check.spec.cjs",
+        "src/game/composition-api.ts",
+        "src/modules/sounds/application/ports/table-ambiences-reader.port.ts"
+      ]
+    },
+    {
+      "id": 60,
+      "point": "**`modules/notification/public-api.ts` expose toujours `NotificationDispatchService` depuis `infrastructure/system`**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Business public APIs no longer re-export infrastructure or Nest modules. Composition entries own wiring; architecture tests reject business consumers of those entries. Sounds is consumed through a narrow reader.",
+      "evidence": [
+        "tools/architecture-check.cjs",
+        "tools/architecture-check.spec.cjs",
+        "src/game/composition-api.ts",
+        "src/modules/sounds/application/ports/table-ambiences-reader.port.ts"
+      ]
+    },
+    {
+      "id": 61,
+      "point": "**`modules/sounds/public-api.ts` expose toujours `SoundsService` depuis `infrastructure/storage`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Business public APIs no longer re-export infrastructure or Nest modules. Composition entries own wiring; architecture tests reject business consumers of those entries. Sounds is consumed through a narrow reader.",
+      "evidence": [
+        "tools/architecture-check.cjs",
+        "tools/architecture-check.spec.cjs",
+        "src/game/composition-api.ts",
+        "src/modules/sounds/application/ports/table-ambiences-reader.port.ts"
+      ]
+    },
+    {
+      "id": 62,
+      "point": "**`game/public-api.ts` expose toujours plusieurs éléments `core/infrastructure` et `engine/infrastructure`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Business public APIs no longer re-export infrastructure or Nest modules. Composition entries own wiring; architecture tests reject business consumers of those entries. Sounds is consumed through a narrow reader.",
+      "evidence": [
+        "tools/architecture-check.cjs",
+        "tools/architecture-check.spec.cjs",
+        "src/game/composition-api.ts",
+        "src/modules/sounds/application/ports/table-ambiences-reader.port.ts"
+      ]
+    },
+    {
+      "id": 63,
+      "point": "**`game/engine/public-api.ts` expose toujours directement des modules Nest d’infrastructure**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Business public APIs no longer re-export infrastructure or Nest modules. Composition entries own wiring; architecture tests reject business consumers of those entries. Sounds is consumed through a narrow reader.",
+      "evidence": [
+        "tools/architecture-check.cjs",
+        "tools/architecture-check.spec.cjs",
+        "src/game/composition-api.ts",
+        "src/modules/sounds/application/ports/table-ambiences-reader.port.ts"
+      ]
+    },
+    {
+      "id": 64,
+      "point": "**Il manque toujours une séparation entre API métier et API de composition Nest**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Business public APIs no longer re-export infrastructure or Nest modules. Composition entries own wiring; architecture tests reject business consumers of those entries. Sounds is consumed through a narrow reader.",
+      "evidence": [
+        "tools/architecture-check.cjs",
+        "tools/architecture-check.spec.cjs",
+        "src/game/composition-api.ts",
+        "src/modules/sounds/application/ports/table-ambiences-reader.port.ts"
+      ]
+    },
+    {
+      "id": 65,
+      "point": "**Les public APIs de plateforme exposent volontairement beaucoup d’infrastructure** : cela peut être acceptable pour `platform`, mais il faut distinguer clairement cette philosophie de celle des bounded contexts métier.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Business public APIs no longer re-export infrastructure or Nest modules. Composition entries own wiring; architecture tests reject business consumers of those entries. Sounds is consumed through a narrow reader.",
+      "evidence": [
+        "tools/architecture-check.cjs",
+        "tools/architecture-check.spec.cjs",
+        "src/game/composition-api.ts",
+        "src/modules/sounds/application/ports/table-ambiences-reader.port.ts"
+      ]
+    },
+    {
+      "id": 66,
+      "point": "**Les public APIs métier ne doivent pas réexporter une implémentation infrastructure simplement pour faciliter le wiring**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Business public APIs no longer re-export infrastructure or Nest modules. Composition entries own wiring; architecture tests reject business consumers of those entries. Sounds is consumed through a narrow reader.",
+      "evidence": [
+        "tools/architecture-check.cjs",
+        "tools/architecture-check.spec.cjs",
+        "src/game/composition-api.ts",
+        "src/modules/sounds/application/ports/table-ambiences-reader.port.ts"
+      ]
+    },
+    {
+      "id": 67,
+      "point": "**Plusieurs bounded contexts exposent toujours des repository ports complets dans leur `public-api`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Removed public User, Messaging and Social repositories. Notification uses a staff-ID reader. Bot/Presence/Room adapter contracts are limited to composition exports; application consumers retain business capabilities/readers.",
+      "evidence": [
+        "src/modules/user/application/ports/staff-users-reader.port.ts",
+        "src/modules/user/infrastructure/persistence/typeorm/repositories/staff-users-typeorm.reader.spec.ts",
+        "src/modules/bot/composition-api.ts",
+        "src/modules/presence/composition-api.ts",
+        "src/modules/room/composition-api.ts"
+      ]
+    },
+    {
+      "id": 68,
+      "point": "**Il faut vérifier si `UserRepository` doit réellement être une API inter-module publique**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Removed public User, Messaging and Social repositories. Notification uses a staff-ID reader. Bot/Presence/Room adapter contracts are limited to composition exports; application consumers retain business capabilities/readers.",
+      "evidence": [
+        "src/modules/user/application/ports/staff-users-reader.port.ts",
+        "src/modules/user/infrastructure/persistence/typeorm/repositories/staff-users-typeorm.reader.spec.ts",
+        "src/modules/bot/composition-api.ts",
+        "src/modules/presence/composition-api.ts",
+        "src/modules/room/composition-api.ts"
+      ]
+    },
+    {
+      "id": 69,
+      "point": "**Même question pour `PrivateMessageRepository`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Removed public User, Messaging and Social repositories. Notification uses a staff-ID reader. Bot/Presence/Room adapter contracts are limited to composition exports; application consumers retain business capabilities/readers.",
+      "evidence": [
+        "src/modules/user/application/ports/staff-users-reader.port.ts",
+        "src/modules/user/infrastructure/persistence/typeorm/repositories/staff-users-typeorm.reader.spec.ts",
+        "src/modules/bot/composition-api.ts",
+        "src/modules/presence/composition-api.ts",
+        "src/modules/room/composition-api.ts"
+      ]
+    },
+    {
+      "id": 70,
+      "point": "**Même question pour `SocialProfileRepository`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Removed public User, Messaging and Social repositories. Notification uses a staff-ID reader. Bot/Presence/Room adapter contracts are limited to composition exports; application consumers retain business capabilities/readers.",
+      "evidence": [
+        "src/modules/user/application/ports/staff-users-reader.port.ts",
+        "src/modules/user/infrastructure/persistence/typeorm/repositories/staff-users-typeorm.reader.spec.ts",
+        "src/modules/bot/composition-api.ts",
+        "src/modules/presence/composition-api.ts",
+        "src/modules/room/composition-api.ts"
+      ]
+    },
+    {
+      "id": 71,
+      "point": "**Même question pour `BotRoomRepository`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Removed public User, Messaging and Social repositories. Notification uses a staff-ID reader. Bot/Presence/Room adapter contracts are limited to composition exports; application consumers retain business capabilities/readers.",
+      "evidence": [
+        "src/modules/user/application/ports/staff-users-reader.port.ts",
+        "src/modules/user/infrastructure/persistence/typeorm/repositories/staff-users-typeorm.reader.spec.ts",
+        "src/modules/bot/composition-api.ts",
+        "src/modules/presence/composition-api.ts",
+        "src/modules/room/composition-api.ts"
+      ]
+    },
+    {
+      "id": 72,
+      "point": "**Même question pour `PresenceRoomParticipantRepository`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Removed public User, Messaging and Social repositories. Notification uses a staff-ID reader. Bot/Presence/Room adapter contracts are limited to composition exports; application consumers retain business capabilities/readers.",
+      "evidence": [
+        "src/modules/user/application/ports/staff-users-reader.port.ts",
+        "src/modules/user/infrastructure/persistence/typeorm/repositories/staff-users-typeorm.reader.spec.ts",
+        "src/modules/bot/composition-api.ts",
+        "src/modules/presence/composition-api.ts",
+        "src/modules/room/composition-api.ts"
+      ]
+    },
+    {
+      "id": 73,
+      "point": "**Même question pour les repositories exposés par `room/public-api.ts`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Removed public User, Messaging and Social repositories. Notification uses a staff-ID reader. Bot/Presence/Room adapter contracts are limited to composition exports; application consumers retain business capabilities/readers.",
+      "evidence": [
+        "src/modules/user/application/ports/staff-users-reader.port.ts",
+        "src/modules/user/infrastructure/persistence/typeorm/repositories/staff-users-typeorm.reader.spec.ts",
+        "src/modules/bot/composition-api.ts",
+        "src/modules/presence/composition-api.ts",
+        "src/modules/room/composition-api.ts"
+      ]
+    },
+    {
+      "id": 74,
+      "point": "**Les frontières inter-domaines devraient préférer des readers/capabilities minimaux adaptés au besoin réel du consumer**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Removed public User, Messaging and Social repositories. Notification uses a staff-ID reader. Bot/Presence/Room adapter contracts are limited to composition exports; application consumers retain business capabilities/readers.",
+      "evidence": [
+        "src/modules/user/application/ports/staff-users-reader.port.ts",
+        "src/modules/user/infrastructure/persistence/typeorm/repositories/staff-users-typeorm.reader.spec.ts",
+        "src/modules/bot/composition-api.ts",
+        "src/modules/presence/composition-api.ts",
+        "src/modules/room/composition-api.ts"
+      ]
+    },
+    {
+      "id": 75,
+      "point": "**Il reste deux usages de comparaison structurelle via `JSON.stringify` dans les jeux**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Foulees checks ordered pawn IDs/labels. Mnemosyne checks question identity, prompt, answer and ordered choices explicitly, independent of object key serialization.",
+      "evidence": [
+        "src/game/games/vents-sacres/foulees-fantastiques/content.ts",
+        "src/game/games/vents-infinis/arche-de-mnemosyne/content.ts",
+        "src/game/testing/architecture-tests/game/canonical-game-content.spec.ts"
+      ]
+    },
+    {
+      "id": 76,
+      "point": "**`foulees-fantastiques/content.ts` compare encore `parsed.pawns` et `expectedPawns` via `JSON.stringify`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Foulees checks ordered pawn IDs/labels. Mnemosyne checks question identity, prompt, answer and ordered choices explicitly, independent of object key serialization.",
+      "evidence": [
+        "src/game/games/vents-sacres/foulees-fantastiques/content.ts",
+        "src/game/games/vents-infinis/arche-de-mnemosyne/content.ts",
+        "src/game/testing/architecture-tests/game/canonical-game-content.spec.ts"
+      ]
+    },
+    {
+      "id": 77,
+      "point": "**`arche-de-mnemosyne/content.ts` compare encore les questions via `JSON.stringify`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Foulees checks ordered pawn IDs/labels. Mnemosyne checks question identity, prompt, answer and ordered choices explicitly, independent of object key serialization.",
+      "evidence": [
+        "src/game/games/vents-sacres/foulees-fantastiques/content.ts",
+        "src/game/games/vents-infinis/arche-de-mnemosyne/content.ts",
+        "src/game/testing/architecture-tests/game/canonical-game-content.spec.ts"
+      ]
+    },
+    {
+      "id": 78,
+      "point": "**Ces comparaisons doivent être remplacées par une validation explicite de l’invariant recherché**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Foulees checks ordered pawn IDs/labels. Mnemosyne checks question identity, prompt, answer and ordered choices explicitly, independent of object key serialization.",
+      "evidence": [
+        "src/game/games/vents-sacres/foulees-fantastiques/content.ts",
+        "src/game/games/vents-infinis/arche-de-mnemosyne/content.ts",
+        "src/game/testing/architecture-tests/game/canonical-game-content.spec.ts"
+      ]
+    },
+    {
+      "id": 79,
+      "point": "**Il reste trois doubles casts `as unknown as` en production**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Mapper outputs are DeepPartial persistence writes. ID-only relation references no longer pretend to be fully loaded users; all three double assertions and the Room assertion are removed.",
+      "evidence": [
+        "src/modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.mappers.ts",
+        "src/modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.mappers.spec.ts"
+      ]
+    },
+    {
+      "id": 80,
+      "point": "**Les trois sont dans `room-typeorm.mappers.ts`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Mapper outputs are DeepPartial persistence writes. ID-only relation references no longer pretend to be fully loaded users; all three double assertions and the Room assertion are removed.",
+      "evidence": [
+        "src/modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.mappers.ts",
+        "src/modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.mappers.spec.ts"
+      ]
+    },
+    {
+      "id": 81,
+      "point": "**Ils concernent `RoomUserPersistenceRef`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Mapper outputs are DeepPartial persistence writes. ID-only relation references no longer pretend to be fully loaded users; all three double assertions and the Room assertion are removed.",
+      "evidence": [
+        "src/modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.mappers.ts",
+        "src/modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.mappers.spec.ts"
+      ]
+    },
+    {
+      "id": 82,
+      "point": "**Le modèle persistence et le mapper doivent être corrigés pour supprimer ces contournements du typage**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Mapper outputs are DeepPartial persistence writes. ID-only relation references no longer pretend to be fully loaded users; all three double assertions and the Room assertion are removed.",
+      "evidence": [
+        "src/modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.mappers.ts",
+        "src/modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.mappers.spec.ts"
+      ]
+    },
+    {
+      "id": 83,
+      "point": "**Les doubles casts masquent encore une incompatibilité réelle entre types**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Mapper outputs are DeepPartial persistence writes. ID-only relation references no longer pretend to be fully loaded users; all three double assertions and the Room assertion are removed.",
+      "evidence": [
+        "src/modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.mappers.ts",
+        "src/modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.mappers.spec.ts"
+      ]
+    },
+    {
+      "id": 84,
+      "point": "**Il reste plusieurs assertions non-null évitables dans le moteur et certains jeux**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Replaced all seven remaining production non-null assertions in runtime and games with explicit control flow or validated indexing. A TypeScript AST scan confirms zero remaining NonNullExpression nodes in those production directories.",
+      "evidence": [
+        "src/game/engine/runtime/content/content-migration-registry.ts",
+        "src/game/engine/runtime/content/game-content.ts",
+        "src/game/engine/runtime/definitions/game-phase-graph-validator.ts",
+        "src/game/engine/runtime/kits/dice-kit.ts",
+        "src/game/engine/runtime/state/assert-serializable-state.ts",
+        "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/rules.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 85,
+      "point": "**`gameplay-pattern-round-economy.ts` utilise encore des `options.xxx!`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Market options require the round limit and its counter together. Captured, narrowed options remain valid inside callbacks; all options.xxx non-null assertions are removed.",
+      "evidence": [
+        "src/game/engine/runtime/patterns/gameplay-pattern-round-economy.ts",
+        "src/game/engine/runtime/patterns/gameplay-patterns.spec.ts"
+      ]
+    },
+    {
+      "id": 86,
+      "point": "**Les options du pattern devraient être modélisées avec des unions discriminées afin que ces champs soient garantis par le type**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Market options require the round limit and its counter together. Captured, narrowed options remain valid inside callbacks; all options.xxx non-null assertions are removed.",
+      "evidence": [
+        "src/game/engine/runtime/patterns/gameplay-pattern-round-economy.ts",
+        "src/game/engine/runtime/patterns/gameplay-patterns.spec.ts"
+      ]
+    },
+    {
+      "id": 87,
+      "point": "**`cat-pattes/rules.ts` utilise encore `card.obstacle!` et `card.parade!`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Cat Pattes cards form a discriminated union. Content validation constructs each valid variant and rejects missing/conflicting variant fields; rules need no obstacle/parade assertions.",
+      "evidence": [
+        "src/game/games/vents-dansants/cat-pattes/content.ts",
+        "src/game/games/vents-dansants/cat-pattes/rules.ts",
+        "src/game/games/vents-dansants/cat-pattes/game.spec.ts"
+      ]
+    },
+    {
+      "id": 88,
+      "point": "**Le modèle de cartes Cat Pattes devrait être discriminé de façon à garantir ces propriétés sans `!`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Cat Pattes cards form a discriminated union. Content validation constructs each valid variant and rejects missing/conflicting variant fields; rules need no obstacle/parade assertions.",
+      "evidence": [
+        "src/game/games/vents-dansants/cat-pattes/content.ts",
+        "src/game/games/vents-dansants/cat-pattes/rules.ts",
+        "src/game/games/vents-dansants/cat-pattes/game.spec.ts"
+      ]
+    },
+    {
+      "id": 89,
+      "point": "**`presence-chat.service.ts` utilise encore `ban.until!`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "An active UserBanState carries a Date. Presence serializes that narrowed state and keeps invalid bans denied.",
+      "evidence": [
+        "src/modules/user/domain/policies/user-ban.policy.ts",
+        "src/modules/presence/application/services/presence-chat.service.ts",
+        "src/modules/presence/application/services/presence-chat.service.spec.ts"
+      ]
+    },
+    {
+      "id": 90,
+      "point": "**Le type représentant un ban actif devrait garantir `until`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "An active UserBanState carries a Date. Presence serializes that narrowed state and keeps invalid bans denied.",
+      "evidence": [
+        "src/modules/user/domain/policies/user-ban.policy.ts",
+        "src/modules/presence/application/services/presence-chat.service.ts",
+        "src/modules/presence/application/services/presence-chat.service.spec.ts"
+      ]
+    },
+    {
+      "id": 91,
+      "point": "**`redis-distributed-lease.service.ts` utilise encore `this.client!`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Verified existing explicit null check and captured Redis client used by lease callbacks; no client non-null assertion remains.",
+      "evidence": [
+        "src/platform/redis/infrastructure/redis-distributed-lease.service.ts"
+      ]
+    },
+    {
+      "id": 92,
+      "point": "**L’état connecté/déconnecté du client Redis devrait être représenté ou vérifié explicitement**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Verified existing explicit null check and captured Redis client used by lease callbacks; no client non-null assertion remains.",
+      "evidence": [
+        "src/platform/redis/infrastructure/redis-distributed-lease.service.ts"
+      ]
+    },
+    {
+      "id": 93,
+      "point": "**Les fallbacks temporels `clock?.now() ?? Date.now()` existent encore dans plusieurs services applicatifs**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 94,
+      "point": "**`room-membership.service.ts` utilise encore ce fallback**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 95,
+      "point": "**`room-leave.service.ts` utilise encore ce fallback**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 96,
+      "point": "**`room-lifecycle.service.ts` utilise encore ce fallback**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 97,
+      "point": "**`record-chat-message.service.ts` utilise encore ce fallback**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 98,
+      "point": "**`private-messaging.service.ts` utilise encore ce fallback à plusieurs endroits**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 99,
+      "point": "**`create-bug-report.service.ts` utilise encore ce fallback**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 100,
+      "point": "**`add-bug-report-comment.service.ts` utilise encore ce fallback**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 101,
+      "point": "**`admin-contact.service.ts` utilise encore ce fallback**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 102,
+      "point": "**`admin-contact-workflow.service.ts` utilise encore ce fallback**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 103,
+      "point": "**`game-stats.service.ts` utilise encore ce fallback**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 104,
+      "point": "**Pour les timestamps métier, le clock injecté devrait être obligatoire au lieu d’avoir une porte de sortie vers l’horloge système**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 105,
+      "point": "**`admin-broadcast.service.ts` utilise encore directement `new Date().toISOString()` dans application**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 106,
+      "point": "**`admin-catalog-invalidation.service.ts` utilise encore directement `new Date().toISOString()` dans application**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Required BusinessClock injection replaces optional clocks/system fallbacks. Nest module imports/factories and test constructors are updated; both administrative notification timestamps use the injected clock.",
+      "evidence": [
+        "docs/architecture/business-clock.md",
+        "src/modules/bug-reports/module/bug-reports.module.ts",
+        "src/modules/notification/module/notification.module.imports.ts",
+        "src/modules/messaging/module/messaging.module.imports.ts",
+        "src/modules/stats/module/stats.module.imports.ts"
+      ]
+    },
+    {
+      "id": 107,
+      "point": "**`game-execution-context.model.ts` utilise encore directement `Date.now()`**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "SystemGameClock belongs to platform/time; FixedGameClock and scope conversions use explicit instants. DTO validation no longer creates incidental wall-clock timestamps. Command latency uses performance.now independently of replay/business clocks.",
+      "evidence": [
+        "src/platform/time/system-game-clock.ts",
+        "src/game/core/application/models/validated-game-action.model.ts",
+        "src/game/core/application/services/game-command-executor.service.ts",
+        "docs/architecture/business-clock.md"
+      ]
+    },
+    {
+      "id": 108,
+      "point": "**`validated-game-action.model.ts` crée encore plusieurs `new Date()` directement**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "SystemGameClock belongs to platform/time; FixedGameClock and scope conversions use explicit instants. DTO validation no longer creates incidental wall-clock timestamps. Command latency uses performance.now independently of replay/business clocks.",
+      "evidence": [
+        "src/platform/time/system-game-clock.ts",
+        "src/game/core/application/models/validated-game-action.model.ts",
+        "src/game/core/application/services/game-command-executor.service.ts",
+        "docs/architecture/business-clock.md"
+      ]
+    },
+    {
+      "id": 109,
+      "point": "**`game-command-executor.service.ts` utilise encore `Date.now()` comme fallback**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "SystemGameClock belongs to platform/time; FixedGameClock and scope conversions use explicit instants. DTO validation no longer creates incidental wall-clock timestamps. Command latency uses performance.now independently of replay/business clocks.",
+      "evidence": [
+        "src/platform/time/system-game-clock.ts",
+        "src/game/core/application/models/validated-game-action.model.ts",
+        "src/game/core/application/services/game-command-executor.service.ts",
+        "docs/architecture/business-clock.md"
+      ]
+    },
+    {
+      "id": 110,
+      "point": "**Il faut distinguer clairement clock métier et clock de mesure de performance** : les usages de benchmarking/latence peuvent rester système, les décisions/timestamps métier non.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "SystemGameClock belongs to platform/time; FixedGameClock and scope conversions use explicit instants. DTO validation no longer creates incidental wall-clock timestamps. Command latency uses performance.now independently of replay/business clocks.",
+      "evidence": [
+        "src/platform/time/system-game-clock.ts",
+        "src/game/core/application/models/validated-game-action.model.ts",
+        "src/game/core/application/services/game-command-executor.service.ts",
+        "docs/architecture/business-clock.md"
+      ]
+    },
+    {
+      "id": 111,
+      "point": "**`game-execution-scope.service.ts` construit directement une `Date` à partir de `gameNowMs()`** : ce n’est pas nécessairement mauvais, mais l’ownership du temps moteur doit rester unique et explicite.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "SystemGameClock belongs to platform/time; FixedGameClock and scope conversions use explicit instants. DTO validation no longer creates incidental wall-clock timestamps. Command latency uses performance.now independently of replay/business clocks.",
+      "evidence": [
+        "src/platform/time/system-game-clock.ts",
+        "src/game/core/application/models/validated-game-action.model.ts",
+        "src/game/core/application/services/game-command-executor.service.ts",
+        "docs/architecture/business-clock.md"
+      ]
+    },
+    {
+      "id": 112,
+      "point": "**Panier Express n’est toujours pas démontré comme jeu 100 % déclaratif**.",
+      "lot": 2,
+      "status": "open",
+      "analysis": "Panier Express still contains TypeScript-specific rules and cannot be claimed 100% declarative.",
+      "evidence": [],
+      "continuation": "JSON authoring now has an executable closed version-1 profile, but production games, all optional components, patterns and the complete Panier Express rules are not migrated. This broader point remains open."
+    },
+    {
+      "id": 113,
+      "point": "**Il manque toujours la preuve qu’un jeu utilisant uniquement des mécaniques connues peut être ajouté sans `.ts` spécifique**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "A three-file JSON game fixture runs through the real runtime from initialization to victory without game-specific TypeScript. The actual CLI-generated JSON package was also compiled and played using the production build. The fixture is deliberately outside the production catalogue.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/testing/fixtures/json-course/game.json",
+        "src/game/testing/fixtures/json-course/manifest.json",
+        "src/game/testing/fixtures/json-course/rules.md",
+        "commands/create-game.spec.cjs",
+        "commands/generate-game-registry.spec.cjs"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 114,
+      "point": "**Les gros `rules.ts`, `content.ts`, `effects.ts`, `rule-bindings.ts` et `setup-rules.ts` doivent toujours être audités pour remonter les mécaniques génériques restantes**.",
+      "lot": 2,
+      "status": "open",
+      "analysis": "All large per-game rules/content/effects/bindings/setup files have not been individually audited.",
+      "evidence": []
+    },
+    {
+      "id": 115,
+      "point": "**Les `rule-bindings.ts` devraient disparaître lorsque leur seule fonction est de relier déclarativement un événement à un effet**.",
+      "lot": 2,
+      "status": "open",
+      "analysis": "Remaining rule-bindings have not all been replaced by declarative event/effect bindings.",
+      "evidence": []
+    },
+    {
+      "id": 116,
+      "point": "**Les `setup-rules.ts` devraient contenir uniquement du setup véritablement spécifique au jeu**.",
+      "lot": 2,
+      "status": "open",
+      "analysis": "Remaining setup-rules have not all been audited for game specificity.",
+      "evidence": []
+    },
+    {
+      "id": 117,
+      "point": "**Les distributions initiales standard devraient être portées par le moteur**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Standard initial dealing is performed by the engine from the cards.hands initial declaration. The JSON-only integration verifies the resulting hand before any game action.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/engine/runtime/definitions/component-kit.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 118,
+      "point": "**Les placements initiaux standard devraient être portés par le moteur**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Standard initial track placement is performed by engine initialization from declarative per-player positions. The JSON-only integration verifies starting and subsequent positions.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/engine/runtime/definitions/component-kit.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 119,
+      "point": "**Les ressources initiales standard devraient être déclaratives**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Initial resource balances are declared in setup.resources and installed by the engine, with reference validation against the resource catalogue and an end-to-end resource victory test.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/engine/runtime/definitions/component-kit.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 120,
+      "point": "**Les sélections initiales de pion standard devraient être déclaratives**.",
+      "lot": 2,
+      "status": "open",
+      "analysis": "Pawn initialization exists; all game-specific selection paths have not been migrated.",
+      "evidence": []
+    },
+    {
+      "id": 121,
+      "point": "**Les conditions de victoire standards devraient être déclaratives**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Standard victory rules: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 122,
+      "point": "**Les conditions de fin de manche standards devraient être déclaratives**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Round-end conditions: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 123,
+      "point": "**Les fins de tour standards devraient être déclaratives**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "The canonical complete-turn effect drives standard turn completion without a game callback. The JSON-only integration verifies alternating actors throughout a complete match.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.spec.ts",
+        "src/game/engine/runtime/content/effect-content.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 124,
+      "point": "**Les sélections génériques de joueurs devraient être centralisées dans selectors/targets**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Player selectors: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 125,
+      "point": "**Les sélections génériques de cartes devraient être centralisées dans Choice/Submission**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Card choice/submission selectors: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 126,
+      "point": "**Les patterns `draw -> resolve -> discard` répétés devraient devenir des recipes génériques lorsqu’ils sont identiques conceptuellement**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Draw/resolve/discard recipes: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 127,
+      "point": "**Les échanges génériques doivent rester concentrés dans Economy/Inventory/Ownership**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Economy/inventory/ownership exchanges: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 128,
+      "point": "**Les checks de ressources ne doivent pas être réimplémentés dans un jeu quand Economy les garantit déjà**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Redundant resource checks: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 129,
+      "point": "**Les checks de possession ne doivent pas être réimplémentés quand Ownership/Inventory/Cards les couvrent**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Redundant ownership checks: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 130,
+      "point": "**Les déplacements standards ne doivent pas être réimplémentés quand Movement les couvre**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Standard movement duplication: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 131,
+      "point": "**Les mécaniques timeout/fallback doivent être centralisées dans Choice/Submission**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Choice/submission timeout fallbacks: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 132,
+      "point": "**Les mécaniques “attendre tous les joueurs” doivent être génériques**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Wait-for-all workflows: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 133,
+      "point": "**Les workflows vote/judge standards doivent rester dans les composants génériques dédiés**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Vote/judge workflows: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 134,
+      "point": "**La validation structurelle répétée `isTile`, `isCard`, etc. dans certains jeux doit encore être réduite si le moteur possède désormais les schemas/combinators appropriés**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Repeated structural schemas: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 135,
+      "point": "**Les contenus devraient décrire directement leurs effects lorsque possible**, plutôt que nécessiter une table TypeScript parallèle.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Content-owned effect descriptions: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 136,
+      "point": "**Les IDs de contenus/components/effects doivent être validés comme uniques à compilation**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Unique content/component/effect IDs: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 137,
+      "point": "**Les références vers phases/actions/effects/components doivent être validées intégralement avant runtime**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Complete static phase/action/effect/component references: engine support exists, but every game and relevant compiler path has not been completely audited and migrated.",
+      "evidence": []
+    },
+    {
+      "id": 138,
+      "point": "**Les phases terminales doivent être identifiées explicitement**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Compilation requires explicit terminal metadata for phases with no exits and rejects outgoing edges from terminal phases. Both TypeScript and JSON authoring tests cover these invariants.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/game-phase-graph-validator.ts",
+        "src/game/engine/runtime/definitions/game-phase-graph-validator.spec.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 139,
+      "point": "**Les transitions invalides doivent être impossibles après compilation**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Compiled phase graphs reject missing/unreachable targets and invalid terminal exits. Recursive freezing now traverses shallow-frozen author phases, so retained transition arrays cannot add edges after compilation. Runtime rejects forbidden transitions before exit hooks, timer cancellation or state mutation; repeated same-phase requests are idempotent. Compilation and transition contract tests pass.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/game-definition-compiler.ts",
+        "src/game/engine/runtime/definitions/game-phase-graph-validator.ts",
+        "src/game/engine/runtime/definitions/game-phase-graph-validator.spec.ts",
+        "src/game/engine/runtime/game-rule-context.ts",
+        "src/game/engine/runtime/lifecycle/phase-transition-contract.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 140,
+      "point": "**Les automatic rules doivent être garanties convergentes ou protégées contre les boucles infinies**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Verified bounded automatic stabilization with trace, ordered effect queues, and clone-before-command execution with atomic batch rejection; replay campaigns exercise all installed games.",
+      "evidence": [
+        "src/game/engine/runtime/lifecycle/declarative-lifecycle.ts",
+        "src/game/engine/runtime/lifecycle/automatic-stabilization.spec.ts",
+        "src/game/core/application/services/game-command-executor.service.spec.ts"
+      ]
+    },
+    {
+      "id": 141,
+      "point": "**L’ordre d’exécution des effects doit être explicitement déterministe**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Verified bounded automatic stabilization with trace, ordered effect queues, and clone-before-command execution with atomic batch rejection; replay campaigns exercise all installed games.",
+      "evidence": [
+        "src/game/engine/runtime/lifecycle/declarative-lifecycle.ts",
+        "src/game/engine/runtime/lifecycle/automatic-stabilization.spec.ts",
+        "src/game/core/application/services/game-command-executor.service.spec.ts"
+      ]
+    },
+    {
+      "id": 142,
+      "point": "**Une mutation de state doit rester atomique en cas d’erreur**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Verified bounded automatic stabilization with trace, ordered effect queues, and clone-before-command execution with atomic batch rejection; replay campaigns exercise all installed games.",
+      "evidence": [
+        "src/game/engine/runtime/lifecycle/declarative-lifecycle.ts",
+        "src/game/engine/runtime/lifecycle/automatic-stabilization.spec.ts",
+        "src/game/core/application/services/game-command-executor.service.spec.ts"
+      ]
+    },
+    {
+      "id": 143,
+      "point": "**Les I/O externes ne doivent pas être effectuées au milieu d’une mutation déterministe avant commit logique**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Command execution buffers events before commit, but every custom rule/I/O path has not been fully audited.",
+      "evidence": []
+    },
+    {
+      "id": 144,
+      "point": "**Les structures persistées dans les snapshots doivent rester entièrement sérialisables**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Snapshot validation rejects nonserializable values. State creation deep-clones base/turn/player data and creates independent kit storage; isolation and state-loader tests pass.",
+      "evidence": [
+        "src/game/engine/runtime/state/assert-serializable-state.ts",
+        "src/game/engine/runtime/state/declarative-state.factory.spec.ts",
+        "src/game/engine/runtime/content/game-state-loader.spec.ts"
+      ]
+    },
+    {
+      "id": 145,
+      "point": "**Le contenu compilé doit rester réellement immutable**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Compiled static collections now expose immutable read facades backed by isolated private collections. Direct and borrowed Map/Set prototype mutators cannot modify them, iterators and forEach cannot leak the backing collection, and retained source aliases cannot mutate the compiled copy. Recursive freezing handles shallow-frozen and readonly parents and preserves shared identities. The final compiler applies this protection to its entire visible graph, including manually supplied content contracts. Content cloning and card materialization preserve collection entries without exposing mutable catalogues; content fingerprints and snapshot formats are unchanged.",
+      "evidence": [
+        "src/game/engine/runtime/content/content-immutability.ts",
+        "src/game/engine/runtime/content/game-content.ts",
+        "src/game/engine/runtime/content/game-content.spec.ts",
+        "src/game/engine/runtime/definitions/game-definition-compiler.ts",
+        "src/game/engine/runtime/definitions/compilation-contracts.spec.ts",
+        "src/game/engine/runtime/cards/cards-state-controller.ts",
+        "src/game/engine/runtime/cards/cards-exchange.spec.ts",
+        "docs/architecture/immutable-content.md",
+        "logs/corrections-content-immutable-final.json"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 146,
+      "point": "**Deux parties ne doivent jamais partager des références mutables provenant d’un même contenu initial**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Snapshot validation rejects nonserializable values. State creation deep-clones base/turn/player data and creates independent kit storage; isolation and state-loader tests pass.",
+      "evidence": [
+        "src/game/engine/runtime/state/assert-serializable-state.ts",
+        "src/game/engine/runtime/state/declarative-state.factory.spec.ts",
+        "src/game/engine/runtime/content/game-state-loader.spec.ts"
+      ]
+    },
+    {
+      "id": 147,
+      "point": "**Tout ordre métier significatif doit être explicite** : joueurs, ranking, effects, scheduler, résultats DB.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Canonical-order helpers exist; exhaustive business-order inventory remains unfinished.",
+      "evidence": []
+    },
+    {
+      "id": 148,
+      "point": "**Les tie-breakers doivent rester explicites**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Ranking helpers have explicit policies; all tie-breaker sites have not been audited.",
+      "evidence": []
+    },
+    {
+      "id": 149,
+      "point": "**Les jobs scheduler/BullMQ doivent rester idempotents ou protégés contre le replay**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Scheduled task and command identities include run, restore epoch, generation, signature and state versions. Superseded jobs cannot delete newer generations.",
+      "evidence": [
+        "src/game/core/infrastructure/scheduling/game-task-job-id.ts",
+        "src/game/core/infrastructure/scheduling/game-task-job-id.spec.ts",
+        "src/game/core/application/helpers/game-task-contract.spec.ts"
+      ]
+    },
+    {
+      "id": 150,
+      "point": "**Les jobs obsolètes doivent pouvoir être identifiés après restore/reset/end game**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Scheduled task and command identities include run, restore epoch, generation, signature and state versions. Superseded jobs cannot delete newer generations.",
+      "evidence": [
+        "src/game/core/infrastructure/scheduling/game-task-job-id.ts",
+        "src/game/core/infrastructure/scheduling/game-task-job-id.spec.ts",
+        "src/game/core/application/helpers/game-task-contract.spec.ts"
+      ]
+    },
+    {
+      "id": 151,
+      "point": "**La concurrence des commandes d’une même partie doit avoir une stratégie unique et documentée**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Verified room-scoped command orchestration and durable version/restore-epoch CAS; stale writes are rejected, including reuse of a version after restoration.",
+      "evidence": [
+        "docs/architecture/concurrency-and-state.md",
+        "src/game/core/application/services/game-engine.service.spec.ts"
+      ]
+    },
+    {
+      "id": 152,
+      "point": "**Une écriture d’état ancienne ne doit jamais écraser une version plus récente**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Verified room-scoped command orchestration and durable version/restore-epoch CAS; stale writes are rejected, including reuse of a version after restoration.",
+      "evidence": [
+        "docs/architecture/concurrency-and-state.md",
+        "src/game/core/application/services/game-engine.service.spec.ts"
+      ]
+    },
+    {
+      "id": 153,
+      "point": "**Le protocole realtime devrait comporter une version/sequence lorsqu’un ordre strict des états est nécessaire**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "State versions exist in the protocol; end-to-end strict ordering has not been fully verified.",
+      "evidence": []
+    },
+    {
+      "id": 154,
+      "point": "**Le client doit pouvoir demander une resynchronisation complète**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "The game.state route supplies full resynchronization; replay cache fingerprints type, payload and authenticated roles and rejects collisions.",
+      "evidence": [
+        "src/game/core/infrastructure/presentation/ws/game-ws.registrar.ts",
+        "src/platform/realtime/infrastructure/presentation/ws/realtime-request-replay.service.spec.ts"
+      ]
+    },
+    {
+      "id": 155,
+      "point": "**Un request ID rejoué avec un payload différent doit être rejeté ou signalé comme conflit**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "The game.state route supplies full resynchronization; replay cache fingerprints type, payload and authenticated roles and rejects collisions.",
+      "evidence": [
+        "src/game/core/infrastructure/presentation/ws/game-ws.registrar.ts",
+        "src/platform/realtime/infrastructure/presentation/ws/realtime-request-replay.service.spec.ts"
+      ]
+    },
+    {
+      "id": 156,
+      "point": "**Les projections client doivent être construites en whitelist**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Generic projections use whitelists; per-game extensions have not all been audited.",
+      "evidence": []
+    },
+    {
+      "id": 157,
+      "point": "**Les secrets de jeu doivent être filtrés par les mécanismes génériques du moteur plutôt que par du code ad hoc jeu par jeu**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Generic visibility filtering exists; removal of every ad hoc game secrecy path is unverified.",
+      "evidence": []
+    },
+    {
+      "id": 158,
+      "point": "**Les APIs debug/snapshot doivent rester séparées des APIs joueur**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Player and internal state APIs differ; exhaustive access audit remains unfinished.",
+      "evidence": []
+    },
+    {
+      "id": 159,
+      "point": "**Les consumers d’événements potentiellement délivrés plusieurs fois doivent être idempotents**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Several consumers deduplicate events; every repeated-delivery consumer has not been audited.",
+      "evidence": []
+    },
+    {
+      "id": 160,
+      "point": "**Les événements persistants doivent être versionnés lorsqu’ils constituent un contrat durable**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Event sequence/state versions exist; durable event schema versions remain to be formalized.",
+      "evidence": []
+    },
+    {
+      "id": 161,
+      "point": "**Les event payloads ne doivent jamais être des Entities ORM sérialisées directement**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Event models are independent of ORM; all publishers have not been individually verified.",
+      "evidence": []
+    },
+    {
+      "id": 162,
+      "point": "**Les opérations cross-domain critiques qui nécessitent une publication fiable doivent disposer d’une stratégie type outbox/inbox si leur niveau de garantie l’exige**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Transaction/compensation guarantees documented; full cross-domain outbox/inbox review remains unfinished.",
+      "evidence": []
+    },
+    {
+      "id": 163,
+      "point": "**Les TTL métier doivent rester centralisés et nommés**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Named operational TTLs exist; exhaustive business TTL centralization not verified.",
+      "evidence": []
+    },
+    {
+      "id": 164,
+      "point": "**Redis Pub/Sub ne doit pas être utilisé comme garantie de livraison d’événements critiques**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Pub/Sub is documented best effort; all critical publication paths still require individual verification.",
+      "evidence": []
+    },
+    {
+      "id": 165,
+      "point": "**Presence doit continuer à gérer expiration, reconnect et états fantômes correctement en multi-instance**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Presence expiry/reconnect tests pass; real multi-instance validation has not been run.",
+      "evidence": []
+    },
+    {
+      "id": 166,
+      "point": "**Les uploads doivent rester bornés en taille, validés en contenu et publiés atomiquement**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Upload unit tests pass; all content/atomic-publication paths have not been audited.",
+      "evidence": []
+    },
+    {
+      "id": 167,
+      "point": "**Les releases/updates doivent rester vérifiables par checksum ou mécanisme d’intégrité lorsque nécessaire**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Update integrity mechanisms exist; end-to-end release checksum guarantees not fully audited.",
+      "evidence": []
+    },
+    {
+      "id": 168,
+      "point": "**Les locks filesystem ne doivent jamais être considérés comme distribués**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Redis lease null guard verified; all filesystem lock uses have not been checked.",
+      "evidence": []
+    },
+    {
+      "id": 169,
+      "point": "**Les logs doivent redacter secrets, tokens, cookies et autres données sensibles**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Root sanitization exists and tests pass; every specialized logger has not been audited.",
+      "evidence": []
+    },
+    {
+      "id": 170,
+      "point": "**Les métriques doivent éviter des labels à cardinalité non bornée**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Game-operation labels are bounded; every metrics family has not been audited.",
+      "evidence": []
+    },
+    {
+      "id": 171,
+      "point": "**Liveness et readiness doivent rester distinctes**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Verified distinct health live/ready endpoints, shared Redis-backed HTTP/WS quotas, and application repository contracts free of ORM/query builders.",
+      "evidence": [
+        "src/modules/health/infrastructure/presentation/http/controllers/health.controller.spec.ts",
+        "src/platform/ws/application/services/ws-request-rate-limit.service.spec.ts",
+        "src/platform/redis/infrastructure/redis-rate-limit.storage.spec.ts",
+        "tools/architecture-check.cjs"
+      ]
+    },
+    {
+      "id": 172,
+      "point": "**Le graceful shutdown doit empêcher de couper une mutation critique au milieu de son exécution**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Shutdown work tracking exists and tests pass; every critical mutation entry has not been verified.",
+      "evidence": []
+    },
+    {
+      "id": 173,
+      "point": "**L’authorization métier doit être vérifiée pour chaque commande sensible, y compris WebSocket**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Authorization tests pass; every sensitive HTTP/WS command has not been individually audited.",
+      "evidence": []
+    },
+    {
+      "id": 174,
+      "point": "**Un `userId` client ne doit jamais être préféré à l’identité authentifiée côté serveur**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Authenticated identity paths exist; exhaustive client-supplied identity audit remains unfinished.",
+      "evidence": []
+    },
+    {
+      "id": 175,
+      "point": "**Le rate limiting doit être compatible avec une architecture multi-instance lorsqu’il protège réellement le système**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Verified distinct health live/ready endpoints, shared Redis-backed HTTP/WS quotas, and application repository contracts free of ORM/query builders.",
+      "evidence": [
+        "src/modules/health/infrastructure/presentation/http/controllers/health.controller.spec.ts",
+        "src/platform/ws/application/services/ws-request-rate-limit.service.spec.ts",
+        "src/platform/redis/infrastructure/redis-rate-limit.storage.spec.ts",
+        "tools/architecture-check.cjs"
+      ]
+    },
+    {
+      "id": 176,
+      "point": "**Les refresh tokens doivent couvrir rotation/révocation selon le niveau de sécurité recherché**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Fixed non-revocable evicted tokens and atomic issuance/indexing. Full rotation/revocation concurrency validation against Redis remains to be completed.",
+      "evidence": []
+    },
+    {
+      "id": 177,
+      "point": "**Les secrets critiques de production doivent rester obligatoires sans fallback permissif**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Production environment validation tests pass; exhaustive critical-secret inventory not completed.",
+      "evidence": []
+    },
+    {
+      "id": 178,
+      "point": "**Les entrées JSON externes doivent être bornées en taille/profondeur et valider valeurs numériques/champs inconnus**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "JSON bounds exist; unknown-field handling across every external entry remains unfinished.",
+      "evidence": []
+    },
+    {
+      "id": 179,
+      "point": "**Les repositories applicatifs ne doivent jamais exposer QueryBuilder/TypeORM aux couches métier**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Verified distinct health live/ready endpoints, shared Redis-backed HTTP/WS quotas, and application repository contracts free of ORM/query builders.",
+      "evidence": [
+        "src/modules/health/infrastructure/presentation/http/controllers/health.controller.spec.ts",
+        "src/platform/ws/application/services/ws-request-rate-limit.service.spec.ts",
+        "src/platform/redis/infrastructure/redis-rate-limit.storage.spec.ts",
+        "tools/architecture-check.cjs"
+      ]
+    },
+    {
+      "id": 180,
+      "point": "**Les read models doivent être privilégiés quand un consumer n’a besoin que d’une projection**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Introduced staff-ID and ambience readers; all projection-only consumers have not been audited.",
+      "evidence": []
+    }
+  ],
+  "lastUpdated": "2026-09-11",
+  "lastContinuation": "docs/quality/corrections-next-batch-2026-09-11.json",
+  "latestContinuation": "docs/quality/corrections-immutable-content-2026-09-11.json"
+}

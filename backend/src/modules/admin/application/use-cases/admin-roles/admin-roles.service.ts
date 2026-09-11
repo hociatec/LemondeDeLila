@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { AdminCatalogInvalidationService } from '../../services/admin-catalog-invalidation.service';
 import { AdminRoleDefinitionsCatalogService } from './admin-role-definitions-catalog.service';
 
@@ -30,6 +30,7 @@ export class AdminRolesService {
       permissions: string[];
     },
   ) {
+    assertAdminId(adminId);
     await this.roleDefinitions.create({
       name: input.name,
       description: input.description,
@@ -48,6 +49,7 @@ export class AdminRolesService {
       permissions?: string[];
     },
   ) {
+    assertAdminId(adminId);
     await this.roleDefinitions.update(input.name, {
       name: input.newName,
       description: input.description,
@@ -58,8 +60,15 @@ export class AdminRolesService {
   }
 
   async delete(adminId: number, name: string) {
+    assertAdminId(adminId);
     await this.roleDefinitions.delete(name);
     await this.catalogInvalidation.notifyCatalogInvalidated(adminId);
     return this.listDefinitions();
+  }
+}
+
+function assertAdminId(value: unknown): asserts value is number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+    throw new BadRequestException('Identifiant administrateur invalide');
   }
 }

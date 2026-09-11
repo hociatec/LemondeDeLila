@@ -1,8 +1,9 @@
-import { IsBoolean, IsInt, IsOptional, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class AdminRoomsListWsDto {
   @IsInt()
   @Min(1)
+  @Max(1000)
   @IsOptional()
   limit?: number;
 

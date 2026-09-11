@@ -123,15 +123,12 @@ export function stealChoice(
   playerId: number,
   ctx: RuleContext,
 ): void {
-  const options = ctx.players
-    .all()
-    .filter((player) => player.id !== playerId)
-    .flatMap((player) =>
-      ctx.cards.hand<string>(HANDS, player.id).map((cardId) => ({
-        targetPlayerId: player.id,
-        cardId,
-      })),
-    );
+  const options = ctx.players.others(playerId).flatMap((player) =>
+    ctx.cards.hand<string>(HANDS, player.id).map((cardId) => ({
+      targetPlayerId: player.id,
+      cardId,
+    })),
+  );
   if (options.length === 0) return;
   const pending: RitesPendingChoice = {
     kind: 'reveal-and-steal',

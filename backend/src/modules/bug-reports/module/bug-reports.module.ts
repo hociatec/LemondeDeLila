@@ -1,4 +1,9 @@
 import { Module } from '@nestjs/common';
+import { BusinessClockModule } from '../../../platform/time/public-api';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '@shared/interfaces/public-api';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   type BugReportCommentRepository,
@@ -23,6 +28,7 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
 
 @Module({
   imports: [
+    BusinessClockModule,
     TypeOrmModule.forFeature([BugReportEntity, BugReportCommentEntity]),
   ],
   providers: [
@@ -58,9 +64,9 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
     },
     {
       provide: CreateBugReportService,
-      useFactory: (repo: BugReportRepository) =>
-        new CreateBugReportService(repo),
-      inject: [BUG_REPORT_REPOSITORY],
+      useFactory: (repo: BugReportRepository, clock: BusinessClock) =>
+        new CreateBugReportService(repo, clock),
+      inject: [BUG_REPORT_REPOSITORY, BUSINESS_CLOCK],
     },
     {
       provide: UpdateBugReportService,
@@ -106,8 +112,13 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
       useFactory: (
         repo: BugReportCommentRepository,
         reports: BugReportRepository,
-      ) => new AddBugReportCommentService(repo, reports),
-      inject: [BUG_REPORT_COMMENT_REPOSITORY, BUG_REPORT_REPOSITORY],
+        clock: BusinessClock,
+      ) => new AddBugReportCommentService(repo, reports, clock),
+      inject: [
+        BUG_REPORT_COMMENT_REPOSITORY,
+        BUG_REPORT_REPOSITORY,
+        BUSINESS_CLOCK,
+      ],
     },
   ],
   exports: [

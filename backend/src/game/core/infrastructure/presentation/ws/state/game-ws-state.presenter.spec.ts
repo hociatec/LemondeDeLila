@@ -1,5 +1,5 @@
-import type { GameRuntime } from '../../../../application/contracts/game-runtime.interface';
-import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
+import type { GameRuntime } from '../../../../application/ports/game-runtime.port';
+import type { GameState } from '../../../../application/models/game-state.model';
 import { GameWsStatePresenter } from './game-ws-state.presenter';
 import { GameVisibilityService } from '../../../../application/services/game-visibility.service';
 
@@ -15,12 +15,17 @@ describe('GameWsStatePresenter', () => {
       players: [{ id: 1, username: 'A' }],
       turn: { currentPlayerId: 1, direction: 1 },
       metadata: { roomRunId: 7 },
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => ({
         ...state,
         actions: [{ type: 'play', label: 'Jouer', payload: { card: 3 } }],
         kits: { score: { leaderboard: [] } },
+        gameContract: {
+          stateVersion: 2,
+          rulesVersion: '3',
+          contentVersion: 'c',
+        },
       }),
       getShortcuts: () => [
         { key: 'P', type: 'action', actionType: 'play' },
@@ -49,6 +54,11 @@ describe('GameWsStatePresenter', () => {
       'Scores',
     ]);
     expect(payload.runId).toBe(7);
+    expect(payload.gameContract).toEqual({
+      stateVersion: 2,
+      rulesVersion: '3',
+      contentVersion: 'c',
+    });
     expect(payload.viewerPlayerId).toBe(1);
     expect(payload.state).toBeUndefined();
   });
@@ -58,7 +68,7 @@ describe('GameWsStatePresenter', () => {
       status: 'finished',
       players: [{ id: 1, username: 'Lila' }],
       metadata: {},
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => ({
         system: { match: { status: 'finished' } },
@@ -102,7 +112,7 @@ describe('GameWsStatePresenter', () => {
       status: 'playing',
       players: [{ id: 1, username: 'Lila' }],
       metadata: {},
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => ({
         system: { match: { status: 'playing' } },
@@ -143,7 +153,7 @@ describe('GameWsStatePresenter', () => {
       status: 'playing',
       players: [{ id: 1, username: 'Lila' }],
       metadata: {},
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => ({
         system: { match: { status: 'playing' } },
@@ -192,7 +202,7 @@ describe('GameWsStatePresenter', () => {
       turn: { currentPlayerId: 1, direction: 1 },
       players: [{ id: 1, username: 'Lila' }],
       metadata: {},
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const exposed = {
       ...state,
       actions: [],
@@ -292,7 +302,7 @@ describe('GameWsStatePresenter', () => {
         { id: 2, username: 'Mina' },
       ],
       metadata: {},
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const exposed = {
       system: {
         match: { status: 'playing' },
@@ -368,7 +378,7 @@ describe('GameWsStatePresenter', () => {
             status: 'playing',
             players,
             metadata: {},
-          } as unknown as GameStateEntity,
+          } as unknown as GameState,
           handler,
           roomId: 8,
           gameType: 'a-fond-les-ballons',
@@ -387,7 +397,7 @@ describe('GameWsStatePresenter', () => {
       turn: { currentPlayerId: 1 },
       players: [{ id: 1, username: 'Lila' }],
       metadata: {},
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => ({
         system: {
@@ -508,7 +518,7 @@ describe('GameWsStatePresenter', () => {
         { id: 1, username: 'Lila' },
         { id: 2, username: 'Mina' },
       ],
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => ({
         system: {
@@ -559,7 +569,7 @@ describe('GameWsStatePresenter', () => {
         { id: 1, username: 'Lila' },
         { id: 2, username: 'Mina' },
       ],
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => ({
         system: {
@@ -658,7 +668,7 @@ describe('GameWsStatePresenter', () => {
             { id: 1, username: 'Lila' },
             { id: 2, username: 'Mina' },
           ],
-        } as unknown as GameStateEntity,
+        } as unknown as GameState,
         handler,
         roomId: 6,
         gameType: 'example',
@@ -705,7 +715,7 @@ describe('GameWsStatePresenter', () => {
       state: {
         status: 'started',
         players: [{ id: 1, username: 'Hacene' }],
-      } as unknown as GameStateEntity,
+      } as unknown as GameState,
       handler,
       roomId: 6,
       gameType: 'panier-express',
@@ -781,7 +791,7 @@ describe('GameWsStatePresenter', () => {
           { id: 1, username: 'Lila' },
           { id: 2, username: 'Mina' },
         ],
-      } as unknown as GameStateEntity,
+      } as unknown as GameState,
       handler,
       roomId: 6,
       gameType: 'example',
@@ -806,7 +816,7 @@ describe('GameWsStatePresenter', () => {
       turn: { currentPlayerId: 1 },
       players: [{ id: 1, username: 'hacene' }],
       metadata: {},
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => ({
         system: {
@@ -986,7 +996,7 @@ describe('GameWsStatePresenter', () => {
           { id: 1, username: 'Lila' },
           { id: 2, username: 'Mina' },
         ],
-      } as unknown as GameStateEntity,
+      } as unknown as GameState,
       handler,
       roomId: 6,
       gameType: 'lama',
@@ -1022,7 +1032,7 @@ describe('GameWsStatePresenter', () => {
       metadata: {},
       pending: prompt,
       actions: [{ type: 'configure', payload: {} }],
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => state,
       getShortcuts: () => [],
@@ -1054,7 +1064,7 @@ describe('GameWsStatePresenter', () => {
         choices: ['Beta'],
         data: { choiceActionsByIndex: [mappedAction] },
       },
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => state,
       getShortcuts: () => [],
@@ -1082,7 +1092,7 @@ describe('GameWsStatePresenter', () => {
       players: [],
       actions: [{ type: 'roll', payload: {} }],
       kits: { dice: { total: 5 } },
-    } as unknown as GameStateEntity;
+    } as unknown as GameState;
     const handler = {
       exposeStateForUser: () => state,
       getShortcuts: () => [],

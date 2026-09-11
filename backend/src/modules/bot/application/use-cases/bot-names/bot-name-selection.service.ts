@@ -1,4 +1,4 @@
-import type { BotRoomRecord } from '../../contracts/bot-room.record';
+import type { BotRoomRecord } from '../../read-models/bot-room.record';
 import { BotUnavailableNamesError } from '../../errors/bot-application.errors';
 import { BotNameCacheService } from './bot-name-cache.service';
 import { BotNameNormalizerService } from './bot-name-normalizer.service';
@@ -10,10 +10,14 @@ export class BotNameSelectionService {
   ) {}
 
   async pickName(existing: BotRoomRecord[]): Promise<string> {
-    const names = existing.map((bot) => bot.name.toLowerCase());
+    const names = existing.slice(0, 64).map((bot) =>
+      String(bot.name ?? '')
+        .slice(0, 150)
+        .toLowerCase(),
+    );
     const exclude = new Set(names);
     const candidates = await this.cache.getEnabledNames();
-    for (const candidate of candidates) {
+    for (const candidate of candidates.slice(0, 10_000)) {
       const sanitized = this.normalizer.sanitize(candidate);
       if (!exclude.has(sanitized.toLowerCase())) {
         return sanitized;

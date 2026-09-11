@@ -2,21 +2,18 @@ import {
   cards,
   collection,
   defineCardsSchema,
-  defineChoice,
   defineGame,
-  defineGameContent,
-  gameInput,
   raceGame,
 } from '../../../engine/sdk/public-api';
-import { VOYAGE_CONTENT } from './content';
+import { VOYAGE_CONTENT, VOYAGE_GAME_CONTENT } from './content';
+import { VOYAGE_EFFECTS } from './effects';
+import manifest from './manifest.json';
+import { GAME_RULES } from './rule-bindings';
 import {
-  advanceFinishCountdown,
-  resolveVoyageQuiz,
   VOYAGE_ACTIONS,
   VOYAGE_FINISH_COUNTDOWN,
   VOYAGE_FINISH_STARTED,
 } from './rules';
-import { VOYAGE_EFFECTS } from './effects';
 import type { VoyageCollectionKind, VoyageState } from './types';
 
 const deckNames: VoyageCollectionKind[] = [
@@ -41,13 +38,14 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<VoyageState>()({
-  id: 'voyage-en-terre-de-brumes',
-  displayName: 'Voyage en Terre de Brumes !',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Parcourez l’Irlande et réunissez légendes et trésors.',
-  players: { min: 2, max: 10 },
-  content: defineGameContent('voyage-en-terre-de-brumes', VOYAGE_CONTENT),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: VOYAGE_GAME_CONTENT,
+  rulesVersion: '3',
   patterns: [
     raceGame({
       trackId: 'ireland',
@@ -67,6 +65,7 @@ export default defineGame<VoyageState>()({
       ),
     }),
   ],
+  resourceIds: deckNames.map((kind) => `voyage.collection.${kind}`),
   initialization: {
     counters: {
       [VOYAGE_FINISH_STARTED]: 0,
@@ -79,16 +78,9 @@ export default defineGame<VoyageState>()({
     { key: 'P', type: 'interface', id: 'position' },
     { key: 'C', type: 'interface', id: 'cards' },
   ],
-  lifecycle: {
-    afterTurn: ({ state, ctx }) => advanceFinishCountdown(state, ctx),
-  },
+  ...GAME_RULES,
   actions: VOYAGE_ACTIONS,
   effects: VOYAGE_EFFECTS,
-  choices: {
-    'voyage.choice': defineChoice<VoyageState, string>({
-      input: gameInput.string({ min: 1, max: 256 }),
-      resolve: ({ state, value, ctx }) => resolveVoyageQuiz(state, value, ctx),
-    }),
-  },
+
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

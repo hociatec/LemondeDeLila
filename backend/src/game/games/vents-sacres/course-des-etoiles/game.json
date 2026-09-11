@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "1",
+  "category": "JeuxDePlateaux",
+  "world": "vents-sacres",
+  "components": [
+    { "component": "movement.track", "id": "course", "spaces": 4 }
+  ],
+  "resourceIds": ["etoiles"],
+  "setup": {
+    "firstPlayer": "first",
+    "resources": { "etoiles": 0 },
+    "tracks": { "course": 0 }
+  },
+  "initialPhase": "playing",
+  "phases": { "playing": { "actions": ["avancer"], "terminal": true } },
+  "actions": {
+    "avancer": {
+      "effects": [
+        { "kind": "move", "trackId": "course", "spaces": 1 },
+        { "kind": "gain-resource", "resource": "etoiles", "amount": 1 },
+        { "kind": "complete-turn" }
+      ]
+    }
+  },
+  "victory": { "kind": "resource-at-least", "resource": "etoiles", "amount": 3 }
+}

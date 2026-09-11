@@ -18,7 +18,8 @@ export type ListAdminUsersFilters = {
 export interface AdminUserRepository {
   clearExpiredBans(now: Date): Promise<void>;
   clearExpiredChatBans(now: Date): Promise<void>;
-  listIds(): Promise<number[]>;
+  /** Ascending ID batches, bounded to the highest ID present when scanning starts. */
+  scanIdBatches(): AsyncIterable<readonly number[]>;
   list(filters: ListAdminUsersFilters): Promise<{
     items: AdminSafeUser[];
     total: number;

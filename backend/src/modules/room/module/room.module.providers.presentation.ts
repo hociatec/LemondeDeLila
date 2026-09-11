@@ -13,6 +13,7 @@ import { RoomGatewayPresenceService } from '../infrastructure/presentation/ws/ro
 import { RoomGatewaySessionPresenter } from '../infrastructure/presentation/ws/room-gateway-session.presenter';
 import { RoomGatewaySessionService } from '../infrastructure/presentation/ws/room-gateway-session.service';
 import { RoomGatewayStateService } from '../infrastructure/presentation/ws/room-gateway-state.service';
+import { RoomPayloadBroadcaster } from '../infrastructure/presentation/ws/room-payload.broadcaster';
 import { RoomGatewayRuntimeStateService } from '../infrastructure/presentation/ws/room-gateway-runtime-state.service';
 import { RoomGateway } from '../infrastructure/presentation/ws/room.gateway';
 import { RoomLobbyWsHandler } from '../infrastructure/presentation/ws/room-lobby-ws.handler';
@@ -37,6 +38,7 @@ export const ROOM_PRESENTATION_PROVIDERS = [
   RoomGatewaySessionPresenter,
   RoomGatewaySessionService,
   RoomGatewayStateService,
+  RoomPayloadBroadcaster,
   RoomGatewayRuntimeStateService,
   RoomLobbyWsHandler,
   RoomLobbyInvitesService,

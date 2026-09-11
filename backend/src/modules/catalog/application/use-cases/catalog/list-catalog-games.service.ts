@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { CatalogGame } from '../../contracts/catalog-game.record';
+import { CatalogGame } from '../../read-models/catalog-game.record';
 import { CATALOG_GAME_SOURCE_PORT } from '../../ports/catalog-game-source.port';
 import type { CatalogGameSourcePort } from '../../ports/catalog-game-source.port';
 import { CatalogCacheService } from '../../services/catalog-cache.service';
@@ -21,8 +21,9 @@ export class ListCatalogGamesService {
       return cached;
     }
 
+    const revision = this.cache.revision();
     const definitions = await this.source.listGames();
     const games = this.mapper.toCatalogGames(definitions);
-    return this.cache.setGames(games);
+    return this.cache.setGames(games, revision);
   }
 }

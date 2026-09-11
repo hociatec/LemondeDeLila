@@ -4,7 +4,8 @@ const VERSION_PATTERN =
 export type UpdateVersion = readonly [number, number, number, number];
 
 export function parseUpdateVersion(value: string): UpdateVersion | null {
-  const match = VERSION_PATTERN.exec((value || '').trim());
+  if (typeof value !== 'string' || value.length > 128) return null;
+  const match = VERSION_PATTERN.exec(value.trim());
   if (!match) return null;
   const parts: UpdateVersion = [
     Number(match[1]),

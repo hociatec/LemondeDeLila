@@ -1,32 +1,27 @@
 import {
-  defineChoice,
   defineGame,
-  defineGameContent,
-  gameInput,
   pawns,
   publicField,
   raceGame,
 } from '../../../engine/sdk/public-api';
-import { GOOSE_PAWNS, GOOSE_TILES } from './content';
-import {
-  assignPawn,
-  initializeGoose,
-  JEU_OIE_ACTIONS,
-  JEU_OIE_PHASES,
-} from './rules';
+import { GOOSE_GAME_CONTENT, GOOSE_PAWNS, GOOSE_TILES } from './content';
+import manifest from './manifest.json';
+import { GAME_CHOICES } from './rules';
+
+import { JEU_OIE_ACTIONS, JEU_OIE_PHASES } from './rules';
+import { setupGame } from './rules';
 import type { JeuOieState } from './types';
 
 export default defineGame<JeuOieState>()({
-  id: 'jeu-oie',
-  displayName: 'Jeu de l’oie',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsSacres',
-  description: 'Course classique sur 63 cases et ses pièges.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('jeu-oie', {
-    tiles: GOOSE_TILES,
-    pawns: GOOSE_PAWNS,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: GOOSE_GAME_CONTENT,
+  rulesVersion: '2',
+  initialization: { tracks: { 'goose-board': 1 } },
   playerValuesVisibility: { statuses: publicField() },
   patterns: [
     raceGame({
@@ -40,23 +35,10 @@ export default defineGame<JeuOieState>()({
     { key: 'D', type: 'action', actionType: 'roll' },
     { key: 'P', type: 'interface', id: 'position' },
   ],
-  setup: ({ players, ctx }) => {
-    const selectionOrder = ctx.random.shuffle(
-      players.map((player) => player.id),
-    );
-    ctx.round.start(selectionOrder[0], selectionOrder);
-    ctx.turn.to(selectionOrder[0]);
-    initializeGoose(selectionOrder, ctx);
-    return {};
-  },
+  setup: setupGame,
   initialPhase: JEU_OIE_PHASES.initialPhase,
   phases: JEU_OIE_PHASES.phases,
   actions: JEU_OIE_ACTIONS,
-  choices: {
-    'goose.pawn': defineChoice<JeuOieState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ actor, value, ctx }) => assignPawn(actor.id, value, ctx),
-    }),
-  },
+  choices: GAME_CHOICES,
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

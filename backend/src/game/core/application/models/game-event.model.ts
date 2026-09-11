@@ -1,0 +1,52 @@
+import type { GameState } from './game-state.model';
+
+export type EventVisibility =
+  | { kind: 'public' }
+  | { kind: 'internal' }
+  | { kind: 'private'; playerIds: readonly number[] }
+  | {
+      kind: 'split';
+      privateDataByPlayer: Readonly<
+        Record<string, Readonly<Record<string, unknown>>>
+      >;
+    };
+
+export type GamePendingEvent = {
+  actorId: number | null;
+  type: string;
+  data: Record<string, unknown>;
+  visibility: EventVisibility;
+  occurredAtMs: number;
+};
+
+export type GameEvent = GamePendingEvent & {
+  /** Missing only on historical v1 events read from storage. */
+  schemaVersion?: number;
+  seq: number;
+  version: number;
+};
+
+export type ProjectedGameEvent = Omit<
+  GameEvent,
+  'visibility' | 'schemaVersion'
+> & {
+  schemaVersion: number;
+};
+export type ProjectedGamePendingEvent = Omit<GamePendingEvent, 'visibility'>;
+
+export type GameStatePatchOperation =
+  | { operation: 'set'; key: keyof GameState; value: unknown }
+  | { operation: 'remove'; key: keyof GameState };
+
+export type GameSnapshot = {
+  seq: number;
+  version: number;
+  state: GameState;
+};
+
+export type GameTimeline = {
+  initial: GameSnapshot;
+  events: GameEvent[];
+  snapshots: GameSnapshot[];
+};
+/** Explicitly named data contract at the application boundary. */

@@ -1,6 +1,10 @@
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
 import { Inject, Injectable } from '@nestjs/common';
 
-import { ChatNormalizedMessage } from '../../contracts/chat-message.record';
+import { ChatNormalizedMessage } from '../../read-models/chat-message.record';
 import {
   CHAT_MESSAGE_REPOSITORY,
   type ChatMessageRepository,
@@ -15,6 +19,7 @@ import {
 } from '../../../domain/errors/chat-domain.errors';
 import { ChatSettingsService } from './chat-settings.service';
 import { ChatValidator } from './chat.validator';
+import { isChatMutationWindowOpen } from '../../../domain/policies/chat-mutation-window';
 
 @Injectable()
 export class EditOwnChatMessageService {
@@ -25,6 +30,7 @@ export class EditOwnChatMessageService {
     private readonly settings: ChatSettingsService,
     private readonly presenter: ChatMessagePresenterService,
     private readonly cache: ChatMessageCacheService,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async execute(
@@ -32,8 +38,13 @@ export class EditOwnChatMessageService {
     messageId: string,
     text: string,
   ): Promise<ChatNormalizedMessage> {
-    const id = (messageId || '').trim();
-    if (!id) {
+    const id = typeof messageId === 'string' ? messageId.trim() : '';
+    if (
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      !id ||
+      id.length > 128
+    ) {
       throw new ChatMessageNotFoundError();
     }
     const message = await this.messages.findByMessageId(id);
@@ -48,9 +59,13 @@ export class EditOwnChatMessageService {
     if (message.deletedAt) {
       throw new ChatMessageDeletedError('Message supprimé.');
     }
-    const ageMs = Date.now() - message.createdAt.getTime();
-    const windowMs = this.settings.getEditWindowSeconds() * 1000;
-    if (windowMs <= 0 || ageMs > windowMs) {
+    if (
+      !isChatMutationWindowOpen(
+        message.createdAt.getTime(),
+        this.clock.now(),
+        this.settings.getEditWindowSeconds(),
+      )
+    ) {
       throw new ChatMessageEditWindowExpiredError(
         'Message trop ancien pour être modifié.',
       );

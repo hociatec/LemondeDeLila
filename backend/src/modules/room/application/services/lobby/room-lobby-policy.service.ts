@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { RoomPayload } from '../../contracts/room-payload.model';
-import type { RoomRecord } from '../../contracts/room-record.model';
+import type { RoomPayload } from '../../models/room-payload.model';
+import type { RoomRecord } from '../../models/room-record.model';
 import type { RoomInvite } from '../membership/room-invite.service';
 
 @Injectable()

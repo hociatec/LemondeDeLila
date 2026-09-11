@@ -4,6 +4,7 @@ import {
 } from '../../../core/domain/errors/game-domain.errors';
 import { GameCardsDeckController } from './cards-deck-controller';
 import type { CardValue, HandsDefinition } from './cards-contracts';
+import { sameSerializableValue } from '../state/serializable-value';
 
 function requireHandDefinition(
   definitions: ReadonlyMap<string, HandsDefinition>,
@@ -43,7 +44,7 @@ export class GameCardsController extends GameCardsDeckController {
     const zone = this.state.zones[zoneId] ?? [];
     const persistentCard = this.toPersistentCard(definition.deck, card);
     const index = zone.findIndex((candidate) =>
-      Object.is(candidate, persistentCard),
+      sameSerializableValue(candidate, persistentCard),
     );
     if (index < 0) {
       throw new GameRuleViolationError('CARD_NOT_IN_ZONE', { zoneId });
@@ -80,7 +81,7 @@ export class GameCardsController extends GameCardsDeckController {
     const hand = this.persistentHand(handId, playerId);
     const persistentCard = this.toPersistentCard(deckId, card);
     const index = hand.findIndex((candidate) =>
-      Object.is(candidate, persistentCard),
+      sameSerializableValue(candidate, persistentCard),
     );
     if (index < 0) {
       throw new GameRuleViolationError(
@@ -114,7 +115,7 @@ export class GameCardsController extends GameCardsDeckController {
     const hand = this.persistentHand(handId, playerId);
     const persistentCard = this.toPersistentCard(definition.deck, card);
     const index = hand.findIndex((candidate) =>
-      Object.is(candidate, persistentCard),
+      sameSerializableValue(candidate, persistentCard),
     );
     if (index < 0) {
       throw new GameRuleViolationError(
@@ -145,20 +146,24 @@ export class GameCardsController extends GameCardsDeckController {
     rightPlayerId: number,
     rightCard: TCard,
   ): void {
-    const leftHand = this.hand<TCard>(handId, leftPlayerId);
-    const rightHand = this.hand<TCard>(handId, rightPlayerId);
-    if (!leftHand.some((card) => Object.is(card, leftCard))) {
+    const definition = requireHandDefinition(this.handDefinitions, handId);
+    const leftHand = this.persistentHand(handId, leftPlayerId);
+    const rightHand = this.persistentHand(handId, rightPlayerId);
+    const leftValue = this.toPersistentCard(definition.deck, leftCard);
+    const rightValue = this.toPersistentCard(definition.deck, rightCard);
+    if (!leftHand.some((card) => sameSerializableValue(card, leftValue))) {
       throw new GameRuleViolationError('CARD_NOT_IN_HAND', {
         handId,
         playerId: leftPlayerId,
       });
     }
-    if (!rightHand.some((card) => Object.is(card, rightCard))) {
+    if (!rightHand.some((card) => sameSerializableValue(card, rightValue))) {
       throw new GameRuleViolationError('CARD_NOT_IN_HAND', {
         handId,
         playerId: rightPlayerId,
       });
     }
+    if (leftPlayerId === rightPlayerId) return;
     const takenLeft = this.take(handId, leftPlayerId, leftCard);
     const takenRight = this.take(handId, rightPlayerId, rightCard);
     this.give(handId, leftPlayerId, takenRight);
@@ -212,12 +217,13 @@ export class GameCardsController extends GameCardsDeckController {
     if (leftPlayerId === rightPlayerId) return;
     const leftCard = this.random.pick(this.hand<TCard>(handId, leftPlayerId));
     const rightCard = this.random.pick(this.hand<TCard>(handId, rightPlayerId));
-    if (leftCard && rightCard) {
+    if (leftCard != null && rightCard != null) {
       this.exchange(handId, leftPlayerId, leftCard, rightPlayerId, rightCard);
       return;
     }
-    if (leftCard) this.transfer(handId, leftPlayerId, rightPlayerId, leftCard);
-    else if (rightCard)
+    if (leftCard != null)
+      this.transfer(handId, leftPlayerId, rightPlayerId, leftCard);
+    else if (rightCard != null)
       this.transfer(handId, rightPlayerId, leftPlayerId, rightCard);
   }
 

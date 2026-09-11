@@ -11,7 +11,18 @@ export class LogoutUserSessionService {
     private readonly refreshTokens: RefreshTokenServicePort,
   ) {}
 
-  async execute(refreshToken: string): Promise<void> {
+  async execute(
+    refreshToken: string,
+    userId?: number,
+    allSessions = false,
+  ): Promise<void> {
+    if (allSessions) {
+      if (!userId || !this.refreshTokens.revokeAllForUser) {
+        throw new Error('Logout global indisponible sans session authentifiee');
+      }
+      await this.refreshTokens.revokeAllForUser(userId);
+      return;
+    }
     await this.refreshTokens.revoke(refreshToken);
   }
 }

@@ -1,5 +1,6 @@
-import type { GameEvent, GameSnapshot } from '../contracts/game-event.model';
-import type { GameStateEntity } from '../contracts/game-state.model';
+import type { GameEvent, GameSnapshot } from '../models/game-event.model';
+import type { GameState } from '../models/game-state.model';
+import type { GameId, RoomId } from '../../../../shared/interfaces/public-api';
 
 export const GAME_EVENT_STORE = Symbol('GAME_EVENT_STORE');
 export const GAME_SNAPSHOT_POLICY = Symbol('GAME_SNAPSHOT_POLICY');
@@ -19,18 +20,18 @@ export const DEFAULT_GAME_SNAPSHOT_POLICY: Readonly<GameSnapshotPolicy> =
 
 export interface GameEventStore {
   listEvents(
-    roomId: number,
-    gameType: string,
+    roomId: RoomId,
+    gameType: GameId,
     afterSequence?: number,
     limit?: number,
   ): Promise<GameEvent[]>;
   latestSnapshot(
-    roomId: number,
-    gameType: string,
+    roomId: RoomId,
+    gameType: GameId,
   ): Promise<GameSnapshot | null>;
   replay(
-    roomId: number,
-    gameType: string,
+    roomId: RoomId,
+    gameType: GameId,
     untilSequence?: number,
-  ): Promise<GameStateEntity | null>;
+  ): Promise<GameState | null>;
 }

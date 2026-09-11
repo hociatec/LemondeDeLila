@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { parseStrictInteger } from '@shared/utils/public-api';
 import { resolveTruthyFlag } from './room-role.helpers';
 
 export type RoomCreateRequest = {
@@ -18,7 +19,9 @@ export function parseRoomCreateRequest(
   row: Record<string, unknown>,
 ): RoomCreateRequest {
   const payload =
-    row.payload && typeof row.payload === 'object'
+    row.payload &&
+    typeof row.payload === 'object' &&
+    !Array.isArray(row.payload)
       ? (row.payload as Record<string, unknown>)
       : row;
   const gameType = normalizeBoundedText(payload.gameType, 120);
@@ -28,20 +31,10 @@ export function parseRoomCreateRequest(
   const normalizedName = normalizeBoundedText(payload.name, 255);
   const name = normalizedName || null;
   const maxPlayersRaw = payload.maxPlayers ?? payload.max ?? null;
-  const parsedMaxPlayers =
-    typeof maxPlayersRaw === 'number'
-      ? maxPlayersRaw
-      : typeof maxPlayersRaw === 'string' &&
-          Number.isFinite(parseInt(maxPlayersRaw, 10))
-        ? parseInt(maxPlayersRaw, 10)
-        : null;
-  const maxPlayers =
-    parsedMaxPlayers != null &&
-    Number.isSafeInteger(parsedMaxPlayers) &&
-    parsedMaxPlayers >= 1 &&
-    parsedMaxPlayers <= 100
-      ? parsedMaxPlayers
-      : null;
+  const maxPlayers = parseStrictInteger(maxPlayersRaw, { min: 1, max: 100 });
+  if (maxPlayersRaw !== null && maxPlayers === null) {
+    throw new BadRequestException('Nombre de joueurs invalide');
+  }
   const isPrivate =
     typeof payload.isPrivate === 'boolean' ? payload.isPrivate : false;
 
@@ -51,8 +44,8 @@ export function parseRoomCreateRequest(
 export function parseRoomJoinRequest(
   row: Record<string, unknown>,
 ): RoomJoinRequest {
-  const roomId = Number(row.roomId ?? 0);
-  if (!Number.isSafeInteger(roomId) || roomId <= 0) {
+  const roomId = parseStrictInteger(row.roomId, { min: 1 });
+  if (roomId === null) {
     throw new BadRequestException('Identifiant de room invalide');
   }
   const spectator = resolveTruthyFlag(row.spectator);

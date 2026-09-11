@@ -3,13 +3,14 @@ import type {
   GameCatalogDefinition,
   GameRuntime,
   GameRuntimeDescriptor,
-} from '../contracts/game-runtime.interface';
+} from '../ports/game-runtime.port';
 import {
   GAME_CATALOG_READER,
   type GameCatalogReader,
 } from '../ports/game-catalog.reader';
-import type { GameCatalogEntryRecord } from '../contracts/game-catalog-entry.model';
+import type { GameCatalogEntryRecord } from '../models/game-catalog-entry.model';
 import { GameCatalogOverridesService } from '../../../engine/application/services/game-catalog-overrides.service';
+import { assertGameManifestMatches } from '../helpers/game-manifest-validation';
 
 type ListGamesOptions = {
   includeDisabledOverrides?: boolean;
@@ -28,6 +29,12 @@ export class GameRegistryService {
   ) {}
 
   register(handler: GameRuntime): void {
+    const previous = this.handlers.get(handler.gameType);
+    if (previous && previous !== handler) {
+      throw new Error(`Runtime de jeu dupliqué: ${handler.gameType}`);
+    }
+    const manifest = this.getManifestCache().get(handler.gameType)?.manifest;
+    if (manifest) this.assertManifest(handler, manifest);
     this.handlers.set(handler.gameType, handler);
   }
 
@@ -42,7 +49,11 @@ export class GameRegistryService {
   listDescriptors(): GameRuntimeDescriptor[] {
     return [...this.handlers.values()]
       .map((handler) => handler.getDescriptor())
-      .sort((left, right) => left.name.localeCompare(right.name, 'fr'));
+      .sort(
+        (left, right) =>
+          left.name.localeCompare(right.name, 'fr') ||
+          left.id.localeCompare(right.id, 'en'),
+      );
   }
 
   invalidateCache(): void {
@@ -56,7 +67,22 @@ export class GameRegistryService {
     const defs = Array.from(this.handlers.values()).map((handler) => {
       const entry = manifests.get(handler.gameType);
       const manifest = entry?.manifest;
+      if (manifest) this.assertManifest(handler, manifest);
       const override = this.overrides?.getGameOverride(handler.gameType);
+      const minPlayers = Math.min(
+        handler.maxPlayers,
+        Math.max(
+          handler.minPlayers,
+          toPlayerCount(override?.minPlayers) ?? handler.minPlayers,
+        ),
+      );
+      const maxPlayers = Math.max(
+        minPlayers,
+        Math.min(
+          handler.maxPlayers,
+          toPlayerCount(override?.maxPlayers) ?? handler.maxPlayers,
+        ),
+      );
 
       const base: GameCatalogDefinition = {
         id: handler.gameType,
@@ -73,16 +99,8 @@ export class GameRegistryService {
               handler.description ??
               '',
           ).trim() || undefined,
-        minPlayers:
-          toFiniteNumber(override?.minPlayers) ??
-          toFiniteNumber(manifest?.minPlayers) ??
-          toFiniteNumber(handler.minPlayers) ??
-          2,
-        maxPlayers:
-          toFiniteNumber(override?.maxPlayers) ??
-          toFiniteNumber(manifest?.maxPlayers) ??
-          toFiniteNumber(handler.maxPlayers) ??
-          4,
+        minPlayers,
+        maxPlayers,
         chatEnabled:
           typeof override?.chatEnabled === 'boolean'
             ? override.chatEnabled
@@ -113,7 +131,20 @@ export class GameRegistryService {
           options.includeDisabledOverrides === true ||
           this.overrides?.getGameOverride(def.id)?.enabled !== false,
       )
-      .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+      .sort(
+        (a, b) =>
+          a.name.localeCompare(b.name, 'fr') || a.id.localeCompare(b.id, 'en'),
+      );
+  }
+
+  private assertManifest(handler: GameRuntime, manifest: unknown): void {
+    assertGameManifestMatches(manifest, {
+      code: handler.gameType,
+      name: handler.displayName,
+      minPlayers: handler.minPlayers,
+      maxPlayers: handler.maxPlayers,
+      summary: handler.description,
+    });
   }
 
   private getManifestCache(): Map<string, GameCatalogEntryRecord> {
@@ -125,6 +156,9 @@ export class GameRegistryService {
     for (const entry of this.catalogReader.listEntries()) {
       const code = String(entry.manifest.code ?? '').trim();
       if (code) {
+        if (manifests.has(code)) {
+          throw new Error(`Manifeste de jeu dupliqué: ${code}`);
+        }
         manifests.set(code, entry);
       }
     }
@@ -134,8 +168,8 @@ export class GameRegistryService {
   }
 }
 
-function toFiniteNumber(value: unknown): number | undefined {
-  return typeof value === 'number' && Number.isFinite(value)
+function toPlayerCount(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 1
     ? value
     : undefined;
 }

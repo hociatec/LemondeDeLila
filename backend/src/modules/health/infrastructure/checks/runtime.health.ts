@@ -23,15 +23,19 @@ export class RuntimeHealthIndicator
   }
 
   checkEventLoop(key: string): HealthIndicatorResult {
+    const safeKey = typeof key === 'string' && key.length <= 128 ? key : 'runtime';
     const lagMs = Number.isFinite(this.eventLoop.max)
       ? this.eventLoop.max / 1_000_000
       : 0;
     this.eventLoop.reset();
-    const maximum = this.config.get<number>(
+    const configuredMaximum = this.config.get<number>(
       'HEALTH_MAX_EVENT_LOOP_LAG_MS',
       250,
     );
-    const status = this.getStatus(key, lagMs <= maximum, {
+    const maximum = Number.isSafeInteger(configuredMaximum) && configuredMaximum >= 0
+      ? configuredMaximum
+      : 250;
+    const status = this.getStatus(safeKey, lagMs <= maximum, {
       lagMs: Math.round(lagMs * 100) / 100,
       maximumLagMs: maximum,
     });
@@ -42,22 +46,31 @@ export class RuntimeHealthIndicator
   }
 
   async checkStorage(key: string): Promise<HealthIndicatorResult> {
+    const safeKey = typeof key === 'string' && key.length <= 128 ? key : 'storage';
     const root = path.resolve(
       this.config.get<string>('HEALTH_CHECK_PATH') ??
         this.config.get<string>('LOG_DIR', 'logs'),
     );
-    const minimumFreeBytes = this.config.get<number>(
+    const configuredMinimum = this.config.get<number>(
       'HEALTH_MIN_FREE_BYTES',
       this.config.get<number>('STORAGE_MIN_FREE_BYTES', 104_857_600),
     );
+    if (root.length > 4096) {
+      throw new HealthCheckError('Invalid storage health path', this.getStatus(safeKey, false));
+    }
+    const minimumFreeBytes = Number.isSafeInteger(configuredMinimum) && configuredMinimum >= 0
+      ? configuredMinimum
+      : 104_857_600;
     const probe = path.join(root, `.health-write-${process.pid}`);
     try {
       await fs.mkdir(root, { recursive: true });
       await fs.writeFile(probe, 'ok', { flag: 'wx' });
       await fs.unlink(probe);
       const stats = await fs.statfs(root);
-      const freeBytes = stats.bavail * stats.bsize;
-      const status = this.getStatus(key, freeBytes >= minimumFreeBytes, {
+      const freeBytes = Number.isSafeInteger(stats.bavail) && Number.isSafeInteger(stats.bsize)
+        ? Math.min(Number.MAX_SAFE_INTEGER, stats.bavail * stats.bsize)
+        : 0;
+      const status = this.getStatus(safeKey, freeBytes >= minimumFreeBytes, {
         path: root,
         freeBytes,
         minimumFreeBytes,
@@ -77,7 +90,7 @@ export class RuntimeHealthIndicator
       if (error instanceof HealthCheckError) throw error;
       throw new HealthCheckError(
         'Storage check failed',
-        this.getStatus(key, false, {
+        this.getStatus(safeKey, false, {
           path: root,
           message: error instanceof Error ? error.message : String(error),
         }),

@@ -19,9 +19,9 @@ type RuleContext = GameContext<ZigEtZagState>;
 export const ZIG_ET_ZAG_PHASES = defineGamePhases<ZigEtZagState>()({
   initialPhase: 'selection',
   phases: {
-    selection: {},
-    'battle-face-down': {},
-    'battle-face-up': {},
+    selection: { transitions: ['battle-face-down'] },
+    'battle-face-down': { transitions: ['battle-face-up', 'selection'] },
+    'battle-face-up': { transitions: ['battle-face-down', 'selection'] },
   },
 });
 
@@ -191,8 +191,7 @@ function captureBonus(
     round.plays.find((play) => play.playerId === winnerId)?.playedCards
       .length ?? 0;
   const loserHand = ctx.cards.hand<string>(HANDS, loser.id);
-  for (let index = 0; index < count && loserHand.length > 0; index += 1) {
-    const cardId = loserHand[0];
+  for (const cardId of loserHand.slice(0, count)) {
     ctx.cards.take(HANDS, loser.id, cardId);
     ctx.cards.give(HANDS, winnerId, cardId);
   }

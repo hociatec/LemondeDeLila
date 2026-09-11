@@ -1,22 +1,23 @@
-import type { GameEffectInstruction } from './effects-kit';
+import type { GameEffectInstruction } from '../contracts/effect-ir';
 import {
   requireFinite,
   requirePositiveInteger,
   requireReference,
+  requireCardReference,
+  requireTrackPosition,
+  requireResourceReference,
   validateEffectCondition,
   validateEffectTarget,
 } from './game-effect-reference-validator';
 
-export type GameEffectValidationReferences = {
-  readonly decks: ReadonlyMap<string, unknown>;
-  readonly hands: ReadonlyMap<string, unknown>;
-  readonly inventories: ReadonlyMap<string, unknown>;
-  readonly tracks: ReadonlySet<string>;
-  readonly diceSets: ReadonlySet<string>;
-  readonly effects?: Readonly<Record<string, unknown>>;
-};
-
-export type ValidationFailure = (path: string, reason: string) => never;
+import type {
+  GameEffectValidationReferences,
+  ValidationFailure,
+} from '../contracts/effect-validation';
+export type {
+  GameEffectValidationReferences,
+  ValidationFailure,
+} from '../contracts/effect-validation';
 type ValidationInput = {
   instruction: GameEffectInstruction;
   path: string;
@@ -29,7 +30,7 @@ export function assertEffectInstructions(
   path: string,
   references: GameEffectValidationReferences,
   fail: ValidationFailure,
-): void {
+): asserts instructions is readonly GameEffectInstruction[] {
   if (!Array.isArray(instructions)) fail(path, 'séquence d’effets invalide');
   const values: readonly unknown[] = instructions;
   for (const [index, value] of values.entries()) {
@@ -99,6 +100,15 @@ function validateControlInstruction({
     );
     return true;
   }
+  return validateReactionInstruction({ instruction, path, references, fail });
+}
+
+function validateReactionInstruction({
+  instruction,
+  path,
+  references,
+  fail,
+}: ValidationInput): boolean {
   if (instruction.kind !== 'reaction') return false;
   validateEffectTarget(instruction.reactor, `${path}.reactor`, fail);
   if (instruction.availability) {
@@ -114,12 +124,31 @@ function validateControlInstruction({
         `${path}.availability.handId`,
         fail,
       );
+      for (const [index, cardId] of instruction.options.entries()) {
+        requireCardReference(
+          references,
+          instruction.availability.handId,
+          cardId,
+          `${path}.options.${index}`,
+          fail,
+        );
+      }
     } else if (
       instruction.availability.amount != null &&
       (!Number.isInteger(instruction.availability.amount) ||
         instruction.availability.amount < 1)
     )
       fail(`${path}.availability.amount`, 'quantité positive attendue');
+    if (instruction.availability.kind === 'resources') {
+      for (const [index, resource] of instruction.options.entries()) {
+        requireResourceReference(
+          references,
+          resource,
+          `${path}.options.${index}`,
+          fail,
+        );
+      }
+    }
   }
   if (
     instruction.options.length === 0 ||
@@ -164,6 +193,16 @@ function validateMovementInstruction({
       path,
       fail,
     );
+    if (instruction.kind === 'move-to')
+      requireTrackPosition(
+        references,
+        instruction.trackId,
+        instruction.position,
+        `${path}.position`,
+        fail,
+      );
+    else if (!Number.isSafeInteger(instruction.spaces))
+      fail(`${path}.spaces`, 'distance entière requise');
     return true;
   }
   if (instruction.kind !== 'swap-positions') return false;
@@ -201,6 +240,9 @@ function validateCardInstruction({
       fail,
     );
     requirePositiveInteger(instruction.count, `${path}.count`, fail);
+    const handDeck = references.handDecks?.get(instruction.handId);
+    if (handDeck != null && handDeck !== instruction.deckId)
+      fail(`${path}.deckId`, 'pioche différente de celle de la main');
     return true;
   }
   if (instruction.kind === 'give-card') {
@@ -210,7 +252,13 @@ function validateCardInstruction({
       `${path}.handId`,
       fail,
     );
-    if (!instruction.cardId.trim()) fail(`${path}.cardId`, 'ID vide');
+    requireCardReference(
+      references,
+      instruction.handId,
+      instruction.cardId,
+      `${path}.cardId`,
+      fail,
+    );
     validateEffectTarget(instruction.from, `${path}.from`, fail);
     validateEffectTarget(instruction.to, `${path}.to`, fail);
     return true;
@@ -288,6 +336,7 @@ function validateInventoryInstruction({
 function validatePlayerValueInstruction({
   instruction,
   path,
+  references,
   fail,
 }: ValidationInput): boolean {
   if (
@@ -295,7 +344,12 @@ function validatePlayerValueInstruction({
     instruction.kind === 'lose-resource' ||
     instruction.kind === 'transfer-resource'
   ) {
-    if (!instruction.resource.trim()) fail(`${path}.resource`, 'ID vide');
+    requireResourceReference(
+      references,
+      instruction.resource,
+      `${path}.resource`,
+      fail,
+    );
     requireFinite(instruction.amount, `${path}.amount`, fail);
     if (instruction.kind === 'transfer-resource') {
       validateEffectTarget(instruction.from, `${path}.from`, fail);
@@ -339,8 +393,40 @@ function validateMiscInstruction({
     return true;
   }
   if (instruction.kind === 'custom') {
-    if (!references.effects?.[instruction.effectId]) {
+    if (
+      !references.effects ||
+      !Object.hasOwn(references.effects, instruction.effectId)
+    ) {
       fail(`${path}.effectId`, `effet inconnu « ${instruction.effectId} »`);
+    }
+    const resolver = references.effects?.[instruction.effectId];
+    if (resolver && typeof resolver === 'object' && 'input' in resolver) {
+      const schema = resolver.input;
+      if (
+        schema &&
+        typeof schema === 'object' &&
+        'parse' in schema &&
+        typeof schema.parse === 'function'
+      ) {
+        try {
+          const parse = schema.parse as (
+            value: unknown,
+            path: string,
+          ) => unknown;
+          parse.call(
+            schema,
+            structuredClone(instruction.data ?? {}),
+            `${path}.data`,
+          );
+        } catch (error) {
+          fail(
+            `${path}.data`,
+            error instanceof Error
+              ? error.message
+              : 'Données d’effet invalides',
+          );
+        }
+      }
     }
     return true;
   }

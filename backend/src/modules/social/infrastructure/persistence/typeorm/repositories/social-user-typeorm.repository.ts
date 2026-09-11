@@ -1,33 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import type { SocialUserReader } from '../../../../application/ports/social-user.repository';
 import type {
   SocialSearchUserSummary,
   SocialUserSummary,
-} from '../../../../application/contracts/social-user.model';
-import { User } from '../../../../../user/public-api';
-import { SocialProfileEntity } from '../entities/social-profile.entity';
+} from '../../../../application/models/social-user.model';
 
 @Injectable()
 export class SocialUserTypeormRepository implements SocialUserReader {
-  constructor(
-    @InjectRepository(User)
-    private readonly users: Repository<User>,
-  ) {}
+  constructor(private readonly dataSource: DataSource) {}
 
   async findById(id: number): Promise<SocialUserSummary | null> {
-    const user = await this.users.findOne({
-      where: { id },
-      select: { id: true, username: true, avatar: true },
-    });
-    if (!user) {
+    const rows = await this.dataSource.query(
+      'SELECT id, username, avatar FROM users WHERE id = ? LIMIT 1',
+      [id],
+    );
+    const user = rows[0] as
+      { id?: unknown; username?: unknown; avatar?: unknown } | undefined;
+    if (!user) return null;
+    const userId = toPositiveSafeId(user?.id);
+    if (userId === null) {
       return null;
     }
     return {
-      id: user.id,
-      username: user.username,
-      avatar: user.avatar ?? null,
+      id: userId,
+      username: typeof user.username === 'string' ? user.username : '',
+      avatar: typeof user.avatar === 'string' ? user.avatar : null,
     };
   }
 
@@ -36,34 +34,29 @@ export class SocialUserTypeormRepository implements SocialUserReader {
     excludeUserId: number,
     limit: number,
   ): Promise<SocialSearchUserSummary[]> {
-    const sanitized = query.trim();
-    const buildQuery = (accentInsensitive: boolean) => {
-      const qb = this.users
-        .createQueryBuilder('u')
-        .leftJoin(SocialProfileEntity, 'p', 'p.userId = u.id')
-        .select('u.id', 'id')
-        .addSelect('u.username', 'username')
-        .addSelect('u.avatar', 'avatar')
-        .addSelect("COALESCE(p.visibility, 'public')", 'profileVisibility')
-        .limit(limit);
-
-      if (accentInsensitive) {
-        qb.where(
-          'u.username COLLATE utf8mb4_0900_ai_ci LIKE :query COLLATE utf8mb4_0900_ai_ci',
-          { query: `%${sanitized}%` },
-        )
-          .andWhere('u.id != :excludeUserId', { excludeUserId })
-          .orderBy('u.username COLLATE utf8mb4_0900_ai_ci', 'ASC')
-          .addOrderBy('u.username', 'ASC')
-          .addOrderBy('u.id', 'ASC');
-        return qb;
-      }
-
-      qb.where('LOWER(u.username) LIKE :query', {
-        query: `%${sanitized.toLowerCase()}%`,
-      }).andWhere('u.id != :excludeUserId', { excludeUserId });
-      return qb;
-    };
+    const sanitized = String(query ?? '')
+      .trim()
+      .slice(0, 255);
+    const safeLimit =
+      Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 100) : 50;
+    const buildQuery = (accentInsensitive: boolean) =>
+      accentInsensitive
+        ? this.dataSource.query(
+            `SELECT u.id AS id, u.username AS username, u.avatar AS avatar,
+              COALESCE(p.visibility, 'public') AS profileVisibility
+             FROM users u LEFT JOIN social_profiles p ON p.user_id = u.id
+             WHERE u.username COLLATE utf8mb4_0900_ai_ci LIKE ? COLLATE utf8mb4_0900_ai_ci AND u.id != ?
+             ORDER BY u.username COLLATE utf8mb4_0900_ai_ci ASC, u.id ASC LIMIT ?`,
+            [`%${sanitized}%`, excludeUserId, safeLimit],
+          )
+        : this.dataSource.query(
+            `SELECT u.id AS id, u.username AS username, u.avatar AS avatar,
+              COALESCE(p.visibility, 'public') AS profileVisibility
+             FROM users u LEFT JOIN social_profiles p ON p.user_id = u.id
+             WHERE LOWER(u.username) LIKE ? AND u.id != ?
+             ORDER BY LOWER(u.username) ASC, u.id ASC LIMIT ?`,
+            [`%${sanitized.toLowerCase()}%`, excludeUserId, safeLimit],
+          );
 
     let rows: Array<{
       id: number;
@@ -73,20 +66,31 @@ export class SocialUserTypeormRepository implements SocialUserReader {
     }>;
 
     try {
-      rows = await buildQuery(true).limit(limit).getRawMany();
+      rows = await buildQuery(true);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (!/collation/i.test(message)) {
         throw error;
       }
-      rows = await buildQuery(false).limit(limit).getRawMany();
+      rows = await buildQuery(false);
     }
 
-    return rows.map((row) => ({
-      id: row.id,
-      username: row.username,
-      avatar: row.avatar ?? null,
-      profileVisibility: row.profileVisibility ?? 'public',
-    }));
+    return rows
+      .map((row) => {
+        const id = toPositiveSafeId(row.id);
+        if (id === null || typeof row.username !== 'string') return null;
+        return {
+          id,
+          username: row.username.slice(0, 255),
+          avatar: typeof row.avatar === 'string' ? row.avatar : null,
+          profileVisibility: row.profileVisibility ?? 'public',
+        };
+      })
+      .filter((row): row is SocialSearchUserSummary => row !== null);
   }
+}
+
+function toPositiveSafeId(value: unknown): number | null {
+  const id = typeof value === 'number' ? value : Number(value);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
 }

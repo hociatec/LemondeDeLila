@@ -1,10 +1,17 @@
+import { Inject } from '@nestjs/common';
+import { WsWorkService } from '../../../../../platform/ws/public-api';
 import { Injectable } from '@nestjs/common';
 import { Server, WebSocket } from 'ws';
-import { getErrorPayload } from '@shared/utils/public-api';
-import { SoundsService } from '../../../../sounds/public-api';
+import { getErrorPayload } from '../../../../../platform/serialization/public-api';
+import {
+  TABLE_AMBIENCES_READER,
+  type TableAmbiencesReader,
+} from '../../../../sounds/public-api';
 import { RoomGatewayActionsService } from './room-gateway-actions.service';
 import { RoomGatewayBotActionsService } from './room-gateway-bot-actions.service';
 import { RoomGatewayCommandService } from './room-gateway-command.service';
+import { routeRoomCommand } from './room-command-router';
+import { decodeRoomMessage } from './room-intent-decoder';
 import { RoomGatewayConnectionService } from './room-gateway-connection.service';
 import { RoomGatewayContextService } from './room-gateway-context.service';
 import { RoomGatewayRuntimeStateService } from './room-gateway-runtime-state.service';
@@ -19,11 +26,13 @@ export class RoomGatewayDispatcherService {
   constructor(
     private readonly runtime: RoomGatewayRuntimeStateService,
     private readonly contexts: RoomGatewayContextService,
-    private readonly sounds: SoundsService,
+    @Inject(TABLE_AMBIENCES_READER)
+    private readonly sounds: TableAmbiencesReader,
     private readonly actions: RoomGatewayActionsService,
     private readonly botActions: RoomGatewayBotActionsService,
     private readonly commands: RoomGatewayCommandService,
     private readonly connection: RoomGatewayConnectionService,
+    @Inject(WsWorkService) private readonly work = new WsWorkService(),
   ) {}
 
   initialize(server: Server<typeof WebSocket>): void {
@@ -31,7 +40,14 @@ export class RoomGatewayDispatcherService {
     this.contexts.initialize();
   }
 
-  async handleConnection(client: WebSocket, args: unknown[]): Promise<void> {
+  handleConnection(client: WebSocket, args: unknown[]): Promise<void> {
+    return this.work.run(client, () => this.openConnection(client, args));
+  }
+
+  private async openConnection(
+    client: WebSocket,
+    args: unknown[],
+  ): Promise<void> {
     const meta = await this.connection.handleConnection(
       this.contexts.connectionContext(),
       client,
@@ -50,6 +66,10 @@ export class RoomGatewayDispatcherService {
   }
 
   handleDisconnect(client: WebSocket): Promise<void> {
+    return this.work.run(client, () => this.disconnect(client), true);
+  }
+
+  private disconnect(client: WebSocket): Promise<void> {
     const listeners = this.socketListeners.get(client);
     if (listeners) {
       client.removeListener('message', listeners.message);
@@ -63,6 +83,10 @@ export class RoomGatewayDispatcherService {
   }
 
   handleMessage(client: WebSocket, raw: unknown): Promise<void> {
+    return this.work.run(client, () => this.processMessage(client, raw));
+  }
+
+  private processMessage(client: WebSocket, raw: unknown): Promise<void> {
     return this.runtime.enqueue(client, async () => {
       const meta = this.runtime.clients.get(client);
       if (!meta) {
@@ -70,7 +94,7 @@ export class RoomGatewayDispatcherService {
         return;
       }
       try {
-        const payload = this.commands.decode(raw);
+        const payload = decodeRoomMessage(raw);
         await this.commands.handleCommand(
           this.commandContext(),
           client,
@@ -112,7 +136,7 @@ export class RoomGatewayDispatcherService {
         payload: unknown,
         receivedAtMs: number,
       ) =>
-        this.commands.executeRoomCommand(
+        routeRoomCommand(
           this.commandContext(),
           client,
           meta,

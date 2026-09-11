@@ -1,11 +1,12 @@
+import { cloneStaticContent } from '../content/content-immutability';
 import {
   GameConfigurationError,
   GameNotFoundError,
   GameRuleViolationError,
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
-import type { GameRng } from '../../../core/application/contracts/game-execution-context.model';
-import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
+import type { GameRng } from '../../../core/application/models/game-execution-context.model';
+import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import {
   contentIdKey,
   isIdentifiedCard,
@@ -318,6 +319,6 @@ export abstract class GameCardsStateController {
       typeof card === 'string' || typeof card === 'number'
         ? this.catalogs.get(deckId)?.cardsById.get(contentIdKey(card))
         : undefined;
-    return structuredClone((content ?? card) as TCard);
+    return cloneStaticContent((content ?? card) as TCard);
   }
 }

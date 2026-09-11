@@ -6,7 +6,7 @@ import {
   type HandsDefinition,
 } from '../cards/cards-kit';
 import type { GameComponentDefinition } from '../definitions/component-kit';
-import type { EngineKitsState } from '../definitions/game-definition';
+import type { EngineKitsState } from '../state/declarative-state';
 import {
   projectInventoryKitState,
   type InventoryDefinition,
@@ -388,6 +388,9 @@ function publicQuizQuestion(
     (candidate) => candidate.id === questionId,
   );
   if (!question) return { id: questionId, prompt: '', choices: [] };
-  const { answerIndex: _answerIndex, ...publicQuestion } = question;
-  return structuredClone(publicQuestion);
+  return {
+    id: question.id,
+    prompt: question.prompt,
+    choices: [...question.choices],
+  };
 }

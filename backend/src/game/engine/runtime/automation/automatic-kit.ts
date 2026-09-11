@@ -1,7 +1,7 @@
 import type {
   AutomaticRule,
   VictoryRule,
-} from '../definitions/game-definition';
+} from '../contracts/author-rule-contracts';
 
 export function when<TState extends object>(
   id: string,

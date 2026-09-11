@@ -7,6 +7,8 @@ import { NotificationDispatchService } from '../../system/notification-dispatch.
 import type { NotificationClientMeta } from './notification-ws.types';
 import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
 
+const MAX_NOTIFICATION_WS_OUTBOUND_BYTES = 1 * 1024 * 1024;
+
 @Injectable()
 export class NotificationWsSessionService {
   private readonly logger = new Logger(NotificationWsSessionService.name);
@@ -19,14 +21,25 @@ export class NotificationWsSessionService {
     private readonly friendPresence: NotificationFriendPresenceService,
   ) {}
 
-  register(client: WebSocket, meta: NotificationClientMeta): void {
+  async register(
+    client: WebSocket,
+    meta: NotificationClientMeta,
+  ): Promise<void> {
+    if (!Number.isSafeInteger(meta.userId) || meta.userId <= 0) {
+      client.close(4003, 'Invalid user');
+      return;
+    }
     const prevCount = this.socketCountsByUserId.get(meta.userId) ?? 0;
+    if (prevCount >= 32) {
+      client.close(4008, 'Too many connections');
+      return;
+    }
     this.clients.set(client, meta);
     this.notifications.register(meta.userId, client);
     this.socketCountsByUserId.set(meta.userId, prevCount + 1);
 
     if (prevCount === 0) {
-      void this.friendPresence.notifyFriendsPresence(
+      await this.friendPresence.notifyFriendsPresence(
         meta.userId,
         meta.username,
         true,
@@ -34,7 +47,7 @@ export class NotificationWsSessionService {
     }
   }
 
-  unregister(client: WebSocket): void {
+  async unregister(client: WebSocket): Promise<void> {
     const meta = this.clients.get(client);
     this.clients.delete(client);
     if (!meta) {
@@ -46,7 +59,7 @@ export class NotificationWsSessionService {
     const nextCount = Math.max(0, prevCount - 1);
     if (nextCount === 0) {
       this.socketCountsByUserId.delete(meta.userId);
-      void this.friendPresence.notifyFriendsPresence(
+      await this.friendPresence.notifyFriendsPresence(
         meta.userId,
         meta.username,
         false,
@@ -86,7 +99,15 @@ export class NotificationWsSessionService {
   safeSend(client: WebSocket, payload: unknown): void {
     if (client.readyState !== WebSocket.OPEN) return;
     try {
-      client.send(JSON.stringify(payload));
+      const serialized = JSON.stringify(payload);
+      if (
+        Buffer.byteLength(serialized, 'utf8') >
+        MAX_NOTIFICATION_WS_OUTBOUND_BYTES
+      ) {
+        client.close(1009, 'Message too large');
+        return;
+      }
+      client.send(serialized);
     } catch (err) {
       const type =
         payload &&

@@ -1,11 +1,13 @@
 import {
   defineEvent,
   gameInput,
-  playerId as toPlayerId,
   rollDice,
+  playerId as toPlayerId,
+  victoryWhen,
   type GameContext,
   type PlayerMap,
 } from '../../../engine/sdk/public-api';
+import { PRIMALIS_TILES } from './content';
 import type { PrimalisFace, PrimalisResources, PrimalisState } from './types';
 
 const TRACK = 'comet';
@@ -53,19 +55,15 @@ export function score(resources: PrimalisResources): number {
 
 export function winnerByResources(
   collections: Readonly<PlayerMap<PrimalisResources>>,
+  ctx: RuleContext,
 ): number | null {
   return (
-    Object.entries(collections)
-      .map(([playerId, resources]) => ({
-        playerId: Number(playerId),
-        resources,
-      }))
-      .sort(
-        (left, right) =>
-          score(right.resources) - score(left.resources) ||
-          right.resources.leaves - left.resources.leaves ||
-          right.resources.eggs - left.resources.eggs,
-      )[0]?.playerId ?? null
+    ctx.ranking.rank(
+      Object.keys(collections).map(Number),
+      { value: (id) => score(collections[id]), direction: 'desc' },
+      { value: (id) => collections[id].leaves, direction: 'desc' },
+      { value: (id) => collections[id].eggs, direction: 'desc' },
+    )[0]?.playerId ?? null
   );
 }
 
@@ -145,3 +143,21 @@ export function primalisCollections(
     leaves: ctx.resources.get(player.id, 'leaves'),
   }));
 }
+
+export const GAME_VICTORY = victoryWhen<PrimalisState>(
+  ({ state: _state, ctx }) => {
+    const finished = ctx.players
+      .all()
+      .some(
+        (player) =>
+          ctx.movement.position('comet', player.id) >=
+          PRIMALIS_TILES.length - 1,
+      );
+    const winnerId = finished
+      ? winnerByResources(primalisCollections(ctx), ctx)
+      : null;
+    return winnerId == null
+      ? null
+      : { winnerPlayerIds: [winnerId], reason: 'comet-impact' };
+  },
+);

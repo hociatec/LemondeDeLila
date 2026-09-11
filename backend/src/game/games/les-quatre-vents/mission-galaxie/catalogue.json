@@ -1,0 +1,840 @@
+{
+  "tiles": [
+    {
+      "n": 1,
+      "title": "Base de lancement",
+      "type": "start"
+    },
+    {
+      "n": 2,
+      "title": "Orbits encombrées",
+      "type": "neutral"
+    },
+    {
+      "n": 3,
+      "title": "Question Galactique",
+      "type": "question"
+    },
+    {
+      "n": 4,
+      "title": "Panne de communication",
+      "type": "skip",
+      "turnsToSkip": 1
+    },
+    {
+      "n": 5,
+      "title": "Défi Cosmique",
+      "type": "challenge"
+    },
+    {
+      "n": 6,
+      "title": "Ravitaillement orbital",
+      "type": "move",
+      "delta": 2
+    },
+    {
+      "n": 7,
+      "title": "Pluie de météorites",
+      "type": "event"
+    },
+    {
+      "n": 8,
+      "title": "Question Galactique",
+      "type": "question"
+    },
+    {
+      "n": 9,
+      "title": "Tempête solaire",
+      "type": "move",
+      "delta": -1
+    },
+    {
+      "n": 10,
+      "title": "Signal alien brouillé",
+      "type": "challenge"
+    },
+    {
+      "n": 11,
+      "title": "Survol paisible",
+      "type": "neutral"
+    },
+    {
+      "n": 12,
+      "title": "Satellite d'observation",
+      "type": "move",
+      "delta": 1
+    },
+    {
+      "n": 13,
+      "title": "Question Galactique",
+      "type": "question"
+    },
+    {
+      "n": 14,
+      "title": "Turbulences orbitales",
+      "type": "skip",
+      "turnsToSkip": 1
+    },
+    {
+      "n": 15,
+      "title": "Sortie du système solaire",
+      "type": "event"
+    },
+    {
+      "n": 16,
+      "title": "Entrée dans la galaxie",
+      "type": "neutral"
+    },
+    {
+      "n": 17,
+      "title": "Attraction gravitationnelle intense",
+      "type": "move",
+      "delta": -2
+    },
+    {
+      "n": 18,
+      "title": "Question Galactique",
+      "type": "question"
+    },
+    {
+      "n": 19,
+      "title": "Message codé",
+      "type": "challenge"
+    },
+    {
+      "n": 20,
+      "title": "Raccourci interstellaire",
+      "type": "move",
+      "delta": 3
+    },
+    {
+      "n": 21,
+      "title": "Station spatiale abandonnée",
+      "type": "event"
+    },
+    {
+      "n": 22,
+      "title": "Étoile filante",
+      "type": "move",
+      "delta": 1
+    },
+    {
+      "n": 23,
+      "title": "Champ énergétique instable",
+      "type": "skip",
+      "turnsToSkip": 1
+    },
+    {
+      "n": 24,
+      "title": "Question Galactique",
+      "type": "question"
+    },
+    {
+      "n": 25,
+      "title": "Nébuleuse lumineuse",
+      "type": "neutral",
+      "keepTurn": true
+    },
+    {
+      "n": 26,
+      "title": "Astre inconnu",
+      "type": "challenge"
+    },
+    {
+      "n": 27,
+      "title": "Système endommagé",
+      "type": "move",
+      "delta": -1
+    },
+    {
+      "n": 28,
+      "title": "Transmission réussie",
+      "type": "move",
+      "delta": 2
+    },
+    {
+      "n": 29,
+      "title": "Rencontre extraterrestre",
+      "type": "event"
+    },
+    {
+      "n": 30,
+      "title": "Instabilité gravitationnelle",
+      "type": "neutral",
+      "keepTurn": true
+    },
+    {
+      "n": 31,
+      "title": "Question Galactique",
+      "type": "question"
+    },
+    {
+      "n": 32,
+      "title": "Réseau spatial perturbé",
+      "type": "neutral"
+    },
+    {
+      "n": 33,
+      "title": "Zone de silence cosmique",
+      "type": "neutral"
+    },
+    {
+      "n": 34,
+      "title": "Collision évitée de justesse",
+      "type": "event"
+    },
+    {
+      "n": 35,
+      "title": "Fin de la zone galactique",
+      "type": "neutral"
+    },
+    {
+      "n": 36,
+      "title": "Comète massive",
+      "type": "move",
+      "delta": -1
+    },
+    {
+      "n": 37,
+      "title": "Défi Cosmique",
+      "type": "challenge"
+    },
+    {
+      "n": 38,
+      "title": "Monde habité",
+      "type": "move",
+      "delta": 2
+    },
+    {
+      "n": 39,
+      "title": "Rayonnement cosmique",
+      "type": "skip",
+      "turnsToSkip": 1
+    },
+    {
+      "n": 40,
+      "title": "Question Galactique",
+      "type": "question"
+    },
+    {
+      "n": 41,
+      "title": "Rencontre pacifique",
+      "type": "move",
+      "delta": 3
+    },
+    {
+      "n": 42,
+      "title": "Anomalie temporelle",
+      "type": "swapNearest"
+    },
+    {
+      "n": 43,
+      "title": "Champ de débris",
+      "type": "event"
+    },
+    {
+      "n": 44,
+      "title": "Réserves optimales",
+      "type": "move",
+      "delta": 1
+    },
+    {
+      "n": 45,
+      "title": "Vision de la destination",
+      "type": "goto",
+      "target": 48
+    },
+    {
+      "n": 46,
+      "title": "Défi Cosmique",
+      "type": "challenge"
+    },
+    {
+      "n": 47,
+      "title": "Singularité évitée",
+      "type": "move",
+      "delta": -1
+    },
+    {
+      "n": 48,
+      "title": "Don d'une civilisation avancée",
+      "type": "neutral",
+      "keepTurn": true
+    },
+    {
+      "n": 49,
+      "title": "Dernière épreuve",
+      "type": "question"
+    },
+    {
+      "n": 50,
+      "title": "Planète légendaire",
+      "type": "finish"
+    }
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "title": "Planète proche",
+      "prompt": "Votre vaisseau s'approche du Soleil. Quelle planète orbite le plus près de cette étoile ?",
+      "choices": [
+        "Mercure",
+        "Vénus",
+        "Mars",
+        "Jupiter"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 2,
+      "title": "Notre galaxie",
+      "prompt": "Comment s'appelle la galaxie qui contient la Terre ?",
+      "choices": [
+        "La Voie Lactée",
+        "Andromède",
+        "Orion",
+        "Sagittarius"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 3,
+      "title": "Planète rouge",
+      "prompt": "Une planète rouge apparaît sur vos instruments. Quel est son nom ?",
+      "choices": [
+        "Mars",
+        "Vénus",
+        "Mercure",
+        "Jupiter"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 4,
+      "title": "Géante gazeuse",
+      "prompt": "Quel géant du système solaire est plus imposant que toutes les autres planètes ?",
+      "choices": [
+        "Jupiter",
+        "Saturne",
+        "Neptune",
+        "Uranus"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 5,
+      "title": "Constellation",
+      "prompt": "Comment appelle-t-on les regroupements lumineux d'étoiles ?",
+      "choices": [
+        "Une constellation",
+        "Une nébuleuse",
+        "Un astéroïde",
+        "Un amas d'étoiles"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 6,
+      "title": "Compagnon terrestre",
+      "prompt": "Quel astre accompagne toujours la Terre ?",
+      "choices": [
+        "La Lune",
+        "Phobos",
+        "Mars",
+        "Vénus"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 7,
+      "title": "Objet changeant",
+      "prompt": "Chaque nuit, vous observez un corps brillant dont l'allure varie légèrement. De quel astre s'agit-il ?",
+      "choices": [
+        "La Lune",
+        "Jupiter",
+        "Vénus",
+        "Une étoile filante"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 8,
+      "title": "Planètes du système",
+      "prompt": "Vous visualisez toutes les planètes du système solaire. Combien y en a-t-il ?",
+      "choices": [
+        "Huit planètes",
+        "Sept planètes",
+        "Neuf planètes",
+        "Dix planètes"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 9,
+      "title": "Découvertes lumineuses",
+      "prompt": "Un trait lumineux traverse le ciel. Que reprèsente une étoile filante ?",
+      "choices": [
+        "Un petit corps rocheux brûlant",
+        "Une roche tombante",
+        "Un fragment de comète",
+        "Un météore brillant"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 10,
+      "title": "Anneaux célèbres",
+      "prompt": "Une planète entourée d'anneaux majestueux se profile. Quel est son nom ?",
+      "choices": [
+        "Saturne",
+        "Jupiter",
+        "Uranus",
+        "Neptune"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 11,
+      "title": "Véhicule spatial",
+      "prompt": "Quel véhicule transporte les astronautes vers l'espace ?",
+      "choices": [
+        "Une fusée",
+        "Une navette",
+        "Un satellite",
+        "Une station orbitale"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 12,
+      "title": "Planète la plus chaude",
+      "prompt": "Même si elle n'est pas la plus proche du Soleil, quelle planète détient le record de chaleur ?",
+      "choices": [
+        "Vénus",
+        "Mercure",
+        "Mars",
+        "Jupiter"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 13,
+      "title": "Premier humain",
+      "prompt": "Quel est le nom du premier humain à avoir marché sur la Lune ?",
+      "choices": [
+        "Neil Armstrong",
+        "Buzz Aldrin",
+        "Yuri Gagarin",
+        "John Glenn"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 14,
+      "title": "Cœur du Soleil",
+      "prompt": "Que contient le centre du Soleil ?",
+      "choices": [
+        "Un noyau très chaud",
+        "Une cavité vide",
+        "Une matière froide",
+        "Une énergie instable"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 15,
+      "title": "Trou noir",
+      "prompt": "Comment définit-on un trou noir ?",
+      "choices": [
+        "Une zone où rien ne peut s'échapper",
+        "Un astre éteint",
+        "Un trou dans l'espace",
+        "Une planète invisible"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    }
+  ],
+  "challenges": [
+    {
+      "id": 1,
+      "title": "Chiffres stellaires",
+      "prompt": "Quelle est la somme de 3, 5 et 2 ?",
+      "choices": [
+        "10",
+        "8",
+        "9"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 2,
+      "wrongDelta": -1
+    },
+    {
+      "id": 2,
+      "title": "Calcul orbital",
+      "prompt": "Votre vaisseau avance de 4 cases puis 3 cases. Quelle distance totale parcourue ?",
+      "choices": [
+        "7",
+        "6",
+        "8"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 2,
+      "wrongDelta": -1
+    },
+    {
+      "id": 3,
+      "title": "Ordre cosmique",
+      "prompt": "Vous traversez une zone planétaire puis galactique. Quelle zone vient ensuite ?",
+      "choices": [
+        "Cosmique",
+        "Planétaire",
+        "Stellaire"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 4,
+      "title": "Logique des astres",
+      "prompt": "Quel type d'astre ne produit pas sa propre lumière ?",
+      "choices": [
+        "Une planète",
+        "Une étoile",
+        "Une galaxie"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 5,
+      "title": "Mémoire spatiale",
+      "prompt": "Souvenez-vous : étoile, planète, satellite. Quel élément était en deuxième position ?",
+      "choices": [
+        "Planète",
+        "Étoile",
+        "Satellite"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 6,
+      "title": "Distance interstellaire",
+      "prompt": "Un signal parcourt 300 unités par seconde. Combien parcourt-il en 2 secondes ?",
+      "choices": [
+        "600",
+        "500",
+        "900"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 2,
+      "wrongDelta": -1
+    },
+    {
+      "id": 7,
+      "title": "Devinette gravitationnelle",
+      "prompt": "Quel objet empêche la lumière de s'échapper ?",
+      "choices": [
+        "Un trou noir",
+        "Une comète",
+        "Une planète"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 2,
+      "wrongDelta": -1
+    },
+    {
+      "id": 8,
+      "title": "Suite logique planétaire",
+      "prompt": "Mercure, Vénus, Terre... quelle planète vient ensuite ?",
+      "choices": [
+        "Mars",
+        "Jupiter",
+        "Saturne"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 9,
+      "title": "Déplacement net",
+      "prompt": "Vous avancez de 5 cases puis reculez de 2. Quel est le déplacement final ?",
+      "choices": [
+        "3",
+        "7",
+        "2"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 10,
+      "title": "Observation céleste",
+      "prompt": "Quel type d'astre produit lumière et chaleur ?",
+      "choices": [
+        "Une étoile",
+        "Une planète",
+        "Un satellite"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 11,
+      "title": "Comparaison cosmique",
+      "prompt": "Quelle planète est la plus grande ?",
+      "choices": [
+        "Jupiter",
+        "Mars",
+        "Mercure"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 2,
+      "wrongDelta": -1
+    },
+    {
+      "id": 12,
+      "title": "Logique temporelle",
+      "prompt": "Un événement se produit avant le décollage puis pendant le voyage. Que vient ensuite ?",
+      "choices": [
+        "L'atterrissage",
+        "Le décollage",
+        "L'observation"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 13,
+      "title": "Raisonnement spatial",
+      "prompt": "Quel objet trace un trait lumineux en traversant l'atmosphère ?",
+      "choices": [
+        "Une étoile filante",
+        "Une planète",
+        "Une galaxie"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 2,
+      "wrongDelta": -1
+    },
+    {
+      "id": 14,
+      "title": "Mémoire courte",
+      "prompt": "Souvenez-vous : comète, astéroïde, planète. Quel élément était le premier ?",
+      "choices": [
+        "Comète",
+        "Astéroïde",
+        "Planète"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 1,
+      "wrongDelta": -1
+    },
+    {
+      "id": 15,
+      "title": "Calcul final",
+      "prompt": "Vous lancez un dé et obtenez 6 puis 1. Quel est le total ?",
+      "choices": [
+        "7",
+        "6",
+        "8"
+      ],
+      "correctIndex": 0,
+      "correctDelta": 2,
+      "wrongDelta": -1
+    }
+  ],
+  "events": [
+    {
+      "id": 1,
+      "title": "Pluie de météorites",
+      "description": "Une pluie de roches traverse votre route. Passez votre tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Panne de carburant",
+      "description": "Vos réserves chutent brutalement. Restez sur place.",
+      "effects": []
+    },
+    {
+      "id": 3,
+      "title": "Raccourci interstellaire",
+      "description": "Vous repérez une voie rapide invisible pour les autres. Avancez de trois cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mission-galaxie.move",
+          "data": {
+            "delta": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Trou noir détecté",
+      "description": "Une force gravitationnelle vous repousse. Reculez de deux cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mission-galaxie.move",
+          "data": {
+            "delta": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Rencontre amicale extraterrestre",
+      "description": "Une civilisation bienveillante vous aide. Avancez de deux cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mission-galaxie.move",
+          "data": {
+            "delta": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Collision évitée de justesse",
+      "description": "Un danger majeur frôle votre trajectoire. Aucun effet.",
+      "effects": []
+    },
+    {
+      "id": 7,
+      "title": "Tempête solaire",
+      "description": "Une onde énergétique interromp votre progression. Passez votre tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Carte d'orientation spatiale",
+      "description": "Vous choisissez d'avancer ou reculer un joueur de deux cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mission-galaxie.choose-player-move",
+          "data": {
+            "cardId": 8,
+            "deltas": [
+              2,
+              -2
+            ]
+          }
+        }
+      ],
+      "moveDeltas": [
+        2,
+        -2
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Champ magnétique perturbé",
+      "description": "Le champ déforme l'espace : relancez le dé et appliquez le résultat.",
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Station spatiale abandonnée",
+      "description": "Des systèmes archaïques vous offrent un bonus : rejouez immédiatement.",
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Télescope géant oublié",
+      "description": "Vous apercevez votre destination. Si vous êtes avant la case 45, avancez jusqu'à elle.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "mission-galaxie.goto",
+          "data": {
+            "target": 45
+          }
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Explosion d'étoile",
+      "description": "Une supernova déclenche un avantage pour vous : tous les autres joueurs passent leur tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    }
+  ]
+}

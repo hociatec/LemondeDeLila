@@ -1,4 +1,5 @@
-import { testGame } from '../../../engine/sdk/public-api';
+import { testGame } from '../../../engine/testing/public-api';
+
 import gameDefinition from './game';
 
 describe('Pimp My Ride declarative game', () => {

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
-import { RoomBot } from '../../room/infrastructure/persistence/typeorm/entities/room-bot.entity';
-import { Room } from '../../room/infrastructure/persistence/typeorm/entities/room.entity';
-import { RoomParticipant } from '../../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
-import { User } from '../../user/public-api';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BusinessClockModule } from '../../../platform/time/public-api';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../shared/interfaces/public-api';
 import {
   BOT_NAME_CACHE_CONFIG,
   type BotNameCacheConfig,
@@ -37,41 +37,17 @@ import { UpdateBotNameService } from '../application/use-cases/bot-names/update-
 import { BotName } from '../infrastructure/persistence/typeorm/entities/bot-name.entity';
 import { createBotNameCacheConfig } from '../infrastructure/config/bot-name-cache.config';
 import { BotNameTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/bot-name-typeorm.repository';
-import {
-  BOT_ROOM_BOTS_TYPEORM_REPOSITORY,
-  BOT_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY,
-  BOT_ROOM_ROOMS_TYPEORM_REPOSITORY,
-  BotRoomTypeormRepository,
-} from '../infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository';
 
 @Module({
   imports: [
-    ConfigModule,
-    TypeOrmModule.forFeature([RoomBot, Room, RoomParticipant, User, BotName]),
+    BusinessClockModule,
+    TypeOrmModule.forFeature([BotName]),
   ],
   providers: [
-    {
-      provide: BOT_ROOM_BOTS_TYPEORM_REPOSITORY,
-      useExisting: getRepositoryToken(RoomBot),
-    },
-    {
-      provide: BOT_ROOM_ROOMS_TYPEORM_REPOSITORY,
-      useExisting: getRepositoryToken(Room),
-    },
-    {
-      provide: BOT_ROOM_PARTICIPANTS_TYPEORM_REPOSITORY,
-      useExisting: getRepositoryToken(RoomParticipant),
-    },
-    BotRoomTypeormRepository,
     BotNameTypeormRepository,
     {
       provide: BOT_NAME_CACHE_CONFIG,
-      inject: [ConfigService],
       useFactory: createBotNameCacheConfig,
-    },
-    {
-      provide: BOT_ROOM_REPOSITORY,
-      useExisting: BotRoomTypeormRepository,
     },
     {
       provide: BOT_NAME_REPOSITORY,
@@ -96,8 +72,9 @@ import {
       useFactory: (
         registry: BotNameRegistryService,
         config: BotNameCacheConfig,
-      ) => new BotNameCacheService(registry, config),
-      inject: [BotNameRegistryService, BOT_NAME_CACHE_CONFIG],
+        clock: BusinessClock,
+      ) => new BotNameCacheService(registry, config, clock),
+      inject: [BotNameRegistryService, BOT_NAME_CACHE_CONFIG, BUSINESS_CLOCK],
     },
     {
       provide: BotNameSelectionService,

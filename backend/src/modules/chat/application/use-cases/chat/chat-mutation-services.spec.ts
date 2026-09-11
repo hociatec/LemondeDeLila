@@ -4,21 +4,25 @@ import {
   ChatMessageDeleteWindowExpiredError,
   ChatMessageRequiredError,
 } from '../../../domain/errors/chat-domain.errors';
-import type { ChatMessageRecord } from '../../contracts/chat-message.record';
+import type { ChatMessageRecord } from '../../read-models/chat-message.record';
 import { ChatMessageCacheService } from '../../services/chat-message-cache.service';
 import { ChatMessagePresenterService } from '../../services/chat-message-presenter.service';
 import { EditOwnChatMessageService } from './edit-own-chat-message.service';
 import { DeleteOwnChatMessageService } from './delete-own-chat-message.service';
 import { ChatValidator } from './chat.validator';
+import {
+  asMessageId,
+  asUserId,
+} from '../../../../../shared/interfaces/public-api';
 
 describe('chat mutation services', () => {
   const record = (createdAt = new Date()): ChatMessageRecord => ({
     id: 10,
-    messageId: 'message-10',
+    messageId: asMessageId('message-10'),
     message: 'before',
     createdAt,
     deletedAt: null,
-    user: { id: 1, username: 'Alice', avatar: null },
+    user: { id: asUserId(1), username: 'Alice', avatar: null },
   });
 
   it('rejects empty messages after sanitization', () => {
@@ -39,9 +43,10 @@ describe('chat mutation services', () => {
       settings as any,
       new ChatMessagePresenterService(),
       new ChatMessageCacheService(),
+      { now: () => Date.now() },
     );
     await expect(
-      service.execute(2, 'message-10', 'after'),
+      service.execute(asUserId(2), asMessageId('message-10'), 'after'),
     ).rejects.toBeInstanceOf(ChatMessageAccessDeniedError);
 
     messages.findByMessageId.mockResolvedValue(
@@ -62,6 +67,7 @@ describe('chat mutation services', () => {
       messages as any,
       { getEditWindowSeconds: () => 60 } as any,
       cache,
+      { now: () => Date.now() },
     );
     await expect(service.execute(2, 'message-10')).rejects.toBeInstanceOf(
       ChatMessageAccessDeniedError,
@@ -85,6 +91,7 @@ describe('chat mutation services', () => {
       messages as any,
       { getEditWindowSeconds: () => 60 } as any,
       new ChatMessageCacheService(),
+      { now: () => Date.now() },
     );
     await expect(service.execute(1, 'message-10')).resolves.toBe(true);
     expect(messages.deleteById).not.toHaveBeenCalled();

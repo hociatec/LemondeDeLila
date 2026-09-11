@@ -1,31 +1,27 @@
 import {
-  defineGameContent,
   defineGame,
   marketGame,
   publicField,
 } from '../../../engine/sdk/public-api';
+import { GAME_BOT } from './bot-rules';
 import {
-  GOOD_LABELS,
   INITIAL_PRICES,
   MARKET_RULES,
+  WONDER_GAME_CONTENT,
   WONDER_GOODS,
 } from './content';
+import manifest from './manifest.json';
 import { MARKET_ACTIONS, MARKET_TURNS_TAKEN } from './rules';
 import type { WonderMarketState } from './types';
 
 export default defineGame<WonderMarketState>()({
-  id: 'le-marche-des-merveilles',
-  displayName: 'Le Marché des Merveilles',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
-  description: 'Achetez, vendez et influencez les cours du marché.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('le-marche-des-merveilles', {
-    goods: WONDER_GOODS,
-    labels: GOOD_LABELS,
-    initialPrices: INITIAL_PRICES,
-    rules: MARKET_RULES,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: WONDER_GAME_CONTENT,
   playerValuesVisibility: { statuses: publicField() },
   patterns: [
     marketGame({
@@ -51,22 +47,5 @@ export default defineGame<WonderMarketState>()({
     { key: 'O', type: 'action', actionType: 'pass' },
   ],
   actions: MARKET_ACTIONS,
-  bot: {
-    choose: ({ actor, ctx }) => {
-      const sellable = WONDER_GOODS.find((good) =>
-        ctx.inventory.has('wonder-goods', actor.id, good),
-      );
-      if (sellable) return { type: 'sell', payload: { good: sellable } };
-      const buyable = [...WONDER_GOODS]
-        .sort(
-          (left, right) =>
-            ctx.economy.price('wonders', right) -
-            ctx.economy.price('wonders', left),
-        )
-        .find((good) => ctx.economy.canAfford('wonders', actor.id, good));
-      return buyable
-        ? { type: 'buy', payload: { good: buyable } }
-        : { type: 'pass', payload: {} };
-    },
-  },
+  bot: GAME_BOT,
 });

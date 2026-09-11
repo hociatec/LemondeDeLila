@@ -1,4 +1,5 @@
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { ApplicationShutdownService } from '../../lifecycle/public-api';
 import { ConfigService } from '@nestjs/config';
 import type { ThrottlerStorage } from '@nestjs/throttler';
 import type Redis from 'ioredis';
@@ -30,7 +31,12 @@ export class RedisRateLimitStorage
 {
   private readonly client: Redis;
 
-  constructor(config: ConfigService, redisFactory: RedisClientFactory) {
+  constructor(
+    config: ConfigService,
+    redisFactory: RedisClientFactory,
+    @Inject(ApplicationShutdownService)
+    private readonly shutdown = new ApplicationShutdownService(),
+  ) {
     const url =
       config.get<string>('RATE_LIMIT_REDIS_URL') ??
       config.get<string>('SESSION_STORE_REDIS_URL');
@@ -45,15 +51,47 @@ export class RedisRateLimitStorage
     });
   }
 
-  async increment(
+  increment(
     key: string,
     ttl: number,
     limit: number,
     blockDuration: number,
     throttlerName: string,
   ) {
+    // HTTP guards run before interceptors, including when a client aborts.
+    return this.shutdown.run(
+      () =>
+        this.incrementInRedis(key, ttl, limit, blockDuration, throttlerName),
+      true,
+    );
+  }
+
+  private async incrementInRedis(
+    key: string,
+    ttl: number,
+    limit: number,
+    blockDuration: number,
+    throttlerName: string,
+  ) {
+    if (
+      typeof key !== 'string' ||
+      key.length === 0 ||
+      key.length > 256 ||
+      typeof throttlerName !== 'string' ||
+      throttlerName.length === 0 ||
+      throttlerName.length > 128 ||
+      !Number.isSafeInteger(ttl) ||
+      ttl <= 0 ||
+      !Number.isSafeInteger(limit) ||
+      limit <= 0 ||
+      !Number.isSafeInteger(blockDuration) ||
+      blockDuration < 0 ||
+      blockDuration > 86_400_000
+    ) {
+      throw new Error('Invalid Redis rate-limit options');
+    }
     const namespace = `lila:throttle:${throttlerName}:${key}`;
-    const raw = (await this.client.eval(
+    const raw: unknown = await this.client.eval(
       INCREMENT_SCRIPT,
       2,
       `${namespace}:hits`,
@@ -61,7 +99,19 @@ export class RedisRateLimitStorage
       String(ttl),
       String(limit),
       String(blockDuration),
-    )) as Array<number | string>;
+    );
+    if (
+      !Array.isArray(raw) ||
+      raw.length !== 4 ||
+      !raw.every(
+        (value: unknown) =>
+          typeof value === 'number' && Number.isSafeInteger(value),
+      ) ||
+      ![0, 1].includes(Number(raw[2])) ||
+      Number(raw[0]) < 0
+    ) {
+      throw new Error('Invalid Redis rate-limit response');
+    }
     const [totalHits, timeToExpire, isBlocked, timeToBlockExpire] =
       raw.map(Number);
     return {
@@ -78,5 +128,7 @@ export class RedisRateLimitStorage
 }
 
 function millisecondsToSeconds(value: number | undefined): number {
-  return Math.max(0, Math.ceil((value ?? 0) / 1000));
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+    ? Math.ceil(value / 1000)
+    : 0;
 }

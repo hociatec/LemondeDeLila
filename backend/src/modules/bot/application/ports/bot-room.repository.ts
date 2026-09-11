@@ -1,7 +1,7 @@
 import type {
   BotManagedRoomRecord,
   BotRoomRecord,
-} from '../contracts/bot-room.record';
+} from '../read-models/bot-room.record';
 
 export interface CreateBotForRoomInput {
   roomId: number;

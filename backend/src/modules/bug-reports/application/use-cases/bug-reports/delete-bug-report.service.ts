@@ -5,7 +5,7 @@ export class DeleteBugReportService {
 
   async execute(id: string): Promise<boolean> {
     const key = String(id ?? '').trim();
-    if (!key) return false;
+    if (!key || key.length > 64) return false;
     return this.repo.delete(key);
   }
 }

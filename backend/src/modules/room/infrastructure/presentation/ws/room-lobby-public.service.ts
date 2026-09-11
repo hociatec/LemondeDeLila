@@ -55,7 +55,7 @@ export class RoomLobbyPublicService {
       this.realtimeTracker.getActivePlayerRoomIds(),
     );
     const built = buildPublicRoomList(
-      rooms.filter((room) => activeRoomIds.has(room.id)),
+      rooms.slice(0, 10_000).filter((room) => activeRoomIds.has(room.id)),
       { allowedGameTypes: allowed },
     );
     const withBan = <T extends { id: number }>(room: T) => ({

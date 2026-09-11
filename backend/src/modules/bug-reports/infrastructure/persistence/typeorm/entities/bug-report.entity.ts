@@ -6,7 +6,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import type { BugReportStatus } from '../../../../application/contracts/bug-report.record';
+import type { BugReportStatus } from '../../../../application/read-models/bug-report.record';
 
 @Entity({ name: 'bug_reports' })
 @Index('idx_bug_reports_status', ['status'])

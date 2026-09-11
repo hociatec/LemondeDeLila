@@ -1,7 +1,7 @@
 import type {
   BugReportRecord,
   BugReportStatus,
-} from '../../contracts/bug-report.record';
+} from '../../read-models/bug-report.record';
 
 export class BugReportStatusNormalizerService {
   normalizeStatus(status: BugReportStatus): BugReportStatus {

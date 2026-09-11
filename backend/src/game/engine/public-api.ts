@@ -1,7 +1,3 @@
-export { EngineModule } from './infrastructure/module/engine.module';
-export { EngineServicesModule } from '../core/infrastructure/module/engine-services.module';
-export { GameRegistryModule } from './infrastructure/module/game-registry.module';
-export { GamePluginsModule } from '../composition/game-plugins.module';
 export { GameRegistryService } from '../core/application/services/game-registry.service';
 export { GameContentService } from '../core/application/services/game-content.service';
 export { GameEngineService } from '../core/application/services/game-engine.service';

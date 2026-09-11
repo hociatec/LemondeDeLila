@@ -1,3 +1,4 @@
+import type { NoGameState as AbsurdissimesState } from '../../../engine/sdk/public-api';
 import {
   completeRound,
   defineAction,
@@ -5,10 +6,10 @@ import {
   defineGamePhases,
   gameInput,
   rejectRule,
+  thresholdVictory,
   type GameContext,
 } from '../../../engine/sdk/public-api';
 import type { AbsurdissimesCard } from './content';
-import type { NoGameState as AbsurdissimesState } from '../../../engine/sdk/public-api';
 
 const HAND = 'answers';
 const BLACK_DECK = 'black';
@@ -24,7 +25,10 @@ export const SUBMISSIONS_REVEALED = defineEvent({
 });
 export const ABSURDISSIMES_PHASES = defineGamePhases<AbsurdissimesState>()({
   initialPhase: 'play',
-  phases: { play: {}, judge: {} },
+  phases: {
+    play: { transitions: ['judge'] },
+    judge: { transitions: ['play'] },
+  },
 });
 
 export const playCard = defineAction<AbsurdissimesState, { cardId: string }>({
@@ -84,13 +88,18 @@ export const judgePick = defineAction<AbsurdissimesState, { winnerId: number }>(
           winnerId: Number(playerId),
         }),
       ),
-    execute: ({ input, ctx }) => {
-      const score = ctx.score.add(input.winnerId, 1);
+    execute: ({ state, input, ctx }) => {
+      ctx.score.add(input.winnerId, 1);
       ctx.events.message('game.round.won', { playerId: input.winnerId });
       completeRound(ctx, {
         winnerPlayerIds: [input.winnerId],
         finishMatch: () => {
-          if (score < ABSURDISSIMES_TARGET_SCORE) return false;
+          const outcome = thresholdVictory<AbsurdissimesState>({
+            kind: 'score-at-least',
+            amount: ABSURDISSIMES_TARGET_SCORE,
+            participants: 'all',
+          }).evaluate({ state, ctx });
+          if (!outcome?.winnerPlayerIds.includes(input.winnerId)) return false;
           ctx.match.finish({
             winners: [input.winnerId],
             reason: 'target-score',
@@ -131,12 +140,4 @@ export function drawWhiteCard(
   const card = ctx.cards.draw<AbsurdissimesCard>(WHITE_DECK);
   if (card != null) ctx.cards.discard(WHITE_DECK, card);
   return card?.text ?? null;
-}
-
-export function currentWhiteCard(
-  ctx: GameContext<AbsurdissimesState>,
-): string | null {
-  return (
-    ctx.cards.discardPile<AbsurdissimesCard>(WHITE_DECK).at(-1)?.text ?? null
-  );
 }

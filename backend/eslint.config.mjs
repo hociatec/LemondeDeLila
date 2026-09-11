@@ -4,6 +4,27 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
+const noDoubleCast = {
+  selector:
+    ':matches(TSAsExpression, TSTypeAssertion) > :matches(TSAsExpression, TSTypeAssertion).expression[typeAnnotation.type="TSUnknownKeyword"]',
+  message: 'Valider la valeur inconnue au lieu de forcer un double cast.',
+};
+
+const deterministicGameSyntax = [
+  {
+    selector: "CallExpression[callee.object.name='Math'][callee.property.name='random']",
+    message: 'Utiliser ctx.random pour garantir le déterminisme.',
+  },
+  {
+    selector: "CallExpression[callee.object.name='Date'][callee.property.name='now']",
+    message: 'Utiliser ctx.clock pour lire l’horloge.',
+  },
+  {
+    selector: "NewExpression[callee.name='Date']",
+    message: 'Utiliser ctx.clock pour lire l’horloge.',
+  },
+];
+
 export default tseslint.config(
   {
     ignores: ['eslint.config.mjs'],
@@ -27,6 +48,16 @@ export default tseslint.config(
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-ignore': true,
+          'ts-nocheck': true,
+          'ts-check': false,
+          'ts-expect-error': 'allow-with-description',
+          minimumDescriptionLength: 10,
+        },
+      ],
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
@@ -55,12 +86,31 @@ export default tseslint.config(
     ],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-ignore': true,
+          'ts-nocheck': true,
+          'ts-check': false,
+          'ts-expect-error': true,
+        },
+      ],
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'error',
       '@typescript-eslint/no-unsafe-call': 'error',
       '@typescript-eslint/no-unsafe-return': 'error',
       '@typescript-eslint/no-unsafe-argument': 'error',
+    },
+  },
+  {
+    files: ['src/**/*.ts'],
+    ignores: ['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/tests/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        noDoubleCast,
+      ],
     },
   },
   {
@@ -75,6 +125,25 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/require-await': 'off',
+    },
+  },
+  {
+    files: ['src/**/*.ts'],
+    ignores: [
+      'src/platform/config/**/*.ts',
+      'src/**/*.spec.ts',
+      'src/**/*.test.ts',
+      'src/**/tests/**/*.ts',
+    ],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'process',
+          property: 'env',
+          message: 'Lire la configuration via platform/config/public-api.',
+        },
+      ],
     },
   },
   {
@@ -98,29 +167,22 @@ export default tseslint.config(
             },
             {
               group: ['**/infrastructure/**', '**/persistence/**'],
-              message:
-                'Transport et persistence sont interdits dans les jeux.',
+              message: 'Transport et persistence sont interdits dans les jeux.',
             },
           ],
         },
       ],
       'no-restricted-syntax': [
         'error',
-        {
-          selector:
-            "CallExpression[callee.object.name='Math'][callee.property.name='random']",
-          message: 'Utiliser ctx.random pour garantir le déterminisme.',
-        },
-        {
-          selector:
-            "CallExpression[callee.object.name='Date'][callee.property.name='now']",
-          message: 'Utiliser ctx.clock pour lire l’horloge.',
-        },
-        {
-          selector: "NewExpression[callee.name='Date']",
-          message: 'Utiliser ctx.clock pour lire l’horloge.',
-        },
+        ...deterministicGameSyntax,
       ],
+    },
+  },
+  {
+    files: ['src/game/games/**/*.ts'],
+    ignores: ['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/tests/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': ['error', ...deterministicGameSyntax, noDoubleCast],
     },
   },
 );

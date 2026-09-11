@@ -2,7 +2,7 @@ import {
   GameRuleViolationError,
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
 import type {
   SubmissionEmitter,
   SubmissionKitState,
@@ -11,7 +11,7 @@ import type {
 export class GameJudgeController {
   constructor(
     private readonly state: SubmissionKitState<unknown>,
-    private readonly players: readonly PlayerStateEntity[],
+    private readonly players: readonly PlayerState[],
     private readonly emit: SubmissionEmitter,
   ) {}
 
@@ -40,9 +40,15 @@ export class GameJudgeController {
       options.starterPlayerId == null
         ? 0
         : playerIds.indexOf(options.starterPlayerId);
+    if (starterIndex < 0) {
+      throw new GameRuleViolationError('JUDGE_PLAYER_NOT_ALLOWED', {
+        id,
+        playerId: options.starterPlayerId,
+      });
+    }
     this.state.judges[id] = {
       playerIds,
-      index: Math.max(0, starterIndex),
+      index: starterIndex,
     };
     const playerId = this.current(id);
     this.emit('judge.started', { id, playerId, playerIds: [...playerIds] });

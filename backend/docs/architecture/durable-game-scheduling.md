@@ -3,7 +3,7 @@
 Les échéances métier (`dueAtMs`) et les actions attendues restent dans l'état de
 jeu persistant. BullMQ n'est qu'un mécanisme de réveil distribué : chaque job
 contient la room, le type de jeu, la signature du plan et la génération (version)
-de l'état qui l'a créé.
+de l'état qui l'a créé, ainsi que l'identifiant de partie `roomRunId`.
 
 Le moteur dépend uniquement du port `GameTaskScheduler`. L'adapter BullMQ peut
 être remplacé sans modifier les règles ou le runtime. Il utilise Redis via
@@ -11,7 +11,7 @@ Le moteur dépend uniquement du port `GameTaskScheduler`. L'adapter BullMQ peut
 `SESSION_STORE_REDIS_URL` en repli. En production, Redis est obligatoire.
 
 À la livraison d'un job, le worker recharge l'état, recalcule le plan et vérifie
-sa signature, sa génération et son échéance. Une livraison obsolète ou annulée
+son identifiant de partie, sa signature, sa génération et son échéance. Une livraison obsolète ou annulée
 est donc inoffensive. Une tâche expirée est exécutée immédiatement. Toute action
 valide passe par `GameCommandExecutorService`, reçoit un `commandId` stable, puis
 est persistée par compare-and-set. Deux workers concurrents ne peuvent ainsi

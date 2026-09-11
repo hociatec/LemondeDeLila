@@ -11,9 +11,19 @@ export class PresenceHeartbeat {
 
   constructor(
     private readonly callbacks: PresenceHeartbeatCallbacks,
-    private readonly pingIntervalMs = 30_000,
-    private readonly pingTimeoutMs = 10_000,
-  ) {}
+    pingIntervalMs = 30_000,
+    pingTimeoutMs = 10_000,
+  ) {
+    this.pingIntervalMs = Number.isSafeInteger(pingIntervalMs)
+      ? Math.min(Math.max(pingIntervalMs, 1), 300_000)
+      : 30_000;
+    this.pingTimeoutMs = Number.isSafeInteger(pingTimeoutMs)
+      ? Math.min(Math.max(pingTimeoutMs, 1), this.pingIntervalMs)
+      : 10_000;
+  }
+
+  private pingIntervalMs: number;
+  private pingTimeoutMs: number;
 
   ensureStarted(): void {
     if (this.timer) {

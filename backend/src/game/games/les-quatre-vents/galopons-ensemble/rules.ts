@@ -1,17 +1,22 @@
+import type {
+  NoGameState as GaloponsState,
+  GameContext,
+} from '../../../engine/sdk/public-api';
 import {
+  defineChoice,
+  defineEffect,
   drawAndResolve,
+  gameInput,
   positionOf,
   rollDice,
   sequentialPawnSelection,
   setupPlayingPhases,
 } from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   GALOPONS_TILES,
   type GaloponsCard,
   type GaloponsRegion,
 } from './content';
-import type { NoGameState as GaloponsState } from '../../../engine/sdk/public-api';
 
 type RuleContext = GameContext<GaloponsState>;
 export const GALOPONS_PHASES = setupPlayingPhases<GaloponsState>();
@@ -45,7 +50,7 @@ const pawnSelection = sequentialPawnSelection<GaloponsState>({
   },
 });
 
-export const requestPawns = pawnSelection.requestAll;
+export const setupGame = pawnSelection.setup(() => ({}));
 export const resolvePawn = pawnSelection.resolve;
 
 export function pairAdvance(
@@ -228,3 +233,67 @@ function iouResource(creditorId: number): string {
 function movementDirection(playerId: number, ctx: RuleContext): 1 | -1 {
   return ctx.status.has(playerId, RETURNING) ? -1 : 1;
 }
+
+export const GAME_EFFECTS = {
+  'galopons.move': defineEffect<GaloponsState, { delta: number }>({
+    input: gameInput.object({
+      delta: gameInput.number({ integer: true }),
+    }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId != null) {
+        moveGaloponsAndResolve(state, actorPlayerId, data.delta, 0, ctx);
+      }
+    },
+  }),
+  'galopons.move-to-region': defineEffect<
+    GaloponsState,
+    { region: 'foret' | 'montagne' }
+  >({
+    input: gameInput.object({
+      region: gameInput.enum(['foret', 'montagne'] as const),
+    }),
+    apply: ({ state, actorPlayerId, data, ctx }) => {
+      if (actorPlayerId != null) {
+        moveToNextRegion(state, actorPlayerId, data.region, 0, ctx);
+      }
+    },
+  }),
+  'galopons.give-apple': defineEffect<GaloponsState, Record<string, never>>({
+    input: gameInput.object({}),
+    apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (actorPlayerId != null && targetId != null) {
+        giveAppleWithIou(actorPlayerId, targetId, ctx);
+      }
+    },
+  }),
+  'galopons.help-advance': defineEffect<GaloponsState, { delta: number }>({
+    input: gameInput.object({
+      delta: gameInput.number({ integer: true }),
+    }),
+    apply: ({ state, actorPlayerId, targetPlayerIds, data, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (actorPlayerId != null && targetId != null) {
+        helpAdvanceForApple(state, actorPlayerId, targetId, data.delta, ctx);
+      }
+    },
+  }),
+  'galopons.pair-advance': defineEffect<GaloponsState, { delta: number }>({
+    input: gameInput.object({
+      delta: gameInput.number({ integer: true }),
+    }),
+    apply: ({ state, actorPlayerId, targetPlayerIds, data, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (actorPlayerId != null && targetId != null) {
+        pairAdvance(state, actorPlayerId, targetId, data.delta, ctx);
+      }
+    },
+  }),
+};
+
+export const GAME_CHOICES = {
+  'galopons.pawn': defineChoice<GaloponsState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+  }),
+};

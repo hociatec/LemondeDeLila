@@ -6,8 +6,9 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
+  RelationId,
 } from 'typeorm';
-import { User } from '../../../../../user/public-api';
+import type { NotificationUserPersistenceRef } from './notification-user.persistence-ref';
 
 @Entity({ name: 'notification_inbox_items' })
 @Index('idx_notification_inbox_user_created', ['user', 'createdAt'])
@@ -22,9 +23,12 @@ export class NotificationInboxItemEntity {
   @PrimaryColumn({ type: 'varchar', length: 36 })
   id!: string;
 
-  @ManyToOne(() => User, { eager: false, onDelete: 'CASCADE' })
+  @ManyToOne('User', { eager: false })
   @JoinColumn({ name: 'user_id' })
-  user!: User;
+  user!: NotificationUserPersistenceRef;
+
+  @RelationId((item: NotificationInboxItemEntity) => item.user)
+  userId!: number;
 
   @Column({ type: 'varchar', length: 50 })
   kind!: string;

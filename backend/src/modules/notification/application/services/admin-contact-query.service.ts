@@ -1,9 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
+  serializeDate,
+  serializeOptionalDate,
+} from '../../../../shared/utils/public-api';
+import {
   NOTIFICATION_INBOX_REPOSITORY,
   type NotificationInboxRepository,
 } from '../ports/notification-inbox.repository';
-import type { AdminContactThreadSummary } from '../contracts/admin-contact.model';
+import type { AdminContactThreadSummary } from '../models/admin-contact.model';
 import {
   ADMIN_CONTACT_KIND,
   normalizeAdminContactPayload,
@@ -20,19 +24,22 @@ export class AdminContactQueryService {
     userId: number,
     limit = 100,
   ): Promise<Array<Record<string, unknown>>> {
-    const items = await this.inbox.list(userId, limit);
+    const safeLimit = Number.isSafeInteger(limit)
+      ? Math.min(Math.max(limit, 1), 200)
+      : 100;
+    const items = await this.inbox.list(userId, safeLimit);
     return items.map((item) => {
       const base = {
+        ...(item.payload ?? {}),
         id: item.id,
         kind: item.kind,
         contactId: item.contactId ?? null,
-        createdAt: item.createdAt?.toISOString?.() ?? new Date().toISOString(),
-        readAt: item.readAt?.toISOString?.() ?? null,
+        createdAt: serializeDate(item.createdAt),
+        readAt: serializeOptionalDate(item.readAt),
         fromUserId: item.fromUserId ?? 0,
         fromUsername: item.fromUsername ?? '',
         toUserId: item.toUserId ?? null,
         message: item.message ?? '',
-        ...(item.payload ?? {}),
       };
       if (item.kind !== ADMIN_CONTACT_KIND) return base;
       return { ...base, ...normalizeAdminContactPayload(item.payload) };
@@ -46,7 +53,13 @@ export class AdminContactQueryService {
       limitThreads = 200,
     }: { maxItems?: number; limitThreads?: number } = {},
   ): Promise<AdminContactThreadSummary[]> {
-    const items = await this.inbox.list(userId, maxItems);
+    const safeMaxItems = Number.isSafeInteger(maxItems)
+      ? Math.min(Math.max(maxItems, 1), 200)
+      : 200;
+    const safeLimitThreads = Number.isSafeInteger(limitThreads)
+      ? Math.min(Math.max(limitThreads, 1), 200)
+      : 200;
+    const items = await this.inbox.list(userId, safeMaxItems);
     const threads = new Map<string, AdminContactThreadSummary>();
     for (const item of items) {
       if (item.kind !== ADMIN_CONTACT_KIND || !item.contactId) continue;
@@ -60,9 +73,8 @@ export class AdminContactQueryService {
         kind: 'admin_contact',
         contactId: item.contactId,
         latestId: item.id,
-        latestCreatedAt:
-          item.createdAt?.toISOString?.() ?? new Date().toISOString(),
-        latestReadAt: item.readAt?.toISOString?.() ?? null,
+        latestCreatedAt: serializeDate(item.createdAt),
+        latestReadAt: serializeOptionalDate(item.readAt),
         latestMessage: item.message ?? '',
         fromUserId: item.fromUserId ?? 0,
         fromUsername: item.fromUsername ?? '',
@@ -71,6 +83,6 @@ export class AdminContactQueryService {
         ...normalized,
       });
     }
-    return [...threads.values()].slice(0, limitThreads);
+    return [...threads.values()].slice(0, safeLimitThreads);
   }
 }

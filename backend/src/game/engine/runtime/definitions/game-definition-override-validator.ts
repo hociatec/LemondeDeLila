@@ -4,7 +4,7 @@ import type {
   GameComponentDefinition,
   GameInitialization,
 } from './component-kit';
-import type { GameActionMap } from './game-definition-contracts';
+import type { GameActionMap } from '../contracts/author-rule-contracts';
 
 export function assertNoImplicitActionOverrides<TState extends object>(
   patternActions: GameActionMap<TState>,
@@ -12,8 +12,16 @@ export function assertNoImplicitActionOverrides<TState extends object>(
   gameId: string,
 ): void {
   for (const [actionId, action] of Object.entries(gameActions)) {
-    if (!(actionId in patternActions) || action.overrides === actionId)
-      continue;
+    const inherited = Object.hasOwn(patternActions, actionId);
+    if (
+      action.overrides != null &&
+      (!inherited || action.overrides !== actionId)
+    ) {
+      throw new GameConfigurationError(
+        `Action "${actionId}" de "${gameId}": cible de remplacement inconnue ou incohérente`,
+      );
+    }
+    if (!inherited || action.overrides === actionId) continue;
     throw new GameConfigurationError(
       `Action "${actionId}" fournie par un pattern et redéfinie par "${gameId}" sans overrideAction() explicite`,
     );
@@ -32,6 +40,14 @@ export function assertNoImplicitComponentOverrides(
   );
   for (const component of gameComponents) {
     const key = `${component.component}:${component.id}`;
+    if (
+      component.overrides != null &&
+      (component.overrides !== key || !patternKeys.has(key))
+    ) {
+      throw new GameConfigurationError(
+        `Composant "${key}" de "${gameId}": cible de remplacement inconnue ou incohérente`,
+      );
+    }
     if (patternKeys.has(key) && component.overrides !== key) {
       throw new GameConfigurationError(
         `Composant "${key}" fourni par un pattern et redéfini par "${gameId}" sans overrideComponent() explicite`,

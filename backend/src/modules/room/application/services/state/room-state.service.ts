@@ -3,7 +3,7 @@ import {
   ROOM_EVENT_PUBLISHER,
   type RoomEventPublisherPort,
 } from '../../ports/room-event-publisher.port';
-import type { RoomPayload } from '../../contracts/room-payload.model';
+import type { RoomPayload } from '../../models/room-payload.model';
 import { RoomPayloadService } from './room-payload.service';
 import { RoomRuntimeStateService } from './room-runtime-state.service';
 

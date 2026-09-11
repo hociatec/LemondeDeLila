@@ -1,10 +1,3 @@
-export type VillageTile = {
-  n: number;
-  title: string;
-  description: string;
-  type: 'card' | 'finish';
-};
-
 export type VillageCard = {
   id: number;
   title: string;

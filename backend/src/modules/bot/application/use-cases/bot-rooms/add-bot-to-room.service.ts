@@ -1,5 +1,5 @@
 import type { BotRoomRepository } from '../../ports/bot-room.repository';
-import type { BotRoomRecord } from '../../contracts/bot-room.record';
+import type { BotRoomRecord } from '../../read-models/bot-room.record';
 import { BotNameSelectionService } from '../bot-names/bot-name-selection.service';
 import { BotRoomPolicyService } from './bot-room-policy.service';
 

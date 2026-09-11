@@ -1,13 +1,11 @@
 import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ChatModule } from '../../chat/public-api';
-import { UpdateModule } from '../../update/public-api';
-import { RoomParticipant } from '../../room/infrastructure/persistence/typeorm/entities/room-participant.entity';
-import { User } from '../../user/public-api';
+import { BusinessClockModule } from '../../../platform/time/public-api';
+import { ChatModule } from '../../chat/composition-api';
+import { UpdateModule } from '../../update/composition-api';
 
 export const PRESENCE_MODULE_IMPORTS = [
   ConfigModule,
+  BusinessClockModule,
   ChatModule,
   UpdateModule,
-  TypeOrmModule.forFeature([RoomParticipant, User]),
 ];

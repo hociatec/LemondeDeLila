@@ -1,42 +1,56 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { stringOrEmpty } from '@shared/utils/public-api';
+import { Injectable } from '@nestjs/common';
 import type { WsSession } from '../../../../../../platform/realtime/public-api';
 import { WsApiHubService } from '../../../../../../platform/ws/public-api';
-import type { GameRuntime } from '../../../../application/contracts/game-runtime.interface';
-import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
-import { resolveGameStateRunId } from '../../../../application/helpers/game-room-run-id.helper';
+import type { GameRuntime } from '../../../../application/ports/game-runtime.port';
+import type { GameState } from '../../../../application/models/game-state.model';
 import { GameRoomStateFactory } from '../../../../application/services/game-room-state.factory';
 import { GameEngineService } from '../../../../application/services/game-engine.service';
 import { GameRealtimeAutomationService } from '../../../../application/services/game-realtime-automation.service';
 import { GameRegistryService } from '../../../../application/services/game-registry.service';
 import { GameWsRoomContextService } from '../game-ws-room-context.service';
 import { GameWsStatePresenter } from './game-ws-state.presenter';
-import { GameStateConflictError } from '../../../../domain/errors/game-domain.errors';
 import { GameExecutionScopeService } from '../../../../application/services/game-execution-scope.service';
+import { gameStateVersion } from '../../../../application/helpers/game-state-version';
 
-type VersionedGameState = GameStateEntity & { version?: number };
-
-export type ResolvedGameState = {
-  gameType: string;
-  state: GameStateEntity;
-  handler: GameRuntime;
-  commandRebaseFromVersion?: number;
-};
-
+import {
+  GameRoomStateLifecycle,
+  type ResolvedGameState,
+} from '../../../../application/services/game-room-state-lifecycle';
+export type { ResolvedGameState } from '../../../../application/services/game-room-state-lifecycle';
 @Injectable()
 export class GameWsRealtimeStateService {
+  private readonly lifecycle: GameRoomStateLifecycle;
+  private readonly latestSentVersions = new Map<
+    string,
+    {
+      roomId: number;
+      gameType: string;
+      runId: number;
+      version: number;
+    }
+  >();
   constructor(
-    private readonly stateFactory: GameRoomStateFactory,
-    private readonly engine: GameEngineService,
-    private readonly registry: GameRegistryService,
-    private readonly automation: GameRealtimeAutomationService,
+    stateFactory: GameRoomStateFactory,
+    engine: GameEngineService,
+    registry: GameRegistryService,
+    automation: GameRealtimeAutomationService,
     private readonly presenter: GameWsStatePresenter,
     private readonly hub: WsApiHubService,
-    private readonly rooms: GameWsRoomContextService,
-    private readonly execution: GameExecutionScopeService,
+    rooms: GameWsRoomContextService,
+    execution: GameExecutionScopeService,
   ) {
-    this.automation.setStateCommittedHandler?.(async (committed) => {
-      await this.publishCommittedState(
+    this.lifecycle = new GameRoomStateLifecycle(
+      stateFactory,
+      engine,
+      registry,
+      automation,
+      rooms,
+      execution,
+      (roomId, gameType, state, handler, version) =>
+        this.broadcast(roomId, gameType, state, handler, version),
+    );
+    automation.setStateCommittedHandler?.(async (committed) => {
+      await this.lifecycle.publishCommittedState(
         committed.roomId,
         committed.gameType,
         committed.state,
@@ -45,62 +59,32 @@ export class GameWsRealtimeStateService {
       );
     });
   }
-
-  async resolve(roomId: number): Promise<ResolvedGameState> {
-    const cachedRoom = await this.rooms.buildPayload(roomId);
-    const gameType = stringOrEmpty(cachedRoom.room.gameType).trim();
-    const handler = this.registry.getHandler(gameType);
-    if (!handler) throw new NotFoundException(`Jeu introuvable: ${gameType}`);
-
-    const existing = await this.engine.exportInternalState(roomId, gameType);
-    // A cached lobby payload is sufficient during ordinary turns, but never
-    // for creating or reconfiguring a game roster. Bot/human mutations and a
-    // start command can be handled concurrently by separate WS connections.
-    // Reading the relations from the database closes that last race even when
-    // the cache itself is new.
-    const room =
-      !existing ||
-      !this.belongsToCurrentRun(existing, cachedRoom.room) ||
-      this.isRosterConfigurationState(existing)
-        ? await this.rooms.refreshPayload(roomId)
-        : cachedRoom;
-    if (existing && this.belongsToCurrentRun(existing, room.room)) {
-      this.ensureVersion(existing);
-      const refreshed = await this.refreshSetupRoster(
-        roomId,
-        gameType,
-        existing,
-        room,
-        handler,
-      );
-      const started = await this.refreshRoomStartedAt(
-        roomId,
-        gameType,
-        refreshed.state,
-        room.room.startedAt,
-      );
-      return {
-        gameType,
-        handler,
-        state: started.state,
-        commandRebaseFromVersion:
-          refreshed.commandRebaseFromVersion ??
-          started.commandRebaseFromVersion,
-      };
-    }
-    if (existing) await this.clear(roomId, gameType);
-
-    const baseState = this.stateFactory.build(room, gameType);
-    const context = this.execution.create(baseState, null);
-    const state = this.execution.run(context, () =>
-      handler.hydrateInitialState(baseState, context),
-    );
-    this.preserveRoomRunId(baseState, state);
-    this.ensureVersion(state);
-    await this.engine.restoreInternalState(roomId, gameType, state);
-    return { gameType, state, handler };
+  resolve(roomId: number): Promise<ResolvedGameState> {
+    return this.lifecycle.resolve(roomId);
   }
-
+  schedule(roomId: number, resolved: ResolvedGameState): void {
+    this.lifecycle.schedule(roomId, resolved);
+  }
+  commit(
+    roomId: number,
+    resolved: ResolvedGameState,
+    previous: GameState,
+    next: GameState,
+  ): Promise<void> {
+    return this.lifecycle.commit(roomId, resolved, previous, next);
+  }
+  clear(roomId: number, gameType: string): Promise<void> {
+    return this.lifecycle.clear(roomId, gameType).finally(() => {
+      this.clearSentVersions(roomId, gameType);
+    });
+  }
+  clearRoom(roomId: number): Promise<void> {
+    return this.lifecycle.clearRoom(roomId).finally(() => {
+      for (const [key, sent] of this.latestSentVersions) {
+        if (sent.roomId === roomId) this.latestSentVersions.delete(key);
+      }
+    });
+  }
   present(
     resolved: ResolvedGameState,
     roomId: number,
@@ -109,11 +93,10 @@ export class GameWsRealtimeStateService {
     return this.presenter.present({
       ...resolved,
       roomId,
-      version: this.ensureVersion(resolved.state),
+      version: gameStateVersion(resolved.state),
       viewerPlayerId,
     });
   }
-
   bind(session: WsSession, roomId: number, gameType: string): void {
     this.hub.updateMeta(session.connectionId, {
       scope: 'game',
@@ -122,206 +105,45 @@ export class GameWsRealtimeStateService {
       userId: session.user?.id ?? null,
     });
   }
-
-  schedule(roomId: number, resolved: ResolvedGameState): void {
-    const { gameType, state, handler } = resolved;
-    this.automation.schedule({
-      roomId,
-      gameType,
-      handler,
-      state,
-    });
-  }
-
-  async commit(
-    roomId: number,
-    resolved: ResolvedGameState,
-    previous: GameStateEntity,
-    next: GameStateEntity,
-  ): Promise<void> {
-    this.preserveRoomRunId(previous, next);
-    const expectedVersion = this.ensureVersion(previous);
-    const result = await this.engine.compareAndSetInternalState(
-      roomId,
-      resolved.gameType,
-      expectedVersion,
-      next,
-    );
-    if (!result.committed) throw new GameStateConflictError();
-    // The store drains transient domain events before persistence. Broadcast
-    // the command result so clients receive its draw/play/turn announcements,
-    // while automation continues from the clean persisted state.
-    const presentedState = structuredClone(next);
-    presentedState.version = result.version;
-    await this.publishCommittedState(
-      roomId,
-      resolved.gameType,
-      presentedState,
-      resolved.handler,
-      result.version,
-    );
-    this.schedule(roomId, { ...resolved, state: result.state });
-  }
-
-  async clear(roomId: number, gameType: string): Promise<void> {
-    this.automation.clear(roomId, gameType);
-    await this.engine.clearInternalState(roomId, gameType);
-  }
-
-  async clearRoom(roomId: number): Promise<void> {
-    this.automation.clearRoom(roomId);
-    await this.engine.clearRoom(roomId);
-  }
-
-  private belongsToCurrentRun(
-    state: GameStateEntity,
-    room: { status?: unknown; runId?: unknown },
-  ): boolean {
-    const stateRunId = state.metadata?.roomRunId;
-    const expectedRunId = resolveGameStateRunId(room);
-    return (
-      typeof stateRunId === 'number' &&
-      expectedRunId != null &&
-      stateRunId === expectedRunId
-    );
-  }
-
-  private preserveRoomRunId(
-    source: GameStateEntity,
-    target: GameStateEntity,
-  ): void {
-    const roomRunId = source.metadata?.roomRunId;
-    if (typeof roomRunId !== 'number') return;
-
-    target.metadata = { ...(target.metadata ?? {}), roomRunId };
-  }
-
-  private async refreshRoomStartedAt(
-    roomId: number,
-    gameType: string,
-    existing: GameStateEntity,
-    roomStartedAt: Date | string | null | undefined,
-  ): Promise<{
-    state: GameStateEntity;
-    commandRebaseFromVersion?: number;
-  }> {
-    if (existing.metadata?.roomStartedAt != null || roomStartedAt == null) {
-      return { state: existing };
-    }
-    const normalizedStartedAt =
-      roomStartedAt instanceof Date
-        ? roomStartedAt.toISOString()
-        : roomStartedAt;
-    const next = structuredClone(existing);
-    next.metadata = {
-      ...(next.metadata ?? {}),
-      roomStartedAt: normalizedStartedAt,
-    };
-    const result = await this.engine.compareAndSetInternalState(
-      roomId,
-      gameType,
-      this.ensureVersion(existing),
-      next,
-    );
-    return result.committed
-      ? {
-          state: result.state,
-          commandRebaseFromVersion: this.ensureVersion(existing),
-        }
-      : { state: result.state };
-  }
-
-  private async refreshSetupRoster(
-    roomId: number,
-    gameType: string,
-    existing: GameStateEntity,
-    room: Parameters<GameRoomStateFactory['build']>[0],
-    handler: GameRuntime,
-  ): Promise<{
-    state: GameStateEntity;
-    commandRebaseFromVersion?: number;
-  }> {
-    const roomStatus = stringOrEmpty(room.room.status).toLowerCase();
-    if (
-      (roomStatus !== 'setup' && roomStatus !== 'started') ||
-      stringOrEmpty(existing.phase).toLowerCase() !== 'setup'
-    ) {
-      return { state: existing };
-    }
-    const base = this.stateFactory.build(room, gameType);
-    if (this.sameRoster(existing.players ?? [], base.players ?? [])) {
-      return { state: existing };
-    }
-    const context = this.execution.create(base, null);
-    const refreshed = this.execution.run(context, () =>
-      handler.hydrateInitialState(base, context),
-    );
-    this.preserveRoomRunId(existing, refreshed);
-    const result = await this.engine.compareAndSetInternalState(
-      roomId,
-      gameType,
-      this.ensureVersion(existing),
-      refreshed,
-    );
-    return result.committed
-      ? {
-          state: result.state,
-          commandRebaseFromVersion: this.ensureVersion(existing),
-        }
-      : { state: result.state };
-  }
-
-  private sameRoster(
-    left: NonNullable<GameStateEntity['players']>,
-    right: NonNullable<GameStateEntity['players']>,
-  ): boolean {
-    return (
-      left.length === right.length &&
-      left.every((player, index) => {
-        const candidate = right[index];
-        return (
-          candidate != null &&
-          player.id === candidate.id &&
-          player.username === candidate.username &&
-          Boolean(player.isBot) === Boolean(candidate.isBot)
-        );
-      })
-    );
-  }
-
-  private isRosterConfigurationState(state: GameStateEntity): boolean {
-    // Declarative games start the match lifecycle before asynchronous setup
-    // choices (pawns, roles, etc.) have finished. Their public status is thus
-    // already "playing" while the phase remains "setup".
-    return stringOrEmpty(state.phase).toLowerCase() === 'setup';
-  }
-
-  private ensureVersion(state: GameStateEntity): number {
-    const versioned = state as VersionedGameState;
-    const current = Number(versioned.version);
-    if (Number.isFinite(current) && current > 0) return current;
-    versioned.version = 1;
-    return 1;
-  }
-
   private broadcast(
     roomId: number,
     gameType: string,
-    state: GameStateEntity,
+    state: GameState,
     handler: GameRuntime,
     version: number,
   ): void {
-    for (const connection of this.hub.listConnections()) {
+    const connections = this.hub.listConnections();
+    const active = new Set(
+      connections.map((connection) => connection.connectionId),
+    );
+    for (const key of this.latestSentVersions.keys()) {
+      if (!active.has(key)) this.latestSentVersions.delete(key);
+    }
+    const runId = state.metadata?.roomRunId ?? 0;
+    for (const connection of connections) {
       const meta = connection.meta;
       if (
         meta.scope !== 'game' ||
+        !Number.isSafeInteger(Number(meta.roomId)) ||
         Number(meta.roomId) !== roomId ||
         (meta.gameType && meta.gameType !== gameType)
       ) {
         continue;
       }
-      const viewerPlayerId = Number(meta.userId ?? 0);
-      this.hub.send(connection.connectionId, {
+      const viewerCandidate = Number(meta.userId ?? 0);
+      const viewerPlayerId =
+        Number.isSafeInteger(viewerCandidate) && viewerCandidate > 0
+          ? viewerCandidate
+          : 0;
+      const previous = this.latestSentVersions.get(connection.connectionId);
+      if (previous?.roomId === roomId && previous.gameType === gameType) {
+        if (
+          runId < previous.runId ||
+          (runId === previous.runId && version < previous.version)
+        )
+          continue;
+      }
+      const sent = this.hub.send(connection.connectionId, {
         type: 'game.state',
         payload: this.presenter.present({
           state,
@@ -332,19 +154,21 @@ export class GameWsRealtimeStateService {
           viewerPlayerId,
         }),
       });
+      if (!sent) continue;
+      this.latestSentVersions.set(connection.connectionId, {
+        roomId,
+        gameType,
+        runId,
+        version,
+      });
     }
   }
 
-  private async publishCommittedState(
-    roomId: number,
-    gameType: string,
-    state: GameStateEntity,
-    handler: GameRuntime,
-    version: number,
-  ): Promise<void> {
-    this.broadcast(roomId, gameType, state, handler, version);
-    if (stringOrEmpty(state.status).toLowerCase() === 'finished') {
-      await this.rooms.prepareNextRun(roomId);
+  private clearSentVersions(roomId: number, gameType: string): void {
+    for (const [key, sent] of this.latestSentVersions) {
+      if (sent.roomId === roomId && sent.gameType === gameType) {
+        this.latestSentVersions.delete(key);
+      }
     }
   }
 }

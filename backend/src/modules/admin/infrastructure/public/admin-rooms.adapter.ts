@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { parseStrictInteger } from '../../../../shared/utils/public-api';
 import { type AdminRoomsPort } from '../../application/ports/admin-room.port';
 import { ROOM_ADMIN_PORT, type RoomAdminPort } from '../../../room/public-api';
 
@@ -30,6 +31,9 @@ export class AdminRoomsAdapter implements AdminRoomsPort {
   }
 
   adminDestroyRoom(roomId: string): Promise<unknown> {
-    return this.rooms.adminDestroyRoom(Number(roomId));
+    const parsed = parseStrictInteger(roomId, { min: 1 });
+    if (parsed === null)
+      throw new BadRequestException('Identifiant de room invalide');
+    return this.rooms.adminDestroyRoom(parsed);
   }
 }

@@ -1,5 +1,6 @@
 import {
   defineAction,
+  thresholdVictory,
   gameInput,
   rejectRule,
 } from '../../../engine/sdk/public-api';
@@ -20,20 +21,24 @@ import {
   GERARD_THEME_SECRET,
   NAME_HANDS,
   SPECIAL_HANDS,
-  advanceSubmission,
-  allowedNameCount,
-  clearSpecialAttackers,
+  type SpecialInput,
+} from './game-constants';
+import {
+  updateCollectionPhase,
   closeRound,
-  combinations,
   gerardMasterId,
   juryId,
   pendingPlayers,
+  syncTurn,
+} from './round-rules';
+import {
+  allowedNameCount,
+  clearSpecialAttackers,
+  combinations,
   sameSpecialInput,
   specialInputs,
-  syncTurn,
   validateTargets,
-  type SpecialInput,
-} from './support';
+} from './special-card-rules';
 
 export const setTheme = defineAction<GerardState, Record<string, never>>({
   input: gameInput.object({}),
@@ -122,7 +127,7 @@ export const playName = defineAction<GerardState, { names: string[] }>({
     }
     ctx.submissionFlow.submit(GERARD_SUBMISSIONS, actor.id, distinct);
     ctx.resources.set(actor.id, GERARD_EXTRA_NAMES, 0);
-    advanceSubmission(ctx);
+    updateCollectionPhase(ctx);
   },
 });
 
@@ -147,10 +152,7 @@ export const playSpecial = defineAction<GerardState, SpecialInput>({
     const card = GERARD_PRESIDENT_SPECIAL_CARDS.find(
       (candidate) => candidate.id === input.cardId,
     );
-    if (
-      !card ||
-      !ctx.cards.hand<string>(SPECIAL_HANDS, actor.id).includes(card.id)
-    ) {
+    if (!card) {
       rejectRule('Carte spéciale absente de la main');
     }
     validateTargets(actor.id, input, ctx);
@@ -199,8 +201,13 @@ export const chooseWinner = defineAction<GerardState, { winnerId: number }>({
     ) {
       rejectRule('Le gagnant doit avoir soumis un prénom');
     }
-    const score = ctx.score.add(input.winnerId, 1);
-    if (score >= GERARD_TARGET_SCORE) {
+    ctx.score.add(input.winnerId, 1);
+    const outcome = thresholdVictory<GerardState>({
+      kind: 'score-at-least',
+      amount: GERARD_TARGET_SCORE,
+      participants: 'all',
+    }).evaluate({ state, ctx });
+    if (outcome?.winnerPlayerIds.includes(input.winnerId)) {
       ctx.match.finish({
         winners: [input.winnerId],
         reason: 'president-7-points',
@@ -219,7 +226,7 @@ export const pass = defineAction<GerardState, Record<string, never>>({
     pendingPlayers(ctx)[0] === actor.id,
   execute: ({ actor, ctx }) => {
     ctx.submissionFlow.submit(GERARD_SUBMISSIONS, actor.id, []);
-    advanceSubmission(ctx);
+    updateCollectionPhase(ctx);
   },
 });
 

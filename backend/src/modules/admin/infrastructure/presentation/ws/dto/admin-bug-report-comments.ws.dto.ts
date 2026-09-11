@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { StrictIntegerInput } from '../../../../../../platform/validation/public-api';
 import {
   IsInt,
   IsOptional,
@@ -19,13 +19,14 @@ export class AdminBugReportCommentsListWsDto {
   reportId!: string;
 
   @IsOptional()
-  @Type(() => Number)
+  @StrictIntegerInput()
   @IsInt()
   @Min(0)
+  @Max(10_000_000)
   offset: number = 0;
 
   @IsOptional()
-  @Type(() => Number)
+  @StrictIntegerInput()
   @IsInt()
   @Min(1)
   @Max(100)
@@ -36,6 +37,6 @@ export class AdminBugReportCommentAddWsDto extends AdminBugReportCommentsListWsD
   @IsString()
   @MinLength(1)
   @Matches(/\S/, { message: 'content must not be blank' })
-  @MaxLength(50000)
+  @MaxLength(20000)
   content!: string;
 }

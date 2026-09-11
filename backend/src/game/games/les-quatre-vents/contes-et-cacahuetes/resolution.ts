@@ -1,4 +1,6 @@
+import { CONTES_TRACK } from './constants';
 import {
+  drawEvent,
   drawAndResolve,
   gameEffects,
   rejectRule,
@@ -18,17 +20,10 @@ import type {
   ContesState,
   ContesTargetEffect,
 } from './types';
-import { blockedPosition, contesPosition, moveTo } from './resolution-support';
+import { blockedPosition } from './blocked-player';
 import { CONTES_RESOURCES, CONTES_STATUSES } from './constants';
 import { listTokens } from './tokens';
 
-export {
-  CONTES_CONTENT_COUNTS,
-  blockedPosition,
-  contesPosition,
-  requirePending,
-  rollDie,
-} from './resolution-support';
 export { CONTES_RESOURCES, CONTES_STATUSES } from './constants';
 export { transferToken } from './tokens';
 
@@ -176,8 +171,8 @@ export function applyTarget(
   else if (effect === 'steal-token' || effect === 'song-steal')
     requestToken(state, actorId, targetId, ctx);
   else if (effect === 'travelling-book') {
-    const actorPosition = contesPosition(actorId, ctx);
-    moveTo(targetId, actorPosition, ctx);
+    const actorPosition = ctx.movement.position(CONTES_TRACK, actorId);
+    ctx.movement.moveTo(CONTES_TRACK, targetId, actorPosition);
     moveContesAndResolve(state, targetId, 1, 0, ctx);
   } else requestOption(state, actorId, 'gold-key-type', ctx, targetId);
 }
@@ -287,9 +282,13 @@ export function drawBonusGift(
   actorId: number,
   ctx: RuleContext,
 ): void {
-  const card = ctx.cards.drawOrRecycle<ContesCard>('bonus');
+  const card = drawEvent<ContesState, ContesCard>(ctx, {
+    deckId: 'bonus',
+    playerId: actorId,
+    recycle: true,
+    discard: true,
+  });
   if (!card) return;
-  ctx.cards.discard('bonus', card);
   scheduleContesTarget(actorId, 'give-bonus', ctx, card.id);
 }
 
@@ -375,25 +374,27 @@ export function previousMalus(
   depth: number,
   ctx: RuleContext,
 ): void {
-  let target = contesPosition(playerId, ctx) - 1;
+  let target = ctx.movement.position(CONTES_TRACK, playerId) - 1;
   while (target > 0 && CONTES_TILES[target].type !== 'malus') target -= 1;
-  moveTo(playerId, Math.max(0, target), ctx);
+  ctx.movement.moveTo(CONTES_TRACK, playerId, Math.max(0, target));
   if (target > 0) drawContesCard(state, playerId, 'malus', depth, ctx);
 }
 
 export function swapClosestBehind(playerId: number, ctx: RuleContext): void {
-  const own = contesPosition(playerId, ctx);
-  const target = ctx.players
+  const own = ctx.movement.position(CONTES_TRACK, playerId);
+  const candidates = ctx.players
     .all()
     .filter(
       (player) =>
-        player.id !== playerId && contesPosition(player.id, ctx) < own,
+        player.id !== playerId &&
+        ctx.movement.position(CONTES_TRACK, player.id) < own,
     )
-    .sort(
-      (left, right) =>
-        contesPosition(right.id, ctx) - contesPosition(left.id, ctx),
-    )[0];
-  if (target) ctx.movement.swap('story-road', playerId, target.id);
+    .map((player) => player.id);
+  const target = ctx.ranking.rank(candidates, {
+    value: (id) => ctx.movement.position(CONTES_TRACK, id),
+    direction: 'desc',
+  })[0];
+  if (target) ctx.movement.swap(CONTES_TRACK, playerId, target.playerId);
 }
 
 export function releaseBlockedPlayers(
@@ -401,7 +402,7 @@ export function releaseBlockedPlayers(
   moverId: number,
   ctx: RuleContext,
 ): void {
-  const reached = contesPosition(moverId, ctx);
+  const reached = ctx.movement.position(CONTES_TRACK, moverId);
   for (const player of ctx.players.all()) {
     const blocked = blockedPosition(ctx, player.id);
     if (player.id !== moverId && blocked != null && reached >= blocked)

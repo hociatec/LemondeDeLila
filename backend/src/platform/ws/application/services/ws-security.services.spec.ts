@@ -29,11 +29,31 @@ const runtimeConfig = (
   jwtPublicKeyPem: publicKeyPem,
   jwtPublicKeyPath: null,
   maxBufferedBytes: 1_048_576,
+  wsRateLimitWindowMs: 10_000,
+  wsRateLimitCount: 20,
   ...overrides,
 });
 
 describe('WsJwtAuthService', () => {
   const service = new WsJwtAuthService(runtimeConfig());
+
+  it.each([
+    ['01', 1],
+    ['1e3', 1000],
+    ['1.5', 1.5],
+    ['-1', -1],
+    ['0', 0],
+    ['9007199254740993', 9007199254740992],
+    ['7', 8],
+  ])('rejects signed inconsistent identities %s / %s', (sub, id) => {
+    const token = sign({ id, username: 'lila' }, privateKeyPem, {
+      algorithm: 'RS256',
+      issuer: 'le-monde-de-lila',
+      subject: String(sub),
+      expiresIn: '5m',
+    });
+    expect(() => service.verify(token)).toThrow(UnauthorizedException);
+  });
 
   it('extracts authentication and client metadata from headers', () => {
     const client = {
@@ -129,6 +149,29 @@ describe('WsJwtAuthService', () => {
 });
 
 describe('WsTicketService and WsTicketAuthService', () => {
+  it.each(['1tail', '1e3', '1.5', '01', ' 1 ', '9007199254740992'])(
+    'rejects noncanonical ticket subjects %s even with a valid signature',
+    (sub) => {
+      const tickets = new WsTicketService(runtimeConfig());
+      const ticket = sign({ sub, scope: 'api', jti: 'test-id' }, secret, {
+        audience: 'lila-ws',
+        issuer: 'lila-backend',
+        expiresIn: '1m',
+      });
+      expect(() => tickets.verify(ticket, 'api')).toThrow(
+        UnauthorizedException,
+      );
+    },
+  );
+
+  it.each([1.5, Number.MAX_SAFE_INTEGER + 1, Infinity, NaN])(
+    'does not issue a ticket for invalid user ID %p',
+    (id) => {
+      expect(() =>
+        new WsTicketService(runtimeConfig()).issue(id, 'api'),
+      ).toThrow(UnauthorizedException);
+    },
+  );
   it('issues scoped short-lived tickets and validates their payload', () => {
     const tickets = new WsTicketService(
       runtimeConfig({ wsTicketTtlSeconds: 999 }),

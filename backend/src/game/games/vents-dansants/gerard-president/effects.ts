@@ -12,19 +12,23 @@ import {
   GERARD_SUBMISSIONS,
   GERARD_THEME_SECRET,
   NAME_HANDS,
+  type RuleContext,
+} from './game-constants';
+import {
   addSpecialAttacker,
   consumeDefense,
   discardRandomName,
-  discardSubmissions,
   exchangeRandomNames,
-  gerardMasterId,
-  pendingPlayers,
   redrawNames,
   takeRandomName,
   takeSpecialAttacker,
+} from './special-card-rules';
+import {
+  discardSubmissions,
+  gerardMasterId,
+  pendingPlayers,
   updateCollectionPhase,
-  type RuleContext,
-} from './support';
+} from './round-rules';
 
 type GerardSpecialData = {
   targetPlayerId?: number;

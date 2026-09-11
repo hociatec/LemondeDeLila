@@ -1,7 +1,8 @@
+import { allCompleted } from '../../../../shared/utils/public-api';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { getErrorMessage } from '@shared/utils/public-api';
-import type { AdminContactItem } from '../contracts/admin-contact.model';
+import type { AdminContactItem } from '../models/admin-contact.model';
 import {
   NOTIFICATION_INBOX_REPOSITORY,
   type NotificationInboxRepository,
@@ -18,6 +19,7 @@ import { ADMIN_CONTACT_KIND } from './admin-contact-normalization';
 
 @Injectable()
 export class AdminContactDeliveryService {
+  private static readonly MAX_RECIPIENTS = 10_000;
   private readonly logger = new Logger(AdminContactDeliveryService.name);
 
   constructor(
@@ -35,11 +37,21 @@ export class AdminContactDeliveryService {
     createdAt: Date,
   ): Promise<AdminContactItem> {
     const firstRowId = randomUUID();
-    const rows = Array.from(new Set(recipients)).map((userId, index) => ({
+    const uniqueRecipients = new Set<number>();
+    for (const userId of recipients) {
+      if (
+        Number.isSafeInteger(userId) &&
+        userId > 0 &&
+        uniqueRecipients.size < AdminContactDeliveryService.MAX_RECIPIENTS
+      ) {
+        uniqueRecipients.add(userId);
+      }
+    }
+    const rows = Array.from(uniqueRecipients, (userId, index) => ({
       userId,
       rowId: index === 0 ? firstRowId : randomUUID(),
     }));
-    await Promise.all(
+    await allCompleted(
       rows.map(({ userId, rowId }) =>
         this.deliverToRecipient(baseItem, userId, rowId, createdAt),
       ),
@@ -72,6 +84,9 @@ export class AdminContactDeliveryService {
         statusByUsername: null,
       },
     });
+    // The SQL inbox row is the durable business event. Socket notification is
+    // deliberately best-effort and must never be treated as the reliable
+    // side effect of this write, so it does not require an outbox record.
     await this.notifyRecipient(userId, item);
   }
 

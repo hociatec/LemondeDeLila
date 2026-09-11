@@ -1,4 +1,10 @@
-import { freezeGameContent } from '../../../engine/sdk/public-api';
+import manifest from './manifest.json';
+import {
+  defineGameContent,
+  gameInput,
+  cardContent,
+  rejectContent,
+} from '../../../engine/sdk/public-api';
 
 export type ZigEtZagColor = 'vert-sauge' | 'bleu-ardoise';
 export type ZigEtZagFamily = 'banane' | 'dentifrice' | 'pantoufle' | 'bougie';
@@ -94,10 +100,52 @@ deck.push(
   },
 );
 
-export const ZIG_ET_ZAG_DECK = deck;
-export const ZIG_ET_ZAG_TOTAL_CARDS = deck.length;
-export const ZIG_ET_ZAG_CARD_BY_ID: Record<string, ZigEtZagCardDefinition> =
-  Object.fromEntries(deck.map((card) => [card.id, card]));
-
-freezeGameContent(ZIG_ET_ZAG_DECK);
-freezeGameContent(ZIG_ET_ZAG_CARD_BY_ID);
+const familySchema = gameInput.enum([
+  'banane',
+  'dentifrice',
+  'pantoufle',
+  'bougie',
+]);
+const deckSchema = gameInput.object({
+  cards: gameInput.array(
+    gameInput.object({
+      id: gameInput.string({ min: 1, max: 128 }),
+      name: gameInput.string({ min: 1, max: 200 }),
+      type: gameInput.enum(['simple', 'figure', 'joker']),
+      color: gameInput.enum(['vert-sauge', 'bleu-ardoise']),
+      family: gameInput.optional(familySchema),
+      value: gameInput.number({ integer: true, min: 0, max: 1000 }),
+      allowedFamilies: gameInput.optional(
+        gameInput.array(familySchema, { min: 1, max: 4 }),
+      ),
+    }),
+    { min: 2, max: 1000 },
+  ),
+});
+export const ZIG_ET_ZAG_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  { cards: deck },
+  {
+    schema: {
+      parse(value: unknown) {
+        const parsed = deckSchema.parse(value);
+        if (parsed.cards.length % 2 !== 0)
+          rejectContent('Le paquet doit se partager entre deux joueurs');
+        for (const card of parsed.cards) {
+          if (card.type !== 'joker' && !card.family)
+            rejectContent('Famille de carte requise');
+          if (card.type === 'joker' && !card.allowedFamilies?.length)
+            rejectContent('Familles du joker requises');
+        }
+        return { cards: cardContent(parsed.cards) };
+      },
+    },
+  },
+);
+export const ZIG_ET_ZAG_DECK = ZIG_ET_ZAG_GAME_CONTENT.data.cards;
+export const ZIG_ET_ZAG_TOTAL_CARDS = ZIG_ET_ZAG_DECK.length;
+export const ZIG_ET_ZAG_CARD_BY_ID: Readonly<
+  Record<string, ZigEtZagCardDefinition>
+> = Object.freeze(
+  Object.fromEntries(ZIG_ET_ZAG_DECK.map((card) => [card.id, card])),
+);

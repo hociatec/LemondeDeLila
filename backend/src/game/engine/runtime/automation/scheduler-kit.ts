@@ -1,21 +1,21 @@
-import type { GameSingleActionDto } from '../../../core/application/contracts/game-action.model';
+import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { gameDeadline, isGameDelay, isGameTimestamp } from './game-deadline';
+import type {
+  GameSchedulerState,
+  ScheduledGameTask,
+  SchedulerVisibility,
+} from './scheduler-types';
+import {
+  assertScheduledTask,
+  SCHEDULED_TASK_SCHEMA_VERSION,
+} from './scheduler-contracts';
 
-export type SchedulerVisibility =
-  | { kind: 'public' }
-  | { kind: 'internal' }
-  | { kind: 'private'; playerIds: number[] };
-
-export type ScheduledGameTask = {
-  id: string;
-  dueAtMs: number;
-  action?: GameSingleActionDto;
-  visibility: SchedulerVisibility;
-};
-
-export type GameSchedulerState = {
-  tasks: Record<string, ScheduledGameTask>;
-};
+export type {
+  GameSchedulerState,
+  ScheduledGameTask,
+  SchedulerVisibility,
+} from './scheduler-types';
 
 export function createGameSchedulerState(): GameSchedulerState {
   return { tasks: {} };
@@ -41,33 +41,44 @@ export class GameSchedulerController {
     },
   ): void {
     const normalizedId = id.trim();
+    if (options.afterMs !== undefined && !isGameDelay(options.afterMs)) {
+      throw new GameConfigurationError('Durée de timer invalide');
+    }
     const dueAtMs =
-      options.atMs ?? this.nowMs() + Math.max(0, options.afterMs ?? 0);
-    if (!normalizedId || !Number.isFinite(dueAtMs)) {
+      options.atMs ?? gameDeadline(this.nowMs(), options.afterMs ?? 0);
+    if (!normalizedId || !isGameTimestamp(dueAtMs)) {
       throw new GameConfigurationError('Timer de jeu invalide');
     }
-    this.state.tasks[normalizedId] = {
+    const task: ScheduledGameTask = {
+      schemaVersion: SCHEDULED_TASK_SCHEMA_VERSION,
       id: normalizedId,
       dueAtMs,
-      ...(options.action ? { action: structuredClone(options.action) } : {}),
-      visibility: structuredClone(options.visibility ?? { kind: 'public' }),
+      ...(options.action !== undefined ? { action: options.action } : {}),
+      visibility: options.visibility ?? { kind: 'public' },
     };
+    assertScheduledTask(task, normalizedId);
+    Object.defineProperty(this.state.tasks, normalizedId, {
+      value: structuredClone(task),
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    });
     this.emit('timer.scheduled', { id: normalizedId, dueAtMs });
   }
 
   cancel(id: string): boolean {
-    if (!this.state.tasks[id]) return false;
+    if (!this.has(id)) return false;
     delete this.state.tasks[id];
     this.emit('timer.cancelled', { id });
     return true;
   }
 
   has(id: string): boolean {
-    return this.state.tasks[id] != null;
+    return Object.hasOwn(this.state.tasks, id);
   }
 
   deadline(id: string): number | null {
-    return this.state.tasks[id]?.dueAtMs ?? null;
+    return this.has(id) ? this.state.tasks[id].dueAtMs : null;
   }
 
   remaining(id: string): number | null {
@@ -95,7 +106,8 @@ export function nextScheduledAction(
     .filter((candidate) => candidate.action != null)
     .sort(
       (left, right) =>
-        left.dueAtMs - right.dueAtMs || left.id.localeCompare(right.id),
+        left.dueAtMs - right.dueAtMs ||
+        (left.id < right.id ? -1 : left.id > right.id ? 1 : 0),
     )[0];
   return task ? structuredClone(task) : null;
 }

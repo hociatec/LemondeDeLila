@@ -1,10 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { isBoundedJsonInput } from '../../../../platform/validation/public-api';
 import { WebSocket } from 'ws';
 import { getErrorDetails } from '@shared/utils/public-api';
 import type {
   PresenceClient,
   PresenceIncomingPayload,
-} from '../contracts/presence-client.model';
+} from '../models/presence-client.model';
 import {
   PresenceChatCommandResult,
   PresenceChatService,
@@ -23,7 +28,10 @@ type MessageCallbacks = {
 export class PresenceClientMessageService {
   private readonly logger = new Logger(PresenceClientMessageService.name);
 
-  constructor(private readonly chat: PresenceChatService) {}
+  constructor(
+    private readonly chat: PresenceChatService,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
+  ) {}
 
   async handle(
     from: PresenceClient,
@@ -35,13 +43,16 @@ export class PresenceClientMessageService {
       return;
     }
     if (payload.type === 'presence-activity') {
+      const now = this.clock.now();
       from.lastInteractionAt =
-        typeof payload.at === 'number' && Number.isFinite(payload.at)
-          ? payload.at
-          : Date.now();
+        typeof payload.at === 'number' &&
+        Number.isSafeInteger(payload.at) &&
+        payload.at >= 0
+          ? Math.min(payload.at, now)
+          : now;
       return;
     }
-    from.lastInteractionAt = Date.now();
+    from.lastInteractionAt = this.clock.now();
     if (payload.type === 'chat-send') {
       await this.sendChat(from, payload, callbacks.broadcastChat);
     } else if (payload.type === 'chat-edit') {
@@ -57,13 +68,16 @@ export class PresenceClientMessageService {
   async sendHistory(to: WebSocket): Promise<void> {
     try {
       const history = await this.chat.buildChatHistory();
-      to.send(
-        JSON.stringify({
-          type: 'chat-history',
-          editWindowSeconds: history.editWindowSeconds,
-          messages: history.messages,
-        }),
-      );
+      const message = JSON.stringify({
+        type: 'chat-history',
+        editWindowSeconds: history.editWindowSeconds,
+        messages: history.messages,
+      });
+      if (Buffer.byteLength(message, 'utf8') > 1024 * 1024) {
+        to.close(1009, 'history too large');
+        return;
+      }
+      to.send(message);
     } catch (error) {
       this.logger.error('Echec envoi historique chat', getErrorDetails(error));
       to.close();
@@ -86,22 +100,25 @@ export class PresenceClientMessageService {
       text = raw;
     } else if (Buffer.isBuffer(raw)) {
       text = raw.toString('utf-8');
-    } else if (raw && typeof raw === 'object' && 'byteLength' in raw) {
-      text = Buffer.from(raw as ArrayBuffer).toString('utf-8');
+    } else if (raw instanceof ArrayBuffer) {
+      text = Buffer.from(raw).toString('utf-8');
     } else {
       return null;
     }
-    if (text.length > 16_384) {
+    if (Buffer.byteLength(text, 'utf8') > 16_384) {
       this.logger.warn('Message WS trop volumineux, rejeté');
       return null;
     }
     try {
       const value: unknown = JSON.parse(text);
+      if (!isBoundedJsonInput(value)) return null;
       if (!value || typeof value !== 'object' || Array.isArray(value)) {
         return null;
       }
       const record = value as Record<string, unknown>;
-      return typeof record.type === 'string'
+      return typeof record.type === 'string' &&
+        record.type.length > 0 &&
+        record.type.length <= 64
         ? (record as PresenceIncomingPayload)
         : null;
     } catch {
@@ -208,13 +225,14 @@ export class PresenceClientMessageService {
     }
     const roomName =
       typeof payload.roomName === 'string' && payload.roomName.trim()
-        ? payload.roomName.trim()
+        ? payload.roomName.trim().slice(0, 255)
         : null;
     client.roomHint = { id: roomId, name: roomName };
   }
 
   private messageIdOf(value: unknown): string {
-    return typeof value === 'string' ? value.trim() : '';
+    const id = typeof value === 'string' ? value.trim() : '';
+    return id.length <= 128 ? id : '';
   }
 
   private safeSend(socket: WebSocket, payload: unknown): void {
@@ -222,7 +240,10 @@ export class PresenceClientMessageService {
       return;
     }
     try {
-      socket.send(JSON.stringify(payload));
+      const message = JSON.stringify(payload);
+      if (!message) return;
+      if (Buffer.byteLength(message, 'utf8') > 1024 * 1024) return;
+      socket.send(message);
     } catch {
       /* ignore */
     }

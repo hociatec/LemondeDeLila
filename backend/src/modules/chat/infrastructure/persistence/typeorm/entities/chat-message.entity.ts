@@ -7,7 +7,7 @@ import {
   Index,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../../../../user/public-api';
+import type { ChatUserPersistenceRef } from './chat-user.persistence-ref';
 
 @Index('idx_chat_messages_created_at', ['createdAt'])
 @Entity({ name: 'chat_messages' })
@@ -15,9 +15,9 @@ export class ChatMessage {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE', eager: true })
+  @ManyToOne('User', { eager: true })
   @JoinColumn({ name: 'user_id' })
-  user!: User;
+  user!: ChatUserPersistenceRef;
 
   @Column({ name: 'message_id', type: 'varchar', length: 36, unique: true })
   messageId!: string;

@@ -6,11 +6,17 @@ import { normalizeInputStrings } from './input-normalization';
 @Injectable()
 export class PayloadValidationService {
   validate<T>(cls: new () => T, payload: unknown): T {
+    if (
+      payload != null &&
+      (typeof payload !== 'object' || Array.isArray(payload))
+    ) {
+      throw new BadRequestException('Le payload doit être un objet JSON');
+    }
     const instance = plainToInstance(
       cls,
       normalizeInputStrings(payload ?? {}),
       {
-        enableImplicitConversion: true,
+        enableImplicitConversion: false,
       },
     );
     const errors = validateSync(instance as object, {

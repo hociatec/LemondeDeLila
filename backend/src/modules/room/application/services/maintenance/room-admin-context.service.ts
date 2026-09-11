@@ -1,9 +1,9 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import {
   ROOM_PAYLOAD_CACHE,
@@ -17,9 +17,12 @@ import {
   ROOM_USER_REPOSITORY,
   type RoomUserRepository,
 } from '../../ports/room-user.repository';
-import type { RoomRecord } from '../../contracts/room-record.model';
-import type { RoomUserRecord } from '../../contracts/room-user.model';
-import { PresenceService } from '../../../../presence/public-api';
+import type { RoomRecord } from '../../models/room-record.model';
+import type { RoomUserRecord } from '../../models/room-user.model';
+import {
+  ROOM_PRESENCE_PORT,
+  type RoomPresencePort,
+} from '../../ports/room-presence.port';
 import type { RoomAdminContext } from './room-admin-maintenance.service';
 
 @Injectable()
@@ -29,8 +32,8 @@ export class RoomAdminContextService {
     private readonly rooms: RoomRepository,
     @Inject(ROOM_USER_REPOSITORY)
     private readonly users: RoomUserRepository,
-    @Inject(forwardRef(() => PresenceService))
-    private readonly presenceService: PresenceService,
+    @Inject(ROOM_PRESENCE_PORT)
+    private readonly presenceService: RoomPresencePort,
     @Inject(ROOM_PAYLOAD_CACHE)
     private readonly roomPayloadCache: RoomPayloadCachePort,
   ) {}
@@ -46,10 +49,12 @@ export class RoomAdminContextService {
   }
 
   async invalidateRoomPayloadCache(roomId: number): Promise<void> {
+    requirePositiveSafeId(roomId, 'Identifiant de table invalide');
     await this.roomPayloadCache.invalidate(roomId);
   }
 
   async requireRoom(roomId: number): Promise<RoomRecord> {
+    requirePositiveSafeId(roomId, 'Identifiant de table invalide');
     const room = await this.rooms.findByIdWithOwner(roomId);
     if (!room) {
       throw new NotFoundException('Table introuvable');
@@ -58,6 +63,7 @@ export class RoomAdminContextService {
   }
 
   async requireUser(userId: number): Promise<RoomUserRecord> {
+    requirePositiveSafeId(userId, 'Identifiant utilisateur invalide');
     const user = await this.users.findById(userId);
     if (!user) {
       throw new NotFoundException('Utilisateur introuvable');
@@ -66,11 +72,19 @@ export class RoomAdminContextService {
   }
 
   ensureOwner(room: RoomRecord, userId: number): void {
+    requirePositiveSafeId(userId, 'Identifiant utilisateur invalide');
+    requirePositiveSafeId(room?.id, 'Identifiant de table invalide');
     if (!room.owner || room.owner.id !== userId) {
       throw new ForbiddenException(
         'Seul le propriétaire peut effectuer cette action',
       );
     }
+  }
+}
+
+function requirePositiveSafeId(value: unknown, message: string): void {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+    throw new BadRequestException(message);
   }
 }
 /** Room application capability boundary. */

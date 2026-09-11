@@ -60,8 +60,7 @@ export function enumerateRequests(
           .filter((family): family is LesMainsFamily => family != null),
       );
   return ctx.players
-    .all()
-    .filter((target) => target.id !== playerId)
+    .others(playerId)
     .flatMap((target) =>
       LES_MAINS_METIER_CARDS.filter(
         (card) => card.family != null && ownedFamilies.has(card.family),
@@ -135,7 +134,12 @@ function completeVanished(playerId: number, ctx: RuleContext): void {
         (cardId) => LES_MAINS_CARD_BY_ID[cardId]?.family === family,
       ),
     }))
-    .sort((left, right) => right.cards.length - left.cards.length);
+    .sort(
+      (left, right) =>
+        right.cards.length - left.cards.length ||
+        LES_MAINS_FAMILIES.indexOf(left.family) -
+          LES_MAINS_FAMILIES.indexOf(right.family),
+    );
   const selected = ranked[0];
   if (!selected || selected.cards.length === 0) return;
   ctx.cards.completeSet(FAMILIES, playerId, selected.family, {
@@ -181,17 +185,12 @@ function passKnowledge(playerId: number, ctx: RuleContext): void {
       .hand<string>(HANDS, playerId)
       .map((cardId) => LES_MAINS_CARD_BY_ID[cardId]?.family),
   );
-  const candidates = ctx.players
-    .all()
-    .filter((player) => player.id !== playerId)
-    .flatMap((player) =>
-      ctx.cards
-        .hand<string>(HANDS, player.id)
-        .filter((cardId) =>
-          ownFamilies.has(LES_MAINS_CARD_BY_ID[cardId]?.family),
-        )
-        .map((cardId) => ({ playerId: player.id, cardId })),
-    );
+  const candidates = ctx.players.others(playerId).flatMap((player) =>
+    ctx.cards
+      .hand<string>(HANDS, player.id)
+      .filter((cardId) => ownFamilies.has(LES_MAINS_CARD_BY_ID[cardId]?.family))
+      .map((cardId) => ({ playerId: player.id, cardId })),
+  );
   const selected = ctx.random.pick(candidates);
   if (!selected) return;
   ctx.cards.transfer(HANDS, selected.playerId, playerId, selected.cardId);

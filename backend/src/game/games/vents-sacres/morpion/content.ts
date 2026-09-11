@@ -1,4 +1,5 @@
-import { freezeGameContent } from '../../../engine/sdk/public-api';
+import manifest from './manifest.json';
+import { defineGameContent, gameInput } from '../../../engine/sdk/public-api';
 
 export type MorpionPawn = {
   id: string;
@@ -7,7 +8,7 @@ export type MorpionPawn = {
   glyph: string;
 };
 
-export const MORPION_PAWNS: readonly MorpionPawn[] = Object.freeze([
+const defaultPawns: readonly MorpionPawn[] = [
   {
     id: 'bourgeon-naissant',
     label: 'Un bourgeon naissant',
@@ -62,6 +63,24 @@ export const MORPION_PAWNS: readonly MorpionPawn[] = Object.freeze([
     description: 'Douce et vive, elle frissonne à l’air.',
     glyph: 'L',
   },
-]);
+];
 
-freezeGameContent(MORPION_PAWNS);
+export const MORPION_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  { pawns: defaultPawns },
+  {
+    schema: gameInput.object({
+      pawns: gameInput.array(
+        gameInput.object({
+          id: gameInput.string({ min: 1, max: 128 }),
+          label: gameInput.string({ min: 1, max: 200 }),
+          description: gameInput.string({ max: 10000 }),
+          glyph: gameInput.string({ min: 1, max: 8 }),
+        }),
+        { min: 2, max: 100 },
+      ),
+    }),
+  },
+);
+export const MORPION_PAWNS: readonly MorpionPawn[] =
+  MORPION_GAME_CONTENT.data.pawns;

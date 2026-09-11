@@ -1,4 +1,10 @@
-import { freezeGameContent } from '../../../engine/sdk/public-api';
+import {
+  cardContent,
+  defineGameContent,
+  effectContentSchema,
+  gameInput,
+} from '../../../engine/sdk/public-api';
+import manifest from './manifest.json';
 
 export interface GerardPresidentNameCard {
   id: string;
@@ -10,10 +16,13 @@ export interface GerardPresidentThemeCard {
   text: string;
 }
 
-import { GERARD_PRESIDENT_NAMES } from './name-content';
-export { GERARD_PRESIDENT_NAMES } from './name-content';
+import { GERARD_PRESIDENT_NAMES as defaultNames } from './name-content';
+import {
+  DEFAULT_GERARD_SPECIAL_CARDS,
+  GERARD_SPECIAL_EFFECTS,
+} from './special-cards';
 
-export const GERARD_PRESIDENT_THEMES = [
+const defaultThemes = [
   'Le prénom qui survivrait à une apocalypse de zombies.',
   'Le prénom qui devrait être interdit par décret.',
   'Le prénom le plus flippant dans une cave à 2h du matin.',
@@ -116,31 +125,81 @@ export const GERARD_PRESIDENT_THEMES = [
   'Le prénom d’un capitaine de pédalo mégalomane',
 ];
 
-export {
-  GERARD_PRESIDENT_SPECIAL_CARDS,
-  type GerardPresidentSpecialCard,
-} from './special-cards';
+export { type GerardPresidentSpecialCard } from './special-cards';
 
-export const GERARD_PRESIDENT_NAME_CARDS: GerardPresidentNameCard[] =
-  GERARD_PRESIDENT_NAMES.map((name, index) => ({
+const defaultNameCards: GerardPresidentNameCard[] = defaultNames.map(
+  (name, index) => ({
     id: `name-${index + 1}`,
     name,
-  }));
-export const GERARD_PRESIDENT_THEME_CARDS: GerardPresidentThemeCard[] =
-  GERARD_PRESIDENT_THEMES.map((text, index) => ({
+  }),
+);
+const defaultThemeCards: GerardPresidentThemeCard[] = defaultThemes.map(
+  (text, index) => ({
     id: `theme-${index + 1}`,
     text,
-  }));
-export const GERARD_PRESIDENT_NAME_BY_ID = Object.fromEntries(
-  GERARD_PRESIDENT_NAME_CARDS.map((card) => [card.id, card]),
+  }),
 );
-export const GERARD_PRESIDENT_THEME_BY_ID = Object.fromEntries(
-  GERARD_PRESIDENT_THEME_CARDS.map((card) => [card.id, card]),
+const idSchema = gameInput.string({ min: 1, max: 128 });
+const nameSchema = gameInput.string({ min: 1, max: 200 });
+const gerardSchema = gameInput.object({
+  names: gameInput.array(gameInput.object({ id: idSchema, name: nameSchema }), {
+    min: 1,
+    max: 10000,
+  }),
+  themes: gameInput.array(
+    gameInput.object({
+      id: idSchema,
+      text: gameInput.string({ min: 1, max: 2000 }),
+    }),
+    { min: 1, max: 10000 },
+  ),
+  specialCards: gameInput.array(
+    gameInput.object({
+      id: idSchema,
+      name: nameSchema,
+      description: gameInput.string({ max: 4000 }),
+      effect: gameInput.enum(GERARD_SPECIAL_EFFECTS),
+      effects: effectContentSchema({
+        effects: GERARD_SPECIAL_EFFECTS.map((effect) => `gerard.${effect}`),
+      }),
+    }),
+    { min: 1, max: 10000 },
+  ),
+});
+export const GERARD_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  {
+    names: defaultNameCards,
+    themes: defaultThemeCards,
+    specialCards: DEFAULT_GERARD_SPECIAL_CARDS,
+  },
+  {
+    schema: {
+      parse(value: unknown) {
+        const parsed = gerardSchema.parse(value);
+        return {
+          names: cardContent(parsed.names),
+          themes: cardContent(parsed.themes),
+          specialCards: cardContent(parsed.specialCards),
+        };
+      },
+    },
+  },
 );
-
-freezeGameContent(GERARD_PRESIDENT_NAMES);
-freezeGameContent(GERARD_PRESIDENT_THEMES);
-freezeGameContent(GERARD_PRESIDENT_NAME_CARDS);
-freezeGameContent(GERARD_PRESIDENT_THEME_CARDS);
-freezeGameContent(GERARD_PRESIDENT_NAME_BY_ID);
-freezeGameContent(GERARD_PRESIDENT_THEME_BY_ID);
+export const GERARD_PRESIDENT_NAME_CARDS = GERARD_GAME_CONTENT.data.names;
+export const GERARD_PRESIDENT_THEME_CARDS = GERARD_GAME_CONTENT.data.themes;
+export const GERARD_PRESIDENT_SPECIAL_CARDS =
+  GERARD_GAME_CONTENT.data.specialCards;
+export const GERARD_PRESIDENT_NAMES = Object.freeze(
+  GERARD_PRESIDENT_NAME_CARDS.map((card) => card.name),
+);
+export const GERARD_PRESIDENT_NAME_BY_ID = Object.freeze(
+  Object.fromEntries(
+    GERARD_PRESIDENT_NAME_CARDS.map((card) => [card.id, card]),
+  ),
+);
+export const GERARD_PRESIDENT_THEME_BY_ID = Object.freeze(
+  Object.fromEntries(
+    GERARD_PRESIDENT_THEME_CARDS.map((card) => [card.id, card]),
+  ),
+);

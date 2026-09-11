@@ -1,35 +1,22 @@
-import {
-  defineChoice,
-  defineGame,
-  defineGameContent,
-  gameInput,
-  gridGame,
-  pawns,
-  sequentialPawnSelection,
-} from '../../../engine/sdk/public-api';
-import { MORPION_PAWNS } from './content';
-import { chooseBotMove, MARK_PLACED, MORPION_ACTIONS } from './rules';
 import type { NoGameState as MorpionState } from '../../../engine/sdk/public-api';
+import { defineGame, gridGame, pawns } from '../../../engine/sdk/public-api';
+import { GAME_BOT } from './bot-rules';
+import { MORPION_GAME_CONTENT, MORPION_PAWNS } from './content';
+import manifest from './manifest.json';
+import { GAME_CHOICES } from './rules';
 
-const PAWN_CHOICE = 'morpion.pawn';
-const pawnSelection = sequentialPawnSelection<MorpionState>({
-  setId: 'morpion',
-  choiceId: PAWN_CHOICE,
-  complete: ({ ctx }) => {
-    const starterId = ctx.round.starter();
-    if (starterId != null) ctx.turn.to(starterId);
-  },
-});
+import { MARK_PLACED, MORPION_ACTIONS } from './rules';
+import { setupGame } from './rules';
 
 export default defineGame<MorpionState>()({
-  id: 'morpion',
-  displayName: 'Morpion',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'Les Vents Sacrés',
-  description: 'Alignez 3 symboles sur une grille 3×3.',
-  players: { min: 2, max: 2 },
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
   events: [MARK_PLACED],
-  content: defineGameContent('morpion', { pawns: MORPION_PAWNS }),
+  content: MORPION_GAME_CONTENT,
   patterns: [
     gridGame({
       boardId: 'morpion',
@@ -47,27 +34,8 @@ export default defineGame<MorpionState>()({
     { key: 'P', type: 'interface', id: 'position' },
     { key: 'A', type: 'interface', id: 'play' },
   ],
-  setup: ({ players, ctx }) => {
-    pawnSelection.requestAll(
-      ctx.random.shuffle(players.map((player) => player.id)),
-      ctx,
-    );
-    return {};
-  },
+  setup: setupGame,
   actions: MORPION_ACTIONS,
-  choices: {
-    [PAWN_CHOICE]: defineChoice<MorpionState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ actor, value, ctx }) =>
-        pawnSelection.resolve(actor.id, value, ctx),
-    }),
-  },
-  bot: {
-    choose: ({ state: _state, actor, ctx }) => {
-      const opponentId =
-        ctx.players.all().find((player) => player.id !== actor.id)?.id ?? null;
-      const move = chooseBotMove(ctx, actor.id, opponentId);
-      return move ? { type: 'morpion_play', payload: move } : null;
-    },
-  },
+  choices: GAME_CHOICES,
+  bot: GAME_BOT,
 });

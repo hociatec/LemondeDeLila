@@ -37,9 +37,16 @@ export class AuthWsHandler {
     return { type: WS_EVENTS.auth.refreshOk, payload: result };
   }
 
-  async logout(payload: unknown) {
+  async logout(session: import('../../../../../platform/ws/public-api').WsSession, payload: unknown) {
     const dto = this.validator.validate(RefreshTokenDto, payload);
-    await this.logoutUserSession.execute(dto.refreshToken);
+    if (dto.allSessions && !session.user?.id) {
+      throw new Error('Session authentifiee requise');
+    }
+    await this.logoutUserSession.execute(
+      dto.refreshToken,
+      session.user?.id,
+      dto.allSessions === true,
+    );
     return { type: WS_EVENTS.auth.logoutOk, payload: { revoked: true } };
   }
 }

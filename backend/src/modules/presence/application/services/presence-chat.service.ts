@@ -1,8 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { userBanState, userBanStatus } from '../../../user/public-api';
 import { Inject } from '@nestjs/common';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
 import { WsAuthPayload } from '../../../../shared/interfaces/public-api';
 import { getErrorMessage } from '../../../../shared/utils/public-api';
-import type { PresenceChatHistory } from '../contracts/presence-chat-history.model';
+import { operationalSettings } from '../../../../platform/config/public-api';
+import type { PresenceChatHistory } from '../models/presence-chat-history.model';
 import {
   PRESENCE_CHAT_PORT,
   type PresenceChatPort,
@@ -33,7 +39,7 @@ export class PresenceChatService {
     number,
     { at: number; until: Date | null; reason: string | null }
   >();
-  private readonly chatBanCacheTtlMs = 10_000;
+  private static readonly MAX_CHAT_BAN_CACHE_ENTRIES = 10_000;
   private static readonly DENIED_MESSAGE = 'Accès au tchat refusé.';
 
   constructor(
@@ -41,39 +47,52 @@ export class PresenceChatService {
     private readonly chat: PresenceChatPort,
     @Inject(PRESENCE_USER_REPOSITORY)
     private readonly users: PresenceUserRepository,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async getChatBanInfo(
     userId: number,
   ): Promise<{ until: Date | null; reason: string | null } | null> {
     const cached = this.chatBanCache.get(userId);
-    if (cached && Date.now() - cached.at < this.chatBanCacheTtlMs) {
+    if (
+      cached &&
+      this.clock.now() - cached.at <
+        operationalSettings.presenceChatBanCacheTtlMs
+    ) {
       return { until: cached.until, reason: cached.reason };
     }
 
     const user = await this.users.findChatBanByUserId(userId);
     const until = user?.chatBannedUntil ?? null;
     const reason = user?.chatBanReason ?? null;
-    this.chatBanCache.set(userId, { at: Date.now(), until, reason });
+    this.chatBanCache.set(userId, { at: this.clock.now(), until, reason });
+    if (
+      this.chatBanCache.size > PresenceChatService.MAX_CHAT_BAN_CACHE_ENTRIES
+    ) {
+      const oldest = this.chatBanCache.keys().next().value;
+      if (typeof oldest === 'number') this.chatBanCache.delete(oldest);
+    }
     return { until, reason };
   }
 
   async isChatBannedNow(userId: number): Promise<boolean> {
     const ban = await this.getChatBanInfo(userId);
-    return !!(ban?.until && ban.until.getTime() > Date.now());
+    const status = userBanStatus(ban?.until, this.clock.now());
+    return status === 'active' || status === 'invalid';
   }
 
   async getActiveChatBanPayload(
     userId: number,
   ): Promise<PresenceChatBanPayload | null> {
     const ban = await this.getChatBanInfo(userId);
-    if (!ban?.until || ban.until.getTime() <= Date.now()) {
+    const state = userBanState(ban?.until, this.clock.now());
+    if (!ban || state.status === 'none' || state.status === 'expired') {
       return null;
     }
     return {
       message: PresenceChatService.DENIED_MESSAGE,
       reason: ban.reason ?? null,
-      until: ban.until.toISOString(),
+      until: state.status === 'active' ? state.until.toISOString() : null,
     };
   }
 
@@ -85,6 +104,13 @@ export class PresenceChatService {
     user: WsAuthPayload,
     text: string,
   ): Promise<PresenceChatCommandResult> {
+    if (
+      typeof text !== 'string' ||
+      text.trim().length === 0 ||
+      text.length > 2_000
+    ) {
+      return { kind: 'error', message: 'Message invalide.' };
+    }
     try {
       const denied = await this.getActiveChatBanPayload(user.id);
       if (denied) {
@@ -101,14 +127,14 @@ export class PresenceChatService {
       };
     } catch (err) {
       this.logger.warn(
-        `Message tchat refusé pour ${user.username}: ${getErrorMessage(
+        `Message tchat refusé pour \${user.id}: ${getErrorMessage(
           err,
           'inconnu',
         )}`,
       );
       return {
         kind: 'error',
-        message: getErrorMessage(err, 'Erreur tchat.'),
+        message: getErrorMessage(err, 'Erreur tchat.').slice(0, 512),
       };
     }
   }
@@ -118,7 +144,7 @@ export class PresenceChatService {
     messageId: string,
     text: string,
   ): Promise<PresenceChatCommandResult> {
-    if (!messageId) {
+    if (!messageId || messageId.length > 128) {
       return { kind: 'noop' };
     }
     try {
@@ -137,14 +163,14 @@ export class PresenceChatService {
       };
     } catch (err) {
       this.logger.warn(
-        `Echec édition tchat pour ${user.username}: ${getErrorMessage(
+        `Echec édition tchat pour \${user.id}: ${getErrorMessage(
           err,
           'inconnu',
         )}`,
       );
       return {
         kind: 'error',
-        message: getErrorMessage(err, 'Modification impossible.'),
+        message: getErrorMessage(err, 'Modification impossible.').slice(0, 512),
       };
     }
   }
@@ -153,7 +179,7 @@ export class PresenceChatService {
     user: WsAuthPayload,
     messageId: string,
   ): Promise<PresenceChatCommandResult> {
-    if (!messageId) {
+    if (!messageId || messageId.length > 128) {
       return { kind: 'noop' };
     }
     try {
@@ -171,14 +197,14 @@ export class PresenceChatService {
       };
     } catch (err) {
       this.logger.warn(
-        `Echec suppression tchat pour ${user.username}: ${getErrorMessage(
+        `Echec suppression tchat pour \${user.id}: ${getErrorMessage(
           err,
           'inconnu',
         )}`,
       );
       return {
         kind: 'error',
-        message: getErrorMessage(err, 'Suppression impossible.'),
+        message: getErrorMessage(err, 'Suppression impossible.').slice(0, 512),
       };
     }
   }

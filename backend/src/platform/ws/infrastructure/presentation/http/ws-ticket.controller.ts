@@ -1,7 +1,7 @@
 import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { HttpJwtGuard } from '../../../../auth/public-api';
-import { WsTicketScope } from '../../../application/contracts/ws-ticket.model';
+import { WsTicketScope } from '../../../application/models/ws-ticket.model';
 import { WsTicketService } from '../../../application/services/ws-ticket.service';
 
 const AllowedScopes: WsTicketScope[] = [
@@ -31,6 +31,9 @@ export class WsTicketController {
     }
 
     const userId = Number(req.user?.id ?? 0);
+    if (!Number.isSafeInteger(userId) || userId <= 0) {
+      return { error: 'utilisateur invalide' };
+    }
     return this.tickets.issue(userId, scope);
   }
 }

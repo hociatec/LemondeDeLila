@@ -1,23 +1,28 @@
+import { BusinessClockModule } from '../../../platform/time/public-api';
+import { RedisModule } from '../../../platform/redis/public-api';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { BotModule as RoomBotModule } from '../../bot/public-api';
-import { BugReportsModule } from '../../bug-reports/public-api';
-import { CatalogModule } from '../../catalog/public-api';
-import { ChatModule } from '../../chat/public-api';
+import { BotModule as RoomBotModule } from '../../bot/composition-api';
+import { BugReportsModule } from '../../bug-reports/composition-api';
+import { CatalogModule } from '../../catalog/composition-api';
+import { ChatModule } from '../../chat/composition-api';
 import { ValidationModule } from '../../../platform/validation/public-api';
-import { EngineServicesModule } from '../../../game/core/infrastructure/module/engine-services.module';
-import { GameRegistryModule } from '../../../game/public-api';
-import { BotModule as GameBotModule } from '../../../game/public-api';
-import { NotificationModule } from '../../notification/public-api';
-import { RoomModule } from '../../room/public-api';
-import { SocialModule } from '../../social/public-api';
-import { StatsModule } from '../../stats/public-api';
-import { UpdateModule } from '../../update/public-api';
-import { User } from '../../user/public-api';
+import { EngineServicesModule } from '../../../game/composition-api';
+import { GameRegistryModule } from '../../../game/composition-api';
+import { BotModule as GameBotModule } from '../../../game/composition-api';
+import { NotificationModule } from '../../notification/composition-api';
+import { RoomModule } from '../../room/composition-api';
+import { SocialModule } from '../../social/composition-api';
+import { StatsModule } from '../../stats/composition-api';
+import { UpdateModule } from '../../update/composition-api';
+import { UserModule } from '../../user/composition-api';
 import { RoleDefinitionEntity } from '../infrastructure/persistence/typeorm/entities/role-definition.entity';
 
 export const ADMIN_MODULE_IMPORTS = [
-  TypeOrmModule.forFeature([User, RoleDefinitionEntity]),
+  BusinessClockModule,
+  RedisModule,
+  TypeOrmModule.forFeature([RoleDefinitionEntity]),
+  UserModule,
   ValidationModule,
   EngineServicesModule,
   GameRegistryModule,

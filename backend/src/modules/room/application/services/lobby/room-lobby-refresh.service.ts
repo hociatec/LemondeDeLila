@@ -7,6 +7,7 @@ type Subscription = {
 
 @Injectable()
 export class RoomLobbyRefreshService implements OnModuleDestroy {
+  private static readonly MAX_SUBSCRIPTIONS = 10_000;
   private readonly subscriptions = new Map<string, Subscription>();
   private pending: { roomId: number | null; reason: string | null } | null =
     null;
@@ -23,25 +24,42 @@ export class RoomLobbyRefreshService implements OnModuleDestroy {
   }
 
   subscribe(connectionId: string, gameType?: string | null) {
-    if (!connectionId || !connectionId.trim()) return;
-    const normalized = typeof gameType === 'string' ? gameType.trim() : '';
-    this.subscriptions.set(connectionId, {
-      gameType: normalized || null,
+    const normalizedConnectionId =
+      typeof connectionId === 'string' ? connectionId.trim() : '';
+    if (!normalizedConnectionId || normalizedConnectionId.length > 128) return;
+    if (
+      !this.subscriptions.has(normalizedConnectionId) &&
+      this.subscriptions.size >= RoomLobbyRefreshService.MAX_SUBSCRIPTIONS
+    ) {
+      return;
+    }
+    const normalizedGameType =
+      typeof gameType === 'string' ? gameType.trim().slice(0, 96) : '';
+    this.subscriptions.set(normalizedConnectionId, {
+      gameType: normalizedGameType || null,
     });
   }
 
   unsubscribe(connectionId: string) {
-    if (!connectionId || !connectionId.trim()) return;
-    this.subscriptions.delete(connectionId);
+    const normalizedConnectionId =
+      typeof connectionId === 'string' ? connectionId.trim() : '';
+    if (!normalizedConnectionId || normalizedConnectionId.length > 128) return;
+    this.subscriptions.delete(normalizedConnectionId);
   }
 
   notifyRefresh(roomId?: number | null, reason?: string | null) {
     // Coalesce bursts (join/leave/bot/etc.) into a single refresh push.
     const next = {
       roomId:
-        typeof roomId === 'number' && Number.isFinite(roomId) ? roomId : null,
+        typeof roomId === 'number' &&
+        Number.isSafeInteger(roomId) &&
+        roomId > 0
+          ? roomId
+          : null,
       reason:
-        typeof reason === 'string' && reason.trim() ? reason.trim() : null,
+        typeof reason === 'string' && reason.trim()
+          ? reason.trim().slice(0, 128)
+          : null,
     };
     this.pending = this.pending ?? next;
     if (!this.flushTimer) {

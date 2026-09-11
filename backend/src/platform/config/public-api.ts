@@ -4,4 +4,4 @@ export {
   readEnvironmentBoolean,
   type RuntimeEnvironmentKey,
 } from './runtime-environment';
-export { operationalPolicy } from './operational-policy';
+export { operationalSettings } from './operational-settings';

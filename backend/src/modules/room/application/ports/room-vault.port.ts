@@ -1,4 +1,5 @@
-import { RoomPayload } from '../contracts/room-payload.model';
+import type { RoomVaultSnapshotSource } from '../contracts/room-vault-snapshot-source';
+import type { RoomCreateCommand } from '../models/room-create-command';
 
 export const ROOM_VAULT_PORT = Symbol('ROOM_VAULT_PORT');
 
@@ -18,7 +19,7 @@ export type RoomVaultRoomRecord = {
 };
 
 export interface RoomVaultPort {
-  getRoomPayload(roomId: number): Promise<RoomPayload>;
+  getRoomPayload(roomId: number): Promise<RoomVaultSnapshotSource>;
   requireRoomForOwnerAction(
     roomId: number,
     userId: number,
@@ -27,14 +28,7 @@ export interface RoomVaultPort {
   findLatestActiveRoomForUser(
     userId: number,
   ): Promise<{ roomId: number; gameType: string } | null>;
-  createRoom(
-    userId: number,
-    gameType: string,
-    name?: string | null,
-    maxPlayers?: number | null,
-    isPrivate?: boolean,
-    invalidateCache?: boolean,
-  ): Promise<RoomVaultRoomRecord>;
+  createRoom(command: RoomCreateCommand): Promise<RoomVaultRoomRecord>;
   saveRoom(room: RoomVaultRoomRecord): Promise<RoomVaultRoomRecord>;
   joinRoom(
     roomId: number,

@@ -1,4 +1,5 @@
-import { testGame } from '../../../engine/sdk/public-api';
+import { testGame } from '../../../engine/testing/public-api';
+
 import { ENTRE_RITES_CARD_BY_ID, ENTRE_RITES_FAMILY_CARDS } from './content';
 import gameDefinition from './game';
 

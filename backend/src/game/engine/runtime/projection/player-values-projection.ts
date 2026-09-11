@@ -4,7 +4,7 @@ import type {
   PlayerValuesPlayerView,
   PlayerValuesVisibility,
   ScorePlayerView,
-} from '../kits/player-values-kit';
+} from '../kits/player-values-contracts';
 import type { VisibilityRule } from '../kits/visibility-kit';
 
 export function projectPlayerValues(

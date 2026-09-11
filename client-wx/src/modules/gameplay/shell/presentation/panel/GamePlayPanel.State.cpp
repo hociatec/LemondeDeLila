@@ -83,6 +83,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
                 ", incomingStatus=" + state.system.match.status);
         return;
     }
+    retryableActionCommand_.reset();
+    inputSubmissionGuard_.ObserveState(state.version, state.runId);
     auto nextLines = application::GameActionPresentationPolicy::GenericLines(state);
     auto nextPawnSelection = infrastructure::PawnSelectionDecoder::Decode(state.pending);
     auto nextLogMessages = EventMessages(state);

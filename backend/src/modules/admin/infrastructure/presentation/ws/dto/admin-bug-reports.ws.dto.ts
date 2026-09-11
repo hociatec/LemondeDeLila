@@ -9,7 +9,7 @@ import {
   MinLength,
   Min,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { StrictIntegerInput } from '../../../../../../platform/validation/public-api';
 
 export class AdminBugReportCreateWsDto {
   @IsString()
@@ -21,7 +21,7 @@ export class AdminBugReportCreateWsDto {
   @IsString()
   @MinLength(1)
   @Matches(/\S/, { message: 'content must not be blank' })
-  @MaxLength(50000)
+  @MaxLength(20000)
   content!: string;
 }
 
@@ -36,13 +36,14 @@ export class AdminBugReportIdWsDto {
 
 export class AdminBugReportsListWsDto {
   @IsOptional()
-  @Type(() => Number)
+  @StrictIntegerInput()
   @IsInt()
   @Min(0)
+  @Max(10_000_000)
   offset: number = 0;
 
   @IsOptional()
-  @Type(() => Number)
+  @StrictIntegerInput()
   @IsInt()
   @Min(1)
   @Max(100)
@@ -61,7 +62,7 @@ export class AdminBugReportUpdateWsDto extends AdminBugReportIdWsDto {
   @IsString()
   @MinLength(1)
   @Matches(/\S/, { message: 'content must not be blank' })
-  @MaxLength(50000)
+  @MaxLength(20000)
   content?: string;
 }
 

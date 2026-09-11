@@ -7,6 +7,8 @@
     "typeCheck": true,
     "deleteOutDir": true,
     "assets": [
+      "game/core/infrastructure/system/generated-game-catalog-index.json",
+      "game/games/**/*.txt",
       "game/games/**/*.json",
       "game/games/**/manifest.json",
       "game/games/**/rules.md"

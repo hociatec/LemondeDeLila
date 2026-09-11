@@ -1,0 +1,158 @@
+[
+  {
+    "code": "a-fond-les-ballons",
+    "directory": "les-quatre-vents/a-fond-les-ballons"
+  },
+  {
+    "code": "aventure-sauvage",
+    "directory": "les-quatre-vents/aventure-sauvage"
+  },
+  {
+    "code": "ca-derape",
+    "directory": "les-quatre-vents/ca-derape"
+  },
+  {
+    "code": "contes-et-cacahuetes",
+    "directory": "les-quatre-vents/contes-et-cacahuetes"
+  },
+  {
+    "code": "en-attendant-minuit",
+    "directory": "les-quatre-vents/en-attendant-minuit"
+  },
+  {
+    "code": "frousse-party",
+    "directory": "les-quatre-vents/frousse-party"
+  },
+  {
+    "code": "galopons-ensemble",
+    "directory": "les-quatre-vents/galopons-ensemble"
+  },
+  {
+    "code": "mission-galaxie",
+    "directory": "les-quatre-vents/mission-galaxie"
+  },
+  {
+    "code": "mon-village-mon-histoire",
+    "directory": "les-quatre-vents/mon-village-mon-histoire"
+  },
+  {
+    "code": "odyssee-quatre-cieux",
+    "directory": "les-quatre-vents/odyssee-quatre-cieux"
+  },
+  {
+    "code": "panier-express",
+    "directory": "les-quatre-vents/panier-express"
+  },
+  {
+    "code": "pirates-en-vadrouille",
+    "directory": "les-quatre-vents/pirates-en-vadrouille"
+  },
+  {
+    "code": "primalis",
+    "directory": "les-quatre-vents/primalis"
+  },
+  {
+    "code": "sac-a-malices",
+    "directory": "les-quatre-vents/sac-a-malices"
+  },
+  {
+    "code": "taxi-express",
+    "directory": "les-quatre-vents/taxi-express"
+  },
+  {
+    "code": "tout-pres-de-maman",
+    "directory": "les-quatre-vents/tout-pres-de-maman"
+  },
+  {
+    "code": "voyage-en-terre-de-brumes",
+    "directory": "les-quatre-vents/voyage-en-terre-de-brumes"
+  },
+  {
+    "code": "cat-pattes",
+    "directory": "vents-dansants/cat-pattes"
+  },
+  {
+    "code": "cercles-sacres",
+    "directory": "vents-dansants/cercles-sacres"
+  },
+  {
+    "code": "dame-nature",
+    "directory": "vents-dansants/dame-nature"
+  },
+  {
+    "code": "entre-rites-et-lumieres",
+    "directory": "vents-dansants/entre-rites-et-lumieres"
+  },
+  {
+    "code": "gerard-president",
+    "directory": "vents-dansants/gerard-president"
+  },
+  {
+    "code": "la-bande-a-banane",
+    "directory": "vents-dansants/la-bande-a-banane"
+  },
+  {
+    "code": "la-grande-mine-de-barbak",
+    "directory": "vents-dansants/la-grande-mine-de-barbak"
+  },
+  {
+    "code": "la-parade-sucree",
+    "directory": "vents-dansants/la-parade-sucree"
+  },
+  {
+    "code": "le-marche-des-merveilles",
+    "directory": "vents-dansants/le-marche-des-merveilles"
+  },
+  {
+    "code": "les-absurdissimes",
+    "directory": "vents-dansants/les-absurdissimes"
+  },
+  {
+    "code": "les-mains-de-la-terre",
+    "directory": "vents-dansants/les-mains-de-la-terre"
+  },
+  {
+    "code": "nawak",
+    "directory": "vents-dansants/nawak"
+  },
+  {
+    "code": "olympia",
+    "directory": "vents-dansants/olympia"
+  },
+  {
+    "code": "pimp-my-ride",
+    "directory": "vents-dansants/pimp-my-ride"
+  },
+  {
+    "code": "zig-et-zag",
+    "directory": "vents-dansants/zig-et-zag"
+  },
+  {
+    "code": "arche-de-mnemosyne",
+    "directory": "vents-infinis/arche-de-mnemosyne"
+  },
+  {
+    "code": "corridor",
+    "directory": "vents-sacres/corridor"
+  },
+  {
+    "code": "course-des-etoiles",
+    "directory": "vents-sacres/course-des-etoiles"
+  },
+  {
+    "code": "foulees-fantastiques",
+    "directory": "vents-sacres/foulees-fantastiques"
+  },
+  {
+    "code": "jeu-oie",
+    "directory": "vents-sacres/jeu-oie"
+  },
+  {
+    "code": "lama",
+    "directory": "vents-sacres/lama"
+  },
+  {
+    "code": "morpion",
+    "directory": "vents-sacres/morpion"
+  }
+]

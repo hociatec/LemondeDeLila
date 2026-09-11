@@ -1,8 +1,8 @@
 import type {
   BugReportRecord,
   BugReportStatus,
-} from '../contracts/bug-report.record';
-import type { BugReportCommentRecord } from '../contracts/bug-report-comment.record';
+} from '../read-models/bug-report.record';
+import type { BugReportCommentRecord } from '../read-models/bug-report-comment.record';
 
 export interface CreateBugReportRecordInput {
   id: string;

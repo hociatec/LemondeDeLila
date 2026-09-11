@@ -1,5 +1,6 @@
+import { presentationTimestamp } from '../../../../../platform/serialization/public-api';
 import { Injectable } from '@nestjs/common';
-import type { RoomPayload } from '../../../application/contracts/room-payload.model';
+import type { RoomPayload } from '../../../application/models/room-payload.model';
 import type { RoomIntent } from './dto/room-intent.ws.dto';
 
 @Injectable()
@@ -27,23 +28,31 @@ export class RoomGatewayPresenter {
     payload: RoomPayload,
     bot: { id: number; name: string },
   ): RoomPayload {
-    payload.room.bots = payload.room.bots ?? [];
-    if (!payload.room.bots.some((candidate) => candidate.id === bot.id)) {
-      payload.room.bots.push({ id: bot.id, name: bot.name });
-    }
-    payload.generatedAt = new Date().toISOString();
-    return payload;
+    const bots = payload.room.bots ?? [];
+    return {
+      ...payload,
+      generatedAt: presentationTimestamp(),
+      room: {
+        ...payload.room,
+        bots: bots.some((candidate) => candidate.id === bot.id)
+          ? [...bots]
+          : [...bots, { id: bot.id, name: bot.name }],
+      },
+    };
   }
 
   updateRoomPayloadWithRemovedBot(
     payload: RoomPayload,
     botId: number,
   ): RoomPayload {
-    payload.room.bots = (payload.room.bots ?? []).filter(
-      (bot) => bot.id !== botId,
-    );
-    payload.generatedAt = new Date().toISOString();
-    return payload;
+    return {
+      ...payload,
+      generatedAt: presentationTimestamp(),
+      room: {
+        ...payload.room,
+        bots: (payload.room.bots ?? []).filter((bot) => bot.id !== botId),
+      },
+    };
   }
 
   presentRoleEvent(roomId: number, spectator: boolean) {

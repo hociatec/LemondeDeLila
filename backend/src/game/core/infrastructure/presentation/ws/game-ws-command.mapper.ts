@@ -1,12 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import type { GameSingleActionDto } from '../../../application/contracts/game-action.model';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { parseStrictInteger } from '../../../../../shared/utils/public-api';
+import type { GameSingleActionDto } from '../../../application/models/game-action.model';
 
 @Injectable()
 export class GameWsCommandMapper {
   resolveRoomId(payload: unknown): number {
     const record = this.asRecord(payload);
-    const roomId = Number(record.roomId ?? record.id);
-    if (!Number.isFinite(roomId) || roomId <= 0) {
+    const roomId = parseStrictInteger(record.roomId ?? record.id, { min: 1 });
+    if (roomId === null) {
       throw new NotFoundException('roomId invalide');
     }
     return roomId;
@@ -57,6 +62,9 @@ export class GameWsCommandMapper {
   private decodeActions(payload: unknown): GameSingleActionDto[] {
     const record = this.asRecord(payload);
     if (Array.isArray(record.actions)) {
+      if (record.actions.length > 128) {
+        throw new BadRequestException('Trop de commandes');
+      }
       return record.actions
         .map((entry) => this.normalizeAction(entry))
         .filter((entry): entry is GameSingleActionDto => entry != null);
@@ -83,7 +91,11 @@ export class GameWsCommandMapper {
   }
 
   private resolveActionType(record: Record<string, unknown>): string {
-    return typeof record.type === 'string' ? record.type.trim() : '';
+    const type = typeof record.type === 'string' ? record.type.trim() : '';
+    if (type.length > 128) {
+      throw new BadRequestException('Type de commande trop long');
+    }
+    return type;
   }
 
   private resolveActionPayload(
@@ -108,7 +120,6 @@ export class GameWsCommandMapper {
       ...action,
       payload: action.payload ?? {},
       meta: {
-        ...(action.meta ?? {}),
         actorId,
         ...(commandId ? { commandId } : {}),
         ...(knownVersion == null ? {} : { knownVersion }),
@@ -121,12 +132,15 @@ export class GameWsCommandMapper {
   }
 
   private integerValue(value: unknown): number | null {
-    const parsed = Number(value);
-    return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
+    if (value == null) return null;
+    const parsed = parseStrictInteger(value, { min: 0 });
+    if (parsed === null)
+      throw new BadRequestException('Entier de commande invalide');
+    return parsed;
   }
 
   private asRecord(value: unknown): Record<string, unknown> {
-    return value && typeof value === 'object'
+    return value && typeof value === 'object' && !Array.isArray(value)
       ? (value as Record<string, unknown>)
       : {};
   }

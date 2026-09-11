@@ -10,8 +10,8 @@ export class ChatSettingsPolicyService {
   static readonly MAX_EDIT_WINDOW_SECONDS = 24 * 60 * 60;
 
   clampHistoryLimit(value: number): number {
-    const candidate = Number(value);
-    if (!Number.isFinite(candidate)) {
+    const candidate = typeof value === 'number' ? value : Number.NaN;
+    if (!Number.isSafeInteger(candidate)) {
       return ChatSettingsPolicyService.DEFAULT_HISTORY_LIMIT;
     }
     const rounded = Math.round(candidate);
@@ -25,8 +25,8 @@ export class ChatSettingsPolicyService {
   }
 
   clampEditWindowSeconds(value: number): number {
-    const candidate = Number(value);
-    if (!Number.isFinite(candidate)) {
+    const candidate = typeof value === 'number' ? value : Number.NaN;
+    if (!Number.isSafeInteger(candidate)) {
       return ChatSettingsPolicyService.DEFAULT_EDIT_WINDOW_SECONDS;
     }
     const rounded = Math.round(candidate);

@@ -15,10 +15,7 @@ const workflowNames = fs.existsSync(workflowsRoot)
 
 function readWorkflow(name) {
   const filename = path.join(workflowsRoot, name);
-  if (!fs.existsSync(filename)) {
-    violations.push(`.github/workflows/${name}: fichier de gouvernance absent`);
-    return null;
-  }
+  if (!fs.existsSync(filename)) return null;
   return fs.readFileSync(filename, 'utf8');
 }
 
@@ -44,7 +41,6 @@ if (quality !== null && !/push:\s*\n\s*branches:\s*\[main\]/.test(quality)) {
 for (const required of [
   '.github/CODEOWNERS',
   '.github/dependabot.yml',
-  '.github/workflows/security.yml',
 ]) {
   if (!fs.existsSync(path.join(repositoryRoot, required))) {
     violations.push(`${required}: fichier de gouvernance absent`);

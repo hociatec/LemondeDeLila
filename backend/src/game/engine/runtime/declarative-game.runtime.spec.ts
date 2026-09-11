@@ -1,19 +1,19 @@
 import {
   FixedGameClock,
   StateGameRng,
-} from '../../core/application/contracts/game-execution-context.model';
+} from '../../core/application/models/game-execution-context.model';
 import type {
-  GameStateEntity,
-  PlayerStateEntity,
-} from '../../core/application/contracts/game-state.model';
+  GameState,
+  PlayerState,
+} from '../../core/application/models/game-state.model';
 import { victoryWhen, when } from './automation/automatic-kit';
 import { cards } from './cards/cards-kit';
 import { DeclarativeGameRuntime } from './declarative-game.runtime';
 import {
   defineAction,
   defineChoice,
-  defineGame,
-} from './definitions/game-definition';
+} from './definitions/game-definition-builders';
+import { defineGame } from './definitions/game-definition';
 import { gameInput } from './actions/game-input-schema';
 import { defineEffect, gameEffects } from './effects/effects-kit';
 import { movement } from './kits/movement-kit';
@@ -57,6 +57,7 @@ const sampleGame = defineGame({
       autoTransition: () => true,
     }),
     playing: phase<SampleState>({
+      terminal: true,
       actions: [
         'score',
         'confirm',
@@ -211,6 +212,39 @@ describe('DeclarativeGameRuntime', () => {
     expect(initial).not.toEqual(current);
   });
 
+  it('rejects a handler that leaves a terminal phase without changing the session', () => {
+    const definition = defineGame<SampleState>()({
+      ...sampleGame,
+      phases: {
+        setup: { next: 'playing', autoTransition: () => true },
+        playing: { terminal: true },
+      },
+      actions: {
+        ...sampleGame.actions,
+        rewind: defineAction<SampleState, Record<string, never>>({
+          input: gameInput.object({}),
+          execute: ({ ctx }) => ctx.transitionTo('setup'),
+        }),
+      },
+    });
+    const runtime = new DeclarativeGameRuntime(definition);
+    const state = runtime.hydrateInitialState(baseState());
+    const before = structuredClone(state);
+    const action = runtime.validateAction(
+      state,
+      { type: 'rewind', payload: {} },
+      1,
+    );
+    expect(() =>
+      runtime.applyActions(state, [action], {
+        actorId: 1,
+        rng: new StateGameRng(state),
+        clock: new FixedGameClock(1000),
+      }),
+    ).toThrow('Transition de phase interdite');
+    expect(state).toEqual(before);
+  });
+
   it('blocks normal actions while a confirmation is pending and resolves it', () => {
     let state = runtimeState(adapter.hydrateInitialState(baseState()));
     state = execute(adapter, state, 'confirm', {}, 1);
@@ -345,6 +379,26 @@ describe('DeclarativeGameRuntime', () => {
     expect(() => adapter.validateAction(state, command!, 1)).not.toThrow();
   });
 
+  it('versions game extensions for players and spectators without exposing storage', () => {
+    const versioned = new DeclarativeGameRuntime(
+      defineGame({ ...sampleGame, stateVersion: 7, rulesVersion: '3' }),
+    );
+    const state = versioned.hydrateInitialState(baseState());
+    const before = structuredClone(state);
+    for (const viewer of [1, 2, null]) {
+      const view = versioned.exposeStateForUser(state, viewer);
+      expect(view.gameContract).toEqual({
+        stateVersion: 7,
+        rulesVersion: '3',
+        contentVersion: sampleGame.contentVersion,
+      });
+      expect(view).not.toHaveProperty('engine');
+      expect(view.game).not.toHaveProperty('secret');
+    }
+    expect(state).toEqual(before);
+    expect(() => adapter.exposeStateForUser(state, 1)).toThrow();
+  });
+
   it('projects only the declared player view and finishes on victory', () => {
     let state = adapter.hydrateInitialState(baseState());
     state = execute(adapter, state, 'score', { amount: 3 }, 1);
@@ -381,8 +435,8 @@ function normalizeTimestamps<T>(value: T): T {
 
 type RuntimeState = ReturnType<typeof runtimeState>;
 
-function runtimeState(state: GameStateEntity) {
-  return state as GameStateEntity & {
+function runtimeState(state: GameState) {
+  return state as GameState & {
     game: SampleState;
     engine: Record<string, unknown>;
   };
@@ -390,7 +444,7 @@ function runtimeState(state: GameStateEntity) {
 
 function execute(
   adapter: DeclarativeGameRuntime<SampleState, typeof sampleGame.actions>,
-  state: GameStateEntity,
+  state: GameState,
   type: string,
   payload: Record<string, unknown>,
   actorId: number,
@@ -401,7 +455,7 @@ function execute(
 
 function apply(
   adapter: DeclarativeGameRuntime<SampleState, typeof sampleGame.actions>,
-  state: GameStateEntity,
+  state: GameState,
   action: {
     type: string;
     payload?: Record<string, unknown>;
@@ -414,8 +468,8 @@ function apply(
   return runtimeState(adapter.applyActions(state, [action], execution));
 }
 
-function baseState(): GameStateEntity {
-  const players: PlayerStateEntity[] = [
+function baseState(): GameState {
+  const players: PlayerState[] = [
     { id: 1, username: 'Bot', isBot: true },
     { id: 2, username: 'Alice' },
   ];

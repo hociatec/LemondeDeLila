@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import ffmpegStatic from 'ffmpeg-static';
 import ffprobeStatic from 'ffprobe-static';
 import { stringOrEmpty } from '@shared/utils/public-api';
-import { operationalPolicy } from '../../../../platform/config/public-api';
+import { operationalSettings } from '../../../../platform/config/public-api';
 import { toSoundErrorLike } from './sounds-storage.utils';
 
 export type AudioProcessResult = {
@@ -31,15 +31,40 @@ export function ffprobePath(): string {
   return candidate;
 }
 
+const AUDIO_PROCESS_CONCURRENCY = 2;
+let activeAudioProcesses = 0;
+const waitingAudioProcesses: Array<() => void> = [];
+
 export async function runAudioProcess(
   command: string,
   args: string[],
-  timeoutMs = operationalPolicy.soundProbeTimeoutMs,
+  timeoutMs = operationalSettings.soundProbeTimeoutMs,
 ): Promise<AudioProcessResult> {
+  await acquireAudioProcessSlot();
+  try {
+    return await spawnAudioProcess(command, args, timeoutMs);
+  } finally {
+    releaseAudioProcessSlot();
+  }
+}
+
+async function spawnAudioProcess(
+  command: string,
+  args: string[],
+  timeoutMs = operationalSettings.soundProbeTimeoutMs,
+): Promise<AudioProcessResult> {
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 100 || timeoutMs > 120_000) {
+    throw new RangeError('Délai du processus audio invalide.');
+  }
+  if (!Array.isArray(args) || args.length > 128) {
+    throw new RangeError('Arguments du processus audio invalides.');
+  }
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { windowsHide: true });
     const stdout: Buffer[] = [];
     const stderr: Buffer[] = [];
+    const maxOutputBytes = 1024 * 1024;
+    let outputBytes = 0;
     let finished = false;
     const timer = setTimeout(() => {
       if (finished) return;
@@ -51,11 +76,27 @@ export async function runAudioProcess(
       }
       reject(new Error(`Process timeout after ${timeoutMs}ms: ${command}`));
     }, timeoutMs);
+    const collect = (target: Buffer[], data: Buffer | Uint8Array) => {
+      if (finished) return;
+      outputBytes += data.byteLength;
+      if (outputBytes > maxOutputBytes) {
+        finished = true;
+        clearTimeout(timer);
+        try {
+          child.kill('SIGKILL');
+        } catch {
+          /* Already exited. */
+        }
+        reject(new Error('Audio process output limit exceeded'));
+        return;
+      }
+      target.push(Buffer.from(data));
+    };
     child.stdout?.on('data', (data: Buffer | Uint8Array) =>
-      stdout.push(Buffer.from(data)),
+      collect(stdout, data),
     );
     child.stderr?.on('data', (data: Buffer | Uint8Array) =>
-      stderr.push(Buffer.from(data)),
+      collect(stderr, data),
     );
     child.on('error', (error) => {
       if (finished) return;
@@ -74,6 +115,23 @@ export async function runAudioProcess(
       });
     });
   });
+}
+
+function acquireAudioProcessSlot(): Promise<void> {
+  if (activeAudioProcesses < AUDIO_PROCESS_CONCURRENCY) {
+    activeAudioProcesses += 1;
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => waitingAudioProcesses.push(resolve));
+}
+
+function releaseAudioProcessSlot(): void {
+  const next = waitingAudioProcesses.shift();
+  if (next) {
+    next();
+    return;
+  }
+  activeAudioProcesses = Math.max(0, activeAudioProcesses - 1);
 }
 
 export function isAudioProcessSpawnError(error: unknown): boolean {

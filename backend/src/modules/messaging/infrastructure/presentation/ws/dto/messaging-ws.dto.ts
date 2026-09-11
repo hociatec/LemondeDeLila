@@ -14,6 +14,7 @@ import {
 export class MessagingConversationDto {
   @IsInt()
   @IsPositive()
+  @Max(2147483647)
   userId!: number;
 
   @IsInt()
@@ -38,6 +39,7 @@ export class MessagingListDto {
 export class MessagingSendDto {
   @IsInt()
   @IsPositive()
+  @Max(2147483647)
   recipientId!: number;
 
   @IsString()

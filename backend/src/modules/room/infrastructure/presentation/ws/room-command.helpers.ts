@@ -18,7 +18,8 @@ export function extractTraceMeta(
 ): { traceId: string | null; clientToServerMs: number | null } {
   const row = asRecord(payload);
   const trace = asRecord(row._trace);
-  const traceId = typeof trace.id === 'string' ? String(trace.id) : undefined;
+  const traceId =
+    typeof trace.id === 'string' ? String(trace.id).slice(0, 128) : undefined;
   const sentAtMs =
     typeof trace.sentAtMs === 'number' ? Number(trace.sentAtMs) : undefined;
 
@@ -29,14 +30,14 @@ export function extractTraceMeta(
 
   const c2s =
     typeof sentAtMs === 'number' && Number.isFinite(sentAtMs)
-      ? Math.max(0, receivedAtMs - sentAtMs)
+      ? Math.min(Math.max(0, receivedAtMs - sentAtMs), 86_400_000)
       : null;
 
   return { traceId: id, clientToServerMs: c2s };
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
-  if (value && typeof value === 'object') {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
     return value as Record<string, unknown>;
   }
 

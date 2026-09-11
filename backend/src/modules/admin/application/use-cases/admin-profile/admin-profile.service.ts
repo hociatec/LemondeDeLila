@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
   ADMIN_PROFILE_SETTINGS_PORT,
   type AdminProfileSettingsPort,
@@ -19,6 +19,14 @@ export class AdminProfileService {
     bioMinLength?: number;
     bioMaxLength?: number;
   }) {
+    for (const value of [update.bioMinLength, update.bioMaxLength]) {
+      if (
+        value !== undefined &&
+        (!Number.isSafeInteger(value) || value < 0 || value > 100_000)
+      ) {
+        throw new BadRequestException('Paramètres de profil invalides');
+      }
+    }
     return this.settings.update(update);
   }
 }

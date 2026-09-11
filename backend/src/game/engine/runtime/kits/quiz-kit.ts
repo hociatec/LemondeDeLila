@@ -1,18 +1,14 @@
-import type { GameRng } from '../../../core/application/contracts/game-execution-context.model';
+import type { GameRng } from '../../../core/application/models/game-execution-context.model';
 import {
   GameNotFoundError,
   GameRuleViolationError,
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
-import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
-import { quizContent } from '../content/game-content';
+import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import type { QuizQuestion } from '../content/quiz-content-contract';
+import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
 
-export type QuizQuestion = {
-  id: string;
-  prompt: string;
-  choices: readonly string[];
-  answerIndex: number;
-};
+export type { QuizQuestion } from '../content/quiz-content-contract';
 
 export type QuizDefinition = {
   readonly component: 'quiz.bank';
@@ -47,7 +43,7 @@ export type QuizKitState = {
 
 export const quiz = {
   bank(definition: Omit<QuizDefinition, 'component'>): QuizDefinition {
-    const questions = quizContent(definition.questions);
+    const questions = validateQuizQuestions(definition.questions);
     return deepFreeze({
       ...definition,
       component: 'quiz.bank',
@@ -55,6 +51,38 @@ export const quiz = {
     });
   },
 };
+
+function validateQuizQuestions<TQuestion extends QuizQuestion>(
+  questions: readonly TQuestion[],
+): readonly Readonly<TQuestion>[] {
+  if (questions.length > 10_000) {
+    throw new GameContentValidationError('Trop de questions dans le contenu');
+  }
+  const ids = new Set<string>();
+  for (const question of questions) {
+    if (ids.has(question.id)) {
+      throw new GameContentValidationError(
+        `Identifiant de question dupliqué: ${question.id}`,
+        { questionId: question.id },
+      );
+    }
+    ids.add(question.id);
+    if (
+      question.choices.length < 2 ||
+      !Number.isInteger(question.answerIndex) ||
+      question.answerIndex < 0 ||
+      question.answerIndex >= question.choices.length
+    ) {
+      throw new GameContentValidationError(
+        `Réponse invalide pour la question ${question.id}`,
+        { questionId: question.id },
+      );
+    }
+  }
+  return Object.freeze(
+    questions.map((question) => Object.freeze(structuredClone(question))),
+  );
+}
 
 export class GameQuizController {
   constructor(
@@ -144,8 +172,11 @@ export class GameQuizController {
     );
     if (!question) return null;
     this.state.cursors[bankId] = cursor + 1;
-    const { answerIndex: _answerIndex, ...publicQuestion } = question;
-    return publicQuestion;
+    return {
+      id: question.id,
+      prompt: question.prompt,
+      choices: [...question.choices],
+    };
   }
 
   check(bankId: string, questionId: string, answerIndex: number): boolean {
@@ -319,11 +350,15 @@ export class GameQuizController {
   }
 
   private publicSession(session: QuizSessionState): QuizSession {
-    const { answerIndex: _answerIndex, ...question } = this.question(
-      session.bankId,
-      session.questionId,
-    );
-    return { ...structuredClone(session), question: structuredClone(question) };
+    const question = this.question(session.bankId, session.questionId);
+    return {
+      ...structuredClone(session),
+      question: {
+        id: question.id,
+        prompt: question.prompt,
+        choices: [...question.choices],
+      },
+    };
   }
 }
 

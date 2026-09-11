@@ -1,5 +1,5 @@
-import type { GameSingleActionDto } from '../../../core/application/contracts/game-action.model';
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
+import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
 import {
   GameActionRejectedError,
   GameActorRequiredError,
@@ -12,12 +12,12 @@ import {
   GAME_CONFIGURE_ACTION,
   parseGameConfiguration,
 } from '../configuration/configuration-kit';
+import type { CompiledGameDefinition } from '../contracts/compiled-game-definition';
+import type { DeclarativeState } from '../state/declarative-state';
 import type {
-  CompiledGameDefinition,
-  DeclarativeState,
   GameActionMap,
   GameActionShape,
-} from '../definitions/game-definition';
+} from '../contracts/author-rule-contracts';
 import type { GameContext } from '../game-rule-context';
 import { standardTurn } from '../kits/turn-kit';
 
@@ -100,7 +100,7 @@ export class DeclarativeActionController<
 
   execute(
     runtime: DeclarativeState<TState>,
-    actor: PlayerStateEntity,
+    actor: PlayerState,
     action: GameSingleActionDto,
     context: GameContext<TState>,
   ): void {
@@ -152,7 +152,7 @@ export class DeclarativeActionController<
   requireActor(
     runtime: DeclarativeState<TState>,
     actorId: number | null,
-  ): PlayerStateEntity {
+  ): PlayerState {
     const actor = (runtime.players ?? []).find(
       (player) => player.id === actorId,
     );
@@ -162,7 +162,7 @@ export class DeclarativeActionController<
 
   isAvailable(
     runtime: DeclarativeState<TState>,
-    actor: PlayerStateEntity,
+    actor: PlayerState,
     type: string,
     context: GameContext<TState>,
     contextFactory: ContextFactory<TState>,
@@ -180,7 +180,7 @@ export class DeclarativeActionController<
 
   private ensureAvailable(
     runtime: DeclarativeState<TState>,
-    actor: PlayerStateEntity,
+    actor: PlayerState,
     type: string,
     context: GameContext<TState>,
     input: object,
@@ -207,7 +207,7 @@ export class DeclarativeActionController<
 
   private validateConfiguration(
     runtime: DeclarativeState<TState>,
-    actor: PlayerStateEntity,
+    actor: PlayerState,
     action: GameSingleActionDto,
     context: GameContext<TState>,
   ): GameSingleActionDto {
@@ -238,7 +238,7 @@ export class DeclarativeActionController<
 
   private executeConfiguration(
     runtime: DeclarativeState<TState>,
-    actor: PlayerStateEntity,
+    actor: PlayerState,
     action: GameSingleActionDto,
     context: GameContext<TState>,
   ): void {

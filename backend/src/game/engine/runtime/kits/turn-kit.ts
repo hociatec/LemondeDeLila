@@ -1,17 +1,15 @@
 import type {
-  GameStateEntity,
-  PlayerStateEntity,
-} from '../../../core/application/contracts/game-state.model';
+  GameState,
+  PlayerState,
+} from '../../../core/application/models/game-state.model';
 
 export interface TurnPolicy {
   readonly kind: 'sequential' | 'simultaneous' | 'action-points';
-  initialize(
-    players: readonly PlayerStateEntity[],
-  ): NonNullable<GameStateEntity['turn']>;
+  initialize(players: readonly PlayerState[]): NonNullable<GameState['turn']>;
   advance(
-    turn: NonNullable<GameStateEntity['turn']>,
-    players: readonly PlayerStateEntity[],
-  ): NonNullable<GameStateEntity['turn']>;
+    turn: NonNullable<GameState['turn']>,
+    players: readonly PlayerState[],
+  ): NonNullable<GameState['turn']>;
   actionPoints?: number;
   /** Marks an intentional replacement of a policy supplied by a pattern. */
   overrides?: boolean;
@@ -87,8 +85,8 @@ function sequentialPolicy(
 }
 
 function eligible(
-  players: readonly PlayerStateEntity[],
+  players: readonly PlayerState[],
   skipEliminated: boolean,
-): PlayerStateEntity[] {
+): PlayerState[] {
   return players.filter((player) => !skipEliminated || player.alive !== false);
 }

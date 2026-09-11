@@ -1,9 +1,11 @@
+import manifest from './manifest.json';
+import embeddedCatalogue from './catalogue.json';
+
+import { isRecord } from '../../../engine/sdk/public-api';
 import {
-  freezeGameContent,
+  defineGameContent,
   rejectContent,
 } from '../../../engine/sdk/public-api';
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 
 export type PrimalisTile = {
   n: number;
@@ -12,23 +14,14 @@ export type PrimalisTile = {
   type: 'comet';
 };
 
-export const PRIMALIS_TILES = loadTiles();
+export const PRIMALIS_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  embeddedCatalogue,
+  { schema: { parse: parseContent } },
+);
+export const PRIMALIS_TILES = PRIMALIS_GAME_CONTENT.data.tiles;
 
-function loadTiles(): PrimalisTile[] {
-  const candidates = [
-    resolve(__dirname, 'model/content/board.json'),
-    resolve(
-      process.cwd(),
-      'src/game/games/les-quatre-vents/primalis/model/content/board.json',
-    ),
-    resolve(
-      process.cwd(),
-      'dist/game/games/les-quatre-vents/primalis/model/content/board.json',
-    ),
-  ];
-  const path = candidates.find(existsSync);
-  if (!path) rejectContent('Plateau Primalis introuvable');
-  const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'));
+function parseContent(parsed: unknown): { tiles: PrimalisTile[] } {
   if (
     !isRecord(parsed) ||
     !Array.isArray(parsed.tiles) ||
@@ -37,7 +30,7 @@ function loadTiles(): PrimalisTile[] {
   ) {
     rejectContent('Plateau Primalis invalide');
   }
-  return parsed.tiles;
+  return { tiles: parsed.tiles };
 }
 
 function isPrimalisTile(value: unknown): value is PrimalisTile {
@@ -50,9 +43,3 @@ function isPrimalisTile(value: unknown): value is PrimalisTile {
     value.type === 'comet'
   );
 }
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
-freezeGameContent(PRIMALIS_TILES);

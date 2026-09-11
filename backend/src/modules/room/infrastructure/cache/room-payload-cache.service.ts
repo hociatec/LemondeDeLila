@@ -2,11 +2,18 @@ import { Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Redis } from 'ioredis';
 import { RedisClientFactory } from '../../../../platform/redis/public-api';
-import { RoomPayload } from '../../application/contracts/room-payload.model';
+import { operationalSettings } from '../../../../platform/config/public-api';
+import { RoomPayload } from '../../application/models/room-payload.model';
 import { decodeRoomPayload } from './room-payload.decoder';
 
 @Injectable()
+/**
+ * Redis is strictly an optimization here. The database remains the source of
+ * truth and every cache error degrades to a database rebuild; callers must not
+ * use this service as the only persistence for a room mutation.
+ */
 export class RoomPayloadCacheService implements OnModuleDestroy {
+  private static readonly MAX_PAYLOAD_BYTES = 512 * 1024;
   private readonly logger = new Logger(RoomPayloadCacheService.name);
   private redis: Redis | null = null;
   private redisDisabled = false;
@@ -17,12 +24,10 @@ export class RoomPayloadCacheService implements OnModuleDestroy {
     private readonly config: ConfigService,
     private readonly redisFactory: RedisClientFactory,
   ) {
-    const ttlCandidate = Number(
-      this.config.get('ROOM_PAYLOAD_CACHE_TTL_SECONDS') ?? 15,
+    this.ttlSeconds = Math.min(
+      operationalSettings.roomPayloadCacheTtlSeconds,
+      3600,
     );
-    const ttl =
-      Number.isFinite(ttlCandidate) && ttlCandidate >= 1 ? ttlCandidate : 15;
-    this.ttlSeconds = Math.min(ttl, 3600);
   }
 
   async prime(roomId: number, payload: RoomPayload): Promise<void> {
@@ -75,6 +80,13 @@ export class RoomPayloadCacheService implements OnModuleDestroy {
     try {
       const raw = await redis.get(this.key(roomId));
       if (!raw) return null;
+      if (
+        Buffer.byteLength(raw, 'utf8') >
+        RoomPayloadCacheService.MAX_PAYLOAD_BYTES
+      ) {
+        await redis.del(this.key(roomId));
+        return null;
+      }
       return decodeRoomPayload(JSON.parse(raw));
     } catch (error) {
       this.disableRedis(
@@ -88,13 +100,16 @@ export class RoomPayloadCacheService implements OnModuleDestroy {
   async persist(roomId: number, payload: RoomPayload): Promise<void> {
     const redis = this.getRedis();
     if (!redis) return;
+    const serialized = JSON.stringify(payload);
+    if (
+      Buffer.byteLength(serialized, 'utf8') >
+      RoomPayloadCacheService.MAX_PAYLOAD_BYTES
+    ) {
+      this.logger.warn('Payload room trop volumineux pour le cache');
+      return;
+    }
     try {
-      await redis.set(
-        this.key(roomId),
-        JSON.stringify(payload),
-        'EX',
-        this.ttlSeconds,
-      );
+      await redis.set(this.key(roomId), serialized, 'EX', this.ttlSeconds);
     } catch (error) {
       this.disableRedis(
         'ecriture cache room Redis impossible (fallback memoire)',

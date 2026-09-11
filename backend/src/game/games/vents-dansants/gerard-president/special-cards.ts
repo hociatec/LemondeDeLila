@@ -1,7 +1,7 @@
-import { freezeGameContent, gameEffects } from '../../../engine/sdk/public-api';
+import { gameEffects } from '../../../engine/sdk/public-api';
 import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 
-export const GERARD_SPECIAL_EFFECTS = [
+export const GERARD_SPECIAL_EFFECTS = Object.freeze([
   'sabotage',
   'double-prenom',
   'double-theme',
@@ -22,7 +22,7 @@ export const GERARD_SPECIAL_EFFECTS = [
   'chaos-temporel',
   'ultra-sabotage',
   'prenom-volant',
-] as const;
+] as const);
 export type GerardSpecialEffect = (typeof GERARD_SPECIAL_EFFECTS)[number];
 
 export interface GerardPresidentSpecialCard {
@@ -181,10 +181,8 @@ const RAW_GERARD_PRESIDENT_SPECIAL_CARDS: RawGerardPresidentSpecialCard[] = [
   },
 ];
 
-export const GERARD_PRESIDENT_SPECIAL_CARDS: GerardPresidentSpecialCard[] =
+export const DEFAULT_GERARD_SPECIAL_CARDS: GerardPresidentSpecialCard[] =
   RAW_GERARD_PRESIDENT_SPECIAL_CARDS.map((card) => ({
     ...card,
     effects: [gameEffects.custom(`gerard.${card.effect}`)],
   }));
-
-freezeGameContent(GERARD_PRESIDENT_SPECIAL_CARDS);

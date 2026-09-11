@@ -15,6 +15,8 @@ let cached: BuildInfo | null = null;
 
 function readText(filePath: string): string | null {
   try {
+    const stat = fs.statSync(filePath);
+    if (!stat.isFile() || stat.size > 256 * 1024) return null;
     return fs.readFileSync(filePath, 'utf8');
   } catch {
     return null;
@@ -48,6 +50,7 @@ function findGitDir(startDir: string, maxUp = 6): string | null {
 }
 
 function resolvePackedRef(gitDir: string, ref: string): string | null {
+  if (!/^refs\/[A-Za-z0-9._/-]{1,256}$/.test(ref)) return null;
   const packed = readText(path.join(gitDir, 'packed-refs'));
   if (!packed) return null;
   const lines = packed.split(/\r?\n/);
@@ -77,7 +80,9 @@ function tryResolveGitHeadSha(): { sha: string | null; ref: string | null } {
   const refPrefix = 'ref:';
   if (headText.toLowerCase().startsWith(refPrefix)) {
     const ref = headText.substring(refPrefix.length).trim();
-    if (!ref) return { sha: null, ref: null };
+    if (!ref || !/^refs\/[A-Za-z0-9._/-]{1,256}$/.test(ref)) {
+      return { sha: null, ref: null };
+    }
 
     const refPath = path.join(gitDir, ref);
     const sha =
@@ -107,8 +112,9 @@ export function getBuildInfo(): BuildInfo {
     readEnvironment('SOURCE_VERSION').trim();
 
   if (envSha) {
+    const normalizedSha = envSha.slice(0, 128);
     cached = {
-      sha: envSha,
+      sha: normalizedSha,
       ref: null,
       source: 'env',
       node: process.version,

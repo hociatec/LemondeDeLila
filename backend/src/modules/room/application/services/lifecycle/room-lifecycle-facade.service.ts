@@ -3,8 +3,11 @@ import {
   ROOM_PARTICIPANT_REPOSITORY,
   type RoomParticipantRepository,
 } from '../../ports/room-participant.repository';
-import type { RoomRecord } from '../../contracts/room-record.model';
-import { CountRoomBotsService } from '../../../../bot/public-api';
+import type { RoomRecord } from '../../models/room-record.model';
+import {
+  ROOM_BOT_COUNTER_PORT,
+  type RoomBotCounterPort,
+} from '../../ports/room-bot-counter.port';
 import { RoomAdminContextService } from '../maintenance/room-admin-context.service';
 import { RoomLifecycleService } from './room-lifecycle.service';
 import { RoomStateService } from '../state/room-state.service';
@@ -14,7 +17,8 @@ export class RoomLifecycleFacadeService {
   constructor(
     @Inject(ROOM_PARTICIPANT_REPOSITORY)
     private readonly participants: RoomParticipantRepository,
-    private readonly countRoomBotsUseCase: CountRoomBotsService,
+    @Inject(ROOM_BOT_COUNTER_PORT)
+    private readonly countRoomBotsUseCase: RoomBotCounterPort,
     private readonly roomAdminContext: RoomAdminContextService,
     private readonly lifecycle: RoomLifecycleService,
     private readonly state: RoomStateService,

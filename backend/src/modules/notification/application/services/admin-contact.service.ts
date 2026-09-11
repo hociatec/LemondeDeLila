@@ -1,6 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import type { WsAuthPayload } from '../../../../shared/interfaces/public-api';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+  type WsAuthPayload,
+} from '../../../../shared/interfaces/public-api';
 import {
   NOTIFICATION_INBOX_REPOSITORY,
   type NotificationInboxRepository,
@@ -9,7 +13,11 @@ import {
   USER_BADGE_COUNTS_NOTIFIER,
   type UserBadgeCountsNotifier,
 } from '../ports/user-badge-counts-notifier.port';
-import { USER_REPOSITORY, type UserRepository } from '../../../user/public-api';
+import {
+  STAFF_USERS_READER,
+  type StaffUsersReader,
+} from '../../../user/public-api';
+import { businessMsToDate } from '../../../../shared/utils/public-api';
 import {
   NotificationAccessDeniedError,
   NotificationContactIdRequiredError,
@@ -21,12 +29,12 @@ import type {
   AdminContactItem,
   AdminContactStatus,
   AdminContactThreadSummary,
-} from '../contracts/admin-contact.model';
+} from '../models/admin-contact.model';
 export type {
   AdminContactItem,
   AdminContactStatus,
   AdminContactThreadSummary,
-} from '../contracts/admin-contact.model';
+} from '../models/admin-contact.model';
 import { AdminContactDeliveryService } from './admin-contact-delivery.service';
 import { AdminContactQueryService } from './admin-contact-query.service';
 import { AdminContactWorkflowService } from './admin-contact-workflow.service';
@@ -43,11 +51,12 @@ export class AdminContactService {
     private readonly inbox: NotificationInboxRepository,
     @Inject(USER_BADGE_COUNTS_NOTIFIER)
     private readonly counts: UserBadgeCountsNotifier,
-    @Inject(USER_REPOSITORY)
-    private readonly users: UserRepository,
+    @Inject(STAFF_USERS_READER)
+    private readonly users: StaffUsersReader,
     private readonly delivery: AdminContactDeliveryService,
     private readonly queries: AdminContactQueryService,
     private readonly workflow: AdminContactWorkflowService,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   listInbox(
@@ -68,7 +77,7 @@ export class AdminContactService {
     from: ContactIdentity,
     contactId: string,
   ): Promise<{ status: AdminContactStatus }> {
-    return this.workflow.cycleForContact(from, contactId);
+    return this.workflow.cycleForContact(from, this.identifier(contactId));
   }
 
   cycleStatusForInboxItem(
@@ -76,7 +85,11 @@ export class AdminContactService {
     userId: number,
     inboxItemId: string,
   ): Promise<{ status: AdminContactStatus }> {
-    return this.workflow.cycleForInboxItem(from, userId, inboxItemId);
+    return this.workflow.cycleForInboxItem(
+      from,
+      userId,
+      this.identifier(inboxItemId),
+    );
   }
 
   setStatusForInboxItem(
@@ -85,7 +98,12 @@ export class AdminContactService {
     inboxItemId: string,
     status: unknown,
   ): Promise<void> {
-    return this.workflow.setForInboxItem(from, userId, inboxItemId, status);
+    return this.workflow.setForInboxItem(
+      from,
+      userId,
+      this.identifier(inboxItemId),
+      status,
+    );
   }
 
   setStatusForContact(
@@ -93,7 +111,11 @@ export class AdminContactService {
     contactId: string,
     status: unknown,
   ): Promise<void> {
-    return this.workflow.setForContact(from, contactId, status);
+    return this.workflow.setForContact(
+      from,
+      this.identifier(contactId),
+      status,
+    );
   }
 
   setHandledForContact(
@@ -103,7 +125,7 @@ export class AdminContactService {
   ): Promise<void> {
     return this.workflow.setForContact(
       from,
-      contactId,
+      this.identifier(contactId),
       handled ? 'handled' : 'open',
     );
   }
@@ -112,16 +134,17 @@ export class AdminContactService {
     from: ContactIdentity,
     contactId: string,
   ): Promise<void> {
-    return this.workflow.deleteThread(from, contactId);
+    return this.workflow.deleteThread(from, this.identifier(contactId));
   }
 
   async deleteInboxItem(userId: number, id: string): Promise<void> {
-    const deleted = await this.inbox.delete(userId, id);
+    const itemId = this.identifier(id);
+    const deleted = await this.inbox.delete(userId, itemId);
     this.logger.log(
       JSON.stringify({
         event: 'notification.inbox.deleted',
         userId,
-        id,
+        id: itemId,
         deleted,
       }),
     );
@@ -129,7 +152,7 @@ export class AdminContactService {
   }
 
   async markRead(userId: number, id: string): Promise<void> {
-    await this.inbox.markRead(userId, id);
+    await this.inbox.markRead(userId, this.identifier(id));
     await this.counts.notifyCounts(userId);
   }
 
@@ -139,13 +162,18 @@ export class AdminContactService {
     contactId?: string,
   ): Promise<AdminContactItem> {
     const clean = this.message(message);
-    const createdAt = new Date();
+    const createdAt = businessMsToDate(this.clock.now());
     const recipients = new Set<number>([
       from.id,
       ...(await this.staffUserIds()),
     ]);
     return this.delivery.deliver(
-      this.item(from, clean, contactId || randomUUID(), createdAt),
+      this.item(
+        from,
+        clean,
+        contactId ? this.identifier(contactId) : randomUUID(),
+        createdAt,
+      ),
       recipients,
       createdAt,
     );
@@ -158,12 +186,11 @@ export class AdminContactService {
     contactId: string,
   ): Promise<AdminContactItem> {
     this.assertStaff(from.roles);
-    if (!toUserId || toUserId <= 0) {
+    if (!Number.isSafeInteger(toUserId) || toUserId <= 0) {
       throw new NotificationRecipientInvalidError();
     }
-    const cid = String(contactId || '').trim();
-    if (!cid) throw new NotificationContactIdRequiredError();
-    const createdAt = new Date();
+    const cid = this.identifier(contactId);
+    const createdAt = businessMsToDate(this.clock.now());
     const recipients = new Set<number>([
       toUserId,
       ...(await this.staffUserIds()),
@@ -198,6 +225,14 @@ export class AdminContactService {
     if (!message) throw new NotificationMessageRequiredError();
     if (message.length > 2000) throw new NotificationMessageTooLongError();
     return message;
+  }
+
+  private identifier(value: string): string {
+    const identifier = String(value ?? '').trim();
+    if (!identifier || identifier.length > 128) {
+      throw new NotificationContactIdRequiredError();
+    }
+    return identifier;
   }
 
   private async staffUserIds(): Promise<number[]> {

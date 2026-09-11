@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import type { PrivateMessageRecord } from '../contracts/private-message.model';
+import type { PrivateMessageRecord } from '../models/private-message.model';
 import { MessageValidatorService } from './message-validator.service';
 import { PrivateMessagingService } from './private-messaging.service';
 
@@ -42,6 +42,7 @@ describe('PrivateMessagingService', () => {
         messages as any,
         users as any,
         new MessageValidatorService(),
+        { now: () => Date.now() },
       ),
       messages,
     };

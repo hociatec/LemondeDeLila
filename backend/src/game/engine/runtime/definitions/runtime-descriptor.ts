@@ -1,5 +1,6 @@
-import type { GameRuntimeDescriptor } from '../../../core/application/contracts/game-runtime.interface';
-import type { CompiledGameDefinition, GameActionMap } from './game-definition';
+import type { GameRuntimeDescriptor } from '../../../core/application/ports/game-runtime.port';
+import type { CompiledGameDefinition } from '../contracts/compiled-game-definition';
+import type { GameActionMap } from '../contracts/author-rule-contracts';
 import { GAME_CONFIGURE_ACTION } from '../configuration/configuration-kit';
 import type { GameShortcutHint } from '../../../shortcuts/public-api';
 import { contentManifest } from '../content/game-content';
@@ -39,7 +40,7 @@ export function describeGameDefinition<
         ? { id: component.id }
         : {}),
     })),
-    patterns: (definition.patterns ?? []).map((pattern) => ({
+    patterns: definition.plan.patterns.map((pattern) => ({
       id: pattern.id,
       mechanics: [...pattern.mechanics],
     })),

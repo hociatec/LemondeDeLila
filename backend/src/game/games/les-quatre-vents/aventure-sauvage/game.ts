@@ -1,27 +1,22 @@
 import {
   cards,
   defineCardsSchema,
-  defineChoice,
-  defineEffect,
   defineGame,
-  defineGameContent,
-  gameInput,
   pawns,
   raceGame,
 } from '../../../engine/sdk/public-api';
 import {
   AVENTURE_ANIMAL_CARDS,
+  AVENTURE_GAME_CONTENT,
   AVENTURE_PATTE_CARDS,
   AVENTURE_PAWNS,
   AVENTURE_TILES,
 } from './content';
-import {
-  AVENTURE_ACTIONS,
-  AVENTURE_PHASES,
-  requestPawns,
-  resolveAventureTile,
-  resolvePawnChoice,
-} from './rules';
+import manifest from './manifest.json';
+import { GAME_CHOICES, GAME_EFFECTS } from './rules';
+
+import { AVENTURE_ACTIONS, AVENTURE_PHASES } from './rules';
+import { setupGame } from './rules';
 import type { AventureSauvageState } from './types';
 
 const cardSchema = defineCardsSchema({
@@ -41,18 +36,14 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<AventureSauvageState>()({
-  id: 'aventure-sauvage',
-  displayName: 'Aventure Sauvage',
+  id: manifest.code,
+  rulesVersion: '2',
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Une course animalière jusqu’à la mare de la jungle.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('aventure-sauvage', {
-    tiles: AVENTURE_TILES,
-    pawns: AVENTURE_PAWNS,
-    animalCards: AVENTURE_ANIMAL_CARDS,
-    pawCards: AVENTURE_PATTE_CARDS,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: AVENTURE_GAME_CONTENT,
   patterns: [
     raceGame({
       trackId: 'jungle',
@@ -68,30 +59,12 @@ export default defineGame<AventureSauvageState>()({
     { key: 'D', type: 'action', actionType: 'roll' },
     { key: 'P', type: 'interface', id: 'position' },
   ],
-  setup: ({ players, ctx }) => {
-    requestPawns(
-      players.map((player) => player.id),
-      ctx,
-    );
-    return {};
-  },
+  setup: setupGame,
   initialPhase: AVENTURE_PHASES.initialPhase,
   phases: AVENTURE_PHASES.phases,
   actions: AVENTURE_ACTIONS,
-  effects: {
-    'aventure.resolve-landing': defineEffect({
-      input: gameInput.object({}),
-      apply: ({ actorPlayerId, ctx }) => {
-        if (actorPlayerId != null) resolveAventureTile(actorPlayerId, ctx);
-      },
-    }),
-  },
-  choices: {
-    'aventure.pawn': defineChoice<AventureSauvageState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ actor, value, ctx }) =>
-        resolvePawnChoice(actor.id, value, ctx),
-    }),
-  },
+  effects: GAME_EFFECTS,
+  choices: GAME_CHOICES,
+
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

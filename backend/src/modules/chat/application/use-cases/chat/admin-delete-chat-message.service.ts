@@ -15,8 +15,8 @@ export class AdminDeleteChatMessageService {
   ) {}
 
   async execute(messageId: string): Promise<boolean> {
-    const id = (messageId || '').trim();
-    if (!id) return false;
+    const id = typeof messageId === 'string' ? messageId.trim() : '';
+    if (!id || id.length > 128) return false;
     const deleted = await this.messages.deleteByMessageId(id);
     if (deleted) {
       this.cache.remove(id);

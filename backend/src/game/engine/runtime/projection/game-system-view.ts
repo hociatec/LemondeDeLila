@@ -1,18 +1,18 @@
-import type { TurnStateEntity } from '../../../core/application/contracts/game-state.model';
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
-import type { GameConfigurationState } from '../configuration/configuration-kit';
+import type { TurnState } from '../../../core/application/models/game-state.model';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
+import type { GameConfigurationState } from '../contracts/configuration-state';
 import type { GameComponentDefinition } from '../definitions/component-kit';
-import type { DeclarativeState } from '../definitions/game-definition';
+import type { DeclarativeState } from '../state/declarative-state';
 import { projectGameKits } from './game-kit-view';
 import type { MatchKitState } from '../kits/match-kit';
 import {
   projectPlayerValues,
   projectStatusViews,
-  type PlayerValuesVisibility,
-} from '../kits/player-values-kit';
+} from './player-values-projection';
+import type { PlayerValuesVisibility } from '../kits/player-values-contracts';
 import type { RoundKitState } from '../kits/round-kit';
-import type { EffectSource } from '../effects/effects-kit';
-import type { GamePendingEvent } from '../../../core/application/contracts/game-event.model';
+import type { EffectSource } from '../contracts/effect-ir';
+import type { GamePendingEvent } from '../../../core/application/models/game-event.model';
 import { projectPendingGameEvent } from '../../../core/application/services/game-event-visibility';
 import { projectSubmissions } from '../submissions/submission-kit';
 import {
@@ -195,7 +195,7 @@ function projectEffectSource(
 }
 
 function projectPlayers(
-  players: readonly PlayerStateEntity[],
+  players: readonly PlayerState[],
 ): GamePlayersPlayerView {
   const all = players.map((player) => ({
     id: player.id,
@@ -229,7 +229,7 @@ function projectRound(round: RoundKitState): RoundPlayerView {
 }
 
 function projectTurn(
-  turn: TurnStateEntity | undefined,
+  turn: TurnState | undefined,
   values: DeclarativeState<object>['engine']['playerValues'],
   submissions: DeclarativeState<object>['engine']['submissions'],
 ): GameTurnPlayerView {

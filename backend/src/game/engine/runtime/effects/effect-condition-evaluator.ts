@@ -1,5 +1,5 @@
-import type { EffectCondition, EffectTarget } from './effects-kit';
-import type { GameContext } from '../game-rule-context';
+import type { EffectCondition, EffectTarget } from '../contracts/effect-ir';
+import type { GameContext } from '../definitions/game-author-context';
 
 export function evaluateEffectCondition<TState extends object>(
   condition: EffectCondition,

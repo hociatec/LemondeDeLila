@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
+import { BusinessClockModule } from '../../../platform/time/public-api';
+import { RedisModule } from '../../../platform/redis/public-api';
 
-import { UpdatePolicyService } from '../application/update-policy.service';
+import { ClientUpdateQueryService } from '../application/client-update-query.service';
 import { WX_UPDATE_RELEASE_READER } from '../application/wx-update-release.reader';
 import { CiWxUpdateController } from '../infrastructure/http/ci-wx-update.controller';
 import { UpdateStaticService } from '../infrastructure/http/update-static.service';
@@ -12,6 +14,7 @@ import { WxUpdateArtifactValidatorService } from '../infrastructure/persistence/
 import { WxUpdateUploadService } from '../infrastructure/persistence/wx-update-upload.service';
 
 @Module({
+  imports: [BusinessClockModule, RedisModule],
   controllers: [
     WxUpdateManifestController,
     WxUpdateLatestController,
@@ -25,10 +28,10 @@ import { WxUpdateUploadService } from '../infrastructure/persistence/wx-update-u
       useExisting: WxUpdateReleaseService,
     },
     WxUpdateUploadService,
-    UpdatePolicyService,
+    ClientUpdateQueryService,
     UpdateStaticService,
     UpdateUploadTokenGuard,
   ],
-  exports: [WxUpdateReleaseService, UpdatePolicyService],
+  exports: [WxUpdateReleaseService, ClientUpdateQueryService],
 })
 export class UpdateModule {}

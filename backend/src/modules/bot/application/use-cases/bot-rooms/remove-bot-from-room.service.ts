@@ -1,6 +1,6 @@
 import type { BotRoomRepository } from '../../ports/bot-room.repository';
 import { BotNotFoundError } from '../../errors/bot-application.errors';
-import type { BotRoomRecord } from '../../contracts/bot-room.record';
+import type { BotRoomRecord } from '../../read-models/bot-room.record';
 import { BotRoomPolicyService } from './bot-room-policy.service';
 
 export class RemoveBotFromRoomService {

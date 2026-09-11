@@ -5,10 +5,10 @@ import type { RoomSnapshot } from './room-announcement.helpers';
 import { RoomSocketHeartbeat } from './room-heartbeat.helpers';
 import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
 import type { ClientMeta } from './room-gateway.types';
-import {
-  bestEffort,
-  type PresentedErrorPayload,
-} from '@shared/utils/public-api';
+import { bestEffort } from '../../../../../platform/observability/public-api';
+import { type PresentedErrorPayload } from '../../../../../platform/serialization/public-api';
+
+const MAX_WS_OUTBOUND_BYTES = 1_048_576;
 
 @Injectable()
 export class RoomGatewayRuntimeStateService implements OnModuleDestroy {
@@ -85,11 +85,17 @@ export class RoomGatewayRuntimeStateService implements OnModuleDestroy {
     payload: unknown,
     emittedRoomId?: number,
   ): Promise<void> {
-    const message = JSON.stringify({
-      type,
-      roomId: emittedRoomId ?? roomId,
-      payload,
-    });
+    let message: string;
+    try {
+      message = JSON.stringify({
+        type,
+        roomId: emittedRoomId ?? roomId,
+        payload,
+      });
+    } catch {
+      return;
+    }
+    if (Buffer.byteLength(message, 'utf8') > MAX_WS_OUTBOUND_BYTES) return;
     this.sendToRoomSet(roomId, this.rooms.get(roomId), message, false);
     this.sendToRoomSet(roomId, this.silentRooms.get(roomId), message, true);
   }
@@ -99,7 +105,15 @@ export class RoomGatewayRuntimeStateService implements OnModuleDestroy {
     error: string | PresentedErrorPayload,
   ): Promise<void> {
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(this.presenter.presentError(error)));
+      let serialized: string;
+      try {
+        serialized = JSON.stringify(this.presenter.presentError(error));
+      } catch {
+        return;
+      }
+      if (Buffer.byteLength(serialized, 'utf8') <= MAX_WS_OUTBOUND_BYTES) {
+        client.send(serialized);
+      }
     }
   }
 
@@ -112,7 +126,12 @@ export class RoomGatewayRuntimeStateService implements OnModuleDestroy {
       return;
     }
     try {
-      client.send(JSON.stringify(payload));
+      const serialized = JSON.stringify(payload);
+      if (Buffer.byteLength(serialized, 'utf8') > MAX_WS_OUTBOUND_BYTES) {
+        client.close(1009, 'message too large');
+        return;
+      }
+      client.send(serialized);
     } catch {
       try {
         client.close();
@@ -135,7 +154,7 @@ export class RoomGatewayRuntimeStateService implements OnModuleDestroy {
   }
 
   asRecord(value: unknown): Record<string, unknown> {
-    return value != null && typeof value === 'object'
+    return value != null && typeof value === 'object' && !Array.isArray(value)
       ? (value as Record<string, unknown>)
       : {};
   }

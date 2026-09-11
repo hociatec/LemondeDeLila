@@ -19,11 +19,11 @@ export class SoundsController {
 
     const proto =
       typeof xfProto === 'string' && xfProto.trim()
-        ? xfProto.split(',')[0].trim()
+        ? xfProto.split(',')[0].trim().slice(0, 32)
         : null;
     const host =
       typeof xfHost === 'string' && xfHost.trim()
-        ? xfHost.split(',')[0].trim()
+        ? xfHost.split(',')[0].trim().slice(0, 255)
         : null;
 
     const origin =
@@ -44,6 +44,16 @@ export class SoundsController {
     @Param('sha') sha: string,
     @Res() res: Response,
   ) {
+    if (
+      typeof soundId !== 'string' ||
+      soundId.length === 0 ||
+      soundId.length > 128 ||
+      typeof sha !== 'string' ||
+      !/^[a-f0-9]{64}$/i.test(sha)
+    ) {
+      res.status(400).json({ message: 'Parametres audio invalides.' });
+      return;
+    }
     const { entry, filePath } = await this.sounds.resolveSoundFile(
       soundId,
       sha,

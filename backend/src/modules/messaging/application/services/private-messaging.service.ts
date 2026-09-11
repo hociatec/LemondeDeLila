@@ -6,9 +6,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as crypto from 'crypto';
-import type { PrivateMessageRecord } from '../contracts/private-message.model';
-import type { MessageUser } from '../contracts/message-user.model';
-import type { SendMessageInput } from '../contracts/send-message.input';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
+import type { PrivateMessageRecord } from '../models/private-message.model';
+import { businessMsToDate } from '../../../../shared/utils/public-api';
+import type { MessageUser } from '../models/message-user.model';
+import type { SendMessageInput } from '../inputs/send-message.input';
 import {
   MESSAGING_USER_READER,
   type MessagingUserReader,
@@ -29,12 +34,16 @@ export class PrivateMessagingService {
     @Inject(MESSAGING_USER_READER)
     private readonly users: MessagingUserReader,
     private readonly validator: MessageValidatorService,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async send(
     senderId: number,
     payload: SendMessageInput,
   ): Promise<PrivateMessageRecord> {
+    if (!Number.isSafeInteger(senderId) || senderId <= 0) {
+      throw new BadRequestException('Expéditeur invalide');
+    }
     const sender = await this.ensureUser(senderId);
     if (sender.id === payload.recipientId) {
       throw new BadRequestException(
@@ -107,6 +116,14 @@ export class PrivateMessagingService {
     userId: number,
     messageId: string,
   ): Promise<PrivateMessageRecord> {
+    if (
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      typeof messageId !== 'string' ||
+      messageId.length > 128
+    ) {
+      throw new BadRequestException('Message invalide');
+    }
     const message = await this.messages.findByMessageId(messageId);
     if (!message) {
       throw new NotFoundException('Message introuvable');
@@ -118,11 +135,11 @@ export class PrivateMessagingService {
     }
     let changed = false;
     if (isSender && !message.deletedBySenderAt) {
-      message.deletedBySenderAt = new Date();
+      message.deletedBySenderAt = businessMsToDate(this.clock.now());
       changed = true;
     }
     if (isRecipient && !message.deletedByRecipientAt) {
-      message.deletedByRecipientAt = new Date();
+      message.deletedByRecipientAt = businessMsToDate(this.clock.now());
       changed = true;
     }
     if (changed) {
@@ -135,6 +152,14 @@ export class PrivateMessagingService {
     userId: number,
     messageId: string,
   ): Promise<PrivateMessageRecord> {
+    if (
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      typeof messageId !== 'string' ||
+      messageId.length > 128
+    ) {
+      throw new BadRequestException('Message invalide');
+    }
     const message = await this.messages.findByMessageId(messageId);
     if (!message) {
       throw new NotFoundException('Message introuvable');
@@ -164,6 +189,14 @@ export class PrivateMessagingService {
     userId: number,
     messageId: string,
   ): Promise<PrivateMessageRecord> {
+    if (
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      typeof messageId !== 'string' ||
+      messageId.length > 128
+    ) {
+      throw new BadRequestException('Message invalide');
+    }
     const message = await this.messages.findByMessageId(messageId);
     if (!message) {
       throw new NotFoundException('Message introuvable');
@@ -184,8 +217,9 @@ export class PrivateMessagingService {
   }
 
   async markRead(userId: number, messageId: string): Promise<void> {
-    const id = String(messageId || '').trim();
-    if (!id) return;
+    const id = typeof messageId === 'string' ? messageId.trim() : '';
+    if (!id || id.length > 128 || !Number.isSafeInteger(userId) || userId <= 0)
+      return;
 
     const message = await this.messages.findByMessageId(id);
     if (!message) {
@@ -200,12 +234,13 @@ export class PrivateMessagingService {
     if (message.readByRecipientAt) {
       return;
     }
-    message.readByRecipientAt = new Date();
+    message.readByRecipientAt = businessMsToDate(this.clock.now());
     await this.messages.save(message);
   }
 
   async lookupUser(username: string): Promise<MessageUser | null> {
-    const normalized = (username ?? '').trim();
+    const normalized =
+      typeof username === 'string' ? username.trim().slice(0, 255) : '';
     if (!normalized) {
       return null;
     }
@@ -221,6 +256,10 @@ export class PrivateMessagingService {
   }
 
   private clampLimit(limit: number): number {
+    if (limit === Number.POSITIVE_INFINITY) return 500;
+    if (!Number.isSafeInteger(limit)) {
+      return PrivateMessagingService.DEFAULT_HISTORY_LIMIT;
+    }
     return Math.max(
       1,
       Math.min(500, limit || PrivateMessagingService.DEFAULT_HISTORY_LIMIT),

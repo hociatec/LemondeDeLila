@@ -37,7 +37,10 @@ describe('GameStatsService', () => {
       getGame: jest.fn().mockResolvedValue({ name: 'Lama' }),
       getAllGames: jest.fn().mockResolvedValue([{ id: 'lama', name: 'Lama' }]),
     } as unknown as CatalogService;
-    return { service: new GameStatsService(repo, catalog), repo };
+    return {
+      service: new GameStatsService(repo, catalog, { now: () => Date.now() }),
+      repo,
+    };
   };
 
   it('records one player row per human when a match starts', async () => {

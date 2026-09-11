@@ -1,5 +1,6 @@
+import { allCompleted } from '../../../../../shared/utils/public-api';
 import type { WebSocket } from 'ws';
-import type { RoomPayload } from '../../../application/contracts/room-payload.model';
+import type { RoomPayload } from '../../../application/models/room-payload.model';
 import {
   collectRoomAnnouncementMessages,
   type RoomSnapshot,
@@ -80,7 +81,7 @@ export class RoomGatewayAnnouncements {
   ): Promise<void> {
     const messages = collectRoomAnnouncementMessages(previous, next);
     if (!previous || messages.length > 0) {
-      await Promise.all(
+      await allCompleted(
         messages.map((message) => this.broadcast(context, roomId, message)),
       );
       return;

@@ -5,8 +5,11 @@ import type {
   BugReportRepository,
   CreateBugReportRecordInput,
 } from '../../../../application/ports/bug-report.repository';
-import type { BugReportRecord } from '../../../../application/contracts/bug-report.record';
+import type { BugReportRecord } from '../../../../application/read-models/bug-report.record';
 import { BugReportEntity } from '../entities/bug-report.entity';
+
+const MAX_BUG_REPORT_PAGE_SIZE = 100;
+const MAX_BUG_REPORT_OFFSET = 10_000_000;
 
 @Injectable()
 export class BugReportTypeormRepository implements BugReportRepository {
@@ -19,10 +22,12 @@ export class BugReportTypeormRepository implements BugReportRepository {
     offset: number;
     limit: number;
   }): Promise<BugReportRecord[]> {
+    const offset = normalizeOffset(options.offset);
+    const limit = normalizeLimit(options.limit);
     const items = await this.repo.find({
-      order: { createdAt: 'DESC' },
-      skip: options.offset,
-      take: options.limit,
+      order: { createdAt: 'DESC', id: 'DESC' },
+      skip: offset,
+      take: limit,
     });
     return items.map((item) => this.toRecord(item));
   }
@@ -61,4 +66,16 @@ export class BugReportTypeormRepository implements BugReportRepository {
       createdByUsername: entity.createdByUsername,
     };
   }
+}
+
+function normalizeOffset(value: number): number {
+  return Number.isSafeInteger(value) && value >= 0
+    ? Math.min(value, MAX_BUG_REPORT_OFFSET)
+    : 0;
+}
+
+function normalizeLimit(value: number): number {
+  return Number.isSafeInteger(value) && value > 0
+    ? Math.min(value, MAX_BUG_REPORT_PAGE_SIZE)
+    : MAX_BUG_REPORT_PAGE_SIZE;
 }

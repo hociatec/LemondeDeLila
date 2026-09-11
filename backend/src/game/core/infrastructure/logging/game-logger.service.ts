@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as winston from 'winston';
 import {
+  currentCorrelationId,
   sanitizeLogText,
   sanitizeLogValue,
 } from '../../../../platform/observability/public-api';
@@ -36,11 +37,14 @@ export class GameLoggerService {
   private logger: winston.Logger;
 
   constructor(private readonly config: ConfigService) {
-    const logLevel = this.config.get<string>('LOG_LEVEL', 'info');
+    const configuredLevel = this.config.get<string>('LOG_LEVEL', 'info');
+    const logLevel = typeof configuredLevel === 'string' && configuredLevel.length <= 32
+      ? configuredLevel
+      : 'info';
     const enableFiles = this.config.get<boolean>('LOG_FILES_ENABLED', true);
     const logDir = enableFiles
       ? this.ensureDirectory(
-          this.config.get<string>('LOG_DIR', 'logs') || 'logs',
+          String(this.config.get<string>('LOG_DIR', 'logs') || 'logs').slice(0, 4096),
         )
       : null;
     const transports: winston.transport[] = [
@@ -93,8 +97,8 @@ export class GameLoggerService {
       return dir;
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      console.warn(
-        `[GameLogger] Impossible de creer le dossier ${dir}: ${detail}`,
+      new Logger(GameLoggerService.name).warn(
+        sanitizeLogText(`Impossible de creer le dossier ${dir}: ${detail}`),
       );
       return null;
     }
@@ -107,7 +111,7 @@ export class GameLoggerService {
   ): void {
     const logData: GameErrorLogData = {
       message: sanitizeLogText(message),
-      context: sanitizeLogValue(context || {}) as GameLogContext,
+      context: this.safeContext(context),
     };
 
     if (error instanceof GameError) {
@@ -136,21 +140,21 @@ export class GameLoggerService {
   warn(message: string, context?: GameLogContext): void {
     this.logger.warn({
       message: sanitizeLogText(message),
-      context: sanitizeLogValue(context || {}),
+      context: this.safeContext(context),
     });
   }
 
   info(message: string, context?: GameLogContext): void {
     this.logger.info({
       message: sanitizeLogText(message),
-      context: sanitizeLogValue(context || {}),
+      context: this.safeContext(context),
     });
   }
 
   debug(message: string, context?: GameLogContext): void {
     this.logger.debug({
       message: sanitizeLogText(message),
-      context: sanitizeLogValue(context || {}),
+      context: this.safeContext(context),
     });
   }
 
@@ -161,6 +165,7 @@ export class GameLoggerService {
     },
     context: GameLogContext,
   ): void {
+    if (!action || typeof action.type !== 'string' || action.type.length > 128) return;
     this.info('Player action', {
       ...context,
       action: {
@@ -176,6 +181,7 @@ export class GameLoggerService {
     changes: Record<string, unknown>,
     context: GameLogContext,
   ): void {
+    if (typeof description !== 'string' || description.length > 2_000) return;
     this.debug('Game state change', {
       ...context,
       description,
@@ -229,5 +235,13 @@ export class GameLoggerService {
 
   getLogger(): winston.Logger {
     return this.logger;
+  }
+
+  private safeContext(context?: GameLogContext): GameLogContext {
+    const correlationId = currentCorrelationId();
+    return sanitizeLogValue({
+      ...context,
+      ...(correlationId ? { correlationId } : {}),
+    }) as GameLogContext;
   }
 }

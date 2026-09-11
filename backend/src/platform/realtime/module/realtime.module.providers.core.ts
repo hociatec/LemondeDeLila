@@ -1,6 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { SESSION_STORE } from '../../session/application/ports/session-state-store.port';
-import { RedisSessionStore } from '../../session/infrastructure/persistence/redis-session-store';
+import { SESSION_STORE, createSessionStore } from '../../session/public-api';
 import { RealtimeConfigurationError } from '../domain/errors/realtime-domain.errors';
 
 export const REALTIME_CORE_PROVIDERS = [
@@ -16,7 +15,7 @@ export const REALTIME_CORE_PROVIDERS = [
           'SESSION_STORE_REDIS_URL doit etre defini pour le module realtime.',
         );
       }
-      return new RedisSessionStore(redisUrl);
+      return createSessionStore(redisUrl);
     },
   },
 ];

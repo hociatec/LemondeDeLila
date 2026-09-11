@@ -1,33 +1,17 @@
 import {
-  cards,
   cardGame,
+  cards,
   defineCardsSchema,
   defineGame,
-  defineGameContent,
   inventory,
-  when,
 } from '../../../engine/sdk/public-api';
-import { PIMP_MY_RIDE_CAR_NAMES, PIMP_MY_RIDE_DECK } from './content';
-import {
-  currentCarParts,
-  drawCarPart,
-  PIMP_MY_RIDE_ACTIONS,
-  PIMP_CAR_NAME_INDEX,
-} from './rules';
-import type { CarProgress, PimpMyRideState } from './state';
-
-type CompletedCarView = {
-  name: string;
-  description: string;
-  parts: string[];
-};
-
-type PimpMyRidePlayerView = {
-  progress: Record<
-    number,
-    Omit<CarProgress, 'completedCars'> & { completedCars: CompletedCarView[] }
-  >;
-};
+import { GAME_BOT } from './bot-rules';
+import { PIMP_MY_RIDE_DECK, PIMP_MY_RIDE_GAME_CONTENT } from './content';
+import manifest from './manifest.json';
+import { GAME_RULES } from './rule-bindings';
+import { PIMP_CAR_NAME_INDEX, PIMP_MY_RIDE_ACTIONS } from './rules';
+import { setupGame } from './setup-rules';
+import type { PimpMyRideState } from './state';
 
 const cardSchema = defineCardsSchema({
   decks: {
@@ -49,16 +33,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<PimpMyRideState>()({
-  id: 'pimp-my-ride',
-  displayName: 'Pimp My Ride',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
-  description: 'Assemblez trois voitures dans l’ordre des sept pièces.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('pimp-my-ride', {
-    cards: PIMP_MY_RIDE_DECK,
-    carNames: PIMP_MY_RIDE_CAR_NAMES,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: PIMP_MY_RIDE_GAME_CONTENT,
   patterns: [
     cardGame({
       schema: cardSchema,
@@ -82,48 +63,9 @@ export default defineGame<PimpMyRideState>()({
     { key: 'D', type: 'action', actionType: 'discard_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
   ],
-  setup: ({ ctx }) => {
-    return {
-      completedCars: ctx.players.byId(() => []),
-    };
-  },
+  setup: setupGame,
   actions: PIMP_MY_RIDE_ACTIONS,
-  automatic: [
-    when(
-      'draw-car-part',
-      ({ ctx }) =>
-        ctx.effects.sourcePlayerId() !== (ctx.players.current()?.id ?? null),
-      ({ state, ctx }) => drawCarPart(state, ctx),
-    ),
-  ],
-  viewExtension: ({ state, ctx }): PimpMyRidePlayerView => {
-    const progress = ctx.players.byId((player) => {
-      const carParts = currentCarParts(player.id, ctx);
-      return {
-        stageIndex: carParts.length,
-        carParts,
-        completedCars: state.completedCars[player.id].map((completed) => {
-          const definition = PIMP_MY_RIDE_CAR_NAMES[completed.nameIndex];
-          return {
-            name: definition?.name ?? '',
-            description: definition?.description ?? '',
-            parts: [...completed.parts],
-          };
-        }),
-      };
-    });
-    return { progress };
-  },
-  bot: {
-    choose: ({ state, actor, ctx }) => {
-      const play = PIMP_MY_RIDE_ACTIONS.play_card.enumerate?.({
-        state,
-        actor,
-        ctx,
-      })[0];
-      return play
-        ? { type: 'play_card', payload: play }
-        : { type: 'pass', payload: {} };
-    },
-  },
+  ...GAME_RULES,
+
+  bot: GAME_BOT,
 });

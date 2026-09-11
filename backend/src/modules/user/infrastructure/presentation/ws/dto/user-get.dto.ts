@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { StrictIntegerInput } from '../../../../../../platform/validation/public-api';
 import { IsInt, IsOptional, IsPositive, Max, Min } from 'class-validator';
 
 export class UserGetDto {
@@ -9,13 +9,14 @@ export class UserGetDto {
 
 export class UserListDto {
   @IsOptional()
-  @Type(() => Number)
+  @StrictIntegerInput()
   @IsInt()
   @Min(0)
+  @Max(10000000)
   offset: number = 0;
 
   @IsOptional()
-  @Type(() => Number)
+  @StrictIntegerInput()
   @IsInt()
   @Min(1)
   @Max(100)

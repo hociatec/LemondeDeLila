@@ -12,7 +12,8 @@ import {
 } from '../../../../bot/public-api';
 import { PerfMetricsService } from '../../../../../platform/observability/public-api';
 import { RoomStateService } from '../../../application/services/state/room-state.service';
-import { RoomWsNoBotToRemoveError } from '../../../domain/errors/room-ws.errors';
+import { RoomWsNoBotToRemoveError } from './room-ws.errors';
+import { parseStrictInteger } from '@shared/utils/public-api';
 import type { ActionsContext } from './room-gateway-actions.types';
 import { extractTraceMeta } from './room-command.helpers';
 import { RoomGatewayPresenter } from './room-gateway.presenter';
@@ -20,16 +21,17 @@ import type { AuthedClient } from './room-gateway.types';
 
 function mapBotError(error: unknown): unknown {
   if (!(error instanceof BotApplicationError)) {
-    return error;
+    return new BadRequestException('Action bot impossible');
   }
+  const message = error.message.slice(0, 512);
   switch (error.code) {
     case 'BOT_ROOM_NOT_FOUND':
     case 'BOT_NOT_FOUND':
-      return new NotFoundException(error.message);
+      return new NotFoundException(message);
     case 'BOT_ROOM_OWNER_REQUIRED':
-      return new UnauthorizedException(error.message);
+      return new UnauthorizedException(message);
     default:
-      return new BadRequestException(error.message);
+      return new BadRequestException(message);
   }
 }
 
@@ -92,13 +94,17 @@ export class RoomGatewayBotActionsService {
       'ws.room.bot.remove.total',
       async () => {
         const row = context.asRecord(payload);
-        let botId = Number(row.botId ?? row.id ?? -1);
-        if (!Number.isFinite(botId) || botId <= 0) {
+        const requestedId = row.botId ?? row.id;
+        let botId = parseStrictInteger(requestedId, { min: 1 });
+        if (requestedId != null && botId === null) {
+          throw new BadRequestException('Identifiant de bot invalide');
+        }
+        if (botId === null) {
           const last = await this.getLastBot.execute(meta.roomId);
           if (!last?.id) {
             throw new RoomWsNoBotToRemoveError();
           }
-          botId = Number(last.id);
+          botId = last.id;
         }
         let bot;
         try {

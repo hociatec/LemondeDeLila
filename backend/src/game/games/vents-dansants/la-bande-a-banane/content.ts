@@ -1,10 +1,18 @@
-import { freezeGameContent, gameEffects } from '../../../engine/sdk/public-api';
+import manifest from './manifest.json';
+import {
+  defineGameContent,
+  gameInput,
+  cardContent,
+  effectContentSchema,
+  rejectContent,
+  gameEffects,
+} from '../../../engine/sdk/public-api';
 import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 
 export type BandeABananeCardType = 'monkey' | 'action' | 'trap' | 'joker';
 
-export type BandeABananeMonkeySpecies =
-  'capucin' | 'mandrill' | 'gibbon' | 'babouin' | 'macaque';
+import type { BandeABananeMonkeySpecies } from './types';
+export type { BandeABananeMonkeySpecies } from './types';
 
 export type BandeABananeActionType =
   'vol-de-banane' | 'cris-de-la-jungle' | 'grimpeur-fou';
@@ -123,11 +131,54 @@ const deck: BandeABananeCardDefinition[] = [
   }),
 ];
 
-export const BANDE_A_BANANE_DECK = deck;
-export const BANDE_A_BANANE_CARD_BY_ID: Record<
-  string,
-  BandeABananeCardDefinition
-> = Object.fromEntries(deck.map((card) => [card.id, card]));
+const deckSchema = gameInput.object({
+  cards: gameInput.array(
+    gameInput.object({
+      id: gameInput.string({ min: 1, max: 128 }),
+      name: gameInput.string({ min: 1, max: 200 }),
 
-freezeGameContent(BANDE_A_BANANE_DECK);
-freezeGameContent(BANDE_A_BANANE_CARD_BY_ID);
+      type: gameInput.enum(['monkey', 'action', 'trap', 'joker']),
+      species: gameInput.optional(
+        gameInput.enum(['capucin', 'mandrill', 'gibbon', 'babouin', 'macaque']),
+      ),
+      action: gameInput.optional(
+        gameInput.enum(['vol-de-banane', 'cris-de-la-jungle', 'grimpeur-fou']),
+      ),
+      trap: gameInput.optional(
+        gameInput.enum(['piege-a-noix-de-coco', 'tigre-rodeur']),
+      ),
+      effects: effectContentSchema({
+        decks: ['banana'],
+        hands: ['players'],
+        effects: ['banana.exchange-random'],
+      }),
+    }),
+    { min: 1, max: 10000 },
+  ),
+});
+export const BANDE_A_BANANE_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  { cards: deck },
+  {
+    schema: {
+      parse(value: unknown) {
+        const parsed = deckSchema.parse(value);
+
+        for (const card of parsed.cards) {
+          if (card.type === 'monkey' && !card.species)
+            rejectContent('Espèce requise');
+          if (card.type === 'action' && !card.action)
+            rejectContent('Action requise');
+          if (card.type === 'trap' && !card.trap) rejectContent('Piège requis');
+        }
+        return { cards: cardContent(parsed.cards) };
+      },
+    },
+  },
+);
+export const BANDE_A_BANANE_DECK = BANDE_A_BANANE_GAME_CONTENT.data.cards;
+export const BANDE_A_BANANE_CARD_BY_ID: Readonly<
+  Record<string, BandeABananeCardDefinition>
+> = Object.freeze(
+  Object.fromEntries(BANDE_A_BANANE_DECK.map((card) => [card.id, card])),
+);

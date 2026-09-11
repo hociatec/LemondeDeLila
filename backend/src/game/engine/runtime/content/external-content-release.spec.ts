@@ -3,10 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
-import {
-  clearExternalContentReleaseCache,
-  loadExternalGameContent,
-} from './external-content-release';
+import { loadExternalGameContent } from './external-content-release';
 
 describe('external content releases', () => {
   let root: string;
@@ -14,7 +11,6 @@ describe('external content releases', () => {
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-content-'));
     fs.mkdirSync(path.join(root, 'games'));
-    clearExternalContentReleaseCache();
   });
 
   afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
@@ -40,14 +36,12 @@ describe('external content releases', () => {
       loadExternalGameContent('lama', { LILA_CONTENT_RELEASE_DIR: root }),
     ).toThrow('Checksum');
 
-    clearExternalContentReleaseCache();
     fs.writeFileSync(path.join(root, 'manifest.json'), '{}\n');
     expect(() =>
       loadExternalGameContent('lama', { LILA_CONTENT_RELEASE_DIR: root }),
     ).toThrow('Contrat de release');
 
     const hash = 'a'.repeat(64);
-    clearExternalContentReleaseCache();
     fs.writeFileSync(
       path.join(root, 'manifest.json'),
       JSON.stringify(manifest('lama', '../outside.json', hash)),
@@ -69,12 +63,30 @@ describe('external content releases', () => {
       loadExternalGameContent('lama', { LILA_CONTENT_RELEASE_DIR: root }),
     ).toThrow(GameContentValidationError);
 
-    clearExternalContentReleaseCache();
     fs.rmSync(path.join(root, 'manifest.json'));
     expect(() =>
       loadExternalGameContent('lama', { LILA_CONTENT_RELEASE_DIR: root }),
     ).toThrow('Manifest de contenu invalide');
   });
+
+  it.each(['manifest', 'entry', 'gameId'] as const)(
+    'rejects unknown release metadata or invalid identifiers at %s',
+    (location) => {
+      writeRelease('lama', { cards: [] });
+      const file = path.join(root, 'manifest.json');
+      const value = JSON.parse(fs.readFileSync(file, 'utf8')) as ReturnType<
+        typeof manifest
+      >;
+      if (location === 'manifest') Object.assign(value, { ignored: true });
+      if (location === 'entry')
+        Object.assign(value.games.lama, { ignored: true });
+      if (location === 'gameId') value.games['../lama'] = value.games.lama;
+      fs.writeFileSync(file, JSON.stringify(value));
+      expect(() =>
+        loadExternalGameContent('lama', { LILA_CONTENT_RELEASE_DIR: root }),
+      ).toThrow('Contrat de release');
+    },
+  );
 
   function writeRelease(gameId: string, value: unknown): void {
     const raw = `${JSON.stringify(value)}\n`;

@@ -1,0 +1,4006 @@
+{
+  "blackCards": [
+    {
+      "id": "black-1",
+      "text": "une femme nue"
+    },
+    {
+      "id": "black-2",
+      "text": "un cheval qui parle"
+    },
+    {
+      "id": "black-3",
+      "text": "le bruit d’un toaster"
+    },
+    {
+      "id": "black-4",
+      "text": "un homme déguisé en licorne"
+    },
+    {
+      "id": "black-5",
+      "text": "le corps d’un zombie"
+    },
+    {
+      "id": "black-6",
+      "text": "un pingouin sur un skateboard"
+    },
+    {
+      "id": "black-7",
+      "text": "le goût du savon"
+    },
+    {
+      "id": "black-8",
+      "text": "un panier de grenouilles vivantes"
+    },
+    {
+      "id": "black-9",
+      "text": "l’odeur du chocolat fondu"
+    },
+    {
+      "id": "black-10",
+      "text": "le cri d’un enfant dans un supermarché"
+    },
+    {
+      "id": "black-11",
+      "text": "un chat qui se gratte"
+    },
+    {
+      "id": "black-12",
+      "text": "un dessin animé des années 90"
+    },
+    {
+      "id": "black-13",
+      "text": "un sandwich à la mayonnaise"
+    },
+    {
+      "id": "black-14",
+      "text": "le vent dans les cheveux"
+    },
+    {
+      "id": "black-15",
+      "text": "une explosion de confettis"
+    },
+    {
+      "id": "black-16",
+      "text": "une danse de la pluie"
+    },
+    {
+      "id": "black-17",
+      "text": "un hot-dog qui danse"
+    },
+    {
+      "id": "black-18",
+      "text": "des lunettes de soleil dans la nuit"
+    },
+    {
+      "id": "black-19",
+      "text": "une balle rebondissante"
+    },
+    {
+      "id": "black-20",
+      "text": "une pluie de spaghetti"
+    },
+    {
+      "id": "black-21",
+      "text": "le bruit d’une porte qui grince"
+    },
+    {
+      "id": "black-22",
+      "text": "un narval dans un jacuzzi"
+    },
+    {
+      "id": "black-23",
+      "text": "un ping-pong avec des crabes"
+    },
+    {
+      "id": "black-24",
+      "text": "un dragon en pyjama"
+    },
+    {
+      "id": "black-25",
+      "text": "des billes dans un sac"
+    },
+    {
+      "id": "black-26",
+      "text": "une pizza géante"
+    },
+    {
+      "id": "black-27",
+      "text": "un hamster en costume"
+    },
+    {
+      "id": "black-28",
+      "text": "un clown triste"
+    },
+    {
+      "id": "black-29",
+      "text": "un chat faisant des pirouettes"
+    },
+    {
+      "id": "black-30",
+      "text": "une licorne qui éternue"
+    },
+    {
+      "id": "black-31",
+      "text": "un éléphant rose"
+    },
+    {
+      "id": "black-32",
+      "text": "un ballet de canards"
+    },
+    {
+      "id": "black-33",
+      "text": "un panda mangeant des bambous"
+    },
+    {
+      "id": "black-34",
+      "text": "un clown jonglant avec des pommes"
+    },
+    {
+      "id": "black-35",
+      "text": "une fête foraine abandonnée"
+    },
+    {
+      "id": "black-36",
+      "text": "un rat faisant du skateboard"
+    },
+    {
+      "id": "black-37",
+      "text": "des frites qui dansent"
+    },
+    {
+      "id": "black-38",
+      "text": "des baisers sur la plage"
+    },
+    {
+      "id": "black-39",
+      "text": "un dragon de glace"
+    },
+    {
+      "id": "black-40",
+      "text": "une boîte à musique cassée"
+    },
+    {
+      "id": "black-41",
+      "text": "une grenouille portant des lunettes"
+    },
+    {
+      "id": "black-42",
+      "text": "des dauphins dansants"
+    },
+    {
+      "id": "black-43",
+      "text": "une machine à remonter le temps"
+    },
+    {
+      "id": "black-44",
+      "text": "un gâteau en forme de voiture"
+    },
+    {
+      "id": "black-45",
+      "text": "une pluie de bonbons"
+    },
+    {
+      "id": "black-46",
+      "text": "des étoiles filantes"
+    },
+    {
+      "id": "black-47",
+      "text": "un hérisson portant une montre"
+    },
+    {
+      "id": "black-48",
+      "text": "une invasion de zombies"
+    },
+    {
+      "id": "black-49",
+      "text": "un film en noir et blanc"
+    },
+    {
+      "id": "black-50",
+      "text": "des bras en spaghetti"
+    },
+    {
+      "id": "black-51",
+      "text": "un tas de fromage râpé"
+    },
+    {
+      "id": "black-52",
+      "text": "une baguette magique"
+    },
+    {
+      "id": "black-53",
+      "text": "un hamster déguisé en super-héros"
+    },
+    {
+      "id": "black-54",
+      "text": "une pizza volante"
+    },
+    {
+      "id": "black-55",
+      "text": "des cheveux en barbe à papa"
+    },
+    {
+      "id": "black-56",
+      "text": "une pluie de tacos"
+    },
+    {
+      "id": "black-57",
+      "text": "un crocodile dans un fauteuil"
+    },
+    {
+      "id": "black-58",
+      "text": "le regard d’un lama"
+    },
+    {
+      "id": "black-59",
+      "text": "des mains en caoutchouc"
+    },
+    {
+      "id": "black-60",
+      "text": "un seau de glace"
+    },
+    {
+      "id": "black-61",
+      "text": "un clown faisant du yoga"
+    },
+    {
+      "id": "black-62",
+      "text": "une danse de robots"
+    },
+    {
+      "id": "black-63",
+      "text": "une moustache en forme de cœur"
+    },
+    {
+      "id": "black-64",
+      "text": "un gorille en tutu"
+    },
+    {
+      "id": "black-65",
+      "text": "un poisson qui chante"
+    },
+    {
+      "id": "black-66",
+      "text": "un cheval faisant du kung-fu"
+    },
+    {
+      "id": "black-67",
+      "text": "un alien dans une voiture"
+    },
+    {
+      "id": "black-68",
+      "text": "des lentilles de contact géantes"
+    },
+    {
+      "id": "black-69",
+      "text": "des bottes en mousse"
+    },
+    {
+      "id": "black-70",
+      "text": "un volcan de chocolat"
+    },
+    {
+      "id": "black-71",
+      "text": "une guitare en bonbons"
+    },
+    {
+      "id": "black-72",
+      "text": "une explosion de marshmallows"
+    },
+    {
+      "id": "black-73",
+      "text": "un chat dans un chapeau"
+    },
+    {
+      "id": "black-74",
+      "text": "un monstre en tutu"
+    },
+    {
+      "id": "black-75",
+      "text": "une licorne qui mange des tacos"
+    },
+    {
+      "id": "black-76",
+      "text": "des lunettes de soleil pour un poisson"
+    },
+    {
+      "id": "black-77",
+      "text": "un dragon à lunettes"
+    },
+    {
+      "id": "black-78",
+      "text": "un ours en pyjama"
+    },
+    {
+      "id": "black-79",
+      "text": "un panier de pommes géantes"
+    },
+    {
+      "id": "black-80",
+      "text": "un éclair de bonheur"
+    },
+    {
+      "id": "black-81",
+      "text": "des lasers dans les yeux"
+    },
+    {
+      "id": "black-82",
+      "text": "une tortue volante"
+    },
+    {
+      "id": "black-83",
+      "text": "un tableau de pâtes"
+    },
+    {
+      "id": "black-84",
+      "text": "une boîte de coussins"
+    },
+    {
+      "id": "black-85",
+      "text": "des chaussures qui parlent"
+    },
+    {
+      "id": "black-86",
+      "text": "un poisson dans un costume"
+    },
+    {
+      "id": "black-87",
+      "text": "un yogourt à la banane"
+    },
+    {
+      "id": "black-88",
+      "text": "une carotte en or"
+    },
+    {
+      "id": "black-89",
+      "text": "une lampe qui danse"
+    },
+    {
+      "id": "black-90",
+      "text": "un ballon de football qui parle"
+    },
+    {
+      "id": "black-91",
+      "text": "une pizza avec des ailes"
+    },
+    {
+      "id": "black-92",
+      "text": "un robot en forme de banane"
+    },
+    {
+      "id": "black-93",
+      "text": "un chocolat fondant"
+    },
+    {
+      "id": "black-94",
+      "text": "une chaussure géante"
+    },
+    {
+      "id": "black-95",
+      "text": "un canapé flottant"
+    },
+    {
+      "id": "black-96",
+      "text": "des éclats de rire"
+    },
+    {
+      "id": "black-97",
+      "text": "un dé à coudre géant"
+    },
+    {
+      "id": "black-98",
+      "text": "des bulles de savon géantes"
+    },
+    {
+      "id": "black-99",
+      "text": "un kangourou qui fait du breakdance"
+    },
+    {
+      "id": "black-100",
+      "text": "des bonbons fluorescents"
+    },
+    {
+      "id": "black-101",
+      "text": "une pluie de donuts"
+    },
+    {
+      "id": "black-102",
+      "text": "un plat de spaghetti en forme de cœur"
+    },
+    {
+      "id": "black-103",
+      "text": "un zombie sur un scooter"
+    },
+    {
+      "id": "black-104",
+      "text": "un dragon éternuant du feu"
+    },
+    {
+      "id": "black-105",
+      "text": "un hamster jouant à la guitare"
+    },
+    {
+      "id": "black-106",
+      "text": "un pirate avec une patte en chocolat"
+    },
+    {
+      "id": "black-107",
+      "text": "un yaourt qui parle"
+    },
+    {
+      "id": "black-108",
+      "text": "une baguette magique en pain d’épices"
+    },
+    {
+      "id": "black-109",
+      "text": "un taureau en rollers"
+    },
+    {
+      "id": "black-110",
+      "text": "un bébé koala sur un skateboard"
+    },
+    {
+      "id": "black-111",
+      "text": "un sandwich qui chante"
+    },
+    {
+      "id": "black-112",
+      "text": "une soupe de légumes flottante"
+    },
+    {
+      "id": "black-113",
+      "text": "un chat se prenant pour un lion"
+    },
+    {
+      "id": "black-114",
+      "text": "un sous-marin en guimauve"
+    },
+    {
+      "id": "black-115",
+      "text": "une planète en fromage"
+    },
+    {
+      "id": "black-116",
+      "text": "un cerf-volant en forme de pizza"
+    },
+    {
+      "id": "black-117",
+      "text": "des lunettes qui font des bulles"
+    },
+    {
+      "id": "black-118",
+      "text": "un hamster faisant du yoga"
+    },
+    {
+      "id": "black-119",
+      "text": "des lunettes de soleil sur un cactus"
+    },
+    {
+      "id": "black-120",
+      "text": "une pluie de bonbons acidulés"
+    },
+    {
+      "id": "black-121",
+      "text": "un hamster pilotant un avion"
+    },
+    {
+      "id": "black-122",
+      "text": "un perroquet racontant des blagues"
+    },
+    {
+      "id": "black-123",
+      "text": "une licorne sur un trampoline"
+    },
+    {
+      "id": "black-124",
+      "text": "une pizza se transformant en dragon"
+    },
+    {
+      "id": "black-125",
+      "text": "un crocodile en maillot de bain"
+    },
+    {
+      "id": "black-126",
+      "text": "un aspirateur qui danse"
+    },
+    {
+      "id": "black-127",
+      "text": "un bâton de dynamite en guimauve"
+    },
+    {
+      "id": "black-128",
+      "text": "des gâteaux qui chantent"
+    },
+    {
+      "id": "black-129",
+      "text": "un hamster dans une robe de bal"
+    },
+    {
+      "id": "black-130",
+      "text": "un panda avec un monocle"
+    },
+    {
+      "id": "black-131",
+      "text": "une étoile filante en chocolat"
+    },
+    {
+      "id": "black-132",
+      "text": "un robot qui fait du breakdance"
+    },
+    {
+      "id": "black-133",
+      "text": "une pizza parlant en argot"
+    },
+    {
+      "id": "black-134",
+      "text": "un pingouin sur un skateboard électrique"
+    },
+    {
+      "id": "black-135",
+      "text": "une mouette avec des lunettes de soleil"
+    },
+    {
+      "id": "black-136",
+      "text": "des chaussures en forme de légumes"
+    },
+    {
+      "id": "black-137",
+      "text": "une maison faite de bonbons"
+    },
+    {
+      "id": "black-138",
+      "text": "un pot de miel géant"
+    },
+    {
+      "id": "black-139",
+      "text": "une grenouille avec un micro"
+    },
+    {
+      "id": "black-140",
+      "text": "un chat qui fait du surf"
+    },
+    {
+      "id": "black-141",
+      "text": "une île flottante en chocolat"
+    },
+    {
+      "id": "black-142",
+      "text": "des pâtes qui se transforment en danseuses"
+    },
+    {
+      "id": "black-143",
+      "text": "une tasse de thé qui fait du bruit"
+    },
+    {
+      "id": "black-144",
+      "text": "un canard déguisé en super-héros"
+    },
+    {
+      "id": "black-145",
+      "text": "une licorne avec des baskets"
+    },
+    {
+      "id": "black-146",
+      "text": "un monstre qui adore les câlins"
+    },
+    {
+      "id": "black-147",
+      "text": "un chien qui fait du skateboard"
+    },
+    {
+      "id": "black-148",
+      "text": "une roue de hamster géante"
+    },
+    {
+      "id": "black-149",
+      "text": "une grenouille en train de chanter"
+    },
+    {
+      "id": "black-150",
+      "text": "un écureuil jouant du piano"
+    },
+    {
+      "id": "black-151",
+      "text": "un robinet hurleur"
+    },
+    {
+      "id": "black-152",
+      "text": "un pyjama possédé"
+    },
+    {
+      "id": "black-153",
+      "text": "les chaussettes de ma grand-mère"
+    },
+    {
+      "id": "black-154",
+      "text": "les couches du bébé d’en face"
+    },
+    {
+      "id": "black-155",
+      "text": "les poils de barbe du papi d’à côté"
+    },
+    {
+      "id": "black-156",
+      "text": "montrer ses fesses"
+    },
+    {
+      "id": "black-157",
+      "text": "donner un coup de pied"
+    },
+    {
+      "id": "black-158",
+      "text": "un doigt qui se prend pour un trombone"
+    },
+    {
+      "id": "black-159",
+      "text": "le bruit d’un réveil qui explose"
+    },
+    {
+      "id": "black-160",
+      "text": "un couteau dansant sur la table"
+    },
+    {
+      "id": "black-161",
+      "text": "un téléphone qui parle en vers"
+    },
+    {
+      "id": "black-162",
+      "text": "des cloches en chocolat"
+    },
+    {
+      "id": "black-163",
+      "text": "une patte de poulet se mettant à chanter"
+    },
+    {
+      "id": "black-164",
+      "text": "les dents d’un monstre sous le lit"
+    },
+    {
+      "id": "black-165",
+      "text": "le fil de l’araignée géante"
+    },
+    {
+      "id": "black-166",
+      "text": "les mains d’un homme invisible"
+    },
+    {
+      "id": "black-167",
+      "text": "un chewing-gum collé sur l’oreille"
+    },
+    {
+      "id": "black-168",
+      "text": "un aspirateur en mode disco"
+    },
+    {
+      "id": "black-169",
+      "text": "un nuage de poussière géant"
+    },
+    {
+      "id": "black-170",
+      "text": "des ciseaux qui font du tricot"
+    },
+    {
+      "id": "black-171",
+      "text": "le bruit d’un éléphant mangeant une pizza"
+    },
+    {
+      "id": "black-172",
+      "text": "une poêle en pleine crise d’angoisse"
+    },
+    {
+      "id": "black-173",
+      "text": "un téléphone sous l’eau"
+    },
+    {
+      "id": "black-174",
+      "text": "un œuf se transformant en poulet"
+    },
+    {
+      "id": "black-175",
+      "text": "une chaise qui rit"
+    },
+    {
+      "id": "black-176",
+      "text": "un gâteau qui fond en criant"
+    },
+    {
+      "id": "black-177",
+      "text": "un pamplemousse qui se prend pour un melon"
+    },
+    {
+      "id": "black-178",
+      "text": "un tapis qui s’écrase de rire"
+    },
+    {
+      "id": "black-179",
+      "text": "les pieds d’un robot en roller"
+    },
+    {
+      "id": "black-180",
+      "text": "un stylo qui raconte des blagues"
+    },
+    {
+      "id": "black-181",
+      "text": "une pomme qui se transforme en grenade"
+    },
+    {
+      "id": "black-182",
+      "text": "des lunettes de soleil en chocolat"
+    },
+    {
+      "id": "black-183",
+      "text": "un miroir qui a peur de lui-même"
+    },
+    {
+      "id": "black-184",
+      "text": "un sac de pommes de terre qui fait des bruitages"
+    },
+    {
+      "id": "black-185",
+      "text": "un chat qui porte des gants de boxe"
+    },
+    {
+      "id": "black-186",
+      "text": "une pierre qui dit des gros mots"
+    },
+    {
+      "id": "black-187",
+      "text": "des escargots en patins à roulettes"
+    },
+    {
+      "id": "black-188",
+      "text": "une fourchette qui chante"
+    },
+    {
+      "id": "black-189",
+      "text": "une balle rebondissante qui pleure"
+    },
+    {
+      "id": "black-190",
+      "text": "un cactus qui danse la salsa"
+    },
+    {
+      "id": "black-191",
+      "text": "un poisson rouge faisant des pirouettes"
+    },
+    {
+      "id": "black-192",
+      "text": "un doudou qui râle"
+    },
+    {
+      "id": "black-193",
+      "text": "un réveil qui explose de rire"
+    },
+    {
+      "id": "black-194",
+      "text": "une salade qui fait du breakdance"
+    },
+    {
+      "id": "black-195",
+      "text": "des poils de barbe qui racontent des secrets"
+    },
+    {
+      "id": "black-196",
+      "text": "une chaussure qui a des pensées profondes"
+    },
+    {
+      "id": "black-197",
+      "text": "un robot qui perd ses vis"
+    },
+    {
+      "id": "black-198",
+      "text": "une montre qui meurt de fatigue"
+    },
+    {
+      "id": "black-199",
+      "text": "une balle de tennis qui s’éclate de rire"
+    },
+    {
+      "id": "black-200",
+      "text": "un sablier qui se mit à pleurer"
+    },
+    {
+      "id": "black-201",
+      "text": "une mouette qui twerke"
+    },
+    {
+      "id": "black-202",
+      "text": "le parapluie d’un clown"
+    },
+    {
+      "id": "black-203",
+      "text": "un bouchon de champagne qui parle"
+    },
+    {
+      "id": "black-204",
+      "text": "le rire d’un poisson"
+    },
+    {
+      "id": "black-205",
+      "text": "un manteau qui mange des chips"
+    },
+    {
+      "id": "black-206",
+      "text": "des dents de requin en gelée"
+    },
+    {
+      "id": "black-207",
+      "text": "une bouteille de lait jouant au foot"
+    },
+    {
+      "id": "black-208",
+      "text": "les yeux de ton voisin qui clignotent en Morse"
+    },
+    {
+      "id": "black-209",
+      "text": "une souris qui fait des blagues"
+    },
+    {
+      "id": "black-210",
+      "text": "un canapé qui se met à chanter"
+    },
+    {
+      "id": "black-211",
+      "text": "une chaussette qui mange des bonbons"
+    },
+    {
+      "id": "black-212",
+      "text": "un chewing-gum dans une montre"
+    },
+    {
+      "id": "black-213",
+      "text": "un œuf qui dit bonjour"
+    },
+    {
+      "id": "black-214",
+      "text": "un parapluie qui fuit"
+    },
+    {
+      "id": "black-215",
+      "text": "un hamster déguisé en pirate"
+    },
+    {
+      "id": "black-216",
+      "text": "un papier toilette qui fait du rap"
+    },
+    {
+      "id": "black-217",
+      "text": "un gâteau de riz qui rigole tout seul"
+    },
+    {
+      "id": "black-218",
+      "text": "un fer à repasser qui se prend pour un DJ"
+    },
+    {
+      "id": "black-219",
+      "text": "une serviette de plage qui se transforme en coussin"
+    },
+    {
+      "id": "black-220",
+      "text": "un pied qui a des moustaches"
+    },
+    {
+      "id": "black-221",
+      "text": "une éponge qui se prend pour un détective"
+    },
+    {
+      "id": "black-222",
+      "text": "une mouche avec une perruque"
+    },
+    {
+      "id": "black-223",
+      "text": "un canapé qui fait des grimaces"
+    },
+    {
+      "id": "black-224",
+      "text": "des chaussons qui se battent"
+    },
+    {
+      "id": "black-225",
+      "text": "une soupe qui parle en rimes"
+    },
+    {
+      "id": "black-226",
+      "text": "des épinards en forme de cœur"
+    },
+    {
+      "id": "black-227",
+      "text": "une montre à gousset qui fait la fête"
+    },
+    {
+      "id": "black-228",
+      "text": "des poissons qui écrivent des poèmes"
+    },
+    {
+      "id": "black-229",
+      "text": "un ballon de basket qui se transforme en licorne"
+    },
+    {
+      "id": "black-230",
+      "text": "un éclair de génie qui explose"
+    },
+    {
+      "id": "black-231",
+      "text": "un toast qui se prend pour une pizza"
+    },
+    {
+      "id": "black-232",
+      "text": "une poupée qui dit des gros mots"
+    },
+    {
+      "id": "black-233",
+      "text": "un aspirateur avec des lunettes de soleil"
+    },
+    {
+      "id": "black-234",
+      "text": "un zèbre en maillot de bain"
+    },
+    {
+      "id": "black-235",
+      "text": "une chaussure qui se rebelle"
+    },
+    {
+      "id": "black-236",
+      "text": "un lit qui mange des céréales"
+    },
+    {
+      "id": "black-237",
+      "text": "une cuillère qui fait du breakdance"
+    },
+    {
+      "id": "black-238",
+      "text": "une tasse de café qui jette des sorts"
+    },
+    {
+      "id": "black-239",
+      "text": "des lunettes de ski sur un chien"
+    },
+    {
+      "id": "black-240",
+      "text": "une tomate qui fait du yoga"
+    },
+    {
+      "id": "black-241",
+      "text": "un tabouret qui aime danser"
+    },
+    {
+      "id": "black-242",
+      "text": "des mains invisibles qui déménagent des meubles"
+    },
+    {
+      "id": "black-243",
+      "text": "un pot de fleurs qui se transforme en robot"
+    },
+    {
+      "id": "black-244",
+      "text": "un oreiller qui se prend pour un avocat"
+    },
+    {
+      "id": "black-245",
+      "text": "un cactus qui a un complexe de supériorité"
+    },
+    {
+      "id": "black-246",
+      "text": "un trombone rêvant de devenir une guitare"
+    },
+    {
+      "id": "black-247",
+      "text": "une pantoufle racontant des histoires"
+    },
+    {
+      "id": "black-248",
+      "text": "un cartable qui veut être un super-héros"
+    },
+    {
+      "id": "black-249",
+      "text": "des pâtes décidant de faire la grève"
+    },
+    {
+      "id": "black-250",
+      "text": "un miroir prenant des selfies"
+    },
+    {
+      "id": "black-251",
+      "text": "un ketchup qui chante du métal"
+    },
+    {
+      "id": "black-252",
+      "text": "des oreillers faisant de la boxe"
+    },
+    {
+      "id": "black-253",
+      "text": "une balle de ping-pong faisant du yoga"
+    },
+    {
+      "id": "black-254",
+      "text": "un rouleau de papier toilette dansant la valse"
+    },
+    {
+      "id": "black-255",
+      "text": "un pot de confiture qui s'enfuit"
+    },
+    {
+      "id": "black-256",
+      "text": "une boîte de céréales donnant des conseils de vie"
+    },
+    {
+      "id": "black-257",
+      "text": "des épinards qui se battent contre des poivrons"
+    },
+    {
+      "id": "black-258",
+      "text": "un marteau qui veut être acteur"
+    },
+    {
+      "id": "black-259",
+      "text": "une assiette qui fait la cuisine"
+    },
+    {
+      "id": "black-260",
+      "text": "une guitare qui pleure"
+    },
+    {
+      "id": "black-261",
+      "text": "un bâton de colle qui lit des poèmes"
+    },
+    {
+      "id": "black-262",
+      "text": "des gants de boxe qui se marient"
+    },
+    {
+      "id": "black-263",
+      "text": "un jus d’orange qui fait du breakdance"
+    },
+    {
+      "id": "black-264",
+      "text": "une baignoire qui parle avec un accent"
+    },
+    {
+      "id": "black-265",
+      "text": "un vélo qui rêve de voler"
+    },
+    {
+      "id": "black-266",
+      "text": "une fourchette qui se prend pour une guitare"
+    },
+    {
+      "id": "black-267",
+      "text": "un croissant qui devient un pancake"
+    },
+    {
+      "id": "black-268",
+      "text": "des chaussures de clown qui marchent seules"
+    },
+    {
+      "id": "black-269",
+      "text": "une mouche qui porte des lunettes de soleil"
+    },
+    {
+      "id": "black-270",
+      "text": "un chat qui fait du tricot"
+    },
+    {
+      "id": "black-271",
+      "text": "un trombone qui fait une déclaration d’amour"
+    },
+    {
+      "id": "black-272",
+      "text": "un pieu en bois qui fait des câlins"
+    },
+    {
+      "id": "black-273",
+      "text": "un câlin de robot"
+    },
+    {
+      "id": "black-274",
+      "text": "des frites qui chantent du jazz"
+    },
+    {
+      "id": "black-275",
+      "text": "une chaussette en furie"
+    },
+    {
+      "id": "black-276",
+      "text": "une brosse à dents qui rêve de faire du théâtre"
+    },
+    {
+      "id": "black-277",
+      "text": "un ventilateur qui se prend pour un hélicoptère"
+    },
+    {
+      "id": "black-278",
+      "text": "un pain au chocolat qui fait du hip-hop"
+    },
+    {
+      "id": "black-279",
+      "text": "une glace qui se transforme en cake"
+    },
+    {
+      "id": "black-280",
+      "text": "un pot de peinture qui pleure des larmes arc-en-ciel"
+    },
+    {
+      "id": "black-281",
+      "text": "une échelle qui est jalouse des escaliers"
+    },
+    {
+      "id": "black-282",
+      "text": "des grenouilles qui jouent à la pétanque"
+    },
+    {
+      "id": "black-283",
+      "text": "un gant de toilette qui déteste l’eau"
+    },
+    {
+      "id": "black-284",
+      "text": "une cravate qui veut être une écharpe"
+    },
+    {
+      "id": "black-285",
+      "text": "un sac à dos qui veut voyager dans l’espace"
+    },
+    {
+      "id": "black-286",
+      "text": "un aspirateur qui fait des karaokés"
+    },
+    {
+      "id": "black-287",
+      "text": "une porte qui veut être une fenêtre"
+    },
+    {
+      "id": "black-288",
+      "text": "des lunettes de vue qui rêvent d’être des lunettes de soleil"
+    },
+    {
+      "id": "black-289",
+      "text": "une mouette avec un diplôme"
+    },
+    {
+      "id": "black-290",
+      "text": "une voiture qui roule en arrière"
+    },
+    {
+      "id": "black-291",
+      "text": "un poulet en basket"
+    },
+    {
+      "id": "black-292",
+      "text": "un caddie qui fait de la musculation"
+    },
+    {
+      "id": "black-293",
+      "text": "une chaussure qui rêve d’être un chapeau"
+    },
+    {
+      "id": "black-294",
+      "text": "un steak qui s’échappe du frigo"
+    },
+    {
+      "id": "black-295",
+      "text": "un chat qui a un job de détective"
+    },
+    {
+      "id": "black-296",
+      "text": "un arbre qui veut se faire coiffer"
+    },
+    {
+      "id": "black-297",
+      "text": "un escargot qui mange des paillettes"
+    },
+    {
+      "id": "black-298",
+      "text": "une fourchette qui écrit des romans"
+    },
+    {
+      "id": "black-299",
+      "text": "un canapé qui raconte sa vie"
+    },
+    {
+      "id": "black-300",
+      "text": "une bouteille de vin qui déteste les fêtes"
+    },
+    {
+      "id": "black-301",
+      "text": "un cri de banane en colère"
+    },
+    {
+      "id": "black-302",
+      "text": "des lunettes de soleil qui refusent de sortir la nuit"
+    },
+    {
+      "id": "black-303",
+      "text": "un robot qui fait la cuisine pour les aliens"
+    },
+    {
+      "id": "black-304",
+      "text": "une chaussette qui rêve d’être une grenouille"
+    },
+    {
+      "id": "black-305",
+      "text": "une tarte qui a décidé de voyager dans le temps"
+    },
+    {
+      "id": "black-306",
+      "text": "une cloche qui se prend pour un tambour"
+    },
+    {
+      "id": "black-307",
+      "text": "une brosse à cheveux qui refuse de brosser les cheveux"
+    },
+    {
+      "id": "black-308",
+      "text": "un canapé qui pleure pour un film triste"
+    },
+    {
+      "id": "black-309",
+      "text": "un cactus qui fait des grimaces"
+    },
+    {
+      "id": "black-310",
+      "text": "une cuillère qui a écrit un roman"
+    },
+    {
+      "id": "black-311",
+      "text": "une brosse à dents qui se bat avec le dentifrice"
+    },
+    {
+      "id": "black-312",
+      "text": "des lunettes 3D qui deviennent aveugles"
+    },
+    {
+      "id": "black-313",
+      "text": "un vélo qui parle en morse"
+    },
+    {
+      "id": "black-314",
+      "text": "des biscuits qui chantent l’hymne national"
+    },
+    {
+      "id": "black-315",
+      "text": "un oreiller qui donne des conseils de vie"
+    },
+    {
+      "id": "black-316",
+      "text": "un panier de fruits qui veulent être des légumes"
+    },
+    {
+      "id": "black-317",
+      "text": "une lampe de chevet qui veut se marier"
+    },
+    {
+      "id": "black-318",
+      "text": "une table qui veut aller en vacances"
+    },
+    {
+      "id": "black-319",
+      "text": "des clés qui ont un accident de voiture"
+    },
+    {
+      "id": "black-320",
+      "text": "un grille-pain qui veut devenir un piano"
+    },
+    {
+      "id": "black-321",
+      "text": "un chapeau qui essaie de faire un spectacle de magie"
+    },
+    {
+      "id": "black-322",
+      "text": "des chaussons qui refusent de marcher"
+    },
+    {
+      "id": "black-323",
+      "text": "un miroir qui se fait des selfies"
+    },
+    {
+      "id": "black-324",
+      "text": "un gâteau qui veut être un croissant"
+    },
+    {
+      "id": "black-325",
+      "text": "un écureuil qui se prend pour un danseur de ballet"
+    },
+    {
+      "id": "black-326",
+      "text": "un frisbee qui se prend pour une pizza"
+    },
+    {
+      "id": "black-327",
+      "text": "un poulet rôti qui fait du théâtre"
+    },
+    {
+      "id": "black-328",
+      "text": "des fourchettes qui organisent un concours de danse"
+    },
+    {
+      "id": "black-329",
+      "text": "une boîte à musique qui déteste la musique"
+    },
+    {
+      "id": "black-330",
+      "text": "une crème solaire qui veut être une crème au chocolat"
+    },
+    {
+      "id": "black-331",
+      "text": "une baguette qui veut être une baguette magique"
+    },
+    {
+      "id": "black-332",
+      "text": "des poissons qui font des selfies"
+    },
+    {
+      "id": "black-333",
+      "text": "un stylo qui se prend pour un pinceau"
+    },
+    {
+      "id": "black-334",
+      "text": "une écharpe qui rêve d’être un collier"
+    },
+    {
+      "id": "black-335",
+      "text": "un chat qui veut devenir une star du cinéma"
+    },
+    {
+      "id": "black-336",
+      "text": "un ballon de football qui veut devenir un pâté en croûte"
+    },
+    {
+      "id": "black-337",
+      "text": "des lunettes de soleil qui détestent la lumière"
+    },
+    {
+      "id": "black-338",
+      "text": "un coussin qui a des angoisses existentielles"
+    },
+    {
+      "id": "black-339",
+      "text": "des tomates qui veulent être des pommes"
+    },
+    {
+      "id": "black-340",
+      "text": "un aspirateur qui se prend pour un super-héros"
+    },
+    {
+      "id": "black-341",
+      "text": "un thermomètre qui fait une dépression"
+    },
+    {
+      "id": "black-342",
+      "text": "un tuyau d’arrosage qui se transforme en serpent"
+    },
+    {
+      "id": "black-343",
+      "text": "des baguettes chinoises qui veulent jouer au golf"
+    },
+    {
+      "id": "black-344",
+      "text": "un téléphone portable qui veut être un avocat"
+    },
+    {
+      "id": "black-345",
+      "text": "un lapin qui devient un politicien"
+    },
+    {
+      "id": "black-346",
+      "text": "des cuillères en bois qui se transforment en spatules"
+    },
+    {
+      "id": "black-347",
+      "text": "un canapé qui veut être un trampoline"
+    },
+    {
+      "id": "black-348",
+      "text": "une bouche qui fait des discours motivants"
+    },
+    {
+      "id": "black-349",
+      "text": "une banane qui veut devenir une pizza"
+    },
+    {
+      "id": "black-350",
+      "text": "des peluches qui veulent être des détectives privés"
+    },
+    {
+      "id": "black-351",
+      "text": "une tartine de beurre qui parle anglais"
+    },
+    {
+      "id": "black-352",
+      "text": "une porte qui rêve d’être un réfrigérateur"
+    },
+    {
+      "id": "black-353",
+      "text": "un coussin qui a des conversations philosophiques"
+    },
+    {
+      "id": "black-354",
+      "text": "un perroquet qui s’improvise chef cuisinier"
+    },
+    {
+      "id": "black-355",
+      "text": "un grille-pain qui se prend pour un DJ"
+    },
+    {
+      "id": "black-356",
+      "text": "un élastique qui veut devenir une baguette magique"
+    },
+    {
+      "id": "black-357",
+      "text": "des lunettes de vue qui veulent devenir des lunettes de soleil"
+    },
+    {
+      "id": "black-358",
+      "text": "un bidet qui se prend pour un jacuzzi"
+    },
+    {
+      "id": "black-359",
+      "text": "des pâtes qui jouent aux échecs"
+    },
+    {
+      "id": "black-360",
+      "text": "une boîte à pizza qui rêve d’être un four à micro-ondes"
+    },
+    {
+      "id": "black-361",
+      "text": "un seau qui veut être un vase"
+    },
+    {
+      "id": "black-362",
+      "text": "un parapluie qui se prend pour un chapeau"
+    },
+    {
+      "id": "black-363",
+      "text": "un fer à repasser qui danse la salsa"
+    },
+    {
+      "id": "black-364",
+      "text": "un bol de céréales qui parle aux fruits"
+    },
+    {
+      "id": "black-365",
+      "text": "un réveil qui veut vivre à Bali"
+    },
+    {
+      "id": "black-366",
+      "text": "un chapeau melon qui veut être un ballon de basket"
+    },
+    {
+      "id": "black-367",
+      "text": "un fromage qui fait du théâtre"
+    },
+    {
+      "id": "black-368",
+      "text": "des chaussettes qui sont en couple"
+    },
+    {
+      "id": "black-369",
+      "text": "une éponge qui écrit des poèmes d’amour"
+    },
+    {
+      "id": "black-370",
+      "text": "un poivron qui se prend pour un avocat"
+    },
+    {
+      "id": "black-371",
+      "text": "un tableau de bord de voiture qui a peur des piétons"
+    },
+    {
+      "id": "black-372",
+      "text": "une pierre qui veut devenir un diamant"
+    },
+    {
+      "id": "black-373",
+      "text": "des canapés qui rêvent d’être des lits"
+    },
+    {
+      "id": "black-374",
+      "text": "un crayon qui veut être un pinceau"
+    },
+    {
+      "id": "black-375",
+      "text": "un rideau qui fait des blagues de mauvais goût"
+    },
+    {
+      "id": "black-376",
+      "text": "un sac à main qui se fait des photos"
+    },
+    {
+      "id": "black-377",
+      "text": "une brosse à dents qui est amoureuse du dentifrice"
+    },
+    {
+      "id": "black-378",
+      "text": "une gomme qui pleure dans son coin"
+    },
+    {
+      "id": "black-379",
+      "text": "un hamac qui veut être un trampoline"
+    },
+    {
+      "id": "black-380",
+      "text": "un moulin à vent qui veut partir en croisière"
+    },
+    {
+      "id": "black-381",
+      "text": "un ventilateur qui pense qu’il est un hélicoptère"
+    },
+    {
+      "id": "black-382",
+      "text": "une bouteille d’eau qui se prend pour un soda"
+    },
+    {
+      "id": "black-383",
+      "text": "un réfrigérateur qui part en vacances"
+    },
+    {
+      "id": "black-384",
+      "text": "un pigeon qui déteste les oiseaux"
+    },
+    {
+      "id": "black-385",
+      "text": "un déodorant qui fait des blagues de papa"
+    },
+    {
+      "id": "black-386",
+      "text": "des biscuits qui chantent de l’opéra"
+    },
+    {
+      "id": "black-387",
+      "text": "une balle de tennis qui veut être un ballon de football"
+    },
+    {
+      "id": "black-388",
+      "text": "une pizza qui rêve de devenir une crêpe"
+    },
+    {
+      "id": "black-389",
+      "text": "une boîte de chocolats qui se prend pour un cadeau"
+    },
+    {
+      "id": "black-390",
+      "text": "une cuillère qui veut devenir une fourchette"
+    },
+    {
+      "id": "black-391",
+      "text": "des lunettes de ski qui veulent aller à la plage"
+    },
+    {
+      "id": "black-392",
+      "text": "un écureuil qui se prend pour un avocat"
+    },
+    {
+      "id": "black-393",
+      "text": "un poisson rouge qui fait du trampoline"
+    },
+    {
+      "id": "black-394",
+      "text": "un œuf qui a des complexes"
+    },
+    {
+      "id": "black-395",
+      "text": "une étoile filante qui rêve d’être une comète"
+    },
+    {
+      "id": "black-396",
+      "text": "un tapis qui fait la roue"
+    },
+    {
+      "id": "black-397",
+      "text": "une ampoule qui a peur du noir"
+    },
+    {
+      "id": "black-398",
+      "text": "un marteau qui chante des chansons de Noël"
+    },
+    {
+      "id": "black-399",
+      "text": "un robot qui veut prendre des vacances"
+    },
+    {
+      "id": "black-400",
+      "text": "des pommes de terre qui parlent avec des accents étrangers"
+    },
+    {
+      "id": "black-401",
+      "text": "une serviette qui fait du bodyboard"
+    },
+    {
+      "id": "black-402",
+      "text": "une mouette qui porte des lunettes de ski"
+    },
+    {
+      "id": "black-403",
+      "text": "un bananier qui rêve de faire du yoga"
+    },
+    {
+      "id": "black-404",
+      "text": "un cactus qui écrit des chansons d’amour"
+    },
+    {
+      "id": "black-405",
+      "text": "une pomme de terre qui a des piercings"
+    },
+    {
+      "id": "black-406",
+      "text": "un parapluie qui se prend pour un drone"
+    },
+    {
+      "id": "black-407",
+      "text": "un poulet rôti qui fait des imitations"
+    },
+    {
+      "id": "black-408",
+      "text": "un rouleau de scotch qui s’invente un nom d’artiste"
+    },
+    {
+      "id": "black-409",
+      "text": "un marteau qui veut devenir écrivain"
+    },
+    {
+      "id": "black-410",
+      "text": "une pâte à modeler qui se prend pour un avocat"
+    },
+    {
+      "id": "black-411",
+      "text": "des poissons qui organisent une conférence"
+    },
+    {
+      "id": "black-412",
+      "text": "une fourchette qui se prend pour une baguette"
+    },
+    {
+      "id": "black-413",
+      "text": "un chat qui rêve de devenir une star de cinéma"
+    },
+    {
+      "id": "black-414",
+      "text": "un miroir qui veut changer de rôle"
+    },
+    {
+      "id": "black-415",
+      "text": "un ventilo qui veut se faire une carrière de danseur"
+    },
+    {
+      "id": "black-416",
+      "text": "un réveil qui met des réveils dans un café"
+    },
+    {
+      "id": "black-417",
+      "text": "des crayons de couleur qui vont à un cours de poterie"
+    },
+    {
+      "id": "black-418",
+      "text": "une chaussette qui fait du surf"
+    },
+    {
+      "id": "black-419",
+      "text": "une barre de chocolat qui rêve de devenir un gâteau"
+    },
+    {
+      "id": "black-420",
+      "text": "un livre qui veut être un film d’action"
+    },
+    {
+      "id": "black-421",
+      "text": "une chaussure qui est amoureuse d’un trombone"
+    },
+    {
+      "id": "black-422",
+      "text": "un doudou qui veut être un détective"
+    },
+    {
+      "id": "black-423",
+      "text": "un canapé qui essaie de devenir un fauteuil de massage"
+    },
+    {
+      "id": "black-424",
+      "text": "un ballon de foot qui veut être un globe terrestre"
+    },
+    {
+      "id": "black-425",
+      "text": "un pull qui se transforme en écharpe"
+    },
+    {
+      "id": "black-426",
+      "text": "une boîte de conserve qui fait du théâtre"
+    },
+    {
+      "id": "black-427",
+      "text": "un aspirateur qui veut devenir une rockstar"
+    },
+    {
+      "id": "black-428",
+      "text": "un sac de sable qui parle aux étoiles"
+    },
+    {
+      "id": "black-429",
+      "text": "un tabouret qui rêve de devenir une chaise longue"
+    },
+    {
+      "id": "black-430",
+      "text": "une brosse à cheveux qui se transforme en peigne"
+    },
+    {
+      "id": "black-431",
+      "text": "un téléphone qui se prend pour un répondeur"
+    },
+    {
+      "id": "black-432",
+      "text": "un dinosaure en pyjama"
+    },
+    {
+      "id": "black-433",
+      "text": "un distributeur de billets qui se prend pour un psychologue"
+    },
+    {
+      "id": "black-434",
+      "text": "une salade de fruits qui fait des pirouettes"
+    },
+    {
+      "id": "black-435",
+      "text": "une pizza qui veut être une tarte"
+    },
+    {
+      "id": "black-436",
+      "text": "un panier à linge qui veut devenir une maison de vacances"
+    },
+    {
+      "id": "black-437",
+      "text": "un chapeau qui a des ambitions d'acteur"
+    },
+    {
+      "id": "black-438",
+      "text": "une fourchette qui rêve d’être une fourchette à fondue"
+    },
+    {
+      "id": "black-439",
+      "text": "un sac à dos qui parle en rimes"
+    },
+    {
+      "id": "black-440",
+      "text": "un cactus qui se prend pour un cactus en peluche"
+    },
+    {
+      "id": "black-441",
+      "text": "une pomme qui se transforme en pomme de terre"
+    },
+    {
+      "id": "black-442",
+      "text": "un crayon qui rêve de se transformer en pinceau"
+    },
+    {
+      "id": "black-443",
+      "text": "des pâtes qui se battent contre du riz"
+    },
+    {
+      "id": "black-444",
+      "text": "un stylo qui veut devenir une baguette magique"
+    },
+    {
+      "id": "black-445",
+      "text": "une cuillère qui rêve de diriger un orchestre"
+    },
+    {
+      "id": "black-446",
+      "text": "un tapis qui veut se transformer en trampoline"
+    },
+    {
+      "id": "black-447",
+      "text": "un coussin qui s’entraîne à être un oreiller"
+    },
+    {
+      "id": "black-448",
+      "text": "un rideau qui veut devenir une couverture"
+    },
+    {
+      "id": "black-449",
+      "text": "un tournevis qui rêve d’être une perceuse"
+    },
+    {
+      "id": "black-450",
+      "text": "une bouteille d’eau qui se prend pour un cocktail"
+    },
+    {
+      "id": "black-451",
+      "text": "une tempête de frites"
+    },
+    {
+      "id": "black-452",
+      "text": "un perroquet qui explose en feu d'artifice"
+    },
+    {
+      "id": "black-453",
+      "text": "un cri de démon sous un lit"
+    },
+    {
+      "id": "black-454",
+      "text": "un hamster possédé qui grimpe au plafond"
+    },
+    {
+      "id": "black-455",
+      "text": "un chewing-gum qui s’enflamme"
+    },
+    {
+      "id": "black-456",
+      "text": "des pantoufles qui font des claquettes à minuit"
+    },
+    {
+      "id": "black-457",
+      "text": "un casserole qui crache de la vapeur radioactive"
+    },
+    {
+      "id": "black-458",
+      "text": "une éruption volcanique de spaghetti"
+    },
+    {
+      "id": "black-459",
+      "text": "une mouette qui dévore un sac plastique"
+    },
+    {
+      "id": "black-460",
+      "text": "une toile d’araignée qui fait du laser"
+    },
+    {
+      "id": "black-461",
+      "text": "un micro-ondes qui se met à grogner"
+    },
+    {
+      "id": "black-462",
+      "text": "un ours en peluche qui fait des blagues macabres"
+    },
+    {
+      "id": "black-463",
+      "text": "une pizza qui rigole dans l’obscurité"
+    },
+    {
+      "id": "black-464",
+      "text": "des chaussettes qui sentent le fromage qui pourrit"
+    },
+    {
+      "id": "black-465",
+      "text": "un sac à main qui se transforme en portail dimensionnel"
+    },
+    {
+      "id": "black-466",
+      "text": "des fleurs qui chantent des chansons sataniques"
+    },
+    {
+      "id": "black-467",
+      "text": "un aspirateur qui hurle de douleur"
+    },
+    {
+      "id": "black-468",
+      "text": "une boîte à musique qui joue des airs de psychose"
+    },
+    {
+      "id": "black-469",
+      "text": "un gâteau d’anniversaire qui explose"
+    },
+    {
+      "id": "black-470",
+      "text": "une douche qui fait des bruits de portes qui grincent"
+    },
+    {
+      "id": "black-471",
+      "text": "un canapé qui se déchire et vomit des serpents"
+    },
+    {
+      "id": "black-472",
+      "text": "une brosse à dents qui émet des éclairs"
+    },
+    {
+      "id": "black-473",
+      "text": "des chaussettes qui se transforment en ombres chinoises"
+    },
+    {
+      "id": "black-474",
+      "text": "un chien qui parle avec une voix caverneuse"
+    },
+    {
+      "id": "black-475",
+      "text": "une cloche qui fait un bruit de cri de banshee"
+    },
+    {
+      "id": "black-476",
+      "text": "un robot qui clignote en rouge et menace de tout détruire"
+    },
+    {
+      "id": "black-477",
+      "text": "un tambour de machine à laver qui hurle de terreur"
+    },
+    {
+      "id": "black-478",
+      "text": "un pigeon qui attaque comme un ninja"
+    },
+    {
+      "id": "black-479",
+      "text": "des pommes pourries qui explosent dans des nuages de vapeur"
+    },
+    {
+      "id": "black-480",
+      "text": "un dragon qui fume des cigarettes à l’ombre"
+    },
+    {
+      "id": "black-481",
+      "text": "un miroir qui déforme les visages"
+    },
+    {
+      "id": "black-482",
+      "text": "des doigts qui gigotent dans le noir"
+    },
+    {
+      "id": "black-483",
+      "text": "un gâteau d'anniversaire qui hurle quand on le coupe"
+    },
+    {
+      "id": "black-484",
+      "text": "un crocodile qui fait du breakdance sous la pluie"
+    },
+    {
+      "id": "black-485",
+      "text": "des lumières clignotantes qui viennent du futur"
+    },
+    {
+      "id": "black-486",
+      "text": "un chat qui se transforme en créature poilue géante"
+    },
+    {
+      "id": "black-487",
+      "text": "des nuages qui forment des visages terrifiants"
+    },
+    {
+      "id": "black-488",
+      "text": "un lapin qui rugit comme un lion"
+    },
+    {
+      "id": "black-489",
+      "text": "une bibliothèque qui éclate en flammes et déverse des livres maudits"
+    },
+    {
+      "id": "black-490",
+      "text": "des mains invisibles qui tiennent un balai et balaient seules"
+    },
+    {
+      "id": "black-491",
+      "text": "un chat qui déteste les canapés et les griffes"
+    },
+    {
+      "id": "black-492",
+      "text": "un avion qui ne veut pas voler"
+    },
+    {
+      "id": "black-493",
+      "text": "des escargots qui glissent en chantant du métal"
+    },
+    {
+      "id": "black-494",
+      "text": "un robinet qui crache du poison au lieu d'eau"
+    },
+    {
+      "id": "black-495",
+      "text": "des crayons de couleur qui foncent vers l’apocalypse"
+    },
+    {
+      "id": "black-496",
+      "text": "un drap qui se prend pour un fantôme"
+    },
+    {
+      "id": "black-497",
+      "text": "un dé à coudre qui explose dans une fumée verte"
+    },
+    {
+      "id": "black-498",
+      "text": "une boîte de conserve qui explose et envoie des confettis en feu"
+    },
+    {
+      "id": "black-499",
+      "text": "une cafetière qui hurle après chaque gorgée"
+    },
+    {
+      "id": "black-500",
+      "text": "un râteau qui se met à gémir de douleur"
+    },
+    {
+      "id": "black-501",
+      "text": "se curer le nez avec une baguette magique"
+    },
+    {
+      "id": "black-502",
+      "text": "un chien qui fait des high-five avec des pigeons"
+    },
+    {
+      "id": "black-503",
+      "text": "un oreiller qui vous parle dans la nuit"
+    },
+    {
+      "id": "black-504",
+      "text": "un cactus qui a une crise d’angoisse"
+    },
+    {
+      "id": "black-505",
+      "text": "un canard qui se gratte les fesses en public"
+    },
+    {
+      "id": "black-506",
+      "text": "un poney qui rêve d’être un hélicoptère"
+    },
+    {
+      "id": "black-507",
+      "text": "un clown qui pleure pendant son spectacle"
+    },
+    {
+      "id": "black-508",
+      "text": "un bébé qui rit en se curant le nez"
+    },
+    {
+      "id": "black-509",
+      "text": "une licorne qui mange du fromage"
+    },
+    {
+      "id": "black-510",
+      "text": "un cactus qui envoie des textos bizarres"
+    },
+    {
+      "id": "black-511",
+      "text": "un balai qui a des jambes et court après les souris"
+    },
+    {
+      "id": "black-512",
+      "text": "un robot qui rêve de faire la sieste"
+    },
+    {
+      "id": "black-513",
+      "text": "un gâteau d’anniversaire qui vole à travers la pièce"
+    },
+    {
+      "id": "black-514",
+      "text": "une bougie qui hurle à chaque souffle"
+    },
+    {
+      "id": "black-515",
+      "text": "un chat qui se prend pour un détective"
+    },
+    {
+      "id": "black-516",
+      "text": "un hamster qui fait du breakdance sur une roue"
+    },
+    {
+      "id": "black-517",
+      "text": "un raton laveur qui crache du feu"
+    },
+    {
+      "id": "black-518",
+      "text": "une chaise qui parle et critique tout le monde"
+    },
+    {
+      "id": "black-519",
+      "text": "un tapis volant qui veut une place dans un film d’action"
+    },
+    {
+      "id": "black-520",
+      "text": "un lama qui chante du rap dans un micro"
+    },
+    {
+      "id": "black-521",
+      "text": "un crocodile qui se prend pour une danseuse étoile"
+    },
+    {
+      "id": "black-522",
+      "text": "un arbre qui se transforme en spaghetti"
+    },
+    {
+      "id": "black-523",
+      "text": "un hamster qui vole en jet-ski"
+    },
+    {
+      "id": "black-524",
+      "text": "un géranium qui se fait des selfies"
+    },
+    {
+      "id": "black-525",
+      "text": "une mouette qui vole en parlant anglais"
+    },
+    {
+      "id": "black-526",
+      "text": "un crabe qui fait des blagues salaces"
+    },
+    {
+      "id": "black-527",
+      "text": "un chat qui porte des lunettes de soleil et se la pète"
+    },
+    {
+      "id": "black-528",
+      "text": "une tarte aux pommes qui court un marathon"
+    },
+    {
+      "id": "black-529",
+      "text": "un tracteur qui rêve de devenir une fusée"
+    },
+    {
+      "id": "black-530",
+      "text": "un cupcake qui veut être une pizza"
+    },
+    {
+      "id": "black-531",
+      "text": "une chaussure qui rêve d’être un sac à main"
+    },
+    {
+      "id": "black-532",
+      "text": "un robot qui s’habille en super-héros pour aller à l’école"
+    },
+    {
+      "id": "black-533",
+      "text": "une fourchette qui se transforme en épée magique"
+    },
+    {
+      "id": "black-534",
+      "text": "un perroquet qui fait des blagues de mauvais goût"
+    },
+    {
+      "id": "black-535",
+      "text": "un chat qui saute dans une piscine de chocolat"
+    },
+    {
+      "id": "black-536",
+      "text": "un hamster qui collectionne des pierres précieuses"
+    },
+    {
+      "id": "black-537",
+      "text": "un miroir qui te raconte des secrets effrayants"
+    },
+    {
+      "id": "black-538",
+      "text": "une éponge qui fait de la politique"
+    },
+    {
+      "id": "black-539",
+      "text": "un pingouin qui monte un skate"
+    },
+    {
+      "id": "black-540",
+      "text": "un coussin qui s’invente une vie amoureuse"
+    },
+    {
+      "id": "black-541",
+      "text": "un œuf qui se transforme en crêpe géante"
+    },
+    {
+      "id": "black-542",
+      "text": "une pastèque qui veut devenir un melon"
+    },
+    {
+      "id": "black-543",
+      "text": "une bougie qui fait des tours de magie"
+    },
+    {
+      "id": "black-544",
+      "text": "un fauteuil qui se met à pleurer"
+    },
+    {
+      "id": "black-545",
+      "text": "un thermomètre qui s’énerve quand on ne le regarde pas"
+    },
+    {
+      "id": "black-546",
+      "text": "des chaussettes qui se transforment en serpents"
+    },
+    {
+      "id": "black-547",
+      "text": "un lapin qui déteste les carottes"
+    },
+    {
+      "id": "black-548",
+      "text": "un chat qui fait du tricot à 3 heures du matin"
+    },
+    {
+      "id": "black-549",
+      "text": "une poule qui pète de la mousse à raser"
+    },
+    {
+      "id": "black-550",
+      "text": "un crocodile qui fait un monologue existentiel"
+    },
+    {
+      "id": "black-551",
+      "text": "une tartine de beurre qui se transforme en dragon"
+    },
+    {
+      "id": "black-552",
+      "text": "un aspirateur qui avale un nuage"
+    },
+    {
+      "id": "black-553",
+      "text": "un ballon de basket qui se prend pour un pingouin"
+    },
+    {
+      "id": "black-554",
+      "text": "un perroquet qui crache de la confiture"
+    },
+    {
+      "id": "black-555",
+      "text": "une boîte à musique qui veut devenir une sirène"
+    },
+    {
+      "id": "black-556",
+      "text": "un chat qui fait du yoga sur un nuage"
+    },
+    {
+      "id": "black-557",
+      "text": "une tasse à café qui chante des chansons de Noël"
+    },
+    {
+      "id": "black-558",
+      "text": "une chaussette qui se prend pour un détective"
+    },
+    {
+      "id": "black-559",
+      "text": "une girafe qui monte un cheval"
+    },
+    {
+      "id": "black-560",
+      "text": "un grille-pain qui pleure à chaque toast"
+    },
+    {
+      "id": "black-561",
+      "text": "une brosse à dents qui refuse de brosser les dents"
+    },
+    {
+      "id": "black-562",
+      "text": "une mouette qui vole en portant des lunettes de soleil"
+    },
+    {
+      "id": "black-563",
+      "text": "un fauteuil qui se transforme en trampoline"
+    },
+    {
+      "id": "black-564",
+      "text": "un sac à main qui parle en vers"
+    },
+    {
+      "id": "black-565",
+      "text": "une carotte qui fait des démonstrations de kung-fu"
+    },
+    {
+      "id": "black-566",
+      "text": "un chat qui se fait des crêpes à 3 heures du matin"
+    },
+    {
+      "id": "black-567",
+      "text": "une pizza qui se prend pour un plat principal dans un restaurant 5 étoiles"
+    },
+    {
+      "id": "black-568",
+      "text": "un tapis qui veut être une couverture"
+    },
+    {
+      "id": "black-569",
+      "text": "un hamster qui danse la valse avec une feuille de papier"
+    },
+    {
+      "id": "black-570",
+      "text": "un cactus qui porte des lunettes de soleil et se bronze"
+    },
+    {
+      "id": "black-571",
+      "text": "une bougie qui veut se marier avec un gâteau"
+    },
+    {
+      "id": "black-572",
+      "text": "un miroir qui se moque de ta coupe de cheveux"
+    },
+    {
+      "id": "black-573",
+      "text": "une pomme de terre qui veut devenir une pomme"
+    },
+    {
+      "id": "black-574",
+      "text": "un hamster qui se bat contre un paquet de chips"
+    },
+    {
+      "id": "black-575",
+      "text": "une fourchette qui rêve de devenir un couteau"
+    },
+    {
+      "id": "black-576",
+      "text": "une souris qui se transforme en licorne"
+    },
+    {
+      "id": "black-577",
+      "text": "un écureuil qui rêve de devenir un super-héros"
+    },
+    {
+      "id": "black-578",
+      "text": "un oreiller qui fait des rêves bizarres et en parle à tout le monde"
+    },
+    {
+      "id": "black-579",
+      "text": "une horloge qui court plus vite que le temps"
+    },
+    {
+      "id": "black-580",
+      "text": "un coussin qui te raconte sa vie amoureuse avec le canapé"
+    },
+    {
+      "id": "black-581",
+      "text": "un canard qui essaie de faire du skateboard"
+    },
+    {
+      "id": "black-582",
+      "text": "une clé qui refuse d’ouvrir les portes"
+    },
+    {
+      "id": "black-583",
+      "text": "une paille qui se transforme en baguette magique"
+    },
+    {
+      "id": "black-584",
+      "text": "un tracteur qui rêve de danser le tango"
+    },
+    {
+      "id": "black-585",
+      "text": "un robot qui veut devenir un chat"
+    },
+    {
+      "id": "black-586",
+      "text": "un pingouin qui veut monter un cirque"
+    },
+    {
+      "id": "black-587",
+      "text": "un crayon de couleur qui a un accès de colère"
+    },
+    {
+      "id": "black-588",
+      "text": "une brosse à cheveux qui se coiffe elle-même"
+    },
+    {
+      "id": "black-589",
+      "text": "un ballon qui explose de joie"
+    },
+    {
+      "id": "black-590",
+      "text": "une brosse de toilette qui fait du rap"
+    },
+    {
+      "id": "black-591",
+      "text": "un sac à dos qui essaie de s’envoler en parachute"
+    },
+    {
+      "id": "black-592",
+      "text": "un canapé qui fait du moonwalk"
+    },
+    {
+      "id": "black-593",
+      "text": "une éponge qui veut devenir un chanteur de rock"
+    },
+    {
+      "id": "black-594",
+      "text": "un téléphone qui veut un rendez-vous galant"
+    },
+    {
+      "id": "black-595",
+      "text": "une bougie qui pète de la vapeur de chocolat"
+    },
+    {
+      "id": "black-596",
+      "text": "une chaussure qui décide de partir en vacances à la plage"
+    },
+    {
+      "id": "black-597",
+      "text": "un canard qui fait des claquettes"
+    },
+    {
+      "id": "black-598",
+      "text": "une lampe qui allume des étincelles de bonheur"
+    },
+    {
+      "id": "black-599",
+      "text": "une fourchette qui rêverait de devenir un chef cuisinier"
+    },
+    {
+      "id": "black-600",
+      "text": "un coussin qui te demande de l’aide pour une audition"
+    },
+    {
+      "id": "black-601",
+      "text": "un coussin péteur qui se prend pour une arme secrète"
+    },
+    {
+      "id": "black-602",
+      "text": "une paille incendiaire qui fait un barbecue"
+    },
+    {
+      "id": "black-603",
+      "text": "un furoncle sur le front qui veut se faire une carrière de star"
+    },
+    {
+      "id": "black-604",
+      "text": "une crotte de nez qui décide de faire une tournée mondiale"
+    },
+    {
+      "id": "black-605",
+      "text": "une patate dans la face qui crie ‘au secours!’"
+    },
+    {
+      "id": "black-606",
+      "text": "des dents de castor qui essayent de mordre une brique"
+    },
+    {
+      "id": "black-607",
+      "text": "un rot dans le micro qui dure trois minutes"
+    },
+    {
+      "id": "black-608",
+      "text": "le ventre qui gargouille plus fort que des tambours de guerre"
+    },
+    {
+      "id": "black-609",
+      "text": "des chaussures qui refusent de sortir de leur boîte"
+    },
+    {
+      "id": "black-610",
+      "text": "un chapeau qui se cache du soleil"
+    },
+    {
+      "id": "black-611",
+      "text": "une chaussette qui se transforme en espion"
+    },
+    {
+      "id": "black-612",
+      "text": "un trombone qui rêve de devenir un spaghetti"
+    },
+    {
+      "id": "black-613",
+      "text": "un ballon qui explose de joie"
+    },
+    {
+      "id": "black-614",
+      "text": "une fourchette qui décide de devenir une cuillère à soupe"
+    },
+    {
+      "id": "black-615",
+      "text": "un paon qui essaie d’être un flamant rose"
+    },
+    {
+      "id": "black-616",
+      "text": "une lampe qui éclaire plus quand tu n’as pas besoin de lumière"
+    },
+    {
+      "id": "black-617",
+      "text": "un poisson rouge qui organise une fête sur le canapé"
+    },
+    {
+      "id": "black-618",
+      "text": "un tapis qui veut un petit frère"
+    },
+    {
+      "id": "black-619",
+      "text": "une baguette de pain qui danse la salsa"
+    },
+    {
+      "id": "black-620",
+      "text": "un vieux t-shirt qui rêve de devenir un drapeau"
+    },
+    {
+      "id": "black-621",
+      "text": "une roue de vélo qui veut être une porte de garage"
+    },
+    {
+      "id": "black-622",
+      "text": "un couvercle de casserole qui se prend pour une soucoupe volante"
+    },
+    {
+      "id": "black-623",
+      "text": "une pâte à pizza qui se transforme en créature mythologique"
+    },
+    {
+      "id": "black-624",
+      "text": "une goutte d’eau qui saute de joie"
+    },
+    {
+      "id": "black-625",
+      "text": "une porte qui refuse de fermer"
+    },
+    {
+      "id": "black-626",
+      "text": "un ver de terre qui se prend pour un détective privé"
+    },
+    {
+      "id": "black-627",
+      "text": "un râteau qui décide de déménager en Afrique"
+    },
+    {
+      "id": "black-628",
+      "text": "une chaussette qui s’embrasse dans le noir"
+    },
+    {
+      "id": "black-629",
+      "text": "une brosse à dents qui veut devenir une brosse de bain"
+    },
+    {
+      "id": "black-630",
+      "text": "un coussin de canapé qui se met à râler"
+    },
+    {
+      "id": "black-631",
+      "text": "un pyjama qui essaie de s’échapper de l’armoire"
+    },
+    {
+      "id": "black-632",
+      "text": "un dé à coudre qui décide de devenir une bague"
+    },
+    {
+      "id": "black-633",
+      "text": "une pâte à modeler qui se fait une coupe de cheveux"
+    },
+    {
+      "id": "black-634",
+      "text": "un trombone qui devient un chef d’orchestre"
+    },
+    {
+      "id": "black-635",
+      "text": "une brique qui décide de jouer à cache-cache"
+    },
+    {
+      "id": "black-636",
+      "text": "un miroir qui commence à raconter sa vie"
+    },
+    {
+      "id": "black-637",
+      "text": "une montre qui a un accident avec le temps"
+    },
+    {
+      "id": "black-638",
+      "text": "des lunettes de soleil qui veulent se cacher sous un chapeau"
+    },
+    {
+      "id": "black-639",
+      "text": "une souris qui prend des cours de danse contemporaine"
+    },
+    {
+      "id": "black-640",
+      "text": "un chat qui mange des croquettes en regardant des films d’action"
+    },
+    {
+      "id": "black-641",
+      "text": "un micro-onde qui hurle chaque fois qu’il tourne"
+    },
+    {
+      "id": "black-642",
+      "text": "une bouteille de lait qui rêve de devenir une bouteille de vin"
+    },
+    {
+      "id": "black-643",
+      "text": "un oreiller qui se prend pour un mini canapé"
+    },
+    {
+      "id": "black-644",
+      "text": "une montre en bois qui refait sa vie après une rupture"
+    },
+    {
+      "id": "black-645",
+      "text": "des chaussettes qui se transforment en serpents géants"
+    },
+    {
+      "id": "black-646",
+      "text": "un parapluie qui se transforme en moustache géante"
+    },
+    {
+      "id": "black-647",
+      "text": "un escargot qui fait du ski nautique"
+    },
+    {
+      "id": "black-648",
+      "text": "un chewing-gum qui devient une œuvre d’art"
+    },
+    {
+      "id": "black-649",
+      "text": "un trombone qui décide de diriger un orchestre symphonique"
+    },
+    {
+      "id": "black-650",
+      "text": "un pissenlit qui rêve de devenir une fleur de lotus"
+    },
+    {
+      "id": "black-651",
+      "text": "un chien qui porte des lunettes de soleil et fait du yoga"
+    },
+    {
+      "id": "black-652",
+      "text": "un hamburger qui se transforme en éclat de rire"
+    },
+    {
+      "id": "black-653",
+      "text": "une pomme de terre qui organise un cours de danse"
+    },
+    {
+      "id": "black-654",
+      "text": "une banane qui veut devenir une fusée"
+    },
+    {
+      "id": "black-655",
+      "text": "un ticket de métro qui rêve d’être une star de cinéma"
+    },
+    {
+      "id": "black-656",
+      "text": "une bougie qui a des regrets"
+    },
+    {
+      "id": "black-657",
+      "text": "un éclair qui se prend pour un éclair de génie"
+    },
+    {
+      "id": "black-658",
+      "text": "un thermomètre qui préfère être une baguette de pain"
+    },
+    {
+      "id": "black-659",
+      "text": "une baguette magique qui fait apparaître des cacahuètes"
+    },
+    {
+      "id": "black-660",
+      "text": "une chaussure qui essaie de devenir un pied"
+    },
+    {
+      "id": "black-661",
+      "text": "une vache qui rêve d’être un lion"
+    },
+    {
+      "id": "black-662",
+      "text": "une cuillère qui s’imagine être une fourchette"
+    },
+    {
+      "id": "black-663",
+      "text": "un aspirateur qui se prend pour un super-héros"
+    },
+    {
+      "id": "black-664",
+      "text": "une chaussette qui tente de convaincre l’autre de partir en vacances"
+    },
+    {
+      "id": "black-665",
+      "text": "un cheval qui fait des grimaces"
+    },
+    {
+      "id": "black-666",
+      "text": "une bouteille d'eau qui se transforme en fontaine de chocolat"
+    },
+    {
+      "id": "black-667",
+      "text": "un cactus qui hurle quand on lui touche les épines"
+    },
+    {
+      "id": "black-668",
+      "text": "une poignée de porte qui se met à chanter des chansons tristes"
+    },
+    {
+      "id": "black-669",
+      "text": "un verre d’eau qui veut absolument prendre des vacances"
+    },
+    {
+      "id": "black-670",
+      "text": "un pamplemousse qui rêve d’être un melon"
+    },
+    {
+      "id": "black-671",
+      "text": "une pomme qui veut devenir une pastèque"
+    },
+    {
+      "id": "black-672",
+      "text": "un canard qui essaie de faire du skate sur un trottoir"
+    },
+    {
+      "id": "black-673",
+      "text": "une carotte qui fait de la gymnastique rythmique"
+    },
+    {
+      "id": "black-674",
+      "text": "un hamster qui veut monter un cirque"
+    },
+    {
+      "id": "black-675",
+      "text": "une pizza qui devient une explosion de feu"
+    },
+    {
+      "id": "black-676",
+      "text": "un fouet qui veut se transformer en serpent géant"
+    },
+    {
+      "id": "black-677",
+      "text": "une porte qui danse le cha-cha-cha toute seule"
+    },
+    {
+      "id": "black-678",
+      "text": "une bougie qui pleure chaque fois qu’on l’allume"
+    },
+    {
+      "id": "black-679",
+      "text": "une fourchette qui se prend pour un stylo"
+    },
+    {
+      "id": "black-680",
+      "text": "un bol de céréales qui tente de conquérir l’espace"
+    },
+    {
+      "id": "black-681",
+      "text": "un pull qui se prend pour un t-shirt"
+    },
+    {
+      "id": "black-682",
+      "text": "un chocolat qui fond sous la chaleur de la lumière"
+    },
+    {
+      "id": "black-683",
+      "text": "un trombone qui pense qu'il est un élastique"
+    },
+    {
+      "id": "black-684",
+      "text": "une étagère qui se rebelle contre les livres"
+    },
+    {
+      "id": "black-685",
+      "text": "une brosse à cheveux qui se transforme en brosse à dents"
+    },
+    {
+      "id": "black-686",
+      "text": "un robot qui rêve d’être une pastèque géante"
+    },
+    {
+      "id": "black-687",
+      "text": "un œuf qui éclate et raconte sa vie"
+    },
+    {
+      "id": "black-688",
+      "text": "une lampe qui fait des étincelles de paillettes"
+    },
+    {
+      "id": "black-689",
+      "text": "un savon qui refuse de se laver"
+    },
+    {
+      "id": "black-690",
+      "text": "un pigeon qui se transforme en flamant rose"
+    },
+    {
+      "id": "black-691",
+      "text": "un sac à dos qui se prend pour un coussin"
+    },
+    {
+      "id": "black-692",
+      "text": "une éponge qui rêve d’être une guirlande lumineuse"
+    },
+    {
+      "id": "black-693",
+      "text": "un râteau qui se déguise en moustache"
+    },
+    {
+      "id": "black-694",
+      "text": "une plume qui se prend pour un ventilateur"
+    },
+    {
+      "id": "black-695",
+      "text": "une tasse de café qui fait des claquettes"
+    },
+    {
+      "id": "black-696",
+      "text": "une montre qui essaye de rattraper le temps"
+    },
+    {
+      "id": "black-697",
+      "text": "un ours en peluche qui fait des blagues de mauvais goût"
+    },
+    {
+      "id": "black-698",
+      "text": "une fourchette qui essaie de devenir une épée"
+    },
+    {
+      "id": "black-699",
+      "text": "un rouleau de papier toilette qui veut changer le monde"
+    },
+    {
+      "id": "black-700",
+      "text": "un canapé qui se cache sous le tapis"
+    },
+    {
+      "id": "black-701",
+      "text": "un coussin qui vomit des arcs-en-ciel"
+    },
+    {
+      "id": "black-702",
+      "text": "une mouette qui joue à Fortnite en 4K"
+    },
+    {
+      "id": "black-703",
+      "text": "une brosse à dents qui te crie dessus"
+    },
+    {
+      "id": "black-704",
+      "text": "une patate qui a décidé de devenir une pizza"
+    },
+    {
+      "id": "black-705",
+      "text": "une tétine de bébé qui parle le swahili"
+    },
+    {
+      "id": "black-706",
+      "text": "un trombone qui se prend pour une sirène"
+    },
+    {
+      "id": "black-707",
+      "text": "un gâteau au chocolat qui rêve d'être une star de cinéma"
+    },
+    {
+      "id": "black-708",
+      "text": "un hamster qui se déguise en licorne pour Halloween"
+    },
+    {
+      "id": "black-709",
+      "text": "un savon qui se prend pour un sushi"
+    },
+    {
+      "id": "black-710",
+      "text": "un chewing-gum qui fait du yoga avec des dauphins"
+    },
+    {
+      "id": "black-711",
+      "text": "un parapluie qui devient une sculpture de Picasso"
+    },
+    {
+      "id": "black-712",
+      "text": "une chaussette qui fait de la chirurgie esthétique"
+    },
+    {
+      "id": "black-713",
+      "text": "un canapé qui se prend pour un trampoline"
+    },
+    {
+      "id": "black-714",
+      "text": "une mouche qui rêve de piloter un avion de chasse"
+    },
+    {
+      "id": "black-715",
+      "text": "une cuillère qui essaie de sauver l’univers"
+    },
+    {
+      "id": "black-716",
+      "text": "une carotte qui décide de faire de la boxe"
+    },
+    {
+      "id": "black-717",
+      "text": "un seau de peinture qui explose de colère"
+    },
+    {
+      "id": "black-718",
+      "text": "un aspirateur qui veut faire de l’escalade"
+    },
+    {
+      "id": "black-719",
+      "text": "une éponge qui fait du roller"
+    },
+    {
+      "id": "black-720",
+      "text": "un chat qui a une crise d’identité"
+    },
+    {
+      "id": "black-721",
+      "text": "une banane qui se transforme en vache"
+    },
+    {
+      "id": "black-722",
+      "text": "une boîte de céréales qui veut faire du stand-up"
+    },
+    {
+      "id": "black-723",
+      "text": "un raton laveur qui se prend pour un astronaute"
+    },
+    {
+      "id": "black-724",
+      "text": "une fourchette qui fait du karaté"
+    },
+    {
+      "id": "black-725",
+      "text": "un téléphone qui parle comme Yoda"
+    },
+    {
+      "id": "black-726",
+      "text": "un cactus qui hurle comme une sirène de pompiers"
+    },
+    {
+      "id": "black-727",
+      "text": "une pizza qui fait des jongles avec des œufs"
+    },
+    {
+      "id": "black-728",
+      "text": "une échelle qui se prend pour une fusée"
+    },
+    {
+      "id": "black-729",
+      "text": "une mouette qui porte un costume de super-héros"
+    },
+    {
+      "id": "black-730",
+      "text": "un crocodile qui fait du macramé"
+    },
+    {
+      "id": "black-731",
+      "text": "un poulet qui veut ouvrir un salon de coiffure"
+    },
+    {
+      "id": "black-732",
+      "text": "une brosse à cheveux qui pense être un piano"
+    },
+    {
+      "id": "black-733",
+      "text": "un oreiller qui fait des vidéos TikTok"
+    },
+    {
+      "id": "black-734",
+      "text": "une pelle à poussière qui rêve de devenir une brouette"
+    },
+    {
+      "id": "black-735",
+      "text": "un pain de mie qui s’éclate en boîte de nuit"
+    },
+    {
+      "id": "black-736",
+      "text": "une touffe de poils qui se prend pour une boule disco"
+    },
+    {
+      "id": "black-737",
+      "text": "un chat qui médite pour devenir un ninja"
+    },
+    {
+      "id": "black-738",
+      "text": "une pièce de monnaie qui veut devenir une star de cinéma"
+    },
+    {
+      "id": "black-739",
+      "text": "un sac à dos qui court un marathon"
+    },
+    {
+      "id": "black-740",
+      "text": "un crayon qui se transforme en trompette"
+    },
+    {
+      "id": "black-741",
+      "text": "un portefeuille qui part en vacances à la plage"
+    },
+    {
+      "id": "black-742",
+      "text": "un chausson qui veut devenir un soldat"
+    },
+    {
+      "id": "black-743",
+      "text": "une feuille de papier qui a un accès de colère"
+    },
+    {
+      "id": "black-744",
+      "text": "un extincteur qui parle de ses traumatismes d’enfance"
+    },
+    {
+      "id": "black-745",
+      "text": "un oeuf qui pleure dans un coin"
+    },
+    {
+      "id": "black-746",
+      "text": "un feu de camp qui crie comme un bébé"
+    },
+    {
+      "id": "black-747",
+      "text": "une plume de dindon qui se prend pour un chef cuisinier"
+    },
+    {
+      "id": "black-748",
+      "text": "un trombone qui s’évapore dans un tourbillon"
+    },
+    {
+      "id": "black-749",
+      "text": "un sac poubelle qui rêve d’être une star du cirque"
+    },
+    {
+      "id": "black-750",
+      "text": "une mouette ayant des tatouages tribaux"
+    }
+  ],
+  "whiteCards": [
+    {
+      "id": "white-1",
+      "text": "J’ai toujours rêvé de ___"
+    },
+    {
+      "id": "white-2",
+      "text": "Quand j’étais petit, je croyais que ___"
+    },
+    {
+      "id": "white-3",
+      "text": "Le pire conseil que l’on m’ait donné, c’est ___"
+    },
+    {
+      "id": "white-4",
+      "text": "Je suis sûr que ___ existe vraiment."
+    },
+    {
+      "id": "white-5",
+      "text": "On m’a toujours dit qu’il fallait jamais ___"
+    },
+    {
+      "id": "white-6",
+      "text": "Mon super pouvoir, c’est ___"
+    },
+    {
+      "id": "white-7",
+      "text": "La meilleure excuse pour ne pas aller au travail, c’est ___"
+    },
+    {
+      "id": "white-8",
+      "text": "Dans un monde parfait, tout le monde serait ___"
+    },
+    {
+      "id": "white-9",
+      "text": "Je ne sais pas pourquoi, mais j’ai une peur irrationnelle de ___"
+    },
+    {
+      "id": "white-10",
+      "text": "Je n’aurais jamais cru que ___ m’arriverait un jour."
+    },
+    {
+      "id": "white-11",
+      "text": "Ce qui manque vraiment à ma vie, c’est ___"
+    },
+    {
+      "id": "white-12",
+      "text": "La dernière fois que j’ai ri de manière incontrôlable, c’était à cause de ___"
+    },
+    {
+      "id": "white-13",
+      "text": "Si j’étais un super-héros, mon nom serait ___"
+    },
+    {
+      "id": "white-14",
+      "text": "Mon plat préféré est ___, mais je ne le dis jamais à personne."
+    },
+    {
+      "id": "white-15",
+      "text": "La phrase qui me fait le plus rire, c’est ___"
+    },
+    {
+      "id": "white-16",
+      "text": "Mon voisin est le genre de personne qui ___"
+    },
+    {
+      "id": "white-17",
+      "text": "Je suis totalement obsédé par ___ en ce moment."
+    },
+    {
+      "id": "white-18",
+      "text": "Si je devais choisir une chanson pour décrire ma vie, ce serait ___"
+    },
+    {
+      "id": "white-19",
+      "text": "Le secret pour réussir dans la vie, c’est ___"
+    },
+    {
+      "id": "white-20",
+      "text": "L’objet qui traîne toujours chez moi et qui ne sert à rien, c’est ___"
+    },
+    {
+      "id": "white-21",
+      "text": "Si je pouvais me téléporter, je partirais direct à ___"
+    },
+    {
+      "id": "white-22",
+      "text": "Quand je suis de mauvaise humeur, je me venge en ___"
+    },
+    {
+      "id": "white-23",
+      "text": "Un jour, j’ai trouvé ___ dans ma boîte à chaussures."
+    },
+    {
+      "id": "white-24",
+      "text": "Mon animal de compagnie m’a appris à ___"
+    },
+    {
+      "id": "white-25",
+      "text": "Je rêve de rencontrer ___ sur une île déserte."
+    },
+    {
+      "id": "white-26",
+      "text": "Si j’étais une licorne, je serais la seule à ___"
+    },
+    {
+      "id": "white-27",
+      "text": "La dernière fois que j’ai pleuré, c’était en ___"
+    },
+    {
+      "id": "white-28",
+      "text": "On m’a dit que si je mangeais ___, j’allais devenir immortel."
+    },
+    {
+      "id": "white-29",
+      "text": "J’ai une photo secrète de ___ qui me fait rire à chaque fois."
+    },
+    {
+      "id": "white-30",
+      "text": "Ce matin, j’ai mangé ___ pour le petit-déjeuner, et ça m’a changé ma journée."
+    },
+    {
+      "id": "white-31",
+      "text": "Si je pouvais parler aux objets, je commencerais par ___"
+    },
+    {
+      "id": "white-32",
+      "text": "Je suis convaincu que le gouvernement cache ___ dans le Grand Canyon."
+    },
+    {
+      "id": "white-33",
+      "text": "Si je devais choisir un superpouvoir, je prendrais ___"
+    },
+    {
+      "id": "white-34",
+      "text": "Ma passion secrète, c’est ___ mais je ne l’avoue à personne."
+    },
+    {
+      "id": "white-35",
+      "text": "J’ai un talent caché pour ___"
+    },
+    {
+      "id": "white-36",
+      "text": "Le mystère le plus intrigant de ma vie est ___"
+    },
+    {
+      "id": "white-37",
+      "text": "Quand je vais au supermarché, je m’arrête toujours devant ___"
+    },
+    {
+      "id": "white-38",
+      "text": "Je suis persuadé que ___ est un complot intergalactique."
+    },
+    {
+      "id": "white-39",
+      "text": "Si les extraterrestres viennent sur Terre, je leur offrirai ___"
+    },
+    {
+      "id": "white-40",
+      "text": "Quand j’ai besoin de me détendre, je m’allonge et je me concentre sur ___"
+    },
+    {
+      "id": "white-41",
+      "text": "Un matin, je me suis réveillé avec ___ sur mon oreiller."
+    },
+    {
+      "id": "white-42",
+      "text": "Si je pouvais inviter n'importe qui à dîner, je choisirais ___, mais je leur ferais manger ___."
+    },
+    {
+      "id": "white-43",
+      "text": "Mon rêve le plus bizarre ? C’est de ___ avec un pingouin."
+    },
+    {
+      "id": "white-44",
+      "text": "Je suis convaincu que ___ est une conspiration menée par des chats."
+    },
+    {
+      "id": "white-45",
+      "text": "J’ai une théorie sur les licornes : elles cachent ___ dans leurs crinières."
+    },
+    {
+      "id": "white-46",
+      "text": "La chose la plus étrange que j’ai trouvée sous mon lit, c’était ___"
+    },
+    {
+      "id": "white-47",
+      "text": "Si je pouvais échanger de corps avec quelqu’un, ce serait avec ___, juste pour voir comment ___."
+    },
+    {
+      "id": "white-48",
+      "text": "Le dernier objet que j’ai acheté par impulsion, c’était ___"
+    },
+    {
+      "id": "white-49",
+      "text": "Mon voisin a un problème, il parle toujours de ___ en pleine nuit."
+    },
+    {
+      "id": "white-50",
+      "text": "Quand je me sens vraiment seul, je parle à ___."
+    },
+    {
+      "id": "white-51",
+      "text": "Un jour, j’ai vu un ___ faire un moonwalk."
+    },
+    {
+      "id": "white-52",
+      "text": "J’ai une obsession secrète pour ___, mais je ne veux pas en parler à mes amis."
+    },
+    {
+      "id": "white-53",
+      "text": "Le gouvernement cache ___ dans les pyramides d’Égypte."
+    },
+    {
+      "id": "white-54",
+      "text": "Le pire moment pour recevoir un appel téléphonique, c’est quand je suis ___"
+    },
+    {
+      "id": "white-55",
+      "text": "Je suis sûr que ___ est responsable de tous les problèmes du monde."
+    },
+    {
+      "id": "white-56",
+      "text": "J’ai un rêve : avoir un ___ en peluche géant qui m’accompagne partout."
+    },
+    {
+      "id": "white-57",
+      "text": "Le meilleur remède contre le stress, c’est ___, mais personne ne m’a cru."
+    },
+    {
+      "id": "white-58",
+      "text": "Si je pouvais avoir un animal de compagnie totalement bizarre, je choisirais ___."
+    },
+    {
+      "id": "white-59",
+      "text": "Je suis persuadé que ___ est un message secret des aliens."
+    },
+    {
+      "id": "white-60",
+      "text": "J’ai vu ___ dans mon jardin hier soir, et je suis toujours sous le choc."
+    },
+    {
+      "id": "white-61",
+      "text": "J’ai une photo de moi avec ___, mais je ne peux pas la montrer à personne."
+    },
+    {
+      "id": "white-62",
+      "text": "La pire invention que l’humanité ait jamais créée, c’est ___."
+    },
+    {
+      "id": "white-63",
+      "text": "Si je devais passer une soirée avec ___, je suis sûr qu’on finirait par ___."
+    },
+    {
+      "id": "white-64",
+      "text": "J’ai trouvé un message secret écrit par ___ dans mon cahier de maths."
+    },
+    {
+      "id": "white-65",
+      "text": "Je suis presque sûr que ___ est en train de préparer une invasion de biscuits géants."
+    },
+    {
+      "id": "white-66",
+      "text": "Si les extraterrestres débarquent, je leur offrirais ___ en premier."
+    },
+    {
+      "id": "white-67",
+      "text": "Quand j’étais petit, je croyais que ___ était responsable de tous mes mauvais rêves."
+    },
+    {
+      "id": "white-68",
+      "text": "La dernière fois que j’ai vu ___, il/elle était en train de ___ dans un costume de poulet."
+    },
+    {
+      "id": "white-69",
+      "text": "Si je pouvais vivre dans n’importe quel film, je choisirais ___ et je prendrais ___ comme partenaire."
+    },
+    {
+      "id": "white-70",
+      "text": "Je suis persuadé que ___ n’est qu’une distraction pour nous faire oublier l’existence de ___."
+    },
+    {
+      "id": "white-71",
+      "text": "Le pire truc que j’ai vu en direct, c’est ___ dans un supermarché."
+    },
+    {
+      "id": "white-72",
+      "text": "Si je pouvais échanger de cerveau avec n’importe qui, ce serait avec ___, pour comprendre pourquoi ___."
+    },
+    {
+      "id": "white-73",
+      "text": "Un jour, je suis tombé sur ___ dans un arbre, et il/elle m’a dit ___."
+    },
+    {
+      "id": "white-74",
+      "text": "Quand je veux me sentir puissant, je regarde ___ et je me mets à ___."
+    },
+    {
+      "id": "white-75",
+      "text": "La première fois que j’ai vu ___, j’ai eu envie de ___."
+    },
+    {
+      "id": "white-76",
+      "text": "Si je pouvais avoir un animal mythologique comme animal de compagnie, je choisirais ___."
+    },
+    {
+      "id": "white-77",
+      "text": "Je suis sûr que ___ n’est pas humain et qu’il/elle cache ___ dans sa cave."
+    },
+    {
+      "id": "white-78",
+      "text": "Un jour, je vais fonder une religion basée sur ___ et ___."
+    },
+    {
+      "id": "white-79",
+      "text": "Je suis tombé amoureux de ___ au moment où j’ai vu ___."
+    },
+    {
+      "id": "white-80",
+      "text": "Si je devais inventer une nouvelle couleur, elle s’appellerait ___ et ressemblerait à ___."
+    },
+    {
+      "id": "white-81",
+      "text": "Si je pouvais avoir un dîner avec ___, je leur servirais ___ pour les impressionner."
+    },
+    {
+      "id": "white-82",
+      "text": "Je suis convaincu que ___ est en réalité un super-héros déguisé en ___."
+    },
+    {
+      "id": "white-83",
+      "text": "Si je pouvais changer une chose dans le passé, je reviendrais pour ___ et je dirais ___."
+    },
+    {
+      "id": "white-84",
+      "text": "Un jour, je me suis réveillé avec ___ dans mes cheveux et je n’ai jamais su pourquoi."
+    },
+    {
+      "id": "white-85",
+      "text": "Mon esprit s’égare toujours quand je pense à ___, mais je me demande pourquoi ça existe."
+    },
+    {
+      "id": "white-86",
+      "text": "Je suis persuadé que ___ est en train de vivre une vie secrète en tant que ___."
+    },
+    {
+      "id": "white-87",
+      "text": "Quand je suis stressé, je me calme en regardant ___ danser sur ___."
+    },
+    {
+      "id": "white-88",
+      "text": "Le gouvernement nous cache ___ dans l’Antarctique et ça pourrait tout changer."
+    },
+    {
+      "id": "white-89",
+      "text": "Si je pouvais choisir n’importe quelle époque pour y vivre, je prendrais ___ pour aller à ___."
+    },
+    {
+      "id": "white-90",
+      "text": "J’ai vu ___ sur la Lune et je suis presque certain que ___ a tout filmé."
+    },
+    {
+      "id": "white-91",
+      "text": "Quand je me regarde dans un miroir, je me demande toujours pourquoi ___."
+    },
+    {
+      "id": "white-92",
+      "text": "Si j’avais une machine à remonter le temps, j’irais ___ pour ___."
+    },
+    {
+      "id": "white-93",
+      "text": "Le dernier objet étrange que j’ai trouvé dans mon garage, c’était ___, et c’était totalement inutile."
+    },
+    {
+      "id": "white-94",
+      "text": "J’ai toujours pensé que ___ était responsable du phénomène des chaussettes qui disparaissent dans la machine à laver."
+    },
+    {
+      "id": "white-95",
+      "text": "Si un alien débarquait chez moi, je lui offrirais ___ et je lui dirais ___."
+    },
+    {
+      "id": "white-96",
+      "text": "Si je devais fusionner avec n’importe quel animal, je choisirais ___ et je ferais ___."
+    },
+    {
+      "id": "white-97",
+      "text": "La meilleure façon de survivre à une invasion de zombies, c’est ___."
+    },
+    {
+      "id": "white-98",
+      "text": "Je suis convaincu que ___ est la clé pour comprendre l’univers tout entier."
+    },
+    {
+      "id": "white-99",
+      "text": "Je pourrais passer des heures à observer ___, surtout quand il/elle ___."
+    },
+    {
+      "id": "white-100",
+      "text": "Le mystère de ma vie, c’est pourquoi ___ disparaît toujours avant que je puisse l’utiliser."
+    },
+    {
+      "id": "white-101",
+      "text": "La dernière fois que j’ai vu un extraterrestre, il/elle portait ___ et disait qu’il/elle venait de ___."
+    },
+    {
+      "id": "white-102",
+      "text": "Si je devais ouvrir un restaurant, je servirais exclusivement ___ et je l’appellerais ___."
+    },
+    {
+      "id": "white-103",
+      "text": "Je suis absolument certain que ___ est une forme de vie extraterrestre déguisée en ___."
+    },
+    {
+      "id": "white-104",
+      "text": "Quand je fais une sieste, je rêve toujours de ___ qui me dit ___."
+    },
+    {
+      "id": "white-105",
+      "text": "Si j’avais un assistant robot, il/elle serait programmé(e) pour ___, mais je suis un peu inquiet(e) de ___."
+    },
+    {
+      "id": "white-106",
+      "text": "Mon rêve le plus fou ? C’est de ___ avec ___ pendant une pluie de ___."
+    },
+    {
+      "id": "white-107",
+      "text": "La seule chose qui me fait vraiment peur, c’est ___, surtout quand je pense à ___."
+    },
+    {
+      "id": "white-108",
+      "text": "Si je pouvais communiquer avec les objets, je commencerais par ___ et je lui demanderais ___."
+    },
+    {
+      "id": "white-109",
+      "text": "Je suis convaincu que ___ a des pouvoirs magiques et utilise ___ pour ___."
+    },
+    {
+      "id": "white-110",
+      "text": "Quand je suis seul chez moi, je me parle à moi-même et je dis toujours ___, même si ça n’a aucun sens."
+    },
+    {
+      "id": "white-111",
+      "text": "Un jour, je suis allé à ___ et j’ai vu ___ qui faisait ___ dans une piscine remplie de ___."
+    },
+    {
+      "id": "white-112",
+      "text": "Si je devais choisir une couleur pour l’univers, je choisirais ___, et tout serait fait de ___."
+    },
+    {
+      "id": "white-113",
+      "text": "J’ai un doute sur ___, je pense qu’il/elle est responsable de ___."
+    },
+    {
+      "id": "white-114",
+      "text": "Le plus gros mystère de ma vie : pourquoi ___ se transforme en ___ tous les matins."
+    },
+    {
+      "id": "white-115",
+      "text": "Si je devais faire une rencontre avec un monstre sous mon lit, je lui offrirais ___ et on discuterait de ___."
+    },
+    {
+      "id": "white-116",
+      "text": "Je suis sûr que ___ est en train de planifier une invasion de ___, mais personne ne veut me croire."
+    },
+    {
+      "id": "white-117",
+      "text": "Si je devais écrire un livre, il s’appellerait ___ et il raconterait l’histoire de ___ qui se rend dans ___."
+    },
+    {
+      "id": "white-118",
+      "text": "Ma plus grande peur, c’est de découvrir que ___ a toujours été ___ et qu’on m’a menti pendant des années."
+    },
+    {
+      "id": "white-119",
+      "text": "Le truc le plus bizarre que j’aie vu en vacances, c’était ___ qui ___ avec ___."
+    },
+    {
+      "id": "white-120",
+      "text": "Je me demande parfois si ___ n’est pas en réalité une forme de vie venue de ___."
+    },
+    {
+      "id": "white-121",
+      "text": "Un jour, j’ai trouvé ___ qui m’a dit : ‘Tu ne croiras jamais ce qui s’est passé à ___.’"
+    },
+    {
+      "id": "white-122",
+      "text": "Si je pouvais vivre dans une dimension parallèle, je choisirais ___ pour m’accompagner et ___ serait notre mission."
+    },
+    {
+      "id": "white-123",
+      "text": "J’ai un secret : chaque fois que je mange ___, je me transforme en ___ pendant 10 minutes."
+    },
+    {
+      "id": "white-124",
+      "text": "La dernière fois que j’ai vu ___, il/elle m’a proposé ___ en échange de ___."
+    },
+    {
+      "id": "white-125",
+      "text": "Je suis convaincu que ___ fait partie d’un complot mondial pour ___."
+    },
+    {
+      "id": "white-126",
+      "text": "Si je pouvais avoir une rencontre avec un dieu, ce serait ___, et je lui demanderais ___."
+    },
+    {
+      "id": "white-127",
+      "text": "Quand je me sens vraiment bizarre, je vais dans mon jardin et je parle à ___ en espérant qu’il/elle me réponde."
+    },
+    {
+      "id": "white-128",
+      "text": "Je suis presque certain que ___ est une invention du gouvernement pour cacher ___."
+    },
+    {
+      "id": "white-129",
+      "text": "Si je devais faire un saut dans le temps, j’irais en ___ pour ___."
+    },
+    {
+      "id": "white-130",
+      "text": "Mon plus grand regret, c’est de ne jamais avoir essayé de ___ avec ___."
+    },
+    {
+      "id": "white-131",
+      "text": "Le plus grand mystère de l’univers, c’est de savoir pourquoi ___ fait toujours ___ quand il/elle voit ___."
+    },
+    {
+      "id": "white-132",
+      "text": "La chose la plus absurde que j’ai entendue aujourd’hui, c’est ___, et je n’arrive toujours pas à y croire."
+    },
+    {
+      "id": "white-133",
+      "text": "Si je devais écrire une lettre au futur, je leur dirais ___ et je leur demanderais de ___."
+    },
+    {
+      "id": "white-134",
+      "text": "Un jour, ___ m’a dit : ‘Fais attention à ___, ça va te changer à jamais.’"
+    },
+    {
+      "id": "white-135",
+      "text": "Si je pouvais être un objet inanimé pendant une journée, je serais ___ et j’attendrais ___."
+    },
+    {
+      "id": "white-136",
+      "text": "Je suis convaincu que ___ n’est pas un humain, mais un ___ déguisé."
+    },
+    {
+      "id": "white-137",
+      "text": "Mon super pouvoir secret, c’est de ___ chaque fois que je suis ___."
+    },
+    {
+      "id": "white-138",
+      "text": "Quand je vais à la plage, je cherche toujours ___, mais je ne trouve jamais ce que je cherche."
+    },
+    {
+      "id": "white-139",
+      "text": "Si je pouvais changer ma voix pour celle de ___, je chanterais ___ à tout le monde."
+    },
+    {
+      "id": "white-140",
+      "text": "Je suis persuadé que ___ est responsable de la disparition des ___ dans le monde entier."
+    },
+    {
+      "id": "white-141",
+      "text": "Le dernier rêve que j’ai eu, c’était ___ qui me poursuivait avec ___ et me demandait ___."
+    },
+    {
+      "id": "white-142",
+      "text": "Je suis sûr que ___ fait secrètement partie d’un club secret où on échange des ___ et des ___."
+    },
+    {
+      "id": "white-143",
+      "text": "Un jour, j’ai vu ___ en train de ___ dans un parc, et je me suis dit : ‘C’est quoi ce délire ?!’"
+    },
+    {
+      "id": "white-144",
+      "text": "Si je pouvais avoir une conversation avec ___, je lui poserais ___ et je lui dirais ___."
+    },
+    {
+      "id": "white-145",
+      "text": "Le plus grand défi de ma vie, c’est de savoir pourquoi ___ refuse de ___ chaque fois que je lui demande."
+    },
+    {
+      "id": "white-146",
+      "text": "Si je devais choisir un compagnon de voyage pour aller sur Mars, ce serait ___, et on ferait ___."
+    },
+    {
+      "id": "white-147",
+      "text": "Je suis convaincu que ___ a des pouvoirs surnaturels et que ___ est en réalité ___ en mission secrète."
+    },
+    {
+      "id": "white-148",
+      "text": "La dernière fois que j’ai mangé ___, je me suis retrouvé dans ___ et j’ai rencontré ___."
+    },
+    {
+      "id": "white-149",
+      "text": "Je suis presque certain que ___ est responsable de la disparition des ___ dans le grand mystère des mondes parallèles."
+    },
+    {
+      "id": "white-150",
+      "text": "Si je devais réécrire l’histoire, je commencerais par ___ et je ferais ___ le personnage principal."
+    },
+    {
+      "id": "white-151",
+      "text": "Mon esprit est obsédé par ___, surtout quand je pense que ___ pourrait être la solution à tout."
+    },
+    {
+      "id": "white-152",
+      "text": "Si je pouvais être un extraterrestre, je choisirais ___ comme planète pour y installer ___ et ___."
+    },
+    {
+      "id": "white-153",
+      "text": "J’ai entendu dire que ___ a un projet secret pour créer ___ et envahir ___."
+    },
+    {
+      "id": "white-154",
+      "text": "Un jour, je suis tombé sur ___ qui faisait ___ dans une piscine remplie de ___."
+    },
+    {
+      "id": "white-155",
+      "text": "Je suis convaincu que ___ est en réalité ___ déguisé pour ___ dans le monde des humains."
+    },
+    {
+      "id": "white-156",
+      "text": "Quand je veux impressionner quelqu’un, je me fais ___ en espérant que ça fonctionne avec ___."
+    },
+    {
+      "id": "white-157",
+      "text": "Si je pouvais vivre dans un monde parallèle, ce serait un monde où ___ et ___ seraient les règles fondamentales."
+    },
+    {
+      "id": "white-158",
+      "text": "Je suis obsédé par ___, surtout quand il/elle me parle de ___ dans un langage secret."
+    },
+    {
+      "id": "white-159",
+      "text": "Un jour, je vais faire ___ avec ___ dans ___ et personne ne saura jamais pourquoi."
+    },
+    {
+      "id": "white-160",
+      "text": "Si je devais donner un conseil à l’humanité, ce serait de ___ chaque fois que ___ se produit."
+    },
+    {
+      "id": "white-161",
+      "text": "Si je devais choisir entre ___ et ___, je prendrais ___, mais seulement si ___."
+    },
+    {
+      "id": "white-162",
+      "text": "Un jour, je vais organiser ___ et inviter ___ pour discuter de ___ pendant des heures."
+    },
+    {
+      "id": "white-163",
+      "text": "Je suis convaincu que ___ est en réalité ___ déguisé en ___ pour infiltrer ___."
+    },
+    {
+      "id": "white-164",
+      "text": "La dernière fois que j’ai vu ___, il/elle m’a offert ___ en me disant que ça venait de ___."
+    },
+    {
+      "id": "white-165",
+      "text": "Si je devais passer un an sur une île déserte, je n’emmènerais que ___ et ___ pour ___."
+    },
+    {
+      "id": "white-166",
+      "text": "Je suis persuadé que ___ est un secret gouvernemental qui peut résoudre ___ en une seule nuit."
+    },
+    {
+      "id": "white-167",
+      "text": "Si je pouvais fusionner avec un objet, je deviendrais ___ et j’irai ___ pour ___."
+    },
+    {
+      "id": "white-168",
+      "text": "Mon rêve le plus bizarre, c’est de ___ avec ___ pendant qu’un ___ se transforme en ___."
+    },
+    {
+      "id": "white-169",
+      "text": "Quand je vais au supermarché, je ne peux pas m’empêcher d’acheter ___, même si je n’en ai absolument pas besoin."
+    },
+    {
+      "id": "white-170",
+      "text": "Si je pouvais être invisible, je passerais mes journées à ___ et à ___ avec ___."
+    },
+    {
+      "id": "white-171",
+      "text": "Un jour, je vais rencontrer ___ et je vais lui demander ___ avant de lui offrir ___."
+    },
+    {
+      "id": "white-172",
+      "text": "Je suis convaincu que ___ fait en fait partie d’une mission pour ___ et trouver ___."
+    },
+    {
+      "id": "white-173",
+      "text": "Si je pouvais m’installer dans n’importe quel endroit, je choisirais ___ pour y faire ___ toute la journée."
+    },
+    {
+      "id": "white-174",
+      "text": "Je suis sûr que ___ m’a dit qu’il/elle venait d’un autre univers, mais je n’ai pas osé lui poser des questions."
+    },
+    {
+      "id": "white-175",
+      "text": "Le dernier objet bizarre que j’ai trouvé chez moi, c’était ___, et il/elle m’a dit que ça appartenait à ___."
+    },
+    {
+      "id": "white-176",
+      "text": "Je suis convaincu que ___ a un pouvoir secret pour ___, mais il/elle n’a jamais voulu me le dire."
+    },
+    {
+      "id": "white-177",
+      "text": "Si je pouvais changer une seule règle dans le monde, je dirais que ___ doit être remplacé par ___."
+    },
+    {
+      "id": "white-178",
+      "text": "J’ai un secret : chaque fois que je mange ___, je me transforme en ___ et je deviens ___ pendant une heure."
+    },
+    {
+      "id": "white-179",
+      "text": "Si je pouvais voyager dans le temps, je reviendrais juste pour ___ et ___."
+    },
+    {
+      "id": "white-180",
+      "text": "Je suis certain que ___ cache un portail magique dans ___ qui mène à ___."
+    },
+    {
+      "id": "white-181",
+      "text": "La dernière fois que j’ai vu ___, il/elle m’a dit qu’il/elle allait ___ pour résoudre ___."
+    },
+    {
+      "id": "white-182",
+      "text": "Un jour, je vais acheter ___ et le transformer en ___ pour ___."
+    },
+    {
+      "id": "white-183",
+      "text": "Je suis persuadé que ___ cache ___ dans ___ et que ___ est la clé pour tout comprendre."
+    },
+    {
+      "id": "white-184",
+      "text": "Si je pouvais parler à ___, je lui demanderais ___ et lui dirais que ___ est la vraie raison de tout."
+    },
+    {
+      "id": "white-185",
+      "text": "Si ___ était un super-héros, son pouvoir serait de ___ et son ennemi juré serait ___."
+    },
+    {
+      "id": "white-186",
+      "text": "Je suis sûr que ___ possède une technologie secrète qui permet de ___, et personne ne veut en parler."
+    },
+    {
+      "id": "white-187",
+      "text": "Si je devais donner un conseil aux extraterrestres, ce serait de ___ et de ___ avant de repartir vers ___."
+    },
+    {
+      "id": "white-188",
+      "text": "Un jour, j’ai rencontré ___ et il/elle m’a dit : ‘Tu sais, la solution à ___ c’est de ___.’"
+    },
+    {
+      "id": "white-189",
+      "text": "Si je pouvais être un objet pendant une journée, je serais ___ et je passerais toute la journée à ___."
+    },
+    {
+      "id": "white-190",
+      "text": "Quand je me réveille le matin, je me demande toujours pourquoi ___ est dans ___ et comment il/elle a fini là."
+    },
+    {
+      "id": "white-191",
+      "text": "Je suis convaincu que ___ a secrètement ___ dans sa cave, mais il/elle refuse de me le dire."
+    },
+    {
+      "id": "white-192",
+      "text": "Si je pouvais m’installer sur une autre planète, je choisirais ___ et je commencerais une guerre contre ___ avec ___."
+    },
+    {
+      "id": "white-193",
+      "text": "La dernière fois que j’ai essayé de ___, ___ a totalement échoué et ___ en a rigolé."
+    },
+    {
+      "id": "white-194",
+      "text": "Si ___ venait sur Terre, je lui offrirais ___ et on passerait la journée à ___."
+    },
+    {
+      "id": "white-195",
+      "text": "J’ai un projet secret : créer ___ qui permettra de ___ et de ___ à grande échelle."
+    },
+    {
+      "id": "white-196",
+      "text": "Je suis sûr que ___ est une machine de guerre déguisée en ___ pour infiltrer ___."
+    },
+    {
+      "id": "white-197",
+      "text": "Un jour, ___ m’a dit que ___ pouvait me donner un super pouvoir si j’arrêtais de ___."
+    },
+    {
+      "id": "white-198",
+      "text": "Je suis persuadé que ___ et ___ sont en réalité des agents secrets venus pour ___ et sauver ___."
+    },
+    {
+      "id": "white-199",
+      "text": "Si je devais organiser un concours pour trouver la personne la plus bizarre, je ferais venir ___ et je lui demanderais ___."
+    },
+    {
+      "id": "white-200",
+      "text": "J’ai trouvé ___ en train de ___ dans un ascenseur, et il/elle m’a dit qu’il/elle cherchait ___."
+    },
+    {
+      "id": "white-201",
+      "text": "Je suis convaincu que ___ et ___ forment le duo le plus dangereux du monde. Ils ont créé ___ et l’ont caché dans ___."
+    },
+    {
+      "id": "white-202",
+      "text": "Le dernier truc que j’ai mangé, c’était ___ et j’ai trouvé un message de ___ dedans disant : ‘Si tu veux ___, fais ___ maintenant.’"
+    },
+    {
+      "id": "white-203",
+      "text": "Je me demande parfois si ___ n’est pas un extraterrestre qui se cache sous l’apparence de ___ et qui mange ___ pour survivre."
+    },
+    {
+      "id": "white-204",
+      "text": "Si je devais passer une journée avec ___ et ___, je suis sûr qu’on finirait par ___, ___ et ___ dans un volcan en éruption."
+    },
+    {
+      "id": "white-205",
+      "text": "Si un chat pouvait dominer le monde, ___ serait son premier ordre et il/elle ferait ___ avec ___."
+    },
+    {
+      "id": "white-206",
+      "text": "Je suis convaincu que ___ est responsable de la disparition des ___, il/elle utilise ___ pour créer un trou noir dans ___."
+    },
+    {
+      "id": "white-207",
+      "text": "Quand ___ m’a dit qu’il/elle voulait acheter ___, je savais qu’on allait se retrouver coincés dans ___ pour ___."
+    },
+    {
+      "id": "white-208",
+      "text": "Si ___ et ___ avaient une chaîne YouTube, elle s’appellerait ‘Comment ___ tout en ___’ et ferait des millions de vues."
+    },
+    {
+      "id": "white-209",
+      "text": "Je pense que ___ a secrètement volé ___ et l’a caché sous ___ pour que personne ne découvre que ___ est un ___."
+    },
+    {
+      "id": "white-210",
+      "text": "Un jour, je vais___ avec ___ sur ___ et on va inventer ___ pour détruire ___."
+    },
+    {
+      "id": "white-211",
+      "text": "Je suis persuadé que ___ a un plan pour ___ en utilisant ___ et ___ pour convaincre ___ qu’il faut ___."
+    },
+    {
+      "id": "white-212",
+      "text": "J’ai trouvé ___ dans ___ en train de ___ avec ___, et il/elle m’a dit que c’était la seule manière de ___."
+    },
+    {
+      "id": "white-213",
+      "text": "Si je devais aller dans un autre univers, je choisirais celui où ___ est une divinité et tout le monde doit ___ pour obtenir ___."
+    },
+    {
+      "id": "white-214",
+      "text": "Quand ___ m’a montré ___, je savais que ça allait déclencher ___, mais je n’imaginais pas que ça finirait par ___ dans ___."
+    },
+    {
+      "id": "white-215",
+      "text": "Si j’étais une créature mythologique, je serais ___, et je conquérirais ___ en lançant ___ et ___ sur ___."
+    },
+    {
+      "id": "white-216",
+      "text": "Je suis absolument certain que ___ a trouvé un moyen de ___ avec ___ et qu’il/elle veut convaincre ___ que ___."
+    },
+    {
+      "id": "white-217",
+      "text": "J’ai vu ___ en train de ___ avec ___ dans un ___ et je me suis demandé s’ils cherchaient ___ ou juste à ___."
+    },
+    {
+      "id": "white-218",
+      "text": "Un jour, je vais convaincre ___ de ___ en échange de ___, et ensemble, on va ___ jusqu’à ___."
+    },
+    {
+      "id": "white-219",
+      "text": "Si ___ devenait président, je suis sûr qu’il/elle imposerait ___ et interdirait ___ en faveur de ___."
+    },
+    {
+      "id": "white-220",
+      "text": "Je suis convaincu que ___ possède la recette secrète pour ___ et l’utilise pour ___ avant de ___ dans ___."
+    },
+    {
+      "id": "white-221",
+      "text": "Si je devais créer un culte, il serait basé sur ___, et on se réunirait tous les dimanches pour ___ et ___."
+    },
+    {
+      "id": "white-222",
+      "text": "Quand j’ai vu ___ faire ___ avec ___, j’ai su que l’humanité allait changer pour toujours."
+    },
+    {
+      "id": "white-223",
+      "text": "Le secret de l’univers, c’est ___, et il suffit de ___ pour accéder à ___."
+    },
+    {
+      "id": "white-224",
+      "text": "Un jour, je vais convaincre ___ de ___, et on fera ___ jusqu’à ce que ___ devienne la norme."
+    },
+    {
+      "id": "white-225",
+      "text": "J’ai découvert que ___ était en réalité ___, et ils ont secrètement inventé ___ pour ___."
+    },
+    {
+      "id": "white-226",
+      "text": "Quand ___ me regarde, je suis sûr(e) qu’il/elle pense à ___, mais moi, je rêve de ___."
+    },
+    {
+      "id": "white-227",
+      "text": "Si j’étais un super-héros, mon super-pouvoir serait de ___ avec ___ et de sauver ___ en ___."
+    },
+    {
+      "id": "white-228",
+      "text": "La dernière fois que j’ai vu ___, il/elle portait ___ et m’a dit que je devais ___ pour ___."
+    },
+    {
+      "id": "white-229",
+      "text": "Je suis convaincu que ___ a créé ___ en secret, et tout ce qu’il/elle veut, c’est ___ pour ___."
+    },
+    {
+      "id": "white-230",
+      "text": "Si ___ et ___ se battaient dans un ring, je parie qu’ils/elles utiliseraient ___ pour ___ et ___ finirait par ___."
+    },
+    {
+      "id": "white-231",
+      "text": "Un jour, je vais fonder une nouvelle religion où ___ et ___ seront les éléments sacrés, et on priera pour ___."
+    },
+    {
+      "id": "white-232",
+      "text": "Je suis sûr(e) que ___ est une créature mythologique cachée sous l’apparence de ___, et il/elle attend juste le bon moment pour ___."
+    },
+    {
+      "id": "white-233",
+      "text": "Si je pouvais ouvrir une boîte de Pandore, dedans, il y aurait ___ et ___, et ensemble, ils provoqueraient ___ dans le monde entier."
+    },
+    {
+      "id": "white-234",
+      "text": "Quand ___ a dit que ___, je savais que c’était un signal pour ___, mais je ne pensais pas que ça finirait par ___."
+    },
+    {
+      "id": "white-235",
+      "text": "Je me demande souvent si ___ a vraiment compris que ___ pourrait le/la transformer en ___ pour toujours."
+    },
+    {
+      "id": "white-236",
+      "text": "Un jour, je vais ___ avec ___ et on va ___, tout ça pour découvrir que ___ est en réalité ___."
+    },
+    {
+      "id": "white-237",
+      "text": "Je suis sûr que ___ a trouvé le moyen de ___ et qu’il/elle va utiliser ___ pour ___."
+    },
+    {
+      "id": "white-238",
+      "text": "Si ___ et ___ se retrouvaient dans ___, ils/elles feraient ___ pour sauver ___ d’une invasion de ___."
+    },
+    {
+      "id": "white-239",
+      "text": "Je suis persuadé que ___ a secrètement envoyé ___ sur ___ pour ___ et tester ___."
+    },
+    {
+      "id": "white-240",
+      "text": "Si je devais choisir une mission pour ___ et ___, ce serait de ___ pour ___, et ensemble, ils/elles réussiraient à ___."
+    },
+    {
+      "id": "white-241",
+      "text": "Si je devais donner un conseil à ___, ce serait de ___ et de ne jamais oublier ___, sinon ___ viendrait ___."
+    },
+    {
+      "id": "white-242",
+      "text": "Je suis convaincu que ___ est en réalité ___, et que ___ est une illusion créée par ___ pour ___."
+    },
+    {
+      "id": "white-243",
+      "text": "Un jour, ___ m’a dit qu’il/elle voulait ___ avec ___ dans ___, mais je ne pensais pas que ça finirait par ___."
+    },
+    {
+      "id": "white-244",
+      "text": "Je suis sûr(e) que ___ a créé ___ pour ___ et que ___ est la clé de ___."
+    },
+    {
+      "id": "white-245",
+      "text": "Si ___ et ___ devenaient des super-héros, leurs pouvoirs seraient de ___ et de ___, et leur ennemi juré serait ___."
+    },
+    {
+      "id": "white-246",
+      "text": "La dernière fois que ___ a fait ___, j’ai eu l’impression que le monde entier allait ___, mais je ne pouvais pas m’arrêter de ___."
+    },
+    {
+      "id": "white-247",
+      "text": "Un jour, je vais organiser une réunion secrète où ___ et ___ devront ___ pour résoudre ___."
+    },
+    {
+      "id": "white-248",
+      "text": "Si ___ et ___ fusionnaient en un seul être, ils/elles deviendraient ___, et leur mission serait de ___ dans ___."
+    },
+    {
+      "id": "white-249",
+      "text": "Je suis sûr(e) que ___ a caché ___ sous ___, et personne n’ose encore ___ pour découvrir ___."
+    },
+    {
+      "id": "white-250",
+      "text": "Je me demande souvent si ___ n’est pas en réalité un ___. Leur plan secret serait de ___ et d’utiliser ___ pour ___."
+    }
+  ]
+}

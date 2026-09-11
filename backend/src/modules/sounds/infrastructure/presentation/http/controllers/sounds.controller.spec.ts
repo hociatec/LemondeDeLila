@@ -24,7 +24,7 @@ describe('SoundsController', () => {
   it('allows serving wav files from storage paths under dot-directories', async () => {
     const sounds: any = {
       resolveSoundFile: jest.fn().mockResolvedValue({
-        entry: { sha256: 'abc' },
+        entry: { sha256: 'a'.repeat(64) },
         filePath:
           '/home/ubuntu/.local/share/lemonde-de-lila/sounds/TableAmbience1/abc.wav',
       }),
@@ -36,7 +36,7 @@ describe('SoundsController', () => {
       sendFile: jest.fn(),
     };
 
-    await controller.getSoundWav('TableAmbience1', 'abc', res);
+    await controller.getSoundWav('TableAmbience1', 'a'.repeat(64), res);
 
     expect(res.sendFile).toHaveBeenCalledWith(
       '/home/ubuntu/.local/share/lemonde-de-lila/sounds/TableAmbience1/abc.wav',

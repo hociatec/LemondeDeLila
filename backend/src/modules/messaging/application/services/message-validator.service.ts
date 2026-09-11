@@ -9,6 +9,9 @@ export class MessageValidatorService {
   private static readonly SUBJECT_MAX_LENGTH = 200;
 
   validate(text: string): string {
+    if (typeof text !== 'string' || text.length > 100_000) {
+      throw new BadRequestException('Le message est invalide');
+    }
     const sanitized = sanitizeMessage(text, {
       encodeHtml: true,
       collapseNewLines: true,
@@ -25,7 +28,7 @@ export class MessageValidatorService {
   }
 
   validateSubject(subject?: string | null): string | null {
-    if (!subject) {
+    if (subject == null || typeof subject !== 'string') {
       return null;
     }
     const sanitized = sanitizeMessage(subject, {

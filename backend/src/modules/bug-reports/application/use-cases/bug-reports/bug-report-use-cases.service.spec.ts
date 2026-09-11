@@ -6,7 +6,7 @@ import { UpdateBugReportService } from './update-bug-report.service';
 import { UpdateBugReportStatusService } from './update-bug-report-status.service';
 import { BugReportStatusNormalizerService } from './bug-report-status-normalizer.service';
 import type { BugReportRepository } from '../../ports/bug-report.repository';
-import type { BugReportRecord } from '../../contracts/bug-report.record';
+import type { BugReportRecord } from '../../read-models/bug-report.record';
 import { AddBugReportCommentService } from '../bug-report-comments/add-bug-report-comment.service';
 import { CountBugReportCommentsService } from '../bug-report-comments/count-bug-report-comments.service';
 import { ListBugReportCommentsService } from '../bug-report-comments/list-bug-report-comments.service';
@@ -41,6 +41,7 @@ describe('Bug report use cases', () => {
     const normalizer = new BugReportStatusNormalizerService();
     const createBugReport = new CreateBugReportService(
       repo as unknown as BugReportRepository,
+      { now: () => Date.now() },
     );
     const getBugReport = new GetBugReportService(
       repo as unknown as BugReportRepository,
@@ -72,6 +73,7 @@ describe('Bug report use cases', () => {
     const add = new AddBugReportCommentService(
       commentRepo,
       reports as unknown as BugReportRepository,
+      { now: () => Date.now() },
     );
     await expect(
       add.execute({
@@ -125,6 +127,7 @@ describe('Bug report use cases', () => {
     const add = new AddBugReportCommentService(
       comments,
       reports as unknown as BugReportRepository,
+      { now: () => Date.now() },
     );
 
     const created = await Promise.all(
@@ -147,6 +150,7 @@ describe('Bug report use cases', () => {
     const normalizer = new BugReportStatusNormalizerService();
     const createBugReport = new CreateBugReportService(
       repo as unknown as BugReportRepository,
+      { now: () => Date.now() },
     );
     const getBugReport = new GetBugReportService(
       repo as unknown as BugReportRepository,
