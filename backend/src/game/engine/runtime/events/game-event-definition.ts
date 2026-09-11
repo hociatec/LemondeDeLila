@@ -1,5 +1,5 @@
-import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
-import type { GameContext } from '../game-rule-context';
+import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import type { GameContext } from '../definitions/game-author-context';
 import type { GameInputSchema } from '../actions/game-input-schema';
 
 export type GameEventDefinition<TType extends string, TData extends object> = {
@@ -23,6 +23,19 @@ export type GameEventMapOf<
 export function defineEvents<
   const TDefinitions extends readonly GameEventDefinition<string, object>[],
 >(...definitions: TDefinitions): TDefinitions {
+  if (definitions.length > 512) {
+    throw new Error('Too many game event definitions');
+  }
+  if (
+    definitions.some(
+      (definition) =>
+        typeof definition.type !== 'string' ||
+        definition.type.length === 0 ||
+        definition.type.length > 128,
+    )
+  ) {
+    throw new Error('Invalid game event identifier');
+  }
   const ids = definitions.map((definition) => definition.type);
   if (new Set(ids).size !== ids.length) {
     throw new Error('Game event identifiers must be unique');

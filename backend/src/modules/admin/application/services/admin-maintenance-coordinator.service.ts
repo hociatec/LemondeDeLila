@@ -11,7 +11,10 @@ export class AdminMaintenanceCoordinatorService {
     private readonly lock: AdminMaintenanceLock,
   ) {}
 
-  execute<TResult>(operation: string, run: () => TResult): TResult {
+  execute<TResult>(
+    operation: string,
+    run: () => TResult | Promise<TResult>,
+  ): Promise<Awaited<TResult>> {
     return this.lock.runExclusive(operation, run);
   }
 }

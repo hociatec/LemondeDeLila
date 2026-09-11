@@ -1,5 +1,6 @@
 import {
   IsArray,
+  ArrayMaxSize,
   IsDateString,
   IsEmail,
   IsOptional,
@@ -16,6 +17,7 @@ import {
 export class AdminUpdateUserDto {
   @IsOptional()
   @IsEmail()
+  @MaxLength(320)
   email?: string;
 
   @IsOptional()
@@ -36,15 +38,20 @@ export class AdminUpdateUserDto {
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(32)
   @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  @MinLength(1, { each: true })
   roles?: string[];
 
   @IsOptional()
   @IsString()
+  @MaxLength(2048)
   avatar?: string | null;
 
   @IsOptional()
   @IsDateString()
+  @MaxLength(64)
   bannedUntil?: string | null;
 
   @IsOptional()

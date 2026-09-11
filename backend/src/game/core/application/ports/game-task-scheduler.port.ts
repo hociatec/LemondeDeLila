@@ -1,11 +1,22 @@
 export const GAME_TASK_SCHEDULER = Symbol('GAME_TASK_SCHEDULER');
 
+export type GameTaskStateIdentity = {
+  schemaVersion: number;
+  contentVersion: string;
+  rulesVersion: string;
+};
+
 export type GameScheduledTask = {
   key: string;
   roomId: number;
   gameType: string;
   signature: string;
   generation: number;
+  restoreId?: string | null;
+  /** Missing on historical jobs; never matches a versioned game state. */
+  stateIdentity?: GameTaskStateIdentity | null;
+  /** Absent only on historical jobs; cannot match a state with a known run. */
+  roomRunId?: number | null;
   dueAtMs: number;
   correlationId?: string;
 };

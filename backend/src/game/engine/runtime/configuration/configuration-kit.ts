@@ -1,17 +1,10 @@
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
+import type { GameConfigurationState } from '../contracts/configuration-state';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
 import type { GameInputSchema } from '../actions/game-input-schema';
-import type { GameContext } from '../game-rule-context';
+import type { GameContext } from '../definitions/game-author-context';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 
 export const GAME_CONFIGURE_ACTION = 'game.configure' as const;
-
-export type GameConfigurationState<
-  TValues extends object = Record<string, unknown>,
-> = {
-  ownerPlayerId: number | null;
-  complete: boolean;
-  values: TValues;
-};
 
 export type GameConfigurationUi = {
   title?: string;
@@ -21,7 +14,7 @@ export type GameConfigurationUi = {
 
 type GameConfigurationExecution<TState extends object> = {
   state: TState;
-  actor: PlayerStateEntity;
+  actor: PlayerState;
   config: object;
   ctx: GameContext<TState>;
 };
@@ -39,13 +32,13 @@ export interface GameConfigurationShape<
   overrides?: readonly string[];
   validate?(input: {
     state: TState;
-    actor: PlayerStateEntity;
+    actor: PlayerState;
     config: TConfig;
     ctx: GameContext<TState>;
   }): boolean;
   onConfigured?(input: {
     state: TState;
-    actor: PlayerStateEntity;
+    actor: PlayerState;
     config: TConfig;
     ctx: GameContext<TState>;
   }): void;
@@ -63,13 +56,13 @@ export interface GameConfigurationDefinition<
   overrides?: readonly (keyof TConfig & string)[];
   validate?(input: {
     state: TState;
-    actor: PlayerStateEntity;
+    actor: PlayerState;
     config: TConfig;
     ctx: GameContext<TState>;
   }): boolean;
   onConfigured?(input: {
     state: TState;
-    actor: PlayerStateEntity;
+    actor: PlayerState;
     config: TConfig;
     ctx: GameContext<TState>;
   }): void;
@@ -174,7 +167,7 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 export function createGameConfigurationState(
   definition: GameConfigurationShape<object> | undefined,
-  players: readonly PlayerStateEntity[],
+  players: readonly PlayerState[],
   preferredOwnerId: number | null | undefined,
 ): GameConfigurationState {
   const ownerPlayerId = selectOwner(players, preferredOwnerId);
@@ -215,7 +208,7 @@ export type ConfigurationValuesOf<TDefinition> = TDefinition extends {
 export function canConfigureGame<TState extends object>(
   definition: GameConfigurationShape<TState>,
   state: GameConfigurationState,
-  actor: PlayerStateEntity,
+  actor: PlayerState,
   ctx: GameContext<TState>,
 ): boolean {
   if (state.complete) return false;
@@ -248,7 +241,7 @@ export function commitGameConfiguration(
 }
 
 function selectOwner(
-  players: readonly PlayerStateEntity[],
+  players: readonly PlayerState[],
   preferredOwnerId: number | null | undefined,
 ): number | null {
   if (
@@ -269,3 +262,5 @@ function asConfigurationRecord(value: unknown): Record<string, unknown> {
 function plainConfigurationValues(value: object): Record<string, unknown> {
   return { ...(structuredClone(value) as Record<string, unknown>) };
 }
+
+export type { GameConfigurationState } from '../contracts/configuration-state';

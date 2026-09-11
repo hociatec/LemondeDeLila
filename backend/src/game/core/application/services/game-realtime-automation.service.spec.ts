@@ -1,5 +1,7 @@
-import type { GameRuntime } from '../contracts/game-runtime.interface';
-import type { GameStateEntity } from '../contracts/game-state.model';
+import { GameTaskDispatchService } from './game-task-dispatch.service';
+import { GameAutomationPlannerService } from './game-automation-planner.service';
+import type { GameRuntime } from '../ports/game-runtime.port';
+import type { GameState } from '../models/game-state.model';
 import type {
   GameScheduledTask,
   GameTaskProcessor,
@@ -7,6 +9,73 @@ import type {
 import { GameRealtimeAutomationService } from './game-realtime-automation.service';
 
 describe('GameRealtimeAutomationService', () => {
+  it('invalidates a pre-restoration delivery with identical run, generation and versions', async () => {
+    const test = harness(state({ metadata: { restoreId: 'new-restore' } }));
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'example',
+      handler: test.runtime,
+      state: test.current,
+    });
+    await Promise.resolve();
+    const task = test.scheduled[0]!;
+    await test.processor()({ ...task, restoreId: 'old-restore' });
+    await test.processor()({ ...task, restoreId: undefined });
+    expect(test.executor.execute).not.toHaveBeenCalled();
+    await test.processor()(task);
+    expect(test.engine.compareAndSetInternalState).toHaveBeenCalledWith(
+      12,
+      'example',
+      4,
+      expect.any(Object),
+      'new-restore',
+    );
+  });
+  it.each(['schemaVersion', 'contentVersion', 'rulesVersion'] as const)(
+    'invalidates deliveries after a %s change even with identical run/generation/signature',
+    async (field) => {
+      const originalIdentity = {
+        schemaVersion: 1,
+        contentVersion: 'content-1',
+        rulesVersion: 'rules-1',
+      };
+      const test = harness(
+        state({ engine: originalIdentity, metadata: { roomRunId: 4 } }),
+      );
+      test.service.schedule({
+        roomId: 12,
+        gameType: 'example',
+        handler: test.runtime,
+        state: test.current,
+      });
+      await Promise.resolve();
+      const original = structuredClone(test.scheduled[0]!);
+      const changed = {
+        ...originalIdentity,
+        [field]: field === 'schemaVersion' ? 2 : 'version-2',
+      };
+      test.engine.exportInternalState.mockResolvedValue(
+        state({ engine: changed, metadata: { roomRunId: 4 } }),
+      );
+      await test.processor()(original);
+      await Promise.resolve();
+      expect(test.executor.execute).not.toHaveBeenCalled();
+      expect(test.engine.compareAndSetInternalState).not.toHaveBeenCalled();
+      expect(test.scheduled.at(-1)?.stateIdentity).toEqual(changed);
+      await test.processor()({ ...original, stateIdentity: undefined });
+      expect(test.executor.execute).not.toHaveBeenCalled();
+    },
+  );
+
+  it('rejects malformed deliveries before acquiring a room lock or reading state', async () => {
+    const test = harness();
+    await expect(
+      test.processor()({ roomId: -1 } as GameScheduledTask),
+    ).rejects.toThrow('Invalid game scheduled task');
+    expect(test.queue.run).not.toHaveBeenCalled();
+    expect(test.engine.exportInternalState).not.toHaveBeenCalled();
+  });
+
   const state = (overrides: Record<string, unknown> = {}) =>
     ({
       status: 'started',
@@ -15,7 +84,7 @@ describe('GameRealtimeAutomationService', () => {
       turn: { currentPlayerId: 1, direction: 1, turnNumber: 2 },
       metadata: {},
       ...overrides,
-    }) as unknown as GameStateEntity;
+    }) as unknown as GameState;
 
   const handler = (executeAtMs = Date.now() - 1, actionType = 'resume') =>
     ({
@@ -61,11 +130,13 @@ describe('GameRealtimeAutomationService', () => {
     };
     const service = new GameRealtimeAutomationService(
       engine as never,
-      {
-        suggestForHandler: jest.fn().mockReturnValue(suggestedActions),
-      } as never,
-      scheduler,
-      { getBotTurnDelayMs: () => 25 } as never,
+      new GameAutomationPlannerService(
+        {
+          suggestForHandler: jest.fn().mockReturnValue(suggestedActions),
+        } as never,
+        { getBotTurnDelayMs: () => 25 } as never,
+      ),
+      new GameTaskDispatchService(scheduler),
       executor as never,
       queue as never,
       undefined,
@@ -139,6 +210,7 @@ describe('GameRealtimeAutomationService', () => {
       'example',
       4,
       expect.any(Object),
+      null,
     );
     expect(committed).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -200,7 +272,7 @@ describe('GameRealtimeAutomationService', () => {
             type: 'draw',
             meta: expect.objectContaining({
               actorId: -7,
-              commandId: expect.stringContaining(':generation:4:'),
+              commandId: expect.stringMatching(/^automatic:[a-f0-9]{64}$/),
             }),
           }),
         ],
@@ -241,8 +313,8 @@ describe('GameRealtimeAutomationService', () => {
       ([input]) => input.actions[0].meta.commandId,
     );
     expect(commandIds).toEqual([
-      expect.stringContaining(':generation:4:'),
-      expect.stringContaining(':generation:5:'),
+      expect.stringMatching(/^automatic:[a-f0-9]{64}$/),
+      expect.stringMatching(/^automatic:[a-f0-9]{64}$/),
     ]);
     expect(commandIds[0]).not.toBe(commandIds[1]);
   });
@@ -481,6 +553,54 @@ describe('GameRealtimeAutomationService', () => {
       }),
     ]);
     expect(test.engine.compareAndSetInternalState).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects old-run and unversioned legacy deliveries with matching generation and signature', async () => {
+    const test = harness(state({ metadata: { roomRunId: 2 } }));
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'example',
+      handler: test.runtime,
+      state: test.current,
+    });
+    await Promise.resolve();
+    const task = test.scheduled[0]!;
+    expect(task.roomRunId).toBe(2);
+    await test.processor()({ ...task, roomRunId: 1 });
+    await test.processor()({ ...task, roomRunId: undefined });
+    expect(test.executor.execute).not.toHaveBeenCalled();
+    await test.processor()(task);
+    expect(test.executor.execute).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not commit twice when delivery retries after the post-commit publisher failed', async () => {
+    const test = harness();
+    test.service.setStateCommittedHandler(() => {
+      throw new Error('publisher unavailable');
+    });
+    test.engine.compareAndSetInternalState.mockImplementation(
+      async (_room, _game, _version, next) => {
+        const persisted = { ...next, version: 5 };
+        test.engine.exportInternalState.mockResolvedValue(persisted);
+        return { committed: true, version: 5, state: persisted };
+      },
+    );
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'example',
+      handler: test.runtime,
+      state: test.current,
+    });
+    await Promise.resolve();
+    const task = test.scheduled[0]!;
+    await expect(test.processor()(task)).rejects.toThrow(
+      'publisher unavailable',
+    );
+    await test.processor()(task);
+    expect(test.engine.compareAndSetInternalState).toHaveBeenCalledTimes(1);
+    expect(test.executor.execute).toHaveBeenCalledTimes(1);
+    await Promise.resolve();
+    expect(test.scheduled.at(-1)?.generation).toBe(5);
   });
 
   it('cancels all durable jobs for a room without a process-local timer map', async () => {

@@ -2,14 +2,15 @@ import {
   cards,
   collection,
   defineCardsSchema,
-  defineEffect,
   defineGame,
-  gameInput,
   inventory,
   raceGame,
 } from '../../../engine/sdk/public-api';
 import { PIRATES_CONTENT, PIRATES_GAME_CONTENT } from './content';
-import { PIRATES_ACTIONS, stealTreasure } from './rules';
+import manifest from './manifest.json';
+import { GAME_EFFECTS } from './rules';
+
+import { PIRATES_ACTIONS } from './rules';
 import type { PiratesState } from './types';
 
 const cardSchema = defineCardsSchema({
@@ -23,12 +24,12 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<PiratesState>()({
-  id: 'pirates-en-vadrouille',
-  displayName: 'Pirates en vadrouille !',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Explorez Papayousse et ouvrez son coffre légendaire.',
-  players: { min: 2, max: 6 },
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
   content: PIRATES_GAME_CONTENT,
   patterns: [
     raceGame({ trackId: 'island', spaces: PIRATES_CONTENT.tiles.length }),
@@ -62,18 +63,6 @@ export default defineGame<PiratesState>()({
     { key: 'S', type: 'interface', id: 'score' },
   ],
   actions: PIRATES_ACTIONS,
-  effects: {
-    'pirates.steal-treasure': defineEffect<PiratesState, Record<string, never>>(
-      {
-        input: gameInput.object({}),
-        apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
-          const targetId = targetPlayerIds[0];
-          if (actorPlayerId != null && targetId != null) {
-            stealTreasure(actorPlayerId, targetId, ctx);
-          }
-        },
-      },
-    ),
-  },
+  effects: GAME_EFFECTS,
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

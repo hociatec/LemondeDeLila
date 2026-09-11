@@ -7,7 +7,7 @@ const socket = () =>
   ({ readyState: WebSocket.OPEN, send: jest.fn(), close: jest.fn() }) as any;
 
 describe('notification WebSocket services', () => {
-  it('keeps presence online until the last socket disconnects and reconnects', () => {
+  it('keeps presence online until the last socket disconnects and reconnects', async () => {
     const dispatch = { register: jest.fn(), unregister: jest.fn() };
     const counts = { getCounts: jest.fn() };
     const presence = { notifyFriendsPresence: jest.fn() };
@@ -26,17 +26,17 @@ describe('notification WebSocket services', () => {
       origin: null,
       product: null,
     };
-    service.register(first, meta);
-    service.register(second, { ...meta, socket: second });
-    service.unregister(first);
+    await service.register(first, meta);
+    await service.register(second, { ...meta, socket: second });
+    await service.unregister(first);
     expect(presence.notifyFriendsPresence).toHaveBeenCalledTimes(1);
-    service.unregister(second);
+    await service.unregister(second);
     expect(presence.notifyFriendsPresence).toHaveBeenLastCalledWith(
       7,
       'Alice',
       false,
     );
-    service.register(first, meta);
+    await service.register(first, meta);
     expect(presence.notifyFriendsPresence).toHaveBeenLastCalledWith(
       7,
       'Alice',

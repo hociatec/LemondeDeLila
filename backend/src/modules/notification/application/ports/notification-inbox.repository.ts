@@ -3,7 +3,7 @@ import type {
   NotificationInboxContactRow,
   NotificationInboxItemRecord,
   NotificationInboxPayload,
-} from '../contracts/notification-inbox-item.model';
+} from '../models/notification-inbox-item.model';
 
 export const NOTIFICATION_INBOX_REPOSITORY = Symbol(
   'NOTIFICATION_INBOX_REPOSITORY',

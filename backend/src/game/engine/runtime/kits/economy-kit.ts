@@ -3,9 +3,10 @@ import {
   GameNotFoundError,
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
-import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
+import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import type { GameInventoryController } from './inventory-kit';
 import type { GameResourcesController } from './player-values-kit';
+import { assertGameValue } from './numeric-invariants';
 
 export type MarketDefinition = {
   readonly component: 'economy.market';
@@ -27,7 +28,13 @@ export function createEconomyKitState(): EconomyKitState {
 
 export const economy = {
   market(definition: Omit<MarketDefinition, 'component'>): MarketDefinition {
+    const minimum = definition.minPrice ?? 0;
+    const maximum = definition.maxPrice ?? Number.MAX_SAFE_INTEGER;
     if (
+      !Number.isSafeInteger(minimum) ||
+      minimum < 0 ||
+      !Number.isSafeInteger(maximum) ||
+      maximum < minimum ||
       Object.keys(definition.prices).length === 0 ||
       Object.entries(definition.prices).some(
         ([itemId, price]) =>
@@ -117,6 +124,7 @@ export class GameEconomyController {
   }
 
   setPrice(marketId: string, itemId: string, value: number): number {
+    assertGameValue(value);
     const definition = this.requireMarket(marketId);
     const previous = this.price(marketId, itemId);
     const price = Math.max(
@@ -167,6 +175,8 @@ export class GameEconomyController {
   ): number {
     const market = this.requireMarket(marketId);
     const price = this.price(marketId, itemId);
+    this.inventories.assertCanAdd(market.inventory, playerId, itemId);
+    this.assertPriceAdjustment(price, options.priceDelta);
     this.resources.remove(playerId, market.currency, price);
     this.inventories.add(market.inventory, playerId, itemId);
     if (options.priceDelta) {
@@ -184,6 +194,8 @@ export class GameEconomyController {
   ): number {
     const market = this.requireMarket(marketId);
     const price = this.price(marketId, itemId);
+    assertGameValue(this.resources.get(playerId, market.currency) + price);
+    this.assertPriceAdjustment(price, options.priceDelta);
     this.inventories.remove(market.inventory, playerId, itemId);
     this.resources.add(playerId, market.currency, price);
     if (options.priceDelta) {
@@ -227,6 +239,16 @@ export class GameEconomyController {
     const definition = this.definitions.get(marketId);
     if (!definition) throw new GameNotFoundError(`Marché inconnu: ${marketId}`);
     return definition;
+  }
+
+  private assertPriceAdjustment(
+    price: number,
+    delta: number | undefined,
+  ): void {
+    if (delta !== undefined) {
+      assertGameValue(delta);
+      assertGameValue(price + delta);
+    }
   }
 }
 

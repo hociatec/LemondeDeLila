@@ -1,27 +1,41 @@
-﻿import { Injectable } from '@nestjs/common';
+﻿import { Inject } from '@nestjs/common';
+import { WsWorkService } from '../../../../../platform/ws/public-api';
+import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
+import { WsRequestRateLimitService } from '../../../../../platform/ws/public-api';
 import { isVersionLower } from '../../../../../shared/utils/public-api';
 import {
   WsJwtAuthService,
   WsTicketAuthService,
   WS_EVENTS,
 } from '../../../../../platform/realtime/public-api';
-import { UpdatePolicyService } from '../../../../update/public-api';
+import { decodeWsEnvelope } from '../../../../../platform/ws/public-api';
+import { ClientUpdateQueryService } from '../../../../update/public-api';
 import { NotificationWsHandler } from './notification-ws.handler';
 import { NotificationWsSessionService } from './notification-ws-session.service';
-import { operationalPolicy } from '../../../../../platform/config/public-api';
+import { operationalSettings } from '../../../../../platform/config/public-api';
+import { isBoundedJsonInput } from '../../../../../platform/validation/public-api';
 
 @Injectable()
 export class NotificationWsConnectionService {
   constructor(
     private readonly auth: WsJwtAuthService,
-    private readonly updates: UpdatePolicyService,
+    private readonly updates: ClientUpdateQueryService,
     private readonly wsTickets: WsTicketAuthService,
     private readonly sessions: NotificationWsSessionService,
     private readonly handler: NotificationWsHandler,
+    private readonly rateLimit: WsRequestRateLimitService,
+    @Inject(WsWorkService) private readonly work = new WsWorkService(),
   ) {}
 
-  async handleConnection(client: WebSocket, args: unknown[]): Promise<void> {
+  handleConnection(client: WebSocket, args: unknown[]): Promise<void> {
+    return this.work.run(client, () => this.openConnection(client, args));
+  }
+
+  private async openConnection(
+    client: WebSocket,
+    args: unknown[],
+  ): Promise<void> {
     const token = this.auth.extractToken(client, args);
     const user = this.auth.tryVerify(token);
     if (!user?.id) {
@@ -60,7 +74,7 @@ export class NotificationWsConnectionService {
             },
           });
           await new Promise((resolve) =>
-            setTimeout(resolve, operationalPolicy.wsReconnectBackoffMs),
+            setTimeout(resolve, operationalSettings.wsReconnectBackoffMs),
           );
           client.close(4406, 'update required');
           return;
@@ -70,7 +84,7 @@ export class NotificationWsConnectionService {
       // ignore
     }
 
-    this.sessions.register(client, {
+    await this.sessions.register(client, {
       userId: user.id,
       username: String(user.username || '').trim() || `user#${user.id}`,
       roles: Array.isArray(user.roles) ? user.roles : [],
@@ -80,13 +94,17 @@ export class NotificationWsConnectionService {
     });
 
     client.on('error', () => client.close());
-    client.on('message', (data) => void this.onClientMessage(client, data));
+    client.on(
+      'message',
+      (data) =>
+        void this.work.run(client, () => this.onClientMessage(client, data)),
+    );
 
     await this.sessions.sendConnected(client, user.id);
   }
 
-  handleDisconnect(client: WebSocket): void {
-    this.sessions.unregister(client);
+  handleDisconnect(client: WebSocket): Promise<void> {
+    return this.work.run(client, () => this.sessions.unregister(client), true);
   }
 
   private async onClientMessage(
@@ -95,6 +113,10 @@ export class NotificationWsConnectionService {
   ): Promise<void> {
     const meta = this.sessions.getMeta(client);
     if (!meta) {
+      return;
+    }
+    if (!(await this.rateLimit.allow(meta.userId))) {
+      client.close(1013, 'rate limit');
       return;
     }
 
@@ -110,17 +132,9 @@ export class NotificationWsConnectionService {
             )
           : '';
     if (!raw) return;
-
-    let parsed: Record<string, unknown> | null;
-    try {
-      const value: unknown = JSON.parse(raw);
-      parsed =
-        value && typeof value === 'object' && !Array.isArray(value)
-          ? (value as Record<string, unknown>)
-          : null;
-    } catch {
-      return;
-    }
+    const value = raw;
+    if (!isBoundedJsonInput(value)) return;
+    const parsed = decodeWsEnvelope(raw);
     if (!parsed) {
       return;
     }

@@ -1,4 +1,4 @@
-export { PerfMetricsService } from './application/services/perf-metrics.service';
+export { PerfMetricsService } from './infrastructure/metrics/perf-metrics.service';
 export {
   currentCorrelationId,
   normalizeCorrelationId,
@@ -10,3 +10,6 @@ export { getBuildInfo, type BuildInfo } from './application/build-info';
 export { ObservabilityModule } from './observability.module';
 export { prometheusMetrics } from './infrastructure/metrics/prometheus-metrics';
 export { inSpan } from './infrastructure/tracing/telemetry';
+
+export { playingLog } from './infrastructure/logging/playing-logger';
+export { bestEffort } from './application/best-effort.utils';

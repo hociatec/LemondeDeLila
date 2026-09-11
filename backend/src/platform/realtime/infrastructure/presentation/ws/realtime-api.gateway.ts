@@ -23,6 +23,6 @@ export class RealtimeApiGateway
   }
 
   handleDisconnect(client: WebSocket) {
-    this.connection.handleDisconnect(client);
+    return this.connection.handleDisconnect(client);
   }
 }

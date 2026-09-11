@@ -12,6 +12,7 @@
   "constructorDependencyExemptions": [
     "\\.registrar\\.ts$",
     "/module/",
-    "\\.module\\.ts$"
+    "\\.module\\.ts$",
+    "\\.adapter\\.ts$"
   ]
 }

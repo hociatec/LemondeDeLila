@@ -1,2 +1,4 @@
-export { SoundsModule } from './module/sounds.module';
-export { SoundsService } from './infrastructure/storage/sounds.service';
+export {
+  TABLE_AMBIENCES_READER,
+  type TableAmbiencesReader,
+} from './application/ports/table-ambiences-reader.port';

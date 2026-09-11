@@ -13,7 +13,7 @@ import {
   SOCIAL_USER_READER,
   type SocialUserReader,
 } from '../ports/social-user.repository';
-import type { SocialRelationshipRecord } from '../contracts/social-relationship.model';
+import type { SocialRelationshipRecord } from '../models/social-relationship.model';
 
 @Injectable()
 export class SocialRelationshipService {
@@ -27,6 +27,7 @@ export class SocialRelationshipService {
   ) {}
 
   async listFriends(userId: number) {
+    if (!isValidUserId(userId)) return [];
     const relations = await this.relationships.listAcceptedForUser(userId);
     return relations.map((relation) => {
       const friend =
@@ -43,6 +44,7 @@ export class SocialRelationshipService {
   }
 
   async listRequests(userId: number, direction: SocialDirection) {
+    if (!isValidUserId(userId)) return [];
     const relations = await this.relationships.listPendingForUser(
       userId,
       direction,
@@ -65,6 +67,7 @@ export class SocialRelationshipService {
   }
 
   async listBlocked(userId: number) {
+    if (!isValidUserId(userId)) return [];
     const relations = await this.relationships.listBlockedByUser(userId);
     return relations.map((relation) => ({
       id: relation.addressee.id,
@@ -75,6 +78,7 @@ export class SocialRelationshipService {
   }
 
   async requestFriend(requesterId: number, addresseeId: number) {
+    requireUserIds(requesterId, addresseeId);
     if (requesterId === addresseeId) {
       throw new HttpException('Impossible de vous ajouter vous-meme.', 400);
     }
@@ -174,6 +178,7 @@ export class SocialRelationshipService {
   }
 
   async acceptFriend(userId: number, requesterId: number) {
+    requireUserIds(userId, requesterId);
     const relation = await this.relationships.findPendingIncoming(
       userId,
       requesterId,
@@ -199,6 +204,7 @@ export class SocialRelationshipService {
   }
 
   async rejectFriend(userId: number, requesterId: number) {
+    requireUserIds(userId, requesterId);
     const relation = await this.relationships.findPendingIncoming(
       userId,
       requesterId,
@@ -217,6 +223,7 @@ export class SocialRelationshipService {
   }
 
   async cancelRequest(userId: number, targetId: number) {
+    requireUserIds(userId, targetId);
     const relation = await this.relationships.findPendingOutgoing(
       userId,
       targetId,
@@ -229,6 +236,7 @@ export class SocialRelationshipService {
   }
 
   async removeFriend(userId: number, targetId: number) {
+    requireUserIds(userId, targetId);
     const relation = await this.findAcceptedRelation(userId, targetId);
     if (!relation) {
       throw new HttpException('Amitie introuvable.', 404);
@@ -238,6 +246,7 @@ export class SocialRelationshipService {
   }
 
   async blockUser(userId: number, targetId: number) {
+    requireUserIds(userId, targetId);
     if (userId === targetId) {
       throw new HttpException('Impossible de vous bloquer vous-meme.', 400);
     }
@@ -274,6 +283,7 @@ export class SocialRelationshipService {
   }
 
   async unblockUser(userId: number, targetId: number) {
+    requireUserIds(userId, targetId);
     const relation = await this.relationships.findBlocked(userId, targetId);
     if (!relation) {
       throw new HttpException('Blocage introuvable.', 404);
@@ -283,6 +293,17 @@ export class SocialRelationshipService {
   }
 
   async findAcceptedRelation(userId: number, targetId: number) {
+    if (!isValidUserId(userId) || !isValidUserId(targetId)) return null;
     return this.relationships.findAcceptedRelation(userId, targetId);
+  }
+}
+
+function isValidUserId(value: unknown): value is number {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0;
+}
+
+function requireUserIds(left: number, right: number): void {
+  if (!isValidUserId(left) || !isValidUserId(right)) {
+    throw new HttpException('Identifiant utilisateur invalide.', 400);
   }
 }

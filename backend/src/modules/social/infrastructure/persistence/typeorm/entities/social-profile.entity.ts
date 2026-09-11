@@ -7,7 +7,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../../../../../user/public-api';
+import type { SocialUserPersistenceRef } from './social-user.persistence-ref';
 
 export type SocialProfileVisibility = 'public' | 'friends' | 'private';
 
@@ -16,9 +16,9 @@ export class SocialProfileEntity {
   @PrimaryColumn({ name: 'user_id', type: 'int' })
   userId!: number;
 
-  @OneToOne(() => User, { eager: true, onDelete: 'CASCADE' })
+  @OneToOne('User', { eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  user!: User;
+  user!: SocialUserPersistenceRef;
 
   @Column({ type: 'longtext', nullable: true })
   bio?: string | null;

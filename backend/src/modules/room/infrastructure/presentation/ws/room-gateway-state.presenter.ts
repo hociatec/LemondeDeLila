@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import type { RoomPayload } from '../../../application/contracts/room-payload.model';
+import type { RoomPayload } from '../../../application/models/room-payload.model';
 import type { RoomFocusIntent } from './dto/room-focus-intent.ws.dto';
 import type {
   RoomIntent,
   RoomStartWizardIntent,
 } from './dto/room-intent.ws.dto';
-import type { PresentedErrorPayload } from '@shared/utils/public-api';
+import type { PresentedErrorPayload } from '../../../../../platform/serialization/public-api';
 
 @Injectable()
 export class RoomGatewayStatePresenter {

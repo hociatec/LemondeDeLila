@@ -5,6 +5,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
+import {
   ROOM_EVENT_PUBLISHER,
   type RoomEventPublisherPort,
 } from '../../ports/room-event-publisher.port';
@@ -20,10 +24,16 @@ import {
   ROOM_VAULT_SNAPSHOT_REPOSITORY,
   type RoomVaultSnapshotRepository,
 } from '../../ports/room-vault-snapshot.repository';
-import type { RoomRecord } from '../../contracts/room-record.model';
-import { CatalogService } from '../../../../catalog/public-api';
-import { GameStatsService } from '../../../../stats/public-api';
-import { bestEffort } from '../../../../../shared/utils/public-api';
+import type { RoomRecord } from '../../models/room-record.model';
+import {
+  ROOM_CATALOG_PORT,
+  type RoomCatalogPort,
+} from '../../ports/room-catalog.port';
+import {
+  ROOM_STATS_PORT,
+  type RoomStatsPort,
+} from '../../ports/room-stats.port';
+import { bestEffort } from '../../../../../platform/observability/public-api';
 import {
   buildMinimumParticipantsMessage,
   hasMinimumParticipants,
@@ -48,10 +58,13 @@ export class RoomLifecycleService {
     private readonly participants: RoomParticipantRepository,
     @Inject(ROOM_VAULT_SNAPSHOT_REPOSITORY)
     private readonly vaultSnapshots: RoomVaultSnapshotRepository,
-    private readonly catalog: CatalogService,
-    private readonly stats: GameStatsService,
+    @Inject(ROOM_CATALOG_PORT)
+    private readonly catalog: RoomCatalogPort,
+    @Inject(ROOM_STATS_PORT)
+    private readonly stats: RoomStatsPort,
     @Inject(ROOM_EVENT_PUBLISHER)
     private readonly roomEvents: RoomEventPublisherPort,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async togglePrivacy(
@@ -96,7 +109,7 @@ export class RoomLifecycleService {
     try {
       const activeParticipants =
         await this.participants.findActiveByRoomWithUsers(room.id);
-      void bestEffort(
+      await bestEffort(
         this.stats.startMatch({
           roomId: room.id,
           gameType: room.gameType,
@@ -140,7 +153,7 @@ export class RoomLifecycleService {
 
     if (String(room.status ?? '').toLowerCase() === 'started') {
       try {
-        void bestEffort(
+        await bestEffort(
           this.stats.endMatchOnReset(room.id),
           `finalisation des statistiques room=${room.id}`,
         );
@@ -218,8 +231,11 @@ export class RoomLifecycleService {
   private applyStartedState(room: RoomRecord): void {
     room.status = 'started';
     if (!room.startedAt) {
-      room.runId = Math.max(0, Number(room.runId ?? 0)) + 1;
-      room.startedAt = new Date(Math.floor(Date.now() / 1000) * 1000);
+      const currentRunId =
+        Number.isSafeInteger(room.runId) && room.runId >= 0 ? room.runId : 0;
+      room.runId =
+        currentRunId >= Number.MAX_SAFE_INTEGER - 1 ? 1 : currentRunId + 1;
+      room.startedAt = new Date(Math.floor(this.now() / 1000) * 1000);
     }
   }
 
@@ -234,10 +250,10 @@ export class RoomLifecycleService {
 
     const ownerUserId =
       typeof room.restoredOwnerUserId === 'number' &&
-      Number.isFinite(room.restoredOwnerUserId)
+      Number.isSafeInteger(room.restoredOwnerUserId)
         ? Number(room.restoredOwnerUserId)
         : fallbackOwnerUserId;
-    if (!Number.isFinite(ownerUserId) || ownerUserId <= 0) {
+    if (!Number.isSafeInteger(ownerUserId) || ownerUserId <= 0) {
       return;
     }
 
@@ -246,6 +262,10 @@ export class RoomLifecycleService {
     } catch {
       // best effort
     }
+  }
+
+  private now(): number {
+    return this.clock.now();
   }
 }
 /** Room application capability boundary. */

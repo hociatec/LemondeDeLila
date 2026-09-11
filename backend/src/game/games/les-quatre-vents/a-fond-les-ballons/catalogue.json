@@ -1,0 +1,862 @@
+{
+  "cards": [
+    {
+      "id": 1,
+      "text": "Peau de banane : reculez de 2 cases.",
+      "retreatScore": -2,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": -2
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "Cookie géant : passez un tour.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "text": "Confiture : avancez d’une case.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "text": "Noix étrange : tous passent un tour.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "text": "Écureuil volant : avancez de 4 cases.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 4
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "text": "Sirop magique : tous reculent d’une case.",
+      "retreatScore": -1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": -1
+          },
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": -1
+          },
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "text": "Réglisse : avancez de 2 cases.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 2
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "text": "Éternuement du Chaton : reculez d’une case.",
+      "retreatScore": -1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": -1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "text": "Chewing-gum : passez un tour.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "text": "Noisette turbo : prochaine case Bonus.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.next-tile",
+          "data": {
+            "tile": "bonus"
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "text": "Mal au ventre : passez un tour.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "text": "Museau qui démange : reculez d’une case.",
+      "retreatScore": -1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": -1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "text": "Gerboise : avancez de 2 cases.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 2
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "text": "Trottinette : avancez de 3 cases.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 3
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "text": "Cacahuètes : reculez d’une case.",
+      "retreatScore": -1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": -1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "text": "Bulle géante : prochaine case Folie.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.next-tile",
+          "data": {
+            "tile": "folie"
+          }
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "text": "Sieste : passez un tour.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "text": "Souris malicieuse : avancez de 2 cases.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 2
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "text": "Loir guide : avancez d’une case.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "text": "Chaussette-bonnet : passez un tour.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "text": "Peinture fluo : tous avancent d’une case.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "text": "Fromage magique : passez deux tours.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "text": "Trampoline : avancez de 4 cases.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 4
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "text": "Agouti philosophe : passez un tour.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "text": "Cabane en biscuits : rejouez.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "text": "Confettis : tous avancent du dernier lancer.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.repeat-roll",
+          "data": {},
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.repeat-roll",
+          "data": {},
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "text": "Avion en carton : reculez d’une case.",
+      "retreatScore": -1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": -1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "text": "Grimoire : échangez votre position.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.swap",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "a-fond-les-ballons.swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "text": "Catapulte : allez en case 13.",
+      "retreatScore": -100,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.go-to",
+          "data": {
+            "position": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "text": "Mousse épaisse : passez un tour.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "text": "Hutia : avancez d’une case.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "text": "Fromage bavard : avancez de 2 cases.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 2
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "text": "Saute-rongeur : avancez de 3 cases.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 3
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "text": "Boutique : appliquez la plus reculante de deux cartes.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.boutique",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "text": "Tunnel défectueux : retour au départ.",
+      "retreatScore": -200,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.go-to",
+          "data": {
+            "position": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "text": "Invisibilité : ignorez les pièges deux tours.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "a-fond-les-ballons.trap-immunity",
+          "turns": 2,
+          "scope": "turn",
+          "stack": true
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "text": "Piment : reculez de 5 cases.",
+      "retreatScore": -5,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": -5
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "text": "Biscuit explosif : tous bougent au hasard.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.random-move",
+          "data": {},
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.random-move",
+          "data": {},
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "text": "Pluie de bonbons : avancez de 2 cases.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.move",
+          "data": {
+            "delta": 2
+          },
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "text": "Reine des Rongeurs : terminez depuis une Glissade.",
+      "retreatScore": 0,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "a-fond-les-ballons.finish-if-slide",
+          "data": {}
+        }
+      ]
+    }
+  ],
+  "pawns": [
+    {
+      "id": "capitaine-cacahuete",
+      "label": "Capitaine Cacahuète",
+      "description": "Écureuil roux moustachu, chapeau de pirate trop grand, cache-œil en noisette, épée en cure-dents. Aventurier grognon, rêve du « trésor de la noix éternelle ». Accessoire : carte au trésor qui sent la confiture. Pouvoir : « À l’abordage ! »."
+    },
+    {
+      "id": "professeur-gribouille",
+      "label": "Professeur Gribouille",
+      "description": "Rat gris à lunettes carrées, fioles « pouf », « gloup » ou « BOUM », blouse trop longue, chapeau en entonnoir. Généreux mais distrait. Accessoire : bocal de bulles parfumées. Pouvoir : échange de place sur éternuement."
+    },
+    {
+      "id": "miss-froufrou",
+      "label": "Miss Froufrou",
+      "description": "Cochon d’Inde blanc et rose, robe à volants, lunettes cœur, mini miroir pomme, parfum fraise. Coquette et gentille. Accessoire : sèche-cheveux enchanté qui joue de la harpe. Pouvoir : « pause beauté ». "
+    },
+    {
+      "id": "sir-croquou",
+      "label": "Sir Croquou",
+      "description": "Castor brun au monocle doré, nœud papillon géant, théière accrochée à la queue. Très poli. Accessoire : valise de biscuits au citron. Pouvoir : « prendre le thé »."
+    },
+    {
+      "id": "chinchillator-3000",
+      "label": "Chinchillator 3000",
+      "description": "Chinchilla argenté mi-robot, mi-roue de hamster. Un peu buggé mais très rapide. Accessoire : antenne extensible et oreille-micro. Pouvoir : « BIP-BLOUP-ZING »."
+    },
+    {
+      "id": "hamstero-dynamite",
+      "label": "Hamstéro Dynamite",
+      "description": "Hamster beige et blanc, bandana rouge, lunettes de moto, mini cape. Hyperactif. Accessoire : pétards inoffensifs et serpentins. Pouvoir : « super tourbillon »."
+    }
+  ],
+  "tiles": [
+    {
+      "type": "start",
+      "label": "Case 1 — La Tanière à Tartines"
+    },
+    {
+      "type": "bonus",
+      "label": "Case 2 — Tunnel bonus"
+    },
+    {
+      "type": "folie",
+      "label": "Case 3 — Folie loufoque"
+    },
+    {
+      "type": "neutral",
+      "label": "Case 4 — Sentier tranquille"
+    },
+    {
+      "type": "piege",
+      "label": "Case 5 — Piège gluant"
+    },
+    {
+      "type": "glissade",
+      "label": "Case 6 — Glissade"
+    },
+    {
+      "type": "neutral",
+      "label": "Case 7 — Sentier tranquille"
+    },
+    {
+      "type": "tornade",
+      "label": "Case 8 — Tornade"
+    },
+    {
+      "type": "folie",
+      "label": "Case 9 — Folie loufoque"
+    },
+    {
+      "type": "neutral",
+      "label": "Case 10 — Sentier tranquille"
+    },
+    {
+      "type": "bonus",
+      "label": "Case 11 — Tunnel bonus"
+    },
+    {
+      "type": "piege",
+      "label": "Case 12 — Piège gluant"
+    },
+    {
+      "type": "glissade",
+      "label": "Case 13 — Glissade"
+    },
+    {
+      "type": "neutral",
+      "label": "Case 14 — Sentier tranquille"
+    },
+    {
+      "type": "folie",
+      "label": "Case 15 — Folie loufoque"
+    },
+    {
+      "type": "bonus",
+      "label": "Case 16 — Tunnel bonus"
+    },
+    {
+      "type": "piege",
+      "label": "Case 17 — Piège gluant"
+    },
+    {
+      "type": "glissade",
+      "label": "Case 18 — Glissade"
+    },
+    {
+      "type": "neutral",
+      "label": "Case 19 — Sentier tranquille"
+    },
+    {
+      "type": "folie",
+      "label": "Case 20 — Folie loufoque"
+    },
+    {
+      "type": "chaton",
+      "label": "Case 21 — Grand Chaton Gourmand"
+    },
+    {
+      "type": "bonus",
+      "label": "Case 22 — Tunnel bonus"
+    },
+    {
+      "type": "piege",
+      "label": "Case 23 — Piège gluant"
+    },
+    {
+      "type": "glissade",
+      "label": "Case 24 — Glissade"
+    },
+    {
+      "type": "neutral",
+      "label": "Case 25 — Sentier tranquille"
+    },
+    {
+      "type": "folie",
+      "label": "Case 26 — Folie loufoque"
+    },
+    {
+      "type": "bonus",
+      "label": "Case 27 — Tunnel bonus"
+    },
+    {
+      "type": "piege",
+      "label": "Case 28 — Piège gluant"
+    },
+    {
+      "type": "glissade",
+      "label": "Case 29 — Glissade"
+    },
+    {
+      "type": "neutral",
+      "label": "Case 30 — Sentier tranquille"
+    },
+    {
+      "type": "tornade",
+      "label": "Case 31 — Tornade"
+    },
+    {
+      "type": "folie",
+      "label": "Case 32 — Folie loufoque"
+    },
+    {
+      "type": "bonus",
+      "label": "Case 33 — Tunnel bonus"
+    },
+    {
+      "type": "piege",
+      "label": "Case 34 — Piège gluant"
+    },
+    {
+      "type": "glissade",
+      "label": "Case 35 — Glissade"
+    },
+    {
+      "type": "neutral",
+      "label": "Case 36 — Sentier tranquille"
+    },
+    {
+      "type": "folie",
+      "label": "Case 37 — Folie loufoque"
+    },
+    {
+      "type": "piege",
+      "label": "Case 38 — Piège gluant"
+    },
+    {
+      "type": "glissade",
+      "label": "Case 39 — Glissade"
+    },
+    {
+      "type": "finish",
+      "label": "Case 40 — La Grosse Noix Dorée"
+    }
+  ]
+}

@@ -1,18 +1,10 @@
-import {
-  defineChoice,
-  defineGame,
-  defineGameContent,
-  gameInput,
-  pawnRace,
-} from '../../../engine/sdk/public-api';
-import { ODYSSEE_CONTENT } from './content';
-import {
-  endMove,
-  moveOdysseePawn,
-  ODYSSEE_ACTIONS,
-  type OdysseeMove,
-} from './rules';
 import type { NoGameState as OdysseeState } from '../../../engine/sdk/public-api';
+import { defineGame, pawnRace } from '../../../engine/sdk/public-api';
+import { ODYSSEE_CONTENT, ODYSSEE_GAME_CONTENT } from './content';
+import manifest from './manifest.json';
+import { GAME_CHOICES } from './rules';
+
+import { ODYSSEE_ACTIONS } from './rules';
 
 const ODYSSEE_PAWNS = Array.from({ length: 4 }, (_seat, seatIndex) =>
   ODYSSEE_CONTENT.pawnNames.map((label, pawnIndex) => ({
@@ -22,13 +14,13 @@ const ODYSSEE_PAWNS = Array.from({ length: 4 }, (_seat, seatIndex) =>
 ).flat();
 
 export default defineGame<OdysseeState>()({
-  id: 'odyssee-quatre-cieux',
-  displayName: 'L’Odyssée des Quatre Cieux',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Course galactique de pions.',
-  players: { min: 2, max: 4 },
-  content: defineGameContent('odyssee-quatre-cieux', ODYSSEE_CONTENT),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: ODYSSEE_GAME_CONTENT,
   patterns: [
     pawnRace({
       pawnSetId: 'odyssee',
@@ -52,21 +44,7 @@ export default defineGame<OdysseeState>()({
     { key: 'S', type: 'interface', id: 'score' },
   ],
   actions: ODYSSEE_ACTIONS,
-  choices: {
-    'odyssee.move': defineChoice<OdysseeState, OdysseeMove>({
-      input: gameInput.object({
-        pawnId: gameInput.string({ min: 1, max: 128 }),
-        from: gameInput.number({ integer: true }),
-        to: gameInput.number({ integer: true }),
-        distance: gameInput.number({ integer: true }),
-        roll: gameInput.number({ integer: true, min: 1 }),
-      }),
-      resolve: ({ state, actor, value, ctx }) => {
-        moveOdysseePawn(state, actor.id, value, ctx);
-        if (ctx.match.lifecycle() !== 'finished') endMove(ctx, value.roll);
-      },
-    }),
-  },
+  choices: GAME_CHOICES,
   bot: {
     choose: () => ({ type: 'roll', payload: {} }),
   },

@@ -1,11 +1,13 @@
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
+  drawEvent,
+  defineChoice,
   defineEffect,
   drawAndResolve,
   gameInput,
-  rejectRule,
   raceTurn,
+  rejectRule,
 } from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
 import { MISSION_GALAXIE_CONTENT } from './content';
 import type {
   MissionGalaxieChoiceCard,
@@ -104,7 +106,7 @@ function resolveMissionTile(
       } else if (tile.type === 'swapNearest') {
         swapNearest(playerId, ctx);
       } else if (tile.type === 'goto' && tile.target != null) {
-        setPosition(playerId, tile.target - 1, ctx);
+        ctx.movement.moveTo(TRACK, playerId, tile.target - 1);
         resolveMissionTile(state, playerId, depth + 1, ctx);
       } else if (tile.type === 'finish') {
         ctx.match.finish({ winners: [playerId], reason: 'legendary-planet' });
@@ -122,9 +124,14 @@ function drawChoiceCard(
   deck: 'questions' | 'challenges',
   ctx: RuleContext,
 ): void {
-  const card = ctx.cards.drawOrRecycle<MissionGalaxieChoiceCard>(deck);
+  const card = drawEvent<MissionGalaxieState, MissionGalaxieChoiceCard>(ctx, {
+    deckId: deck,
+    playerId: playerId,
+    recycle: true,
+    discard: true,
+  });
   if (!card) return;
-  ctx.cards.discard(deck, card);
+
   const pending = {
     kind: 'answer' as const,
     actorId: playerId,
@@ -206,25 +213,12 @@ export function moveMissionAndResolve(
 
 function swapNearest(playerId: number, ctx: RuleContext): void {
   const current = ctx.movement.position(TRACK, playerId);
-  const nearest = ctx.players
-    .all()
-    .filter((player) => player.id !== playerId)
-    .map((player) => ({
-      id: player.id,
-      position: ctx.movement.position(TRACK, player.id),
-    }))
-    .sort(
-      (a, b) =>
-        Math.abs(a.position - current) - Math.abs(b.position - current) ||
-        a.id - b.id,
-    )[0];
+  const nearest = ctx.ranking.rank(ctx.players.otherIds(playerId), {
+    value: (id) => Math.abs(ctx.movement.position(TRACK, id) - current),
+    direction: 'asc',
+  })[0];
   if (!nearest) return;
-  ctx.movement.swap(TRACK, playerId, nearest.id);
-}
-
-function setPosition(playerId: number, next: number, ctx: RuleContext): void {
-  const current = ctx.movement.position(TRACK, playerId);
-  ctx.movement.move(TRACK, playerId, next - current);
+  ctx.movement.swap(TRACK, playerId, nearest.playerId);
 }
 
 export const MISSION_GALAXIE_EFFECTS = {
@@ -246,7 +240,7 @@ export const MISSION_GALAXIE_EFFECTS = {
       apply: ({ state, actorPlayerId, data, ctx }) => {
         if (actorPlayerId == null) return;
         const position = data.target - 1;
-        setPosition(actorPlayerId, position, ctx);
+        ctx.movement.moveTo(TRACK, actorPlayerId, position);
         resolveMissionTile(state, actorPlayerId, 0, ctx);
       },
     },
@@ -270,3 +264,15 @@ export const MISSION_GALAXIE_EFFECTS = {
 function encodeMove(option: { targetId: number; delta: number }): string {
   return `${option.targetId}:${option.delta}`;
 }
+
+export const GAME_CHOICES = {
+  'mission-galaxie.answer': defineChoice<MissionGalaxieState, number>({
+    input: gameInput.number({ integer: true, min: 0 }),
+    resolve: ({ state, value, ctx }) => resolveMissionAnswer(state, value, ctx),
+  }),
+  'mission-galaxie.event-move': defineChoice<MissionGalaxieState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ state, value, ctx }) =>
+      resolveMissionEventMove(state, value, ctx),
+  }),
+};

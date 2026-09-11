@@ -1,15 +1,18 @@
+import { findSoundSourcePath } from './sounds-source-path';
 import { BadRequestException } from '@nestjs/common';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import { writeFileAtomic } from '../../../../shared/utils/public-api';
+import { writeFileAtomic } from '../../../../platform/filesystem/public-api';
 import {
   SOUND_KEYS,
   type SoundKey,
   type SoundManifest,
   type SoundManifestEntry,
-} from '../../application/contracts/sound-manifest.record';
+} from '../../application/read-models/sound-manifest.record';
 import { toSoundErrorMessage } from './sounds-storage.utils';
+
+const MAX_REENCODED_AUDIO_BYTES = 250 * 1024 * 1024;
 
 export type SoundsMaintenanceDeps = {
   dataRoot: () => string;
@@ -65,15 +68,6 @@ export class SoundsReencoder {
     };
   }
 
-  findSourcePath(soundId: SoundKey, sha256: string): string | null {
-    const soundDir = path.join(this.deps.dataRoot(), soundId);
-    const wav = path.join(soundDir, `${sha256}.wav`);
-    const mp3 = path.join(soundDir, `${sha256}.mp3`);
-    if (fs.existsSync(wav)) return wav;
-    if (fs.existsSync(mp3)) return mp3;
-    return null;
-  }
-
   private async reencode(onlyInvalid: boolean): Promise<ReencodeDetails> {
     const manifest = await this.deps.readManifest();
     const next = cloneManifest(manifest);
@@ -87,7 +81,11 @@ export class SoundsReencoder {
     for (const soundId of SOUND_KEYS) {
       const entry = manifest.sounds?.[soundId];
       if (!entry?.sha256) continue;
-      const sourcePath = this.findSourcePath(soundId, entry.sha256);
+      const sourcePath = findSoundSourcePath(
+        this.deps.dataRoot(),
+        soundId,
+        entry.sha256,
+      );
       if (!sourcePath) {
         details.missing.push(soundId);
         continue;
@@ -141,6 +139,12 @@ export class SoundsReencoder {
       const transcoded = await this.deps.transcodeToStableWav(sourcePath);
       tempDir = transcoded.tempDir;
       await this.validateSoundFile(transcoded.outputPath);
+      const outputStat = await fs.promises.stat(transcoded.outputPath);
+      if (!outputStat.isFile() || outputStat.size > MAX_REENCODED_AUDIO_BYTES) {
+        throw new BadRequestException(
+          'Fichier audio transcodé trop volumineux.',
+        );
+      }
       const bytes = await fs.promises.readFile(transcoded.outputPath);
       const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
       if (sha256 === path.basename(sourcePath).replace(/\.(wav|mp3)$/i, '')) {

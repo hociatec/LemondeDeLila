@@ -2,13 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 
-import { ChatMessageRecord } from '../../../../application/contracts/chat-message.record';
+import { ChatMessageRecord } from '../../../../application/read-models/chat-message.record';
 import {
   ChatMessageRepository,
   CreateChatMessageInput,
 } from '../../../../application/ports/chat-message.repository';
 import { ChatMessageNotFoundError } from '../../../../domain/errors/chat-domain.errors';
 import { ChatMessage } from '../entities/chat-message.entity';
+import type { ChatUserPersistenceRef } from '../entities/chat-user.persistence-ref';
+import {
+  asMessageId,
+  asUserId,
+} from '../../../../../../shared/interfaces/public-api';
+
+const MAX_CHAT_QUERY_LIMIT = 500;
 
 @Injectable()
 export class ChatMessageTypeormRepository implements ChatMessageRepository {
@@ -19,7 +26,7 @@ export class ChatMessageTypeormRepository implements ChatMessageRepository {
 
   async create(input: CreateChatMessageInput): Promise<ChatMessageRecord> {
     const message = this.messages.create({
-      user: { id: input.userId } as ChatMessage['user'],
+      user: { id: input.userId } as ChatUserPersistenceRef,
       message: input.message,
       messageId: input.messageId,
       createdAt: input.createdAt,
@@ -30,12 +37,14 @@ export class ChatMessageTypeormRepository implements ChatMessageRepository {
   }
 
   async listRecent(limit: number, since?: Date): Promise<ChatMessageRecord[]> {
+    const safeLimit = normalizeLimit(limit);
     const qb = this.messages
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.user', 'user')
       .where('m.deletedAt IS NULL')
       .orderBy('m.createdAt', 'DESC')
-      .take(limit);
+      .addOrderBy('m.id', 'DESC')
+      .take(safeLimit);
 
     if (since) {
       qb.andWhere('m.createdAt >= :since', { since });
@@ -49,11 +58,13 @@ export class ChatMessageTypeormRepository implements ChatMessageRepository {
     limit: number,
     includeDeleted: boolean,
   ): Promise<ChatMessageRecord[]> {
+    const safeLimit = normalizeLimit(limit);
     const qb = this.messages
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.user', 'user')
       .orderBy('m.createdAt', 'DESC')
-      .take(limit);
+      .addOrderBy('m.id', 'DESC')
+      .take(safeLimit);
 
     if (!includeDeleted) {
       qb.where({ deletedAt: IsNull() });
@@ -109,13 +120,13 @@ export class ChatMessageTypeormRepository implements ChatMessageRepository {
   private toRecord(entity: ChatMessage): ChatMessageRecord {
     return {
       id: entity.id,
-      messageId: entity.messageId,
+      messageId: asMessageId(entity.messageId),
       message: entity.message,
       createdAt: entity.createdAt,
       deletedAt: entity.deletedAt,
       user: entity.user
         ? {
-            id: entity.user.id,
+            id: asUserId(entity.user.id),
             username: entity.user.username,
             avatar: entity.user.avatar ?? null,
             chatBannedUntil: entity.user.chatBannedUntil ?? null,
@@ -124,4 +135,10 @@ export class ChatMessageTypeormRepository implements ChatMessageRepository {
         : null,
     };
   }
+}
+
+function normalizeLimit(value: number): number {
+  return Number.isSafeInteger(value) && value > 0
+    ? Math.min(value, MAX_CHAT_QUERY_LIMIT)
+    : MAX_CHAT_QUERY_LIMIT;
 }

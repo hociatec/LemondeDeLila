@@ -1,16 +1,14 @@
 import { buildPublicRoomList } from './room-lobby-list.helpers';
 import { Room } from '../../persistence/typeorm/entities/room.entity';
 import { RoomParticipant } from '../../persistence/typeorm/entities/room-participant.entity';
-import { User } from '../../../../user/public-api';
+import type { UserRef as User } from '../../../../user/public-api';
+import { asUserId } from '../../../../../shared/interfaces/public-api';
 
 function makeUser(id: number, username: string): User {
   return {
-    id,
+    id: asUserId(id),
     username,
-    email: `${username}@example.test`,
     roles: [],
-    password: 'x',
-    createdAt: new Date(),
   };
 }
 

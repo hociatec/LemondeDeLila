@@ -1,7 +1,10 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
-import { getErrorDetails } from '@shared/utils/public-api';
+import {
+  getErrorDetails,
+  parseExplicitInstant,
+} from '@shared/utils/public-api';
 import { RedisClientFactory } from '../../../../../platform/redis/public-api';
 import { NotificationConfigurationError } from '../../../domain/errors/notification-domain.errors';
 
@@ -14,6 +17,9 @@ export type InboxNotificationItem = {
 
 @Injectable()
 export class UserInboxRedisService implements OnModuleDestroy {
+  private static readonly MAX_ITEM_BYTES = 256 * 1024;
+  private static readonly MAX_LIST_LIMIT = 200;
+  private static readonly MAX_IDENTIFIER_LENGTH = 128;
   private readonly logger = new Logger(UserInboxRedisService.name);
   private readonly redis: Redis;
   private connected = false;
@@ -59,12 +65,24 @@ export class UserInboxRedisService implements OnModuleDestroy {
   }
 
   async add(userId: number, item: InboxNotificationItem): Promise<void> {
-    if (!userId || userId <= 0) return;
-    if (!item?.id) return;
-    await this.ensureConnected();
-
+    if (!Number.isSafeInteger(userId) || userId <= 0) return;
+    if (
+      !item?.id ||
+      typeof item.id !== 'string' ||
+      item.id.length > UserInboxRedisService.MAX_IDENTIFIER_LENGTH
+    )
+      return;
+    const score = parseExplicitInstant(item.createdAt);
+    if (score === null)
+      throw new RangeError('Notification creation instant is invalid');
     const json = JSON.stringify(item);
-    const score = Date.parse(item.createdAt || '') || Date.now();
+    if (
+      Buffer.byteLength(json, 'utf8') > UserInboxRedisService.MAX_ITEM_BYTES
+    ) {
+      this.logger.warn(`Notification inbox trop volumineuse id=${item.id}`);
+      return;
+    }
+    await this.ensureConnected();
 
     await this.redis
       .multi()
@@ -73,11 +91,13 @@ export class UserInboxRedisService implements OnModuleDestroy {
       .exec();
 
     // Best-effort trim to avoid unbounded growth.
-    void this.trim(userId, 200);
+    await this.trim(userId, 200);
   }
 
   async list(userId: number, limit = 100): Promise<InboxNotificationItem[]> {
-    if (!userId || userId <= 0) return [];
+    if (!Number.isSafeInteger(userId) || userId <= 0) return [];
+    if (!Number.isSafeInteger(limit) || limit < 1) return [];
+    limit = Math.min(limit, UserInboxRedisService.MAX_LIST_LIMIT);
     await this.ensureConnected();
 
     const ids = await this.redis.zrevrange(this.orderKey(userId), 0, limit - 1);
@@ -87,6 +107,11 @@ export class UserInboxRedisService implements OnModuleDestroy {
     const out: InboxNotificationItem[] = [];
     for (const value of raw) {
       if (!value) continue;
+      if (
+        Buffer.byteLength(value, 'utf8') > UserInboxRedisService.MAX_ITEM_BYTES
+      ) {
+        continue;
+      }
       try {
         const parsed: unknown = JSON.parse(value);
         if (isInboxNotificationItem(parsed)) out.push(parsed);
@@ -98,8 +123,13 @@ export class UserInboxRedisService implements OnModuleDestroy {
   }
 
   async delete(userId: number, id: string): Promise<void> {
-    if (!userId || userId <= 0) return;
-    if (!id || typeof id !== 'string') return;
+    if (!Number.isSafeInteger(userId) || userId <= 0) return;
+    if (
+      !id ||
+      typeof id !== 'string' ||
+      id.length > UserInboxRedisService.MAX_IDENTIFIER_LENGTH
+    )
+      return;
     await this.ensureConnected();
     await this.redis
       .multi()
@@ -141,9 +171,12 @@ function isInboxNotificationItem(
     typeof value === 'object' &&
     'id' in value &&
     typeof value.id === 'string' &&
+    value.id.length <= 128 &&
     'kind' in value &&
     typeof value.kind === 'string' &&
+    value.kind.length <= 128 &&
     'createdAt' in value &&
-    typeof value.createdAt === 'string'
+    typeof value.createdAt === 'string' &&
+    value.createdAt.length <= 64
   );
 }

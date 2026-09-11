@@ -2,21 +2,21 @@
 
 La frontière `game` contient quatre responsabilités distinctes :
 
-- `core` implémente le moteur déterministe, ses ports applicatifs et ses adapters ;
-- `engine` expose les capacités de catalogue et le SDK stable ;
+- `core` orchestre les commandes, la persistance et les ports applicatifs ;
+- `engine/runtime` exécute le modèle déclaratif déterministe ; `engine/sdk`
+  expose sa surface auteur, et `engine/application` les capacités de catalogue ;
 - `composition` ne contient que la découverte, le registre et le wiring Nest ;
 - `games` contient les définitions et règles propres aux jeux.
 
 Le runtime se trouve dans `engine/runtime` : il s'agit de l'implémentation
 du noyau, tandis que `engine/sdk/public-api.ts` constitue sa façade auteur. Le
-dossier `engine` n'est donc pas une seconde implémentation du runtime. Le
-déplacer sous `engine` mélangerait API publique, catalogue applicatif et détails
-d'exécution sans améliorer la direction des dépendances.
+dossier `core` n'est pas un second moteur de règles. La sémantique canonique
+est définie dans [ADR-006](../../docs/architecture/adr-006-game-sdk-runtime.md).
 
 Les jeux suivent exclusivement :
 
 ```text
-games -> engine/sdk/public-api -> core
+games -> engine/sdk/public-api -> engine/runtime
 composition -> core + engine + games
 ```
 
@@ -46,3 +46,6 @@ propre dossier.
 
 Les décisions globales de couches, vocabulaire, présentation et wiring Nest
 sont définies dans `docs/architecture/module-conventions.md` et ADR-003.
+
+Le [guide auteur et sa Definition of Done](../../docs/architecture/authoring-and-boundaries.md)
+décrit l'ownership de l'état, l'ajout d'un kit et le choix recipe/pattern/rule.

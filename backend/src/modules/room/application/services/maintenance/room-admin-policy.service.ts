@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import type { RoomPayload } from '../../contracts/room-payload.model';
+import { parseStrictInteger } from '@shared/utils/public-api';
+import type { RoomPayload } from '../../models/room-payload.model';
 import {
-  RoomWsInvalidRoomIdError,
-  RoomWsInvalidUserIdError,
-  RoomWsOwnerRequiredError,
-  RoomWsUserNotOnTableError,
-} from '../../../domain/errors/room-ws.errors';
+  RoomInvalidRoomIdError,
+  RoomInvalidUserIdError,
+  RoomOwnerRequiredError,
+  RoomUserNotOnTableError,
+} from '../../../domain/errors/room-domain.errors';
 
 @Injectable()
 export class RoomAdminPolicyService {
   requireValidRoomId(roomId: number): number {
-    if (!Number.isFinite(roomId) || roomId <= 0) {
-      throw new RoomWsInvalidRoomIdError();
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) {
+      throw new RoomInvalidRoomIdError();
     }
 
     return roomId;
@@ -21,12 +22,15 @@ export class RoomAdminPolicyService {
     row: Record<string, unknown>,
     candidateKeys: readonly string[],
   ): number {
+    if (!Array.isArray(candidateKeys) || candidateKeys.length > 16) {
+      throw new RoomInvalidUserIdError();
+    }
     const targetRaw = candidateKeys
       .map((key) => row[key])
       .find((value) => value !== undefined && value !== null);
-    const targetUserId = Number(targetRaw);
-    if (!Number.isFinite(targetUserId) || targetUserId <= 0) {
-      throw new RoomWsInvalidUserIdError();
+    const targetUserId = parseStrictInteger(targetRaw, { min: 1 });
+    if (targetUserId === null) {
+      throw new RoomInvalidUserIdError();
     }
 
     return targetUserId;
@@ -38,6 +42,15 @@ export class RoomAdminPolicyService {
     spectatorIds: readonly number[];
     hasUserConnections: boolean;
   }): void {
+    if (
+      !input ||
+      !Number.isSafeInteger(input.userId) ||
+      input.userId <= 0 ||
+      !Array.isArray(input.spectatorIds) ||
+      input.spectatorIds.length > 10_000
+    ) {
+      throw new RoomUserNotOnTableError();
+    }
     const isOnTable =
       (input.state?.room?.players?.some(
         (player) => player?.id === input.userId,
@@ -47,7 +60,7 @@ export class RoomAdminPolicyService {
       input.hasUserConnections;
 
     if (!isOnTable) {
-      throw new RoomWsUserNotOnTableError();
+      throw new RoomUserNotOnTableError();
     }
   }
 
@@ -58,7 +71,7 @@ export class RoomAdminPolicyService {
   ): RoomPayload {
     const ownerId = state?.room?.owner?.id ?? 0;
     if (ownerId !== userId) {
-      throw new RoomWsOwnerRequiredError(ownerErrorMessage);
+      throw new RoomOwnerRequiredError(ownerErrorMessage);
     }
 
     return state;

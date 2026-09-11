@@ -1,0 +1,2434 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "2",
+  "definitionVersion": "2",
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "components": [
+    {
+      "id": "market",
+      "spaces": 40,
+      "overshoot": "wrap",
+      "component": "movement.track"
+    },
+    {
+      "component": "dice.set",
+      "id": "main",
+      "count": 1,
+      "sides": 6
+    },
+    {
+      "id": "market-quiz",
+      "questions": [
+        {
+          "id": "quiz-01",
+          "prompt": "Quel fruit contient le plus de vitamine C ?",
+          "choices": [
+            "banane",
+            "kiwi",
+            "pomme"
+          ],
+          "answerIndex": 1
+        },
+        {
+          "id": "quiz-02",
+          "prompt": "Quel légume est en réalité un fruit ?",
+          "choices": [
+            "carotte",
+            "brocoli",
+            "tomate"
+          ],
+          "answerIndex": 2
+        },
+        {
+          "id": "quiz-03",
+          "prompt": "Quel fruit a ses graines à l'extérieur ?",
+          "choices": [
+            "cerise",
+            "fraise",
+            "raisin"
+          ],
+          "answerIndex": 1
+        },
+        {
+          "id": "quiz-04",
+          "prompt": "Quel fruit est connu comme le \"roi des fruits\" en Asie ?",
+          "choices": [
+            "durian",
+            "mangue",
+            "ananas"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-05",
+          "prompt": "Quelle est la couleur naturelle de la carotte originelle ?",
+          "choices": [
+            "orange",
+            "jaune",
+            "violet"
+          ],
+          "answerIndex": 2
+        },
+        {
+          "id": "quiz-06",
+          "prompt": "Quel fruit est aussi appelé \"pomme cannelle\" ?",
+          "choices": [
+            "prune",
+            "pomme",
+            "poire"
+          ],
+          "answerIndex": 1
+        },
+        {
+          "id": "quiz-07",
+          "prompt": "Quel légume peut être blanc, vert ou violet et ressemble à un petit arbre ?",
+          "choices": [
+            "brocoli",
+            "artichaut",
+            "chou-fleur"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-08",
+          "prompt": "Quel fruit est souvent utilisé pour faire du guacamole ?",
+          "choices": [
+            "concombre",
+            "courgette",
+            "avocat"
+          ],
+          "answerIndex": 2
+        },
+        {
+          "id": "quiz-09",
+          "prompt": "Quel fruit a un nom qui signifie \"pêche sauvage\" en japonais ?",
+          "choices": [
+            "kaki",
+            "yuzu",
+            "litchi"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-10",
+          "prompt": "Quel fruit tropical est composé principalement d'eau et très rafraîchissant ?",
+          "choices": [
+            "ananas",
+            "pastèque",
+            "mangue"
+          ],
+          "answerIndex": 1
+        },
+        {
+          "id": "quiz-11",
+          "prompt": "Quel légume est utilisé pour faire des frites ?",
+          "choices": [
+            "carotte",
+            "pomme-de-terre",
+            "navet"
+          ],
+          "answerIndex": 1
+        },
+        {
+          "id": "quiz-12",
+          "prompt": "Quel fruit est connu pour être riche en antioxydants et souvent rouge foncé ?",
+          "choices": [
+            "grenade",
+            "cerise",
+            "groseille"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-13",
+          "prompt": "Quel fruit exotique a une peau piquante et une chair jaune ?",
+          "choices": [
+            "litchi",
+            "ananas",
+            "fruit-du-dragon"
+          ],
+          "answerIndex": 1
+        },
+        {
+          "id": "quiz-14",
+          "prompt": "Quel légume vert est souvent utilisé dans les salades et a un goût légèrement poivré ?",
+          "choices": [
+            "roquette",
+            "épinard",
+            "laitue"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-15",
+          "prompt": "Quel fruit est souvent associé à Halloween ?",
+          "choices": [
+            "pastèque",
+            "citrouille",
+            "pomme"
+          ],
+          "answerIndex": 1
+        },
+        {
+          "id": "quiz-16",
+          "prompt": "Quel légume est une racine orange souvent croquée crue ?",
+          "choices": [
+            "carotte",
+            "navet",
+            "radis"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-17",
+          "prompt": "Quel fruit peut être jaune, vert ou rouge et est souvent mangé en tranches ?",
+          "choices": [
+            "poire",
+            "pomme",
+            "pêche"
+          ],
+          "answerIndex": 1
+        },
+        {
+          "id": "quiz-18",
+          "prompt": "Quel fruit a une peau rugueuse et une chair orange sucrée ?",
+          "choices": [
+            "papaye",
+            "orange",
+            "mangue"
+          ],
+          "answerIndex": 2
+        },
+        {
+          "id": "quiz-19",
+          "prompt": "Quel légume est souvent utilisé pour faire une soupe appelée \"velouté\" ?",
+          "choices": [
+            "potiron",
+            "courgette",
+            "concombre"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-20",
+          "prompt": "Quel fruit est considéré comme un symbole de paix dans certaines cultures ?",
+          "choices": [
+            "grenade",
+            "olive",
+            "pomme"
+          ],
+          "answerIndex": 1
+        },
+        {
+          "id": "quiz-21",
+          "prompt": "Quel fruit est le plus consommé au monde ?",
+          "choices": [
+            "banane",
+            "pomme",
+            "orange"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-22",
+          "prompt": "Quel légume est souvent mariné pour faire des pickles ?",
+          "choices": [
+            "carotte",
+            "chou-fleur",
+            "concombre"
+          ],
+          "answerIndex": 2
+        },
+        {
+          "id": "quiz-23",
+          "prompt": "Quel fruit est petit, bleu et utilisé dans les muffins et les tartes ?",
+          "choices": [
+            "myrtille",
+            "groseille",
+            "cassis"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-24",
+          "prompt": "Quel légume est utilisé dans la cuisine italienne pour faire des lasagnes ?",
+          "choices": [
+            "aubergine",
+            "courgette",
+            "poivron"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-25",
+          "prompt": "Quel fruit est célèbre pour son utilisation dans le cidre ?",
+          "choices": [
+            "poire",
+            "cerise",
+            "pomme"
+          ],
+          "answerIndex": 2
+        },
+        {
+          "id": "quiz-26",
+          "prompt": "Quel légume est souvent appelé \"Trompette de la mort\" ?",
+          "choices": [
+            "aubergine",
+            "piment",
+            "champignon"
+          ],
+          "answerIndex": 2
+        },
+        {
+          "id": "quiz-27",
+          "prompt": "Quel fruit est rond, orange et a une peau épaisse et rugueuse ?",
+          "choices": [
+            "mandarine",
+            "orange",
+            "pamplemousse"
+          ],
+          "answerIndex": 1
+        },
+        {
+          "id": "quiz-28",
+          "prompt": "Quel légume a des feuilles vertes et est souvent utilisé dans les salades ?",
+          "choices": [
+            "laitue",
+            "épinard",
+            "chou-fleur"
+          ],
+          "answerIndex": 0
+        },
+        {
+          "id": "quiz-29",
+          "prompt": "Quel fruit exotique a une chair blanche et des graines noires ?",
+          "choices": [
+            "kiwi",
+            "fruit-du-dragon",
+            "fruit-de-la-passion"
+          ],
+          "answerIndex": 2
+        },
+        {
+          "id": "quiz-30",
+          "prompt": "Quel légume est souvent utilisé pour faire des chips ?",
+          "choices": [
+            "pomme-de-terre",
+            "panais",
+            "topinambour"
+          ],
+          "answerIndex": 0
+        }
+      ],
+      "shuffle": true,
+      "component": "quiz.bank"
+    },
+    {
+      "id": "panier",
+      "pawns": [
+        {
+          "id": "panier-osier",
+          "name": "panier en osier",
+          "description": "Un panier classique et solide pour démarrer les courses."
+        },
+        {
+          "id": "sac-toile",
+          "name": "sac en toile",
+          "description": "Un sac léger et pratique, idéal pour les petits achats."
+        },
+        {
+          "id": "chariot-roulettes",
+          "name": "chariot à roulettes",
+          "description": "Un chariot maniable qui suit facilement chaque déplacement."
+        },
+        {
+          "id": "cagette-bois",
+          "name": "cagette en bois",
+          "description": "Une cagette robuste pour transporter fruits et légumes."
+        },
+        {
+          "id": "cabas-pliable",
+          "name": "cabas pliable",
+          "description": "Un cabas compact qui se range vite entre deux stands."
+        },
+        {
+          "id": "brouette-jardinier",
+          "name": "brouette de jardinier",
+          "description": "Une brouette stable pour ramener des courses en volume."
+        }
+      ],
+      "component": "pawn.set",
+      "perPlayer": 1
+    },
+    {
+      "id": "events",
+      "cards": [
+        {
+          "id": "promo-surprise",
+          "label": "Promo surprise",
+          "effectDescription": "Piochez 2 cartes Courses",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.draw-course",
+              "data": {
+                "count": 2,
+                "everyone": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "coup-de-chance",
+          "label": "Coup de chance",
+          "effectDescription": "Avancez de 2 cases",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.move-and-resolve",
+              "data": {
+                "delta": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "stand-exceptionnel",
+          "label": "Stand exceptionnel",
+          "effectDescription": "Piochez 1 carte Courses",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.draw-course",
+              "data": {
+                "count": 1,
+                "everyone": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "fidelite-recompensee",
+          "label": "Fidelite recompensee",
+          "effectDescription": "Rejouez immédiatement",
+          "effects": [
+            {
+              "kind": "extra-turn",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "panier-bonus",
+          "label": "Panier bonus",
+          "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+          "effects": [
+            {
+              "kind": "steal-random-inventory",
+              "inventoryId": "market-items",
+              "from": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.steal",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "tirage-chanceux",
+          "label": "Tirage chanceux",
+          "effectDescription": "Piochez 3 cartes Courses",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.draw-course",
+              "data": {
+                "count": 3,
+                "everyone": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "don-du-maraicher",
+          "label": "Don du maraicher",
+          "effectDescription": "Piochez 1 carte Courses",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.draw-course",
+              "data": {
+                "count": 1,
+                "everyone": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "journee-bio",
+          "label": "Journee bio",
+          "effectDescription": "Tout le monde pioche 1 carte Courses",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.draw-course",
+              "data": {
+                "count": 1,
+                "everyone": true
+              }
+            }
+          ]
+        },
+        {
+          "id": "stand-ouvert-en-avance",
+          "label": "Stand ouvert en avance",
+          "effectDescription": "Avancez jusqu’au prochain stand",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.nearest-stand",
+              "data": {}
+            }
+          ]
+        },
+        {
+          "id": "echange-spontane",
+          "label": "Echange spontane",
+          "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+          "effects": [
+            {
+              "kind": "steal-random-inventory",
+              "inventoryId": "market-items",
+              "from": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.steal",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "marche-anime",
+          "label": "Marche anime",
+          "effectDescription": "Tout le monde pioche 1 carte Courses",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.draw-course",
+              "data": {
+                "count": 1,
+                "everyone": true
+              }
+            }
+          ]
+        },
+        {
+          "id": "producteur-genereux",
+          "label": "Producteur genereux",
+          "effectDescription": "Piochez 2 cartes Courses",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.draw-course",
+              "data": {
+                "count": 2,
+                "everyone": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "recette-express",
+          "label": "Recette express",
+          "effectDescription": "Piochez 1 carte Courses",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.draw-course",
+              "data": {
+                "count": 1,
+                "everyone": false
+              }
+            }
+          ]
+        },
+        {
+          "id": "stand-en-fete",
+          "label": "Stand en fete",
+          "effectDescription": "Tout le monde pioche 1 carte Courses",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.draw-course",
+              "data": {
+                "count": 1,
+                "everyone": true
+              }
+            }
+          ]
+        },
+        {
+          "id": "rupture-de-stock",
+          "label": "Rupture de stock",
+          "effectDescription": "Perdez 1 légume de votre inventaire",
+          "effects": [
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "stand-ferme",
+          "label": "Stand ferme",
+          "effectDescription": "Passez 1 tour",
+          "effects": [
+            {
+              "kind": "skip-turn",
+              "count": 1,
+              "target": {
+                "kind": "self"
+              }
+            }
+          ]
+        },
+        {
+          "id": "emballage-defectueux",
+          "label": "Emballage defectueux",
+          "effectDescription": "Perdez 1 légume de votre inventaire",
+          "effects": [
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "retour-en-arriere",
+          "label": "Retour en arriere",
+          "effectDescription": "Reculez de 3 cases",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.move-and-resolve",
+              "data": {
+                "delta": -3
+              }
+            }
+          ]
+        },
+        {
+          "id": "marche-bonde",
+          "label": "Marche bonde",
+          "effectDescription": "Passez 1 tour",
+          "effects": [
+            {
+              "kind": "skip-turn",
+              "count": 1,
+              "target": {
+                "kind": "self"
+              }
+            }
+          ]
+        },
+        {
+          "id": "stand-detrempe",
+          "label": "Stand detrempe",
+          "effectDescription": "Passez 1 tour",
+          "effects": [
+            {
+              "kind": "skip-turn",
+              "count": 1,
+              "target": {
+                "kind": "self"
+              }
+            }
+          ]
+        },
+        {
+          "id": "file-attente-interminable",
+          "label": "File attente interminable",
+          "effectDescription": "Passez 2 tours",
+          "effects": [
+            {
+              "kind": "skip-turn",
+              "count": 2,
+              "target": {
+                "kind": "self"
+              }
+            }
+          ]
+        },
+        {
+          "id": "erreur-de-livraison",
+          "label": "Erreur de livraison",
+          "effectDescription": "Perdez 1 légume de votre inventaire",
+          "effects": [
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "produit-avarie",
+          "label": "Produit avarie",
+          "effectDescription": "Perdez 1 légume de votre inventaire",
+          "effects": [
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "emballage-oublie",
+          "label": "Emballage oublie",
+          "effectDescription": "Perdez 1 légume de votre inventaire",
+          "effects": [
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "intemperie-au-marche",
+          "label": "Intemperie au marche",
+          "effectDescription": "Reculez de 2 cases",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.move-and-resolve",
+              "data": {
+                "delta": -2
+              }
+            }
+          ]
+        },
+        {
+          "id": "panne-de-caisse",
+          "label": "Panne de caisse",
+          "effectDescription": "Passez 1 tour",
+          "effects": [
+            {
+              "kind": "skip-turn",
+              "count": 1,
+              "target": {
+                "kind": "self"
+              }
+            }
+          ]
+        },
+        {
+          "id": "inspection-sanitaire",
+          "label": "Inspection sanitaire",
+          "effectDescription": "Révélez votre inventaire pendant un tour",
+          "effects": [
+            {
+              "kind": "add-status",
+              "status": "panier.reveal",
+              "turns": 1,
+              "scope": "turn"
+            }
+          ]
+        },
+        {
+          "id": "chariot-perce",
+          "label": "Chariot perce",
+          "effectDescription": "Perdez 2 légumes de votre inventaire",
+          "effects": [
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 2
+            }
+          ]
+        },
+        {
+          "id": "echange-obligatoire",
+          "label": "Echange obligatoire",
+          "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+          "effects": [
+            {
+              "kind": "steal-random-inventory",
+              "inventoryId": "market-items",
+              "from": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.steal",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "inversion-de-panier",
+          "label": "Inversion de panier",
+          "effectDescription": "Choisissez un adversaire et échangez vos inventaires",
+          "effects": [
+            {
+              "kind": "swap-inventories",
+              "inventoryId": "market-items",
+              "left": {
+                "kind": "self"
+              },
+              "right": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.swap-inventories",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "troc-improvise",
+          "label": "Troc improvise",
+          "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+          "effects": [
+            {
+              "kind": "steal-random-inventory",
+              "inventoryId": "market-items",
+              "from": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.steal",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "changement-de-saison",
+          "label": "Changement de saison",
+          "effectDescription": "Tout le monde perd 1 légume de son inventaire",
+          "effects": [
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 1
+            },
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 1,
+              "target": {
+                "kind": "all-opponents"
+              }
+            }
+          ]
+        },
+        {
+          "id": "produit-oublie",
+          "label": "Produit oublie",
+          "effectDescription": "Perdez 1 légume de votre inventaire",
+          "effects": [
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "offre-ephemere",
+          "label": "Offre ephemere",
+          "effectDescription": "Rejouez immédiatement",
+          "effects": [
+            {
+              "kind": "extra-turn",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "stand-surprise",
+          "label": "Stand surprise",
+          "effectDescription": "Avancez jusqu’au prochain stand",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.nearest-stand",
+              "data": {}
+            }
+          ]
+        },
+        {
+          "id": "conseil-de-voisinage",
+          "label": "Conseil de voisinage",
+          "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+          "effects": [
+            {
+              "kind": "steal-random-inventory",
+              "inventoryId": "market-items",
+              "from": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.steal",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "controle-des-inventaires",
+          "label": "Controle des inventaires",
+          "effectDescription": "Révélez votre inventaire pendant un tour",
+          "effects": [
+            {
+              "kind": "add-status",
+              "status": "panier.reveal",
+              "turns": 1,
+              "scope": "turn"
+            }
+          ]
+        },
+        {
+          "id": "carton-abime",
+          "label": "Carton abime",
+          "effectDescription": "Perdez 1 légume de votre inventaire",
+          "effects": [
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "file-inversee",
+          "label": "File inversee",
+          "effectDescription": "Inversez le sens du jeu",
+          "effects": [
+            {
+              "kind": "add-status",
+              "status": "panier.reversed-until-owner-turn",
+              "scope": "until-used"
+            },
+            {
+              "kind": "reverse-turn-order"
+            }
+          ]
+        },
+        {
+          "id": "pause-fatigue",
+          "label": "Pause fatigue",
+          "effectDescription": "Passez 1 tour",
+          "effects": [
+            {
+              "kind": "skip-turn",
+              "count": 1,
+              "target": {
+                "kind": "self"
+              }
+            }
+          ]
+        }
+      ],
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "exchanges",
+      "cards": [
+        {
+          "id": "echange-amiable",
+          "label": "Echange amiable",
+          "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.strategic-swap",
+              "data": {},
+              "target": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.strategic-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "troc-fruit-legume",
+          "label": "Troc fruit legume",
+          "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.strategic-swap",
+              "data": {},
+              "target": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.strategic-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "echange-devant",
+          "label": "Echange devant",
+          "effectDescription": "Échangez un légume au hasard avec un adversaire",
+          "effects": [
+            {
+              "kind": "exchange-random-inventory",
+              "inventoryId": "market-items",
+              "left": {
+                "kind": "self"
+              },
+              "right": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.random-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "echange-derriere",
+          "label": "Echange derriere",
+          "effectDescription": "Échangez un légume au hasard avec un adversaire",
+          "effects": [
+            {
+              "kind": "exchange-random-inventory",
+              "inventoryId": "market-items",
+              "left": {
+                "kind": "self"
+              },
+              "right": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.random-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "echange-force",
+          "label": "Echange force",
+          "effectDescription": "Échangez un légume au hasard avec un adversaire",
+          "effects": [
+            {
+              "kind": "exchange-random-inventory",
+              "inventoryId": "market-items",
+              "left": {
+                "kind": "self"
+              },
+              "right": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.random-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "troc-rapide",
+          "label": "Troc rapide",
+          "effectDescription": "Échangez un légume au hasard avec un adversaire",
+          "effects": [
+            {
+              "kind": "exchange-random-inventory",
+              "inventoryId": "market-items",
+              "left": {
+                "kind": "self"
+              },
+              "right": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.random-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "panier-mixe",
+          "label": "Panier mixe",
+          "effectDescription": "Choisissez un adversaire et échangez vos inventaires",
+          "effects": [
+            {
+              "kind": "swap-inventories",
+              "inventoryId": "market-items",
+              "left": {
+                "kind": "self"
+              },
+              "right": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.swap-inventories",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "echange-strategique",
+          "label": "Echange strategique",
+          "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.strategic-swap",
+              "data": {},
+              "target": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.strategic-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "chariot-echange",
+          "label": "Chariot echange",
+          "effectDescription": "Choisissez un adversaire et échangez vos inventaires",
+          "effects": [
+            {
+              "kind": "swap-inventories",
+              "inventoryId": "market-items",
+              "left": {
+                "kind": "self"
+              },
+              "right": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.swap-inventories",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "echange-masque",
+          "label": "Echange masque",
+          "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.strategic-swap",
+              "data": {},
+              "target": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.strategic-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "vol-discret",
+          "label": "Vol discret",
+          "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+          "effects": [
+            {
+              "kind": "steal-random-inventory",
+              "inventoryId": "market-items",
+              "from": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.steal",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "panier-collectif",
+          "label": "Panier collectif",
+          "effectDescription": "Échangez un légume au hasard avec un adversaire",
+          "effects": [
+            {
+              "kind": "exchange-random-inventory",
+              "inventoryId": "market-items",
+              "left": {
+                "kind": "self"
+              },
+              "right": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.random-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "echange-impose",
+          "label": "Echange impose",
+          "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.strategic-swap",
+              "data": {},
+              "target": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.strategic-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "defausse-aleatoire",
+          "label": "Defausse aleatoire",
+          "effectDescription": "Perdez un légume de votre inventaire",
+          "effects": [
+            {
+              "kind": "discard-random-inventory",
+              "inventoryId": "market-items",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "echange-simultane",
+          "label": "Echange simultane",
+          "effectDescription": "Échangez un légume au hasard avec un adversaire",
+          "effects": [
+            {
+              "kind": "exchange-random-inventory",
+              "inventoryId": "market-items",
+              "left": {
+                "kind": "self"
+              },
+              "right": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.random-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "marche-noir",
+          "label": "Marche noir",
+          "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+          "effects": [
+            {
+              "kind": "steal-random-inventory",
+              "inventoryId": "market-items",
+              "from": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.steal",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "troc-equitable",
+          "label": "Troc equitable",
+          "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+          "effects": [
+            {
+              "kind": "custom",
+              "effectId": "panier.strategic-swap",
+              "data": {},
+              "target": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.strategic-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        },
+        {
+          "id": "echange-saison",
+          "label": "Echange saison",
+          "effectDescription": "Échangez un légume au hasard avec un adversaire",
+          "effects": [
+            {
+              "kind": "exchange-random-inventory",
+              "inventoryId": "market-items",
+              "left": {
+                "kind": "self"
+              },
+              "right": {
+                "kind": "chosen-opponent",
+                "choiceId": "panier.random-swap",
+                "optional": false
+              }
+            },
+            {
+              "kind": "complete-turn"
+            }
+          ]
+        }
+      ],
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "market-items",
+      "visibility": "owner",
+      "component": "inventory.set"
+    },
+    {
+      "id": "shopping-lists",
+      "visibility": "owner",
+      "component": "inventory.set",
+      "items": [
+        "abricot",
+        "ail",
+        "amande",
+        "amarante",
+        "ananas",
+        "asperge",
+        "aubergine",
+        "banane",
+        "bergamote",
+        "betterave",
+        "blette",
+        "carotte",
+        "cassis",
+        "cepe",
+        "celeri-branche",
+        "cerise",
+        "champignon-de-paris",
+        "chataigne",
+        "chou",
+        "citron",
+        "clementine",
+        "coing",
+        "concombre",
+        "courgette",
+        "cresson",
+        "cumquat",
+        "echalote",
+        "epinard",
+        "fane-de-radis",
+        "feuille-de-basilic",
+        "feuille-de-moutarde",
+        "feve",
+        "fenouil",
+        "figue",
+        "fleur-de-courgette",
+        "fraise",
+        "framboise",
+        "fruit-du-dragon",
+        "girolle",
+        "gombo",
+        "haricot-sec",
+        "haricot-vert",
+        "igname",
+        "jeune-pousse-d-ortie",
+        "jujube",
+        "kaki",
+        "kiwano",
+        "kiwi",
+        "laitue",
+        "lentille",
+        "litchi",
+        "lupin",
+        "mache",
+        "mais",
+        "mandarine",
+        "mangue",
+        "melon",
+        "mure",
+        "navet",
+        "nectarine",
+        "nefle",
+        "nashi",
+        "noisette",
+        "noix",
+        "noix-de-coco",
+        "oignon",
+        "orange",
+        "panais",
+        "papaye",
+        "patate-douce",
+        "patisson",
+        "peche",
+        "pasteque",
+        "physalis",
+        "pleurote",
+        "poire",
+        "poireau",
+        "pois-casse",
+        "pois-chiche",
+        "pois-gourmand",
+        "pomme",
+        "pomme-de-terre",
+        "poivron",
+        "pamplemousse",
+        "pousse-de-bambou",
+        "prune",
+        "radis",
+        "raisin",
+        "roquette",
+        "rutabaga",
+        "salsifis",
+        "salade",
+        "shiitake",
+        "sorbe",
+        "taro",
+        "tomate",
+        "topinambour"
+      ]
+    },
+    {
+      "id": "shopping-baskets",
+      "visibility": "owner",
+      "component": "inventory.set"
+    }
+  ],
+  "setup": {},
+  "resourceIds": [],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": {
+      "actions": [],
+      "transitions": [
+        "playing"
+      ]
+    },
+    "playing": {
+      "actions": [
+        "roll",
+        "draw_card"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "board-roll"
+    },
+    "draw_card": {
+      "recipe": "board-draw"
+    }
+  },
+  "victory": {
+    "kind": "by-board"
+  },
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    },
+    {
+      "key": "Space",
+      "type": "action",
+      "actionType": "draw_card",
+      "label": "Piocher la carte"
+    },
+    {
+      "key": "S",
+      "type": "interface",
+      "id": "inventory:shopping-baskets",
+      "label": "Panier"
+    },
+    {
+      "key": "L",
+      "type": "interface",
+      "id": "inventory:shopping-lists",
+      "label": "Liste de courses"
+    },
+    {
+      "key": "I",
+      "type": "interface",
+      "id": "inventory:market-items",
+      "label": "Inventaire"
+    }
+  ],
+  "board": {
+    "namespace": "panier",
+    "trackId": "market",
+    "diceId": "main",
+    "playingPhase": "playing",
+    "maxDepth": 24,
+    "scorePerForwardLap": 1,
+    "pawnSelection": {
+      "setId": "panier",
+      "choiceId": "panier.pawn",
+      "announceInventory": {
+        "inventoryId": "shopping-lists",
+        "eventType": "panier.shopping-list.announced"
+      }
+    },
+    "distribution": {
+      "inventoryId": "shopping-lists",
+      "groups": [
+        [
+          "pomme",
+          "concombre",
+          "abricot",
+          "fleur-de-courgette",
+          "mangue"
+        ],
+        [
+          "betterave",
+          "salade",
+          "fraise",
+          "pois-chiche",
+          "oignon"
+        ],
+        [
+          "celeri-branche",
+          "orange",
+          "amande",
+          "tomate",
+          "kaki"
+        ],
+        [
+          "patate-douce",
+          "cepe",
+          "chou",
+          "figue",
+          "poire"
+        ],
+        [
+          "mais",
+          "nashi",
+          "fane-de-radis",
+          "papaye",
+          "radis"
+        ],
+        [
+          "epinard",
+          "framboise",
+          "lentille",
+          "laitue",
+          "fenouil"
+        ],
+        [
+          "citron",
+          "noisette",
+          "aubergine",
+          "coing",
+          "igname"
+        ],
+        [
+          "champignon-de-paris",
+          "navet",
+          "prune",
+          "peche",
+          "asperge"
+        ],
+        [
+          "kiwano",
+          "pousse-de-bambou",
+          "kiwi",
+          "pomme-de-terre",
+          "mache"
+        ],
+        [
+          "cerise",
+          "haricot-sec",
+          "courgette",
+          "roquette",
+          "pamplemousse"
+        ],
+        [
+          "noix",
+          "poivron",
+          "mandarine",
+          "amarante",
+          "pleurote"
+        ],
+        [
+          "topinambour",
+          "raisin",
+          "banane",
+          "feve",
+          "nefle"
+        ],
+        [
+          "feuille-de-basilic",
+          "ananas",
+          "carotte",
+          "cresson",
+          "mure"
+        ],
+        [
+          "pois-casse",
+          "ail",
+          "panais",
+          "bergamote",
+          "noix-de-coco"
+        ],
+        [
+          "patisson",
+          "clementine",
+          "gombo",
+          "shiitake",
+          "salsifis"
+        ],
+        [
+          "jujube",
+          "melon",
+          "pois-gourmand",
+          "nectarine",
+          "jeune-pousse-d-ortie"
+        ],
+        [
+          "litchi",
+          "rutabaga",
+          "blette",
+          "cassis",
+          "lupin"
+        ],
+        [
+          "echalote",
+          "feuille-de-moutarde",
+          "cumquat",
+          "chataigne",
+          "haricot-vert"
+        ],
+        [
+          "physalis",
+          "taro",
+          "girolle",
+          "poireau",
+          "sorbe"
+        ],
+        [
+          "pomme",
+          "mais",
+          "kiwano",
+          "feuille-de-basilic",
+          "litchi"
+        ],
+        [
+          "betterave",
+          "epinard",
+          "cerise",
+          "pois-casse",
+          "echalote"
+        ],
+        [
+          "celeri-branche",
+          "citron",
+          "noix",
+          "poivron",
+          "clementine"
+        ]
+      ]
+    },
+    "collection": {
+      "requiredInventoryId": "shopping-lists",
+      "collectedInventoryId": "shopping-baskets",
+      "overflowInventoryId": "market-items",
+      "sources": {
+        "fruitier": [
+          "pomme",
+          "poire",
+          "peche",
+          "banane",
+          "melon"
+        ],
+        "maraicher": [
+          "concombre",
+          "mais",
+          "asperge",
+          "feve",
+          "pois-gourmand"
+        ],
+        "bio-fruits": [
+          "abricot",
+          "nashi",
+          "kiwano",
+          "nefle",
+          "nectarine"
+        ],
+        "primeur": [
+          "fleur-de-courgette",
+          "fane-de-radis",
+          "pousse-de-bambou",
+          "feuille-de-basilic",
+          "jeune-pousse-d-ortie"
+        ],
+        "fruits-exotiques": [
+          "mangue",
+          "papaye",
+          "kiwi",
+          "ananas",
+          "litchi"
+        ],
+        "legumes-racines": [
+          "betterave",
+          "radis",
+          "pomme-de-terre",
+          "carotte",
+          "rutabaga"
+        ],
+        "legumes-feuilles": [
+          "salade",
+          "epinard",
+          "mache",
+          "cresson",
+          "blette"
+        ],
+        "fruits-rouges": [
+          "fraise",
+          "framboise",
+          "cerise",
+          "mure",
+          "cassis"
+        ],
+        "legumes-secs": [
+          "pois-chiche",
+          "lentille",
+          "haricot-sec",
+          "pois-casse",
+          "lupin"
+        ],
+        "agrumes": [
+          "orange",
+          "citron",
+          "pamplemousse",
+          "bergamote",
+          "cumquat"
+        ],
+        "legumes-ete": [
+          "tomate",
+          "aubergine",
+          "poivron",
+          "patisson",
+          "haricot-vert"
+        ],
+        "fruits-secs": [
+          "amande",
+          "noisette",
+          "noix",
+          "noix-de-coco",
+          "chataigne"
+        ],
+        "fruits-hiver": [
+          "kaki",
+          "coing",
+          "mandarine",
+          "clementine",
+          "physalis"
+        ],
+        "legumes-exotiques": [
+          "patate-douce",
+          "igname",
+          "amarante",
+          "gombo",
+          "taro"
+        ],
+        "champignons": [
+          "cepe",
+          "champignon-de-paris",
+          "pleurote",
+          "shiitake",
+          "girolle"
+        ],
+        "primeur-special": [
+          "celeri-branche",
+          "fenouil",
+          "roquette",
+          "panais",
+          "feuille-de-moutarde"
+        ],
+        "bio-legumes": [
+          "oignon",
+          "laitue",
+          "courgette",
+          "ail",
+          "echalote"
+        ],
+        "primeur-hivernal": [
+          "chou",
+          "navet",
+          "topinambour",
+          "salsifis",
+          "poireau"
+        ],
+        "maraicher-automne": [
+          "figue",
+          "prune",
+          "raisin",
+          "jujube",
+          "sorbe"
+        ],
+        "bonus": [
+          "abricot",
+          "ail",
+          "amande",
+          "amarante",
+          "ananas",
+          "asperge",
+          "aubergine",
+          "banane",
+          "bergamote",
+          "betterave",
+          "blette",
+          "carotte",
+          "cassis",
+          "cepe",
+          "celeri-branche",
+          "cerise",
+          "champignon-de-paris",
+          "chataigne",
+          "chou",
+          "citron",
+          "clementine",
+          "coing",
+          "concombre",
+          "courgette",
+          "cresson",
+          "cumquat",
+          "echalote",
+          "epinard",
+          "fane-de-radis",
+          "feuille-de-basilic",
+          "feuille-de-moutarde",
+          "feve",
+          "fenouil",
+          "figue",
+          "fleur-de-courgette",
+          "fraise",
+          "framboise",
+          "girolle",
+          "gombo",
+          "haricot-sec",
+          "haricot-vert",
+          "igname",
+          "jeune-pousse-d-ortie",
+          "jujube",
+          "kaki",
+          "kiwano",
+          "kiwi",
+          "laitue",
+          "lentille",
+          "litchi",
+          "lupin",
+          "mache",
+          "mais",
+          "mandarine",
+          "mangue",
+          "melon",
+          "mure",
+          "navet",
+          "nectarine",
+          "nefle",
+          "nashi",
+          "noisette",
+          "noix",
+          "noix-de-coco",
+          "oignon",
+          "orange",
+          "panais",
+          "papaye",
+          "patate-douce",
+          "patisson",
+          "peche",
+          "physalis",
+          "pleurote",
+          "poire",
+          "poireau",
+          "pois-casse",
+          "pois-chiche",
+          "pois-gourmand",
+          "pomme",
+          "pomme-de-terre",
+          "poivron",
+          "pamplemousse",
+          "prune",
+          "radis",
+          "raisin",
+          "roquette",
+          "rutabaga",
+          "salsifis",
+          "salade",
+          "shiitake",
+          "sorbe",
+          "taro",
+          "tomate",
+          "topinambour"
+        ]
+      },
+      "defaultSourceId": "bonus",
+      "collectedMessage": "panier.item.added-to-basket",
+      "overflowMessage": "panier.item.added-to-inventory"
+    },
+    "quiz": {
+      "bankId": "market-quiz",
+      "choiceId": "panier.quiz",
+      "correctMove": 2
+    },
+    "exchange": {
+      "inventoryId": "market-items",
+      "takeChoiceId": "panier.take",
+      "giveChoiceId": "panier.give"
+    },
+    "directionChoiceId": "panier.direction",
+    "bindings": {
+      "panier.move-and-resolve": {
+        "kind": "move"
+      },
+      "panier.draw-course": {
+        "kind": "collect"
+      },
+      "panier.quiz": {
+        "kind": "quiz"
+      },
+      "panier.nearest-stand": {
+        "kind": "nearest",
+        "tag": "stand"
+      },
+      "panier.strategic-swap": {
+        "kind": "exchange"
+      }
+    },
+    "tiles": [
+      {
+        "id": "case-1-entree",
+        "label": "Entrée du marché",
+        "description": "Vous voici à l’entrée du marché. L’air embaume les fruits et légumes frais, les étals s’étendent devant vous.",
+        "operations": [
+          {
+            "kind": "finish-collection",
+            "minimumScore": 1,
+            "reason": "shopping-complete"
+          }
+        ]
+      },
+      {
+        "id": "case-2-stand-fruitier",
+        "label": "Stand Fruitier",
+        "description": "Pommes, poires et pêches sont disposées en pyramides colorées. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "fruitier"
+          }
+        ]
+      },
+      {
+        "id": "case-3-evenement",
+        "label": "Événement",
+        "description": "Un imprévu surgit dans le marché. Piochez une carte Événement et appliquez son effet.",
+        "operations": [
+          {
+            "kind": "draw",
+            "deckId": "events"
+          }
+        ]
+      },
+      {
+        "id": "case-4-stand-maraicher",
+        "label": "Stand Maraîcher",
+        "description": "Concombres, maïs et asperges fraîches brillent sous les lampes du marché. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "maraicher"
+          }
+        ]
+      },
+      {
+        "id": "case-5-echange",
+        "label": "Échange",
+        "description": "Un marchand semble intéressé par les légumes de votre chariot. Il vous demande un ingrédient qui lui ferait plaisir. Si vous l'avez dans votre inventaire, donnez-lui, sinon passez deux tours.",
+        "operations": [
+          {
+            "kind": "draw",
+            "deckId": "exchanges"
+          }
+        ]
+      },
+      {
+        "id": "case-6-stand-bio",
+        "label": "Stand Bio",
+        "description": "Tout est bio et parfumé. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "bio-fruits"
+          }
+        ]
+      },
+      {
+        "id": "case-7-avance-1",
+        "label": "Avancée",
+        "description": "Une allée dégagée vous permet de vous rapprocher d’un stand de votre choix.",
+        "operations": [
+          {
+            "kind": "move",
+            "distance": 1
+          }
+        ]
+      },
+      {
+        "id": "case-8-stand-primeur",
+        "label": "Stand Primeur",
+        "description": "Jeunes pousses et herbes aromatiques éveillent vos sens. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "primeur"
+          }
+        ]
+      },
+      {
+        "id": "case-9-repos",
+        "label": "Repos",
+        "description": "Un marchand organise une dégustation.",
+        "operations": []
+      },
+      {
+        "id": "case-10-stand-fruits-exotiques",
+        "label": "Stand Fruits Exotiques",
+        "description": "Mangues, papayes et kiwis vous invitent à goûter. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "fruits-exotiques"
+          }
+        ]
+      },
+      {
+        "id": "case-11-echange",
+        "label": "Échange",
+        "description": "Une opportunité d’échanger se présente. Piochez une carte Échange et suivez son effet.",
+        "operations": [
+          {
+            "kind": "draw",
+            "deckId": "exchanges"
+          }
+        ]
+      },
+      {
+        "id": "case-12-stand-legumes-racines",
+        "label": "Stand Légumes Racines",
+        "description": "Betteraves, radis et pommes de terre sont exposés. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "legumes-racines"
+          }
+        ]
+      },
+      {
+        "id": "case-13-recule-2",
+        "label": "Recule",
+        "description": "Une allée encombrée vous oblige à revenir en arrière. Reculez de 2 cases.",
+        "operations": [
+          {
+            "kind": "move",
+            "distance": -2
+          }
+        ]
+      },
+      {
+        "id": "case-14-stand-legumes-feuilles",
+        "label": "Stand Légumes Feuilles",
+        "description": "Salades, épinards et blettes fraîches. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "legumes-feuilles"
+          }
+        ]
+      },
+      {
+        "id": "case-15-mini-quiz",
+        "label": "Mini Quiz",
+        "description": "Une question sur les fruits et légumes du marché vous est posée.",
+        "operations": [
+          {
+            "kind": "quiz"
+          }
+        ]
+      },
+      {
+        "id": "case-16-stand-fruits-rouges",
+        "label": "Stand Fruits Rouges",
+        "description": "Fraises, framboises et cerises. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "fruits-rouges"
+          }
+        ]
+      },
+      {
+        "id": "case-17-evenement",
+        "label": "Événement",
+        "description": "Un étal est temporairement fermé. Piochez une carte Événement et appliquez son effet.",
+        "operations": [
+          {
+            "kind": "draw",
+            "deckId": "events"
+          }
+        ]
+      },
+      {
+        "id": "case-18-stand-legumes-secs",
+        "label": "Stand Légumes Secs",
+        "description": "Pois chiches, lentilles et haricots secs. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "legumes-secs"
+          }
+        ]
+      },
+      {
+        "id": "case-19-echange",
+        "label": "Échange",
+        "description": "Échangez une carte avec un autre joueur. Piochez une carte Échange et suivez son effet.",
+        "operations": [
+          {
+            "kind": "draw",
+            "deckId": "exchanges"
+          }
+        ]
+      },
+      {
+        "id": "case-20-stand-bio",
+        "label": "Stand Bio",
+        "description": "Oignons, courgettes et laitues bio. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "bio-legumes"
+          }
+        ]
+      },
+      {
+        "id": "case-21-stand-au-choix",
+        "label": "Stand au choix",
+        "description": "Choisissez votre prochaine destination pour compléter votre panier efficacement. Avancez ou reculez de 2 cases.",
+        "operations": [
+          {
+            "kind": "choose-direction",
+            "distance": 2
+          }
+        ]
+      },
+      {
+        "id": "case-22-stand-primeur-special",
+        "label": "Stand Primeur Spécial",
+        "description": "Céleri-branche, fenouil et roquette. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "primeur-special"
+          }
+        ]
+      },
+      {
+        "id": "case-23-courses-supplementaires",
+        "label": "Courses supplémentaires",
+        "description": "Une promotion spéciale vous permet d’obtenir une carte en plus. Piochez une carte Courses bonus.",
+        "operations": [
+          {
+            "kind": "collect"
+          }
+        ]
+      },
+      {
+        "id": "case-24-stand-agrumes",
+        "label": "Stand des Agrumes",
+        "description": "Oranges, citrons et pamplemousses colorent le marché. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "agrumes"
+          }
+        ]
+      },
+      {
+        "id": "case-25-repos",
+        "label": "Repos",
+        "description": "Vous profitez de l’ombre d’un étal pour souffler un instant.",
+        "operations": []
+      },
+      {
+        "id": "case-26-stand-fruits-secs",
+        "label": "Stand Fruits Secs",
+        "description": "Amandes, noisettes et noix. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "fruits-secs"
+          }
+        ]
+      },
+      {
+        "id": "case-27-troc-improvise",
+        "label": "Troc improvisé",
+        "description": "Échangez une carte avec un joueur voisin. Piochez une carte Échange et suivez son effet.",
+        "operations": [
+          {
+            "kind": "draw",
+            "deckId": "exchanges"
+          }
+        ]
+      },
+      {
+        "id": "case-28-stand-legumes-ete",
+        "label": "Stand Légumes d'été",
+        "description": "Tomates, aubergines et poivrons. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "legumes-ete"
+          }
+        ]
+      },
+      {
+        "id": "case-29-meteo",
+        "label": "Météo",
+        "description": "Un orage éclate soudainement. Reculez de 1 à 10 cases aléatoirement.",
+        "operations": [
+          {
+            "kind": "random-move",
+            "minimum": 1,
+            "maximum": 10,
+            "direction": -1
+          }
+        ]
+      },
+      {
+        "id": "case-30-stand-fruits-hiver",
+        "label": "Stand Fruits d'hiver",
+        "description": "Kakis, coings et mandarines. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "fruits-hiver"
+          }
+        ]
+      },
+      {
+        "id": "case-31-echange",
+        "label": "Échange",
+        "description": "Une opportunité d’échanger avec un autre joueur. Piochez une carte Échange et suivez son effet.",
+        "operations": [
+          {
+            "kind": "draw",
+            "deckId": "exchanges"
+          }
+        ]
+      },
+      {
+        "id": "case-32-stand-legumes-exotiques",
+        "label": "Stand Légumes Exotiques",
+        "description": "Patates douces, ignames et amarante. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "legumes-exotiques"
+          }
+        ]
+      },
+      {
+        "id": "case-33-mini-quiz",
+        "label": "Mini Quiz",
+        "description": "Répondez correctement à une question.",
+        "operations": [
+          {
+            "kind": "quiz"
+          }
+        ]
+      },
+      {
+        "id": "case-34-stand-champignons",
+        "label": "Stand des Champignons",
+        "description": "Cèpes, champignons de Paris et pleurotes. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "champignons"
+          }
+        ]
+      },
+      {
+        "id": "case-35-energie",
+        "label": "Énergie",
+        "description": "Une allée dégagée vous donne un coup de boost. Avancez de 2 cases.",
+        "operations": [
+          {
+            "kind": "move",
+            "distance": 2
+          }
+        ]
+      },
+      {
+        "id": "case-36-stand-primeur-hivernal",
+        "label": "Stand Primeur Hivernal",
+        "description": "Choux, navets et topinambours. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "primeur-hivernal"
+          }
+        ]
+      },
+      {
+        "id": "case-37-evenement",
+        "label": "Événement",
+        "description": "Une situation inattendue survient. Piochez une carte Événement et appliquez son effet.",
+        "operations": [
+          {
+            "kind": "draw",
+            "deckId": "events"
+          }
+        ]
+      },
+      {
+        "id": "case-38-stand-maraicher-automne",
+        "label": "Stand Maraîcher d'automne",
+        "description": "Fruits frais et colorés : figues, prunes et raisins. Piochez une carte Courses.",
+        "tags": [
+          "stand"
+        ],
+        "operations": [
+          {
+            "kind": "collect",
+            "sourceId": "maraicher-automne"
+          }
+        ]
+      },
+      {
+        "id": "case-39-echange-libre",
+        "label": "Échange libre",
+        "description": "Proposez un échange selon votre stratégie. Piochez une carte Échange et suivez son effet.",
+        "operations": [
+          {
+            "kind": "draw",
+            "deckId": "exchanges"
+          }
+        ]
+      },
+      {
+        "id": "case-40-repos",
+        "label": "Repos",
+        "description": "Vous atteignez une jolie fontaine au centre du marché. Vous soufflez un instant et planifiez vos prochains mouvements.",
+        "operations": []
+      }
+    ],
+    "restoreDirection": {
+      "status": "panier.reversed-until-owner-turn",
+      "ruleId": "restore-market-direction"
+    },
+    "startingPlayer": "random"
+  }
+}

@@ -4,6 +4,8 @@ export type PresenceEvent = {
   players: PresencePublicPlayer[];
   origin: string | null;
   at?: number;
+  /** Monotonically increasing within the process identified by origin. */
+  sequence?: number;
 };
 
 export abstract class PresenceTransport {

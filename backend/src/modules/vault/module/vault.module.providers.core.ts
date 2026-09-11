@@ -1,3 +1,5 @@
+import { OWNED_SNAPSHOT_DELETER } from '../application/ports/owned-snapshot-deleter.port';
+import { OwnedSnapshotTypeormDeleter } from '../infrastructure/persistence/typeorm/repositories/owned-snapshot-typeorm.deleter';
 import { VAULT_BOT_PORT } from '../application/ports/vault-bot.port';
 import { VAULT_GAME_PORT } from '../application/ports/vault-game.port';
 import { VAULT_PRESENCE_PORT } from '../application/ports/vault-presence.port';
@@ -13,6 +15,8 @@ import { VaultPresenceAdapter } from '../infrastructure/system/vault-presence.ad
 import { VaultUserNotifierAdapter } from '../infrastructure/system/vault-user-notifier.adapter';
 
 export const VAULT_CORE_PROVIDERS = [
+  OwnedSnapshotTypeormDeleter,
+  { provide: OWNED_SNAPSHOT_DELETER, useExisting: OwnedSnapshotTypeormDeleter },
   VaultRoomSnapshotTypeormRepository,
   VaultBotAdapter,
   VaultGameAdapter,

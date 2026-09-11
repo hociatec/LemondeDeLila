@@ -20,16 +20,18 @@ import {
 import {
   definePattern,
   eventTrackGame,
-  overrideAction,
+} from '../../../engine/runtime/patterns/gameplay-patterns';
+import { overrideAction } from '../../../engine/runtime/definitions/game-definition';
+import {
   overrideComponent,
   overrideInitialization,
+} from '../../../engine/runtime/definitions/component-kit';
+import {
   overrideTurn,
   simultaneous,
-} from '../../../engine/runtime/public-api';
-import type {
-  CardInstance,
-  GameViewExtension,
-} from '../../../engine/runtime/public-api';
+} from '../../../engine/runtime/kits/turn-kit';
+import type { CardInstance } from '../../../engine/runtime/cards/cards-kit';
+import type { GameViewExtension } from '../../../engine/runtime/definitions/game-definition';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import { GameTestKit } from '../../../core/testing/game-test-kit';
 import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
@@ -316,6 +318,13 @@ describe('backend debt contracts', () => {
   it('keeps game files behind the public game API boundary', () => {
     expect(
       auditGameImportBoundaries({
+        file: 'sample/game.spec.ts',
+        source:
+          "import { compileJsonGame } from '../../../engine/json/public-api';",
+      }),
+    ).toEqual([]);
+    expect(
+      auditGameImportBoundaries({
         file: 'sample/game.ts',
         source: "import { defineGame } from '../../../engine/sdk/public-api';",
       }),
@@ -335,6 +344,26 @@ describe('backend debt contracts', () => {
     expect(
       gameSources().flatMap((source) => auditGameImportBoundaries(source)),
     ).toEqual([]);
+  });
+
+  it.each([
+    "import 'node:fs';",
+    "import fs = require('node:fs');",
+    "require('node:path');",
+    "import('typeorm');",
+    "import {x} from 'ioredis';",
+    "import {x} from 'bullmq';",
+    "import {x} from '@nestjs/common';",
+    "import {x} from '../../../engine/runtime/private';",
+    "import { compileJsonGame } from '../../../engine/json/public-api';",
+    'process.cwd();',
+    'Date.now();',
+    'new Date();',
+    'Math.random();',
+  ])('rejects forbidden authoring dependencies and APIs: %s', (source) => {
+    expect(
+      auditGameImportBoundaries({ file: 'sample/content.ts', source }).length,
+    ).toBeGreaterThan(0);
   });
 
   it('detects kit-owned fields in TState unless explicitly annotated', () => {
@@ -369,27 +398,47 @@ describe('backend debt contracts', () => {
     expect(Array.isArray(repeatedFunctionNames(files, 3))).toBe(true);
   });
 
+  it('audits the actual state declarations of all registered games', () => {
+    const sources = gameSources().filter(
+      (source) => !source.file.endsWith('.spec.ts'),
+    );
+    for (const definition of definitions) {
+      const stateSource = sources
+        .filter((source) => source.file.split('/')[1] === definition.id)
+        .map((source) => source.source)
+        .join('\n');
+      expect(
+        auditGameStateOwnership({
+          gameId: definition.id,
+          stateSource,
+          components: definition.components ?? [],
+        }),
+      ).toEqual([]);
+    }
+  });
+
+  it('checks core-owned values without fictitious score or turn components', () => {
+    for (const field of ['score', 'scores', 'skipTurns', 'extraTurns']) {
+      expect(
+        auditGameStateOwnership({
+          gameId: 'sample',
+          stateSource: `type LocalState = { ${field}: number };`,
+          components: [],
+        }),
+      ).toHaveLength(1);
+    }
+  });
+
   it('detects declared phases unreachable from the initial phase', () => {
-    const definition = defineGame({
+    const definition = {
       id: 'reachability-contract',
-      displayName: 'Reachability Contract',
-      category: 'Tests',
-      players: { min: 2, max: 2 },
       initialPhase: 'start',
       phases: {
         start: { next: 'end' },
         end: {},
         orphan: {},
       },
-      setup: () => ({}),
-      actions: {
-        pass: defineAction({
-          input: gameInput.object({}),
-          execute: ({ ctx }) => ctx.turn.complete(),
-        }),
-      },
-      viewExtension: () => ({}),
-    });
+    };
     expect(auditPhaseReachability(definition)).toEqual([
       {
         gameId: 'reachability-contract',

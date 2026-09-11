@@ -4,6 +4,7 @@
  */
 export * from './gameplay/track-round.recipes';
 export * from './gameplay/card-dice.recipes';
+export * from './gameplay/pawn-selection.recipes';
 export * from './gameplay/card-actions.recipes';
 export * from './gameplay/movement-quiz.recipes';
 export * from './gameplay/scoring-submission.recipes';

@@ -1,11 +1,12 @@
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   defineAction,
+  defineChoice,
   gameInput,
   rejectRule,
   sequentialPawnSelection,
   setupPlayingPhases,
 } from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
 import { GOOSE_TILES } from './content';
 import type { JeuOieState } from './types';
 
@@ -54,22 +55,10 @@ const pawnSelection = sequentialPawnSelection<JeuOieState>({
   },
 });
 
-export function initializeGoose(
-  selectionOrder: number[],
-  ctx: RuleContext,
-): void {
-  for (const player of ctx.players.all())
-    ctx.movement.move(TRACK, player.id, 1);
-  pawnSelection.requestAll(selectionOrder, ctx);
-}
-
-export function assignPawn(
-  actorId: number,
-  pawnId: string,
-  ctx: RuleContext,
-): void {
-  pawnSelection.resolve(actorId, pawnId, ctx);
-}
+export const setupGame = pawnSelection.setup(() => ({}), {
+  order: 'shuffled',
+  startRound: true,
+});
 
 function land(
   playerId: number,
@@ -123,3 +112,11 @@ function land(
     );
   }
 }
+
+export const GAME_CHOICES = {
+  'goose.pawn': defineChoice<JeuOieState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ actor, value, ctx }) =>
+      pawnSelection.resolve(actor.id, value, ctx),
+  }),
+};

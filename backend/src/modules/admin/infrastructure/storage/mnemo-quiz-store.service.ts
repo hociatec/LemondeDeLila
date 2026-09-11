@@ -2,9 +2,14 @@ import { randomUUID } from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { Injectable, type OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
+import { businessMsToIso } from '@shared/utils/public-api';
 import { readEnvironment } from '../../../../platform/config/public-api';
-import { writeFileAtomicSync } from '../../../../shared/utils/public-api';
+import { writeFileAtomicSync } from '../../../../platform/filesystem/public-api';
 import type {
   MnemoQuestionStatus,
   MnemoQuizCategory,
@@ -17,10 +22,17 @@ import type {
   MnemoQuestionPatch,
 } from '../../application/ports/admin-mnemo-quiz-store.port';
 
+const MAX_MNEMO_CATEGORIES = 64;
+const MAX_MNEMO_QUESTIONS = 5_000;
+const MAX_MNEMO_TEXT_LENGTH = 2_000;
+const MAX_MNEMO_CATEGORY_NAME_LENGTH = 255;
+
 @Injectable()
 export class MnemoQuizStoreService
   implements OnModuleInit, AdminMnemoQuizStorePort
 {
+  constructor(@Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock) {}
+
   private readonly filePath = resolveStoragePath();
   private data: MnemoQuizStoreData = { categories: [], questions: [] };
 
@@ -54,11 +66,12 @@ export class MnemoQuizStoreService
   }
 
   createCategory(name: string): MnemoQuizCategory {
-    const normalized = requireText(name, 'Nom de catégorie requis');
+    const normalized = requireText(name, 'Nom de categorie requis', MAX_MNEMO_CATEGORY_NAME_LENGTH);
     const category = {
       id: this.uniqueCategoryId(slugify(normalized)),
       name: normalized,
     };
+    assertCapacity(this.data, 1, 0);
     this.data.categories.push(category);
     this.persist();
     return structuredClone(category);
@@ -66,7 +79,7 @@ export class MnemoQuizStoreService
 
   renameCategory(categoryId: string, name: string): MnemoQuizCategory {
     const category = this.requireCategory(categoryId);
-    category.name = requireText(name, 'Nom de catégorie requis');
+    category.name = requireText(name, 'Nom de categorie requis', MAX_MNEMO_CATEGORY_NAME_LENGTH);
     this.persist();
     return structuredClone(category);
   }
@@ -76,7 +89,7 @@ export class MnemoQuizStoreService
     this.data.categories = this.data.categories.filter(
       (candidate) => candidate.id !== category.id,
     );
-    const now = new Date().toISOString();
+    const now = this.nowIso();
     for (const question of this.data.questions) {
       if (question.categoryId === category.id) {
         question.status = 'trash';
@@ -88,7 +101,7 @@ export class MnemoQuizStoreService
 
   createQuestion(input: MnemoQuestionInput): MnemoQuizQuestion {
     this.requireCategory(input.categoryId);
-    const now = new Date().toISOString();
+    const now = this.nowIso();
     const question: MnemoQuizQuestion = {
       id: randomUUID(),
       categoryId: input.categoryId,
@@ -101,6 +114,7 @@ export class MnemoQuizStoreService
       createdAt: now,
       updatedAt: now,
     };
+    assertCapacity(this.data, 0, 1);
     this.data.questions.push(question);
     this.persist();
     return structuredClone(question);
@@ -126,7 +140,7 @@ export class MnemoQuizStoreService
     if (patch.wrong3 !== undefined)
       question.wrong3 = requireText(patch.wrong3, 'Mauvaise réponse requise');
     if (patch.status !== undefined) question.status = patch.status;
-    question.updatedAt = new Date().toISOString();
+    question.updatedAt = this.nowIso();
     this.persist();
     return structuredClone(question);
   }
@@ -145,17 +159,23 @@ export class MnemoQuizStoreService
       this.persist();
       return;
     }
+    if (fs.statSync(this.filePath).size > 4 * 1024 * 1024) {
+      throw new Error('Catalogue Mnémosyne trop volumineux');
+    }
     const source = fs
       .readFileSync(this.filePath, 'utf8')
       .replace(/^\uFEFF/, '');
     this.data = parseStoreData(source);
+    assertCapacity(this.data, 0, 0);
   }
 
   private persist(): void {
-    writeFileAtomicSync(
-      this.filePath,
-      `${JSON.stringify(this.data, null, 2)}\n`,
-    );
+    assertCapacity(this.data, 0, 0);
+    const serialized = `${JSON.stringify(this.data, null, 2)}\n`;
+    if (Buffer.byteLength(serialized, 'utf8') > 4 * 1024 * 1024) {
+      throw new Error('Catalogue Mnemosyne trop volumineux');
+    }
+    writeFileAtomicSync(this.filePath, serialized);
   }
 
   private requireCategory(categoryId: string): MnemoQuizCategory {
@@ -183,6 +203,10 @@ export class MnemoQuizStoreService
     while (this.data.categories.some((category) => category.id === candidate))
       candidate = `${base}-${suffix++}`;
     return candidate;
+  }
+
+  private nowIso(): string {
+    return businessMsToIso(this.clock.now());
   }
 }
 
@@ -219,14 +243,18 @@ function parseStoreData(source: string): MnemoQuizStoreData {
   const questions = Array.isArray(parsed.questions)
     ? parsed.questions.filter(isQuestion)
     : [];
-  return { categories, questions };
+  const data = { categories, questions };
+  assertCapacity(data, 0, 0);
+  return data;
 }
 
 function isCategory(value: unknown): value is MnemoQuizCategory {
   return (
     isRecord(value) &&
     typeof value.id === 'string' &&
-    typeof value.name === 'string'
+    typeof value.name === 'string' &&
+    value.id.length <= 128 &&
+    value.name.length <= MAX_MNEMO_CATEGORY_NAME_LENGTH
   );
 }
 
@@ -236,10 +264,17 @@ function isQuestion(value: unknown): value is MnemoQuizQuestion {
     typeof value.id === 'string' &&
     typeof value.categoryId === 'string' &&
     typeof value.question === 'string' &&
+    value.question.length <= MAX_MNEMO_TEXT_LENGTH &&
     typeof value.correct === 'string' &&
+    value.correct.length <= MAX_MNEMO_TEXT_LENGTH &&
     typeof value.wrong1 === 'string' &&
+    value.wrong1.length <= MAX_MNEMO_TEXT_LENGTH &&
     typeof value.wrong2 === 'string' &&
+    value.wrong2.length <= MAX_MNEMO_TEXT_LENGTH &&
     typeof value.wrong3 === 'string' &&
+    value.wrong3.length <= MAX_MNEMO_TEXT_LENGTH &&
+    value.id.length <= 128 &&
+    value.categoryId.length <= 128 &&
     isStatus(value.status) &&
     typeof value.createdAt === 'string' &&
     typeof value.updatedAt === 'string'
@@ -259,10 +294,25 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
 
-function requireText(value: string, message: string): string {
+function requireText(value: string, message: string, maxLength = MAX_MNEMO_TEXT_LENGTH): string {
+  if (typeof value !== 'string') throw new Error(message);
   const normalized = value.trim();
   if (!normalized) throw new Error(message);
+  if (normalized.length > maxLength) throw new Error(message);
   return normalized;
+}
+
+function assertCapacity(
+  data: MnemoQuizStoreData,
+  addCategories: number,
+  addQuestions: number,
+): void {
+  if (
+    data.categories.length + addCategories > MAX_MNEMO_CATEGORIES ||
+    data.questions.length + addQuestions > MAX_MNEMO_QUESTIONS
+  ) {
+    throw new Error('Catalogue Mnemosyne trop rempli');
+  }
 }
 
 function slugify(value: string): string {

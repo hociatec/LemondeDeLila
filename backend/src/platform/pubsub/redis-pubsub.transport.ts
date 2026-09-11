@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import Redis from 'ioredis';
 import {
   currentCorrelationId,
@@ -6,10 +7,20 @@ import {
   runWithCorrelationId,
 } from '../observability/public-api';
 
+const MAX_PUBSUB_MESSAGE_BYTES = 1024 * 1024;
+
 type CorrelatedPubSubEnvelope<TEvent> = {
   kind: 'lila.pubsub';
+  schemaVersion: 1;
+  eventId: string;
+  occurredAt: string;
   correlationId: string;
   event: TEvent;
+};
+
+export type PubSubEventMetadata = {
+  eventId: string;
+  occurredAt: string;
 };
 
 export class RedisPubSubTransport<TEvent> {
@@ -27,10 +38,13 @@ export class RedisPubSubTransport<TEvent> {
     ) => {
       const client = new Redis(url, {
         lazyConnect: true,
+        connectTimeout: 10_000,
+        commandTimeout: 10_000,
         connectionName: name,
         // Pub/sub is best-effort. Fail fast when Redis is down instead of retrying many times
         // and blocking API requests (default ioredis maxRetriesPerRequest is 20).
         maxRetriesPerRequest: 1,
+        autoResendUnfulfilledCommands: false,
         enableOfflineQueue: false,
         enableReadyCheck: false,
       });
@@ -59,6 +73,9 @@ export class RedisPubSubTransport<TEvent> {
     try {
       const envelope: CorrelatedPubSubEnvelope<TEvent> = {
         kind: 'lila.pubsub',
+        schemaVersion: 1,
+        eventId: randomUUID(),
+        occurredAt: new Date().toISOString(),
         correlationId:
           currentCorrelationId() ?? normalizeCorrelationId(undefined),
         event,
@@ -72,20 +89,31 @@ export class RedisPubSubTransport<TEvent> {
     }
   }
 
-  async subscribe(handler: (event: TEvent) => void): Promise<void> {
+  async subscribe(
+    handler: (event: TEvent, metadata: PubSubEventMetadata) => void,
+  ): Promise<void> {
     this.subscriber.on('message', (channel, message) => {
       if (channel !== this.channel) return;
       try {
+        if (Buffer.byteLength(message, 'utf8') > MAX_PUBSUB_MESSAGE_BYTES) {
+          return;
+        }
         const parsed: unknown = JSON.parse(message);
         const correlated = correlatedEnvelope(parsed);
         const event = this.decodeEvent(correlated?.event ?? parsed);
         if (event) {
           if (correlated) {
             runWithCorrelationId(correlated.correlationId, () =>
-              handler(event),
+              handler(event, {
+                eventId: correlated.eventId,
+                occurredAt: correlated.occurredAt,
+              }),
             );
           } else {
-            handler(event);
+            handler(event, {
+              eventId: randomUUID(),
+              occurredAt: new Date().toISOString(),
+            });
           }
         }
       } catch {
@@ -109,13 +137,23 @@ function correlatedEnvelope(
   const candidate = value as Partial<CorrelatedPubSubEnvelope<unknown>>;
   if (
     candidate.kind !== 'lila.pubsub' ||
+    candidate.schemaVersion !== 1 ||
+    typeof candidate.eventId !== 'string' ||
+    !candidate.eventId ||
+    candidate.eventId.length > 128 ||
+    typeof candidate.occurredAt !== 'string' ||
+    candidate.occurredAt.length > 64 ||
     typeof candidate.correlationId !== 'string' ||
+    candidate.correlationId.length > 128 ||
     !('event' in candidate)
   ) {
     return null;
   }
   return {
     kind: 'lila.pubsub',
+    schemaVersion: 1,
+    eventId: candidate.eventId,
+    occurredAt: candidate.occurredAt,
     correlationId: normalizeCorrelationId(candidate.correlationId),
     event: candidate.event,
   };

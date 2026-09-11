@@ -2,17 +2,18 @@
 
 ## Frontières racine
 
-Le dossier `src` possède exactement quatre frontières de code :
+Le dossier `src` possède exactement cinq frontières de code :
 
 ```text
 src/
+├── app/       composition des modules et registre de persistance
 ├── modules/   capacités métier et applicatives
 ├── game/      moteur, SDK, composition et jeux
 ├── platform/  adapters et services techniques transversaux
 └── shared/    primitives pures et types sans technologie applicative
 ```
 
-`main.ts`, `app.module.ts`, `data-source.ts` et `typeorm-entities.ts` sont les
+`main.ts`, `app.module.ts` et `data-source.ts` sont les
 seuls points de composition conservés directement à la racine.
 
 La direction générale est fermée et contrôlée :
@@ -29,7 +30,7 @@ platform ─> shared
 shared ───> aucune frontière supérieure
 ```
 
-`typeorm-entities.ts` constitue le registre de composition TypeORM et connaît
+`src/app/database/typeorm-entities.ts` constitue le registre de composition TypeORM et connaît
 les adapters de persistance des modules et de `game`. `platform/database`
 reste purement technique : il reçoit ce registre par paramètre et ses migrations
 sont autonomes, sans import vers un contrat métier. Il ne bénéficie d'aucune

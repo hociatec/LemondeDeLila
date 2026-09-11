@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { spawn, spawnSync } from 'node:child_process';
 import * as http from 'node:http';
 import { getProcessEnvironment } from '../../../../platform/config/public-api';
+import { parseStrictInteger } from '../../../../shared/utils/public-api';
 import type {
   AdminMaintenanceRuntimePort,
   MaintenanceCommandResult,
@@ -10,6 +11,8 @@ import type {
 
 @Injectable()
 export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePort {
+  private static readonly MAX_HTTP_BODY_BYTES = 1 * 1024 * 1024;
+  private static readonly MAX_SYSTEMCTL_OUTPUT_BYTES = 256 * 1024;
   private readonly logger = new Logger(AdminMaintenanceRuntimeService.name);
 
   runCommand(
@@ -17,13 +20,28 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
     opts?: { cwd?: string; timeoutMs?: number },
   ): MaintenanceCommandResult {
     const [cmd, ...args] = argv;
+    if (typeof cmd !== 'string' || !cmd.trim()) {
+      return {
+        status: 1,
+        stdout: '',
+        stderr: '',
+        error: 'Commande de maintenance absente',
+      };
+    }
+    const timeoutMs =
+      typeof opts?.timeoutMs === 'number' &&
+      Number.isSafeInteger(opts.timeoutMs) &&
+      opts.timeoutMs >= 1 &&
+      opts.timeoutMs <= 10 * 60 * 1000
+        ? opts.timeoutMs
+        : 60 * 1000;
     const result = spawnSync(cmd, args, {
       encoding: 'utf8',
       env: getProcessEnvironment(),
       windowsHide: true,
       maxBuffer: 10 * 1024 * 1024,
       cwd: opts?.cwd,
-      timeout: opts?.timeoutMs,
+      timeout: timeoutMs,
     });
 
     return {
@@ -38,11 +56,18 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
     argv: string[],
     opts?: { cwd?: string; delayMs?: number },
   ): void {
-    const delayMs = typeof opts?.delayMs === 'number' ? opts.delayMs : 0;
+    const [cmd, ...args] = argv;
+    if (typeof cmd !== 'string' || !cmd.trim()) return;
+    const delayMs =
+      typeof opts?.delayMs === 'number' &&
+      Number.isSafeInteger(opts.delayMs) &&
+      opts.delayMs >= 0 &&
+      opts.delayMs <= 10 * 60 * 1000
+        ? opts.delayMs
+        : 0;
     const timer = setTimeout(
       () => {
         try {
-          const [cmd, ...args] = argv;
           const child = spawn(cmd, args, {
             cwd: opts?.cwd,
             env: getProcessEnvironment(),
@@ -71,14 +96,33 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
     timeoutMs: number,
   ): Promise<{ statusCode: number; body: string }> {
     return new Promise((resolve) => {
+      const safeTimeoutMs =
+        Number.isSafeInteger(timeoutMs) && timeoutMs >= 1 && timeoutMs <= 120_000
+          ? timeoutMs
+          : 10_000;
+      let settled = false;
+      const finish = (result: { statusCode: number; body: string }) => {
+        if (settled) return;
+        settled = true;
+        resolve(result);
+      };
       try {
         const req = http.get(url, (res) => {
           const statusCode =
             typeof res.statusCode === 'number' ? res.statusCode : 0;
           res.setEncoding('utf8');
           let body = '';
-          res.on('data', (chunk) => (body += chunk));
-          res.on('end', () => resolve({ statusCode, body }));
+          res.on('data', (chunk) => {
+            body += chunk;
+            if (
+              Buffer.byteLength(body, 'utf8') >
+              AdminMaintenanceRuntimeService.MAX_HTTP_BODY_BYTES
+            ) {
+              res.destroy();
+              finish({ statusCode: 0, body: '' });
+            }
+          });
+          res.on('end', () => finish({ statusCode, body }));
         });
         req.on('error', (error) => {
           this.logger.warn(
@@ -87,9 +131,9 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
               message: error.message,
             }),
           );
-          resolve({ statusCode: 0, body: '' });
+          finish({ statusCode: 0, body: '' });
         });
-        req.setTimeout(timeoutMs, () => {
+        req.setTimeout(safeTimeoutMs, () => {
           try {
             req.destroy();
           } catch (error) {
@@ -100,7 +144,7 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
               }),
             );
           }
-          resolve({ statusCode: 0, body: '' });
+          finish({ statusCode: 0, body: '' });
         });
       } catch (error) {
         this.logger.warn(
@@ -109,14 +153,16 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
             message: error instanceof Error ? error.message : String(error),
           }),
         );
-        resolve({ statusCode: 0, body: '' });
+        finish({ statusCode: 0, body: '' });
       }
     });
   }
 
   parseSystemctlShow(raw: string): MaintenanceSystemctlShow {
     const lines = String(raw || '')
+      .slice(0, AdminMaintenanceRuntimeService.MAX_SYSTEMCTL_OUTPUT_BYTES)
       .split(/\r?\n/)
+      .slice(0, 2_000)
       .map((line) => line.trim())
       .filter(Boolean);
 
@@ -127,15 +173,16 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
         continue;
       }
       const key = line.slice(0, idx).trim();
-      const value = line.slice(idx + 1).trim();
+      if (key.length > 128) continue;
+      const value = line.slice(idx + 1).trim().slice(0, 4096);
       out[key] = value;
     }
     return out;
   }
 
   parseTail(rawTail?: string): number {
-    const value = Number.parseInt(String(rawTail || ''), 10);
-    if (!Number.isFinite(value) || value <= 0) {
+    const value = parseStrictInteger(rawTail, { min: 1 });
+    if (value === null) {
       return 200;
     }
     return Math.max(1, Math.min(2000, value));

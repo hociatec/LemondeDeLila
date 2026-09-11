@@ -1,0 +1,1710 @@
+{
+  "cards": [
+    {
+      "id": 1,
+      "title": "Avancée joyeuse 1",
+      "text": "Avancez de 1 case(s).",
+      "kind": "move",
+      "moveDelta": 1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 1
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Avancée joyeuse 2",
+      "text": "Avancez de 2 case(s).",
+      "kind": "move",
+      "moveDelta": 2,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 2
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Avancée joyeuse 3",
+      "text": "Avancez de 1 case(s).",
+      "kind": "move",
+      "moveDelta": 1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 1
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Avancée joyeuse 4",
+      "text": "Avancez de 2 case(s).",
+      "kind": "move",
+      "moveDelta": 2,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 2
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Avancée joyeuse 5",
+      "text": "Avancez de 3 case(s).",
+      "kind": "move",
+      "moveDelta": 3,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 3
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Avancée joyeuse 6",
+      "text": "Avancez de 2 case(s).",
+      "kind": "move",
+      "moveDelta": 2,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 2
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Avancée joyeuse 7",
+      "text": "Avancez de 3 case(s).",
+      "kind": "move",
+      "moveDelta": 3,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 3
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Avancée joyeuse 8",
+      "text": "Avancez de 2 case(s).",
+      "kind": "move",
+      "moveDelta": 2,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 2
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Avancée joyeuse 9",
+      "text": "Avancez de 3 case(s).",
+      "kind": "move",
+      "moveDelta": 3,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 3
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Avancée joyeuse 10",
+      "text": "Avancez de 1 case(s).",
+      "kind": "move",
+      "moveDelta": 1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 1
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Avancée joyeuse 11",
+      "text": "Avancez de 2 case(s).",
+      "kind": "move",
+      "moveDelta": 2,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 2
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Avancée joyeuse 12",
+      "text": "Avancez de 3 case(s).",
+      "kind": "move",
+      "moveDelta": 3,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 3
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Accélération spectaculaire 1",
+      "text": "Avancez de 5 case(s).",
+      "kind": "move",
+      "moveDelta": 5,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 5
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Accélération spectaculaire 2",
+      "text": "Avancez de 6 case(s).",
+      "kind": "move",
+      "moveDelta": 6,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 6
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Accélération spectaculaire 3",
+      "text": "Avancez de 7 case(s).",
+      "kind": "move",
+      "moveDelta": 7,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 7
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Accélération spectaculaire 4",
+      "text": "Avancez de 6 case(s).",
+      "kind": "move",
+      "moveDelta": 6,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 6
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Accélération spectaculaire 5",
+      "text": "Avancez de 8 case(s).",
+      "kind": "move",
+      "moveDelta": 8,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 8
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Accélération spectaculaire 6",
+      "text": "Avancez de 5 case(s).",
+      "kind": "move",
+      "moveDelta": 5,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 5
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Accélération spectaculaire 7",
+      "text": "Avancez de 7 case(s).",
+      "kind": "move",
+      "moveDelta": 7,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 7
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Accélération spectaculaire 8",
+      "text": "Avancez de 6 case(s).",
+      "kind": "move",
+      "moveDelta": 6,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 6
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Dérapage 1",
+      "text": "Passez un tour.",
+      "kind": "skip",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.skip-penalty",
+          "data": {}
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Dérapage 2",
+      "text": "Reculez de 2 case(s).",
+      "kind": "move",
+      "moveDelta": -2,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": -2
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "Dérapage 3",
+      "text": "Passez un tour.",
+      "kind": "skip",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.skip-penalty",
+          "data": {}
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "title": "Dérapage 4",
+      "text": "Reculez de 1 case(s).",
+      "kind": "move",
+      "moveDelta": -1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": -1
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "title": "Dérapage 5",
+      "text": "Passez un tour.",
+      "kind": "skip",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.skip-penalty",
+          "data": {}
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "title": "Dérapage 6",
+      "text": "Reculez de 3 case(s).",
+      "kind": "move",
+      "moveDelta": -3,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": -3
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "title": "Dérapage 7",
+      "text": "Reculez de 2 case(s).",
+      "kind": "move",
+      "moveDelta": -2,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": -2
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "title": "Dérapage 8",
+      "text": "Reculez de 1 case(s).",
+      "kind": "move",
+      "moveDelta": -1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": -1
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "title": "Dérapage 9",
+      "text": "Reculez de 3 case(s).",
+      "kind": "move",
+      "moveDelta": -3,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": -3
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "title": "Dérapage 10",
+      "text": "Reculez de 1 case(s).",
+      "kind": "move",
+      "moveDelta": -1,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": -1
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "title": "Dérapage 11",
+      "text": "Passez un tour.",
+      "kind": "skip",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.skip-penalty",
+          "data": {}
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "title": "Dérapage 12",
+      "text": "Reculez de 4 case(s).",
+      "kind": "move",
+      "moveDelta": -4,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": -4
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "title": "Raccourci Secret",
+      "text": "Prenez la première place.",
+      "kind": "special",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.special",
+          "data": {
+            "effect": "take-lead",
+            "delta": 0
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "title": "Cactus Sympathiques",
+      "text": "Avancez de 4 et ignorez la prochaine pénalité.",
+      "kind": "special",
+      "moveDelta": 4,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.special",
+          "data": {
+            "effect": "move-and-shield",
+            "delta": 4
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "title": "Saute-Mouton",
+      "text": "Dépassez le joueur devant et faites-le reculer.",
+      "kind": "special",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.special",
+          "data": {
+            "effect": "leapfrog",
+            "delta": 0
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "title": "Saut Quantique",
+      "text": "Rejoignez la prochaine case multiple de cinq.",
+      "kind": "special",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.special",
+          "data": {
+            "effect": "next-multiple-five",
+            "delta": 0
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "title": "Chemin de Traverse",
+      "text": "Avancez de 3 et rejouez.",
+      "kind": "special",
+      "moveDelta": 3,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.special",
+          "data": {
+            "effect": "move-and-replay",
+            "delta": 3
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "title": "Trompe-l’œil",
+      "text": "Avancez de 2 puis échangez votre place.",
+      "kind": "special",
+      "moveDelta": 2,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.special",
+          "data": {
+            "effect": "move-and-swap",
+            "delta": 2
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "title": "Trappe Bienveillante",
+      "text": "Avancez de 5.",
+      "kind": "move",
+      "moveDelta": 5,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 5
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "title": "Virage Efficace",
+      "text": "Avancez de 3.",
+      "kind": "move",
+      "moveDelta": 3,
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.move",
+          "data": {
+            "delta": 3
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "title": "Chaos 1",
+      "text": "Mélangez toutes les positions.",
+      "kind": "global",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.global",
+          "data": {
+            "effect": "shuffle"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "title": "Chaos 2",
+      "text": "Inversez l’ordre du classement.",
+      "kind": "global",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.global",
+          "data": {
+            "effect": "reverse-ranking"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "title": "Chaos 3",
+      "text": "Tout le monde passe un tour.",
+      "kind": "global",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.global",
+          "data": {
+            "effect": "skip-all"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "title": "Chaos 4",
+      "text": "Tout le monde avance d’une case.",
+      "kind": "global",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.global",
+          "data": {
+            "effect": "advance-all"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "title": "Chaos 5",
+      "text": "Tout le monde recule de deux cases.",
+      "kind": "global",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.global",
+          "data": {
+            "effect": "retreat-all"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "title": "Chaos 6",
+      "text": "Rien ne se passe.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "title": "Chaos 7",
+      "text": "Tout le monde passe un tour.",
+      "kind": "global",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.global",
+          "data": {
+            "effect": "skip-all"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "title": "Chaos 8",
+      "text": "Tout le monde avance d’une case.",
+      "kind": "global",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.global",
+          "data": {
+            "effect": "advance-all"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "title": "Chaos 9",
+      "text": "Décalez toutes les positions.",
+      "kind": "global",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.global",
+          "data": {
+            "effect": "cycle-ranking"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "title": "Chaos 10",
+      "text": "Tout le monde relance le dé.",
+      "kind": "global",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.global",
+          "data": {
+            "effect": "random-roll-all"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "title": "Condition 1",
+      "text": "Le premier recule de 2, les autres avancent de 2.",
+      "kind": "conditional",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.conditional",
+          "data": {
+            "effect": "leader-retreat-others-advance"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "title": "Condition 2",
+      "text": "Le dernier avance de 3.",
+      "kind": "conditional",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.conditional",
+          "data": {
+            "effect": "last-advance"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "title": "Condition 3",
+      "text": "Après un recul, avancez de 3.",
+      "kind": "conditional",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.conditional",
+          "data": {
+            "effect": "after-retreat"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "title": "Condition 4",
+      "text": "Annulez un tour à passer.",
+      "kind": "conditional",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.conditional",
+          "data": {
+            "effect": "cancel-skip"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "title": "Condition 5",
+      "text": "Sur un multiple de 5, avancez de 4, sinon reculez de 1.",
+      "kind": "conditional",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.conditional",
+          "data": {
+            "effect": "multiple-five"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "title": "Condition 6",
+      "text": "Après deux tours immobile, avancez de 5.",
+      "kind": "conditional",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.conditional",
+          "data": {
+            "effect": "after-idle"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "title": "Condition 7",
+      "text": "À égalité, avancez tous les deux de 2.",
+      "kind": "conditional",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.conditional",
+          "data": {
+            "effect": "shared-position"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "title": "Condition 8",
+      "text": "Rejouez immédiatement.",
+      "kind": "conditional",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.conditional",
+          "data": {
+            "effect": "replay"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "title": "Condition 9",
+      "text": "Rejoignez le joueur juste devant.",
+      "kind": "conditional",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.conditional",
+          "data": {
+            "effect": "join-ahead"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "title": "Condition 10",
+      "text": "Après un dépassement d’une case, avancez encore de 1.",
+      "kind": "conditional",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.conditional",
+          "data": {
+            "effect": "after-one-step"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "title": "Règle idiote 1",
+      "text": "Lancez deux dés et avancez du total.",
+      "kind": "rule",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.rule",
+          "data": {
+            "effect": "roll-two"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "title": "Règle idiote 2",
+      "text": "Piochez une carte supplémentaire.",
+      "kind": "rule",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.rule",
+          "data": {
+            "effect": "draw-extra"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 63,
+      "title": "Règle idiote 3",
+      "text": "Votre prochain déplacement est doublé.",
+      "kind": "rule",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.rule",
+          "data": {
+            "effect": "double-move"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 64,
+      "title": "Règle idiote 4",
+      "text": "Reculez de 3 puis avancez de 2.",
+      "kind": "rule",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.rule",
+          "data": {
+            "effect": "retreat-one"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 65,
+      "title": "Règle idiote 5",
+      "text": "Ignorez votre prochain recul.",
+      "kind": "rule",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.rule",
+          "data": {
+            "effect": "shield"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 66,
+      "title": "Règle idiote 6",
+      "text": "Avancez de 3 puis reculez de 1.",
+      "kind": "rule",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.rule",
+          "data": {
+            "effect": "advance-two"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 67,
+      "title": "Règle idiote 7",
+      "text": "Choisissez qui joue après vous.",
+      "kind": "rule",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.rule",
+          "data": {
+            "effect": "choose-next-player"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 68,
+      "title": "Règle idiote 8",
+      "text": "Choisissez +1 ou -1 pour le prochain joueur.",
+      "kind": "rule",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.rule",
+          "data": {
+            "effect": "choose-next-delta"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 69,
+      "title": "Règle idiote 9",
+      "text": "Votre prochain lancer compte double.",
+      "kind": "rule",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.rule",
+          "data": {
+            "effect": "double-roll"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "title": "Règle idiote 10",
+      "text": "Copiez le dernier lancer d’un joueur choisi.",
+      "kind": "rule",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.rule",
+          "data": {
+            "effect": "mirror-roll"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 71,
+      "title": "Ambiance 1",
+      "text": "Une parenthèse paisible traverse la course.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 72,
+      "title": "Ambiance 2",
+      "text": "Une parenthèse paisible traverse la course.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "title": "Ambiance 3",
+      "text": "Une parenthèse paisible traverse la course.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "title": "Ambiance 4",
+      "text": "Une parenthèse paisible traverse la course.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 75,
+      "title": "Ambiance 5",
+      "text": "Une parenthèse paisible traverse la course.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 76,
+      "title": "Ambiance 6",
+      "text": "Une parenthèse paisible traverse la course.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 77,
+      "title": "Ambiance 7",
+      "text": "Une parenthèse paisible traverse la course.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 78,
+      "title": "Ambiance 8",
+      "text": "Une parenthèse paisible traverse la course.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 79,
+      "title": "Ambiance 9",
+      "text": "Une parenthèse paisible traverse la course.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 80,
+      "title": "Ambiance 10",
+      "text": "Une parenthèse paisible traverse la course.",
+      "kind": "neutral",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "ca-derape.mark-winner",
+          "data": {}
+        }
+      ]
+    }
+  ],
+  "tiles": [
+    {
+      "label": "Départ",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    },
+    {
+      "label": "Petit Bosquet",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Case Neutre",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    },
+    {
+      "label": "Petit Pont",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Collines Dansantes",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Rivière Chantante",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Prairie Colorée",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Case détente",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    },
+    {
+      "label": "Monticule Rigolo",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Forêt des Chuchotis",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Case détente",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    },
+    {
+      "label": "Racine Taquine",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Colline du Hérisson",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Case détente",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    },
+    {
+      "label": "Tourbillon de Feuilles",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Pont Suspendu",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Petite Mare Mystérieuse",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Case détente",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    },
+    {
+      "label": "Chemin des Fougères",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Colline de l’Élan",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Case détente",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    },
+    {
+      "label": "Racine Souriante",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Forêt des Murmures",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Case détente",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    },
+    {
+      "label": "Prairie des Papillons",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Monticule Secret",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Case détente",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    },
+    {
+      "label": "Pont des Échos",
+      "description": "Une carte Situation vous attend.",
+      "isNeutral": false
+    },
+    {
+      "label": "Dernière détente",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    },
+    {
+      "label": "Arrivée",
+      "description": "Un instant calme sur le parcours.",
+      "isNeutral": true
+    }
+  ]
+}

@@ -3,8 +3,8 @@ import type {
   EffectEngineState,
   EffectTarget,
   GameEffectInstruction,
-} from './effects-kit';
-import type { GameContext } from '../game-rule-context';
+} from '../contracts/effect-ir';
+import type { GameContext } from '../definitions/game-author-context';
 import type { PrimitiveEffectInstruction } from './effect-primitive-executor';
 
 export class EffectTargetResolver<TState extends object> {

@@ -1,4 +1,8 @@
 import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
+import {
   Inject,
   Injectable,
   Logger,
@@ -17,7 +21,12 @@ import {
   type RefreshTokenServicePort,
 } from '../ports/refresh-token.port';
 import { USER_REPOSITORY, type UserRepository } from '../ports/user.repository';
-import { normalizeUsername } from '../../domain/policies/user-credentials.policy';
+import {
+  normalizeUsername,
+  PASSWORD_MAX_LENGTH,
+  USERNAME_MAX_LENGTH,
+} from '../../domain/policies/user-credentials.policy';
+import { userBanStatus } from '../../domain/policies/user-ban.policy';
 
 @Injectable()
 export class LoginUserService {
@@ -32,6 +41,7 @@ export class LoginUserService {
     private readonly tokenService: UserTokenServicePort,
     @Inject(REFRESH_TOKEN_SERVICE)
     private readonly refreshTokens: RefreshTokenServicePort,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async execute(input: { username: string; password: string }): Promise<{
@@ -40,6 +50,14 @@ export class LoginUserService {
     userId: number;
     username: string;
   }> {
+    if (
+      typeof input.username !== 'string' ||
+      typeof input.password !== 'string' ||
+      input.username.length > USERNAME_MAX_LENGTH ||
+      input.password.length > PASSWORD_MAX_LENGTH
+    ) {
+      throw new UnauthorizedException('Identifiants invalides');
+    }
     const user = await this.users.findByUsername(
       normalizeUsername(input.username),
     );
@@ -66,7 +84,10 @@ export class LoginUserService {
     if (!ok) {
       throw new UnauthorizedException('Identifiants invalides');
     }
-    if (user.bannedUntil && user.bannedUntil.getTime() <= Date.now()) {
+    const banStatus = userBanStatus(user.bannedUntil, this.clock.now());
+    if (banStatus === 'invalid')
+      throw new UnauthorizedException('Compte banni');
+    if (banStatus === 'expired') {
       user.bannedUntil = null;
       user.banReason = null;
       try {
@@ -75,7 +96,7 @@ export class LoginUserService {
         // best effort
       }
     }
-    if (user.bannedUntil && user.bannedUntil.getTime() > Date.now()) {
+    if (banStatus === 'active' && user.bannedUntil) {
       const until = formatDateFr(user.bannedUntil);
       const reason = this.sanitizeBanReason(user.banReason);
       const suffix = reason ? ` (motif : ${reason})` : '';
@@ -101,7 +122,7 @@ export class LoginUserService {
     const normalized = String(reason)
       .replace(this.banReasonWhitespace, ' ')
       .trim();
-    return normalized || null;
+    return normalized.slice(0, 255) || null;
   }
 }
 

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { RoomPayload } from '../../contracts/room-payload.model';
+import type { RoomPayload } from '../../models/room-payload.model';
+import { resolveRoomLifecycleState } from '../../models/room-lifecycle-state.model';
 import {
   hasMinimumParticipants,
   resolveMinimumParticipants,
@@ -11,45 +12,37 @@ function countUniqueMembers(
   return new Set(
     (members ?? [])
       .map((member) => Number(member?.id))
-      .filter((id) => Number.isFinite(id) && id > 0),
+      .filter((id) => Number.isSafeInteger(id) && id > 0),
   ).size;
 }
 
 @Injectable()
 export class RoomClientPolicyService {
-  canSpectate(
+  spectatorAccess(
     payload: RoomPayload,
     userId: number,
-    invitesCanSpectate: boolean | (() => boolean),
-  ): boolean {
+  ): 'allow' | 'deny' | 'invitation' {
     if (!payload?.room) {
-      return false;
+      return 'deny';
     }
     if (!payload.room.isPrivate) {
-      return true;
+      return 'allow';
     }
 
     const isOwner = payload.room.owner?.id === userId;
     const isParticipant =
       payload.room.players?.some((player) => player?.id === userId) ?? false;
     if (isOwner || isParticipant) {
-      return true;
+      return 'allow';
     }
 
-    const started =
-      (payload.room.status || '').toLowerCase() === 'started' ||
-      Boolean(payload.room.startedAt);
-    if (!started) return false;
-    return typeof invitesCanSpectate === 'function'
-      ? invitesCanSpectate()
-      : invitesCanSpectate;
+    const started = resolveRoomLifecycleState(payload.room).kind === 'started';
+    return started ? 'invitation' : 'deny';
   }
 
   listAllowedActions(payload: RoomPayload, userId: number): string[] {
     const room = payload.room;
-    const started =
-      (room.status || '').toLowerCase() === 'started' ||
-      Boolean(room.startedAt);
+    const started = resolveRoomLifecycleState(room).kind === 'started';
     const isOwner = room.owner?.id === userId;
     const isParticipant =
       room.players?.some((player) => player?.id === userId) ?? false;
@@ -59,8 +52,8 @@ export class RoomClientPolicyService {
     const bots = countUniqueMembers(room.bots);
     const minimum = resolveMinimumParticipants(payload.manifest?.minPlayers);
     const maximum =
-      Number.isFinite(room.maxPlayers) && room.maxPlayers > 0
-        ? Math.trunc(room.maxPlayers)
+      Number.isSafeInteger(room.maxPlayers) && room.maxPlayers > 0
+        ? Math.min(64, room.maxPlayers)
         : minimum;
     const canStart = !started && hasMinimumParticipants(humans, bots, minimum);
 
@@ -92,9 +85,7 @@ export class RoomClientPolicyService {
     payload: RoomPayload,
     userId: number,
   ): boolean {
-    const started =
-      (payload.room.status || '').toLowerCase() === 'started' ||
-      Boolean(payload.room.startedAt);
+    const started = resolveRoomLifecycleState(payload.room).kind === 'started';
     const isOwner = payload.room.owner?.id === userId;
     return !started && (!payload.room.isPrivate || isOwner);
   }
@@ -110,9 +101,7 @@ export class RoomClientPolicyService {
       return false;
     }
 
-    const started =
-      (payload.room.status || '').toLowerCase() === 'started' ||
-      Boolean(payload.room.startedAt);
+    const started = resolveRoomLifecycleState(payload.room).kind === 'started';
     return started || !payload.room.isPrivate;
   }
 
@@ -127,10 +116,7 @@ export class RoomClientPolicyService {
       return false;
     }
 
-    return (
-      (payload.room.status || '').toLowerCase() === 'started' ||
-      Boolean(payload.room.startedAt)
-    );
+    return resolveRoomLifecycleState(payload.room).kind === 'started';
   }
 }
 /** Room application capability boundary. */

@@ -5,9 +5,10 @@ import {
   HealthIndicator,
   HealthIndicatorResult,
 } from '@nestjs/terminus';
-import Redis from 'ioredis';
 import { RedisClientFactory } from '../../../../platform/redis/public-api';
 import { prometheusMetrics } from '../../../../platform/observability/public-api';
+import { redisReadinessTargets } from './redis-readiness-targets';
+import { probeRedisReadiness } from './redis-readiness-probe';
 
 @Injectable()
 export class RedisHealthIndicator extends HealthIndicator {
@@ -19,40 +20,48 @@ export class RedisHealthIndicator extends HealthIndicator {
   }
 
   async check(key: string): Promise<HealthIndicatorResult> {
-    const url =
-      this.config.get<string>('GAME_ENGINE_STATE_REDIS_URL') ??
-      this.config.get<string>('SESSION_STORE_REDIS_URL');
-    if (!url) {
-      return this.getStatus(key, true, {
-        message: 'Redis non configuré',
-      });
+    if (typeof key !== 'string' || !key.trim() || key.length > 128) {
+      throw new HealthCheckError('Invalid health-check key', this.getStatus('redis', false));
     }
-
-    let client: Redis | null = null;
-    try {
-      client = this.redisFactory.create(url, 'health:redis', {
-        lazyConnect: true,
-      });
-      await client.connect();
-      await client.ping();
-      await client.quit();
-      prometheusMetrics.setDependencyUp('redis', true);
-      return this.getStatus(key, true);
-    } catch (error) {
-      prometheusMetrics.setDependencyUp('redis', false);
-      if (client) {
-        try {
-          client.disconnect();
-        } catch {
-          /* ignore */
-        }
-      }
+    const targets = redisReadinessTargets(this.config);
+    const urls = [
+      ...new Set(
+        Object.values(targets).filter(
+          (url): url is string =>
+            typeof url === 'string' && url.length > 0 && url.length <= 2048,
+        ),
+      ),
+    ];
+    if (urls.length > 16) {
       throw new HealthCheckError(
-        'Redis check failed',
-        this.getStatus(key, false, {
-          message: error instanceof Error ? error.message : String(error),
-        }),
+        'Too many Redis readiness targets',
+        this.getStatus(key, false, { capabilities: {} }),
       );
     }
+    const probes = new Map(
+      await Promise.all(
+        urls.map(
+          async (url) =>
+            [url, await probeRedisReadiness(this.redisFactory, url)] as const,
+        ),
+      ),
+    );
+    const capabilities = Object.fromEntries(
+      Object.entries(targets).map(([capability, url]) => [
+        capability,
+        url && probes.get(url) ? 'up' : 'down',
+      ]),
+    );
+    const healthy = Object.values(capabilities).every(
+      (status) => status === 'up',
+    );
+    prometheusMetrics.setDependencyUp('redis', healthy);
+    const result = this.getStatus(key, healthy, { capabilities });
+    if (!healthy)
+      throw new HealthCheckError(
+        'Required Redis capability unavailable',
+        result,
+      );
+    return result;
   }
 }

@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
-import fs from 'node:fs';
 import path from 'node:path';
 import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
 import { getProcessEnvironment } from '../../../../platform/config/public-api';
+import { decodeContentText, parseContentJson } from './content-parser';
+import { readContainedContent } from '../../infrastructure/content/read-contained-content';
 
 type ContentReleaseEntry = {
   file: string;
@@ -22,9 +23,6 @@ export type ExternalGameContent = {
   version: string;
 };
 
-let cachedRoot = '';
-let cachedManifest: ContentReleaseManifest | null = null;
-
 export function loadExternalGameContent(
   gameId: string,
   environment: NodeJS.ProcessEnv = getProcessEnvironment(),
@@ -33,10 +31,11 @@ export function loadExternalGameContent(
   if (!configuredRoot) return null;
   const root = path.resolve(configuredRoot);
   const manifest = readManifest(root);
-  const entry = manifest.games[gameId];
+  const entry = Object.hasOwn(manifest.games, gameId)
+    ? manifest.games[gameId]
+    : undefined;
   if (!entry) return null;
-  const payloadPath = resolvePayloadPath(root, entry.file);
-  const raw = readFile(payloadPath, gameId);
+  const raw = decodeContentText(readContainedContent(root, entry.file));
   const actualHash = createHash('sha256').update(raw).digest('hex');
   if (actualHash !== entry.sha256 || entry.contentVersion !== actualHash) {
     throw new GameContentValidationError(
@@ -45,7 +44,7 @@ export function loadExternalGameContent(
     );
   }
   try {
-    return { source: JSON.parse(raw) as unknown, version: actualHash };
+    return { source: parseContentJson(raw, gameId), version: actualHash };
   } catch (error) {
     throw new GameContentValidationError(
       `JSON de release invalide pour ${gameId}`,
@@ -54,17 +53,15 @@ export function loadExternalGameContent(
   }
 }
 
-export function clearExternalContentReleaseCache(): void {
-  cachedRoot = '';
-  cachedManifest = null;
-}
-
 function readManifest(root: string): ContentReleaseManifest {
-  if (root === cachedRoot && cachedManifest) return cachedManifest;
   const manifestPath = path.join(root, 'manifest.json');
   let parsed: unknown;
   try {
-    parsed = JSON.parse(readFile(manifestPath, 'release')) as unknown;
+    parsed = parseContentJson(
+      readContainedContent(root, 'manifest.json'),
+      'release',
+      'manifest.json',
+    );
   } catch (error) {
     throw new GameContentValidationError('Manifest de contenu invalide', {
       manifestPath,
@@ -79,52 +76,43 @@ function readManifest(root: string): ContentReleaseManifest {
       },
     );
   }
-  cachedRoot = root;
-  cachedManifest = parsed;
   return parsed;
-}
-
-function resolvePayloadPath(root: string, relative: string): string {
-  const resolved = path.resolve(root, relative);
-  if (!resolved.startsWith(`${root}${path.sep}`)) {
-    throw new GameContentValidationError('Chemin de contenu hors release', {
-      relative,
-    });
-  }
-  return resolved;
-}
-
-function readFile(filePath: string, gameId: string): string {
-  try {
-    return fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-  } catch (error) {
-    throw new GameContentValidationError(
-      `Fichier de contenu illisible pour ${gameId}`,
-      {
-        filePath,
-        cause: error instanceof Error ? error.message : String(error),
-      },
-    );
-  }
 }
 
 function isManifest(value: unknown): value is ContentReleaseManifest {
   if (!value || typeof value !== 'object') return false;
   const record = value as Record<string, unknown>;
   if (
+    Object.keys(record).some(
+      (key) => !['kind', 'schemaVersion', 'releaseId', 'games'].includes(key),
+    ) ||
     record.kind !== 'lila.content-release' ||
     record.schemaVersion !== 1 ||
     typeof record.releaseId !== 'string' ||
     !record.games ||
-    typeof record.games !== 'object'
+    typeof record.games !== 'object' ||
+    Array.isArray(record.games)
   ) {
     return false;
   }
-  return Object.values(record.games).every((entry) => {
+  if (
+    record.releaseId.length === 0 ||
+    record.releaseId.length > 128 ||
+    Object.keys(record.games).length > 1_000
+  ) {
+    return false;
+  }
+  return Object.entries(record.games).every(([gameId, entry]) => {
+    if (!/^[a-z0-9][a-z0-9-]{0,127}$/.test(gameId)) return false;
     if (!entry || typeof entry !== 'object') return false;
     const item = entry as Record<string, unknown>;
     return (
+      Object.keys(item).every((key) =>
+        ['file', 'sha256', 'contentVersion'].includes(key),
+      ) &&
       typeof item.file === 'string' &&
+      item.file.length > 0 &&
+      item.file.length <= 512 &&
       typeof item.sha256 === 'string' &&
       /^[a-f0-9]{64}$/.test(item.sha256) &&
       item.contentVersion === item.sha256

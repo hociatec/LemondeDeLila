@@ -1,5 +1,5 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
-import { ModuleOverviewDto } from '../contracts/generic-module.model';
+import { ModuleOverviewDto } from '../models/generic-module.model';
 import {
   GAME_MODULE_OVERVIEW,
   GameModuleOverviewProvider,
@@ -15,6 +15,6 @@ export class GameModuleOverviewRegistryService {
 
   getModules(): ModuleOverviewDto[] {
     const list = Array.isArray(this.providers) ? this.providers : [];
-    return list.map((provider) => provider.getOverview());
+    return list.slice(0, 512).map((provider) => provider.getOverview());
   }
 }

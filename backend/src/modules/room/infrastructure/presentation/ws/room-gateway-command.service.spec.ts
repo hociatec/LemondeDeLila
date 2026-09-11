@@ -1,12 +1,46 @@
-import { getErrorPayload } from '@shared/utils/public-api';
+import { getErrorPayload } from '../../../../../platform/serialization/public-api';
 import { RoomGatewayCommandService } from './room-gateway-command.service';
+import { decodeRoomMessage } from './room-intent-decoder';
+import type { WsRequestRateLimitService } from '../../../../../platform/ws/public-api';
 
 describe('RoomGatewayCommandService transport pipeline', () => {
-  const commands = new RoomGatewayCommandService();
+  it('refuses chat and costly commands before acknowledgement or execution when quota is exhausted', async () => {
+    const allow = jest.fn().mockResolvedValue(false);
+    const service = new RoomGatewayCommandService(
+      {
+        allow,
+      } as unknown as WsRequestRateLimitService,
+      { now: () => Date.now() },
+    );
+    const safeSend = jest.fn();
+    const context = { safeSend } as unknown as Parameters<
+      RoomGatewayCommandService['handleCommand']
+    >[0];
+    const client = {} as Parameters<
+      RoomGatewayCommandService['handleCommand']
+    >[1];
+    const meta = { userId: 42 } as Parameters<
+      RoomGatewayCommandService['handleCommand']
+    >[2];
+    for (const intentId of ['room.chat.send', 'room.start', 'bot.add']) {
+      await service.handleCommand(context, client, meta, {
+        type: 'room.intent.execute',
+        payload: { intentId, data: {} },
+      });
+    }
+    expect(allow).toHaveBeenCalledWith(42);
+    expect(safeSend).toHaveBeenCalledTimes(3);
+    expect(safeSend).toHaveBeenLastCalledWith(
+      client,
+      expect.objectContaining({
+        payload: expect.objectContaining({ code: 'WS_RATE_LIMITED' }),
+      }),
+    );
+  });
 
   it('accepts only the canonical intent envelope', () => {
     expect(
-      commands.decode(
+      decodeRoomMessage(
         JSON.stringify({
           type: 'room.intent.execute',
           payload: { intentId: 'room.ping', data: { clientSentAtMs: 1 } },
@@ -25,7 +59,7 @@ describe('RoomGatewayCommandService transport pipeline', () => {
       [JSON.stringify({ type: 'room.ping' }), 'ROOM_WS_UNKNOWN_COMMAND'],
     ] as const) {
       try {
-        commands.decode(raw);
+        decodeRoomMessage(raw);
         throw new Error('decode should fail');
       } catch (error) {
         expect(getErrorPayload(error)).toEqual(
@@ -36,6 +70,6 @@ describe('RoomGatewayCommandService transport pipeline', () => {
   });
 
   it('rejects oversized Room payloads before JSON parsing', () => {
-    expect(() => commands.decode('x'.repeat(65_537))).toThrow();
+    expect(() => decodeRoomMessage('x'.repeat(65_537))).toThrow();
   });
 });

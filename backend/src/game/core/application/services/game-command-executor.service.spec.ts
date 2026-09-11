@@ -1,11 +1,11 @@
-import type { GameRuntime } from '../contracts/game-runtime.interface';
-import type { GameSingleActionDto } from '../contracts/game-action.model';
-import type { GameStateEntity } from '../contracts/game-state.model';
-import { FixedGameClock } from '../contracts/game-execution-context.model';
+import type { GameRuntime } from '../ports/game-runtime.port';
+import type { GameSingleActionDto } from '../models/game-action.model';
+import type { GameState } from '../models/game-state.model';
+import { FixedGameClock } from '../models/game-execution-context.model';
 import { GameCommandExecutorService } from './game-command-executor.service';
 import { GameExecutionScopeService } from './game-execution-scope.service';
 
-function state(counter = 0): GameStateEntity {
+function state(counter = 0): GameState {
   return {
     status: 'started',
     phase: 'turn',
@@ -15,9 +15,9 @@ function state(counter = 0): GameStateEntity {
   };
 }
 
-function counterOf(state: GameStateEntity): number {
+function counterOf(state: GameState): number {
   return Number(
-    (state as GameStateEntity & { game: { counter: number } }).game.counter,
+    (state as GameState & { game: { counter: number } }).game.counter,
   );
 }
 
@@ -30,14 +30,11 @@ describe('GameCommandExecutorService', () => {
     const validatedCounters: number[] = [];
     const handler = {
       validateActor: () => true,
-      validateAction: (
-        current: GameStateEntity,
-        action: GameSingleActionDto,
-      ) => {
+      validateAction: (current: GameState, action: GameSingleActionDto) => {
         validatedCounters.push(counterOf(current));
         return action;
       },
-      applyActions: (current: GameStateEntity) => ({
+      applyActions: (current: GameState) => ({
         ...current,
         game: { counter: counterOf(current) + 1 },
       }),
@@ -58,17 +55,13 @@ describe('GameCommandExecutorService', () => {
     const initial = state();
     const handler = {
       validateActor: () => true,
-      validateAction: (
-        _current: GameStateEntity,
-        action: GameSingleActionDto,
-      ) => {
+      validateAction: (_current: GameState, action: GameSingleActionDto) => {
         if (action.type === 'reject') throw new Error('rejected');
         return action;
       },
-      applyActions: (current: GameStateEntity) => {
-        (
-          current as GameStateEntity & { game: { counter: number } }
-        ).game.counter += 1;
+      applyActions: (current: GameState) => {
+        (current as GameState & { game: { counter: number } }).game.counter +=
+          1;
         return current;
       },
     } as unknown as GameRuntime;
@@ -88,7 +81,7 @@ describe('GameCommandExecutorService', () => {
     const execution = new GameExecutionScopeService();
     const initialA = state();
     const initialB = state();
-    const run = (current: GameStateEntity) => {
+    const run = (current: GameState) => {
       const context = execution.create(current, 4, new FixedGameClock(1234));
       return execution.run(context, () => ({
         random: context.rng.int(1000),
@@ -98,5 +91,45 @@ describe('GameCommandExecutorService', () => {
 
     expect(run(initialA)).toEqual(run(initialB));
     expect(run(state()).now).toBe(1234);
+  });
+
+  it('clones the accepted action once at the event boundary', () => {
+    const initial = state();
+    const handler = {
+      validateActor: () => true,
+      validateAction: (_current: GameState, action: GameSingleActionDto) =>
+        action,
+      applyActions: (current: GameState, actions: GameSingleActionDto[]) => {
+        actions[0]!.payload = { mutatedAfterAcceptance: true };
+        return current;
+      },
+    } as unknown as GameRuntime;
+
+    const next = executor.execute({
+      handler,
+      state: initial,
+      actions: [{ type: 'change', payload: { original: true } }],
+      actorId: 7,
+    });
+
+    expect(
+      (
+        next as GameState & {
+          engine?: { pendingEvents?: readonly unknown[] };
+        }
+      ).engine?.pendingEvents?.[0],
+    ).toMatchObject({
+      type: 'game.command.accepted',
+      data: {
+        actionType: 'change',
+      },
+      visibility: {
+        privateDataByPlayer: {
+          '7': {
+            action: { type: 'change', payload: { original: true } },
+          },
+        },
+      },
+    });
   });
 });

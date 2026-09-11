@@ -1,29 +1,19 @@
-import {
-  freezeGameContent,
-  gameEffects,
-  rejectContent,
-} from '../../../engine/sdk/public-api';
 import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
-import { CONTES_RESOURCES, CONTES_STATUSES } from './constants';
+import {
+  cardContent,
+  defineGameContent,
+  effectContentSchema,
+  gameInput,
+  rejectContent,
+  trackContent,
+} from '../../../engine/sdk/public-api';
 import rawContent from './content-data.json';
+import manifest from './manifest.json';
 
 export type ContesTileType =
   'start' | 'conte' | 'bonus' | 'malus' | 'surprise' | 'finish';
 
 export type ContesCardType = 'bonus' | 'malus' | 'surprise' | 'conte';
-
-export type ContesPawn = {
-  id: string;
-  label: string;
-  description: string;
-};
-
-export type ContesTile = {
-  id: string;
-  type: ContesTileType;
-  label: string;
-  description: string;
-};
 
 export type ContesCard = {
   id: number;
@@ -33,186 +23,104 @@ export type ContesCard = {
   effects: readonly GameEffectInstruction[];
 };
 
-type RawContesCard = Omit<ContesCard, 'effects'>;
-
-const self = gameEffects.target.self();
-type ContesCustomEffect =
-  | { id: 'contes.move'; data: { delta: number } }
-  | { id: 'contes.draw'; data: { type: ContesCardType } }
-  | { id: 'contes.schedule-target'; data: { effect: string } }
-  | {
-      id: 'contes.roll-move';
-      data: { mode: 'double' | 'half' | 'backward' };
-    }
-  | { id: 'contes.queue-draws'; data: { types: ContesCardType[] } }
-  | {
-      id: 'contes.extend-status';
-      data: { status: string; turns: number };
-    }
-  | {
-      id:
-        | 'contes.force-one-others'
-        | 'contes.abundance'
-        | 'contes.swap-closest'
-        | 'contes.block'
-        | 'contes.bonus-gift'
-        | 'contes.skip-if-low-roll'
-        | 'contes.previous-malus'
-        | 'contes.queue-random-draws'
-        | 'contes.laughter'
-        | 'contes.conte';
-      data?: never;
-    }
-  | { id: 'contes.option'; data: { effect: 'song' | 'wish' } };
-
-function custom<TEffect extends ContesCustomEffect>(
-  effectId: TEffect['id'],
-  ...payload: TEffect extends { data: infer TData } ? [TData] : []
-): GameEffectInstruction {
-  return gameEffects.custom(effectId, payload[0] ?? {}, self);
-}
-const move = (delta: number): GameEffectInstruction =>
-  custom('contes.move', { delta });
-const draw = (type: ContesCardType): GameEffectInstruction =>
-  custom('contes.draw', { type });
-const target = (effect: string): GameEffectInstruction =>
-  custom('contes.schedule-target', { effect });
-const status = (statusId: string): GameEffectInstruction =>
-  gameEffects.addStatus({
-    status: statusId,
-    scope: 'until-used',
-    target: self,
-  });
-
-const BONUS_EFFECTS: Readonly<
-  Record<number, readonly GameEffectInstruction[]>
-> = {
-  1: [move(2)],
-  2: [gameEffects.gainResource(CONTES_RESOURCES.reroll, 1, self)],
-  3: [gameEffects.gainResource(CONTES_RESOURCES.shield, 1, self)],
-  4: [status(CONTES_STATUSES.cape)],
-  5: [target('move-other-two')],
-  6: [custom('contes.roll-move', { mode: 'double' })],
-  7: [status(CONTES_STATUSES.keyOfGold)],
-  8: [move(3)],
-  9: [custom('contes.queue-draws', { types: ['bonus', 'surprise'] })],
-  10: [target('swap-next-turns')],
-  11: [custom('contes.force-one-others')],
-  12: [custom('contes.abundance')],
-  13: [move(5), gameEffects.skipTurn(1, self)],
-  14: [status(CONTES_STATUSES.replaceOne)],
-  15: [move(-2), move(3)],
-};
-
-const MALUS_EFFECTS: Readonly<
-  Record<number, readonly GameEffectInstruction[]>
-> = {
-  1: [gameEffects.skipTurn(1, self)],
-  2: [move(-2)],
-  3: [custom('contes.swap-closest')],
-  4: [custom('contes.roll-move', { mode: 'half' })],
-  5: [custom('contes.block')],
-  6: [gameEffects.skipTurn(2, self)],
-  7: [draw('malus')],
-  8: [move(3), move(-4)],
-  9: [custom('contes.bonus-gift')],
-  10: [custom('contes.roll-move', { mode: 'backward' })],
-  11: [custom('contes.skip-if-low-roll')],
-  12: [custom('contes.previous-malus')],
-  13: [move(-2)],
-  14: [gameEffects.moveTo('story-road', 0, self)],
-  15: [
-    custom('contes.extend-status', {
-      status: CONTES_STATUSES.noBonus,
-      turns: 2,
+const textSchema = gameInput.string({ min: 1, max: 4000, trim: false });
+const idSchema = gameInput.string({ min: 1, max: 128 });
+const deckSchema = gameInput.array(
+  gameInput.object({
+    id: gameInput.number({ integer: true, min: 1 }),
+    type: gameInput.enum(['bonus', 'malus', 'surprise', 'conte']),
+    title: textSchema,
+    text: textSchema,
+    effects: effectContentSchema({
+      tracks: ['story-road'],
+      effects: [
+        'contes.move',
+        'contes.draw',
+        'contes.schedule-target',
+        'contes.roll-move',
+        'contes.queue-draws',
+        'contes.extend-status',
+        'contes.force-one-others',
+        'contes.abundance',
+        'contes.swap-closest',
+        'contes.block',
+        'contes.bonus-gift',
+        'contes.skip-if-low-roll',
+        'contes.previous-malus',
+        'contes.queue-random-draws',
+        'contes.laughter',
+        'contes.conte',
+        'contes.option',
+      ],
     }),
-  ],
+  }),
+  { min: 1, max: 10000 },
+);
+const contesSchema = gameInput.object({
+  tiles: gameInput.array(
+    gameInput.object({
+      id: idSchema,
+      type: gameInput.enum([
+        'start',
+        'conte',
+        'bonus',
+        'malus',
+        'surprise',
+        'finish',
+      ]),
+      label: textSchema,
+      description: textSchema,
+    }),
+    { min: 2, max: 1000 },
+  ),
+  pawns: gameInput.array(
+    gameInput.object({
+      id: idSchema,
+      label: textSchema,
+      description: textSchema,
+    }),
+    { min: 6, max: 100 },
+  ),
+  decks: gameInput.object({
+    bonus: deckSchema,
+    malus: deckSchema,
+    surprise: deckSchema,
+    conte: deckSchema,
+  }),
+});
+export const CONTES_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  rawContent,
+  {
+    schema: {
+      parse(value: unknown) {
+        const parsed = contesSchema.parse(value);
+        for (const [type, cards] of Object.entries(parsed.decks)) {
+          if (cards.some((card) => card.type !== type))
+            rejectContent('Type de carte différent de la pioche');
+        }
+        return {
+          tiles: trackContent(parsed.tiles),
+          pawns: cardContent(parsed.pawns),
+          decks: {
+            bonus: cardContent(parsed.decks.bonus),
+            malus: cardContent(parsed.decks.malus),
+            surprise: cardContent(parsed.decks.surprise),
+            conte: cardContent(parsed.decks.conte),
+          },
+        };
+      },
+    },
+  },
+);
+export const CONTES_TILES = CONTES_GAME_CONTENT.data.tiles;
+export const CONTES_PAWNS = CONTES_GAME_CONTENT.data.pawns;
+export const CONTES_DECKS = CONTES_GAME_CONTENT.data.decks;
+
+export const CONTES_CONTENT_COUNTS = {
+  tiles: CONTES_TILES.length,
+  cards: Object.values(CONTES_DECKS).reduce(
+    (total, deck) => total + deck.length,
+    0,
+  ),
 };
-
-const SURPRISE_EFFECTS: Readonly<
-  Record<number, readonly GameEffectInstruction[]>
-> = {
-  1: [move(-1)],
-  2: [move(4)],
-  3: [draw('bonus')],
-  4: [custom('contes.queue-random-draws')],
-  5: [custom('contes.laughter')],
-  6: [target('swap-positions')],
-  7: [gameEffects.skipTurn(1, self)],
-  8: [status(CONTES_STATUSES.reverseNextTurn)],
-  9: [custom('contes.option', { effect: 'song' })],
-  10: [status(CONTES_STATUSES.protectNextMalus)],
-  11: [draw('conte')],
-  12: [custom('contes.roll-move', { mode: 'backward' })],
-  13: [custom('contes.option', { effect: 'wish' })],
-  14: [target('steal-token')],
-  15: [target('travelling-book')],
-};
-
-export const CONTES_PAWNS: ContesPawn[] = rawContent.pawns.map((pawn) => ({
-  ...pawn,
-}));
-
-export const CONTES_TILES: ContesTile[] = rawContent.tiles.map((tile) => ({
-  ...tile,
-  type: tileType(tile.type),
-}));
-
-export const CONTES_DECKS = {
-  bonus: normalizeCards(rawContent.decks.bonus),
-  malus: normalizeCards(rawContent.decks.malus),
-  surprise: normalizeCards(rawContent.decks.surprise),
-  conte: normalizeCards(rawContent.decks.contes),
-};
-
-function normalizeCards(
-  cards: ReadonlyArray<{
-    id: number;
-    type: string;
-    title: string;
-    text: string;
-  }>,
-): ContesCard[] {
-  return cards.map((card) => {
-    const normalized: RawContesCard = {
-      ...card,
-      type: cardType(card.type),
-    };
-    return { ...normalized, effects: cardEffects(normalized) };
-  });
-}
-
-function cardEffects(card: RawContesCard): readonly GameEffectInstruction[] {
-  if (card.type === 'bonus') return BONUS_EFFECTS[card.id] ?? [];
-  if (card.type === 'malus') return MALUS_EFFECTS[card.id] ?? [];
-  if (card.type === 'surprise') return SURPRISE_EFFECTS[card.id] ?? [];
-  return [custom('contes.conte')];
-}
-
-function tileType(value: string): ContesTileType {
-  if (
-    value === 'start' ||
-    value === 'conte' ||
-    value === 'bonus' ||
-    value === 'malus' ||
-    value === 'surprise' ||
-    value === 'finish'
-  )
-    return value;
-  rejectContent(`Type de case Contes inconnu: ${value}`);
-}
-
-function cardType(value: string): ContesCardType {
-  if (
-    value === 'bonus' ||
-    value === 'malus' ||
-    value === 'surprise' ||
-    value === 'conte'
-  )
-    return value;
-  rejectContent(`Type de carte Contes inconnu: ${value}`);
-}
-
-freezeGameContent(CONTES_PAWNS);
-freezeGameContent(CONTES_TILES);
-freezeGameContent(CONTES_DECKS);

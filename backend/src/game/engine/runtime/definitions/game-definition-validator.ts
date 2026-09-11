@@ -1,56 +1,19 @@
+import type {
+  DefinitionToValidate,
+  ValidationFailure,
+} from '../contracts/definition-validation';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { GameComponentDefinition } from './component-kit';
+import { isGameDelay } from '../automation/game-deadline';
+
+import { assertInitializationReferences } from './component-initialization-references';
+import { assertInitializationValues } from './initialization-value-validation';
 import { assertComponentDefinitions } from './game-definition-component-validator';
+import { validateStaticContent } from '../content/game-content';
+import { assertPhaseGraph } from './game-phase-graph-validator';
 import {
   assertAuxiliaryDefinitions,
   assertConfiguration,
 } from './game-definition-auxiliary-validator';
-
-export type DefinitionToValidate = {
-  id: string;
-  players: { min: number; max: number };
-  actions: Readonly<
-    Record<string, { enumerateInputs?: unknown; validateInput?: unknown }>
-  >;
-  phases?: Readonly<
-    Record<
-      string,
-      {
-        actions?: readonly string[];
-        next?: string;
-        visibility?: string;
-        timeout?: { afterMs?: number; action?: { type?: string } };
-      }
-    >
-  >;
-  initialPhase?: string;
-  components?: readonly GameComponentDefinition[];
-  automatic?: readonly { id: string; priority?: number }[];
-  choices?: Readonly<Record<string, { input?: unknown }>>;
-  events?: readonly {
-    type: string;
-    data?: { parse?: unknown };
-    emit?: unknown;
-  }[];
-  stateVersion?: number;
-  contentVersion?: string;
-  rulesVersion?: string;
-  config?: {
-    input?: { parse?: unknown; describe?: unknown };
-    defaults?: unknown;
-    phase?: string;
-    permission?: string;
-  };
-  content?: {
-    kind?: unknown;
-    gameId?: unknown;
-    version?: unknown;
-    data?: unknown;
-  };
-  effects?: Readonly<Record<string, { input?: unknown; resolveRaw?: unknown }>>;
-};
-
-export type ValidationFailure = (path: string, reason: string) => never;
 
 export function assertGameDefinition(definition: DefinitionToValidate): void {
   const fail: ValidationFailure = (path, reason) => {
@@ -61,7 +24,14 @@ export function assertGameDefinition(definition: DefinitionToValidate): void {
   assertMetadata(definition, fail);
   const actionNames = assertActionsAndEvents(definition, fail);
   const phaseNames = assertPhases(definition, actionNames, fail);
+  assertPhaseGraph(definition, fail);
   assertComponentDefinitions(definition, fail);
+  assertInitializationValues(definition.initialization, fail);
+  assertInitializationReferences(
+    definition.components ?? [],
+    definition.initialization,
+    fail,
+  );
   assertAuxiliaryDefinitions(definition, fail);
   assertConfiguration(definition, phaseNames, fail);
 }
@@ -76,7 +46,8 @@ function assertMetadata(
     !Number.isInteger(definition.players.min) ||
     !Number.isInteger(definition.players.max) ||
     definition.players.min < 1 ||
-    definition.players.max < definition.players.min
+    definition.players.max < definition.players.min ||
+    definition.players.max > 64
   )
     fail('players', 'limites de joueurs invalides');
   if (
@@ -89,7 +60,10 @@ function assertMetadata(
     ['rulesVersion', definition.rulesVersion],
     ['contentVersion', definition.contentVersion],
   ] as const) {
-    if (version != null && version.trim().length === 0)
+    if (
+      version != null &&
+      (version.trim().length === 0 || version.length > 128)
+    )
       fail(path, 'la version ne peut pas être vide');
   }
   const content = definition.content;
@@ -115,6 +89,7 @@ function assertMetadata(
     !Object.isFrozen(content.data)
   )
     fail('content', 'le contenu statique doit être immuable');
+  validateStaticContent(content.data, `${definition.id}.content`);
 }
 
 function assertActionsAndEvents(
@@ -165,10 +140,7 @@ function assertPhases(
       fail(`phases.${name}.visibility`, 'visibilité inconnue');
     }
     if (!phase.timeout) continue;
-    if (
-      !Number.isFinite(phase.timeout.afterMs) ||
-      Number(phase.timeout.afterMs) < 0
-    ) {
+    if (!isGameDelay(phase.timeout.afterMs)) {
       fail(`phases.${name}.timeout`, 'durée invalide');
     }
     const action = phase.timeout.action?.type;
@@ -200,3 +172,8 @@ function assertEventDefinitions(
     names.add(event.type);
   }
 }
+
+export type {
+  DefinitionToValidate,
+  ValidationFailure,
+} from '../contracts/definition-validation';

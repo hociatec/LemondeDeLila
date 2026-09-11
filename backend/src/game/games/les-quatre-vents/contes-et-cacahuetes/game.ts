@@ -1,31 +1,23 @@
 import {
   cards,
   defineCardsSchema,
-  defineChoice,
   defineGame,
-  defineGameContent,
-  gameInput,
   pawns,
   publicField,
   raceGame,
-  when,
 } from '../../../engine/sdk/public-api';
-import { CONTES_DECKS, CONTES_PAWNS, CONTES_TILES } from './content';
+import { CONTES_RESOURCES } from './constants';
 import {
-  CONTES_ACTIONS,
-  CONTES_PHASES,
-  requestPawns,
-  resolveCard,
-  resolveLaughter,
-  resolveOption,
-  resolvePawn,
-  resolveReroll,
-  resolveToken,
-  skipBlockedContesPlayer,
-  unblockPassedPlayers,
-} from './rules';
-import { blockedPosition } from './resolution';
+  CONTES_DECKS,
+  CONTES_GAME_CONTENT,
+  CONTES_PAWNS,
+  CONTES_TILES,
+} from './content';
 import { CONTES_EFFECTS } from './effects';
+import manifest from './manifest.json';
+import { GAME_RULES } from './rule-bindings';
+import { CONTES_ACTIONS, CONTES_PHASES } from './rules';
+import { setupGame } from './rules';
 import type { ContesState } from './types';
 
 const cardSchema = defineCardsSchema({
@@ -44,17 +36,14 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<ContesState>()({
-  id: 'contes-et-cacahuetes',
-  displayName: 'Contes et Cacahuètes',
+  id: manifest.code,
+  rulesVersion: '2',
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Une course narrative à travers les contes du monde.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('contes-et-cacahuetes', {
-    tiles: CONTES_TILES,
-    pawns: CONTES_PAWNS,
-    decks: CONTES_DECKS,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: CONTES_GAME_CONTENT,
   playerValuesVisibility: { statuses: publicField() },
   patterns: [
     raceGame({
@@ -67,83 +56,15 @@ export default defineGame<ContesState>()({
     pawns.set({ id: 'contes', pawns: CONTES_PAWNS }),
     ...cardSchema.components,
   ],
+  resourceIds: Object.values(CONTES_RESOURCES),
   initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
-  setup: ({ players, ctx }) => {
-    requestPawns(
-      players.map((player) => player.id),
-      ctx,
-    );
-    return {};
-  },
+  setup: setupGame,
   initialPhase: CONTES_PHASES.initialPhase,
   phases: CONTES_PHASES.phases,
   actions: CONTES_ACTIONS,
   effects: CONTES_EFFECTS,
-  choices: {
-    'contes.pawn': defineChoice<ContesState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
-    }),
-    'contes.reroll': defineChoice<ContesState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ state, actor, value, ctx }) =>
-        resolveReroll(state, actor.id, value, ctx),
-    }),
-    'contes.option': defineChoice<ContesState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ state, actor, value, ctx }) =>
-        resolveOption(state, actor.id, value, ctx),
-    }),
-    'contes.number': defineChoice<ContesState, number>({
-      input: gameInput.number({ integer: true }),
-      resolve: ({ state, actor, value, ctx }) =>
-        resolveLaughter(state, actor.id, value, ctx),
-    }),
-    'contes.card': defineChoice<ContesState, number>({
-      input: gameInput.number({ integer: true }),
-      resolve: ({ state, actor, value, ctx }) =>
-        resolveCard(state, actor.id, value, ctx),
-    }),
-    'contes.token': defineChoice<ContesState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ state, actor, value, ctx }) =>
-        resolveToken(state, actor.id, value, ctx),
-    }),
-  },
-  automatic: [
-    when(
-      'unblock-passed-player',
-      ({ state: _state, ctx }) => {
-        const player = ctx.players.current();
-        const blocked = player ? blockedPosition(ctx, player.id) : null;
-        return (
-          CONTES_PHASES.is(ctx, 'playing') &&
-          player != null &&
-          blocked != null &&
-          ctx.players
-            .all()
-            .some(
-              (other) =>
-                other.id !== player.id &&
-                ctx.movement.position('story-road', other.id) >= blocked,
-            )
-        );
-      },
-      ({ state, ctx }) => unblockPassedPlayers(state, ctx),
-    ),
-    when(
-      'skip-sleeping-or-blocked-player',
-      ({ state: _state, ctx }) => {
-        const player = ctx.players.current();
-        return (
-          CONTES_PHASES.is(ctx, 'playing') &&
-          player != null &&
-          blockedPosition(ctx, player.id) != null
-        );
-      },
-      ({ state, ctx }) => skipBlockedContesPlayer(state, ctx),
-    ),
-  ],
+  ...GAME_RULES,
+
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

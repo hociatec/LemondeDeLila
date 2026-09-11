@@ -1,7 +1,13 @@
-import { freezeGameContent, gameEffects } from '../../../engine/sdk/public-api';
 import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
-
-export type CatPattesCardType = 'pattes' | 'obstacle' | 'parade' | 'bot';
+import {
+  cardContent,
+  defineGameContent,
+  effectContentSchema,
+  gameEffects,
+  gameInput,
+  rejectContent,
+} from '../../../engine/sdk/public-api';
+import manifest from './manifest.json';
 
 export type CatPattesObstacleType =
   'gamelle' | 'pluie' | 'chien' | 'coussin' | 'sol';
@@ -10,23 +16,48 @@ export type CatPattesParadeType =
 export type CatPattesBotType =
   'reserve' | 'chat-ninja' | 'patte-blindee' | 'passage-star';
 
-export interface CatPattesCardDefinition {
+type CatPattesCardBase = {
   id: string;
   name: string;
   description?: string;
   effect?: string;
-  type: CatPattesCardType;
-  value?: number;
-  obstacle?: CatPattesObstacleType;
-  parade?: CatPattesParadeType;
-  bot?: CatPattesBotType;
   effects: readonly GameEffectInstruction[];
-}
+};
+type CatPattesCardKind =
+  | {
+      type: 'pattes';
+      value: number;
+      obstacle?: never;
+      parade?: never;
+      bot?: never;
+    }
+  | {
+      type: 'obstacle';
+      obstacle: CatPattesObstacleType;
+      value?: never;
+      parade?: never;
+      bot?: never;
+    }
+  | {
+      type: 'parade';
+      parade: CatPattesParadeType;
+      value?: never;
+      obstacle?: never;
+      bot?: never;
+    }
+  | {
+      type: 'bot';
+      bot: CatPattesBotType;
+      value?: never;
+      obstacle?: never;
+      parade?: never;
+    };
+export type CatPattesCardDefinition = CatPattesCardBase & CatPattesCardKind;
 
 const createCopies = (
   prefix: string,
   count: number,
-  value: Omit<CatPattesCardDefinition, 'id'>,
+  value: Omit<CatPattesCardBase, 'id'> & CatPattesCardKind,
 ) =>
   Array.from({ length: count }, (_, index): CatPattesCardDefinition => ({
     id: `${prefix}-${index + 1}`,
@@ -229,11 +260,78 @@ const deck: CatPattesCardDefinition[] = [
   },
 ];
 
-export const CAT_PATTES_DECK = deck;
-export const CAT_PATTES_CARD_BY_ID: Record<string, CatPattesCardDefinition> =
-  Object.fromEntries(deck.map((card) => [card.id, card]));
+const deckSchema = gameInput.object({
+  cards: gameInput.array(
+    gameInput.object({
+      id: gameInput.string({ min: 1, max: 128 }),
+      name: gameInput.string({ min: 1, max: 200 }),
+
+      description: gameInput.optional(gameInput.string({ max: 2000 })),
+      effect: gameInput.optional(gameInput.string({ max: 2000 })),
+      type: gameInput.enum(['pattes', 'obstacle', 'parade', 'bot']),
+      value: gameInput.optional(
+        gameInput.number({ integer: true, min: 1, max: 1000 }),
+      ),
+      obstacle: gameInput.optional(
+        gameInput.enum(['gamelle', 'pluie', 'chien', 'coussin', 'sol']),
+      ),
+      parade: gameInput.optional(
+        gameInput.enum(['croquettes', 'rayon', 'dodo', 'coussin', 'saut']),
+      ),
+      bot: gameInput.optional(
+        gameInput.enum([
+          'reserve',
+          'chat-ninja',
+          'patte-blindee',
+          'passage-star',
+        ]),
+      ),
+      effects: effectContentSchema({
+        effects: ['cat-pattes.move', 'cat-pattes.parade', 'cat-pattes.power'],
+      }),
+    }),
+    { min: 1, max: 10000 },
+  ),
+});
+export const CAT_PATTES_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  { cards: deck },
+  {
+    schema: {
+      parse(value: unknown) {
+        const parsed = deckSchema.parse(value);
+
+        const cards = parsed.cards.map((card): CatPattesCardDefinition => {
+          const { type, value, obstacle, parade, bot, ...base } = card;
+          switch (type) {
+            case 'pattes':
+              if (value === undefined || obstacle || parade || bot)
+                rejectContent('Carte Pattes invalide');
+              return { ...base, type, value };
+            case 'obstacle':
+              if (!obstacle || value !== undefined || parade || bot)
+                rejectContent('Carte Obstacle invalide');
+              return { ...base, type, obstacle };
+            case 'parade':
+              if (!parade || value !== undefined || obstacle || bot)
+                rejectContent('Carte Parade invalide');
+              return { ...base, type, parade };
+            case 'bot':
+              if (!bot || value !== undefined || obstacle || parade)
+                rejectContent('Carte Pouvoir invalide');
+              return { ...base, type, bot };
+          }
+        });
+        return { cards: cardContent(cards) };
+      },
+    },
+  },
+);
+export const CAT_PATTES_DECK = CAT_PATTES_GAME_CONTENT.data.cards;
+export const CAT_PATTES_CARD_BY_ID: Readonly<
+  Record<string, CatPattesCardDefinition>
+> = Object.freeze(
+  Object.fromEntries(CAT_PATTES_DECK.map((card) => [card.id, card])),
+);
 export const CAT_PATTES_GOAL = 1000;
 export const CAT_PATTES_DEFAULT_ROUNDS = 3;
-
-freezeGameContent(CAT_PATTES_DECK);
-freezeGameContent(CAT_PATTES_CARD_BY_ID);

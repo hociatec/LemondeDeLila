@@ -6,10 +6,10 @@ import type {
   SocialProfileEndgameMessages,
   SocialProfileRepository,
 } from '../../../../application/ports/social-profile.repository';
-import type { SocialProfileRecord } from '../../../../application/contracts/social-profile.model';
+import type { SocialProfileRecord } from '../../../../application/models/social-profile.model';
 import { SocialProfileUserRelationMissingError } from '../../../../domain/errors/social-domain.errors';
-import { User } from '../../../../../user/public-api';
 import { SocialProfileEntity } from '../entities/social-profile.entity';
+import type { SocialUserPersistenceRef } from '../entities/social-user.persistence-ref';
 
 @Injectable()
 export class SocialProfileTypeormRepository implements SocialProfileRepository {
@@ -19,6 +19,7 @@ export class SocialProfileTypeormRepository implements SocialProfileRepository {
   ) {}
 
   async findByUserId(userId: number): Promise<SocialProfileRecord | null> {
+    if (!Number.isSafeInteger(userId) || userId <= 0) return null;
     const profile = await this.profiles.findOne({ where: { userId } });
     return profile ? this.toModel(profile) : null;
   }
@@ -26,7 +27,14 @@ export class SocialProfileTypeormRepository implements SocialProfileRepository {
   async findEndgameMessagesByUserIds(
     userIds: number[],
   ): Promise<SocialProfileEndgameMessages[]> {
-    if (userIds.length === 0) {
+    const normalizedUserIds = Array.isArray(userIds)
+      ? [
+          ...new Set(
+            userIds.filter((id) => Number.isSafeInteger(id) && id > 0),
+          ),
+        ].slice(0, 1_000)
+      : [];
+    if (normalizedUserIds.length === 0) {
       return [];
     }
 
@@ -37,9 +45,10 @@ export class SocialProfileTypeormRepository implements SocialProfileRepository {
         defeatMessage: true,
       },
       where: {
-        userId: In(userIds),
+        userId: In(normalizedUserIds),
       },
-      take: Math.min(1_000, userIds.length),
+      order: { userId: 'ASC' },
+      take: normalizedUserIds.length,
     });
 
     return rows.map((row) => ({
@@ -50,9 +59,16 @@ export class SocialProfileTypeormRepository implements SocialProfileRepository {
   }
 
   async create(input: CreateSocialProfileInput): Promise<SocialProfileRecord> {
+    if (
+      !input?.user ||
+      !Number.isSafeInteger(input.user.id) ||
+      input.user.id <= 0
+    ) {
+      throw new RangeError('Utilisateur social invalide');
+    }
     const profile = this.profiles.create({
       userId: input.user.id,
-      user: { id: input.user.id } as User,
+      user: { id: input.user.id } as SocialUserPersistenceRef,
       bio: input.bio,
       victoryMessage: input.victoryMessage,
       defeatMessage: input.defeatMessage,
@@ -63,10 +79,18 @@ export class SocialProfileTypeormRepository implements SocialProfileRepository {
   }
 
   async save(profile: SocialProfileRecord): Promise<SocialProfileRecord> {
+    if (
+      !profile ||
+      !Number.isSafeInteger(profile.userId) ||
+      profile.userId <= 0 ||
+      !profile.user
+    ) {
+      throw new RangeError('Profil social invalide');
+    }
     const saved = await this.profiles.save(
       this.profiles.create({
         userId: profile.userId,
-        user: { id: profile.user.id } as User,
+        user: { id: profile.user.id } as SocialUserPersistenceRef,
         bio: profile.bio,
         victoryMessage: profile.victoryMessage,
         defeatMessage: profile.defeatMessage,
@@ -85,8 +109,11 @@ export class SocialProfileTypeormRepository implements SocialProfileRepository {
     const user = profile.user
       ? {
           id: profile.user.id,
-          username: profile.user.username,
-          avatar: profile.user.avatar ?? null,
+          username: String(profile.user.username ?? '').slice(0, 255),
+          avatar:
+            typeof profile.user.avatar === 'string'
+              ? profile.user.avatar.slice(0, 2048)
+              : null,
         }
       : fallbackUser;
 
@@ -99,9 +126,16 @@ export class SocialProfileTypeormRepository implements SocialProfileRepository {
     return {
       userId: profile.userId,
       user,
-      bio: profile.bio ?? null,
-      victoryMessage: profile.victoryMessage ?? null,
-      defeatMessage: profile.defeatMessage ?? null,
+      bio:
+        typeof profile.bio === 'string' ? profile.bio.slice(0, 20_000) : null,
+      victoryMessage:
+        typeof profile.victoryMessage === 'string'
+          ? profile.victoryMessage.slice(0, 2_000)
+          : null,
+      defeatMessage:
+        typeof profile.defeatMessage === 'string'
+          ? profile.defeatMessage.slice(0, 2_000)
+          : null,
       visibility: profile.visibility,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,

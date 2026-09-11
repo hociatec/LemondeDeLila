@@ -4,10 +4,10 @@ import type {
   GameLifecycleHooks,
   RoundLifecycleInput,
   TurnLifecycleInput,
-} from '../lifecycle/game-lifecycle-hooks';
-import type { VictoryRule } from '../definitions/game-definition';
-import type { TurnPolicy } from '../kits/turn-kit';
-import type { GamePattern } from './gameplay-pattern-core';
+} from './pattern-capabilities';
+import type { VictoryRule } from '../contracts/author-rule-contracts';
+import type { TurnPolicy } from './pattern-capabilities';
+import type { GamePattern } from '../contracts/pattern-definition';
 
 export function assertComposablePatterns<TState extends object>(
   patterns: readonly GamePattern<TState>[],

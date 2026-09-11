@@ -1,13 +1,19 @@
+import type { NoGameState as OlympiaState } from '../../../engine/sdk/public-api';
 import {
-  cards,
   cardGame,
+  cards,
   defineCardsSchema,
   defineGame,
-  defineGameContent,
 } from '../../../engine/sdk/public-api';
-import { OLYMPIA_DECKS, type OlympiaDeckType } from './content';
+import { GAME_BOT } from './bot-rules';
+import {
+  OLYMPIA_DECKS,
+  OLYMPIA_GAME_CONTENT,
+  type OlympiaDeckType,
+} from './content';
+import manifest from './manifest.json';
 import { OLYMPIA_ACTIONS, OLYMPIA_EFFECTS } from './rules';
-import type { NoGameState as OlympiaState } from '../../../engine/sdk/public-api';
+import { setupGame } from './setup-rules';
 
 const DECKS: OlympiaDeckType[] = [
   'divinite',
@@ -49,13 +55,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<OlympiaState>()({
-  id: 'olympia',
-  displayName: 'Olympia',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
-  description: 'Gagnez le prestige suprême du panthéon.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('olympia', { decks: OLYMPIA_DECKS }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: OLYMPIA_GAME_CONTENT,
   patterns: [
     cardGame({
       schema: cardSchema,
@@ -67,28 +73,8 @@ export default defineGame<OlympiaState>()({
     { key: 'C', type: 'action', actionType: 'play_card' },
     { key: 'P', type: 'action', actionType: 'pass' },
   ],
-  setup: ({ players, ctx }) => {
-    for (const player of players) {
-      const divinity = ctx.cards.draw<string>('divinite');
-      if (divinity) ctx.cards.give('divinities', player.id, divinity);
-      for (let index = 0; index < 2; index += 1) {
-        const creature = ctx.cards.draw<string>('creatures');
-        if (creature) ctx.cards.give('players', player.id, creature);
-      }
-      const action =
-        ctx.cards.draw<string>('actions') ?? ctx.cards.draw<string>('attaques');
-      if (action) ctx.cards.give('players', player.id, action);
-    }
-    return {};
-  },
+  setup: setupGame,
   actions: OLYMPIA_ACTIONS,
   effects: OLYMPIA_EFFECTS,
-  bot: {
-    choose: ({ actor, ctx }) => {
-      const cardId = ctx.cards.hand<string>('players', actor.id)[0];
-      return cardId
-        ? { type: 'play_card', payload: { cardId } }
-        : { type: 'pass', payload: {} };
-    },
-  },
+  bot: GAME_BOT,
 });

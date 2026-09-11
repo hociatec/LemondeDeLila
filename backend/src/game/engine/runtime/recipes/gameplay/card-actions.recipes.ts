@@ -1,5 +1,5 @@
-import type { GameActionDefinition } from '../../definitions/game-definition';
-import { defineAction } from '../../definitions/game-definition';
+import type { GameActionDefinition } from '../../contracts/author-rule-contracts';
+import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
 import { cardEventIdentity } from './card-recipe.helpers';
 import type { CardValue } from '../../cards/cards-kit';
@@ -267,7 +267,7 @@ export function giveCard<TState extends object>(options: {
     }),
     validate: ({ actor, input, ctx }) =>
       input.targetPlayerId !== actor.id &&
-      ctx.players.get(input.targetPlayerId) != null &&
+      ctx.players.other(input.targetPlayerId, actor.id) != null &&
       ctx.cards.hand<string>(options.handId, actor.id).includes(input.cardId),
     enumerate: ({ actor, ctx }) =>
       ctx.cards.hand<string>(options.handId, actor.id).flatMap((cardId) =>
@@ -316,7 +316,7 @@ export function swapHands<TState extends object>(options: {
     input: gameInput.object({ targetPlayerId: gameInput.playerId() }),
     validate: ({ actor, input, ctx }) =>
       input.targetPlayerId !== actor.id &&
-      ctx.players.get(input.targetPlayerId) != null,
+      ctx.players.other(input.targetPlayerId, actor.id) != null,
     enumerate: ({ actor, ctx }) =>
       ctx.players
         .others(actor.id)

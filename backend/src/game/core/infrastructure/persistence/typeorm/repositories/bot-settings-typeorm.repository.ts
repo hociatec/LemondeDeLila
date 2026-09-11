@@ -3,7 +3,7 @@ import { Repository } from 'typeorm';
 import {
   BotSettingsRecord,
   BotSettingsRepository,
-} from '../../../../application/contracts/bot-settings.repository';
+} from '../../../../application/ports/bot-settings.repository';
 import { BotSettingsEntity } from '../entities/bot-settings.entity';
 
 export class BotSettingsTypeormRepository implements BotSettingsRepository {

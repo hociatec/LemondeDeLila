@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
-import { UpdatePolicyService } from '../../../../update/public-api';
+import { ClientUpdateQueryService } from '../../../../update/public-api';
 import { WsJwtAuthService } from '../../../../../platform/realtime/public-api';
 import {
   getErrorMessage,
@@ -45,7 +45,7 @@ export class RoomGatewayConnectionService {
     private readonly membership: RoomMembershipFacadeService,
     private readonly roomState: RoomStateService,
     private readonly auth: WsJwtAuthService,
-    private readonly updates: UpdatePolicyService,
+    private readonly updates: ClientUpdateQueryService,
     private readonly wsTickets: WsTicketAuthService,
     private readonly clientPolicy: RoomClientPolicyService,
     private readonly joinPolicy: RoomJoinPolicyService,

@@ -1,14 +1,18 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import type { GameRuntime } from '../contracts/game-runtime.interface';
-import type { GameSingleActionDto } from '../contracts/game-action.model';
-import type { GameStateEntity } from '../contracts/game-state.model';
-import type { GameClock } from '../contracts/game-execution-context.model';
+import { parseStrictInteger } from '../../../../shared/utils/public-api';
+import type { GameRuntime } from '../ports/game-runtime.port';
+import type { GameSingleActionDto } from '../models/game-action.model';
+import type { GameState } from '../models/game-state.model';
+import type {
+  GameClock,
+  GameExecutionContext,
+} from '../models/game-execution-context.model';
 import {
   GameActionRejectedError,
   GameStateConflictError,
 } from '../../domain/errors/game-domain.errors';
 import { GameExecutionScopeService } from './game-execution-scope.service';
-import { appendPendingGameEvent } from './game-event-log.helper';
+import { appendPendingGameEvent } from './game-event-buffer';
 import {
   commandReceipt,
   normalizeCommandId,
@@ -18,7 +22,7 @@ import { GameEngineMetricsService } from './game-engine-metrics.service';
 
 type GameCommandExecutionInput = {
   handler: GameRuntime;
-  state: GameStateEntity;
+  state: GameState;
   actions: GameSingleActionDto[];
   actorId: number | null;
   clock?: GameClock;
@@ -34,7 +38,10 @@ export class GameCommandExecutorService {
     @Optional() private readonly metrics?: GameEngineMetricsService,
   ) {}
 
-  execute(input: GameCommandExecutionInput): GameStateEntity {
+  execute(input: GameCommandExecutionInput): GameState {
+    if (!Array.isArray(input.actions) || input.actions.length > 128) {
+      throw new GameActionRejectedError('Trop de commandes dans la requête.');
+    }
     let current = this.clone(input.state);
     for (const candidate of input.actions) {
       current = this.executeCandidate(input, current, candidate);
@@ -44,22 +51,25 @@ export class GameCommandExecutorService {
 
   private executeCandidate(
     input: GameCommandExecutionInput,
-    current: GameStateEntity,
+    current: GameState,
     candidate: GameSingleActionDto,
-  ): GameStateEntity {
+  ): GameState {
     const commandId = normalizeCommandId(candidate.meta?.commandId);
     if (commandId && commandReceipt(current, commandId)) return current;
-    const startedAtMs = Date.now();
+    const startedAtMs = performance.now();
     const actorId = input.actorId ?? this.actorOf(candidate);
     try {
-      this.ensureClientVersion(current, candidate.meta?.knownVersion);
-      this.ensureActionAllowed(input.handler, current, candidate, actorId);
-      const action = input.handler.validateAction(current, candidate, actorId);
       const context = this.execution.create(
         current,
         actorId,
         input.clock,
         commandId,
+      );
+      const action = this.validateCandidate(
+        input.handler,
+        current,
+        candidate,
+        context,
       );
       appendPendingGameEvent(current, {
         actorId,
@@ -71,7 +81,7 @@ export class GameCommandExecutorService {
             : {
                 kind: 'split',
                 privateDataByPlayer: {
-                  [String(actorId)]: { action: structuredClone(action) },
+                  [String(actorId)]: { action },
                 },
               },
         occurredAtMs: context.clock.nowMs(),
@@ -89,7 +99,7 @@ export class GameCommandExecutorService {
         });
       }
       this.ensureValidState(next);
-      const durationMs = Date.now() - startedAtMs;
+      const durationMs = Math.max(0, performance.now() - startedAtMs);
       this.metrics?.recordCommand(input.handler.gameType, true, durationMs);
       this.logResolution(
         input,
@@ -114,9 +124,26 @@ export class GameCommandExecutorService {
     }
   }
 
+  private validateCandidate(
+    handler: GameRuntime,
+    state: GameState,
+    candidate: GameSingleActionDto,
+    context: GameExecutionContext,
+  ): GameSingleActionDto {
+    this.ensureClientVersion(state, candidate.meta?.knownVersion);
+    this.ensureActionAllowed(
+      handler,
+      state,
+      candidate,
+      context.actorId,
+      context,
+    );
+    return handler.validateAction(state, candidate, context.actorId, context);
+  }
+
   private logResolution(
     input: GameCommandExecutionInput,
-    state: GameStateEntity,
+    state: GameState,
     actionType: string,
     commandId: string | null,
     actorId: number | null,
@@ -138,15 +165,16 @@ export class GameCommandExecutorService {
 
   private logRejection(
     input: GameCommandExecutionInput,
-    state: GameStateEntity,
+    state: GameState,
     candidate: GameSingleActionDto,
     commandId: string | null,
     actorId: number | null,
     startedAtMs: number,
     error: unknown,
   ): void {
-    const durationMs = Date.now() - startedAtMs;
+    const durationMs = Math.max(0, performance.now() - startedAtMs);
     this.metrics?.recordCommand(input.handler.gameType, false, durationMs);
+    this.metrics?.recordFailure(input.handler.gameType, 'command', error);
     this.logger.warn(
       JSON.stringify({
         event: 'game.command.rejected',
@@ -183,14 +211,15 @@ export class GameCommandExecutorService {
       : {};
   }
 
-  private ensureClientVersion(
-    state: GameStateEntity,
-    knownVersion: unknown,
-  ): void {
+  private ensureClientVersion(state: GameState, knownVersion: unknown): void {
     if (knownVersion == null) return;
-    const expected = Number(knownVersion);
+    const expected = parseStrictInteger(knownVersion, { min: 0 });
     const current = Number(state.version ?? 0);
-    if (!Number.isInteger(expected) || expected !== current) {
+    if (
+      expected === null ||
+      !Number.isSafeInteger(current) ||
+      expected !== current
+    ) {
       throw new GameStateConflictError(
         `Version client obsolète (courante: ${current})`,
       );
@@ -199,19 +228,20 @@ export class GameCommandExecutorService {
 
   private ensureActionAllowed(
     handler: GameRuntime,
-    state: GameStateEntity,
+    state: GameState,
     action: GameSingleActionDto,
     actorId: number | null,
+    context: GameExecutionContext,
   ): void {
     if (String(state.status).toLowerCase() === 'finished') {
       throw new GameActionRejectedError('La partie est terminée.');
     }
-    if (!handler.validateActor(state, [action], actorId)) {
+    if (!handler.validateActor(state, [action], actorId, context)) {
       throw new GameActionRejectedError('Acteur non autorisé.');
     }
   }
 
-  private ensureValidState(state: GameStateEntity): void {
+  private ensureValidState(state: GameState): void {
     if (!state || typeof state !== 'object') {
       throw new GameActionRejectedError(
         'La commande a produit un état invalide.',
@@ -223,11 +253,10 @@ export class GameCommandExecutorService {
   }
 
   private actorOf(action: GameSingleActionDto): number | null {
-    const actorId = Number(action.meta?.actorId);
-    return Number.isFinite(actorId) ? actorId : null;
+    return parseStrictInteger(action.meta?.actorId);
   }
 
-  private clone(state: GameStateEntity): GameStateEntity {
+  private clone(state: GameState): GameState {
     return structuredClone(state);
   }
 }

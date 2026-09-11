@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
+import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { operationalPolicy } from '../../../../../platform/config/public-api';
+import { operationalSettings } from '../../../../../platform/config/public-api';
 
 export type RoomInvite = {
   id: string;
@@ -14,32 +18,51 @@ export type RoomInvite = {
 
 @Injectable()
 export class RoomInviteService {
+  private static readonly MAX_INVITES = 10_000;
+  private static readonly MAX_INVITE_ID_LENGTH = 64;
+  constructor(@Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock) {}
+
   private readonly invites = new Map<string, RoomInvite>();
-  private readonly ttlMs = operationalPolicy.roomInviteTtlMs;
+  private readonly ttlMs = operationalSettings.roomInviteTtlMs;
 
   create(roomId: number, fromUserId: number, toUserId: number): RoomInvite {
-    this.cleanupExpired();
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      !Number.isSafeInteger(fromUserId) ||
+      fromUserId <= 0 ||
+      !Number.isSafeInteger(toUserId) ||
+      toUserId <= 0
+    ) {
+      throw new RangeError('Identifiant d’invitation invalide');
+    }
+    const now = this.clock.now();
+    this.cleanupExpired(now);
+    this.enforceBound();
     const invite: RoomInvite = {
       id: randomUUID(),
       roomId,
       fromUserId,
       toUserId,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + this.ttlMs,
+      createdAt: now,
+      expiresAt: now + this.ttlMs,
       consumedAt: null,
     };
     this.invites.set(invite.id, invite);
-    return invite;
+    return { ...invite };
   }
 
   get(id: string): RoomInvite | null {
+    if (typeof id !== 'string' || id.length === 0 || id.length > RoomInviteService.MAX_INVITE_ID_LENGTH) {
+      return null;
+    }
     const invite = this.invites.get(id) ?? null;
     if (!invite) return null;
-    if (invite.expiresAt <= Date.now()) {
+    if (invite.expiresAt <= this.clock.now()) {
       this.invites.delete(id);
       return null;
     }
-    return invite;
+    return { ...invite };
   }
 
   findActive(roomId: number, toUserId: number): RoomInvite | null {
@@ -48,9 +71,9 @@ export class RoomInviteService {
       if (
         invite.roomId === roomId &&
         invite.toUserId === toUserId &&
-        !invite.consumedAt
+        invite.consumedAt == null
       ) {
-        return invite;
+        return { ...invite };
       }
     }
     return null;
@@ -69,9 +92,9 @@ export class RoomInviteService {
       this.invites.delete(id);
       return invite;
     }
-    invite.consumedAt = Date.now();
+    invite.consumedAt = this.clock.now();
     this.invites.set(invite.id, invite);
-    return invite;
+    return { ...invite };
   }
 
   delete(id: string) {
@@ -84,7 +107,7 @@ export class RoomInviteService {
       if (
         invite.roomId === roomId &&
         invite.toUserId === userId &&
-        Boolean(invite.consumedAt)
+        invite.consumedAt != null
       ) {
         return true;
       }
@@ -92,12 +115,19 @@ export class RoomInviteService {
     return false;
   }
 
-  private cleanupExpired() {
-    const now = Date.now();
+  private cleanupExpired(now = this.clock.now()) {
     for (const [id, invite] of this.invites.entries()) {
       if (invite.expiresAt <= now) {
         this.invites.delete(id);
       }
+    }
+  }
+
+  private enforceBound(): void {
+    while (this.invites.size >= RoomInviteService.MAX_INVITES) {
+      const oldest = this.invites.keys().next().value;
+      if (typeof oldest !== 'string') return;
+      this.invites.delete(oldest);
     }
   }
 }

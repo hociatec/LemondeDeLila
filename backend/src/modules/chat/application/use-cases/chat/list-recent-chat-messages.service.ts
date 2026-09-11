@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { ChatMessageRecord } from '../../contracts/chat-message.record';
+import { ChatMessageRecord } from '../../read-models/chat-message.record';
 import {
   CHAT_MESSAGE_REPOSITORY,
   type ChatMessageRepository,
@@ -20,9 +20,9 @@ export class ListRecentChatMessagesService {
     limit = ListRecentChatMessagesService.DEFAULT_HISTORY_LIMIT,
     since?: Date,
   ): Promise<ChatMessageRecord[]> {
-    return this.messages.listRecent(
-      Math.min(Math.max(limit, 1), ChatMessageCacheService.CACHE_LIMIT),
-      since,
-    );
+    const safeLimit = Number.isSafeInteger(limit)
+      ? Math.min(Math.max(limit, 1), ChatMessageCacheService.CACHE_LIMIT)
+      : ListRecentChatMessagesService.DEFAULT_HISTORY_LIMIT;
+    return this.messages.listRecent(safeLimit, since);
   }
 }

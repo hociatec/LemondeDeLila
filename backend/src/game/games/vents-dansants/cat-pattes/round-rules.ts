@@ -70,10 +70,10 @@ export function scoreCatPattesRound(
     });
   }
   if (ctx.round.completed() >= (ctx.config.get<number>('roundsToPlay') ?? 1)) {
-    const winnerId = [...ctx.players.all()].sort(
-      (left, right) =>
-        ctx.score.get(right.id) - ctx.score.get(left.id) || left.id - right.id,
-    )[0]?.id;
+    const winnerId = ctx.ranking.rank(
+      ctx.players.all().map((player) => player.id),
+      { value: (id) => ctx.score.get(id), direction: 'desc' },
+    )[0]?.playerId;
     if (winnerId != null) {
       ctx.match.finish({ winners: [winnerId], reason: 'most-pattes' });
     }

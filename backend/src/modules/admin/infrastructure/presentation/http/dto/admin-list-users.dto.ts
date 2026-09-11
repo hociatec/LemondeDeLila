@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { StrictIntegerInput } from '../../../../../../platform/validation/public-api';
 import {
   IsDateString,
   IsIn,
@@ -6,16 +6,19 @@ import {
   IsOptional,
   IsString,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 
 export class AdminListUsersDto {
   @IsOptional()
   @IsString()
+  @MaxLength(255)
   search?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(64)
   role?: string;
 
   @IsOptional()
@@ -30,12 +33,13 @@ export class AdminListUsersDto {
   @IsDateString()
   createdBefore?: string;
 
-  @Type(() => Number)
+  @StrictIntegerInput()
   @IsInt()
   @Min(1)
+  @Max(100000)
   page: number = 1;
 
-  @Type(() => Number)
+  @StrictIntegerInput()
   @IsInt()
   @Min(1)
   @Max(100)

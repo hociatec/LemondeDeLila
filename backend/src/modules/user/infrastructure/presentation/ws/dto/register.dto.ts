@@ -15,6 +15,7 @@ import {
 
 export class RegisterDto {
   @IsEmail()
+  @MaxLength(320)
   email!: string;
 
   @IsString()
@@ -33,5 +34,6 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(2048)
   avatar?: string;
 }

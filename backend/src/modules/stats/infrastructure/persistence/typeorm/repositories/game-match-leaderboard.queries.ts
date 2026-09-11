@@ -1,5 +1,5 @@
 import type { Repository } from 'typeorm';
-import { stringOrEmpty } from '@shared/utils/public-api';
+import { requireStrictInteger, stringOrEmpty } from '@shared/utils/public-api';
 import { GameMatchEntity } from '../entities/game-match.entity';
 import { GameMatchPlayerEntity } from '../entities/game-match-player.entity';
 
@@ -26,10 +26,27 @@ export class GameMatchLeaderboardQueries {
       .orderBy('m.game_type', 'ASC')
       .limit(500)
       .getRawMany<{ gameType: string }>();
-    return rows.map((row) => String(row.gameType ?? '').trim()).filter(Boolean);
+    return [
+      ...new Set(
+        rows
+          .map((row) =>
+            String(row.gameType ?? '')
+              .trim()
+              .slice(0, 128),
+          )
+          .filter(Boolean),
+      ),
+    ].slice(0, 500);
   }
 
   async getTop10(gameType: string) {
+    if (
+      typeof gameType !== 'string' ||
+      !gameType.trim() ||
+      gameType.length > 128
+    ) {
+      return [];
+    }
     const rows = await this.players
       .createQueryBuilder('p')
       .innerJoin('p.match', 'm')
@@ -45,21 +62,30 @@ export class GameMatchLeaderboardQueries {
         'finished',
       )
       .addSelect("SUM(CASE WHEN p.outcome = 'quit' THEN 1 ELSE 0 END)", 'quit')
-      .where('m.game_type = :gameType', { gameType })
+      .where('m.game_type = :gameType', { gameType: gameType.trim() })
       .andWhere('m.ended_reason = :reason', { reason: 'finished' })
       .groupBy('p.user_id')
       .orderBy('wins', 'DESC')
       .addOrderBy('finished', 'DESC')
       .addOrderBy('losses', 'ASC')
+      .addOrderBy('p.user_id', 'ASC')
       .limit(10)
       .getRawMany<Top10RawRow>();
     return rows.map((row) => ({
-      userId: Number(row.userId),
+      userId: requireStrictInteger(row.userId, 'leaderboard.userId', {
+        min: 1,
+      }),
       username: stringOrEmpty(row.username),
-      wins: Number(row.wins ?? 0),
-      losses: Number(row.losses ?? 0),
-      finished: Number(row.finished ?? 0),
-      quit: Number(row.quit ?? 0),
+      wins: requireStrictInteger(row.wins ?? 0, 'leaderboard.wins', { min: 0 }),
+      losses: requireStrictInteger(row.losses ?? 0, 'leaderboard.losses', {
+        min: 0,
+      }),
+      finished: requireStrictInteger(
+        row.finished ?? 0,
+        'leaderboard.finished',
+        { min: 0 },
+      ),
+      quit: requireStrictInteger(row.quit ?? 0, 'leaderboard.quit', { min: 0 }),
     }));
   }
 }

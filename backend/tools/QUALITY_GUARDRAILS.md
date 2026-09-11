@@ -46,7 +46,16 @@ anciens symboles moteur, de `any`, de doubles casts, de casts de metadata, de
 550 lignes. Chaque manifeste doit fournir les cinq entrées standard et son test
 doit utiliser `GameTestKit`. Cette vérification exige toujours zéro violation.
 
+Le SDK auteur 3.0 sépare `engine/sdk/public-api` et `engine/testing/public-api`.
+Les imports externes aux jeux passent exclusivement par ces façades (testing
+uniquement dans les specs). Les imports système, les chemins d'exécution et
+les cycles locaux sont bloqués par l'analyse syntaxique des sources.
+Le chargement des assets est décrit dans
+`docs/architecture/game-content-loading.md`.
+
 ## CI
 
-- Workflow : `.github/workflows/backend-quality.yml`.
+- Les workflows GitHub sont facultatifs. `governance:audit` contrôle ceux
+  présents sans imposer leur création ; les exigences CODEOWNERS et Dependabot
+  restent actives.
 - Gate PR backend : `build` + `test:transverse` + `quality:check`.

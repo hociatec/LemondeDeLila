@@ -1,33 +1,24 @@
 import {
   defineGame,
-  defineGameContent,
   submissionJudgeGame,
 } from '../../../engine/sdk/public-api';
-import { NAWAK_CHALLENGES } from './content';
-import {
-  ANSWERS_REVEALED,
-  NAWAK_ACTIONS,
-  NAWAK_TARGET_SCORE,
-  ROUND_STARTED,
-  nawakStage,
-} from './rules';
+import { GAME_BOT } from './bot-rules';
+import { NAWAK_GAME_CONTENT, NAWAK_TARGET_SCORE } from './content';
+import manifest from './manifest.json';
+import { GAME_RULES } from './rule-bindings';
+import { ANSWERS_REVEALED, NAWAK_ACTIONS, ROUND_STARTED } from './rules';
+import { setupGame } from './setup-rules';
 import type { NawakState } from './state';
 
-type NawakPlayerView = Pick<NawakState, 'currentChallengeId' | 'lastRound'>;
-
 export default defineGame<NawakState>()({
-  id: 'nawak',
-  displayName: 'Nawak !',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
-  description:
-    'Répondez aux défis absurdes puis votez pour une réponse étrangère.',
-  players: { min: 2, max: 8 },
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
   events: [ANSWERS_REVEALED, ROUND_STARTED],
-  content: defineGameContent('nawak', {
-    challenges: NAWAK_CHALLENGES,
-    targetScore: NAWAK_TARGET_SCORE,
-  }),
+  content: NAWAK_GAME_CONTENT,
   patterns: [
     submissionJudgeGame({
       submissionId: 'nawak.answers',
@@ -42,49 +33,8 @@ export default defineGame<NawakState>()({
     { key: 'V', type: 'action', actionType: 'vote_answer' },
   ],
   initialization: { firstPlayer: 'first', startRound: true },
-  setup: ({ ctx }) => {
-    ctx.submissionFlow.open({
-      id: 'nawak.answers',
-      secret: true,
-      waitForAll: true,
-    });
-    return {
-      currentChallengeId: (
-        ctx.random.pick(NAWAK_CHALLENGES) ?? NAWAK_CHALLENGES[0]
-      ).id,
-      lastRound: null,
-    };
-  },
+  setup: setupGame,
   actions: NAWAK_ACTIONS,
-  viewExtension: ({ state }): NawakPlayerView => ({
-    currentChallengeId: state.currentChallengeId,
-    lastRound: state.lastRound
-      ? {
-          challengeId: state.lastRound.challengeId,
-          submissions: { ...state.lastRound.submissions },
-          votes: { ...state.lastRound.votes },
-          pointsAwarded: { ...state.lastRound.pointsAwarded },
-          tie: state.lastRound.tie,
-        }
-      : null,
-  }),
-  bot: {
-    choose: ({ state: _state, actor, ctx }) => {
-      if (nawakStage(ctx) === 'choose') {
-        return {
-          type: 'choose_answer',
-          payload: { answerIndex: ctx.random.int(3) },
-        };
-      }
-      const targets = Object.keys(
-        ctx.submissions.values<number>('nawak.answers'),
-      )
-        .map(Number)
-        .filter((playerId) => playerId !== actor.id);
-      const targetPlayerId = ctx.random.pick(targets);
-      return targetPlayerId == null
-        ? null
-        : { type: 'vote_answer', payload: { targetPlayerId } };
-    },
-  },
+  ...GAME_RULES,
+  bot: GAME_BOT,
 });

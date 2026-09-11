@@ -1,17 +1,23 @@
+import { PresenceOrigins } from './presence-origins';
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
 import { Inject } from '@nestjs/common';
+import { ApplicationShutdownService } from '../../../../platform/lifecycle/public-api';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
 import type { WsAuthPayload } from '../../../../shared/interfaces/public-api';
 import { getErrorDetails } from '../../../../shared/utils/public-api';
 import type {
   PresenceClient,
   PresenceListItem,
-} from '../contracts/presence-client.model';
+} from '../models/presence-client.model';
 export type {
   PresenceClientCommand,
   PresenceListItem,
-} from '../contracts/presence-client.model';
+} from '../models/presence-client.model';
 import {
   PresenceEvent,
   PresenceTransport,
@@ -37,17 +43,14 @@ type PresenceActivity = PresenceConnectionContext;
 export class PresenceService implements OnModuleDestroy {
   private readonly logger = new Logger(PresenceService.name);
   private readonly clients = new Map<WebSocket, PresenceClient>();
-  private readonly playersByOrigin = new Map<
-    string,
-    { at: number; players: PresencePublicPlayer[] }
-  >();
+  private readonly origins = new PresenceOrigins(() => this.clock.now());
+  private broadcastSequence = 0;
   private readonly heartbeat = new PresenceHeartbeat({
     listSockets: () => Array.from(this.clients.keys()),
     unregister: (socket) => this.unregister(socket),
     refreshPresence: () => this.broadcastPresence(),
   });
   private readonly instanceId = randomUUID();
-  private readonly originTtlMs = 120_000;
   private readonly absentAfterMs = 3 * 60_000;
 
   constructor(
@@ -55,7 +58,11 @@ export class PresenceService implements OnModuleDestroy {
     @Inject(PRESENCE_ROOM_PARTICIPANT_REPOSITORY)
     private readonly participants: PresenceRoomParticipantRepository,
     private readonly transport: PresenceTransport,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
+    @Inject(ApplicationShutdownService)
+    private readonly shutdown = new ApplicationShutdownService(),
   ) {
+    shutdown.registerSource('presence-heartbeat', () => this.heartbeat.stop());
     this.transport
       .subscribe((event) => this.handleExternalPresence(event))
       .catch((err) =>
@@ -73,15 +80,24 @@ export class PresenceService implements OnModuleDestroy {
     user: WsAuthPayload,
     context: PresenceConnectionContext = 'home',
   ) {
+    if (
+      !Number.isSafeInteger(user?.id) ||
+      user.id <= 0 ||
+      typeof user.username !== 'string' ||
+      user.username.length > 255
+    ) {
+      return;
+    }
+    if (this.clients.size >= 10_000 && !this.clients.has(socket)) return;
     this.clients.set(socket, {
       socket,
       user,
       context,
       contextLocked: false,
       roomHint: null,
-      lastInteractionAt: Date.now(),
+      lastInteractionAt: this.clock.now(),
     });
-    this.heartbeat.ensureStarted();
+    if (!this.shutdown.isDraining) this.heartbeat.ensureStarted();
   }
 
   unregister(socket: WebSocket) {
@@ -113,16 +129,20 @@ export class PresenceService implements OnModuleDestroy {
   }
 
   broadcastPresence() {
+    if (this.shutdown.isDraining) return;
+    const sequence = ++this.broadcastSequence;
     const playersByUser = this.collectPlayers();
-    this.attachRooms(playersByUser)
-      .then(() => this.emitPresence(playersByUser))
-      .catch((err) => {
-        this.logger.warn(
-          'attachRooms a échoué, diffusion présence sans room enrichie',
-          getErrorDetails(err),
-        );
-        this.emitPresence(playersByUser);
-      });
+    void this.shutdown.run(() =>
+      this.attachRooms(playersByUser)
+        .then(() => this.emitPresence(playersByUser, sequence))
+        .catch((err) => {
+          this.logger.warn(
+            'attachRooms a échoué, diffusion présence sans room enrichie',
+            getErrorDetails(err),
+          );
+          return this.emitPresence(playersByUser, sequence);
+        }),
+    );
   }
 
   /**
@@ -130,7 +150,7 @@ export class PresenceService implements OnModuleDestroy {
    * Used by features that require all players to be available before starting/restoring a table.
    */
   isUserInTavern(userId: number): boolean {
-    if (!Number.isFinite(userId) || userId <= 0) return false;
+    if (!Number.isSafeInteger(userId) || userId <= 0) return false;
     for (const client of this.clients.values()) {
       if (client?.user?.id !== userId) continue;
       if (client.context === 'tavern') return true;
@@ -151,7 +171,7 @@ export class PresenceService implements OnModuleDestroy {
           : null,
         activity,
         contextLocked,
-        lastInteractionAt: client.lastInteractionAt ?? Date.now(),
+        lastInteractionAt: client.lastInteractionAt ?? this.clock.now(),
         roomStarted: null,
       };
       const existing = playersByUser.get(user.id);
@@ -215,6 +235,7 @@ export class PresenceService implements OnModuleDestroy {
     requiredContext?: PresenceConnectionContext,
   ): void {
     const encoded = JSON.stringify(payload);
+    if (!encoded || Buffer.byteLength(encoded, 'utf8') > 1_048_576) return;
     for (const { socket, context } of this.clients.values()) {
       if (requiredContext && context !== requiredContext) {
         continue;
@@ -235,19 +256,26 @@ export class PresenceService implements OnModuleDestroy {
 
   private emitPresence(
     playersByUser: Map<number, PresenceBroadcastPlayer>,
-  ): void {
+    sequence: number,
+  ): Promise<void> {
+    if (sequence !== this.broadcastSequence) return Promise.resolve();
     const players = this.toPublicPlayers(playersByUser);
-    this.playersByOrigin.set(this.instanceId, { at: Date.now(), players });
-    this.pruneOrigins();
-    const merged = mergePresencePlayersFromOrigins(this.playersByOrigin);
+    const event = {
+      players,
+      origin: this.instanceId,
+      at: this.clock.now(),
+      sequence,
+    };
+    this.origins.accept(event);
+    const merged = mergePresencePlayersFromOrigins(this.origins.snapshot());
     const enriched = enrichPresencePlayers(
       merged,
-      Date.now(),
+      this.clock.now(),
       this.absentAfterMs,
     );
     this.broadcast({ type: 'presence-update', players: enriched });
-    this.transport
-      .publish({ players, origin: this.instanceId, at: Date.now() })
+    return this.transport
+      .publish(event)
       .catch((err) =>
         this.logger.error('Publication presence redis échouée', err),
       );
@@ -257,8 +285,16 @@ export class PresenceService implements OnModuleDestroy {
     playersByUser: Map<number, PresenceBroadcastPlayer>,
   ): PresencePublicPlayer[] {
     return Array.from(playersByUser.values()).map(
-      ({ contextLocked: _contextLocked, ...rest }): PresencePublicPlayer =>
-        rest,
+      (player): PresencePublicPlayer => ({
+        id: player.id,
+        username: player.username,
+        activity: player.activity,
+        currentRoom: player.currentRoom
+          ? { id: player.currentRoom.id, name: player.currentRoom.name }
+          : null,
+        lastInteractionAt: player.lastInteractionAt,
+        roomStarted: player.roomStarted,
+      }),
     );
   }
 
@@ -266,19 +302,11 @@ export class PresenceService implements OnModuleDestroy {
     if (event.origin === this.instanceId) {
       return;
     }
-    const origin = event.origin ?? 'unknown';
-    this.playersByOrigin.set(origin, {
-      at:
-        typeof event.at === 'number' && Number.isFinite(event.at)
-          ? event.at
-          : Date.now(),
-      players: Array.isArray(event.players) ? event.players : [],
-    });
-    this.pruneOrigins();
-    const merged = mergePresencePlayersFromOrigins(this.playersByOrigin);
+    if (!this.origins.accept(event)) return;
+    const merged = mergePresencePlayersFromOrigins(this.origins.snapshot());
     const enriched = enrichPresencePlayers(
       merged,
-      Date.now(),
+      this.clock.now(),
       this.absentAfterMs,
     );
     this.broadcast({ type: 'presence-update', players: enriched });
@@ -289,11 +317,10 @@ export class PresenceService implements OnModuleDestroy {
   }
 
   listPlayers(): PresenceListItem[] {
-    this.pruneOrigins();
-    const merged = mergePresencePlayersFromOrigins(this.playersByOrigin);
+    const merged = mergePresencePlayersFromOrigins(this.origins.snapshot());
     const enriched = enrichPresencePlayers(
       merged,
-      Date.now(),
+      this.clock.now(),
       this.absentAfterMs,
     );
     return enriched.map((p) => ({
@@ -306,18 +333,5 @@ export class PresenceService implements OnModuleDestroy {
       availability: p.availability,
       location: p.location,
     }));
-  }
-
-  private pruneOrigins(): void {
-    const now = Date.now();
-    for (const [origin, entry] of this.playersByOrigin.entries()) {
-      if (
-        !entry ||
-        typeof entry.at !== 'number' ||
-        now - entry.at > this.originTtlMs
-      ) {
-        this.playersByOrigin.delete(origin);
-      }
-    }
   }
 }

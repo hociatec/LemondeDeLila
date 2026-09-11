@@ -1,4 +1,5 @@
-import type { PendingState } from '../../../core/application/contracts/game-state.model';
+import type { PendingState } from '../../../core/application/models/game-state.model';
+import { gameDeadline } from '../automation/game-deadline';
 import {
   GameConfigurationError,
   GameStateViolationError,
@@ -62,9 +63,18 @@ export class GameChoiceController {
       step?: number;
     },
   ): void {
-    const step = Math.max(1, Math.floor(options.step ?? 1));
+    const step = options.step ?? 1;
+    if (
+      !Number.isSafeInteger(options.min) ||
+      !Number.isSafeInteger(options.max) ||
+      !Number.isSafeInteger(options.max - options.min) ||
+      !Number.isSafeInteger(step) ||
+      step < 1
+    ) {
+      throw new GameConfigurationError('Bornes de choix numérique invalides');
+    }
     const count = Math.floor((options.max - options.min) / step) + 1;
-    if (count < 1 || count > 1_000) {
+    if (!Number.isSafeInteger(count) || count < 1 || count > 1_000) {
       throw new GameConfigurationError(
         'Intervalle de choix numérique invalide',
       );
@@ -174,8 +184,14 @@ export class GameChoiceController {
   }
 
   continuation<TData extends object>(): TData | null {
-    const data = this.current()?.data ?? this.resolvedData;
-    return data ? (structuredClone(data) as TData) : null;
+    const data = this.resolvedData ?? this.current()?.data;
+    if (!data) return null;
+    const continuation = data.continuationData;
+    return structuredClone(
+      continuation != null && typeof continuation === 'object'
+        ? continuation
+        : data,
+    ) as TData;
   }
 
   consumeContinuation<TData extends object>(): TData | null {
@@ -230,6 +246,15 @@ export class GameChoiceController {
       throw new GameStateViolationError('Un choix est déjà en attente');
     }
     const values = [...options.options];
+    if (
+      !Number.isSafeInteger(min) ||
+      !Number.isSafeInteger(max) ||
+      min < 0 ||
+      max < min ||
+      max > values.length
+    ) {
+      throw new GameConfigurationError('Nombre de choix invalide');
+    }
     const pending: PendingState = {
       schemaVersion: 1,
       type: `engine.choice.${kind}`,
@@ -241,7 +266,7 @@ export class GameChoiceController {
       blocking: true,
       choices: values.map((value) => options.label?.(value) ?? String(value)),
       data: {
-        ...structuredClone(options.data ?? {}),
+        continuationData: structuredClone(options.data ?? {}),
         kind,
         choiceId: options.id,
         options: values,
@@ -254,7 +279,7 @@ export class GameChoiceController {
         deadlineMs:
           options.timeout == null
             ? null
-            : this.nowMs() + Math.max(0, options.timeout.afterMs),
+            : gameDeadline(this.nowMs(), options.timeout.afterMs),
       },
     };
     if (!this.current()) {

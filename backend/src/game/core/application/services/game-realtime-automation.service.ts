@@ -1,21 +1,13 @@
 import {
-  Inject,
-  Injectable,
-  Logger,
-  OnModuleInit,
-  Optional,
-} from '@nestjs/common';
-import type { GameRuntime } from '../contracts/game-runtime.interface';
-import type { GameSingleActionDto } from '../contracts/game-action.model';
-import type { GameStateEntity } from '../contracts/game-state.model';
-import {
-  GAME_TASK_SCHEDULER,
-  type GameScheduledTask,
-  type GameTaskScheduler,
-} from '../ports/game-task-scheduler.port';
+  GameAutomationPlannerService,
+  type AutomationPlan,
+} from './game-automation-planner.service';
+import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
+import type { GameRuntime } from '../ports/game-runtime.port';
+import { GameTaskDispatchService } from './game-task-dispatch.service';
+import type { GameState } from '../models/game-state.model';
+import type { GameScheduledTask } from '../ports/game-task-scheduler.port';
 import { GameStateConflictError } from '../../domain/errors/game-domain.errors';
-import { BotRunnerService } from './bot-runner.service';
-import { BotSettingsService } from './bot-settings.service';
 import { GameCommandExecutorService } from './game-command-executor.service';
 import { GameEngineService } from './game-engine.service';
 import { GameEngineMetricsService } from './game-engine-metrics.service';
@@ -23,39 +15,37 @@ import { gameNowMs } from './game-execution-scope.service';
 import { GameRegistryService } from './game-registry.service';
 import { GameRoomCommandQueueService } from './game-room-command-queue.service';
 import { sameSerializableValue } from '../../../engine/runtime/state/serializable-value';
-
-type AutomationPlan = {
-  signature: string;
-  dueAtMs: number;
-  actions: GameSingleActionDto[];
-};
+import {
+  decodeGameScheduledTask,
+  gameTaskCommandId,
+  gameTaskStateIdentity,
+  sameGameTaskStateIdentity,
+} from '../helpers/game-task-contract';
 
 type AutomaticStateCommittedHandler = (input: {
   roomId: number;
   gameType: string;
   handler: GameRuntime;
-  state: GameStateEntity;
+  state: GameState;
   version: number;
 }) => Promise<void> | void;
 
 type AutomationExecution = {
   handler: GameRuntime;
-  current: GameStateEntity;
+  current: GameState;
   plan: AutomationPlan;
 };
 
+/** Coordinates durable automation delivery, stale-task checks and state commits. */
 @Injectable()
 export class GameRealtimeAutomationService implements OnModuleInit {
   private readonly logger = new Logger(GameRealtimeAutomationService.name);
   private onStateCommitted: AutomaticStateCommittedHandler | null = null;
-  private readonly schedulerOperations = new Map<string, Promise<void>>();
 
   constructor(
     private readonly engine: GameEngineService,
-    private readonly botRunner: BotRunnerService,
-    @Inject(GAME_TASK_SCHEDULER)
-    private readonly scheduler: GameTaskScheduler,
-    private readonly botSettings: BotSettingsService,
+    private readonly planner: GameAutomationPlannerService,
+    private readonly scheduler: GameTaskDispatchService,
     private readonly executor: GameCommandExecutorService,
     private readonly queue: GameRoomCommandQueueService,
     @Optional() private readonly metrics?: GameEngineMetricsService,
@@ -74,14 +64,20 @@ export class GameRealtimeAutomationService implements OnModuleInit {
     roomId: number;
     gameType: string;
     handler: GameRuntime;
-    state: GameStateEntity;
+    state: GameState;
   }): void {
+    if (
+      !Number.isSafeInteger(input.roomId) ||
+      input.roomId <= 0 ||
+      typeof input.gameType !== 'string' ||
+      !input.gameType ||
+      input.gameType.length > 128
+    )
+      return;
     const key = this.taskKey(input.roomId, input.gameType);
-    const plan = this.resolvePlan(input.handler, input.state);
+    const plan = this.planner.resolve(input.handler, input.state);
     if (!plan || String(input.state.status).toLowerCase() === 'finished') {
-      this.enqueueSchedulerOperation(key, () =>
-        this.cancel(key, input.gameType),
-      );
+      this.scheduler.cancel(key, input.gameType);
       return;
     }
     const task: GameScheduledTask = {
@@ -89,36 +85,38 @@ export class GameRealtimeAutomationService implements OnModuleInit {
       roomId: input.roomId,
       gameType: input.gameType,
       signature: plan.signature,
-      generation: Number(input.state.version ?? 0),
+      generation:
+        Number.isSafeInteger(Number(input.state.version ?? 0)) &&
+        Number(input.state.version ?? 0) > 0
+          ? Number(input.state.version)
+          : 1,
+      restoreId: input.state.metadata?.restoreId ?? null,
+      stateIdentity: gameTaskStateIdentity(input.state),
+      roomRunId: input.state.metadata?.roomRunId ?? null,
       dueAtMs: plan.dueAtMs,
     };
-    this.enqueueSchedulerOperation(key, () =>
-      this.scheduler.schedule(task).catch((error: unknown) => {
-        this.logger.error(
-          gameTaskErrorLog('game.task.schedule.failed', task, error),
-        );
-      }),
-    );
+    this.scheduler.schedule(task);
   }
 
   clear(roomId: number, gameType: string): void {
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      typeof gameType !== 'string' ||
+      !gameType ||
+      gameType.length > 128
+    )
+      return;
     const key = this.taskKey(roomId, gameType);
-    this.enqueueSchedulerOperation(key, () => this.cancel(key, gameType));
+    this.scheduler.cancel(key, gameType);
   }
 
   clearRoom(roomId: number): void {
-    void this.scheduler.cancelRoom(roomId).catch((error: unknown) => {
-      this.logger.error(
-        JSON.stringify({
-          event: 'game.task.cancel-room.failed',
-          roomId,
-          message: error instanceof Error ? error.message : String(error),
-        }),
-      );
-    });
+    this.scheduler.cancelRoom(roomId);
   }
 
   async executeTask(task: GameScheduledTask): Promise<void> {
+    task = decodeGameScheduledTask(task);
     return this.queue.run(task.roomId, () => this.executeTaskInRoom(task));
   }
 
@@ -145,7 +143,7 @@ export class GameRealtimeAutomationService implements OnModuleInit {
     );
     if (!current || String(current.status).toLowerCase() === 'finished')
       return null;
-    const plan = this.resolvePlan(handler, current);
+    const plan = this.planner.resolve(handler, current);
     return plan ? { handler, current, plan } : null;
   }
 
@@ -154,7 +152,13 @@ export class GameRealtimeAutomationService implements OnModuleInit {
     execution: AutomationExecution,
   ): boolean {
     return (
+      Number.isSafeInteger(Number(execution.current.version ?? 0)) &&
       Number(execution.current.version ?? 0) === task.generation &&
+      sameGameTaskStateIdentity(task, execution.current) &&
+      (execution.current.metadata?.restoreId ?? null) ===
+        (task.restoreId ?? null) &&
+      (execution.current.metadata?.roomRunId ?? null) ===
+        (task.roomRunId ?? null) &&
       execution.plan.signature === task.signature
     );
   }
@@ -174,13 +178,7 @@ export class GameRealtimeAutomationService implements OnModuleInit {
   private rescheduleFutureTask(task: GameScheduledTask): boolean {
     // Recomputing a bot deadline from now would postpone execution indefinitely.
     if (task.dueAtMs <= gameNowMs()) return false;
-    this.enqueueSchedulerOperation(task.key, () =>
-      this.scheduler.schedule(task).catch((error: unknown) => {
-        this.logger.error(
-          gameTaskErrorLog('game.task.schedule.failed', task, error),
-        );
-      }),
-    );
+    this.scheduler.schedule(task);
     return true;
   }
 
@@ -192,7 +190,7 @@ export class GameRealtimeAutomationService implements OnModuleInit {
       ...action,
       meta: {
         ...(action.meta ?? {}),
-        commandId: `${task.key}:${task.signature}:generation:${task.generation}:${index}`,
+        commandId: gameTaskCommandId(task, index),
       },
     }));
     const next = this.executor.execute({
@@ -212,6 +210,7 @@ export class GameRealtimeAutomationService implements OnModuleInit {
       task.gameType,
       Number(execution.current.version ?? 0),
       next,
+      execution.current.metadata?.restoreId ?? null,
     );
     if (!result.committed) throw new GameStateConflictError();
     const presentedState = structuredClone(next);
@@ -244,161 +243,7 @@ export class GameRealtimeAutomationService implements OnModuleInit {
     );
   }
 
-  private resolvePlan(
-    handler: GameRuntime,
-    state: GameStateEntity,
-  ): AutomationPlan | null {
-    const roundNumber = Number(
-      (state as GameStateEntity & { engine?: { round?: { number?: number } } })
-        .engine?.round?.number ?? 0,
-    );
-    const automatic = handler.getAutomaticActions(state);
-    if (automatic?.actions?.length) {
-      const dueAtMs = Number(automatic.executeAtMs ?? gameNowMs());
-      return {
-        signature: `automatic:${automatic.key}:round:${roundNumber}:turn:${Number(state.turn?.turnNumber ?? 0)}`,
-        dueAtMs,
-        actions: automatic.actions,
-      };
-    }
-    const pendingBotPlayerId = this.pendingBotPlayerId(state);
-    if (pendingBotPlayerId != null) {
-      return this.botPlan(
-        handler,
-        state,
-        pendingBotPlayerId,
-        roundNumber,
-        true,
-      );
-    }
-    const currentPlayerId = state.turn?.currentPlayerId ?? null;
-    const currentPlayer = (state.players ?? []).find(
-      (player) => player.id === currentPlayerId,
-    );
-    if (!currentPlayer?.isBot || currentPlayerId == null) return null;
-    return this.botPlan(handler, state, currentPlayerId, roundNumber, false);
-  }
-
-  private pendingBotPlayerId(state: GameStateEntity): number | null {
-    const pending = state.pending;
-    if (!pending) return null;
-    const resolved = new Set(pending.resolvedPlayerIds ?? []);
-    const expectedPlayerIds = pending.playerIds?.length
-      ? pending.playerIds.filter((playerId) => !resolved.has(playerId))
-      : pending.playerId == null
-        ? []
-        : [pending.playerId];
-    for (const playerId of expectedPlayerIds) {
-      const player = (state.players ?? []).find(
-        (candidate) => candidate.id === playerId,
-      );
-      if (player?.isBot) return playerId;
-    }
-    return null;
-  }
-
-  private botPlan(
-    handler: GameRuntime,
-    state: GameStateEntity,
-    playerId: number,
-    roundNumber: number,
-    pendingChoice: boolean,
-  ): AutomationPlan | null {
-    const suggested =
-      this.botRunner.suggestForHandler(handler, state, playerId) ?? [];
-    if (suggested.length === 0) return null;
-    const rawChoiceId = state.pending?.data?.choiceId;
-    const choiceId =
-      typeof rawChoiceId === 'string' || typeof rawChoiceId === 'number'
-        ? String(rawChoiceId)
-        : 'pending';
-    const context = pendingChoice ? `choice:${choiceId}` : 'play';
-    return {
-      signature: `bot:${playerId}:${context}:round:${roundNumber}:turn:${Number(state.turn?.turnNumber ?? 0)}`,
-      dueAtMs: gameNowMs() + this.botSettings.getBotTurnDelayMs(),
-      actions: suggested.map((action) => ({
-        ...action,
-        meta: { ...(action.meta ?? {}), actorId: playerId },
-      })),
-    };
-  }
-
   private taskKey(roomId: number, gameType: string): string {
     return `game-realtime:${roomId}:${gameType}`;
   }
-
-  private enqueueSchedulerOperation(
-    key: string,
-    operation: () => Promise<void>,
-  ): void {
-    const previous = this.schedulerOperations.get(key);
-    const current = previous
-      ? previous
-          .catch((error: unknown) =>
-            this.logSchedulerOperationError(
-              key,
-              'game.task.scheduler-operation.previous.failed',
-              error,
-            ),
-          )
-          .then(operation)
-      : operation();
-    this.schedulerOperations.set(key, current);
-    void current
-      .finally(() => {
-        if (this.schedulerOperations.get(key) === current) {
-          this.schedulerOperations.delete(key);
-        }
-      })
-      .catch((error: unknown) =>
-        this.logSchedulerOperationError(
-          key,
-          'game.task.scheduler-operation.failed',
-          error,
-        ),
-      );
-  }
-
-  private async cancel(key: string, gameType: string): Promise<void> {
-    try {
-      await this.scheduler.cancel(key);
-    } catch (error) {
-      this.logger.error(
-        JSON.stringify({
-          event: 'game.task.cancel.failed',
-          key,
-          gameType,
-          message: error instanceof Error ? error.message : String(error),
-        }),
-      );
-    }
-  }
-
-  private logSchedulerOperationError(
-    key: string,
-    event: string,
-    error: unknown,
-  ): void {
-    this.logger.error(
-      JSON.stringify({
-        event,
-        key,
-        message: error instanceof Error ? error.message : String(error),
-      }),
-    );
-  }
-}
-
-function gameTaskErrorLog(
-  event: string,
-  task: GameScheduledTask,
-  error: unknown,
-): string {
-  return JSON.stringify({
-    event,
-    key: task.key,
-    roomId: task.roomId,
-    gameType: task.gameType,
-    message: error instanceof Error ? error.message : String(error),
-  });
 }

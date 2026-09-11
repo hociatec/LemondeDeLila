@@ -1,6 +1,35 @@
-import type { GameActionDefinition } from '../../definitions/game-definition';
-import { defineAction } from '../../definitions/game-definition';
+import type { GameActionDefinition } from '../../contracts/author-rule-contracts';
+import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
+import type { GameContext } from '../../definitions/game-author-context';
+
+/** Shared bounded movement resolver for track games with landing pipelines. */
+export function resolveTrackMovement<TState extends object>(options: {
+  ctx: GameContext<TState>;
+  trackId: string;
+  playerId: number;
+  distance: number;
+  depth: number;
+  maxDepth: number;
+  tiles: readonly unknown[];
+  onLand: () => void;
+}): void {
+  if (
+    options.depth > options.maxDepth ||
+    options.ctx.choice.current() ||
+    options.ctx.match.lifecycle() === 'finished'
+  )
+    return;
+  options.ctx.movement.moveAndResolve({
+    trackId: options.trackId,
+    playerId: options.playerId,
+    distance: options.distance,
+    tiles: options.tiles,
+    depth: options.depth,
+    maxDepth: options.maxDepth,
+    onLand: options.onLand,
+  });
+}
 
 export function moveCurrentPlayer<TState extends object>(options: {
   trackId: string;
@@ -85,7 +114,8 @@ export function skipTurn<TState extends object>(
 ): GameActionDefinition<TState, { targetPlayerId: number }> {
   return defineAction<TState, { targetPlayerId: number }>({
     input: gameInput.object({ targetPlayerId: gameInput.playerId() }),
-    validate: ({ input, ctx }) => ctx.players.get(input.targetPlayerId) != null,
+    validate: ({ input, actor, ctx }) =>
+      ctx.players.other(input.targetPlayerId, actor.id) != null,
     enumerate: ({ actor, ctx }) =>
       ctx.players
         .others(actor.id)

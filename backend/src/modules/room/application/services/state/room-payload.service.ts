@@ -7,7 +7,7 @@ import {
   ROOM_REPOSITORY,
   type RoomRepository,
 } from '../../ports/room.repository';
-import { RoomPayload } from '../../contracts/room-payload.model';
+import { RoomPayload } from '../../models/room-payload.model';
 import { RoomPayloadBuilderService } from './room-payload-builder.service';
 
 @Injectable()

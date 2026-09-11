@@ -1,40 +1,31 @@
 import {
-  defineChoice,
-  defineConfiguration,
   defineGame,
-  defineGameContent,
-  gameInput,
   gridGame,
   type NoGameState,
   pawns,
 } from '../../../engine/sdk/public-api';
+import { GAME_BOT } from './bot-rules';
+import { GAME_CONFIGURATION } from './configuration';
 import {
   CORRIDOR_DEFAULT_WALLS,
+  CORRIDOR_GAME_CONTENT,
   CORRIDOR_PAWNS,
   CORRIDOR_SIZE,
 } from './content';
-import {
-  CORRIDOR_ACTIONS,
-  CORRIDOR_PHASES,
-  CORRIDOR_WALLS,
-  legalMoves,
-  resolvePawn,
-  startCorridorSetup,
-} from './rules';
-import type { CorridorPosition } from './types';
+import manifest from './manifest.json';
+import { GAME_CHOICES } from './rules';
+
+import { CORRIDOR_ACTIONS, CORRIDOR_PHASES, CORRIDOR_WALLS } from './rules';
+import { setupGame } from './setup-rules';
 
 export default defineGame<NoGameState>()({
-  id: 'corridor',
-  displayName: 'Le Corridor',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsSacres',
-  description: 'Atteignez le bord opposé sans fermer tous les chemins.',
-  players: { min: 2, max: 2 },
-  content: defineGameContent('corridor', {
-    size: CORRIDOR_SIZE,
-    defaultWallsPerPlayer: CORRIDOR_DEFAULT_WALLS,
-    pawns: CORRIDOR_PAWNS,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: CORRIDOR_GAME_CONTENT,
   patterns: [
     gridGame({
       boardId: 'corridor',
@@ -42,53 +33,17 @@ export default defineGame<NoGameState>()({
       height: CORRIDOR_SIZE,
     }),
   ],
-  config: defineConfiguration<NoGameState, { wallsPerPlayer: number }>({
-    input: gameInput.object({
-      wallsPerPlayer: gameInput.number({ integer: true, min: 0, max: 20 }),
-    }),
-    defaults: { wallsPerPlayer: CORRIDOR_DEFAULT_WALLS },
-    phase: CORRIDOR_PHASES.initialPhase,
-    permission: 'owner',
-    ui: {
-      title: 'Configuration du Corridor',
-      submitLabel: 'Choisir les pions',
-    },
-    onConfigured: ({ config, ctx }) =>
-      startCorridorSetup(config.wallsPerPlayer, ctx),
-  }),
+  config: GAME_CONFIGURATION,
   components: [pawns.set({ id: 'corridor', pawns: CORRIDOR_PAWNS })],
   initialization: {
     resources: { [CORRIDOR_WALLS]: CORRIDOR_DEFAULT_WALLS },
     startRound: false,
   },
   shortcuts: [{ key: 'M', type: 'action', actionType: 'corridor_place_wall' }],
-  setup: ({ players, ctx }) => {
-    const center = Math.floor(CORRIDOR_SIZE / 2);
-    ctx.grid.set('corridor', { x: center, y: 0 }, players[0].id);
-    ctx.grid.set(
-      'corridor',
-      { x: center, y: CORRIDOR_SIZE - 1 },
-      players[1].id,
-    );
-    ctx.grid.setOverlays('corridor', 'walls', []);
-    return {};
-  },
+  setup: setupGame,
   initialPhase: CORRIDOR_PHASES.initialPhase,
   phases: CORRIDOR_PHASES.phases,
   actions: CORRIDOR_ACTIONS,
-  choices: {
-    'corridor.pawn': defineChoice<NoGameState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
-    }),
-  },
-  bot: {
-    choose: ({ state, actor, ctx }) => {
-      const move = legalMoves(state, actor.id, ctx)[0] as
-        CorridorPosition | undefined;
-      return move
-        ? { type: 'corridor_move', payload: { x: move.x, y: move.y } }
-        : null;
-    },
-  },
+  choices: GAME_CHOICES,
+  bot: GAME_BOT,
 });

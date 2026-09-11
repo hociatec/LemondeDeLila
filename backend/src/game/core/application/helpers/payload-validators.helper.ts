@@ -1,4 +1,5 @@
 import { GamePayloadValidationError } from '../../domain/errors/game-domain.errors';
+import { parseStrictInteger } from '../../../../shared/utils/public-api';
 
 type PayloadRecord = Record<string, unknown>;
 
@@ -10,7 +11,7 @@ function asPayloadRecord(payload: unknown): PayloadRecord {
 }
 
 function toPayloadText(value: unknown): string {
-  if (typeof value === 'string') return value;
+  if (typeof value === 'string') return value.slice(0, 2_000);
   if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value);
   }
@@ -22,8 +23,8 @@ export function requiredInt(
   key: string,
   message?: string,
 ): number {
-  const value = Number(asPayloadRecord(payload)[key]);
-  if (!Number.isFinite(value) || !Number.isInteger(value)) {
+  const value = parseStrictInteger(asPayloadRecord(payload)[key]);
+  if (value === null) {
     throw new GamePayloadValidationError(message ?? `${key} est requis.`);
   }
   return value;
@@ -32,8 +33,8 @@ export function requiredInt(
 export function optionalInt(payload: unknown, key: string): number | undefined {
   const raw = asPayloadRecord(payload)[key];
   if (raw == null || raw === '') return undefined;
-  const value = Number(raw);
-  if (!Number.isFinite(value) || !Number.isInteger(value)) {
+  const value = parseStrictInteger(raw);
+  if (value === null) {
     throw new GamePayloadValidationError(`${key} est invalide.`);
   }
   return value;
@@ -80,6 +81,9 @@ export function requiredArrayIndex(
   length: number,
   message?: string,
 ): number {
+  if (!Number.isSafeInteger(length) || length < 0 || length > 10_000) {
+    throw new GamePayloadValidationError(message ?? `${key} est hors limites.`);
+  }
   const index = requiredInt(payload, key, message);
   if (index < 0 || index >= Math.max(0, Math.trunc(length))) {
     throw new GamePayloadValidationError(message ?? `${key} est hors limites.`);

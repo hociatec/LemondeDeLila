@@ -1,4 +1,5 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { ApplicationShutdownService } from '../../../../platform/lifecycle/public-api';
 import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
 import type { NotificationDispatcher } from '../../application/ports/notification-dispatcher.port';
@@ -7,6 +8,11 @@ import {
   NotificationEvent,
 } from '../transport/notification-transport';
 import { getErrorDetails } from '../../../../shared/utils/public-api';
+import type { PubSubEventMetadata } from '../../../../platform/pubsub/public-api';
+
+const MAX_NOTIFICATION_MESSAGE_BYTES = 1024 * 1024;
+const NOTIFICATION_DEDUPLICATION_TTL_MS = 5 * 60 * 1000;
+const MAX_PROCESSED_NOTIFICATION_IDS = 4096;
 
 @Injectable()
 export class NotificationDispatchService
@@ -15,10 +21,15 @@ export class NotificationDispatchService
   private readonly logger = new Logger(NotificationDispatchService.name);
   private readonly socketsByUserId = new Map<number, Set<WebSocket>>();
   private readonly instanceId = randomUUID();
+  private readonly processedEventIds = new Map<string, number>();
 
-  constructor(private readonly transport: NotificationTransport) {
+  constructor(
+    private readonly transport: NotificationTransport,
+    @Inject(ApplicationShutdownService)
+    private readonly shutdown = new ApplicationShutdownService(),
+  ) {
     this.transport
-      .subscribe((event) => this.handleExternalEvent(event))
+      .subscribe((event, metadata) => this.handleExternalEvent(event, metadata))
       .catch((err) =>
         this.logger.error('Impossible de souscrire aux notifications', err),
       );
@@ -29,11 +40,13 @@ export class NotificationDispatchService
   }
 
   register(userId: number, socket: WebSocket) {
+    if (!Number.isSafeInteger(userId) || userId <= 0) return;
     let sockets = this.socketsByUserId.get(userId);
     if (!sockets) {
       sockets = new Set();
       this.socketsByUserId.set(userId, sockets);
     }
+    if (sockets.size >= 32 && !sockets.has(socket)) return;
     sockets.add(socket);
   }
 
@@ -46,7 +59,13 @@ export class NotificationDispatchService
     }
   }
 
-  async notifyUser(userId: number, type: string, payload: unknown) {
+  async notifyUser(
+    userId: number,
+    type: string,
+    payload: Record<string, unknown>,
+  ) {
+    if (!Number.isSafeInteger(userId) || userId <= 0) return;
+    if (!isValidNotificationType(type)) return;
     try {
       await this.transport.publish({
         userId,
@@ -66,7 +85,8 @@ export class NotificationDispatchService
 
   // Broadcast to all connected users.
   // Implementation detail: userId=0 is treated as a "global" event and dispatched to every socket.
-  async notifyAll(type: string, payload: unknown) {
+  async notifyAll(type: string, payload: Record<string, unknown>) {
+    if (!isValidNotificationType(type)) return;
     try {
       await this.transport.publish({
         userId: 0,
@@ -85,23 +105,28 @@ export class NotificationDispatchService
   }
 
   disconnectAll(reason?: string, eventType?: string) {
-    const payload =
+    const safeReason =
       typeof reason === 'string' && reason.trim().length > 0
-        ? { reason: reason.trim() }
+        ? reason.trim().slice(0, 123)
         : null;
+    const payload = safeReason ? { reason: safeReason } : null;
     const message =
       payload != null && eventType
-        ? JSON.stringify({ type: eventType, payload })
+        ? serializeNotification(eventType, payload)
         : null;
 
-    void this.transport
-      .publish({
-        userId: 0,
-        type: eventType || 'system.server.disconnect',
-        payload,
-        origin: this.instanceId,
-        disconnect: true,
-      })
+    void this.shutdown
+      .run(
+        () =>
+          this.transport.publish({
+            userId: 0,
+            type: eventType || 'system.server.disconnect',
+            payload,
+            origin: this.instanceId,
+            disconnect: true,
+          }),
+        true,
+      )
       .catch((err) =>
         this.logger.warn(
           'Echec publication de la déconnexion globale',
@@ -121,7 +146,7 @@ export class NotificationDispatchService
           }
         }
         try {
-          socket.close(1000, reason ?? 'maintenance');
+          socket.close(1000, safeReason ?? 'maintenance');
         } catch {
           // ignore
         }
@@ -131,9 +156,23 @@ export class NotificationDispatchService
     }
   }
 
-  private handleExternalEvent(event: NotificationEvent) {
+  private handleExternalEvent(
+    event: NotificationEvent,
+    metadata: PubSubEventMetadata,
+  ) {
     if (event.origin === this.instanceId) {
       return;
+    }
+    const now = Date.now();
+    for (const [eventId, seenAt] of this.processedEventIds) {
+      if (now - seenAt >= NOTIFICATION_DEDUPLICATION_TTL_MS)
+        this.processedEventIds.delete(eventId);
+    }
+    if (this.processedEventIds.has(metadata.eventId)) return;
+    this.processedEventIds.set(metadata.eventId, now);
+    if (this.processedEventIds.size > MAX_PROCESSED_NOTIFICATION_IDS) {
+      const oldest = this.processedEventIds.keys().next().value;
+      if (oldest) this.processedEventIds.delete(oldest);
     }
     if (event.disconnect) {
       const reason =
@@ -143,7 +182,7 @@ export class NotificationDispatchService
         typeof (event.payload as { reason?: unknown }).reason === 'string'
           ? (event.payload as { reason: string }).reason
           : 'maintenance';
-      this.disconnectAllLocal(reason, event.type);
+      this.disconnectAllLocal(reason.slice(0, 123), event.type);
       return;
     }
     if (event.userId === 0) {
@@ -154,7 +193,11 @@ export class NotificationDispatchService
   }
 
   private disconnectAllLocal(reason: string, eventType: string): void {
-    const message = JSON.stringify({ type: eventType, payload: { reason } });
+    const message = serializeNotification(eventType, { reason });
+    if (!message) {
+      this.socketsByUserId.clear();
+      return;
+    }
     for (const sockets of this.socketsByUserId.values()) {
       for (const socket of sockets) {
         if (socket.readyState === WebSocket.OPEN) {
@@ -177,7 +220,8 @@ export class NotificationDispatchService
   private dispatchToLocal(userId: number, type: string, payload: unknown) {
     const targets = this.socketsByUserId.get(userId);
     if (!targets || targets.size === 0) return;
-    const message = JSON.stringify({ type, payload });
+    const message = serializeNotification(type, payload);
+    if (!message) return;
     for (const socket of Array.from(targets)) {
       if (socket.readyState !== WebSocket.OPEN) {
         targets.delete(socket);
@@ -204,7 +248,8 @@ export class NotificationDispatchService
   }
 
   private dispatchToAllLocal(type: string, payload: unknown) {
-    const message = JSON.stringify({ type, payload });
+    const message = serializeNotification(type, payload);
+    if (!message) return;
     for (const [userId, targets] of Array.from(
       this.socketsByUserId.entries(),
     )) {
@@ -233,4 +278,23 @@ export class NotificationDispatchService
       }
     }
   }
+}
+
+function serializeNotification(type: string, payload: unknown): string | null {
+  try {
+    if (!isValidNotificationType(type)) return null;
+    const message = JSON.stringify({ type, payload });
+    return message &&
+      Buffer.byteLength(message, 'utf8') <= MAX_NOTIFICATION_MESSAGE_BYTES
+      ? message
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function isValidNotificationType(value: unknown): value is string {
+  return (
+    typeof value === 'string' && value.trim().length > 0 && value.length <= 128
+  );
 }

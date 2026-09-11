@@ -1,5 +1,6 @@
 import { MESSAGING_USER_READER } from '../application/ports/messaging-user.repository';
 import { PRIVATE_MESSAGE_REPOSITORY } from '../application/ports/private-message.repository';
+import { UNREAD_PRIVATE_MESSAGES_READER } from '../application/ports/unread-private-messages-reader.port';
 import { MessageValidatorService } from '../application/services/message-validator.service';
 import { MessagePresenterService } from '../application/services/message-presenter.service';
 import { PrivateMessagingService } from '../application/services/private-messaging.service';
@@ -8,6 +9,10 @@ import { PrivateMessageTypeormRepository } from '../infrastructure/persistence/t
 
 export const MESSAGING_CORE_PROVIDERS = [
   PrivateMessageTypeormRepository,
+  {
+    provide: UNREAD_PRIVATE_MESSAGES_READER,
+    useExisting: PrivateMessageTypeormRepository,
+  },
   MessagingUserTypeormRepository,
   {
     provide: PRIVATE_MESSAGE_REPOSITORY,

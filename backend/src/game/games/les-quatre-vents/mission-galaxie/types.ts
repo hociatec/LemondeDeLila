@@ -12,16 +12,6 @@ export type MissionGalaxieTileType =
   | 'swapNearest'
   | 'goto';
 
-export interface MissionGalaxieTile {
-  n: number;
-  title: string;
-  type: MissionGalaxieTileType;
-  delta?: number;
-  turnsToSkip?: number;
-  target?: number;
-  keepTurn?: boolean;
-}
-
 export interface MissionGalaxieChoiceCard {
   id: number;
   title: string;
@@ -31,16 +21,6 @@ export interface MissionGalaxieChoiceCard {
   correctDelta: number;
   wrongDelta: number;
 }
-
-export type MissionGalaxieEventEffect =
-  | { kind: 'move'; delta: number }
-  | { kind: 'skip'; turns: number }
-  | { kind: 'none' }
-  | { kind: 'reroll' }
-  | { kind: 'keepTurn' }
-  | { kind: 'goto'; target: number }
-  | { kind: 'skipOthers'; turns: number }
-  | { kind: 'choosePlayerMove'; deltas: number[] };
 
 export interface MissionGalaxieEventCard {
   id: number;

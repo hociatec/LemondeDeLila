@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "reference": "2026-09-08",
+  "games": [
+    {
+      "gameId": "a-fond-les-ballons",
+      "contentLoc": 496,
+      "declarativeLoc": 95,
+      "customRulesLoc": 364
+    },
+    {
+      "gameId": "arche-de-mnemosyne",
+      "contentLoc": 5739,
+      "declarativeLoc": 102,
+      "customRulesLoc": 156
+    },
+    {
+      "gameId": "aventure-sauvage",
+      "contentLoc": 189,
+      "declarativeLoc": 99,
+      "customRulesLoc": 80
+    },
+    {
+      "gameId": "ca-derape",
+      "contentLoc": 341,
+      "declarativeLoc": 63,
+      "customRulesLoc": 543
+    },
+    {
+      "gameId": "cat-pattes",
+      "contentLoc": 228,
+      "declarativeLoc": 112,
+      "customRulesLoc": 495
+    },
+    {
+      "gameId": "cercles-sacres",
+      "contentLoc": 133,
+      "declarativeLoc": 77,
+      "customRulesLoc": 178
+    },
+    {
+      "gameId": "contes-et-cacahuetes",
+      "contentLoc": 1063,
+      "declarativeLoc": 151,
+      "customRulesLoc": 996
+    },
+    {
+      "gameId": "corridor",
+      "contentLoc": 28,
+      "declarativeLoc": 97,
+      "customRulesLoc": 322
+    },
+    {
+      "gameId": "dame-nature",
+      "contentLoc": 1196,
+      "declarativeLoc": 99,
+      "customRulesLoc": 103
+    },
+    {
+      "gameId": "en-attendant-minuit",
+      "contentLoc": 1567,
+      "declarativeLoc": 85,
+      "customRulesLoc": 381
+    },
+    {
+      "gameId": "entre-rites-et-lumieres",
+      "contentLoc": 276,
+      "declarativeLoc": 132,
+      "customRulesLoc": 520
+    },
+    {
+      "gameId": "foulees-fantastiques",
+      "contentLoc": 311,
+      "declarativeLoc": 67,
+      "customRulesLoc": 278
+    },
+    {
+      "gameId": "frousse-party",
+      "contentLoc": 983,
+      "declarativeLoc": 80,
+      "customRulesLoc": 267
+    },
+    {
+      "gameId": "galopons-ensemble",
+      "contentLoc": 840,
+      "declarativeLoc": 132,
+      "customRulesLoc": 214
+    },
+    {
+      "gameId": "gerard-president",
+      "contentLoc": 435,
+      "declarativeLoc": 145,
+      "customRulesLoc": 896
+    },
+    {
+      "gameId": "jeu-oie",
+      "contentLoc": 393,
+      "declarativeLoc": 65,
+      "customRulesLoc": 139
+    },
+    {
+      "gameId": "la-bande-a-banane",
+      "contentLoc": 124,
+      "declarativeLoc": 72,
+      "customRulesLoc": 282
+    },
+    {
+      "gameId": "la-grande-mine-de-barbak",
+      "contentLoc": 718,
+      "declarativeLoc": 74,
+      "customRulesLoc": 284
+    },
+    {
+      "gameId": "la-parade-sucree",
+      "contentLoc": 111,
+      "declarativeLoc": 87,
+      "customRulesLoc": 97
+    },
+    {
+      "gameId": "lama",
+      "contentLoc": 30,
+      "declarativeLoc": 198,
+      "customRulesLoc": 286
+    },
+    {
+      "gameId": "le-marche-des-merveilles",
+      "contentLoc": 37,
+      "declarativeLoc": 75,
+      "customRulesLoc": 189
+    },
+    {
+      "gameId": "les-absurdissimes",
+      "contentLoc": 2034,
+      "declarativeLoc": 103,
+      "customRulesLoc": 135
+    },
+    {
+      "gameId": "les-mains-de-la-terre",
+      "contentLoc": 159,
+      "declarativeLoc": 88,
+      "customRulesLoc": 252
+    },
+    {
+      "gameId": "mission-galaxie",
+      "contentLoc": 961,
+      "declarativeLoc": 75,
+      "customRulesLoc": 317
+    },
+    {
+      "gameId": "mon-village-mon-histoire",
+      "contentLoc": 1126,
+      "declarativeLoc": 50,
+      "customRulesLoc": 145
+    },
+    {
+      "gameId": "morpion",
+      "contentLoc": 64,
+      "declarativeLoc": 75,
+      "customRulesLoc": 98
+    },
+    {
+      "gameId": "nawak",
+      "contentLoc": 1332,
+      "declarativeLoc": 92,
+      "customRulesLoc": 148
+    },
+    {
+      "gameId": "odyssee-quatre-cieux",
+      "contentLoc": 8,
+      "declarativeLoc": 73,
+      "customRulesLoc": 81
+    },
+    {
+      "gameId": "olympia",
+      "contentLoc": 1504,
+      "declarativeLoc": 96,
+      "customRulesLoc": 325
+    },
+    {
+      "gameId": "panier-express",
+      "contentLoc": 1549,
+      "declarativeLoc": 174,
+      "customRulesLoc": 494
+    },
+    {
+      "gameId": "pimp-my-ride",
+      "contentLoc": 921,
+      "declarativeLoc": 129,
+      "customRulesLoc": 145
+    },
+    {
+      "gameId": "pirates-en-vadrouille",
+      "contentLoc": 602,
+      "declarativeLoc": 77,
+      "customRulesLoc": 178
+    },
+    {
+      "gameId": "primalis",
+      "contentLoc": 109,
+      "declarativeLoc": 62,
+      "customRulesLoc": 147
+    },
+    {
+      "gameId": "sac-a-malices",
+      "contentLoc": 9109,
+      "declarativeLoc": 152,
+      "customRulesLoc": 822
+    },
+    {
+      "gameId": "taxi-express",
+      "contentLoc": 148,
+      "declarativeLoc": 65,
+      "customRulesLoc": 97
+    },
+    {
+      "gameId": "tout-pres-de-maman",
+      "contentLoc": 501,
+      "declarativeLoc": 42,
+      "customRulesLoc": 254
+    },
+    {
+      "gameId": "voyage-en-terre-de-brumes",
+      "contentLoc": 1572,
+      "declarativeLoc": 94,
+      "customRulesLoc": 418
+    },
+    {
+      "gameId": "zig-et-zag",
+      "contentLoc": 93,
+      "declarativeLoc": 107,
+      "customRulesLoc": 303
+    }
+  ]
+}

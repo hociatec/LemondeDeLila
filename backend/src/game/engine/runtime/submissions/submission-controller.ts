@@ -2,8 +2,8 @@ import {
   GameRuleViolationError,
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
-import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
+import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
 
 export type SubmissionSession<TSubmission = unknown> = {
   id: string;
@@ -65,7 +65,7 @@ export function createSubmissionKitState<
 export class GameSubmissionController<TSubmission = unknown> {
   constructor(
     protected readonly state: SubmissionKitState<TSubmission>,
-    protected readonly players: readonly PlayerStateEntity[],
+    protected readonly players: readonly PlayerState[],
     protected readonly emit: SubmissionEmitter,
   ) {}
 
@@ -156,6 +156,7 @@ export class GameSubmissionController<TSubmission = unknown> {
     const pending = this.pendingPlayers(id);
     if (
       playerIds.length !== pending.length ||
+      new Set(playerIds).size !== playerIds.length ||
       playerIds.some((playerId) => !pending.includes(playerId))
     ) {
       throw new GameRuleViolationError('SUBMISSION_PENDING_ORDER_INVALID', {
@@ -287,6 +288,7 @@ export class GameSubmissionController<TSubmission = unknown> {
   }
 
   protected closeWhenComplete(session: SubmissionSession<TSubmission>): void {
+    if (session.closed) return;
     if (this.pendingPlayers(session.id).length > 0) return;
     session.closed = true;
     this.emit(`${session.kind}.closed`, { sessionId: session.id });

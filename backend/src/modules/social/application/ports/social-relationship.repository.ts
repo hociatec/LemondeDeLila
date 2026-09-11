@@ -1,7 +1,7 @@
 import type {
   SocialRelationshipRecord,
   SocialRelationshipStatus,
-} from '../contracts/social-relationship.model';
+} from '../models/social-relationship.model';
 
 export const SOCIAL_RELATIONSHIP_REPOSITORY = Symbol(
   'SOCIAL_RELATIONSHIP_REPOSITORY',

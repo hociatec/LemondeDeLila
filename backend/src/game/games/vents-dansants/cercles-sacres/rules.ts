@@ -5,8 +5,7 @@ import {
   gameInput,
 } from '../../../engine/sdk/public-api';
 import { CERCLES_SACRES_CARD_BY_ID, type CerclesSacresTheme } from './content';
-import type { CerclesSacresCircle, CerclesSacresState } from './types';
-import type { PlayerMap } from '../../../engine/sdk/public-api';
+import type { CerclesSacresState } from './types';
 
 export const CERCLES_SACRES_GOAL = 3;
 export const CERCLES_SACRES_HAND_MIN = 6;
@@ -14,6 +13,7 @@ export const CERCLES_SACRES_HAND_LIMIT = 8;
 const DECK = 'sacred-circles';
 const HANDS = 'players';
 const CIRCLES = 'sacred-circles-completed';
+const CARDS_PER_CIRCLE = 6;
 const CERCLES_THEMES: readonly CerclesSacresTheme[] = [
   'totem',
   'nature',
@@ -55,8 +55,14 @@ export const formCircle = defineAction<
     })),
   execute: ({ actor, input, ctx }) => {
     for (const cardId of input.cardIds) ctx.cards.take(HANDS, actor.id, cardId);
-    ctx.inventory.add(CIRCLES, actor.id, JSON.stringify(input.cardIds));
-    const circleCount = ctx.inventory.count(CIRCLES, actor.id);
+    // Conserver les cartes comme éléments natifs de l'inventaire, dans l'ordre
+    // de formation, plutôt qu'encoder un tableau JSON dans une chaîne.
+    for (const cardId of input.cardIds) {
+      ctx.inventory.add(CIRCLES, actor.id, cardId);
+    }
+    const circleCount = Math.floor(
+      ctx.inventory.count(CIRCLES, actor.id) / CARDS_PER_CIRCLE,
+    );
     fillHand(actor.id, ctx);
     ctx.events.message('cercles.circle.completed', {
       playerId: actor.id,
@@ -129,53 +135,4 @@ function fillHand(
     if (!card) return;
     ctx.cards.give(HANDS, playerId, card);
   }
-}
-
-export function sacredCircles(
-  ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): PlayerMap<CerclesSacresCircle[]> {
-  return ctx.players.byId((player) =>
-    ctx.inventory.items(CIRCLES, player.id).flatMap((itemId, index) => {
-      const cards = parseCardIds(itemId);
-      if (!cards) return [];
-      const themes = circleThemes(cards);
-      if (!themes) return [];
-      return [
-        {
-          id: `circle-${player.id}-${index + 1}`,
-          cards,
-          themes,
-        },
-      ];
-    }),
-  );
-}
-
-function parseCardIds(value: string): string[] | null {
-  try {
-    const parsed: unknown = JSON.parse(value);
-    return Array.isArray(parsed) &&
-      parsed.every((cardId): cardId is string => typeof cardId === 'string')
-      ? parsed
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-function circleThemes(
-  cards: readonly string[],
-): Record<CerclesSacresTheme, string> | null {
-  const byTheme = new Map<CerclesSacresTheme, string>();
-  for (const cardId of cards) {
-    const card = CERCLES_SACRES_CARD_BY_ID[cardId];
-    if (card) byTheme.set(card.theme, cardId);
-  }
-  const [totem, nature, plante, esprit, parole, nation] = CERCLES_THEMES.map(
-    (theme) => byTheme.get(theme),
-  );
-  if (!totem || !nature || !plante || !esprit || !parole || !nation) {
-    return null;
-  }
-  return { totem, nature, plante, esprit, parole, nation };
 }

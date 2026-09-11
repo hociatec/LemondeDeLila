@@ -1,4 +1,8 @@
-import { defineEffect, gameInput } from '../../../engine/sdk/public-api';
+import {
+  commonStatuses,
+  defineEffect,
+  gameInput,
+} from '../../../engine/sdk/public-api';
 import {
   CA_CONDITIONAL_EFFECTS,
   CA_GLOBAL_EFFECTS,
@@ -16,7 +20,6 @@ import {
   applyPenaltyAwareMove,
   applyRule,
   applySpecial,
-  consumePenaltyShield,
   markWinnerIfReached,
 } from './rules';
 import type { NoGameState as CaDerapeState } from '../../../engine/sdk/public-api';
@@ -33,7 +36,10 @@ export const CA_DERAPE_EFFECTS = {
   'ca-derape.skip-penalty': defineEffect<CaDerapeState, Record<string, never>>({
     input: gameInput.object({}),
     apply: ({ actorPlayerId, ctx }) => {
-      if (actorPlayerId != null && !consumePenaltyShield(actorPlayerId, ctx)) {
+      if (
+        actorPlayerId != null &&
+        !ctx.status.consume(actorPlayerId, commonStatuses.shield)
+      ) {
         ctx.turn.skip(actorPlayerId, 1);
       }
     },

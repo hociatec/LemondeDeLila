@@ -1,19 +1,15 @@
 import {
-  cards,
   cardGame,
+  cards,
   defineCardsSchema,
   defineGame,
-  defineGameContent,
   inventory,
 } from '../../../engine/sdk/public-api';
-import { LA_GRANDE_MINE_CARDS } from './content';
-import {
-  drawAtTurnStart,
-  enumeratePlays,
-  GRANDE_MINE_ACTIONS,
-  MINE_DOMAINS,
-} from './rules';
+import { GAME_BOT } from './bot-rules';
+import { LA_GRANDE_MINE_CARDS, LA_GRANDE_MINE_GAME_CONTENT } from './content';
 import { GRANDE_MINE_EFFECTS } from './effects';
+import manifest from './manifest.json';
+import { drawAtTurnStart, GRANDE_MINE_ACTIONS, MINE_DOMAINS } from './rules';
 import type { GrandeMineState } from './types';
 
 const cardSchema = defineCardsSchema({
@@ -36,15 +32,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<GrandeMineState>()({
-  id: 'la-grande-mine-de-barbak',
-  displayName: 'La Grande Mine de Barbak !',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
-  description: 'Amassez le meilleur domaine avant l’effondrement.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('la-grande-mine-de-barbak', {
-    cards: LA_GRANDE_MINE_CARDS,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: LA_GRANDE_MINE_GAME_CONTENT,
   patterns: [
     cardGame({
       schema: cardSchema,
@@ -61,12 +55,5 @@ export default defineGame<GrandeMineState>()({
   ],
   actions: GRANDE_MINE_ACTIONS,
   effects: GRANDE_MINE_EFFECTS,
-  bot: {
-    choose: ({ actor, ctx }) => {
-      const play = enumeratePlays(actor.id, ctx)[0];
-      return play
-        ? { type: 'play_card', payload: play }
-        : { type: 'pass', payload: {} };
-    },
-  },
+  bot: GAME_BOT,
 });

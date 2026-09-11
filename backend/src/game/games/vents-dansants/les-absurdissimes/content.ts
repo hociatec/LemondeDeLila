@@ -1,52 +1,29 @@
-import {
-  freezeGameContent,
-  rejectContent,
-} from '../../../engine/sdk/public-api';
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import manifest from './manifest.json';
+import embeddedCatalogue from './catalogue.json';
+
+import { defineGameContent, gameInput } from '../../../engine/sdk/public-api';
 
 export interface AbsurdissimesCard {
   id: string;
   text: string;
 }
 
-export const WHITE_CARDS = loadCards('white-cards.txt').map((text, index) => ({
-  id: `white-${index + 1}`,
-  text,
-}));
-export const BLACK_CARDS = loadCards('black-cards.txt').map((text, index) => ({
-  id: `black-${index + 1}`,
-  text,
-}));
-
-function loadCards(fileName: string): string[] {
-  const candidates = [
-    resolve(__dirname, 'data', fileName),
-    resolve(
-      process.cwd(),
-      'src/game/games/vents-dansants/les-absurdissimes/data',
-      fileName,
-    ),
-    resolve(
-      process.cwd(),
-      'dist/game/games/vents-dansants/les-absurdissimes/data',
-      fileName,
-    ),
-  ];
-  const path = candidates.find(existsSync);
-  if (!path) rejectContent(`Contenu Absurdissimes introuvable: ${fileName}`);
-  const content = readFileSync(path, 'utf8');
-  return [
-    ...content.matchAll(/(?:^|\n)\d+\.\s*[\r\n]+([\s\S]*?)(?=\n\d+\.|$)/g),
-  ]
-    .map((match) =>
-      (match[1] ?? '')
-        .replace(/["\r\n]+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim(),
-    )
-    .filter(Boolean);
-}
-
-freezeGameContent(WHITE_CARDS);
-freezeGameContent(BLACK_CARDS);
+const cardsSchema = gameInput.array(
+  gameInput.object({
+    id: gameInput.string({ min: 1, max: 128 }),
+    text: gameInput.string({ min: 1, max: 10000 }),
+  }),
+  { min: 1, max: 10000 },
+);
+export const ABSURDISSIMES_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  embeddedCatalogue,
+  {
+    schema: gameInput.object({
+      blackCards: cardsSchema,
+      whiteCards: cardsSchema,
+    }),
+  },
+);
+export const WHITE_CARDS = ABSURDISSIMES_GAME_CONTENT.data.whiteCards;
+export const BLACK_CARDS = ABSURDISSIMES_GAME_CONTENT.data.blackCards;

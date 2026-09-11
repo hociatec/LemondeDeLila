@@ -1,31 +1,44 @@
-import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import type { PresenceUserRepository } from '../../../../application/ports/presence-user.repository';
-import type { PresenceUserChatBan } from '../../../../application/contracts/presence-user-chat-ban.model';
-import { User } from '../../../../../user/public-api';
+import type { PresenceUserChatBan } from '../../../../application/models/presence-user-chat-ban.model';
 
 @Injectable()
 export class PresenceUserTypeormRepository implements PresenceUserRepository {
-  constructor(
-    @InjectRepository(User)
-    private readonly users: Repository<User>,
-  ) {}
+  constructor(private readonly dataSource: DataSource) {}
 
   async findChatBanByUserId(
     userId: number,
   ): Promise<PresenceUserChatBan | null> {
-    const user = await this.users.findOne({
-      where: { id: userId },
-      select: { id: true, chatBannedUntil: true, chatBanReason: true },
-    });
-    if (!user) {
-      return null;
-    }
+    const rows = await this.dataSource.query(
+      'SELECT id, chat_banned_until, chat_ban_reason FROM users WHERE id = ? LIMIT 1',
+      [userId],
+    );
+    const user = rows[0] as
+      | {
+          id?: unknown;
+          chat_banned_until?: Date | string | null;
+          chat_ban_reason?: string | null;
+        }
+      | undefined;
+    if (!user) return null;
+    const normalizedUserId = toPositiveSafeId(user?.id);
+    if (normalizedUserId === null) return null;
+    const chatBannedUntil =
+      user.chat_banned_until != null ? new Date(user.chat_banned_until) : null;
+    if (chatBannedUntil && Number.isNaN(chatBannedUntil.getTime())) return null;
     return {
-      id: user.id,
-      chatBannedUntil: user.chatBannedUntil ?? null,
-      chatBanReason: user.chatBanReason ?? null,
+      id: normalizedUserId,
+      chatBannedUntil,
+      chatBanReason:
+        typeof user.chat_ban_reason === 'string'
+          ? user.chat_ban_reason.slice(0, 255)
+          : null,
     };
   }
+}
+
+function toPositiveSafeId(value: unknown): number | null {
+  const id = typeof value === 'number' ? value : Number(value);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
 }

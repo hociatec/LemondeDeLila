@@ -1,190 +1,77 @@
+import manifest from './manifest.json';
+import embeddedCatalogue from './catalogue.json';
+
 import {
-  freezeGameContent,
-  gameEffects,
+  defineGameContent,
+  gameInput,
+  cardContent,
+  effectContentSchema,
   rejectContent,
 } from '../../../engine/sdk/public-api';
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import type {
-  AventureCard,
-  AventurePawn,
-  AventureTile,
-  AventureTileType,
-} from './types';
 
-const TILE_TYPES: AventureTileType[] = [
-  'neutral',
-  'neutral',
-  'animal',
-  'neutral',
-  'patte',
-  'animal',
-  'neutral',
-  'animal',
-  'patte',
-  'animal',
-  'neutral',
-  'animal',
-  'patte',
-  'neutral',
-  'animal',
-  'patte',
-  'animal',
-  'neutral',
-  'animal',
-  'patte',
-  'neutral',
-  'animal',
-  'patte',
-  'animal',
-  'neutral',
-  'animal',
-  'patte',
-  'animal',
-  'patte',
-  'finish',
-];
-
-export const AVENTURE_TILES: AventureTile[] = TILE_TYPES.map((type, index) => ({
-  type,
-  label:
-    type === 'animal'
-      ? 'Animal rigolo'
-      : type === 'patte'
-        ? 'Coup de patte'
-        : type === 'finish'
-          ? 'La mare — arrivée'
-          : index === 0
-            ? 'Départ de la jungle'
-            : `Sentier ${index + 1}`,
-}));
-
-export const AVENTURE_ANIMAL_CARDS = makeCards('animal', [
-  { moveDelta: 2 },
-  { moveDelta: -1 },
-  { moveDelta: 3 },
-  { reroll: true },
-  { skipTurns: 1 },
-  { moveDelta: 1 },
-  { moveDelta: 1 },
-  { moveDelta: 2 },
-  { moveDelta: 1 },
-  { skipTurns: 1 },
-  { moveDelta: 2 },
-  { moveDelta: 3 },
-  { moveDelta: 1 },
-  { moveDelta: 1 },
-  { moveDelta: 1 },
-  { moveDelta: 2 },
-  {},
-  { moveDelta: 1 },
-  { moveDelta: 3 },
-  { skipTurns: 1 },
-]);
-
-export const AVENTURE_PATTE_CARDS = makeCards('patte', [
-  { skipTurns: 1 },
-  { moveDelta: -1 },
-  { skipTurns: 1 },
-  { moveDelta: -1 },
-  { skipTurns: 1 },
-  { skipTurns: 1 },
-  { skipTurns: 1 },
-  { skipTurns: 1 },
-  { skipTurns: 1 },
-  { moveDelta: -1 },
-]);
-
-export const AVENTURE_PAWNS = loadPawns();
-
-function makeCards(
-  deck: AventureCard['deck'],
-  definitions: Array<{
-    moveDelta?: number;
-    skipTurns?: number;
-    reroll?: boolean;
-  }>,
-): AventureCard[] {
-  return definitions.map((definition, index) => {
-    const effects: Array<AventureCard['effects'][number]> = [];
-    if (definition.moveDelta) {
-      effects.push(
-        gameEffects.move('jungle', definition.moveDelta),
-        gameEffects.custom('aventure.resolve-landing'),
-      );
-    }
-    if (definition.skipTurns) {
-      effects.push(gameEffects.skipTurn(definition.skipTurns));
-    }
-    if (definition.reroll) effects.push(gameEffects.extraTurn());
-    return {
-      id: index + 1,
-      deck,
-      text: `${deck === 'animal' ? 'Rencontre animale' : 'Coup de patte'} ${index + 1}`,
-      effects,
-    };
-  });
-}
-
-function loadPawns(): AventurePawn[] {
-  const directory = contentDirectory();
-  const raw: unknown = JSON.parse(
-    readFileSync(resolve(directory, 'pawns.json'), 'utf8').replace(
-      /^\uFEFF/,
-      '',
-    ),
-  );
-  if (!isRecord(raw) || raw.version !== 1 || !Array.isArray(raw.pawns)) {
-    rejectContent('Pions Aventure Sauvage invalides');
-  }
-  const pawns = raw.pawns;
-  if (pawns.length < 6 || !pawns.every(isPawn)) {
-    rejectContent('Catalogue de pions Aventure Sauvage invalide');
-  }
-  return pawns.map((pawn) => ({
-    id: pawn.id,
-    label: pawn.name,
-    description: pawn.description,
-  }));
-}
-
-function contentDirectory(): string {
-  const candidates = [
-    resolve(__dirname, 'model/content'),
-    resolve(
-      process.cwd(),
-      'src/game/games/les-quatre-vents/aventure-sauvage/model/content',
-    ),
-    resolve(
-      process.cwd(),
-      'dist/game/games/les-quatre-vents/aventure-sauvage/model/content',
-    ),
-  ];
-  const found = candidates.find((directory) =>
-    existsSync(resolve(directory, 'pawns.json')),
-  );
-  if (!found) rejectContent('Contenu Aventure Sauvage introuvable');
-  return found;
-}
-
-function isPawn(value: unknown): value is {
-  id: string;
-  name: string;
-  description: string;
-} {
-  return (
-    isRecord(value) &&
-    typeof value.id === 'string' &&
-    typeof value.name === 'string' &&
-    typeof value.description === 'string'
-  );
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value != null && typeof value === 'object' && !Array.isArray(value);
-}
-
-freezeGameContent(AVENTURE_TILES);
-freezeGameContent(AVENTURE_ANIMAL_CARDS);
-freezeGameContent(AVENTURE_PATTE_CARDS);
-freezeGameContent(AVENTURE_PAWNS);
+const textSchema = gameInput.string({ min: 1, max: 4000, trim: false });
+const deckSchema = gameInput.array(
+  gameInput.object({
+    id: gameInput.number({ integer: true, min: 1 }),
+    deck: gameInput.enum(['animal', 'patte']),
+    text: textSchema,
+    effects: effectContentSchema({
+      tracks: ['jungle'],
+      effects: ['aventure.resolve-landing'],
+    }),
+  }),
+  { min: 1, max: 10000 },
+);
+const aventureSchema = gameInput.object({
+  tiles: gameInput.array(
+    gameInput.object({
+      type: gameInput.enum(['neutral', 'animal', 'patte', 'finish']),
+      label: textSchema,
+    }),
+    { min: 2, max: 1000 },
+  ),
+  pawns: gameInput.array(
+    gameInput.object({
+      id: gameInput.string({ min: 1, max: 128 }),
+      label: textSchema,
+      description: textSchema,
+    }),
+    { min: 6, max: 100 },
+  ),
+  animalCards: deckSchema,
+  pawCards: deckSchema,
+});
+export const AVENTURE_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  embeddedCatalogue,
+  {
+    snapshotMigrations: [
+      {
+        fromVersion: 'aventure-sauvage@content:c48df7e1',
+        toVersion: 'aventure-sauvage@content:f577dff1',
+      },
+    ],
+    schema: {
+      parse(value: unknown) {
+        const parsed = aventureSchema.parse(value);
+        if (
+          parsed.animalCards.some((card) => card.deck !== 'animal') ||
+          parsed.pawCards.some((card) => card.deck !== 'patte')
+        )
+          rejectContent('Carte dans une pioche incorrecte');
+        if (parsed.tiles.at(-1)?.type !== 'finish')
+          rejectContent('Arrivée de la jungle requise');
+        return {
+          tiles: parsed.tiles,
+          pawns: cardContent(parsed.pawns),
+          animalCards: cardContent(parsed.animalCards),
+          pawCards: cardContent(parsed.pawCards),
+        };
+      },
+    },
+  },
+);
+export const AVENTURE_TILES = AVENTURE_GAME_CONTENT.data.tiles;
+export const AVENTURE_PAWNS = AVENTURE_GAME_CONTENT.data.pawns;
+export const AVENTURE_ANIMAL_CARDS = AVENTURE_GAME_CONTENT.data.animalCards;
+export const AVENTURE_PATTE_CARDS = AVENTURE_GAME_CONTENT.data.pawCards;

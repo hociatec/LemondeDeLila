@@ -19,18 +19,28 @@ export function createWsRuntimeConfig(config: ConfigService): WsRuntimeConfig {
   const maxBufferedBytes = Number(
     config.get<number>('WS_MAX_BUFFERED_BYTES', 1_048_576),
   );
+  const wsRateLimitWindowMs = Number(
+    config.get<number>('WS_RATE_LIMIT_WINDOW_MS', 10_000),
+  );
+  const wsRateLimitCount = Number(
+    config.get<number>('WS_RATE_LIMIT_COUNT', 60),
+  );
 
   return {
     nodeEnv,
     wsTicketSecret: wsTicketSecret || null,
     wsTicketTtlSeconds:
-      Number.isFinite(wsTicketTtlRaw) && wsTicketTtlRaw >= 0
+      Number.isSafeInteger(wsTicketTtlRaw) &&
+      wsTicketTtlRaw >= 1 &&
+      wsTicketTtlRaw <= 3_600
         ? wsTicketTtlRaw
         : 60,
     jwtIssuer: jwtIssuer || 'le-monde-de-lila',
     jwtAudience: jwtAudience || null,
     jwtClockToleranceSeconds:
-      Number.isFinite(clockToleranceRaw) && clockToleranceRaw >= 0
+      Number.isSafeInteger(clockToleranceRaw) &&
+      clockToleranceRaw >= 0 &&
+      clockToleranceRaw <= 300
         ? clockToleranceRaw
         : 10,
     jwtPrivateKeyPem:
@@ -42,8 +52,22 @@ export function createWsRuntimeConfig(config: ConfigService): WsRuntimeConfig {
     jwtPublicKeyPath:
       String(config.get<string>('JWT_PUBLIC_KEY_PATH') ?? '').trim() || null,
     maxBufferedBytes:
-      Number.isInteger(maxBufferedBytes) && maxBufferedBytes >= 65_536
+      Number.isSafeInteger(maxBufferedBytes) &&
+      maxBufferedBytes >= 65_536 &&
+      maxBufferedBytes <= 64 * 1024 * 1024
         ? maxBufferedBytes
         : 1_048_576,
+    wsRateLimitWindowMs:
+      Number.isSafeInteger(wsRateLimitWindowMs) &&
+      wsRateLimitWindowMs >= 1_000 &&
+      wsRateLimitWindowMs <= 3_600_000
+        ? wsRateLimitWindowMs
+        : 10_000,
+    wsRateLimitCount:
+      Number.isSafeInteger(wsRateLimitCount) &&
+      wsRateLimitCount >= 1 &&
+      wsRateLimitCount <= 10_000
+        ? wsRateLimitCount
+        : 60,
   };
 }

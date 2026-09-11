@@ -1,4 +1,6 @@
+import { presentationTimestamp } from '../../../../../platform/serialization/public-api';
 import { Injectable } from '@nestjs/common';
+import { parseStrictInteger } from '@shared/utils/public-api';
 import { WebSocket } from 'ws';
 import { PerfMetricsService } from '../../../../../platform/observability/public-api';
 import { RoomAdminPolicyService } from '../../../application/services/maintenance/room-admin-policy.service';
@@ -10,11 +12,11 @@ import { extractTraceMeta } from './room-command.helpers';
 import {
   RoomWsCurrentRoomMismatchError,
   RoomWsGameAlreadyStartedError,
-  RoomWsInvalidRoomIdError,
   RoomWsOwnerTargetForbiddenError,
   RoomWsPrivateInvitationRequiredError,
   RoomWsSelfTargetForbiddenError,
-} from '../../../domain/errors/room-ws.errors';
+} from './room-ws.errors';
+import { RoomInvalidRoomIdError } from '../../../domain/errors/room-domain.errors';
 import { resolveSpectatorIntent } from './room-role.helpers';
 import { RoomGatewayPresenter } from './room-gateway.presenter';
 import type { AuthedClient, ClientMeta } from './room-gateway.types';
@@ -40,9 +42,9 @@ export class RoomGatewayActionsService {
   ): Promise<void> {
     const row = ctx.asRecord(payload);
     const roomIdRaw = row.roomId ?? meta.roomId;
-    const roomId = Number(roomIdRaw);
-    if (!Number.isFinite(roomId) || roomId <= 0) {
-      throw new RoomWsInvalidRoomIdError();
+    const roomId = parseStrictInteger(roomIdRaw, { min: 1 });
+    if (roomId === null) {
+      throw new RoomInvalidRoomIdError();
     }
     if (roomId !== meta.roomId) {
       throw new RoomWsCurrentRoomMismatchError();
@@ -140,7 +142,8 @@ export class RoomGatewayActionsService {
       spectatorIds: Array.from(ctx.clients.values())
         .filter((clientMeta) => clientMeta.roomId === roomId)
         .filter((clientMeta) => clientMeta.role === 'spectator')
-        .map((spectator) => spectator.userId),
+        .map((spectator) => spectator.userId)
+        .slice(0, 10_000),
       hasUserConnections: ctx.hasUserConnections(roomId, targetUserId),
     });
 
@@ -191,7 +194,8 @@ export class RoomGatewayActionsService {
       spectatorIds: Array.from(ctx.clients.values())
         .filter((clientMeta) => clientMeta.roomId === roomId)
         .filter((clientMeta) => clientMeta.role === 'spectator')
-        .map((spectator) => spectator.userId),
+        .map((spectator) => spectator.userId)
+        .slice(0, 10_000),
       hasUserConnections: ctx.hasUserConnections(roomId, newOwnerId),
     });
 
@@ -258,7 +262,7 @@ export class RoomGatewayActionsService {
           meta.roomId,
           (roomState) => {
             roomState.room.tableAmbienceSoundId = soundId;
-            roomState.generatedAt = new Date().toISOString();
+            roomState.generatedAt = presentationTimestamp();
             return roomState;
           },
         );

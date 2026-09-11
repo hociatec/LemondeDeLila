@@ -1,9 +1,9 @@
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
-import type { GameContext } from '../game-rule-context';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
+import type { GameContext } from '../definitions/game-author-context';
 
 export type TurnLifecycleInput<TState extends object> = {
   state: TState;
-  player: PlayerStateEntity | null;
+  player: PlayerState | null;
   ctx: GameContext<TState>;
 };
 

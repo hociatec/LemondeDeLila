@@ -3,7 +3,8 @@ import {
   GameNotFoundError,
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
-import type { GameEffectInstruction } from '../effects/effects-kit';
+import type { GameEffectInstruction } from '../contracts/effect-ir';
+import { assertGameCount } from './numeric-invariants';
 
 export type TrackDefinition = {
   readonly component: 'movement.track';
@@ -50,7 +51,11 @@ export type MovementPipelineOptions<TTile> = MovementLandingOptions<TTile> & {
 
 export const movement = {
   track(definition: Omit<TrackDefinition, 'component'>): TrackDefinition {
-    if (!Number.isInteger(definition.spaces) || definition.spaces < 1) {
+    if (
+      !Number.isSafeInteger(definition.spaces) ||
+      definition.spaces < 1 ||
+      definition.spaces > 1_000_000
+    ) {
       throw new GameConfigurationError(
         'Une piste doit contenir au moins une case',
       );
@@ -166,6 +171,7 @@ export class GameMovementController {
   }
 
   preview(trackId: string, playerId: number, distance: number): number {
+    assertGameCount(Math.abs(distance), 100_000);
     const track = this.requireTrack(trackId);
     const current = this.position(trackId, playerId);
     return resolveTrackPosition(
@@ -197,8 +203,9 @@ export class GameMovementController {
       to: next,
       distance: Math.trunc(distance),
     });
-    for (const position of this.passedPositions(trackId, current, distance)) {
-      onPass?.(position);
+    if (onPass) {
+      for (const position of this.passedPositions(trackId, current, distance))
+        onPass(position);
     }
     if (emitLanding) {
       this.emit('pawn.landed', { trackId, playerId, position: next });

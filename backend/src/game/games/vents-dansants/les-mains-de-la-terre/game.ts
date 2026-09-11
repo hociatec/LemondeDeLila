@@ -1,17 +1,19 @@
+import type { NoGameState as LesMainsState } from '../../../engine/sdk/public-api';
 import {
-  cards,
   cardGame,
+  cards,
   defineCardsSchema,
   defineGame,
-  defineGameContent,
 } from '../../../engine/sdk/public-api';
-import { LES_MAINS_DECK, LES_MAINS_METIER_CARDS } from './content';
+import { GAME_BOT } from './bot-rules';
 import {
-  dealProfessionHands,
-  LES_MAINS_ACTIONS,
-  LES_MAINS_EFFECTS,
-} from './rules';
-import type { NoGameState as LesMainsState } from '../../../engine/sdk/public-api';
+  LES_MAINS_DECK,
+  LES_MAINS_GAME_CONTENT,
+  LES_MAINS_METIER_CARDS,
+} from './content';
+import manifest from './manifest.json';
+import { LES_MAINS_ACTIONS, LES_MAINS_EFFECTS } from './rules';
+import { setupGame } from './setup-rules';
 
 const familySets = cards.sets({
   id: 'profession-families',
@@ -46,15 +48,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<LesMainsState>()({
-  id: 'les-mains-de-la-terre',
-  displayName: 'Les Mains de la Terre',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
-  description: 'Complétez les sept familles de métiers du monde.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('les-mains-de-la-terre', {
-    cards: LES_MAINS_DECK,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: LES_MAINS_GAME_CONTENT,
   patterns: [
     cardGame({
       schema: cardSchema,
@@ -63,24 +63,10 @@ export default defineGame<LesMainsState>()({
     }),
   ],
   components: [familySets],
+  resourceIds: ['les-mains.extra-draws'],
   shortcuts: [{ key: 'D', type: 'action', actionType: 'request_card' }],
-  setup: ({ players, ctx }) => {
-    dealProfessionHands(
-      players.map((player) => player.id),
-      ctx,
-    );
-    return {};
-  },
+  setup: setupGame,
   actions: LES_MAINS_ACTIONS,
   effects: LES_MAINS_EFFECTS,
-  bot: {
-    choose: ({ state, actor, ctx }) => {
-      const first = LES_MAINS_ACTIONS.request_card.enumerate?.({
-        state,
-        actor,
-        ctx,
-      })[0];
-      return first ? { type: 'request_card', payload: first } : null;
-    },
-  },
+  bot: GAME_BOT,
 });

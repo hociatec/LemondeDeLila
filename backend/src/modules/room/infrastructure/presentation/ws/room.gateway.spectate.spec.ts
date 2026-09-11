@@ -20,6 +20,7 @@ function createGateway() {
     clientPolicy,
     roomState,
     sessionPresenter,
+    { now: () => Date.now() },
   ) as any;
   const gateway = {
     canSpectate: (roomId: number, userId: number) =>
@@ -68,7 +69,7 @@ describe('RoomGateway.canSpectate', () => {
   });
 
   it('returns true on public rooms', async () => {
-    const { gateway, roomsService } = createGateway();
+    const { gateway, roomsService, invites } = createGateway();
     roomsService.getRoomPayload.mockResolvedValueOnce(
       payload({ room: { isPrivate: false } }),
     );
@@ -76,6 +77,7 @@ describe('RoomGateway.canSpectate', () => {
     const allowed = await gateway.canSpectate(10, 5);
 
     expect(allowed).toBe(true);
+    expect(invites.canSpectate).not.toHaveBeenCalled();
   });
 
   it('returns true on private room for owner', async () => {

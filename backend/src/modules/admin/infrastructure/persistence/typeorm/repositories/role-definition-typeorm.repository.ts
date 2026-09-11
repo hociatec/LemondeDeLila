@@ -13,11 +13,12 @@ export class RoleDefinitionTypeormRepository implements RoleDefinitionRepository
   ) {}
 
   async findAll(): Promise<RoleDefinition[]> {
-    const rows = await this.repo.find();
+    const rows = await this.repo.find({ order: { name: 'ASC' }, take: 128 });
     return rows.map((row) => this.toModel(row));
   }
 
   async findByName(name: string): Promise<RoleDefinition | null> {
+    if (typeof name !== 'string' || !name.trim() || name.length > 100) return null;
     const row = await this.repo.findOne({ where: { name } });
     return row ? this.toModel(row) : null;
   }
@@ -31,6 +32,7 @@ export class RoleDefinitionTypeormRepository implements RoleDefinitionRepository
   }
 
   async saveMany(definitions: RoleDefinition[]): Promise<void> {
+    if (!Array.isArray(definitions) || definitions.length > 128) return;
     await this.repo.save(
       definitions.map((definition) => this.toEntity(definition)),
     );
@@ -75,18 +77,26 @@ export class RoleDefinitionTypeormRepository implements RoleDefinitionRepository
 
   private toModel(row: RoleDefinitionEntity): RoleDefinition {
     return {
-      name: row.name,
-      description: row.description,
-      permissions: Array.isArray(row.permissions) ? row.permissions : [],
+      name: String(row.name ?? '').slice(0, 100),
+      description: String(row.description ?? '').slice(0, 255),
+      permissions: Array.isArray(row.permissions)
+        ? row.permissions
+            .filter((permission): permission is string => typeof permission === 'string')
+            .map((permission) => permission.slice(0, 100))
+            .slice(0, 64)
+        : [],
     };
   }
 
   private toEntity(definition: RoleDefinition): RoleDefinitionEntity {
     return {
-      name: definition.name,
-      description: definition.description,
+      name: String(definition.name ?? '').trim().slice(0, 100),
+      description: String(definition.description ?? '').slice(0, 255),
       permissions: Array.isArray(definition.permissions)
         ? definition.permissions
+            .filter((permission): permission is string => typeof permission === 'string')
+            .map((permission) => permission.slice(0, 100))
+            .slice(0, 64)
         : [],
     };
   }

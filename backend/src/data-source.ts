@@ -1,6 +1,8 @@
 import { DataSource } from 'typeorm';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
-import { ORM_ENTITIES } from './typeorm-entities';
+import { ORM_ENTITIES } from './app/database/typeorm-entities';
+import { createMysqlConnectionOptions } from './platform/database/public-api';
 import {
   getProcessEnvironment,
   readEnvironmentBoolean,
@@ -10,32 +12,12 @@ const shouldIgnoreEnvFile = readEnvironmentBoolean('IGNORE_ENV_FILE', false);
 if (!shouldIgnoreEnvFile) {
   // Load `.env` for migrations as well (default behavior).
   // When env vars come from systemd/docker, set `IGNORE_ENV_FILE=true`.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  require('dotenv/config');
+  // Keep this side effect conditional: IGNORE_ENV_FILE must be checked first.
+  createRequire(__filename)('dotenv/config');
 }
 
-const {
-  DATABASE_URL,
-  DB_HOST = '127.0.0.1',
-  DB_PORT = '3306',
-  DB_USER = 'root',
-  DB_PASSWORD = '',
-  DB_NAME = 'le_monde_de_lila',
-} = getProcessEnvironment();
-
-const base = DATABASE_URL
-  ? {
-      type: 'mysql' as const,
-      url: DATABASE_URL,
-    }
-  : {
-      type: 'mysql' as const,
-      host: DB_HOST,
-      port: parseInt(DB_PORT, 10),
-      username: DB_USER,
-      password: DB_PASSWORD,
-      database: DB_NAME,
-    };
+const environment = getProcessEnvironment();
+const base = createMysqlConnectionOptions((name) => environment[name]);
 
 const migrationExtension = __filename.endsWith('.js') ? 'js' : 'ts';
 const migrations = [

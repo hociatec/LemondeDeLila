@@ -1,3 +1,4 @@
+export const CONTES_TRACK = 'story-road';
 export const CONTES_RESOURCES = {
   reroll: 'contes.reroll-token',
   shield: 'contes.malus-shield',

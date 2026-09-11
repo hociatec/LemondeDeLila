@@ -58,6 +58,66 @@ const refreshTokens = (): jest.Mocked<RefreshTokenServicePort> => ({
 });
 
 describe('user authentication use cases', () => {
+  it.each(['login', 'refresh'] as const)(
+    'uses the injected ban deadline for %s',
+    async (operation) => {
+      let now = 999;
+      const clock = { now: () => now };
+      const users = repository();
+      const account = user({ bannedUntil: new Date(1000) });
+      users.findByUsername.mockResolvedValue(account);
+      users.findById.mockResolvedValue(account);
+      const signer = tokens();
+      const refresh = refreshTokens();
+      const login = new LoginUserService(
+        users,
+        hasher(),
+        signer,
+        refresh,
+        clock,
+      );
+      const renewal = new RefreshUserSessionService(
+        users,
+        signer,
+        refresh,
+        clock,
+      );
+      const execute = () =>
+        operation === 'login'
+          ? login.execute({ username: 'Alice', password: 'secret' })
+          : renewal.execute('old-token');
+      await expect(execute()).rejects.toBeInstanceOf(UnauthorizedException);
+      expect(signer.sign).not.toHaveBeenCalled();
+      now = 1000;
+      await expect(execute()).resolves.toMatchObject({ token: 'access-token' });
+      expect(account.bannedUntil).toBeNull();
+    },
+  );
+  it('refuses corrupt ban dates during login and refresh', async () => {
+    const users = repository();
+    users.findByUsername.mockResolvedValue(
+      user({ bannedUntil: new Date(NaN) }),
+    );
+    users.findById.mockResolvedValue(user({ bannedUntil: new Date(NaN) }));
+    const refresh = refreshTokens();
+    const signer = tokens();
+    await expect(
+      new LoginUserService(users, hasher(), signer, refresh, {
+        now: () => Date.now(),
+      }).execute({
+        username: 'Alice',
+        password: 'secret',
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(
+      new RefreshUserSessionService(users, signer, refresh, {
+        now: () => Date.now(),
+      }).execute('old-token'),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(signer.sign).not.toHaveBeenCalled();
+    expect(refresh.issue).not.toHaveBeenCalled();
+    expect(refresh.revoke).toHaveBeenCalledWith('rotated-token');
+  });
   it('normalizes registration identity and hashes a policy-compliant password', async () => {
     const users = repository();
     const passwords = hasher();
@@ -107,7 +167,9 @@ describe('user authentication use cases', () => {
     const users = repository();
     users.findByUsername.mockResolvedValue(user());
     const refresh = refreshTokens();
-    const service = new LoginUserService(users, hasher(), tokens(), refresh);
+    const service = new LoginUserService(users, hasher(), tokens(), refresh, {
+      now: () => Date.now(),
+    });
 
     await expect(
       service.execute({ username: ' Alice ', password: 'secret' }),
@@ -130,6 +192,7 @@ describe('user authentication use cases', () => {
       hasher(),
       tokens(),
       refreshTokens(),
+      { now: () => Date.now() },
     );
     await expect(
       service.execute({ username: 'Alice', password: 'secret' }),
@@ -140,7 +203,9 @@ describe('user authentication use cases', () => {
     const users = repository();
     users.findById.mockResolvedValue(null);
     const refresh = refreshTokens();
-    const service = new RefreshUserSessionService(users, tokens(), refresh);
+    const service = new RefreshUserSessionService(users, tokens(), refresh, {
+      now: () => Date.now(),
+    });
 
     await expect(service.execute('old-token')).rejects.toBeInstanceOf(
       UnauthorizedException,

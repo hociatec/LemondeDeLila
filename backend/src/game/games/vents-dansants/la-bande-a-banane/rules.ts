@@ -1,10 +1,11 @@
+import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 import {
-  rejectRule,
   defineAction,
   defineEffect,
   drawCardsAtTurnStart,
   gameEffects,
   gameInput,
+  rejectRule,
 } from '../../../engine/sdk/public-api';
 import {
   BANDE_A_BANANE_CARD_BY_ID,
@@ -12,8 +13,6 @@ import {
   type BandeABananeMonkeySpecies,
 } from './content';
 import type { BandeABananeState } from './types';
-import type { PlayerMap } from '../../../engine/sdk/public-api';
-import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
 
 const DECK = 'banana';
 const HANDS = 'players';
@@ -194,8 +193,8 @@ function enforceHandLimit(
   playerId: number,
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
 ): void {
-  const hand = ctx.cards.hand<string>(HANDS, playerId);
-  while (hand.length > HAND_LIMIT) discardRandom(playerId, ctx);
+  const excess = ctx.cards.hand<string>(HANDS, playerId).length - HAND_LIMIT;
+  for (let index = 0; index < excess; index++) discardRandom(playerId, ctx);
 }
 
 function discardRandom(
@@ -210,12 +209,6 @@ function speciesCount(
   ctx: Parameters<typeof pass.execute>[0]['ctx'],
 ): number {
   return new Set(troops(playerId, ctx).map((entry) => entry.species)).size;
-}
-
-export function bananaTroops(
-  ctx: Parameters<typeof pass.execute>[0]['ctx'],
-): PlayerMap<import('./types').BandeABananeTroopEntry[]> {
-  return ctx.players.byId((player) => troops(player.id, ctx));
 }
 
 function troops(

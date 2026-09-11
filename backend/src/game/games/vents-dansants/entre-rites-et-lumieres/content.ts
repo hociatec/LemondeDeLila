@@ -1,5 +1,13 @@
-import { freezeGameContent, gameEffects } from '../../../engine/sdk/public-api';
 import type { GameEffectInstruction } from '../../../engine/sdk/public-api';
+import {
+  cardContent,
+  defineGameContent,
+  effectContentSchema,
+  gameEffects,
+  gameInput,
+  rejectContent,
+} from '../../../engine/sdk/public-api';
+import manifest from './manifest.json';
 
 export type RiteFamilyId =
   | 'symboles-sacres'
@@ -7,8 +15,6 @@ export type RiteFamilyId =
   | 'traditions-et-fetes'
   | 'gourmandises-objets'
   | 'nature-saisons';
-
-export type RiteCardType = 'family' | 'special';
 
 export interface RiteFamilyCard {
   id: string;
@@ -27,7 +33,7 @@ export interface RiteSpecialCard {
   effects: readonly GameEffectInstruction[];
 }
 
-export const RITE_SPECIAL_EFFECTS = [
+export const RITE_SPECIAL_EFFECTS = Object.freeze([
   'draw_two_choose_one',
   'draw_and_trigger',
   'collect_from_others',
@@ -38,11 +44,9 @@ export const RITE_SPECIAL_EFFECTS = [
   'reshuffle_cycle',
   'peace_turns',
   'reveal_and_steal',
-] as const;
+] as const);
 export type RiteSpecialEffect = (typeof RITE_SPECIAL_EFFECTS)[number];
 type RawRiteSpecialCard = Omit<RiteSpecialCard, 'effects'>;
-
-export type RiteCardDefinition = RiteFamilyCard | RiteSpecialCard;
 
 const FAMILY_DEFINITIONS: {
   id: RiteFamilyId;
@@ -258,34 +262,71 @@ const createFamilyCards = (): RiteFamilyCard[] => {
   return cards;
 };
 
-export const ENTRE_RITES_FAMILY_CARDS = createFamilyCards();
-export const ENTRE_RITES_SPECIAL_CARDS = SPECIALS;
-export const ENTRE_RITES_DECK: RiteCardDefinition[] = [
-  ...ENTRE_RITES_FAMILY_CARDS,
-  ...ENTRE_RITES_SPECIAL_CARDS,
-];
-export const ENTRE_RITES_CUSTOM_FAMILY_SIZE = FAMILY_DEFINITIONS.reduce<
-  Record<RiteFamilyId, number>
->(
-  (sizes, family) => {
-    sizes[family.id] = family.members.length;
-    return sizes;
-  },
+const idSchema = gameInput.string({ min: 1, max: 128 });
+const nameSchema = gameInput.string({ min: 1, max: 200 });
+const ritesSchema = gameInput.object({
+  cards: gameInput.array(
+    gameInput.union([
+      gameInput.object({
+        id: idSchema,
+        name: nameSchema,
+        type: gameInput.literal('family'),
+        familyId: gameInput.enum([
+          'symboles-sacres',
+          'creatures-de-paques',
+          'traditions-et-fetes',
+          'gourmandises-objets',
+          'nature-saisons',
+        ]),
+        familyName: nameSchema,
+      }),
+      gameInput.object({
+        id: idSchema,
+        name: nameSchema,
+        type: gameInput.literal('special'),
+        description: gameInput.string({ max: 4000 }),
+        effect: gameInput.enum(RITE_SPECIAL_EFFECTS),
+        effects: effectContentSchema({
+          hands: ['players'],
+          effects: [
+            'rites.draw-two',
+            'rites.draw-one',
+            'rites.collect',
+            'rites.resurrect',
+            'rites.free-family',
+            'rites.dawn-cycle',
+            'rites.steal-choice',
+          ],
+        }),
+      }),
+    ]),
+    { min: 1, max: 10000 },
+  ),
+});
+export const ENTRE_RITES_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  { cards: [...createFamilyCards(), ...SPECIALS] },
   {
-    'symboles-sacres': 0,
-    'creatures-de-paques': 0,
-    'traditions-et-fetes': 0,
-    'gourmandises-objets': 0,
-    'nature-saisons': 0,
+    schema: {
+      parse(value: unknown) {
+        const parsed = ritesSchema.parse(value);
+        for (const family of FAMILY_DEFINITIONS) {
+          if (
+            !parsed.cards.some(
+              (card) => card.type === 'family' && card.familyId === family.id,
+            )
+          )
+            rejectContent('Famille sans cartes');
+        }
+        return { cards: cardContent(parsed.cards) };
+      },
+    },
   },
 );
-
-export const ENTRE_RITES_CARD_BY_ID = Object.fromEntries(
-  ENTRE_RITES_DECK.map((card) => [card.id, card]),
+export const ENTRE_RITES_DECK = ENTRE_RITES_GAME_CONTENT.data.cards;
+export const ENTRE_RITES_FAMILY_CARDS = Object.freeze(
+  ENTRE_RITES_DECK.filter((card) => card.type === 'family'),
 );
-
-freezeGameContent(ENTRE_RITES_FAMILY_CARDS);
-freezeGameContent(ENTRE_RITES_SPECIAL_CARDS);
-freezeGameContent(ENTRE_RITES_DECK);
-freezeGameContent(ENTRE_RITES_CUSTOM_FAMILY_SIZE);
-freezeGameContent(ENTRE_RITES_CARD_BY_ID);
+export const ENTRE_RITES_CARD_BY_ID = Object.freeze(
+  Object.fromEntries(ENTRE_RITES_DECK.map((card) => [card.id, card])),
+);

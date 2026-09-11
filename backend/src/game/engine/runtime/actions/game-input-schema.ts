@@ -1,5 +1,9 @@
 import { GamePayloadValidationError } from '../../../core/domain/errors/game-domain.errors';
 import {
+  parseStrictInteger,
+  parseStrictNumber,
+} from '../../../../shared/utils/public-api';
+import {
   cardId as toCardId,
   pawnId as toPawnId,
   playerId as toPlayerId,
@@ -32,6 +36,7 @@ export const gameInput = {
     label: string,
     input: GameInputSchema<TValue>,
   ): GameInputSchema<TValue> {
+    input = captureSchema(input);
     return schema((value, path) => input.parse(value, path), {
       ...input.describe(),
       label: label.trim(),
@@ -39,12 +44,27 @@ export const gameInput = {
   },
 
   string(
-    options: { min?: number; max?: number } = {},
+    options: { min?: number; max?: number; trim?: boolean } = {},
   ): GameInputSchema<string> {
+    options = { ...options };
+    if (
+      options.min !== undefined &&
+      (!Number.isSafeInteger(options.min) || options.min < 0)
+    ) {
+      throw new Error('Invalid string schema minimum');
+    }
+    if (
+      options.max !== undefined &&
+      (!Number.isSafeInteger(options.max) ||
+        options.max < 0 ||
+        options.max > 65_536)
+    ) {
+      throw new Error('Invalid string schema maximum');
+    }
     return schema(
       (value, path) => {
         if (typeof value !== 'string') invalid(path, 'texte attendu');
-        const normalized = value.trim();
+        const normalized = options.trim === false ? value : value.trim();
         if (options.min != null && normalized.length < options.min) {
           invalid(path, `longueur minimale ${options.min}`);
         }
@@ -57,12 +77,31 @@ export const gameInput = {
     );
   },
 
-  number(options: { min?: number; max?: number; integer?: boolean } = {}) {
+  number(
+    options: {
+      min?: number;
+      max?: number;
+      integer?: boolean;
+      coerce?: boolean;
+    } = {},
+  ) {
+    options = { ...options };
+    if (
+      (options.min !== undefined && !Number.isFinite(options.min)) ||
+      (options.max !== undefined && !Number.isFinite(options.max)) ||
+      (options.min !== undefined &&
+        options.max !== undefined &&
+        options.min > options.max)
+    ) {
+      throw new Error('Invalid number schema bounds');
+    }
     return schema<number>(
       (value, path) => {
-        const parsed = typeof value === 'number' ? value : Number(value);
-        if (!Number.isFinite(parsed)) invalid(path, 'nombre attendu');
-        if (options.integer && !Number.isInteger(parsed)) {
+        if (options.coerce === false && typeof value !== 'number') {
+          invalid(path, 'nombre JSON attendu');
+        }
+        const parsed = parseNumber(value, path, options.integer);
+        if (options.integer && !Number.isSafeInteger(parsed)) {
           invalid(path, 'entier attendu');
         }
         if (options.min != null && parsed < options.min) {
@@ -78,10 +117,10 @@ export const gameInput = {
   },
 
   numberEnum<const TValue extends number>(values: readonly TValue[]) {
+    values = [...values];
     return schema<TValue>(
       (candidate, path) => {
-        const parsed =
-          typeof candidate === 'number' ? candidate : Number(candidate);
+        const parsed = parseNumber(candidate, path);
         const matched = values.find((value) => value === parsed);
         if (!Number.isFinite(parsed) || matched == null) {
           invalid(path, `valeur attendue parmi ${values.join(', ')}`);
@@ -102,7 +141,9 @@ export const gameInput = {
     );
   },
 
-  literal<const TValue extends string | number | boolean>(value: TValue) {
+  literal<const TValue extends string | number | boolean | null>(
+    value: TValue,
+  ) {
     return schema<TValue>(
       (candidate, path) => {
         if (candidate !== value) invalid(path, `valeur attendue: ${value}`);
@@ -113,6 +154,7 @@ export const gameInput = {
   },
 
   enum<const TValue extends string>(values: readonly TValue[]) {
+    values = [...values];
     return schema<TValue>(
       (candidate, path) => {
         const matched =
@@ -132,6 +174,20 @@ export const gameInput = {
     item: GameInputSchema<TValue>,
     options: { min?: number; max?: number } = {},
   ) {
+    item = captureSchema(item);
+    options = { ...options };
+    const max = options.max ?? 10_000;
+    if (
+      !Number.isSafeInteger(max) ||
+      max < 0 ||
+      (options.min !== undefined &&
+        (!Number.isSafeInteger(options.min) ||
+          options.min < 0 ||
+          options.min > max))
+    ) {
+      throw new Error('Invalid array schema bounds');
+    }
+    options.max = max;
     return schema<TValue[]>(
       (value, path) => {
         if (!Array.isArray(value)) invalid(path, 'liste attendue');
@@ -151,7 +207,12 @@ export const gameInput = {
 
   object<TShape extends Shape>(
     shape: TShape,
+    options: { unknownKeys?: 'strip' | 'reject' } = {},
   ): GameInputSchema<InferShape<TShape>> {
+    const rejectUnknown = options.unknownKeys === 'reject';
+    const fields = Object.entries(shape).map(
+      ([key, field]) => [key, captureSchema(field)] as const,
+    );
     return schema(
       (value, path) => {
         if (
@@ -162,17 +223,32 @@ export const gameInput = {
           invalid(path, 'objet attendu');
         }
         const source = value as Record<string, unknown>;
+        if (rejectUnknown) {
+          const allowed = new Set(fields.map(([key]) => key));
+          for (const key of Object.keys(source)) {
+            if (!allowed.has(key)) invalid(`${path}.${key}`, 'champ inconnu');
+          }
+        }
         const parsed: Record<string, unknown> = {};
-        for (const [key, field] of Object.entries(shape)) {
+        for (const [key, field] of fields) {
           const fieldValue = field.parse(source[key], `${path}.${key}`);
-          if (fieldValue !== undefined) parsed[key] = fieldValue;
+          if (fieldValue === undefined) continue;
+          if (key === '__proto__') {
+            Object.defineProperty(parsed, key, {
+              value: fieldValue,
+              enumerable: true,
+              writable: true,
+              configurable: true,
+            });
+          } else parsed[key] = fieldValue;
         }
         return parsed as InferShape<TShape>;
       },
       {
         type: 'object',
+        ...(rejectUnknown ? { additionalProperties: false } : {}),
         properties: Object.fromEntries(
-          Object.entries(shape).map(([key, field]) => [key, field.describe()]),
+          fields.map(([key, field]) => [key, field.describe()]),
         ),
       },
     );
@@ -181,6 +257,7 @@ export const gameInput = {
   optional<TValue>(
     inner: GameInputSchema<TValue>,
   ): GameInputSchema<TValue | undefined> {
+    inner = captureSchema(inner);
     return schema(
       (value, path) =>
         value === undefined ? undefined : inner.parse(value, path),
@@ -191,9 +268,10 @@ export const gameInput = {
   union<const TSchemas extends readonly GameInputSchema<unknown>[]>(
     schemas: TSchemas,
   ): GameInputSchema<InferSchema<TSchemas[number]>> {
+    const candidates = schemas.map(captureSchema);
     return schema(
       (value, path) => {
-        for (const candidate of schemas) {
+        for (const candidate of candidates) {
           try {
             return candidate.parse(value, path) as InferSchema<
               TSchemas[number]
@@ -204,7 +282,7 @@ export const gameInput = {
         }
         return invalid(path, 'aucune variante valide');
       },
-      { oneOf: schemas.map((candidate) => candidate.describe()) },
+      { oneOf: candidates.map((candidate) => candidate.describe()) },
     );
   },
 
@@ -234,6 +312,7 @@ function taggedMap<TValue, TMapped>(
   format: string,
   map: (value: TValue) => TMapped,
 ): GameInputSchema<TMapped> {
+  input = captureSchema(input);
   return schema((value, path) => map(input.parse(value, path)), {
     ...input.describe(),
     format,
@@ -244,12 +323,25 @@ function schema<T>(
   parse: (value: unknown, path: string) => T,
   description: Record<string, unknown>,
 ): GameInputSchema<T> {
-  return {
-    parse: (value, path = 'payload') => parse(value, path),
-    describe: () => structuredClone(description),
-  };
+  const descriptor = structuredClone(description);
+  return Object.freeze({
+    parse: (value: unknown, path = 'payload') => parse(value, path),
+    describe: () => structuredClone(descriptor),
+  });
+}
+
+export function captureSchema<T>(
+  input: GameInputSchema<T>,
+): GameInputSchema<T> {
+  return schema(input.parse.bind(input), input.describe());
 }
 
 function invalid(path: string, reason: string): never {
   throw new GamePayloadValidationError(`${path}: ${reason}`);
+}
+
+function parseNumber(value: unknown, path: string, integer = false): number {
+  const parsed = integer ? parseStrictInteger(value) : parseStrictNumber(value);
+  if (parsed === null) invalid(path, 'nombre attendu');
+  return parsed;
 }

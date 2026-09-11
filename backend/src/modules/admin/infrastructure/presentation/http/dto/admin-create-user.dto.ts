@@ -1,5 +1,6 @@
 import {
   IsArray,
+  ArrayMaxSize,
   IsEmail,
   IsOptional,
   IsString,
@@ -14,6 +15,7 @@ import {
 
 export class AdminCreateUserDto {
   @IsEmail()
+  @MaxLength(320)
   email!: string;
 
   @IsString()
@@ -33,10 +35,14 @@ export class AdminCreateUserDto {
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(32)
   @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  @MinLength(1, { each: true })
   roles?: string[];
 
   @IsOptional()
   @IsString()
+  @MaxLength(2048)
   avatar?: string | null;
 }

@@ -7,8 +7,10 @@ import { RoomAccessService } from '../../application/services/membership/room-ac
 import { RoomLifecycleFacadeService } from '../../application/services/lifecycle/room-lifecycle-facade.service';
 import { RoomMembershipFacadeService } from '../../application/services/membership/room-membership-facade.service';
 import { RoomStateService } from '../../application/services/state/room-state.service';
+import type { RoomCreateCommand } from '../../application/models/room-create-command';
 import type { Room } from '../persistence/typeorm/entities/room.entity';
-import type { RoomRecord } from '../../application/contracts/room-record.model';
+import type { RoomRecord } from '../../application/models/room-record.model';
+import type { RoomVaultSnapshotSource } from '../../application/contracts/room-vault-snapshot-source';
 
 @Injectable()
 export class RoomVaultAdapter implements RoomVaultPort {
@@ -19,8 +21,33 @@ export class RoomVaultAdapter implements RoomVaultPort {
     private readonly roomState: RoomStateService,
   ) {}
 
-  getRoomPayload(roomId: number) {
-    return this.roomState.getRoomPayload(roomId);
+  async getRoomPayload(roomId: number): Promise<RoomVaultSnapshotSource> {
+    const { room } = await this.roomState.getRoomPayload(roomId);
+    return {
+      schemaVersion: 1,
+      room: {
+        id: room.id,
+        name: room.name,
+        gameType: room.gameType,
+        status: room.status,
+        startedAt:
+          room.startedAt instanceof Date
+            ? room.startedAt.toISOString()
+            : (room.startedAt ?? null),
+        maxPlayers: room.maxPlayers,
+        isPrivate: room.isPrivate,
+        tableAmbienceSoundId: room.tableAmbienceSoundId ?? null,
+        owner: room.owner ? { id: room.owner.id } : null,
+        players: room.players
+          .slice(0, 64)
+          .map(({ id, username }) => ({ id, username })),
+        spectators: room.spectators.slice(0, 64).map(({ id, username }) => ({
+          id,
+          username,
+        })),
+        bots: room.bots.slice(0, 64).map(({ id, name }) => ({ id, name })),
+      },
+    };
   }
 
   async requireRoomForOwnerAction(roomId: number, userId: number) {
@@ -39,22 +66,8 @@ export class RoomVaultAdapter implements RoomVaultPort {
     return this.membership.findLatestActiveRoomForUser(userId);
   }
 
-  async createRoom(
-    userId: number,
-    gameType: string,
-    name?: string | null,
-    maxPlayers?: number | null,
-    isPrivate = false,
-    invalidateCache = true,
-  ) {
-    const room = await this.membership.createRoom(
-      userId,
-      gameType,
-      name,
-      maxPlayers,
-      isPrivate,
-      invalidateCache,
-    );
+  async createRoom(command: RoomCreateCommand) {
+    const room = await this.membership.createRoom(command);
     return this.toRecord(room);
   }
 

@@ -1,8 +1,8 @@
-import type { EffectCondition, EffectTarget } from './effects-kit';
+import type { EffectCondition, EffectTarget } from '../contracts/effect-ir';
 import type {
   GameEffectValidationReferences,
   ValidationFailure,
-} from './game-effect-definition-validator';
+} from '../contracts/effect-validation';
 
 export function validateEffectCondition(
   condition: EffectCondition,
@@ -30,7 +30,12 @@ export function validateEffectCondition(
   }
   validateEffectTarget(condition.target, `${path}.target`, fail);
   if (condition.kind === 'has-resource') {
-    if (!condition.resource.trim()) fail(`${path}.resource`, 'ID vide');
+    requireResourceReference(
+      references,
+      condition.resource,
+      `${path}.resource`,
+      fail,
+    );
     requireFinite(condition.amount, `${path}.amount`, fail);
   } else if (condition.kind === 'has-status') {
     if (!condition.status.trim()) fail(`${path}.status`, 'ID vide');
@@ -41,6 +46,14 @@ export function validateEffectCondition(
       `${path}.handId`,
       fail,
     );
+    if (condition.cardId != null)
+      requireCardReference(
+        references,
+        condition.handId,
+        condition.cardId,
+        `${path}.cardId`,
+        fail,
+      );
   } else if (condition.kind === 'track-position') {
     requireReference(
       references.tracks,
@@ -49,9 +62,60 @@ export function validateEffectCondition(
       fail,
     );
     for (const value of [condition.position, condition.min, condition.max]) {
-      if (value != null) requireFinite(value, path, fail);
+      if (value != null)
+        requireTrackPosition(references, condition.trackId, value, path, fail);
     }
+    if (
+      condition.min != null &&
+      condition.max != null &&
+      condition.min > condition.max
+    )
+      fail(path, 'intervalle de positions inversé');
+  } else {
+    fail(path, 'condition inconnue');
   }
+}
+
+export function requireResourceReference(
+  references: GameEffectValidationReferences,
+  id: string,
+  path: string,
+  fail: ValidationFailure,
+): void {
+  if (typeof id !== 'string' || !id.trim()) fail(path, 'ID vide');
+  if (references.resources)
+    requireReference(references.resources, id, path, fail);
+}
+
+export function requireCardReference(
+  references: GameEffectValidationReferences,
+  handId: string,
+  cardId: string,
+  path: string,
+  fail: ValidationFailure,
+): void {
+  if (typeof cardId !== 'string' || !cardId.trim()) fail(path, 'ID vide');
+  if (!references.cardIdsByDeck || !references.handDecks) return;
+  const deck = references.handDecks.get(handId);
+  const cards = deck == null ? undefined : references.cardIdsByDeck.get(deck);
+  if (!cards?.has(cardId))
+    fail(path, `carte inconnue « ${cardId} » dans la main « ${handId} »`);
+}
+
+export function requireTrackPosition(
+  references: GameEffectValidationReferences,
+  trackId: string,
+  position: number,
+  path: string,
+  fail: ValidationFailure,
+): void {
+  const spaces = references.trackSpaces?.get(trackId);
+  if (
+    !Number.isSafeInteger(position) ||
+    position < 0 ||
+    (spaces != null && position >= spaces)
+  )
+    fail(path, `case inexistante « ${position} » sur la piste « ${trackId} »`);
 }
 
 export function validateEffectTarget(

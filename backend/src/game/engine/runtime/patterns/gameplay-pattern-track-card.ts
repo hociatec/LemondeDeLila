@@ -1,21 +1,22 @@
-import { type CardValue } from '../cards/cards-kit';
-import type { CardsSchemaDefinition } from '../cards/typed-cards';
-import type { GameComponentDefinition } from '../definitions/component-kit';
-import { diceKit } from '../kits/dice-kit';
 import type {
   GameLifecycleHooks,
   TurnLifecycleInput,
-} from '../lifecycle/game-lifecycle-hooks';
-import { movement } from '../kits/movement-kit';
-import type { GameEffectInstruction } from '../effects/effects-kit';
-import { pawns, type PawnDefinition } from '../kits/pawn-kit';
-import { quiz, type QuizQuestion } from '../kits/quiz-kit';
-import { clockwise } from '../kits/turn-kit';
+  CardValue,
+  CardsSchemaDefinition,
+  GameEffectInstruction,
+  PawnDefinition,
+  QuizQuestion,
+} from './pattern-capabilities';
 import {
-  eventTrackTurn,
-  type EventTrackOptions,
-} from '../recipes/gameplay-recipes';
-import { definePattern, type GamePattern } from './gameplay-pattern-core';
+  diceKit,
+  movement,
+  pawns,
+  quiz,
+  clockwise,
+} from './pattern-capabilities';
+import { eventTrackTurn, type EventTrackOptions } from './pattern-capabilities';
+import { definePattern } from './gameplay-pattern-core';
+import { type GamePattern } from '../contracts/pattern-definition';
 
 export function eventTrackGame<TState extends object, TTile>(
   options: EventTrackOptions<TState, TTile> & {
@@ -23,7 +24,16 @@ export function eventTrackGame<TState extends object, TTile>(
     spaces?: number;
     overshoot?: Parameters<typeof movement.track>[0]['overshoot'];
   },
-): GamePattern<TState> {
+): GamePattern<
+  TState,
+  'movement.track' | 'dice.set',
+  | 'race'
+  | 'track'
+  | 'dice'
+  | 'tile-resolution'
+  | 'event-deck'
+  | 'effect-pipeline'
+> {
   const actionType = options.actionType ?? 'roll';
   return definePattern({
     id: `event-track-game:${options.trackId}:${actionType}`,
@@ -65,7 +75,11 @@ export function raceGame<TState extends object>(options: {
   diceCount?: number;
   diceSides?: number;
   winOnFinish?: boolean | string;
-}): GamePattern<TState> {
+}): GamePattern<
+  TState,
+  'movement.track' | 'dice.set',
+  'race' | 'track' | 'dice'
+> {
   return definePattern({
     id: `race-game:${options.trackId ?? 'main'}`,
     mechanics: ['race', 'track', 'dice'],
@@ -123,7 +137,11 @@ export function quizRace<TState extends object>(options: {
   quizId: string;
   questions: readonly QuizQuestion[];
   shuffleQuestions?: boolean;
-}): GamePattern<TState> {
+}): GamePattern<
+  TState,
+  'movement.track' | 'dice.set' | 'quiz.bank',
+  'race' | 'track' | 'dice' | 'quiz'
+> {
   const race = raceGame<TState>(options);
   return definePattern({
     ...race,
@@ -154,7 +172,11 @@ export function pawnRace<TState extends object>(options: {
   diceId?: string;
   diceCount?: number;
   diceSides?: number;
-}): GamePattern<TState> {
+}): GamePattern<
+  TState,
+  'pawn.set' | 'dice.set',
+  'race' | 'pawns' | 'dice' | 'pawn-selection'
+> {
   return definePattern({
     id: `pawn-race:${options.pawnSetId}`,
     mechanics: ['race', 'pawns', 'dice', 'pawn-selection'],
@@ -188,9 +210,13 @@ export function cardGame<TState extends object>(options: {
   handId: string;
   drawAtTurnStart?:
     number | NonNullable<GameLifecycleHooks<TState>['beforeTurn']>;
-}): GamePattern<TState> {
+}): GamePattern<
+  TState,
+  'cards.deck' | 'cards.hands' | 'cards.zone',
+  'cards' | 'hands' | 'deck-lifecycle'
+> {
   const { deckId, handId } = options;
-  const components: GameComponentDefinition[] = [...options.schema.components];
+  const components = [...options.schema.components];
   const beforeTurn =
     typeof options.drawAtTurnStart === 'function'
       ? options.drawAtTurnStart

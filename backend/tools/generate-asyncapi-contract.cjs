@@ -98,7 +98,7 @@ if (process.argv.includes('--write')) {
   console.log(`asyncapi: ${events.length} événements écrits`);
 } else if (
   !fs.existsSync(output) ||
-  fs.readFileSync(output, 'utf8') !== serialized
+  fs.readFileSync(output, 'utf8').replace(/\r\n/g, '\n') !== serialized
 ) {
   console.error(
     'asyncapi: contrat obsolète; exécuter npm run contracts:ws:write',

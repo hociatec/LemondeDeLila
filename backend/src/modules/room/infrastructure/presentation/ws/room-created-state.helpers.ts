@@ -1,7 +1,13 @@
+import { presentationTimestamp } from '../../../../../platform/serialization/public-api';
 import type {
   RoomPayload,
   RoomPlayer,
-} from '../../../application/contracts/room-payload.model';
+} from '../../../application/models/room-payload.model';
+import {
+  asGameId,
+  asRoomId,
+  asUserId,
+} from '../../../../../shared/interfaces/public-api';
 
 type RoomCreatedManifest =
   | {
@@ -35,14 +41,14 @@ export function buildCreatedRoomState(params: {
 }): RoomPayload {
   const { manifest, room, userId, username } = params;
   const player = {
-    id: userId,
+    id: asUserId(userId),
     username,
   } satisfies RoomPlayer;
 
   return {
     manifest: manifest
       ? {
-          id: manifest.id,
+          id: asGameId(manifest.id),
           name: manifest.name,
           minPlayers: manifest.minPlayers ?? 2,
           maxPlayers: manifest.maxPlayers ?? room.maxPlayers,
@@ -51,27 +57,29 @@ export function buildCreatedRoomState(params: {
         }
       : null,
     room: {
-      id: room.id,
+      id: asRoomId(room.id),
       name: room.name,
       isPrivate: room.isPrivate,
       maxPlayers: room.maxPlayers,
       status: room.status,
-      gameType: room.gameType,
+      gameType: asGameId(room.gameType),
       startedAt: room.startedAt ? room.startedAt.toISOString() : null,
       // The setup game state is deliberately attached to the next run.  Keep
       // this field in the eagerly primed payload too; otherwise game.join sees
       // a different room contract until the cache is rebuilt from storage.
       runId:
-        typeof room.runId === 'number' && Number.isFinite(room.runId)
+        typeof room.runId === 'number' &&
+        Number.isSafeInteger(room.runId) &&
+        room.runId >= 0
           ? room.runId
           : 0,
       tableAmbienceSoundId: room.tableAmbienceSoundId ?? null,
       counts: { players: 1, spectators: 0 },
-      owner: { id: userId, username },
+      owner: { id: asUserId(userId), username },
       players: [player],
       spectators: [],
       bots: [],
     },
-    generatedAt: new Date().toISOString(),
+    generatedAt: presentationTimestamp(),
   };
 }

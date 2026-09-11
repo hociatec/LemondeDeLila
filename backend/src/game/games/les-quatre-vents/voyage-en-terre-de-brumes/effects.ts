@@ -1,3 +1,4 @@
+import type { VoyageTargetEffect } from './types';
 import {
   defineEffect,
   gameInput,
@@ -9,7 +10,6 @@ import {
   applyVoyageTarget,
   loseRandomCard,
   scheduleTargetEffect,
-  type VoyageTargetEffect,
 } from './rules';
 import type { VoyageCollectionKind, VoyageState } from './types';
 
@@ -47,12 +47,10 @@ export const VOYAGE_EFFECTS = {
     input: gameInput.object({}),
     apply: ({ actorPlayerId, ctx }) => {
       if (actorPlayerId == null) return;
-      const targetId = ctx.players
-        .otherIds(actorPlayerId)
-        .sort(
-          (left, right) =>
-            positionOf(ctx, TRACK, left) - positionOf(ctx, TRACK, right),
-        )[0];
+      const targetId = ctx.ranking.rank(ctx.players.otherIds(actorPlayerId), {
+        value: (id) => positionOf(ctx, TRACK, id),
+        direction: 'asc',
+      })[0]?.playerId;
       if (targetId != null) ctx.movement.swap(TRACK, actorPlayerId, targetId);
     },
   }),

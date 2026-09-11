@@ -2,25 +2,25 @@ import type {
   GameActionCandidatePage,
   GameActionCandidateQuery,
   GameRuntimeDescriptor,
-} from '../../../core/application/contracts/game-runtime.interface';
-import type { GameExecutionContext } from '../../../core/application/contracts/game-execution-context.model';
+} from '../../../core/application/ports/game-runtime.port';
+import type { GameExecutionContext } from '../../../core/application/models/game-execution-context.model';
 import type {
   GameSingleActionDto,
   GameStateWithActions,
-} from '../../../core/application/contracts/game-action.model';
+} from '../../../core/application/models/game-action.model';
 import type {
-  GameStateEntity,
+  GameState,
   PendingState,
-  PlayerStateEntity,
-} from '../../../core/application/contracts/game-state.model';
+  PlayerState,
+} from '../../../core/application/models/game-state.model';
 import { DeclarativeChoiceRuntime } from '../choices/declarative-choice-runtime';
+import type { CompiledGameDefinition } from '../contracts/compiled-game-definition';
+import type { DeclarativeState } from '../state/declarative-state';
 import type {
-  CompiledGameDefinition,
-  DeclarativeState,
   GameActionMap,
   GameActionShape,
-} from '../definitions/game-definition';
-import type { GameContext } from '../game-rule-context';
+} from '../contracts/author-rule-contracts';
+import type { GameContext } from '../definitions/game-author-context';
 import { projectGameSystemView } from './game-system-view';
 import { asRecord } from '../actions/runtime-game-action';
 import {
@@ -49,9 +49,7 @@ export abstract class DeclarativeGameQueries<
     TState,
     TActions
   >;
-  protected abstract runtimeState(
-    state: GameStateEntity,
-  ): DeclarativeState<TState>;
+  protected abstract runtimeState(state: GameState): DeclarativeState<TState>;
   protected abstract context(
     state: DeclarativeState<TState>,
     actorId: number | null,
@@ -61,22 +59,24 @@ export abstract class DeclarativeGameQueries<
   protected abstract requireActor(
     runtime: DeclarativeState<TState>,
     playerId: number | null,
-  ): PlayerStateEntity;
+  ): PlayerState;
   protected abstract isActionAvailable(
     runtime: DeclarativeState<TState>,
-    actor: PlayerStateEntity,
+    actor: PlayerState,
     type: string,
     context: GameContext<TState>,
   ): boolean;
   abstract validateAction(
-    state: GameStateEntity,
+    state: GameState,
     action: GameSingleActionDto,
     playerId?: number | null,
+    execution?: GameExecutionContext,
   ): GameSingleActionDto;
 
   getAvailableActions(
-    state: GameStateEntity,
+    state: GameState,
     playerId: number,
+    execution?: GameExecutionContext,
   ): GameSingleActionDto[] {
     const runtime = this.runtimeState(state);
     const actor = (runtime.players ?? []).find(
@@ -85,7 +85,7 @@ export abstract class DeclarativeGameQueries<
     if (!actor || String(runtime.status).toLowerCase() === 'finished')
       return [];
     if (runtime.pending) return this.choices.actions(runtime, actor);
-    const context = this.context(runtime, actor.id);
+    const context = this.context(runtime, actor.id, execution);
     if (this.definition.config && !runtime.engine.configuration.complete) {
       return canConfigureGame(
         this.definition.config,
@@ -122,14 +122,15 @@ export abstract class DeclarativeGameQueries<
   }
 
   getActionCandidates(
-    state: GameStateEntity,
+    state: GameState,
     playerId: number,
     actionType: string,
     options: GameActionCandidateQuery = {},
+    execution?: GameExecutionContext,
   ): GameActionCandidatePage {
     const runtime = this.runtimeState(state);
     const actor = this.requireActor(runtime, playerId);
-    const context = this.context(runtime, actor.id);
+    const context = this.context(runtime, actor.id, execution);
     const definition = this.actionDefinition(actionType);
     const offset = Math.max(0, Math.trunc(options.offset ?? 0));
     const limit = Math.max(1, Math.min(200, Math.trunc(options.limit ?? 50)));
@@ -167,13 +168,14 @@ export abstract class DeclarativeGameQueries<
   }
 
   exposeStateForUser(
-    state: GameStateEntity,
+    state: GameState,
     userId: number | null,
+    execution?: GameExecutionContext,
   ): GameStateWithActions {
     const runtime = this.runtimeState(state);
     const actor =
       (runtime.players ?? []).find((player) => player.id === userId) ?? null;
-    const context = this.context(runtime, actor?.id ?? null);
+    const context = this.context(runtime, actor?.id ?? null, execution);
     const gameView = this.definition.viewExtension
       ? this.definition.viewExtension({
           state: runtime.game,
@@ -192,20 +194,29 @@ export abstract class DeclarativeGameQueries<
     return {
       ...system,
       game: gameView,
+      gameContract: {
+        stateVersion: this.definition.stateVersion,
+        rulesVersion: this.definition.rulesVersion,
+        contentVersion: this.definition.contentVersion,
+      },
       actionCatalog: describeGameDefinition(this.definition).actions,
       timers: projectScheduler(
         runtime.engine.scheduler,
         actor?.id ?? null,
         context.clock.nowMs(),
       ),
-      actions: userId == null ? [] : this.getAvailableActions(runtime, userId),
+      actions:
+        userId == null
+          ? []
+          : this.getAvailableActions(runtime, userId, execution),
       pending,
     };
   }
 
   getBotActions(
-    state: GameStateEntity,
+    state: GameState,
     botPlayerId: number,
+    execution?: GameExecutionContext,
   ): GameSingleActionDto[] | null {
     const runtime = this.runtimeState(state);
     const actor = (runtime.players ?? []).find(
@@ -214,13 +225,13 @@ export abstract class DeclarativeGameQueries<
     if (!actor) return null;
     const decisionRuntime = structuredClone(runtime);
     const decisionActor = this.requireActor(decisionRuntime, botPlayerId);
-    const context = this.context(decisionRuntime, botPlayerId);
+    const context = this.context(decisionRuntime, botPlayerId, execution);
     const pending = this.choices.actions(decisionRuntime, decisionActor);
     if (pending.length > 0) {
       const selected = randomLegalAction(pending, context.random);
       return selected ? [selected] : null;
     }
-    const available = this.getAvailableActions(runtime, botPlayerId);
+    const available = this.getAvailableActions(runtime, botPlayerId, execution);
     if (available.length === 0) return null;
     if (
       available.length === 1 &&
@@ -231,6 +242,7 @@ export abstract class DeclarativeGameQueries<
           runtime,
           { type: GAME_CONFIGURE_ACTION, payload: {} },
           botPlayerId,
+          execution,
         ),
       ];
     }
@@ -242,6 +254,7 @@ export abstract class DeclarativeGameQueries<
               runtime,
               { ...selected, meta: { actorId: botPlayerId } },
               botPlayerId,
+              execution,
             ),
           ]
         : null;
@@ -263,10 +276,12 @@ export abstract class DeclarativeGameQueries<
         : { payload: toActionPayload(selected.payload) }),
       meta: { actorId: botPlayerId },
     };
-    return [this.validateAction(runtime, selectedAction, botPlayerId)];
+    return [
+      this.validateAction(runtime, selectedAction, botPlayerId, execution),
+    ];
   }
 
-  getAutomaticActions(state: GameStateEntity) {
+  getAutomaticActions(state: GameState) {
     const runtime = this.runtimeState(state);
     const data = asRecord(runtime.pending?.data);
     const rawChoiceDeadline = data.deadlineMs;
@@ -374,6 +389,7 @@ function projectPending(
   };
   if (!expected) return common;
   const data = pending.data ? structuredClone(pending.data) : undefined;
+  if (data) delete data.continuationData;
   const kind = typeof data?.kind === 'string' ? data.kind : '';
   const options = Array.isArray(data?.options) ? data.options : [];
   if (

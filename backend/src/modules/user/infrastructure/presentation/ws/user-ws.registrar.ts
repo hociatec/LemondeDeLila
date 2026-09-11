@@ -22,8 +22,8 @@ export class UserWsRegistrar implements OnModuleInit {
     this.registry.register(WS_EVENTS.auth.refresh, (_, payload) =>
       this.auth.refresh(payload),
     );
-    this.registry.register(WS_EVENTS.auth.logout, (_, payload) =>
-      this.auth.logout(payload),
+    this.registry.register(WS_EVENTS.auth.logout, (session, payload) =>
+      this.auth.logout(session, payload),
     );
     this.registry.register(WS_EVENTS.users.list, (session, payload) =>
       this.users.list(session, payload),

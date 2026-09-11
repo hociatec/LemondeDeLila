@@ -10,7 +10,7 @@ import {
   type SoundManifestEntry,
   TableAmbienceDefinition,
   TableAmbienceSoundKey,
-} from '../../application/contracts/sound-manifest.record';
+} from '../../application/read-models/sound-manifest.record';
 import { stringOrEmpty } from '@shared/utils/public-api';
 
 export type SoundErrorLike = {
@@ -25,6 +25,7 @@ export function decodeSoundManifest(value: unknown): SoundManifest | null {
   if (
     !isRecord(value) ||
     typeof value.updatedAt !== 'string' ||
+    value.updatedAt.length > 64 ||
     !isRecord(value.sounds)
   ) {
     return null;
@@ -48,11 +49,15 @@ function isSoundManifestEntry(
     value.soundId === expectedKey &&
     SOUND_KEY_SET.has(expectedKey) &&
     typeof value.sha256 === 'string' &&
+    /^[a-f0-9]{64}$/i.test(value.sha256) &&
     typeof value.bytes === 'number' &&
-    Number.isFinite(value.bytes) &&
+    Number.isSafeInteger(value.bytes) &&
+    value.bytes <= 250 * 1024 * 1024 &&
     value.bytes >= 0 &&
     typeof value.uploadedAt === 'string' &&
-    typeof value.url === 'string'
+    value.uploadedAt.length <= 64 &&
+    typeof value.url === 'string' &&
+    value.url.length <= 1024
   );
 }
 
@@ -61,7 +66,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function resolveSoundsDataRoot(): string {
-  const override = readEnvironment('LMDL_SOUNDS_DIR').trim();
+  const override = readEnvironment('LMDL_SOUNDS_DIR').trim().slice(0, 4_096);
   if (override) return path.resolve(override);
 
   const persistentRoot =
@@ -71,7 +76,7 @@ export function resolveSoundsDataRoot(): string {
             readEnvironment(
               'PROGRAMDATA',
               path.join(homedir(), 'AppData', 'Local'),
-            ),
+            ).slice(0, 4_096),
           ),
           'lemonde-de-lila',
           'sounds',
@@ -149,7 +154,12 @@ export function toTableAmbienceDefinition(
   const soundId = normalizeKey(stringOrEmpty(record.soundId));
   const name = stringOrEmpty(record.name).trim();
 
-  if (!soundId || !name || typeof record.enabled !== 'boolean') {
+  if (
+    !soundId ||
+    !name ||
+    name.length > 255 ||
+    typeof record.enabled !== 'boolean'
+  ) {
     return null;
   }
 

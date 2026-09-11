@@ -5,6 +5,12 @@ import {
 } from './version.utils';
 
 describe('version utils', () => {
+  it.each(['1..2', '.1', '1.', '1.2..3'])(
+    'rejects an empty version component in %s',
+    (version) => {
+      expect(parseVersion(version)).toBeNull();
+    },
+  );
   it('keeps build components independent above 999', () => {
     expect(isVersionLower('1.2.1000.0', '1.3.0.0')).toBe(true);
     expect(isVersionGreater('1.2.1000.1', '1.2.1000.0')).toBe(true);

@@ -4,16 +4,18 @@ import {
 } from '@nestjs/common';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
+import { bestEffort } from '../../../../platform/observability/public-api';
 import {
-  bestEffort,
+  assertPathInside,
   writeFileAtomic,
-} from '../../../../shared/utils/public-api';
+} from '../../../../platform/filesystem/public-api';
 import type {
   SoundKey,
   SoundManifest,
   SoundManifestEntry,
-} from '../../application/contracts/sound-manifest.record';
+} from '../../application/read-models/sound-manifest.record';
 import {
   detectSoundSilence,
   probeSoundDurationSeconds,
@@ -23,6 +25,7 @@ import {
   audioToolExecutionError,
   isAudioProcessSpawnError,
 } from './sounds-audio-process';
+import { assertSoundMime } from './sounds-media-validation';
 
 type SoundsUploadDependencies = {
   dataRoot: string;
@@ -55,23 +58,39 @@ export class SoundsUploadManager {
     soundIdRaw: string,
     tempFilePath: string,
     originalName?: string,
+    mimeType?: string,
   ): Promise<SoundManifestEntry> {
     const soundId = this.dependencies.normalizeSoundKey(soundIdRaw);
-    const isWavInput = await this.validateInput(tempFilePath, originalName);
-    const encoded = await this.encodeAndValidate(tempFilePath, isWavInput);
-    const entry = await this.persist(soundId, encoded);
-    await this.dependencies.removeUnusedFiles(soundId, encoded.sha256);
-    await this.dependencies.notifyUpdated(entry, entry.uploadedAt);
-    return entry;
+    const safeTempFilePath = this.assertTemporaryFilePath(tempFilePath);
+    try {
+      const isWavInput = await this.validateInput(
+        safeTempFilePath,
+        originalName,
+        mimeType,
+      );
+      const encoded = await this.encodeAndValidate(
+        safeTempFilePath,
+        isWavInput,
+      );
+      const entry = await this.persist(soundId, encoded);
+      await this.dependencies.removeUnusedFiles(soundId, encoded.sha256);
+      await this.dependencies.notifyUpdated(entry, entry.uploadedAt);
+      return entry;
+    } finally {
+      await bestEffort(
+        fs.promises.rm(safeTempFilePath, { force: true }),
+        'nettoyage du fichier audio temporaire',
+      );
+    }
   }
 
   private async validateInput(
     tempFilePath: string,
     originalName?: string,
+    mimeType?: string,
   ): Promise<boolean> {
-    if (!tempFilePath || !fs.existsSync(tempFilePath)) {
-      throw new BadRequestException('Fichier manquant.');
-    }
+    const stat = await fs.promises.lstat(tempFilePath).catch(() => null);
+    if (!stat?.isFile()) throw new BadRequestException('Fichier manquant.');
     const extension = path.extname(originalName || tempFilePath).toLowerCase();
     if (!['.mp3', '.wav', '.wave'].includes(extension)) {
       throw new BadRequestException(
@@ -79,14 +98,24 @@ export class SoundsUploadManager {
       );
     }
     await this.assertValidSize(tempFilePath, '');
+    assertSoundMime(extension, mimeType);
     const duration = await probeSoundDurationSeconds(
       tempFilePath,
       this.dependencies.warn,
+      extension,
     );
     if (duration < MIN_SOUND_DURATION_SECONDS) {
       throw new BadRequestException('Son trop court (min 200ms).');
     }
     return extension === '.wav' || extension === '.wave';
+  }
+
+  private assertTemporaryFilePath(input: string): string {
+    try {
+      return assertPathInside(os.tmpdir(), input);
+    } catch {
+      throw new BadRequestException('Fichier temporaire invalide.');
+    }
   }
 
   private async encodeAndValidate(

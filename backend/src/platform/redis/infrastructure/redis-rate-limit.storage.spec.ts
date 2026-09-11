@@ -4,6 +4,26 @@ import { RedisClientFactory } from './redis-client.factory';
 import { RedisRateLimitStorage } from './redis-rate-limit.storage';
 
 describe('RedisRateLimitStorage', () => {
+  it.each([
+    { response: null },
+    { response: [] },
+    { response: [1, 10, 2, 0] },
+    { response: [NaN, 10, 0, 0] },
+    { response: [-1, 10, 0, 0] },
+    { response: ['1', 10, 0, 0] },
+  ])('rejects a malformed Redis response: %j', async ({ response }) => {
+    const config = {
+      get: () => 'redis://127.0.0.1:6379/4',
+    } as unknown as ConfigService;
+    const factory = {
+      create: () => ({ eval: async () => response }),
+    } as unknown as RedisClientFactory;
+    const storage = new RedisRateLimitStorage(config, factory);
+    await expect(storage.increment('key', 1000, 2, 1000, 'ws')).rejects.toThrow(
+      'Invalid Redis',
+    );
+  });
+
   it('maps the atomic Redis response to the throttler contract', async () => {
     const client = {
       eval: jest.fn(async () => [3, 1500, 1, 900]),

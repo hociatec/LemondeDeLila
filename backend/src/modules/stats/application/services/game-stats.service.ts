@@ -1,11 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
+import {
+  businessMsToDate,
+  compareCanonicalText,
+} from '@shared/utils/public-api';
 import { CatalogService } from '../../../catalog/public-api';
-import type { GameStateEntity } from '../../../../game/public-api';
+import type { GameState } from '../../../../game/public-api';
 import { isUniqueConstraintViolation } from '../../../../platform/database/public-api';
 import { GameStatsGameTypeRequiredError } from '../../domain/errors/game-stats-domain.errors';
-import { GameMatchOutcome } from '../contracts/game-match-player.model';
-import type { GameMatchRecord } from '../contracts/game-match.model';
+import { GameMatchOutcome } from '../models/game-match-player.model';
+import type { GameMatchRecord } from '../models/game-match.model';
 import {
   GAME_MATCH_REPOSITORY,
   type GameMatchRepository,
@@ -44,6 +52,7 @@ export class GameStatsService {
     @Inject(GAME_MATCH_REPOSITORY)
     private readonly statsRepo: GameMatchRepository,
     private readonly catalog: CatalogService,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async startMatch(params: {
@@ -53,15 +62,32 @@ export class GameStatsService {
     botsCount: number;
   }): Promise<GameMatchRecord> {
     const gameType = (params.gameType ?? '').trim();
-    if (!gameType) {
+    if (!gameType || gameType.length > 128) {
       throw new GameStatsGameTypeRequiredError();
     }
 
     // Fermer tout match actif de la room (robustesse).
     await this.closeActiveMatch(params.roomId, 'restart');
 
+    if (
+      !Number.isSafeInteger(params.roomId) ||
+      params.roomId <= 0 ||
+      !Number.isSafeInteger(params.botsCount) ||
+      params.botsCount < 0 ||
+      params.botsCount > 64
+    ) {
+      throw new RangeError('Invalid match participant counts');
+    }
     const humans = [
-      ...new Map(params.humans.map((human) => [human.id, human])).values(),
+      ...new Map(
+        params.humans
+          .slice(0, 64)
+          .filter((human) => Number.isSafeInteger(human.id) && human.id > 0)
+          .map((human) => [
+            human.id,
+            { ...human, username: String(human.username).slice(0, 255) },
+          ]),
+      ).values(),
     ];
     try {
       return await this.statsRepo.createMatchWithPlayers({
@@ -98,7 +124,7 @@ export class GameStatsService {
       return;
     }
     row.outcome = 'quit';
-    row.leftAt = row.leftAt ?? new Date();
+    row.leftAt = row.leftAt ?? businessMsToDate(this.now());
     await this.statsRepo.savePlayer(row);
   }
 
@@ -106,10 +132,7 @@ export class GameStatsService {
     await this.closeActiveMatch(roomId, 'reset');
   }
 
-  async finalizeFinished(
-    roomId: number,
-    state: GameStateEntity,
-  ): Promise<void> {
+  async finalizeFinished(roomId: number, state: GameState): Promise<void> {
     const match = await this.getActiveMatch(roomId);
     if (!match) return;
 
@@ -118,7 +141,7 @@ export class GameStatsService {
     const cooperative =
       typeof winnerRaw === 'string' && winnerRaw.trim() !== '';
 
-    match.endedAt = new Date();
+    match.endedAt = businessMsToDate(this.now());
     match.endedReason = 'finished';
     match.winnerUserId = winnerId;
     const rows = await this.statsRepo.findPlayersByMatchId(match.id);
@@ -180,7 +203,11 @@ export class GameStatsService {
       });
     }
 
-    results.sort((a, b) => a.gameName.localeCompare(b.gameName, 'fr'));
+    results.sort(
+      (a, b) =>
+        compareCanonicalText(a.gameName, b.gameName) ||
+        compareCanonicalText(a.gameType, b.gameType),
+    );
     return results;
   }
 
@@ -192,13 +219,17 @@ export class GameStatsService {
       list.push({ gameType, gameName: gameNames.get(gameType) ?? gameType });
     }
 
-    list.sort((a, b) => a.gameName.localeCompare(b.gameName, 'fr'));
+    list.sort(
+      (a, b) =>
+        compareCanonicalText(a.gameName, b.gameName) ||
+        compareCanonicalText(a.gameType, b.gameType),
+    );
     return list;
   }
 
   async getTop10(gameType: string): Promise<LeaderboardEntry[]> {
     const normalized = (gameType ?? '').trim();
-    if (!normalized) return [];
+    if (!normalized || normalized.length > 128) return [];
 
     return this.statsRepo.getTop10(normalized);
   }
@@ -230,7 +261,7 @@ export class GameStatsService {
     const match = await this.getActiveMatch(roomId);
     if (!match) return;
 
-    match.endedAt = new Date();
+    match.endedAt = businessMsToDate(this.now());
     match.endedReason = reason;
     match.winnerUserId = null;
     const rows = await this.statsRepo.findPlayersByMatchId(match.id);
@@ -243,7 +274,7 @@ export class GameStatsService {
         continue;
       }
       row.outcome = 'quit';
-      row.leftAt = row.leftAt ?? new Date();
+      row.leftAt = row.leftAt ?? businessMsToDate(this.now());
     }
     await this.statsRepo.saveMatchWithPlayers(match, rows);
 
@@ -254,6 +285,10 @@ export class GameStatsService {
     return new Map(
       (await this.catalog.getAllGames()).map((game) => [game.id, game.name]),
     );
+  }
+
+  private now(): number {
+    return this.clock.now();
   }
 
   async resetAllStats(): Promise<{

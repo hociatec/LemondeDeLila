@@ -8,8 +8,18 @@ const root = path.resolve(__dirname, '..', 'src');
 const backendRoot = path.resolve(__dirname, '..');
 const contracts = [
   [
+    'platform/lifecycle/infrastructure/install-graceful-shutdown.ts',
+    /stopAccepting\([\s\S]*stopSources\([\s\S]*drain\([\s\S]*closeConnections\([\s\S]*drain\([\s\S]*closeResources\(/,
+    'drain before resource shutdown',
+  ],
+  [
+    'platform/lifecycle/infrastructure/install-graceful-shutdown.ts',
+    /process\.on\('SIGTERM', signal\)[\s\S]*process\.on\('SIGINT', signal\)/,
+    'SIGTERM and SIGINT shutdown listeners',
+  ],
+  [
     'main.ts',
-    /enableShutdownHooks\(\['SIGTERM', 'SIGINT'\]\)/,
+    /installGracefulShutdown\(app, shutdown, sockets,/,
     'shutdown hooks',
   ],
   ['main.ts', /runWithCorrelationId/, 'correlation HTTP'],

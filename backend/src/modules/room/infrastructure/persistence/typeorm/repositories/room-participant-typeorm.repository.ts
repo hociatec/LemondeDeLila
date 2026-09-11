@@ -5,7 +5,7 @@ import type {
   RoomParticipantCreateRecord,
   RoomParticipantRepository,
 } from '../../../../application/ports/room-participant.repository';
-import type { RoomParticipantRecord } from '../../../../application/contracts/room-participant.model';
+import type { RoomParticipantRecord } from '../../../../application/models/room-participant.model';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import {
   toRoomParticipantEntity,
@@ -47,6 +47,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
   }
 
   async countActiveByRoom(roomId: number): Promise<number> {
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) return 0;
     const result = await this.participants
       .createQueryBuilder('participant')
       .select('COUNT(DISTINCT participant.user_id)', 'count')
@@ -64,6 +65,13 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
     roomId: number,
     userId: number,
   ): Promise<RoomParticipantRecord | null> {
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      !Number.isSafeInteger(userId) ||
+      userId <= 0
+    )
+      return null;
     return toRoomParticipantRecord(
       await this.participants.findOne({
         where: { room: { id: roomId }, user: { id: userId }, leftAt: IsNull() },
@@ -75,10 +83,12 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
   async findActiveByRoomWithUsers(
     roomId: number,
   ): Promise<RoomParticipantRecord[]> {
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) return [];
     return (
       await this.participants.find({
         where: { room: { id: roomId }, leftAt: IsNull() },
         relations: { room: true, user: true },
+        order: { joinedAt: 'ASC', id: 'ASC' },
         take: 100,
       })
     )
@@ -92,11 +102,12 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
   async findFirstActiveByRoomWithUser(
     roomId: number,
   ): Promise<RoomParticipantRecord | null> {
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) return null;
     return toRoomParticipantRecord(
       await this.participants.findOne({
         where: { room: { id: roomId }, leftAt: IsNull() },
         relations: { room: true, user: true },
-        order: { joinedAt: 'ASC' },
+        order: { joinedAt: 'ASC', id: 'ASC' },
       }),
     );
   }
@@ -104,10 +115,12 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
   async findActiveByUserWithRooms(
     userId: number,
   ): Promise<RoomParticipantRecord[]> {
+    if (!Number.isSafeInteger(userId) || userId <= 0) return [];
     return (
       await this.participants.find({
         where: { user: { id: userId }, leftAt: IsNull() },
         relations: { room: true, user: true },
+        order: { joinedAt: 'ASC', id: 'ASC' },
         take: 100,
       })
     )
@@ -121,6 +134,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
   async findLatestActiveRoomForUser(
     userId: number,
   ): Promise<{ roomId: number; gameType: string } | null> {
+    if (!Number.isSafeInteger(userId) || userId <= 0) return null;
     const startedParticipation = await this.participants
       .createQueryBuilder('p')
       .innerJoinAndSelect('p.room', 'r')
@@ -130,6 +144,7 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
         started: 'started',
       })
       .orderBy('p.joined_at', 'DESC')
+      .addOrderBy('p.id', 'DESC')
       .getOne();
 
     const participation =
@@ -137,12 +152,17 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
       (await this.participants.findOne({
         where: { user: { id: userId }, leftAt: IsNull() },
         relations: { room: true },
-        order: { joinedAt: 'DESC' },
+        order: { joinedAt: 'DESC', id: 'DESC' },
       }));
 
     const roomId = participation?.room?.id ?? 0;
     const gameType = String(participation?.room?.gameType ?? '').trim();
-    if (!Number.isFinite(roomId) || roomId <= 0 || !gameType) {
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      !gameType ||
+      gameType.length > 128
+    ) {
       return null;
     }
     return { roomId, gameType };
@@ -153,6 +173,16 @@ export class RoomParticipantTypeormRepository implements RoomParticipantReposito
     userId: number,
     role: string,
   ): Promise<void> {
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      typeof role !== 'string' ||
+      !role ||
+      role.length > 64
+    )
+      return;
     const participant = this.participants.create({
       room: { id: roomId },
       user: { id: userId },

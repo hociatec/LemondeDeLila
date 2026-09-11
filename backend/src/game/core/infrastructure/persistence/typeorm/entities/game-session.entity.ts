@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
+import type { GameState } from '../../../../application/models/game-state.model';
 
 @Entity({ name: 'game_sessions' })
 export class GameSessionEntity {
@@ -13,7 +13,7 @@ export class GameSessionEntity {
   version!: number;
 
   @Column({ type: 'json' })
-  state!: GameStateEntity;
+  state!: GameState;
 
   @UpdateDateColumn({ name: 'updated_at', type: 'datetime', precision: 3 })
   updatedAt!: Date;

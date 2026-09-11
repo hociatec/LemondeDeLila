@@ -1,10 +1,11 @@
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   drawAndResolve,
   gameEffects,
-  rejectRule,
   raceTurn,
+  rejectRule,
 } from '../../../engine/sdk/public-api';
-import type { GameContext, PlayerMap } from '../../../engine/sdk/public-api';
+import { TRACK } from './constants';
 import { VOYAGE_CONTENT } from './content';
 import type {
   VoyageCard,
@@ -12,11 +13,12 @@ import type {
   VoyageCollectionKind,
   VoyagePendingChoice,
   VoyageState,
+  VoyageTargetEffect,
   VoyageTileType,
 } from './types';
 
 type RuleContext = GameContext<VoyageState>;
-export const TRACK = 'ireland';
+export { TRACK } from './constants';
 export const COLLECTION_KINDS: VoyageCollectionKind[] = [
   'legend',
   'farce',
@@ -24,7 +26,6 @@ export const COLLECTION_KINDS: VoyageCollectionKind[] = [
   'landscape',
 ];
 const VOYAGE_LAST_TARGET = 'voyage.last-target';
-export type VoyageTargetEffect = 'swap-position' | 'skip-turn' | 'swap-card';
 export const VOYAGE_FINISH_COUNTDOWN = 'voyage.finish-countdown';
 export const VOYAGE_FINISH_STARTED = 'voyage.finish-started';
 
@@ -105,7 +106,14 @@ function drawVoyageCard(
         ctx.choice.one({
           id: 'voyage.choice',
           player: playerId,
-          options: quiz.choices,
+          options: quiz.choices.map((choice) => choice.id),
+          label: (id) => {
+            const choice = quiz.choices.find(
+              (candidate) => candidate.id === id,
+            );
+            if (!choice) return ctx.reject('UNKNOWN_QUIZ_CHOICE', { id });
+            return choice.label;
+          },
           data: pending,
         });
         return false;
@@ -129,7 +137,7 @@ function resolveQuiz(
   );
   const quiz = card?.quiz ?? null;
   if (!card || !quiz) rejectRule('Question Voyage inconnue');
-  if (normalize(answer) !== normalize(quiz.answer)) {
+  if (answer !== quiz.answerId) {
     ctx.cards.discard('legend', card);
     ctx.events.message('game.quiz.answered', {
       playerId: pending.actorId,
@@ -243,17 +251,12 @@ export function advanceFinishCountdown(
   );
   ctx.counters.set(VOYAGE_FINISH_COUNTDOWN, finishCountdown);
   if (finishCountdown === 0) {
-    const ranked = ctx.players
-      .all()
-      .map((player) => ({
-        id: player.id,
-        total: total(voyageCollection(player.id, ctx)),
-        legends: voyageCollection(player.id, ctx).legend,
-      }))
-      .sort(
-        (a, b) => b.total - a.total || b.legends - a.legends || a.id - b.id,
-      );
-    const winnerId = ranked[0]?.id;
+    const ranked = ctx.ranking.rank(
+      ctx.players.all().map((player) => player.id),
+      { value: (id) => total(voyageCollection(id, ctx)), direction: 'desc' },
+      { value: (id) => voyageCollection(id, ctx).legend, direction: 'desc' },
+    );
+    const winnerId = ranked[0]?.playerId;
     if (winnerId != null) {
       ctx.match.finish({ winners: [winnerId], reason: 'irish-collection' });
     }
@@ -270,22 +273,6 @@ function gain(
 
 function total(collection: VoyageCollection): number {
   return COLLECTION_KINDS.reduce((sum, kind) => sum + collection[kind], 0);
-}
-
-export function voyageCollections(
-  ctx: RuleContext,
-): PlayerMap<VoyageCollection> {
-  return ctx.players.byId((player) => voyageCollection(player.id, ctx));
-}
-
-export function voyageLastTargets(ctx: RuleContext): PlayerMap<number> {
-  return Object.fromEntries(
-    Object.entries(
-      ctx.players.byId((player) => lastTarget(player.id, ctx)),
-    ).flatMap(([playerId, target]) =>
-      target == null ? [] : [[playerId, target]],
-    ),
-  );
 }
 
 function voyageCollection(
@@ -308,10 +295,6 @@ function lastTarget(playerId: number, ctx: RuleContext): number | null {
   const value = ctx.status.get(playerId, VOYAGE_LAST_TARGET)?.data
     .targetPlayerId;
   return typeof value === 'number' ? value : null;
-}
-
-function normalize(value: string): string {
-  return value.trim().toLocaleLowerCase('fr');
 }
 
 function isDeckTile(type: VoyageTileType): type is VoyageCollectionKind {

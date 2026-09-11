@@ -83,18 +83,15 @@ function main() {
       errors.push(`rules.md manquant: ${rulesPath}`);
     }
 
-    const contentDir = path.join(gameDir, 'model', 'content');
-    if (fs.existsSync(contentDir)) {
-      const contentFiles = listFilesRecursive(contentDir).filter((f) =>
-        f.toLowerCase().endsWith('.json'),
-      );
-      for (const f of contentFiles) {
-        try {
-          readJson(f);
-          checkedContentJson += 1;
-        } catch (e) {
-          errors.push(`content JSON invalide: ${f} (${String(e)})`);
-        }
+    const contentFiles = listFilesRecursive(gameDir).filter((file) =>
+      file.toLowerCase().endsWith('.json') && path.basename(file) !== 'manifest.json',
+    );
+    for (const file of contentFiles) {
+      try {
+        readJson(file);
+        checkedContentJson += 1;
+      } catch (error) {
+        errors.push(`content JSON invalide: ${file} (${String(error)})`);
       }
     }
 

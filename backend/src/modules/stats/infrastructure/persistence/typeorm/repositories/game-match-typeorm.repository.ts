@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import type { GameMatchRepository } from '../../../../application/ports/game-match.repository';
-import type { GameMatchRecord } from '../../../../application/contracts/game-match.model';
+import type { GameMatchRecord } from '../../../../application/models/game-match.model';
 import { GameStatsDomainError } from '../../../../domain/errors/game-stats-domain.errors';
 import type {
   GameMatchOutcome,
   GameMatchPlayerRecord,
-} from '../../../../application/contracts/game-match-player.model';
+} from '../../../../application/models/game-match-player.model';
 import { GameMatchEntity } from '../entities/game-match.entity';
 import { GameMatchPlayerEntity } from '../entities/game-match-player.entity';
 import {
@@ -41,6 +41,20 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     };
     players: Array<{ userId: number; username: string }>;
   }): Promise<GameMatchRecord> {
+    if (
+      !Number.isSafeInteger(data.match.roomId) ||
+      data.match.roomId <= 0 ||
+      !Number.isSafeInteger(data.match.botsCount) ||
+      data.match.botsCount < 0 ||
+      !Number.isSafeInteger(data.match.humansCount) ||
+      data.match.humansCount < 0 ||
+      data.players.length > 64
+    ) {
+      throw new GameStatsDomainError(
+        'GAME_MATCH_INPUT_INVALID',
+        'Invalid game match input',
+      );
+    }
     return this.matches.manager.transaction(async (manager) => {
       const matches = manager.getRepository(GameMatchEntity);
       const players = manager.getRepository(GameMatchPlayerEntity);
@@ -117,9 +131,10 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
   async findActiveMatchByRoomId(
     roomId: number,
   ): Promise<GameMatchRecord | null> {
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) return null;
     const match = await this.matches.findOne({
       where: { roomId, endedAt: IsNull() },
-      order: { startedAt: 'DESC' },
+      order: { startedAt: 'DESC', id: 'DESC' },
       relations: { winnerUser: true },
     });
     return match ? toGameMatchModel(match) : null;
@@ -128,9 +143,11 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
   async findPlayersByMatchId(
     matchId: number,
   ): Promise<GameMatchPlayerRecord[]> {
+    if (!Number.isSafeInteger(matchId) || matchId <= 0) return [];
     const rows = await this.players.find({
       where: { match: { id: matchId } },
       relations: { match: true },
+      order: { id: 'ASC' },
       take: 100,
     });
     return rows.map(toGameMatchPlayerModel);
@@ -140,6 +157,13 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     matchId: number,
     userId: number,
   ): Promise<GameMatchPlayerRecord | null> {
+    if (
+      !Number.isSafeInteger(matchId) ||
+      matchId <= 0 ||
+      !Number.isSafeInteger(userId) ||
+      userId <= 0
+    )
+      return null;
     const row = await this.players.findOne({
       where: { match: { id: matchId }, user: { id: userId } },
       relations: { match: true },
@@ -234,6 +258,7 @@ export class GameMatchTypeormRepository implements GameMatchRepository {
     const rows = await this.players.find({
       where: { user: { id: userId } },
       relations: { match: true },
+      order: { id: 'ASC' },
       take: 5_000,
     });
     return rows.map(toGameMatchPlayerModel);

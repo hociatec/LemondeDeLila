@@ -12,13 +12,6 @@ export type MamanTileType =
   | 'meeting'
   | 'finish';
 
-export interface MamanTile {
-  id: number;
-  title: string;
-  type: MamanTileType;
-  description?: string;
-}
-
 export interface MamanCard {
   id: number;
   text: string;

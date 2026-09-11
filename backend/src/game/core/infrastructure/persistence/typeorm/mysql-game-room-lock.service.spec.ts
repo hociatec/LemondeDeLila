@@ -12,8 +12,9 @@ describe('MysqlGameRoomLockService', () => {
         if (releaseError) throw releaseError;
         return [{ released: 1 }];
       });
+    const destroy = jest.fn();
     const runner = {
-      connect: jest.fn().mockResolvedValue(undefined),
+      connect: jest.fn().mockResolvedValue({ destroy }),
       query,
       release: jest.fn().mockResolvedValue(undefined),
     } as unknown as QueryRunner;
@@ -25,6 +26,7 @@ describe('MysqlGameRoomLockService', () => {
     } as ConfigService;
     return {
       service: new MysqlGameRoomLockService(dataSource, config),
+      destroy,
       runner,
       query,
     };
@@ -61,10 +63,57 @@ describe('MysqlGameRoomLockService', () => {
     expect(runner.release).toHaveBeenCalledTimes(1);
   });
 
+  it('releases the runner even when connection acquisition fails', async () => {
+    const { service, runner } = setup(1);
+    const failure = new Error('connection unavailable');
+    jest.mocked(runner.connect).mockRejectedValueOnce(failure);
+    const operation = jest.fn();
+    await expect(service.runExclusive(9, operation)).rejects.toBe(failure);
+    expect(operation).not.toHaveBeenCalled();
+    expect(runner.release).toHaveBeenCalledTimes(1);
+  });
+
   it('does not replace a successful command result with a release failure', async () => {
-    const { service } = setup(1, new Error('connection lost'));
+    const { service, destroy } = setup(1, new Error('connection lost'));
     await expect(
       service.runExclusive(3, async () => 'committed'),
     ).resolves.toBe('committed');
+    expect(destroy).toHaveBeenCalledTimes(1);
+  });
+
+  it('destroys the connection when acquisition acknowledgement is lost', async () => {
+    const { service, query, destroy, runner } = setup(1);
+    const failure = new Error('response lost');
+    query.mockReset().mockRejectedValueOnce(failure);
+    const operation = jest.fn();
+    await expect(service.runExclusive(3, operation)).rejects.toBe(failure);
+    expect(operation).not.toHaveBeenCalled();
+    expect(destroy).toHaveBeenCalledTimes(1);
+    expect(runner.release).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([0, null, true, undefined])(
+    'destroys the connection for unconfirmed release %s',
+    async (released) => {
+      const { service, query, destroy } = setup(1);
+      query
+        .mockReset()
+        .mockResolvedValueOnce([{ acquired: 1 }])
+        .mockResolvedValueOnce([{ released }]);
+      await expect(
+        service.runExclusive(3, async () => 'committed'),
+      ).resolves.toBe('committed');
+      expect(destroy).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('returns a clean connection to the pool after a failed operation', async () => {
+    const { service, destroy, query } = setup(1);
+    const failure = new Error('command failed');
+    await expect(
+      service.runExclusive(3, () => Promise.reject(failure)),
+    ).rejects.toBe(failure);
+    expect(query).toHaveBeenCalledTimes(2);
+    expect(destroy).not.toHaveBeenCalled();
   });
 });

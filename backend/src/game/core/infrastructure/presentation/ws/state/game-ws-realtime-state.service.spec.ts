@@ -1,14 +1,14 @@
-import type { GameRuntime } from '../../../../application/contracts/game-runtime.interface';
-import type { GameStateEntity } from '../../../../application/contracts/game-state.model';
+import type { GameRuntime } from '../../../../application/ports/game-runtime.port';
+import type { GameState } from '../../../../application/models/game-state.model';
 import { GameRoomStateFactory } from '../../../../application/services/game-room-state.factory';
-import { appendPendingGameEvent } from '../../../../application/services/game-event-log.helper';
+import { appendPendingGameEvent } from '../../../../application/services/game-event-buffer';
 import { GameWsRealtimeStateService } from './game-ws-realtime-state.service';
 
 describe('GameWsRealtimeStateService run isolation', () => {
   const gameState = (
-    metadata: GameStateEntity['metadata'],
+    metadata: GameState['metadata'],
     game: object = {},
-  ): GameStateEntity => ({
+  ): GameState => ({
     status: 'started',
     phase: 'playing',
     log: [],
@@ -272,7 +272,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
   });
 
   it('keeps configured setup state when the room starts its reserved run', async () => {
-    let stored: GameStateEntity | null = null;
+    let stored: GameState | null = null;
     const hydrateInitialState = jest.fn((state) => state);
     const handler = {
       hydrateInitialState,
@@ -341,7 +341,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
       phase: 'round',
       metadata: { roomRunId: 3 },
       game: { configured: true },
-    } satisfies GameStateEntity;
+    } satisfies GameState;
     await service.commit(4, setup, setup.state, configured);
 
     const started = await service.resolve(4);
@@ -454,7 +454,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
     });
     const persisted = structuredClone(next);
     delete (
-      persisted as GameStateEntity & {
+      persisted as GameState & {
         engine?: { pendingEvents?: unknown };
       }
     ).engine?.pendingEvents;
@@ -572,7 +572,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
           roomId: number;
           gameType: string;
           handler: GameRuntime;
-          state: GameStateEntity;
+          state: GameState;
           version: number;
         }) => Promise<void> | void)
       | undefined;

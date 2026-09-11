@@ -1,12 +1,12 @@
+import type {
+  NoGameState as CaDerapeState,
+  GameContext,
+} from '../../../engine/sdk/public-api';
 import {
   commonStatuses,
   drawEvent,
   gameEffects,
   positionOf,
-} from '../../../engine/sdk/public-api';
-import type {
-  GameContext,
-  NoGameState as CaDerapeState,
 } from '../../../engine/sdk/public-api';
 import {
   CA_DERAPE_TILES,
@@ -74,36 +74,36 @@ export function applySpecial(
   if (effect === 'take-lead') {
     const lead = Math.max(
       ...ctx.players
-        .all()
-        .filter((player) => player.id !== actorId)
+        .others(actorId)
         .map((player) => positionOf(ctx, TRACK, player.id)),
     );
     ctx.movement.moveTo(TRACK, actorId, Math.min(FINISH, lead + 1));
   } else if (effect === 'move-and-shield') {
     movePlayer(state, actorId, 4, 0, true, ctx);
-    addUntilUsedStatus(actorId, commonStatuses.shield, ctx);
+    ctx.status.add(actorId, commonStatuses.shield, { scope: 'until-used' });
   } else if (effect === 'leapfrog') {
-    const ahead = ctx.players
+    const candidates = ctx.players
       .all()
       .filter(
         (player) =>
           player.id !== actorId &&
           positionOf(ctx, TRACK, player.id) > positionOf(ctx, TRACK, actorId),
       )
-      .sort(
-        (left, right) =>
-          positionOf(ctx, TRACK, left.id) - positionOf(ctx, TRACK, right.id),
-      )[0];
+      .map((player) => player.id);
+    const ahead = ctx.ranking.rank(candidates, {
+      value: (id) => positionOf(ctx, TRACK, id),
+      direction: 'asc',
+    })[0];
     if (ahead) {
       ctx.movement.moveTo(
         TRACK,
         actorId,
-        Math.min(FINISH, positionOf(ctx, TRACK, ahead.id) + 1),
+        Math.min(FINISH, positionOf(ctx, TRACK, ahead.playerId) + 1),
       );
       ctx.movement.moveTo(
         TRACK,
-        ahead.id,
-        Math.max(0, positionOf(ctx, TRACK, ahead.id) - 1),
+        ahead.playerId,
+        Math.max(0, positionOf(ctx, TRACK, ahead.playerId) - 1),
       );
     }
   } else if (effect === 'next-multiple-five') {
@@ -138,9 +138,12 @@ export function applyGlobal(effect: CaGlobalEffect, ctx: RuleContext): void {
       ctx,
     );
   else if (effect === 'reverse-ranking') {
-    const ranked = [...ids].sort(
-      (a, b) => positionOf(ctx, TRACK, a) - positionOf(ctx, TRACK, b),
-    );
+    const ranked = ctx.ranking
+      .rank(ids, {
+        value: (id) => positionOf(ctx, TRACK, id),
+        direction: 'asc',
+      })
+      .map((entry) => entry.playerId);
     assignPositions(
       ranked,
       ranked.map((id) => positionOf(ctx, TRACK, id)).reverse(),
@@ -151,9 +154,12 @@ export function applyGlobal(effect: CaGlobalEffect, ctx: RuleContext): void {
   } else if (effect === 'advance-all') moveAll(ids, 1, ctx);
   else if (effect === 'retreat-all') moveAll(ids, -2, ctx);
   else if (effect === 'cycle-ranking') {
-    const ranked = [...ids].sort(
-      (a, b) => positionOf(ctx, TRACK, b) - positionOf(ctx, TRACK, a),
-    );
+    const ranked = ctx.ranking
+      .rank(ids, {
+        value: (id) => positionOf(ctx, TRACK, id),
+        direction: 'desc',
+      })
+      .map((entry) => entry.playerId);
     const values = ranked.map((id) => positionOf(ctx, TRACK, id));
     assignPositions(
       ranked,
@@ -177,9 +183,9 @@ export function applyConditional(
   ctx: RuleContext,
 ): void {
   const ids = ctx.players.all().map((player) => player.id);
-  const ranked = [...ids].sort(
-    (a, b) => positionOf(ctx, TRACK, a) - positionOf(ctx, TRACK, b),
-  );
+  const ranked = ctx.ranking
+    .rank(ids, { value: (id) => positionOf(ctx, TRACK, id), direction: 'asc' })
+    .map((entry) => entry.playerId);
   if (effect === 'leader-retreat-others-advance')
     applyPenaltyAwareMove(
       state,
@@ -267,18 +273,18 @@ export function applyRule(
     });
     if (extra) ctx.effects.schedule(...extra.effects);
   } else if (effect === 'double-move')
-    addUntilUsedStatus(actorId, commonStatuses.doubleMove, ctx);
+    ctx.status.add(actorId, commonStatuses.doubleMove, { scope: 'until-used' });
   else if (effect === 'retreat-one')
     applyPenaltyAwareMove(state, actorId, -1, 0, ctx);
   else if (effect === 'shield')
-    addUntilUsedStatus(actorId, commonStatuses.shield, ctx);
+    ctx.status.add(actorId, commonStatuses.shield, { scope: 'until-used' });
   else if (effect === 'advance-two')
     movePlayer(state, actorId, 2, 0, true, ctx);
   else if (effect === 'choose-next-player')
     scheduleTargetEffect('ca-derape.next-player', ctx, false);
   else if (effect === 'choose-next-delta') requestDeltaChoice(actorId, ctx);
   else if (effect === 'double-roll')
-    addUntilUsedStatus(actorId, commonStatuses.doubleRoll, ctx);
+    ctx.status.add(actorId, commonStatuses.doubleRoll, { scope: 'until-used' });
   else if (effect === 'mirror-roll')
     scheduleTargetEffect('ca-derape.mirror', ctx);
 }
@@ -315,7 +321,7 @@ export function applyPenaltyAwareMove(
   depth: number,
   ctx: RuleContext,
 ): void {
-  if (delta < 0 && consumePenaltyShield(actorId, ctx)) return;
+  if (delta < 0 && ctx.status.consume(actorId, commonStatuses.shield)) return;
   movePlayer(state, actorId, delta, depth, true, ctx);
 }
 
@@ -335,21 +341,6 @@ export function movePlayer(
   ctx.resources.set(playerId, CA_LAST_MOVE, delta);
   if (delta !== 0) ctx.resources.set(playerId, CA_IDLE_TURNS, 0);
   if (resolve) resolveCaDerapeTile(state, playerId, depth + 1, ctx);
-}
-
-export function consumePenaltyShield(
-  actorId: number,
-  ctx: RuleContext,
-): boolean {
-  return ctx.status.consume(actorId, commonStatuses.shield);
-}
-
-function addUntilUsedStatus(
-  playerId: number,
-  statusId: string,
-  ctx: RuleContext,
-): void {
-  ctx.status.add(playerId, statusId, { scope: 'until-used' });
 }
 
 export function incrementIdleCounters(

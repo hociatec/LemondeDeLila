@@ -1,3 +1,4 @@
+import type { VaultRoomSnapshotSource } from '../contracts/vault-room-snapshot-source';
 import {
   BadRequestException,
   ConflictException,
@@ -6,23 +7,23 @@ import {
   PayloadTooLargeException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import {
-  ROOM_VAULT_PORT,
-  type RoomPayload,
-  type RoomVaultPort,
-} from '../../../room/public-api';
-import type { VaultRoomSnapshotRecord } from '../contracts/vault-room-snapshot.model';
-import type { VaultGameState } from '../contracts/vault-game-state.model';
+import { VAULT_ROOM_PORT, type VaultRoomPort } from '../ports/vault-room.port';
+import type { VaultRoomSnapshotRecord } from '../models/vault-room-snapshot.model';
+import type { VaultGameState } from '../models/vault-game-state.model';
 import { VAULT_GAME_PORT, type VaultGamePort } from '../ports/vault-game.port';
 import {
   VAULT_ROOM_SNAPSHOT_REPOSITORY,
   type VaultRoomSnapshotRepository,
 } from '../ports/vault-room-snapshot.repository';
 import type { VaultRoomSnapshot } from '../../vault.types';
-
-type VaultRoomPayloadLike = {
-  tableAmbienceSoundId?: unknown;
-};
+import {
+  businessMsToDate,
+  businessMsToIso,
+} from '../../../../shared/utils/public-api';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
 
 type PreparedSnapshot = {
   snapshot: VaultRoomSnapshot;
@@ -32,19 +33,28 @@ type PreparedSnapshot = {
 };
 
 function buildSnapshot(
-  payload: RoomPayload,
+  payload: VaultRoomSnapshotSource,
   gameType: string,
   state: VaultGameState,
+  savedAt: string,
 ): VaultRoomSnapshot {
   const room = payload.room;
-  const ambience = (room as VaultRoomPayloadLike).tableAmbienceSoundId;
+  const ambience = room.tableAmbienceSoundId;
   return {
     version: 1,
-    savedAt: new Date().toISOString(),
+    savedAt,
     room: {
-      name: String(room.name ?? '').trim() || `Table ${gameType}`,
+      name:
+        String(room.name ?? '')
+          .trim()
+          .slice(0, 255) || `Table ${gameType}`,
       isPrivate: Boolean(room.isPrivate),
-      maxPlayers: Number(room.maxPlayers ?? 4) || 4,
+      maxPlayers:
+        Number.isSafeInteger(room.maxPlayers) &&
+        room.maxPlayers >= 1 &&
+        room.maxPlayers <= 64
+          ? room.maxPlayers
+          : 4,
       tableAmbienceSoundId:
         typeof ambience === 'string' ? ambience.trim() || null : null,
     },
@@ -52,15 +62,21 @@ function buildSnapshot(
       ownerUserId: typeof room.owner?.id === 'number' ? room.owner.id : null,
       players: (room.players ?? []).map((player) => ({
         id: player.id,
-        username: player.username,
+        username: String(player.username ?? '')
+          .trim()
+          .slice(0, 255),
       })),
       spectators: (room.spectators ?? []).map((spectator) => ({
         id: spectator.id,
-        username: spectator.username,
+        username: String(spectator.username ?? '')
+          .trim()
+          .slice(0, 255),
       })),
       bots: (room.bots ?? []).map((bot) => ({
         id: bot.id,
-        name: bot.name,
+        name: String(bot.name ?? '')
+          .trim()
+          .slice(0, 255),
       })),
     },
     game: { gameType, state },
@@ -74,10 +90,11 @@ export class VaultSnapshotWriterService {
   constructor(
     @Inject(VAULT_ROOM_SNAPSHOT_REPOSITORY)
     private readonly snapshots: VaultRoomSnapshotRepository,
-    @Inject(ROOM_VAULT_PORT)
-    private readonly rooms: RoomVaultPort,
+    @Inject(VAULT_ROOM_PORT)
+    private readonly rooms: VaultRoomPort,
     @Inject(VAULT_GAME_PORT)
     private readonly game: VaultGamePort,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async save(
@@ -85,7 +102,12 @@ export class VaultSnapshotWriterService {
     roomId: number,
     snapshotId?: string | null,
   ): Promise<{ id: string }> {
-    if (!Number.isFinite(roomId) || roomId <= 0) {
+    if (
+      !Number.isSafeInteger(ownerUserId) ||
+      ownerUserId <= 0 ||
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0
+    ) {
       throw new BadRequestException('roomId invalide');
     }
     const prepared = await this.prepare(ownerUserId, roomId);
@@ -134,7 +156,12 @@ export class VaultSnapshotWriterService {
         "État de jeu introuvable (la table n'est peut-être pas démarrée).",
       );
     }
-    const snapshot = buildSnapshot(payload, gameType, state);
+    const snapshot = buildSnapshot(
+      payload,
+      gameType,
+      state,
+      businessMsToIso(this.clock.now()),
+    );
     const playersLabel = (payload.room.players ?? [])
       .map((player) => String(player?.username ?? '').trim())
       .filter(Boolean)
@@ -154,6 +181,9 @@ export class VaultSnapshotWriterService {
     snapshotId?: string | null,
   ): Promise<string> {
     const explicitId = String(snapshotId ?? '').trim();
+    if (explicitId.length > 128) {
+      throw new BadRequestException('snapshotId invalide');
+    }
     if (explicitId) {
       return explicitId;
     }
@@ -200,7 +230,7 @@ export class VaultSnapshotWriterService {
       roomName: prepared.snapshot.room.name.slice(0, 255),
       playersLabel: prepared.playersLabel,
       snapshotJson,
-      createdAt: new Date(),
+      createdAt: businessMsToDate(this.clock.now()),
     };
     if (existing) {
       Object.assign(existing, data);

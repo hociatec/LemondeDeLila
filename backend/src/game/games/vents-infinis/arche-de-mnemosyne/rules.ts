@@ -1,5 +1,6 @@
 import {
   rejectRule,
+  thresholdVictory,
   defineAction,
   gameInput,
   setupPlayingPhases,
@@ -102,7 +103,6 @@ export const MNEMO_ACTIONS = {
 };
 
 function resolveQuestion(timedOutIds: number[], ctx: RuleContext): void {
-  const players = ctx.players.all();
   const session = ctx.quiz.reveal(MNEMO_SESSION);
   const answeredIds = Object.keys(session.answers).map(Number);
   const correctIds = answeredIds.filter(
@@ -127,13 +127,16 @@ function resolveQuestion(timedOutIds: number[], ctx: RuleContext): void {
     timedOutPlayerIds: timedOutIds,
   });
 
-  const reached = players
-    .map((player) => ({ id: player.id, score: ctx.score.get(player.id) }))
-    .filter(({ score }) => score >= config.targetPoints)
-    .sort((left, right) => right.score - left.score || left.id - right.id);
+  const outcome = thresholdVictory<MnemoState>({
+    kind: 'score-at-least',
+    amount: config.targetPoints,
+    participants: 'all',
+    selection: 'highest-value-lowest-id',
+    reason: 'target-score',
+  }).evaluate({ state: {}, ctx });
   ctx.quiz.close(MNEMO_SESSION);
   ctx.scheduler.cancel(MNEMO_QUESTION_TIMER);
-  const winnerId = reached[0]?.id;
+  const winnerId = outcome?.winnerPlayerIds[0];
   ctx.round.end(correctIds);
   if (winnerId != null) {
     ctx.match.finish({ winners: [winnerId], reason: 'target-score' });

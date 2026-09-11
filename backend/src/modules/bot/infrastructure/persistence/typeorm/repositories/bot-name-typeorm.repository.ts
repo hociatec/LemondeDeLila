@@ -5,7 +5,7 @@ import type {
   BotNameRepository,
   CreateBotNameInput,
 } from '../../../../application/ports/bot-name.repository';
-import type { BotNameRecord } from '../../../../application/contracts/bot-name.record';
+import type { BotNameRecord } from '../../../../application/read-models/bot-name.record';
 import { BotName } from '../entities/bot-name.entity';
 
 @Injectable()
@@ -33,11 +33,14 @@ export class BotNameTypeormRepository implements BotNameRepository {
   }
 
   async findById(id: number): Promise<BotNameRecord | null> {
+    if (!Number.isSafeInteger(id) || id <= 0) return null;
     const row = await this.botNames.findOne({ where: { id } });
     return row ? this.toRecord(row) : null;
   }
 
   async findByName(name: string): Promise<BotNameRecord | null> {
+    if (typeof name !== 'string' || !name.trim() || name.length > 150)
+      return null;
     const row = await this.botNames.findOne({ where: { name } });
     return row ? this.toRecord(row) : null;
   }
@@ -55,6 +58,7 @@ export class BotNameTypeormRepository implements BotNameRepository {
   }
 
   async delete(id: number): Promise<void> {
+    if (!Number.isSafeInteger(id) || id <= 0) return;
     await this.botNames.delete(id);
   }
 
@@ -65,7 +69,7 @@ export class BotNameTypeormRepository implements BotNameRepository {
   private toRecord(entity: BotName): BotNameRecord {
     return {
       id: entity.id,
-      name: entity.name,
+      name: String(entity.name ?? '').slice(0, 150),
       enabled: entity.enabled,
       createdAt: entity.createdAt,
     };

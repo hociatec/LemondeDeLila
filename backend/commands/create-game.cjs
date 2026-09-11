@@ -12,7 +12,10 @@ const GENERATED_FILES = [
   'rules.ts',
   'content.ts',
   'game.spec.ts',
+  'manifest.json',
+  'rules.md',
 ];
+const JSON_ONLY_FILES = ['manifest.json', 'game.json', 'rules.md'];
 const GAME_TEMPLATES = ['empty', 'card', 'race', 'quiz', 'party', 'board'];
 
 function kebabToPascal(value) {
@@ -36,6 +39,10 @@ function parseArguments(argv) {
       continue;
     }
     const [rawKey, inlineValue] = argument.slice(2).split('=', 2);
+    if (rawKey === 'json-only' && inlineValue == null && !['true', 'false'].includes(argv[index + 1])) {
+      options[rawKey] = 'true';
+      continue;
+    }
     const value = inlineValue ?? argv[index + 1];
     if (inlineValue == null) index += 1;
     options[rawKey] = value;
@@ -73,35 +80,38 @@ function templates(configuration) {
   const typeName = kebabToPascal(code);
   const family = familyTemplate(template, typeName);
   return {
-    'content.ts': `import { defineGameContent${family.contentImports} } from '../../../core/application/public-api';
+    'manifest.json': JSON.stringify({code, name, engine: code, minPlayers, maxPlayers, summary: `Règles de ${name} à compléter.`}, null, 2) + '\n',
+    'rules.md': `# ${name}\n\nRègles à compléter avant publication du jeu.\n`,
+    'content.ts': `import { defineGameContent, gameInput${family.contentImports} } from '../../../engine/sdk/public-api';
+import manifest from './manifest.json';
 
-export const ${typeName}Content = defineGameContent(${quote(code)}, ${family.content});
+export const ${typeName}Content = defineGameContent(manifest.code, ${family.content}, { formatVersion: 1, schema: ${family.schema} });
 `,
-    'rules.ts': `import { passTurn } from '../../../core/application/public-api';
+    'rules.ts': `import { defineAction, gameInput } from '../../../engine/sdk/public-api';
 
 export type ${typeName}State = Record<string, never>;
-export const ${typeName}Actions = { pass: passTurn<${typeName}State>() };
+export const ${typeName}Actions = { pass: defineAction<${typeName}State, Record<string, never>>({ input: gameInput.object({}), execute: ({ ctx }) => ctx.turn.end() }) };
 `,
-    'game.ts': `import { clockwise, defineGame${family.gameImports} } from '../../../core/application/public-api';
+    'game.ts': `import { defineGame${family.gameImports} } from '../../../engine/sdk/public-api';
+import manifest from './manifest.json';
 import { ${typeName}Content } from './content';
 import { ${typeName}Actions, type ${typeName}State } from './rules';
 
 ${family.declaration}
 
-export default defineGame<${typeName}State, typeof ${typeName}Actions>({
-  id: ${quote(code)},
-  displayName: ${quote(name)},
+export default defineGame<${typeName}State>()({
+  id: manifest.code,
+  displayName: manifest.name,
   category: ${quote(category)},
   subcategory: ${quote(world)},
-  description: ${quote(`Règles de ${name} à compléter.`)},
+  description: manifest.summary,
   content: ${typeName}Content,
-  players: { min: ${minPlayers}, max: ${maxPlayers} },
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
   ${family.definition}
-  turn: ${family.turn},
   actions: ${typeName}Actions,
 });
 `,
-    'game.spec.ts': `import { testGame } from '../../../core/application/public-api';
+    'game.spec.ts': `import { testGame } from '../../../engine/testing/public-api';
 import gameDefinition from './game';
 
 describe(${quote(name)}, () => {
@@ -119,18 +129,33 @@ describe(${quote(name)}, () => {
   };
 }
 
+function jsonOnlyTemplates(configuration) {
+  const { code, name, category = 'JeuxDePlateaux', world, minPlayers, maxPlayers } = configuration;
+  return {
+    'manifest.json': JSON.stringify({ code, name, engine: code, minPlayers, maxPlayers, summary: `Règles de ${name} à compléter.` }, null, 2) + '\n',
+    'game.json': JSON.stringify({
+      schemaVersion: 1, contentVersion: '1', definitionVersion: '1', category, world,
+      components: [], setup: { firstPlayer: 'first', scores: 0 }, resourceIds: [],
+      initialPhase: 'playing', phases: { playing: { actions: ['score'], terminal: true } },
+      actions: { score: { effects: [{ kind: 'gain-score', amount: 1 }, { kind: 'complete-turn' }] } },
+      victory: { kind: 'score-at-least', amount: 3 },
+    }, null, 2) + '\n',
+    'rules.md': `# ${name}\n\nÀ votre tour, gagnez un point. Le premier joueur à trois points gagne.\n`,
+  };
+}
+
 function familyTemplate(template, typeName) {
   if (template === 'card') {
     return {
       contentImports: '',
-      gameImports: ', cardGame',
+      gameImports: ', cardGame, cards, defineCardsSchema',
       content: "{ cards: [{ id: 'example-card' }] }",
-      declaration: `const pattern = cardGame<${typeName}State, { id: string }>({
-  cards: ${typeName}Content.data.cards,
-  initialHandSize: 1,
+      schema: "gameInput.object({ cards: gameInput.array(gameInput.object({ id: gameInput.string({ min: 1, max: 128 }) }), { min: 1, max: 10000 }) })",
+      declaration: `const schema = defineCardsSchema({
+  decks: { main: cards.deck({ id: 'main', cards: ${typeName}Content.data.cards, shuffle: true }) },
+  hands: { players: cards.hands({ id: 'players', deck: 'main', initial: 0, visibility: 'owner' }) },
 });`,
-      definition: 'components: pattern.components,\n  lifecycle: pattern.lifecycle,',
-      turn: 'pattern.turn ?? clockwise()',
+      definition: "patterns: [cardGame({ schema, deckId: 'main', handId: 'players' })],",
     };
   }
   if (template === 'race') {
@@ -138,9 +163,9 @@ function familyTemplate(template, typeName) {
       contentImports: '',
       gameImports: ', raceGame',
       content: '{ trackLength: 32 }',
-      declaration: `const pattern = raceGame<${typeName}State>({ spaces: ${typeName}Content.data.trackLength });`,
-      definition: 'components: pattern.components,',
-      turn: 'pattern.turn ?? clockwise()',
+      schema: 'gameInput.object({ trackLength: gameInput.number({ integer: true, min: 2, max: 1000 }) })',
+      declaration: '',
+      definition: `patterns: [raceGame({ spaces: ${typeName}Content.data.trackLength })],`,
     };
   }
   if (template === 'quiz') {
@@ -149,9 +174,9 @@ function familyTemplate(template, typeName) {
       gameImports: ', quiz',
       content:
         "{ questions: quizContent([{ id: 'example', prompt: 'À compléter', choices: ['A', 'B'], answerIndex: 0 }]) }",
+      schema: "{ parse(value: unknown) { const parsed = gameInput.object({ questions: gameInput.array(gameInput.object({ id: gameInput.string({ min: 1, max: 128 }), prompt: gameInput.string({ min: 1, max: 4000 }), choices: gameInput.array(gameInput.string({ min: 1, max: 1000 }), { min: 2, max: 20 }), answerIndex: gameInput.number({ integer: true, min: 0, max: 19 }) }), { min: 1, max: 10000 }) }).parse(value); return { questions: quizContent(parsed.questions) }; } }",
       declaration: '',
       definition: `components: [quiz.bank({ id: 'main', questions: ${typeName}Content.data.questions })],`,
-      turn: 'clockwise()',
     };
   }
   if (template === 'party') {
@@ -159,28 +184,28 @@ function familyTemplate(template, typeName) {
       contentImports: '',
       gameImports: ', simultaneousAnswers',
       content: '{ prompts: [] as string[] }',
-      declaration: `const pattern = simultaneousAnswers<${typeName}State>();`,
-      definition: '',
-      turn: 'pattern.turn ?? clockwise()',
+      schema: 'gameInput.object({ prompts: gameInput.array(gameInput.string({ min: 1, max: 4000 }), { max: 10000 }) })',
+      declaration: '',
+      definition: 'patterns: [simultaneousAnswers()],',
     };
   }
   if (template === 'board') {
     return {
       contentImports: '',
-      gameImports: ', grid',
+      gameImports: ', gridGame',
       content: '{ width: 8, height: 8 }',
+      schema: 'gameInput.object({ width: gameInput.number({ integer: true, min: 1, max: 100 }), height: gameInput.number({ integer: true, min: 1, max: 100 }) })',
       declaration: '',
-      definition: `components: [grid.board({ id: 'main', width: ${typeName}Content.data.width, height: ${typeName}Content.data.height })],`,
-      turn: 'clockwise()',
+      definition: `patterns: [gridGame({ boardId: 'main', width: ${typeName}Content.data.width, height: ${typeName}Content.data.height })],`,
     };
   }
   return {
     contentImports: '',
     gameImports: '',
     content: '{}',
+    schema: 'gameInput.object({})',
     declaration: '',
     definition: '',
-    turn: 'clockwise()',
   };
 }
 
@@ -195,8 +220,9 @@ async function createGame(configuration) {
     throw new Error(`Le dossier existe déjà: ${gameDirectory}`);
   }
   await fsp.mkdir(gameDirectory, { recursive: true });
-  const contentByFile = templates(configuration);
-  for (const file of GENERATED_FILES) {
+  const jsonOnly = configuration.jsonOnly === true;
+  const contentByFile = jsonOnly ? jsonOnlyTemplates(configuration) : templates(configuration);
+  for (const file of jsonOnly ? JSON_ONLY_FILES : GENERATED_FILES) {
     await fsp.writeFile(
       path.join(gameDirectory, file),
       contentByFile[file],
@@ -217,6 +243,7 @@ async function resolveConfiguration(argv) {
     minPlayers: Number(parsed.options.min ?? 2),
     maxPlayers: Number(parsed.options.max ?? 4),
     template: parsed.options.template ?? 'empty',
+    jsonOnly: parsed.options['json-only'] === 'true' || parsed.options['json-only'] === true,
   };
   if (parsed.options['games-root']) {
     defaults.gamesRoot = path.resolve(parsed.options['games-root']);

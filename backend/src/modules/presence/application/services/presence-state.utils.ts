@@ -1,4 +1,4 @@
-import { stringOrEmpty } from '@shared/utils/public-api';
+import { parseStrictInteger, stringOrEmpty } from '@shared/utils/public-api';
 
 export type PresenceConnectionContext =
   | 'home'
@@ -41,16 +41,7 @@ export type PresenceDecodedPlayer = {
 };
 
 export function parsePresenceRoomId(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
-    return value;
-  }
-  if (typeof value === 'string') {
-    const parsed = parseInt(value, 10);
-    if (!Number.isNaN(parsed) && parsed > 0) {
-      return parsed;
-    }
-  }
-  return null;
+  return parseStrictInteger(value, { min: 1 });
 }
 
 export function scorePresenceActivity(
@@ -95,7 +86,8 @@ export function decodePresenceCurrentRoom(
   if (id == null) {
     return null;
   }
-  const name = stringOrEmpty(record.name).trim() || `Table #${id}`;
+  const name =
+    stringOrEmpty(record.name).trim().slice(0, 255) || `Table #${id}`;
   return { id, name };
 }
 
@@ -107,7 +99,7 @@ export function decodePresencePublicPlayer(
   }
   const record = value as Record<string, unknown>;
   const id =
-    typeof record.id === 'number' && Number.isFinite(record.id)
+    typeof record.id === 'number' && Number.isSafeInteger(record.id)
       ? record.id
       : null;
   if (!id || id <= 0) {
@@ -121,7 +113,8 @@ export function decodePresencePublicPlayer(
   const currentRoom = decodePresenceCurrentRoom(record.currentRoom);
   const lastInteractionAt =
     typeof record.lastInteractionAt === 'number' &&
-    Number.isFinite(record.lastInteractionAt)
+    Number.isSafeInteger(record.lastInteractionAt) &&
+    record.lastInteractionAt >= 0
       ? record.lastInteractionAt
       : 0;
   const roomStarted =
@@ -129,7 +122,8 @@ export function decodePresencePublicPlayer(
 
   return {
     id,
-    username: stringOrEmpty(record.username).trim() || `user#${id}`,
+    username:
+      stringOrEmpty(record.username).trim().slice(0, 255) || `user#${id}`,
     activity,
     currentRoom,
     lastInteractionAt,
@@ -138,11 +132,18 @@ export function decodePresencePublicPlayer(
 }
 
 export function mergePresencePlayersFromOrigins(
-  playersByOrigin: Map<string, { at: number; players: PresencePublicPlayer[] }>,
+  playersByOrigin: ReadonlyMap<
+    string,
+    { at: number; players: readonly PresencePublicPlayer[] }
+  >,
 ): PresencePublicPlayer[] {
   const combined: PresencePublicPlayer[] = [];
-  for (const entry of playersByOrigin.values()) {
-    combined.push(...(entry.players ?? []));
+  // Resolve equal-priority metadata by origin ID, independently of delivery order.
+  const origins = [...playersByOrigin].sort(([left], [right]) =>
+    left < right ? -1 : left > right ? 1 : 0,
+  );
+  for (const [, entry] of origins) {
+    combined.push(...(entry.players ?? []).slice(0, 1_000));
   }
 
   const byUser = new Map<number, PresencePublicPlayer>();
@@ -175,7 +176,7 @@ export function mergePresencePlayersFromOrigins(
     }
   }
 
-  return Array.from(byUser.values());
+  return Array.from(byUser.values()).sort((left, right) => left.id - right.id);
 }
 
 export function computePresenceAvailability(

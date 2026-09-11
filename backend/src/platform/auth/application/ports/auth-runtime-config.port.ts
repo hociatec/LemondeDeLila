@@ -10,7 +10,7 @@ export type AuthRuntimeConfig = {
 
 function trimOrNull(value: string | undefined): string | null {
   const trimmed = String(value ?? '').trim();
-  return trimmed || null;
+  return trimmed ? trimmed.slice(0, 16_384) : null;
 }
 
 export function readAuthRuntimeConfigFromEnv(): AuthRuntimeConfig {
@@ -23,10 +23,12 @@ export function readAuthRuntimeConfigFromEnv(): AuthRuntimeConfig {
     jwtPrivateKeyPath: trimOrNull(readEnvironment('JWT_PRIVATE_KEY_PATH')),
     jwtPublicKeyPem: trimOrNull(readEnvironment('JWT_PUBLIC_KEY_PEM')),
     jwtPublicKeyPath: trimOrNull(readEnvironment('JWT_PUBLIC_KEY_PATH')),
-    jwtIssuer: trimOrNull(readEnvironment('JWT_ISSUER')) ?? 'le-monde-de-lila',
-    jwtAudience: trimOrNull(readEnvironment('JWT_AUDIENCE')),
+    jwtIssuer: (trimOrNull(readEnvironment('JWT_ISSUER')) ?? 'le-monde-de-lila').slice(0, 128),
+    jwtAudience: trimOrNull(readEnvironment('JWT_AUDIENCE'))?.slice(0, 128) ?? null,
     jwtClockToleranceSeconds:
-      Number.isFinite(clockToleranceRaw) && clockToleranceRaw >= 0
+      Number.isFinite(clockToleranceRaw) &&
+      clockToleranceRaw >= 0 &&
+      clockToleranceRaw <= 300
         ? clockToleranceRaw
         : 10,
   };

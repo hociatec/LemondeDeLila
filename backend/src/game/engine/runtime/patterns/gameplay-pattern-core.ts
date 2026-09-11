@@ -1,15 +1,12 @@
-import type {
-  GameComponentDefinition,
-  GameInitialization,
-} from '../definitions/component-kit';
-import type { GameLifecycleHooks } from '../lifecycle/game-lifecycle-hooks';
-import type { TurnPolicy } from '../kits/turn-kit';
-import type { VictoryRule } from '../definitions/game-definition';
-import type { GameActionMap } from '../definitions/game-definition';
+import type { GamePattern } from '../contracts/pattern-definition';
+import type { GameComponentDefinition } from '../definitions/component-kit';
+import type { TurnPolicy } from './pattern-capabilities';
+
+import type { GameActionMap } from '../contracts/author-rule-contracts';
 import {
   composeGameConfigurations,
   type GameConfigurationShape,
-} from '../configuration/configuration-kit';
+} from './pattern-capabilities';
 import {
   assertComposablePatterns,
   composeInitialization,
@@ -17,21 +14,14 @@ import {
   composeVictory,
 } from './gameplay-pattern-composition';
 
-export type GamePattern<TState extends object> = {
-  readonly id: string;
-  readonly mechanics: readonly string[];
-  readonly components?: readonly GameComponentDefinition[];
-  readonly lifecycle?: GameLifecycleHooks<TState>;
-  readonly initialization?: GameInitialization;
-  readonly turn?: TurnPolicy;
-  readonly victory?: VictoryRule<TState>;
-  readonly actions?: GameActionMap<TState>;
-  readonly config?: GameConfigurationShape<TState>;
-};
-
-export function definePattern<TState extends object>(
-  pattern: GamePattern<TState>,
-): GamePattern<TState> {
+export function definePattern<
+  TState extends object,
+  TKind extends GameComponentDefinition['component'] =
+    GameComponentDefinition['component'],
+  const TMechanic extends string = string,
+>(
+  pattern: GamePattern<TState, TKind, TMechanic>,
+): GamePattern<TState, TKind, TMechanic> {
   return Object.freeze({
     ...pattern,
     mechanics: Object.freeze([...pattern.mechanics]),
@@ -47,6 +37,9 @@ export function composePatterns<TState extends object>(
   return {
     ids: patterns.map((pattern) => pattern.id),
     mechanics: [...new Set(patterns.flatMap((pattern) => pattern.mechanics))],
+    resourceIds: [
+      ...new Set(patterns.flatMap((pattern) => pattern.resourceIds ?? [])),
+    ],
     components: patterns.flatMap((pattern) => pattern.components ?? []),
     actions: patterns.reduce<GameActionMap<TState>>(
       (merged, pattern) => ({
@@ -77,3 +70,5 @@ export function composePatterns<TState extends object>(
     ),
   };
 }
+
+export type { GamePattern } from '../contracts/pattern-definition';

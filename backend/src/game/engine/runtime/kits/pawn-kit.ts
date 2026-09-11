@@ -4,7 +4,7 @@ import {
   GameRuleViolationError,
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
 import { resolveTrackPosition } from './movement-kit';
 
 export type PawnDefinition = {
@@ -50,9 +50,17 @@ export const pawns = {
       perPlayer?: number;
     },
   ): PawnSetDefinition {
-    const perPlayer = Math.max(1, Math.floor(definition.perPlayer ?? 1));
+    const perPlayer = definition.perPlayer ?? 1;
     const ids = definition.pawns.map((pawn) => pawn.id);
-    if (ids.length === 0 || new Set(ids).size !== ids.length) {
+    if (
+      ids.length === 0 ||
+      ids.length > 10_000 ||
+      ids.some((id) => !id.trim() || id.length > 128) ||
+      new Set(ids).size !== ids.length ||
+      !Number.isSafeInteger(perPlayer) ||
+      perPlayer < 1 ||
+      perPlayer > ids.length
+    ) {
       throw new GameConfigurationError('Catalogue de pions invalide');
     }
     return Object.freeze({
@@ -69,7 +77,7 @@ export const pawns = {
 export class GamePawnController {
   constructor(
     private readonly state: PawnKitState,
-    private readonly players: readonly PlayerStateEntity[],
+    private readonly players: readonly PlayerState[],
     private readonly emit: (
       type: string,
       data: Record<string, unknown>,

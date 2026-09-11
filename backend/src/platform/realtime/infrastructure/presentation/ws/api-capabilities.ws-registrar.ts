@@ -1,4 +1,5 @@
-﻿import { Injectable, OnModuleInit } from '@nestjs/common';
+import { presentationTimestamp } from '../../../../serialization/public-api';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { WsRouteRegistry } from '../../../../ws/public-api';
 import { WS_EVENTS } from './ws-events';
 
@@ -32,7 +33,7 @@ export class ApiCapabilitiesWsRegistrar implements OnModuleInit {
             },
             routesCount: this.registry.listTypes().length,
             wsTypes,
-            generatedAt: new Date().toISOString(),
+            generatedAt: presentationTimestamp(),
           },
         };
       },

@@ -1,5 +1,5 @@
 import type { VaultRoomSnapshot } from '../../vault.types';
-import { isVaultGameState } from '../contracts/vault-game-state.model';
+import { isVaultGameState } from '../models/vault-game-state.model';
 
 export function decodeVaultRoomSnapshot(
   value: unknown,
@@ -8,6 +8,7 @@ export function decodeVaultRoomSnapshot(
     !isRecord(value) ||
     value.version !== 1 ||
     typeof value.savedAt !== 'string' ||
+    !Number.isFinite(Date.parse(value.savedAt)) ||
     !isRecord(value.room) ||
     !isRecord(value.roster) ||
     !isRecord(value.game)
@@ -25,15 +26,27 @@ export function decodeVaultRoomSnapshot(
   const bots = decodeArray(roster.bots, decodeRosterBot);
   if (
     typeof room.name !== 'string' ||
+    room.name.length > 255 ||
     typeof room.isPrivate !== 'boolean' ||
     typeof room.maxPlayers !== 'number' ||
     !Number.isSafeInteger(room.maxPlayers) ||
+    room.maxPlayers < 1 ||
+    room.maxPlayers > 64 ||
     !isNullableString(room.tableAmbienceSoundId) ||
+    (typeof room.tableAmbienceSoundId === 'string' &&
+      room.tableAmbienceSoundId.length > 128) ||
     !isNullableSafeInteger(roster.ownerUserId) ||
     !players ||
+    players.length > room.maxPlayers ||
+    !uniqueIds(players) ||
     spectators === null ||
+    (spectators !== undefined && spectators.length > 1000) ||
     !bots ||
+    bots.length > 64 ||
+    !uniqueIds(bots) ||
     typeof game.gameType !== 'string' ||
+    game.gameType.length > 128 ||
+    !game.gameType.trim() ||
     !isVaultGameState(game.state)
   ) {
     return null;
@@ -63,7 +76,9 @@ function decodeRosterUser(
   return isRecord(value) &&
     typeof value.id === 'number' &&
     Number.isSafeInteger(value.id) &&
-    typeof value.username === 'string'
+    value.id > 0 &&
+    typeof value.username === 'string' &&
+    value.username.length <= 255
     ? { id: value.id, username: value.username }
     : null;
 }
@@ -72,7 +87,9 @@ function decodeRosterBot(value: unknown): { id: number; name: string } | null {
   return isRecord(value) &&
     typeof value.id === 'number' &&
     Number.isSafeInteger(value.id) &&
-    typeof value.name === 'string'
+    value.id > 0 &&
+    typeof value.name === 'string' &&
+    value.name.length <= 255
     ? { id: value.id, name: value.name }
     : null;
 }
@@ -86,13 +103,18 @@ function decodeArray<T>(
   return decoded.every((item): item is T => item !== null) ? decoded : null;
 }
 
+function uniqueIds(values: { id: number }[]): boolean {
+  return new Set(values.map((value) => value.id)).size === values.length;
+}
+
 function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === 'string';
 }
 
 function isNullableSafeInteger(value: unknown): value is number | null {
   return (
-    value === null || (typeof value === 'number' && Number.isSafeInteger(value))
+    value === null ||
+    (typeof value === 'number' && Number.isSafeInteger(value) && value > 0)
   );
 }
 

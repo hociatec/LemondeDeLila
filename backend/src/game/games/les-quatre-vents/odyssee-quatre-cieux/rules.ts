@@ -1,14 +1,16 @@
-import { defineAction, gameInput } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
-import type { PawnMove } from '../../../engine/sdk/public-api';
-import { ODYSSEE_CONTENT } from './content';
+import {
+  defineAction,
+  defineChoice,
+  gameInput,
+  rejectRule,
+} from '../../../engine/sdk/public-api';
+import type { OdysseeMove } from './types';
+
 import type { NoGameState as OdysseeState } from '../../../engine/sdk/public-api';
+import { ODYSSEE_CONTENT } from './content';
 
 type RuleContext = GameContext<OdysseeState>;
-
-export type OdysseeMove = PawnMove & {
-  roll: number;
-};
 
 export const roll = defineAction<OdysseeState, Record<string, never>>({
   input: gameInput.object({}),
@@ -88,3 +90,21 @@ function pawnName(index: number): string {
 function pawnIndex(pawnId: string): number {
   return Number(pawnId.split(':')[1]);
 }
+
+export const GAME_CHOICES = {
+  'odyssee.move': defineChoice<OdysseeState, OdysseeMove>({
+    input: gameInput.object({
+      pawnId: gameInput.string({ min: 1, max: 128 }),
+      from: gameInput.number({ integer: true }),
+      to: gameInput.number({ integer: true }),
+      distance: gameInput.number({ integer: true }),
+      roll: gameInput.number({ integer: true, min: 1 }),
+    }),
+    resolve: ({ state, actor, value, ctx }) => {
+      const total = ctx.dice.last('main')?.total;
+      if (total == null) rejectRule('Lancer Odyssée introuvable');
+      moveOdysseePawn(state, actor.id, value, ctx);
+      if (ctx.match.lifecycle() !== 'finished') endMove(ctx, total);
+    },
+  }),
+};

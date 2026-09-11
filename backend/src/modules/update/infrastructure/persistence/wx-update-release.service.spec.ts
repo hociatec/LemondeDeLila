@@ -4,11 +4,47 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { canonicalizeWxUpdateSignature } from '../../domain/wx-update-manifest';
+import { WxUpdateArtifactValidatorService } from './wx-update-artifact-validator.service';
 import { WxUpdateReleaseService } from './wx-update-release.service';
+
+function validZipPayload(label: string): Buffer {
+  const name = Buffer.from('payload.txt');
+  const body = Buffer.from(label);
+  const local = Buffer.alloc(30 + name.length + body.length);
+  local.writeUInt32LE(0x04034b50, 0);
+  local.writeUInt16LE(name.length, 26);
+  local.writeUInt32LE(body.length, 18);
+  name.copy(local, 30);
+  body.copy(local, 30 + name.length);
+  const central = Buffer.alloc(46 + name.length);
+  central.writeUInt32LE(0x02014b50, 0);
+  central.writeUInt16LE(name.length, 28);
+  central.writeUInt32LE(body.length, 20);
+  central.writeUInt32LE(body.length, 24);
+  name.copy(central, 46);
+  const eocd = Buffer.alloc(22);
+  eocd.writeUInt32LE(0x06054b50, 0);
+  eocd.writeUInt16LE(1, 8);
+  eocd.writeUInt16LE(1, 10);
+  eocd.writeUInt32LE(central.length, 12);
+  eocd.writeUInt32LE(local.length, 16);
+  return Buffer.concat([local, central, eocd]);
+}
+
+function validPePayload(): Buffer {
+  const value = Buffer.alloc(512);
+  value.writeUInt16LE(0x5a4d, 0);
+  value.writeUInt32LE(0x80, 0x3c);
+  value.writeUInt32LE(0x00004550, 0x80);
+  value.writeUInt16LE(0x8664, 0x84);
+  value.writeUInt16LE(1, 0x86);
+  return value;
+}
 
 describe('WxUpdateReleaseService', () => {
   let root: string;
   let releases: WxUpdateReleaseService;
+  let now: number;
   let privateKey: ReturnType<typeof generateKeyPairSync>['privateKey'];
 
   beforeEach(async () => {
@@ -22,7 +58,8 @@ describe('WxUpdateReleaseService', () => {
       .export({ type: 'spki', format: 'der' })
       .toString('base64');
     delete process.env.CLIENT_WX_ALLOW_UNSIGNED;
-    releases = new WxUpdateReleaseService();
+    now = Date.parse('2026-09-09T00:00:00Z');
+    releases = new WxUpdateReleaseService(undefined, { now: () => now });
   });
 
   afterEach(async () => {
@@ -33,24 +70,55 @@ describe('WxUpdateReleaseService', () => {
     await fs.promises.rm(root, { recursive: true, force: true });
   });
 
+  it('rejects files that only spoof ZIP or PE magic bytes', async () => {
+    const validator = new WxUpdateArtifactValidatorService();
+    const fakeZip = path.join(root, 'fake.zip');
+    const fakePe = path.join(root, 'fake.exe');
+    await fs.promises.writeFile(fakeZip, Buffer.from('PK\x03\x04not-a-zip'));
+    await fs.promises.writeFile(fakePe, Buffer.from('MZnot-a-pe'));
+    await expect(
+      validator.validateArtifact(
+        {
+          zipPath: fakeZip,
+          expectedSha256: createHash('sha256')
+            .update('PK\x03\x04not-a-zip')
+            .digest('hex'),
+        } as never,
+        1024,
+      ),
+    ).rejects.toThrow('Archive WX invalide');
+    await expect(
+      validator.validateInstaller({ installerZipPath: fakePe } as never, 1024),
+    ).rejects.toThrow('Installateur WX invalide');
+  });
+
   const publishRelease = async (input: {
     releaseId: string;
     version: string;
     sequence: number;
     content: Buffer;
+    installerZipPath?: string;
+    mandatoryAt?: string;
   }) => {
     const archive = path.join(root, `${input.releaseId}.zip`);
     await fs.promises.writeFile(archive, input.content);
     const sha256 = createHash('sha256').update(input.content).digest('hex');
+    const installerContent = input.installerZipPath
+      ? await fs.promises.readFile(input.installerZipPath)
+      : null;
+    const installerSha256 = installerContent
+      ? createHash('sha256').update(installerContent).digest('hex')
+      : null;
     const fields = {
       releaseId: input.releaseId,
       version: input.version,
       sequence: input.sequence,
       publishedAt: '2026-08-24T12:00:00.000Z',
-      mandatoryAt: null,
+      mandatoryAt: input.mandatoryAt ?? null,
       minimumVersion: null,
       artifactSize: input.content.length,
       artifactSha256: sha256,
+      installerSha256,
     };
     const signature = sign(
       'RSA-SHA256',
@@ -61,15 +129,141 @@ describe('WxUpdateReleaseService', () => {
       zipPath: archive,
       ...fields,
       expectedSha256: sha256,
+      expectedInstallerSha256: installerSha256 ?? undefined,
       signature,
+      installerZipPath: input.installerZipPath,
     });
   };
+
+  it('applies a signed mandatory deadline using the injected clock', async () => {
+    const deadline = now + 1000;
+    await publishRelease({
+      releaseId: 'deadline',
+      version: '1.4.2',
+      sequence: 1,
+      content: validZipPayload('archive'),
+      mandatoryAt: new Date(deadline).toISOString(),
+    });
+    expect((await releases.getForClient('1.4.1', null))?.mandatory).toBe(false);
+    now = deadline;
+    expect((await releases.getForClient('1.4.1', null))?.mandatory).toBe(true);
+  });
+
+  it('refuses a competing publication before creating a manifest', async () => {
+    const acquire = jest.fn().mockResolvedValue(null);
+    releases = new WxUpdateReleaseService(undefined, { now: () => now }, {
+      acquire,
+    } as never);
+    await expect(
+      publishRelease({
+        releaseId: 'busy',
+        version: '1.0.0',
+        sequence: 1,
+        content: validZipPayload('busy'),
+      }),
+    ).rejects.toThrow('déjà en cours');
+    expect(acquire).toHaveBeenCalledWith('lemonde:update:publication', 900000);
+    expect(fs.existsSync(path.join(root, 'latest.json'))).toBe(false);
+  });
+
+  it('does not publish a manifest if the distributed lease is lost while preparing files', async () => {
+    const lease = {
+      isHeld: jest.fn().mockResolvedValueOnce(true).mockResolvedValue(false),
+      release: jest.fn().mockResolvedValue(undefined),
+    };
+    releases = new WxUpdateReleaseService(undefined, { now: () => now }, {
+      acquire: async () => lease,
+    } as never);
+    await expect(
+      publishRelease({
+        releaseId: 'lost',
+        version: '1.0.0',
+        sequence: 1,
+        content: validZipPayload('lost'),
+      }),
+    ).rejects.toThrow('Bail');
+    expect(fs.existsSync(path.join(root, 'latest.json'))).toBe(false);
+    expect(lease.release).toHaveBeenCalledTimes(1);
+  });
+
+  it('releases the distributed lease after a successful publication', async () => {
+    const lease = {
+      isHeld: jest.fn().mockResolvedValue(true),
+      release: jest.fn().mockResolvedValue(undefined),
+    };
+    releases = new WxUpdateReleaseService(undefined, { now: () => now }, {
+      acquire: async () => lease,
+    } as never);
+    await publishRelease({
+      releaseId: 'held',
+      version: '1.0.0',
+      sequence: 1,
+      content: validZipPayload('held'),
+    });
+    expect(fs.existsSync(path.join(root, 'latest.json'))).toBe(true);
+    expect(lease.release).toHaveBeenCalledTimes(1);
+  });
+
+  it('never exposes a partial installer when completing an existing release directory', async () => {
+    const releaseId = 'interrupted-release';
+    const content = validZipPayload('archive');
+    const finalDir = path.join(root, 'artifacts', 'releases', releaseId);
+    await fs.promises.mkdir(finalDir, { recursive: true });
+    await fs.promises.writeFile(
+      path.join(finalDir, 'client-wx-1.4.2-windows-x64.zip'),
+      content,
+    );
+    const installerZipPath = path.join(root, 'installer.exe');
+    await fs.promises.writeFile(installerZipPath, validPePayload());
+    const copy = jest
+      .spyOn(fs.promises, 'copyFile')
+      .mockImplementationOnce(async (_source, destination) => {
+        await fs.promises.writeFile(destination, 'partial');
+        throw new Error('interrupted copy');
+      });
+    try {
+      await expect(
+        publishRelease({
+          releaseId,
+          version: '1.4.2',
+          sequence: 1,
+          content,
+          installerZipPath,
+        }),
+      ).rejects.toThrow('interrupted copy');
+      await expect(
+        fs.promises.stat(
+          path.join(finalDir, 'LeMondeDeLilaWX-1.4.2-Setup.exe'),
+        ),
+      ).rejects.toMatchObject({ code: 'ENOENT' });
+      expect(await releases.getLatest()).toBeNull();
+      expect(
+        await fs.promises.readdir(path.join(root, 'artifacts', '.staging')),
+      ).toEqual([]);
+    } finally {
+      copy.mockRestore();
+    }
+    const manifest = await publishRelease({
+      releaseId,
+      version: '1.4.2',
+      sequence: 1,
+      content,
+      installerZipPath,
+    });
+    expect(manifest.installer).toBeDefined();
+    expect(
+      await fs.promises.readFile(
+        path.join(finalDir, 'LeMondeDeLilaWX-1.4.2-Setup.exe'),
+        'utf8',
+      ),
+    ).toHaveLength(512);
+  });
 
   it('publishes an immutable, signed manifest and enforces the minimum version', async () => {
     const archive = path.join(root, 'client.zip');
     const installer = path.join(root, 'installer.zip');
-    const content = Buffer.from('PK\x03\x04signed-test-archive');
-    const installerContent = Buffer.from('MZinstaller-test-archive');
+    const content = validZipPayload('signed-test-archive');
+    const installerContent = validPePayload();
     await fs.promises.writeFile(archive, content);
     await fs.promises.writeFile(installer, installerContent);
     const sha256 = createHash('sha256').update(content).digest('hex');
@@ -85,6 +279,7 @@ describe('WxUpdateReleaseService', () => {
       minimumVersion: '1.4.2',
       artifactSize: content.length,
       artifactSha256: sha256,
+      installerSha256: installerSha256,
     };
     expect(canonicalizeWxUpdateSignature(fields)).toBe(
       [
@@ -101,6 +296,7 @@ describe('WxUpdateReleaseService', () => {
         'minimumVersion=1.4.2',
         `artifactSize=${content.length}`,
         `artifactSha256=${sha256}`,
+        `installerSha256=${installerSha256}`,
       ].join('\n'),
     );
     const signature = sign(
@@ -140,7 +336,7 @@ describe('WxUpdateReleaseService', () => {
 
   it('rejects traversal release identifiers before touching the release tree', async () => {
     const archive = path.join(root, 'client.zip');
-    await fs.promises.writeFile(archive, Buffer.from('PK\x03\x04archive'));
+    await fs.promises.writeFile(archive, validZipPayload('archive'));
     await expect(
       releases.publish({
         zipPath: archive,
@@ -162,7 +358,7 @@ describe('WxUpdateReleaseService', () => {
       releaseId: '1.4.1-release-old',
       version: '1.4.1',
       sequence: 1,
-      content: Buffer.from('PK\x03\x04old-release'),
+      content: validZipPayload('old-release'),
     });
     await fs.promises.writeFile(path.join(releasesDir, 'orphan.tmp'), 'stale');
 
@@ -170,7 +366,7 @@ describe('WxUpdateReleaseService', () => {
       releaseId: '1.4.2-release-latest',
       version: '1.4.2',
       sequence: 2,
-      content: Buffer.from('PK\x03\x04latest-release'),
+      content: validZipPayload('latest-release'),
     };
     await publishRelease(latestInput);
 

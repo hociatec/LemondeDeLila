@@ -1,0 +1,257 @@
+{
+  "date": "2026-09-11",
+  "scope": "Continuation of the first 60 still-open points selected in corrections-next-batch-2026-09-11.json",
+  "requestedIds": [
+    1,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    16,
+    17,
+    18,
+    19,
+    23,
+    24,
+    29,
+    31,
+    112,
+    114,
+    115,
+    116,
+    120,
+    121,
+    122,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    139,
+    143,
+    145,
+    147
+  ],
+  "requested": 45,
+  "validated": 9,
+  "validatedIds": [
+    1,
+    4,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+  ],
+  "remaining": 36,
+  "remainingIds": [
+    5,
+    6,
+    14,
+    16,
+    17,
+    18,
+    19,
+    23,
+    24,
+    29,
+    31,
+    112,
+    114,
+    115,
+    116,
+    120,
+    121,
+    122,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    139,
+    143,
+    145,
+    147
+  ],
+  "complete": false,
+  "batchProgress": {
+    "requested": 60,
+    "validated": 24,
+    "remaining": 36
+  },
+  "validation": {
+    "typecheck": "passed",
+    "build": "passed; compiled AppModule loads",
+    "jest": "280 suites / 1307 tests passed, plus the new author-context compatibility suite / 1 test; --forceExit for pre-existing open handles",
+    "architecture": "0 violations; no baseline",
+    "runtimeGraph": {
+      "files": 152,
+      "cycles": [],
+      "compilerDependencies": []
+    },
+    "sdk": "79 public exports preserved; 105 declaration files reviewed and refreshed for internal contract moves at SDK 5.2.0; SDK contract check passed",
+    "toolTests": "57 tool regression tests passed: 29 SDK/game architecture and 28 architecture/double-cast/runtime graph/separation"
+  },
+  "points": [
+    {
+      "id": 1,
+      "point": "**Le gros cycle du runtime moteur existe toujours** : j’en détecte encore un sur **49 fichiers** dans `game/engine/runtime`, autour de `game-definition-*`, `game-context-*`, `effects-*`, `patterns/*`, `recipes/*`, `movement-kit`, `pawn-kit`, `phase-kit`, lifecycle et configuration. C’est actuellement le principal point empêchant de considérer l’architecture moteur comme complètement découplée.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Removed the runtime strongly connected component. All 152 production files form an acyclic graph including type imports, re-exports, dynamic imports and TypeScript aliases. A regression audit rejects every cycle without a baseline.",
+      "evidence": [
+        "tools/runtime-dependency-graph.cjs",
+        "tools/runtime-dependency-graph.spec.cjs",
+        "logs/corrections-runtime-dependency-graph.json"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 4,
+      "point": "**La direction des dépendances internes du moteur n’est toujours pas strictement descendante** : plusieurs couches bas niveau connaissent encore des structures de définition/compilation qui redépendent ensuite d’elles.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Execution entry points no longer depend transitively on the definition compiler, definition validator, pattern builders or recipe builders. Low-level author commands and independently owned contracts establish a descending acyclic dependency graph. The audit also rejects indirect upward paths.",
+      "evidence": [
+        "tools/runtime-dependency-graph.cjs",
+        "tools/runtime-separation-audit.cjs",
+        "docs/architecture/runtime-contract-direction.md"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 7,
+      "point": "**`game-definition-contracts.ts` reste trop central** : il concentre encore de nombreux concepts et participe directement au grand cycle.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Split author rules, pattern fragments, effect resolvers, validation input, configuration state and persistent runtime state out of the compiled definition contract. The remaining definition contract no longer participates in any cycle.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/author-rule-contracts.ts",
+        "src/game/engine/runtime/contracts/pattern-definition.ts",
+        "src/game/engine/runtime/contracts/definition-validation.ts",
+        "src/game/engine/runtime/state/declarative-state.ts",
+        "src/game/engine/runtime/definitions/game-definition-contracts.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 8,
+      "point": "**Les patterns restent trop liés au runtime/definition compiler** : idéalement ils devraient produire des fragments déclaratifs sans connaître la couche d’exécution.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Pattern fragments now depend on independent author rule/context contracts and kit primitives. They no longer acquire the execution context class or compiler through these contracts. Existing composition behavior is preserved.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/pattern-definition.ts",
+        "src/game/engine/runtime/definitions/game-author-context.ts",
+        "tools/runtime-dependency-graph.cjs"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 9,
+      "point": "**Les recipes restent trop liées aux structures supérieures du moteur** : elles devraient dépendre uniquement de primitives/contracts suffisamment bas niveau.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Recipes import low-level action builders and author rule contracts directly. Action and choice builders and their typed handler adapter no longer import the compiled definition or definition compiler.",
+      "evidence": [
+        "src/game/engine/runtime/actions/action-builders.ts",
+        "src/game/engine/runtime/actions/typed-runtime-handler.ts",
+        "src/game/engine/runtime/contracts/author-rule-contracts.ts",
+        "tools/runtime-separation-audit.cjs"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 10,
+      "point": "**Les effects restent fortement interconnectés avec definitions, validators et runtime execution** : définition, validation et exécution doivent être séparées plus strictement.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Effect instruction/resolver contracts, author effect capability, typed builder adapter, validation inputs and execution are separate. Effect execution cannot reach the game compiler/validator/pattern/recipe builders through its imports.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/effect-resolver.ts",
+        "src/game/engine/runtime/contracts/context-effect-capability.ts",
+        "src/game/engine/runtime/contracts/definition-validation.ts",
+        "src/game/engine/runtime/actions/typed-runtime-handler.ts",
+        "tools/runtime-dependency-graph.cjs"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 11,
+      "point": "**Le lifecycle reste pris dans le même graphe cyclique** : `game-turn-controller`, `game-turn-schedule` et hooks devraient dépendre d’un modèle compilé minimal plutôt que de structures qui redépendent du lifecycle.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Turn controller and turn schedule use minimal TurnRuntimeState and TurnScheduleState contracts instead of the full declarative state/compiled definition. Lifecycle hooks use the independently owned author context. Their transitive imports are acyclic.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/turn-runtime-state.ts",
+        "src/game/engine/runtime/lifecycle/game-turn-controller.ts",
+        "src/game/engine/runtime/lifecycle/game-turn-schedule.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 12,
+      "point": "**`GameRuleContext` reste au centre du gros cycle** : même s’il a été amélioré, il reste une façade très large du runtime.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "The runtime context implements the independently owned GameContextCapabilities interface. Author context no longer derives its contract by importing the runtime class. Compile-time bidirectional compatibility and forbidden orchestration API assertions preserve the existing public surface.",
+      "evidence": [
+        "src/game/engine/runtime/game-rule-context.ts",
+        "src/game/engine/runtime/definitions/game-context-capabilities.ts",
+        "src/game/engine/runtime/definitions/game-author-context.ts",
+        "src/game/engine/runtime/definitions/game-author-context.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 13,
+      "point": "**Les capacités de `GameRuleContext` devraient encore être davantage segmentées** : lifecycle, players, components, interactions, effects, scheduling et values devraient être des sous-capabilities plus indépendantes.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Segmented player, lifecycle, value, component, interaction, effect and scheduling capabilities into independently owned contracts. Turn/configuration/effect command ports are explicit; other controllers expose structural public views. Existing facade aliases remain compatible.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/context-players-capability.ts",
+        "src/game/engine/runtime/contracts/context-lifecycle-capability.ts",
+        "src/game/engine/runtime/contracts/context-values-capability.ts",
+        "src/game/engine/runtime/contracts/context-components-capability.ts",
+        "src/game/engine/runtime/contracts/context-interactions-capability.ts",
+        "src/game/engine/runtime/contracts/context-effect-capability.ts",
+        "src/game/engine/runtime/contracts/context-scheduling-capability.ts",
+        "src/game/engine/runtime/definitions/game-context-facades.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    }
+  ],
+  "limitations": [
+    "The selected 60-point batch is not complete.",
+    "AuthorGameDefinition/neutral compiled IR separation and complete optional capability filtering remain open.",
+    "No live MySQL/Redis multi-instance campaign was run."
+  ]
+}

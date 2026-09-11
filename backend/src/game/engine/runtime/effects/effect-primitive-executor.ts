@@ -1,5 +1,8 @@
 import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
-import type { EffectSource, GameEffectInstruction } from './effects-kit';
+import type {
+  EffectSource,
+  GameEffectInstruction,
+} from '../contracts/effect-ir';
 
 type ControlEffectInstruction = Extract<
   GameEffectInstruction,

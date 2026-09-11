@@ -8,9 +8,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../../../../user/public-api';
+import type { Relation } from 'typeorm';
 import { RoomParticipant } from './room-participant.entity';
 import { RoomBot } from './room-bot.entity';
+import type { RoomUserPersistenceRef } from './room-user.persistence-ref';
 
 @Entity({ name: 'rooms' })
 @Index('idx_rooms_lobby_status_privacy_created', [
@@ -37,9 +38,9 @@ export class Room {
   @Column({ type: 'varchar', length: 50, default: 'setup' })
   status!: string;
 
-  @ManyToOne(() => User, { eager: true, nullable: true })
+  @ManyToOne('User', { eager: true, nullable: true })
   @JoinColumn({ name: 'owner_id' })
-  owner?: User | null;
+  owner?: Relation<RoomUserPersistenceRef> | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime' })
   createdAt!: Date;

@@ -1,7 +1,7 @@
 import {
   isVaultGameState,
   type VaultGameState,
-} from '../contracts/vault-game-state.model';
+} from '../models/vault-game-state.model';
 
 export type VaultGameStateRemapOptions = {
   roomId: number;
@@ -12,7 +12,12 @@ export type VaultGameStateRemapOptions = {
   botNamesByNewId: Map<number, string>;
 };
 
-function remapValue(value: unknown, botIdMap: Map<number, number>): unknown {
+function remapValue(
+  value: unknown,
+  botIdMap: Map<number, number>,
+  depth = 0,
+): unknown {
+  if (depth > 32) return null;
   if (
     value == null ||
     typeof value === 'string' ||
@@ -24,19 +29,22 @@ function remapValue(value: unknown, botIdMap: Map<number, number>): unknown {
     return botIdMap.get(value) ?? value;
   }
   if (Array.isArray(value)) {
-    return value.map((item) => remapValue(item, botIdMap));
+    return value
+      .slice(0, 10_000)
+      .map((item) => remapValue(item, botIdMap, depth + 1));
   }
   if (typeof value !== 'object') {
     return value;
   }
   const remapped: Record<string, unknown> = {};
-  for (const [key, item] of Object.entries(value)) {
+  for (const [key, item] of Object.entries(value).slice(0, 2_000)) {
+    if (key.length > 256) continue;
     const numericKey = Number(key);
     const nextKey =
       Number.isFinite(numericKey) && botIdMap.has(numericKey)
         ? String(botIdMap.get(numericKey))
         : key;
-    remapped[nextKey] = remapValue(item, botIdMap);
+    remapped[nextKey] = remapValue(item, botIdMap, depth + 1);
   }
   return remapped;
 }

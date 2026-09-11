@@ -12,4 +12,6 @@ export type WsRuntimeConfig = {
   jwtPublicKeyPem: string | null;
   jwtPublicKeyPath: string | null;
   maxBufferedBytes: number;
+  wsRateLimitWindowMs: number;
+  wsRateLimitCount: number;
 };

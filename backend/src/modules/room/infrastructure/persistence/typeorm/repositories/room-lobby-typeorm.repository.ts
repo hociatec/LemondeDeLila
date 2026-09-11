@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import type { RoomLobbyRepository } from '../../../../application/ports/room-lobby.repository';
-import type { RoomRecord } from '../../../../application/contracts/room-record.model';
-import { OPEN_ROOM_STATUSES } from '../../../../application/contracts/room-status.model';
+import type { RoomRecord } from '../../../../application/models/room-record.model';
+import { OPEN_ROOM_STATUSES } from '../../../../application/models/room-status.model';
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { toRoomRecord } from './room-typeorm.mappers';
@@ -35,10 +35,17 @@ export class RoomLobbyTypeormRepository implements RoomLobbyRepository {
         '(room.startedAt IS NOT NULL OR LOWER(room.status) IN (:...statuses))',
         { statuses },
       )
+      .orderBy('room.id', 'ASC')
       .limit(500);
 
-    if (filters?.gameType) {
-      qb.andWhere('room.gameType = :gameType', { gameType: filters.gameType });
+    if (
+      typeof filters?.gameType === 'string' &&
+      filters.gameType.trim() &&
+      filters.gameType.length <= 128
+    ) {
+      qb.andWhere('room.gameType = :gameType', {
+        gameType: filters.gameType.trim(),
+      });
     }
 
     return (await qb.getMany())
@@ -47,6 +54,7 @@ export class RoomLobbyTypeormRepository implements RoomLobbyRepository {
   }
 
   async findRoomWithOwner(roomId: number): Promise<RoomRecord | null> {
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) return null;
     return toRoomRecord(
       await this.rooms.findOne({
         where: { id: roomId },
@@ -56,6 +64,13 @@ export class RoomLobbyTypeormRepository implements RoomLobbyRepository {
   }
 
   async hasActiveParticipant(roomId: number, userId: number): Promise<boolean> {
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      !Number.isSafeInteger(userId) ||
+      userId <= 0
+    )
+      return false;
     const participant = await this.participants.findOne({
       where: {
         room: { id: roomId },
@@ -68,6 +83,7 @@ export class RoomLobbyTypeormRepository implements RoomLobbyRepository {
   }
 
   async listActiveParticipantUserIds(roomId: number): Promise<number[]> {
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) return [];
     const rows = await this.participants
       .createQueryBuilder('p')
       .select('p.user_id', 'userId')
@@ -76,8 +92,12 @@ export class RoomLobbyTypeormRepository implements RoomLobbyRepository {
       .limit(500)
       .getRawMany<{ userId: number }>();
 
-    return rows
-      .map((row) => Number(row.userId))
-      .filter((id) => Number.isInteger(id) && id > 0);
+    const ids = new Set<number>();
+    for (const row of rows) {
+      const id = Number(row.userId);
+      if (!Number.isSafeInteger(id) || id <= 0) continue;
+      ids.add(id);
+    }
+    return Array.from(ids);
   }
 }

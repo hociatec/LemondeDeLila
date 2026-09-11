@@ -1,14 +1,26 @@
+import type { NoGameState as MorpionState } from '../../../engine/sdk/public-api';
 import {
-  rejectRule,
   defineAction,
+  defineChoice,
   defineEvent,
   gameInput,
-  playerId as toPlayerId,
+  rejectRule,
   scanGridWinner,
+  sequentialPawnSelection,
+  playerId as toPlayerId,
   type GameActionDefinition,
   type GameContext,
 } from '../../../engine/sdk/public-api';
-import type { NoGameState as MorpionState } from '../../../engine/sdk/public-api';
+const PAWN_CHOICE = 'morpion.pawn';
+const pawnSelection = sequentialPawnSelection<MorpionState>({
+  setId: 'morpion',
+  choiceId: PAWN_CHOICE,
+  complete: ({ ctx }) => {
+    const starterId = ctx.round.starter();
+    if (starterId != null) ctx.turn.to(starterId);
+  },
+});
+export const setupGame = pawnSelection.setup(() => ({}), { order: 'shuffled' });
 
 type PlayInput = { x: number; y: number };
 export const MARK_PLACED = defineEvent({
@@ -104,3 +116,11 @@ function emptyCells(board: readonly number[]): PlayInput[] {
     owner === 0 ? [{ x: index % 3, y: Math.floor(index / 3) }] : [],
   );
 }
+
+export const GAME_CHOICES = {
+  [PAWN_CHOICE]: defineChoice<MorpionState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ actor, value, ctx }) =>
+      pawnSelection.resolve(actor.id, value, ctx),
+  }),
+};

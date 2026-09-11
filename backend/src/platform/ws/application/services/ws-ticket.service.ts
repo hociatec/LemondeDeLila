@@ -11,7 +11,8 @@ import {
   verify as jwtVerify,
 } from 'jsonwebtoken';
 import { randomBytes, randomUUID } from 'crypto';
-import { WsTicketPayload, WsTicketScope } from '../contracts/ws-ticket.model';
+import { parseStrictInteger } from '../../../../shared/utils/public-api';
+import { WsTicketPayload, WsTicketScope } from '../models/ws-ticket.model';
 import {
   WS_RUNTIME_CONFIG,
   type WsRuntimeConfig,
@@ -36,7 +37,7 @@ export class WsTicketService {
     expiresInSeconds: number;
     scope: WsTicketScope;
   } {
-    if (!Number.isFinite(userId) || userId <= 0) {
+    if (!Number.isSafeInteger(userId) || userId <= 0) {
       throw new UnauthorizedException('Utilisateur invalide');
     }
 
@@ -59,6 +60,9 @@ export class WsTicketService {
   }
 
   verify(ticket: string, scope: WsTicketScope): WsTicketPayload {
+    if (typeof ticket !== 'string' || ticket.length > 16 * 1024) {
+      throw new UnauthorizedException('Ticket invalide');
+    }
     const secret = this.getSecret();
     try {
       const decoded = jwtVerify(ticket, secret, {
@@ -78,12 +82,16 @@ export class WsTicketService {
       if (typeof typed.sub !== 'string') {
         throw new UnauthorizedException('Ticket invalide (sub)');
       }
-      const userId = parseInt(typed.sub, 10);
-      if (!Number.isFinite(userId) || userId <= 0) {
+      const userId = parseStrictInteger(typed.sub, { min: 1 });
+      if (userId === null || typed.sub !== String(userId)) {
         throw new UnauthorizedException('Ticket invalide (sub)');
       }
 
-      if (typeof typed.jti !== 'string' || !typed.jti.trim()) {
+      if (
+        typeof typed.jti !== 'string' ||
+        !typed.jti.trim() ||
+        typed.jti.length > 128
+      ) {
         throw new UnauthorizedException('Ticket invalide (jti)');
       }
 

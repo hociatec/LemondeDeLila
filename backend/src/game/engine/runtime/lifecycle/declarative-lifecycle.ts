@@ -1,8 +1,6 @@
-import type {
-  CompiledGameDefinition,
-  DeclarativeState,
-  GameActionMap,
-} from '../definitions/game-definition';
+import type { CompiledGameDefinition } from '../contracts/compiled-game-definition';
+import type { DeclarativeState } from '../state/declarative-state';
+import type { GameActionMap } from '../contracts/author-rule-contracts';
 import type { GameContext } from '../game-rule-context';
 import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
 
@@ -73,20 +71,9 @@ export class DeclarativeLifecycle<
     runtime: DeclarativeState<TState>,
     context: GameContext<TState>,
   ): string | null {
-    const rule = (this.definition.automatic ?? [])
-      .map((candidate, declarationIndex) => ({
-        candidate,
-        declarationIndex,
-      }))
-      .sort(
-        (left, right) =>
-          (right.candidate.priority ?? 0) - (left.candidate.priority ?? 0) ||
-          left.declarationIndex - right.declarationIndex,
-      )
-      .map(({ candidate }) => candidate)
-      .find((candidate) =>
-        candidate.when({ state: runtime.game, ctx: context }),
-      );
+    const rule = (this.definition.automatic ?? []).find((candidate) =>
+      candidate.when({ state: runtime.game, ctx: context }),
+    );
     if (!rule) return null;
     rule.apply({ state: runtime.game, ctx: context });
     context.events.engine('game.automatic', {

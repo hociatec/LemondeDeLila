@@ -20,7 +20,9 @@ describe('AdminChatModerationService', () => {
       chatBannedUntil: null,
       chatBanReason: null,
     });
-    const service = new AdminChatModerationService(repo);
+    const service = new AdminChatModerationService(repo, {
+      now: () => Date.now(),
+    });
 
     const result = await service.ban({
       userId: 4,
@@ -55,7 +57,9 @@ describe('AdminChatModerationService', () => {
       chatBannedUntil: new Date(),
       chatBanReason: 'reason',
     });
-    const service = new AdminChatModerationService(repo);
+    const service = new AdminChatModerationService(repo, {
+      now: () => Date.now(),
+    });
 
     const result = await service.unban({ userId: 5, byUserId: 42 });
 
@@ -71,7 +75,9 @@ describe('AdminChatModerationService', () => {
   it('fails when the user does not exist', async () => {
     const repo = createRepositoryMock();
     repo.findById.mockResolvedValue(null);
-    const service = new AdminChatModerationService(repo);
+    const service = new AdminChatModerationService(repo, {
+      now: () => Date.now(),
+    });
 
     await expect(
       service.ban({ userId: 999, byUserId: 1 }),

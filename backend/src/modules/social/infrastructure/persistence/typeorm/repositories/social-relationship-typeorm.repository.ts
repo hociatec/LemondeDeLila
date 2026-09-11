@@ -8,10 +8,10 @@ import type {
 import type {
   SocialRelationshipRecord,
   SocialRelationshipStatus,
-} from '../../../../application/contracts/social-relationship.model';
+} from '../../../../application/models/social-relationship.model';
 import { SocialRelationshipUserRelationMissingError } from '../../../../domain/errors/social-domain.errors';
-import { User } from '../../../../../user/public-api';
 import { SocialRelationshipEntity } from '../entities/social-relationship.entity';
+import type { SocialUserPersistenceRef } from '../entities/social-user.persistence-ref';
 
 @Injectable()
 export class SocialRelationshipTypeormRepository implements SocialRelationshipRepository {
@@ -23,12 +23,13 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
   async listAcceptedForUser(
     userId: number,
   ): Promise<SocialRelationshipRecord[]> {
+    if (!Number.isSafeInteger(userId) || userId <= 0) return [];
     const relations = await this.relationships.find({
       where: [
         { requester: { id: userId }, status: 'accepted' },
         { addressee: { id: userId }, status: 'accepted' },
       ],
-      order: { updatedAt: 'DESC' },
+      order: { updatedAt: 'DESC', id: 'DESC' },
       take: 500,
     });
     return relations.map((relation) => this.toModel(relation));
@@ -38,6 +39,7 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
     userId: number,
     direction: SocialDirection,
   ): Promise<SocialRelationshipRecord[]> {
+    if (!Number.isSafeInteger(userId) || userId <= 0) return [];
     const where =
       direction === 'incoming'
         ? { addressee: { id: userId }, status: 'pending' as const }
@@ -50,16 +52,17 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
 
     const relations = await this.relationships.find({
       where,
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'DESC', id: 'DESC' },
       take: 500,
     });
     return relations.map((relation) => this.toModel(relation));
   }
 
   async listBlockedByUser(userId: number): Promise<SocialRelationshipRecord[]> {
+    if (!Number.isSafeInteger(userId) || userId <= 0) return [];
     const relations = await this.relationships.find({
       where: { requester: { id: userId }, status: 'blocked' },
-      order: { updatedAt: 'DESC' },
+      order: { updatedAt: 'DESC', id: 'DESC' },
       take: 500,
     });
     return relations.map((relation) => this.toModel(relation));
@@ -69,11 +72,19 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
     userId: number,
     targetId: number,
   ): Promise<SocialRelationshipRecord[]> {
+    if (
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      !Number.isSafeInteger(targetId) ||
+      targetId <= 0
+    )
+      return [];
     const relations = await this.relationships.find({
       where: [
         { requester: { id: userId }, addressee: { id: targetId } },
         { requester: { id: targetId }, addressee: { id: userId } },
       ],
+      order: { createdAt: 'ASC', id: 'ASC' },
       take: 2,
     });
     return relations.map((relation) => this.toModel(relation));
@@ -83,6 +94,13 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
     userId: number,
     requesterId: number,
   ): Promise<SocialRelationshipRecord | null> {
+    if (
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      !Number.isSafeInteger(requesterId) ||
+      requesterId <= 0
+    )
+      return null;
     const relation = await this.relationships.findOne({
       where: {
         requester: { id: requesterId },
@@ -97,6 +115,13 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
     userId: number,
     targetId: number,
   ): Promise<SocialRelationshipRecord | null> {
+    if (
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      !Number.isSafeInteger(targetId) ||
+      targetId <= 0
+    )
+      return null;
     const relation = await this.relationships.findOne({
       where: {
         requester: { id: userId },
@@ -111,6 +136,13 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
     userId: number,
     targetId: number,
   ): Promise<SocialRelationshipRecord | null> {
+    if (
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      !Number.isSafeInteger(targetId) ||
+      targetId <= 0
+    )
+      return null;
     const relation = await this.relationships.findOne({
       where: {
         requester: { id: userId },
@@ -125,6 +157,13 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
     userId: number,
     targetId: number,
   ): Promise<SocialRelationshipRecord | null> {
+    if (
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      !Number.isSafeInteger(targetId) ||
+      targetId <= 0
+    )
+      return null;
     const relation = await this.relationships.findOne({
       where: [
         {
@@ -147,9 +186,17 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
     addresseeId: number,
     status: SocialRelationshipStatus,
   ): Promise<SocialRelationshipRecord> {
+    if (
+      !Number.isSafeInteger(requesterId) ||
+      requesterId <= 0 ||
+      !Number.isSafeInteger(addresseeId) ||
+      addresseeId <= 0
+    ) {
+      throw new RangeError('Identifiants sociaux invalides');
+    }
     const relation = this.relationships.create({
-      requester: { id: requesterId } as User,
-      addressee: { id: addresseeId } as User,
+      requester: { id: requesterId } as SocialUserPersistenceRef,
+      addressee: { id: addresseeId } as SocialUserPersistenceRef,
       status,
     });
     const saved = await this.relationships.save(relation);
@@ -162,8 +209,12 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
     const saved = await this.relationships.save(
       this.relationships.create({
         id: relationship.id,
-        requester: { id: relationship.requester.id } as User,
-        addressee: { id: relationship.addressee.id } as User,
+        requester: {
+          id: relationship.requester.id,
+        } as SocialUserPersistenceRef,
+        addressee: {
+          id: relationship.addressee.id,
+        } as SocialUserPersistenceRef,
         status: relationship.status,
         createdAt: relationship.createdAt,
         updatedAt: relationship.updatedAt,
@@ -173,14 +224,24 @@ export class SocialRelationshipTypeormRepository implements SocialRelationshipRe
   }
 
   async remove(relationship: SocialRelationshipRecord): Promise<void> {
+    if (
+      !relationship ||
+      !Number.isSafeInteger(relationship.id) ||
+      relationship.id <= 0
+    )
+      return;
     await this.relationships.delete({ id: relationship.id });
   }
 
   async removeMany(relationships: SocialRelationshipRecord[]): Promise<void> {
-    if (relationships.length === 0) {
+    if (!Array.isArray(relationships) || relationships.length === 0) {
       return;
     }
-    await this.relationships.delete(relationships.map((item) => item.id));
+    const ids = relationships
+      .map((item) => item?.id)
+      .filter((id): id is number => Number.isSafeInteger(id) && id > 0)
+      .slice(0, 500);
+    if (ids.length > 0) await this.relationships.delete(ids);
   }
 
   private toModel(

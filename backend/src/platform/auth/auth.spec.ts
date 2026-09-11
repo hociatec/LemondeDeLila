@@ -1,5 +1,5 @@
-import { type ExecutionContext } from '@nestjs/common';
-import { generateKeyPairSync } from 'crypto';
+import { UnauthorizedException, type ExecutionContext } from '@nestjs/common';
+import { generateKeyPairSync, sign as cryptoSign } from 'crypto';
 import { sign as jwtSign } from 'jsonwebtoken';
 
 import type { AuthRuntimeConfig } from './application/ports/auth-runtime-config.port';
@@ -51,6 +51,50 @@ describe('Auth guards', () => {
     };
 
     expect(guard.canActivate(createHttpContext(request))).toBe(true);
-    expect(request.user).toMatchObject({ username: 'lila' });
+    expect(request.user).toMatchObject({ id: 1, username: 'lila' });
+  });
+
+  it.each([
+    ['01', 1],
+    ['1e3', 1000],
+    ['1.5', 1.5],
+    ['-1', -1],
+    ['0', 0],
+    ['9007199254740993', 9007199254740992],
+    ['7', 8],
+    ['7', '7'],
+    ['7', true],
+  ])('rejects signed inconsistent identities %s / %s', (sub, id) => {
+    const verifier = new JwtPayloadVerifierService(config);
+    const token = jwtSign({ username: 'lila', id }, privateKeyPem, {
+      algorithm: 'RS256',
+      issuer,
+      subject: String(sub),
+      expiresIn: '1h',
+    });
+    expect(() => verifier.verifyHttpToken(token)).toThrow(
+      UnauthorizedException,
+    );
+    expect(() => verifier.verifyWsToken(token)).toThrow(UnauthorizedException);
+  });
+
+  it.each(['exp', 'iat'])('rejects a signed nonfinite %s claim', (claim) => {
+    const verifier = new JwtPayloadVerifierService(config);
+    const claims = JSON.stringify({
+      id: 7,
+      sub: '7',
+      username: 'lila',
+      iss: issuer,
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      iat: Math.floor(Date.now() / 1000),
+    }).replace(new RegExp(`"${claim}":\\d+`), `"${claim}":1e999`);
+    const unsigned = [JSON.stringify({ alg: 'RS256', typ: 'JWT' }), claims]
+      .map((part) => Buffer.from(part).toString('base64url'))
+      .join('.');
+    const token = `${unsigned}.${cryptoSign('RSA-SHA256', Buffer.from(unsigned), privateKeyPem).toString('base64url')}`;
+    expect(() => verifier.verifyHttpToken(token)).toThrow(
+      UnauthorizedException,
+    );
+    expect(() => verifier.verifyWsToken(token)).toThrow(UnauthorizedException);
   });
 });

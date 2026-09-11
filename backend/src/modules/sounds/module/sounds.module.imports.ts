@@ -1,3 +1,3 @@
-import { NotificationModule } from '../../notification/public-api';
+import { NotificationModule } from '../../notification/composition-api';
 
 export const SOUNDS_MODULE_IMPORTS = [NotificationModule];

@@ -1,11 +1,9 @@
+import { parseStrictInteger } from '@shared/utils/public-api';
+
 const DEFAULT_MINIMUM_PARTICIPANTS = 2;
 
 export function resolveMinimumParticipants(value: unknown): number {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < 1) {
-    return DEFAULT_MINIMUM_PARTICIPANTS;
-  }
-  return Math.max(1, Math.trunc(parsed));
+  return parseStrictInteger(value, { min: 1 }) ?? DEFAULT_MINIMUM_PARTICIPANTS;
 }
 
 export function hasMinimumParticipants(
@@ -13,10 +11,10 @@ export function hasMinimumParticipants(
   bots: number,
   minimum: number,
 ): boolean {
-  const humanCount = Number.isFinite(humans)
-    ? Math.max(0, Math.trunc(humans))
+  const humanCount = Number.isSafeInteger(humans)
+    ? Math.min(64, Math.max(0, humans))
     : 0;
-  const botCount = Number.isFinite(bots) ? Math.max(0, Math.trunc(bots)) : 0;
+  const botCount = Number.isSafeInteger(bots) ? Math.min(64, Math.max(0, bots)) : 0;
   return humanCount + botCount >= resolveMinimumParticipants(minimum);
 }
 

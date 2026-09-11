@@ -1,21 +1,22 @@
-import type { GameRuntime } from '../../core/application/contracts/game-runtime.interface';
+import { appendPendingGameEvent } from '../../core/application/services/game-event-buffer';
+import type { GameRuntime } from '../../core/application/ports/game-runtime.port';
+import { parseStrictInteger } from '../../../shared/utils/public-api';
 import {
   StateGameRng,
-  SystemGameClock,
   type GameExecutionContext,
-} from '../../core/application/contracts/game-execution-context.model';
-import type { GameSingleActionDto } from '../../core/application/contracts/game-action.model';
-import type { GameStateEntity } from '../../core/application/contracts/game-state.model';
-import type { PlayerStateEntity } from '../../core/application/contracts/game-state.model';
+} from '../../core/application/models/game-execution-context.model';
+import type { GameSingleActionDto } from '../../core/application/models/game-action.model';
+import type { GameState } from '../../core/application/models/game-state.model';
+import type { PlayerState } from '../../core/application/models/game-state.model';
 import { DeclarativeChoiceRuntime } from './choices/declarative-choice-runtime';
 import { DeclarativeActionController } from './actions/declarative-action-controller';
 import { DeclarativeLifecycle } from './lifecycle/declarative-lifecycle';
+import type { CompiledGameDefinition } from './contracts/compiled-game-definition';
+import type { DeclarativeState } from './state/declarative-state';
 import type {
-  CompiledGameDefinition,
-  DeclarativeState,
   GameActionShape,
   GameActionMap,
-} from './definitions/game-definition';
+} from './contracts/author-rule-contracts';
 import { GameContext } from './game-rule-context';
 import {
   initializeGameComponents,
@@ -25,6 +26,7 @@ import { standardTurn } from './kits/turn-kit';
 import { createDeclarativeState } from './state/declarative-state.factory';
 import { loadDeclarativeState } from './content/game-state-loader';
 import { assertValidGameSession } from './state/game-session-contracts';
+import { assertCompiledGameDefinition } from './definitions/compiled-game-definition-brand';
 import { DeclarativeGameQueries } from './projection/declarative-game-queries';
 
 export class DeclarativeGameRuntime<
@@ -49,6 +51,7 @@ export class DeclarativeGameRuntime<
     protected readonly definition: CompiledGameDefinition<TState, TActions>,
   ) {
     super();
+    assertCompiledGameDefinition(definition);
     this.gameType = definition.id;
     this.displayName = definition.displayName;
     this.category = definition.category;
@@ -62,9 +65,9 @@ export class DeclarativeGameRuntime<
   }
 
   hydrateInitialState(
-    baseState: GameStateEntity,
+    baseState: GameState,
     execution?: GameExecutionContext,
-  ): GameStateEntity {
+  ): GameState {
     const runtime = this.createRuntime(baseState, execution?.clock);
     const context = this.context(runtime, null, execution);
     installGameComponents(
@@ -85,6 +88,7 @@ export class DeclarativeGameRuntime<
       : ({} as TState);
     this.lifecycle.enterInitialPhase(runtime, context);
     if (runtime.engine.configuration.complete) {
+      assertValidGameSession(runtime, this.definition.components ?? []);
       context.match.start();
       context.runBeforeCurrentTurnHook();
       this.lifecycle.stabilize(runtime, context);
@@ -96,10 +100,13 @@ export class DeclarativeGameRuntime<
   }
 
   applyActions(
-    state: GameStateEntity,
+    state: GameState,
     actions: GameSingleActionDto[],
     execution?: GameExecutionContext,
-  ): GameStateEntity {
+  ): GameState {
+    if (!Array.isArray(actions) || actions.length > 128) {
+      throw new Error('Too many declarative game actions');
+    }
     let runtime = this.runtimeState(state);
     for (const action of actions) {
       runtime = this.applyOne(runtime, action, execution);
@@ -108,24 +115,26 @@ export class DeclarativeGameRuntime<
   }
 
   validateAction(
-    state: GameStateEntity,
+    state: GameState,
     action: GameSingleActionDto,
     actorId: number | null,
+    execution?: GameExecutionContext,
   ): GameSingleActionDto {
     const runtime = this.runtimeState(state);
     return this.actions.validate(runtime, action, actorId, (id) =>
-      this.context(runtime, id),
+      this.context(runtime, id, execution),
     );
   }
 
   validateActor(
-    state: GameStateEntity,
+    state: GameState,
     actions: GameSingleActionDto[],
     actorId: number | null,
+    execution?: GameExecutionContext,
   ): boolean {
     const runtime = this.runtimeState(state);
     return this.actions.validateActor(runtime, actions, actorId, (id) =>
-      this.context(runtime, id),
+      this.context(runtime, id, execution),
     );
   }
 
@@ -134,11 +143,8 @@ export class DeclarativeGameRuntime<
     action: GameSingleActionDto,
     execution?: GameExecutionContext,
   ): DeclarativeState<TState> {
-    const actorId = Number(action.meta?.actorId);
-    const actor = this.requireActor(
-      runtime,
-      Number.isFinite(actorId) ? actorId : null,
-    );
+    const actorId = parseStrictInteger(action.meta?.actorId);
+    const actor = this.requireActor(runtime, actorId);
     const context = this.context(runtime, actor.id, execution);
     this.actions.execute(runtime, actor, action, context);
     this.lifecycle.stabilize(runtime, context);
@@ -149,7 +155,7 @@ export class DeclarativeGameRuntime<
   }
 
   private createRuntime(
-    base: GameStateEntity,
+    base: GameState,
     clock = new SystemGameClock(),
   ): DeclarativeState<TState> {
     const turn = (this.definition.turn ?? standardTurn()).initialize(
@@ -168,6 +174,7 @@ export class DeclarativeGameRuntime<
       this.definition.contentVersion,
       this.definition.rulesVersion,
       this.definition.config,
+      this.definition.contentDigest,
     );
   }
 
@@ -195,13 +202,15 @@ export class DeclarativeGameRuntime<
     );
   }
 
-  protected runtimeState(state: GameStateEntity): DeclarativeState<TState> {
+  protected runtimeState(state: GameState): DeclarativeState<TState> {
     return loadDeclarativeState(
       state,
       this.definition.id,
       this.definition.stateVersion,
       this.definition.contentVersion,
       this.definition.rulesVersion,
+      this.definition.content.snapshotMigrations,
+      this.definition.contentDigest,
     );
   }
 
@@ -212,18 +221,21 @@ export class DeclarativeGameRuntime<
   protected requireActor(
     runtime: DeclarativeState<TState>,
     actorId: number | null,
-  ): PlayerStateEntity {
+  ): PlayerState {
     return this.actions.requireActor(runtime, actorId);
   }
 
   protected isActionAvailable(
     runtime: DeclarativeState<TState>,
-    actor: PlayerStateEntity,
+    actor: PlayerState,
     type: string,
     context: GameContext<TState>,
   ): boolean {
     return this.actions.isAvailable(runtime, actor, type, context, (id) =>
-      this.context(runtime, id),
+      this.context(runtime, id, {
+        clock: context.clock,
+        commandId: context.commandId,
+      }),
     );
   }
 
@@ -234,10 +246,8 @@ export class DeclarativeGameRuntime<
     context: GameContext<TState>,
   ): void {
     const events = context.consumeEvents();
-    const engine = runtime.engine;
-    engine.pendingEvents = [
-      ...(engine.pendingEvents ?? []),
-      ...events.map((event) => ({
+    for (const event of events) {
+      appendPendingGameEvent(runtime, {
         ...event,
         actorId,
         occurredAtMs: context.clock.nowMs(),
@@ -246,7 +256,8 @@ export class DeclarativeGameRuntime<
           ...(context.commandId ? { commandId: context.commandId } : {}),
           ...event.data,
         },
-      })),
-    ];
+      });
+    }
   }
 }
+import { SystemGameClock } from '@platform/time/public-api';

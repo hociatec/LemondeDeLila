@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { getErrorMessage } from '@shared/utils/public-api';
 import { RoomClientPolicyService } from '../../../application/services/membership/room-client-policy.service';
-import type { RoomPayload } from '../../../application/contracts/room-payload.model';
+import type { RoomPayload } from '../../../application/models/room-payload.model';
 import { RoomStateService } from '../../../application/services/state/room-state.service';
 import {
   buildRoomSnapshot,
@@ -13,11 +13,10 @@ import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
 import { RoomGatewayAnnouncements } from './room-gateway.announcements';
 import type { ClientMeta } from './room-gateway.types';
 import {
-  addHiddenSelf,
-  listConnectedPlayers,
-  listVisibleSpectators,
-  mergePlayers,
-} from './room-roster';
+  projectRoomRoster,
+  type RoomRosterOptions,
+} from './room-roster-projection';
+import { RoomPayloadBroadcaster } from './room-payload.broadcaster';
 
 type StateContext = {
   clients: Map<WebSocket, ClientMeta>;
@@ -35,12 +34,14 @@ type StateContext = {
 
 @Injectable()
 export class RoomGatewayStateService {
+  private static readonly MAX_TRACKED_ROOMS = 10_000;
   private readonly announcements: RoomGatewayAnnouncements;
 
   constructor(
     private readonly roomState: RoomStateService,
     private readonly clientPolicy: RoomClientPolicyService,
     private readonly presenter: RoomGatewayStatePresenter,
+    private readonly broadcaster: RoomPayloadBroadcaster,
   ) {
     this.announcements = new RoomGatewayAnnouncements(presenter);
   }
@@ -64,51 +65,13 @@ export class RoomGatewayStateService {
         await this.roomState.invalidateRoomPayloadCache(roomId);
         payload = await this.roomState.getRoomPayload(roomId);
       }
+      this.ensureRoomTrackingCapacity(ctx, roomId);
       ctx.lastRoomStatusByRoomId.set(roomId, nextStatus);
 
-      this.applySpectators(ctx, roomId, payload);
-      await this.broadcastRoomUpdated(ctx, roomId, payload);
+      payload = projectRoomRoster(payload, ctx.clients.values(), roomId);
+      await this.broadcaster.broadcast(ctx, roomId, payload);
     } catch {
       // la table a peut-etre ete supprimee, on ignore
-    }
-  }
-
-  applySpectators(
-    ctx: StateContext,
-    roomId: number,
-    payload: RoomPayload,
-  ): void {
-    payload.room.spectators = listVisibleSpectators(
-      ctx.clients.values(),
-      roomId,
-    );
-    payload.room.counts.spectators = payload.room.spectators.length;
-
-    const started =
-      (payload.room.status || '').toLowerCase() === 'started' ||
-      Boolean(payload.room.startedAt);
-    if (
-      !started &&
-      payload.room.players?.length &&
-      payload.room.spectators?.length
-    ) {
-      const spectatorIds = new Set(
-        payload.room.spectators.map((spectator) => spectator.id),
-      );
-      payload.room.players = payload.room.players.filter(
-        (player) => !spectatorIds.has(player.id),
-      );
-      payload.room.counts.players = payload.room.players.length;
-    }
-
-    if (payload.room.players?.length && payload.room.spectators?.length) {
-      const playerIds = new Set(
-        payload.room.players.map((player) => player.id),
-      );
-      payload.room.spectators = payload.room.spectators.filter(
-        (spectator) => !playerIds.has(spectator.id),
-      );
-      payload.room.counts.spectators = payload.room.spectators.length;
     }
   }
 
@@ -148,9 +111,9 @@ export class RoomGatewayStateService {
       .toLowerCase()
       .trim();
 
-    this.applySpectators(ctx, roomId, payload);
+    payload = projectRoomRoster(payload, ctx.clients.values(), roomId);
     const focusIntent = this.announcements.focusIntent(ctx, roomId, payload);
-    await this.broadcastRoomUpdated(ctx, roomId, payload);
+    await this.broadcaster.broadcast(ctx, roomId, payload);
     if (focusIntent) {
       await ctx.broadcast(roomId, 'room.focus', focusIntent);
       await this.broadcastRoomIntent(
@@ -174,6 +137,7 @@ export class RoomGatewayStateService {
       previousSnapshot,
       nextSnapshot,
     );
+    this.ensureRoomTrackingCapacity(ctx, roomId);
     ctx.lastRoomSnapshotByRoomId.set(roomId, nextSnapshot);
 
     const startWizardIntent = this.announcements.startWizardIntent(
@@ -198,6 +162,7 @@ export class RoomGatewayStateService {
         this.presenter.presentCreationAnnouncement(gameName),
       );
     }
+    this.ensureRoomTrackingCapacity(ctx, roomId);
     ctx.lastRoomStatusByRoomId.set(roomId, nextStatus);
   }
 
@@ -221,26 +186,15 @@ export class RoomGatewayStateService {
     ctx: StateContext,
     client: WebSocket,
     roomId: number,
-    opts?: {
-      includeRealtimePlayers?: boolean;
-      includeHiddenSelf?: { userId: number; username: string };
-    },
+    opts?: RoomRosterOptions,
   ): Promise<void> {
     try {
-      const payload = await this.roomState.getRoomPayload(roomId);
-      this.applySpectators(ctx, roomId, payload);
-      if (opts?.includeHiddenSelf) {
-        payload.room.spectators = addHiddenSelf(
-          payload.room.spectators,
-          opts.includeHiddenSelf,
-        );
-        payload.room.counts.spectators = payload.room.spectators.length;
-      }
-      if (opts?.includeRealtimePlayers) {
-        const connected = listConnectedPlayers(ctx.clients.values(), roomId);
-        payload.room.players = mergePlayers(payload.room.players, connected);
-        payload.room.counts.players = payload.room.players.length;
-      }
+      const payload = projectRoomRoster(
+        await this.roomState.getRoomPayload(roomId),
+        ctx.clients.values(),
+        roomId,
+        opts,
+      );
       const previousStatus = (ctx.lastRoomStatusByRoomId.get(roomId) ?? '')
         .toLowerCase()
         .trim();
@@ -275,6 +229,7 @@ export class RoomGatewayStateService {
           ),
         );
       }
+      this.ensureRoomTrackingCapacity(ctx, roomId);
       ctx.lastRoomSnapshotByRoomId.set(roomId, buildRoomSnapshot(payload));
       ctx.lastRoomStatusByRoomId.set(roomId, nextStatus);
     } catch (err) {
@@ -287,59 +242,28 @@ export class RoomGatewayStateService {
     }
   }
 
-  private async broadcastRoomUpdated(
-    ctx: StateContext,
-    roomId: number,
-    payload: RoomPayload,
-  ): Promise<void> {
-    const targets = ctx.rooms.get(roomId);
-    const silentTargets = ctx.silentRooms.get(roomId);
-
-    const serializedByActions = new Map<string, string>();
-    const messageFor = (meta: ClientMeta): string => {
-      const actions = this.clientPolicy.listAllowedActions(
-        payload,
-        meta.userId,
-      );
-      const cacheKey = JSON.stringify(actions);
-      const cached = serializedByActions.get(cacheKey);
-      if (cached) return cached;
-      const message = JSON.stringify(
-        this.presenter.presentRoomUpdated(roomId, {
-          ...payload,
-          room: { ...payload.room, allowedActions: actions },
-        }),
-      );
-      serializedByActions.set(cacheKey, message);
-      return message;
-    };
-
-    const sendToSet = (set?: Set<WebSocket>) => {
-      if (!set) return;
-      for (const socket of Array.from(set)) {
-        const meta = ctx.clients.get(socket);
-        if (!meta || socket.readyState !== WebSocket.OPEN) {
-          set.delete(socket);
-          continue;
-        }
-        try {
-          socket.send(messageFor(meta));
-        } catch {
-          set.delete(socket);
-          try {
-            socket.close();
-          } catch {
-            // ignore
-          }
-        }
+  private ensureRoomTrackingCapacity(ctx: StateContext, roomId: number): void {
+    if (
+      ctx.lastRoomStatusByRoomId.size >=
+        RoomGatewayStateService.MAX_TRACKED_ROOMS &&
+      !ctx.lastRoomStatusByRoomId.has(roomId)
+    ) {
+      const oldest = ctx.lastRoomStatusByRoomId.keys().next().value;
+      if (typeof oldest === 'number') {
+        ctx.lastRoomStatusByRoomId.delete(oldest);
+        ctx.lastRoomSnapshotByRoomId.delete(oldest);
       }
-      if (set.size === 0) {
-        if (set === targets) ctx.rooms.delete(roomId);
-        if (set === silentTargets) ctx.silentRooms.delete(roomId);
+    }
+    if (
+      ctx.lastRoomSnapshotByRoomId.size >=
+        RoomGatewayStateService.MAX_TRACKED_ROOMS &&
+      !ctx.lastRoomSnapshotByRoomId.has(roomId)
+    ) {
+      const oldest = ctx.lastRoomSnapshotByRoomId.keys().next().value;
+      if (typeof oldest === 'number') {
+        ctx.lastRoomSnapshotByRoomId.delete(oldest);
+        ctx.lastRoomStatusByRoomId.delete(oldest);
       }
-    };
-
-    sendToSet(targets);
-    sendToSet(silentTargets);
+    }
   }
 }

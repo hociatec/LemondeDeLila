@@ -4,6 +4,8 @@ import { RealtimeGameGateway } from '../infrastructure/presentation/ws/realtime-
 import { RealtimeApiHandlerService } from '../infrastructure/presentation/ws/realtime-api-handler.service';
 import { ApiCapabilitiesWsRegistrar } from '../infrastructure/presentation/ws/api-capabilities.ws-registrar';
 import { RealtimeRequestReplayService } from '../infrastructure/presentation/ws/realtime-request-replay.service';
+import { RealtimeApiTransportService } from '../infrastructure/presentation/ws/realtime-api-transport.service';
+import { RealtimeSessionPersistenceService } from '../infrastructure/presentation/ws/realtime-session-persistence.service';
 
 export const REALTIME_PRESENTATION_PROVIDERS = [
   RealtimeApiGateway,
@@ -11,5 +13,7 @@ export const REALTIME_PRESENTATION_PROVIDERS = [
   RealtimeApiConnectionService,
   RealtimeApiHandlerService,
   RealtimeRequestReplayService,
+  RealtimeApiTransportService,
+  RealtimeSessionPersistenceService,
   ApiCapabilitiesWsRegistrar,
 ];

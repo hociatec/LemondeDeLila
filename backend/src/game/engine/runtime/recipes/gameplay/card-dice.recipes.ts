@@ -1,9 +1,8 @@
-import type { GameActionDefinition } from '../../definitions/game-definition';
-import { defineAction } from '../../definitions/game-definition';
+import type { GameActionDefinition } from '../../contracts/author-rule-contracts';
+import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
 import type { DiceRollPolicy } from '../../kits/dice-kit';
-import type { PawnDefinition } from '../../kits/pawn-kit';
-import type { GameContext } from '../../game-rule-context';
+import type { GameContext } from '../../definitions/game-author-context';
 import { cardEventIdentity } from './card-recipe.helpers';
 import type { CardValue } from '../../cards/cards-kit';
 
@@ -25,17 +24,13 @@ export type DrawForPlayerOptions = {
   recycle?: boolean;
 };
 
-type SequentialPawnSelectionOptions<TState extends object> = {
-  setId: string;
-  choiceId: string;
-  label?: (pawn: PawnDefinition) => string;
-  assigned?: (input: {
-    playerId: number;
-    pawnId: string;
-    ctx: GameContext<TState>;
-  }) => void;
-  complete: (input: { ctx: GameContext<TState> }) => void;
-};
+/** Returns a deterministic-in-context random order for participating players. */
+export function shuffledPlayerIds<TState extends object>(
+  ctx: GameContext<TState>,
+  players: readonly { id: number }[],
+): number[] {
+  return ctx.random.shuffle(players.map((player) => player.id));
+}
 
 /** Pioche ciblée vers une main et enregistre sa provenance pour tout le tour. */
 export function drawForPlayer<TState extends object, TCard extends CardValue>(
@@ -112,132 +107,6 @@ export function drawAndResolve<
       discard: options.discard,
     },
   );
-}
-
-export function sequentialPawnSelection<TState extends object>(
-  options: SequentialPawnSelectionOptions<TState>,
-): {
-  request: (playerId: number, ctx: GameContext<TState>) => void;
-  requestAll: (playerIds: readonly number[], ctx: GameContext<TState>) => void;
-  resolve: (playerId: number, pawnId: string, ctx: GameContext<TState>) => void;
-} {
-  const request = (playerId: number, ctx: GameContext<TState>): void => {
-    requestPawnSelection(
-      options,
-      playerId,
-      ctx.players.all().map((player) => player.id),
-      ctx,
-    );
-  };
-  const requestAll = (
-    playerIds: readonly number[],
-    ctx: GameContext<TState>,
-  ): void => {
-    const participants = orderedPawnSelectionParticipants(playerIds, ctx);
-    if (participants.length === 0) {
-      options.complete({ ctx });
-      return;
-    }
-    const first = participants[0];
-    if (first != null) {
-      ctx.turn.to(first, { announce: false });
-      requestPawnSelection(options, first, participants, ctx);
-    }
-  };
-  const resolve = (
-    playerId: number,
-    pawnId: string,
-    ctx: GameContext<TState>,
-  ): void => {
-    ctx.pawns.assign(options.setId, playerId, pawnId);
-    options.assigned?.({ playerId, pawnId, ctx });
-    const participantIds = pawnSelectionContinuationPlayers(ctx);
-    const next = nextPawnSelectionPlayer(options.setId, participantIds, ctx);
-    if (next) {
-      ctx.turn.to(next.id, { announce: false });
-      requestPawnSelection(options, next.id, participantIds, ctx);
-      return;
-    }
-    options.complete({ ctx });
-  };
-  return Object.freeze({ request, requestAll, resolve });
-}
-
-function requestPawnSelection<TState extends object>(
-  options: SequentialPawnSelectionOptions<TState>,
-  playerId: number,
-  playerIds: readonly number[],
-  ctx: GameContext<TState>,
-): void {
-  const available = ctx.pawns.available(options.setId);
-  ctx.events.message('game.pawn.selection-requested', { playerId });
-  ctx.choice.pawn({
-    id: options.choiceId,
-    player: playerId,
-    options: available.map((pawn) => pawn.id),
-    label: (pawnId) => pawnSelectionLabel(options, available, pawnId),
-    data: { pawnSelectionPlayerIds: [...playerIds] },
-  });
-}
-
-function pawnSelectionLabel<TState extends object>(
-  options: SequentialPawnSelectionOptions<TState>,
-  available: readonly PawnDefinition[],
-  pawnId: string,
-): string {
-  const pawn = available.find((candidate) => candidate.id === pawnId);
-  return pawn
-    ? (options.label?.(pawn) ?? pawn.label ?? pawn.name ?? pawn.id)
-    : pawnId;
-}
-
-function orderedPawnSelectionParticipants<TState extends object>(
-  playerIds: readonly number[],
-  ctx: GameContext<TState>,
-): number[] {
-  const uniqueParticipants = [...new Set(playerIds)];
-  const playersById = new Map(
-    ctx.players.all().map((player) => [player.id, player] as const),
-  );
-  return [
-    ...uniqueParticipants.filter(
-      (playerId) => !playersById.get(playerId)?.isBot,
-    ),
-    ...uniqueParticipants.filter(
-      (playerId) => playersById.get(playerId)?.isBot,
-    ),
-  ];
-}
-
-function pawnSelectionContinuationPlayers<TState extends object>(
-  ctx: GameContext<TState>,
-): number[] {
-  const continuation = ctx.choice.continuation<{
-    pawnSelectionPlayerIds?: unknown;
-  }>();
-  const configuredPlayers = continuation?.pawnSelectionPlayerIds;
-  return Array.isArray(configuredPlayers)
-    ? configuredPlayers.filter(
-        (candidate): candidate is number =>
-          typeof candidate === 'number' && Number.isInteger(candidate),
-      )
-    : ctx.players.all().map((player) => player.id);
-}
-
-function nextPawnSelectionPlayer<TState extends object>(
-  setId: string,
-  participantIds: readonly number[],
-  ctx: GameContext<TState>,
-): ReturnType<GameContext<TState>['players']['all']>[number] | null {
-  const playersById = new Map(
-    ctx.players.all().map((player) => [player.id, player] as const),
-  );
-  const nextId = participantIds.find(
-    (candidate) =>
-      playersById.has(candidate) &&
-      ctx.pawns.assigned(setId, candidate).length < ctx.pawns.perPlayer(setId),
-  );
-  return nextId == null ? null : (playersById.get(nextId) ?? null);
 }
 
 export function passTurn<TState extends object>(): GameActionDefinition<

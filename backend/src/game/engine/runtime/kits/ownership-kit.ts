@@ -4,7 +4,7 @@ import {
   GameRuleViolationError,
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
-import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
+import type { EventVisibility } from '../../../core/application/models/game-event.model';
 
 export type OwnershipDefinition = {
   readonly component: 'ownership.registry';

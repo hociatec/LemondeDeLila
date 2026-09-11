@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import {
   GameEngineService,
   GameRegistryService,
-  type GameStateEntity,
+  type GameState,
 } from '../../../../game/public-api';
-import type { VaultGameState } from '../../application/contracts/vault-game-state.model';
+import type { VaultGameState } from '../../application/models/vault-game-state.model';
 import type { VaultGamePort } from '../../application/ports/vault-game.port';
 
 @Injectable()
@@ -41,17 +41,18 @@ export class VaultGameAdapter implements VaultGamePort {
   }
 }
 
-function toVaultGameState(state: GameStateEntity): VaultGameState {
+function toVaultGameState(state: GameState): VaultGameState {
   return {
     ...structuredClone(state),
     status: state.status,
     metadata: state.metadata ? { ...state.metadata } : null,
-    players: state.players?.map((player) => ({ ...player })),
+    players: state.players?.slice(0, 64).map((player) => ({ ...player })),
+    log: Array.isArray(state.log) ? state.log.slice(-10_000) : [],
     turn: state.turn ? { ...state.turn } : null,
   };
 }
 
-function isGameStateEntity(value: unknown): value is GameStateEntity {
+function isGameStateEntity(value: unknown): value is GameState {
   return (
     value != null &&
     typeof value === 'object' &&

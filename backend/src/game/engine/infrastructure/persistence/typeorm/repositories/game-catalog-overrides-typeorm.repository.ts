@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import type {
   GameCatalogOverrideRecord,
   GameCatalogStatus,
-} from '../../../../application/contracts/game-catalog-override.model';
+} from '../../../../application/models/game-catalog-override.model';
 import type { GameCatalogOverridesRepository } from '../../../../application/ports/game-catalog-overrides.repository';
 import { GameCatalogOverrideEntity } from '../entities/game-catalog-override.entity';
 
@@ -36,11 +36,25 @@ export class GameCatalogOverridesTypeormRepository implements GameCatalogOverrid
   }
 
   async findAll() {
-    const rows = await this.repo.find();
-    return rows.map((row) => ({
-      gameType: row.gameType,
-      override: toRecord(row),
-    }));
+    const result: { gameType: string; override: GameCatalogOverrideRecord }[] =
+      [];
+    const pageSize = 100;
+    let cursor: string | undefined;
+    for (;;) {
+      const rows = await this.repo.find({
+        where: cursor === undefined ? {} : { gameType: MoreThan(cursor) },
+        order: { gameType: 'ASC' },
+        take: pageSize,
+      });
+      result.push(
+        ...rows.map((row) => ({
+          gameType: row.gameType,
+          override: toRecord(row),
+        })),
+      );
+      if (rows.length < pageSize) return result;
+      cursor = rows[rows.length - 1].gameType;
+    }
   }
 }
 

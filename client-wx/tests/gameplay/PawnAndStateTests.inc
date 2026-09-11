@@ -136,6 +136,23 @@ void TestOlderGameStateCannotRestoreSetupPrompt()
     newRunState.system.setup.phase = "setup";
     Expect(GameStateUpdatePolicy::ShouldApply(roundState, newRunState),
         "Une nouvelle execution doit accepter une version remise a un.");
+
+    auto unversionedActiveState = roundState;
+    unversionedActiveState.version = 0;
+    Expect(!GameStateUpdatePolicy::ShouldApply(roundState, unversionedActiveState),
+        "Un etat actif sans version ne doit pas remplacer un etat versionne.");
+    auto unidentifiedRunState = roundState;
+    unidentifiedRunState.runId = 0;
+    unidentifiedRunState.version = 99;
+    Expect(!GameStateUpdatePolicy::ShouldApply(roundState, unidentifiedRunState),
+        "Un etat sans execution ne doit pas remplacer une execution identifiee.");
+    newRunState.version = 0;
+    Expect(!GameStateUpdatePolicy::ShouldApply(roundState, newRunState),
+        "Une nouvelle execution doit aussi presenter une version valide.");
+    auto olderActiveState = roundState;
+    olderActiveState.version = roundState.version - 1;
+    Expect(!GameStateUpdatePolicy::ShouldApply(roundState, olderActiveState),
+        "Un ancien etat actif ne doit pas remplacer une vue recente.");
 }
 }
 void TestCapabilityInformationIsInspectable()

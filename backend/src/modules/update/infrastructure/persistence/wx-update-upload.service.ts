@@ -6,11 +6,17 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
+import { bestEffort } from '../../../../platform/observability/public-api';
 import {
-  bestEffort,
+  assertPathInside,
   StorageCapacityError,
-} from '../../../../shared/utils/public-api';
+} from '../../../../platform/filesystem/public-api';
+import {
+  RedisDistributedLeaseService,
+  type RedisDistributedLease,
+} from '../../../../platform/redis/public-api';
 
 import { WxUpdateReleaseService } from './wx-update-release.service';
 import {
@@ -20,9 +26,13 @@ import {
 
 @Injectable()
 export class WxUpdateUploadService {
+  private static readonly COMPLETION_LOCK_TTL_MS = 15 * 60 * 1000;
   private readonly storage: WxUpdateUploadStorage;
 
-  constructor(private readonly updates: WxUpdateReleaseService) {
+  constructor(
+    private readonly updates: WxUpdateReleaseService,
+    private readonly distributedLeases: RedisDistributedLeaseService,
+  ) {
     this.storage = new WxUpdateUploadStorage(this.updates.getTargetDir());
   }
 
@@ -88,8 +98,6 @@ export class WxUpdateUploadService {
     }
     await this.storage.pruneExpired();
     const uploadId = randomUUID();
-    const dir = this.storage.uploadDir(uploadId);
-    await fs.promises.mkdir(dir, { recursive: true });
     const meta: WxUploadMeta = {
       uploadId,
       releaseId,
@@ -106,7 +114,7 @@ export class WxUpdateUploadService {
       installerTotalBytes: hasInstaller ? installerTotalBytes : null,
       completedAt: null,
     };
-    await this.storage.writeMeta(path.join(dir, 'meta.json'), meta);
+    await this.storage.initialize(meta);
     return { uploadId };
   }
 
@@ -117,8 +125,13 @@ export class WxUpdateUploadService {
     kind?: string;
   }) {
     const uploadId = this.storage.requireUploadId(input.uploadId);
+    const filePath = this.assertTemporaryFilePath(input.filePath);
     if (!Number.isSafeInteger(input.index) || input.index < 0) {
       throw new BadRequestException('Index de chunk WX invalide.');
+    }
+    const fileStat = await fs.promises.lstat(filePath);
+    if (!fileStat.isFile()) {
+      throw new BadRequestException('Chunk WX invalide.');
     }
     const kind = this.storage.normalizePartKind(input.kind);
     const dir = this.storage.uploadDir(uploadId);
@@ -127,15 +140,13 @@ export class WxUpdateUploadService {
     }
     const destination = path.join(dir, `${kind}.${input.index}.part`);
     if (fs.existsSync(destination)) {
-      await fs.promises.rm(input.filePath, { force: true });
+      await fs.promises.rm(filePath, { force: true });
       return { ok: true, duplicate: true };
     }
-    await this.storage.ensureCapacity(
-      (await fs.promises.stat(input.filePath)).size,
-    );
+    await this.storage.ensureCapacity(fileStat.size);
     try {
       await fs.promises.copyFile(
-        input.filePath,
+        filePath,
         destination,
         fs.constants.COPYFILE_EXCL,
       );
@@ -155,9 +166,20 @@ export class WxUpdateUploadService {
       }
       throw error;
     } finally {
-      await fs.promises.rm(input.filePath, { force: true });
+      await fs.promises.rm(filePath, { force: true });
     }
     return { ok: true };
+  }
+
+  private assertTemporaryFilePath(input: string): string {
+    if (typeof input !== 'string' || input.trim().length === 0) {
+      throw new BadRequestException('Chemin de chunk WX invalide.');
+    }
+    try {
+      return assertPathInside(os.tmpdir(), input);
+    } catch {
+      throw new BadRequestException('Chemin de chunk WX invalide.');
+    }
   }
 
   async complete(uploadIdInput: string) {
@@ -173,69 +195,148 @@ export class WxUpdateUploadService {
       };
     }
 
+    const distributedLease: RedisDistributedLease | null =
+      await this.distributedLeases.acquire(
+        `lemonde:update:complete:${uploadId}`,
+        WxUpdateUploadService.COMPLETION_LOCK_TTL_MS,
+      );
+    if (!distributedLease) {
+      throw new ConflictException('Finalisation WX deja en cours.');
+    }
+
+    try {
+      return await this.completeWithLease(
+        uploadId,
+        dir,
+        metaPath,
+        meta,
+        distributedLease,
+      );
+    } finally {
+      await bestEffort(
+        distributedLease.release(),
+        'release WX completion lease',
+      );
+    }
+  }
+
+  private async completeWithLease(
+    uploadId: string,
+    dir: string,
+    metaPath: string,
+    meta: WxUploadMeta,
+    distributedLease: RedisDistributedLease,
+  ) {
     const lockPath = path.join(dir, '.complete.lock');
     let lock: fs.promises.FileHandle;
     try {
       lock = await fs.promises.open(lockPath, 'wx');
+      await lock.writeFile(
+        JSON.stringify({
+          owner: randomUUID(),
+          startedAt: new Date().toISOString(),
+        }),
+        'utf8',
+      );
     } catch {
-      throw new ConflictException('Finalisation WX déjà en cours.');
+      const stat = await fs.promises.stat(lockPath).catch(() => null);
+      if (
+        !stat ||
+        Date.now() - stat.mtimeMs <=
+          WxUpdateUploadService.COMPLETION_LOCK_TTL_MS
+      ) {
+        throw new ConflictException('Finalisation WX déjà en cours.');
+      }
+      await fs.promises.rm(lockPath, { force: true });
+      try {
+        lock = await fs.promises.open(lockPath, 'wx');
+        await lock.writeFile(
+          JSON.stringify({
+            owner: randomUUID(),
+            startedAt: new Date().toISOString(),
+          }),
+          'utf8',
+        );
+      } catch {
+        throw new ConflictException('Finalisation WX déjà en cours.');
+      }
     }
 
-    const combinedPath = path.join(dir, 'combined.zip');
-    const installerPath = path.join(dir, 'installer.zip');
     try {
-      await this.storage.combineParts({
+      return await this.publishCompletedUpload(
+        uploadId,
         dir,
-        kind: 'artifact',
-        destination: combinedPath,
-        expectedBytes: meta.totalBytes,
-        missingMessage: 'Aucun chunk WX reçu.',
-        overflowMessage: 'Upload WX plus grand que prévu.',
-        sizeMessage: 'Taille WX invalide',
-      });
-      const installerTotalBytes = meta.installerTotalBytes;
-      const hasInstaller =
-        meta.installerSha256 != null && installerTotalBytes != null;
-      if (installerTotalBytes != null && meta.installerSha256 != null) {
-        await this.storage.combineParts({
-          dir,
-          kind: 'installer',
-          destination: installerPath,
-          expectedBytes: installerTotalBytes,
-          missingMessage: 'Aucun chunk installateur WX reçu.',
-          overflowMessage: 'Installateur WX plus grand que prévu.',
-          sizeMessage: 'Taille installateur WX invalide',
-        });
-      }
-      const manifest = await this.updates.publish({
-        zipPath: combinedPath,
-        installerZipPath: hasInstaller ? installerPath : null,
-        releaseId: meta.releaseId,
-        version: meta.version,
-        sequence: meta.sequence,
-        publishedAt: meta.publishedAt,
-        message: meta.message,
-        minimumVersion: meta.minimumVersion,
-        mandatoryAt: meta.mandatoryAt,
-        expectedSha256: meta.sha256,
-        expectedInstallerSha256: hasInstaller ? meta.installerSha256 : null,
-        signature: meta.signature,
-      });
-      meta.completedAt = new Date().toISOString();
-      await this.storage.writeMeta(metaPath, meta);
-      await bestEffort(
-        this.storage.removeParts(dir),
-        `suppression des chunks WX upload=${uploadId}`,
+        metaPath,
+        meta,
+        distributedLease,
       );
-      return { ok: true, manifest };
     } finally {
       await bestEffort(
         lock.close(),
         `fermeture du verrou WX upload=${uploadId}`,
       );
-      await fs.promises.rm(lockPath, { force: true });
-      await fs.promises.rm(combinedPath, { force: true });
-      await fs.promises.rm(installerPath, { force: true });
+      await this.storage.cleanupCompletion(dir);
     }
+  }
+
+  private async publishCompletedUpload(
+    uploadId: string,
+    dir: string,
+    metaPath: string,
+    meta: WxUploadMeta,
+    distributedLease: RedisDistributedLease | null,
+  ) {
+    const combinedPath = path.join(dir, 'combined.zip');
+    const installerPath = path.join(dir, 'installer.zip');
+    await this.storage.combineParts({
+      dir,
+      kind: 'artifact',
+      destination: combinedPath,
+      expectedBytes: meta.totalBytes,
+      missingMessage: 'Aucun chunk WX reçu.',
+      overflowMessage: 'Upload WX plus grand que prévu.',
+      sizeMessage: 'Taille WX invalide',
+    });
+    const installerTotalBytes = meta.installerTotalBytes;
+    const hasInstaller =
+      meta.installerSha256 != null && installerTotalBytes != null;
+    if (installerTotalBytes != null && meta.installerSha256 != null) {
+      await this.storage.combineParts({
+        dir,
+        kind: 'installer',
+        destination: installerPath,
+        expectedBytes: installerTotalBytes,
+        missingMessage: 'Aucun chunk installateur WX reçu.',
+        overflowMessage: 'Installateur WX plus grand que prévu.',
+        sizeMessage: 'Taille installateur WX invalide',
+      });
+    }
+    if (distributedLease && !(await distributedLease.isHeld())) {
+      throw new ConflictException('Bail de finalisation WX perdu.');
+    }
+    const manifest = await this.updates.publish({
+      zipPath: combinedPath,
+      installerZipPath: hasInstaller ? installerPath : null,
+      releaseId: meta.releaseId,
+      version: meta.version,
+      sequence: meta.sequence,
+      publishedAt: meta.publishedAt,
+      message: meta.message,
+      minimumVersion: meta.minimumVersion,
+      mandatoryAt: meta.mandatoryAt,
+      expectedSha256: meta.sha256,
+      expectedInstallerSha256: hasInstaller ? meta.installerSha256 : null,
+      signature: meta.signature,
+    });
+    if (distributedLease && !(await distributedLease.isHeld())) {
+      throw new ConflictException('Bail de finalisation WX perdu.');
+    }
+    meta.completedAt = new Date().toISOString();
+    await this.storage.writeMeta(metaPath, meta);
+    await bestEffort(
+      this.storage.removeParts(dir),
+      `suppression des chunks WX upload=${uploadId}`,
+    );
+    return { ok: true, manifest };
   }
 }

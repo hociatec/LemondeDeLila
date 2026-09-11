@@ -22,18 +22,27 @@ type LegacySessionRow = {
 export class SplitGameSessionTimeline1770400000000 implements MigrationInterface {
   name = 'SplitGameSessionTimeline1770400000000';
 
+  private static readonly ROW_BATCH_SIZE = 250;
+  private static readonly MAX_TIMELINE_ITEMS = 100_000;
+
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(eventTable(), true);
     await queryRunner.createTable(snapshotTable(), true);
     if (!(await queryRunner.hasColumn('game_sessions', 'timeline'))) return;
 
-    const rows = (await queryRunner.query(
-      'SELECT room_id, game_type, state, timeline FROM game_sessions',
-    )) as LegacySessionRow[];
-    for (const row of rows) {
+    for (let offset = 0; ; offset += SplitGameSessionTimeline1770400000000.ROW_BATCH_SIZE) {
+      const rows = (await queryRunner.query(
+        'SELECT room_id, game_type, state, timeline FROM game_sessions ORDER BY room_id ASC, game_type ASC LIMIT ? OFFSET ?',
+        [SplitGameSessionTimeline1770400000000.ROW_BATCH_SIZE, offset],
+      )) as LegacySessionRow[];
+      if (rows.length === 0) break;
+      for (const row of rows) {
       const timeline = parseTimeline(row.timeline);
       if (!timeline) continue;
-      for (const event of timeline.events ?? []) {
+      for (const event of (timeline.events ?? []).slice(
+        0,
+        SplitGameSessionTimeline1770400000000.MAX_TIMELINE_ITEMS,
+      )) {
         await queryRunner.query(
           'INSERT INTO game_session_events (room_id, game_type, seq, version, event) VALUES (?, ?, ?, ?, ?)',
           [
@@ -47,7 +56,10 @@ export class SplitGameSessionTimeline1770400000000 implements MigrationInterface
       }
       const snapshots =
         (timeline.snapshots?.length ?? 0) > 0
-          ? (timeline.snapshots ?? [])
+          ? (timeline.snapshots ?? []).slice(
+              0,
+              SplitGameSessionTimeline1770400000000.MAX_TIMELINE_ITEMS,
+            )
           : timeline.initial
             ? [timeline.initial]
             : [];
@@ -63,6 +75,7 @@ export class SplitGameSessionTimeline1770400000000 implements MigrationInterface
           ],
         );
       }
+      }
     }
     await queryRunner.dropColumn('game_sessions', 'timeline');
   }
@@ -74,17 +87,28 @@ export class SplitGameSessionTimeline1770400000000 implements MigrationInterface
         new TableColumn({ name: 'timeline', type: 'json', isNullable: true }),
       );
     }
-    const sessions = (await queryRunner.query(
-      'SELECT room_id, game_type, state FROM game_sessions',
-    )) as LegacySessionRow[];
-    for (const session of sessions) {
+    for (let offset = 0; ; offset += SplitGameSessionTimeline1770400000000.ROW_BATCH_SIZE) {
+      const sessions = (await queryRunner.query(
+        'SELECT room_id, game_type, state FROM game_sessions ORDER BY room_id ASC, game_type ASC LIMIT ? OFFSET ?',
+        [SplitGameSessionTimeline1770400000000.ROW_BATCH_SIZE, offset],
+      )) as LegacySessionRow[];
+      if (sessions.length === 0) break;
+      for (const session of sessions) {
       const events = await queryRunner.query(
-        'SELECT event FROM game_session_events WHERE room_id = ? AND game_type = ? ORDER BY seq ASC',
-        [session.room_id, session.game_type],
+        'SELECT event FROM game_session_events WHERE room_id = ? AND game_type = ? ORDER BY seq ASC LIMIT ?',
+        [
+          session.room_id,
+          session.game_type,
+          SplitGameSessionTimeline1770400000000.MAX_TIMELINE_ITEMS,
+        ],
       );
       const snapshots = await queryRunner.query(
-        'SELECT seq, version, state FROM game_session_snapshots WHERE room_id = ? AND game_type = ? ORDER BY seq ASC',
-        [session.room_id, session.game_type],
+        'SELECT seq, version, state FROM game_session_snapshots WHERE room_id = ? AND game_type = ? ORDER BY seq ASC LIMIT ?',
+        [
+          session.room_id,
+          session.game_type,
+          SplitGameSessionTimeline1770400000000.MAX_TIMELINE_ITEMS,
+        ],
       );
       const normalizedSnapshots = snapshots.map(
         (row: Record<string, unknown>) => ({
@@ -114,6 +138,7 @@ export class SplitGameSessionTimeline1770400000000 implements MigrationInterface
           session.game_type,
         ],
       );
+      }
     }
     await queryRunner.dropTable('game_session_snapshots', true);
     await queryRunner.dropTable('game_session_events', true);

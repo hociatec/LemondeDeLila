@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type {
   GameStateMetadata,
-  GameStateEntity,
-  PlayerStateEntity,
-} from '../contracts/game-state.model';
+  GameState,
+  PlayerState,
+} from '../models/game-state.model';
 import { ensureSeededRng } from '../random/seeded-rng';
 import { seededShuffle } from '../random/seeded-shuffle';
 import { resolveGameStateRunId } from '../helpers/game-room-run-id.helper';
@@ -23,7 +23,17 @@ type GameRoomPayload = {
 
 @Injectable()
 export class GameRoomStateFactory {
-  build(payload: GameRoomPayload, gameType: string): GameStateEntity {
+  build(payload: GameRoomPayload, gameType: string): GameState {
+    if (
+      !payload?.room ||
+      !Number.isSafeInteger(payload.room.id) ||
+      payload.room.id <= 0 ||
+      typeof gameType !== 'string' ||
+      !gameType.trim() ||
+      gameType.length > 128
+    ) {
+      throw new Error('Invalid game room payload');
+    }
     const status = payload.room.status || 'setup';
     const roomOwnerId = payload.room.owner?.id ?? null;
     const metadata: GameStateMetadata = {
@@ -56,23 +66,32 @@ export class GameRoomStateFactory {
     };
   }
 
-  private players(payload: GameRoomPayload): PlayerStateEntity[] {
-    const humans = payload.room.players.map((player) => ({
-      id: player.id,
-      username: sanitizePlayerName(player.username),
-      isBot: false,
-    }));
-    const bots = payload.room.bots.map((bot) => ({
-      id: -Math.abs(bot.id),
-      username: sanitizePlayerName(bot.name),
-      isBot: true,
-    }));
+  private players(payload: GameRoomPayload): PlayerState[] {
+    const humans = (
+      Array.isArray(payload.room.players) ? payload.room.players : []
+    )
+      .slice(0, 64)
+      .filter((player) => Number.isSafeInteger(player?.id) && player.id > 0)
+      .map((player) => ({
+        id: player.id,
+        username: sanitizePlayerName(player.username),
+        isBot: false,
+      }));
+    const bots = (Array.isArray(payload.room.bots) ? payload.room.bots : [])
+      .slice(0, 64)
+      .filter((bot) => Number.isSafeInteger(bot?.id) && bot.id > 0)
+      .map((bot) => ({
+        id: -Math.abs(bot.id),
+        username: sanitizePlayerName(bot.name),
+        isBot: true,
+      }));
     return [...humans, ...bots];
   }
 }
 
 function sanitizePlayerName(raw: string): string {
-  let name = raw
+  let name = (typeof raw === 'string' ? raw : '')
+    .slice(0, 255)
     .trim()
     .replace(/[\r\n\t]+/g, ' ')
     .replace(/\s{2,}/g, ' ')

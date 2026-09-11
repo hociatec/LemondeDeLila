@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import * as fs from 'fs';
-import { bestEffort } from '@shared/utils/public-api';
+import { bestEffort } from '../../../../platform/observability/public-api';
 
 type WavMeta = {
   durationSeconds: number;

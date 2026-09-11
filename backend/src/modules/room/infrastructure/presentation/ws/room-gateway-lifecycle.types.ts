@@ -1,5 +1,5 @@
 import type { Server, WebSocket } from 'ws';
-import type { RoomPayload } from '../../../public-api';
+import type { RoomPayload } from '../../../application/models/room-payload.model';
 import type { RoomIntent } from './dto/room-intent.ws.dto';
 import type { ClientMeta, ClientRole } from './room-gateway.types';
 

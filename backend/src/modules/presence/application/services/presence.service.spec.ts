@@ -1,5 +1,5 @@
 import type { WebSocket } from 'ws';
-import type { PresenceClient } from '../contracts/presence-client.model';
+import type { PresenceClient } from '../models/presence-client.model';
 import type { PresenceEvent } from '../ports/presence-transport.port';
 import { PresenceTransport } from '../ports/presence-transport.port';
 import type { PresenceRoomParticipantRepository } from '../ports/presence-room-participant.repository';
@@ -12,9 +12,11 @@ describe('PresenceService', () => {
   let participants: jest.Mocked<PresenceRoomParticipantRepository>;
   let transport: jest.Mocked<PresenceTransport>;
   let service: PresenceService;
+  let now: number;
 
   beforeEach(() => {
     jest.useFakeTimers();
+    now = 1_000_000;
     messages = {
       handle: jest.fn().mockResolvedValue(undefined),
       isChatBannedNow: jest.fn().mockResolvedValue(false),
@@ -32,7 +34,9 @@ describe('PresenceService', () => {
       }),
       disconnect: jest.fn().mockResolvedValue(undefined),
     };
-    service = new PresenceService(messages, participants, transport);
+    service = new PresenceService(messages, participants, transport, {
+      now: () => now,
+    });
   });
 
   afterEach(async () => {
@@ -186,7 +190,7 @@ describe('PresenceService', () => {
 
   it('merges external origins, ignores its own echo and expires stale origins', async () => {
     const target = socket();
-    jest.spyOn(Date, 'now').mockReturnValue(1_000_000);
+    now = 1_000_000;
     service.register(target.value, { id: 1, username: 'Local' }, 'home');
     service.broadcastPresence();
     await settle();
@@ -213,13 +217,35 @@ describe('PresenceService', () => {
       ]),
     );
 
-    jest.spyOn(Date, 'now').mockReturnValue(1_200_001);
+    now = 1_200_001;
     expect(service.listPlayers()).toEqual([]);
   });
 
   it('disconnects its transport during shutdown', async () => {
     await service.onModuleDestroy();
     expect(transport.disconnect).toHaveBeenCalled();
+  });
+
+  it('does not publish an older room enrichment after a newer presence snapshot', async () => {
+    let finishFirst!: (value: []) => void;
+    participants.listActiveRoomsByUserIds.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishFirst = resolve;
+        }),
+    );
+    const client = socket();
+    service.register(client.value, { id: 1, username: 'Local' });
+    service.broadcastPresence();
+    service.unregister(client.value);
+    service.broadcastPresence();
+    await settle();
+    finishFirst([]);
+    await settle();
+    expect(transport.publish).toHaveBeenCalledTimes(1);
+    expect(transport.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ players: [], sequence: 2 }),
+    );
   });
 });
 

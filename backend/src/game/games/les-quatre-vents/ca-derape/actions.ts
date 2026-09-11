@@ -1,6 +1,7 @@
 import {
   commonStatuses,
   defineAction,
+  defineChoice,
   gameInput,
   rejectRule,
   type GameContext,
@@ -47,6 +48,13 @@ export const roll = defineAction<CaDerapeState, Record<string, never>>({
 });
 
 export const CA_DERAPE_ACTIONS = { roll };
+
+export const GAME_CHOICES = {
+  'ca-derape.next-delta': defineChoice<CaDerapeState, number>({
+    input: gameInput.number({ integer: true }),
+    resolve: ({ value, ctx }) => resolveDeltaChoice(value, ctx),
+  }),
+};
 
 export function resolveDeltaChoice(value: number, ctx: RuleContext): void {
   const pending = ctx.choice.consumeContinuation<{

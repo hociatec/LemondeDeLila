@@ -1,7 +1,8 @@
-import { testGame } from '../../../engine/sdk/public-api';
+import { testGame } from '../../../engine/testing/public-api';
+
 import { CONTES_DECKS, CONTES_PAWNS, CONTES_TILES } from './content';
 import gameDefinition from './game';
-import { CONTES_CONTENT_COUNTS } from './rules';
+import { CONTES_CONTENT_COUNTS } from './content';
 
 describe('Contes et Cacahuètes declarative game', () => {
   it('preserves the complete content and runs deterministic choices', async () => {

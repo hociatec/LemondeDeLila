@@ -22,7 +22,12 @@ type LamaState = NoGameState;
 type RuleContext = GameContext<LamaState>;
 export const LAMA_PHASES = defineGamePhases<LamaState>()({
   initialPhase: 'setup',
-  phases: { setup: {}, turn: {}, return: {}, pause: {} },
+  phases: {
+    setup: { transitions: ['turn'] },
+    turn: { transitions: ['return'] },
+    return: { transitions: ['pause', 'turn'] },
+    pause: { transitions: ['turn'] },
+  },
 });
 const DECK = 'lama';
 const HANDS = 'lama-hands';
@@ -48,7 +53,7 @@ export const play = defineAction<LamaState, { value: LamaCard }>({
   enumerate: ({ actor, ctx }) =>
     playableValues(actor.id, ctx).map((value) => ({ value })),
   execute: ({ state, actor, input, ctx }) => {
-    requireCurrentPlayer(actor.id, ctx);
+    ctx.turn.requireCurrent(actor.id);
     const value = input.value;
     if (!playableValues(actor.id, ctx).includes(value))
       rejectRule('Carte LAMA injouable');
@@ -76,7 +81,7 @@ export const draw = defineAction<LamaState, Record<string, never>>({
     !ctx.turn.flags.get<boolean>(DRAWN_TURN_FLAG) &&
     ctx.cards.deckCount(DECK) > 0,
   execute: ({ actor, ctx }) => {
-    requireCurrentPlayer(actor.id, ctx);
+    ctx.turn.requireCurrent(actor.id);
     const card = ctx.cards.draw<LamaCard>(DECK);
     if (card == null) rejectRule('Pioche LAMA vide');
     ctx.cards.give(HANDS, actor.id, card);
@@ -102,7 +107,7 @@ export const pass = defineAction<LamaState, Record<string, never>>({
     lamaConfig(ctx).allowPlayAfterDraw &&
     ctx.turn.flags.get<boolean>(DRAWN_TURN_FLAG) === true,
   execute: ({ actor, ctx }) => {
-    requireCurrentPlayer(actor.id, ctx);
+    ctx.turn.requireCurrent(actor.id);
     ctx.events.message('game.player.passed', { playerId: actor.id });
     ctx.turn.end();
   },
@@ -118,7 +123,7 @@ export const quit = defineAction<LamaState, Record<string, never>>({
     LAMA_PHASES.is(ctx, 'turn') &&
     ctx.round.activePlayers().some((player) => player.id === actor.id),
   execute: ({ state, actor, ctx }) => {
-    requireCurrentPlayer(actor.id, ctx);
+    ctx.turn.requireCurrent(actor.id);
     ctx.round.leave(actor.id);
     if (activeRoundPlayers(ctx).length === 0) endRound(state, null, ctx);
     else ctx.turn.end();
@@ -197,10 +202,6 @@ function isCurrentPlayer(playerId: number, ctx: RuleContext): boolean {
   return ctx.players.current()?.id === playerId;
 }
 
-function requireCurrentPlayer(playerId: number, ctx: RuleContext): void {
-  if (!isCurrentPlayer(playerId, ctx)) rejectRule("Ce n'est pas votre tour");
-}
-
 function endRound(
   state: LamaState,
   winnerId: number | null,
@@ -254,9 +255,10 @@ function advanceAfterLamaRound(_state: LamaState, ctx: RuleContext): void {
   if (survivors.length <= 1) {
     const winnerId =
       survivors[0]?.id ??
-      [...players].sort(
-        (left, right) => ctx.score.get(left.id) - ctx.score.get(right.id),
-      )[0].id;
+      ctx.ranking.rank(
+        players.map((player) => player.id),
+        { value: (id) => ctx.score.get(id), direction: 'asc' },
+      )[0].playerId;
     ctx.match.finish({ winners: [winnerId], reason: 'last-below-limit' });
     return;
   }

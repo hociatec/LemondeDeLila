@@ -1,23 +1,23 @@
+import type { NoGameState as FrousseState } from '../../../engine/sdk/public-api';
 import {
   cards,
   defineCardsSchema,
-  defineChoice,
   defineGame,
-  defineGameContent,
-  gameInput,
   pawns,
   publicField,
   raceGame,
 } from '../../../engine/sdk/public-api';
-import { FROUSSE_CARDS, FROUSSE_PAWNS, FROUSSE_TILES } from './content';
 import {
-  FROUSSE_ACTIONS,
-  FROUSSE_EFFECTS,
-  FROUSSE_PHASES,
-  requestPawns,
-  resolvePawn,
-} from './rules';
-import type { NoGameState as FrousseState } from '../../../engine/sdk/public-api';
+  FROUSSE_CARDS,
+  FROUSSE_GAME_CONTENT,
+  FROUSSE_PAWNS,
+  FROUSSE_TILES,
+} from './content';
+import manifest from './manifest.json';
+import { GAME_CHOICES, FROUSSE_EFFECTS } from './rules';
+
+import { FROUSSE_ACTIONS, FROUSSE_PHASES } from './rules';
+import { setupGame } from './rules';
 
 const cardSchema = defineCardsSchema({
   decks: {
@@ -32,17 +32,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<FrousseState>()({
-  id: 'frousse-party',
-  displayName: 'Frousse Party',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Course mouvementée dans un manoir hanté.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('frousse-party', {
-    tiles: FROUSSE_TILES,
-    pawns: FROUSSE_PAWNS,
-    cards: FROUSSE_CARDS,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: FROUSSE_GAME_CONTENT,
   playerValuesVisibility: { statuses: publicField() },
   patterns: [
     raceGame({
@@ -57,22 +53,11 @@ export default defineGame<FrousseState>()({
   ],
   initialization: { firstPlayer: 'random', startRound: true },
   shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
-  setup: ({ players, ctx }) => {
-    requestPawns(
-      players.map((player) => player.id),
-      ctx,
-    );
-    return {};
-  },
+  setup: setupGame,
   initialPhase: FROUSSE_PHASES.initialPhase,
   phases: FROUSSE_PHASES.phases,
   actions: FROUSSE_ACTIONS,
   effects: FROUSSE_EFFECTS,
-  choices: {
-    'frousse.pawn': defineChoice<FrousseState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
-    }),
-  },
+  choices: GAME_CHOICES,
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

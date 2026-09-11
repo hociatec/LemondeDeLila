@@ -22,7 +22,7 @@ export class GameMatchPlayerEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => GameMatchEntity, (m) => m.players, { eager: false })
+  @ManyToOne(() => GameMatchEntity, { eager: false })
   @JoinColumn({ name: 'match_id' })
   @Index('idx_game_match_players_match')
   match!: Relation<GameMatchEntity>;

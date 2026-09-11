@@ -20,6 +20,9 @@ import { GameSessionSnapshotEntity } from '../persistence/typeorm/entities/game-
 import { GAME_STATE_STORE } from '../../application/ports/game-state-store.port';
 import { GAME_EVENT_STORE } from '../../application/ports/game-event-store.port';
 import { GameEngineMetricsService } from '../../application/services/game-engine-metrics.service';
+import { GameActiveSessionsMetrics } from '../persistence/typeorm/game-active-sessions.metrics';
+import { MysqlGameActiveSessionsReader } from '../persistence/typeorm/mysql-game-active-sessions.reader';
+import { GAME_SESSION_RECOVERY_READER } from '../../application/ports/game-session-recovery.reader';
 
 @Module({
   imports: [
@@ -50,6 +53,12 @@ import { GameEngineMetricsService } from '../../application/services/game-engine
     },
     GameEngineService,
     GameEngineMetricsService,
+    GameActiveSessionsMetrics,
+    MysqlGameActiveSessionsReader,
+    {
+      provide: GAME_SESSION_RECOVERY_READER,
+      useExisting: MysqlGameActiveSessionsReader,
+    },
     GameCatalogOverridesTypeormRepository,
     GameCategoriesTypeormRepository,
     {
@@ -64,6 +73,7 @@ import { GameEngineMetricsService } from '../../application/services/game-engine
     GameCategoriesService,
   ],
   exports: [
+    GAME_SESSION_RECOVERY_READER,
     GAME_CATALOG_READER,
     GameContentService,
     GameEngineService,

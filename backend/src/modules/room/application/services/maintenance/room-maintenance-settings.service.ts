@@ -38,13 +38,13 @@ export class RoomMaintenanceSettingsService implements OnModuleInit {
     input: Partial<RoomMaintenanceSettings>,
   ): RoomMaintenanceSettings {
     const enabled = input.autoCleanupEnabled === true;
-    const interval = Number.isFinite(input.autoCleanupIntervalSeconds)
-      ? Math.max(30, Math.floor(input.autoCleanupIntervalSeconds as number))
+    const interval = Number.isSafeInteger(input.autoCleanupIntervalSeconds)
+      ? Math.min(86_400, Math.max(30, input.autoCleanupIntervalSeconds as number))
       : 300;
-    const older = Number.isFinite(input.autoCleanupOlderThanMinutes)
-      ? Math.max(5, Math.floor(input.autoCleanupOlderThanMinutes as number))
+    const older = Number.isSafeInteger(input.autoCleanupOlderThanMinutes)
+      ? Math.min(525_600, Math.max(5, input.autoCleanupOlderThanMinutes as number))
       : 60;
-    const limit = Number.isFinite(input.autoCleanupLimit)
+    const limit = Number.isSafeInteger(input.autoCleanupLimit)
       ? Math.max(
           1,
           Math.min(5000, Math.floor(input.autoCleanupLimit as number)),

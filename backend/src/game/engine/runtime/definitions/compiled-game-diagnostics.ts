@@ -1,13 +1,13 @@
 import type { GameLifecycleHooks } from '../lifecycle/game-lifecycle-hooks';
-import type { GamePattern } from '../patterns/gameplay-patterns';
+import type { GamePattern } from '../contracts/pattern-definition';
 import type {
-  CompiledGameDefinition,
+  AuthorGameDefinition,
   CompiledGameDiagnostics,
-  GameActionMap,
 } from './game-definition-contracts';
+import type { GameActionMap } from '../contracts/author-rule-contracts';
 
 export type CompiledDescriptorInput<TState extends object = object> = Pick<
-  CompiledGameDefinition<TState, GameActionMap<TState>, object>,
+  AuthorGameDefinition<TState, GameActionMap<TState>, object>,
   | 'id'
   | 'patterns'
   | 'components'
@@ -24,7 +24,13 @@ export type CompiledDescriptorInput<TState extends object = object> = Pick<
   | 'stateVersion'
   | 'contentVersion'
   | 'rulesVersion'
->;
+> &
+  Required<
+    Pick<
+      AuthorGameDefinition<TState, GameActionMap<TState>>,
+      'content' | 'stateVersion' | 'contentVersion' | 'rulesVersion'
+    >
+  >;
 
 /** Builds the immutable authoring diagnostics exposed by a compiled game. */
 export function describeCompiledGameDefinition<TState extends object>(
@@ -105,7 +111,7 @@ export function describeCompiledGameDefinition<TState extends object>(
 
 function actionSources<TState extends object>(
   definition: Pick<
-    CompiledGameDefinition<TState, GameActionMap<TState>, object>,
+    AuthorGameDefinition<TState, GameActionMap<TState>, object>,
     'patterns' | 'actions'
   >,
 ): Record<string, string> {
@@ -125,7 +131,7 @@ function actionSources<TState extends object>(
 
 function componentSources<TState extends object>(
   definition: Pick<
-    CompiledGameDefinition<TState, GameActionMap<TState>, object>,
+    AuthorGameDefinition<TState, GameActionMap<TState>, object>,
     'patterns' | 'components'
   >,
 ): Record<string, string> {

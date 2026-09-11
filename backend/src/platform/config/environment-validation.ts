@@ -1,4 +1,5 @@
 import * as Joi from 'joi';
+import { applicationEnvironment } from './environment-application-options';
 
 type EnvValidationInput = Record<string, unknown>;
 
@@ -6,14 +7,27 @@ const coreEnvironment = {
   NODE_ENV: Joi.string()
     .valid('development', 'production', 'test')
     .default('development'),
-  PORT: Joi.number().default(3000),
+  PORT: Joi.number().integer().min(1).max(65535).default(3000),
   IGNORE_ENV_FILE: Joi.boolean().truthy('true').falsy('false').default(false),
 };
 
 const databaseEnvironment = {
   DATABASE_URL: Joi.string().uri().optional(),
   DB_HOST: Joi.string().default('127.0.0.1'),
-  DB_PORT: Joi.number().default(3306),
+  DB_PORT: Joi.number().integer().min(1).max(65535).default(3306),
+  DB_POOL_SIZE: Joi.number().integer().min(1).max(1000).default(10),
+  DB_CONNECT_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(1)
+    .max(120000)
+    .default(10000),
+  DB_QUERY_TIMEOUT_MS: Joi.number().integer().min(100).max(120000).default(30000),
+  DB_STARTUP_RETRY_ATTEMPTS: Joi.number().integer().min(0).max(10).default(5),
+  DB_STARTUP_RETRY_DELAY_MS: Joi.number()
+    .integer()
+    .min(0)
+    .max(30000)
+    .default(1000),
   DB_USER: Joi.string().default('root'),
   DB_PASSWORD: Joi.string().allow('', null).default(''),
   DB_NAME: Joi.string().default('le_monde_de_lila'),
@@ -27,14 +41,21 @@ const authEnvironment = {
   JWT_PUBLIC_KEY_PATH: Joi.string().optional(),
   JWT_ISSUER: Joi.string().default('le-monde-de-lila'),
   JWT_AUDIENCE: Joi.string().optional(),
-  JWT_CLOCK_TOLERANCE_SECONDS: Joi.number().default(10),
-  JWT_EXPIRES_IN: Joi.string().default('12h'),
+  JWT_CLOCK_TOLERANCE_SECONDS: Joi.number()
+    .integer()
+    .min(0)
+    .max(300)
+    .default(10),
+  JWT_EXPIRES_IN: Joi.string()
+    .pattern(/^[1-9]\d{0,5}(s|m|h|d)$/)
+    .default('12h'),
   REFRESH_TOKEN_TTL_SECONDS: Joi.number().integer().min(3600).default(2592000),
   BCRYPT_COST: Joi.number().integer().min(10).max(15).default(12),
 };
 
 const redisAndRateLimitEnvironment = {
   SESSION_STORE_REDIS_URL: Joi.string().uri().optional(),
+  UPDATE_REDIS_URL: Joi.string().uri().optional(),
   GAME_ENGINE_STATE_REDIS_URL: Joi.string().uri().optional(),
   GAME_TASK_REDIS_URL: Joi.string().uri().optional(),
   ROOM_PAYLOAD_REDIS_URL: Joi.string().uri().optional(),
@@ -86,6 +107,7 @@ const runtimeEnvironment = {
   ADMIN_MAINTENANCE_TOKEN: Joi.string().optional(),
   ADMIN_MAINTENANCE_ALLOWED_IPS: Joi.string().optional(),
   ADMIN_MAINTENANCE_LOCK_PATH: Joi.string().min(1).optional(),
+  ADMIN_MAINTENANCE_REQUIRE_DISTRIBUTED: Joi.boolean().default(false),
   MAINTENANCE_COMMAND_TIMEOUT_MS: Joi.number()
     .integer()
     .positive()
@@ -103,6 +125,8 @@ const runtimeEnvironment = {
     .default(5000),
   ROOM_INVITE_TTL_MS: Joi.number().integer().positive().default(600000),
   WS_RECONNECT_BACKOFF_MS: Joi.number().integer().positive().default(300),
+  REALTIME_REQUEST_REPLAY_TTL_MS: Joi.number().integer().positive().optional(),
+  REALTIME_REQUEST_REPLAY_MAX_ENTRIES: Joi.number().integer().positive().optional(),
 };
 
 const updateEnvironment = {
@@ -141,6 +165,7 @@ const websocketEnvironment = {
 };
 
 export const environmentValidationSchema = Joi.object({
+  ...applicationEnvironment,
   ...coreEnvironment,
   ...databaseEnvironment,
   ...authEnvironment,
@@ -163,6 +188,18 @@ function validateCrossModuleEnvironment(
   helpers: Joi.CustomHelpers,
 ): EnvValidationInput | Joi.ErrorReport {
   const environment = rawEnvironment as EnvValidationInput;
+  const bioMin = Number(environment['PROFILE_BIO_MIN_LENGTH']);
+  const bioMax = Number(environment['PROFILE_BIO_MAX_LENGTH']);
+  if (
+    Number.isFinite(bioMin) &&
+    Number.isFinite(bioMax) &&
+    (bioMin < 0 || bioMax < 0 || bioMin > 10000 || bioMax > 10000 || bioMin > bioMax)
+  ) {
+    return customError(
+      helpers,
+      'PROFILE_BIO_MIN_LENGTH ne peut pas dépasser PROFILE_BIO_MAX_LENGTH',
+    );
+  }
   if (
     normalizedString(environment['NODE_ENV'], 'DEVELOPMENT') === 'PRODUCTION'
   ) {

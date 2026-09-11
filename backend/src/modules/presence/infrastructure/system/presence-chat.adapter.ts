@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ChatService, ChatSettingsService } from '../../../chat/public-api';
-import type { PresenceChatHistory } from '../../application/contracts/presence-chat-history.model';
+import { asUserId } from '../../../../shared/interfaces/public-api';
+import type { PresenceChatHistory } from '../../application/models/presence-chat-history.model';
 import type { PresenceChatPort } from '../../application/ports/presence-chat.port';
 
 @Injectable()
@@ -26,7 +27,7 @@ export class PresenceChatAdapter implements PresenceChatPort {
     text: string;
   }): Promise<Record<string, unknown>> {
     return this.chat.recordMessageForBroadcast(
-      { id: input.userId, username: input.username },
+      { id: asUserId(input.userId), username: input.username },
       input.text,
     );
   }

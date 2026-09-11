@@ -1,8 +1,8 @@
 import type {
   SocialProfileRecord,
   SocialProfileVisibility,
-} from '../contracts/social-profile.model';
-import type { SocialUserSummary } from '../contracts/social-user.model';
+} from '../models/social-profile.model';
+import type { SocialUserSummary } from '../models/social-user.model';
 
 export const SOCIAL_PROFILE_REPOSITORY = Symbol('SOCIAL_PROFILE_REPOSITORY');
 

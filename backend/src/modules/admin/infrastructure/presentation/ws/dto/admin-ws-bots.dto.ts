@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -29,6 +30,7 @@ export class AdminBotNameCreateWsDto {
 export class AdminBotNameUpdateWsDto {
   @IsInt()
   @IsPositive()
+  @Max(2147483647)
   id!: number;
 
   @IsOptional()
@@ -45,6 +47,7 @@ export class AdminBotNameUpdateWsDto {
 export class AdminBotNameDeleteWsDto {
   @IsInt()
   @IsPositive()
+  @Max(2147483647)
   id!: number;
 }
 
@@ -58,15 +61,18 @@ export class AdminBotSettingsUpdateWsDto {
   @IsOptional()
   @IsInt()
   @Min(0)
+  @Max(600000)
   botTurnDelayMs?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
+  @Max(600000)
   botStartDelayMs?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
+  @Max(600000)
   botDrawDelayMs?: number;
 }

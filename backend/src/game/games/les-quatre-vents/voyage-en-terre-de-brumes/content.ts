@@ -1,264 +1,160 @@
+import manifest from './manifest.json';
+import embeddedCatalogue from './catalogue.json';
 import {
-  freezeGameContent,
-  gameEffects,
+  defineGameContent,
+  cardContent,
+  trackContent,
+  effectContentSchema,
+  gameInput,
   rejectContent,
 } from '../../../engine/sdk/public-api';
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import type {
-  VoyageCard,
-  VoyageCollectionKind,
-  VoyageQuiz,
-  VoyageTile,
-  VoyageTileType,
-} from './types';
-import { TRACK } from './rules';
+import type { VoyageCard } from './types';
+import { TRACK } from './constants';
 
-type RawVoyageCard = Omit<
-  VoyageCard,
-  'effects' | 'collectionGain' | 'discardAfterResolve' | 'quiz'
->;
-type RawVoyageTile = Omit<VoyageTile, 'passageEffect'>;
-
-type VoyageContent = {
-  tiles: VoyageTile[];
-  legend: VoyageCard[];
-  farce: VoyageCard[];
-  treasure: VoyageCard[];
-  landscape: VoyageCard[];
+const COLLECTIONS = ['legend', 'farce', 'treasure', 'landscape'] as const;
+const integer = gameInput.number({ integer: true, coerce: false });
+const text = gameInput.string({ trim: false });
+const tileSchema = gameInput.object(
+  {
+    id: integer,
+    title: text,
+    type: gameInput.enum([
+      'start',
+      'finish',
+      'neutral',
+      'rest',
+      'passage',
+      ...COLLECTIONS,
+    ]),
+    label: gameInput.optional(text),
+    description: gameInput.optional(text),
+    passageEffect: gameInput.optional(
+      gameInput.union([
+        gameInput.object(
+          { kind: gameInput.literal('swap-position') },
+          { unknownKeys: 'reject' },
+        ),
+        gameInput.object(
+          { kind: gameInput.literal('move'), delta: integer },
+          { unknownKeys: 'reject' },
+        ),
+      ]),
+    ),
+  },
+  { unknownKeys: 'reject' },
+);
+const quizSchema = gameInput.object(
+  {
+    choices: gameInput.array(
+      gameInput.object(
+        {
+          id: gameInput.string({ min: 1, max: 128, trim: false }),
+          label: gameInput.string({ min: 1, trim: false }),
+        },
+        { unknownKeys: 'reject' },
+      ),
+      { min: 2 },
+    ),
+    answerId: gameInput.string({ min: 1, max: 128, trim: false }),
+    successDelta: integer,
+  },
+  { unknownKeys: 'reject' },
+);
+const cardSchema = gameInput.object(
+  {
+    id: integer,
+    title: text,
+    description: text,
+    effect: text,
+    effects: effectContentSchema({
+      tracks: [TRACK],
+      effects: [
+        'voyage.swap-last-player',
+        'voyage.lose-random-card',
+        'voyage.schedule-target',
+      ],
+    }),
+    collectionGain: gameInput.union([
+      gameInput.literal(null),
+      gameInput.enum(COLLECTIONS),
+    ]),
+    discardAfterResolve: gameInput.boolean(),
+    quiz: gameInput.optional(quizSchema),
+  },
+  { unknownKeys: 'reject' },
+);
+const customDataSchemas = {
+  'voyage.swap-last-player': gameInput.object({}, { unknownKeys: 'reject' }),
+  'voyage.lose-random-card': gameInput.object(
+    { allowed: gameInput.array(gameInput.enum(COLLECTIONS), { min: 1 }) },
+    { unknownKeys: 'reject' },
+  ),
+  'voyage.schedule-target': gameInput.object(
+    {
+      effect: gameInput.enum(['skip-turn', 'swap-card', 'swap-position']),
+      count: gameInput.number({ integer: true, min: 1, coerce: false }),
+    },
+    { unknownKeys: 'reject' },
+  ),
 };
 
-export const VOYAGE_CONTENT = loadContent();
-
-function loadContent(): VoyageContent {
-  const directory = contentDirectory();
-  return {
-    tiles: readArray(directory, 'board.json', 'tiles', isTile).map(
-      decorateTile,
-    ),
-    legend: readCards(directory, 'legend-cards.json', 'legend'),
-    farce: readCards(directory, 'farce-cards.json', 'farce'),
-    treasure: readCards(directory, 'treasure-cards.json', 'treasure'),
-    landscape: readCards(directory, 'landscape-cards.json', 'landscape'),
-  };
-}
-
-function readCards(
-  directory: string,
-  filename: string,
-  kind: VoyageCollectionKind,
-): VoyageCard[] {
-  return readArray(directory, filename, 'cards', isCard).map((card) =>
-    decorateCard(card, kind),
-  );
-}
-
-function readArray<T>(
-  directory: string,
-  filename: string,
-  field: string,
-  guard: (value: unknown) => value is T,
-): T[] {
-  const raw: unknown = JSON.parse(
-    readFileSync(resolve(directory, filename), 'utf8').replace(/^\uFEFF/, ''),
-  );
-  if (!isRecord(raw) || raw.version !== 1 || !Array.isArray(raw[field])) {
-    rejectContent(`Contenu Voyage invalide: ${filename}`);
-  }
-  const values = raw[field];
-  if (values.length === 0 || !values.every(guard)) {
-    rejectContent(`Entrées Voyage invalides: ${filename}`);
-  }
-  return values;
-}
-
-function contentDirectory(): string {
-  const candidates = [
-    resolve(__dirname, 'model/content'),
-    resolve(
-      process.cwd(),
-      'src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/model/content',
-    ),
-    resolve(
-      process.cwd(),
-      'dist/game/games/les-quatre-vents/voyage-en-terre-de-brumes/model/content',
-    ),
-  ];
-  const found = candidates.find((directory) =>
-    existsSync(resolve(directory, 'board.json')),
-  );
-  if (!found) rejectContent('Contenu Voyage en Terre de Brumes introuvable');
-  return found;
-}
-
-function isTile(value: unknown): value is RawVoyageTile {
-  if (!isRecord(value)) return false;
-  const types: VoyageTileType[] = [
-    'start',
-    'finish',
-    'neutral',
-    'rest',
-    'passage',
-    'legend',
-    'farce',
-    'treasure',
-    'landscape',
-  ];
-  return (
-    typeof value.id === 'number' &&
-    typeof value.title === 'string' &&
-    isTileType(value.type, types) &&
-    (value.label == null || typeof value.label === 'string') &&
-    (value.description == null || typeof value.description === 'string')
-  );
-}
-
-function isTileType(
-  value: unknown,
-  types: readonly VoyageTileType[],
-): value is VoyageTileType {
-  return typeof value === 'string' && types.some((type) => type === value);
-}
-
-function decorateTile(tile: RawVoyageTile): VoyageTile {
-  if (tile.type !== 'passage') return tile;
-  const description = tile.description ?? '';
-  if (/\béchange\b/i.test(description)) {
-    return { ...tile, passageEffect: { kind: 'swap-position' } };
-  }
-  const delta = extractMoveDelta(description);
-  return delta === 0
-    ? tile
-    : { ...tile, passageEffect: { kind: 'move', delta } };
-}
-
-function isCard(value: unknown): value is RawVoyageCard {
-  return (
-    isRecord(value) &&
-    typeof value.id === 'number' &&
-    typeof value.title === 'string' &&
-    typeof value.description === 'string' &&
-    typeof value.effect === 'string'
-  );
-}
-
-function decorateCard(
-  card: RawVoyageCard,
-  kind: VoyageCollectionKind,
-): VoyageCard {
-  const quiz = kind === 'legend' ? parseQuiz(card.effect) : null;
-  const keep =
-    kind === 'legend' ||
-    kind === 'treasure' ||
-    (kind === 'landscape'
-      ? !/défauss/i.test(card.effect)
-      : /gardez|conservez/i.test(card.effect));
-  return {
-    ...card,
-    effects: quiz ? [] : cardInstructions(card.effect),
-    collectionGain: quiz ? null : keep ? kind : null,
-    discardAfterResolve: !quiz && !keep,
-    ...(quiz ? { quiz } : {}),
-  };
-}
-
-function cardInstructions(text: string): VoyageCard['effects'] {
+export function parseVoyageCard(value: unknown): VoyageCard {
+  const card = cardSchema.parse(value);
+  const quiz = card.quiz;
   if (
-    /choisissez\s+un\s+joueur/i.test(text) &&
-    /perd\s+son\s+prochain\s+tour/i.test(text)
-  ) {
-    return [
-      gameEffects.custom('voyage.schedule-target', {
-        effect: 'skip-turn',
-        count: 1,
-      }),
-    ];
-  }
-  if (/tirez\s+au\s+hasard\s+une\s+carte/i.test(text) && /perdez/i.test(text)) {
-    const allowed = (
-      ['legend', 'farce', 'treasure', 'landscape'] as const
-    ).filter(
-      (kind) =>
-        !/l[ée]gende|paysage|tr[ée]sor|farce/i.test(text) ||
-        new RegExp(kind === 'landscape' ? 'paysage' : kind, 'i').test(text),
-    );
-    return [gameEffects.custom('voyage.lose-random-card', { allowed })];
-  }
-  const delta = extractMoveDelta(text);
-  if (delta !== 0) return [gameEffects.move(TRACK, delta)];
-  const skip = extractSkipTurns(text);
-  if (skip > 0) return [gameEffects.skipTurn(skip)];
-  if (/échange/i.test(text) && /carte/i.test(text)) {
-    return [
-      gameEffects.custom('voyage.schedule-target', {
-        effect: 'swap-card',
-        count: extractCardCount(text),
-      }),
-    ];
-  }
-  if (/échange/i.test(text) && /position|place/i.test(text)) {
-    return /dernier\s+joueur/i.test(text)
-      ? [gameEffects.custom('voyage.swap-last-player')]
-      : [
-          gameEffects.custom('voyage.schedule-target', {
-            effect: 'swap-position',
-            count: 1,
-          }),
-        ];
-  }
-  return [];
-}
-
-function parseQuiz(text: string): VoyageQuiz | null {
-  const lines = text
-    .split(/\s*(?=[*]?[ABC]\))/i)
-    .map((line) => line.trim())
-    .filter((line) => /^[*]?[ABC]\)/i.test(line));
-  const answerLine = lines.find((line) => line.startsWith('*'));
-  if (lines.length < 2 || !answerLine) return null;
-  const clean = (line: string) => line.replace(/^[*]?[ABC]\)\s*/i, '').trim();
-  return {
-    choices: lines.map(clean),
-    answer: clean(answerLine),
-    successDelta: extractMoveDelta(text),
-  };
-}
-
-function extractMoveDelta(text: string): number {
-  const words: Record<string, number> = {
-    un: 1,
-    une: 1,
-    deux: 2,
-    trois: 3,
-    quatre: 4,
-    cinq: 5,
-    six: 6,
-  };
-  const match = text.match(
-    /(avance(?:z)?|recule(?:z)?)\s+de\s+([0-9]+|un|une|deux|trois|quatre|cinq|six)\s+case/i,
-  );
-  if (!match) return 0;
-  const amount = Number(match[2]) || words[match[2].toLowerCase()] || 0;
-  return /^recule/i.test(match[1]) ? -amount : amount;
-}
-
-function extractSkipTurns(text: string): number {
-  if (/passez trois tours/i.test(text)) return 3;
-  if (/passez deux tours/i.test(text)) return 2;
-  return /perdez votre prochain tour|passez votre tour|passe ton prochain tour/i.test(
-    text,
+    quiz &&
+    (new Set(quiz.choices.map((choice) => choice.id)).size !==
+      quiz.choices.length ||
+      !quiz.choices.some((choice) => choice.id === quiz.answerId))
   )
-    ? 1
-    : 0;
+    rejectContent('Invalid quiz answer identifiers');
+  for (const effect of card.effects) {
+    if (effect.kind === 'custom') {
+      const schema = Object.entries(customDataSchemas).find(
+        ([id]) => id === effect.effectId,
+      )?.[1];
+      if (!schema) rejectContent('Unknown Voyage effect');
+      schema.parse(effect.data ?? {});
+    } else if (
+      (effect.kind !== 'move' && effect.kind !== 'skip-turn') ||
+      effect.target?.kind !== 'self'
+    )
+      rejectContent('Invalid Voyage effect target');
+  }
+  return card;
 }
+const cardsSchema = gameInput.array(
+  { parse: parseVoyageCard, describe: () => cardSchema.describe() },
+  { min: 1 },
+);
+const catalogueSchema = gameInput.object(
+  {
+    tiles: gameInput.array(tileSchema, { min: 2 }),
+    legend: cardsSchema,
+    farce: cardsSchema,
+    treasure: cardsSchema,
+    landscape: cardsSchema,
+  },
+  { unknownKeys: 'reject' },
+);
 
-function extractCardCount(text: string): number {
-  if (/\b3\b|\btrois\b/i.test(text)) return 3;
-  return /\b2\b|\bdeux\b/i.test(text) ? 2 : 1;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value != null && typeof value === 'object' && !Array.isArray(value);
-}
-
-freezeGameContent(VOYAGE_CONTENT);
+export const VOYAGE_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  embeddedCatalogue,
+  {
+    formatVersion: 2,
+    schema: {
+      parse(value: unknown) {
+        const content = catalogueSchema.parse(value);
+        return {
+          tiles: trackContent(content.tiles),
+          legend: cardContent(content.legend),
+          farce: cardContent(content.farce),
+          treasure: cardContent(content.treasure),
+          landscape: cardContent(content.landscape),
+        };
+      },
+    },
+  },
+);
+export const VOYAGE_CONTENT = VOYAGE_GAME_CONTENT.data;

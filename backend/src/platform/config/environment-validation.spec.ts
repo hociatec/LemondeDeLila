@@ -30,6 +30,39 @@ const validProduction = {
 };
 
 describe('environment validation', () => {
+  it.each([
+    { ROOM_AUTO_CLEANUP_INTERVAL_SECONDS: '12minutes' },
+    { ROOM_AUTO_CLEANUP_LIMIT: -1 },
+    { ROOM_AUTO_CLEANUP_LIMIT: 10001 },
+    { PROFILE_BIO_MIN_LENGTH: 600, PROFILE_BIO_MAX_LENGTH: 500 },
+    { PROFILE_BIO_MIN_LENGTH: 600 },
+    { BOT_NAMES_CACHE_TTL_MS: Infinity },
+    { ADMIN_MAINTENANCE_BACKEND_SERVICE: '--all' },
+    { ADMIN_MAINTENANCE_DEPLOY_UNIT: 'unit; command' },
+    { REDIS_URL: 'https://example.com' },
+  ])('rejects invalid application configuration before use: %j', (override) => {
+    expect(
+      environmentValidationSchema.validate({ ...validBase, ...override }).error,
+    ).toBeDefined();
+  });
+  it.each([
+    { PORT: 0 },
+    { PORT: 65536 },
+    { PORT: 3.5 },
+    { JWT_CLOCK_TOLERANCE_SECONDS: -1 },
+    { JWT_CLOCK_TOLERANCE_SECONDS: 301 },
+    { JWT_EXPIRES_IN: '120' },
+    { JWT_EXPIRES_IN: '0h' },
+    { JWT_EXPIRES_IN: '-1h' },
+  ])(
+    'rejects ambiguous lifetimes and invalid numeric configuration',
+    (override) => {
+      expect(
+        environmentValidationSchema.validate({ ...validBase, ...override })
+          .error,
+      ).toBeDefined();
+    },
+  );
   it('applies safe numeric defaults', () => {
     const result = environmentValidationSchema.validate(validBase);
     expect(result.error).toBeUndefined();

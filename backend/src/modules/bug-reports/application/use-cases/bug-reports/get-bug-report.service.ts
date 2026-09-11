@@ -1,5 +1,5 @@
 import type { BugReportRepository } from '../../ports/bug-report.repository';
-import type { BugReportRecord } from '../../contracts/bug-report.record';
+import type { BugReportRecord } from '../../read-models/bug-report.record';
 import { BugReportStatusNormalizerService } from './bug-report-status-normalizer.service';
 
 export class GetBugReportService {
@@ -10,7 +10,7 @@ export class GetBugReportService {
 
   async execute(id: string): Promise<BugReportRecord | null> {
     const key = String(id ?? '').trim();
-    if (!key) return null;
+    if (!key || key.length > 64) return null;
 
     const report = await this.repo.findById(key);
     if (!report) return null;

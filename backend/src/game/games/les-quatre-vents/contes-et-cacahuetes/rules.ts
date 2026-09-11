@@ -1,3 +1,5 @@
+import type { ContesPendingEffect } from './types';
+import { CONTES_TRACK } from './constants';
 import {
   rejectRule,
   defineAction,
@@ -10,19 +12,15 @@ import { CONTES_DECKS } from './content';
 import {
   applyCard,
   applyRoll,
-  CONTES_RESOURCES,
-  CONTES_STATUSES,
-  blockedPosition,
   drainResolution,
   drawContesCard,
   moveContesAndResolve,
-  contesPosition,
   requestNumber,
   scheduleContesTarget,
-  requirePending,
-  rollDie,
-  transferToken,
 } from './resolution';
+import { CONTES_RESOURCES, CONTES_STATUSES } from './constants';
+import { blockedPosition } from './blocked-player';
+import { transferToken } from './tokens';
 import type { ContesState } from './types';
 
 type RuleContext = GameContext<ContesState>;
@@ -43,7 +41,7 @@ export const roll = defineAction<ContesState, Record<string, never>>({
     });
     let value = ctx.status.has(actor.id, CONTES_STATUSES.forcedOne)
       ? 1
-      : rollDie(ctx);
+      : ctx.dice.roll('main').total;
     if (
       value === 1 &&
       ctx.status.consume(actor.id, CONTES_STATUSES.replaceOne)
@@ -91,7 +89,7 @@ const pawnSelection = sequentialPawnSelection<ContesState>({
   },
 });
 
-export const requestPawns = pawnSelection.requestAll;
+export const setupGame = pawnSelection.setup(() => ({}));
 export const resolvePawn = pawnSelection.resolve;
 
 export function resolveReroll(
@@ -104,7 +102,7 @@ export function resolveReroll(
   let rollValue = pending.roll;
   if (value === 'reroll') {
     ctx.resources.remove(actorId, CONTES_RESOURCES.reroll, 1);
-    rollValue = rollDie(ctx);
+    rollValue = ctx.dice.roll('main').total;
     if (
       rollValue === 1 &&
       ctx.status.consume(actorId, CONTES_STATUSES.replaceOne)
@@ -223,9 +221,25 @@ export function unblockPassedPlayers(
     .all()
     .some(
       (player) =>
-        player.id !== current.id && contesPosition(player.id, ctx) >= blocker,
+        player.id !== current.id &&
+        ctx.movement.position(CONTES_TRACK, player.id) >= blocker,
     );
   if (passed) ctx.status.remove(current.id, CONTES_STATUSES.blocked);
 }
 
-export { CONTES_CONTENT_COUNTS } from './resolution';
+function requirePending<TKind extends ContesPendingEffect['kind']>(
+  ctx: RuleContext,
+  kind: TKind,
+  actorId: number,
+): Extract<ContesPendingEffect, { kind: TKind }> {
+  const pending = ctx.choice.consumeContinuation<ContesPendingEffect>();
+  if (!pending || !hasKind(pending, kind) || pending.actorId !== actorId)
+    rejectRule(`Choix Contes ${kind} absent`);
+  return pending;
+}
+function hasKind<TKind extends ContesPendingEffect['kind']>(
+  pending: ContesPendingEffect,
+  kind: TKind,
+): pending is Extract<ContesPendingEffect, { kind: TKind }> {
+  return pending.kind === kind;
+}

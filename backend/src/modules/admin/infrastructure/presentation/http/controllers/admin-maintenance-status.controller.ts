@@ -31,7 +31,13 @@ export class AdminMaintenanceStatusController {
 
   @Get('deploy/logs')
   deployLogs(@Query('tail') tail?: string) {
-    return this.getDeployLogs.execute({ tail });
+    const normalized =
+      typeof tail === 'string' && /^\d{1,5}$/.test(tail.trim())
+        ? Math.min(10_000, Number(tail))
+        : undefined;
+    return this.getDeployLogs.execute({
+      tail: normalized === undefined ? undefined : String(normalized),
+    });
   }
 
   @Get('service/status')

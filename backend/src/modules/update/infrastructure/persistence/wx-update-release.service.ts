@@ -1,4 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { RedisDistributedLeaseService } from '../../../../platform/redis/public-api';
+import type { WxPublicationCommit } from './wx-update-publication.manager';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  Optional,
+} from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { readEnvironment } from '../../../../platform/config/public-api';
@@ -14,10 +26,10 @@ import type { PublishWxUpdateInput } from './wx-update-publication.model';
 export type { PublishWxUpdateInput } from './wx-update-publication.model';
 import { WxUpdateArtifactValidatorService } from './wx-update-artifact-validator.service';
 import { WxUpdatePublicationManager } from './wx-update-publication.manager';
+import { operationalSettings } from '../../../../platform/config/public-api';
 
 @Injectable()
 export class WxUpdateReleaseService {
-  private static readonly manifestCacheTtlMs = 5_000;
   private static readonly defaultMaxArtifactBytes = 2 * 1024 * 1024 * 1024;
 
   private readonly updatesDir: string;
@@ -31,6 +43,9 @@ export class WxUpdateReleaseService {
 
   constructor(
     private readonly validator: WxUpdateArtifactValidatorService = new WxUpdateArtifactValidatorService(),
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
+    @Optional()
+    private readonly distributedLeases?: RedisDistributedLeaseService,
   ) {
     const backendRoot = path.resolve(__dirname, '..', '..', '..', '..');
     const dataRoot = path.join(backendRoot, 'data', 'client-wx-updates');
@@ -71,20 +86,17 @@ export class WxUpdateReleaseService {
   async getLatest(): Promise<WxUpdateManifest | null> {
     if (
       this.manifestCacheInitialized &&
-      Date.now() < this.manifestCacheExpiresAt
+      this.clock.now() < this.manifestCacheExpiresAt
     ) {
       return this.cachedManifest;
     }
     try {
+      const stat = await fs.promises.stat(this.metaPath);
+      if (!stat.isFile() || stat.size > 256 * 1024) return this.cachedManifest;
       const raw = await fs.promises.readFile(this.metaPath, 'utf-8');
       const value: unknown = JSON.parse(raw.replace(/^\uFEFF/, ''));
-      if (
-        this.validator.verifyManifest(
-          value as WxUpdateManifest,
-          this.maxArtifactBytes,
-        )
-      ) {
-        const manifest = value as WxUpdateManifest;
+      if (this.validator.verifyManifest(value, this.maxArtifactBytes)) {
+        const manifest = value;
         this.updateManifestCache(manifest);
         return manifest;
       }
@@ -93,7 +105,7 @@ export class WxUpdateReleaseService {
     }
     this.manifestCacheInitialized = true;
     this.manifestCacheExpiresAt =
-      Date.now() + WxUpdateReleaseService.manifestCacheTtlMs;
+      this.clock.now() + operationalSettings.clientWxManifestCacheTtlMs;
     return this.cachedManifest;
   }
 
@@ -130,7 +142,7 @@ export class WxUpdateReleaseService {
       (current == null || minimumComparison == null || minimumComparison < 0);
     const deadlineReached =
       latest.mandatoryAt != null &&
-      Date.parse(latest.mandatoryAt) <= Date.now();
+      Date.parse(latest.mandatoryAt) <= this.clock.now();
     return {
       ...latest,
       artifact: {
@@ -188,7 +200,7 @@ export class WxUpdateReleaseService {
       input,
       this.maxArtifactBytes,
     );
-    return this.publication.commit({
+    return this.commitPublication({
       input,
       releaseId,
       version,
@@ -201,6 +213,33 @@ export class WxUpdateReleaseService {
       artifactSize: artifact.size,
       installer,
     });
+  }
+
+  private async commitPublication(
+    params: WxPublicationCommit,
+  ): Promise<WxUpdateManifest> {
+    if (!this.distributedLeases) {
+      if (readEnvironment('NODE_ENV') === 'production')
+        throw new ConflictException(
+          'Redis requis pour la publication WX en production.',
+        );
+      return this.publication.commit(params);
+    }
+    const lease = await this.distributedLeases.acquire(
+      'lemonde:update:publication',
+      15 * 60 * 1000,
+    );
+    if (!lease) throw new ConflictException('Publication WX déjà en cours.');
+    const assertHeld = async () => {
+      if (!(await lease.isHeld()))
+        throw new ConflictException('Bail de publication WX perdu.');
+    };
+    try {
+      await assertHeld();
+      return await this.publication.commit(params, assertHeld);
+    } finally {
+      await lease.release();
+    }
   }
 
   private resolveMinimumVersion(
@@ -223,7 +262,7 @@ export class WxUpdateReleaseService {
     this.cachedManifest = manifest;
     this.manifestCacheInitialized = true;
     this.manifestCacheExpiresAt =
-      Date.now() + WxUpdateReleaseService.manifestCacheTtlMs;
+      this.clock.now() + operationalSettings.clientWxManifestCacheTtlMs;
   }
 }
 

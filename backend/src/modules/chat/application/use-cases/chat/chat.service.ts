@@ -4,7 +4,7 @@ import {
   ChatBroadcastUser,
   ChatMessageRecord,
   ChatNormalizedMessage,
-} from '../../contracts/chat-message.record';
+} from '../../read-models/chat-message.record';
 import { AdminClearChatMessagesService } from './admin-clear-chat-messages.service';
 import { AdminDeleteChatMessageService } from './admin-delete-chat-message.service';
 import { AdminListChatMessagesService } from './admin-list-chat-messages.service';

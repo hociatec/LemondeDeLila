@@ -1,4 +1,4 @@
-import type { BotNameRecord } from '../contracts/bot-name.record';
+import type { BotNameRecord } from '../read-models/bot-name.record';
 
 export interface CreateBotNameInput {
   name: string;

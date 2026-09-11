@@ -1,5 +1,7 @@
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   defineAction,
+  defineChoice,
   defineEffect,
   drawAndResolve,
   drawEvent,
@@ -11,16 +13,13 @@ import {
   sequentialPawnSelection,
   setupPlayingPhases,
 } from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   A_FOND_LES_BALLONS_CARDS,
   A_FOND_LES_BALLONS_TILES,
   type BalloonCard,
   type BalloonTileType,
 } from './content';
-export type AFondLesBallonsState = {
-  awaitingCardDraw: boolean;
-};
+import type { AFondLesBallonsState } from './state';
 
 type RuleContext = GameContext<AFondLesBallonsState>;
 export const A_FOND_LES_BALLONS_PHASES =
@@ -77,7 +76,9 @@ const pawnSelection = sequentialPawnSelection<AFondLesBallonsState>({
   },
 });
 
-export const requestPawns = pawnSelection.requestAll;
+export const setupGame = pawnSelection.setup(() => ({
+  awaitingCardDraw: false,
+}));
 export const resolvePawn = pawnSelection.resolve;
 
 function applySwap(actorId: number, targetId: number, ctx: RuleContext): void {
@@ -218,9 +219,14 @@ function applyBoutique(playerId: number, ctx: RuleContext): void {
       recycle: true,
     }),
   ].filter((card): card is BalloonCard => card != null);
-  const selected = cards.sort(
-    (left, right) => left.retreatScore - right.retreatScore,
-  )[0];
+  // Equal retreat scores keep the first drawn card.
+  const selected = cards
+    .map((card, drawIndex) => ({ card, drawIndex }))
+    .sort(
+      (left, right) =>
+        left.card.retreatScore - right.card.retreatScore ||
+        left.drawIndex - right.drawIndex,
+    )[0]?.card;
   if (!selected) return;
   ctx.events.message('a-fond-les-ballons.shop.card-selected', {
     playerId,
@@ -335,3 +341,10 @@ export const A_FOND_LES_BALLONS_EFFECTS = {
 } as const;
 
 export const A_FOND_CARD_COUNT = A_FOND_LES_BALLONS_CARDS.length;
+
+export const GAME_CHOICES = {
+  'a-fond-les-ballons.pawn': defineChoice<AFondLesBallonsState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
+  }),
+};

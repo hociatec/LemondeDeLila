@@ -1,28 +1,24 @@
+import { defineGame, raceGame } from '../../../engine/sdk/public-api';
+import { PRIMALIS_GAME_CONTENT, PRIMALIS_TILES } from './content';
+import manifest from './manifest.json';
+import { GAME_VICTORY } from './rules';
+
 import {
-  defineGame,
-  defineGameContent,
-  raceGame,
-  victoryWhen,
-} from '../../../engine/sdk/public-api';
-import { PRIMALIS_TILES } from './content';
-import {
-  primalisCollections,
   PRIMALIS_ACTIONS,
   PRIMALIS_DANGER_AMPLIFIED,
   ROLL_RESOLVED,
-  winnerByResources,
 } from './rules';
 import type { PrimalisState } from './types';
 
 export default defineGame<PrimalisState>()({
-  id: 'primalis',
-  displayName: 'Primalis',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Construisez votre tribu avant l’impact de la comète.',
-  players: { min: 2, max: 6 },
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
   events: [ROLL_RESOLVED],
-  content: defineGameContent('primalis', { tiles: PRIMALIS_TILES }),
+  content: PRIMALIS_GAME_CONTENT,
   patterns: [raceGame({ trackId: 'comet', spaces: PRIMALIS_TILES.length })],
   initialization: {
     resources: {
@@ -40,20 +36,6 @@ export default defineGame<PrimalisState>()({
     { key: 'V', type: 'interface', id: 'ressources' },
   ],
   actions: PRIMALIS_ACTIONS,
-  victory: victoryWhen(({ state: _state, ctx }) => {
-    const finished = ctx.players
-      .all()
-      .some(
-        (player) =>
-          ctx.movement.position('comet', player.id) >=
-          PRIMALIS_TILES.length - 1,
-      );
-    const winnerId = finished
-      ? winnerByResources(primalisCollections(ctx))
-      : null;
-    return winnerId == null
-      ? null
-      : { winnerPlayerIds: [winnerId], reason: 'comet-impact' };
-  }),
+  victory: GAME_VICTORY,
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

@@ -13,11 +13,43 @@ import {
 } from './presence-state.utils';
 
 describe('presence state utilities', () => {
+  it('merges equal-priority snapshots independently of delivery order', () => {
+    const entries: [string, { at: number; players: PresencePublicPlayer[] }][] =
+      [
+        [
+          'z',
+          {
+            at: 100,
+            players: [
+              player(2, 'home', 1),
+              player(1, 'table', 20, { id: 9, name: 'Nine' }, false),
+            ],
+          },
+        ],
+        [
+          'a',
+          {
+            at: 100,
+            players: [player(1, 'table', 10, { id: 3, name: 'Three' }, true)],
+          },
+        ],
+      ];
+    const first = mergePresencePlayersFromOrigins(new Map(entries));
+    expect(first).toEqual(
+      mergePresencePlayersFromOrigins(new Map([...entries].reverse())),
+    );
+    expect(first.map((entry) => entry.id)).toEqual([1, 2]);
+    expect(first[0].currentRoom?.id).toBe(3);
+    expect(first[0].lastInteractionAt).toBe(20);
+  });
   describe('parsePresenceRoomId', () => {
     it.each([
       [7, 7],
       ['42', 42],
-      ['7-table', 7],
+      ['7-table', null],
+      [true, null],
+      ['1e3', null],
+      [Number.MAX_SAFE_INTEGER + 1, null],
       [0, null],
       [-1, null],
       [1.5, null],

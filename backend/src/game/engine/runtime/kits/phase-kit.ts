@@ -1,5 +1,5 @@
-import type { GameContext } from '../game-rule-context';
-import type { GameSingleActionDto } from '../../../core/application/contracts/game-action.model';
+import type { GameContext } from '../definitions/game-author-context';
+import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
 import type { SchedulerVisibility } from '../automation/scheduler-kit';
 
 export interface PhaseConfiguration<TState extends object> {
@@ -8,6 +8,10 @@ export interface PhaseConfiguration<TState extends object> {
   readonly enter?: (input: { state: TState; ctx: GameContext<TState> }) => void;
   readonly exit?: (input: { state: TState; ctx: GameContext<TState> }) => void;
   readonly next?: string;
+  /** Permitted manual exits; next is also an exit for automatic transitions. */
+  readonly transitions?: readonly string[];
+  /** Last phase in the phase graph; match completion is a separate lifecycle. */
+  readonly terminal?: boolean;
   readonly autoTransition?: (input: {
     state: TState;
     ctx: GameContext<TState>;
@@ -75,6 +79,9 @@ export function defineGamePhases<TState extends object>() {
 export function setupPlayingPhases<TState extends object>() {
   return defineGamePhases<TState>()({
     initialPhase: 'setup',
-    phases: { setup: {}, playing: {} },
+    phases: {
+      setup: { transitions: ['playing'] },
+      playing: { terminal: true },
+    },
   });
 }

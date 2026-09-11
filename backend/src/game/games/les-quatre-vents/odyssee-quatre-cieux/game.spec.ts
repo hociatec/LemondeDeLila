@@ -1,10 +1,35 @@
 import {
+  DeclarativeGameRuntime,
   testGame,
-  type StableGameKitsView,
-} from '../../../engine/sdk/public-api';
+} from '../../../engine/testing/public-api';
+import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import gameDefinition from './game';
 
 describe('Odyssée des Quatre Cieux declarative game', () => {
+  it('uses the stored die rather than a copied roll when completing a choice', async () => {
+    const game = testGame(gameDefinition).players(['Alice', 'Bob']).seed(42);
+    await game.start();
+    for (let attempt = 0; attempt < 24 && !game.state().pending; attempt++) {
+      await game.as(game.state().turn!.currentPlayerId!).do('roll', {});
+    }
+    const state = game.state();
+    const pending = state.pending!;
+    expect(pending.data?.choiceId).toBe('odyssee.move');
+    const options = pending.data!.options as Array<{ roll: number }>;
+    expect(options[0].roll).toBe(6);
+    const value = { ...options[0], roll: 1 };
+    pending.data!.options = [value, ...options.slice(1)];
+    const runtime = new DeclarativeGameRuntime(gameDefinition);
+    const next = runtime.applyActions(state, [
+      {
+        type: 'choice.resolve',
+        payload: { value },
+        meta: { actorId: pending.playerId },
+      },
+    ]);
+    expect(next.turn?.currentPlayerId).toBe(pending.playerId);
+  });
+
   it('runs dice, choices, turns and replay through engine primitives', async () => {
     const game = testGame(gameDefinition).players(['Alice', 'Bob']).seed(42);
     await game.start();

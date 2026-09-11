@@ -7,6 +7,7 @@ import {
 } from '../../../../ws/public-api';
 import { RealtimeApiConnectionService } from './realtime-api-connection.service';
 import { RealtimeApiHandlerService } from './realtime-api-handler.service';
+import { RealtimeSessionPersistenceService } from './realtime-session-persistence.service';
 
 describe('RealtimeApiConnectionService', () => {
   const setup = () => {
@@ -36,9 +37,11 @@ describe('RealtimeApiConnectionService', () => {
     } as unknown as WsApiHubService;
     const handler = {
       handleIncoming: jest.fn().mockResolvedValue(undefined),
+    } as unknown as RealtimeApiHandlerService;
+    const sessions = {
       persistSession: jest.fn().mockResolvedValue(undefined),
       clearSession: jest.fn().mockResolvedValue(undefined),
-    } as unknown as RealtimeApiHandlerService;
+    } as unknown as RealtimeSessionPersistenceService;
     const perf = new PerfMetricsService();
     const service = new RealtimeApiConnectionService(
       auth,
@@ -46,8 +49,19 @@ describe('RealtimeApiConnectionService', () => {
       hub,
       handler,
       perf,
+      sessions,
     );
-    return { service, client, listeners, auth, wsTickets, hub, handler, perf };
+    return {
+      service,
+      client,
+      listeners,
+      auth,
+      wsTickets,
+      hub,
+      handler,
+      perf,
+      sessions,
+    };
   };
 
   it('rejects authenticated connections without a valid ticket', async () => {
@@ -70,7 +84,8 @@ describe('RealtimeApiConnectionService', () => {
   });
 
   it('registers a game connection, persists it and requests its initial state', async () => {
-    const { service, client, listeners, hub, handler, perf } = setup();
+    const { service, client, listeners, hub, handler, perf, sessions } =
+      setup();
     await service.handleConnection(
       client,
       [{ url: '/ws/game?roomId=12&gameType=corridor' }],
@@ -84,7 +99,7 @@ describe('RealtimeApiConnectionService', () => {
       gameType: 'corridor',
       userId: 7,
     });
-    expect(handler.persistSession).toHaveBeenCalledWith(
+    expect(sessions.persistSession).toHaveBeenCalledWith(
       expect.objectContaining({
         clientVersion: '1.2.3',
         clientProduct: 'desktop',
@@ -118,14 +133,14 @@ describe('RealtimeApiConnectionService', () => {
   });
 
   it('clears registered sessions on disconnect and ignores unknown clients', async () => {
-    const { service, client, hub, handler, perf } = setup();
+    const { service, client, hub, sessions, perf } = setup();
     await service.handleConnection(client, [], 'api');
     const connectionId = (hub.register as jest.Mock).mock.calls[0][0];
 
-    service.handleDisconnect(client);
-    service.handleDisconnect(client);
+    await service.handleDisconnect(client);
+    await service.handleDisconnect(client);
 
-    expect(handler.clearSession).toHaveBeenCalledWith(connectionId);
+    expect(sessions.clearSession).toHaveBeenCalledWith(connectionId);
     expect(hub.unregister).toHaveBeenCalledWith(connectionId);
     expect(perf.snapshot().events).toEqual(
       expect.arrayContaining([
@@ -135,14 +150,14 @@ describe('RealtimeApiConnectionService', () => {
   });
 
   it('keeps unauthenticated sessions when token verification fails', async () => {
-    const { service, client, auth, handler } = setup();
+    const { service, client, auth, sessions } = setup();
     (auth.verify as jest.Mock).mockImplementation(() => {
       throw new Error('expired');
     });
 
     await service.handleConnection(client, [], 'api');
 
-    expect(handler.persistSession).toHaveBeenCalledWith(
+    expect(sessions.persistSession).toHaveBeenCalledWith(
       expect.objectContaining({ user: null }),
     );
   });

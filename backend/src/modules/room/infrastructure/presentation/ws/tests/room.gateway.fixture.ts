@@ -1,5 +1,9 @@
 import { RoomGatewayActionsService } from '../room-gateway-actions.service';
 import { RoomGatewayCommandService } from '../room-gateway-command.service';
+import { routeRoomCommand } from '../room-command-router';
+import type { WebSocket } from 'ws';
+import type { ClientMeta } from '../room-gateway.types';
+import type { WsRequestRateLimitService } from '../../../../../../platform/ws/public-api';
 import { RoomGatewayLifecycleService } from '../room-gateway-lifecycle.service';
 import { RoomGatewayLifecyclePresenter } from '../room-gateway-lifecycle.presenter';
 import { RoomGatewayPresenceService } from '../room-gateway-presence.service';
@@ -108,7 +112,12 @@ export function createGatewayFixture(): GatewayFixture {
     realtimeTracker,
     gatewayPresenter,
   ) as any;
-  const commands = new RoomGatewayCommandService() as any;
+  const commands = new RoomGatewayCommandService(
+    {
+      allow: jest.fn().mockResolvedValue(true),
+    } as unknown as WsRequestRateLimitService,
+    { now: () => Date.now() },
+  ) as any;
   const presence = new RoomGatewayPresenceService(
     roomsService,
     roomState,
@@ -237,8 +246,14 @@ export function createGatewayFixture(): GatewayFixture {
     presence.scheduleDelayedParticipantLeave(presenceContext(), roomId, userId);
   gateway.sendImmediateAckIfNeeded = (...args: any[]) =>
     commands.sendImmediateAckIfNeeded(commandContext(), ...args);
-  gateway.executeRoomCommand = (...args: any[]) =>
-    commands.executeRoomCommand(commandContext(), ...args);
+  gateway.executeRoomCommand = (
+    client: WebSocket,
+    meta: ClientMeta,
+    type: string | undefined,
+    data: unknown,
+    receivedAtMs: number,
+  ) =>
+    routeRoomCommand(commandContext(), client, meta, type, data, receivedAtMs);
   gateway.handleRoomIntentExecute = (...args: any[]) =>
     commands.handleRoomIntentExecute(commandContext(), ...args);
 

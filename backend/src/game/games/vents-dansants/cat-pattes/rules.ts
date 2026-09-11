@@ -181,7 +181,7 @@ export function playableInputs(
         .filter(
           (player) =>
             player.id !== actorId &&
-            canReceiveObstacle(player.id, card.obstacle!, ctx),
+            canReceiveObstacle(player.id, card.obstacle, ctx),
         )
         .map((player) => ({ cardId, targetPlayerId: player.id }));
     }
@@ -242,7 +242,7 @@ function canPlayParade(
   if (!card.parade) return false;
   if (
     powers(playerId, ctx).some((power) =>
-      PARADE_DISABLED_BY_POWER[power].includes(card.parade!),
+      PARADE_DISABLED_BY_POWER[power].includes(card.parade),
     )
   ) {
     return false;

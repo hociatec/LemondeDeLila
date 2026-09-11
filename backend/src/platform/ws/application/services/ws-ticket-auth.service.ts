@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   WsTicketScope,
   WsTicketValidationResult,
-} from '../contracts/ws-ticket.model';
+} from '../models/ws-ticket.model';
 import { WsTicketService } from './ws-ticket.service';
 import type { IncomingHttpHeaders, IncomingMessage } from 'http';
 
@@ -112,6 +112,6 @@ export class WsTicketAuthService {
     const value = Array.isArray(raw) ? raw[0] : raw;
     if (typeof value !== 'string') return null;
     const trimmed = value.trim();
-    return trimmed || null;
+    return trimmed.length <= 16_384 ? trimmed || null : null;
   }
 }

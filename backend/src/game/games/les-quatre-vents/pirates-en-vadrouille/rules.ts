@@ -1,5 +1,10 @@
-import { drawAndResolve, raceTurn } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
+import {
+  defineEffect,
+  drawAndResolve,
+  gameInput,
+  raceTurn,
+} from '../../../engine/sdk/public-api';
 import { PIRATES_CONTENT } from './content';
 import type { PirateCard, PiratesState } from './types';
 
@@ -167,3 +172,15 @@ function consumeObstacleImmunity(playerId: number, ctx: RuleContext): boolean {
   }
   return true;
 }
+
+export const GAME_EFFECTS = {
+  'pirates.steal-treasure': defineEffect<PiratesState, Record<string, never>>({
+    input: gameInput.object({}),
+    apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
+      const targetId = targetPlayerIds[0];
+      if (actorPlayerId != null && targetId != null) {
+        stealTreasure(actorPlayerId, targetId, ctx);
+      }
+    },
+  }),
+};

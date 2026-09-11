@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { ChatNormalizedMessage } from '../../contracts/chat-message.record';
+import { ChatNormalizedMessage } from '../../read-models/chat-message.record';
 import { ChatMessageCacheService } from '../../services/chat-message-cache.service';
 import { ChatMessagePresenterService } from '../../services/chat-message-presenter.service';
 import { ListRecentChatMessagesService } from './list-recent-chat-messages.service';
@@ -25,10 +25,9 @@ export class ListRecentNormalizedChatMessagesService {
       this.cache.setAll(messages);
     }
 
-    const safeLimit = Math.min(
-      Math.max(limit, 1),
-      ChatMessageCacheService.CACHE_LIMIT,
-    );
+    const safeLimit = Number.isSafeInteger(limit)
+      ? Math.min(Math.max(limit, 1), ChatMessageCacheService.CACHE_LIMIT)
+      : ListRecentChatMessagesService.DEFAULT_HISTORY_LIMIT;
     return messages.slice(-safeLimit);
   }
 }

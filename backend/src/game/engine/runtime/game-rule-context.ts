@@ -1,16 +1,13 @@
-import type { GameExecutionContext } from '../../core/application/contracts/game-execution-context.model';
-import type { PlayerStateEntity } from '../../core/application/contracts/game-state.model';
-import type { EventVisibility } from '../../core/application/contracts/game-event.model';
+import type { GameContextCapabilities } from './definitions/game-context-capabilities';
+import type { GameExecutionContext } from '../../core/application/models/game-execution-context.model';
+import type { PlayerState } from '../../core/application/models/game-state.model';
+import type { EventVisibility } from '../../core/application/models/game-event.model';
 import { GameCardsController } from './cards/cards-kit';
 import { GameInventoryController } from './kits/inventory-kit';
 import { GameEconomyController } from './kits/economy-kit';
 import { GameOwnershipController } from './kits/ownership-kit';
 import { GameRankingController } from './kits/ranking-kit';
-import type {
-  CompiledGameDefinition,
-  DeclarativeState,
-  GameActionMap,
-} from './definitions/game-definition';
+import type { DeclarativeState } from './state/declarative-state';
 import { GameChoiceController } from './choices/game-choice-controller';
 import { GameMovementController } from './kits/movement-kit';
 import { GamePawnController } from './kits/pawn-kit';
@@ -27,7 +24,7 @@ import {
   GameScoreController,
   GameStatusController,
 } from './kits/player-values-kit';
-import { GameRuleViolationError } from '../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../core/domain/errors/game-domain.errors';
 import type { GameLifecycleHooks } from './lifecycle/game-lifecycle-hooks';
 import { GameConfigurationController } from './configuration/configuration-kit';
 import {
@@ -35,7 +32,7 @@ import {
   type GameComponentDefinition,
 } from './definitions/component-kit';
 import { GameEffectEngineController } from './effects/effect-engine';
-import type { GameEffectResolverShape } from './effects/effects-kit';
+import type { GameEffectResolverShape } from './contracts/effect-resolver';
 import {
   GameSubmissionController,
   GameSubmissionFlowController,
@@ -53,61 +50,17 @@ import { GameContextComponents } from './definitions/game-context-components';
 
 export type { EventDataMap, DomainEvent } from './events/game-context-events';
 export type { EngineEventMap } from './events/engine-event-registry';
-export type { EventVisibility } from '../../core/application/contracts/game-event.model';
+export type { EventVisibility } from '../../core/application/models/game-event.model';
 
-type ContextDefinitionInitialization<TDefinition> = TDefinition extends {
-  readonly initialization?: infer TInitialization;
-}
-  ? TInitialization
-  : never;
-type ContextPatternInitialization<TDefinition> = TDefinition extends {
-  readonly patterns?: infer TPatterns;
-}
-  ? TPatterns extends readonly (infer TPattern)[]
-    ? TPattern extends { readonly initialization?: infer TValue }
-      ? TValue
-      : never
-    : never
-  : never;
-type ContextInitializations<TDefinition> =
-  | ContextDefinitionInitialization<TDefinition>
-  | ContextPatternInitialization<TDefinition>;
-export type GameResourceIdOf<TDefinition> =
-  ContextInitializations<TDefinition> extends infer TInitialization
-    ? TInitialization extends { readonly resources?: infer TResources }
-      ? string extends keyof NonNullable<TResources>
-        ? string
-        : Extract<keyof NonNullable<TResources>, string>
-      : never
-    : never;
-export type GameCounterIdOf<TDefinition> =
-  ContextInitializations<TDefinition> extends infer TInitialization
-    ? TInitialization extends { readonly counters?: infer TCounters }
-      ? string extends keyof NonNullable<TCounters>
-        ? string
-        : Extract<keyof NonNullable<TCounters>, string>
-      : never
-    : never;
-type GameStateOf<TDefinition> =
-  TDefinition extends CompiledGameDefinition<
-    infer TState,
-    GameActionMap<infer TState>,
-    object,
-    infer _TInitialization,
-    infer _TEvents,
-    infer _TPatterns
-  >
-    ? TState
-    : object;
-export type GameContextFor<TDefinition> = Omit<
-  GameContext<GameStateOf<TDefinition>>,
-  'resources' | 'counters'
-> & {
-  readonly resources: GameResourcesController<GameResourceIdOf<TDefinition>>;
-  readonly counters: GameCountersController<GameCounterIdOf<TDefinition>>;
-};
+export type {
+  GameContextFor,
+  GameCounterIdOf,
+  GameResourceIdOf,
+} from './definitions/game-context-contracts';
 
-export class GameContext<TState extends object> {
+export class GameContext<
+  TState extends object,
+> implements GameContextCapabilities<TState> {
   readonly random: GameExecutionContext['rng'];
   readonly clock: GameExecutionContext['clock'];
   readonly commandId: string | null;
@@ -136,12 +89,12 @@ export class GameContext<TState extends object> {
     details: Readonly<Record<string, unknown>> = {},
     message = 'Règle de jeu non respectée',
   ): never => {
-    throw new GameRuleViolationError(code, details, message);
+    return rejectRule(message, details, code);
   };
   readonly players = {
     all: () => [...(this.runtime.players ?? [])],
     byId: <TValue>(
-      select: (player: PlayerStateEntity, index: number) => TValue,
+      select: (player: PlayerState, index: number) => TValue,
     ): PlayerMap<TValue> =>
       Object.fromEntries(
         (this.runtime.players ?? []).map((player, index) => [
@@ -156,6 +109,11 @@ export class GameContext<TState extends object> {
     remaining: () => this.match.activePlayers(),
     get: (playerId: number) =>
       this.runtime.players?.find((player) => player.id === playerId) ?? null,
+    other: (playerId: number, actorId = this.actor?.id ?? null) =>
+      actorId != null && playerId !== actorId
+        ? (this.runtime.players?.find((player) => player.id === playerId) ??
+          null)
+        : null,
     others: (playerId = this.actor?.id ?? null) =>
       (this.runtime.players ?? []).filter((player) => player.id !== playerId),
     otherIds: (playerId = this.actor?.id ?? null) =>
@@ -222,7 +180,7 @@ export class GameContext<TState extends object> {
 
   constructor(
     private readonly runtime: DeclarativeState<TState>,
-    readonly actor: PlayerStateEntity | null,
+    readonly actor: PlayerState | null,
     private readonly execution: GameExecutionContext,
     private readonly turnPolicy: TurnPolicy,
     private readonly phases: Readonly<
@@ -376,6 +334,18 @@ export class GameContext<TState extends object> {
     }
     const previous = this.runtime.phase;
     if (previous === phase) return;
+    const configuration = this.phases[previous];
+    if (
+      configuration &&
+      !(configuration.transitions ?? []).includes(phase) &&
+      configuration.next !== phase
+    ) {
+      this.reject(
+        'PHASE_TRANSITION_FORBIDDEN',
+        { from: previous, phase },
+        `Transition de phase interdite: ${previous} -> ${phase}`,
+      );
+    }
     this.phases[previous]?.exit?.({
       state: this.runtime.game,
       ctx: this,

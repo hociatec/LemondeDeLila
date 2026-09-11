@@ -1,0 +1,363 @@
+{
+  "date": "2026-09-11",
+  "scope": "First 60 still-open points of the original 180-point request",
+  "requestedIds": [
+    1,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    84,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    143,
+    145,
+    147
+  ],
+  "requested": 60,
+  "validated": 15,
+  "remaining": 45,
+  "complete": false,
+  "validatedIds": [
+    20,
+    21,
+    22,
+    25,
+    26,
+    27,
+    28,
+    30,
+    84,
+    113,
+    117,
+    118,
+    119,
+    123,
+    138
+  ],
+  "remainingIds": [
+    1,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    16,
+    17,
+    18,
+    19,
+    23,
+    24,
+    29,
+    31,
+    112,
+    114,
+    115,
+    116,
+    120,
+    121,
+    122,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    139,
+    143,
+    145,
+    147
+  ],
+  "validation": {
+    "typecheck": "passed",
+    "build": "passed; compiled AppModule loads",
+    "jest": "280 suites / 1307 tests passed; --forceExit for pre-existing open handles",
+    "afterFinalLoaderOptimization": "50 targeted restoration/runtime/JSON integration tests passed; typecheck and build rerun successfully",
+    "toolTests": "26 architecture/tool/registry tests passed; then 7 final scaffold/registry tests passed",
+    "architecture": "0 violations; baseline not expanded",
+    "runtimeCycles": "one 42-file cycle remains, including type imports",
+    "jsonSmoke": "Actual generated JSON package compiled and played to victory with the production build"
+  },
+  "points": [
+    {
+      "id": 20,
+      "point": "**Les effects déclaratifs JSON doivent encore disposer d’un schema canonique stable**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Versioned closed effect grammar covers every EffectInstruction discriminant, validates shape before reference checks, and preserves optional TypeScript builder fields without changing existing content fingerprints.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/effect-json-schema.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.spec.ts",
+        "src/game/engine/runtime/content/effect-content.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 21,
+      "point": "**Les conditions déclaratives JSON doivent encore disposer d’un schema canonique stable**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Canonical recursive condition grammar covers all condition variants and rejects unknown fields, malformed values and unbounded trees.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/effect-json-schema.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.spec.ts",
+        "src/game/engine/runtime/content/effect-content.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 22,
+      "point": "**Les selectors/targets déclaratifs JSON doivent encore disposer d’un schema canonique stable**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Canonical target grammar covers every target discriminant, with typed player lists and closed fields; independent target validation is tested.",
+      "evidence": [
+        "src/game/engine/runtime/contracts/effect-json-schema.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.spec.ts",
+        "src/game/engine/runtime/content/effect-content.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 25,
+      "point": "**Le langage JSON auteur doit rester fermé et typé** : pas d’expression JavaScript ou pseudo-code dans des strings.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "The author JSON boundary accepts only bounded plain JSON data and an explicit closed grammar. No strings are interpreted as code; custom effects without engine resolvers are rejected.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 26,
+      "point": "**Le schema auteur JSON doit être versionné**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Author documents require schemaVersion 1. Missing or unsupported versions are rejected before compilation.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 27,
+      "point": "**La version du contenu doit rester distincte de la version du runtime**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Author schema, content label/fingerprint, game-state schema and engine algorithm version are distinct. Changing JSON with unchanged labels changes the effective content fingerprint.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 28,
+      "point": "**La version de définition du jeu doit être explicitement distinguée des autres versions si nécessaire**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "JSON definitionVersion explicitly feeds compiled rulesVersion, separately from the author schema, content fingerprint and engine algorithm.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 30,
+      "point": "**Les migrations de snapshot doivent être prévues pour les changements runtime incompatibles**.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Engine-owned snapshot migration registry resolves a bounded unambiguous path before transforming a clone. Real multi-step transformations, missing paths, cycles, invalid output and identity preservation are tested. Headerless legacy snapshots remain tied to engine 1, never to an arbitrary future current version. No incompatible engine version is being introduced.",
+      "evidence": [
+        "src/game/engine/runtime/content/engine-snapshot-migrations.ts",
+        "src/game/engine/runtime/content/engine-snapshot-migrations.spec.ts",
+        "src/game/engine/runtime/content/game-state-loader.spec.ts",
+        "docs/architecture/engine-snapshot-migrations.md"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 84,
+      "point": "**Il reste plusieurs assertions non-null évitables dans le moteur et certains jeux**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Replaced all seven remaining production non-null assertions in runtime and games with explicit control flow or validated indexing. A TypeScript AST scan confirms zero remaining NonNullExpression nodes in those production directories.",
+      "evidence": [
+        "src/game/engine/runtime/content/content-migration-registry.ts",
+        "src/game/engine/runtime/content/game-content.ts",
+        "src/game/engine/runtime/definitions/game-phase-graph-validator.ts",
+        "src/game/engine/runtime/kits/dice-kit.ts",
+        "src/game/engine/runtime/state/assert-serializable-state.ts",
+        "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/rules.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 113,
+      "point": "**Il manque toujours la preuve qu’un jeu utilisant uniquement des mécaniques connues peut être ajouté sans `.ts` spécifique**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "A three-file JSON game fixture runs through the real runtime from initialization to victory without game-specific TypeScript. The actual CLI-generated JSON package was also compiled and played using the production build. The fixture is deliberately outside the production catalogue.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/testing/fixtures/json-course/game.json",
+        "src/game/testing/fixtures/json-course/manifest.json",
+        "src/game/testing/fixtures/json-course/rules.md",
+        "commands/create-game.spec.cjs",
+        "commands/generate-game-registry.spec.cjs"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 117,
+      "point": "**Les distributions initiales standard devraient être portées par le moteur**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Standard initial dealing is performed by the engine from the cards.hands initial declaration. The JSON-only integration verifies the resulting hand before any game action.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/engine/runtime/definitions/component-kit.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 118,
+      "point": "**Les placements initiaux standard devraient être portés par le moteur**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Standard initial track placement is performed by engine initialization from declarative per-player positions. The JSON-only integration verifies starting and subsequent positions.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/engine/runtime/definitions/component-kit.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 119,
+      "point": "**Les ressources initiales standard devraient être déclaratives**.",
+      "lot": 2,
+      "status": "validated",
+      "analysis": "Initial resource balances are declared in setup.resources and installed by the engine, with reference validation against the resource catalogue and an end-to-end resource victory test.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/engine/runtime/definitions/component-kit.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 123,
+      "point": "**Les fins de tour standards devraient être déclaratives**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "The canonical complete-turn effect drives standard turn completion without a game callback. The JSON-only integration verifies alternating actors throughout a complete match.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.spec.ts",
+        "src/game/engine/runtime/content/effect-content.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 138,
+      "point": "**Les phases terminales doivent être identifiées explicitement**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Compilation requires explicit terminal metadata for phases with no exits and rejects outgoing edges from terminal phases. Both TypeScript and JSON authoring tests cover these invariants.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/game-phase-graph-validator.ts",
+        "src/game/engine/runtime/definitions/game-phase-graph-validator.spec.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    }
+  ],
+  "limitations": [
+    "The 60-point batch is not complete.",
+    "JSON profile does not yet support every engine capability or the full Panier Express rules.",
+    "No production game.json added; the executable JSON package is a test fixture.",
+    "The runtime cycle and broader author/compiled/runtime separation remain open.",
+    "No live MySQL/Redis integration campaign was run."
+  ]
+}

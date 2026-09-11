@@ -5,13 +5,14 @@ import {
   type CreatePrivateMessageInput,
   type PrivateMessageRepository,
 } from '../../../../application/ports/private-message.repository';
-import type { PrivateMessageRecord } from '../../../../application/contracts/private-message.model';
+import type { PrivateMessageRecord } from '../../../../application/models/private-message.model';
 import { PrivateMessageNotFoundError } from '../../../../domain/errors/private-message-domain.errors';
-import { User } from '../../../../../user/public-api';
 import { PrivateMessageEntity } from '../entities/private-message.entity';
+import type { MessageUserPersistenceRef } from '../entities/message-user.persistence-ref';
 
 @Injectable()
 export class PrivateMessageTypeormRepository implements PrivateMessageRepository {
+  private static readonly MAX_LIST_LIMIT = 200;
   constructor(
     @InjectRepository(PrivateMessageEntity)
     private readonly messages: Repository<PrivateMessageEntity>,
@@ -21,8 +22,8 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
     input: CreatePrivateMessageInput,
   ): Promise<PrivateMessageRecord> {
     const entity = this.messages.create({
-      sender: { id: input.senderId } as User,
-      recipient: { id: input.recipientId } as User,
+      sender: { id: input.senderId } as MessageUserPersistenceRef,
+      recipient: { id: input.recipientId } as MessageUserPersistenceRef,
       messageId: input.messageId,
       message: input.message,
       subject: input.subject,
@@ -60,7 +61,8 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
       )
       .setParameters({ current: currentUserId, other: otherUserId })
       .orderBy('m.created_at', 'ASC')
-      .limit(limit)
+      .addOrderBy('m.id', 'ASC')
+      .limit(this.normalizeLimit(limit))
       .getMany();
     return items.map((item) => this.toModel(item));
   }
@@ -77,7 +79,8 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
         userId,
       })
       .orderBy('m.created_at', 'DESC')
-      .limit(limit)
+      .addOrderBy('m.id', 'DESC')
+      .limit(this.normalizeLimit(limit))
       .getMany();
     return items.map((item) => this.toModel(item));
   }
@@ -94,7 +97,8 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
         userId,
       })
       .orderBy('m.created_at', 'DESC')
-      .limit(limit)
+      .addOrderBy('m.id', 'DESC')
+      .limit(this.normalizeLimit(limit))
       .getMany();
     return items.map((item) => this.toModel(item));
   }
@@ -116,7 +120,8 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
         { userId },
       )
       .orderBy('deletionDate', 'DESC')
-      .limit(limit)
+      .addOrderBy('m.id', 'DESC')
+      .limit(this.normalizeLimit(limit))
       .getMany();
     return items.map((item) => this.toModel(item));
   }
@@ -144,12 +149,17 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
     return this.toModel(message);
   }
 
+  private normalizeLimit(limit: number): number {
+    if (!Number.isSafeInteger(limit) || limit < 1) return 1;
+    return Math.min(limit, PrivateMessageTypeormRepository.MAX_LIST_LIMIT);
+  }
+
   private toEntity(message: PrivateMessageRecord): PrivateMessageEntity {
     return this.messages.create({
       id: message.id,
       messageId: message.messageId,
-      sender: { id: message.sender.id } as User,
-      recipient: { id: message.recipient.id } as User,
+      sender: { id: message.sender.id } as MessageUserPersistenceRef,
+      recipient: { id: message.recipient.id } as MessageUserPersistenceRef,
       message: message.message,
       subject: message.subject,
       createdAt: message.createdAt,

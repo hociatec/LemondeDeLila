@@ -1,4 +1,4 @@
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
 
 export type RoundKitState = {
   number: number;
@@ -25,7 +25,7 @@ export function createRoundKitState(): RoundKitState {
 export class GameRoundController {
   constructor(
     private readonly state: RoundKitState,
-    private readonly players: readonly PlayerStateEntity[],
+    private readonly players: readonly PlayerState[],
     private readonly emit: (
       type: string,
       data: Record<string, unknown>,
@@ -90,7 +90,7 @@ export class GameRoundController {
     this.lifecycle.onStart?.(this.state.number);
   }
 
-  activePlayers(): PlayerStateEntity[] {
+  activePlayers(): PlayerState[] {
     const active = new Set(
       this.state.participantPlayerIds.filter(
         (playerId) => !this.state.leftPlayerIds.includes(playerId),

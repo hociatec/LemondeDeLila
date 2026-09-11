@@ -49,7 +49,7 @@ export class RedisPresenceTransport extends PresenceTransport {
 }
 
 function decodePresenceEvent(value: unknown): PresenceEvent | null {
-  if (!isRecord(value) || !Array.isArray(value.players)) {
+  if (!isRecord(value) || !Array.isArray(value.players) || value.players.length > 1_000) {
     return null;
   }
   const players = value.players.filter(isPresencePublicPlayer);
@@ -57,7 +57,7 @@ function decodePresenceEvent(value: unknown): PresenceEvent | null {
     return null;
   }
   const origin = value.origin;
-  if (origin !== null && typeof origin !== 'string') {
+  if (origin !== null && (typeof origin !== 'string' || origin.length > 128)) {
     return null;
   }
   if (
@@ -66,9 +66,19 @@ function decodePresenceEvent(value: unknown): PresenceEvent | null {
   ) {
     return null;
   }
-  return value.at === undefined
-    ? { players, origin }
-    : { players, origin, at: value.at };
+  if (
+    value.sequence !== undefined &&
+    (typeof value.sequence !== 'number' ||
+      !Number.isSafeInteger(value.sequence) ||
+      value.sequence < 1)
+  )
+    return null;
+  return {
+    players,
+    origin,
+    ...(value.at === undefined ? {} : { at: value.at }),
+    ...(value.sequence === undefined ? {} : { sequence: value.sequence }),
+  };
 }
 
 function isPresencePublicPlayer(value: unknown): value is PresencePublicPlayer {
@@ -82,7 +92,7 @@ function isPresencePublicPlayer(value: unknown): value is PresencePublicPlayer {
       availability === 'available' ||
       availability === 'occupied' ||
       availability === 'absent') &&
-    (location === undefined || typeof location === 'string')
+    (location === undefined || (typeof location === 'string' && location.length <= 255))
   );
 }
 

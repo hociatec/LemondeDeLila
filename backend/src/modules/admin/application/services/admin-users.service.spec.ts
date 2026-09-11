@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AdminUsersCommandService } from '../use-cases/admin-users/admin-users-command.service';
+import { AdminUserBanPolicyService } from '../use-cases/admin-users/admin-user-ban-policy.service';
 
 describe('AdminUsersCommandService', () => {
   function createRepositoryMock() {
@@ -35,8 +36,33 @@ describe('AdminUsersCommandService', () => {
       ),
       resolveBannedUntil: jest.fn(() => null),
     } as any;
-    return new AdminUsersCommandService(repo, passwords, bans);
+    return new AdminUsersCommandService(repo, passwords, bans, {
+      now: () => 1000,
+    });
   }
+
+  it('uses the application instant when persisting a ban duration', async () => {
+    const repo = createRepositoryMock();
+    repo.findById.mockResolvedValue({
+      id: 7,
+      username: 'tester',
+      password: 'hash',
+    });
+    const clock = { now: jest.fn(() => 1000) };
+    const service = new AdminUsersCommandService(
+      repo,
+      {} as any,
+      new AdminUserBanPolicyService(),
+      clock,
+    );
+    await service.ban(7, 'reason', 2);
+    expect(clock.now).toHaveBeenCalledTimes(1);
+    expect(repo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bannedUntil: new Date(172_801_000),
+      }),
+    );
+  });
 
   it('normalizes and truncates ban reason', async () => {
     const repo = createRepositoryMock();

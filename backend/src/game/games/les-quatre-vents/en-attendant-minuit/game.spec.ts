@@ -1,4 +1,5 @@
-import { testGame } from '../../../engine/sdk/public-api';
+import { testGame } from '../../../engine/testing/public-api';
+
 import { MINUIT_CARDS } from './content';
 import gameDefinition from './game';
 

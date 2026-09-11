@@ -57,8 +57,9 @@ dans leur nom de classe et décrivent leur ownership.
 
 ## Frontières transversales
 
-`modules/user` possède identité et profil. `platform/auth` possède
-authentification, credentials, hashing, JWT, refresh tokens et sessions.
+`modules/user` possède identité, credentials, hashing, émission JWT et rotation
+des refresh tokens. `platform/auth` fournit la vérification JWT, les clés/JWKS
+et les gardes transport ; `platform/session` possède le stockage des sessions WS.
 `platform/realtime` est le transport générique
 (connexion, routage, resynchronisation) ;
 `modules/room/infrastructure/presentation/ws` porte les
@@ -67,12 +68,25 @@ authentification WS et sécurité communes. Ces trois niveaux ne dupliquent pas 
 règle métier.
 
 Dans `game`, `engine/sdk/public-api.ts` est l'unique surface des jeux concrets.
-`core` contient l'implémentation du moteur ; `engine` expose et compose ses
-capacités applicatives ; `composition` ne contient que découverte, registry et
+`core` orchestre l'exécution durable ; `engine/runtime` exécute le modèle
+déclaratif déterministe ; `engine/application` porte le catalogue ;
+`composition` contient la découverte des définitions, le registre et le
 wiring Nest. Un jeu n'importe jamais ces internes, règle vérifiée par les tests de
 contrat.
 
 ## Vocabulaire et tests
+
+Les suffixes ont une portée stricte : `Entity` désigne un agrégat métier ou une
+entité ORM selon son emplacement ; `Model` désigne une structure applicative
+de données ou d'état ; `Record` désigne une valeur sans comportement de
+persistance, éventuellement issue d'un adapter ; `DTO` désigne une forme de transport externe
+validée ; `Command` exprime une intention de mutation ; `Query` exprime une
+lecture ; `Port` est une dépendance abstraite possédée par l'application.
+Les autres noms doivent décrire une responsabilité (`Projection`, `Reader`,
+`Writer`, `Policy`, `Presenter`) plutôt que masquer une forme générique.
+
+Les emplacements et les entrées de composition sont précisés dans
+[les rôles des contrats applicatifs](application-contract-roles.md).
 
 - `service` : capacité cohésive avec comportement ; `manager` est réservé à une
   ressource technique avec cycle de vie ; `handler` traduit une commande de
@@ -89,3 +103,7 @@ contrat.
 Les facades sans frontière sont interdites : une facade doit stabiliser une API,
 appliquer une politique ou coordonner plusieurs capacités, pas seulement renvoyer
 chaque appel vers un autre objet.
+
+La [matrice et le guide auteur](authoring-and-boundaries.md) précisent les
+critères de création d'un jeu, d'un kit et d'un module. Les audits représentent
+les garanties mécaniques ; les critères de revue restent explicitement humains.

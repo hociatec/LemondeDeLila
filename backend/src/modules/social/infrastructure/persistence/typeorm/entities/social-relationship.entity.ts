@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../../../../../user/public-api';
+import type { SocialUserPersistenceRef } from './social-user.persistence-ref';
 
 export type SocialRelationshipStatus = 'pending' | 'accepted' | 'blocked';
 
@@ -30,13 +30,13 @@ export class SocialRelationshipEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
+  @ManyToOne('User', { eager: true })
   @JoinColumn({ name: 'requester_id' })
-  requester!: User;
+  requester!: SocialUserPersistenceRef;
 
-  @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
+  @ManyToOne('User', { eager: true })
   @JoinColumn({ name: 'addressee_id' })
-  addressee!: User;
+  addressee!: SocialUserPersistenceRef;
 
   @Column({ type: 'varchar', length: 20, default: 'pending' })
   status!: SocialRelationshipStatus;

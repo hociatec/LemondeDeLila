@@ -22,7 +22,7 @@ describe('database migrations contract', () => {
 
   it('places the newest migrations after the game-session baseline', () => {
     expect(basename(files.at(-1) ?? '')).toBe(
-      '1770800000000-EnforceSingleActiveGameMatch.ts',
+      '1771000000000-DecoupleUserForeignKeys.ts',
     );
   });
 

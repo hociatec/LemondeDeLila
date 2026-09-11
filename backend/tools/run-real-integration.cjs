@@ -103,6 +103,7 @@ try {
   startDependencies();
   run('npm', ['run', 'migration:run:dev'], integrationEnv);
   run('npm', ['run', 'test:db:migrations'], integrationEnv);
+  run(process.execPath, ['tools/game-room-locks-integration.cjs'], integrationEnv);
   run('npm', ['run', 'test:redis:bullmq'], integrationEnv);
   run('npm', ['run', 'test:disaster-recovery'], integrationEnv);
   run('npm', ['run', 'build'], integrationEnv);

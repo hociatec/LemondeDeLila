@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
 import type {
@@ -12,6 +12,12 @@ import {
 
 @Injectable()
 export class JwtUserTokenService implements UserTokenServicePort {
+  private static readonly MAX_ISSUER_LENGTH = 128;
+  private static readonly MAX_AUDIENCE_LENGTH = 128;
+  private static readonly MAX_USERNAME_LENGTH = 255;
+  private static readonly MAX_EMAIL_LENGTH = 320;
+  private static readonly MAX_ROLE_LENGTH = 64;
+  private static readonly MAX_ROLES = 32;
   private readonly jwtSigningKey: string;
   private readonly jwtExpiresIn: jwt.SignOptions['expiresIn'];
   private readonly jwtIssuer: string;
@@ -24,10 +30,16 @@ export class JwtUserTokenService implements UserTokenServicePort {
       'JWT_EXPIRES_IN',
       '12h',
     );
-    this.jwtIssuer = this.config.get<string>('JWT_ISSUER', 'le-monde-de-lila');
+    this.jwtIssuer = String(
+      this.config.get<string>('JWT_ISSUER', 'le-monde-de-lila'),
+    )
+      .trim()
+      .slice(0, JwtUserTokenService.MAX_ISSUER_LENGTH);
     const audience = this.config.get<string>('JWT_AUDIENCE');
     this.jwtAudience =
-      audience && audience.trim() ? audience.trim() : undefined;
+      audience && audience.trim()
+        ? audience.trim().slice(0, JwtUserTokenService.MAX_AUDIENCE_LENGTH)
+        : undefined;
   }
 
   private toAuthRuntimeConfig(config: ConfigService): AuthRuntimeConfig {
@@ -49,10 +61,39 @@ export class JwtUserTokenService implements UserTokenServicePort {
   }
 
   sign(payload: UserTokenPayload): string {
+    if (!Number.isSafeInteger(payload.id) || payload.id <= 0) {
+      throw new UnauthorizedException('Identifiant utilisateur invalide');
+    }
+    if (
+      typeof payload.username !== 'string' ||
+      payload.username.length > JwtUserTokenService.MAX_USERNAME_LENGTH
+    ) {
+      throw new UnauthorizedException('Nom utilisateur invalide');
+    }
+    if (
+      payload.email !== undefined &&
+      (typeof payload.email !== 'string' ||
+        payload.email.length > JwtUserTokenService.MAX_EMAIL_LENGTH)
+    ) {
+      throw new UnauthorizedException('Adresse email invalide');
+    }
+    const roles = payload.roles?.length ? payload.roles : ['ROLE_USER'];
+    if (
+      !Array.isArray(roles) ||
+      roles.length > JwtUserTokenService.MAX_ROLES ||
+      roles.some(
+        (role) =>
+          typeof role !== 'string' ||
+          role.length === 0 ||
+          role.length > JwtUserTokenService.MAX_ROLE_LENGTH,
+      )
+    ) {
+      throw new UnauthorizedException('Roles invalides');
+    }
     return jwt.sign(
       {
         username: payload.username,
-        roles: payload.roles?.length ? payload.roles : ['ROLE_USER'],
+        roles,
         email: payload.email,
         id: payload.id,
       },

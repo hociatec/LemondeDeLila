@@ -4,6 +4,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -32,11 +33,13 @@ export class AdminGameUpdateWsDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(64)
   minPlayers?: number;
 
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(64)
   maxPlayers?: number;
 
   @IsOptional()

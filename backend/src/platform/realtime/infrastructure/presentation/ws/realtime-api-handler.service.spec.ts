@@ -1,8 +1,10 @@
 import type { ConfigService } from '@nestjs/config';
 import type { WebSocket } from 'ws';
-import type { SessionStateStore } from '../../../../session/public-api';
+import { RealtimeApiTransportService } from './realtime-api-transport.service';
 import { WsRouteRegistry } from '../../../../ws/public-api';
-import type { ClientVersionPolicy } from '../../../application/ports/client-version-policy.port';
+import { WsRequestRateLimitService } from '../../../../ws/public-api';
+import type { RedisRateLimitStorage } from '../../../../redis/public-api';
+import type { ClientVersionReader } from '../../../application/ports/client-version-reader.port';
 import { RealtimeApiHandlerService } from './realtime-api-handler.service';
 import type { RealtimeClientSession } from './realtime-api.types';
 import { RealtimeRequestReplayService } from './realtime-request-replay.service';
@@ -11,25 +13,27 @@ import { PerfMetricsService } from '../../../../observability/public-api';
 describe('RealtimeApiHandlerService', () => {
   const setup = (overrides: Record<string, number> = {}) => {
     const registry = new WsRouteRegistry();
-    const sessionStore = {
-      save: jest.fn(),
-      get: jest.fn(),
-      delete: jest.fn(),
-    } as jest.Mocked<SessionStateStore>;
     const updates = {
       getMinimumVersion: jest.fn().mockResolvedValue(null),
-    } as ClientVersionPolicy;
+    } as ClientVersionReader;
     const config = {
       get: (key: string, fallback: number) => overrides[key] ?? fallback,
     } as ConfigService;
     const perf = new PerfMetricsService();
+    let hits = 0;
+    const storage = {
+      increment: jest.fn(async () => ({ totalHits: ++hits, isBlocked: false })),
+    } as unknown as RedisRateLimitStorage;
     const service = new RealtimeApiHandlerService(
       registry,
-      sessionStore,
       updates,
-      config,
-      new RealtimeRequestReplayService(),
+      new RealtimeApiTransportService(config),
+      new RealtimeRequestReplayService({ now: () => Date.now() }),
       perf,
+      new WsRequestRateLimitService(storage, {
+        wsRateLimitWindowMs: overrides.WS_RATE_LIMIT_WINDOW_MS ?? 10_000,
+        wsRateLimitCount: overrides.WS_RATE_LIMIT_COUNT ?? 20,
+      }),
     );
     const send = jest.fn();
     const close = jest.fn();
@@ -41,7 +45,7 @@ describe('RealtimeApiHandlerService', () => {
       clientVersion: null,
       clientProduct: null,
     };
-    return { service, registry, client, session, send, close, perf };
+    return { service, registry, client, session, send, close, perf, updates };
   };
 
   it('rejects unknown top-level properties instead of dispatching them', async () => {
@@ -125,7 +129,7 @@ describe('RealtimeApiHandlerService', () => {
       JSON.stringify({
         type: 'error',
         context: 'safe.action',
-        payload: { message: 'Trop de requêtes' },
+        payload: { message: 'Trop de requêtes ou quota indisponible' },
       }),
     );
   });
@@ -179,6 +183,39 @@ describe('RealtimeApiHandlerService', () => {
         expect.objectContaining({ event: 'ws.handler.error', count: 1 }),
       ]),
     );
+  });
+
+  it('rejects a different payload under the same request ID before invoking the handler', async () => {
+    const { service, registry, client, session, send } = setup();
+    const handler = jest.fn().mockResolvedValue({ type: 'done', payload: {} });
+    registry.register('change', handler);
+    for (const value of [1, 2]) {
+      await service.handleIncoming(
+        client,
+        session,
+        JSON.stringify({
+          type: 'change',
+          requestId: 'same',
+          payload: { value },
+        }),
+      );
+    }
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(String(send.mock.calls.at(-1)?.[0])).toContain('payload');
+  });
+
+  it('releases replay ownership when the client-version check fails before execution', async () => {
+    const { service, registry, client, session, updates } = setup();
+    const handler = jest.fn().mockResolvedValue({ type: 'done', payload: {} });
+    registry.register('change', handler);
+    jest
+      .spyOn(updates, 'getMinimumVersion')
+      .mockRejectedValueOnce(new Error('unavailable'));
+    const message = JSON.stringify({ type: 'change', requestId: 'retry' });
+    await service.handleIncoming(client, session, message);
+    expect(handler).not.toHaveBeenCalled();
+    await service.handleIncoming(client, session, message);
+    expect(handler).toHaveBeenCalledTimes(1);
   });
 
   it('rejects reuse of one requestId for a different command', async () => {

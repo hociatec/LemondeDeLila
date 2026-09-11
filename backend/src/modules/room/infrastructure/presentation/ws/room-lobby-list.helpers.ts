@@ -1,4 +1,5 @@
-import { OPEN_ROOM_STATUSES } from '../../../application/contracts/room-status.model';
+import { OPEN_ROOM_STATUSES } from '../../../application/models/room-status.model';
+import { compareCanonicalText } from '@shared/utils/public-api';
 
 type RoomLobbyUser = {
   id: number;
@@ -49,7 +50,9 @@ function isRoomOpenStatus(status: unknown): boolean {
 }
 
 function countActiveParticipants(room: RoomLobbyRecord): number {
-  const active = (room.participants || []).filter((p) => !p.leftAt);
+  const active = (room.participants || [])
+    .slice(0, 1_000)
+    .filter((p) => !p.leftAt);
   const activeCount = active.length;
   const ownerId = room.owner?.id;
   if (!ownerId) return activeCount;
@@ -65,6 +68,7 @@ export function buildPublicRoomList(
   items: PublicRoomListItem[];
   groups: { gameType: string; rooms: PublicRoomListItem[] }[];
 } {
+  rooms = rooms.slice(0, 10_000);
   const allowedGameTypes = opts?.allowedGameTypes;
   const items = rooms
     .filter((room) => {
@@ -85,18 +89,20 @@ export function buildPublicRoomList(
     })
     .map((room) => {
       const playersCount = countActiveParticipants(room);
-      const botsCount = (room.bots || []).length;
+      const botsCount = Math.min((room.bots || []).length, 64);
       const started = !!room.startedAt;
       return {
         id: room.id,
-        name: room.name,
-        gameType: room.gameType,
-        status: room.status,
+        name: String(room.name ?? '').slice(0, 255),
+        gameType: String(room.gameType ?? '').slice(0, 128),
+        status: String(room.status ?? '').slice(0, 64),
         started,
         spectatorOnly: started,
-        maxPlayers: room.maxPlayers,
-        playersCount,
-        botsCount,
+        maxPlayers: Number.isSafeInteger(room.maxPlayers)
+          ? Math.min(Math.max(room.maxPlayers, 1), 64)
+          : 1,
+        playersCount: Math.min(Math.max(playersCount, 0), 64),
+        botsCount: Math.min(Math.max(botsCount, 0), 64),
         owner: room.owner
           ? { id: room.owner.id, username: room.owner.username }
           : null,
@@ -115,8 +121,12 @@ export function buildPublicRoomList(
   }
 
   const groups = Array.from(grouped.entries())
-    .sort(([a], [b]) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
-    .map(([gameType, groupRooms]) => ({ gameType, rooms: groupRooms }));
+    .sort(([a], [b]) => compareCanonicalText(a, b))
+    .slice(0, 512)
+    .map(([gameType, groupRooms]) => ({
+      gameType: gameType.slice(0, 128),
+      rooms: groupRooms.slice(0, 10_000),
+    }));
 
   return { items, groups };
 }

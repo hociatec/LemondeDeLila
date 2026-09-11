@@ -1,4 +1,5 @@
 import {
+  drawEvent,
   defineEvent,
   gameInput,
   playerId as toPlayerId,
@@ -37,7 +38,7 @@ export const roll = raceTurn<MonVillageState>({
     ctx.events.message('game.pawn.landed', { playerId, tileId: tile.n });
     if (tile.type === 'finish') {
       const collections = villageCollections(ctx);
-      const winnerId = collectionWinner(collections);
+      const winnerId = collectionWinner(collections, ctx);
       ctx.events.message('mon-village.collection.won', {
         playerId: winnerId,
         total: collections[winnerId]?.total ?? 0,
@@ -54,31 +55,17 @@ export const MON_VILLAGE_ACTIONS = { roll };
 
 export function collectionWinner(
   collections: Readonly<PlayerMap<VillageCollection>>,
+  ctx: GameContext<MonVillageState>,
 ): number {
-  const ranked = Object.entries(collections)
-    .map(([playerId, collection]) => ({
-      playerId: Number(playerId),
-      collection,
-    }))
-    .sort(
-      (left, right) =>
-        right.collection.total - left.collection.total ||
-        compareZones(right.collection, left.collection) ||
-        left.playerId - right.playerId,
-    );
+  const ranked = ctx.ranking.rank(
+    Object.keys(collections).map(Number),
+    { value: (id) => collections[id].total, direction: 'desc' },
+    ...ZONE_RANGES.map((zone) => ({
+      value: (id: number) => collections[id].byZone[zone.id] ?? 0,
+      direction: 'desc' as const,
+    })),
+  );
   return ranked[0]?.playerId ?? 0;
-}
-
-function compareZones(
-  left: VillageCollection,
-  right: VillageCollection,
-): number {
-  for (const zone of ZONE_RANGES) {
-    const difference =
-      (left.byZone[zone.id] ?? 0) - (right.byZone[zone.id] ?? 0);
-    if (difference !== 0) return difference;
-  }
-  return 0;
 }
 
 function collectCard(
@@ -87,12 +74,17 @@ function collectCard(
   ctx: Parameters<typeof roll.execute>[0]['ctx'],
 ): void {
   const deckId = deckForZone(zoneId);
-  const card = ctx.cards.drawOrRecycle<VillageCard>(deckId);
+  const card = drawEvent<MonVillageState, VillageCard>(ctx, {
+    deckId: deckId,
+    playerId: playerId,
+    recycle: true,
+    discard: true,
+  });
   if (!card) {
     ctx.events.message('mon-village.zone.empty', { zoneId });
     return;
   }
-  ctx.cards.discard(deckId, card);
+
   ctx.score.add(playerId, 1);
   ctx.resources.add(playerId, zoneResource(zoneId), 1);
   ctx.events.message('mon-village.card.collected', {

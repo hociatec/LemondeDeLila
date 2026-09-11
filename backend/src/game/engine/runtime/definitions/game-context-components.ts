@@ -1,5 +1,5 @@
-import type { GameExecutionContext } from '../../../core/application/contracts/game-execution-context.model';
-import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
+import type { GameExecutionContext } from '../../../core/application/models/game-execution-context.model';
+import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import {
   createCardsKitState,
   GameCardsController,
@@ -8,8 +8,8 @@ import {
   type DeckDefinition,
   type HandsDefinition,
 } from '../cards/cards-kit';
-import type { GameEffectInstruction } from '../effects/effects-kit';
-import type { DeclarativeState } from './game-definition';
+import type { GameEffectInstruction } from '../contracts/effect-ir';
+import type { DeclarativeState } from '../state/declarative-state';
 import type {
   GameComponentDefinition,
   GameComponentScope,

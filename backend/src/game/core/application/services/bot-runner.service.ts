@@ -1,13 +1,13 @@
 ﻿import { Injectable } from '@nestjs/common';
-import { GameSingleActionDto } from '../contracts/game-action.model';
-import { GameStateEntity } from '../contracts/game-state.model';
-import type { GameRuntime } from '../contracts/game-runtime.interface';
+import { GameSingleActionDto } from '../models/game-action.model';
+import { GameState } from '../models/game-state.model';
+import type { GameRuntime } from '../ports/game-runtime.port';
 
 @Injectable()
 export class BotRunnerService {
   suggestForHandler(
     handler: GameRuntime | undefined,
-    state: GameStateEntity,
+    state: GameState,
     botPlayerId: number,
   ): GameSingleActionDto[] | null {
     if (!handler) return null;

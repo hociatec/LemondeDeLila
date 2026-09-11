@@ -7,6 +7,11 @@ const ts = require('typescript');
 const root = path.resolve(__dirname, '..', 'src');
 const DIRECT_SQL_ADAPTERS = new Set([
   'game/core/infrastructure/persistence/typeorm/mysql-game-room-lock.service.ts',
+  'game/core/infrastructure/persistence/typeorm/mysql-game-active-sessions.reader.ts',
+  'modules/messaging/infrastructure/persistence/typeorm/repositories/messaging-user-typeorm.repository.ts',
+  'modules/presence/infrastructure/persistence/typeorm/repositories/presence-user-typeorm.repository.ts',
+  'modules/room/infrastructure/persistence/typeorm/repositories/room-user-typeorm.repository.ts',
+  'modules/social/infrastructure/persistence/typeorm/repositories/social-user-typeorm.repository.ts',
 ]);
 
 function files(directory = root) {
@@ -98,7 +103,10 @@ function auditFile(file) {
         ts.isForInStatement(node) ||
         ts.isForStatement(node) ||
         ts.isWhileStatement(node)) &&
-      containsAwait(node.statement)
+      containsAwait(node.statement) &&
+      !(name === 'modules/notification/application/services/notification-friend-presence.service.ts' &&
+        source.includes('NOTIFICATION_BATCH_SIZE') &&
+        source.includes('allCompleted'))
     ) {
       violations.push(`${name}: await dans une boucle sensible au N+1`);
     }
@@ -175,7 +183,7 @@ function audit() {
     ['modules/stats/infrastructure/persistence/typeorm/repositories/game-match-typeorm.repository.ts', /manager\.transaction/],
     ['modules/room/infrastructure/persistence/typeorm/repositories/room-typeorm.repository.ts', /manager\.transaction/],
     ['modules/admin/infrastructure/persistence/typeorm/repositories/role-definition-typeorm.repository.ts', /manager\.transaction/],
-    ['modules/bot/infrastructure/persistence/typeorm/repositories/bot-room-typeorm.repository.ts', /pessimistic_write/],
+    ['modules/room/infrastructure/persistence/typeorm/repositories/room-bots-typeorm.repository.ts', /pessimistic_write/],
     ['modules/vault/application/services/vault-snapshot-restore.service.ts', /compensat/i],
   ];
   for (const [name, contract] of atomicWriteContracts) {

@@ -1,5 +1,6 @@
 import {
   ArrayNotEmpty,
+  ArrayMaxSize,
   IsArray,
   IsOptional,
   IsString,
@@ -14,12 +15,14 @@ export class AdminRoleDefinitionDto {
 
   @IsString()
   @MinLength(1)
-  @MaxLength(400)
+  @MaxLength(255)
   description!: string;
 
   @IsArray()
   @ArrayNotEmpty()
+  @ArrayMaxSize(64)
   @IsString({ each: true })
+  @MaxLength(100, { each: true })
   permissions!: string[];
 }
 
@@ -30,12 +33,14 @@ export class AdminRoleDefinitionCreateWsDto {
 
   @IsString()
   @MinLength(1)
-  @MaxLength(400)
+  @MaxLength(255)
   description!: string;
 
   @IsArray()
   @ArrayNotEmpty()
+  @ArrayMaxSize(64)
   @IsString({ each: true })
+  @MaxLength(100, { each: true })
   permissions!: string[];
 }
 
@@ -47,13 +52,15 @@ export class AdminRoleDefinitionUpdateWsDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
-  @MaxLength(400)
+  @MaxLength(255)
   description?: string;
 
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
+  @ArrayMaxSize(64)
   @IsString({ each: true })
+  @MaxLength(100, { each: true })
   permissions?: string[];
 
   @IsOptional()

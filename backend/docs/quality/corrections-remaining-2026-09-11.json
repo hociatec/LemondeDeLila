@@ -1,0 +1,166 @@
+{
+  "date": "2026-09-11",
+  "scope": "36 remaining points from corrections-runtime-2026-09-11.json",
+  "requestedIds": [
+    5,
+    6,
+    14,
+    16,
+    17,
+    18,
+    19,
+    23,
+    24,
+    29,
+    31,
+    112,
+    114,
+    115,
+    116,
+    120,
+    121,
+    122,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    139,
+    143,
+    145,
+    147
+  ],
+  "requested": 36,
+  "validated": 3,
+  "validatedIds": [
+    23,
+    24,
+    139
+  ],
+  "remaining": 33,
+  "remainingIds": [
+    5,
+    6,
+    14,
+    16,
+    17,
+    18,
+    19,
+    29,
+    31,
+    112,
+    114,
+    115,
+    116,
+    120,
+    121,
+    122,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    143,
+    145,
+    147
+  ],
+  "complete": false,
+  "batchProgress": {
+    "requested": 60,
+    "validated": 27,
+    "remaining": 33
+  },
+  "validation": {
+    "jest": "280 suites / 1319 tests passed; 50 targeted tests passed after final validator edits",
+    "typecheck": "passed",
+    "build": "passed after final changes; compiled AppModule loads",
+    "sdk": "unchanged; 105 declaration files",
+    "architecture": "0 violations; no baseline; 0 runtime cycles across 152 files"
+  },
+  "points": [
+    {
+      "id": 23,
+      "point": "**Les références JSON entre composants doivent être validées avant runtime** : deck IDs, track IDs, resource IDs, phase IDs, effects, actions, pawns, etc.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "The supported closed JSON grammar rejects unsupported components. JSON compilation now delegates all static reference checks to the common definition validator, removing its divergent reference index. Actions, card content, track landing effects, nested conditions and reaction branches/options are checked against component/resource/action/phase/effect catalogues before runtime. Added regression tests for missing references inside cards and reaction availability, and for numeric/string card identity separation. Extending the JSON language remains tracked by 18/19.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/json-game-compiler.ts",
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/definitions/game-definition-component-validator.ts",
+        "src/game/engine/runtime/definitions/static-effect-references.ts",
+        "src/game/engine/runtime/definitions/component-initialization-references.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "continuation": "JSON authoring now has an executable closed version-1 profile, but production games, all optional components, patterns and the complete Panier Express rules are not migrated. This broader point remains open.",
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 24,
+      "point": "**Les incompatibilités de capability doivent être détectées à compilation** : par exemple un effet Cards dans un jeu qui n’a pas de composant Cards.",
+      "lot": 1,
+      "status": "validated",
+      "analysis": "Static declarative effects and conditions cannot compile without their required hand/deck/track/dice/inventory/resource catalogues. Reaction availability now validates each option against the hand card catalogue or declared resources. The common validator owns this rule for both authoring paths. Unsupported JSON components are rejected by the closed grammar; dynamic TypeScript callback capability inference remains separately tracked by 14/16.",
+      "evidence": [
+        "src/game/engine/runtime/effects/game-effect-definition-validator.ts",
+        "src/game/engine/runtime/effects/game-effect-reference-validator.ts",
+        "src/game/engine/runtime/definitions/game-definition-component-validator.ts",
+        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+      ],
+      "continuation": "JSON authoring now has an executable closed version-1 profile, but production games, all optional components, patterns and the complete Panier Express rules are not migrated. This broader point remains open.",
+      "validatedOn": "2026-09-11"
+    },
+    {
+      "id": 139,
+      "point": "**Les transitions invalides doivent être impossibles après compilation**.",
+      "lot": 3,
+      "status": "validated",
+      "analysis": "Compiled phase graphs reject missing/unreachable targets and invalid terminal exits. Recursive freezing now traverses shallow-frozen author phases, so retained transition arrays cannot add edges after compilation. Runtime rejects forbidden transitions before exit hooks, timer cancellation or state mutation; repeated same-phase requests are idempotent. Compilation and transition contract tests pass.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/game-definition-compiler.ts",
+        "src/game/engine/runtime/definitions/game-phase-graph-validator.ts",
+        "src/game/engine/runtime/definitions/game-phase-graph-validator.spec.ts",
+        "src/game/engine/runtime/game-rule-context.ts",
+        "src/game/engine/runtime/lifecycle/phase-transition-contract.spec.ts"
+      ],
+      "validatedOn": "2026-09-11"
+    }
+  ],
+  "partialProgress": [
+    {
+      "id": 145,
+      "point": "**Le contenu compilé doit rester réellement immutable**.",
+      "lot": 3,
+      "status": "open",
+      "analysis": "Fixed compiler recursive freezing beneath already-frozen parents and bounded revisits with a WeakSet; regression test covers retained author initialization and phase graph references. Point remains open: borrowed Map.prototype.set can mutate a frozen content Map, confirmed against the production build. Full collection immutability is not established.",
+      "evidence": [
+        "src/game/engine/runtime/definitions/game-definition-compiler.ts",
+        "src/game/engine/runtime/definitions/compilation-contracts.spec.ts",
+        "src/game/engine/runtime/content/content-immutability.ts"
+      ]
+    }
+  ],
+  "limitations": [
+    "The requested remaining lot is not complete.",
+    "Full JSON language and Panier Express migration, neutral game IR, optional capability inference and remaining per-game audits are still open.",
+    "No live MySQL/Redis multi-instance campaign run."
+  ]
+}

@@ -1,5 +1,6 @@
 import {
   IsInt,
+  Max,
   IsOptional,
   IsString,
   MaxLength,
@@ -10,6 +11,7 @@ import {
 export class VaultSaveWsDto {
   @IsInt()
   @Min(1)
+  @Max(2147483647)
   roomId!: number;
 
   @IsOptional()
@@ -29,5 +31,6 @@ export class VaultIdWsDto {
 export class VaultAbandonWsDto {
   @IsInt()
   @Min(1)
+  @Max(2147483647)
   roomId!: number;
 }

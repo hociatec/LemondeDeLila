@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../../../core/application/contracts/game-state.model';
+import type { GameState } from '../../../core/application/models/game-state.model';
 
 const MAX_COMMAND_RECEIPTS = 256;
 
@@ -14,7 +14,7 @@ export type GameCommandJournalState = {
   receipts: GameCommandReceipt[];
 };
 
-type StateWithCommandJournal = GameStateEntity & {
+type StateWithCommandJournal = GameState & {
   engine?: { commands?: GameCommandJournalState };
 };
 
@@ -23,7 +23,7 @@ export function createGameCommandJournalState(): GameCommandJournalState {
 }
 
 export function commandReceipt(
-  state: GameStateEntity,
+  state: GameState,
   commandId: string,
 ): GameCommandReceipt | null {
   const journal = (state as StateWithCommandJournal).engine?.commands;
@@ -33,7 +33,7 @@ export function commandReceipt(
 }
 
 export function recordCommandReceipt(
-  state: GameStateEntity,
+  state: GameState,
   receipt: GameCommandReceipt,
 ): void {
   const runtime = state as StateWithCommandJournal;

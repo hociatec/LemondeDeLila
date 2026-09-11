@@ -1,0 +1,8 @@
+{
+  "code": "json-course",
+  "name": "Course JSON",
+  "summary": "Atteignez trois étoiles.",
+  "minPlayers": 2,
+  "maxPlayers": 4,
+  "engine": "json-course"
+}

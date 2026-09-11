@@ -1,13 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { AddSystemBotToRoomService } from '../../../../bot/public-api';
-import { PresenceService } from '../../../../presence/public-api';
-import { GameStatsService } from '../../../../stats/public-api';
-import { bestEffort } from '../../../../../shared/utils/public-api';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
+import { businessMsToDate } from '@shared/utils/public-api';
+import { bestEffort } from '../../../../../platform/observability/public-api';
 import type {
   RoomLeaveOptions,
   RoomMembershipContext,
-} from '../../contracts/room-membership-context.model';
-import type { RoomRecord } from '../../contracts/room-record.model';
+} from '../../models/room-membership-context.model';
+import type { RoomRecord } from '../../models/room-record.model';
 import {
   ROOM_EVENT_PUBLISHER,
   type RoomEventPublisherPort,
@@ -20,6 +22,18 @@ import {
   ROOM_REPOSITORY,
   type RoomRepository,
 } from '../../ports/room.repository';
+import {
+  ROOM_PRESENCE_PORT,
+  type RoomPresencePort,
+} from '../../ports/room-presence.port';
+import {
+  ROOM_STATS_PORT,
+  type RoomStatsPort,
+} from '../../ports/room-stats.port';
+import {
+  ROOM_BOT_OPERATIONS_PORT,
+  type RoomBotOperationsPort,
+} from '../../ports/room-bot-operations.port';
 import { isStartedRoom } from './room-membership.utils';
 import { RoomEmptyCleanupService } from '../lifecycle/room-empty-cleanup.service';
 
@@ -30,12 +44,16 @@ export class RoomLeaveService {
     private readonly rooms: RoomRepository,
     @Inject(ROOM_PARTICIPANT_REPOSITORY)
     private readonly participants: RoomParticipantRepository,
-    private readonly addSystemBot: AddSystemBotToRoomService,
-    private readonly presence: PresenceService,
-    private readonly stats: GameStatsService,
+    @Inject(ROOM_BOT_OPERATIONS_PORT)
+    private readonly botOperations: RoomBotOperationsPort,
+    @Inject(ROOM_PRESENCE_PORT)
+    private readonly presence: RoomPresencePort,
+    @Inject(ROOM_STATS_PORT)
+    private readonly stats: RoomStatsPort,
     @Inject(ROOM_EVENT_PUBLISHER)
     private readonly events: RoomEventPublisherPort,
     private readonly emptyCleanup: RoomEmptyCleanupService,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async leave(
@@ -44,6 +62,16 @@ export class RoomLeaveService {
     userId: number,
     options?: RoomLeaveOptions,
   ): Promise<RoomRecord | null> {
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      !Number.isSafeInteger(userId) ||
+      userId <= 0
+    ) {
+      throw new BadRequestException(
+        'Identifiant de table ou utilisateur invalide',
+      );
+    }
     const room = await context.requireRoom(roomId);
     const user = await context.requireUser(userId);
     const participant = await this.participants.findActiveByRoomAndUser(
@@ -55,7 +83,7 @@ export class RoomLeaveService {
       return room;
     }
     if (participant) {
-      participant.leftAt = new Date();
+      participant.leftAt = businessMsToDate(this.clock.now());
       await this.participants.save(participant);
     }
     await context.invalidateRoomPayloadCache(room.id);
@@ -133,7 +161,7 @@ export class RoomLeaveService {
     }
     try {
       if ((await context.countActiveHumans(room.id)) > 0) {
-        await this.addSystemBot.execute(room.id);
+        await this.botOperations.addSystemBot(room.id);
         await context.invalidateRoomPayloadCache(room.id);
       }
     } catch {

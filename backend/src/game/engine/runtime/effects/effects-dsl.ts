@@ -3,7 +3,7 @@ import type {
   EffectCondition,
   EffectTarget,
   GameEffectInstruction,
-} from './effects-core';
+} from '../contracts/effect-ir';
 import type { StatusScope } from '../kits/player-values-kit';
 
 const self = (): EffectTarget => ({ kind: 'self' });

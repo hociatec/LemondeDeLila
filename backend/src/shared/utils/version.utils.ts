@@ -1,17 +1,17 @@
-export function parseVersion(value: string): number | null {
-  const raw = (value ?? '').trim();
+export function parseVersion(value: unknown): number | null {
+  if (typeof value !== 'string' || value.length > 128) return null;
+  const raw = value.trim();
   if (!raw) return null;
 
-  const parts = raw
-    .split('.')
-    .map((p) => p.trim())
-    .filter(Boolean);
+  const parts = raw.split('.').map((p) => p.trim());
   if (parts.length < 1 || parts.length > 4) return null;
 
   const nums: number[] = [];
   for (const p of parts) {
     if (!/^\d+$/.test(p)) return null;
-    nums.push(Number(p));
+    const parsed = Number(p);
+    if (!Number.isSafeInteger(parsed)) return null;
+    nums.push(parsed);
   }
   while (nums.length < 4) nums.push(0);
 

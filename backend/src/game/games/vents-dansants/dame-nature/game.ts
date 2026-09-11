@@ -1,19 +1,19 @@
 import {
-  cards,
   cardGame,
+  cards,
   defineCardsSchema,
   defineGame,
-  defineGameContent,
   type NoGameState,
 } from '../../../engine/sdk/public-api';
+import { GAME_BOT } from './bot-rules';
 import {
-  DAME_NATURE_CARD_BY_ID,
   DAME_NATURE_FAMILY_CARD_DEFINITIONS,
   DAME_NATURE_FAMILY_CARD_IDS,
-  DAME_NATURE_NATURE_CARD_IDS,
-  DAME_NATURE_QUIZ_CARD_IDS,
+  DAME_NATURE_GAME_CONTENT,
 } from './content';
+import manifest from './manifest.json';
 import { DAME_NATURE_ACTIONS, DAME_NATURE_POLLUTION } from './rules';
+import { setupGame } from './setup-rules';
 
 const familySets = cards.sets({
   id: 'nature-families',
@@ -48,15 +48,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<NoGameState>()({
-  id: 'dame-nature',
-  displayName: 'Dame Nature',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'VentsDansants',
-  description: 'Réunissez quatre familles avant le pic de pollution.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('dame-nature', {
-    cards: Object.values(DAME_NATURE_CARD_BY_ID),
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: DAME_NATURE_GAME_CONTENT,
   patterns: [
     cardGame({
       schema: cardSchema,
@@ -73,25 +71,7 @@ export default defineGame<NoGameState>()({
     { key: 'C', type: 'action', actionType: 'ask_card' },
     { key: 'S', type: 'action', actionType: 'pass' },
   ],
-  setup: ({ ctx }) => {
-    ctx.cards.putOnTop('nature', [
-      ...DAME_NATURE_QUIZ_CARD_IDS,
-      ...DAME_NATURE_NATURE_CARD_IDS,
-    ]);
-    ctx.cards.shuffle('nature');
-    return {};
-  },
+  setup: setupGame,
   actions: DAME_NATURE_ACTIONS,
-  bot: {
-    choose: ({ actor, ctx }) => {
-      const target = ctx.players.all().find((player) => player.id !== actor.id);
-      const cardId =
-        DAME_NATURE_FAMILY_CARD_IDS[
-          ctx.random.int(DAME_NATURE_FAMILY_CARD_IDS.length)
-        ];
-      return target
-        ? { type: 'ask_card', payload: { targetPlayerId: target.id, cardId } }
-        : { type: 'pass', payload: {} };
-    },
-  },
+  bot: GAME_BOT,
 });

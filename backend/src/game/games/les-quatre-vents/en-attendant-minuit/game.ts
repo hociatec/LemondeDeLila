@@ -1,23 +1,22 @@
 import {
   cards,
   defineCardsSchema,
-  defineChoice,
   defineGame,
-  defineGameContent,
-  gameInput,
   pawns,
   publicField,
   raceGame,
 } from '../../../engine/sdk/public-api';
-import { MINUIT_CARDS, MINUIT_PAWNS, MINUIT_TILES } from './content';
 import {
-  MINUIT_ACTIONS,
-  MINUIT_EFFECTS,
-  MINUIT_PHASES,
-  requestPawns,
-  resolvePawn,
-  resolvePending,
-} from './rules';
+  MINUIT_CARDS,
+  MINUIT_GAME_CONTENT,
+  MINUIT_PAWNS,
+  MINUIT_TILES,
+} from './content';
+import manifest from './manifest.json';
+import { GAME_CHOICES, MINUIT_EFFECTS } from './rules';
+
+import { MINUIT_ACTIONS, MINUIT_PHASES } from './rules';
+import { setupGame } from './rules';
 import type { MinuitState } from './types';
 
 const cardSchema = defineCardsSchema({
@@ -33,17 +32,14 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<MinuitState>()({
-  id: 'en-attendant-minuit',
-  displayName: 'En Attendant Minuit !',
+  id: manifest.code,
+  rulesVersion: '2',
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Course de Noël jusqu’à la grande fête de Minuit.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('en-attendant-minuit', {
-    tiles: MINUIT_TILES,
-    pawns: MINUIT_PAWNS,
-    cards: MINUIT_CARDS,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: MINUIT_GAME_CONTENT,
   playerValuesVisibility: { statuses: publicField() },
   patterns: [
     raceGame({
@@ -58,26 +54,11 @@ export default defineGame<MinuitState>()({
   ],
   initialization: { firstPlayer: 'first', startRound: true },
   shortcuts: [{ key: 'D', type: 'action', actionType: 'roll' }],
-  setup: ({ players, ctx }) => {
-    requestPawns(
-      players.map((player) => player.id),
-      ctx,
-    );
-    return {};
-  },
+  setup: setupGame,
   initialPhase: MINUIT_PHASES.initialPhase,
   phases: MINUIT_PHASES.phases,
   actions: MINUIT_ACTIONS,
   effects: MINUIT_EFFECTS,
-  choices: {
-    'minuit.pawn': defineChoice<MinuitState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
-    }),
-    'minuit.resolve': defineChoice<MinuitState, number>({
-      input: gameInput.number({ integer: true }),
-      resolve: ({ state, value, ctx }) => resolvePending(state, value, ctx),
-    }),
-  },
+  choices: GAME_CHOICES,
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

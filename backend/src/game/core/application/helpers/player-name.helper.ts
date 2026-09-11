@@ -1,4 +1,4 @@
-import type { GameStateEntity } from '../contracts/game-state.model';
+import type { GameState } from '../models/game-state.model';
 
 type PlayerLike =
   { id?: number | string; username?: string | null } | null | undefined;
@@ -10,7 +10,7 @@ export interface ResolvePlayerNameOptions {
 }
 
 export function resolvePlayerName(
-  players: GameStateEntity['players'] | PlayerLike[] | null | undefined,
+  players: GameState['players'] | PlayerLike[] | null | undefined,
   playerId: number,
   options?: ResolvePlayerNameOptions,
 ): string {
@@ -37,7 +37,7 @@ export function resolvePlayerName(
 }
 
 export function resolvePlayerNameFromState(
-  state: Pick<GameStateEntity, 'players'> | null | undefined,
+  state: Pick<GameState, 'players'> | null | undefined,
   playerId: number,
   options?: ResolvePlayerNameOptions,
 ): string {

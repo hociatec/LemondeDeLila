@@ -1,8 +1,14 @@
+import { RealtimeSessionPersistenceService } from './realtime-session-persistence.service';
+import { Inject } from '@nestjs/common';
+import { WsWorkService } from '../../../../ws/public-api';
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { WebSocket } from 'ws';
 import type { WsAuthPayload } from '../../../../../shared/interfaces/public-api';
-import { getErrorMessage } from '../../../../../shared/utils/public-api';
+import {
+  getErrorMessage,
+  parseStrictInteger,
+} from '../../../../../shared/utils/public-api';
 import { PerfMetricsService } from '../../../../observability/public-api';
 import {
   WsApiHubService,
@@ -24,9 +30,21 @@ export class RealtimeApiConnectionService {
     private readonly hub: WsApiHubService,
     private readonly handler: RealtimeApiHandlerService,
     private readonly perf: PerfMetricsService,
+    private readonly sessions: RealtimeSessionPersistenceService,
+    @Inject(WsWorkService) private readonly work = new WsWorkService(),
   ) {}
 
-  async handleConnection(
+  handleConnection(
+    client: WebSocket,
+    args: unknown[],
+    scope: WsTicketScope = 'api',
+  ): Promise<void> {
+    return this.work.run(client, () =>
+      this.openConnection(client, args, scope),
+    );
+  }
+
+  private async openConnection(
     client: WebSocket,
     args: unknown[],
     scope: WsTicketScope = 'api',
@@ -70,6 +88,7 @@ export class RealtimeApiConnectionService {
       clientVersion,
       clientProduct,
       scope,
+      peerAddress: this.peerAddress(args),
       ...gameContext,
     };
 
@@ -87,20 +106,27 @@ export class RealtimeApiConnectionService {
 
     client.on(
       'message',
-      (raw) => void this.handler.handleIncoming(client, session, raw),
+      (raw) =>
+        void this.work.run(client, () =>
+          this.handler.handleIncoming(client, session, raw),
+        ),
     );
     client.on('error', () => {
       this.perf.record('ws.connection.error', 0, { scope });
       client.close();
     });
 
-    await this.handler.persistSession(session);
+    await this.sessions.persistSession(session);
     if (scope === 'game') {
       await this.sendInitialGameStateIfRequested(client, session);
     }
   }
 
-  handleDisconnect(client: WebSocket): void {
+  handleDisconnect(client: WebSocket): Promise<void> {
+    return this.work.run(client, () => this.disconnect(client), true);
+  }
+
+  private async disconnect(client: WebSocket): Promise<void> {
     const session = this.clients.get(client);
     this.clients.delete(client);
     if (!session) {
@@ -110,8 +136,20 @@ export class RealtimeApiConnectionService {
       scope: session.scope ?? 'api',
     });
 
-    void this.handler.clearSession(session.connectionId);
+    await this.sessions.clearSession(session.connectionId);
     this.hub.unregister(session.connectionId);
+  }
+
+  private peerAddress(args: unknown[]): string {
+    const request = args[0];
+    if (!request || typeof request !== 'object' || !('socket' in request))
+      return 'unknown';
+    const socket = request.socket;
+    if (!socket || typeof socket !== 'object' || !('remoteAddress' in socket))
+      return 'unknown';
+    return typeof socket.remoteAddress === 'string'
+      ? socket.remoteAddress.slice(0, 128)
+      : 'unknown';
   }
 
   private resolveUser(token: string | null): WsAuthPayload | null {
@@ -135,8 +173,8 @@ export class RealtimeApiConnectionService {
   ): Promise<void> {
     try {
       const roomId = Number(session.roomId ?? 0);
-      if (!Number.isFinite(roomId) || roomId <= 0) return;
-      const gameType = String(session.gameType ?? '').trim();
+      if (!Number.isSafeInteger(roomId) || roomId <= 0) return;
+      const gameType = String(session.gameType ?? '').trim().slice(0, 100);
       await this.handler.handleIncoming(
         client,
         session,
@@ -160,12 +198,14 @@ export class RealtimeApiConnectionService {
     if (!url) return {};
     try {
       const parsed = new URL(url, 'ws://localhost');
-      const roomId = Number(
+      const roomId = parseStrictInteger(
         parsed.searchParams.get('roomId') ?? parsed.searchParams.get('room'),
+        { min: 1 },
       );
       const gameType = String(parsed.searchParams.get('gameType') ?? '').trim();
+      if (gameType.length > 100) return {};
       return {
-        roomId: Number.isFinite(roomId) && roomId > 0 ? roomId : null,
+        roomId,
         gameType: gameType || null,
       };
     } catch {
@@ -178,10 +218,12 @@ export class RealtimeApiConnectionService {
     if (firstArg && typeof firstArg === 'object' && 'url' in firstArg) {
       const url = (firstArg as { url?: unknown }).url;
       if (typeof url === 'string' && url.trim()) {
-        return url;
+        return url.slice(0, 4_096);
       }
     }
     const clientUrl = 'url' in client ? client.url : undefined;
-    return typeof clientUrl === 'string' && clientUrl.trim() ? clientUrl : null;
+    return typeof clientUrl === 'string' && clientUrl.trim()
+      ? clientUrl.slice(0, 4_096)
+      : null;
   }
 }

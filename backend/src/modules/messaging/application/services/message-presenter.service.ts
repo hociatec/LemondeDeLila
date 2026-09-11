@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { MessageDto } from '../contracts/message.record';
-import type { PrivateMessageRecord } from '../contracts/private-message.model';
+import type { MessageDto } from '../read-models/message.record';
+import type { PrivateMessageRecord } from '../models/private-message.model';
 
 @Injectable()
 export class MessagePresenterService {
@@ -22,9 +22,9 @@ export class MessagePresenterService {
       },
       text: message.message,
       subject: message.subject ?? null,
-      createdAt: message.createdAt.toISOString(),
+      createdAt: safeIso(message.createdAt) ?? new Date(0).toISOString(),
       direction,
-      deletedAt: deletedAt ? deletedAt.toISOString() : null,
+      deletedAt: safeIso(deletedAt),
       boxType,
     };
   }
@@ -33,6 +33,13 @@ export class MessagePresenterService {
     messages: PrivateMessageRecord[],
     viewerId: number,
   ): MessageDto[] {
-    return messages.map((message) => this.present(message, viewerId));
+    return messages.slice(0, 500).map((message) => this.present(message, viewerId));
   }
+}
+
+function safeIso(value: Date | null | undefined): string | null {
+  if (!(value instanceof Date) || !Number.isFinite(value.getTime())) {
+    return null;
+  }
+  return value.toISOString();
 }

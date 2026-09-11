@@ -17,7 +17,8 @@ import {
   overrideConfiguration,
 } from '../configuration/configuration-kit';
 import { gameInput } from '../actions/game-input-schema';
-import { defineAction, defineGame } from '../definitions/game-definition';
+import { defineAction } from '../actions/action-builders';
+import { defineGame } from '../definitions/game-definition';
 
 describe('gameplay pattern composition', () => {
   it('keeps configured pattern instances uniquely identifiable', () => {

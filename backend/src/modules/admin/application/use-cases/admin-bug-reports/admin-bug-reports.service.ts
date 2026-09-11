@@ -1,11 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CountBugReportCommentsService } from '../../../../bug-reports/public-api';
-import { CreateBugReportService } from '../../../../bug-reports/public-api';
-import { DeleteBugReportService } from '../../../../bug-reports/public-api';
-import { GetBugReportService } from '../../../../bug-reports/public-api';
-import { ListBugReportsService } from '../../../../bug-reports/public-api';
-import { UpdateBugReportService } from '../../../../bug-reports/public-api';
-import { UpdateBugReportStatusService } from '../../../../bug-reports/public-api';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  ADMIN_BUG_REPORTS_PORT,
+  type AdminBugReportsPort,
+} from '../../ports/admin-bug-reports.port';
 
 export interface CreateAdminBugReportCommand {
   subject: string;
@@ -29,17 +26,16 @@ export interface UpdateAdminBugReportStatusCommand {
 @Injectable()
 export class AdminBugReportsService {
   constructor(
-    private readonly createBugReport: CreateBugReportService,
-    private readonly listBugReports: ListBugReportsService,
-    private readonly getBugReport: GetBugReportService,
-    private readonly updateBugReport: UpdateBugReportService,
-    private readonly updateBugReportStatus: UpdateBugReportStatusService,
-    private readonly deleteBugReport: DeleteBugReportService,
-    private readonly countBugReportComments: CountBugReportCommentsService,
+    @Inject(ADMIN_BUG_REPORTS_PORT)
+    private readonly bugReports: AdminBugReportsPort,
   ) {}
 
   async create(command: CreateAdminBugReportCommand) {
-    return this.createBugReport.execute({
+    assertText(command.subject, 200, 'Sujet invalide');
+    assertText(command.content, 20_000, 'Contenu invalide');
+    assertUserId(command.createdByUserId);
+    assertText(command.createdByUsername, 100, "Nom d'utilisateur invalide");
+    return this.bugReports.create({
       subject: command.subject,
       content: command.content,
       createdByUserId: command.createdByUserId,
@@ -48,8 +44,10 @@ export class AdminBugReportsService {
   }
 
   async list(options: { offset?: number; limit?: number } = {}) {
-    const items = await this.listBugReports.execute(options);
-    const counts = await this.countBugReportComments.execute(
+    const offset = normalizeOffset(options.offset);
+    const limit = normalizeLimit(options.limit);
+    const items = await this.bugReports.list({ offset, limit });
+    const counts = await this.bugReports.countComments(
       items.map((item) => item.id),
     );
     return items.map((item) => ({
@@ -59,11 +57,12 @@ export class AdminBugReportsService {
   }
 
   async get(id: string) {
-    const report = await this.getBugReport.execute(id);
+    assertReportId(id);
+    const report = await this.bugReports.get(id);
     if (!report) {
       throw new BadRequestException('Rapport introuvable');
     }
-    const counts = await this.countBugReportComments.execute([report.id]);
+    const counts = await this.bugReports.countComments([report.id]);
     return {
       ...report,
       commentsCount: counts[report.id] ?? 0,
@@ -71,7 +70,14 @@ export class AdminBugReportsService {
   }
 
   async update(command: UpdateAdminBugReportCommand) {
-    const report = await this.updateBugReport.execute(command.id, {
+    assertReportId(command.id);
+    if (command.subject !== undefined) {
+      assertText(command.subject, 200, 'Sujet invalide');
+    }
+    if (command.content !== undefined) {
+      assertText(command.content, 20_000, 'Contenu invalide');
+    }
+    const report = await this.bugReports.update(command.id, {
       subject: command.subject,
       content: command.content,
     });
@@ -82,7 +88,20 @@ export class AdminBugReportsService {
   }
 
   async updateStatus(command: UpdateAdminBugReportStatusCommand) {
-    const report = await this.updateBugReportStatus.execute(
+    assertReportId(command.id);
+    if (
+      ![
+        'pending',
+        'in_progress',
+        'to_test',
+        'done',
+        'refused',
+        'rejected',
+      ].includes(command.status)
+    ) {
+      throw new BadRequestException('Statut de rapport invalide');
+    }
+    const report = await this.bugReports.updateStatus(
       command.id,
       command.status,
     );
@@ -93,10 +112,41 @@ export class AdminBugReportsService {
   }
 
   async delete(id: string) {
-    const ok = await this.deleteBugReport.execute(id);
+    assertReportId(id);
+    const ok = await this.bugReports.delete(id);
     if (!ok) {
       throw new BadRequestException('Rapport introuvable');
     }
     return { removed: true };
   }
+}
+
+function assertReportId(value: unknown): asserts value is string {
+  if (typeof value !== 'string' || !value.trim() || value.length > 64) {
+    throw new BadRequestException('Identifiant de rapport invalide');
+  }
+}
+
+function assertUserId(value: unknown): asserts value is number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+    throw new BadRequestException('Identifiant utilisateur invalide');
+  }
+}
+
+function assertText(value: unknown, maxLength: number, message: string): asserts value is string {
+  if (typeof value !== 'string' || value.trim().length === 0 || value.length > maxLength) {
+    throw new BadRequestException(message);
+  }
+}
+
+function normalizeOffset(value: unknown): number {
+  return Number.isSafeInteger(value) && (value as number) >= 0
+    ? Math.min(10_000_000, value as number)
+    : 0;
+}
+
+function normalizeLimit(value: unknown): number {
+  return Number.isSafeInteger(value) && (value as number) > 0
+    ? Math.min(100, value as number)
+    : 50;
 }

@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../../shared/interfaces/public-api';
+import { businessMsToDate } from '@shared/utils/public-api';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type {
@@ -6,8 +11,8 @@ import type {
   ListRoomsFilters,
   RoomRepository,
 } from '../../../../application/ports/room.repository';
-import type { RoomRecord } from '../../../../application/contracts/room-record.model';
-import type { RoomUserRecord } from '../../../../application/contracts/room-user.model';
+import type { RoomRecord } from '../../../../application/models/room-record.model';
+import type { RoomUserRecord } from '../../../../application/models/room-user.model';
 import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import {
@@ -20,18 +25,30 @@ import {
 export class RoomTypeormRepository implements RoomRepository {
   constructor(
     @InjectRepository(Room) private readonly rooms: Repository<Room>,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   create(data: Partial<RoomRecord>): RoomRecord {
+    if (
+      data.id !== undefined &&
+      (!Number.isSafeInteger(data.id) || data.id < 0)
+    ) {
+      throw new RangeError('Identifiant de salle invalide');
+    }
     return {
       id: data.id ?? 0,
-      name: data.name ?? '',
-      gameType: data.gameType ?? '',
-      maxPlayers: data.maxPlayers ?? 4,
+      name: typeof data.name === 'string' ? data.name.slice(0, 255) : '',
+      gameType:
+        typeof data.gameType === 'string' ? data.gameType.slice(0, 128) : '',
+      maxPlayers:
+        typeof data.maxPlayers === 'number' &&
+        Number.isSafeInteger(data.maxPlayers)
+          ? Math.max(1, Math.min(64, data.maxPlayers))
+          : 4,
       isPrivate: data.isPrivate ?? false,
       status: data.status ?? 'setup',
       owner: data.owner ?? null,
-      createdAt: data.createdAt ?? new Date(),
+      createdAt: data.createdAt ?? businessMsToDate(this.clock.now()),
       startedAt: data.startedAt ?? null,
       runId: data.runId ?? 0,
       tableAmbienceSoundId: data.tableAmbienceSoundId ?? null,
@@ -59,16 +76,28 @@ export class RoomTypeormRepository implements RoomRepository {
   }
 
   async update(id: number, patch: Partial<RoomRecord>): Promise<void> {
+    if (!Number.isSafeInteger(id) || id <= 0) return;
     await this.rooms.save(
       this.rooms.create({ id, ...toRoomEntityPatch(patch) }),
     );
   }
 
   async delete(ids: number | number[]): Promise<void> {
-    await this.rooms.delete(ids);
+    const normalized = Array.isArray(ids)
+      ? ids.filter((id) => Number.isSafeInteger(id) && id > 0).slice(0, 1_000)
+      : Number.isSafeInteger(ids) && ids > 0
+        ? ids
+        : null;
+    if (
+      normalized !== null &&
+      (!Array.isArray(normalized) || normalized.length > 0)
+    ) {
+      await this.rooms.delete(normalized);
+    }
   }
 
   async exists(id: number): Promise<boolean> {
+    if (!Number.isSafeInteger(id) || id <= 0) return false;
     const existing = await this.rooms.findOne({
       where: { id },
       select: { id: true },
@@ -77,10 +106,12 @@ export class RoomTypeormRepository implements RoomRepository {
   }
 
   async findById(id: number): Promise<RoomRecord | null> {
+    if (!Number.isSafeInteger(id) || id <= 0) return null;
     return toRoomRecord(await this.rooms.findOne({ where: { id } }));
   }
 
   async findByIdWithOwner(id: number): Promise<RoomRecord | null> {
+    if (!Number.isSafeInteger(id) || id <= 0) return null;
     return toRoomRecord(
       await this.rooms.findOne({
         where: { id },
@@ -90,9 +121,33 @@ export class RoomTypeormRepository implements RoomRepository {
   }
 
   async findByIdWithPayloadRelations(id: number): Promise<RoomRecord | null> {
+    if (!Number.isSafeInteger(id) || id <= 0) return null;
     return toRoomRecord(
       await this.rooms.findOne({
         where: { id },
+        select: {
+          id: true,
+          name: true,
+          gameType: true,
+          maxPlayers: true,
+          isPrivate: true,
+          status: true,
+          createdAt: true,
+          startedAt: true,
+          runId: true,
+          tableAmbienceSoundId: true,
+          restoredFromSnapshotId: true,
+          restoredOwnerUserId: true,
+          owner: { id: true, username: true, roles: true },
+          participants: {
+            id: true,
+            role: true,
+            joinedAt: true,
+            leftAt: true,
+            user: { id: true, username: true, roles: true },
+          },
+          bots: { id: true, name: true },
+        },
         relations: {
           owner: true,
           participants: { user: true },
@@ -106,6 +161,13 @@ export class RoomTypeormRepository implements RoomRepository {
     roomId: number,
     ownerUserId: number,
   ): Promise<RoomRecord | null> {
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      !Number.isSafeInteger(ownerUserId) ||
+      ownerUserId <= 0
+    )
+      return null;
     return this.rooms.manager.transaction(async (manager) => {
       const repository = manager.getRepository(Room);
       const room = await repository.findOne({
@@ -130,6 +192,9 @@ export class RoomTypeormRepository implements RoomRepository {
   }
 
   async listForAdmin(filters: ListRoomsFilters): Promise<RoomRecord[]> {
+    const limit = Number.isSafeInteger(filters?.limit)
+      ? Math.min(1_000, Math.max(1, filters.limit))
+      : 100;
     const qb = this.rooms
       .createQueryBuilder('room')
       .leftJoinAndSelect('room.owner', 'owner')
@@ -141,7 +206,7 @@ export class RoomTypeormRepository implements RoomRepository {
       .leftJoinAndSelect('participant.user', 'participantUser')
       .leftJoinAndSelect('room.bots', 'bot')
       .orderBy('room.id', 'DESC')
-      .limit(filters.limit);
+      .limit(limit);
 
     if (!filters.includePrivate) {
       qb.where('room.isPrivate = :isPrivate', { isPrivate: false });
@@ -161,11 +226,14 @@ export class RoomTypeormRepository implements RoomRepository {
   async listCleanupCandidateIds(
     filters: CleanupRoomsFilters,
   ): Promise<number[]> {
+    const limit = Number.isSafeInteger(filters?.limit)
+      ? Math.min(1_000, Math.max(1, filters.limit))
+      : 100;
     const qb = this.rooms
       .createQueryBuilder('room')
       .select(['room.id'])
       .orderBy('room.id', 'ASC')
-      .limit(filters.limit);
+      .limit(limit);
 
     if (!filters.includePrivate) {
       qb.where('room.is_private = :isPrivate', { isPrivate: false });
@@ -181,7 +249,9 @@ export class RoomTypeormRepository implements RoomRepository {
     }
 
     if (filters.olderThanMinutes) {
-      const cutoff = new Date(Date.now() - filters.olderThanMinutes * 60_000);
+      const cutoff = new Date(
+        this.clock.now() - filters.olderThanMinutes * 60_000,
+      );
       qb.andWhere('room.created_at < :cutoff', { cutoff });
     }
 
@@ -200,6 +270,22 @@ export class RoomTypeormRepository implements RoomRepository {
     owner: RoomUserRecord;
     createdAt: Date;
   }): Promise<RoomRecord> {
+    if (
+      !input ||
+      typeof input.name !== 'string' ||
+      input.name.length > 255 ||
+      typeof input.gameType !== 'string' ||
+      !input.gameType ||
+      input.gameType.length > 128 ||
+      !Number.isSafeInteger(input.maxPlayers) ||
+      input.maxPlayers < 1 ||
+      input.maxPlayers > 64 ||
+      !input.owner ||
+      !Number.isSafeInteger(input.owner.id) ||
+      input.owner.id <= 0
+    ) {
+      throw new RangeError('Parametres de salle invalides');
+    }
     const room = await this.rooms.manager.transaction(async (manager) => {
       const roomRepo = manager.getRepository(Room);
       const participantRepo = manager.getRepository(RoomParticipant);

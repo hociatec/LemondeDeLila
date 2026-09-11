@@ -2,7 +2,7 @@ import type {
   RoomBotState,
   RoomPayload,
   RoomPlayer,
-} from '../../../application/contracts/room-payload.model';
+} from '../../../application/models/room-payload.model';
 
 export type RoomSnapshot = {
   players: Map<number, string>;
@@ -90,7 +90,7 @@ export function collectRoomAnnouncementMessages(
     messages.push(next.isPrivate ? 'Table privée.' : 'Table publique.');
   }
 
-  return messages;
+  return messages.slice(0, 128).map((message) => message.slice(0, 512));
 }
 
 function collectPlayerDiffMessages(
@@ -143,11 +143,11 @@ function buildPlayerMap(players?: RoomPlayer[]): Map<number, string> {
     return map;
   }
 
-  for (const player of players) {
-    if (!player || !Number.isFinite(player.id) || player.id <= 0) {
+  for (const player of players.slice(0, 64)) {
+    if (!player || !Number.isSafeInteger(player.id) || player.id <= 0) {
       continue;
     }
-    map.set(player.id, (player.username ?? '').trim());
+    map.set(player.id, (player.username ?? '').trim().slice(0, 255));
   }
 
   return map;
@@ -159,11 +159,11 @@ function buildBotMap(bots?: RoomBotState[]): Map<number, string> {
     return map;
   }
 
-  for (const bot of bots) {
-    if (!bot || !Number.isFinite(bot.id) || bot.id <= 0) {
+  for (const bot of bots.slice(0, 64)) {
+    if (!bot || !Number.isSafeInteger(bot.id) || bot.id <= 0) {
       continue;
     }
-    map.set(bot.id, (bot.name ?? '').trim());
+    map.set(bot.id, (bot.name ?? '').trim().slice(0, 255));
   }
 
   return map;
@@ -194,11 +194,11 @@ function buildBotLeftMessage(name: string): string {
 }
 
 function formatPlayerName(name: string): string {
-  const trimmed = (name ?? '').trim();
+  const trimmed = (name ?? '').trim().slice(0, 255);
   return trimmed.length > 0 ? trimmed : 'Un joueur';
 }
 
 function formatBotName(name: string): string {
-  const trimmed = (name ?? '').trim();
+  const trimmed = (name ?? '').trim().slice(0, 255);
   return trimmed.length > 0 ? trimmed : 'Un bot';
 }

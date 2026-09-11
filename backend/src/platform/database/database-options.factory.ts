@@ -1,5 +1,9 @@
 import type { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import {
+  createMysqlConnectionOptions,
+  databaseInteger,
+} from './mysql-connection-options';
 
 type TypeOrmEntities = NonNullable<TypeOrmModuleOptions['entities']>;
 
@@ -7,21 +11,17 @@ export function createDatabaseOptions(
   config: ConfigService,
   entities: TypeOrmEntities,
 ): TypeOrmModuleOptions {
-  const url = config.get<string>('DATABASE_URL');
-  const connection = url
-    ? { url }
-    : {
-        host: config.get<string>('DB_HOST', '127.0.0.1'),
-        port: config.get<number>('DB_PORT', 3306),
-        username: config.get<string>('DB_USER', 'root'),
-        password: config.get<string>('DB_PASSWORD', ''),
-        database: config.get<string>('DB_NAME', 'le_monde_de_lila'),
-      };
+  const read = (name: string): unknown => config.get(name);
   return {
-    type: 'mysql',
+    ...createMysqlConnectionOptions(read),
     entities,
-    synchronize: false,
-    logging: false,
-    ...connection,
+    retryAttempts: databaseInteger(read, 'DB_STARTUP_RETRY_ATTEMPTS', 5, 0, 10),
+    retryDelay: databaseInteger(
+      read,
+      'DB_STARTUP_RETRY_DELAY_MS',
+      1000,
+      0,
+      30000,
+    ),
   };
 }

@@ -9,7 +9,7 @@ import {
   readEnvironment,
   readEnvironmentBoolean,
 } from '../../../../../../platform/config/public-api';
-import { constantTimeSecretEquals } from '../../../../../../shared/utils/public-api';
+import { constantTimeSecretEquals } from '../../../../../../platform/security/public-api';
 
 @Injectable()
 export class AdminMaintenanceGuard implements CanActivate {
@@ -60,7 +60,8 @@ export class AdminMaintenanceGuard implements CanActivate {
     if (!raw) return [];
     return raw
       .split(',')
-      .map((s) => s.trim())
+      .slice(0, 64)
+      .map((s) => s.trim().slice(0, 128))
       .filter(Boolean);
   }
 

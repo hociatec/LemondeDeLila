@@ -1,12 +1,12 @@
 import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import type { GameEffectResolverShape } from '../contracts/effect-resolver';
 import type {
   EffectEngineState,
   EffectSource,
   GameEffectInstruction,
-  GameEffectResolverShape,
-} from './effects-kit';
+} from '../contracts/effect-ir';
 import { evaluateEffectCondition } from './effect-condition-evaluator';
-import type { GameContext } from '../game-rule-context';
+import type { GameContext } from '../definitions/game-author-context';
 import { EffectTargetResolver } from './effect-target-resolver';
 import {
   executeRegisteredPrimitive,

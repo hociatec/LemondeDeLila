@@ -1,7 +1,7 @@
-import type { GameActionDefinition } from '../../definitions/game-definition';
+import type { GameActionDefinition } from '../../contracts/author-rule-contracts';
 import type { DiceRollPolicy } from '../../kits/dice-kit';
-import type { GameContext } from '../../game-rule-context';
-import type { GameEffectInstruction } from '../../effects/effects-kit';
+import type { GameContext } from '../../definitions/game-author-context';
+import type { GameEffectInstruction } from '../../contracts/effect-ir';
 import { drawEvent, rollDice } from './card-dice.recipes';
 import type { CardValue } from '../../cards/cards-kit';
 

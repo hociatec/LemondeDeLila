@@ -1,9 +1,9 @@
+import type { GameContext } from '../../../engine/sdk/public-api';
 import {
   defineAction,
   gameEffects,
   gameInput,
 } from '../../../engine/sdk/public-api';
-import type { GameContext, PlayerMap } from '../../../engine/sdk/public-api';
 import { LA_GRANDE_MINE_CARD_BY_ID, type LaGrandeMineCard } from './content';
 import type { GrandeMineState, MineDomain } from './types';
 
@@ -163,9 +163,7 @@ export function discardRandomHand(playerId: number, ctx: RuleContext): void {
 
 export function trimHand(playerId: number, ctx: RuleContext): void {
   const hand = ctx.cards.hand<string>(HANDS, playerId);
-  while (hand.length > HAND_LIMIT) {
-    const cardId = hand.at(-1);
-    if (!cardId) return;
+  for (const cardId of hand.slice(HAND_LIMIT).reverse()) {
     ctx.cards.play(HANDS, DECK, playerId, cardId);
   }
 }
@@ -180,10 +178,6 @@ export function finishMine(ctx: RuleContext): void {
 
 function syncDomainScore(playerId: number, ctx: RuleContext): void {
   ctx.score.set(playerId, scoreDomain(mineDomain(playerId, ctx)));
-}
-
-export function mineDomains(ctx: RuleContext): PlayerMap<MineDomain> {
-  return ctx.players.byId((player) => mineDomain(player.id, ctx));
 }
 
 function mineDomain(playerId: number, ctx: RuleContext): MineDomain {

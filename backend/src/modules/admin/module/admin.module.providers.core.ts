@@ -39,23 +39,22 @@ import {
 } from '../application/ports/admin-room.port';
 import { ADMIN_STATS_PORT } from '../application/ports/admin-stats.port';
 import { ADMIN_USER_REPOSITORY } from '../application/ports/admin-user.repository';
+import { USER_ADMINISTRATION_PORT } from '../../user/public-api';
 import { ROLE_DEFINITION_REPOSITORY } from '../application/ports/role-definition.repository';
 import { AdminLogsConfigService } from '../infrastructure/config/admin-logs-config.service';
 import { createAdminMaintenanceConfig } from '../infrastructure/config/admin-maintenance.config';
 import { AdminRoomsAdapter } from '../infrastructure/public/admin-rooms.adapter';
 import { AdminMaintenanceGuard } from '../infrastructure/presentation/http/guards/admin-maintenance.guard';
-import { AdminUserTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/admin-user-typeorm.repository';
 import { RoleDefinitionTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/role-definition-typeorm.repository';
 import { AdminNotificationAdapter } from '../infrastructure/system/admin-notification.adapter';
 import { AdminMaintenanceRuntimeService } from '../infrastructure/system/admin-maintenance-runtime.service';
 import { FilesystemAdminMaintenanceLockService } from '../infrastructure/system/filesystem-admin-maintenance-lock.service';
 
 export const ADMIN_CORE_PROVIDERS = [
-  AdminUserTypeormRepository,
   RoleDefinitionTypeormRepository,
   {
     provide: ADMIN_USER_REPOSITORY,
-    useExisting: AdminUserTypeormRepository,
+    useExisting: USER_ADMINISTRATION_PORT,
   },
   {
     provide: ROLE_DEFINITION_REPOSITORY,

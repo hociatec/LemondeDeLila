@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  Max,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -11,6 +12,7 @@ import {
 export class SocialUserIdDto {
   @IsInt()
   @IsPositive()
+  @Max(2147483647)
   userId!: number;
 }
 
@@ -24,13 +26,14 @@ export class SocialProfileGetDto {
   @IsOptional()
   @IsInt()
   @IsPositive()
+  @Max(2147483647)
   userId?: number;
 }
 
 export class SocialProfileUpdateDto {
   @IsOptional()
   @IsString()
-  @MaxLength(100000)
+  @MaxLength(20000)
   bio?: string;
 
   @IsOptional()

@@ -1,68 +1,45 @@
-import {
-  freezeGameContent,
-  rejectContent,
-} from '../../../engine/sdk/public-api';
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import manifest from './manifest.json';
+import embeddedCatalogue from './catalogue.json';
+
+import { defineGameContent, gameInput } from '../../../engine/sdk/public-api';
+
 import type { NawakChallenge } from './state';
 
-export const NAWAK_CHALLENGES = loadChallenges();
-
-function loadChallenges(): NawakChallenge[] {
-  const candidates = [
-    resolve(__dirname, 'data', 'nawak-defis.txt'),
-    resolve(
-      process.cwd(),
-      'src/game/games/vents-dansants/nawak/data/nawak-defis.txt',
-    ),
-    resolve(
-      process.cwd(),
-      'dist/game/games/vents-dansants/nawak/data/nawak-defis.txt',
-    ),
-  ];
-  const path = candidates.find(existsSync);
-  if (!path) rejectContent('Contenu Nawak introuvable');
-  return parseChallenges(readFileSync(path, 'utf8'));
-}
-
-function parseChallenges(content: string): NawakChallenge[] {
-  const lines = content.split(/\r?\n/).map((line) => line.trim());
-  const challenges: NawakChallenge[] = [];
-  let index = 0;
-  while (index < lines.length) {
-    const header = lines[index]?.match(/^(\d+)\.$/);
-    if (!header) {
-      index += 1;
-      continue;
-    }
-    const id = header[1];
-    index += 1;
-    const prompt: string[] = [];
-    while (index < lines.length && !/^[123]\.$/.test(lines[index] ?? '')) {
-      if (lines[index]) prompt.push(lines[index]);
-      index += 1;
-    }
-    const answers: string[] = [];
-    while (answers.length < 3 && index < lines.length) {
-      if (!/^[123]\.$/.test(lines[index] ?? '')) break;
-      index += 1;
-      const parts: string[] = [];
-      while (index < lines.length && !/^\d+\.$/.test(lines[index] ?? '')) {
-        if (lines[index]) parts.push(lines[index]);
-        index += 1;
-      }
-      answers.push(parts.join(' ').trim());
-    }
-    if (prompt.length > 0 && answers.length === 3) {
-      challenges.push({
-        id,
-        prompt: prompt.join(' '),
-        answers: [answers[0], answers[1], answers[2]],
-      });
-    }
-  }
-  if (challenges.length === 0) rejectContent('Aucun défi Nawak valide');
-  return challenges;
-}
-
-freezeGameContent(NAWAK_CHALLENGES);
+const challengesSchema = gameInput.object({
+  targetScore: gameInput.number({ integer: true, min: 1, max: 1000 }),
+  challenges: gameInput.array(
+    gameInput.object({
+      id: gameInput.string({ min: 1, max: 128 }),
+      prompt: gameInput.string({ min: 1, max: 10000 }),
+      answers: gameInput.array(gameInput.string({ min: 1, max: 10000 }), {
+        min: 3,
+        max: 3,
+      }),
+    }),
+    { min: 1, max: 10000 },
+  ),
+});
+export const NAWAK_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  embeddedCatalogue,
+  {
+    schema: {
+      parse(value: unknown) {
+        const parsed = challengesSchema.parse(value);
+        return {
+          targetScore: parsed.targetScore,
+          challenges: parsed.challenges.map((challenge): NawakChallenge => ({
+            ...challenge,
+            answers: [
+              challenge.answers[0],
+              challenge.answers[1],
+              challenge.answers[2],
+            ],
+          })),
+        };
+      },
+    },
+  },
+);
+export const NAWAK_CHALLENGES = NAWAK_GAME_CONTENT.data.challenges;
+export const NAWAK_TARGET_SCORE = NAWAK_GAME_CONTENT.data.targetScore;

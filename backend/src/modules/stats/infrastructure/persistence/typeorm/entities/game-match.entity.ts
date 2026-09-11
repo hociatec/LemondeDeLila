@@ -5,11 +5,9 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import type { Relation } from 'typeorm';
-import { GameMatchPlayerEntity } from './game-match-player.entity';
 
 type StatsUserReference = {
   id: number;
@@ -49,7 +47,4 @@ export class GameMatchEntity {
   @ManyToOne('User', { eager: true, nullable: true })
   @JoinColumn({ name: 'winner_user_id' })
   winnerUser?: Relation<StatsUserReference> | null;
-
-  @OneToMany(() => GameMatchPlayerEntity, (p) => p.match)
-  players!: Relation<GameMatchPlayerEntity[]>;
 }

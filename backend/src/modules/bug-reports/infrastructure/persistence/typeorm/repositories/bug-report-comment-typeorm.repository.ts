@@ -5,8 +5,11 @@ import type {
   BugReportCommentRepository,
   CreateBugReportCommentRecordInput,
 } from '../../../../application/ports/bug-report.repository';
-import type { BugReportCommentRecord } from '../../../../application/contracts/bug-report-comment.record';
+import type { BugReportCommentRecord } from '../../../../application/read-models/bug-report-comment.record';
 import { BugReportCommentEntity } from '../entities/bug-report-comment.entity';
+
+const MAX_COMMENT_PAGE_SIZE = 100;
+const MAX_COMMENT_OFFSET = 10_000_000;
 
 @Injectable()
 export class BugReportCommentTypeormRepository implements BugReportCommentRepository {
@@ -32,7 +35,7 @@ export class BugReportCommentTypeormRepository implements BugReportCommentReposi
         continue;
       }
       const count = Number(row.count ?? 0);
-      output[reportId] = Number.isFinite(count) ? count : 0;
+      output[reportId] = Number.isSafeInteger(count) && count >= 0 ? count : 0;
     }
     return output;
   }
@@ -41,11 +44,13 @@ export class BugReportCommentTypeormRepository implements BugReportCommentReposi
     reportId: string,
     options: { offset: number; limit: number },
   ): Promise<BugReportCommentRecord[]> {
+    const offset = normalizeOffset(options.offset);
+    const limit = normalizeLimit(options.limit);
     const items = await this.repo.find({
       where: { reportId },
-      order: { createdAt: 'ASC' },
-      skip: options.offset,
-      take: options.limit,
+      order: { createdAt: 'ASC', id: 'ASC' },
+      skip: offset,
+      take: limit,
     });
     return items.map((item) => this.toRecord(item));
   }
@@ -68,4 +73,16 @@ export class BugReportCommentTypeormRepository implements BugReportCommentReposi
       createdByUsername: entity.createdByUsername,
     };
   }
+}
+
+function normalizeOffset(value: number): number {
+  return Number.isSafeInteger(value) && value >= 0
+    ? Math.min(value, MAX_COMMENT_OFFSET)
+    : 0;
+}
+
+function normalizeLimit(value: number): number {
+  return Number.isSafeInteger(value) && value > 0
+    ? Math.min(value, MAX_COMMENT_PAGE_SIZE)
+    : MAX_COMMENT_PAGE_SIZE;
 }

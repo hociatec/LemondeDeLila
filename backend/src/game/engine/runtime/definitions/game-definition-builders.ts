@@ -1,99 +1,14 @@
-import type { GameExecutionContext } from '../../../core/application/contracts/game-execution-context.model';
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
-import type { GameContext } from '../game-rule-context';
-import { typedRuntimeHandler } from './typed-runtime-handler';
+import type { GameExecutionContext } from '../../../core/application/models/game-execution-context.model';
+
 import {
   GAME_DEFINITION_KIND,
-  type ChoiceResolver,
   type CompiledGameDefinition,
-  type DefinedChoiceResolver,
-  type DefinedGameAction,
-  type GameActionDefinition,
-  type GameActionExecution,
+} from './game-definition-contracts';
+import {
   type GameActionMap,
   type GameViewExtension,
-  type RawChoiceResolution,
   type ReservedGameViewKeys,
-} from './game-definition-contracts';
-
-export function defineAction<TState extends object, TInput extends object>(
-  action: GameActionDefinition<TState, TInput>,
-): DefinedGameAction<TState, TInput> {
-  const runtimeHandler = typedRuntimeHandler<
-    TInput,
-    Omit<GameActionExecution<TState, object>, 'input'>
-  >({
-    schema: action.input,
-    path: 'action.payload',
-    handle: (execution, input) => action.execute({ ...execution, input }),
-  });
-  return Object.freeze({
-    ...action,
-    parseInput: (payload: Record<string, unknown>) =>
-      runtimeHandler.parse(payload),
-    ...(action.validate
-      ? {
-          validateInput: (input: GameActionExecution<TState, object>) =>
-            action.validate?.({ ...input, input: input.input as TInput }) ??
-            true,
-        }
-      : {}),
-    ...(action.enumerate
-      ? {
-          enumerateInputs: (input: {
-            state: TState;
-            actor: PlayerStateEntity;
-            ctx: GameContext<TState>;
-          }) => action.enumerate?.(input) ?? [],
-        }
-      : {}),
-    ...(action.candidates
-      ? {
-          enumerateCandidateInputs: (input: {
-            state: TState;
-            actor: PlayerStateEntity;
-            ctx: GameContext<TState>;
-            query: Readonly<Record<string, unknown>>;
-            offset: number;
-            limit: number;
-          }) => action.candidates?.(input) ?? [],
-        }
-      : {}),
-    executeInput: ({
-      input,
-      ...execution
-    }: GameActionExecution<TState, object>) =>
-      runtimeHandler.handle(execution, input),
-  });
-}
-
-export function overrideAction<TState extends object, TInput extends object>(
-  actionId: string,
-  action: GameActionDefinition<TState, TInput>,
-): DefinedGameAction<TState, TInput> {
-  return defineAction({
-    ...action,
-    overrides: actionId,
-  });
-}
-
-export function defineChoice<TState extends object, TValue>(
-  choice: ChoiceResolver<TState, TValue>,
-): DefinedChoiceResolver<TState, TValue> {
-  const runtimeHandler = typedRuntimeHandler<
-    TValue,
-    Omit<RawChoiceResolution<TState>, 'rawValue'>
-  >({
-    schema: choice.input,
-    path: 'choice.value',
-    handle: (resolution, value) => choice.resolve({ ...resolution, value }),
-  });
-  return Object.freeze({
-    ...choice,
-    resolveRaw: ({ rawValue, ...resolution }: RawChoiceResolution<TState>) =>
-      runtimeHandler.handle(resolution, rawValue),
-  });
-}
+} from '../contracts/author-rule-contracts';
 
 /** Preferred helper for a minimal game-specific `viewExtension`. */
 export function gameViewExtension<TValue extends object>(
@@ -113,3 +28,9 @@ export function isGameDefinition(
 }
 
 export type RuntimeExecution = GameExecutionContext;
+
+export {
+  defineAction,
+  defineChoice,
+  overrideAction,
+} from '../actions/action-builders';

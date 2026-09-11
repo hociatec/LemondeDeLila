@@ -1,5 +1,39 @@
-import { testGame } from '../../../engine/sdk/public-api';
+import { testGame } from '../../../engine/testing/public-api';
+
 import gameDefinition from './game';
+import { parseVoyageCard, VOYAGE_CONTENT } from './content';
+
+describe('Voyage structured content', () => {
+  it('accepts presentation edits without deriving new effects', () => {
+    const original = VOYAGE_CONTENT.farce[0];
+    const translated = {
+      ...original,
+      effect: 'Advance three spaces',
+      description: 'Updated presentation',
+    };
+    expect(() => parseVoyageCard(translated)).not.toThrow();
+    expect(translated.effects).toEqual(original.effects);
+  });
+
+  it('rejects missing executable fields and invalid references', () => {
+    const original = VOYAGE_CONTENT.farce[0];
+    expect(() =>
+      parseVoyageCard({ ...original, effects: undefined }),
+    ).toThrow();
+    expect(() =>
+      parseVoyageCard({
+        ...original,
+        effects: [{ kind: 'custom', effectId: 'missing', data: {} }],
+      }),
+    ).toThrow();
+    expect(() =>
+      parseVoyageCard({
+        ...original,
+        quiz: { choices: ['A', 'B'], answer: 'C', successDelta: 2 },
+      }),
+    ).toThrow();
+  });
+});
 
 describe('Voyage en Terre de Brumes declarative game', () => {
   it('moves deterministically and supports replay', async () => {

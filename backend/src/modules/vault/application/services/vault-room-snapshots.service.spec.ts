@@ -181,6 +181,7 @@ describe('VaultRoomSnapshotsService', () => {
       snapshots,
       rooms as any,
       game as any,
+      { now: () => Date.now() } as any,
     );
     const restorer = new VaultSnapshotRestoreService(
       snapshots,
@@ -298,6 +299,7 @@ describe('VaultRoomSnapshotsService', () => {
       snapshots,
       rooms as any,
       {} as any,
+      { now: () => Date.now() } as any,
     );
     const restorer = new VaultSnapshotRestoreService(
       snapshots,

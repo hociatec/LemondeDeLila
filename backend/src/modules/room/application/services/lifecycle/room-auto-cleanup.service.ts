@@ -1,5 +1,10 @@
 import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
+import {
   Injectable,
+  Inject,
   Logger,
   OnModuleDestroy,
   OnModuleInit,
@@ -7,39 +12,45 @@ import {
 import { RoomAdminContextService } from '../maintenance/room-admin-context.service';
 import { RoomAdminMaintenanceService } from '../maintenance/room-admin-maintenance.service';
 import { RoomMaintenanceSettingsService } from '../maintenance/room-maintenance-settings.service';
-import { bestEffort } from '../../../../../shared/utils/public-api';
-import { operationalPolicy } from '../../../../../platform/config/public-api';
+import { bestEffort } from '../../../../../platform/observability/public-api';
+import { operationalSettings } from '../../../../../platform/config/public-api';
+import { ApplicationShutdownService } from '../../../../../platform/lifecycle/public-api';
 
 @Injectable()
 export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RoomAutoCleanupService.name);
   private timer: NodeJS.Timeout | null = null;
   private initialTimer: NodeJS.Timeout | null = null;
-  private lastRunAtMs = 0;
+  private lastRunAtMs: number | null = null;
 
   constructor(
     private readonly roomAdminContext: RoomAdminContextService,
     private readonly adminMaintenance: RoomAdminMaintenanceService,
     private readonly settings: RoomMaintenanceSettingsService,
-  ) {}
+    @Inject(ApplicationShutdownService)
+    private readonly shutdown = new ApplicationShutdownService(),
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
+  ) {
+    shutdown.registerSource('room-auto-cleanup', () => this.onModuleDestroy());
+  }
 
   onModuleInit() {
     // Timer is always running (cheap). Actual execution is gated by settings.
     this.timer = setInterval(() => {
       void bestEffort(
-        this.tick(),
+        this.shutdown.run(() => this.tick()),
         'nettoyage automatique des rooms',
         this.logger,
       );
-    }, operationalPolicy.roomCleanupTickMs);
+    }, operationalSettings.roomCleanupTickMs);
     this.initialTimer = setTimeout(() => {
       this.initialTimer = null;
       void bestEffort(
-        this.tick(),
+        this.shutdown.run(() => this.tick()),
         'nettoyage automatique initial des rooms',
         this.logger,
       );
-    }, operationalPolicy.roomCleanupInitialDelayMs);
+    }, operationalSettings.roomCleanupInitialDelayMs);
   }
 
   async onModuleDestroy() {
@@ -58,9 +69,9 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
     if (!s.autoCleanupEnabled) {
       return;
     }
-    const now = Date.now();
+    const now = this.clock.now();
     if (
-      this.lastRunAtMs &&
+      this.lastRunAtMs != null &&
       now - this.lastRunAtMs < s.autoCleanupIntervalSeconds * 1000
     ) {
       return;

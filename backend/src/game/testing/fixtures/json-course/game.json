@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "1",
+  "category": "test",
+  "world": "examples",
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "deck",
+      "cards": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "shuffle": true
+    },
+    {
+      "component": "cards.hands",
+      "id": "hand",
+      "deck": "deck",
+      "initial": 1,
+      "visibility": "owner"
+    },
+    {
+      "component": "movement.track",
+      "id": "board",
+      "spaces": 10
+    }
+  ],
+  "resourceIds": [
+    "stars"
+  ],
+  "setup": {
+    "firstPlayer": "first",
+    "scores": 0,
+    "resources": {
+      "stars": 0
+    },
+    "tracks": {
+      "board": 0
+    }
+  },
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": [
+        "advance"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "advance": {
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "board",
+          "spaces": 1
+        },
+        {
+          "kind": "gain-resource",
+          "resource": "stars",
+          "amount": 1
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    }
+  },
+  "victory": {
+    "kind": "resource-at-least",
+    "resource": "stars",
+    "amount": 3
+  }
+}

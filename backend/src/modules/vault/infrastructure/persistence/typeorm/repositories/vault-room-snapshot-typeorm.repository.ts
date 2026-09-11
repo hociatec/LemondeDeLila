@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { VaultRoomSnapshotRecord } from '../../../../application/contracts/vault-room-snapshot.model';
+import type { VaultRoomSnapshotRecord } from '../../../../application/models/vault-room-snapshot.model';
 import type { VaultRoomSnapshotRepository } from '../../../../application/ports/vault-room-snapshot.repository';
 import { VaultRoomSnapshotEntity } from '../entities/vault-room-snapshot.entity';
+
+const MAX_SNAPSHOT_LIST_LIMIT = 50;
 
 @Injectable()
 export class VaultRoomSnapshotTypeormRepository implements VaultRoomSnapshotRepository {
@@ -16,10 +18,14 @@ export class VaultRoomSnapshotTypeormRepository implements VaultRoomSnapshotRepo
     ownerUserId: number,
     limit: number,
   ): Promise<VaultRoomSnapshotRecord[]> {
+    const safeLimit =
+      Number.isSafeInteger(limit) && limit > 0
+        ? Math.min(limit, MAX_SNAPSHOT_LIST_LIMIT)
+        : MAX_SNAPSHOT_LIST_LIMIT;
     const rows = await this.snapshots.find({
       where: { ownerUserId },
-      order: { createdAt: 'DESC' },
-      take: limit,
+      order: { createdAt: 'DESC', id: 'DESC' },
+      take: safeLimit,
     });
     return rows.map((row) => this.toModel(row));
   }

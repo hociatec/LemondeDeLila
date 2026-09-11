@@ -3,12 +3,11 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import type {
   GameClock,
   GameExecutionContext,
-} from '../contracts/game-execution-context.model';
-import {
-  StateGameRng,
-  SystemGameClock,
-} from '../contracts/game-execution-context.model';
-import type { GameStateEntity } from '../contracts/game-state.model';
+} from '../models/game-execution-context.model';
+import { StateGameRng } from '../models/game-execution-context.model';
+import { SystemGameClock } from '@platform/time/public-api';
+import { businessMsToDate } from '@shared/utils/public-api';
+import type { GameState } from '../models/game-state.model';
 
 const executionStorage = new AsyncLocalStorage<GameExecutionContext>();
 const systemClock = new SystemGameClock();
@@ -26,17 +25,26 @@ export function gameNowIso(): string {
 }
 
 export function gameNowDate(): Date {
-  return new Date(gameNowMs());
+  return businessMsToDate(gameNowMs());
 }
 
 @Injectable()
 export class GameExecutionScopeService {
   create(
-    state: GameStateEntity,
+    state: GameState,
     actorId: number | null,
     clock: GameClock = systemClock,
     commandId: string | null = null,
   ): GameExecutionContext {
+    if (actorId !== null && (!Number.isSafeInteger(actorId) || actorId === 0)) {
+      actorId = null;
+    }
+    if (
+      commandId !== null &&
+      (typeof commandId !== 'string' || commandId.length > 128)
+    ) {
+      commandId = null;
+    }
     return { actorId, commandId, rng: new StateGameRng(state), clock };
   }
 

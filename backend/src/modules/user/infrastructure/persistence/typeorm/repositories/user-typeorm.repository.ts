@@ -108,7 +108,7 @@ export class UserTypeormRepository implements UserRepository {
       id: user.id,
       email: user.email,
       roles: user.roles,
-      password: user.password ?? '',
+      password: user.password ?? undefined,
       username: user.username,
       avatar: user.avatar,
       preferences: user.preferences,
@@ -144,4 +144,5 @@ export class UserTypeormRepository implements UserRepository {
       password: user.password ?? null,
     };
   }
+
 }

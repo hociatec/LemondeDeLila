@@ -1,0 +1,677 @@
+{
+  "tiles": [
+    {
+      "type": "neutral",
+      "label": "Départ de la jungle"
+    },
+    {
+      "type": "neutral",
+      "label": "Sentier 2"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "neutral",
+      "label": "Sentier 4"
+    },
+    {
+      "type": "patte",
+      "label": "Coup de patte"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "neutral",
+      "label": "Sentier 7"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "patte",
+      "label": "Coup de patte"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "neutral",
+      "label": "Sentier 11"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "patte",
+      "label": "Coup de patte"
+    },
+    {
+      "type": "neutral",
+      "label": "Sentier 14"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "patte",
+      "label": "Coup de patte"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "neutral",
+      "label": "Sentier 18"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "patte",
+      "label": "Coup de patte"
+    },
+    {
+      "type": "neutral",
+      "label": "Sentier 21"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "patte",
+      "label": "Coup de patte"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "neutral",
+      "label": "Sentier 25"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "patte",
+      "label": "Coup de patte"
+    },
+    {
+      "type": "animal",
+      "label": "Animal rigolo"
+    },
+    {
+      "type": "patte",
+      "label": "Coup de patte"
+    },
+    {
+      "type": "finish",
+      "label": "La mare — arrivée"
+    }
+  ],
+  "pawns": [
+    {
+      "id": "lion",
+      "label": "Le Lion",
+      "description": "Majestueux et fier, il avance avec assurance dans la jungle."
+    },
+    {
+      "id": "elephant",
+      "label": "L'Éléphant",
+      "description": "Imposant et calme, il progresse à grands pas réguliers."
+    },
+    {
+      "id": "girafe",
+      "label": "La Girafe",
+      "description": "Élégante et curieuse, elle observe tout du haut de son long cou."
+    },
+    {
+      "id": "zebre",
+      "label": "Le Zèbre",
+      "description": "Rapide et vif, il zigzague avec une énergie imprévisible."
+    },
+    {
+      "id": "crocodile",
+      "label": "Le Crocodile",
+      "description": "Silencieux et malin, il surprend ses adversaires au bon moment."
+    },
+    {
+      "id": "autruche",
+      "label": "L'Autruche",
+      "description": "Dynamique et drôle, elle alterne accélération et pauses soudaines."
+    }
+  ],
+  "animalCards": [
+    {
+      "id": 1,
+      "deck": "animal",
+      "text": "Rencontre animale 1",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 2,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "deck": "animal",
+      "text": "Rencontre animale 2",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": -1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "deck": "animal",
+      "text": "Rencontre animale 3",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 3,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "deck": "animal",
+      "text": "Rencontre animale 4",
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "deck": "animal",
+      "text": "Rencontre animale 5",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "deck": "animal",
+      "text": "Rencontre animale 6",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "deck": "animal",
+      "text": "Rencontre animale 7",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "deck": "animal",
+      "text": "Rencontre animale 8",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 2,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "deck": "animal",
+      "text": "Rencontre animale 9",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "deck": "animal",
+      "text": "Rencontre animale 10",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "deck": "animal",
+      "text": "Rencontre animale 11",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 2,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "deck": "animal",
+      "text": "Rencontre animale 12",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 3,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "deck": "animal",
+      "text": "Rencontre animale 13",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "deck": "animal",
+      "text": "Rencontre animale 14",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "deck": "animal",
+      "text": "Rencontre animale 15",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "deck": "animal",
+      "text": "Rencontre animale 16",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 2,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "deck": "animal",
+      "text": "Rencontre animale 17",
+      "effects": []
+    },
+    {
+      "id": 18,
+      "deck": "animal",
+      "text": "Rencontre animale 18",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "deck": "animal",
+      "text": "Rencontre animale 19",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": 3,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "deck": "animal",
+      "text": "Rencontre animale 20",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    }
+  ],
+  "pawCards": [
+    {
+      "id": 1,
+      "deck": "patte",
+      "text": "Coup de patte 1",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "deck": "patte",
+      "text": "Coup de patte 2",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": -1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "deck": "patte",
+      "text": "Coup de patte 3",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "deck": "patte",
+      "text": "Coup de patte 4",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": -1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "deck": "patte",
+      "text": "Coup de patte 5",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "deck": "patte",
+      "text": "Coup de patte 6",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "deck": "patte",
+      "text": "Coup de patte 7",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "deck": "patte",
+      "text": "Coup de patte 8",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "deck": "patte",
+      "text": "Coup de patte 9",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "deck": "patte",
+      "text": "Coup de patte 10",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "jungle",
+          "spaces": -1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "custom",
+          "effectId": "aventure.resolve-landing",
+          "data": {}
+        }
+      ]
+    }
+  ]
+}

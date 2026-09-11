@@ -74,12 +74,18 @@ describe('RedisPubSubTransport degradation', () => {
     );
     const published = JSON.parse(publish.mock.calls[0][1] as string) as {
       correlationId: string;
+      eventId: string;
+      occurredAt: string;
+      schemaVersion: number;
       event: { id: number };
     };
     expect(published).toEqual({
       kind: 'lila.pubsub',
       correlationId: 'request-42',
       event: { id: 7 },
+      eventId: expect.any(String),
+      occurredAt: expect.any(String),
+      schemaVersion: 1,
     });
 
     const observed: Array<{

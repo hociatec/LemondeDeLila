@@ -1,22 +1,25 @@
+import type { NoGameState as CaDerapeState } from '../../../engine/sdk/public-api';
 import {
   cards,
   defineCardsSchema,
-  defineChoice,
-  defineGamePhases,
   defineGame,
-  defineGameContent,
-  gameInput,
+  defineGamePhases,
   raceGame,
 } from '../../../engine/sdk/public-api';
-import { CA_DERAPE_CARDS, CA_DERAPE_TILES } from './content';
-import { CA_NEXT_PLAYER_DELTA } from './rules';
-import { CA_DERAPE_ACTIONS, resolveDeltaChoice } from './actions';
+import { CA_DERAPE_ACTIONS, GAME_CHOICES } from './actions';
+import {
+  CA_DERAPE_CARDS,
+  CA_DERAPE_GAME_CONTENT,
+  CA_DERAPE_TILES,
+} from './content';
+import manifest from './manifest.json';
 import { CA_DERAPE_EFFECTS } from './effects';
-import type { NoGameState as CaDerapeState } from '../../../engine/sdk/public-api';
+
+import { CA_NEXT_PLAYER_DELTA } from './rules';
 
 const CA_DERAPE_PHASES = defineGamePhases<CaDerapeState>()({
   initialPhase: 'playing',
-  phases: { playing: {} },
+  phases: { playing: { terminal: true } },
 });
 const cardSchema = defineCardsSchema({
   decks: {
@@ -30,16 +33,14 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<CaDerapeState>()({
-  id: 'ca-derape',
-  displayName: 'Ça Dérape !',
+  id: manifest.code,
+  rulesVersion: '2',
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Course chaotique sur 30 cases avec cartes Situation.',
-  players: { min: 2, max: 10 },
-  content: defineGameContent('ca-derape', {
-    cards: CA_DERAPE_CARDS,
-    tiles: CA_DERAPE_TILES,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: CA_DERAPE_GAME_CONTENT,
   patterns: [raceGame({ trackId: 'derape', spaces: CA_DERAPE_TILES.length })],
   components: [...cardSchema.components],
   initialization: {
@@ -51,11 +52,6 @@ export default defineGame<CaDerapeState>()({
   phases: CA_DERAPE_PHASES.phases,
   actions: CA_DERAPE_ACTIONS,
   effects: CA_DERAPE_EFFECTS,
-  choices: {
-    'ca-derape.next-delta': defineChoice<CaDerapeState, number>({
-      input: gameInput.number({ integer: true }),
-      resolve: ({ value, ctx }) => resolveDeltaChoice(value, ctx),
-    }),
-  },
+  choices: GAME_CHOICES,
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

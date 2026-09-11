@@ -3,31 +3,32 @@ import { AdminBugReportCommentsService } from './admin-bug-report-comments.servi
 
 describe('AdminBugReportCommentsService', () => {
   it('lists comments for a report', async () => {
-    const listBugReportComments = {
-      execute: jest.fn().mockResolvedValue([{ id: 'c1' }]),
+    const bugReports = {
+      listComments: jest.fn().mockResolvedValue([{ id: 'c1' }]),
+      addComment: jest.fn(),
+      countComments: jest.fn(),
     };
-    const service = new AdminBugReportCommentsService(
-      listBugReportComments as any,
-      { execute: jest.fn() } as any,
-      { execute: jest.fn() } as any,
-    );
+    const service = new AdminBugReportCommentsService(bugReports as any);
 
     await expect(service.list('r1')).resolves.toEqual([{ id: 'c1' }]);
-    expect(listBugReportComments.execute).toHaveBeenCalledWith('r1', {});
+    expect(bugReports.listComments).toHaveBeenCalledWith('r1', {
+      offset: 0,
+      limit: 50,
+    });
 
     await service.list('r1', { offset: 10, limit: 20 });
-    expect(listBugReportComments.execute).toHaveBeenLastCalledWith('r1', {
+    expect(bugReports.listComments).toHaveBeenLastCalledWith('r1', {
       offset: 10,
       limit: 20,
     });
   });
 
   it('throws when target report is missing', async () => {
-    const service = new AdminBugReportCommentsService(
-      { execute: jest.fn() } as any,
-      { execute: jest.fn().mockResolvedValue(null) } as any,
-      { execute: jest.fn() } as any,
-    );
+    const service = new AdminBugReportCommentsService({
+      listComments: jest.fn(),
+      addComment: jest.fn().mockResolvedValue(null),
+      countComments: jest.fn(),
+    } as any);
 
     await expect(
       service.add({
@@ -40,17 +41,12 @@ describe('AdminBugReportCommentsService', () => {
   });
 
   it('returns the created comment with updated count', async () => {
-    const addBugReportComment = {
-      execute: jest.fn().mockResolvedValue({ id: 'c1' }),
+    const bugReports = {
+      listComments: jest.fn(),
+      addComment: jest.fn().mockResolvedValue({ id: 'c1' }),
+      countComments: jest.fn().mockResolvedValue({ r1: 4 }),
     };
-    const countBugReportComments = {
-      execute: jest.fn().mockResolvedValue({ r1: 4 }),
-    };
-    const service = new AdminBugReportCommentsService(
-      { execute: jest.fn() } as any,
-      addBugReportComment as any,
-      countBugReportComments as any,
-    );
+    const service = new AdminBugReportCommentsService(bugReports as any);
 
     await expect(
       service.add({
@@ -65,12 +61,12 @@ describe('AdminBugReportCommentsService', () => {
       commentsCount: 4,
     });
 
-    expect(addBugReportComment.execute).toHaveBeenCalledWith({
+    expect(bugReports.addComment).toHaveBeenCalledWith({
       reportId: 'r1',
       content: 'note',
       createdByUserId: 1,
       createdByUsername: 'admin',
     });
-    expect(countBugReportComments.execute).toHaveBeenCalledWith(['r1']);
+    expect(bugReports.countComments).toHaveBeenCalledWith(['r1']);
   });
 });

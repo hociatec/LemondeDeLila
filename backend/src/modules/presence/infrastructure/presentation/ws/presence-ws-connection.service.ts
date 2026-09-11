@@ -1,4 +1,6 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+﻿import { Inject } from '@nestjs/common';
+import { WsWorkService } from '../../../../../platform/ws/public-api';
+import { Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import {
   getErrorMessage,
@@ -9,7 +11,7 @@ import {
   WsJwtAuthService,
   WsTicketAuthService,
 } from '../../../../../platform/realtime/public-api';
-import { UpdatePolicyService } from '../../../../update/public-api';
+import { ClientUpdateQueryService } from '../../../../update/public-api';
 import { PresenceChatService } from '../../../application/services/presence-chat.service';
 import { PresenceService } from '../../../application/services/presence.service';
 import type { PresenceConnectionContext } from '../../../application/services/presence-state.utils';
@@ -25,6 +27,8 @@ type WsClientLike = {
   url?: string;
 };
 
+const MAX_WS_OUTBOUND_BYTES = 1_048_576;
+
 @Injectable()
 export class PresenceWsConnectionService {
   private readonly logger = new Logger(PresenceWsConnectionService.name);
@@ -35,10 +39,18 @@ export class PresenceWsConnectionService {
     private readonly auth: WsJwtAuthService,
     private readonly wsTickets: WsTicketAuthService,
     private readonly handler: PresenceWsHandler,
-    private readonly updates: UpdatePolicyService,
+    private readonly updates: ClientUpdateQueryService,
+    @Inject(WsWorkService) private readonly work = new WsWorkService(),
   ) {}
 
-  async handleConnection(client: WebSocket, args: unknown[]): Promise<void> {
+  handleConnection(client: WebSocket, args: unknown[]): Promise<void> {
+    return this.work.run(client, () => this.openConnection(client, args));
+  }
+
+  private async openConnection(
+    client: WebSocket,
+    args: unknown[],
+  ): Promise<void> {
     let payload: WsAuthPayload | null;
     try {
       payload = this.resolveAuth(client, args);
@@ -48,7 +60,13 @@ export class PresenceWsConnectionService {
       return;
     }
 
-    if (!payload || !payload.id || !payload.username) {
+    if (
+      !payload ||
+      !Number.isSafeInteger(payload.id) ||
+      payload.id <= 0 ||
+      typeof payload.username !== 'string' ||
+      !payload.username
+    ) {
       this.sendError(client, 'Authentification requise pour ouvrir le tchat.');
       client.close(4001, 'auth required');
       return;
@@ -88,7 +106,10 @@ export class PresenceWsConnectionService {
     this.presence.register(client, payload, context);
     client.on(
       'message',
-      (raw) => void this.handler.handleIncoming(client, raw),
+      (raw) =>
+        void this.work.run(client, () =>
+          this.handler.handleIncoming(client, raw),
+        ),
     );
     client.on('error', () => client.close());
 
@@ -99,7 +120,11 @@ export class PresenceWsConnectionService {
     this.presence.broadcastPresence();
   }
 
-  handleDisconnect(client: WebSocket): void {
+  handleDisconnect(client: WebSocket): Promise<void> {
+    return this.work.run(client, () => this.disconnect(client), true);
+  }
+
+  private disconnect(client: WebSocket): void {
     this.presence.unregister(client);
     this.presence.broadcastPresence();
   }
@@ -130,7 +155,7 @@ export class PresenceWsConnectionService {
       ((args && args[0]) as WsRequestLike | undefined) ??
       wsClient.upgradeReq ??
       wsClient.req;
-    const urlCandidate = wsClient.url || request?.url || '';
+    const urlCandidate = String(wsClient.url || request?.url || '').slice(0, 4096);
 
     try {
       const url = new URL(urlCandidate, 'ws://localhost');
@@ -154,7 +179,13 @@ export class PresenceWsConnectionService {
 
   private safeSend(client: WebSocket, payload: unknown): void {
     try {
-      client.send(JSON.stringify(payload));
+      const serialized = JSON.stringify(payload);
+      if (!serialized) return;
+      if (Buffer.byteLength(serialized, 'utf8') > MAX_WS_OUTBOUND_BYTES) {
+        client.close(1009, 'message too large');
+        return;
+      }
+      client.send(serialized);
     } catch {
       /* ignore */
     }

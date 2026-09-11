@@ -1,10 +1,9 @@
-export { SocialModule } from './module/social.module';
-export { SocialInteractionsService } from './application/services/social-interactions.service';
-export { SocialProfileSettingsService } from './application/services/social-profile-settings.service';
 export {
-  SOCIAL_PROFILE_REPOSITORY,
-  type SocialProfileRepository,
-} from './application/ports/social-profile.repository';
+  ACCEPTED_FRIENDS_READER,
+  type AcceptedFriendsReader,
+} from './application/ports/accepted-friends-reader.port';
+export { SocialProfileSettingsService } from './application/services/social-profile-settings.service';
+export { SocialProfileService } from './application/services/social-profile.service';
 export {
   SOCIAL_RELATIONSHIP_NOTIFIER,
   type SocialRelationshipNotifier,

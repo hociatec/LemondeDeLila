@@ -1,0 +1,770 @@
+{
+  "cards": [
+    {
+      "id": 1,
+      "text": "Raccourci : avancez de 2 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "Belle cabriole : rejouez.",
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "text": "Fruit trouvé : gagnez une pomme.",
+      "effects": [
+        {
+          "kind": "gain-resource",
+          "resource": "apple",
+          "amount": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "text": "Pause à la rivière : passez un tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "text": "Donnez une pomme avec reconnaissance de dette.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.give-apple",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "galopons.give-apple",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "text": "Fer perdu : reculez de 2 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "text": "Chant d’oiseau : avancez d’une case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "text": "Pause broutage : passez un tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "text": "Chemin secret vers la forêt.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move-to-region",
+          "data": {
+            "region": "foret"
+          }
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "text": "Boue : reculez d’une case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "text": "Papillon : rejouez.",
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "text": "Jument amie : avancez de 3 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "text": "Saut élégant : gagnez une pomme.",
+      "effects": [
+        {
+          "kind": "gain-resource",
+          "resource": "apple",
+          "amount": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "text": "Bruit soudain : reculez d’une case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "text": "Aidez un poulain : défaussez une pomme et rejouez.",
+      "effects": [
+        {
+          "kind": "lose-resource",
+          "resource": "apple",
+          "amount": 1,
+          "target": {
+            "kind": "self"
+          },
+          "allowPartial": true
+        },
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "text": "Cachette de fruits : gagnez deux pommes.",
+      "effects": [
+        {
+          "kind": "gain-resource",
+          "resource": "apple",
+          "amount": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "text": "Pluie : passez un tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "text": "Grand galop : avancez de 4 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "text": "Chapeau perdu : reculez d’une case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "text": "Aidez un joueur à avancer contre une pomme.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.help-advance",
+          "data": {
+            "delta": 2
+          },
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "galopons.help-advance",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "text": "Hennissement de joie : rejouez.",
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "text": "Branche : passez un tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "text": "Chemin vers la montagne.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move-to-region",
+          "data": {
+            "region": "montagne"
+          }
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "text": "Fatigue : défaussez une pomme.",
+      "effects": [
+        {
+          "kind": "lose-resource",
+          "resource": "apple",
+          "amount": 1,
+          "target": {
+            "kind": "self"
+          },
+          "allowPartial": true
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "text": "Beau sabot : gagnez deux pommes.",
+      "effects": [
+        {
+          "kind": "gain-resource",
+          "resource": "apple",
+          "amount": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "text": "Flaque : reculez d’une case.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "text": "Ruisseau franchi : avancez de 2 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "text": "Trèfle : avancez à deux.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.pair-advance",
+          "data": {
+            "delta": 1
+          },
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "galopons.pair-advance",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "text": "Pause câlin : tous passent un tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        },
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "text": "Nuage de mouches : reculez de 2 cases.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "galopons.move",
+          "data": {
+            "delta": -2
+          }
+        }
+      ]
+    }
+  ],
+  "pawns": [
+    {
+      "id": "shetland",
+      "name": "Le Poney Shetland",
+      "description": "Petit, robuste et malicieux."
+    },
+    {
+      "id": "mustang",
+      "name": "Le Mustang",
+      "description": "Rapide, libre et un peu rebelle."
+    },
+    {
+      "id": "percheron",
+      "name": "Le Percheron",
+      "description": "Puissant et calme."
+    },
+    {
+      "id": "camargue",
+      "name": "Le Camargue",
+      "description": "Rustique et courageux."
+    }
+  ],
+  "tiles": [
+    {
+      "n": 1,
+      "title": "Départ",
+      "type": "start",
+      "region": "prairie",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 2,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "prairie",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 3,
+      "title": "Fer à cheval",
+      "type": "card",
+      "region": "prairie",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 4,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "prairie",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 5,
+      "title": "Pomme bonus",
+      "type": "bonus",
+      "region": "prairie",
+      "apples": 1,
+      "skipTurns": 0
+    },
+    {
+      "n": 6,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "prairie",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 7,
+      "title": "Fer à cheval",
+      "type": "card",
+      "region": "prairie",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 8,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "prairie",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 9,
+      "title": "Fer à cheval",
+      "type": "card",
+      "region": "prairie",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 10,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "prairie",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 11,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "riviere",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 12,
+      "title": "Fer à cheval",
+      "type": "card",
+      "region": "riviere",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 13,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "riviere",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 14,
+      "title": "Obstacle",
+      "type": "skip",
+      "region": "riviere",
+      "apples": 0,
+      "skipTurns": 1
+    },
+    {
+      "n": 15,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "riviere",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 16,
+      "title": "Pomme bonus",
+      "type": "bonus",
+      "region": "riviere",
+      "apples": 1,
+      "skipTurns": 0
+    },
+    {
+      "n": 17,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "riviere",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 18,
+      "title": "Fer à cheval",
+      "type": "card",
+      "region": "riviere",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 19,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "riviere",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 20,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "riviere",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 21,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "foret",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 22,
+      "title": "Fer à cheval",
+      "type": "card",
+      "region": "foret",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 23,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "foret",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 24,
+      "title": "Obstacle",
+      "type": "skip",
+      "region": "foret",
+      "apples": 0,
+      "skipTurns": 1
+    },
+    {
+      "n": 25,
+      "title": "Pomme bonus",
+      "type": "bonus",
+      "region": "foret",
+      "apples": 1,
+      "skipTurns": 0
+    },
+    {
+      "n": 26,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "foret",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 27,
+      "title": "Fer à cheval",
+      "type": "card",
+      "region": "foret",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 28,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "foret",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 29,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "foret",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 30,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "foret",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 31,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "montagne",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 32,
+      "title": "Fer à cheval",
+      "type": "card",
+      "region": "montagne",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 33,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "montagne",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 34,
+      "title": "Fer à cheval",
+      "type": "card",
+      "region": "montagne",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 35,
+      "title": "Pomme bonus",
+      "type": "bonus",
+      "region": "montagne",
+      "apples": 1,
+      "skipTurns": 0
+    },
+    {
+      "n": 36,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "montagne",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 37,
+      "title": "Fer à cheval",
+      "type": "card",
+      "region": "montagne",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 38,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "montagne",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 39,
+      "title": "Sentier",
+      "type": "neutral",
+      "region": "montagne",
+      "apples": 0,
+      "skipTurns": 0
+    },
+    {
+      "n": 40,
+      "title": "Écurie finale",
+      "type": "finish",
+      "region": "montagne",
+      "apples": 0,
+      "skipTurns": 0
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { RoomClientPolicyService } from '../membership/room-client-policy.service';
 import { RoomLifecycleService } from './room-lifecycle.service';
-import type { RoomPayload } from '../../contracts/room-payload.model';
-import type { RoomRecord } from '../../contracts/room-record.model';
+import type { RoomPayload } from '../../models/room-payload.model';
+import type { RoomRecord } from '../../models/room-record.model';
 import { buildUniqueActiveRoomPlayers } from '../membership/room-participant-roster';
 
 function payload(
@@ -121,6 +121,7 @@ describe('Room start flow', () => {
       catalog as never,
       stats as never,
       events as never,
+      { now: () => Date.now() },
     );
     const current = room();
     const context = {
@@ -152,6 +153,7 @@ describe('Room start flow', () => {
       { getGame: jest.fn(async () => ({ minPlayers: 1 })) } as never,
       { startMatch: jest.fn(async () => undefined) } as never,
       { publishLobbyChanged: jest.fn(async () => undefined) } as never,
+      { now: () => Date.now() },
     );
     const context = {
       invalidateRoomPayloadCache: jest.fn(async () => undefined),
@@ -186,6 +188,7 @@ describe('Room start flow', () => {
       {} as never,
       {} as never,
       events as never,
+      { now: () => Date.now() },
     );
     const context = {
       invalidateRoomPayloadCache: jest.fn(),

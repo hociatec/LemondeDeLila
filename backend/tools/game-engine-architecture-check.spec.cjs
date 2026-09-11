@@ -18,7 +18,7 @@ function fixture(mutator) {
   const runtimeRoot = path.join(root, 'src/game/engine/runtime');
   fs.mkdirSync(gamesRoot, { recursive: true });
   fs.mkdirSync(runtimeRoot, { recursive: true });
-  fs.mkdirSync(path.join(root, 'src/game/core/application/contracts'), {
+  fs.mkdirSync(path.join(root, 'src/game/core/application/ports'), {
     recursive: true,
   });
   fs.writeFileSync(
@@ -27,7 +27,7 @@ function fixture(mutator) {
   );
   fs.writeFileSync(
     path.join(gamesRoot, 'game.ts'),
-    "export default defineGame({ id: 'example' });\n",
+    "import manifest from './manifest.json';\nexport default defineGame({ id: manifest.code, displayName: manifest.name, description: manifest.summary, players: { min: manifest.minPlayers, max: manifest.maxPlayers } });\n",
   );
   fs.writeFileSync(
     path.join(gamesRoot, 'state.ts'),
@@ -45,7 +45,7 @@ function fixture(mutator) {
   fs.writeFileSync(
     path.join(
       root,
-      'src/game/core/application/contracts/game-runtime.interface.ts',
+      'src/game/core/application/ports/game-runtime.port.ts',
     ),
     [
       'interface Runtime {',
@@ -69,8 +69,133 @@ function fixture(mutator) {
   }
 }
 
+test('accepts a data-only game package and rejects parallel executable sources', () => {
+  const jsonPackage = ({ gamesRoot }) => {
+    for (const file of ['game.ts', 'state.ts', 'rules.ts', 'content.ts', 'game.spec.ts']) {
+      fs.unlinkSync(path.join(gamesRoot, file));
+    }
+    fs.writeFileSync(path.join(gamesRoot, 'game.json'), '{"schemaVersion":1}');
+    fs.writeFileSync(path.join(gamesRoot, 'rules.md'), '# Rules');
+  };
+  assert.deepEqual(fixture(jsonPackage), []);
+  assert(fixture(paths => {
+    jsonPackage(paths);
+    fs.writeFileSync(path.join(paths.gamesRoot, 'rules.ts'), 'export const hidden = 1;');
+  }).some(item => item.rule === 'json-game-no-executable-source'));
+});
+
 test('accepts a minimal framework-free declarative game', () => {
   assert.deepEqual(fixture(), []);
+});
+
+test('rejects external work and deferred callbacks from rule modules, including aliases', () => {
+  for (const source of [
+    "export const play = () => fetch('/write', { method: 'POST' });",
+    "const send = fetch; export const play = () => send('/write');",
+    "const { fetch: send } = globalThis; export const play = () => send('/write');",
+    "export const play = () => globalThis['fetch']('/write');",
+    "export const play = () => setTimeout(() => {}, 1);",
+    "export const play = () => queueMicrotask(() => {});",
+    "export const play = () => Promise.resolve().then(() => {});",
+    "export const play = async () => {};",
+  ]) {
+    const violations = fixture(({ gamesRoot }) => fs.writeFileSync(path.join(gamesRoot, 'rules.ts'), source));
+    assert(violations.some((item) => item.rule === 'no-external-game-effects'), source);
+  }
+});
+
+test('does not mistake content strings or ordinary properties for external capabilities', () => {
+  const violations = fixture(({ gamesRoot }) => fs.writeFileSync(path.join(gamesRoot, 'rules.ts'), "export const text = 'fetch and setTimeout'; export const data = { fetch: 'card' }; export const play = ctx => ctx.cards.fetch();"));
+  assert(!violations.some((item) => item.rule === 'no-external-game-effects'));
+  assert(!fixture(({ gamesRoot }) => fs.writeFileSync(path.join(gamesRoot, 'rules.ts'), "import { self } from '../../../engine/sdk/public-api'; export const target = self;")).some((item) => item.rule === 'no-external-game-effects'));
+  assert(!fixture(({ gamesRoot }) => fs.writeFileSync(path.join(gamesRoot, 'rules.ts'), "const self = { kind: 'self' }; export const target = self;")).some((item) => item.rule === 'no-external-game-effects'));
+  assert(!fixture(({ gamesRoot }) => fs.writeFileSync(path.join(gamesRoot, 'game.spec.ts'), 'testGame(game); test("integration", async () => { await Promise.resolve(); });')).some((item) => item.rule === 'no-external-game-effects'));
+});
+
+test('rejects prose interpreters in game rules and content helpers', () => {
+  for (const source of [
+    "export const effect = card.text.match(/avancez (\\d+)/);",
+    "export const skip = /passez/.test(card.description);",
+    "export const group = tile.title.normalize('NFD');",
+  ]) {
+    const violations = fixture(({ gamesRoot }) => {
+      fs.writeFileSync(path.join(gamesRoot, 'content-helper.ts'), source);
+    });
+    assert(violations.some(violation => violation.rule === 'structured-game-content'));
+  }
+});
+
+test('accepts explicit data and presentation-only formatting', () => {
+  assert.deepEqual(fixture(({ gamesRoot }) => {
+    fs.writeFileSync(path.join(gamesRoot, 'content-helper.ts'),
+      "export const effects = card.effects; export const label = id.replace(/-/g, ' ');");
+  }), []);
+});
+
+test('rejects a second game-folder discovery outside composition', () => {
+  const violations = fixture(({ gameRoot }) => {
+    fs.writeFileSync(path.join(gameRoot, 'core/application/ports/catalogue.ts'), "export const entries = fs.readdirSync('games');\n");
+  });
+  assert(violations.some(violation => violation.rule === 'composition-game-discovery'));
+});
+
+test('rejects duplicated metadata even when its literal currently matches the manifest', () => {
+  const violations = fixture(({ gamesRoot }) => {
+    const file = path.join(gamesRoot, 'game.ts');
+    fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('displayName: manifest.name', "displayName: 'Example'"));
+  });
+  assert(violations.some(violation => violation.rule === 'canonical-manifest-metadata'));
+});
+
+test('rejects all external imports, including side effects, require and dynamic import', () => {
+  for (const source of [
+    "import 'node:fs';",
+    "const fs = require('fs');",
+    "import('node:path');",
+    "import { x } from 'typeorm';",
+    "import { x } from 'ioredis';",
+    "import { x } from 'bullmq';",
+    "import { x } from '../../../core/testing/game-test-kit';",
+    "import { testGame } from '../../../engine/testing/public-api';",
+    "import { compileJsonGame } from '../../../engine/json/public-api';",
+    'process.cwd();',
+    '__dirname;',
+    'fetch(url);',
+  ]) {
+    const violations = fixture(({ gamesRoot }) =>
+      fs.writeFileSync(path.join(gamesRoot, 'content.ts'), source),
+    );
+    assert.ok(
+      violations.some((v) => v.rule === 'game-sdk-boundary'),
+      source,
+    );
+  }
+});
+
+test('rejects local cycles including type-only imports', () => {
+  const violations = fixture(({ gamesRoot }) => {
+    fs.writeFileSync(
+      path.join(gamesRoot, 'content.ts'),
+      "import type { A } from './types'; export type B = A;",
+    );
+    fs.writeFileSync(
+      path.join(gamesRoot, 'types.ts'),
+      "import type { B } from './content'; export type A = B;",
+    );
+  });
+  assert.ok(violations.some((v) => v.rule === 'acyclic-game-files'));
+});
+
+test('permits testing facade only in specs', () => {
+  assert.deepEqual(
+    fixture(({ gamesRoot }) => {
+      fs.writeFileSync(
+        path.join(gamesRoot, 'game.spec.ts'),
+        "import { testGame } from '../../../engine/testing/public-api'; import { compileJsonGame } from '../../../engine/json/public-api'; testGame(game);",
+      );
+    }),
+    [],
+  );
 });
 
 test('rejects framework layers, nondeterminism and unsafe types', () => {
@@ -214,7 +339,7 @@ test('rejects an incomplete official runtime contract', () => {
   const violations = fixture(({ root }) => {
     const contract = path.join(
       root,
-      'src/game/core/application/contracts/game-runtime.interface.ts',
+      'src/game/core/application/ports/game-runtime.port.ts',
     );
     fs.writeFileSync(
       contract,
@@ -236,4 +361,79 @@ test('locks the complete public SDK surface, including type exports', () => {
     })[0].rule,
     'sdk-public-surface',
   );
+});
+
+test('rejects game-specific throw representations', () => {
+  const { inspectGameImports } = require('./game-import-boundaries.cjs');
+  const file = path.resolve('fixture/game/rules.ts');
+  const result = inspectGameImports(
+    file,
+    'throw new Error("custom representation");',
+    path.dirname(file),
+  );
+  assert.equal(
+    result.violations.some((message) => message.includes('rejectRule')),
+    true,
+  );
+  assert.deepEqual(
+    inspectGameImports(file, 'rejectRule("unavailable");', path.dirname(file))
+      .violations,
+    [],
+  );
+});
+
+test('enforces dependency direction through type imports, barrels and helpers', () => {
+  for (const files of [
+    { 'types.ts': "import type { Card } from './content';" },
+    { 'constants.ts': "export * from './rules';" },
+    { 'content.ts': "import './bridge';", 'bridge.ts': "export * from './rules';" },
+    { 'content-schema.ts': "type Rule = import('./rules').Rule;" },
+    { 'rules.ts': "import './game';" },
+    { 'content.ts': "const rules = require('./bridge');", 'bridge.ts': "import './actions';", 'actions.ts': 'export {};' },
+  ]) {
+    const violations = fixture(({ gamesRoot }) => {
+      for (const [name, body] of Object.entries(files)) fs.writeFileSync(path.join(gamesRoot, name), body);
+    });
+    assert(violations.some(value => value.rule === 'game-dependency-direction'), JSON.stringify(files));
+  }
+});
+
+test('accepts types then constants then content then rules then composition', () => {
+  const violations = fixture(({ gamesRoot }) => {
+    fs.writeFileSync(path.join(gamesRoot, 'types.ts'), 'export type Card = { id: string };');
+    fs.writeFileSync(path.join(gamesRoot, 'constants.ts'), "import type { Card } from './types'; export const card: Card = { id: 'one' };");
+    fs.appendFileSync(path.join(gamesRoot, 'content.ts'), "\nimport { card } from './constants'; void card;");
+    fs.appendFileSync(path.join(gamesRoot, 'rules.ts'), "\nimport './content';");
+    fs.appendFileSync(path.join(gamesRoot, 'game.ts'), "\nimport './rules';");
+  });
+  assert.deepEqual(violations, []);
+});
+
+test('keeps exported data contracts outside rules', () => {
+  for (const source of [
+    'export type Move = { roll: number };',
+    'export interface Move { roll: number }',
+    "export type { Move } from './types';",
+    "export { type Move } from './types';",
+    'type Move = { roll: number }; export { Move as PendingMove };',
+    "import type { Move } from './types'; export { Move };",
+  ]) {
+    const violations = fixture(({ gamesRoot }) => {
+      fs.appendFileSync(path.join(gamesRoot, 'rules.ts'), '\n' + source);
+    });
+    assert(violations.some(value => value.rule === 'game-rule-contracts'), source);
+  }
+  const { inspectRuleContracts } = require('./game-composition-boundary.cjs');
+  assert.deepEqual(inspectRuleContracts('rules.ts', "import type { Move } from './types'; type Context = GameContext; export const move = defineAction({});"), []);
+});
+
+test('keeps executable decisions out of game composition', () => {
+  const { inspectGameComposition } = require('./game-composition-boundary.cjs');
+  for (const source of [
+    'const setup = ({ ctx }) => { ctx.round.start(1); return {}; };',
+    'const choose = ({ actor }) => actor.id === 1 ? first : second;',
+    'const execute = ({ ctx: game }) => game.turn.complete();',
+    "import { defineAction as action } from '../../../engine/sdk/public-api'; const rule = action({});",
+  ]) assert(inspectGameComposition('game.ts', source).length > 0, source);
+  assert.deepEqual(inspectGameComposition('game.ts', "import { drawAtTurnStart } from './rules'; const options = { draw: ({ ctx }) => drawAtTurnStart(ctx) }; const metadata = cards.map(card => card.id); const bot = { choose: () => ({ type: 'roll' }) };"), []);
 });

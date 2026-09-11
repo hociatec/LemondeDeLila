@@ -1,4 +1,10 @@
-import { freezeGameContent } from '../../../engine/sdk/public-api';
+import {
+  cardContent,
+  defineGameContent,
+  gameInput,
+  rejectContent,
+} from '../../../engine/sdk/public-api';
+import manifest from './manifest.json';
 import type { CandyCounts, ParadeCandyType } from './types';
 
 export interface ParadeCard {
@@ -8,7 +14,7 @@ export interface ParadeCard {
   special: boolean;
 }
 
-export const PARADE_SEQUENCE = [
+const defaultSequence = [
   '2',
   '3',
   '4',
@@ -24,7 +30,7 @@ export const PARADE_SEQUENCE = [
   'A',
 ] as const;
 
-export const PARADE_CARDS: readonly ParadeCard[] = [
+const defaultCards: readonly ParadeCard[] = [
   {
     id: 'parade-2',
     name: 'Jacques – Le Tambourinaire',
@@ -80,41 +86,68 @@ export const PARADE_CARDS: readonly ParadeCard[] = [
   },
 ];
 
+const paradeSchema = gameInput.object({
+  sequence: gameInput.array(gameInput.string({ min: 1, max: 128 }), {
+    min: 1,
+    max: 1000,
+  }),
+  cards: gameInput.array(
+    gameInput.object({
+      id: gameInput.string({ min: 1, max: 128 }),
+      name: gameInput.string({ min: 1, max: 200 }),
+      value: gameInput.string({ min: 1, max: 128 }),
+      special: gameInput.boolean(),
+    }),
+    { min: 1, max: 1000 },
+  ),
+});
+export const PARADE_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  { cards: defaultCards, sequence: defaultSequence },
+  {
+    schema: {
+      parse(value: unknown) {
+        const parsed = paradeSchema.parse(value);
+        const values = new Set(parsed.cards.map((card) => card.value));
+        if (
+          values.size !== parsed.cards.length ||
+          new Set(parsed.sequence).size !== parsed.sequence.length ||
+          values.size !== parsed.sequence.length ||
+          parsed.sequence.some((value) => !values.has(value))
+        )
+          rejectContent(
+            'La séquence doit référencer chaque valeur de carte exactement une fois',
+          );
+        return { cards: cardContent(parsed.cards), sequence: parsed.sequence };
+      },
+    },
+  },
+);
+export const PARADE_CARDS = PARADE_GAME_CONTENT.data.cards;
+export const PARADE_SEQUENCE = PARADE_GAME_CONTENT.data.sequence;
 export const PARADE_CARD_BY_ID: Readonly<Record<string, ParadeCard>> =
-  Object.fromEntries(PARADE_CARDS.map((card) => [card.id, card]));
+  Object.freeze(
+    Object.fromEntries(PARADE_CARDS.map((card) => [card.id, card])),
+  );
 
 export const SPECIAL_REWARDS: Readonly<
   Record<string, Partial<Record<ParadeCandyType, number>>>
-> = {
-  '7': { Chocobon: 1 },
-  '10': { Chamallow: 1 },
-  V: { Chamallow: 2 },
-  D: { Chamallow: 3 },
-  R: { Chamallow: 4 },
-};
+> = Object.freeze({
+  '7': Object.freeze({ Chocobon: 1 }),
+  '10': Object.freeze({ Chamallow: 1 }),
+  V: Object.freeze({ Chamallow: 2 }),
+  D: Object.freeze({ Chamallow: 3 }),
+  R: Object.freeze({ Chamallow: 4 }),
+});
 
-export const CANDY_VALUES: CandyCounts = {
+export const CANDY_VALUES: Readonly<CandyCounts> = Object.freeze({
   Chamallow: 1,
   Chocobon: 5,
   Balisto: 10,
-};
+});
 
-export const CANDY_TYPES: readonly ParadeCandyType[] = [
+export const CANDY_TYPES: readonly ParadeCandyType[] = Object.freeze([
   'Chamallow',
   'Chocobon',
   'Balisto',
-];
-
-export const INITIAL_CANDIES: CandyCounts = {
-  Chamallow: 1,
-  Chocobon: 1,
-  Balisto: 1,
-};
-
-freezeGameContent(PARADE_SEQUENCE);
-freezeGameContent(PARADE_CARDS);
-freezeGameContent(PARADE_CARD_BY_ID);
-freezeGameContent(SPECIAL_REWARDS);
-freezeGameContent(CANDY_VALUES);
-freezeGameContent(CANDY_TYPES);
-freezeGameContent(INITIAL_CANDIES);
+]);

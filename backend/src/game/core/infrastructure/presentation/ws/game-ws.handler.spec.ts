@@ -1,9 +1,9 @@
-import type { GameRuntime } from '../../../application/contracts/game-runtime.interface';
-import type { GameStateEntity } from '../../../application/contracts/game-state.model';
+import type { GameRuntime } from '../../../application/ports/game-runtime.port';
+import type { GameState } from '../../../application/models/game-state.model';
 import { GameWsHandler } from './game-ws.handler';
 
 describe('GameWsHandler internal state refresh version', () => {
-  const state = (version: number): GameStateEntity => ({
+  const state = (version: number): GameState => ({
     status: 'setup',
     phase: 'setup',
     version,
@@ -20,9 +20,7 @@ describe('GameWsHandler internal state refresh version', () => {
       gameType: 'lama',
       state: state(2),
       handler: {} as GameRuntime,
-      ...(commandRebaseFromVersion == null
-        ? {}
-        : { commandRebaseFromVersion }),
+      ...(commandRebaseFromVersion == null ? {} : { commandRebaseFromVersion }),
     };
     const actions = [
       {

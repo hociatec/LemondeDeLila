@@ -1,0 +1,1441 @@
+{
+  "tiles": [
+    {
+      "id": 1,
+      "title": "Départ – Dublin, le cœur vibrant (Neutre)",
+      "type": "neutral",
+      "description": "Vous commencez votre voyage dans les rues animées de Dublin. Le parfum du café fraîchement moulu et des pâtisseries flotte dans l’air tandis que les sons des musiciens de rue se mêlent aux pas des passants.",
+      "label": "Neutre"
+    },
+    {
+      "id": 2,
+      "title": "Trésor Culturel – Trinity College",
+      "type": "treasure",
+      "description": "Les murs centenaires du Trinity College résonnent des pas des étudiants et des visiteurs émerveillés par le Livre de Kells. Chaque enluminure raconte l’histoire de l’Irlande.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 3,
+      "title": "Tradition – Fête de Samhain à Kells",
+      "type": "legend",
+      "description": "Les habitants décorent les maisons de citrouilles et allument des feux sacrés. Vous sentez la magie ancienne de cette célébration automnale.",
+      "label": "Légende"
+    },
+    {
+      "id": 4,
+      "title": "Paysage – Falaises de Moher",
+      "type": "landscape",
+      "description": "Le vent fouette vos joues alors que les falaises s’élancent vers l’océan. Les vagues rugissent en contrebas et le vert des prairies tranche avec le bleu profond de la mer.",
+      "label": "Paysage"
+    },
+    {
+      "id": 5,
+      "title": "Farce – Marais de Bog of Allen",
+      "type": "farce",
+      "description": "Vous traversez le mystérieux Bog of Allen, vaste marais au cœur de l’Irlande. Le sol spongieux grince sous vos pas et de petits trous d’eau laissent échapper des vapeurs mystérieuses. Les grenouilles coassent, les oiseaux vous observent, et parfois, un esprit farceur semble déplacer les troncs ou créer des illusions étranges. Méfiez‑vous : dans ces marais, tout peut se jouer d’un voyageur inattentif !",
+      "label": "Farce"
+    },
+    {
+      "id": 6,
+      "title": "Neutre – Pont Ha’Penny, Dublin",
+      "type": "neutral",
+      "description": "Le célèbre pont de fer enjambe la Liffey. Chaque pas sur le bois ancien vous rapproche des histoires des amoureux et voyageurs d’antan.",
+      "label": "Neutre"
+    },
+    {
+      "id": 7,
+      "title": "Légende – Slieve Bloom",
+      "type": "legend",
+      "description": "Les collines de Slieve Bloom s’élèvent doucement, couvertes de bruyères et de forêts anciennes. On raconte que des esprits du vent et du feu veillent sur ces terres, vestiges d’anciens volcans endormis. Le brouillard et les chants des oiseaux créent une atmosphère mystérieuse, comme si chaque pierre murmurait les secrets des anciens druides.",
+      "label": "Légende"
+    },
+    {
+      "id": 8,
+      "title": "Trésor Culturel – Bibliothèque de Marsh, Dublin",
+      "type": "treasure",
+      "description": "Vous découvrez la célèbre bibliothèque aux étagères infinies et aux voûtes majestueuses. Les manuscrits anciens et les rouleaux médiévaux racontent l’histoire intellectuelle de l’Irlande, et chaque pas parmi les rayonnages semble vous plonger dans un voyage à travers le temps.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 9,
+      "title": "Neutre – Bain thermal de Lisdoonvarna",
+      "type": "neutral",
+      "description": "L’eau chaude et minérale s’élève en vapeur dans l’air frais. Le murmure des sources invite à la détente et à l’observation des collines environnantes.",
+      "label": "Neutre"
+    },
+    {
+      "id": 10,
+      "title": "Tradition – Pêche traditionnelle sur le Shannon",
+      "type": "legend",
+      "description": "Les pêcheurs tirent leurs filets à l’aube. Les gestes anciens et le chant des oiseaux donnent un air de sérénité à l’aube irlandaise.",
+      "label": "Légende"
+    },
+    {
+      "id": 11,
+      "title": "Farce – Village de Doolin",
+      "type": "farce",
+      "description": "Les ruelles étroites résonnent des sons d’accordéons et de rires. Méfiez-vous : un farceur pourrait vous faire trébucher… de rire !",
+      "label": "Farce"
+    },
+    {
+      "id": 12,
+      "title": "Neutre – Escalier de Clonmacnoise",
+      "type": "neutral",
+      "description": "Les pierres usées guident dans le monastère ancien. Chaque marche semble murmurer des prières et des chants oubliés.",
+      "label": "Neutre"
+    },
+    {
+      "id": 13,
+      "title": "Légende – Forêt de Killarney",
+      "type": "legend",
+      "description": "Les bois abritent faunes et créatures mythiques. On raconte que les druides y laissaient des messages secrets aux voyageurs.",
+      "label": "Légende"
+    },
+    {
+      "id": 14,
+      "title": "Paysage – Connemara, l’étendue sauvage",
+      "type": "landscape",
+      "description": "Les tourbières s’étendent à perte de vue, ponctuées de lochs scintillants. Le vent transporte les parfums de bruyère et d’air pur.",
+      "label": "Paysage"
+    },
+    {
+      "id": 15,
+      "title": "Tradition – Danse et musique traditionnelle à Kilkenny",
+      "type": "legend",
+      "description": "Au son des violons et bodhrans, habitants et visiteurs se joignent à une danse folklorique. L’énergie du groupe emplit les ruelles médiévales.",
+      "label": "Légende"
+    },
+    {
+      "id": 16,
+      "title": "Neutre – Rue pavée de Galway",
+      "type": "neutral",
+      "description": "Les façades colorées et les boutiques artisanales créent une atmosphère vivante et chaleureuse. L’odeur des biscuits et du pain chatouille vos narines.",
+      "label": "Neutre"
+    },
+    {
+      "id": 17,
+      "title": "Farce – Pont de Carrick-a-Rede",
+      "type": "farce",
+      "description": "La passerelle suspendue danse sous le vent. Chaque pas semble une aventure… et peut-être un défi espiègle lancé par la nature elle-même.",
+      "label": "Farce"
+    },
+    {
+      "id": 18,
+      "title": "Trésor Culturel – Château de Powerscourt",
+      "type": "treasure",
+      "description": "Les jardins spectaculaires s’étendent à perte de vue, ponctués de fontaines, statues et allées fleuries. Le château lui-même, avec ses salles richement décorées et ses portraits anciens, raconte l’histoire des nobles irlandais et de leurs traditions artistiques.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 19,
+      "title": "Légende – Lough Neagh",
+      "type": "legend",
+      "description": "Les eaux calmes du plus grand lac d’Irlande cachent les secrets des créatures mystiques et des histoires de pêche miraculeuse. Les brumes révèlent parfois les silhouettes des anciens héros.",
+      "label": "Légende"
+    },
+    {
+      "id": 20,
+      "title": "Tradition – Festival des Feux de Beltane",
+      "type": "legend",
+      "description": "Les feux illuminent la nuit tandis que les habitants célèbrent la fertilité et le renouveau. Vous sentez l’énergie vibrante de la saison et des anciens rites.  21. Neutre – Quai de Dingle Les bateaux colorés se balancent doucement sur l’eau. L’air salin emporte les chants des pêcheurs et le parfum iodé des embruns.",
+      "label": "Légende"
+    },
+    {
+      "id": 22,
+      "title": "Farce – Village de Adare",
+      "type": "farce",
+      "description": "Les chaumières aux toits de chaume semblent paisibles… mais derrière chaque fenêtre, un petit esprit espiègle pourrait vous surprendre.",
+      "label": "Farce"
+    },
+    {
+      "id": 23,
+      "title": "Tradition – Cérémonie du mariage à Bunratty",
+      "type": "legend",
+      "description": "Les habitants en costumes anciens célèbrent l’union sous des arches fleuries. Les musiques et chants traditionnels emplissent la cour du château.",
+      "label": "Légende"
+    },
+    {
+      "id": 24,
+      "title": "Trésor Culturel – Rockingham House",
+      "type": "treasure",
+      "description": "Cette demeure ancienne vous transporte dans les salons feutrés et les jardins impeccables des grandes familles irlandaises.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 25,
+      "title": "Paysage – Glens of Antrim",
+      "type": "landscape",
+      "description": "Les vallées profondes et verdoyantes serpentent entre des collines escarpées, parsemées de rivières scintillantes et de cascades cachées. Le chant des oiseaux et le bruissement des feuilles créent un spectacle naturel empreint de calme et de mystère.",
+      "label": "Paysage"
+    },
+    {
+      "id": 26,
+      "title": "Neutre – Village de Adrigole",
+      "type": "neutral",
+      "description": "Les ruelles tranquilles et les maisons aux façades colorées s’étendent le long de la vallée d’Adrigole. Le murmure du ruisseau et le chant des oiseaux créent une ambiance paisible. Chaque pas vous invite à découvrir la vie quotidienne des habitants et la beauté intacte de ce coin reculé du comté de Cork.",
+      "label": "Neutre"
+    },
+    {
+      "id": 27,
+      "title": "Légende – Chemin des Fées de Turlough",
+      "type": "legend",
+      "description": "Les landes sont ponctuées de pierres mystérieuses et de trous d’eau où, dit-on, les fées dansent au clair de lune.",
+      "label": "Légende"
+    },
+    {
+      "id": 28,
+      "title": "Farce – Glencar Waterfall",
+      "type": "farce",
+      "description": "L’eau chute avec fracas sur les rochers, et un esprit malicieux pourrait éclabousser les visiteurs ou cacher un petit objet inattendu.",
+      "label": "Farce"
+    },
+    {
+      "id": 29,
+      "title": "Trésor Culturel – Monastère de Clonmacnoise",
+      "type": "treasure",
+      "description": "Les ruines anciennes s’élèvent le long du Shannon. Les croix celtiques et les manuscrits évoquent le savoir, la foi et les légendes monastiques.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 30,
+      "title": "Tradition – Fête de la Saint-Patrick à Dublin",
+      "type": "legend",
+      "description": "Les rues s’illuminent de vert, les musiciens de rue jouent des airs entraînants, et les habitants dansent au rythme des tambours et violons.",
+      "label": "Légende"
+    },
+    {
+      "id": 31,
+      "title": "Neutre – Village de Portmagee",
+      "type": "neutral",
+      "description": "Vous arrivez dans le petit village côtier de Portmagee, avec ses maisons colorées et son port pittoresque. Les bateaux de pêche se balancent doucement sur l’eau et les mouettes crient au-dessus des quais. Le parfum salin de l’océan et le bruissement des vagues créent une atmosphère paisible et authentique.",
+      "label": "Neutre"
+    },
+    {
+      "id": 32,
+      "title": "Paysage – Plage de Dog's Bay",
+      "type": "landscape",
+      "description": "La courbe parfaite de sable blanc se mêle aux eaux turquoise de l’Atlantique. Le vent léger apporte une odeur saline, tandis que les vagues dessinent des motifs éphémères sur la plage immaculée. Un lieu paisible où la lumière semble danser sur chaque grain de sable.",
+      "label": "Paysage"
+    },
+    {
+      "id": 33,
+      "title": "Légende – Roche de Cashel",
+      "type": "legend",
+      "description": "Le rocher s’élève majestueux, témoin des rois et saints irlandais. Certaines pierres semblent encore murmurer des histoires anciennes.",
+      "label": "Légende"
+    },
+    {
+      "id": 34,
+      "title": "Farce – Le Violon qui Joue Tout Seul à Minuit",
+      "type": "farce",
+      "description": "Dans certaines vieilles auberges, on dit qu’un violon abandonné se met à jouer un air de jig quand son propriétaire oublie de le ranger. Les habitants assurent qu’il ne joue pas pour faire peur, juste pour rappeler qu’un instrument irlandais, ça ne reste pas muet longtemps.",
+      "label": "Farce"
+    },
+    {
+      "id": 35,
+      "title": "Tradition – Danse des Mayflowers à Cork",
+      "type": "legend",
+      "description": "Les habitants exécutent des danses anciennes autour de maypoles fleuris, perpétuant des coutumes joyeuses et colorées.",
+      "label": "Légende"
+    },
+    {
+      "id": 36,
+      "title": "Neutre – Jardin botanique de Dublin",
+      "type": "neutral",
+      "description": "Les allées se perdent parmi fleurs colorées et arbres majestueux. L’air est doux et parfumé, invitant à la détente et à l’observation des plantes rares.",
+      "label": "Neutre"
+    },
+    {
+      "id": 37,
+      "title": "Trésor Culturel – Château de Cahir",
+      "type": "treasure",
+      "description": "Les murailles imposantes et les douves profondes racontent l’histoire des chevaliers et des batailles médiévales.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 38,
+      "title": "Légende – Lough Corrib",
+      "type": "legend",
+      "description": "On raconte que des créatures mystérieuses peuplent le lac et protègent les trésors engloutis. Le brouillard semble murmurer de vieilles légendes.",
+      "label": "Légende"
+    },
+    {
+      "id": 39,
+      "title": "Paysage – Île d’Aran",
+      "type": "landscape",
+      "description": "Falaises abruptes et prairies ventées donnent à l’île un charme sauvage. Les moutons paissent librement et la mer clapote contre les rochers noirs. 40 — Paysage : Les Burren, le désert de pierre Dans ce paysage lunaire du comté de Clare, d’immenses dalles de calcaire s’étendent à perte de vue, fendillées comme une peau antique. Entre les failles, des fleurs minuscules jaillissent, défiant la rudesse du vent. On dit que marcher ici, c’est voyager dans un autre âge de la Terre.  41. Neutre – Promenade dans les rues de Galway Les pavés luisent sous vos pas, et les façades colorées des maisons semblent sourire aux passants. L’air est empli d’une légère brise marine et des rires s’échappent des cafés animés.",
+      "label": "Paysage"
+    },
+    {
+      "id": 42,
+      "title": "Farce – Île de Skellig Michael",
+      "type": "farce",
+      "description": "Les oiseaux et le vent jouent avec votre équilibre sur les marches abruptes. Une apparition de puffin ou un cri inattendu pourrait vous faire rire ou sursauter.",
+      "label": "Farce"
+    },
+    {
+      "id": 43,
+      "title": "Tradition – Festival des Lumières de Derry",
+      "type": "legend",
+      "description": "Les lanternes flottent au-dessus des rues, illuminant la nuit d’une douce clarté. Les habitants partagent musiques, danses et histoires locales.",
+      "label": "Légende"
+    },
+    {
+      "id": 44,
+      "title": "Trésor Culturel – Musée National d’Irlande, Dublin",
+      "type": "treasure",
+      "description": "Dans les salles feutrées, vous découvrez des artefacts celtiques fascinants : torques d’or, armes finement ciselées, broderies anciennes. Chaque vitrine éclaire un pan de l’histoire irlandaise, des mythes fondateurs aux grandes époques monastiques. Le silence du musée vous enveloppe tandis que vous voyagez à travers les siècles. 45 – Paysage – Parc forestier de Killarney Les lacs tranquilles reflètent les collines verdoyantes et les forêts anciennes. Le parfum des pins et le chant des oiseaux créent une atmosphère de calme absolu.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 46,
+      "title": "Légende – Giant’s Causeway",
+      "type": "legend",
+      "description": "Les colonnes de basalte s’alignent comme une passerelle géante vers l’océan. La légende raconte qu’elles ont été construites par un géant pour traverser la mer et défier son rival.",
+      "label": "Légende"
+    },
+    {
+      "id": 47,
+      "title": "Neutre – Marché de Dublin",
+      "type": "neutral",
+      "description": "Les étals regorgent de fruits, de légumes, de fromages et de spécialités locales. Les voix des marchands et le parfum des herbes créent une atmosphère animée et chaleureuse.",
+      "label": "Neutre"
+    },
+    {
+      "id": 48,
+      "title": "Farce – Parc national de Killarney",
+      "type": "farce",
+      "description": "Le vent dans les arbres et les cascades cachées peuvent créer des illusions sonores. Une feuille tombante ou un écureuil curieux pourrait vous surprendre.",
+      "label": "Farce"
+    },
+    {
+      "id": 49,
+      "title": "Tradition – Bal de la Saint-Jean à Cork",
+      "type": "legend",
+      "description": "Les villageois dansent autour du feu, chantant des airs anciens. Les étincelles illuminent la nuit et célèbrent l’arrivée de l’été.",
+      "label": "Légende"
+    },
+    {
+      "id": 50,
+      "title": "Trésor Culturel – Château de Kilkenny",
+      "type": "treasure",
+      "description": "Les pierres anciennes racontent les exploits des seigneurs et des chevaliers. À l’intérieur, tapisseries, salles d’armes et couloirs secrets révèlent des trésors historiques.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 51,
+      "title": "Paysage – Lough Mask",
+      "type": "landscape",
+      "description": "Le lac s’étend comme un miroir sombre, reflétant les nuages et les collines environnantes. Les brumes matinales donnent à l’endroit une atmosphère mystérieuse et paisible.",
+      "label": "Paysage"
+    },
+    {
+      "id": 52,
+      "title": "Légende – Knock Shrine",
+      "type": "legend",
+      "description": "Les pèlerins marchent lentement vers l’apparition sacrée. Des récits miraculeux entourent ce lieu de dévotion, où le sacré et le quotidien se croisent.",
+      "label": "Légende"
+    },
+    {
+      "id": 53,
+      "title": "Neutre – Rue animée de Belfast",
+      "type": "neutral",
+      "description": "Les façades modernes côtoient les murs historiques, et les artistes de rue partagent leurs œuvres et musiques. L’énergie de la ville vous enveloppe doucement.",
+      "label": "Neutre"
+    },
+    {
+      "id": 54,
+      "title": "Farce – Le Mouton Jugeur de Connemara",
+      "type": "farce",
+      "description": "On raconte qu’un mouton solitaire, perché sur un muret de pierres sèches, observe les voyageurs avec l’air le plus sévère d’Irlande. Si vous passez trop vite, il secoue la tête ; si vous passez trop lentement, il vous juge encore plus fort. Certains disent qu’il comprend tout. Les autres préfèrent ne pas vérifier.",
+      "label": "Farce"
+    },
+    {
+      "id": 55,
+      "title": "Tradition – Pique-nique folklorique à Lough Neagh",
+      "type": "legend",
+      "description": "Les habitants se rassemblent au bord du lac, partageant musiques, contes et mets traditionnels, dans un cadre naturel enchanteur.",
+      "label": "Légende"
+    },
+    {
+      "id": 56,
+      "title": "Trésor Culturel – Newgrange",
+      "type": "treasure",
+      "description": "Le tumulus préhistorique renferme un mystère vieux de 5 000 ans. À l’intérieur, la lumière du solstice révèle un savoir astronomique fascinant.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 57,
+      "title": "Paysage – Lough Ree",
+      "type": "landscape",
+      "description": "Les eaux calmes du Lough Ree s’étendent sous un ciel changeant, bordées de forêts anciennes et de prairies verdoyantes. Le reflet des nuages et le chant des oiseaux créent une atmosphère sereine et presque mystique, propice à la contemplation et à la rêverie.",
+      "label": "Paysage"
+    },
+    {
+      "id": 58,
+      "title": "Légende – Château de Dunluce",
+      "type": "legend",
+      "description": "Perché au bord d’une falaise, le château semble flotter dans la brume. Les légendes y murmurent batailles, romances et disparitions mystérieuses. 59 – Neutre – Rue médiévale de Trim Les pavés usés et les maisons anciennes racontent l’histoire du passé. Les odeurs de pain frais et de fleurs en pot ajoutent un charme discret et authentique.",
+      "label": "Légende"
+    },
+    {
+      "id": 60,
+      "title": "Farce – Chaussée des Géants",
+      "type": "farce",
+      "description": "Les colonnes de basalte forment un chemin improbable. On raconte que les géants y ont laissé plus d’un piège… ou quelques farces minérales. 61 – Neutre – Quai de Howth Les bateaux de pêche oscillent doucement sur l’eau, les mouettes tournoient et le vent salin chatouille le visage. L’endroit respire la tranquillité maritime et le quotidien des pêcheurs.",
+      "label": "Farce"
+    },
+    {
+      "id": 62,
+      "title": "Farce – Grotte de Marble Arch",
+      "type": "farce",
+      "description": "L’obscurité et l’écho des gouttes d’eau peuvent vous jouer des tours. Un bruit soudain ou un reflet inattendu pourrait vous surprendre.",
+      "label": "Farce"
+    },
+    {
+      "id": 63,
+      "title": "Tradition – Fête de la Harpe à Belfast",
+      "type": "legend",
+      "description": "Des musiciens talentueux font vibrer les cordes, tandis que les habitants chantent des airs anciens. La culture irlandaise s’exprime avec énergie et passion.",
+      "label": "Légende"
+    },
+    {
+      "id": 64,
+      "title": "Trésor Culturel – Château de Blarney",
+      "type": "treasure",
+      "description": "Vous approchez du célèbre château. Baiser la pierre vous promet l’éloquence, tandis que chaque mur raconte l’histoire de batailles et d’héritages anciens. 65 – Paysage – Iles Skellig Les îles rocheuses se dressent au large, battues par les vagues de l’Atlantique. Les ruines monastiques et la nature sauvage offrent un spectacle dramatique et fascinant.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 66,
+      "title": "Légende – Colline de Tara",
+      "type": "legend",
+      "description": "Ancien siège mythique des rois d’Irlande. Les tertres sacrés vibrent encore des échos druidiques, comme si le passé chuchotait sous vos pas.",
+      "label": "Légende"
+    },
+    {
+      "id": 67,
+      "title": "Neutre – Quai de Kinsale",
+      "type": "neutral",
+      "description": "Les barques colorées oscillent doucement dans le port. L’air marin apporte une odeur d’embruns et de poisson grillé, tandis que les façades pastel se reflètent sur l’eau calme.",
+      "label": "Neutre"
+    },
+    {
+      "id": 68,
+      "title": "Farce – Farces du Banshee",
+      "type": "farce",
+      "description": "Alors que vous traversez un sentier brumeux, un petit cri perçant retentit derrière un rocher… mais ce n’est que le Banshee qui joue des tours aux voyageurs inattentifs ! Une branche qui tombe, un souffle de vent soudain, ou un reflet étrange dans l’eau vous fait sursauter… mais tout ceci n’est que malice et mystère.",
+      "label": "Farce"
+    },
+    {
+      "id": 69,
+      "title": "Tradition – Marché d’été à Cork",
+      "type": "legend",
+      "description": "Les stands regorgent de produits locaux et artisanaux. La musique et les rires des enfants emplissent l’air, célébrant la vie et les traditions locales.",
+      "label": "Légende"
+    },
+    {
+      "id": 70,
+      "title": "Trésor Culturel – Château de Lismore",
+      "type": "treasure",
+      "description": "Perché au cœur du comté de Waterford, le château de Lismore dévoile ses vastes jardins, ses salles richement décorées et ses trésors artistiques. Chaque pierre raconte les histoires des seigneurs et des grands événements qui ont façonné l’histoire irlandaise.",
+      "label": "Trésor Culturel"
+    },
+    {
+      "id": 71,
+      "title": "Paysage – Montagnes du Wicklow",
+      "type": "landscape",
+      "description": "Les collines verdoyantes ondulent sous le vent. Les sentiers serpentent entre les tourbières et les forêts, offrant une vue spectaculaire sur la campagne irlandaise.",
+      "label": "Paysage"
+    },
+    {
+      "id": 72,
+      "title": "Légende – Le Cheval d’Ombre de Knockmany",
+      "type": "legend",
+      "description": "Dans les collines de Knockmany, on raconte qu’un cheval noir, né de l’ombre et du vent, apparaît parfois au crépuscule. Ceux qui croisent son regard jurent entendre un souffle venu d’un autre monde, comme un appel vers les anciens dieux.",
+      "label": "Légende"
+    },
+    {
+      "id": 73,
+      "title": "Neutre – Sentier de Glendalough",
+      "type": "neutral",
+      "description": "Vous marchez le long des lacs paisibles et des ruines monastiques de Glendalough. Les pierres anciennes et les arbres centenaires créent une atmosphère de sérénité. Le murmure de l’eau et le chant des oiseaux vous accompagnent, tandis que chaque pas raconte l’histoire tranquille de ce lieu sacré.",
+      "label": "Neutre"
+    },
+    {
+      "id": 74,
+      "title": "Farce – L’Île d’Inishbofin",
+      "type": "farce",
+      "description": "Les falaises escarpées et les sentiers étroits de cette île au large du Connemara cachent parfois des moutons espiègles et des oiseaux malicieux. Un vent soudain ou un cri perçant peut vous surprendre, et les habitants racontent que certains visiteurs repartent avec un souvenir… tout à fait inattendu !",
+      "label": "Farce"
+    },
+    {
+      "id": 75,
+      "title": "Tradition – Festival de la Saint-Patrick",
+      "type": "legend",
+      "description": "Les habitants vêtus de vert défilent dans les rues, tambours et cornemuses résonnent. La fierté et la culture irlandaise éclatent en musique et en couleurs. 76 – Trésor Culturel – Abbaye de Kylemore L’abbaye victorienne se dresse au bord du lac Pollacapall, entourée de jardins victoriens et de paysages enchanteurs. Chaque salle raconte l’histoire des moines bénédictins et des artistes qui ont contribué à sa splendeur. 77 – Paysage – Mourne Mountains Les sommets granitiques s’élèvent dans la brume, les vallées cachent des ruisseaux scintillants. La lumière changeante donne à chaque regard un paysage nouveau et mystérieux.",
+      "label": "Légende"
+    },
+    {
+      "id": 78,
+      "title": "Légende – La Dame Blanche de Lough Gur",
+      "type": "legend",
+      "description": "Au bord du lac Lough Gur, certains disent apercevoir une silhouette éthérée vêtue de blanc. On raconte qu’elle apparaît lors des nuits de brume pour guider les voyageurs perdus ou annoncer un événement mystérieux. Le vent porte parfois ses soupirs anciens, et chaque reflet sur l’eau semble murmurer une histoire oubliée.",
+      "label": "Légende"
+    },
+    {
+      "id": 79,
+      "title": "Neutre – Montagnes de Slieve Gullion",
+      "type": "neutral",
+      "description": "Vous marchez dans les contreforts de Slieve Gullion, un ancien volcan endormi. Les pentes verdoyantes et les cratères formés il y a des millénaires créent un paysage à la fois majestueux et mystérieux. Le souffle du vent et les légers murmures des ruisseaux accompagnent vos pas, tandis que l’histoire géologique et mythique de la montagne semble vibrer sous vos pieds.",
+      "label": "Neutre"
+    },
+    {
+      "id": 80,
+      "title": "Farce – Falaises de Slieve League",
+      "type": "farce",
+      "description": "Vous admirez les falaises vertigineuses… mais attention ! Un vent espiègle ou un oiseau curieux pourrait vous surprendre et faire vaciller votre équilibre.",
+      "label": "Farce"
+    }
+  ],
+  "legend": [
+    {
+      "id": 1,
+      "title": "Finn MacCool et le saumon de la sagesse",
+      "description": "Vous découvrez l’histoire du jeune Finn, assis au bord d’une rivière irlandaise, lorsqu’un saumon lumineux bondit hors de l’eau. En le goûtant par accident, Finn voit soudain le monde s’éclairer : chaque pierre, chaque souffle de vent semble murmurer un secret oublié. C’est ainsi qu’il devint le plus sage des héros d’Irlande.",
+      "effect": "Question : Que devient Finn MacCool après avoir goûté le saumon de la sagesse ? A) Finn devient le roi des géants. *B) Finn devient le plus sage des héros d’Irlande. C) Finn transforme tous les poissons en pierres.",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 2,
+      "title": "Les enfants de Lir",
+      "description": "Vous entendez le bruissement d’ailes au-dessus des eaux calmes. Quatre cygnes immaculés glissent dans la brume, et leurs voix portent une mélodie ancienne. Ils vous racontent leur peine : autrefois enfants d’un puissant seigneur, ils furent changés en oiseaux par la jalousie d’une belle-mère cruelle. Depuis, ils errent de lac en lac, attendant que les siècles passent comme des vagues trop longues. Le vent frais semble murmurer leurs noms — et vous comprenez alors que leurs souvenirs hantent encore les rivières d’Irlande.",
+      "effect": "Question : Parmi ces noms, lequel est une véritable rivière ou lac irlandais ? *A) Lough Neagh B) River Flarney C) Lake Dunwyn",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 3,
+      "title": "La Banshee des O’Neill",
+      "description": "La nuit tombe, lourde et silencieuse… jusqu’à ce que retentisse un cri déchirant. Une silhouette pâle flotte entre deux mondes, ses cheveux battant comme des fils d’argent dans le vent. La banshee des O’Neill vous fixe — non pour vous menacer, mais pour annoncer ce qui doit être entendu. Son chant n’est ni colère ni haine, seulement la certitude du destin qui approche. Une onde glacée traverse vos cartes : certaines semblent trembler entre vos doigts comme si elles devinaient la suite.",
+      "effect": "Vous tirez au hasard une carte de votre main. Si c’est une carte Légende ou Paysage, vous la perdez.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.lose-random-card",
+          "data": {
+            "allowed": [
+              "landscape"
+            ]
+          }
+        }
+      ],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 4,
+      "title": "Finn et la Chaussée des Géants",
+      "description": "Vous avancez sur un rivage où les pierres s’alignent comme les marches d’un escalier oublié. Le grondement de la mer se mêle au souvenir d’un défi ancien : Finn MacCool, le géant d’Irlande, bâtit ici un passage de basalte pour rejoindre l’Écosse et affronter son rival. Chaque colonne semble porter encore l’empreinte de ses pas immenses, figés dans la roche comme un poème minéral. Un instant, vous croyez voir son ombre immense se dresser, vous invitant à suivre sa démarche puissante.",
+      "effect": "Choisissez la bonne réponse parmi les trois propositions pour compléter la phrase : “Finn construit la Chaussée des Géants pour défier _______.” *A) un autre géant B) un dragon marin C) un roi humain Si vous répondez correctement, vous avancez de deux cases.",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 5,
+      "title": "Le cycle d’Ulster : Cúchulainn, le héros",
+      "description": "Le vent se lève et vous apporte une odeur de feu et de boue. C’est ici qu’un jeune garçon nommé Setanta affronta le terrible chien de Culann et gagna son nom de guerrier : Cúchulainn, le molosse du forgeron. Ses exploits résonnent encore dans la terre, comme si les batailles n’avaient jamais vraiment cessé. Vous sentez une énergie farouche se glisser autour de vous, une force sauvage et indomptable. Un rugissement semble gronder au loin… ou peut-être vient-il de vous.",
+      "effect": "Choisissez la bonne réponse parmi les trois propositions pour compléter la phrase : “Setanta devient Cúchulainn après avoir tué _______.” *A) un chien monstrueux B) un dragon des collines C) un loup des marais Si vous répondez correctement, vous gardez la carte, sinon elle est défaussée.",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 6,
+      "title": "Tir Na nÓg, le pays éternel",
+      "description": "Un voile de lumière s’ouvre devant vous, comme une porte vers un rêve éveillé. Vous entrez dans Tir Na nÓg, où le temps n’a plus de prise, où les prés brillent d’un éclat irréel et où les chevaux blancs galopent sans laisser d’ombre. Le rire d’Oisín résonne encore, jeune et clair, tandis qu’une brise parfumée vous promet mille merveilles… Mais en un battement de cœur, le portail se referme, et vous retournez au monde réel, un peu étourdi mais émerveillé. Le passage a été bref, mais il vous a laissé une étrange impression de légèreté.",
+      "effect": "Choisissez une carte de votre main. Vous pouvez la rejouer immédiatement ou l’échanger contre une carte aléatoire du paquet Légende.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.schedule-target",
+          "data": {
+            "effect": "swap-card",
+            "count": 1
+          }
+        }
+      ],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 7,
+      "title": "Le roi Nuada et son bras d’argent",
+      "description": "Au cœur d’une ancienne bataille, le roi Nuada est blessé et son bras lui est arraché. Mais la magie de l’Irlande veille : un bras d’argent, étincelant et puissant, lui est offert pour qu’il puisse continuer à régner et protéger son peuple. Vous sentez l’éclat froid de ce métal sur votre peau imaginaire, comme un gage de protection et de force mystérieuse.",
+      "effect": "Choisissez une carte dans votre main : elle est protégée et ne peut être perdue ou affectée par une carte Farce ce tour-ci.",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 8,
+      "title": "Le Dagda et sa harpe magique",
+      "description": "Dans la brume d’un matin irlandais, vous entendez les cordes d’une harpe résonner avec des notes d’une beauté surnaturelle. Le Dagda, maître de cet instrument, joue, et les émotions de tous s’alignent sur sa mélodie. Une douce tristesse devient un rire éclatant, un doute se transforme en courage. Vous êtes touché par le pouvoir invisible de sa musique.",
+      "effect": "Choisissez un joueur : il perd son prochain tour.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.schedule-target",
+          "data": {
+            "effect": "skip-turn",
+            "count": 1
+          }
+        }
+      ],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 9,
+      "title": "Le chaudron d’abondance",
+      "description": "Vous approchez d’un chaudron bouillonnant d’un liquide doré et parfumé. Il semble infini, nourrissant quiconque s’en approche, sans jamais se vider. Chaque goutte dégage une douce chaleur magique, et vous sentez qu’aucune faim ne saurait résister à ce trésor.",
+      "effect": "Vous piochez une carte au hasard.",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 10,
+      "title": "Le duel de Lugh et Balor",
+      "description": "Sous un ciel orageux, le jeune dieu Lugh se tient face à son grand-père Balor, le terrible souverain au regard foudroyant. D’un geste précis et courageux, Lugh lance son arme magique et désarme Balor, prouvant que la ruse et le courage peuvent triompher même des puissances les plus redoutables. Vous sentez l’adrénaline et la tension de ce duel épique parcourir vos veines imaginaires.",
+      "effect": "La prochaine carte négative que vous piochez est annulée.",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 11,
+      "title": "Le roi Arthur en Irlande",
+      "description": "Dans le brouillard des terres irlandaises, certains murmures racontent qu’Arthur, le roi légendaire, combattit aux côtés des héros celtes. Vous imaginez son épée scintillant dans la lumière pâle, sa prestance imposante et son courage inspirant tous ceux qui le regardent. Le souffle des légendes anciennes vous effleure, et vous sentez la grandeur des héros d’outre-mer se mêler à celle des guerriers d’Irlande.",
+      "effect": "Question : Quel est le héros légendaire non-irlandais parmi ces trois propositions  ? *A) Ulysse B) Cúchulainn C) Fionn MacCool",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 12,
+      "title": "La belle Deirdre",
+      "description": "Deirdre fuit un mariage imposé, ses pas résonnant dans les vallées embrumées d’Irlande. Sa beauté et son destin cruel hantent chaque rivière et chaque colline. Vous ressentez la mélancolie de son histoire, mêlée à la force de son courage face à l’inévitable tragédie qui s’approche.",
+      "effect": "Question : Quelle est l’émotion principale qu'inspire Deirdre parmi ces trois propositions : A) Joie B) Colère *C) Tristesse",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 13,
+      "title": "Le Léprechaun et le chaudron caché",
+      "description": "Dans un coin reculé de la forêt, un leprechaun malin protège jalousement son trésor. Un intrépide aventurier tente de s’en emparer, mais le chemin est semé d’énigmes et de malices, et le trésor semble se dérober à chaque pas. Vous ressentez la ruse et l’espièglerie du petit gardien, et l’aventure devient un jeu de hasard et de sagacité.",
+      "effect": "Le leprechaun vous lance un défi ! Parmi ces trois actions, laquelle ne ferait pas partie de ses malices ? A) Mélanger vos cartes et en piocher une au hasard *B) Transformer toutes vos cartes en cartes Trésor pour ce tour C) Vous faire perdre votre prochain tour",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 14,
+      "title": "La chasse sauvage de Sídhe",
+      "description": "Lorsque la nuit tombe, les esprits féeriques sillonnent les collines et les forêts. Si vous vous égarez sur leur chemin, vous êtes emporté par le vent, la lune et le frisson des courses invisibles. L’atmosphère mystérieuse et haletante vous enveloppe, mêlant douce frayeur et émerveillement.",
+      "effect": "Vous échangez votre position avec le dernier joueur.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.swap-last-player",
+          "data": {}
+        }
+      ],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 15,
+      "title": "La naissance de Brigid",
+      "description": "Sous le ciel lumineux de l’Irlande, Brigid émerge, déesse des poètes, guérisseurs et forgerons. Sa présence inspire la création, la protection et la chaleur des foyers. Vous sentez son aura bienveillante traverser le temps et les histoires, apportant chance et inspiration à ceux qui l’écoutent.",
+      "effect": "Vous gagnez un point de protection : la prochaine Farce n’a aucun effet sur vous.",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 16,
+      "title": "Le druide Cathbad et le destin de Cúchulainn",
+      "description": "Vous apercevez Cathbad, druide au regard pénétrant, méditant sous un ciel chargé d’étoiles. Ses paroles anciennes vibrent dans l’air et semblent tracer le destin du jeune Cúchulainn, annonçant gloire et péril. Vous sentez l’écho de ses prédictions glisser autour de vous, comme si chaque souffle de vent portait un avertissement mystérieux.",
+      "effect": "Vous êtes protégé d’un effet négatif (Farce), ce tour-ci.",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 17,
+      "title": "Le roi Conchobar et la colère de Medb",
+      "description": "Les tambours de guerre résonnent dans les vallées, et la colère de Medb emplit l’air. Le roi Conchobar regarde avec inquiétude son taureau légendaire, tandis que vous sentez la tension des terres d’Ulster vibrer sous vos pieds. Les échos des batailles passées semblent murmurer à votre oreille, et vous êtes invité à grogner avec la force d’un taureau mythique.",
+      "effect": "Question : Parmi les trois propositions, laquelle serait la meilleure pour canaliser l’énergie du taureau ? A) Battre des mains comme un tambour *B) Étendre les bras lentement en cercle C) Sauter sur place en criant “Hou !” Si vous choisissez la bonne action, vous remportez cette carte et un autre joueur de votre choix pioche une carte FARCE.",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 18,
+      "title": "La construction de Newgrange",
+      "description": "Vous marchez dans une plaine silencieuse, où un ancien tombeau s’élève, gardien des secrets des anciens druides. La lumière du solstice d’hiver effleure ses pierres gravées, révélant des symboles oubliés. Vous sentez le souffle du passé et la puissance du temps suspendu, et comprenez que Newgrange garde depuis des millénaires un mystère que seuls les sages peuvent percevoir.",
+      "effect": "Question : Dans quelle province se trouve le site de Newgrange ? A) Munster (comté de Cork) B) Connacht (comté de Galway) *C) Leinster (comté de Meath) Si vous donnez la bonne réponse, avancez de trois cases sur le plateau ; sinon, reculez de trois cases.",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": 3,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 19,
+      "title": "Le cheval magique d’Oisín",
+      "description": "Au bord d’un lac scintillant, vous voyez Oisín monter un cheval aux crins lumineux, qui semble flotter sur l’eau et la brume. Le vent chante à vos oreilles des mélodies anciennes, et chaque pas de l'animal semble suspendre le temps. Vous sentez l’énergie féerique parcourir vos mains et vos cartes, tandis que l'équidé vous entraîne dans un voyage où le sol et le ciel se confondent.",
+      "effect": "Lancez un dé à six faces. Si vous faites 5, vous gagnez un Trésor Culturel. sinon, perdez trois cartes.",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 20,
+      "title": "Le combat des rois à Tara",
+      "description": "Sur la colline sacrée de Tara, les rois d’Irlande se rassemblent pour leurs rites anciens. Le vent emporte le murmure des couronnes et des sceptres, et vous sentez le poids de l’histoire vibrer sous vos pieds. Les pierres semblent raconter les batailles passées et les alliances formées, vous invitant à lancer votre dé et prendre part au destin des rois.",
+      "effect": "Lancez un dé à six faces. Si vous faites 5 ou 6, vous gagnez un Trésor Culturel. sinon, perdez deux cartes.",
+      "effects": [],
+      "collectionGain": "legend",
+      "discardAfterResolve": false
+    }
+  ],
+  "farce": [
+    {
+      "id": 1,
+      "title": "La chèvre du comté de Kerry",
+      "description": "Une chèvre facétieuse a subtilisé le pain royal et l’a caché derrière un menhir en riant sous cape.",
+      "effect": "Vous perdez votre prochain tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 2,
+      "title": "L’écho de la falaise moqueuse",
+      "description": "La falaise moqueuse transforme vos mots en petites farces : rien ne sort tout à fait comme prévu !",
+      "effect": "Les points obtenus sur votre prochaine carte FARCE sont divisés par deux.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 3,
+      "title": "Le tonneau de cidre qui explose",
+      "description": "Un farfadet malin a glissé un piment magique dans le tonneau… et hop, surprise !",
+      "effect": "Vous devez défausser une carte FARCE au hasard.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 4,
+      "title": "Le haricot géant de Glendalough",
+      "description": "En croquant le haricot géant, vous poussez d’un coup comme par magie… attention à ne pas vous taper la tête dans un nuage !",
+      "effect": "Vous piochez une carte supplémentaire, mais vous devez en défausser une autre de votre choix.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 5,
+      "title": "Le mouton bavard du Connemara",
+      "description": "Le mouton bavard du Connemara s’est amusé à répandre une rumeur farfelue sur les autres aventuriers… qui sait ce qui est vrai ?",
+      "effect": "Vous choisissez un joueur et lui échangez une carte de votre main.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.schedule-target",
+          "data": {
+            "effect": "swap-card",
+            "count": 1
+          }
+        }
+      ],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 6,
+      "title": "Le farceur invisible",
+      "description": "Un farfadet invisible a chipé vos cartes et les a remaniées à sa guise… surprise garantie !",
+      "effect": "Mélangez toutes vos cartes FARCE dans votre main et en piochez une nouvelle.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 7,
+      "title": "Le chaudron qui éternue",
+      "description": "Le chaudron éternuant projette de douces malices à chaque « atchoum » : préparez-vous à rire (ou à grogner) !",
+      "effect": "Le prochain joueur doit défausser une carte FARCE.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 8,
+      "title": "Le leprechaun qui confond la gauche et la droite",
+      "description": "Le leprechaun farceur vous a entraîné dans un drôle de détour… est-ce à gauche ou à droite ? Mystère !",
+      "effect": "Choisissez une carte FARCE dans votre main : son effet se déclenche deux fois ce tour-ci !",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 9,
+      "title": "Le poisson qui parle",
+      "description": "Le poisson bavard vous a lancé une énigme farfelue… et vous voilà perplexe comme un elfe en hiver !",
+      "effect": "Choisissez un joueur. Ce dernier doit vous donner une carte au hasard depuis sa main.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 10,
+      "title": "Le corbeau copieur",
+      "description": "Le corbeau copieur se régale : il répète vos mots (et vos bêtises) comme un petit miroir espiègle.",
+      "effect": "Le prochain joueur copie l’effet de votre dernière carte FARCE.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 11,
+      "title": "La soupe aux champignons dansante",
+      "description": "Une bouchée de soupe dansante et la magie s’empare de vous… attention aux élans imaginaires !",
+      "effect": "Piochez une carte TRÉSOR CULTUREL et défaussez une carte FARCE.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 12,
+      "title": "L’âne sorcier du Mayo",
+      "description": "L’âne sorcier a lu dans vos pensées et devine votre prochain geste… mais pas sûr que ça vous aide !",
+      "effect": "Choisissez une carte dans votre main et échangez-la avec celle d’un autre joueur.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.schedule-target",
+          "data": {
+            "effect": "swap-card",
+            "count": 1
+          }
+        }
+      ],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 13,
+      "title": "La pluie qui parle en vers",
+      "description": "Une pluie de vers s’abat sur vous : rimes et rythmes farfelus au programme !",
+      "effect": "Votre prochain point gagné sur une carte FARCE est doublé.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 14,
+      "title": "Le barde farceur",
+      "description": "Le barde espiègle a troqué votre récit contre une devinette qui n’a ni queue ni tête… saurez-vous la résoudre ?",
+      "effect": "Piochez une carte FARCE et donnez-en une à un autre joueur.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 15,
+      "title": "La poule en or… en toc !",
+      "description": "Une fausse poule étincelante gambade devant vous, promettant un trésor… qui s’avère être une farce dorée !",
+      "effect": "Toutes vos cartes FARCE ne rapportent que la moitié des points ce tour-ci.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 16,
+      "title": "Le trèfle en papier mâché",
+      "description": "Vous l’avez délicatement cueilli, mais ce trèfle de pacotille ne porte chance à personne… même pas aux lutins !",
+      "effect": "Vous ne pouvez pas gagner de carte TRÉSOR CULTUREL ce tour-ci.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 17,
+      "title": "L’elfe qui rote des bulles",
+      "description": "Vous avez réveillé un elfe farceur en plein rêve… et il se met à rototer des bulles magiques en riant !",
+      "effect": "Défaussez une carte FARCE et piochez-en une nouvelle.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 18,
+      "title": "Le fantôme du tambour fâché",
+      "description": "Un tambour spectral bat la mesure dans votre tête, entraînant tous les joueurs dans une danse improbable !",
+      "effect": "Tous les joueurs échangent une carte de leur main avec celle d’un autre joueur au hasard.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.schedule-target",
+          "data": {
+            "effect": "swap-card",
+            "count": 1
+          }
+        }
+      ],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 19,
+      "title": "La mouette collectionneuse de cartes",
+      "description": "Une mouette malicieuse a subtilisé une de vos carte au passage, tournoyant avec son butin au-dessus de votre tête !",
+      "effect": "Choisissez un joueur et piochez une carte trésor culpturel dans sa main.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    },
+    {
+      "id": 20,
+      "title": "Le vieux druide distrait",
+      "description": "Le druide a lancé une incantation… mais entre bénédiction et malédiction, personne ne sait ce qui va se passer !",
+      "effect": "Contraignez un autre joueur à piocher une carte FARCE et à en subir immédiatement l’effet.",
+      "effects": [],
+      "collectionGain": null,
+      "discardAfterResolve": true
+    }
+  ],
+  "treasure": [
+    {
+      "id": 1,
+      "title": "La harpe de Brian Boru",
+      "description": "Vous tenez la harpe légendaire, dont les cordes vibrent depuis des siècles et font frémir les cœurs des Irlandais.",
+      "effect": "Choisissez un joueur : vous gagnez une carte de sa main.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 2,
+      "title": "Le Livre de Kells",
+      "description": "Vous ouvrez ce manuscrit sacré et contemplez ses enluminures étincelantes, comme un éclat de lumière suspendu dans le temps.",
+      "effect": "Consultez une carte de votre choix chez un joueur sans la prendre.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 3,
+      "title": "Les falaises de Moher",
+      "description": "Le vent fouette vos joues et vous fait entendre les légendes anciennes murmurées par les falaises.",
+      "effect": "Piochez une carte Trésor Culturel supplémentaire.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 4,
+      "title": "Le Bodhrán",
+      "description": "Le rythme du tambour résonne dans vos mains et fait vibrer l’air autour de vous, comme un battement ancien.",
+      "effect": "Choisissez un joueur. Il découvre sur les touches numériques (0 à 9) les sons possibles. Lorsqu’il appuie sur Entrée, un rythme aléatoire est joué. S’il le reproduit correctement sur le clavier numérique, vous avancez de 2 cases sur le plateau. Sinon, vous piochez une carte et appliquez immédiatement son effet.",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 5,
+      "title": "Le Connemara et ses tourbières",
+      "description": "La brume enveloppe vos pas, et vous sentez le silence presque vivant, chargé de poésie et de mystère.",
+      "effect": "Choisissez un joueur. Il doit sélectionner un chiffre entre 0 et 9 pour tenter de traverser la brume. Si vous le trouvez, vous avancez de 2 cases sur le plateau. Si vous échouez, il vous donne une carte de sa main, que vous appliquez immédiatement.",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 6,
+      "title": "Le whiskey irlandais",
+      "description": "L’odeur de l’orge et du feu vous transporte dans les landes où il est distillé depuis des siècles.",
+      "effect": "Vous goûtez un verre du whiskey irlandais et voilà que la chaleur et l’ivresse vous titillent. Lancez un dé : Si vous réussissez (4, 5 ou 6), vous avancez de 2 cases sur le plateau, porté par votre énergie. Si vous échouez (1, 2 ou 3), vous êtes trop saoul, vous titubez et vous vous trompez de chemin : reculez de 4 cases.",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 7,
+      "title": "Le gaélique",
+      "description": "Vous entendez les sons anciens de la langue irlandaise, comme un souffle magique sur les collines.",
+      "effect": "Question : Parmi ces mots, lequel est un vrai mot gaélique ? A) Fionnlagh *B) Slán C) Caerfai Si vous répondez correctement, vous gardez la carte. Sinon, elle est immédiatement jetée à la défausse et vous reculez d'une case sur le plateau.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 8,
+      "title": "Le dolmen de Poulnabrone",
+      "description": "Vous sentez l’énergie des pierres dressées pour les ancêtres, comme un écho immobile du passé.",
+      "effect": "Protégez une carte de votre main : elle ne peut être volée jusqu’à votre prochain tour.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 9,
+      "title": "Le pub O’Donoghue de Dublin",
+      "description": "Les sons d’un vieux pub résonnent dans vos oreilles : musique, rires et récits anciens se mêlent.",
+      "effect": "Question : Parmi ces trois chansons, laquelle est véritablement irlandaise ? A) Greensleeves *B) The Rocky Road C) Scarborough Fair Si votre réponse est correcte, piochez immédiatement une carte Trésor Culturel. Dans le cas contraire, lancez deux dés et reculez du total obtenu.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 10,
+      "title": "Les vitraux celtiques",
+      "description": "Les couleurs et formes des vitraux racontent des histoires de rois, saints et fées, illuminant votre imagination.",
+      "effect": "Question : Quel motif est le plus fréquemment représenté dans les vitraux celtiques irlandais ? A) Triskel *B) Nœud celtique C) Spirale du cornemuseur Si vous répondez juste, le vent vous porte et vous rejouez sans attendre. Si vous vous trompez, une de vos cartes glisse entre les mains du deuxième joueur installé à la table.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 11,
+      "title": "La croix celtique de Clonmacnoise",
+      "description": "Vous sentez l’union du ciel et de la terre, et la force tranquille des anciens druides.",
+      "effect": "Trois symboles irlandais vous sont proposés. Choisissez celui qui est traditionnellement associé à la bénédiction et à la protection : A) La aarpe B) Le motif de laine Aran *C) Le trèfle Si vous choisissez correctement, vous avancez de 7 cases sur le plateau. Dans le cas contraire, vous reculez de 7 cases.",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": 7,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 12,
+      "title": "Le tweed d’Aran",
+      "description": "Chaque motif semble protéger un secret ancien, tissé avec patience et magie.",
+      "effect": "Trois types de motifs de tricot irlandais vous sont proposés. Choisissez celui qui est traditionnellement considéré comme porteur de chance et de protection : *A) Motif torsade B) Motif losange C) Motif serpent En cas de bonne réponse, vous piochez deux cartes. Sinon, vous défausser deux cartes.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 13,
+      "title": "Le marché de Galway",
+      "description": "Les étals débordent de couleurs, d’odeurs et de trésors inattendus.",
+      "effect": "?changez deux cartes de votre main avec le dernier joueur arrivé à la table.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 14,
+      "title": "Le château de Blarney",
+      "description": "Une pierre magique promet le don de l’éloquence à qui l’embrasse.",
+      "effect": "Question : Parmi ces trois affirmations, laquelle est vraie au sujet de la Pierre de Blarney ? A) Elle confère la capacité de prédire l’avenir. *B) Elle est censée donner le don de l’éloquence. C) Elle permet de comprendre le langage des animaux. Si vous choisissez correctement, vous gagnez immédiatement une carte Trésor Culturel. En cas de mauvaise réponse, vous défaussez une carte de votre choix.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 15,
+      "title": "Le cercle de Drombeg",
+      "description": "Les pierres anciennes murmurent vos vœux et captent votre énergie.",
+      "effect": "Trois symboles liés aux cercles de pierres apparaissent. Choisissez celui qui représente traditionnellement un vœu exaucé : A) Le rayon de soleil B) La pierre levée *C) Le cercle complet Si votre réponse est juste, avancez d'une case sur le plateau. Si votre réponse est fausse, alors piochez une carte farce et appliquez ses effets immédiatement.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 16,
+      "title": "Le Salmon Leap de la Boyne",
+      "description": "L’eau scintille et l’on raconte que le saumon y confère sagesse et connaissance.",
+      "effect": "Question : Parmi ces trois proverbes, lequel est véritablement irlandais ? A) ?Where the river bends, wisdom follows.? - ? Là où la rivière tourne, la sagesse suit. ? B) ?A salmon never swims against the tune of fate.? - ? Un saumon ne nage jamais à contre-courant du chant du destin. ? *C) ?The day will come that will bring the truth.? - ? Le jour viendra qui apportera la vérité. ? Si votre réponse est juste, tout le monde gagne une carte paysage. Dans le cas contraire, tout le monde pioche deux cartes au hasard et applique leurs effets.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 17,
+      "title": "La pipe de lutin en argile",
+      "description": "Elle sent la mousse et semble contenir des secrets espiègles.",
+      "effect": " Question : Parmi ces trois traditions, laquelle est réellement associée au folklore irlandais des lutins (leprechauns) ? A) Porter une feuille de frêne derrière l’oreille pour attirer la chance. B) Garder une pièce d’argent dans sa chaussure pour éloigner les mauvais esprits. *C) Cacher de petites chaussures ou objets miniatures dans la maison pour attirer la chance. Si vous répondez correctement, vous avancez de cinq cases sur le plateau. Dans le cas contraire, vous reculez de trois cases et piochez une carte au hasard en appliquant ses effets immédiatement.",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": 5,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 18,
+      "title": "Le costume de danse irlandaise",
+      "description": "Chaque broderie semble danser autour de vous, emportée par la musique ancienne.",
+      "effect": "Lancez un dé. Si vous obtenez 4, 5 ou 6, avancez du nombre de cases indiqué par le dé. Si vous obtenez 1, 2 ou 3, chaque joueur doit piocher autant de cartes que le chiffre obtenu.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 19,
+      "title": "Le conteur du Burren",
+      "description": "Il mélange histoires anciennes et absurdités modernes avec un talent inégalé.",
+      "effect": "Question : Parmi ces trois faits, lequel est réellement associé au Burren en Irlande ? *A) On y trouve des fleurs rares qui poussent sur les roches calcaires. B) C’est le lieu où les druides pratiquaient des danses rituelles sur les collines enneigées. C) Les habitants y fabriquent du fromage bleu unique depuis le Moyen Âge. Si vous choisissez la bonne réponse, vous restez là, à méditer. Une petite pose, ça fait du bien ! Si vous avez faux, alors reculez de 2 cases sur le plateau et réessayez !",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": -2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 20,
+      "title": "Le drapeau tricolore irlandais",
+      "description": "Vert, orange et blanc : couleurs de l’histoire, des croyances et de la paix.",
+      "effect": "Le drapeau vous inspire à unir les couleurs et leurs significations. Lancez trois dés. Si le résultat est pair, vous créez une « harmonie de couleurs » et piochez une carte Trésor Culturel. - Si le résultat est impair, l’harmonie est fragile : vous devez défausser une carte au hasard. - Si le résultat est un mixte des deux, rien ne se passe.",
+      "effects": [],
+      "collectionGain": "treasure",
+      "discardAfterResolve": false
+    }
+  ],
+  "landscape": [
+    {
+      "id": 1,
+      "title": "Les falaises de Moher",
+      "description": "Vous vous tenez au bord d’une falaise vertigineuse, où l’océan s’écrase avec un rugissement ancien. Le vent fouette votre visage et emporte vos pensées vers des horizons lointains. Chaque vague qui se brise semble conter l’histoire des géants endormis qui veillent sur ces falaises.",
+      "effect": "Avancez de 2 cases supplémentaires sur le plateau.",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 2,
+      "title": "La Chaussée des Géants",
+      "description": "Sous vos pieds, des colonnes de basalte s’alignent comme un escalier sculpté par la colère et la tendresse des titans. La mer bruisse à vos côtés, et vous sentez encore l’empreinte des pas immenses de ceux qui bâtirent ce chemin vers l’inconnu.",
+      "effect": "Vous tourbillonnez sur le plateau et prenez la place du joueur installé en deuxième position.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 3,
+      "title": "Le Burren",
+      "description": "Vous pénétrez dans un paysage de pierres grises, où chaque rocher semble murmurer l’écho des âges. Parmi les fissures, des fleurs aux couleurs improbables percent la pierre, comme des éclats d’un autre monde. Le vent léger transporte des parfums anciens et vous sentez que la terre elle-même vous observe et vous raconte ses secrets millénaires.",
+      "effect": "Vous choisissez de faire une pose et de méditer : passez votre tour.",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 4,
+      "title": "Le lac de Glendalough",
+      "description": "Deux lacs miroirs reflètent le ciel et les ombres des moines anciens. Une brume légère s’élève, effleurant votre peau, et chaque pas semble faire écho à des prières oubliées. Vous êtes en paix, au cœur d’un silence sacré.",
+      "effect": "Personne ne peut vous attaquer ou vous échanger de cartes jusqu’à votre prochain tour.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.schedule-target",
+          "data": {
+            "effect": "swap-card",
+            "count": 1
+          }
+        }
+      ],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 5,
+      "title": "Les collines de Tara",
+      "description": "Vous gravissez les collines où jadis les rois d’Irlande étaient couronnés. Le vent porte les chants anciens et le fracas des armures oubliées. Chaque pierre semble vibrer sous vos mains comme si elle gardait le pouvoir des souverains passés.",
+      "effect": "Vous recevez un “pouvoir royal” : choisissez un joueur pour qu’il saute son prochain tour.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 6,
+      "title": "Les landes du Connemara",
+      "description": "Les brumes flottent entre les collines, avalant les heures et les voyageurs pressés. Vous sentez le temps se dilater, et chaque souffle de vent murmure des secrets que seuls les âmes attentives peuvent entendre.",
+      "effect": "Reculez d’une case.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 7,
+      "title": "Le mont Errigal",
+      "description": "Vous escaladez la montagne dont la cime touche la première lumière du matin. Le ciel s’embrase de nuances dorées et violettes, et vous sentez un souffle d’émerveillement parcourir vos mains et votre cœur.",
+      "effect": "Rejouez immédiatement.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 8,
+      "title": "La rivière Shannon",
+      "description": "Une rivière paisible serpente dans la vallée, lente et majestueuse, comme un dragon endormi. Son murmure vous invite à suivre ses courbes et à laisser vos pas danser avec l’eau.",
+      "effect": "Avancez de trois cases sur le plateau.",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": 3,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 9,
+      "title": "Les grottes de Marble Arch",
+      "description": "Vous pénétrez dans un monde souterrain où la pierre s’ouvre en arches et en tunnels. Le silence est profond, seulement troublé par l’écho de vos pas, et chaque goutte d’eau résonne comme un tambour ancien.",
+      "effect": "Au prochain tour, lancez deux dés. Avancez du total obtenu.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 10,
+      "title": "Les îles d’Aran",
+      "description": "Battues par le vent et par les vagues, ces îles respirent la force et la rudesse de la vie sauvage. Les pierres, les herbes et les maisons racontent des histoires de courage et de secrets anciens.",
+      "effect": "Procédez à un échange de carte avec le second joueur installé à la table.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.schedule-target",
+          "data": {
+            "effect": "swap-card",
+            "count": 1
+          }
+        }
+      ],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 11,
+      "title": "Le parc national de Killarney",
+      "description": "Forêts profondes, lacs miroirs et cerfs majestueux parcourent ces terres. Vous sentez le souffle des arbres et le murmure des rivières, comme si la nature vous parlait à voix basse.",
+      "effect": "Prenez une carte au hasard dans la main d’un autre joueur.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 12,
+      "title": "Le rocher de Cashel",
+      "description": "Au sommet d’une colline, une forteresse veille depuis des siècles, témoin des saints et des rois. Chaque pierre semble vibrer sous vos doigts comme si elle conservait les prières et les couronnes d’antan.",
+      "effect": "Vous devenez “intouchable” pendant un tour : on ne peut ni vous voler ni vous échanger de carte.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.schedule-target",
+          "data": {
+            "effect": "swap-card",
+            "count": 1
+          }
+        }
+      ],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 13,
+      "title": "Les plages de Donegal",
+      "description": "Le sable est balayé par les vents et les vagues murmurent des légendes anciennes. Vous marchez pieds nus et sentez le sel et l’histoire s’accrocher à votre peau.",
+      "effect": "Avancez ou reculez d’autant de cases que votre lancer de dé vous l’indique, sans choisir.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 14,
+      "title": "Le lac Corrib",
+      "description": "Parsemé d’îlots mystérieux et de légendes englouties, le lac brille comme un miroir de secrets. Vous observez l’eau et sentez qu’elle vous invite à la prudence et à l’audace.",
+      "effect": "Le sort vous lie au dernier joueur arrivé à la table : échangez avec lui deux cartes de votre main contre deux des siennes.",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "voyage.schedule-target",
+          "data": {
+            "effect": "swap-card",
+            "count": 2
+          }
+        }
+      ],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 15,
+      "title": "Les montagnes de Wicklow",
+      "description": "Recouvertes de bruyère et de nuages, elles semblent abriter des regards invisibles et des esprits anciens. Chaque pas résonne dans la vallée comme un murmure du passé.",
+      "effect": "Tous les joueurs déposent une carte face cachée au centre de la table. Piochez en une au hasard.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 16,
+      "title": "Le gouffre de Slieve League",
+      "description": "Les falaises s’élèvent presque aussi haut que les Moher, dans un silence qui semble éternel. Le vent vous emporte et les nuages frôlent vos épaules, vous invitant à écouter les secrets de la pierre.",
+      "effect": "Choisissez un autre joueur. Celui-ci doit répondre à la question suivante : Question : Quel animal est le plus associé aux anciennes légendes d’Irlande ? A) Le phénix *B) Le cheval blanc mystique C) Le dragon des tourbières S’il donne la bonne réponse, il pioche une carte. Dans le cas contraire, vous gagnez au hasard l’une des cartes de sa main.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 17,
+      "title": "La vallée de la Boyne",
+      "description": "Vous traversez la vallée où mythes et batailles anciennes se mêlent aux tombes préhistoriques. Le sol vibre d’histoires enfouies et le vent transporte les échos des siècles.",
+      "effect": "Reculez de deux cases sur le plateau.",
+      "effects": [
+        {
+          "kind": "move",
+          "trackId": "ireland",
+          "spaces": -2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 18,
+      "title": "Les plaines de Meath",
+      "description": "Sous un ciel pâle, les plaines s’étendent à perte de vue, ondulant doucement comme une mer d’herbes. Le souffle du vent porte les murmures des rois anciens, et chaque pas semble vous mettre à l’épreuve entre intuition et clairvoyance.",
+      "effect": "Lancez un dé et avancez du nombre de cases obtenu. Puis relancez le dé et reculez du nombre de cases obtenu.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 19,
+      "title": "Le lough Neagh",
+      "description": "Le plus grand lac d’Irlande s’étend devant vous, profond et silencieux. L’eau semble respirer, et chaque vague est porteuse d’une légende druidique.",
+      "effect": "Piochez une carte supplémentaire.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    },
+    {
+      "id": 20,
+      "title": "Le pont des soupirs de Cork",
+      "description": "Un ancien pont suspendu sur la rivière murmure les regrets des ancêtres. Le vent transporte leurs voix et vous invite à écouter ou à imaginer leurs histoires.",
+      "effect": "Lorsque vous tombez sur cette carte, vous déclenchez l’effet pour tous les joueurs. Trois choix vous sont proposés : a) « J’aurais aimé apprendre à voler avant que le temps ne me rattrape. » b) « J’ai regretté de ne jamais dire “je t’aime” à celui que j’aimais. » c) « J’aurais voulu écouter davantage le murmure des rivières et des forêts. » Chaque joueur doit voter pour le choix qu’il préfère, hors son propre choix. Le choix ayant obtenu le plus de votes permet à tous les joueurs d’avancer de 3 cases sur le plateau et de gagner une carte Trésor Culturel. Sinon, rien ne se passe.",
+      "effects": [],
+      "collectionGain": "landscape",
+      "discardAfterResolve": false
+    }
+  ]
+}

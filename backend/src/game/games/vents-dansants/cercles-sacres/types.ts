@@ -1,4 +1,5 @@
-import type { CerclesSacresTheme } from './content';
+export type CerclesSacresTheme =
+  'totem' | 'nature' | 'plante' | 'esprit' | 'parole' | 'nation';
 
 export interface CerclesSacresCircle {
   id: string;

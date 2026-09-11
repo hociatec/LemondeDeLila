@@ -19,6 +19,11 @@ public:
             incoming.gameType != current.gameType)
             return true;
 
+        // Once a stream is versioned, an unidentified snapshot cannot replace it.
+        if ((current.runId > 0 && incoming.runId <= 0) ||
+            (current.version > 0 && incoming.version <= 0))
+            return false;
+
         if (current.runId > 0 && incoming.runId > 0 &&
             incoming.runId != current.runId)
             return incoming.runId > current.runId;

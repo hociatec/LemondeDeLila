@@ -1,3 +1,4 @@
+import type { RitesStealChoice } from './types';
 import {
   rejectRule,
   defineAction,
@@ -25,7 +26,6 @@ export const RITES_SPECIALS = 'rites-specials-played';
 export const RITES_PEACE = 'rites.peace';
 export const RITES_SILENCE = 'rites.silence';
 type RuleContext = GameContext<EntreRitesState>;
-export type RitesStealChoice = { targetPlayerId: number; cardId: string };
 
 export const askCard = defineAction<
   EntreRitesState,
@@ -82,8 +82,7 @@ export function enumerateRequests(
       .map((card) => card.familyId),
   );
   return ctx.players
-    .all()
-    .filter((target) => target.id !== playerId)
+    .others(playerId)
     .flatMap((target) =>
       ENTRE_RITES_FAMILY_CARDS.filter((card) =>
         families.has(card.familyId),
@@ -282,19 +281,14 @@ function determineVictory(_state: EntreRitesState, ctx: RuleContext): void {
     0,
   );
   if (total < TOTAL_FAMILIES) return;
-  const ranked = ctx.players
-    .all()
-    .map((player) => ({
-      playerId: player.id,
-      families: completedCounts[player.id] ?? 0,
-      specials: ctx.inventory.count(RITES_SPECIALS, player.id),
-    }))
-    .sort(
-      (left, right) =>
-        right.families - left.families ||
-        right.specials - left.specials ||
-        left.playerId - right.playerId,
-    );
+  const ranked = ctx.ranking.rank(
+    ctx.players.all().map((player) => player.id),
+    { value: (id) => completedCounts[id] ?? 0, direction: 'desc' },
+    {
+      value: (id) => ctx.inventory.count(RITES_SPECIALS, id),
+      direction: 'desc',
+    },
+  );
   const winnerId = ranked[0]?.playerId;
   if (winnerId != null) {
     ctx.match.finish({ winners: [winnerId], reason: 'five-families' });

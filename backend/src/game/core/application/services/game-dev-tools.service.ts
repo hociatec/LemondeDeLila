@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { readEnvironment } from '../../../../platform/config/public-api';
-import type { GameEvent, GameSnapshot } from '../contracts/game-event.model';
-import type { GameStateEntity } from '../contracts/game-state.model';
-import type { GameStateWithActions } from '../contracts/game-action.model';
+import type { GameEvent, GameSnapshot } from '../models/game-event.model';
+import type { GameState } from '../models/game-state.model';
+import type { GameStateWithActions } from '../models/game-action.model';
 import { GameConfigurationError } from '../../domain/errors/game-domain.errors';
 import { GameEngineService } from './game-engine.service';
 import { GameRegistryService } from './game-registry.service';
@@ -10,7 +10,7 @@ import { GameRegistryService } from './game-registry.service';
 export type GameDevToolsInspection = {
   roomId: number;
   gameType: string;
-  internalState: GameStateEntity;
+  internalState: GameState;
   playerView: GameStateWithActions | null;
   events: GameEvent[];
   latestSnapshot: GameSnapshot | null;
@@ -18,8 +18,8 @@ export type GameDevToolsInspection = {
     version: number;
     status: string;
     phase: string;
-    turn: GameStateEntity['turn'];
-    pending: GameStateEntity['pending'];
+    turn: GameState['turn'];
+    pending: GameState['pending'];
     rng: { seed: number; counter: number } | null;
   };
   reproduction: {
@@ -50,6 +50,17 @@ export class GameDevToolsService {
     viewerPlayerId: number | null = null,
   ): Promise<GameDevToolsInspection | null> {
     this.assertEnabled();
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      typeof gameType !== 'string' ||
+      !gameType.trim() ||
+      gameType.length > 128 ||
+      (viewerPlayerId !== null &&
+        (!Number.isSafeInteger(viewerPlayerId) || viewerPlayerId <= 0))
+    ) {
+      throw new GameConfigurationError('Parametres Game DevTools invalides');
+    }
     const state = await this.engine.exportInternalState(roomId, gameType);
     if (!state) return null;
     const handler = this.registry.getHandler(gameType);
@@ -106,9 +117,16 @@ export class GameDevToolsService {
     roomId: number,
     gameType: string,
     sequence: number,
-  ): Promise<GameStateEntity> {
+  ): Promise<GameState> {
     this.assertEnabled();
-    if (!Number.isInteger(sequence) || sequence < 0) {
+    if (
+      !Number.isSafeInteger(roomId) ||
+      roomId <= 0 ||
+      typeof gameType !== 'string' ||
+      gameType.length > 128 ||
+      !Number.isSafeInteger(sequence) ||
+      sequence < 0
+    ) {
       throw new GameConfigurationError('Séquence de replay invalide');
     }
     const state = await this.engine.replay(roomId, gameType, sequence);

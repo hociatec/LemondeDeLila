@@ -1,5 +1,6 @@
+import { allCompleted } from '../../../../../shared/utils/public-api';
 import type { WebSocket } from 'ws';
-import { RoomWsPrivateInvitationRequiredError } from '../../../domain/errors/room-ws.errors';
+import { RoomWsPrivateInvitationRequiredError } from './room-ws.errors';
 import { RoomJoinPolicyService } from '../../../application/services/membership/room-join-policy.service';
 import { RoomMembershipFacadeService } from '../../../application/services/membership/room-membership-facade.service';
 import { RoomRealtimeTrackerService } from '../../../application/services/state/room-realtime-tracker.service';
@@ -40,7 +41,7 @@ export class RoomGatewayJoinWorkflow {
     context: LifecycleContext,
     roomId: number,
   ): Promise<void> {
-    if (!Number.isFinite(roomId) || roomId <= 0) return;
+    if (!Number.isSafeInteger(roomId) || roomId <= 0) return;
     const isPrivate = await this.roomState
       .getRoomPayload(roomId)
       .then((state) => Boolean(state.room.isPrivate))
@@ -52,9 +53,11 @@ export class RoomGatewayJoinWorkflow {
           meta.roomId === roomId &&
           meta.silent !== true &&
           meta.role === 'spectator',
-      );
-    await Promise.all(
-      connected.map(async ({ socket, meta }) => {
+      )
+      .slice(0, 10_000);
+    for (let offset = 0; offset < connected.length; offset += 100) {
+      await allCompleted(
+        connected.slice(offset, offset + 100).map(async ({ socket, meta }) => {
         try {
           await this.membership.joinRoom(roomId, meta.userId, {
             allowPrivate: isPrivate,
@@ -69,8 +72,9 @@ export class RoomGatewayJoinWorkflow {
         } catch {
           // A closed socket does not invalidate the persisted promotion.
         }
-      }),
-    );
+        }),
+      );
+    }
   }
 
   private async resolve(

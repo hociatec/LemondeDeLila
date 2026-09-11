@@ -1,26 +1,23 @@
 import {
   cards,
   defineCardsSchema,
-  defineChoice,
   defineGame,
-  defineGameContent,
-  gameInput,
   pawns,
   raceGame,
 } from '../../../engine/sdk/public-api';
+import { GAME_BOT } from './bot-rules';
 import {
   A_FOND_LES_BALLONS_CARDS,
   A_FOND_LES_BALLONS_PAWNS,
   A_FOND_LES_BALLONS_TILES,
+  BALLOONS_GAME_CONTENT,
 } from './content';
-import {
-  A_FOND_LES_BALLONS_ACTIONS,
-  A_FOND_LES_BALLONS_EFFECTS,
-  A_FOND_LES_BALLONS_PHASES,
-  requestPawns,
-  resolvePawn,
-  type AFondLesBallonsState,
-} from './rules';
+import manifest from './manifest.json';
+import { GAME_CHOICES, A_FOND_LES_BALLONS_EFFECTS } from './rules';
+import type { AFondLesBallonsState } from './state';
+
+import { A_FOND_LES_BALLONS_ACTIONS, A_FOND_LES_BALLONS_PHASES } from './rules';
+import { setupGame } from './rules';
 
 const cardSchema = defineCardsSchema({
   decks: {
@@ -35,17 +32,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<AFondLesBallonsState>()({
-  id: 'a-fond-les-ballons',
-  displayName: 'A fond les ballons !',
+  id: manifest.code,
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Course déjantée jusqu’à la Grosse Noix Dorée.',
-  players: { min: 2, max: 6 },
-  content: defineGameContent('a-fond-les-ballons', {
-    cards: A_FOND_LES_BALLONS_CARDS,
-    pawns: A_FOND_LES_BALLONS_PAWNS,
-    tiles: A_FOND_LES_BALLONS_TILES,
-  }),
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+  content: BALLOONS_GAME_CONTENT,
   patterns: [
     raceGame({
       trackId: 'balloons',
@@ -67,27 +60,11 @@ export default defineGame<AFondLesBallonsState>()({
       label: 'Piocher',
     },
   ],
-  setup: ({ ctx }) => {
-    requestPawns(
-      ctx.players.all().map((player) => player.id),
-      ctx,
-    );
-    return { awaitingCardDraw: false };
-  },
+  setup: setupGame,
   initialPhase: A_FOND_LES_BALLONS_PHASES.initialPhase,
   phases: A_FOND_LES_BALLONS_PHASES.phases,
   actions: A_FOND_LES_BALLONS_ACTIONS,
   effects: A_FOND_LES_BALLONS_EFFECTS,
-  choices: {
-    'a-fond-les-ballons.pawn': defineChoice<AFondLesBallonsState, string>({
-      input: gameInput.string({ min: 1, max: 128 }),
-      resolve: ({ actor, value, ctx }) => resolvePawn(actor.id, value, ctx),
-    }),
-  },
-  bot: {
-    choose: ({ availableActions }) =>
-      availableActions.includes('draw_card')
-        ? { type: 'draw_card', payload: {} }
-        : { type: 'roll', payload: {} },
-  },
+  choices: GAME_CHOICES,
+  bot: GAME_BOT,
 });

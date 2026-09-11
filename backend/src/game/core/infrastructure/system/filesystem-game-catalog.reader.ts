@@ -2,36 +2,64 @@ import { Injectable } from '@nestjs/common';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { readEnvironment } from '../../../../platform/config/public-api';
+import { GameConfigurationError } from '../../domain/errors/game-domain.errors';
+import catalogIndex from './generated-game-catalog-index.json';
 import type { GameCatalogReader } from '../../application/ports/game-catalog.reader';
 import type {
   GameCatalogEntryRecord,
   GameManifestRecord,
-} from '../../application/contracts/game-catalog-entry.model';
+} from '../../application/models/game-catalog-entry.model';
+
+const MAX_GAME_MANIFEST_BYTES = 1024 * 1024;
+const MAX_GAME_RULES_BYTES = 4 * 1024 * 1024;
 
 @Injectable()
 export class FilesystemGameCatalogReader implements GameCatalogReader {
   listEntries(): GameCatalogEntryRecord[] {
-    return resolveGameRoots()
-      .map((root) => this.readEntry(root))
-      .filter((entry): entry is GameCatalogEntryRecord => entry != null);
+    const configured = readEnvironment('GAME_MODULES_ROOT').trim();
+    const root = configured
+      ? path.resolve(configured)
+      : path.resolve(__dirname, '../../../games');
+    return readInstalledGameCatalog(root, catalogIndex);
   }
 
   readTextFile(filePath: string): string {
-    return fs.readFileSync(filePath, 'utf8');
+    const content = fs.readFileSync(filePath, 'utf8');
+    if (Buffer.byteLength(content, 'utf8') > MAX_GAME_RULES_BYTES) {
+      throw new GameConfigurationError('Règles de jeu trop volumineuses');
+    }
+    return content;
   }
+}
 
-  private readEntry(root: string): GameCatalogEntryRecord | null {
+/** Reads only packages enumerated by build composition; never discovers folders. */
+export function readInstalledGameCatalog(
+  gamesRoot: string,
+  entries: readonly { code: string; directory: string }[],
+): GameCatalogEntryRecord[] {
+  return entries.map(({ code, directory }) => {
+    if (
+      !/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/.test(
+        directory,
+      ) ||
+      path.posix.basename(directory) !== code
+    )
+      throw new GameConfigurationError('Index de catalogue invalide');
+    const root = path.resolve(gamesRoot, directory);
     const manifestPath = path.join(root, 'manifest.json');
     try {
-      const parsed: unknown = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      const manifestSource = fs.readFileSync(manifestPath, 'utf8');
+      if (Buffer.byteLength(manifestSource, 'utf8') > MAX_GAME_MANIFEST_BYTES) {
+        throw new GameConfigurationError(
+          `Manifeste de catalogue trop volumineux : ${code}`,
+        );
+      }
+      const parsed: unknown = JSON.parse(manifestSource);
       const manifest = toGameManifest(parsed);
-      if (!manifest) {
-        return null;
-      }
-      const code = String(manifest.code ?? '').trim();
-      if (!code) {
-        return null;
-      }
+      if (!manifest || manifest.code !== code)
+        throw new GameConfigurationError(
+          `Manifeste de catalogue invalide : ${code}`,
+        );
 
       const rulesPath = path.join(root, 'rules.md');
       return {
@@ -40,10 +68,13 @@ export class FilesystemGameCatalogReader implements GameCatalogReader {
         rulesPath: fs.existsSync(rulesPath) ? rulesPath : undefined,
         manifest,
       };
-    } catch {
-      return null;
+    } catch (error) {
+      if (error instanceof GameConfigurationError) throw error;
+      throw new GameConfigurationError(
+        `Package de jeu absent ou illisible : ${code}`,
+      );
     }
-  }
+  });
 }
 
 function toGameManifest(value: unknown): GameManifestRecord | null {
@@ -52,6 +83,7 @@ function toGameManifest(value: unknown): GameManifestRecord | null {
   }
   const manifest: GameManifestRecord = {};
   assignString(manifest, value, 'code');
+  assignString(manifest, value, 'engine');
   assignString(manifest, value, 'name');
   assignString(manifest, value, 'summary');
   assignNumber(manifest, value, 'minPlayers');
@@ -67,7 +99,7 @@ function toGameManifest(value: unknown): GameManifestRecord | null {
 function assignString(
   target: GameManifestRecord,
   source: Record<string, unknown>,
-  key: 'code' | 'name' | 'summary',
+  key: 'code' | 'engine' | 'name' | 'summary',
 ): void {
   if (typeof source[key] === 'string') {
     target[key] = source[key];
@@ -102,37 +134,4 @@ function isManifestStatus(
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
-function resolveGameRoots(): string[] {
-  const configured = readEnvironment('GAME_MODULES_ROOT').trim();
-  const baseRoot = configured
-    ? path.resolve(configured)
-    : path.resolve(process.cwd(), 'src', 'game', 'games');
-
-  const roots: string[] = [];
-  walkGameRoots(baseRoot, roots);
-  return roots;
-}
-
-function walkGameRoots(dir: string, roots: string[]): void {
-  let entries: fs.Dirent[];
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
-
-  if (
-    entries.some((entry) => entry.isFile() && entry.name === 'manifest.json')
-  ) {
-    roots.push(dir);
-    return;
-  }
-
-  for (const entry of entries) {
-    if (entry.isDirectory()) {
-      walkGameRoots(path.join(dir, entry.name), roots);
-    }
-  }
 }

@@ -5,11 +5,18 @@ export {
 export type {
   WsRouteHandler,
   WsSession,
-} from './application/contracts/ws-route.model';
-export type { WsTicketScope } from './application/contracts/ws-ticket.model';
+} from './application/models/ws-route.model';
+export type { WsTicketScope } from './application/models/ws-ticket.model';
 export { WsApiHubService } from './application/services/ws-api-hub.service';
+export { WsWorkService } from './application/services/ws-work.service';
 export { WsJwtAuthService } from './application/services/ws-jwt-auth.service';
 export { WsRouteRegistry } from './application/services/ws-route-registry.service';
 export { WsTicketAuthService } from './application/services/ws-ticket-auth.service';
 export { WsRoutingModule } from './module/ws-routing.module';
 export { WsTicketModule } from './module/ws-ticket.module';
+export {
+  decodeWsEnvelope,
+  WS_PROTOCOL_VERSION,
+  type WsIncomingEnvelope,
+} from './infrastructure/presentation/ws/ws-message-codec';
+export { WsRequestRateLimitService } from './application/services/ws-request-rate-limit.service';

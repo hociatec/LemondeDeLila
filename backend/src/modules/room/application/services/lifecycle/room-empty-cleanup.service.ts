@@ -1,9 +1,12 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { RemoveAllRoomBotsService } from '../../../../bot/public-api';
-import { PresenceService } from '../../../../presence/public-api';
-import { bestEffort } from '../../../../../shared/utils/public-api';
-import type { RoomMembershipContext } from '../../contracts/room-membership-context.model';
-import type { RoomRecord } from '../../contracts/room-record.model';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
+import { bestEffort } from '../../../../../platform/observability/public-api';
+import type { RoomMembershipContext } from '../../models/room-membership-context.model';
+import type { RoomRecord } from '../../models/room-record.model';
 import {
   ROOM_EVENT_PUBLISHER,
   type RoomEventPublisherPort,
@@ -16,6 +19,14 @@ import {
   ROOM_VAULT_SNAPSHOT_REPOSITORY,
   type RoomVaultSnapshotRepository,
 } from '../../ports/room-vault-snapshot.repository';
+import {
+  ROOM_PRESENCE_PORT,
+  type RoomPresencePort,
+} from '../../ports/room-presence.port';
+import {
+  ROOM_BOT_OPERATIONS_PORT,
+  type RoomBotOperationsPort,
+} from '../../ports/room-bot-operations.port';
 import { RoomRuntimeStateService } from '../state/room-runtime-state.service';
 
 @Injectable()
@@ -27,8 +38,10 @@ export class RoomEmptyCleanupService {
     private readonly rooms: RoomRepository,
     @Inject(ROOM_VAULT_SNAPSHOT_REPOSITORY)
     private readonly vaultSnapshots: RoomVaultSnapshotRepository,
-    private readonly removeAllRoomBots: RemoveAllRoomBotsService,
-    private readonly presence: PresenceService,
+    @Inject(ROOM_BOT_OPERATIONS_PORT)
+    private readonly botOperations: RoomBotOperationsPort,
+    @Inject(ROOM_PRESENCE_PORT)
+    private readonly presence: RoomPresencePort,
     private readonly runtimeState: RoomRuntimeStateService,
     @Inject(ROOM_EVENT_PUBLISHER)
     private readonly events: RoomEventPublisherPort,
@@ -40,6 +53,8 @@ export class RoomEmptyCleanupService {
     userId: number,
     participantLeft: boolean,
   ): Promise<boolean> {
+    requirePositiveSafeId(room?.id, 'Identifiant de table invalide');
+    requirePositiveSafeId(userId, 'Identifiant utilisateur invalide');
     const snapshotId = String(room.restoredFromSnapshotId ?? '').trim();
     if (
       !participantLeft ||
@@ -68,9 +83,11 @@ export class RoomEmptyCleanupService {
     room: RoomRecord,
     userId: number,
   ): Promise<boolean> {
+    requirePositiveSafeId(room?.id, 'Identifiant de table invalide');
+    requirePositiveSafeId(userId, 'Identifiant utilisateur invalide');
     let activeHumans = await context.countActiveHumans(room.id);
     if (activeHumans === 0) {
-      await this.removeAllRoomBots.execute(room.id);
+      await this.botOperations.removeAll(room.id);
       activeHumans = await context.countActiveHumans(room.id);
     }
     const bots = await context.countBots(room.id);
@@ -90,6 +107,12 @@ export class RoomEmptyCleanupService {
     this.presence.broadcastPresence();
     await this.events.publishLobbyChanged(room.id, 'deleted');
     return true;
+  }
+}
+
+function requirePositiveSafeId(value: unknown, message: string): void {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+    throw new BadRequestException(message);
   }
 }
 /** Room application capability boundary. */

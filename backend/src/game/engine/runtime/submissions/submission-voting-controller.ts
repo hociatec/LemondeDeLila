@@ -69,6 +69,17 @@ export class GameVotingController<
       if (existing) existing.votes += 1;
       else results.push({ value: structuredClone(value), votes: 1 });
     }
-    return results.sort((left, right) => right.votes - left.votes);
+    const choices = session.allowedValues ?? [];
+    return results.sort((left, right) => {
+      const byVotes = right.votes - left.votes;
+      if (byVotes !== 0) return byVotes;
+      const leftIndex = choices.findIndex((choice) =>
+        sameSerializableValue(choice, left.value),
+      );
+      const rightIndex = choices.findIndex((choice) =>
+        sameSerializableValue(choice, right.value),
+      );
+      return leftIndex - rightIndex;
+    });
   }
 }

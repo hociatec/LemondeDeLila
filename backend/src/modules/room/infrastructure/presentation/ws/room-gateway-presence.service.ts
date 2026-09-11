@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ApplicationShutdownService } from '../../../../../platform/lifecycle/public-api';
 import { WebSocket } from 'ws';
-import { bestEffort } from '@shared/utils/public-api';
+import { bestEffort } from '../../../../../platform/observability/public-api';
 import { RoomMembershipFacadeService } from '../../../application/services/membership/room-membership-facade.service';
-import { RoomStateService } from '../../../application/services/state/room-state.service';
+import { RoomPayloadService } from '../../../application/services/state/room-payload.service';
 import type { ClientMeta, ClientRole } from './room-gateway.types';
 import { hasUserConnectionsInRoom } from './room-socket-membership.helpers';
 
@@ -23,9 +24,12 @@ type PresenceContext = {
 
 @Injectable()
 export class RoomGatewayPresenceService {
+  private static readonly MAX_PENDING_PARTICIPANT_LEAVES = 10_000;
   constructor(
     private readonly membership: RoomMembershipFacadeService,
-    private readonly roomState: RoomStateService,
+    private readonly roomPayloads: RoomPayloadService,
+    @Inject(ApplicationShutdownService)
+    private readonly shutdown = new ApplicationShutdownService(),
   ) {}
 
   forceDisconnectRoomClients(ctx: PresenceContext, roomId: number): void {
@@ -107,21 +111,38 @@ export class RoomGatewayPresenceService {
     roomId: number,
     userId: number,
   ): void {
+    if (this.shutdown.isDraining) return;
     const key = this.buildParticipantLeaveKey(roomId, userId);
     if (ctx.pendingParticipantLeaves.has(key)) return;
+    if (
+      ctx.pendingParticipantLeaves.size >=
+        RoomGatewayPresenceService.MAX_PENDING_PARTICIPANT_LEAVES
+    ) {
+      const oldest = ctx.pendingParticipantLeaves.keys().next().value;
+      if (typeof oldest === 'string') {
+        clearTimeout(ctx.pendingParticipantLeaves.get(oldest));
+        ctx.pendingParticipantLeaves.delete(oldest);
+      }
+    }
 
     const timeout = setTimeout(() => {
       ctx.pendingParticipantLeaves.delete(key);
-      if (this.hasUserConnections(ctx, roomId, userId)) return;
+      if (
+        this.shutdown.isDraining ||
+        this.hasUserConnections(ctx, roomId, userId)
+      )
+        return;
 
       void bestEffort(
-        this.membership
-          .leaveRoom(roomId, userId, {
-            preserveRoom: false,
-            disconnectOnly: false,
-            replaceWithBot: false,
-          })
-          .then(() => ctx.sendRoomState(roomId)),
+        this.shutdown.run(() =>
+          this.membership
+            .leaveRoom(roomId, userId, {
+              preserveRoom: false,
+              disconnectOnly: false,
+              replaceWithBot: false,
+            })
+            .then(() => ctx.sendRoomState(roomId)),
+        ),
         `départ différé room=${roomId} user=${userId}`,
       );
     }, ctx.participantDisconnectGraceMs);
@@ -167,7 +188,7 @@ export class RoomGatewayPresenceService {
     let ownerId: number | null = null;
     if (meta && meta.roomId > 0) {
       try {
-        const state = await this.roomState.getRoomPayload(meta.roomId);
+        const state = await this.roomPayloads.getRoomPayload(meta.roomId);
         ownerId = state?.room?.owner?.id ?? null;
       } catch {
         ownerId = null;
@@ -196,7 +217,7 @@ export class RoomGatewayPresenceService {
 
     if (meta.role === 'participant') {
       if (!userStillConnected) {
-        void bestEffort(
+        await bestEffort(
           this.membership.leaveRoom(meta.roomId, meta.userId, {
             preserveRoom: true,
             disconnectOnly: true,
@@ -207,14 +228,14 @@ export class RoomGatewayPresenceService {
       }
     } else {
       if (!userStillConnected && ownerId === meta.userId) {
-        void bestEffort(
+        await bestEffort(
           this.membership.transferOwnerIfCurrent(meta.roomId, meta.userId),
           `transfert propriétaire room=${meta.roomId} user=${meta.userId}`,
         );
       }
 
       if (remainingTotalConnections === 0) {
-        void bestEffort(
+        await bestEffort(
           this.membership.leaveRoom(meta.roomId, meta.userId, {
             preserveRoom: false,
             disconnectOnly: false,
@@ -225,8 +246,8 @@ export class RoomGatewayPresenceService {
     }
 
     if (meta.roomId > 0 && meta.silent !== true) {
-      void bestEffort(
-        this.roomState
+      await bestEffort(
+        this.roomPayloads
           .getRoomPayload(meta.roomId)
           .then(() => ctx.sendRoomState(meta.roomId)),
         `rafraîchissement après déconnexion room=${meta.roomId}`,

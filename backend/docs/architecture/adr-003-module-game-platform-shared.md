@@ -22,7 +22,7 @@ autre frontière ; `platform` dépend seulement de `shared` ; `modules` et
 ainsi qu'entre modules et `game`, restent fermées et déclarées explicitement.
 
 La composition est assumée uniquement à la racine : `app.module.ts` assemble
-les modules Nest et `typeorm-entities.ts` collecte les entités TypeORM dans un
+les modules Nest et le registre `src/app/database/typeorm-entities.ts` collecte les entités TypeORM dans un
 ordre global. `platform/database` reçoit cette liste par paramètre et ses
 migrations définissent leurs formats historiques localement ; il ne peut donc
 plus importer le métier. Lorsqu'un adapter transversal a besoin d'une décision

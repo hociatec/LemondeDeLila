@@ -1,21 +1,23 @@
-import type { RoomBotRecord } from '../../../../application/contracts/room-bot.model';
-import type { RoomParticipantRecord } from '../../../../application/contracts/room-participant.model';
-import type { RoomRecord } from '../../../../application/contracts/room-record.model';
-import type { RoomUserRecord } from '../../../../application/contracts/room-user.model';
+import type { RoomBotRecord } from '../../../../application/models/room-bot.model';
+import type { RoomParticipantRecord } from '../../../../application/models/room-participant.model';
+import type { RoomRecord } from '../../../../application/models/room-record.model';
+import type { RoomUserRecord } from '../../../../application/models/room-user.model';
 import { RoomBot } from '../entities/room-bot.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { Room } from '../entities/room.entity';
-import { User } from '../../../../../user/public-api';
+import type { RoomUserPersistenceRef } from '../entities/room-user.persistence-ref';
+import type { DeepPartial } from 'typeorm';
+import { asUserId } from '../../../../../../shared/interfaces/public-api';
 
 export function toRoomUserRecord(
-  user: User | null | undefined,
+  user: RoomUserPersistenceRef | null | undefined,
 ): RoomUserRecord | null {
   if (!user) {
     return null;
   }
 
   return {
-    id: user.id,
+    id: asUserId(user.id),
     username: user.username,
     roles: Array.isArray(user.roles) ? [...user.roles] : [],
   };
@@ -92,11 +94,11 @@ export function toRoomRecord(room: Room | null | undefined): RoomRecord | null {
   };
 }
 
-export function toRoomEntity(room: RoomRecord): Partial<Room> {
+export function toRoomEntity(room: RoomRecord): DeepPartial<Room> {
   const owner = room.owner
-    ? ({
+    ? {
         id: room.owner.id,
-      } as User)
+      }
     : null;
 
   return {
@@ -116,15 +118,17 @@ export function toRoomEntity(room: RoomRecord): Partial<Room> {
   };
 }
 
-export function toRoomEntityPatch(room: Partial<RoomRecord>): Partial<Room> {
-  const patch: Partial<Room> = {};
+export function toRoomEntityPatch(
+  room: Partial<RoomRecord>,
+): DeepPartial<Room> {
+  const patch: DeepPartial<Room> = {};
   if (room.name !== undefined) patch.name = room.name;
   if (room.gameType !== undefined) patch.gameType = room.gameType;
   if (room.maxPlayers !== undefined) patch.maxPlayers = room.maxPlayers;
   if (room.isPrivate !== undefined) patch.isPrivate = room.isPrivate;
   if (room.status !== undefined) patch.status = room.status;
   if (room.owner !== undefined) {
-    patch.owner = room.owner ? ({ id: room.owner.id } as User) : null;
+    patch.owner = room.owner ? { id: room.owner.id } : null;
   }
   if (room.createdAt !== undefined) patch.createdAt = room.createdAt;
   if (room.startedAt !== undefined) patch.startedAt = room.startedAt;
@@ -143,18 +147,18 @@ export function toRoomEntityPatch(room: Partial<RoomRecord>): Partial<Room> {
 
 export function toRoomParticipantEntity(
   participant: RoomParticipantRecord,
-): Partial<RoomParticipant> {
+): DeepPartial<RoomParticipant> {
   return {
     id: participant.id > 0 ? participant.id : undefined,
     room: participant.room
-      ? ({
+      ? {
           id: participant.room.id,
           gameType: participant.room.gameType,
-        } as Room)
+        }
       : undefined,
     user: {
       id: participant.user.id,
-    } as User,
+    },
     role: participant.role,
     joinedAt: participant.joinedAt ?? undefined,
     leftAt: participant.leftAt ?? null,

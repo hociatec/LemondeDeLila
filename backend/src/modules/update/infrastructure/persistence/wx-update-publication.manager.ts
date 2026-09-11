@@ -1,10 +1,9 @@
+import { allCompleted } from '../../../../shared/utils/public-api';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  bestEffort,
-  writeFileAtomic,
-} from '../../../../shared/utils/public-api';
+import { bestEffort } from '../../../../platform/observability/public-api';
+import { writeFileAtomic } from '../../../../platform/filesystem/public-api';
 import {
   canonicalizeWxUpdateSignature,
   WX_UPDATE_ARCHITECTURE,
@@ -42,7 +41,10 @@ export class WxUpdatePublicationManager {
     private readonly updateCache: (manifest: WxUpdateManifest) => void,
   ) {}
 
-  async commit(params: WxPublicationCommit): Promise<WxUpdateManifest> {
+  async commit(
+    params: WxPublicationCommit,
+    assertHeld: () => Promise<void> = async () => {},
+  ): Promise<WxUpdateManifest> {
     const lock = await this.acquirePublicationLock();
     try {
       const previous = await this.readLatestFromDisk();
@@ -63,6 +65,7 @@ export class WxUpdatePublicationManager {
       this.assertSignature(params);
       const files = await this.prepareReleaseFiles(params);
       const manifest = this.buildManifest(params, files);
+      await assertHeld();
       await writeFileAtomic(this.metaPath, JSON.stringify(manifest, null, 2));
       this.updateCache(manifest);
       await this.pruneSupersededReleases(manifest.releaseId);
@@ -83,6 +86,7 @@ export class WxUpdatePublicationManager {
       minimumVersion: params.minimumVersion,
       artifactSize: params.artifactSize,
       artifactSha256: params.sha256,
+      installerSha256: params.installer?.sha256 ?? null,
     });
     if (!this.validator.verifySignature(payload, params.signature)) {
       throw new BadRequestException('Signature cryptographique WX invalide.');
@@ -145,7 +149,21 @@ export class WxUpdatePublicationManager {
       );
     }
     if (!hash && params.input.installerZipPath) {
-      await fs.promises.copyFile(params.input.installerZipPath, installerPath);
+      const stagingRoot = path.join(this.updatesDir, '.staging');
+      await fs.promises.mkdir(stagingRoot, { recursive: true });
+      const stagingDir = await fs.promises.mkdtemp(
+        path.join(stagingRoot, 'installer-'),
+      );
+      const stagedInstaller = path.join(stagingDir, installerFileName);
+      try {
+        await fs.promises.copyFile(
+          params.input.installerZipPath,
+          stagedInstaller,
+        );
+        await fs.promises.rename(stagedInstaller, installerPath);
+      } finally {
+        await fs.promises.rm(stagingDir, { recursive: true, force: true });
+      }
     }
   }
 
@@ -192,7 +210,7 @@ export class WxUpdatePublicationManager {
     const entries = await fs.promises.readdir(releasesDir, {
       withFileTypes: true,
     });
-    await Promise.all(
+    await allCompleted(
       entries
         .filter((entry) => entry.name !== activeReleaseId)
         .map((entry) =>
@@ -234,14 +252,13 @@ export class WxUpdatePublicationManager {
 
   private async readLatestFromDisk(): Promise<WxUpdateManifest | null> {
     try {
+      const stat = await fs.promises.stat(this.metaPath);
+      if (!stat.isFile() || stat.size > 256 * 1024) return null;
       const value = JSON.parse(
         await fs.promises.readFile(this.metaPath, 'utf-8'),
       ) as unknown;
-      return this.validator.verifyManifest(
-        value as WxUpdateManifest,
-        this.maxArtifactBytes,
-      )
-        ? (value as WxUpdateManifest)
+      return this.validator.verifyManifest(value, this.maxArtifactBytes)
+        ? value
         : null;
     } catch {
       return null;

@@ -1,5 +1,10 @@
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { bestEffort } from '../../../../shared/utils/public-api';
+import { bestEffort } from '../../../../platform/observability/public-api';
+import { userBanStatus } from '../../domain/policies/user-ban.policy';
 import {
   REFRESH_TOKEN_SERVICE,
   type RefreshTokenServicePort,
@@ -18,6 +23,7 @@ export class RefreshUserSessionService {
     private readonly tokenService: UserTokenServicePort,
     @Inject(REFRESH_TOKEN_SERVICE)
     private readonly refreshTokens: RefreshTokenServicePort,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async execute(refreshToken: string): Promise<{
@@ -37,7 +43,8 @@ export class RefreshUserSessionService {
       throw new UnauthorizedException('Session invalide');
     }
 
-    if (user.bannedUntil && user.bannedUntil.getTime() <= Date.now()) {
+    const banStatus = userBanStatus(user.bannedUntil, this.clock.now());
+    if (banStatus === 'expired') {
       user.bannedUntil = null;
       user.banReason = null;
       await bestEffort(
@@ -45,7 +52,7 @@ export class RefreshUserSessionService {
         `nettoyage du bannissement expiré user=${user.id}`,
       );
     }
-    if (user.bannedUntil && user.bannedUntil.getTime() > Date.now()) {
+    if (banStatus === 'active' || banStatus === 'invalid') {
       await this.refreshTokens.revoke(rotation.refreshToken);
       throw new UnauthorizedException('Compte banni');
     }

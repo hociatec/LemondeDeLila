@@ -1,7 +1,5 @@
-import {
-  testGame,
-  type StableGameKitsView,
-} from '../../../engine/sdk/public-api';
+import { testGame } from '../../../engine/testing/public-api';
+import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import { A_FOND_CARD_COUNT } from './rules';
 import gameDefinition from './game';
 
@@ -157,8 +155,7 @@ describe('À fond les ballons declarative game', () => {
     expect(game.inspect.deckCount()).toBe(A_FOND_CARD_COUNT - 1);
     const drawAnnouncement = (await game.events()).find(
       (event) =>
-        event.type === 'game.message' &&
-        event.data.key === 'game.card.drawn',
+        event.type === 'game.message' && event.data.key === 'game.card.drawn',
     );
     expect(drawAnnouncement?.data.params).toEqual(
       expect.objectContaining({

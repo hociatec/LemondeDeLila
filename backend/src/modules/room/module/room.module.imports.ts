@@ -1,30 +1,27 @@
-import { forwardRef } from '@nestjs/common';
+import { BusinessClockModule } from '../../../platform/time/public-api';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BotModule } from '../../bot/public-api';
-import { CatalogModule } from '../../catalog/public-api';
-import { UpdateModule } from '../../update/public-api';
-import { NotificationModule } from '../../notification/public-api';
-import { PresenceModule } from '../../presence/public-api';
-import { SoundsModule } from '../../sounds/public-api';
-import { StatsModule } from '../../stats/public-api';
-import { User } from '../../user/public-api';
-import { VaultRoomSnapshotEntity } from '../../vault/infrastructure/persistence/typeorm/entities/vault-room-snapshot.entity';
+import { BotModule } from '../../bot/composition-api';
+import { CatalogModule } from '../../catalog/composition-api';
+import { UpdateModule } from '../../update/composition-api';
+import { NotificationModule } from '../../notification/composition-api';
+import { PresenceModule } from '../../presence/composition-api';
+import { SoundsModule } from '../../sounds/composition-api';
+import { StatsModule } from '../../stats/composition-api';
 import { RoomBot } from '../infrastructure/persistence/typeorm/entities/room-bot.entity';
 import { RoomMaintenanceSettingsEntity } from '../infrastructure/persistence/typeorm/entities/room-maintenance-settings.entity';
 import { RoomParticipant } from '../infrastructure/persistence/typeorm/entities/room-participant.entity';
 import { Room } from '../infrastructure/persistence/typeorm/entities/room.entity';
 
 export const ROOM_MODULE_IMPORTS = [
+  BusinessClockModule,
   TypeOrmModule.forFeature([
     Room,
     RoomParticipant,
     RoomBot,
     RoomMaintenanceSettingsEntity,
-    VaultRoomSnapshotEntity,
-    User,
   ]),
-  forwardRef(() => BotModule),
-  forwardRef(() => PresenceModule),
+  BotModule,
+  PresenceModule,
   NotificationModule,
   UpdateModule,
   SoundsModule,

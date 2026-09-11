@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { GameRegistryService } from '../../../../game/public-api';
-import { CatalogSourceGame } from '../../application/contracts/catalog-source-game.record';
+import { CatalogSourceGame } from '../../application/read-models/catalog-source-game.record';
 import { CatalogGameSourcePort } from '../../application/ports/catalog-game-source.port';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class CatalogGameRegistrySource implements CatalogGameSourcePort {
 
   async listGames(): Promise<CatalogSourceGame[]> {
     const definitions = await this.registry.listGames();
-    return definitions.map((definition) => ({
+    return definitions.slice(0, 2_000).map((definition) => ({
       id: definition.id,
       name: definition.name,
       description: definition.description,

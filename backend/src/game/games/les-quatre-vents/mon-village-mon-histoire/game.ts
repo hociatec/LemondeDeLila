@@ -1,3 +1,4 @@
+import manifest from './manifest.json';
 import {
   cards,
   collection,
@@ -20,12 +21,13 @@ const cardSchema = defineCardsSchema({
 });
 
 export default defineGame<MonVillageState>()({
-  id: 'mon-village-mon-histoire',
-  displayName: 'Mon Village, Mon Histoire',
+  id: manifest.code,
+  rulesVersion: '2',
+  displayName: manifest.name,
   category: 'JeuxDePlateaux',
   subcategory: 'LesQuatreVents',
-  description: 'Parcourez les métiers qui font vivre un village.',
-  players: { min: 2, max: 6 },
+  description: manifest.summary,
+  players: { min: manifest.minPlayers, max: manifest.maxPlayers },
   events: [CARD_COLLECTED],
   content: MON_VILLAGE_CONTENT,
   patterns: [raceGame({ trackId: 'village', spaces: VILLAGE_TILES.length })],
@@ -48,5 +50,6 @@ export default defineGame<MonVillageState>()({
     { key: 'S', type: 'interface', id: 'score' },
   ],
   actions: MON_VILLAGE_ACTIONS,
+  resourceIds: VILLAGE_ZONES.map((zone) => `village-zone-${zone.id}`),
   bot: { choose: () => ({ type: 'roll', payload: {} }) },
 });

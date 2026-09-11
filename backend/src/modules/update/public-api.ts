@@ -1,8 +1,7 @@
 export {
-  UpdatePolicyService,
+  ClientUpdateQueryService,
   type UpdateNotice,
-} from './application/update-policy.service';
-export { UpdateModule } from './module/update.module';
+} from './application/client-update-query.service';
 export type {
   WxUpdateManifest,
   WxUpdateManifestResponse,

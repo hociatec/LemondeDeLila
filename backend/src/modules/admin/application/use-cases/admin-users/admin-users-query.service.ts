@@ -1,3 +1,7 @@
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../../shared/interfaces/public-api';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   ADMIN_USER_REPOSITORY,
@@ -5,22 +9,29 @@ import {
 } from '../../ports/admin-user.repository';
 import type { AdminSafeUser } from '../../../domain/models/admin-user.model';
 import type { ListAdminUsersQuery } from './admin-users.commands';
+import { businessMsToDate, parseExplicitInstant } from '../../../../../shared/utils/public-api';
 
 @Injectable()
 export class AdminUsersQueryService {
   constructor(
     @Inject(ADMIN_USER_REPOSITORY)
     private readonly users: AdminUserRepository,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
   async list(query: ListAdminUsersQuery) {
-    const now = new Date();
+    const now = businessMsToDate(this.clock.now());
     await this.users.clearExpiredBans(now);
     await this.users.clearExpiredChatBans(now);
 
-    const page = query.page && query.page > 0 ? query.page : 1;
+    const page =
+      query.page && Number.isSafeInteger(query.page) && query.page > 0
+        ? Math.min(query.page, 100_000)
+        : 1;
     const limit =
-      query.limit && query.limit > 0 ? Math.min(query.limit, 100) : 20;
+      query.limit && Number.isSafeInteger(query.limit) && query.limit > 0
+        ? Math.min(query.limit, 100)
+        : 20;
 
     const result = await this.users.list({
       search: query.search,
@@ -41,7 +52,7 @@ export class AdminUsersQueryService {
   }
 
   async get(id: number): Promise<AdminSafeUser> {
-    const now = new Date();
+    const now = businessMsToDate(this.clock.now());
     await this.users.clearExpiredBans(now);
     await this.users.clearExpiredChatBans(now);
 
@@ -56,7 +67,7 @@ export class AdminUsersQueryService {
     if (!value) {
       return null;
     }
-    const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
+    const instant = parseExplicitInstant(value);
+    return instant === null ? null : businessMsToDate(instant);
   }
 }

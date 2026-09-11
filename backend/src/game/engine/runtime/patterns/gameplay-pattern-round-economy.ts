@@ -1,20 +1,21 @@
-import type { PlayerStateEntity } from '../../../core/application/contracts/game-state.model';
-import type { GameContext } from '../game-rule-context';
-import type { RoundLifecycleInput } from '../lifecycle/game-lifecycle-hooks';
-import { clockwise, simultaneous } from '../kits/turn-kit';
-import { grid } from '../kits/grid-kit';
-import { economy } from '../kits/economy-kit';
-import { inventory } from '../kits/inventory-kit';
-import { completeRound } from '../recipes/gameplay-recipes';
-import { definePattern, type GamePattern } from './gameplay-pattern-core';
+import type { PlayerState } from '../../../core/application/models/game-state.model';
+import type { GameContext } from '../definitions/game-author-context';
+import type { RoundLifecycleInput } from './pattern-capabilities';
+import {
+  clockwise,
+  simultaneous,
+  grid,
+  economy,
+  inventory,
+  completeRound,
+} from './pattern-capabilities';
+import { definePattern } from './gameplay-pattern-core';
+import { type GamePattern } from '../contracts/pattern-definition';
 
 export function collectionGame<TState extends object>(options: {
-  completedSets: (input: {
-    state: TState;
-    player: PlayerStateEntity;
-  }) => number;
+  completedSets: (input: { state: TState; player: PlayerState }) => number;
   targetSets: number;
-}): GamePattern<TState> {
+}): GamePattern<TState, never, 'collections' | 'sets' | 'scoring'> {
   return definePattern({
     id: 'collection-game',
     mechanics: ['collections', 'sets', 'scoring'],
@@ -35,16 +36,22 @@ export function collectionGame<TState extends object>(options: {
   });
 }
 
-export function pushYourLuck<TState extends object>(): GamePattern<TState> {
+export function pushYourLuck<TState extends object>(): GamePattern<
+  TState,
+  never,
+  'push-your-luck' | 'pass' | 'round-risk'
+> {
   return definePattern({
     id: 'push-your-luck',
     mechanics: ['push-your-luck', 'pass', 'round-risk'],
   });
 }
 
-export function simultaneousAnswers<
-  TState extends object,
->(): GamePattern<TState> {
+export function simultaneousAnswers<TState extends object>(): GamePattern<
+  TState,
+  never,
+  'simultaneous' | 'secret-submissions' | 'reveal'
+> {
   return definePattern({
     id: 'simultaneous-answers',
     mechanics: ['simultaneous', 'secret-submissions', 'reveal'],
@@ -66,7 +73,7 @@ export function roundScoring<TState extends object>(options: {
     | { starterPlayerId: number }
     | ((input: RoundLifecycleInput<TState>) => number | null);
   matchReason?: string | ((input: RoundLifecycleInput<TState>) => string);
-}): GamePattern<TState> {
+}): GamePattern<TState, never, 'rounds' | 'scoring' | 'starter-rotation'> {
   return definePattern({
     id: 'round-scoring:main',
     mechanics: ['rounds', 'scoring', 'starter-rotation'],
@@ -128,17 +135,19 @@ function normalizeWinners(
   ];
 }
 
-export function gridGame<TState extends object>(options: {
-  boardId?: string;
-  width: number;
-  height: number;
-  diagonals?: boolean;
-  winLength?: number;
-  drawWhenFull?: boolean;
-  winnerReason?: string;
-  drawReason?: string;
-}): GamePattern<TState> {
+export function gridGame<TState extends object>(
+  options: {
+    boardId?: string;
+    width: number;
+    height: number;
+    diagonals?: boolean;
+    drawWhenFull?: boolean;
+    winnerReason?: string;
+    drawReason?: string;
+  } & ({ winLength: number } | { winLength?: never }),
+): GamePattern<TState, 'grid.board', 'grid' | 'legal-cells' | 'grid-victory'> {
   const boardId = options.boardId ?? 'main';
+  const { winLength } = options;
   return definePattern({
     id: `grid-game:${boardId}`,
     mechanics: ['grid', 'legal-cells', 'grid-victory'],
@@ -151,14 +160,11 @@ export function gridGame<TState extends object>(options: {
         diagonals: options.diagonals,
       }),
     ],
-    ...(options.winLength
+    ...(winLength !== undefined
       ? {
           victory: {
             evaluate: ({ ctx }) => {
-              const winner = ctx.grid.lineWinner<number>(
-                boardId,
-                options.winLength!,
-              );
+              const winner = ctx.grid.lineWinner<number>(boardId, winLength);
               if (winner != null) {
                 return {
                   winnerPlayerIds: [winner],
@@ -182,7 +188,14 @@ type MarketGamePattern<
   TState extends object,
   TCurrency extends string,
   TCounterId extends string,
-> = Omit<GamePattern<TState>, 'initialization'> & {
+> = Omit<
+  GamePattern<
+    TState,
+    'inventory.set' | 'economy.market',
+    'market' | 'economy' | 'buy' | 'sell' | 'solvency'
+  >,
+  'initialization'
+> & {
   readonly initialization: {
     readonly resources?: Readonly<Record<TCurrency, number>>;
     readonly counters?: Readonly<Record<TCounterId, number>>;
@@ -195,21 +208,26 @@ export function marketGame<
   TState extends object = object,
   const TCurrency extends string = string,
   const TCounterId extends string = never,
->(options: {
-  marketId: string;
-  inventoryId: string;
-  items: readonly string[];
-  currency: TCurrency;
-  prices: Readonly<Record<string, number>>;
-  startingCurrency?: number;
-  minPrice?: number;
-  maxPrice?: number;
-  turnsCounterId?: TCounterId;
-  maxRounds?: number;
-  winnerReason?: string;
-}): MarketGamePattern<TState, TCurrency, TCounterId> {
+>(
+  options: {
+    marketId: string;
+    inventoryId: string;
+    items: readonly string[];
+    currency: TCurrency;
+    prices: Readonly<Record<string, number>>;
+    startingCurrency?: number;
+    minPrice?: number;
+    maxPrice?: number;
+    winnerReason?: string;
+  } & (
+    | { turnsCounterId: TCounterId; maxRounds: number }
+    | { turnsCounterId?: never; maxRounds?: never }
+  ),
+): MarketGamePattern<TState, TCurrency, TCounterId> {
+  const { turnsCounterId, maxRounds } = options;
   return definePattern({
     id: `market-game:${options.marketId}:${options.inventoryId}`,
+    resourceIds: [options.currency],
     mechanics: ['market', 'economy', 'buy', 'sell', 'solvency'],
     turn: clockwise(),
     components: [
@@ -238,13 +256,13 @@ export function marketGame<
       firstPlayer: 'first',
       startRound: true,
     },
-    ...(options.turnsCounterId && options.maxRounds
+    ...(turnsCounterId !== undefined && maxRounds !== undefined
       ? {
           victory: {
             evaluate: ({ ctx }) => {
               if (
-                ctx.counters.get(options.turnsCounterId!) <
-                ctx.players.count() * options.maxRounds!
+                ctx.counters.get(turnsCounterId) <
+                ctx.players.count() * maxRounds
               ) {
                 return null;
               }
@@ -278,7 +296,17 @@ export function submissionJudgeGame<TState extends object>(
     targetScore?: number;
     winnerReason?: string;
   } = {},
-): GamePattern<TState> {
+): GamePattern<
+  TState,
+  never,
+  | 'simultaneous'
+  | 'secret-submissions'
+  | 'reveal'
+  | 'judge'
+  | 'voting'
+  | 'scoring'
+> {
+  const { targetScore } = options;
   return definePattern({
     id: `submission-judge-game:${options.submissionId ?? 'main'}:${options.judgeId ?? 'judge'}`,
     mechanics: [
@@ -315,15 +343,13 @@ export function submissionJudgeGame<TState extends object>(
         }
       },
     },
-    ...(options.targetScore
+    ...(targetScore
       ? {
           victory: {
             evaluate: ({ ctx }) => {
               const reached = ctx.players
                 .all()
-                .filter(
-                  (player) => ctx.score.get(player.id) >= options.targetScore!,
-                );
+                .filter((player) => ctx.score.get(player.id) >= targetScore);
               return reached.length === 1
                 ? {
                     winnerPlayerIds: [reached[0].id],

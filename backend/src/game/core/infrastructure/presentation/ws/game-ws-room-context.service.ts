@@ -9,6 +9,7 @@ import {
   type GameRoomContextPort,
   type GameRoomPayload,
 } from '../../../application/ports/game-room.port';
+import { asRoomId, asUserId } from '../../../../../shared/interfaces/public-api';
 
 @Injectable()
 export class GameWsRoomContextService {
@@ -18,7 +19,7 @@ export class GameWsRoomContextService {
   ) {}
 
   async ensureReadable(roomId: number, userId: number): Promise<void> {
-    const payload = await this.roomGame.getRoomPayload(roomId);
+    const payload = await this.roomGame.getRoomPayload(asRoomId(roomId));
     const room = payload.room;
     if (!room.isPrivate) return;
 
@@ -32,7 +33,7 @@ export class GameWsRoomContextService {
   }
 
   async ensureWritable(roomId: number, userId: number): Promise<void> {
-    const room = (await this.roomGame.getRoomPayload(roomId)).room;
+    const room = (await this.roomGame.getRoomPayload(asRoomId(roomId))).room;
     const isOwner = room.owner?.id === userId;
     const isParticipant = (room.players ?? []).some(
       (participant) => participant.id === userId,
@@ -48,27 +49,29 @@ export class GameWsRoomContextService {
     userId: number,
     requestedGameType = '',
   ): Promise<string> {
-    const room = (await this.roomGame.getRoomPayload(roomId)).room;
+    const typedRoomId = asRoomId(roomId);
+    const typedUserId = asUserId(userId);
+    const room = (await this.roomGame.getRoomPayload(typedRoomId)).room;
     const gameType = requestedGameType || String(room.gameType ?? '').trim();
     if (!gameType) throw new NotFoundException('Jeu introuvable');
 
     if (operation === 'reset') {
-      await this.roomGame.resetRoom(roomId, userId);
+      await this.roomGame.resetRoom(typedRoomId, typedUserId);
     } else {
-      await this.roomGame.startRoom(roomId, userId);
+      await this.roomGame.startRoom(typedRoomId, typedUserId);
     }
     return gameType;
   }
 
   async buildPayload(roomId: number): Promise<GameRoomPayload> {
-    return this.roomGame.getRoomPayload(roomId);
+    return this.roomGame.getRoomPayload(asRoomId(roomId));
   }
 
   async refreshPayload(roomId: number): Promise<GameRoomPayload> {
-    return this.roomGame.refreshRoomPayload(roomId);
+    return this.roomGame.refreshRoomPayload(asRoomId(roomId));
   }
 
   async prepareNextRun(roomId: number): Promise<void> {
-    await this.roomGame.prepareNextRun(roomId);
+    await this.roomGame.prepareNextRun(asRoomId(roomId));
   }
 }

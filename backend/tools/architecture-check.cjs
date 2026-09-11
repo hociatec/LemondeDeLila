@@ -3,6 +3,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const ts = require('typescript');
+const { inspectPolicyPurity } = require('./policy-purity.cjs');
+const { inspectReaderBoundary } = require('./reader-boundary.cjs');
+const { createExportOriginReader } = require('./public-api-exports.cjs');
 
 const repoRoot = path.resolve(__dirname, '..');
 const srcRoot = path.join(repoRoot, 'src');
@@ -61,6 +64,11 @@ function describeComponent(srcRelative, contract) {
   const parts = normalizeSlashes(srcRelative).split('/').filter(Boolean);
   if (parts.length === 0) return null;
   if (parts.length === 1 && path.extname(parts[0])) {
+    return { name: 'root', root: '', depth: 0, kind: 'composition' };
+  }
+  if ((contract.composition?.rootDirectories ?? []).some(directory =>
+    parts.join('/').startsWith(`${directory}/`),
+  )) {
     return { name: 'root', root: '', depth: 0, kind: 'composition' };
   }
 
@@ -208,11 +216,23 @@ function getImports(filePath, contract, root = srcRoot) {
       add(node.moduleSpecifier.text, 'export');
     } else if (
       ts.isCallExpression(node) &&
-      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(node.expression) && node.expression.text === 'require')) &&
       node.arguments.length === 1 &&
       ts.isStringLiteral(node.arguments[0])
     ) {
       add(node.arguments[0].text, 'dynamic-import');
+    } else if (
+      ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument) &&
+      ts.isStringLiteral(node.argument.literal)
+    ) {
+      add(node.argument.literal.text, 'import');
+    } else if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference) &&
+      node.moduleReference.expression && ts.isStringLiteral(node.moduleReference.expression)
+    ) {
+      add(node.moduleReference.expression.text, 'import');
     }
     ts.forEachChild(node, visit);
   }
@@ -373,10 +393,40 @@ function analyzeArchitecture({
   const violations = [];
   const graph = new Map();
   const componentNames = new Set();
+  const exportOrigins = createExportOriginReader(files,
+    (file, specifier) => resolveImport(file, specifier, contract, root));
 
   for (const filePath of files) {
     const sourceInfo = describeFile(filePath, contract, root);
     if (!sourceInfo.component) continue;
+    if (path.basename(filePath) !== 'composition-api.ts' &&
+        isComponentPublicEntry(sourceInfo, contract) &&
+        ['domain', 'game'].includes(sourceInfo.component.kind)) {
+      for (const origin of exportOrigins(filePath)) {
+        const targetInfo = describeFile(origin, contract, root);
+        if (targetInfo.relative.includes('/infrastructure/') || targetInfo.layer === 'module') {
+          violations.push(makeViolation(
+            'business-api-infrastructure-export', sourceInfo, targetInfo, null,
+            `Business public entry exposes infrastructure declared in ${targetInfo.relative}`,
+          ));
+        }
+      }
+    }
+    if (/(?:^|\/)contracts\/.*\.(?:model|record)\.ts$/.test(sourceInfo.relative)) {
+      violations.push(makeViolation(
+        'contracts-no-data-model', sourceInfo, null, 'contracts',
+        'Data models and persistence records belong outside contracts directories',
+      ));
+    }
+    if (/[-.]reader(?:\.port)?\.ts$/.test(filePath) ||
+        /\b(?:class|interface)\s+\w*Reader\b/.test(fs.readFileSync(filePath, 'utf8'))) {
+      for (const detail of inspectReaderBoundary(filePath, fs.readFileSync(filePath, 'utf8')))
+        violations.push(makeViolation('reader-read-only', sourceInfo, null, 'reader', detail));
+    }
+    if (/[-.]policy(?:\.service)?\.ts$/.test(filePath)) {
+      for (const detail of inspectPolicyPurity(filePath, fs.readFileSync(filePath, 'utf8')))
+        violations.push(makeViolation('policy-purity', sourceInfo, null, 'policy', detail));
+    }
     componentNames.add(sourceInfo.component.name);
     if (!graph.has(sourceInfo.component.name))
       graph.set(sourceInfo.component.name, new Set());
@@ -403,6 +453,16 @@ function analyzeArchitecture({
       const targetInfo = resolved
         ? describeFile(resolved, contract, root)
         : null;
+
+      if (sourceInfo.relative.startsWith('platform/database/migrations/') &&
+          (targetInfo
+            ? !targetInfo.relative.startsWith('platform/database/migrations/')
+            : specifier !== 'typeorm' && !specifier.startsWith('node:'))) {
+        violations.push(makeViolation(
+          'migration-no-application-dependency', sourceInfo, targetInfo, specifier,
+          'Historical migrations may depend only on migrations, TypeORM and Node built-ins',
+        ));
+      }
 
       if (sourceInfo.layer === 'application') {
         if (
@@ -433,6 +493,14 @@ function analyzeArchitecture({
       }
 
       if (sourceInfo.layer === 'domain') {
+        if (['joi', '@hapi/joi', 'zod', 'class-validator', 'class-transformer'].some(
+          (name) => specifier === name || specifier.startsWith(`${name}/`),
+        )) {
+          violations.push(makeViolation(
+            'domain-no-validation-framework', sourceInfo, null, specifier,
+            `imports ${specifier}`,
+          ));
+        }
         if (specifier === 'typeorm' || specifier.startsWith('@nestjs/')) {
           violations.push(
             makeViolation(
@@ -461,6 +529,31 @@ function analyzeArchitecture({
       const sameComponent =
         targetInfo.component.name === sourceInfo.component.name;
       const compositionSource = isCompositionSource(sourceInfo, contract);
+      if (path.basename(resolved) === 'composition-api.ts' && !compositionSource) {
+        violations.push(makeViolation(
+          'composition-api-consumer', sourceInfo, targetInfo, null,
+          'Only composition code may import the Nest composition entry',
+        ));
+      }
+
+      // A bounded context's public entry is for consumers outside that
+      // context. Internal files must keep the dependency graph explicit and
+      // import the local contract/implementation directly.
+      if (
+        sameComponent &&
+        path.basename(resolved) === 'public-api.ts' &&
+        isComponentPublicEntry(targetInfo, contract)
+      ) {
+        violations.push(
+          makeViolation(
+            'internal-public-api-import',
+            sourceInfo,
+            targetInfo,
+            'public-api',
+            `internal file imports its own public entry ${targetInfo.relative}`,
+          ),
+        );
+      }
 
       if (
         entry.kind === 'export' &&
@@ -480,6 +573,17 @@ function analyzeArchitecture({
       }
 
       if (sameComponent) continue;
+
+      if ((contract.dependencies?.forbidden ?? []).some(
+        (entry) => sourceInfo.component.kind !== 'composition' &&
+          componentPatternMatches(sourceInfo.component.name, entry.source) &&
+          componentPatternMatches(targetInfo.component.name, entry.target),
+      )) {
+        violations.push(makeViolation(
+          'forbidden-component-dependency', sourceInfo, targetInfo, null,
+          `dependency ${sourceInfo.component.name} -> ${targetInfo.component.name} is forbidden, including composition`,
+        ));
+      }
 
       if (
         sourceInfo.component.kind === 'shared' &&
@@ -511,12 +615,15 @@ function analyzeArchitecture({
         );
       }
 
-      if (!compositionSource) {
+      // A module's wiring still creates a dependency of its bounded context.
+      // Root composition is excluded, but module-to-module cycles must remain visible.
+      if (!compositionSource || sourceInfo.component.kind === 'domain') {
         const graphSource = graphComponentName(sourceInfo.component, contract);
         const graphTarget = graphComponentName(targetInfo.component, contract);
         if (graphSource !== graphTarget)
           addGraphEdge(graph, graphSource, graphTarget);
-
+      }
+      if (!compositionSource) {
         if (!isAllowedDependency(sourceInfo.component, targetInfo.component, contract)) {
           violations.push(
             makeViolation(

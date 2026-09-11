@@ -1,3 +1,4 @@
-import { GameRegistryModule } from '../../../game/public-api';
+import { GameRegistryModule } from '../../../game/composition-api';
+import { BusinessClockModule } from '../../../platform/time/public-api';
 
-export const CATALOG_MODULE_IMPORTS = [GameRegistryModule];
+export const CATALOG_MODULE_IMPORTS = [GameRegistryModule, BusinessClockModule];

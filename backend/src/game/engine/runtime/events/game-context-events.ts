@@ -1,6 +1,7 @@
+import { assertSerializableState } from '../state/assert-serializable-state';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { EventVisibility } from '../../../core/application/contracts/game-event.model';
-import type { GameLogEntry } from '../../../core/application/contracts/game-state.model';
+import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import type { GameLogEntry } from '../../../core/application/models/game-state.model';
 import {
   ENGINE_EVENT_VISIBILITY,
   type EngineEventMap,
@@ -35,22 +36,23 @@ export class GameContextEvents {
       type: string,
       data: object = {},
       visibility: EventVisibility = { kind: 'public' },
-    ) => this.buffer.push({ type, data, visibility }),
+    ) => this.enqueue({ type, data, visibility }),
     engine: <TType extends keyof EngineEventMap>(
       type: TType,
       data: EngineEventMap[TType],
       ...[visibility]: EngineVisibilityArguments<TType>
     ) => {
-      this.buffer.push({
+      this.enqueue({
         type,
         data,
         visibility: resolveEngineVisibility(type, visibility),
       });
     },
     message: (key: string, params: Record<string, unknown> = {}) => {
+      assertSerializableState(params, 'event.data.params');
       const normalizedKey = key.trim();
       if (!normalizedKey) return;
-      this.buffer.push({
+      this.enqueue({
         type: 'game.message',
         data: { key: normalizedKey, params: structuredClone(params) },
         visibility: { kind: 'public' },
@@ -73,13 +75,18 @@ export class GameContextEvents {
     data: Record<string, unknown>,
     visibility?: EventVisibility,
   ): void {
-    this.buffer.push({
+    this.enqueue({
       type,
       data,
       visibility: isEngineEventType(type)
         ? resolveEngineVisibility(type, visibility)
         : (visibility ?? { kind: 'public' }),
     });
+  }
+
+  private enqueue(event: DomainEvent): number {
+    assertSerializableState(event, 'event');
+    return this.buffer.push(structuredClone(event));
   }
 
   consume(): DomainEvent[] {

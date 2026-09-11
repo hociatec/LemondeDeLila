@@ -13,6 +13,7 @@ export class AdminChatMessagesWsDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(500)
   limit?: number;
 
   @IsOptional()

@@ -1,125 +1,42 @@
-import {
-  freezeGameContent,
-  gameEffects,
-  rejectContent,
-} from '../../../engine/sdk/public-api';
 import type {
   EffectTarget,
   GameEffectInstruction,
 } from '../../../engine/sdk/public-api';
+import {
+  cardContent,
+  defineGameContent,
+  effectContentSchema,
+  gameEffects,
+  gameInput,
+  isRecord,
+  rejectContent,
+} from '../../../engine/sdk/public-api';
 import data from './content-data.json';
+import type {
+  OlympiaCardDefinition,
+  OlympiaDeckType,
+  OlympiaEffect,
+} from './content-types';
+import {
+  OLYMPIA_CATEGORIES,
+  OLYMPIA_DECK_TYPES,
+  OLYMPIA_STATUS_KEYS,
+} from './content-types';
+import manifest from './manifest.json';
+export {
+  OLYMPIA_CATEGORIES,
+  OLYMPIA_DECK_TYPES,
+  OLYMPIA_STATUS_KEYS,
+} from './content-types';
+export type {
+  OlympiaCardDefinition,
+  OlympiaCategory,
+  OlympiaDeckType,
+  OlympiaEffect,
+  OlympiaStatusKey,
+} from './content-types';
 
-export type OlympiaCategory =
-  | 'divinite'
-  | 'heros'
-  | 'creature'
-  | 'exploit'
-  | 'action'
-  | 'attaque'
-  | 'evenement';
-export type OlympiaDeckType =
-  | 'divinite'
-  | 'heros'
-  | 'creatures'
-  | 'exploits'
-  | 'actions'
-  | 'attaques'
-  | 'evenements';
-export type OlympiaStatusKey =
-  | 'block_play'
-  | 'block_hero'
-  | 'block_exploit'
-  | 'block_hero_exploit'
-  | 'shield'
-  | 'halved_gains'
-  | 'neutralize_creature'
-  | 'double_exploit'
-  | 'divinity_block'
-  | 'global_block_hero'
-  | 'global_block_exploit'
-  | 'block_draw_hero'
-  | 'exploit_bonus'
-  | 'event_protection'
-  | 'block_actions'
-  | 'exploit_penalty';
-export type OlympiaEffect =
-  | {
-      type: 'prestige';
-      target: 'self' | 'target' | 'all' | 'others';
-      value: number;
-    }
-  | { type: 'steal'; value: number }
-  | {
-      type: 'draw';
-      target: 'self' | 'all';
-      amount: number;
-      decks: OlympiaDeckType[];
-    }
-  | {
-      type: 'status';
-      key: OlympiaStatusKey;
-      target: 'self' | 'target' | 'all' | 'others';
-      turns: number;
-      value?: number;
-    }
-  | {
-      type: 'discard';
-      target: 'target' | 'all';
-      categories: OlympiaCategory[];
-      amount: number;
-    }
-  | { type: 'exchange'; categories: OlympiaCategory[] }
-  | { type: 'skip'; target: 'target'; turns: number };
-
-export interface OlympiaCardDefinition {
-  id: string;
-  name: string;
-  description: string;
-  category: OlympiaCategory;
-  deck: OlympiaDeckType;
-  points?: number;
-  effect?: OlympiaEffect | OlympiaEffect[];
-  effects: readonly GameEffectInstruction[];
-}
-
-export const OLYMPIA_CATEGORIES: OlympiaCategory[] = [
-  'divinite',
-  'heros',
-  'creature',
-  'exploit',
-  'action',
-  'attaque',
-  'evenement',
-];
-export const OLYMPIA_DECK_TYPES: OlympiaDeckType[] = [
-  'divinite',
-  'heros',
-  'creatures',
-  'exploits',
-  'actions',
-  'attaques',
-  'evenements',
-];
-export const OLYMPIA_STATUS_KEYS: OlympiaStatusKey[] = [
-  'block_play',
-  'block_hero',
-  'block_exploit',
-  'block_hero_exploit',
-  'shield',
-  'halved_gains',
-  'neutralize_creature',
-  'double_exploit',
-  'divinity_block',
-  'global_block_hero',
-  'global_block_exploit',
-  'block_draw_hero',
-  'exploit_bonus',
-  'event_protection',
-  'block_actions',
-  'exploit_penalty',
-];
-
-export const OLYMPIA_CARDS: OlympiaCardDefinition[] = data.cards.map((card) => {
+const defaultCards: OlympiaCardDefinition[] = data.cards.map((card) => {
   const effect = 'effect' in card ? parseEffects(card.effect) : undefined;
   const effects =
     effect == null
@@ -139,7 +56,7 @@ export const OLYMPIA_CARDS: OlympiaCardDefinition[] = data.cards.map((card) => {
   };
 });
 
-export const OLYMPIA_DECKS: Record<OlympiaDeckType, string[]> = {
+const defaultDecks: Record<OlympiaDeckType, string[]> = {
   divinite: [],
   heros: [],
   creatures: [],
@@ -148,10 +65,7 @@ export const OLYMPIA_DECKS: Record<OlympiaDeckType, string[]> = {
   attaques: [],
   evenements: [],
 };
-for (const card of OLYMPIA_CARDS) OLYMPIA_DECKS[card.deck].push(card.id);
-export const OLYMPIA_CARD_BY_ID = Object.fromEntries(
-  OLYMPIA_CARDS.map((card) => [card.id, card]),
-);
+for (const card of defaultCards) defaultDecks[card.deck].push(card.id);
 
 function parseEffects(value: unknown): OlympiaEffect | OlympiaEffect[] {
   return Array.isArray(value) ? value.map(parseEffect) : parseEffect(value);
@@ -303,10 +217,6 @@ function required<T extends string>(
   return found;
 }
 
-export function isOlympiaStatusKey(value: string): value is OlympiaStatusKey {
-  return OLYMPIA_STATUS_KEYS.some((candidate) => candidate === value);
-}
-
 function target<T extends string>(value: unknown, values: readonly T[]): T {
   return required(values, text(value), 'cible');
 }
@@ -327,10 +237,82 @@ function stringArray(value: unknown): string[] {
   return value;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value != null && typeof value === 'object' && !Array.isArray(value);
-}
-
-freezeGameContent(OLYMPIA_CARDS);
-freezeGameContent(OLYMPIA_DECKS);
-freezeGameContent(OLYMPIA_CARD_BY_ID);
+const textSchema = gameInput.string({ min: 1, max: 4000, trim: false });
+const idSchema = gameInput.string({ min: 1, max: 128 });
+const deckSchema = gameInput.array(idSchema, { min: 1, max: 10000 });
+const olympiaSchema = gameInput.object({
+  cards: gameInput.array(
+    gameInput.object({
+      id: idSchema,
+      name: textSchema,
+      description: textSchema,
+      category: gameInput.enum(OLYMPIA_CATEGORIES),
+      deck: gameInput.enum(OLYMPIA_DECK_TYPES),
+      points: gameInput.optional(
+        gameInput.number({ integer: true, min: -1000000, max: 1000000 }),
+      ),
+      effect: gameInput.optional({
+        parse: parseEffects,
+        describe: () => ({ type: 'object' }),
+      }),
+      effects: effectContentSchema({
+        effects: [
+          'olympia.prestige',
+          'olympia.steal',
+          'olympia.draw',
+          'olympia.discard',
+          'olympia.exchange',
+        ],
+      }),
+    }),
+    { min: 1, max: 10000 },
+  ),
+  decks: gameInput.object({
+    divinite: deckSchema,
+    heros: deckSchema,
+    creatures: deckSchema,
+    exploits: deckSchema,
+    actions: deckSchema,
+    attaques: deckSchema,
+    evenements: deckSchema,
+  }),
+});
+export const OLYMPIA_GAME_CONTENT = defineGameContent(
+  manifest.code,
+  { decks: defaultDecks, cards: defaultCards },
+  {
+    snapshotMigrations: [
+      {
+        fromVersion: 'olympia@content:25cb5135',
+        toVersion: 'olympia@content:5429cc55',
+      },
+    ],
+    schema: {
+      parse(value: unknown) {
+        const source =
+          isRecord(value) && !Object.hasOwn(value, 'cards')
+            ? { ...value, cards: defaultCards }
+            : value;
+        const parsed = olympiaSchema.parse(source);
+        const cards = cardContent(parsed.cards);
+        const byId = new Map(cards.map((card) => [card.id, card]));
+        const assigned = new Set<string>();
+        for (const [deck, ids] of Object.entries(parsed.decks)) {
+          for (const id of ids) {
+            if (assigned.has(id) || byId.get(id)?.deck !== deck)
+              rejectContent('Référence de carte Olympia invalide');
+            assigned.add(id);
+          }
+        }
+        if (assigned.size !== cards.length)
+          rejectContent('Carte Olympia sans pioche');
+        return { decks: parsed.decks, cards };
+      },
+    },
+  },
+);
+export const OLYMPIA_CARDS = OLYMPIA_GAME_CONTENT.data.cards;
+export const OLYMPIA_DECKS = OLYMPIA_GAME_CONTENT.data.decks;
+export const OLYMPIA_CARD_BY_ID = Object.freeze(
+  Object.fromEntries(OLYMPIA_CARDS.map((card) => [card.id, card])),
+);
