@@ -106,6 +106,18 @@ les cycles, les définitions et la surface SDK. L'équivalence sémantique, l'ow
 et la lisibilité demandent aussi une revue humaine ; un audit vert ne les prouve
 pas à lui seul.
 
+La CI exécute aussi un graphe syntaxique sur tout `src`, imports de types,
+barrels, imports dynamiques et `require` inclus. Toute composante fortement
+connexe fait échouer `architecture:test`. Dans le moteur, les contrats ne
+peuvent avoir de dépendance de valeur vers une couche supérieure et le runtime
+d'exécution ne peut atteindre le compilateur auteur.
+
+La CI exécute aussi un graphe syntaxique sur tout `src`, imports de types,
+barrels, imports dynamiques et `require` inclus. Toute composante fortement
+connexe fait échouer `architecture:test`. Dans le moteur, les contrats ne
+peuvent avoir de dépendance de valeur vers une couche supérieure et le runtime
+d'exécution ne peut atteindre le compilateur auteur.
+
 ## Definition of Done d'une nouvelle primitive moteur
 
 - Décrire la mécanique et ses usages réels équivalents ; plusieurs usages sont

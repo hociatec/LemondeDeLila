@@ -2,7 +2,7 @@ import type { GameContext } from '../../definitions/game-author-context';
 import type {
   BoardGameProgram,
   BoardLanding,
-} from '../../contracts/board-game-program';
+} from '../../extensions/board-game/program';
 import { GameStateViolationError } from '../../../../core/domain/errors/game-domain.errors';
 import { resolveTrackMovement } from './movement-quiz.recipes';
 

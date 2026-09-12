@@ -38,7 +38,6 @@ test('current backlog reconciles with lot evidence', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(JSON.parse(result.stdout).retainedClosed, []);
 });
-
 test('accepts multiline JSON snapshot points with Windows line endings', () => {
   const result = checkFixture((directory) => {
     fs.writeFileSync(path.join(directory, 'corriger.txt'),
@@ -71,8 +70,15 @@ test('rejects invalid backlog numbering', () => {
 
 test('rejects a current point removed without updating its register', () => {
   const result = checkFixture((directory) => {
-    const file = path.join(directory, 'corriger.txt');
-    fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/^\d+\. .*\r?\n/m, ''));
+    fs.writeFileSync(
+      path.join(directory, 'corriger.txt'),
+      'Snapshot JSON complet :\n\n2. second point\n',
+    );
+    fs.writeFileSync(
+      path.join(directory, 'docs/quality/open-debt-register-2026-09-10.md'),
+      '| 1 | backend | first point | backend/corriger.txt#1 | open | proof documented and removal from corriger.txt |\n' +
+        '| 2 | backend | second point | backend/corriger.txt#2 | open | proof documented and removal from corriger.txt |\n',
+    );
   });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Register must match corriger.txt exactly/);
@@ -80,10 +86,10 @@ test('rejects a current point removed without updating its register', () => {
 
 test('rejects duplicate current point IDs', () => {
   const result = checkFixture((directory) => {
-    const file = path.join(directory, 'corriger.txt');
-    const source = fs.readFileSync(file, 'utf8');
-    const first = source.match(/^\d+\. .*/m)[0];
-    fs.appendFileSync(file, `\n${first}\n`);
+    fs.writeFileSync(
+      path.join(directory, 'corriger.txt'),
+      'Snapshot JSON complet :\n\n1. first point\n\n1. first point\n',
+    );
   });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Duplicate backlog IDs/);

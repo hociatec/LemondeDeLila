@@ -2,7 +2,7 @@ import type {
   PirateDeckKind,
   PirateRaceCard,
   PirateRaceProgram,
-} from '../../contracts/pirate-race-program';
+} from '../../extensions/pirate-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineEffect } from '../../effects/effects-core';
 import { gameInput } from '../../actions/game-input-schema';
@@ -32,7 +32,6 @@ export function pirateRaceRules(source: PirateRaceProgram) {
     },
   };
 }
-
 function resolveLanding(
   program: PirateRaceProgram,
   playerId: number,

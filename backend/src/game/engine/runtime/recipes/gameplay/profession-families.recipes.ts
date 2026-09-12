@@ -1,7 +1,7 @@
 import type {
   ProfessionFamiliesProgram,
   ProfessionFamilyCard,
-} from '../../contracts/profession-families-program';
+} from '../../extensions/profession-families/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineEffect } from '../../effects/effects-core';
 import { gameInput } from '../../actions/game-input-schema';
@@ -53,7 +53,6 @@ export function professionFamiliesRules(source: ProfessionFamiliesProgram) {
   });
   return { request, enumerate, effects: effects(program, cards) };
 }
-
 function drawCard(
   program: ProfessionFamiliesProgram,
   cards: ReadonlyMap<string, ProfessionFamilyCard>,

@@ -1,7 +1,7 @@
 import type {
   MamanRaceProgram,
   MamanTileType,
-} from '../../contracts/maman-race-program';
+} from '../../extensions/maman-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../actions/action-builders';
 import { defineEffect } from '../../effects/effects-core';
@@ -48,7 +48,6 @@ export function mamanRaceRules(source: MamanRaceProgram) {
     effects: mamanEffects(program),
   };
 }
-
 function applyTile(
   program: MamanRaceProgram,
   playerId: number,

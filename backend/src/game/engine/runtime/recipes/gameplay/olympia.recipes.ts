@@ -4,7 +4,7 @@ import { gameInput } from '../../actions/game-input-schema';
 import type {
   OlympiaCard,
   OlympiaProgram,
-} from '../../contracts/olympia-program';
+} from '../../extensions/olympia/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { gameEffects } from '../../effects/effects-dsl';
 import { defineEffect } from '../../effects/effects-core';
@@ -91,7 +91,6 @@ export function olympiaRules(source: OlympiaProgram) {
       ctx.cards.hand<string>(program.handId, playerId)[0],
   };
 }
-
 function effects(
   program: OlympiaProgram,
   cards: ReadonlyMap<string, OlympiaCard>,

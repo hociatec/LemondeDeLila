@@ -7,7 +7,7 @@ import type {
   LamaCard,
   LamaConfig,
   LamaProgram,
-} from '../../contracts/lama-program';
+} from '../../extensions/lama/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { when } from '../../automation/automatic-kit';
 import { defineGamePhases } from '../../kits/phase-kit';
@@ -23,7 +23,6 @@ const VALUES: readonly LamaCard[] = [1, 2, 3, 4, 5, 6, 'LAMA'];
 export function nextLamaValue(value: LamaCard): LamaCard {
   return VALUES[(VALUES.indexOf(value) + 1) % VALUES.length];
 }
-
 export function scoreLamaHand(cards: readonly LamaCard[]): number {
   return [...new Set(cards)].reduce(
     (total, card) => total + (card === 'LAMA' ? 10 : card),

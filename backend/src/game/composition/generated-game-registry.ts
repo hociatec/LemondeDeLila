@@ -59,6 +59,7 @@ import document16 from '../games/les-quatre-vents/voyage-en-terre-de-brumes/game
 import asset16_0 from '../games/les-quatre-vents/voyage-en-terre-de-brumes/catalogue.json';
 import manifest17 from '../games/vents-dansants/cat-pattes/manifest.json';
 import document17 from '../games/vents-dansants/cat-pattes/game.json';
+import asset17_0 from '../games/vents-dansants/cat-pattes/content/cat-pattes.json';
 import manifest18 from '../games/vents-dansants/cercles-sacres/manifest.json';
 import document18 from '../games/vents-dansants/cercles-sacres/game.json';
 import asset18_0 from '../games/vents-dansants/cercles-sacres/content/catalogue.json';
@@ -176,7 +177,9 @@ const game15 = compileJsonGame(manifest15, document15, {
 const game16 = compileJsonGame(manifest16, document16, {
   'content/catalogue.json': asset16_0,
 });
-const game17 = compileJsonGame(manifest17, document17);
+const game17 = compileJsonGame(manifest17, document17, {
+  'content/cat-pattes.json': asset17_0,
+});
 const game18 = compileJsonGame(manifest18, document18, {
   'content/catalogue.json': asset18_0,
 });
@@ -277,7 +280,6 @@ export const GENERATED_GAME_DEFINITIONS: readonly unknown[] = Object.freeze([
   game37,
   game38,
 ]);
-
 export const GENERATED_GAME_PACKAGES: readonly {
   definition: unknown;
   manifest: unknown;

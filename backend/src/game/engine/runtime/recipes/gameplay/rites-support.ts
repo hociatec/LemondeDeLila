@@ -2,7 +2,7 @@ import type { GameEffectInstruction } from '../../contracts/effect-ir';
 import type {
   RiteFamilyCard,
   RitesProgram,
-} from '../../contracts/rites-program';
+} from '../../extensions/rites/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { gameEffects } from '../../effects/effects-dsl';
 import { drawEvent } from './card-dice.recipes';

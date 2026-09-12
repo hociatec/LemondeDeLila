@@ -1,6 +1,6 @@
 import { defineAction, defineChoice } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
-import type { BalloonRaceProgram } from '../../contracts/balloon-race-program';
+import type { BalloonRaceProgram } from '../../extensions/balloon-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineEffect } from '../../effects/effects-core';
 import { drawAndResolve, drawEvent } from './card-dice.recipes';
@@ -66,7 +66,6 @@ export function balloonRaceRules(source: BalloonRaceProgram) {
     effects: effects(program),
   };
 }
-
 function awaiting(
   program: BalloonRaceProgram,
   playerId: number,

@@ -4,7 +4,7 @@ import type {
   SacTile,
   SacVariant,
   SacVariantId,
-} from '../../contracts/sac-program';
+} from '../../extensions/sac/program';
 import type { GameContext } from '../../definitions/game-author-context';
 
 export type SacState = Record<string, never>;
@@ -33,7 +33,6 @@ export function sacBuildings(state: SacState): Record<number, SacBuilding> {
   Reflect.set(state, 'buildings', created);
   return created;
 }
-
 export function createSacSupport(source: SacProgram) {
   const program = structuredClone(source);
   function current(ctx: SacContext): SacVariant {

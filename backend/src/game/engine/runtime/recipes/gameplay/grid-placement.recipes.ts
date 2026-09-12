@@ -1,4 +1,4 @@
-import type { GridPlacementProgram } from '../../contracts/grid-placement-program';
+import type { GridPlacementProgram } from '../../extensions/grid-placement/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import type { ChoiceResolverShape } from '../../contracts/author-rule-contracts';
 import { defineAction, defineChoice } from '../../actions/action-builders';
@@ -54,7 +54,6 @@ export function gridPlacementRules(source: GridPlacementProgram) {
       choosePlacement(program, ctx, playerId),
   };
 }
-
 function bindSelection(program: GridPlacementProgram) {
   const choices: Record<string, ChoiceResolverShape<State>> = {};
   const config = program.pawnSelection;

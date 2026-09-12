@@ -3,7 +3,7 @@ import type {
   SacMovement,
   SacProgram,
   SacVariant,
-} from '../contracts/sac-program';
+} from '../extensions/sac/program';
 import { effectJsonSchema } from '../contracts/effect-json-schema';
 import { isRecord } from '../content/content-guards';
 import {
@@ -171,7 +171,6 @@ export function assertSacReferences(program: SacProgram): void {
   if (new Set(cardIds).size !== cardIds.length) fail('duplicate card IDs');
   for (const candidate of program.variants) assertVariant(candidate, fail);
 }
-
 function assertVariant(variant: SacVariant, fail: (reason: string) => never) {
   const tiles = new Map(variant.tiles.map((tile) => [tile.id, tile]));
   const groups = new Map(variant.groups.map((group) => [group.id, group]));

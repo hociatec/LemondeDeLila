@@ -1,4 +1,4 @@
-import type { BoardGameProgram } from '../../contracts/board-game-program';
+import type { BoardGameProgram } from '../../extensions/board-game/program';
 import { gameInput } from '../../actions/game-input-schema';
 type State = Record<string, never>;
 import { defineEffect } from '../../effects/effects-core';

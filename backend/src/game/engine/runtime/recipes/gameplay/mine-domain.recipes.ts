@@ -1,4 +1,4 @@
-import type { MineDomainProgram } from '../../contracts/mine-domain-program';
+import type { MineDomainProgram } from '../../extensions/mine-domain/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
@@ -55,7 +55,6 @@ export function mineDomainRules(source: MineDomainProgram) {
     enumerate,
   };
 }
-
 function mineEffects(
   program: MineDomainProgram,
   cards: ReadonlyMap<string, Card>,

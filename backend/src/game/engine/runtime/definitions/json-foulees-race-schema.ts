@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { FouleesRaceProgram } from '../contracts/foulees-race-program';
+import type { FouleesRaceProgram } from '../extensions/foulees-race/program';
 import {
   authorArray as array,
   authorId as id,

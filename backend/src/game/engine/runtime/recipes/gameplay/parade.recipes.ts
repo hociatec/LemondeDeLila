@@ -1,4 +1,4 @@
-import type { ParadeProgram } from '../../contracts/parade-program';
+import type { ParadeProgram } from '../../extensions/parade/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
@@ -72,7 +72,6 @@ export function paradeRules(source: ParadeProgram) {
     playable,
   };
 }
-
 function rewardScore(
   program: ParadeProgram,
   reward: Readonly<Record<string, number>>,

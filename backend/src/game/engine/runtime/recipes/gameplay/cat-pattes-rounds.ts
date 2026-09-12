@@ -1,4 +1,4 @@
-import type { CatPattesProgram } from '../../contracts/cat-pattes-program';
+import type { CatPattesProgram } from '../../extensions/cat-pattes/program';
 import type { GameContext } from '../../definitions/game-author-context';
 
 type State = Record<string, never>;
@@ -36,7 +36,6 @@ export function resetCatPattesRound(
   const starterId = ctx.round.starter();
   if (starterId != null) ctx.turn.to(starterId);
 }
-
 export function scoreCatPattesRound(program: CatPattesProgram, ctx: Context) {
   for (const player of ctx.players.all())
     ctx.score.add(player.id, ctx.movement.position(program.trackId, player.id));

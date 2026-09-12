@@ -1,4 +1,4 @@
-import type { FouleesRaceProgram } from '../../contracts/foulees-race-program';
+import type { FouleesRaceProgram } from '../../extensions/foulees-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import type { PawnMove } from '../../kits/pawn-kit';
 import { defineChoice } from '../../actions/action-builders';
@@ -85,7 +85,6 @@ export function fouleesRaceRules(source: FouleesRaceProgram) {
     },
   };
 }
-
 function legalMoves(
   program: FouleesRaceProgram,
   playerId: number,

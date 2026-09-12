@@ -1,4 +1,4 @@
-import type { CarAssemblyProgram } from '../../contracts/car-assembly-program';
+import type { CarAssemblyProgram } from '../../extensions/car-assembly/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
@@ -79,7 +79,6 @@ export function carAssemblyRules(source: CarAssemblyProgram) {
     playable,
   };
 }
-
 function requiredCategory(
   program: CarAssemblyProgram,
   playerId: number,

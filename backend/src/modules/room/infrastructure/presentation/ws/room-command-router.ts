@@ -58,6 +58,7 @@ export async function routeRoomCommand(
         type: 'room.pong',
         roomId: meta.roomId,
         payload: {
+          // Protocol observation only; gameplay decisions receive BusinessClock.
           serverTimeMs: Date.now(),
           clientSentAtMs:
             finiteNumberOrNull(record.clientSentAtMs) ??
@@ -82,7 +83,6 @@ export async function routeRoomCommand(
       throw new RoomWsUnknownCommandError(type ?? '');
   }
 }
-
 function finiteNumberOrNull(value: unknown): number | null {
   return typeof value === 'number' && Number.isSafeInteger(value)
     ? value

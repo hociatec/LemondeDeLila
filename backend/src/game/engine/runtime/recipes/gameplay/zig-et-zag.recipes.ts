@@ -1,5 +1,5 @@
 import { gameInput } from '../../actions/game-input-schema';
-import type { ZigEtZagProgram } from '../../contracts/zig-et-zag-program';
+import type { ZigEtZagProgram } from '../../extensions/zig-et-zag/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../definitions/game-definition-builders';
 import { defineGamePhases } from '../../kits/phase-kit';
@@ -279,7 +279,6 @@ export function zigEtZagRules(source: ZigEtZagProgram) {
     };
   }
 }
-
 function runtime(state: State): RuntimeState {
   if (!isRuntimeState(state))
     throw new TypeError('Invalid Zig et Zag runtime state');

@@ -1,7 +1,7 @@
 import type {
   CardSelectionOwner,
   CardSelectionProgram,
-} from '../../contracts/card-selection-program';
+} from '../../extensions/card-selection/program';
 import type { CardValue } from '../../cards/cards-contracts';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction, defineChoice } from '../../actions/action-builders';
@@ -49,7 +49,6 @@ export function cardSelectionRules(source: CardSelectionProgram) {
     }),
   };
 }
-
 function owner(
   selector: CardSelectionOwner | undefined,
   actorId: number,

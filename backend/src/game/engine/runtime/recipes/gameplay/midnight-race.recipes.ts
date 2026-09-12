@@ -1,4 +1,4 @@
-import type { MidnightRaceProgram } from '../../contracts/midnight-race-program';
+import type { MidnightRaceProgram } from '../../extensions/midnight-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction, defineChoice } from '../../actions/action-builders';
 import { defineEffect } from '../../effects/effects-core';
@@ -58,7 +58,6 @@ export function midnightRaceRules(source: MidnightRaceProgram) {
     effects: effects(program),
   };
 }
-
 function resolveAnswer(
   program: MidnightRaceProgram,
   value: number,

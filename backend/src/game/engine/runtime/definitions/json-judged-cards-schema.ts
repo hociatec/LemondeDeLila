@@ -1,4 +1,4 @@
-import type { JudgedCardsProgram } from '../contracts/judged-cards-program';
+import type { JudgedCardsProgram } from '../extensions/judged-cards/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorObject as object,

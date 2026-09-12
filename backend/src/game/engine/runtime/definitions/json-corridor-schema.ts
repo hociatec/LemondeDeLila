@@ -1,4 +1,4 @@
-import type { CorridorProgram } from '../contracts/corridor-program';
+import type { CorridorProgram } from '../extensions/corridor/program';
 import {
   type AuthorSchema,
   authorArray as array,

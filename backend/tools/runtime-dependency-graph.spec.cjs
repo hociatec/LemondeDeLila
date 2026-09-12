@@ -64,6 +64,12 @@ test('the production runtime has no dependency cycles, including types', () => {
   assert.deepEqual(result.compilerDependencies, []);
 });
 
+test('the complete production source tree has no TypeScript dependency cycle', () => {
+  const result = analyzeRuntime(path.join(__dirname, '../src'));
+  assert(result.files > 1_000);
+  assert.deepEqual(result.cycles, []);
+});
+
 test('the neutral compiled plan has no imports from authoring or execution', () => {
   const ts = require('typescript');
   const file = path.join(__dirname, '../src/game/engine/runtime/contracts/compiled-game-plan.ts');

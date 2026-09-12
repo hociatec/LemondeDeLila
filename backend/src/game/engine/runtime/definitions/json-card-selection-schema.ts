@@ -1,4 +1,4 @@
-import type { CardSelectionProgram } from '../contracts/card-selection-program';
+import type { CardSelectionProgram } from '../extensions/card-selection/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorObject as object,

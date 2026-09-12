@@ -1,4 +1,4 @@
-import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../../application/ports/presence-transport.port';
+import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../../application/models/presence.models';
 import { RedisPubSubTransport } from '../../../../platform/pubsub/public-api';
 import {
   PresenceEvent,
@@ -48,7 +48,6 @@ export class RedisPresenceTransport extends PresenceTransport {
     return this.transport.disconnect();
   }
 }
-
 function decodePresenceEvent(value: unknown): PresenceEvent | null {
   if (
     !isRecord(value) ||

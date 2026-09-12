@@ -173,6 +173,7 @@ export class NotificationDispatchService
     if (event.origin === this.instanceId) {
       return;
     }
+    // Infrastructure-only TTL for the best-effort delivery deduplication cache.
     const now = Date.now();
     for (const [eventId, seenAt] of this.processedEventIds) {
       if (now - seenAt >= operationalSettings.notificationDeduplicationTtlMs)
@@ -289,7 +290,6 @@ export class NotificationDispatchService
     }
   }
 }
-
 function serializeNotification(type: string, payload: unknown): string | null {
   try {
     if (!isValidNotificationType(type)) return null;

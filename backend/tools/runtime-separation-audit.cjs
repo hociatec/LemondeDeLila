@@ -17,6 +17,38 @@ for (const cycle of dependencyGraph.cycles) {
 for (const chain of dependencyGraph.compilerDependencies) {
   violations.push(`execution reaches author compilation: ${chain.join(' -> ')}`);
 }
+for (const file of files(path.join(runtime, 'contracts'))) {
+  if (!file.endsWith('.ts') || file.endsWith('.spec.ts')) continue;
+  if (
+    file.endsWith('-program.ts') &&
+    path.basename(file) !== 'game-rule-program.ts'
+  )
+    violations.push(
+      `${file}: single-consumer author program belongs in runtime/extensions`,
+    );
+  const source = fs.readFileSync(file, 'utf8');
+  if (/\b(?:import|export)\s+(?!type\b)[\s\S]*?from\s+['"]\.\.\//m.test(source))
+    violations.push(`${file}: runtime contract has a value dependency on a higher layer`);
+}
+const extensionsRoot = path.join(runtime, 'extensions');
+const extensions = fs
+  .readdirSync(extensionsRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory());
+for (const extension of extensions) {
+  const directory = path.join(extensionsRoot, extension.name);
+  const entries = files(directory);
+  const program = path.join(directory, 'program.ts');
+  if (!entries.includes(program))
+    violations.push(`${directory}: program.ts is missing`);
+  if (entries.some((file) => file !== program))
+    violations.push(`${directory}: extension contract directory must stay minimal`);
+  if (!entries.includes(program)) continue;
+  const source = fs.readFileSync(program, 'utf8');
+  if (!source.includes('Single-consumer JSON authoring extension'))
+    violations.push(`${program}: temporary extension status is undocumented`);
+  if (/from\s+['"]\.\.\/(?!\.\.\/contracts\/)/.test(source))
+    violations.push(`${program}: extension contract reaches outside low-level contracts`);
+}
 for (const file of files(path.join(runtime, 'kits'))) {
   if (file.endsWith('.ts') && /game-definition/.test(fs.readFileSync(file, 'utf8')))
     violations.push(`${file}: kit depends on game definition`);

@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { ContesProgram } from '../contracts/contes-program';
+import type { ContesProgram } from '../extensions/contes/program';
 import { effectJsonSchema } from '../contracts/effect-json-schema';
 import {
   type AuthorSchema,

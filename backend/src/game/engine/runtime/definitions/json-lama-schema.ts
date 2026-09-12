@@ -1,4 +1,4 @@
-import type { LamaProgram } from '../contracts/lama-program';
+import type { LamaProgram } from '../extensions/lama/program';
 import {
   type AuthorSchema,
   authorArray as array,

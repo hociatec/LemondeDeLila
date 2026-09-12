@@ -1,7 +1,7 @@
 import type {
   EcosystemFace,
   EcosystemRaceProgram,
-} from '../../contracts/ecosystem-race-program';
+} from '../../extensions/ecosystem-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineEvent } from '../../events/game-event-definition';
 import { gameInput } from '../../actions/game-input-schema';
@@ -43,7 +43,6 @@ export function ecosystemRaceRules(source: EcosystemRaceProgram) {
     events: [resolved],
   };
 }
-
 function applyFace(
   program: EcosystemRaceProgram,
   playerId: number,

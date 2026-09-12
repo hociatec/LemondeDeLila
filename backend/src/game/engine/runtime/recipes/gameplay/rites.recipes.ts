@@ -2,7 +2,7 @@ import { defineAction, defineChoice } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
 import { cards } from '../../cards/cards-contracts';
 import { defineCardsSchema } from '../../cards/typed-cards';
-import type { RitesProgram } from '../../contracts/rites-program';
+import type { RitesProgram } from '../../extensions/rites/program';
 import { defineEffect } from '../../effects/effects-core';
 import { inventory } from '../../kits/inventory-kit';
 import { cardGame } from '../../patterns/gameplay-pattern-track-card';
@@ -251,7 +251,6 @@ export function ritesRules(source: RitesProgram) {
     },
   };
 }
-
 function effect(
   apply: (input: { playerId: number; ctx: RitesContext }) => void,
 ) {

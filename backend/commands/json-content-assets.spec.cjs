@@ -69,6 +69,14 @@ test('rejects content filenames that cannot be referenced by the closed grammar'
   });
 });
 
+test('requires large game documents to use dedicated content assets', async () => {
+  await fixture(({ game }) => {
+    const file = path.join(game, 'game.json');
+    fs.writeFileSync(file, `{${'\n'.repeat(300)}}`);
+    assert.throws(() => jsonContentAssets(game), /exceeds 300 lines/);
+  });
+});
+
 test('rejects a content directory junction escaping its game', async () => {
   await fixture(({ root, game }) => {
     fs.symlinkSync(path.join(root, 'composition'), path.join(game, 'content/outside'), 'junction');

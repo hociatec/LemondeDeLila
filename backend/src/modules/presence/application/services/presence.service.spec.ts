@@ -1,4 +1,4 @@
-import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../ports/presence-transport.port';
+import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../models/presence.models';
 import type { WebSocket } from 'ws';
 import type { PresenceClient } from '../models/presence-client.model';
 import type { PresenceEvent } from '../ports/presence-transport.port';
@@ -336,7 +336,6 @@ function socket() {
     close,
   };
 }
-
 function publicPlayer(
   id: number,
   username: string,

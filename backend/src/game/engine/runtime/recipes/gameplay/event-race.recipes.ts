@@ -1,4 +1,4 @@
-import type { EventRaceProgram } from '../../contracts/event-race-program';
+import type { EventRaceProgram } from '../../extensions/event-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import type { GameEffectInstruction } from '../../contracts/effect-ir';
 import { defineChoice } from '../../actions/action-builders';
@@ -47,7 +47,6 @@ export function eventRaceRules(source: EventRaceProgram) {
     },
   };
 }
-
 function resolveLanding(
   program: EventRaceProgram,
   playerId: number,

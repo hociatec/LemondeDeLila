@@ -1,7 +1,7 @@
 import type {
   GooseRaceProgram,
   GooseTile,
-} from '../../contracts/goose-race-program';
+} from '../../extensions/goose-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction, defineChoice } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
@@ -65,7 +65,6 @@ export function gooseRaceRules(source: GooseRaceProgram) {
     playerValuesVisibility: { statuses: publicField() },
   };
 }
-
 function land(
   program: GooseRaceProgram,
   playerId: number,

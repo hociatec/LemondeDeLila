@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { MidnightRaceProgram } from '../contracts/midnight-race-program';
+import type { MidnightRaceProgram } from '../extensions/midnight-race/program';
 import {
   authorArray as array,
   authorBoolean as boolean,

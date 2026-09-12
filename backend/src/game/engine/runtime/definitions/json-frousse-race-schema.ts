@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { FrousseRaceProgram } from '../contracts/frousse-race-program';
+import type { FrousseRaceProgram } from '../extensions/frousse-race/program';
 import {
   authorArray as array,
   authorId as id,

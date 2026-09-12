@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { RitesProgram } from '../contracts/rites-program';
+import type { RitesProgram } from '../extensions/rites/program';
 import { effectJsonSchema } from '../contracts/effect-json-schema';
 import {
   type AuthorSchema,
