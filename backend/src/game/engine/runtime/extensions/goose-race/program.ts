@@ -1,4 +1,4 @@
-/** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
+/** Reusable JSON authoring extension; prefer shared effects and patterns for new rules. */
 import type { TrackRaceProgram } from '../../contracts/track-race-contract';
 
 export type GooseTile = {

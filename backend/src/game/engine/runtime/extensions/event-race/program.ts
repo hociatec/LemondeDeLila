@@ -1,4 +1,4 @@
-/** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
+/** Reusable JSON authoring extension; prefer shared effects and patterns for new rules. */
 /** A dice race whose landings draw and resolve event cards immediately. */
 export type EventRaceProgram = {
   trackId: string;

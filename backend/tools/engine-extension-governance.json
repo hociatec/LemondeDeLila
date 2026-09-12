@@ -1,6 +1,29 @@
 {
   "maximumProgramFiles": 39,
   "maximumProgramLines": 1144,
+  "maximumRegisteredExtensions": 38,
+  "genericGameplayFiles": [
+    "board-choices.ts",
+    "board-effect-bindings.ts",
+    "board-landings.ts",
+    "board-turn.recipes.ts",
+    "card-actions.recipes.ts",
+    "card-dice.recipes.ts",
+    "card-recipe.helpers.ts",
+    "card-selection.recipes.ts",
+    "event-race.recipes.ts",
+    "goose-race.recipes.ts",
+    "grid-placement.recipes.ts",
+    "judged-cards.recipes.ts",
+    "movement-quiz.recipes.ts",
+    "pawn-race.recipes.ts",
+    "pawn-selection-groups.spec.ts",
+    "pawn-selection-groups.ts",
+    "pawn-selection.spec.ts",
+    "pawn-selection.recipes.ts",
+    "scoring-submission.recipes.ts",
+    "track-round.recipes.ts"
+  ],
   "profiles": {
     "balloon-race": {
       "property": "balloonRace",

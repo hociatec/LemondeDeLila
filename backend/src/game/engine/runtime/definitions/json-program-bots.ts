@@ -7,26 +7,9 @@ export type JsonProgramBot = GameBotDefinition<
   GameActionMap<Record<string, never>>
 >;
 
-type RollRecipe =
-  | 'event-race-roll'
-  | 'delivery-race-roll'
-  | 'goose-race-roll'
-  | 'collection-race-roll'
-  | 'ecosystem-race-roll'
-  | 'pirate-race-roll'
-  | 'maman-race-roll'
-  | 'frousse-race-roll'
-  | 'galopons-race-roll'
-  | 'foulees-race-roll'
-  | 'galaxy-race-roll'
-  | 'midnight-race-roll'
-  | 'derape-race-roll'
-  | 'zig-et-zag-draw'
-  | 'pawn-race-roll';
-
 export function recipeBot(
   document: JsonGameDocument,
-  recipe: RollRecipe,
+  recipe: string,
 ): JsonProgramBot {
   return {
     choose: ({ availableActions }) => {

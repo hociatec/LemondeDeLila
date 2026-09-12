@@ -1,65 +1,82 @@
-# Gouvernance des profils JSON du moteur
+# Gouvernance des extensions JSON du moteur
 
-## Frontière
+## Frontière du moteur
 
-`runtime/contracts`, les kits, effects, selectors et patterns forment le noyau
-générique. Les noms de jeux ne sont pas des primitives de ce noyau. Les formes
-JSON historiques qui ne se réduisent pas encore à ces primitives sont des
-**profils d’auteur exceptionnels** sous `runtime/extensions`. Leur fichier
-`program.ts` ne contient que des types effacés à la compilation : aucune règle,
-fonction, constante, I/O ou décision exécutable ne peut y être déplacée.
+Le noyau générique se trouve dans `runtime/contracts`, `runtime/kits`,
+`runtime/effects`, `runtime/selectors`, `runtime/patterns` et dans les vingt
+primitives revues de `runtime/recipes/gameplay`. Ce dernier dossier ne peut plus
+contenir un nom de jeu : son contenu exact est une liste blanche vérifiée par
+`engine-extension-governance.cjs`.
 
-Le document, le schéma et le compilateur génériques dépendent chacun d’une seule
-frontière de catalogue : `json-program-extension-contract.ts`,
-`json-program-extension-schemas.ts` et
-`json-program-extension-compilers.ts`. Ajouter un jeu qui compose les mécaniques
-existantes ne modifie aucun de ces fichiers. Le test du quarantième jeu crée 40
-paquets JSON et vérifie qu’aucun fichier TypeScript auteur n’est nécessaire.
+Une mécanique qui reste propre à un jeu vit dans son dossier
+`runtime/extensions/<profil>`. Elle y est explicitement classée comme
+`game-specific` et n'est donc plus présentée comme une primitive du moteur. Son
+module `extension.ts` possède en un seul endroit sa clé JSON, son schéma, son
+compilateur, ses actions, ses handlers et sa validation. Ses recettes et ses
+helpers restent dans le même dossier. Le fichier `program.ts` ne contient que
+le contrat de données sérialisable et aucune logique exécutable.
 
-## Audit des profils existants
+Les sept contrats réellement réutilisables (`board-game`, `card-selection`,
+`event-race`, `goose-race`, `grid-placement`, `judged-cards` et `pawn-race`)
+portent le marqueur `Reusable JSON authoring extension`. Les autres contrats
+portent le marqueur `Single-consumer JSON authoring extension` et une
+justification mécanique propre dans le catalogue. Un commentaire générique ne
+suffit plus à faire accepter un profil.
 
-`tools/engine-extension-governance.json` constitue la revue exhaustive. Chaque
-profil y déclare sa propriété JSON, sa classification et la mécanique qui motive
-sa présence. L’audit recalcule ses consommateurs dans les 39 paquets officiels,
-refuse un profil non classé, une déclaration exécutable, un second fichier dans
-le profil ou une hausse au-dessus des 39 fichiers et 1 144 lignes actuels. Le
-contrat bas niveau commun `TrackRaceProgram` a déjà supprimé 18 lignes dupliquées entre onze
-variantes de course. L’audit publie aussi le ratio de contrats réutilisables et le nombre de profils à
-consommateur unique. Une baisse est acceptée immédiatement ; une hausse casse la
-CI et exige d’abord une généralisation explicite.
+## Registre et compilation
 
-Les variantes de course partagent déjà les composants `movement.track`,
-`dice.set`, `pawn.set`, le pattern `race`, les effets de mouvement, le RNG et la
-validation commune de `json-race-program-validation.ts`. `board-game`,
-`event-race`, `goose-race` et `pawn-race` sont les profils paramétrables. Les
-profils de course encore spécifiques correspondent aux différences observables
-énumérées dans le catalogue : livraison, ressources d’écosystème, capture,
-protections, collisions, quiz ou chaînes de cases. Ils ne deviennent pas des
-primitives génériques par leur emplacement.
+`json-program-extension-registry.ts` est l'unique racine de composition. Son
+ordre est explicite, déterministe et figé avec `Object.freeze`. Il n'utilise ni
+découverte du système de fichiers, ni import dynamique, ni I/O à l'exécution.
+Ajouter une extension demande une entrée dans cette racine et dans le catalogue
+de gouvernance, sans ajouter de branche dans les compilateurs, les handlers,
+l'initialisation ou la validation du moteur.
 
-Les jeux de familles et collections partagent les paquets, mains, inventaires,
-ownership, transferts, selectors et conditions standard. Les profils restants
-portent seulement leurs workflows distincts : demande de famille, assemblage
-ordonné, cercle thématique, marché ou course avec zones. Une extraction future
-n’est recevable que si au moins deux consommateurs réels partagent le même
-invariant et les mêmes erreurs métier.
+Les catalogues de contrats, schémas et compilateurs sont dérivés du registre.
+Le compilateur d'actions collecte les recettes déclarées par le profil actif.
+Les handlers, événements, composants, patterns, choix, règles d'initialisation
+et validations passent par le même contrat générique. Les fichiers centraux ne
+contiennent donc aucune clé de profil propre à un jeu.
 
-## Règles d’évolution
+Un nouveau jeu qui compose uniquement les primitives et profils existants reste
+un paquet de données sous `game/games/**`. Il ne modifie aucun fichier
+TypeScript. Le test de création du quarantième jeu et le garde « zéro TypeScript
+dans `game/games/**` » protègent cette propriété.
 
-Une nouvelle mécanique commence par les effects, selectors, conditions, recipes
-ou patterns fermés existants. Un profil spécifique est admis seulement si cette
-composition ne peut exprimer le comportement, avec une entrée motivée dans le
-catalogue et un budget total inférieur ou égal au précédent. Il reste identifié
-comme spécifique et n’entre jamais dans `runtime/contracts` ou `shared`.
+## Mécaniques communes et comportements uniques
 
-Le DSL reste fermé : pas de JavaScript, expression textuelle, variable, boucle,
-scope, callback ou chargement propre à un jeu. Les recettes représentent des
-opérations métier de haut niveau et bornées. Le chargeur de contenu résout toutes
-les références de fichiers de façon générique avant le schéma, puis la compilation
-valide les IDs, composants, capacités, effects, selectors, phases et actions.
+Les courses partagent les composants de piste, dés et pions, le pattern de
+course, `TrackRaceProgram`, les effets de mouvement, le RNG du moteur et les
+recettes génériques `track-round`, `movement-quiz`, `event-race`, `goose-race`
+et `pawn-race`. Leurs extensions spécifiques ne conservent que les différences
+observables : livraison, ressources, capture, protections, collisions, quiz ou
+chaînes de cases.
 
-La suppression d’un profil exige la conservation des scénarios déterministes du
-jeu, la suppression de son entrée dans les trois catalogues et l’abaissement des
-plafonds de gouvernance. Les audits de duplication, dead code, exports publics,
-ownership, sérialisabilité, déterminisme et versionnement de `quality:check`
-complètent cette vérification.
+Les jeux de cartes et de plateau composent de la même façon les primitives de
+main, sélection, soumission, jugement, score, inventaire, propriété, transfert,
+plateau et résolution d'effets. Les workflows encore uniques, par exemple les
+phases de Gérard, les manches de Cat Pattes, la narration de Contes ou l'économie
+de Sac, sont isolés dans leur extension. Une extraction vers le noyau n'est
+admise que lorsque deux consommateurs réels partagent le même invariant et les
+mêmes erreurs métier.
+
+## Gardes bloquants
+
+`engine-extension-governance.json` constitue la revue exhaustive. Chaque profil
+déclare sa propriété JSON, sa classification et la mécanique qui justifie sa
+présence. L'audit recalcule le nombre de jeux consommateurs et publie les
+métriques suivantes : contrats, extensions enregistrées, primitives génériques,
+lignes réutilisables et profils mono-consommateur. Il refuse :
+
+- un profil absent du catalogue ou sans justification ;
+- une logique exécutable dans `program.ts` ;
+- une extension sans schéma, compilateur, actions, handlers ou validation ;
+- une clé de jeu dans un fichier central ;
+- une recette non revue dans le dossier générique ;
+- une hausse des plafonds de dette sans modification explicite de la politique.
+
+Le graphe TypeScript complet est testé sans cycle et ce test est bloquant dans
+`quality:check`. Les mêmes contrôles maintiennent la fermeture du DSL, les
+références inter-fichiers, l'immutabilité, la sérialisation, le versionnement,
+les migrations déterministes, la restauration des snapshots et la convergence
+des règles automatiques.
