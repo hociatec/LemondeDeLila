@@ -1,4 +1,4 @@
-import type { PawnRaceProgram } from '../contracts/pawn-race-program';
+import type { PawnRaceProgram } from '../extensions/pawn-race/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorId as id,

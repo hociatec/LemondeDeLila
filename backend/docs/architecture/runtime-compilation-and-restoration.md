@@ -1,5 +1,23 @@
 # Compilation, états persistés et automatisation
 
+## Noyau et extensions d'auteur
+
+`runtime/contracts` contient uniquement l'IR et les capacités stables du noyau.
+Les 39 sections de programme actuellement utilisées par un seul jeu sont
+assumées comme dette de migration et placées sous
+`runtime/extensions/<section>/program.ts`. Leur contrat ne peut dépendre que de
+l'IR bas niveau. L'audit de séparation refuse un `*-program.ts` dans les
+contrats centraux, une extension non marquée ou un fichier supplémentaire dans
+son dossier.
+
+Chaque section reste fermée, validée par son schéma et compilée avant
+l'exécution. Pour toute nouvelle règle, l'ordre de préférence est : effect
+existant, recipe ou pattern réutilisable, nouvelle primitive générique, puis
+extension temporaire documentée. Une extension peut rejoindre le noyau après
+usage par plusieurs jeux et suppression de tout vocabulaire propre au premier
+jeu. Le nombre d'extensions est donc une mesure de dette, pas une surface
+publique à faire croître.
+
 ## Définition auteur et artefact runtime
 
 `defineGame` compose les patterns, composants, actions, hooks et politiques,

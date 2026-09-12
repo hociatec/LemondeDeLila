@@ -5,7 +5,7 @@ import type {
   MnemosyneConfig,
   MnemosyneProgram,
   MnemosyneSourceQuestion,
-} from '../../contracts/mnemosyne-program';
+} from '../../extensions/mnemosyne/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../definitions/game-definition-builders';
 import { defineEvent } from '../../events/game-event-definition';
@@ -224,7 +224,6 @@ export function mnemosyneRules(source: MnemosyneProgram) {
     },
   };
 }
-
 function mnemoConfig(ctx: Context): MnemosyneConfig {
   return ctx.config.values<MnemosyneConfig>();
 }

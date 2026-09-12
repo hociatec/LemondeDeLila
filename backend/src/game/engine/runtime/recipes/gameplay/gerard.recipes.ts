@@ -6,7 +6,7 @@ import type {
   GerardNameCard,
   GerardProgram,
   GerardThemeCard,
-} from '../../contracts/gerard-program';
+} from '../../extensions/gerard/program';
 import { defineGamePhases } from '../../kits/phase-kit';
 import { cardGame } from '../../patterns/gameplay-pattern-track-card';
 import { rejectRule } from '../../../../core/domain/errors/game-domain.errors';
@@ -342,7 +342,6 @@ export function gerardRules(source: GerardProgram) {
   };
   return buildDefinition();
 }
-
 function sameInput(left: SpecialInput, right: SpecialInput) {
   return (
     left.cardId === right.cardId &&

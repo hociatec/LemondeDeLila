@@ -2,7 +2,7 @@ import type {
   GalaxyChoiceCard,
   GalaxyEventCard,
   GalaxyRaceProgram,
-} from '../../contracts/galaxy-race-program';
+} from '../../extensions/galaxy-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineChoice } from '../../actions/action-builders';
 import { defineEffect } from '../../effects/effects-core';
@@ -53,7 +53,6 @@ export function galaxyRaceRules(source: GalaxyRaceProgram) {
     effects: effects(program, move),
   };
 }
-
 function choices(program: GalaxyRaceProgram, move: Move) {
   return {
     [program.answerChoiceId]: defineChoice<State, number>({

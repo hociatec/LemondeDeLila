@@ -1,4 +1,4 @@
-import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../ports/presence-transport.port';
+import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../models/presence.models';
 import { type PresenceEvent } from '../ports/presence-transport.port';
 import {
   decodePresencePublicPlayer,

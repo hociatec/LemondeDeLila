@@ -1,4 +1,4 @@
-import type { NawakProgram } from '../contracts/nawak-program';
+import type { NawakProgram } from '../extensions/nawak/program';
 import {
   type AuthorSchema,
   authorArray as array,

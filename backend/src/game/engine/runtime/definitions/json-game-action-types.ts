@@ -1,4 +1,4 @@
-import type { CardSelectionProgram } from '../contracts/card-selection-program';
+import type { CardSelectionProgram } from '../extensions/card-selection/program';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import type { JsonStandardVictory } from './json-standard-victory';
 

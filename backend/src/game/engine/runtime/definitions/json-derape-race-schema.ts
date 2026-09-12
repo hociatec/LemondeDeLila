@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { DerapeRaceProgram } from '../contracts/derape-race-program';
+import type { DerapeRaceProgram } from '../extensions/derape-race/program';
 import {
   authorArray as array,
   authorBoolean as boolean,

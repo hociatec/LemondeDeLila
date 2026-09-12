@@ -1,4 +1,4 @@
-import type { MamanRaceProgram } from '../contracts/maman-race-program';
+import type { MamanRaceProgram } from '../extensions/maman-race/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

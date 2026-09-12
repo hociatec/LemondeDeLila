@@ -1,4 +1,4 @@
-import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../ports/presence-transport.port';
+import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../models/presence.models';
 import { PresenceOrigins } from './presence-origins';
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocket } from 'ws';

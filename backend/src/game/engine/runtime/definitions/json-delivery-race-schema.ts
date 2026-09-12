@@ -1,4 +1,4 @@
-import type { DeliveryRaceProgram } from '../contracts/delivery-race-program';
+import type { DeliveryRaceProgram } from '../extensions/delivery-race/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,
@@ -82,7 +82,6 @@ export function assertDeliveryRaceReferences(
     fail,
   );
 }
-
 function findDeck(
   components: readonly GameComponentDefinition[],
   id: string,

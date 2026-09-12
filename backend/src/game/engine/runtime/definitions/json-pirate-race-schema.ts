@@ -1,4 +1,4 @@
-import type { PirateRaceProgram } from '../contracts/pirate-race-program';
+import type { PirateRaceProgram } from '../extensions/pirate-race/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

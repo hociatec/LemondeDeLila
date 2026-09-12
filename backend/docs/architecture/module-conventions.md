@@ -57,6 +57,30 @@ queue. TypeORM est sous `infrastructure/persistence/typeorm`; Redis durable sous
 `infrastructure/transport`. Les migrations globales portent un préfixe de domaine
 dans leur nom de classe et décrivent leur ownership.
 
+Les contrats `RoomVaultSnapshotSource` et `VaultRoomSnapshotSource` sont les
+deux vues volontairement distinctes de la frontière Room/Vault. Room expose la
+forme minimale que son adapter peut publier ; Vault déclare la forme dont son
+writer a besoin. Aucun module n'importe le port, le service ou l'infrastructure
+de l'autre, ce qui maintient l'ownership de chaque côté.
+
+Les `platform/*/public-api.ts` peuvent exporter une implémentation technique :
+Platform est la couche technique partagée et cette surface sert au wiring. Cette
+exception ne s'applique pas aux bounded contexts métier, dont les API publiques
+restent limitées aux contrats applicatifs. `shared` reste réservé aux types et
+fonctions sans dépendance métier ; les primitives de jeu vont dans le moteur.
+
+Les contrats `RoomVaultSnapshotSource` et `VaultRoomSnapshotSource` sont les
+deux vues volontairement distinctes de la frontière Room/Vault. Room expose la
+forme minimale que son adapter peut publier ; Vault déclare la forme dont son
+writer a besoin. Aucun des deux modules n'importe le port, le service ou
+l'infrastructure de l'autre, ce qui maintient l'ownership de chaque côté.
+
+Les `platform/*/public-api.ts` peuvent exporter une implémentation technique :
+Platform est la couche technique partagée et cette surface sert au wiring. Cette
+exception ne s'applique pas aux bounded contexts métier, dont les API publiques
+restent limitées aux contrats applicatifs. `shared` reste réservé aux types et
+fonctions sans dépendance métier ; les primitives de jeu vont dans le moteur.
+
 ## Frontières transversales
 
 `modules/user` possède identité, credentials, hashing, émission JWT et rotation

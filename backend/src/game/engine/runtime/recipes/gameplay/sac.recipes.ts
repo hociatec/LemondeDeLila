@@ -7,7 +7,7 @@ import type {
   SacMovement,
   SacProgram,
   SacVariantId,
-} from '../../contracts/sac-program';
+} from '../../extensions/sac/program';
 import { defineEffect } from '../../effects/effects-core';
 import { defineEvent } from '../../events/game-event-definition';
 import { ownership } from '../../kits/ownership-kit';

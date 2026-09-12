@@ -1,7 +1,7 @@
 import { GameRuleViolationError } from '../../../../core/domain/errors/game-domain.errors';
 import { defineAction, defineChoice } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
-import type { DerapeRaceProgram } from '../../contracts/derape-race-program';
+import type { DerapeRaceProgram } from '../../extensions/derape-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { commonStatuses } from '../../kits/player-values-contracts';
 import { derapeEffects, moveDerapePlayer } from './derape-race-effects';
@@ -36,7 +36,6 @@ export function derapeRaceRules(source: DerapeRaceProgram) {
     effects: derapeEffects(program),
   };
 }
-
 function executeRoll(
   program: DerapeRaceProgram,
   actorId: number,

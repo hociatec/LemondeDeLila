@@ -3,7 +3,7 @@ import { defineConfiguration } from '../../configuration/configuration-kit';
 import type {
   CorridorPosition,
   CorridorProgram,
-} from '../../contracts/corridor-program';
+} from '../../extensions/corridor/program';
 import type { PlayerMap } from '../../game-identifiers';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../definitions/game-definition-builders';
@@ -273,7 +273,6 @@ export function corridorRules(source: CorridorProgram) {
     firstMove: (actorId: number, ctx: Context) => legalMoves(actorId, ctx)[0],
   };
 }
-
 function add(a: CorridorPosition, b: CorridorPosition): CorridorPosition {
   return { x: a.x + b.x, y: a.y + b.y };
 }

@@ -1,7 +1,7 @@
 import type {
   GaloponsRaceProgram,
   GaloponsRegion,
-} from '../../contracts/galopons-race-program';
+} from '../../extensions/galopons-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineChoice } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
@@ -45,7 +45,6 @@ export function galoponsRaceRules(source: GaloponsRaceProgram) {
     effects: effects(program),
   };
 }
-
 function moveAndResolve(
   program: GaloponsRaceProgram,
   playerId: number,

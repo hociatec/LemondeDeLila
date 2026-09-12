@@ -1,4 +1,4 @@
-import type { OlympiaProgram } from '../contracts/olympia-program';
+import type { OlympiaProgram } from '../extensions/olympia/program';
 import {
   type AuthorSchema,
   authorArray as array,

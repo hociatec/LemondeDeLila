@@ -1,5 +1,12 @@
 # Jeux JSON, schéma 1
 
+Un `game.json` reste un document de composition lisible et ne dépasse pas 300
+lignes. Les catalogues, cartes, plateaux et questionnaires plus volumineux vont
+dans `content/*.json`, puis sont référencés avec `{ "$content":
+"content/fichier.json" }`. Le registre charge ces fichiers dans un ordre stable
+et le compilateur applique le même résolveur borné à tous les jeux : les chemins,
+pointeurs JSON, cycles, tailles et formes finales sont validés avant compilation.
+
 Le registre importe maintenant le véritable `game.json` et le compile une seule
 fois par paquet. Le manifeste fournit l'identité et les limites de joueurs ;
 le document fournit les règles. Le même objet compilé alimente les définitions

@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { GaloponsRaceProgram } from '../contracts/galopons-race-program';
+import type { GaloponsRaceProgram } from '../extensions/galopons-race/program';
 import {
   authorArray as array,
   authorId as id,

@@ -1,7 +1,7 @@
 import { defineAction, defineChoice } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
 import { cards } from '../../cards/cards-kit';
-import type { ContesProgram } from '../../contracts/contes-program';
+import type { ContesProgram } from '../../extensions/contes/program';
 import { when } from '../../automation/automatic-kit';
 import { pawns } from '../../kits/pawn-kit';
 import { setupPlayingPhases } from '../../kits/phase-kit';

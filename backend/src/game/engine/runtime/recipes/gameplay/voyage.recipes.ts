@@ -4,7 +4,7 @@ import type {
   VoyageCard,
   VoyageCollectionKind,
   VoyageProgram,
-} from '../../contracts/voyage-program';
+} from '../../extensions/voyage/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineEffect } from '../../effects/effects-core';
 import { drawAndResolve, raceTurn } from './card-dice.recipes';
@@ -36,7 +36,6 @@ export function voyageRules(source: VoyageProgram) {
     },
   };
 }
-
 function resolveTile(
   program: VoyageProgram,
   playerId: number,

@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { VoyageProgram } from '../contracts/voyage-program';
+import type { VoyageProgram } from '../extensions/voyage/program';
 import { effectJsonSchema } from '../contracts/effect-json-schema';
 import {
   authorArray as array,

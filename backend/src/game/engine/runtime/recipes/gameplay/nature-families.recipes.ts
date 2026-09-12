@@ -1,7 +1,7 @@
 import type {
   NatureFamiliesCard,
   NatureFamiliesProgram,
-} from '../../contracts/nature-families-program';
+} from '../../extensions/nature-families/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
@@ -44,7 +44,6 @@ export function natureFamiliesRules(source: NatureFamiliesProgram) {
     familyIds,
   };
 }
-
 function drawAfterMiss(
   program: NatureFamiliesProgram,
   cards: ReadonlyMap<string, NatureFamiliesCard>,

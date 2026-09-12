@@ -1,4 +1,4 @@
-import type { DeliveryRaceProgram } from '../../contracts/delivery-race-program';
+import type { DeliveryRaceProgram } from '../../extensions/delivery-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
@@ -21,7 +21,6 @@ export function deliveryRaceRules(source: DeliveryRaceProgram) {
     }),
   };
 }
-
 function playTurn(
   program: DeliveryRaceProgram,
   playerId: number,

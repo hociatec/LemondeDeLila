@@ -118,16 +118,22 @@
     },
     {
       "gameId": "cat-pattes",
-      "contentLoc": 0,
-      "declarativeLoc": 2245,
+      "contentLoc": 2191,
+      "declarativeLoc": 63,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 2245,
+      "jsonLoc": 2254,
       "files": [
+        {
+          "file": "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json",
+          "category": "contentLoc",
+          "loc": 2191,
+          "functions": []
+        },
         {
           "file": "src/game/games/vents-dansants/cat-pattes/game.json",
           "category": "declarativeLoc",
-          "loc": 2245,
+          "loc": 63,
           "functions": []
         }
       ],
@@ -964,13 +970,6 @@
     }
   ],
   "growthReviews": [
-    {
-      "gameId": "cat-pattes",
-      "metric": "declarativeLoc",
-      "before": 112,
-      "after": 2245,
-      "delta": 2133
-    },
     {
       "gameId": "course-des-etoiles",
       "reason": "new-game"

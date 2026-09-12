@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { ProfessionFamiliesProgram } from '../contracts/profession-families-program';
+import type { ProfessionFamiliesProgram } from '../extensions/profession-families/program';
 import {
   authorArray as array,
   authorId as id,

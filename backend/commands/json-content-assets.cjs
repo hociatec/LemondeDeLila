@@ -2,8 +2,18 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const MAX_GAME_JSON_LINES = 300;
+
 /** Filesystem access belongs to registry generation, never to a game runtime. */
 function jsonContentAssets(gameDirectory) {
+  const gameFile = path.join(gameDirectory, 'game.json');
+  if (fs.existsSync(gameFile)) {
+    const lines = fs.readFileSync(gameFile, 'utf8').split(/\r?\n/).length;
+    if (lines > MAX_GAME_JSON_LINES)
+      throw new Error(
+        `game.json exceeds ${MAX_GAME_JSON_LINES} lines; move content to dedicated JSON assets`,
+      );
+  }
   const directory = path.join(gameDirectory, 'content');
   const legacyCatalogue = path.join(gameDirectory, 'catalogue.json');
   const legacyQuiz = path.join(gameDirectory, 'quiz.json');

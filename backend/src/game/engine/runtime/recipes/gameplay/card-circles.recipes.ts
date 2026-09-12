@@ -1,4 +1,4 @@
-import type { CardCirclesProgram } from '../../contracts/card-circles-program';
+import type { CardCirclesProgram } from '../../extensions/card-circles/program';
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
 import { discardCard } from './card-actions.recipes';
@@ -97,7 +97,6 @@ export function cardCirclesRules(source: CardCirclesProgram) {
     circles,
   };
 }
-
 function completeCircles(
   program: CardCirclesProgram,
   cards: ReadonlyMap<string, { theme: string }>,

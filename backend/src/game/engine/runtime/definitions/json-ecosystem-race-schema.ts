@@ -1,4 +1,4 @@
-import type { EcosystemRaceProgram } from '../contracts/ecosystem-race-program';
+import type { EcosystemRaceProgram } from '../extensions/ecosystem-race/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

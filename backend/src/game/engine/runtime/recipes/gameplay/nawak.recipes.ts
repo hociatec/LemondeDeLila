@@ -1,6 +1,6 @@
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
-import type { NawakProgram } from '../../contracts/nawak-program';
+import type { NawakProgram } from '../../extensions/nawak/program';
 import type { PlayerMap } from '../../game-identifiers';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineEvent } from '../../events/game-event-definition';
@@ -147,7 +147,6 @@ export function nawakRules(source: NawakProgram) {
     },
   };
 }
-
 function resolveRound(
   program: NawakProgram,
   state: RuntimeState,

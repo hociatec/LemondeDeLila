@@ -1,4 +1,4 @@
-import type { WonderMarketProgram } from '../../contracts/wonder-market-program';
+import type { WonderMarketProgram } from '../../extensions/wonder-market/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
@@ -158,7 +158,6 @@ export function wonderMarketRules(source: WonderMarketProgram) {
     choose: (playerId: number, ctx: Context) => choose(program, playerId, ctx),
   };
 }
-
 function begin(playerId: number, ctx: Context): void {
   ctx.status.remove(playerId, commonStatuses.protected);
 }

@@ -1,4 +1,4 @@
-import type { JudgedCardsProgram } from '../../contracts/judged-cards-program';
+import type { JudgedCardsProgram } from '../../extensions/judged-cards/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
@@ -79,7 +79,6 @@ export function judgedCardsRules(source: JudgedCardsProgram) {
       select(program, ctx, submittedPlayers(program, ctx)),
   };
 }
-
 function submitCard(
   program: JudgedCardsProgram,
   playerId: number,

@@ -1,7 +1,7 @@
 import type {
   BananaSpecies,
   BananaTroopsProgram,
-} from '../../contracts/banana-troops-program';
+} from '../../extensions/banana-troops/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../actions/action-builders';
 import { defineEffect } from '../../effects/effects-core';
@@ -64,7 +64,6 @@ export function bananaTroopsRules(source: BananaTroopsProgram) {
     enumerate,
   };
 }
-
 function enumeratePlays(
   program: BananaTroopsProgram,
   byId: ReadonlyMap<string, BananaTroopsProgram['cards'][number]>,

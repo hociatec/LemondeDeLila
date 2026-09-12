@@ -4,7 +4,7 @@ import type {
   ContesOptionEffect,
   ContesProgram,
   ContesTargetEffect,
-} from '../../contracts/contes-program';
+} from '../../extensions/contes/program';
 import type { GameEffectInstruction } from '../../contracts/effect-ir';
 import type { GameContext } from '../../definitions/game-author-context';
 import { gameEffects } from '../../effects/effects-dsl';
@@ -147,7 +147,7 @@ export function createContesResolution(program: ContesProgram) {
     else if (effect === 'swap-next-turns')
       ctx.turn.swapUpcoming(actorId, targetId);
     else if (effect === 'give-bonus') {
-      if (cardId == null) rejectRule('Carte Ã  donner absente');
+      if (cardId == null) rejectRule('Carte à donner absente');
       const card = program.decks.bonus.find((entry) => entry.id === cardId);
       if (!card) rejectRule('Carte Bonus absente');
       applyCard(state, targetId, card, 0, ctx);

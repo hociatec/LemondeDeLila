@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { GerardProgram } from '../contracts/gerard-program';
+import type { GerardProgram } from '../extensions/gerard/program';
 import { effectJsonSchema } from '../contracts/effect-json-schema';
 import {
   type AuthorSchema,

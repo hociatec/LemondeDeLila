@@ -1,6 +1,6 @@
 {
   "contractVersion": 2,
-  "generatedAt": "2026-09-11T22:36:46.060Z",
+  "generatedAt": "2026-09-12T10:14:01.029Z",
   "contractUpdatedAt": "2026-08-24",
   "metrics": {
     "manualActionPayloadParsing": 0,
@@ -9,7 +9,7 @@
   "observations": {
     "directPendingAssignments": 0,
     "scoresByPlayerIdMentionsInGames": 0,
-    "targetScoreMentionsInGames": 10
+    "targetScoreMentionsInGames": 2
   },
   "limits": {
     "manualActionPayloadParsing": 0,

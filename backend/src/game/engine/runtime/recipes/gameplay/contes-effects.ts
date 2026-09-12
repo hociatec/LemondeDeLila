@@ -3,7 +3,7 @@ import type {
   ContesCardType,
   ContesProgram,
   ContesTargetEffect,
-} from '../../contracts/contes-program';
+} from '../../extensions/contes/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineEffect } from '../../effects/effects-core';
 import type { createContesResolution } from './contes-resolution';
@@ -213,7 +213,6 @@ export function createContesEffects(
   });
   return { ...movementEffects(), ...storyEffects() };
 }
-
 function emptyEffect(
   apply: (input: {
     state: State;

@@ -1,4 +1,4 @@
-import type { ParadeProgram } from '../contracts/parade-program';
+import type { ParadeProgram } from '../extensions/parade/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

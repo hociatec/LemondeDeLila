@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { BananaTroopsProgram } from '../contracts/banana-troops-program';
+import type { BananaTroopsProgram } from '../extensions/banana-troops/program';
 import {
   authorArray as array,
   authorId as id,

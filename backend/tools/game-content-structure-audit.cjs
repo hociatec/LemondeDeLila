@@ -13,6 +13,8 @@ function visit(directory) {
   if (names.has('manifest.json')) {
     if (!names.has('game.json'))
       violations.push(`${directory}: missing game.json`);
+    if (!names.has('game.spec.ts'))
+      violations.push(`${directory}: missing behavioral or parity game.spec.ts`);
     if (names.has('game.ts') || names.has('content.ts'))
       violations.push(`${directory}: legacy executable game content`);
   }
@@ -35,7 +37,6 @@ function visit(directory) {
     }
   }
 }
-
 visit(root);
 if (contentFiles !== 39 || violations.length) {
   console.error(

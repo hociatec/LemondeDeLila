@@ -1,4 +1,4 @@
-import type { CollectionRaceProgram } from '../../contracts/collection-race-program';
+import type { CollectionRaceProgram } from '../../extensions/collection-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineEvent } from '../../events/game-event-definition';
 import { gameInput } from '../../actions/game-input-schema';
@@ -64,7 +64,6 @@ export function collectionRaceRules(source: CollectionRaceProgram) {
     events: [collected],
   };
 }
-
 function finish(program: CollectionRaceProgram, ctx: Context): void {
   const ranked = ctx.ranking.rank(
     ctx.players.all().map((player) => player.id),

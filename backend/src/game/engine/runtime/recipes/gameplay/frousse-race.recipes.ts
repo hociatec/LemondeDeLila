@@ -1,7 +1,7 @@
 import type {
   FrousseBlock,
   FrousseRaceProgram,
-} from '../../contracts/frousse-race-program';
+} from '../../extensions/frousse-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction, defineChoice } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
@@ -43,7 +43,6 @@ export function frousseRaceRules(source: FrousseRaceProgram) {
     effects: frousseEffects(program),
   };
 }
-
 function executeRoll(
   program: FrousseRaceProgram,
   playerId: number,

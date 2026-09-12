@@ -1,4 +1,4 @@
-import type { EventRaceProgram } from '../contracts/event-race-program';
+import type { EventRaceProgram } from '../extensions/event-race/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

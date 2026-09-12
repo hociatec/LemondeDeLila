@@ -1,4 +1,4 @@
-import type { WonderMarketProgram } from '../contracts/wonder-market-program';
+import type { WonderMarketProgram } from '../extensions/wonder-market/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

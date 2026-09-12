@@ -1,4 +1,4 @@
-import type { BoardGameProgram } from '../contracts/board-game-program';
+import type { BoardGameProgram } from '../extensions/board-game/program';
 import type { GameComponentDefinition } from './component-kit';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import {

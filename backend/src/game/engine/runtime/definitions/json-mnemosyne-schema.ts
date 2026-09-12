@@ -1,4 +1,4 @@
-import type { MnemosyneProgram } from '../contracts/mnemosyne-program';
+import type { MnemosyneProgram } from '../extensions/mnemosyne/program';
 import {
   type AuthorSchema,
   authorArray as array,

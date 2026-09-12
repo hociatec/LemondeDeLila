@@ -2,7 +2,7 @@ import { gameInput } from '../../actions/game-input-schema';
 import type {
   GerardSpecialEffect,
   GerardThemeCard,
-} from '../../contracts/gerard-program';
+} from '../../extensions/gerard/program';
 import type { DefinedGameEffectResolver } from '../../contracts/effect-resolver';
 import { defineEffect } from '../../effects/effects-core';
 import {
@@ -170,7 +170,6 @@ export function createGerardEffects(support: Support) {
     ),
   };
 }
-
 function isAttack(effect: GerardSpecialEffect) {
   return ['sabotage', 'ultra-sabotage', 'main-fantome'].includes(effect);
 }

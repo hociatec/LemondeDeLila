@@ -9,7 +9,7 @@ import type {
   CatPattesParade,
   CatPattesPower,
   CatPattesProgram,
-} from '../../contracts/cat-pattes-program';
+} from '../../extensions/cat-pattes/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineEffect } from '../../effects/effects-core';
 import { gameEffects } from '../../effects/effects-dsl';
@@ -435,7 +435,6 @@ export function catPattesRules(source: CatPattesProgram) {
   };
   return buildRules();
 }
-
 function includesInput(inputs: readonly CardInput[], input: CardInput) {
   return inputs.some(
     (candidate) =>

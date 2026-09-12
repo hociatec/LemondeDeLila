@@ -2,7 +2,7 @@ import type {
   CatPattesObstacle,
   CatPattesParade,
   CatPattesPower,
-} from '../../contracts/cat-pattes-program';
+} from '../../extensions/cat-pattes/program';
 
 export const OBSTACLE_TO_PARADE: Record<CatPattesObstacle, CatPattesParade> = {
   gamelle: 'croquettes',
@@ -11,7 +11,6 @@ export const OBSTACLE_TO_PARADE: Record<CatPattesObstacle, CatPattesParade> = {
   coussin: 'coussin',
   sol: 'saut',
 };
-
 export const PARADE_DISABLED_BY_POWER: Record<
   CatPattesPower,
   readonly CatPattesParade[]

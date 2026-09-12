@@ -1,4 +1,4 @@
-import type { BalloonRaceProgram } from '../contracts/balloon-race-program';
+import type { BalloonRaceProgram } from '../extensions/balloon-race/program';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import type { GameComponentDefinition } from './component-kit';
 import {

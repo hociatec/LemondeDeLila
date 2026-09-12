@@ -1,4 +1,4 @@
-import type { CollectionRaceProgram } from '../contracts/collection-race-program';
+import type { CollectionRaceProgram } from '../extensions/collection-race/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

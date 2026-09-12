@@ -1,7 +1,7 @@
 import type {
   GerardNameCard,
   GerardProgram,
-} from '../../contracts/gerard-program';
+} from '../../extensions/gerard/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { completeRound } from './track-round.recipes';
 import { rejectRule } from '../../../../core/domain/errors/game-domain.errors';
@@ -41,7 +41,6 @@ export function gerardState(
   const value = Reflect.get(state, key);
   return typeof value === 'string' ? value : null;
 }
-
 export function setGerardState(
   state: GerardState,
   key: 'currentThemeId' | 'secondThemeId' | 'lockedNameId',

@@ -1,4 +1,4 @@
-import type { ZigEtZagProgram } from '../contracts/zig-et-zag-program';
+import type { ZigEtZagProgram } from '../extensions/zig-et-zag/program';
 import {
   type AuthorSchema,
   authorArray as array,

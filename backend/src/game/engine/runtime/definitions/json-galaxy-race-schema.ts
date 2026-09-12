@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { GalaxyRaceProgram } from '../contracts/galaxy-race-program';
+import type { GalaxyRaceProgram } from '../extensions/galaxy-race/program';
 import {
   authorArray as array,
   authorBoolean as boolean,

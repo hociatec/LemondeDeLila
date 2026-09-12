@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { MineDomainProgram } from '../contracts/mine-domain-program';
+import type { MineDomainProgram } from '../extensions/mine-domain/program';
 import {
   authorArray as array,
   authorId as id,

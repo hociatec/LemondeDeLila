@@ -3,7 +3,7 @@ import type {
   SacMovement,
   SacTile,
   SacVariant,
-} from '../../contracts/sac-program';
+} from '../../extensions/sac/program';
 import { rejectRule } from '../../../../core/domain/errors/game-domain.errors';
 import { drawAndResolve } from './card-dice.recipes';
 import {
@@ -309,7 +309,6 @@ export function createSacBoard(support: Support) {
     applyMovement,
   };
 }
-
 function nextType(
   variant: SacVariant,
   current: number,

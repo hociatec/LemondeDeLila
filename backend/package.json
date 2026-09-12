@@ -62,7 +62,7 @@
     "content:publish": "node tools/content-release.cjs publish",
     "content:rollback": "node tools/content-release.cjs rollback",
     "quality:report": "node tools/quality-report.cjs",
-    "architecture:test": "node --test tools/architecture-check.spec.cjs tools/double-cast-lint.spec.cjs tools/business-clock-lint.spec.cjs tools/non-null-assertion-lint.spec.cjs tools/runtime-dependency-graph.spec.cjs",
+    "architecture:test": "node --test tools/architecture-check.spec.cjs tools/double-cast-lint.spec.cjs tools/business-clock-lint.spec.cjs tools/non-null-assertion-lint.spec.cjs tools/runtime-dependency-graph.spec.cjs tools/content-release-policy.spec.cjs",
     "architecture:check": "node tools/architecture-check.cjs",
     "architecture:baseline:update": "node tools/architecture-check.cjs --update-baseline",
     "structure:test": "node --test tools/structural-quality-check.spec.cjs",

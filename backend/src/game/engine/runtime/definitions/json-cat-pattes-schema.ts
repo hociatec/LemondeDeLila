@@ -1,5 +1,5 @@
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
-import type { CatPattesProgram } from '../contracts/cat-pattes-program';
+import type { CatPattesProgram } from '../extensions/cat-pattes/program';
 import { effectJsonSchema } from '../contracts/effect-json-schema';
 import {
   type AuthorSchema,

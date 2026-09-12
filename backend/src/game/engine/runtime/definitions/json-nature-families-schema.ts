@@ -1,4 +1,4 @@
-import type { NatureFamiliesProgram } from '../contracts/nature-families-program';
+import type { NatureFamiliesProgram } from '../extensions/nature-families/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

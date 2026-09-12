@@ -11,6 +11,20 @@ checksum incorrect, un chemin sortant de la release, une version de manifeste
 inconnue ou un payload rejeté par le runtime bloque la publication ou le
 démarrage.
 
+Le répertoire de releases est un stockage historique, pas un cache. La commande
+de publication crée une release par écriture exclusive et ne supprime aucune
+ancienne version ; rollback ne fait que déplacer le lien atomique `current`.
+Il n'existe volontairement aucune commande de purge. La sauvegarde du répertoire
+complet fait partie du déploiement. Une release ne peut être retirée qu'après
+une requête d'exploitation prouvant qu'aucune ligne active de `game_sessions`
+ni aucun snapshot Vault ne référence une de ses `contentVersion`. En l'absence
+de cette preuve, elle est conservée.
+
+Les migrations déclarées dans `snapshotMigrations` sont des données statiques
+du paquet, exécutées sans horloge, réseau, base de données ni état global. Leur
+source et leur destination sont explicites et le chargeur ne cherche jamais une
+conversion selon la version courante du serveur.
+
 ## Publication
 
 Après construction initiale du backend, exporter une base éditable :

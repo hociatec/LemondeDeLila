@@ -1,4 +1,4 @@
-import type { DerapeRaceProgram } from '../../contracts/derape-race-program';
+import type { DerapeRaceProgram } from '../../extensions/derape-race/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineEffect } from '../../effects/effects-core';
 import { gameInput } from '../../actions/game-input-schema';
@@ -57,7 +57,6 @@ function resolveTile(
     },
   });
 }
-
 export function derapeEffects(program: DerapeRaceProgram) {
   return {
     'ca-derape.move': defineEffect<State, { delta: number }>({
