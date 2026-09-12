@@ -1,4 +1,4 @@
-/** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
+/** Reusable JSON authoring extension; prefer shared effects and patterns for new rules. */
 /** A bounded line-building board game, with no author callbacks or mutable rule state. */
 export type GridPlacementProgram = {
   boardId: string;

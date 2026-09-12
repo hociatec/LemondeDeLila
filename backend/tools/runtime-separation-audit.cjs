@@ -12,10 +12,14 @@ function files(directory) {
 const runtime = path.resolve('src/game/engine/runtime');
 const dependencyGraph = analyzeRuntime(runtime);
 for (const cycle of dependencyGraph.cycles) {
-  violations.push(`runtime dependency cycle (including types): ${cycle.join(' -> ')}`);
+  violations.push(
+    `runtime dependency cycle (including types): ${cycle.join(' -> ')}`,
+  );
 }
 for (const chain of dependencyGraph.compilerDependencies) {
-  violations.push(`execution reaches author compilation: ${chain.join(' -> ')}`);
+  violations.push(
+    `execution reaches author compilation: ${chain.join(' -> ')}`,
+  );
 }
 for (const file of files(path.join(runtime, 'contracts'))) {
   if (!file.endsWith('.ts') || file.endsWith('.spec.ts')) continue;
@@ -28,9 +32,17 @@ for (const file of files(path.join(runtime, 'contracts'))) {
     );
   const source = fs.readFileSync(file, 'utf8');
   if (/\b(?:import|export)\s+(?!type\b)[\s\S]*?from\s+['"]\.\.\//m.test(source))
-    violations.push(`${file}: runtime contract has a value dependency on a higher layer`);
+    violations.push(
+      `${file}: runtime contract has a value dependency on a higher layer`,
+    );
 }
 const extensionsRoot = path.join(runtime, 'extensions');
+const extensionPolicy = JSON.parse(
+  fs.readFileSync(
+    path.resolve('tools/engine-extension-governance.json'),
+    'utf8',
+  ),
+);
 const extensions = fs
   .readdirSync(extensionsRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory());
@@ -40,17 +52,28 @@ for (const extension of extensions) {
   const program = path.join(directory, 'program.ts');
   if (!entries.includes(program))
     violations.push(`${directory}: program.ts is missing`);
-  if (entries.some((file) => file !== program))
-    violations.push(`${directory}: extension contract directory must stay minimal`);
+  const profile = extensionPolicy.profiles[extension.name];
+  const implementation = path.join(directory, 'extension.ts');
+  if (profile?.property && !entries.includes(implementation))
+    violations.push(`${directory}: extension.ts is missing`);
   if (!entries.includes(program)) continue;
   const source = fs.readFileSync(program, 'utf8');
-  if (!source.includes('Single-consumer JSON authoring extension'))
-    violations.push(`${program}: temporary extension status is undocumented`);
+  const marker =
+    profile?.classification === 'reusable'
+      ? 'Reusable JSON authoring extension'
+      : 'Single-consumer JSON authoring extension';
+  if (!source.includes(marker))
+    violations.push(`${program}: extension classification is undocumented`);
   if (/from\s+['"]\.\.\/(?!\.\.\/contracts\/)/.test(source))
-    violations.push(`${program}: extension contract reaches outside low-level contracts`);
+    violations.push(
+      `${program}: extension contract reaches outside low-level contracts`,
+    );
 }
 for (const file of files(path.join(runtime, 'kits'))) {
-  if (file.endsWith('.ts') && /game-definition/.test(fs.readFileSync(file, 'utf8')))
+  if (
+    file.endsWith('.ts') &&
+    /game-definition/.test(fs.readFileSync(file, 'utf8'))
+  )
     violations.push(`${file}: kit depends on game definition`);
 }
 const declarative = path.join(runtime, 'declarative-game.runtime.ts');
@@ -58,7 +81,10 @@ if (/game-definition-compiler/.test(fs.readFileSync(declarative, 'utf8')))
   violations.push('declarative runtime imports compiler');
 for (const file of files(path.join(runtime, 'patterns'))) {
   if (file.endsWith('.spec.ts')) continue;
-  if (file.endsWith('.ts') && /game-definition-(?:compiler|validator)/.test(fs.readFileSync(file, 'utf8')))
+  if (
+    file.endsWith('.ts') &&
+    /game-definition-(?:compiler|validator)/.test(fs.readFileSync(file, 'utf8'))
+  )
     violations.push(`${file}: pattern depends on compiler or validator`);
   if (
     file.endsWith('.ts') &&
@@ -74,5 +100,7 @@ if (violations.length) {
   console.error(`Runtime separation audit failed: ${violations.join(', ')}`);
   process.exitCode = 1;
 } else {
-  console.log('Runtime separation audit: patterns use the authoring bridge and runtime is compiler-independent');
+  console.log(
+    'Runtime separation audit: patterns use the authoring bridge and runtime is compiler-independent',
+  );
 }

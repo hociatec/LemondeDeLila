@@ -33,6 +33,7 @@ for (const file of [
   'src/game/engine/runtime/definitions/json-version-policy.spec.ts',
   'src/game/engine/runtime/definitions/json-restored-session.spec.ts',
   'src/game/engine/runtime/definitions/static-effect-references.spec.ts',
+  'src/game/engine/runtime/extensions/json-program-extension-registry.spec.ts',
   'src/game/engine/runtime/state/assert-serializable-state.spec.ts',
   'src/game/engine/runtime/state/setup-state-isolation.spec.ts',
   'src/game/engine/runtime/lifecycle/automatic-stabilization.spec.ts',
@@ -52,6 +53,7 @@ for (const file of [
   'docs/architecture/table-ownership.md',
   'docs/architecture/production-readiness.md',
   'docs/quality/corrections-130-2026-09-12.md',
+  'docs/quality/corrections-100-generic-engine-2026-09-12.md',
 ])
   exists(file);
 
@@ -67,6 +69,14 @@ contains('tools/architecture-check.cjs', /public-api-no-typeorm-entity/);
 contains(
   'src/game/engine/runtime/definitions/json-game-schema.ts',
   /freezeAuthorSchema/,
+);
+contains(
+  'src/game/engine/runtime/extensions/json-program-extension-registry.ts',
+  /Object\.freeze/,
+);
+contains(
+  'src/game/engine/runtime/contracts/json-program-extension.ts',
+  /defineJsonProgramExtension/,
 );
 contains(
   'src/game/engine/runtime/content/content-immutability.ts',

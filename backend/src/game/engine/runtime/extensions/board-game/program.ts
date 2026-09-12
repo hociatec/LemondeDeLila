@@ -1,4 +1,4 @@
-/** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
+/** Reusable JSON authoring extension; prefer shared effects and patterns for new rules. */
 /** Closed data instructions for a turn that resolves successive board landings. */
 export type BoardLanding =
   | { kind: 'move'; distance: number }

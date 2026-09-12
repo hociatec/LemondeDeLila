@@ -21,6 +21,8 @@ import { assertProgramReferences } from './json-program-reference-validation';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import { assertGameManifestMatches } from '../../../core/application/helpers/game-manifest-validation';
 import type { JsonGameManifest } from './json-game-manifest';
+import type { JsonGameViewExtension } from '../contracts/json-program-extension';
+import { jsonProgramExtensions } from '../extensions/json-program-extension-registry';
 
 export type { JsonGameManifest } from './json-game-manifest';
 
@@ -45,39 +47,11 @@ export function compileJsonGame(
     throw new GameConfigurationError(`${manifest.code}.${path}: ${reason}`);
   };
   const programs = compileJsonPrograms(document);
-  const {
-    grid,
-    judged,
-    patterns,
-    collectionRace,
-    ecosystemRace,
-    nawak,
-    mnemosyne,
-  } = programs;
+  const { patterns } = programs;
   assertDocumentReferences(document, patterns, manifest, fail);
   const actions = compileJsonActions(document, programs, fail);
-  const events = [
-    ...(grid?.events ?? []),
-    ...(judged?.events ?? []),
-    ...(collectionRace?.events ?? []),
-    ...(ecosystemRace?.events ?? []),
-    ...(nawak?.events ?? []),
-    ...(mnemosyne?.events ?? []),
-    ...(programs.sac?.events ?? []),
-  ];
-  const components = [...document.components, ...(mnemosyne?.components ?? [])];
-  for (const program of [
-    programs.corridor,
-    programs.catPattes,
-    programs.contes,
-    programs.rites,
-    programs.sac,
-  ])
-    components.push(
-      ...(program?.components ?? []).filter(
-        (component) => component.component !== 'cards.zone',
-      ),
-    );
+  const events = programs.events;
+  const components = [...document.components, ...programs.components];
   const handlers = programHandlers(document, programs);
   const buildDefinition = () =>
     defineGame<Record<string, never>>()<
@@ -118,15 +92,6 @@ export function compileJsonGame(
 
 type JsonDocument = ReturnType<typeof parseJsonGame>;
 type JsonFailure = (path: string, reason: string) => never;
-type JsonGameViewExtension = {
-  progress?: Readonly<Record<number, unknown>>;
-  currentChallengeId?: string;
-  lastRound?: unknown;
-  currentTheme?: string | null;
-  secondTheme?: string | null;
-  buildings?: Readonly<Record<number, unknown>>;
-};
-
 function isProgramVictory(
   victory: JsonDocument['victory'],
 ): victory is Extract<JsonDocument['victory'], { kind: `by-${string}` }> {
@@ -173,22 +138,6 @@ function assertDocumentReferences(
   assertProgramReferences(document, patterns, manifest, fail);
   assertBoardPawnCapacity(document, manifest.maxPlayers, fail);
   assertSelections(document, patterns, fail);
-  for (const [id, action] of Object.entries(document.actions)) {
-    if ('recipe' in action && action.recipe === 'grid-place' && !document.grid)
-      fail(`actions.${id}`, 'grid required');
-    if (
-      'recipe' in action &&
-      action.recipe.startsWith('board-') &&
-      !document.board
-    )
-      fail(`actions.${id}`, 'board required');
-    if (
-      'recipe' in action &&
-      action.recipe.startsWith('judged-') &&
-      !document.judgedCards
-    )
-      fail(`actions.${id}`, 'judged card program required');
-  }
   for (const shortcut of document.shortcuts ?? []) {
     if (
       shortcut.type === 'action' &&
@@ -214,18 +163,14 @@ function assertSelections(
   patterns: ReturnType<typeof compileJsonPattern>[] | undefined,
   fail: JsonFailure,
 ): void {
-  const choices = new Set<string>(
-    [
-      document.board?.pawnSelection?.choiceId,
-      document.board?.directionChoiceId,
-      document.board?.quiz?.choiceId,
-      document.board?.exchange?.takeChoiceId,
-      document.board?.exchange?.giveChoiceId,
-      document.grid?.pawnSelection?.choiceId,
-      document.eventRace?.pawnSelection.choiceId,
-      document.pawnRace?.choiceId,
-    ].filter((id): id is string => id !== undefined),
-  );
+  const sources = new Map<string, unknown>(Object.entries(document));
+  const choices = new Set<string>();
+  for (const extension of jsonProgramExtensions) {
+    const source = sources.get(extension.documentKey);
+    if (source === undefined) continue;
+    for (const choiceId of extension.collectChoiceIds(source))
+      if (choiceId !== undefined) choices.add(choiceId);
+  }
   for (const action of Object.values(document.actions)) {
     if (!('selectCards' in action)) continue;
     const program = action.selectCards;

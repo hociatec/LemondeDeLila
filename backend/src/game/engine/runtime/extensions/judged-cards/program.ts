@@ -1,4 +1,4 @@
-/** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
+/** Reusable JSON authoring extension; prefer shared effects and patterns for new rules. */
 /** A rotating judge selects among hidden card submissions, then a new round opens. */
 export type JudgedCardsProgram = {
   judgeId: string;
