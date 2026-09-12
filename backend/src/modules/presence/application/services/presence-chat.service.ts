@@ -53,13 +53,22 @@ export class PresenceChatService {
   async getChatBanInfo(
     userId: number,
   ): Promise<{ until: Date | null; reason: string | null } | null> {
-    const cached = this.chatBanCache.get(userId);
-    if (
-      cached &&
-      this.clock.now() - cached.at <
-        operationalSettings.presenceChatBanCacheTtlMs
-    ) {
-      return { until: cached.until, reason: cached.reason };
+    return this.loadChatBanInfo(userId, true);
+  }
+
+  private async loadChatBanInfo(
+    userId: number,
+    allowCached: boolean,
+  ): Promise<{ until: Date | null; reason: string | null }> {
+    if (allowCached) {
+      const cached = this.chatBanCache.get(userId);
+      if (
+        cached &&
+        this.clock.now() - cached.at <
+          operationalSettings.presenceChatBanCacheTtlMs
+      ) {
+        return { until: cached.until, reason: cached.reason };
+      }
     }
 
     const user = await this.users.findChatBanByUserId(userId);
@@ -85,8 +94,25 @@ export class PresenceChatService {
     userId: number,
   ): Promise<PresenceChatBanPayload | null> {
     const ban = await this.getChatBanInfo(userId);
+    return this.toActiveChatBanPayload(ban);
+  }
+
+  private async getAuthoritativeChatBanPayload(
+    userId: number,
+  ): Promise<PresenceChatBanPayload | null> {
+    const ban = await this.loadChatBanInfo(userId, false);
+    return this.toActiveChatBanPayload(ban);
+  }
+
+  private toActiveChatBanPayload(
+    ban: {
+      until: Date | null;
+      reason: string | null;
+    } | null,
+  ): PresenceChatBanPayload | null {
+    if (!ban) return null;
     const state = userBanState(ban?.until, this.clock.now());
-    if (!ban || state.status === 'none' || state.status === 'expired') {
+    if (state.status === 'none' || state.status === 'expired') {
       return null;
     }
     return {
@@ -112,7 +138,7 @@ export class PresenceChatService {
       return { kind: 'error', message: 'Message invalide.' };
     }
     try {
-      const denied = await this.getActiveChatBanPayload(user.id);
+      const denied = await this.getAuthoritativeChatBanPayload(user.id);
       if (denied) {
         return { kind: 'denied', payload: denied };
       }
@@ -148,7 +174,7 @@ export class PresenceChatService {
       return { kind: 'noop' };
     }
     try {
-      const denied = await this.getActiveChatBanPayload(user.id);
+      const denied = await this.getAuthoritativeChatBanPayload(user.id);
       if (denied) {
         return { kind: 'denied', payload: denied };
       }
@@ -183,7 +209,7 @@ export class PresenceChatService {
       return { kind: 'noop' };
     }
     try {
-      const denied = await this.getActiveChatBanPayload(user.id);
+      const denied = await this.getAuthoritativeChatBanPayload(user.id);
       if (denied) {
         return { kind: 'denied', payload: denied };
       }

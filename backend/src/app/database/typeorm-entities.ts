@@ -9,6 +9,7 @@ import { Room } from '../../modules/room/infrastructure/persistence/typeorm/enti
 import { RoomParticipant } from '../../modules/room/infrastructure/persistence/typeorm/entities/room-participant.entity';
 import { RoomBot } from '../../modules/room/infrastructure/persistence/typeorm/entities/room-bot.entity';
 import { RoomMaintenanceSettingsEntity } from '../../modules/room/infrastructure/persistence/typeorm/entities/room-maintenance-settings.entity';
+import { RoomInviteEntity } from '../../modules/room/infrastructure/persistence/typeorm/entities/room-invite.entity';
 import { BotName } from '../../modules/bot/infrastructure/persistence/typeorm/entities/bot-name.entity';
 import { GameMatchEntity } from '../../modules/stats/infrastructure/persistence/typeorm/entities/game-match.entity';
 import { GameMatchPlayerEntity } from '../../modules/stats/infrastructure/persistence/typeorm/entities/game-match-player.entity';
@@ -38,6 +39,7 @@ export const ORM_ENTITIES = [
   RoomParticipant,
   RoomBot,
   RoomMaintenanceSettingsEntity,
+  RoomInviteEntity,
   BotName,
   GameMatchEntity,
   GameMatchPlayerEntity,

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "lion",
+    "label": "Le Lion",
+    "description": "Majestueux et fier, il avance avec assurance dans la jungle."
+  },
+  {
+    "id": "elephant",
+    "label": "L'Éléphant",
+    "description": "Imposant et calme, il progresse à grands pas réguliers."
+  },
+  {
+    "id": "girafe",
+    "label": "La Girafe",
+    "description": "Élégante et curieuse, elle observe tout du haut de son long cou."
+  },
+  {
+    "id": "zebre",
+    "label": "Le Zèbre",
+    "description": "Rapide et vif, il zigzague avec une énergie imprévisible."
+  },
+  {
+    "id": "crocodile",
+    "label": "Le Crocodile",
+    "description": "Silencieux et malin, il surprend ses adversaires au bon moment."
+  },
+  {
+    "id": "autruche",
+    "label": "L'Autruche",
+    "description": "Dynamique et drôle, elle alterne accélération et pauses soudaines."
+  }
+]

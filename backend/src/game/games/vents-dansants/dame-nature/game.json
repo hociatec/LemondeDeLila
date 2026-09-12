@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "2",
+  "definitionVersion": "3",
+  "snapshotMigrations": [
+    { "fromVersion": "dame-nature@content:593ce53d", "toVersion": "2" },
+    { "fromVersion": "dame-nature@content:5fc7c131", "toVersion": "2" }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "nature",
+      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.hands",
+      "id": "players",
+      "deck": "nature",
+      "initial": 5,
+      "visibility": "owner",
+      "initialDeferredCardIds": {
+        "$content": "content/catalogue.json#/deferredIds"
+      }
+    },
+    {
+      "component": "cards.sets",
+      "id": "nature-families",
+      "hand": "players",
+      "deck": "nature",
+      "visibility": "public",
+      "sets": { "$content": "content/catalogue.json#/sets" }
+    }
+  ],
+  "setup": {
+    "counters": { "dame-nature.pollution": 0 },
+    "startRound": false
+  },
+  "resourceIds": [],
+  "shortcuts": [
+    { "key": "C", "type": "action", "actionType": "ask_card" },
+    { "key": "S", "type": "action", "actionType": "pass" }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": { "actions": ["ask_card", "pass"], "terminal": true }
+  },
+  "actions": {
+    "ask_card": { "recipe": "nature-families-ask" },
+    "pass": { "recipe": "nature-families-pass" }
+  },
+  "victory": { "kind": "by-nature-families" },
+  "natureFamilies": {
+    "deckId": "nature",
+    "handId": "players",
+    "setsId": "nature-families",
+    "cards": { "$content": "content/catalogue.json#/cards" },
+    "pollutionCounter": "dame-nature.pollution",
+    "pollutionLimit": 12,
+    "familiesToWin": 4,
+    "pollutionFinishReason": "pollution-limit",
+    "familyFinishReason": "nature-completed",
+    "eventNamespace": "dame-nature"
+  }
+}

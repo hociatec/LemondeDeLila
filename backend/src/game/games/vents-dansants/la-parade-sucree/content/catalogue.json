@@ -1,0 +1,124 @@
+{
+  "sequence": [
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "V",
+    "D",
+    "R",
+    "A"
+  ],
+  "cardIds": [
+    "parade-2",
+    "parade-3",
+    "parade-4",
+    "parade-5",
+    "parade-6",
+    "parade-7",
+    "parade-8",
+    "parade-9",
+    "parade-10",
+    "parade-v",
+    "parade-d",
+    "parade-r",
+    "parade-a"
+  ],
+  "cards": [
+    {
+      "id": "parade-2",
+      "name": "Jacques â€“ Le Tambourinaire",
+      "value": "2",
+      "special": false
+    },
+    {
+      "id": "parade-3",
+      "name": "RÃ©mi â€“ Le Jongleur",
+      "value": "3",
+      "special": false
+    },
+    {
+      "id": "parade-4",
+      "name": "Tina â€“ La Danseuse ColorÃ©e",
+      "value": "4",
+      "special": false
+    },
+    {
+      "id": "parade-5",
+      "name": "MÃ©lissa â€“ La Lanceuse de Bonbons",
+      "value": "5",
+      "special": false
+    },
+    {
+      "id": "parade-6",
+      "name": "Nico â€“ Lâ€™Acrobate",
+      "value": "6",
+      "special": false
+    },
+    {
+      "id": "parade-7",
+      "name": "Farou â€“ Le Farceur",
+      "value": "7",
+      "special": true
+    },
+    {
+      "id": "parade-8",
+      "name": "Laura â€“ Le Masque MystÃ©rieux",
+      "value": "8",
+      "special": false
+    },
+    {
+      "id": "parade-9",
+      "name": "Francis â€“ Le PÃªcheur",
+      "value": "9",
+      "special": false
+    },
+    {
+      "id": "parade-10",
+      "name": "Roland â€“ Le Roi du Carnaval",
+      "value": "10",
+      "special": true
+    },
+    {
+      "id": "parade-v",
+      "name": "Dimitri â€“ Le Bouffon",
+      "value": "V",
+      "special": true
+    },
+    {
+      "id": "parade-d",
+      "name": "Daniella â€“ La Reine du Bal",
+      "value": "D",
+      "special": true
+    },
+    {
+      "id": "parade-r",
+      "name": "Fabien â€“ Le Capitaine de la Parade",
+      "value": "R",
+      "special": true
+    },
+    {
+      "id": "parade-a",
+      "name": "RÃ©gis â€“ Le Trompettiste",
+      "value": "A",
+      "special": false
+    }
+  ],
+  "rewards": {
+    "7": { "parade.candy.Chocobon": 1 },
+    "10": { "parade.candy.Chamallow": 1 },
+    "V": { "parade.candy.Chamallow": 2 },
+    "D": { "parade.candy.Chamallow": 3 },
+    "R": { "parade.candy.Chamallow": 4 }
+  },
+  "resourceValues": {
+    "parade.candy.Chamallow": 1,
+    "parade.candy.Chocobon": 5,
+    "parade.candy.Balisto": 10
+  }
+}

@@ -12,7 +12,7 @@ function walk(dir) {
 }
 for (const file of walk(root)) {
   const relative = path.relative(root, file).replaceAll(path.sep, '/');
-  const match = relative.match(/\/application\/contracts\/([^/]+(?:\.(?:model|record|input|interface)|\.repository)\.ts)$/);
+  const match = relative.match(/\/application\/contracts\/(?:[^/]+\/)*([^/]+(?:\.(?:model|record|input|interface)|\.repository)\.ts)$/);
   if (!match) continue;
   const source = fs.readFileSync(file, 'utf8');
   violations.push(`${relative}: data model or port remains in contracts${source.includes('export *') ? ' through a forwarding file' : ''}`);

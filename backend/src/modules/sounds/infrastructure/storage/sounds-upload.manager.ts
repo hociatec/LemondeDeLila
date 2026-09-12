@@ -9,7 +9,7 @@ import * as path from 'path';
 import { bestEffort } from '../../../../platform/observability/public-api';
 import {
   assertPathInside,
-  writeFileAtomic,
+  copyFileAtomic,
 } from '../../../../platform/filesystem/public-api';
 import type {
   SoundKey,
@@ -43,7 +43,8 @@ type SoundsUploadDependencies = {
 };
 
 type EncodedSound = {
-  bytes: Buffer;
+  filePath: string;
+  cleanupDir: string | null;
   sha256: string;
   encodedSize: number;
 };
@@ -62,21 +63,25 @@ export class SoundsUploadManager {
   ): Promise<SoundManifestEntry> {
     const soundId = this.dependencies.normalizeSoundKey(soundIdRaw);
     const safeTempFilePath = this.assertTemporaryFilePath(tempFilePath);
+    let encoded: EncodedSound | null = null;
     try {
       const isWavInput = await this.validateInput(
         safeTempFilePath,
         originalName,
         mimeType,
       );
-      const encoded = await this.encodeAndValidate(
-        safeTempFilePath,
-        isWavInput,
-      );
+      encoded = await this.encodeAndValidate(safeTempFilePath, isWavInput);
       const entry = await this.persist(soundId, encoded);
       await this.dependencies.removeUnusedFiles(soundId, encoded.sha256);
       await this.dependencies.notifyUpdated(entry, entry.uploadedAt);
       return entry;
     } finally {
+      if (encoded?.cleanupDir) {
+        await bestEffort(
+          fs.promises.rm(encoded.cleanupDir, { recursive: true, force: true }),
+          'nettoyage du transcodage audio temporaire',
+        );
+      }
       await bestEffort(
         fs.promises.rm(safeTempFilePath, { force: true }),
         'nettoyage du fichier audio temporaire',
@@ -141,17 +146,25 @@ export class SoundsUploadManager {
       if (await detectSoundSilence(outputPath)) {
         throw new BadRequestException('Son silencieux (volume max = -inf).');
       }
-      const bytes = await fs.promises.readFile(outputPath);
-      const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
-      return { bytes, sha256, encodedSize };
-    } finally {
+      const sha256 = await this.sha256File(outputPath);
+      return { filePath: outputPath, cleanupDir: tempDir, sha256, encodedSize };
+    } catch (error) {
       if (tempDir) {
         await bestEffort(
           fs.promises.rm(tempDir, { recursive: true, force: true }),
           'nettoyage du transcodage audio temporaire',
         );
       }
+      throw error;
     }
+  }
+
+  private async sha256File(filePath: string): Promise<string> {
+    const hash = crypto.createHash('sha256');
+    for await (const chunk of fs.createReadStream(filePath)) {
+      hash.update(chunk as Buffer);
+    }
+    return hash.digest('hex');
   }
 
   private async transcode(
@@ -198,11 +211,12 @@ export class SoundsUploadManager {
   ): Promise<SoundManifestEntry> {
     const soundDir = path.join(this.dependencies.dataRoot, soundId);
     try {
-      await this.dependencies.ensureStorageCapacity(encoded.bytes.length);
+      await this.dependencies.ensureStorageCapacity(encoded.encodedSize);
       await fs.promises.mkdir(soundDir, { recursive: true });
-      await writeFileAtomic(
+      await copyFileAtomic(
+        encoded.filePath,
         path.join(soundDir, `${encoded.sha256}.wav`),
-        encoded.bytes,
+        MAX_SOUND_BYTES,
       );
     } catch (error) {
       throw this.dependencies.storageError(
@@ -213,7 +227,7 @@ export class SoundsUploadManager {
     const entry: SoundManifestEntry = {
       soundId,
       sha256: encoded.sha256,
-      bytes: encoded.encodedSize || encoded.bytes.length,
+      bytes: encoded.encodedSize,
       uploadedAt: new Date().toISOString(),
       url: `/api/sounds/${encodeURIComponent(soundId)}/${encoded.sha256}.wav`,
     };

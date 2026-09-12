@@ -13,6 +13,9 @@ export interface NotificationInboxRepository {
   create(
     input: CreateNotificationInboxItemInput,
   ): Promise<NotificationInboxItemRecord>;
+  createMany(
+    inputs: readonly CreateNotificationInboxItemInput[],
+  ): Promise<void>;
   list(userId: number, limit?: number): Promise<NotificationInboxItemRecord[]>;
   getByIdForUser(
     userId: number,
@@ -29,5 +32,8 @@ export interface NotificationInboxRepository {
     id: string,
     payload: NotificationInboxPayload,
   ): Promise<boolean>;
+  updatePayloads(
+    updates: readonly { id: string; payload: NotificationInboxPayload }[],
+  ): Promise<number>;
   deleteManyByIds(ids: string[]): Promise<number>;
 }

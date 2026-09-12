@@ -54,6 +54,7 @@ type SimulationContext = {
   events: GamePendingEvent[];
   eventFrequency: Record<string, number>;
   cardFrequency: Record<string, number>;
+  stateRoundTrip?: (state: GameState) => GameState;
 };
 
 /** Headless deterministic runner for bot-vs-bot campaigns. */
@@ -63,7 +64,11 @@ export class GameSimulator {
   run(
     runtime: GameRuntime,
     initialState: GameState,
-    options: { maxCommands?: number; startAtMs?: number } = {},
+    options: {
+      maxCommands?: number;
+      startAtMs?: number;
+      stateRoundTrip?: (state: GameState) => GameState;
+    } = {},
   ): GameSimulationResult {
     const state = structuredClone(initialState) as RuntimeState;
     for (const player of state.players ?? []) player.isBot = true;
@@ -83,6 +88,7 @@ export class GameSimulator {
       events: [],
       eventFrequency: {},
       cardFrequency: {},
+      stateRoundTrip: options.stateRoundTrip,
     };
     try {
       return this.runLoop(runtime, context);
@@ -100,6 +106,8 @@ export class GameSimulator {
     context: SimulationContext,
   ): GameSimulationResult {
     for (let commands = 0; commands < context.maxCommands; commands += 1) {
+      if (context.stateRoundTrip)
+        context.state = context.stateRoundTrip(context.state);
       this.collectEvents(
         context.state,
         context.events,
@@ -129,7 +137,7 @@ export class GameSimulator {
         continue;
       }
 
-      const action = this.nextBotAction(runtime, context.state);
+      const action = this.nextBotAction(runtime, context.state, context.clock);
       if (!action) return this.simulationResult(context, 'deadlock', commands);
       context.state = this.apply(
         runtime,
@@ -206,6 +214,7 @@ export class GameSimulator {
   private nextBotAction(
     runtime: GameRuntime,
     state: GameState,
+    clock: FixedGameClock,
   ): GameSingleActionDto | null {
     const players = state.players ?? [];
     const currentPlayerId = state.turn?.currentPlayerId;
@@ -214,14 +223,19 @@ export class GameSimulator {
       ...players.filter((player) => player.id !== currentPlayerId),
     ];
     for (const player of ordered) {
-      const selected = runtime.getBotActions(state, player.id)?.[0];
+      const execution = this.execution.create(state, player.id, clock);
+      const selected = runtime.getBotActions(state, player.id, execution)?.[0];
       if (selected) {
         return {
           ...selected,
           meta: { ...(selected.meta ?? {}), actorId: player.id },
         };
       }
-      const fallback = runtime.getAvailableActions(state, player.id)[0];
+      const fallback = runtime.getAvailableActions(
+        state,
+        player.id,
+        execution,
+      )[0];
       if (fallback) {
         return {
           ...fallback,
@@ -244,17 +258,15 @@ export class GameSimulator {
       const normalizedActorId = Number.isFinite(actorId)
         ? actorId
         : (current.turn?.currentPlayerId ?? null);
-      const validated = runtime.validateAction(
-        current,
-        candidate,
-        normalizedActorId,
-      );
       const context = {
         actorId: normalizedActorId,
         commandId: `simulation:${current.version ?? 0}`,
         rng: new StateGameRng(current),
         clock,
       };
+      const validated = this.execution.run(context, () =>
+        runtime.validateAction(current, candidate, normalizedActorId, context),
+      );
       current = this.execution.run(context, () =>
         runtime.applyActions(current, [validated], context),
       );

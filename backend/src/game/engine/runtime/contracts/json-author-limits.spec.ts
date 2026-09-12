@@ -1,5 +1,5 @@
 import { assertAuthorJson } from './json-author-schema';
-import { parseJsonGame } from '../definitions/json-game-schema';
+import { parseJsonGame } from '../definitions/json-game-parser';
 import document from '../../../testing/fixtures/json-course/game.json';
 
 it('bounds cumulative UTF-8 text even when each individual string is allowed', () => {

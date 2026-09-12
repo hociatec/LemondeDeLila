@@ -1,6 +1,17 @@
 import { testGame } from '../../../engine/testing/public-api';
 
-import gameDefinition from './game';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import manifest from './manifest.json';
+import document from './game.json';
+import board from './content/board.json';
+import cards from './content/cards.json';
+import pawns from './content/pawns.json';
+
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/board.json': board,
+  'content/cards.json': cards,
+  'content/pawns.json': pawns,
+});
 
 describe('Aventure Sauvage declarative game', () => {
   it('assigns unique pawns through generic choices', async () => {

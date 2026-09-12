@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "2",
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "minuit",
+      "spaces": 56,
+      "overshoot": "bounce"
+    }
+  ],
+  "components": [
+    {
+      "component": "pawn.set",
+      "id": "minuit",
+      "pawns": { "$content": "content/catalogue.json#/pawns" },
+      "perPlayer": 1
+    },
+    {
+      "component": "cards.deck",
+      "id": "noel",
+      "cards": { "$content": "content/catalogue.json#/cards" },
+      "shuffle": true,
+      "empty": "recycle"
+    }
+  ],
+  "setup": { "firstPlayer": "first", "startRound": true },
+  "resourceIds": [],
+  "shortcuts": [{ "key": "D", "type": "action", "actionType": "roll" }],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": { "actions": [], "transitions": ["playing"] },
+    "playing": { "actions": ["roll"], "terminal": true }
+  },
+  "actions": { "roll": { "recipe": "midnight-race-roll" } },
+  "victory": { "kind": "by-midnight-race" },
+  "midnightRace": {
+    "trackId": "minuit",
+    "diceId": "main",
+    "deckId": "noel",
+    "pawnSetId": "minuit",
+    "pawnChoiceId": "minuit.pawn",
+    "answerChoiceId": "minuit.resolve",
+    "maxDepth": 24,
+    "finishReason": "midnight",
+    "statuses": {
+      "ignoreNextMalus": "minuit.ignore-next-malus",
+      "ignoreNextSkip": "minuit.ignore-next-skip",
+      "forceDrawNextTurn": "minuit.force-draw-next-turn"
+    },
+    "tiles": { "$content": "content/catalogue.json#/tiles" },
+    "cards": { "$content": "content/catalogue.json#/cards" }
+  }
+}

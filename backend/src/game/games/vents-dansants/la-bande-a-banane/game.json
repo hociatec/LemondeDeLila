@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "1",
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "banana",
+      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.hands",
+      "id": "players",
+      "deck": "banana",
+      "initial": 5,
+      "visibility": "owner"
+    },
+    {
+      "component": "inventory.set",
+      "id": "banana-troops",
+      "visibility": "public"
+    }
+  ],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    { "key": "C", "type": "action", "actionType": "play_card" },
+    { "key": "S", "type": "action", "actionType": "pass" }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": { "actions": ["play_card", "pass"], "terminal": true }
+  },
+  "actions": {
+    "play_card": { "recipe": "banana-troops-play" },
+    "pass": { "recipe": "banana-troops-pass" }
+  },
+  "victory": { "kind": "by-banana-troops" },
+  "bananaTroops": {
+    "deckId": "banana",
+    "handId": "players",
+    "inventoryId": "banana-troops",
+    "exchangeChoiceId": "banana.exchange-card",
+    "handLimit": 7,
+    "victoryReason": "five-species",
+    "species": ["capucin", "mandrill", "gibbon", "babouin", "macaque"],
+    "cards": { "$content": "content/catalogue.json#/cards" }
+  }
+}

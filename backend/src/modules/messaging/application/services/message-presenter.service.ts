@@ -33,7 +33,9 @@ export class MessagePresenterService {
     messages: PrivateMessageRecord[],
     viewerId: number,
   ): MessageDto[] {
-    return messages.slice(0, 500).map((message) => this.present(message, viewerId));
+    return messages
+      .slice(0, 500)
+      .map((message) => this.present(message, viewerId));
   }
 }
 

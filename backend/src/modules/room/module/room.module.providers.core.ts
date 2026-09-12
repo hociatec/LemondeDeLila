@@ -1,3 +1,6 @@
+import { ROOM_GAME_RUN_READER } from '../application/ports/room-game-run-reader.port';
+import { RoomGameRunTypeormReader } from '../infrastructure/persistence/typeorm/repositories/room-game-run-typeorm.reader';
+import { RoomGameAccessService } from '../application/services/membership/room-game-access.service';
 import { ROOM_BOTS_REPOSITORY } from '../application/ports/room-bots.repository';
 import { RoomBotsTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-bots-typeorm.repository';
 import { ConfigService } from '@nestjs/config';
@@ -10,6 +13,8 @@ import { RoomClientPolicyService } from '../application/services/membership/room
 import { RoomAdminPolicyService } from '../application/services/maintenance/room-admin-policy.service';
 import { RoomAutoCleanupService } from '../application/services/lifecycle/room-auto-cleanup.service';
 import { RoomInviteService } from '../application/services/membership/room-invite.service';
+import { ROOM_INVITE_REPOSITORY } from '../application/ports/room-invite.repository';
+import { RoomInviteTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-invite-typeorm.repository';
 import { RoomJoinPolicyService } from '../application/services/membership/room-join-policy.service';
 import { RoomLobbyPolicyService } from '../application/services/lobby/room-lobby-policy.service';
 import { RoomLifecycleFacadeService } from '../application/services/lifecycle/room-lifecycle-facade.service';
@@ -34,6 +39,7 @@ import { ROOM_LOBBY_REPOSITORY } from '../application/ports/room-lobby.repositor
 import { ROOM_PARTICIPANT_REPOSITORY } from '../application/ports/room-participant.repository';
 import { ROOM_PAYLOAD_CACHE } from '../application/ports/room-payload-cache.port';
 import { ROOM_REPOSITORY } from '../application/ports/room.repository';
+import { ROOM_PAYLOAD_READER } from '../application/ports/room-payload.reader';
 import { ROOM_VAULT_PORT } from '../application/ports/room-vault.port';
 import { ROOM_USER_REPOSITORY } from '../application/ports/room-user.repository';
 import { RoomPayloadCacheService } from '../infrastructure/cache/room-payload-cache.service';
@@ -46,12 +52,16 @@ import { RoomMaintenanceSettingsTypeormRepository } from '../infrastructure/pers
 import { RoomLobbyTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-lobby-typeorm.repository';
 import { RoomParticipantTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-participant-typeorm.repository';
 import { RoomTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-typeorm.repository';
+import { RoomPayloadTypeormReader } from '../infrastructure/persistence/typeorm/repositories/room-payload-typeorm.reader';
 import { RoomUserTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/room-user-typeorm.repository';
-import { RoomEventPublisherAdapter } from '../infrastructure/system/room-event-publisher.adapter';
 import { RoomEventsBusService } from '../infrastructure/system/room-events-bus.service';
 import { createRoomMaintenanceDefaults } from '../infrastructure/config/room-maintenance-defaults.config';
 
 export const ROOM_CORE_PROVIDERS = [
+  RoomGameRunTypeormReader,
+  RoomInviteTypeormRepository,
+  { provide: ROOM_INVITE_REPOSITORY, useExisting: RoomInviteTypeormRepository },
+  { provide: ROOM_GAME_RUN_READER, useExisting: RoomGameRunTypeormReader },
   RoomBotsTypeormRepository,
   { provide: ROOM_BOTS_REPOSITORY, useExisting: RoomBotsTypeormRepository },
   ActiveRoomParticipantsTypeormReader,
@@ -60,18 +70,19 @@ export const ROOM_CORE_PROVIDERS = [
     useExisting: ActiveRoomParticipantsTypeormReader,
   },
   RoomEventsBusService,
-  RoomEventPublisherAdapter,
   RoomAdminAdapter,
   RoomGameAdapter,
+  RoomGameAccessService,
   RoomVaultAdapter,
   RoomTypeormRepository,
+  RoomPayloadTypeormReader,
   RoomLobbyTypeormRepository,
   RoomParticipantTypeormRepository,
   RoomUserTypeormRepository,
   RoomMaintenanceSettingsTypeormRepository,
   {
     provide: ROOM_EVENT_PUBLISHER,
-    useExisting: RoomEventPublisherAdapter,
+    useExisting: RoomEventsBusService,
   },
   {
     provide: ROOM_EVENTS_PORT,
@@ -92,6 +103,10 @@ export const ROOM_CORE_PROVIDERS = [
   {
     provide: ROOM_REPOSITORY,
     useExisting: RoomTypeormRepository,
+  },
+  {
+    provide: ROOM_PAYLOAD_READER,
+    useExisting: RoomPayloadTypeormReader,
   },
   {
     provide: ROOM_LOBBY_REPOSITORY,

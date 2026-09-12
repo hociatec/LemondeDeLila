@@ -7,9 +7,10 @@ const open = [...backlog.matchAll(/^(\d+)\. /gm)].map((match) => Number(match[1]
 assert.equal(new Set(open).size, open.length, 'Duplicate backlog IDs');
 assert(open.every((id, index) => id >= 1 && id <= 744 && (index === 0 || id > open[index - 1])), 'Original backlog IDs must remain ordered and within 1-744');
 const snapshotHeader = 'Il reste encore ces points visibles dans ce snapshot :';
-const isCurrentSnapshot = backlog.startsWith(`${snapshotHeader}\n`) || backlog.startsWith(`${snapshotHeader}\r\n`);
-const numberedBody = isCurrentSnapshot ? backlog.slice(snapshotHeader.length) : backlog;
-assert(numberedBody.split(/\r?\n/).every((line) => !line.trim() || /^\d+\. \S/.test(line)), 'Backlog must contain only unfinished numbered points');
+const isJsonSnapshot = /^Snapshot JSON complet :\r?\n/.test(backlog);
+const isCurrentSnapshot = isJsonSnapshot || backlog.startsWith(`${snapshotHeader}\n`) || backlog.startsWith(`${snapshotHeader}\r\n`);
+const numberedBody = isJsonSnapshot ? backlog.slice('Snapshot JSON complet :'.length) : isCurrentSnapshot ? backlog.slice(snapshotHeader.length) : backlog;
+assert(isJsonSnapshot ? !numberedBody.trim() || /^\d+\. \S/.test(numberedBody.trim()) : numberedBody.split(/\r?\n/).every((line) => !line.trim() || /^\d+\. \S/.test(line)), 'Backlog must contain only unfinished numbered points');
 
 // Historical reports reuse these IDs for different requirements. The current
 // snapshot is reconciled with its own register, never with those old closures.

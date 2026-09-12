@@ -1,6 +1,6 @@
 import { getErrorPayload } from '../../../../../platform/serialization/public-api';
 import { RoomGatewayCommandService } from './room-gateway-command.service';
-import { decodeRoomMessage } from './room-intent-decoder';
+import { decodeRoomIntent, decodeRoomMessage } from './room-intent-decoder';
 import type { WsRequestRateLimitService } from '../../../../../platform/ws/public-api';
 
 describe('RoomGatewayCommandService transport pipeline', () => {
@@ -50,6 +50,31 @@ describe('RoomGatewayCommandService transport pipeline', () => {
       type: 'room.intent.execute',
       payload: { intentId: 'room.ping', data: { clientSentAtMs: 1 } },
     });
+  });
+
+  it('accepts the explicit room snapshot resynchronization intent', () => {
+    expect(decodeRoomIntent({ intentId: 'room.state', data: {} })).toEqual({
+      intentId: 'room.state',
+      commandPayload: {},
+    });
+  });
+
+  it('rejects unknown envelope and command fields', () => {
+    expect(() =>
+      decodeRoomIntent({ intentId: 'room.state', data: {}, admin: true }),
+    ).toThrow();
+    expect(() =>
+      decodeRoomIntent({
+        intentId: 'room.set-owner',
+        data: { newOwnerId: 7, force: true },
+      }),
+    ).toThrow();
+    expect(() =>
+      decodeRoomIntent({
+        intentId: 'room.create',
+        data: { payload: { gameType: 'lama', force: true } },
+      }),
+    ).toThrow();
   });
 
   it('presents malformed and unknown commands through stable error codes', () => {

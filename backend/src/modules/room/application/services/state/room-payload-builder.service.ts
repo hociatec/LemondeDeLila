@@ -1,7 +1,7 @@
 import { presentationTimestamp } from '../../../../../platform/serialization/public-api';
 import { Inject, Injectable } from '@nestjs/common';
 import { RoomPayload } from '../../models/room-payload.model';
-import type { RoomRecord } from '../../models/room-record.model';
+import type { RoomPayloadRecord } from '../../read-models/room-payload.record';
 import {
   ROOM_CATALOG_PORT,
   type RoomCatalogPort,
@@ -18,7 +18,7 @@ export class RoomPayloadBuilderService {
     @Inject(ROOM_CATALOG_PORT) private readonly catalog: RoomCatalogPort,
   ) {}
 
-  async build(room: RoomRecord): Promise<RoomPayload> {
+  async build(room: RoomPayloadRecord): Promise<RoomPayload> {
     const manifest = await this.catalog.getGame(room.gameType);
     const players = buildUniqueActiveRoomPlayers(room.participants);
     return {

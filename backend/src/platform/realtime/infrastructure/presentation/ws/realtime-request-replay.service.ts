@@ -66,20 +66,16 @@ export class RealtimeRequestReplayService {
       if (existing.fingerprint !== fingerprint) return { kind: 'collision' };
       return { kind: 'replay', frames: existing.result };
     }
-    this.enforceBound();
+    // Completed receipts remain authoritative until their advertised TTL.
+    // Eviction under load would allow the same mutation to execute again.
     if (this.entries.size >= this.maxEntries) return { kind: 'busy' };
 
-    let complete!: (frames: readonly RealtimeResponseFrame[]) => void;
-    let failPromise!: () => void;
-    const result = new Promise<readonly RealtimeResponseFrame[]>((resolve) => {
-      complete = resolve;
-      failPromise = () => resolve([]);
-    });
+    const deferred = createDeferred<readonly RealtimeResponseFrame[]>();
     const entry: ReplayEntry = {
       type,
       fingerprint,
       expiresAtMs: Infinity,
-      result,
+      result: deferred.promise,
     };
     this.entries.set(key, entry);
     return {
@@ -88,7 +84,7 @@ export class RealtimeRequestReplayService {
         if (entry.expiresAtMs !== Infinity) return;
         if (!Array.isArray(frames) || frames.length > 128) {
           entry.expiresAtMs = this.now() + this.ttlMs;
-          complete([]);
+          deferred.resolve([]);
           return;
         }
         let snapshot: readonly RealtimeResponseFrame[];
@@ -96,22 +92,23 @@ export class RealtimeRequestReplayService {
           const serialized = JSON.stringify(frames);
           if (Buffer.byteLength(serialized, 'utf8') > 1_048_576) {
             entry.expiresAtMs = this.now() + this.ttlMs;
-            complete([]);
+            deferred.resolve([]);
             return;
           }
-          snapshot = structuredClone(frames);
+          snapshot = JSON.parse(serialized) as readonly RealtimeResponseFrame[];
         } catch {
           entry.expiresAtMs = this.now() + this.ttlMs;
-          complete([]);
+          deferred.resolve([]);
           return;
         }
         entry.expiresAtMs = this.now() + this.ttlMs;
-        complete(snapshot);
+        deferred.resolve(snapshot);
       },
       fail: () => {
+        if (entry.expiresAtMs !== Infinity) return;
         entry.expiresAtMs = 0;
         if (this.entries.get(key) === entry) this.entries.delete(key);
-        failPromise();
+        deferred.resolve([]);
       },
     };
   }
@@ -153,17 +150,24 @@ export class RealtimeRequestReplayService {
     }
   }
 
-  private enforceBound(): void {
-    while (this.entries.size >= this.maxEntries) {
-      const completed = [...this.entries].find(
-        ([, entry]) => entry.expiresAtMs !== Infinity,
-      );
-      if (!completed) return;
-      this.entries.delete(completed[0]);
-    }
-  }
-
   private now(): number {
     return this.clock.now();
   }
+}
+
+function createDeferred<T>(): {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+} {
+  let resolver: ((value: T) => void) | undefined;
+  const promise = new Promise<T>((resolve) => {
+    resolver = resolve;
+  });
+  return {
+    promise,
+    resolve: (value) => {
+      if (!resolver) throw new Error('Deferred resolver unavailable');
+      resolver(value);
+    },
+  };
 }

@@ -58,8 +58,13 @@ export class MysqlGameRoomLockService implements GameRoomLock {
     private readonly dataSource: DataSource,
     config: ConfigService,
   ) {
-    const configured = Number(config.get<number>('GAME_ROOM_LOCK_TIMEOUT_SECONDS', 5));
-    this.timeoutSeconds = Number.isSafeInteger(configured) && configured >= 1 && configured <= 60 ? configured : 5;
+    const configured = Number(
+      config.get<number>('GAME_ROOM_LOCK_TIMEOUT_SECONDS', 5),
+    );
+    this.timeoutSeconds =
+      Number.isSafeInteger(configured) && configured >= 1 && configured <= 60
+        ? configured
+        : 5;
   }
 
   async runExclusive<T>(
@@ -71,7 +76,7 @@ export class MysqlGameRoomLockService implements GameRoomLock {
     }
     const runner = this.dataSource.createQueryRunner();
     const lockName = `lmdl:game-room:${roomId}`;
-    const startedAtMs = Date.now();
+    const startedAtMs = performance.now();
     let acquired = false;
     let uncertain = false;
     let destroy: (() => void) | undefined;
@@ -90,7 +95,7 @@ export class MysqlGameRoomLockService implements GameRoomLock {
           JSON.stringify({
             event: 'game.room_lock.acquire_failed',
             roomId,
-            waitMs: Date.now() - startedAtMs,
+            waitMs: performance.now() - startedAtMs,
           }),
         );
         throw new GameRoomLockUnavailableError(roomId);
@@ -99,7 +104,7 @@ export class MysqlGameRoomLockService implements GameRoomLock {
         JSON.stringify({
           event: 'game.room_lock.acquired',
           roomId,
-          waitMs: Date.now() - startedAtMs,
+          waitMs: performance.now() - startedAtMs,
         }),
       );
       return await operation();
@@ -121,7 +126,17 @@ export class MysqlGameRoomLockService implements GameRoomLock {
         // mysql2 removes destroyed connections from its pool before release().
         if (uncertain) destroy?.();
       } finally {
-        await runner.release();
+        try {
+          await runner.release();
+        } catch {
+          destroy?.();
+          this.logger.error(
+            JSON.stringify({
+              event: 'game.room_lock.connection_release_failed',
+              roomId,
+            }),
+          );
+        }
       }
     }
   }

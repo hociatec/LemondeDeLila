@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "mine",
+      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.hands",
+      "id": "players",
+      "deck": "mine",
+      "initial": 5,
+      "visibility": "owner"
+    },
+    {
+      "component": "inventory.set",
+      "id": "mine-domains",
+      "items": { "$content": "content/catalogue.json#/cardIds" },
+      "visibility": "public"
+    }
+  ],
+  "setup": { "scores": 0 },
+  "resourceIds": [],
+  "shortcuts": [
+    { "key": "C", "type": "action", "actionType": "play_card" },
+    { "key": "S", "type": "action", "actionType": "pass" }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": { "actions": ["play_card", "pass"], "terminal": true }
+  },
+  "actions": {
+    "play_card": { "recipe": "mine-domain-play" },
+    "pass": { "recipe": "mine-domain-pass" }
+  },
+  "victory": { "kind": "by-mine-domain" },
+  "mineDomain": {
+    "deckId": "mine",
+    "handId": "players",
+    "inventoryId": "mine-domains",
+    "discardNextDrawStatus": "mine.discard-next-draw",
+    "handLimit": 5,
+    "finishReason": "mine-collapsed",
+    "eventNamespace": "grande-mine",
+    "cards": { "$content": "content/catalogue.json#/cards" }
+  }
+}

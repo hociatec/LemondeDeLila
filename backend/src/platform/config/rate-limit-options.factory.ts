@@ -1,10 +1,12 @@
 import type { ConfigService } from '@nestjs/config';
-import type { ThrottlerModuleOptions } from '@nestjs/throttler';
-import type { RedisRateLimitStorage } from '../redis/public-api';
+import type {
+  ThrottlerModuleOptions,
+  ThrottlerStorage,
+} from '@nestjs/throttler';
 
 export function createRateLimitOptions(
   config: ConfigService,
-  storage: RedisRateLimitStorage,
+  storage: ThrottlerStorage,
 ): ThrottlerModuleOptions {
   const ttlSecondsRaw = Number(config.get<number>('RATE_LIMIT_TTL', 60));
   const limitRaw = Number(config.get<number>('RATE_LIMIT_COUNT', 120));

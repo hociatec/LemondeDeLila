@@ -1,0 +1,427 @@
+{
+  "cards": [
+    {
+      "id": "symboles-sacres-1",
+      "name": "La Croix",
+      "type": "family",
+      "familyId": "symboles-sacres",
+      "familyName": "Symboles Sacrés"
+    },
+    {
+      "id": "symboles-sacres-2",
+      "name": "Le mouton",
+      "type": "family",
+      "familyId": "symboles-sacres",
+      "familyName": "Symboles Sacrés"
+    },
+    {
+      "id": "symboles-sacres-3",
+      "name": "La Cloche",
+      "type": "family",
+      "familyId": "symboles-sacres",
+      "familyName": "Symboles Sacrés"
+    },
+    {
+      "id": "symboles-sacres-4",
+      "name": "Le Pain Azyme",
+      "type": "family",
+      "familyId": "symboles-sacres",
+      "familyName": "Symboles Sacrés"
+    },
+    {
+      "id": "symboles-sacres-5",
+      "name": "La Lumière",
+      "type": "family",
+      "familyId": "symboles-sacres",
+      "familyName": "Symboles Sacrés"
+    },
+    {
+      "id": "symboles-sacres-6",
+      "name": "L’Eau Bénite",
+      "type": "family",
+      "familyId": "symboles-sacres",
+      "familyName": "Symboles Sacrés"
+    },
+    {
+      "id": "symboles-sacres-7",
+      "name": "Le Tombeau Vide",
+      "type": "family",
+      "familyId": "symboles-sacres",
+      "familyName": "Symboles Sacrés"
+    },
+    {
+      "id": "creatures-de-paques-1",
+      "name": "Le Lapin",
+      "type": "family",
+      "familyId": "creatures-de-paques",
+      "familyName": "Créatures de Pâques"
+    },
+    {
+      "id": "creatures-de-paques-2",
+      "name": "La Poule",
+      "type": "family",
+      "familyId": "creatures-de-paques",
+      "familyName": "Créatures de Pâques"
+    },
+    {
+      "id": "creatures-de-paques-3",
+      "name": "L’Agneau",
+      "type": "family",
+      "familyId": "creatures-de-paques",
+      "familyName": "Créatures de Pâques"
+    },
+    {
+      "id": "creatures-de-paques-4",
+      "name": "Le Papillon",
+      "type": "family",
+      "familyId": "creatures-de-paques",
+      "familyName": "Créatures de Pâques"
+    },
+    {
+      "id": "creatures-de-paques-5",
+      "name": "L’Hirondelle",
+      "type": "family",
+      "familyId": "creatures-de-paques",
+      "familyName": "Créatures de Pâques"
+    },
+    {
+      "id": "creatures-de-paques-6",
+      "name": "L’Abeille",
+      "type": "family",
+      "familyId": "creatures-de-paques",
+      "familyName": "Créatures de Pâques"
+    },
+    {
+      "id": "creatures-de-paques-7",
+      "name": "Le Lièvre Blanc",
+      "type": "family",
+      "familyId": "creatures-de-paques",
+      "familyName": "Créatures de Pâques"
+    },
+    {
+      "id": "traditions-et-fetes-1",
+      "name": "Ostara",
+      "type": "family",
+      "familyId": "traditions-et-fetes",
+      "familyName": "Traditions & Fêtes"
+    },
+    {
+      "id": "traditions-et-fetes-2",
+      "name": "Pessa’h",
+      "type": "family",
+      "familyId": "traditions-et-fetes",
+      "familyName": "Traditions & Fêtes"
+    },
+    {
+      "id": "traditions-et-fetes-3",
+      "name": "La Messe de Pâques",
+      "type": "family",
+      "familyId": "traditions-et-fetes",
+      "familyName": "Traditions & Fêtes"
+    },
+    {
+      "id": "traditions-et-fetes-4",
+      "name": "La Chasse aux œufs",
+      "type": "family",
+      "familyId": "traditions-et-fetes",
+      "familyName": "Traditions & Fêtes"
+    },
+    {
+      "id": "traditions-et-fetes-5",
+      "name": "Le Lundi de Pâques",
+      "type": "family",
+      "familyId": "traditions-et-fetes",
+      "familyName": "Traditions & Fêtes"
+    },
+    {
+      "id": "traditions-et-fetes-6",
+      "name": "Le Festin de famille",
+      "type": "family",
+      "familyId": "traditions-et-fetes",
+      "familyName": "Traditions & Fêtes"
+    },
+    {
+      "id": "traditions-et-fetes-7",
+      "name": "La Veillée Pascale",
+      "type": "family",
+      "familyId": "traditions-et-fetes",
+      "familyName": "Traditions & Fêtes"
+    },
+    {
+      "id": "gourmandises-objets-1",
+      "name": "Œuf en chocolat",
+      "type": "family",
+      "familyId": "gourmandises-objets",
+      "familyName": "Gourmandises & Objets"
+    },
+    {
+      "id": "gourmandises-objets-2",
+      "name": "Panier de Pâques",
+      "type": "family",
+      "familyId": "gourmandises-objets",
+      "familyName": "Gourmandises & Objets"
+    },
+    {
+      "id": "gourmandises-objets-3",
+      "name": "Brioche tressée",
+      "type": "family",
+      "familyId": "gourmandises-objets",
+      "familyName": "Gourmandises & Objets"
+    },
+    {
+      "id": "gourmandises-objets-4",
+      "name": "Cloche en sucre",
+      "type": "family",
+      "familyId": "gourmandises-objets",
+      "familyName": "Gourmandises & Objets"
+    },
+    {
+      "id": "gourmandises-objets-5",
+      "name": "Gâteau en forme d’agneau",
+      "type": "family",
+      "familyId": "gourmandises-objets",
+      "familyName": "Gourmandises & Objets"
+    },
+    {
+      "id": "gourmandises-objets-6",
+      "name": "Nid de printemps",
+      "type": "family",
+      "familyId": "gourmandises-objets",
+      "familyName": "Gourmandises & Objets"
+    },
+    {
+      "id": "gourmandises-objets-7",
+      "name": "Dragées multicolores",
+      "type": "family",
+      "familyId": "gourmandises-objets",
+      "familyName": "Gourmandises & Objets"
+    },
+    {
+      "id": "nature-saisons-1",
+      "name": "Le Printemps",
+      "type": "family",
+      "familyId": "nature-saisons",
+      "familyName": "Nature & Saisons"
+    },
+    {
+      "id": "nature-saisons-2",
+      "name": "Arbre en fleurs",
+      "type": "family",
+      "familyId": "nature-saisons",
+      "familyName": "Nature & Saisons"
+    },
+    {
+      "id": "nature-saisons-3",
+      "name": "Rayon de soleil",
+      "type": "family",
+      "familyId": "nature-saisons",
+      "familyName": "Nature & Saisons"
+    },
+    {
+      "id": "nature-saisons-4",
+      "name": "Éclosion",
+      "type": "family",
+      "familyId": "nature-saisons",
+      "familyName": "Nature & Saisons"
+    },
+    {
+      "id": "nature-saisons-5",
+      "name": "Arc-en-ciel",
+      "type": "family",
+      "familyId": "nature-saisons",
+      "familyName": "Nature & Saisons"
+    },
+    {
+      "id": "nature-saisons-6",
+      "name": "Douce pluie",
+      "type": "family",
+      "familyId": "nature-saisons",
+      "familyName": "Nature & Saisons"
+    },
+    {
+      "id": "nature-saisons-7",
+      "name": "Champ fleuri",
+      "type": "family",
+      "familyId": "nature-saisons",
+      "familyName": "Nature & Saisons"
+    },
+    {
+      "id": "lapin-d-or",
+      "name": "Le Lapin d’Or",
+      "type": "special",
+      "description": "Piochez deux cartes. Choisissez-en une pour votre main et ajoutez-la immédiatement ; l’autre va dans la défausse.",
+      "effect": "draw_two_choose_one",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "rites.draw-two",
+          "data": {},
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "oeuf-surprise",
+      "name": "L’Œuf Surprise",
+      "type": "special",
+      "description": "Piochez une carte supplémentaire et appliquez immédiatement son effet caché.",
+      "effect": "draw_and_trigger",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "rites.draw-one",
+          "data": {},
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "benediction",
+      "name": "La Bénédiction",
+      "type": "special",
+      "description": "Tous les autres joueurs vous offrent une carte de leur choix.",
+      "effect": "collect_from_others",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "rites.collect",
+          "data": {},
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "resurrection",
+      "name": "La Résurrection",
+      "type": "special",
+      "description": "Reprenez une carte depuis la défausse et ajoutez-la dans votre main pour rejouer.",
+      "effect": "take_from_discard",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "rites.resurrect",
+          "data": {},
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "silence-sacre",
+      "name": "Le Silence Sacré",
+      "type": "special",
+      "description": "Les effets spéciaux sont annulés jusqu’à votre prochain tour (aucun effet automatisé ne peut être déclenché).",
+      "effect": "mute_specials",
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "rites.silence",
+          "scope": "until-used",
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "envol-mystique",
+      "name": "L’Envol Mystique",
+      "type": "special",
+      "description": "Échangez toutes vos cartes avec celles d’un autre joueur.",
+      "effect": "swap_hands",
+      "effects": [
+        {
+          "kind": "swap-hands",
+          "handId": "players",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "rites.swap-hands",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "cle-jardin",
+      "name": "La Clé du Jardin Caché",
+      "type": "special",
+      "description": "Posez trois cartes issues de familles différentes comme si elles formaient une famille complète.",
+      "effect": "free_family",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "rites.free-family",
+          "data": {},
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "aube-nouvelle",
+      "name": "L’Aube Nouvelle",
+      "type": "special",
+      "description": "Chaque joueur défausse une carte puis pioche deux cartes.",
+      "effect": "reshuffle_cycle",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "rites.dawn-cycle",
+          "data": {},
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "etoile-orient",
+      "name": "L’Étoile de l’Orient",
+      "type": "special",
+      "description": "Personne ne peut demander de cartes ni jouer de pouvoirs pendant deux tours.",
+      "effect": "peace_turns",
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "rites.peace",
+          "turns": 2,
+          "scope": "global-turn",
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chant-coq",
+      "name": "Le Chant du Coq",
+      "type": "special",
+      "description": "Chaque joueur révèle sa main et vous pouvez choisir une carte révélée.",
+      "effect": "reveal_and_steal",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "rites.steal-choice",
+          "data": {},
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    }
+  ]
+}

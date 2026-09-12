@@ -1,4 +1,5 @@
-import type { PresenceEvent } from '../ports/presence-transport.port';
+import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../ports/presence-transport.port';
+import { type PresenceEvent } from '../ports/presence-transport.port';
 import {
   decodePresencePublicPlayer,
   type PresencePublicPlayer,
@@ -27,7 +28,7 @@ export class PresenceOrigins {
       event.origin.length === 0 ||
       event.origin.length > 128 ||
       !Array.isArray(event.players) ||
-      event.players.length > 1_000
+      event.players.length > MAX_PRESENCE_PLAYERS_PER_ORIGIN
     )
       return false;
     if (

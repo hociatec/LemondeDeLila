@@ -15,10 +15,12 @@ import { GameExecutionScopeService } from './game-execution-scope.service';
 import { appendPendingGameEvent } from './game-event-buffer';
 import {
   commandReceipt,
+  assertMatchingCommandReceipt,
   normalizeCommandId,
   recordCommandReceipt,
 } from '../../../engine/runtime/actions/game-command-journal';
 import { GameEngineMetricsService } from './game-engine-metrics.service';
+import { gameCommandFingerprint } from '../helpers/game-command-fingerprint';
 
 type GameCommandExecutionInput = {
   handler: GameRuntime;
@@ -55,10 +57,17 @@ export class GameCommandExecutorService {
     candidate: GameSingleActionDto,
   ): GameState {
     const commandId = normalizeCommandId(candidate.meta?.commandId);
-    if (commandId && commandReceipt(current, commandId)) return current;
     const startedAtMs = performance.now();
     const actorId = input.actorId ?? this.actorOf(candidate);
     try {
+      const requestFingerprint = commandId
+        ? gameCommandFingerprint(candidate, actorId)
+        : undefined;
+      const receipt = commandId ? commandReceipt(current, commandId) : null;
+      if (receipt) {
+        assertMatchingCommandReceipt(receipt, requestFingerprint);
+        return current;
+      }
       const context = this.execution.create(
         current,
         actorId,
@@ -71,21 +80,7 @@ export class GameCommandExecutorService {
         candidate,
         context,
       );
-      appendPendingGameEvent(current, {
-        actorId,
-        type: 'game.command.accepted',
-        data: { actionType: action.type, ...(commandId ? { commandId } : {}) },
-        visibility:
-          actorId == null
-            ? { kind: 'internal' }
-            : {
-                kind: 'split',
-                privateDataByPlayer: {
-                  [String(actorId)]: { action },
-                },
-              },
-        occurredAtMs: context.clock.nowMs(),
-      });
+      this.recordAcceptedCommand(current, action, context);
       const next = this.execution.run(context, () =>
         input.handler.applyActions(current, [action], context),
       );
@@ -96,6 +91,7 @@ export class GameCommandExecutorService {
           actionType: action.type,
           acceptedAtMs: context.clock.nowMs(),
           resultVersion: (next.version ?? 0) + 1,
+          requestFingerprint,
         });
       }
       this.ensureValidState(next);
@@ -139,6 +135,27 @@ export class GameCommandExecutorService {
       context,
     );
     return handler.validateAction(state, candidate, context.actorId, context);
+  }
+
+  private recordAcceptedCommand(
+    state: GameState,
+    action: GameSingleActionDto,
+    context: GameExecutionContext,
+  ): void {
+    const { actorId, commandId } = context;
+    appendPendingGameEvent(state, {
+      actorId,
+      type: 'game.command.accepted',
+      data: { actionType: action.type, ...(commandId ? { commandId } : {}) },
+      visibility:
+        actorId == null
+          ? { kind: 'internal' }
+          : {
+              kind: 'split',
+              privateDataByPlayer: { [String(actorId)]: { action } },
+            },
+      occurredAtMs: context.clock.nowMs(),
+    });
   }
 
   private logResolution(

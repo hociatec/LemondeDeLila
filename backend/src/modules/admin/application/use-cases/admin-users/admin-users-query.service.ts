@@ -9,13 +9,19 @@ import {
 } from '../../ports/admin-user.repository';
 import type { AdminSafeUser } from '../../../domain/models/admin-user.model';
 import type { ListAdminUsersQuery } from './admin-users.commands';
-import { businessMsToDate, parseExplicitInstant } from '../../../../../shared/utils/public-api';
+import {
+  businessMsToDate,
+  parseExplicitInstant,
+} from '../../../../../shared/utils/public-api';
 
 @Injectable()
 export class AdminUsersQueryService {
   constructor(
     @Inject(ADMIN_USER_REPOSITORY)
-    private readonly users: AdminUserRepository,
+    private readonly users: Pick<
+      AdminUserRepository,
+      'clearExpiredBans' | 'clearExpiredChatBans' | 'findSafeById' | 'list'
+    >,
     @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 

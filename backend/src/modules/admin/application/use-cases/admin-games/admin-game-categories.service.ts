@@ -20,7 +20,8 @@ export class AdminGameCategoriesService {
 
   async update(id: string, data: { name?: string; parentId?: string | null }) {
     await this.categories.updateCategory(id, {
-      name: data.name === undefined ? undefined : normalizeCategoryName(data.name),
+      name:
+        data.name === undefined ? undefined : normalizeCategoryName(data.name),
       parentId: normalizeCategoryId(data.parentId),
     });
   }

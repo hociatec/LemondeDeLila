@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "2",
+  "definitionVersion": "2",
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "city",
+      "spaces": 25
+    }
+  ],
+  "components": [
+    {
+      "id": "clients",
+      "cards": {
+        "$content": "content/clients.json#/cards"
+      },
+      "shuffle": true,
+      "empty": "recycle",
+      "component": "cards.deck"
+    },
+    {
+      "id": "events",
+      "cards": {
+        "$content": "content/events.json#/cards"
+      },
+      "shuffle": true,
+      "empty": "recycle",
+      "component": "cards.deck"
+    },
+    {
+      "id": "taxi-clients",
+      "deck": "clients",
+      "initial": 0,
+      "visibility": "owner",
+      "component": "cards.hands"
+    }
+  ],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": ["roll"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "delivery-race-roll",
+      "documentation": "Prend un client, révèle un obstacle, lance le dé et résout le trajet."
+    }
+  },
+  "victory": {
+    "kind": "by-delivery-race"
+  },
+  "deliveryRace": {
+    "trackId": "city",
+    "diceId": "main",
+    "clientDeckId": "clients",
+    "clientHandId": "taxi-clients",
+    "eventDeckId": "events",
+    "destinationAttribute": "destinationId",
+    "blockedPositionAttribute": "blockedTileId",
+    "positionOffset": 1,
+    "targetScore": 5,
+    "finishReason": "five-trips",
+    "eventNamespace": "taxi",
+    "tiles": {
+      "$content": "content/board.json#/tiles"
+    }
+  }
+}

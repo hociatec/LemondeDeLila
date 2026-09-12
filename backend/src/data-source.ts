@@ -1,8 +1,10 @@
-import { DataSource } from 'typeorm';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { ORM_ENTITIES } from './app/database/typeorm-entities';
-import { createMysqlConnectionOptions } from './platform/database/public-api';
+import {
+  createMysqlConnectionOptions,
+  MigrationDataSource,
+} from './platform/database/public-api';
 import {
   getProcessEnvironment,
   readEnvironmentBoolean,
@@ -27,7 +29,7 @@ const migrations = [
   ),
 ];
 
-export default new DataSource({
+export default new MigrationDataSource({
   ...base,
   entities: ORM_ENTITIES,
   migrations,

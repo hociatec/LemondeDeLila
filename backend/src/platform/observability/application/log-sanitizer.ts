@@ -57,7 +57,9 @@ export function sanitizeLogValue(
 /** Redacts credentials even when a framework supplies an Error or structured value. */
 export function sanitizeLogText(value: unknown): string {
   const boundedText =
-    typeof value === 'string' ? value.slice(0, MAX_JSON_TEXT_INPUT_LENGTH) : value;
+    typeof value === 'string'
+      ? value.slice(0, MAX_JSON_TEXT_INPUT_LENGTH)
+      : value;
   if (typeof boundedText === 'string' && /^\s*[[{]/.test(boundedText)) {
     try {
       return JSON.stringify(sanitizeLogValue(JSON.parse(boundedText))).slice(
@@ -78,17 +80,11 @@ export function sanitizeLogText(value: unknown): string {
     .replace(/(\b[a-z][a-z0-9+.-]*:\/\/)[^\s/@]+:[^\s/@]*@/gi, `$1${REDACTED}@`)
     .replace(/\b(Bearer|Basic)\s+[A-Za-z0-9._~+/=-]+/gi, `$1 ${REDACTED}`)
     .replace(
-      /(["']?(?:accessToken|authorization|cookie|credentials|password|refreshToken|secret|token)["']?\s*[:=]\s*)(["']?)[^\s,;}]+\2/gi,
+      /(["']?\b(?:access[-_]?token|api[-_]?key|authorization|cookie|set[-_]?cookie|client[-_]?secret|credentials|password|refresh[-_]?token|secret|token)\b["']?\s*[:=]\s*)(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;}]+)/gi,
       `$1${REDACTED}`,
     )
-    .replace(
-      /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
-      REDACTED,
-    )
-    .replace(
-      /(?<!\w)(?:\+?\d[\d .()-]{7,}\d)(?!\w)/g,
-      REDACTED,
-    )
+    .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, REDACTED)
+    .replace(/(?<!\w)(?:\+?\d[\d .()-]{7,}\d)(?!\w)/g, REDACTED)
     .slice(0, MAX_SANITIZED_TEXT_LENGTH);
 }
 

@@ -26,9 +26,11 @@ Pour un gros domaine, `application` est organisé par capacité (`membership`,
 `lifecycle`, `lobby`, `maintenance`) plutôt que par suffixe. Un use-case porte une
 action applicative d'entrée ; un service applicatif fournit une capacité partagée
 par plusieurs use-cases. `domain` n'est jamais créé uniquement pour satisfaire la
-forme. Les données applicatives sont sous `application/contracts` et nommées
-selon leur rôle : command, query, result, DTO, projection, record ou contract.
-Le dossier générique `application/models` est interdit par l'audit de layout.
+forme. Les données applicatives sont nommées selon leur rôle : command, query,
+result, DTO, projection, record, model ou contract. `application/models`
+contient les structures internes partagées qui ne sont ni des messages d'entrée,
+ni des vues de lecture ; les nouvelles vues de lecture vont dans
+`application/read-models`.
 
 Les dépendances suivent `presentation -> application -> domain` et
 `infrastructure -> application/domain`. Le domaine et l'application n'importent
@@ -81,9 +83,21 @@ entité ORM selon son emplacement ; `Model` désigne une structure applicative
 de données ou d'état ; `Record` désigne une valeur sans comportement de
 persistance, éventuellement issue d'un adapter ; `DTO` désigne une forme de transport externe
 validée ; `Command` exprime une intention de mutation ; `Query` exprime une
-lecture ; `Port` est une dépendance abstraite possédée par l'application.
+lecture ; `Port` est une dépendance abstraite possédée par l'application ;
+`Adapter` est une implémentation technique d'un port, placée dans
+`infrastructure` ou dans la composition inter-module `app/boundaries`.
 Les autres noms doivent décrire une responsabilité (`Projection`, `Reader`,
 `Writer`, `Policy`, `Presenter`) plutôt que masquer une forme générique.
+L'audit `npm run naming:audit` contrôle ces suffixes, leurs emplacements, les
+décorateurs des entités ORM et les noms des classes DTO/Adapter.
+
+Aux frontières JSON, une propriété facultative absente est omise. `null`
+représente une absence explicite et stable (par exemple une date inconnue ou une
+commande qui efface une valeur). Un DTO d'entrée n'accepte donc `null` que si ce
+sens est déclaré par son type et sa validation. Les tableaux ne contiennent
+jamais `undefined`. `stringifyExternalJson` applique cette convention aux sorties
+WS, Pub/Sub et notifications ; `normalizeOptional` projette les valeurs
+nullables qui doivent toujours être présentes dans une réponse.
 
 Les emplacements et les entrées de composition sont précisés dans
 [les rôles des contrats applicatifs](application-contract-roles.md).

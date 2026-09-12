@@ -10,7 +10,7 @@ import type {
 import { DeclarativeGameRuntime } from '../../engine/runtime/declarative-game.runtime';
 import type {
   CompiledGameDefinition,
-  GameActionDefinition,
+  GameActionInput,
   GameActionMap,
 } from '../../engine/runtime/definitions/game-definition';
 import type { MatchResult } from '../../engine/runtime/kits/match-kit';
@@ -19,10 +19,7 @@ import { GameEngineService } from '../application/services/game-engine.service';
 import { GameExecutionScopeService } from '../application/services/game-execution-scope.service';
 import { InMemoryGameSessionStore } from '../infrastructure/persistence/memory/in-memory-game-session.store';
 
-type ActionInput<TAction> =
-  TAction extends GameActionDefinition<infer _TState, infer TInput>
-    ? TInput
-    : never;
+type ActionInput<TAction> = GameActionInput<TAction>;
 
 type EngineActionType = 'game.configure' | 'choice.resolve' | 'choice.timeout';
 

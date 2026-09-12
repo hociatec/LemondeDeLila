@@ -10,6 +10,7 @@ describe('RedisPubSubTransport degradation', () => {
       connect: jest.fn().mockRejectedValue(new Error('redis down')),
       publish: jest.fn().mockRejectedValue(new Error('redis down')),
       disconnect: jest.fn(),
+      off: jest.fn(),
       on: jest.fn(),
       subscribe: jest.fn(),
     };
@@ -17,6 +18,7 @@ describe('RedisPubSubTransport degradation', () => {
       ...publisher,
       connect: jest.fn().mockRejectedValue(new Error('redis down')),
       disconnect: jest.fn(),
+      off: jest.fn(),
       on: jest.fn(),
     };
     const clients = [publisher, subscriber];
@@ -48,6 +50,7 @@ describe('RedisPubSubTransport degradation', () => {
     const publisher = {
       publish,
       disconnect: jest.fn(),
+      off: jest.fn(),
     };
     const subscriber = {
       on: jest.fn(
@@ -60,6 +63,7 @@ describe('RedisPubSubTransport degradation', () => {
       ),
       subscribe: jest.fn().mockResolvedValue(1),
       disconnect: jest.fn(),
+      off: jest.fn(),
     };
     const clients = [publisher, subscriber];
     const transport = new RedisPubSubTransport<{ id: number }>(

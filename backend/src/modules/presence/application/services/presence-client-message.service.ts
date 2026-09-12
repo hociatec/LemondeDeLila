@@ -3,7 +3,10 @@ import {
   type BusinessClock,
 } from '../../../../shared/interfaces/public-api';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { isBoundedJsonInput } from '../../../../platform/validation/public-api';
+import {
+  hasOnlyAllowedKeys,
+  isBoundedJsonInput,
+} from '../../../../platform/validation/public-api';
 import { WebSocket } from 'ws';
 import { getErrorDetails } from '@shared/utils/public-api';
 import type {
@@ -22,6 +25,8 @@ import {
 type MessageCallbacks = {
   broadcastChat: (event: Record<string, unknown>) => void;
   presenceChanged: () => void;
+  presenceSync?: (socket: WebSocket) => void;
+  chatSync?: (socket: WebSocket) => Promise<void>;
 };
 
 @Injectable()
@@ -50,6 +55,14 @@ export class PresenceClientMessageService {
         payload.at >= 0
           ? Math.min(payload.at, now)
           : now;
+      return;
+    }
+    if (payload.type === 'presence-sync') {
+      callbacks.presenceSync?.(from.socket);
+      return;
+    }
+    if (payload.type === 'chat-sync') {
+      await callbacks.chatSync?.(from.socket);
       return;
     }
     from.lastInteractionAt = this.clock.now();
@@ -116,9 +129,15 @@ export class PresenceClientMessageService {
         return null;
       }
       const record = value as Record<string, unknown>;
-      return typeof record.type === 'string' &&
-        record.type.length > 0 &&
-        record.type.length <= 64
+      if (
+        typeof record.type !== 'string' ||
+        record.type.length === 0 ||
+        record.type.length > 64
+      ) {
+        return null;
+      }
+      const keys = presenceMessageKeys(record.type);
+      return keys && hasOnlyAllowedKeys(record, keys)
         ? (record as PresenceIncomingPayload)
         : null;
     } catch {
@@ -247,5 +266,25 @@ export class PresenceClientMessageService {
     } catch {
       /* ignore */
     }
+  }
+}
+
+function presenceMessageKeys(type: string): readonly string[] | null {
+  switch (type) {
+    case 'presence-activity':
+      return ['type', 'at'];
+    case 'presence-sync':
+    case 'chat-sync':
+      return ['type'];
+    case 'chat-send':
+      return ['type', 'text'];
+    case 'chat-edit':
+      return ['type', 'messageId', 'text'];
+    case 'chat-delete':
+      return ['type', 'messageId'];
+    case 'presence-context':
+      return ['type', 'context', 'roomId', 'roomName'];
+    default:
+      return null;
   }
 }

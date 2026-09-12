@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "parade",
+      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.hands",
+      "id": "players",
+      "deck": "parade",
+      "initial": 13,
+      "visibility": "owner"
+    }
+  ],
+  "setup": {
+    "resources": {
+      "parade.candy.Chamallow": 0,
+      "parade.candy.Chocobon": 0,
+      "parade.candy.Balisto": 0
+    }
+  },
+  "resourceIds": [
+    "parade.candy.Chamallow",
+    "parade.candy.Chocobon",
+    "parade.candy.Balisto"
+  ],
+  "shortcuts": [
+    { "key": "C", "type": "action", "actionType": "play_card" },
+    { "key": "S", "type": "action", "actionType": "pass" }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": { "actions": ["play_card", "pass"], "terminal": true }
+  },
+  "actions": {
+    "play_card": { "recipe": "parade-play" },
+    "pass": { "recipe": "parade-pass" }
+  },
+  "victory": { "kind": "by-parade" },
+  "parade": {
+    "deckId": "parade",
+    "handId": "players",
+    "cards": { "$content": "content/catalogue.json#/cards" },
+    "sequence": { "$content": "content/catalogue.json#/sequence" },
+    "rewards": { "$content": "content/catalogue.json#/rewards" },
+    "resourceValues": { "$content": "content/catalogue.json#/resourceValues" },
+    "finishReason": "parade-complete",
+    "eventNamespace": "parade"
+  }
+}

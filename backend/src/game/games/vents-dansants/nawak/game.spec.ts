@@ -1,6 +1,13 @@
-import { testGame } from '../../../engine/testing/public-api';
+import { compileJsonGame } from '../../../engine/json/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import gameDefinition from './game';
+import { testGame } from '../../../engine/testing/public-api';
+import catalogue from './catalogue.json';
+import document from './game.json';
+import manifest from './manifest.json';
+
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Nawak declarative game', () => {
   it('supports simultaneous choices/votes without leaking secret selections', async () => {

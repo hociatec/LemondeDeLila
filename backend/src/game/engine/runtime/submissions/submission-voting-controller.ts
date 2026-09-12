@@ -4,6 +4,7 @@ import {
 } from '../../../core/domain/errors/game-domain.errors';
 import { sameSerializableValue } from '../state/serializable-value';
 import { GameSubmissionController } from './submission-controller';
+import { recordSubmissionValue } from './submission-value-order';
 
 export class GameVotingController<
   TSubmission = unknown,
@@ -38,7 +39,7 @@ export class GameVotingController<
         playerId,
       });
     }
-    session.valuesByPlayerId[String(playerId)] = structuredClone(value);
+    recordSubmissionValue(session, playerId, value);
     this.emit(
       'vote.received',
       { sessionId: id, playerId },

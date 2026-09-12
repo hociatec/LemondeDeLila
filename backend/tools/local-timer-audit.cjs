@@ -40,7 +40,9 @@ const allowedCalls = new Map([
     'modules/room/infrastructure/presentation/ws/room-gateway-runtime-state.service.ts',
     1,
   ],
-  ['modules/sounds/infrastructure/storage/sounds-audio-process.ts', 1],
+  // Process deadline and bounded admission wait; neither represents durable work.
+  // Admission timers are cleared on grant and remove their waiter on expiry.
+  ['modules/sounds/infrastructure/storage/sounds-audio-process.ts', 2],
   // Readiness I/O deadline: 2 seconds, cleared in finally; no durable business task.
   ['modules/health/infrastructure/checks/health-check-timeout.ts', 1],
   // Windows atomic rename: at most five waits, 150 ms total, no business replay.

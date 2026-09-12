@@ -13,6 +13,7 @@
 } from 'class-validator';
 import { Type, plainToClass } from 'class-transformer';
 import { PayloadValidationError } from '../../domain/errors/public-api';
+import { isBoundedJsonInput } from '../../../../platform/validation/public-api';
 
 /**
  * Base DTO for action payloads
@@ -66,10 +67,17 @@ export async function validateAction(
   action: unknown,
   context: Record<string, unknown> = {},
 ): Promise<ValidatedGameActionDto> {
+  if (!isBoundedJsonInput(action, { allowUndefinedProperties: true })) {
+    throw new PayloadValidationError(
+      'Action validation failed: payload structure is invalid or too complex',
+      ['Payload structure is invalid or too complex'],
+      context,
+    );
+  }
   const dto = plainToClass(ValidatedGameActionDto, action);
   const errors = await validate(dto, {
-    whitelist: false,
-    forbidNonWhitelisted: false,
+    whitelist: true,
+    forbidNonWhitelisted: true,
     validationError: { target: false },
   });
 

@@ -27,7 +27,19 @@ Une erreur n'est publique que si elle est déclarée comme erreur métier prése
 
 Les appels externes et processus administratifs ont timeout, concurrence exclusive et audit. On ne retry automatiquement que les opérations idempotentes avec backoff borné. Les publications utilisent staging puis rename afin de ne jamais rendre visible un fichier partiel.
 
+Les mutations inter-domaines critiques ne dépendent pas de Redis Pub/Sub. La suppression ou réinitialisation d'une salle est réconciliée depuis MySQL au démarrage puis toutes les cinq secondes : le consumer compare `gameType`, `status` et `runId`, puis supprime une session uniquement si sa version et son identité de restauration sont encore celles observées. Les notifications et la présence diffusées par Pub/Sub restent des vues best-effort reconstructibles. Les invitations de salle et les autorisations de spectateur associées sont stockées dans MySQL, consommées sous verrou et expirent après leur TTL.
+
+Les événements durables de partie utilisent l'identité composite `(roomId, gameType, seq)`, une séquence continue, la version du state et `schemaVersion`. Les événements historiques sans en-tête sont lus comme v1 ; une version inconnue est refusée. Les consumers de mutations sont idempotents par identité/version, tandis que les consumers de vues utilisent séquence, expiration ou déduplication d'event ID selon leur flux.
+
 ## Cycle de vie
 
 `SIGTERM` et `SIGINT` déclenchent les hooks Nest. Chaque propriétaire de timer, socket, listener ou client Redis implémente sa destruction. `/health/live` vérifie le processus; `/health/ready` et `/health` vérifient DB et Redis.
 
+
+## Quotas des surfaces publiques
+
+Toutes les commandes des sockets API/jeu et room passent par WsRequestRateLimitService avant leur handler. Le budget Redis est partagé par utilisateur entre sockets et instances ; les visiteurs utilisent l’adresse réseau de la connexion. La connexion, l’inscription et le renouvellement des jetons consomment aussi un budget par adresse, indépendant du compte présenté : 20 requêtes par minute par défaut. AUTH_REQUEST_RATE_LIMIT_COUNT (1–10 000) et AUTH_REQUEST_RATE_LIMIT_WINDOW_MS (1 000–3 600 000 ms) le configurent. Le quota général reste actif ; une panne Redis refuse la commande.
+
+Le chat, les invitations et les actions coûteuses passent par ces entrées communes. Les contrôleurs HTTP, y compris les uploads audio/WX, passent par ThrottlerGuard global et RedisRateLimitStorage avant les intercepteurs de fichiers (120 requêtes/minute par défaut, configuration RATE_LIMIT_COUNT/RATE_LIMIT_TTL). Aucun contrôleur ne déclare SkipThrottle. Les bornes de taille et de concurrence des uploads complètent ce quota.
+
+Les sockets /presence et /ws/notify appliquent également le même quota utilisateur avant leurs handlers ; un dépassement ferme la connexion avec le code 1013.

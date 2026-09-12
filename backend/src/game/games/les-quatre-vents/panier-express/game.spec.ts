@@ -6,16 +6,21 @@ import { compileJsonGame } from '../../../engine/json/public-api';
 import manifest from './manifest.json';
 import document from './game.json';
 
-const gameDefinition = compileJsonGame(manifest, document);
-const PANIER_TILES = document.board.tiles;
-const PANIER_EVENTS =
-  document.components.find((c) => c.id === 'events')?.cards ?? [];
-const PANIER_EXCHANGES =
-  document.components.find((c) => c.id === 'exchanges')?.cards ?? [];
-const PANIER_PAWNS =
-  document.components.find((c) => c.component === 'pawn.set')?.pawns ?? [];
-const PANIER_QUIZZES =
-  document.components.find((c) => c.component === 'quiz.bank')?.questions ?? [];
+import PANIER_TILES from './content/board.json';
+import PANIER_PAWNS from './content/pawns.json';
+import PANIER_QUIZZES from './content/quizzes.json';
+import cards from './content/cards.json';
+import products from './content/products.json';
+
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/board.json': PANIER_TILES,
+  'content/pawns.json': PANIER_PAWNS,
+  'content/quizzes.json': PANIER_QUIZZES,
+  'content/cards.json': cards,
+  'content/products.json': products,
+});
+const PANIER_EVENTS = cards.events;
+const PANIER_EXCHANGES = cards.exchanges;
 
 describe('Panier Express declarative game', () => {
   it('declares the private information and manual draw shortcuts', () => {

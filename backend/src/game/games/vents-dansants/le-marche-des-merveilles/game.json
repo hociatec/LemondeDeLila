@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "patterns": [
+    {
+      "kind": "market",
+      "marketId": "wonders",
+      "inventoryId": "wonder-goods",
+      "items": { "$content": "content/catalogue.json#/goods" },
+      "currency": "coins",
+      "prices": { "$content": "content/catalogue.json#/initialPrices" },
+      "startingCurrency": 12,
+      "minPrice": 1,
+      "maxPrice": 10,
+      "turnsCounterId": "wonder-market.turns-taken",
+      "maxRounds": 6,
+      "winnerReason": "market-closed"
+    }
+  ],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    { "key": "A", "type": "action", "actionType": "buy" },
+    { "key": "Q", "type": "action", "actionType": "sell" },
+    { "key": "R", "type": "action", "actionType": "rumor" },
+    { "key": "P", "type": "action", "actionType": "protect" },
+    { "key": "V", "type": "action", "actionType": "steal_deal" },
+    { "key": "O", "type": "action", "actionType": "pass" }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": ["buy", "sell", "rumor", "protect", "steal_deal", "pass"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "buy": { "recipe": "wonder-market-buy" },
+    "sell": { "recipe": "wonder-market-sell" },
+    "rumor": { "recipe": "wonder-market-rumor" },
+    "protect": { "recipe": "wonder-market-protect" },
+    "steal_deal": { "recipe": "wonder-market-steal" },
+    "pass": { "recipe": "wonder-market-pass" }
+  },
+  "victory": { "kind": "by-wonder-market" },
+  "wonderMarket": {
+    "marketId": "wonders",
+    "inventoryId": "wonder-goods",
+    "currency": "coins",
+    "goods": { "$content": "content/catalogue.json#/goods" },
+    "turnsCounterId": "wonder-market.turns-taken",
+    "maxRounds": 6,
+    "rumorCost": 1,
+    "protectCost": 2,
+    "eventNamespace": "wonder-market"
+  }
+}

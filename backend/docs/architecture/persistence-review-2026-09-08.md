@@ -63,3 +63,21 @@ Un rollback de données nécessite la sauvegarde antérieure et le runbook de
 restauration ; ne pas assimiler migration:revert à une restauration complète.
 Les batches et durées de locks SQL restent à vérifier (434/435). Les tests locaux
 de ce lot n'ont aucune valeur de validation d'une migration sur MySQL réel.
+
+### Compatibilité vérifiée le 11 septembre 2026
+
+Les 40 migrations conservent leurs empreintes historiques. MigrationDataSource
+normalise uniquement le nom runtime de l'import no-op dont le suffixe avait dix
+chiffres : une base portant son ancien nom réexécute ce no-op une fois. Le lancement
+prépare la table de métadonnées TypeORM nécessaire aux colonnes générées par SQL.
+Le CLI et le banc MySQL utilisent ce même lancement.
+
+DecoupleUserForeignKeys1771000000000 définit une limite de retour arrière : son
+down historique référence des colonnes absentes. Le CLI refuse avant toute DDL ;
+revenir avant cette limite exige une restauration de sauvegarde. Le banc vérifie
+ce refus sans modifier le schéma, ainsi que les cycles down/up indépendants des
+quatre migrations précédentes sur des données existantes. Ces cycles ne prouvent
+pas un rollback intégral de l'historique.
+
+Preuves : logs/json134-immutable-history.log, logs/json134-immutable-mysql.log
+(40 migrations, ancien nom, index/plans SQL, unicité, concurrence et restauration).

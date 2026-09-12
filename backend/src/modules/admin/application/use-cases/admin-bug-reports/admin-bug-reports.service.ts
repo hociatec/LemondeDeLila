@@ -133,8 +133,16 @@ function assertUserId(value: unknown): asserts value is number {
   }
 }
 
-function assertText(value: unknown, maxLength: number, message: string): asserts value is string {
-  if (typeof value !== 'string' || value.trim().length === 0 || value.length > maxLength) {
+function assertText(
+  value: unknown,
+  maxLength: number,
+  message: string,
+): asserts value is string {
+  if (
+    typeof value !== 'string' ||
+    value.trim().length === 0 ||
+    value.length > maxLength
+  ) {
     throw new BadRequestException(message);
   }
 }

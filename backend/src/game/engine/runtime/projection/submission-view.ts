@@ -3,6 +3,7 @@ import type {
   SubmissionKitState,
   SubmissionPlayerView,
 } from '../submissions/submission-controller';
+import { orderedSubmissionValues } from '../submissions/submission-value-order';
 
 const MAX_PROJECTED_SESSIONS = 512;
 const MAX_PROJECTED_JUDGES = 512;
@@ -17,7 +18,8 @@ export function projectSubmissions<TSubmission>(
       Object.entries(state.sessions)
         .slice(0, MAX_PROJECTED_SESSIONS)
         .map(([id, session]) => {
-          const submittedPlayerIds = Object.keys(session.valuesByPlayerId)
+          const values = orderedSubmissionValues(session);
+          const submittedPlayerIds = Object.keys(values)
             .map(Number)
             .filter(
               (playerId) => Number.isSafeInteger(playerId) && playerId !== 0,
@@ -46,7 +48,7 @@ export function projectSubmissions<TSubmission>(
               revealed: session.revealed,
               ...(maySeeAll
                 ? {
-                    valuesByPlayerId: structuredClone(session.valuesByPlayerId),
+                    valuesByPlayerId: values,
                   }
                 : ownValue === undefined
                   ? {}
@@ -75,10 +77,27 @@ function projectSubmissionStage(
   state: SubmissionKitState<unknown>,
 ): SubmissionFlowStage {
   const sessions = Object.values(state.sessions);
-  const vote = sessions.find((session) => session.kind === 'vote');
-  if (vote) return vote.closed ? 'complete' : 'voting';
-  const submission = sessions.find((session) => session.kind === 'submission');
-  if (!submission) return 'idle';
-  if (!submission.closed) return 'collecting';
-  return submission.revealed ? 'revealed' : 'ready-to-reveal';
+  if (sessions.some((session) => session.kind === 'vote' && !session.closed))
+    return 'voting';
+  if (
+    sessions.some((session) => session.kind === 'submission' && !session.closed)
+  )
+    return 'collecting';
+  if (
+    sessions.some(
+      (session) =>
+        session.kind === 'submission' && session.closed && !session.revealed,
+    )
+  )
+    return 'ready-to-reveal';
+  if (
+    sessions.some(
+      (session) =>
+        session.kind === 'submission' && session.closed && session.revealed,
+    )
+  )
+    return 'revealed';
+  return sessions.some((session) => session.kind === 'vote')
+    ? 'complete'
+    : 'idle';
 }

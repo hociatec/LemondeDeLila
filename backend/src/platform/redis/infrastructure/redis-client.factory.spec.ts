@@ -13,10 +13,14 @@ beforeEach(() => jest.clearAllMocks());
 it('forbids replay of unacknowledged writes even when a caller requests it', () => {
   new RedisClientFactory().create('redis://localhost', 'test', {
     autoResendUnfulfilledCommands: true,
+    maxRetriesPerRequest: null,
   });
   expect(Redis).toHaveBeenCalledWith(
     'redis://localhost',
-    expect.objectContaining({ autoResendUnfulfilledCommands: false }),
+    expect.objectContaining({
+      autoResendUnfulfilledCommands: false,
+      maxRetriesPerRequest: 1,
+    }),
   );
 });
 

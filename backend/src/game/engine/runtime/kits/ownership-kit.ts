@@ -5,6 +5,7 @@ import {
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import { assertGamePlayerId, assertPlayerValueId } from './numeric-invariants';
 
 export type OwnershipDefinition = {
   readonly component: 'ownership.registry';
@@ -26,6 +27,8 @@ export const ownership = {
   registry(
     definition: Omit<OwnershipDefinition, 'component'>,
   ): OwnershipDefinition {
+    assertPlayerValueId(definition.id);
+    for (const assetId of definition.assets) assertPlayerValueId(assetId);
     if (
       definition.id.trim().length === 0 ||
       definition.assets.some((assetId) => assetId.trim().length === 0) ||
@@ -71,9 +74,16 @@ export class GameOwnershipController {
   }
 
   assertValid(): void {
+    if (
+      !this.state.owners ||
+      typeof this.state.owners !== 'object' ||
+      Array.isArray(this.state.owners)
+    )
+      throw new GameStateViolationError('Table des propriétaires invalide');
+    for (const id of Object.keys(this.state.owners)) this.requireRegistry(id);
     for (const [registryId, definition] of this.definitions) {
       const owners = this.state.owners[registryId];
-      if (!owners) {
+      if (!owners || typeof owners !== 'object' || Array.isArray(owners)) {
         throw new GameStateViolationError('Registre de propriété absent', {
           registryId,
         });
@@ -82,6 +92,7 @@ export class GameOwnershipController {
       for (const [assetId, playerIds] of Object.entries(owners)) {
         if (
           !assets.has(assetId) ||
+          !Array.isArray(playerIds) ||
           new Set(playerIds).size !== playerIds.length ||
           ((definition.exclusive ?? true) && playerIds.length > 1)
         ) {
@@ -90,6 +101,7 @@ export class GameOwnershipController {
             assetId,
           });
         }
+        for (const playerId of playerIds) assertGamePlayerId(playerId);
       }
     }
   }
@@ -112,6 +124,7 @@ export class GameOwnershipController {
   }
 
   claim(registryId: string, assetId: string, playerId: number): void {
+    assertGamePlayerId(playerId);
     const definition = this.requireAsset(registryId, assetId);
     const owners = (this.state.owners[registryId][assetId] ??= []);
     if (owners.includes(playerId)) return;
@@ -159,6 +172,8 @@ export class GameOwnershipController {
     fromPlayerId: number,
     toPlayerId: number,
   ): void {
+    assertGamePlayerId(fromPlayerId);
+    assertGamePlayerId(toPlayerId);
     if (!this.isOwner(registryId, assetId, fromPlayerId)) {
       throw new GameRuleViolationError('ASSET_NOT_OWNED', {
         registryId,
@@ -176,10 +191,11 @@ export class GameOwnershipController {
   }
 
   assetsOf(registryId: string, playerId: number): string[] {
-    this.requireRegistry(registryId);
-    return Object.entries(this.state.owners[registryId] ?? {})
-      .filter(([, owners]) => owners.includes(playerId))
-      .map(([assetId]) => assetId);
+    const definition = this.requireRegistry(registryId);
+    const owners = this.state.owners[registryId] ?? {};
+    return definition.assets.filter((assetId) =>
+      owners[assetId]?.includes(playerId),
+    );
   }
 
   releaseAll(registryId: string, playerId: number): string[] {

@@ -3,4 +3,3 @@ export type PresenceChatHistory = {
   messages: Array<Record<string, unknown>>;
 };
 /** Explicitly named data contract at the application boundary. */
-

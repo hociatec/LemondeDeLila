@@ -64,7 +64,7 @@ export class SocialProfileService {
     if (typeof bio === 'string') {
       const trimmed = bio.trim();
       const length = trimmed.length;
-      const settings = this.settings.get();
+      const settings = await this.settings.getFresh();
       if (length < settings.bioMinLength || length > settings.bioMaxLength) {
         throw new HttpException(
           `Bio invalide (longueur ${length}). Requis: ${settings.bioMinLength}-${settings.bioMaxLength} caracteres.`,

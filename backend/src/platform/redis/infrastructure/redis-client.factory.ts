@@ -9,9 +9,9 @@ export class RedisClientFactory {
     const client = new Redis(url, {
       connectTimeout: 10_000,
       commandTimeout: 10_000,
-      maxRetriesPerRequest: 1,
       ...(options ?? {}),
       // An unacknowledged write may already have executed on Redis.
+      maxRetriesPerRequest: 1,
       autoResendUnfulfilledCommands: false,
     });
     client.on('error', (err: Error) => {

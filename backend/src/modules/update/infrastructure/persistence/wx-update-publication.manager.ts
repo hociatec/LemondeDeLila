@@ -1,7 +1,7 @@
-import { allCompleted } from '../../../../shared/utils/public-api';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { operationalSettings } from '../../../../platform/config/public-api';
 import { bestEffort } from '../../../../platform/observability/public-api';
 import { writeFileAtomic } from '../../../../platform/filesystem/public-api';
 import {
@@ -54,7 +54,7 @@ export class WxUpdatePublicationManager {
         previous.artifact.sha256 === params.sha256
       ) {
         this.updateCache(previous);
-        await this.pruneSupersededReleases(previous.releaseId);
+        await this.cleanupStaging();
         return previous;
       }
       if (previous && params.sequence <= previous.sequence) {
@@ -68,7 +68,7 @@ export class WxUpdatePublicationManager {
       await assertHeld();
       await writeFileAtomic(this.metaPath, JSON.stringify(manifest, null, 2));
       this.updateCache(manifest);
-      await this.pruneSupersededReleases(manifest.releaseId);
+      await this.cleanupStaging();
       return manifest;
     } finally {
       await bestEffort(lock.close(), 'fermeture du verrou de publication WX');
@@ -125,7 +125,15 @@ export class WxUpdatePublicationManager {
           params.input.installerZipPath,
           path.join(stagingDir, installerFileName),
         );
+        await this.assertCopiedHash(
+          path.join(stagingDir, installerFileName),
+          params.installer.sha256,
+        );
       }
+      await this.assertCopiedHash(
+        path.join(stagingDir, fileName),
+        params.sha256,
+      );
       await fs.promises.mkdir(releasesDir, { recursive: true });
       await fs.promises.rename(stagingDir, finalDir);
     } catch (error) {
@@ -160,10 +168,22 @@ export class WxUpdatePublicationManager {
           params.input.installerZipPath,
           stagedInstaller,
         );
+        await this.assertCopiedHash(stagedInstaller, params.installer.sha256);
         await fs.promises.rename(stagedInstaller, installerPath);
       } finally {
         await fs.promises.rm(stagingDir, { recursive: true, force: true });
       }
+    }
+  }
+
+  private async assertCopiedHash(
+    filePath: string,
+    expected: string,
+  ): Promise<void> {
+    if ((await this.validator.sha256(filePath)) !== expected) {
+      throw new BadRequestException(
+        'Le contenu WX a changé pendant la publication.',
+      );
     }
   }
 
@@ -203,23 +223,9 @@ export class WxUpdatePublicationManager {
     return manifest;
   }
 
-  private async pruneSupersededReleases(
-    activeReleaseId: string,
-  ): Promise<void> {
-    const releasesDir = path.join(this.updatesDir, 'releases');
-    const entries = await fs.promises.readdir(releasesDir, {
-      withFileTypes: true,
-    });
-    await allCompleted(
-      entries
-        .filter((entry) => entry.name !== activeReleaseId)
-        .map((entry) =>
-          fs.promises.rm(path.join(releasesDir, entry.name), {
-            recursive: true,
-            force: true,
-          }),
-        ),
-    );
+  private async cleanupStaging(): Promise<void> {
+    // Published URLs can remain referenced by offline clients and downloads.
+    // Without acknowledgements, superseded does not mean unreferenced.
     await fs.promises.rm(path.join(this.updatesDir, '.staging'), {
       recursive: true,
       force: true,
@@ -238,7 +244,11 @@ export class WxUpdatePublicationManager {
       const stat = await fs.promises
         .stat(this.publicationLockPath())
         .catch(() => null);
-      if (stat && stat.mtimeMs < Date.now() - 2 * 60 * 60 * 1000) {
+      if (
+        stat &&
+        stat.mtimeMs <
+          Date.now() - operationalSettings.clientWxPublicationLockStaleMs
+      ) {
         await fs.promises.rm(this.publicationLockPath(), { force: true });
         try {
           return await fs.promises.open(this.publicationLockPath(), 'wx');

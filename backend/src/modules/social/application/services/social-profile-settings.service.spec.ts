@@ -58,4 +58,19 @@ describe('SocialProfileSettingsService', () => {
     await svc2.onModuleInit();
     expect(svc2.get()).toEqual({ bioMinLength: 10, bioMaxLength: 20 });
   });
+
+  it('refreshes validation settings from persistence', async () => {
+    const { repo } = createRepo();
+    const svc = new SocialProfileSettingsService(
+      repo as ConstructorParameters<typeof SocialProfileSettingsService>[0],
+      createSocialProfileSettingsDefaults(new ConfigService()),
+    );
+    await svc.update({ bioMinLength: 10, bioMaxLength: 20 });
+    await repo.save({ bioMinLength: 30, bioMaxLength: 40 });
+
+    await expect(svc.getFresh()).resolves.toEqual({
+      bioMinLength: 30,
+      bioMaxLength: 40,
+    });
+  });
 });

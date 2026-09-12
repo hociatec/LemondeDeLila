@@ -13,6 +13,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { bestEffort } from '../../../../platform/observability/public-api';
 import { parseStrictInteger } from '../../../../shared/utils/public-api';
+import { hasOnlyAllowedKeys } from '../../../../platform/validation/public-api';
 
 import { WxUpdateUploadService } from '../persistence/wx-update-upload.service';
 import { UpdateUploadTokenGuard } from './update-upload-token.guard';
@@ -31,7 +32,22 @@ export class CiWxUpdateController {
 
   @Post('upload/init')
   init(@Body() body: Record<string, unknown>) {
-    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    if (
+      !hasOnlyAllowedKeys(body, [
+        'releaseId',
+        'version',
+        'sequence',
+        'publishedAt',
+        'message',
+        'minimumVersion',
+        'mandatoryAt',
+        'sha256',
+        'signature',
+        'totalBytes',
+        'installerSha256',
+        'installerTotalBytes',
+      ])
+    ) {
       throw new BadRequestException('Parametres WX invalides.');
     }
     return this.uploads.init({
@@ -72,7 +88,8 @@ export class CiWxUpdateController {
           ? body.signature
           : undefined,
       totalBytes:
-        typeof body.totalBytes === 'number' && Number.isSafeInteger(body.totalBytes)
+        typeof body.totalBytes === 'number' &&
+        Number.isSafeInteger(body.totalBytes)
           ? body.totalBytes
           : undefined,
       installerSha256:
@@ -100,14 +117,14 @@ export class CiWxUpdateController {
   ) {
     const filePath = typeof file?.path === 'string' ? file.path : '';
     if (!filePath) throw new BadRequestException('Chunk WX manquant.');
-    if (!body || typeof body !== 'object' || Array.isArray(body)) {
-      throw new BadRequestException('Parametres WX invalides.');
-    }
-    const uploadId = typeof body.uploadId === 'string' ? body.uploadId : '';
-    if (!uploadId || uploadId.length > 128) {
-      throw new BadRequestException('Upload WX invalide.');
-    }
     try {
+      if (!hasOnlyAllowedKeys(body, ['uploadId', 'index', 'kind'])) {
+        throw new BadRequestException('Parametres WX invalides.');
+      }
+      const uploadId = typeof body.uploadId === 'string' ? body.uploadId : '';
+      if (!uploadId || uploadId.length > 128) {
+        throw new BadRequestException('Upload WX invalide.');
+      }
       return await this.uploads.chunk({
         uploadId,
         index: parseStrictInteger(body?.index, { min: 0 }) ?? -1,
@@ -127,7 +144,7 @@ export class CiWxUpdateController {
 
   @Post('upload/complete')
   complete(@Body() body: Record<string, unknown>) {
-    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    if (!hasOnlyAllowedKeys(body, ['uploadId'])) {
       throw new BadRequestException('Parametres WX invalides.');
     }
     const uploadId = typeof body.uploadId === 'string' ? body.uploadId : '';

@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { operationalSettings } from '../../../../platform/config/public-api';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -26,7 +27,6 @@ import {
 
 @Injectable()
 export class WxUpdateUploadService {
-  private static readonly COMPLETION_LOCK_TTL_MS = 15 * 60 * 1000;
   private readonly storage: WxUpdateUploadStorage;
 
   constructor(
@@ -198,7 +198,7 @@ export class WxUpdateUploadService {
     const distributedLease: RedisDistributedLease | null =
       await this.distributedLeases.acquire(
         `lemonde:update:complete:${uploadId}`,
-        WxUpdateUploadService.COMPLETION_LOCK_TTL_MS,
+        operationalSettings.clientWxCompletionLeaseMs,
       );
     if (!distributedLease) {
       throw new ConflictException('Finalisation WX deja en cours.');
@@ -243,7 +243,7 @@ export class WxUpdateUploadService {
       if (
         !stat ||
         Date.now() - stat.mtimeMs <=
-          WxUpdateUploadService.COMPLETION_LOCK_TTL_MS
+          operationalSettings.clientWxCompletionLeaseMs
       ) {
         throw new ConflictException('Finalisation WX déjà en cours.');
       }

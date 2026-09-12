@@ -1,4 +1,5 @@
 import type { PlayerState } from '../../../core/application/models/game-state.model';
+import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import type { GameContext } from './game-author-context';
 import type {
   CardSetsDefinition,
@@ -85,6 +86,17 @@ export type GameInitialization = {
   pawns?: readonly {
     setId: string;
     assignment?: 'round-robin' | 'grouped' | 'random';
+  }[];
+  deals?: readonly {
+    deckId: string;
+    handId: string;
+    count: number;
+    fallbackDeckId?: string;
+  }[];
+  gridPlacements?: readonly {
+    boardId: string;
+    positions: readonly { x: number; y: number }[];
+    emptyOverlays?: readonly string[];
   }[];
 };
 
@@ -191,6 +203,7 @@ export function initializeGameComponents<TState extends object>(
   context: GameContext<TState>,
 ): void {
   if (!initialization) return;
+  assertInitializationCapacity(initialization, players, context);
   for (const player of players) {
     if (initialization.scores != null) {
       context.score.set(
@@ -239,6 +252,34 @@ export function initializeGameComponents<TState extends object>(
       }
     }
   }
+  for (const deal of initialization.deals ?? []) {
+    for (const player of players) {
+      for (let index = 0; index < deal.count; index += 1) {
+        const card =
+          context.cards.draw<CardValue>(deal.deckId) ??
+          (deal.fallbackDeckId
+            ? context.cards.draw<CardValue>(deal.fallbackDeckId)
+            : null);
+        if (card != null) context.cards.give(deal.handId, player.id, card);
+      }
+    }
+  }
+  for (const placement of initialization.gridPlacements ?? []) {
+    for (const [index, player] of players.entries()) {
+      const position = placement.positions[index];
+      if (position) context.grid.set(placement.boardId, position, player.id);
+    }
+    for (const overlayId of placement.emptyOverlays ?? [])
+      context.grid.setOverlays(placement.boardId, overlayId, []);
+  }
+  initializeFirstPlayer(initialization, players, context);
+}
+
+function initializeFirstPlayer<TState extends object>(
+  initialization: GameInitialization,
+  players: readonly PlayerState[],
+  context: GameContext<TState>,
+): void {
   const firstPlayer =
     typeof initialization.firstPlayer === 'number'
       ? context.players.get(initialization.firstPlayer)
@@ -252,4 +293,29 @@ export function initializeGameComponents<TState extends object>(
 
 function initialValue(values: PerPlayerInitialValue, playerId: number): number {
   return typeof values === 'number' ? values : (values[String(playerId)] ?? 0);
+}
+
+function assertInitializationCapacity<TState extends object>(
+  initialization: GameInitialization,
+  players: readonly PlayerState[],
+  context: GameContext<TState>,
+): void {
+  if (
+    typeof initialization.firstPlayer === 'number' &&
+    !players.some((player) => player.id === initialization.firstPlayer)
+  )
+    throw new GameConfigurationError('Premier joueur absent de la partie');
+  for (const setup of initialization.pawns ?? []) {
+    const required = players.length * context.pawns.perPlayer(setup.setId);
+    if (context.pawns.available(setup.setId).length < required)
+      throw new GameConfigurationError(
+        `Pions insuffisants pour la distribution: ${setup.setId}`,
+      );
+  }
+  for (const placement of initialization.gridPlacements ?? []) {
+    if (placement.positions.length < players.length)
+      throw new GameConfigurationError(
+        `Positions de grille insuffisantes: ${placement.boardId}`,
+      );
+  }
 }

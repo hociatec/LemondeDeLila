@@ -2,7 +2,10 @@ import { Global, Module } from '@nestjs/common';
 import { ROOM_BOTS_REPOSITORY } from '../../modules/room/composition-api';
 import { RoomModule } from '../../modules/room/composition-api';
 import { CountRoomBotsService } from '../../modules/bot/public-api';
-import { BOT_ROOM_REPOSITORY } from '../../modules/bot/composition-api';
+import {
+  BOT_ROOM_REPOSITORY,
+  BOT_ROOM_READER,
+} from '../../modules/bot/composition-api';
 import { BotModule } from '../../modules/bot/composition-api';
 import {
   ROOM_BOT_COUNTER_PORT,
@@ -15,6 +18,7 @@ import { AppRoomBotOperationsAdapter } from './app-room-bot-operations.adapter';
   imports: [RoomModule, BotModule],
   providers: [
     { provide: BOT_ROOM_REPOSITORY, useExisting: ROOM_BOTS_REPOSITORY },
+    { provide: BOT_ROOM_READER, useExisting: ROOM_BOTS_REPOSITORY },
     {
       provide: ROOM_BOT_COUNTER_PORT,
       useExisting: CountRoomBotsService,
@@ -26,6 +30,7 @@ import { AppRoomBotOperationsAdapter } from './app-room-bot-operations.adapter';
     },
   ],
   exports: [
+    BOT_ROOM_READER,
     BOT_ROOM_REPOSITORY,
     ROOM_BOT_COUNTER_PORT,
     ROOM_BOT_OPERATIONS_PORT,

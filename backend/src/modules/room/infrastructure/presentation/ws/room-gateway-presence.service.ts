@@ -116,7 +116,7 @@ export class RoomGatewayPresenceService {
     if (ctx.pendingParticipantLeaves.has(key)) return;
     if (
       ctx.pendingParticipantLeaves.size >=
-        RoomGatewayPresenceService.MAX_PENDING_PARTICIPANT_LEAVES
+      RoomGatewayPresenceService.MAX_PENDING_PARTICIPANT_LEAVES
     ) {
       const oldest = ctx.pendingParticipantLeaves.keys().next().value;
       if (typeof oldest === 'string') {

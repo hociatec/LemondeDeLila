@@ -69,6 +69,37 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
     return this.getByIdOrThrow(saved.id);
   }
 
+  async createMany(
+    inputs: readonly CreateNotificationInboxItemInput[],
+  ): Promise<void> {
+    const bounded = inputs.slice(0, 10_000);
+    if (bounded.length === 0) return;
+    await this.repo.manager.transaction(async (manager) => {
+      const repository = manager.getRepository(NotificationInboxItemEntity);
+      for (let offset = 0; offset < bounded.length; offset += 500) {
+        await repository.save(
+          bounded.slice(offset, offset + 500).map((input) =>
+            repository.create({
+              id: input.id,
+              user: { id: input.userId },
+              kind: input.kind,
+              contactId: input.contactId ?? null,
+              fromUserId: input.fromUserId ?? null,
+              fromUsername: input.fromUsername ?? null,
+              toUserId: input.toUserId ?? null,
+              message: input.message ?? null,
+              payload: input.payload ?? null,
+              createdAt: input.createdAt,
+              readAt: null,
+              deletedAt: null,
+            }),
+          ),
+          { reload: false },
+        );
+      }
+    });
+  }
+
   async list(
     userId: number,
     limit = 200,
@@ -231,6 +262,38 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
     return true;
   }
 
+  async updatePayloads(
+    updates: readonly {
+      id: string;
+      payload: NotificationInboxPayload;
+    }[],
+  ): Promise<number> {
+    const clean = updates
+      .filter(
+        (update) =>
+          typeof update.id === 'string' &&
+          update.id.length > 0 &&
+          update.id.length <= MAX_NOTIFICATION_IDENTIFIER_LENGTH,
+      )
+      .slice(0, 500);
+    if (clean.length === 0) return 0;
+    const parameters: Record<string, unknown> = {
+      ids: clean.map((update) => update.id),
+    };
+    const cases = clean.map((update, index) => {
+      parameters[`id${index}`] = update.id;
+      parameters[`payload${index}`] = JSON.stringify(update.payload ?? null);
+      return `WHEN :id${index} THEN CAST(:payload${index} AS JSON)`;
+    });
+    const result = await this.repo
+      .createQueryBuilder()
+      .update(NotificationInboxItemEntity)
+      .set({ payload: () => `CASE id ${cases.join(' ')} ELSE payload END` })
+      .where('id IN (:...ids)', parameters)
+      .execute();
+    return result.affected ?? 0;
+  }
+
   async deleteManyByIds(ids: string[]): Promise<number> {
     const clean = Array.from(
       new Set((ids ?? []).map((value) => String(value || '').trim())),
@@ -240,7 +303,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
           value.length > 0 &&
           value.length <= MAX_NOTIFICATION_IDENTIFIER_LENGTH,
       )
-      .slice(0, 128);
+      .slice(0, 500);
     if (clean.length === 0) {
       return 0;
     }

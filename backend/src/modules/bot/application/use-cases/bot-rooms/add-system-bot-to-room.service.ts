@@ -20,15 +20,11 @@ export class AddSystemBotToRoomService {
     rooms: BotRoomRepository,
     roomId: number,
   ): Promise<BotRoomRecord> {
-    const room = this.policy.requireRoom(await rooms.findRoomById(roomId));
-
-    const [humans, existingBots] = await Promise.all([
-      rooms.countActiveHumansForRoom(room.id),
-      rooms.listBotsForRoom(room.id),
-    ]);
-    this.policy.ensureCapacity(room, humans, existingBots.length);
-
+    this.policy.requireAllowed(
+      await rooms.assessBotMutation(roomId, { kind: 'restore' }),
+    );
+    const existingBots = await rooms.listBotsForRoom(roomId);
     const name = await this.names.pickName(existingBots);
-    return rooms.createBot({ roomId: room.id, name });
+    return rooms.createBot({ roomId: roomId, name });
   }
 }

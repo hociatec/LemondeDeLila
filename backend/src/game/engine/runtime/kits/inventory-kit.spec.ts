@@ -45,3 +45,39 @@ it('rejects swapping an unknown inventory before modifying state', () => {
   expect(state).toEqual(before);
   expect(emit).not.toHaveBeenCalled();
 });
+
+it('returns detached inventory items without changing state on reads', () => {
+  const { state, kit } = fixture();
+  const before = structuredClone(state);
+  kit.items('items', 1).splice(0, 1, 'forged');
+  expect(kit.items('items', 3)).toEqual([]);
+  expect(state).toEqual(before);
+});
+
+it('does not create a destination when an inventory transfer is rejected', () => {
+  const { state, kit, emit } = fixture();
+  const before = structuredClone(state);
+  expect(() => kit.transfer('items', 1, 3, 'pear')).toThrow();
+  expect(state).toEqual(before);
+  expect(emit).not.toHaveBeenCalled();
+});
+
+it.each(['', '__proto__', 'constructor', 'toString'])(
+  'rejects unsafe dynamic item %s',
+  (itemId) => {
+    const state = createInventoryKitState();
+    const kit = new GameInventoryController(state, { shuffle: (v) => [...v] });
+    kit.create(inventory.set({ id: 'dynamic' }), [1]);
+    const before = structuredClone(state);
+    expect(() => kit.add('dynamic', 1, itemId)).toThrow();
+    expect(state).toEqual(before);
+    state.byPlayer.dynamic['1'] = [itemId];
+    expect(() => kit.assertValid()).toThrow();
+  },
+);
+
+it('rejects unregistered restored inventories', () => {
+  const { state, kit } = fixture();
+  state.byPlayer.unknown = { 1: [] };
+  expect(() => kit.assertValid()).toThrow();
+});

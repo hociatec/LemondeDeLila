@@ -6,7 +6,14 @@ import type {
   StableGameSystemView,
   StableGameKitsView,
 } from '../../../engine/sdk/public-api';
-import gameDefinition from './game';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import manifest from './manifest.json';
+import document from './game.json';
+import catalogue from './catalogue.json';
+
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Foulées Fantastiques declarative game', () => {
   it('resolves a pawn choice from the canonical die, including older continuations', async () => {

@@ -49,3 +49,8 @@ export {
   type GameRoomEventsPort,
   type GameRoomPayload,
 } from './ports/game-room.port';
+
+export {
+  GAME_ROOM_RUN_READER,
+  type GameRoomRunReader,
+} from './ports/game-room-run-reader.port';

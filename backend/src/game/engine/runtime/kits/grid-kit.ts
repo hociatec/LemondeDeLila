@@ -59,16 +59,20 @@ export class GameGridController<TCellState = unknown, TOverlayState = unknown> {
   }
 
   assertValid(): void {
+    assertGridRecord(this.state.cells);
+    assertGridRecord(this.state.overlays);
     for (const [boardId, cells] of Object.entries(this.state.cells)) {
       const board = this.definitions.get(boardId);
       if (!board) {
         throw new GameStateViolationError('Grille absente', { boardId });
       }
+      assertGridRecord(cells);
       for (const key of Object.keys(cells)) {
         const [x, y] = key.split(',').map(Number);
         if (
           !Number.isInteger(x) ||
           !Number.isInteger(y) ||
+          key !== cellKey({ x, y }) ||
           x < 0 ||
           y < 0 ||
           x >= board.width ||
@@ -77,6 +81,19 @@ export class GameGridController<TCellState = unknown, TOverlayState = unknown> {
           throw new GameStateViolationError('Case de grille invalide', {
             boardId,
             key,
+          });
+        }
+      }
+    }
+    for (const [boardId, layers] of Object.entries(this.state.overlays)) {
+      if (!this.definitions.has(boardId)) {
+        throw new GameStateViolationError('Grille absente', { boardId });
+      }
+      assertGridRecord(layers);
+      for (const values of Object.values(layers)) {
+        if (!Array.isArray(values)) {
+          throw new GameStateViolationError('Couche de grille invalide', {
+            boardId,
           });
         }
       }
@@ -130,12 +147,16 @@ export class GameGridController<TCellState = unknown, TOverlayState = unknown> {
     boardId: string,
   ): Array<{ position: GridPosition; value: TValue }> {
     this.requireBoard(boardId);
-    return Object.entries(this.state.cells[boardId] ?? {}).map(
-      ([key, value]) => {
+    return Object.entries(this.state.cells[boardId] ?? {})
+      .map(([key, value]) => {
         const [x, y] = key.split(',').map(Number);
         return { position: { x, y }, value: value as TValue };
-      },
-    );
+      })
+      .sort(
+        (left, right) =>
+          left.position.y - right.position.y ||
+          left.position.x - right.position.x,
+      );
   }
 
   overlays<TValue extends TOverlayState = TOverlayState>(
@@ -240,6 +261,12 @@ export function createGridKitState<
 
 function cellKey(position: GridPosition): string {
   return `${position.x},${position.y}`;
+}
+
+function assertGridRecord(value: unknown): void {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new GameStateViolationError('Table de grille invalide');
+  }
 }
 
 export function scanGridWinner<TValue>(

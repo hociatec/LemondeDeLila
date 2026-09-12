@@ -14,6 +14,10 @@ import {
 import { GameEngineService } from '../../application/services/game-engine.service';
 import { GameRegistryService } from '../../application/services/game-registry.service';
 import { GameRealtimeAutomationService } from '../../application/services/game-realtime-automation.service';
+import {
+  GAME_ROOM_RUN_READER,
+  type GameRoomRunReader,
+} from '../../application/ports/game-room-run-reader.port';
 
 const RECOVERY_INTERVAL_MS = 5_000;
 const RECOVERY_PAGE_SIZE = 100;
@@ -31,10 +35,20 @@ export class GameAutomationRecoveryService
   constructor(
     @Inject(GAME_SESSION_RECOVERY_READER)
     private readonly sessions: GameSessionRecoveryReader,
-    private readonly engine: GameEngineService,
-    private readonly registry: GameRegistryService,
-    private readonly automation: GameRealtimeAutomationService,
+    @Inject(GameEngineService)
+    private readonly engine: Pick<
+      GameEngineService,
+      'exportInternalState' | 'clearInternalStateIf'
+    >,
+    @Inject(GameRegistryService)
+    private readonly registry: Pick<GameRegistryService, 'getHandler'>,
+    @Inject(GameRealtimeAutomationService)
+    private readonly automation: Pick<
+      GameRealtimeAutomationService,
+      'schedule'
+    >,
     private readonly shutdown: ApplicationShutdownService,
+    @Inject(GAME_ROOM_RUN_READER) private readonly rooms: GameRoomRunReader,
   ) {}
 
   onApplicationBootstrap(): void {
@@ -62,14 +76,30 @@ export class GameAutomationRecoveryService
         );
         for (const key of sessions) {
           try {
-            const handler = this.registry.getHandler(key.gameType);
-            if (!handler)
-              throw new Error(`Unknown game runtime: ${key.gameType}`);
             const state = await this.engine.exportInternalState(
               key.roomId,
               key.gameType,
             );
-            if (state) this.automation.schedule({ ...key, handler, state });
+            if (!state) continue;
+            if (
+              !(await this.rooms.isCurrent(
+                key.roomId,
+                key.gameType,
+                state.metadata?.roomRunId ?? null,
+              ))
+            ) {
+              // Version + restore identity prevent a delayed scan deleting a new session.
+              await this.engine.clearInternalStateIf(
+                key.roomId,
+                key.gameType,
+                state,
+              );
+              continue;
+            }
+            const handler = this.registry.getHandler(key.gameType);
+            if (!handler)
+              throw new Error(`Unknown game runtime: ${key.gameType}`);
+            this.automation.schedule({ ...key, handler, state });
           } catch (error) {
             this.report(error, key);
           }

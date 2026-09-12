@@ -12,3 +12,5 @@ Administration (réservée à Lila) :
 - Gestion des catégories.
 - Ajout / modification / changement de statut des questions (Validée / En attente / À modifier / Corbeille).
 
+
+- La résolution collective des réponses suit l’ordre des participants à la question, indépendamment de leur ordre de réponse (version des règles 2).

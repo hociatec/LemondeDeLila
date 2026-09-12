@@ -1,7 +1,7 @@
 import { GameRoomLifecycleResetBinder } from './game-room-lifecycle-reset.binder';
 
 describe('GameRoomLifecycleResetBinder', () => {
-  it('clears game state on room reset and deletion only', async () => {
+  it('requests reconciliation on reset and deletion without blindly clearing a room', async () => {
     let lobbyChanged:
       ((roomId: number, reason: string) => Promise<void> | void) | undefined;
     let roomDeleted: ((roomId: number) => Promise<void> | void) | undefined;
@@ -13,19 +13,16 @@ describe('GameRoomLifecycleResetBinder', () => {
         roomDeleted = listener;
       }),
     };
-    const realtime = { clearRoom: jest.fn().mockResolvedValue(undefined) };
-    const binder = new GameRoomLifecycleResetBinder(
-      roomEvents as never,
-      realtime as never,
-    );
+    const recovery = { recover: jest.fn().mockResolvedValue(undefined) };
+    const binder = new GameRoomLifecycleResetBinder(roomEvents, recovery);
     binder.onModuleInit();
 
     await lobbyChanged!(4, 'started');
-    expect(realtime.clearRoom).not.toHaveBeenCalled();
+    expect(recovery.recover).not.toHaveBeenCalled();
 
     await lobbyChanged!(4, 'reset');
     await roomDeleted!(5);
-    expect(realtime.clearRoom).toHaveBeenNthCalledWith(1, 4);
-    expect(realtime.clearRoom).toHaveBeenNthCalledWith(2, 5);
+    expect(recovery.recover).toHaveBeenNthCalledWith(1);
+    expect(recovery.recover).toHaveBeenNthCalledWith(2);
   });
 });

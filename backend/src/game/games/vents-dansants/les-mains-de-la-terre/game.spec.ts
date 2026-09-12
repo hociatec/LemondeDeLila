@@ -1,7 +1,14 @@
 import { testGame } from '../../../engine/testing/public-api';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import manifest from './manifest.json';
+import document from './game.json';
+import catalogue from './catalogue.json';
 
-import { LES_MAINS_CARD_BY_ID, LES_MAINS_METIER_CARDS } from './content';
-import gameDefinition from './game';
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
+const cards = catalogue.cards;
+const byId = Object.fromEntries(cards.map((card) => [card.id, card]));
 
 describe('Les Mains de la Terre declarative game', () => {
   it('deals profession-only hands, keeps them private and replays', async () => {
@@ -12,10 +19,8 @@ describe('Les Mains de la Terre declarative game', () => {
     expect(game.inspect.hand(2)).toHaveLength(6);
     expect(JSON.stringify(game.view(2))).not.toContain(game.inspect.hand(1)[0]);
 
-    const family = LES_MAINS_CARD_BY_ID[game.inspect.hand<string>(1)[0]].family;
-    const requested = LES_MAINS_METIER_CARDS.find(
-      (card) => card.family === family,
-    );
+    const family = byId[game.inspect.hand<string>(1)[0]]?.family;
+    const requested = cards.find((card) => card.family === family);
     expect(requested).toBeDefined();
     await game
       .as(1)

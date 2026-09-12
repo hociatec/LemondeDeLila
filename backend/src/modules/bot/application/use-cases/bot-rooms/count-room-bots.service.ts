@@ -1,7 +1,7 @@
-import type { BotRoomRepository } from '../../ports/bot-room.repository';
+import type { BotRoomReader } from '../../ports/bot-room-reader.port';
 
 export class CountRoomBotsService {
-  constructor(private readonly rooms: BotRoomRepository) {}
+  constructor(private readonly rooms: BotRoomReader) {}
 
   execute(roomId: number): Promise<number> {
     return this.rooms.countBotsForRoom(roomId);

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "manor",
+      "spaces": 50,
+      "overshoot": "bounce"
+    }
+  ],
+  "components": [
+    {
+      "component": "pawn.set",
+      "id": "frousse",
+      "pawns": { "$content": "content/catalogue.json#/pawns" },
+      "perPlayer": 1
+    },
+    {
+      "component": "cards.deck",
+      "id": "frights",
+      "cards": { "$content": "content/catalogue.json#/cards" },
+      "shuffle": true,
+      "empty": "recycle"
+    }
+  ],
+  "setup": { "firstPlayer": "random", "startRound": true },
+  "resourceIds": [],
+  "shortcuts": [{ "key": "D", "type": "action", "actionType": "roll" }],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": { "actions": [], "transitions": ["playing"] },
+    "playing": { "actions": ["roll"], "terminal": true }
+  },
+  "actions": { "roll": { "recipe": "frousse-race-roll" } },
+  "victory": { "kind": "by-frousse-race" },
+  "frousseRace": {
+    "trackId": "manor",
+    "diceId": "main",
+    "deckId": "frights",
+    "pawnSetId": "frousse",
+    "pawnChoiceId": "frousse.pawn",
+    "swapChoiceId": "frousse.swap",
+    "maxChainDepth": 24,
+    "finishReason": "escaped-manor",
+    "eventNamespace": "frousse",
+    "statuses": {
+      "ignoreNextTrap": "frousse.ignore-next-trap",
+      "ignoreTrapUntilNextDraw": "frousse.ignore-trap-until-next-draw",
+      "ignoreNextPrank": "frousse.ignore-next-prank",
+      "ignoreNextGhost": "frousse.ignore-next-ghost",
+      "nextMoveCap": "frousse.next-move-cap",
+      "nextRollMalus": "frousse.next-roll-malus",
+      "nextRollKeepLowest": "frousse.next-roll-keep-lowest",
+      "nextRollDouble": "frousse.next-roll-double",
+      "nextRollIfThreeBackTwo": "frousse.next-roll-if-three-back-two",
+      "blocked": "frousse.blocked"
+    },
+    "tiles": { "$content": "content/catalogue.json#/tiles" },
+    "cards": { "$content": "content/catalogue.json#/cards" }
+  }
+}

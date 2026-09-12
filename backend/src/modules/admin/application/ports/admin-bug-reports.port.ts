@@ -13,7 +13,10 @@ export interface AdminBugReportsPort {
     createdByUserId: number;
     createdByUsername: string;
   }): Promise<BugReportRecord>;
-  list(options: { offset?: number; limit?: number }): Promise<BugReportRecord[]>;
+  list(options: {
+    offset?: number;
+    limit?: number;
+  }): Promise<BugReportRecord[]>;
   get(id: string): Promise<BugReportRecord | null>;
   update(
     id: string,

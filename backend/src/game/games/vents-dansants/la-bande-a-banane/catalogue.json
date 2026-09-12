@@ -1,0 +1,701 @@
+{
+  "cards": [
+    {
+      "id": "monkey-capucin-1",
+      "name": "Capucin malicieux",
+      "type": "monkey",
+      "species": "capucin",
+      "effects": []
+    },
+    {
+      "id": "monkey-capucin-2",
+      "name": "Capucin malicieux",
+      "type": "monkey",
+      "species": "capucin",
+      "effects": []
+    },
+    {
+      "id": "monkey-capucin-3",
+      "name": "Capucin malicieux",
+      "type": "monkey",
+      "species": "capucin",
+      "effects": []
+    },
+    {
+      "id": "monkey-capucin-4",
+      "name": "Capucin malicieux",
+      "type": "monkey",
+      "species": "capucin",
+      "effects": []
+    },
+    {
+      "id": "monkey-capucin-5",
+      "name": "Capucin malicieux",
+      "type": "monkey",
+      "species": "capucin",
+      "effects": []
+    },
+    {
+      "id": "monkey-capucin-6",
+      "name": "Capucin malicieux",
+      "type": "monkey",
+      "species": "capucin",
+      "effects": []
+    },
+    {
+      "id": "monkey-mandrill-1",
+      "name": "Mandrill paradeur",
+      "type": "monkey",
+      "species": "mandrill",
+      "effects": []
+    },
+    {
+      "id": "monkey-mandrill-2",
+      "name": "Mandrill paradeur",
+      "type": "monkey",
+      "species": "mandrill",
+      "effects": []
+    },
+    {
+      "id": "monkey-mandrill-3",
+      "name": "Mandrill paradeur",
+      "type": "monkey",
+      "species": "mandrill",
+      "effects": []
+    },
+    {
+      "id": "monkey-mandrill-4",
+      "name": "Mandrill paradeur",
+      "type": "monkey",
+      "species": "mandrill",
+      "effects": []
+    },
+    {
+      "id": "monkey-mandrill-5",
+      "name": "Mandrill paradeur",
+      "type": "monkey",
+      "species": "mandrill",
+      "effects": []
+    },
+    {
+      "id": "monkey-mandrill-6",
+      "name": "Mandrill paradeur",
+      "type": "monkey",
+      "species": "mandrill",
+      "effects": []
+    },
+    {
+      "id": "monkey-gibbon-1",
+      "name": "Gibbon bondissant",
+      "type": "monkey",
+      "species": "gibbon",
+      "effects": []
+    },
+    {
+      "id": "monkey-gibbon-2",
+      "name": "Gibbon bondissant",
+      "type": "monkey",
+      "species": "gibbon",
+      "effects": []
+    },
+    {
+      "id": "monkey-gibbon-3",
+      "name": "Gibbon bondissant",
+      "type": "monkey",
+      "species": "gibbon",
+      "effects": []
+    },
+    {
+      "id": "monkey-gibbon-4",
+      "name": "Gibbon bondissant",
+      "type": "monkey",
+      "species": "gibbon",
+      "effects": []
+    },
+    {
+      "id": "monkey-gibbon-5",
+      "name": "Gibbon bondissant",
+      "type": "monkey",
+      "species": "gibbon",
+      "effects": []
+    },
+    {
+      "id": "monkey-gibbon-6",
+      "name": "Gibbon bondissant",
+      "type": "monkey",
+      "species": "gibbon",
+      "effects": []
+    },
+    {
+      "id": "monkey-babouin-1",
+      "name": "Babouin observateur",
+      "type": "monkey",
+      "species": "babouin",
+      "effects": []
+    },
+    {
+      "id": "monkey-babouin-2",
+      "name": "Babouin observateur",
+      "type": "monkey",
+      "species": "babouin",
+      "effects": []
+    },
+    {
+      "id": "monkey-babouin-3",
+      "name": "Babouin observateur",
+      "type": "monkey",
+      "species": "babouin",
+      "effects": []
+    },
+    {
+      "id": "monkey-babouin-4",
+      "name": "Babouin observateur",
+      "type": "monkey",
+      "species": "babouin",
+      "effects": []
+    },
+    {
+      "id": "monkey-babouin-5",
+      "name": "Babouin observateur",
+      "type": "monkey",
+      "species": "babouin",
+      "effects": []
+    },
+    {
+      "id": "monkey-babouin-6",
+      "name": "Babouin observateur",
+      "type": "monkey",
+      "species": "babouin",
+      "effects": []
+    },
+    {
+      "id": "monkey-macaque-1",
+      "name": "Macaque zen",
+      "type": "monkey",
+      "species": "macaque",
+      "effects": []
+    },
+    {
+      "id": "monkey-macaque-2",
+      "name": "Macaque zen",
+      "type": "monkey",
+      "species": "macaque",
+      "effects": []
+    },
+    {
+      "id": "monkey-macaque-3",
+      "name": "Macaque zen",
+      "type": "monkey",
+      "species": "macaque",
+      "effects": []
+    },
+    {
+      "id": "monkey-macaque-4",
+      "name": "Macaque zen",
+      "type": "monkey",
+      "species": "macaque",
+      "effects": []
+    },
+    {
+      "id": "monkey-macaque-5",
+      "name": "Macaque zen",
+      "type": "monkey",
+      "species": "macaque",
+      "effects": []
+    },
+    {
+      "id": "monkey-macaque-6",
+      "name": "Macaque zen",
+      "type": "monkey",
+      "species": "macaque",
+      "effects": []
+    },
+    {
+      "id": "action-vol-de-banane-1",
+      "name": "Vol de banane",
+      "type": "action",
+      "action": "vol-de-banane",
+      "effects": [
+        {
+          "kind": "steal-card",
+          "handId": "players",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "banana.steal",
+            "optional": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "action-vol-de-banane-2",
+      "name": "Vol de banane",
+      "type": "action",
+      "action": "vol-de-banane",
+      "effects": [
+        {
+          "kind": "steal-card",
+          "handId": "players",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "banana.steal",
+            "optional": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "action-vol-de-banane-3",
+      "name": "Vol de banane",
+      "type": "action",
+      "action": "vol-de-banane",
+      "effects": [
+        {
+          "kind": "steal-card",
+          "handId": "players",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "banana.steal",
+            "optional": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "action-vol-de-banane-4",
+      "name": "Vol de banane",
+      "type": "action",
+      "action": "vol-de-banane",
+      "effects": [
+        {
+          "kind": "steal-card",
+          "handId": "players",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "banana.steal",
+            "optional": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "action-vol-de-banane-5",
+      "name": "Vol de banane",
+      "type": "action",
+      "action": "vol-de-banane",
+      "effects": [
+        {
+          "kind": "steal-card",
+          "handId": "players",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "banana.steal",
+            "optional": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "action-cris-de-la-jungle-1",
+      "name": "Cris de la jungle",
+      "type": "action",
+      "action": "cris-de-la-jungle",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "banana.exchange-random",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "banana.exchange",
+            "optional": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "action-cris-de-la-jungle-2",
+      "name": "Cris de la jungle",
+      "type": "action",
+      "action": "cris-de-la-jungle",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "banana.exchange-random",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "banana.exchange",
+            "optional": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "action-cris-de-la-jungle-3",
+      "name": "Cris de la jungle",
+      "type": "action",
+      "action": "cris-de-la-jungle",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "banana.exchange-random",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "banana.exchange",
+            "optional": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "action-cris-de-la-jungle-4",
+      "name": "Cris de la jungle",
+      "type": "action",
+      "action": "cris-de-la-jungle",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "banana.exchange-random",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "banana.exchange",
+            "optional": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "action-cris-de-la-jungle-5",
+      "name": "Cris de la jungle",
+      "type": "action",
+      "action": "cris-de-la-jungle",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "banana.exchange-random",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "banana.exchange",
+            "optional": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "action-grimpeur-fou-1",
+      "name": "Grimpeur fou",
+      "type": "action",
+      "action": "grimpeur-fou",
+      "effects": [
+        {
+          "kind": "draw-cards",
+          "deckId": "banana",
+          "handId": "players",
+          "count": 2,
+          "recycle": true
+        }
+      ]
+    },
+    {
+      "id": "action-grimpeur-fou-2",
+      "name": "Grimpeur fou",
+      "type": "action",
+      "action": "grimpeur-fou",
+      "effects": [
+        {
+          "kind": "draw-cards",
+          "deckId": "banana",
+          "handId": "players",
+          "count": 2,
+          "recycle": true
+        }
+      ]
+    },
+    {
+      "id": "action-grimpeur-fou-3",
+      "name": "Grimpeur fou",
+      "type": "action",
+      "action": "grimpeur-fou",
+      "effects": [
+        {
+          "kind": "draw-cards",
+          "deckId": "banana",
+          "handId": "players",
+          "count": 2,
+          "recycle": true
+        }
+      ]
+    },
+    {
+      "id": "action-grimpeur-fou-4",
+      "name": "Grimpeur fou",
+      "type": "action",
+      "action": "grimpeur-fou",
+      "effects": [
+        {
+          "kind": "draw-cards",
+          "deckId": "banana",
+          "handId": "players",
+          "count": 2,
+          "recycle": true
+        }
+      ]
+    },
+    {
+      "id": "action-grimpeur-fou-5",
+      "name": "Grimpeur fou",
+      "type": "action",
+      "action": "grimpeur-fou",
+      "effects": [
+        {
+          "kind": "draw-cards",
+          "deckId": "banana",
+          "handId": "players",
+          "count": 2,
+          "recycle": true
+        }
+      ]
+    },
+    {
+      "id": "trap-piege-a-noix-de-coco-1",
+      "name": "Piège à noix de coco",
+      "type": "trap",
+      "trap": "piege-a-noix-de-coco",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "trap-piege-a-noix-de-coco-2",
+      "name": "Piège à noix de coco",
+      "type": "trap",
+      "trap": "piege-a-noix-de-coco",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "trap-piege-a-noix-de-coco-3",
+      "name": "Piège à noix de coco",
+      "type": "trap",
+      "trap": "piege-a-noix-de-coco",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "trap-piege-a-noix-de-coco-4",
+      "name": "Piège à noix de coco",
+      "type": "trap",
+      "trap": "piege-a-noix-de-coco",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "trap-piege-a-noix-de-coco-5",
+      "name": "Piège à noix de coco",
+      "type": "trap",
+      "trap": "piege-a-noix-de-coco",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "trap-tigre-rodeur-1",
+      "name": "Tigre rôdeur",
+      "type": "trap",
+      "trap": "tigre-rodeur",
+      "effects": [
+        {
+          "kind": "discard-random",
+          "deckId": "banana",
+          "handId": "players",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "trap-tigre-rodeur-2",
+      "name": "Tigre rôdeur",
+      "type": "trap",
+      "trap": "tigre-rodeur",
+      "effects": [
+        {
+          "kind": "discard-random",
+          "deckId": "banana",
+          "handId": "players",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "trap-tigre-rodeur-3",
+      "name": "Tigre rôdeur",
+      "type": "trap",
+      "trap": "tigre-rodeur",
+      "effects": [
+        {
+          "kind": "discard-random",
+          "deckId": "banana",
+          "handId": "players",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "trap-tigre-rodeur-4",
+      "name": "Tigre rôdeur",
+      "type": "trap",
+      "trap": "tigre-rodeur",
+      "effects": [
+        {
+          "kind": "discard-random",
+          "deckId": "banana",
+          "handId": "players",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "trap-tigre-rodeur-5",
+      "name": "Tigre rôdeur",
+      "type": "trap",
+      "trap": "tigre-rodeur",
+      "effects": [
+        {
+          "kind": "discard-random",
+          "deckId": "banana",
+          "handId": "players",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "joker-singe-deguise-1",
+      "name": "Singe déguisé",
+      "type": "joker",
+      "effects": []
+    },
+    {
+      "id": "joker-singe-deguise-2",
+      "name": "Singe déguisé",
+      "type": "joker",
+      "effects": []
+    },
+    {
+      "id": "joker-singe-deguise-3",
+      "name": "Singe déguisé",
+      "type": "joker",
+      "effects": []
+    },
+    {
+      "id": "joker-singe-deguise-4",
+      "name": "Singe déguisé",
+      "type": "joker",
+      "effects": []
+    },
+    {
+      "id": "joker-singe-deguise-5",
+      "name": "Singe déguisé",
+      "type": "joker",
+      "effects": []
+    }
+  ],
+  "cardIds": [
+    "monkey-capucin-1",
+    "monkey-capucin-2",
+    "monkey-capucin-3",
+    "monkey-capucin-4",
+    "monkey-capucin-5",
+    "monkey-capucin-6",
+    "monkey-mandrill-1",
+    "monkey-mandrill-2",
+    "monkey-mandrill-3",
+    "monkey-mandrill-4",
+    "monkey-mandrill-5",
+    "monkey-mandrill-6",
+    "monkey-gibbon-1",
+    "monkey-gibbon-2",
+    "monkey-gibbon-3",
+    "monkey-gibbon-4",
+    "monkey-gibbon-5",
+    "monkey-gibbon-6",
+    "monkey-babouin-1",
+    "monkey-babouin-2",
+    "monkey-babouin-3",
+    "monkey-babouin-4",
+    "monkey-babouin-5",
+    "monkey-babouin-6",
+    "monkey-macaque-1",
+    "monkey-macaque-2",
+    "monkey-macaque-3",
+    "monkey-macaque-4",
+    "monkey-macaque-5",
+    "monkey-macaque-6",
+    "action-vol-de-banane-1",
+    "action-vol-de-banane-2",
+    "action-vol-de-banane-3",
+    "action-vol-de-banane-4",
+    "action-vol-de-banane-5",
+    "action-cris-de-la-jungle-1",
+    "action-cris-de-la-jungle-2",
+    "action-cris-de-la-jungle-3",
+    "action-cris-de-la-jungle-4",
+    "action-cris-de-la-jungle-5",
+    "action-grimpeur-fou-1",
+    "action-grimpeur-fou-2",
+    "action-grimpeur-fou-3",
+    "action-grimpeur-fou-4",
+    "action-grimpeur-fou-5",
+    "trap-piege-a-noix-de-coco-1",
+    "trap-piege-a-noix-de-coco-2",
+    "trap-piege-a-noix-de-coco-3",
+    "trap-piege-a-noix-de-coco-4",
+    "trap-piege-a-noix-de-coco-5",
+    "trap-tigre-rodeur-1",
+    "trap-tigre-rodeur-2",
+    "trap-tigre-rodeur-3",
+    "trap-tigre-rodeur-4",
+    "trap-tigre-rodeur-5",
+    "joker-singe-deguise-1",
+    "joker-singe-deguise-2",
+    "joker-singe-deguise-3",
+    "joker-singe-deguise-4",
+    "joker-singe-deguise-5"
+  ]
+}

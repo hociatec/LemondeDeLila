@@ -1,11 +1,33 @@
 import { testGame } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import gameDefinition from './game';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import catalogue from './catalogue.json';
+import document from './game.json';
+import manifest from './manifest.json';
+
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Olympia declarative game', () => {
+  it.each([
+    'creatures',
+    'exploits',
+    'actions',
+    'attaques',
+    'evenements',
+  ] as const)(
+    'draws from %s into the shared hand and replays',
+    async (deck) => {
+      const game = await testGame(gameDefinition).players(2).seed(48).start();
+      await game.as(1).do('draw_card', { deck });
+      expect(game.inspect.hand(1)).toHaveLength(4);
+      expect(await game.replay()).toEqual(game.state());
+    },
+  );
   it('deals private hands and unique divinities', async () => {
     const game = testGame(gameDefinition)
-      .players(['Athéna', 'Hermès'])
+      .players(['AthÃ©na', 'HermÃ¨s'])
       .seed(47);
     await game.start();
     expect(game.inspect.hand(1)).toHaveLength(3);
@@ -17,7 +39,7 @@ describe('Olympia declarative game', () => {
 
   it('limits drawing and supports replay', async () => {
     const game = testGame(gameDefinition)
-      .players(['Athéna', 'Hermès'])
+      .players(['AthÃ©na', 'HermÃ¨s'])
       .seed(48);
     await game.start();
     await game.as(1).do('draw_card', { deck: 'heros' });

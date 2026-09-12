@@ -19,9 +19,11 @@ export class ApplicationShutdownService {
       normalizedName.length > 128 ||
       typeof stop !== 'function' ||
       this.stopping ||
-      this.sources.has(name)
+      this.sources.has(normalizedName)
     ) {
-      throw new Error(`Shutdown source cannot be registered: ${normalizedName}`);
+      throw new Error(
+        `Shutdown source cannot be registered: ${normalizedName}`,
+      );
     }
     this.sources.set(normalizedName, stop);
   }
@@ -32,9 +34,20 @@ export class ApplicationShutdownService {
 
   stopSources(): Promise<void> {
     this.stopAccepting();
-    return (this.stoppedSources ??= Promise.all(
+    return (this.stoppedSources ??= Promise.allSettled(
       [...this.sources.values()].map((stop) => Promise.resolve().then(stop)),
-    ).then(() => undefined));
+    ).then((results) => {
+      const failures = results.filter(
+        (result): result is PromiseRejectedResult =>
+          result.status === 'rejected',
+      );
+      if (failures.length === 1) throw failures[0].reason;
+      if (failures.length > 1)
+        throw new AggregateError(
+          failures.map((failure): unknown => failure.reason as unknown),
+          'Failed to stop application sources',
+        );
+    }));
   }
 
   run<T>(operation: () => T | Promise<T>, cleanup = false): Promise<T> {

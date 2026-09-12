@@ -1,7 +1,12 @@
 import { testGame } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import { MORPION_PAWNS } from './content';
-import gameDefinition from './game';
+import MORPION_PAWNS from './content/pawns.json';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import manifest from './manifest.json';
+import document from './game.json';
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/pawns.json': MORPION_PAWNS,
+});
 
 describe('Morpion declarative game', () => {
   it('requires a bot to resolve the same sequential pawn choice', async () => {

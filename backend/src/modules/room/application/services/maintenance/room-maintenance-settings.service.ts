@@ -39,10 +39,16 @@ export class RoomMaintenanceSettingsService implements OnModuleInit {
   ): RoomMaintenanceSettings {
     const enabled = input.autoCleanupEnabled === true;
     const interval = Number.isSafeInteger(input.autoCleanupIntervalSeconds)
-      ? Math.min(86_400, Math.max(30, input.autoCleanupIntervalSeconds as number))
+      ? Math.min(
+          86_400,
+          Math.max(30, input.autoCleanupIntervalSeconds as number),
+        )
       : 300;
     const older = Number.isSafeInteger(input.autoCleanupOlderThanMinutes)
-      ? Math.min(525_600, Math.max(5, input.autoCleanupOlderThanMinutes as number))
+      ? Math.min(
+          525_600,
+          Math.max(5, input.autoCleanupOlderThanMinutes as number),
+        )
       : 60;
     const limit = Number.isSafeInteger(input.autoCleanupLimit)
       ? Math.max(

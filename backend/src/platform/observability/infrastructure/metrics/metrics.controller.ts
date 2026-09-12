@@ -1,8 +1,5 @@
 import { Controller, Get, Header, UseGuards } from '@nestjs/common';
-import {
-  AdminRoleGuard,
-  HttpJwtGuard,
-} from '../../../auth/public-api';
+import { AdminRoleGuard, HttpJwtGuard } from '../../../auth/public-api';
 import { prometheusMetrics } from './prometheus-metrics';
 
 @Controller('metrics')

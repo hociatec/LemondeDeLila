@@ -1,3 +1,4 @@
+import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../ports/presence-transport.port';
 import { PresenceOrigins } from './presence-origins';
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocket } from 'ws';
@@ -45,6 +46,8 @@ export class PresenceService implements OnModuleDestroy {
   private readonly clients = new Map<WebSocket, PresenceClient>();
   private readonly origins = new PresenceOrigins(() => this.clock.now());
   private broadcastSequence = 0;
+  private readonly clientSequences = new WeakMap<WebSocket, number>();
+  private destroyed = false;
   private readonly heartbeat = new PresenceHeartbeat({
     listSockets: () => Array.from(this.clients.keys()),
     unregister: (socket) => this.unregister(socket),
@@ -54,7 +57,11 @@ export class PresenceService implements OnModuleDestroy {
   private readonly absentAfterMs = 3 * 60_000;
 
   constructor(
-    private readonly messages: PresenceClientMessageService,
+    @Inject(PresenceClientMessageService)
+    private readonly messages: Pick<
+      PresenceClientMessageService,
+      'handle' | 'isChatBannedNow' | 'getChatBanInfo' | 'sendHistory'
+    >,
     @Inject(PRESENCE_ROOM_PARTICIPANT_REPOSITORY)
     private readonly participants: PresenceRoomParticipantRepository,
     private readonly transport: PresenceTransport,
@@ -71,7 +78,32 @@ export class PresenceService implements OnModuleDestroy {
   }
 
   async onModuleDestroy(): Promise<void> {
+    if (this.destroyed) return;
+    this.destroyed = true;
     this.heartbeat.stop();
+    for (const socket of this.clients.keys()) {
+      try {
+        socket.close(1001, 'server shutdown');
+      } catch {
+        /* Already closed. */
+      }
+    }
+    this.clients.clear();
+    const withdrawal = {
+      origin: this.instanceId,
+      players: [],
+      at: this.clock.now(),
+      sequence: ++this.broadcastSequence,
+    };
+    this.origins.accept(withdrawal);
+    await this.transport
+      .publish(withdrawal)
+      .catch((error: unknown) =>
+        this.logger.warn(
+          'Dernière présence indisponible',
+          getErrorDetails(error),
+        ),
+      );
     await this.transport.disconnect();
   }
 
@@ -79,16 +111,25 @@ export class PresenceService implements OnModuleDestroy {
     socket: WebSocket,
     user: WsAuthPayload,
     context: PresenceConnectionContext = 'home',
-  ) {
+  ): boolean {
     if (
+      this.destroyed ||
+      this.shutdown.isDraining ||
       !Number.isSafeInteger(user?.id) ||
       user.id <= 0 ||
       typeof user.username !== 'string' ||
       user.username.length > 255
     ) {
-      return;
+      return false;
     }
-    if (this.clients.size >= 10_000 && !this.clients.has(socket)) return;
+    if (this.clients.size >= 10_000 && !this.clients.has(socket)) return false;
+    const users = new Set(
+      [...this.clients]
+        .filter(([existing]) => existing !== socket)
+        .map(([, client]) => client.user.id),
+    );
+    if (!users.has(user.id) && users.size >= MAX_PRESENCE_PLAYERS_PER_ORIGIN)
+      return false;
     this.clients.set(socket, {
       socket,
       user,
@@ -98,9 +139,11 @@ export class PresenceService implements OnModuleDestroy {
       lastInteractionAt: this.clock.now(),
     });
     if (!this.shutdown.isDraining) this.heartbeat.ensureStarted();
+    return true;
   }
 
   unregister(socket: WebSocket) {
+    this.heartbeat.cancel(socket);
     this.clients.delete(socket);
     if (this.clients.size === 0) {
       this.heartbeat.stop();
@@ -111,6 +154,8 @@ export class PresenceService implements OnModuleDestroy {
     return this.messages.handle(from, raw, {
       broadcastChat: (event) => this.broadcast(event, 'chat'),
       presenceChanged: () => this.broadcastPresence(),
+      presenceSync: (socket) => this.sendCurrentPresence(socket),
+      chatSync: (socket) => this.sendHistory(socket),
     });
   }
 
@@ -129,7 +174,7 @@ export class PresenceService implements OnModuleDestroy {
   }
 
   broadcastPresence() {
-    if (this.shutdown.isDraining) return;
+    if (this.destroyed || this.shutdown.isDraining) return;
     const sequence = ++this.broadcastSequence;
     const playersByUser = this.collectPlayers();
     void this.shutdown.run(() =>
@@ -273,7 +318,7 @@ export class PresenceService implements OnModuleDestroy {
       this.clock.now(),
       this.absentAfterMs,
     );
-    this.broadcast({ type: 'presence-update', players: enriched });
+    this.broadcastPresencePlayers(enriched);
     return this.transport
       .publish(event)
       .catch((err) =>
@@ -309,7 +354,51 @@ export class PresenceService implements OnModuleDestroy {
       this.clock.now(),
       this.absentAfterMs,
     );
-    this.broadcast({ type: 'presence-update', players: enriched });
+    this.broadcastPresencePlayers(enriched);
+  }
+
+  private sendCurrentPresence(socket: WebSocket): void {
+    const merged = mergePresencePlayersFromOrigins(this.origins.snapshot());
+    this.sendPresenceUpdate(
+      socket,
+      enrichPresencePlayers(merged, this.clock.now(), this.absentAfterMs),
+    );
+  }
+
+  private broadcastPresencePlayers(players: PresenceListItem[]): void {
+    for (const { socket } of this.clients.values()) {
+      this.sendPresenceUpdate(socket, players);
+    }
+  }
+
+  private sendPresenceUpdate(
+    socket: WebSocket,
+    players: PresenceListItem[],
+  ): void {
+    const sequence = (this.clientSequences.get(socket) ?? 0) + 1;
+    const payload = {
+      type: 'presence-update',
+      players,
+      realtime: {
+        streamId: this.instanceId,
+        sequence,
+        snapshot: true,
+      },
+    };
+    const encoded = JSON.stringify(payload);
+    if (Buffer.byteLength(encoded, 'utf8') > 1_048_576) return;
+    try {
+      socket.send(encoded);
+      this.clientSequences.set(socket, sequence);
+    } catch (error) {
+      this.logger.warn('Envoi WS échoué', getErrorDetails(error));
+      this.unregister(socket);
+      try {
+        socket.close();
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   findClient(socket: WebSocket): PresenceClient | undefined {

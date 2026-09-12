@@ -6,11 +6,7 @@ export function parseStrictInteger(
   if (!bounds || typeof bounds !== 'object') return null;
   const min = bounds.min ?? Number.MIN_SAFE_INTEGER;
   const max = bounds.max ?? Number.MAX_SAFE_INTEGER;
-  if (
-    !Number.isSafeInteger(min) ||
-    !Number.isSafeInteger(max) ||
-    min > max
-  )
+  if (!Number.isSafeInteger(min) || !Number.isSafeInteger(max) || min > max)
     return null;
   if (
     typeof value === 'string' &&

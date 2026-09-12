@@ -60,11 +60,11 @@ export class GameDiceController {
     private readonly actorPlayerId: () => number | null = () => null,
   ) {
     this.state.rollsByPlayer ??= {};
-    this.state.lastRollId ??= Object.keys(this.state.rolls).at(-1) ?? null;
-    this.state.sequence ??= Object.keys(this.state.rolls).length;
     for (const definition of definitions) {
       this.definitions.set(definition.id, definition);
     }
+    this.state.lastRollId ??= this.fallbackLastRollId();
+    this.state.sequence ??= Object.keys(this.state.rolls).length;
   }
 
   private readonly definitions = new Map<string, DiceDefinition>();
@@ -79,7 +79,7 @@ export class GameDiceController {
     for (const rolls of Object.values(this.state.rollsByPlayer))
       delete rolls[id];
     if (this.state.lastRollId === id) {
-      this.state.lastRollId = Object.keys(this.state.rolls).at(-1) ?? null;
+      this.state.lastRollId = this.fallbackLastRollId();
     }
   }
 
@@ -193,6 +193,17 @@ export class GameDiceController {
     return result ? { values: [...result.values], total: result.total } : null;
   }
 
+  private fallbackLastRollId(): string | null {
+    const declared = [...this.definitions.keys()].filter(
+      (id) => this.state.rolls[id] != null,
+    );
+    return (
+      declared.at(-1) ??
+      Object.keys(this.state.rolls).sort(compareIds).at(-1) ??
+      null
+    );
+  }
+
   private rawRoll(count: number, sides: number): DiceRollResult {
     const values = Array.from(
       { length: count },
@@ -200,6 +211,10 @@ export class GameDiceController {
     );
     return { values, total: values.reduce((sum, value) => sum + value, 0) };
   }
+}
+
+function compareIds(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 function selectRoll(

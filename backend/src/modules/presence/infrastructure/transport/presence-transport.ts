@@ -1,3 +1,4 @@
+import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../../application/ports/presence-transport.port';
 import { RedisPubSubTransport } from '../../../../platform/pubsub/public-api';
 import {
   PresenceEvent,
@@ -49,7 +50,11 @@ export class RedisPresenceTransport extends PresenceTransport {
 }
 
 function decodePresenceEvent(value: unknown): PresenceEvent | null {
-  if (!isRecord(value) || !Array.isArray(value.players) || value.players.length > 1_000) {
+  if (
+    !isRecord(value) ||
+    !Array.isArray(value.players) ||
+    value.players.length > MAX_PRESENCE_PLAYERS_PER_ORIGIN
+  ) {
     return null;
   }
   const players = value.players.filter(isPresencePublicPlayer);
@@ -92,7 +97,8 @@ function isPresencePublicPlayer(value: unknown): value is PresencePublicPlayer {
       availability === 'available' ||
       availability === 'occupied' ||
       availability === 'absent') &&
-    (location === undefined || (typeof location === 'string' && location.length <= 255))
+    (location === undefined ||
+      (typeof location === 'string' && location.length <= 255))
   );
 }
 

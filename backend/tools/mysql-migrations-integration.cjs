@@ -4,7 +4,16 @@ require('ts-node/register');
 require('tsconfig-paths/register');
 const mysql = require('mysql2/promise');
 const path = require('node:path');
-const { DataSource } = require('typeorm');
+const {
+  MigrationDataSource,
+} = require('../src/platform/database/migration-data-source');
+const assert = require('node:assert/strict');
+const {
+  GameSessionTypeormStore,
+} = require('../src/game/core/infrastructure/persistence/typeorm/repositories/game-session-typeorm.store');
+const {
+  GameSessionEntity,
+} = require('../src/game/core/infrastructure/persistence/typeorm/entities/game-session.entity');
 
 const host = process.env.DB_HOST || '127.0.0.1';
 const port = Number(process.env.DB_PORT || 3306);
@@ -20,7 +29,7 @@ async function main() {
   await admin.query(
     `CREATE DATABASE \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
   );
-  const source = new DataSource({
+  const source = new MigrationDataSource({
     type: 'mysql',
     host,
     port,
@@ -42,12 +51,15 @@ async function main() {
     }
     const pending = await source.showMigrations();
     if (pending) throw new Error('Des migrations restent en attente');
+    await verifyLegacyMigrationName(source);
     await verifyCriticalIndexes(source);
     await verifyCriticalQueryPlans(source);
     await verifyNamedLocks();
     await verifyGameSessionInvariants(source);
+    await verifyRestoredSessionConcurrency(source);
     await verifyConcurrentUniqueness(source);
     await verifyUserIdentityUniqueness(source);
+    await verifyPersistentRoomInvites(source);
     await verifyRecentMigrationsWithExistingData(source);
     console.log(
       `mysql-migrations-integration: OK (${applied.length} migrations, plans SQL, historique, unicité et transactions vérifiés)`,
@@ -226,6 +238,64 @@ async function verifyGameSessionInvariants(source) {
   }
 }
 
+async function verifyLegacyMigrationName(source) {
+  await source.query('UPDATE migrations SET name = ? WHERE name = ?', [
+    'ImportLegacySettingsJson1735900000',
+    'ImportLegacySettingsJson1735900000000',
+  ]);
+  const repaired = await source.runMigrations({ transaction: 'each' });
+  assert.equal(repaired.length, 1);
+  assert.equal(repaired[0].name, 'ImportLegacySettingsJson1735900000000');
+  assert.equal(await source.showMigrations(), false);
+}
+
+async function verifyRestoredSessionConcurrency(source) {
+  const store = new GameSessionTypeormStore(
+    source.getRepository(GameSessionEntity),
+  );
+  const initial = { status: 'started', phase: 'playing', log: [], version: 4 };
+  const previous = await store.restore(103, 'integration-restore', initial);
+  const current = await store.restore(103, 'integration-restore', initial);
+  const commit = {
+    roomId: 103,
+    gameType: 'integration-restore',
+    expectedVersion: 4,
+    next: previous,
+    pendingEvents: [],
+    occurredAtMs: 100,
+    expectedRestoreId: previous.metadata.restoreId,
+  };
+  assert.equal((await store.compareAndSet(commit)).committed, false);
+  await store.clearIfVersion(
+    103,
+    'integration-restore',
+    4,
+    previous.metadata.restoreId,
+  );
+  assert.deepEqual(await store.load(103, 'integration-restore'), current);
+  const results = await Promise.all([
+    store.compareAndSet({
+      ...commit,
+      next: current,
+      expectedRestoreId: current.metadata.restoreId,
+    }),
+    store.compareAndSet({
+      ...commit,
+      next: current,
+      expectedRestoreId: current.metadata.restoreId,
+    }),
+  ]);
+  assert.equal(results.filter((result) => result.committed).length, 1);
+  assert.equal((await store.load(103, 'integration-restore')).version, 5);
+  await store.clearIfVersion(
+    103,
+    'integration-restore',
+    5,
+    current.metadata.restoreId,
+  );
+  assert.equal(await store.load(103, 'integration-restore'), null);
+}
+
 async function verifyConcurrentUniqueness(source) {
   const values = [
     101,
@@ -290,18 +360,102 @@ function assertSingleDuplicate(results, label) {
   }
 }
 
+async function verifyPersistentRoomInvites(source) {
+  await source.query(
+    'INSERT INTO users (email, roles, password, username) VALUES (?, ?, ?, ?), (?, ?, ?, ?)',
+    [
+      'invite-owner@example.test',
+      '[]',
+      'hash',
+      'invite_owner',
+      'invite-target@example.test',
+      '[]',
+      'hash',
+      'invite_target',
+    ],
+  );
+  const users = await source.query(
+    'SELECT id, username FROM users WHERE username IN (?, ?) ORDER BY username',
+    ['invite_owner', 'invite_target'],
+  );
+  const ownerId = Number(
+    users.find((row) => row.username === 'invite_owner')?.id,
+  );
+  const targetId = Number(
+    users.find((row) => row.username === 'invite_target')?.id,
+  );
+  const room = await source.query(
+    'INSERT INTO rooms (name, game_type, max_players, is_private, status, owner_id) VALUES (?, ?, ?, ?, ?, ?)',
+    ['Invite room', 'example', 4, 1, 'started', ownerId],
+  );
+  const roomId = Number(room.insertId);
+  await source.query(
+    'INSERT INTO room_invites (id, room_id, from_user_id, to_user_id, created_at, expires_at, consumed_at) VALUES (?, ?, ?, ?, NOW(6), DATE_ADD(NOW(6), INTERVAL 10 MINUTE), NOW(6))',
+    ['00000000-0000-4000-8000-000000000001', roomId, ownerId, targetId],
+  );
+  const visible = await source.query(
+    'SELECT id FROM room_invites WHERE room_id = ? AND to_user_id = ? AND consumed_at IS NOT NULL AND expires_at > NOW(6)',
+    [roomId, targetId],
+  );
+  assert.equal(visible.length, 1);
+  await source.query('DELETE FROM rooms WHERE id = ?', [roomId]);
+  const removed = await source.query(
+    'SELECT id FROM room_invites WHERE room_id = ?',
+    [roomId],
+  );
+  assert.equal(removed.length, 0, 'room invite cascade missing');
+}
+
 async function verifyRecentMigrationsWithExistingData(source) {
   const before = await source.query(
     'SELECT COUNT(*) AS count FROM game_sessions WHERE room_id IN (99, 101)',
   );
-  for (let index = 0; index < 5; index += 1) {
-    await source.undoLastMigration({ transaction: 'each' });
-  }
+  // verifyLegacyMigrationName appended the historical no-op to the ledger.
+  await source.undoLastMigration({ transaction: 'each' });
+  // The newest invite table is reversible and must be removed before reaching
+  // the historical rollback boundary immediately below.
+  await source.undoLastMigration({ transaction: 'each' });
+  const inviteTable = await source.query("SHOW TABLES LIKE 'room_invites'");
+  assert.equal(inviteTable.length, 0);
+  // The immutable DecoupleUserForeignKeys down() is invalid for the historical
+  // schema. Its explicit boundary must reject before touching schema or data.
+  const schemaBeforeBoundary = await source.query(
+    'SHOW CREATE TABLE social_relationships',
+  );
+  await assert.rejects(
+    source.undoLastMigration({ transaction: 'each' }),
+    /Rollback boundary: DecoupleUserForeignKeys1771000000000/,
+  );
+  assert.deepEqual(
+    await source.query('SHOW CREATE TABLE social_relationships'),
+    schemaBeforeBoundary,
+  );
   const reapplied = await source.runMigrations({ transaction: 'each' });
-  if (reapplied.length !== 5) {
-    throw new Error(
-      `Cycle historique incomplet: ${reapplied.length}/5 migrations`,
-    );
+  assert.deepEqual(reapplied.map((migration) => migration.name).sort(), [
+    'ImportLegacySettingsJson1735900000000',
+    'PersistRoomInvites1771100000000',
+  ]);
+
+  // Independently exercise the reversible index/constraint migrations on
+  // existing data. This does not pretend the complete history is reversible.
+  const reversibleNames = [
+    'NormalizeUserIdentityCollation1770500000000',
+    'AuditHotQueryIndexes1770600000000',
+    'CanonicalizeSocialRelationshipPairs1770700000000',
+    'EnforceSingleActiveGameMatch1770800000000',
+  ];
+  const reversible = reversibleNames.map((name) => {
+    const migration = source.migrations.find((item) => item.name === name);
+    assert.ok(migration, `Migration absente: ${name}`);
+    return migration;
+  });
+  const runner = source.createQueryRunner();
+  try {
+    for (const migration of [...reversible].reverse())
+      await migration.down(runner);
+    for (const migration of reversible) await migration.up(runner);
+  } finally {
+    await runner.release();
   }
   const after = await source.query(
     'SELECT COUNT(*) AS count FROM game_sessions WHERE room_id IN (99, 101)',

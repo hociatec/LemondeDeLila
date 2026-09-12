@@ -58,20 +58,23 @@ describe('GameWsRoomContextService transitions', () => {
     );
   });
 
-  it('allows writes only for the owner or an active participant', async () => {
+  it('delegates authorization without reading a cached payload', async () => {
+    const authorizeGameAccess = jest.fn().mockResolvedValue(undefined);
     const roomGame = {
-      getRoomPayload: jest.fn().mockResolvedValue({
-        room: {
-          ...room,
-          owner: { id: 1 },
-          players: [{ id: 2 }],
-        },
-      }),
+      authorizeGameAccess,
+      getRoomPayload: jest.fn(),
+      refreshRoomPayload: jest.fn(),
+      resetRoom: jest.fn(),
+      startRoom: jest.fn(),
+      prepareNextRun: jest.fn(),
     };
-    const service = new GameWsRoomContextService(roomGame as never);
-
-    await expect(service.ensureWritable(4, 1)).resolves.toBeUndefined();
-    await expect(service.ensureWritable(4, 2)).resolves.toBeUndefined();
+    const service = new GameWsRoomContextService(roomGame);
+    await service.ensureReadable(4, 2);
+    await service.ensureWritable(4, 2);
+    expect(authorizeGameAccess).toHaveBeenNthCalledWith(1, 4, 2, 'read');
+    expect(authorizeGameAccess).toHaveBeenNthCalledWith(2, 4, 2, 'write');
+    expect(roomGame.getRoomPayload).not.toHaveBeenCalled();
+    authorizeGameAccess.mockRejectedValueOnce(new ForbiddenException());
     await expect(service.ensureWritable(4, 3)).rejects.toBeInstanceOf(
       ForbiddenException,
     );

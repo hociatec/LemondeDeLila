@@ -25,16 +25,13 @@ export class RemoveBotFromRoomService {
     userId: number,
     botId: number,
   ): Promise<BotRoomRecord> {
-    const room = this.policy.requireRoom(await rooms.findRoomById(roomId));
-    this.policy.ensureOwner(room, userId);
-
-    const [humans, bots] = await Promise.all([
-      rooms.countActiveHumansForRoom(room.id),
-      rooms.countBotsForRoom(room.id),
-    ]);
-    this.policy.ensureStartedRoomCanRemoveBot(room, humans, bots);
-
-    const bot = await rooms.findBotById(room.id, botId);
+    this.policy.requireAllowed(
+      await rooms.assessBotMutation(roomId, {
+        kind: 'remove',
+        actorId: userId,
+      }),
+    );
+    const bot = await rooms.findBotById(roomId, botId);
     if (!bot) {
       throw new BotNotFoundError();
     }

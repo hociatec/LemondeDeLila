@@ -3,7 +3,7 @@ import type { WebSocket } from 'ws';
 import { RealtimeApiTransportService } from './realtime-api-transport.service';
 import { WsRouteRegistry } from '../../../../ws/public-api';
 import { WsRequestRateLimitService } from '../../../../ws/public-api';
-import type { RedisRateLimitStorage } from '../../../../redis/public-api';
+import { operationalSettings } from '../../../../config/public-api';
 import type { ClientVersionReader } from '../../../application/ports/client-version-reader.port';
 import { RealtimeApiHandlerService } from './realtime-api-handler.service';
 import type { RealtimeClientSession } from './realtime-api.types';
@@ -20,10 +20,28 @@ describe('RealtimeApiHandlerService', () => {
       get: (key: string, fallback: number) => overrides[key] ?? fallback,
     } as ConfigService;
     const perf = new PerfMetricsService();
-    let hits = 0;
+    const hits = new Map<string, number>();
     const storage = {
-      increment: jest.fn(async () => ({ totalHits: ++hits, isBlocked: false })),
-    } as unknown as RedisRateLimitStorage;
+      increment: jest.fn(
+        async (
+          key: string,
+          _ttl: number,
+          _limit: number,
+          _block: number,
+          namespace: string,
+        ) => {
+          const bucket = `${namespace}:${key}`;
+          const totalHits = (hits.get(bucket) ?? 0) + 1;
+          hits.set(bucket, totalHits);
+          return {
+            totalHits,
+            isBlocked: false,
+            timeToExpire: 60,
+            timeToBlockExpire: 0,
+          };
+        },
+      ),
+    };
     const service = new RealtimeApiHandlerService(
       registry,
       updates,
@@ -47,6 +65,31 @@ describe('RealtimeApiHandlerService', () => {
     };
     return { service, registry, client, session, send, close, perf, updates };
   };
+
+  it.each(['auth.login', 'auth.register', 'auth.refresh'])(
+    'checks the authentication budget before dispatching %s',
+    async (type) => {
+      const { service, registry, client, session } = setup({
+        WS_RATE_LIMIT_COUNT: 10_000,
+      });
+      const handler = jest.fn().mockResolvedValue({ type: 'ok' });
+      registry.register(type, handler);
+      for (
+        let index = 0;
+        index <= operationalSettings.authRequestRateLimitCount;
+        index++
+      ) {
+        await service.handleIncoming(
+          client,
+          session,
+          JSON.stringify({ type, payload: {} }),
+        );
+      }
+      expect(handler).toHaveBeenCalledTimes(
+        operationalSettings.authRequestRateLimitCount,
+      );
+    },
+  );
 
   it('rejects unknown top-level properties instead of dispatching them', async () => {
     const { service, registry, client, session } = setup();

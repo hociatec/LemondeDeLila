@@ -23,6 +23,40 @@ import {
   GameEconomyController,
 } from './economy-kit';
 
+it.each([0, NaN, Infinity, 1.5, Number.MAX_SAFE_INTEGER + 1])(
+  'rejects invalid player %s without changing balances',
+  (playerId) => {
+    const state = createPlayerValuesKitState();
+    const emit = jest.fn();
+    const scores = new GameScoreController(state, emit);
+    const resources = new GameResourcesController(state, emit);
+    expect(() => scores.set(playerId, 1)).toThrow();
+    expect(() => resources.set(playerId, 'gold', 1)).toThrow();
+    expect(() => resources.transfer(1, playerId, 'gold', 1)).toThrow();
+    expect(state).toEqual(createPlayerValuesKitState());
+    expect(emit).not.toHaveBeenCalled();
+  },
+);
+
+it.each(['0', '01', '1.5', 'NaN', '-0'])(
+  'rejects noncanonical restored player key %s',
+  (id) => {
+    const state = createPlayerValuesKitState();
+    state.resources.gold = { [id]: 1 };
+    expect(() => assertPlayerValues(state)).toThrow();
+  },
+);
+
+it('ranks signed player identities consistently through Score and Ranking', () => {
+  const state = createPlayerValuesKitState();
+  const scores = new GameScoreController(state, jest.fn());
+  scores.set(2, 5);
+  scores.set(-1, 5);
+  scores.set(1, -2);
+  expect(scores.ranking()).toEqual([[-1, 2], [1]]);
+  expect(scores.ranking('asc')).toEqual([[1], [-1, 2]]);
+});
+
 it('rejects impossible purchases, sales and price adjustments before moving assets', () => {
   const values = createPlayerValuesKitState();
   const holdings = createInventoryKitState();
@@ -82,6 +116,20 @@ it('refuses non-finite/unsafe values without changing scores, resources or count
   expect(emit).not.toHaveBeenCalled();
   scores.set(1, -2.5);
   expect(scores.get(1)).toBe(-2.5);
+});
+
+it('drains a counter once and emits only when its value changes', () => {
+  const state = createPlayerValuesKitState();
+  const emit = jest.fn();
+  const counters = new GameCountersController(state, emit);
+  counters.set('pot', 7);
+  emit.mockClear();
+  expect(counters.drain('pot')).toBe(7);
+  expect(counters.get('pot')).toBe(0);
+  expect(emit).toHaveBeenCalledTimes(1);
+  emit.mockClear();
+  expect(counters.drain('pot')).toBe(0);
+  expect(emit).not.toHaveBeenCalled();
 });
 
 it('rejects negative spending and checks destination overflow before transferring', () => {

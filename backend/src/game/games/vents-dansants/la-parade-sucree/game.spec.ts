@@ -1,7 +1,16 @@
 import { testGame } from '../../../engine/testing/public-api';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import document from './game.json';
+import manifest from './manifest.json';
+import catalogue from './content/catalogue.json';
 
-import gameDefinition from './game';
-import { PARADE_CARD_BY_ID, PARADE_SEQUENCE } from './content';
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
+const PARADE_CARD_BY_ID = Object.fromEntries(
+  catalogue.cards.map((card) => [card.id, card]),
+);
+const PARADE_SEQUENCE = catalogue.sequence;
 
 describe('La Parade Sucrée declarative game', () => {
   it('keeps hands private and runs legal card/pass commands with replay', async () => {

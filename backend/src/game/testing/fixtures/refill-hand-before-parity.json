@@ -1,0 +1,38 @@
+[
+  {
+    "game": "cercles-sacres",
+    "seed": 1,
+    "events": 675,
+    "sha256": "7361a8a19f10dbe46d1fd595d626e3d4dc2662bc4319c15b5832193122365df0"
+  },
+  {
+    "game": "cercles-sacres",
+    "seed": 7,
+    "events": 589,
+    "sha256": "3f08da6bd54ff3c1c231a7c4fbb99a201f3a2f80594bc2b323099e3f0aa13e60"
+  },
+  {
+    "game": "cercles-sacres",
+    "seed": 42,
+    "events": 146,
+    "sha256": "6c0e90cbf41ed30ec2eca99bb66b7e4c586de64b23a1d954d05203f1ff404690"
+  },
+  {
+    "game": "gerard-president",
+    "seed": 1,
+    "events": 408,
+    "sha256": "6c1c397be111fbec5b03a0e8258d7db73e467c8b22030dbe169297351cef40c1"
+  },
+  {
+    "game": "gerard-president",
+    "seed": 7,
+    "events": 408,
+    "sha256": "58917dfc9032cc1d930f92f95c1b9105f2f3ce995ecf295525daf5ab5f096a65"
+  },
+  {
+    "game": "gerard-president",
+    "seed": 42,
+    "events": 408,
+    "sha256": "1097930dcb196aa23347e9c52dd4c9b581787e846e6d41ede1b2964f5292191e"
+  }
+]

@@ -3,9 +3,9 @@ export {
   type NotificationUnreadMessageCounter,
 } from './application/ports/notification-unread-message-counter.port';
 export {
-  NOTIFICATION_FRIENDSHIP_REPOSITORY,
-  type NotificationFriendshipRepository,
-} from './application/ports/notification-friendship.repository';
+  NOTIFICATION_FRIENDS_READER,
+  type NotificationFriendsReader,
+} from './application/ports/notification-friends-reader.port';
 export { AdminContactService } from './application/services/admin-contact.service';
 export { UserBadgeCountsService } from './application/services/user-badge-counts.service';
 export {

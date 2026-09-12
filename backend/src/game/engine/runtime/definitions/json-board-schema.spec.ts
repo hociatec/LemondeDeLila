@@ -1,210 +1,141 @@
 import { compileJsonGame } from './json-game-compiler';
 import manifest from '../../../games/les-quatre-vents/panier-express/manifest.json';
-import document from '../../../games/les-quatre-vents/panier-express/game.json';
+import { resolveJsonContent } from '../../../engine/json/public-api';
+import composition from '../../../games/les-quatre-vents/panier-express/game.json';
+import board from '../../../games/les-quatre-vents/panier-express/content/board.json';
+import cards from '../../../games/les-quatre-vents/panier-express/content/cards.json';
+import pawns from '../../../games/les-quatre-vents/panier-express/content/pawns.json';
+import products from '../../../games/les-quatre-vents/panier-express/content/products.json';
+import quizzes from '../../../games/les-quatre-vents/panier-express/content/quizzes.json';
+import { parseJsonGame } from './json-game-parser';
 
-type Document = typeof document;
-const mutations: Array<{ name: string; mutate: (source: Document) => void }> = [
-  {
-    name: 'duplicate tiles',
-    mutate: (d) => {
-      d.board.tiles[1].id = d.board.tiles[0].id;
-    },
-  },
-  {
-    name: 'unknown track',
-    mutate: (d) => {
-      d.board.trackId = 'absent';
-    },
-  },
-  {
-    name: 'unknown dice',
-    mutate: (d) => {
-      d.board.diceId = 'absent';
-    },
-  },
-  {
-    name: 'unknown quiz bank',
-    mutate: (d) => {
-      d.board.quiz.bankId = 'absent';
-    },
-  },
-  {
-    name: 'unknown inventory',
-    mutate: (d) => {
-      d.board.collection.requiredInventoryId = 'absent';
-    },
-  },
-  {
-    name: 'unknown pawn set',
-    mutate: (d) => {
-      d.board.pawnSelection.setId = 'absent';
-    },
-  },
-  {
-    name: 'duplicate choices',
-    mutate: (d) => {
-      d.board.exchange.giveChoiceId = d.board.quiz.choiceId;
-    },
-  },
-  {
-    name: 'unknown phase',
-    mutate: (d) => {
-      d.board.playingPhase = 'absent';
-    },
-  },
-  {
-    name: 'unreachable playing phase',
-    mutate: (d) => {
-      d.phases.setup.transitions = [];
-    },
-  },
-  {
-    name: 'missing quiz capability',
-    mutate: (d) => {
-      Reflect.deleteProperty(d.board, 'quiz');
-    },
-  },
-  {
-    name: 'missing collection capability',
-    mutate: (d) => {
-      Reflect.deleteProperty(d.board, 'collection');
-    },
-  },
-  {
-    name: 'missing exchange capability',
-    mutate: (d) => {
-      Reflect.deleteProperty(d.board, 'exchange');
-    },
-  },
-  {
-    name: 'missing direction choice',
-    mutate: (d) => {
-      Reflect.deleteProperty(d.board, 'directionChoiceId');
-    },
-  },
-  {
-    name: 'unknown default source',
-    mutate: (d) => {
-      d.board.collection.defaultSourceId = 'absent';
-    },
-  },
-  {
-    name: 'empty distribution',
-    mutate: (d) => {
-      d.board.distribution.groups = [];
-    },
-  },
-  {
-    name: 'unknown distribution item',
-    mutate: (d) => {
-      d.board.distribution.groups[0][0] = 'absent';
-    },
-  },
-  {
-    name: 'excessive recursion',
-    mutate: (d) => {
-      d.board.maxDepth = 10000;
-    },
-  },
-  {
-    name: 'unknown custom effect',
-    mutate: (d) => {
-      Reflect.set(d.board.bindings, 'new-effect', { kind: 'execute-code' });
-    },
-  },
-  {
-    name: 'unknown board field',
-    mutate: (d) => {
-      Reflect.set(d.board, 'execute', 'arbitrary code');
-    },
-  },
-  {
-    name: 'unknown landing operation',
-    mutate: (d) => {
-      Reflect.set(d.board.tiles[0], 'operations', [{ kind: 'execute-code' }]);
-    },
-  },
-  {
-    name: 'inverted random movement',
-    mutate: (d) => {
-      Reflect.set(d.board.tiles[0], 'operations', [
-        { kind: 'random-move', minimum: 5, maximum: 2, direction: 1 },
-      ]);
-    },
-  },
-  {
-    name: 'unknown draw deck',
-    mutate: (d) => {
-      Reflect.set(d.board.tiles[0], 'operations', [
-        { kind: 'draw', deckId: 'absent' },
-      ]);
-    },
-  },
-  {
-    name: 'unknown landing source',
-    mutate: (d) => {
-      Reflect.set(d.board.tiles[0], 'operations', [
-        { kind: 'collect', sourceId: 'absent' },
-      ]);
-    },
-  },
-  {
-    name: 'unknown destination tag',
-    mutate: (d) => {
-      d.board.bindings['panier.nearest-stand'].tag = 'absent';
-    },
-  },
-  {
-    name: 'unknown shortcut action',
-    mutate: (d) => {
-      Reflect.set(d.shortcuts[0], 'actionType', 'absent');
-    },
-  },
-  {
-    name: 'missing board',
-    mutate: (d) => {
-      Reflect.deleteProperty(d, 'board');
-    },
-  },
-  {
-    name: 'missing card effects',
-    mutate: (d) => {
-      const card = d.components.find((c) => c.id === 'events')?.cards?.[0];
-      if (!card) throw new Error('Missing fixture card');
-      Reflect.deleteProperty(card, 'effects');
-    },
-  },
-  {
-    name: 'unknown card effect',
-    mutate: (d) => {
-      const card = d.components.find((c) => c.id === 'events')?.cards?.[0];
-      if (!card) throw new Error('Missing fixture card');
-      Reflect.set(card, 'effects', [
-        { kind: 'custom', effectId: 'absent', data: {} },
-      ]);
-    },
-  },
+const document = resolveJsonContent(composition, {
+  'content/board.json': board,
+  'content/cards.json': cards,
+  'content/pawns.json': pawns,
+  'content/products.json': products,
+  'content/quizzes.json': quizzes,
+});
+
+const mutations: Array<[string, string[], unknown]> = [
+  ['duplicate tiles', ['board', 'tiles', '1', 'id'], 'case-1-entree'],
+  ['unknown track', ['board', 'trackId'], 'absent'],
+  ['unknown dice', ['board', 'diceId'], 'absent'],
+  ['unknown quiz bank', ['board', 'quiz', 'bankId'], 'absent'],
+  [
+    'unknown inventory',
+    ['board', 'collection', 'requiredInventoryId'],
+    'absent',
+  ],
+  ['unknown pawn set', ['board', 'pawnSelection', 'setId'], 'absent'],
+  ['duplicate choices', ['board', 'exchange', 'giveChoiceId'], 'panier.quiz'],
+  ['unknown phase', ['board', 'playingPhase'], 'absent'],
+  ['unreachable phase', ['phases', 'setup', 'transitions'], []],
+  ['missing quiz', ['board', 'quiz'], undefined],
+  ['missing collection', ['board', 'collection'], undefined],
+  ['missing exchange', ['board', 'exchange'], undefined],
+  ['missing direction', ['board', 'directionChoiceId'], undefined],
+  ['unknown source', ['board', 'collection', 'defaultSourceId'], 'absent'],
+  ['empty distribution', ['board', 'distribution', 'groups'], []],
+  ['unknown item', ['board', 'distribution', 'groups', '0', '0'], 'absent'],
+  ['excessive recursion', ['board', 'maxDepth'], 10000],
+  [
+    'unknown binding',
+    ['board', 'bindings', 'new-effect'],
+    { kind: 'execute-code' },
+  ],
+  ['unknown field', ['board', 'execute'], 'arbitrary code'],
+  [
+    'unknown operation',
+    ['board', 'tiles', '0', 'operations'],
+    [{ kind: 'execute-code' }],
+  ],
+  [
+    'inverted range',
+    ['board', 'tiles', '0', 'operations'],
+    [{ kind: 'random-move', minimum: 5, maximum: 2, direction: 1 }],
+  ],
+  [
+    'unknown deck',
+    ['board', 'tiles', '0', 'operations'],
+    [{ kind: 'draw', deckId: 'absent' }],
+  ],
+  [
+    'unknown collection source',
+    ['board', 'tiles', '0', 'operations'],
+    [{ kind: 'collect', sourceId: 'absent' }],
+  ],
+  [
+    'unknown tag',
+    ['board', 'bindings', 'panier.nearest-stand', 'tag'],
+    'absent',
+  ],
+  ['unknown shortcut', ['shortcuts', '0', 'actionType'], 'absent'],
+  ['missing board', ['board'], undefined],
+  [
+    'missing card effects',
+    ['components', '4', 'cards', '0', 'effects'],
+    undefined,
+  ],
+  [
+    'unknown card effect',
+    ['components', '4', 'cards', '0', 'effects'],
+    [{ kind: 'custom', effectId: 'absent', data: {} }],
+  ],
+  [
+    'invalid custom data',
+    ['components', '4', 'cards', '0', 'effects'],
+    [
+      {
+        kind: 'custom',
+        effectId: 'panier.draw-course',
+        data: { count: 0, everyone: true },
+      },
+    ],
+  ],
 ];
 
-it.each(mutations)(
-  'rejects $name before installing a board runtime',
-  ({ mutate }) => {
-    const source = structuredClone(document);
-    mutate(source);
-    expect(() => compileJsonGame(manifest, source)).toThrow();
+it('accepts the fully assembled fixture before mutations', () => {
+  expect(() => compileJsonGame(manifest, document)).not.toThrow();
+});
+
+it.each([1, 2])(
+  'rejects insufficient pawn capacity with %i pawns per player',
+  (perPlayer) => {
+    const source = parseJsonGame(document);
+    const components = source.components.map((component) =>
+      component.component === 'pawn.set'
+        ? {
+            ...component,
+            perPlayer,
+            pawns: component.pawns.slice(
+              0,
+              manifest.maxPlayers * perPlayer - 1,
+            ),
+          }
+        : component,
+    );
+    expect(() => compileJsonGame(manifest, { ...source, components })).toThrow(
+      /not enough pawns/,
+    );
   },
 );
 
-it('rejects invalid custom effect data before any action executes', () => {
-  const source = structuredClone(document);
-  const card = source.components.find((c) => c.id === 'events')?.cards?.[0];
-  if (!card) throw new Error('Missing fixture card');
-  Reflect.set(card, 'effects', [
-    {
-      kind: 'custom',
-      effectId: 'panier.draw-course',
-      data: { count: 0, everyone: true },
-    },
-  ]);
-  expect(() => compileJsonGame(manifest, source)).toThrow();
-});
+it.each(mutations)(
+  'rejects %s before installing a board runtime',
+  (_name, path, value) => {
+    const source = structuredClone(document);
+    let target = source;
+    for (const key of path.slice(0, -1)) {
+      if (!target || typeof target !== 'object' || !Object.hasOwn(target, key))
+        throw new Error(`Missing fixture path: ${path.join('/')}`);
+      target = Reflect.get(target, key);
+    }
+    const key = path.at(-1);
+    if (!target || typeof target !== 'object' || key === undefined)
+      throw new Error('Invalid fixture target');
+    if (value === undefined) Reflect.deleteProperty(target, key);
+    else Reflect.set(target, key, value);
+    expect(() => compileJsonGame(manifest, source)).toThrow();
+  },
+);

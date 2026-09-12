@@ -16,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { randomUUID } from 'crypto';
 import * as os from 'os';
 import * as path from 'path';
 import { bestEffort } from '../../../../../../platform/observability/public-api';
@@ -25,6 +26,7 @@ import {
 } from '../../../../../../platform/auth/public-api';
 import { SoundsService } from '../../../storage/sounds.service';
 import { MulterErrorFilter } from '../filters/multer-error.filter';
+import { hasOnlyAllowedKeys } from '../../../../../../platform/validation/public-api';
 
 type TableAmbienceNameBody = {
   name?: unknown;
@@ -76,6 +78,7 @@ export class AdminSoundsController {
 
   @Post('table-ambiences')
   async createTableAmbience(@Body() body: TableAmbienceNameBody) {
+    this.requireExactBody(body, ['name']);
     return this.sounds.createTableAmbience(
       typeof body?.name === 'string' ? body.name : '',
     );
@@ -86,6 +89,7 @@ export class AdminSoundsController {
     @Param('soundId') soundId: string,
     @Body() body: TableAmbienceNameBody,
   ) {
+    this.requireExactBody(body, ['name']);
     return this.sounds.renameTableAmbience(
       soundId,
       typeof body?.name === 'string' ? body.name : '',
@@ -102,6 +106,7 @@ export class AdminSoundsController {
     @Param('soundId') soundId: string,
     @Body() body: TableAmbienceEnabledBody,
   ) {
+    this.requireExactBody(body, ['enabled']);
     if (typeof body?.enabled !== 'boolean') {
       throw new BadRequestException('Champ "enabled" booléen requis.');
     }
@@ -117,7 +122,7 @@ export class AdminSoundsController {
         filename: (_req, file, cb) =>
           cb(
             null,
-            `lila-sound-${Date.now()}-${AdminSoundsController.sanitizeFilename(file.originalname)}`,
+            `lila-sound-${randomUUID()}-${AdminSoundsController.sanitizeFilename(file.originalname)}`,
           ),
       }),
       // WAV files are much larger than MP3. Keep this generous; only admins can upload.
@@ -184,5 +189,11 @@ export class AdminSoundsController {
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 120);
+  }
+
+  private requireExactBody(value: unknown, keys: readonly string[]): void {
+    if (!hasOnlyAllowedKeys(value, keys)) {
+      throw new BadRequestException('Champs de requête inconnus.');
+    }
   }
 }

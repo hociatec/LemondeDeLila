@@ -16,14 +16,11 @@ export class ListRecentNormalizedChatMessagesService {
   async execute(
     limit = ListRecentChatMessagesService.DEFAULT_HISTORY_LIMIT,
   ): Promise<ChatNormalizedMessage[]> {
-    let messages = this.cache.getAll();
-    if (messages === null) {
-      const rows = await this.listRecentMessages.execute(
-        ChatMessageCacheService.CACHE_LIMIT,
-      );
-      messages = this.presenter.normalizeMany(rows);
-      this.cache.setAll(messages);
-    }
+    const rows = await this.listRecentMessages.execute(
+      ChatMessageCacheService.CACHE_LIMIT,
+    );
+    const messages = this.presenter.normalizeMany(rows);
+    this.cache.setAll(messages);
 
     const safeLimit = Number.isSafeInteger(limit)
       ? Math.min(Math.max(limit, 1), ChatMessageCacheService.CACHE_LIMIT)

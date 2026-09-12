@@ -87,3 +87,15 @@ test('detects unbounded findAndCount and query-builder terminals', () => {
     );
   }
 });
+
+test('detects repository calls hidden in parallel async maps', () => {
+  const target = fixture(
+    `modules/notification/application/audit-map-${process.pid}.ts`,
+    'await Promise.all(rows.map(async row => this.inbox.updatePayload(row.id, row.payload)));',
+  );
+  try {
+    assert.match(auditFile(target).join('\n'), /map async sensible au N\+1/);
+  } finally {
+    fs.rmSync(target, { force: true });
+  }
+});

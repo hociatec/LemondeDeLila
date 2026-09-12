@@ -44,11 +44,7 @@ const CORE_OWNERSHIP_FIELDS = [
   /\bextraTurns?\b/i,
 ];
 
-const GAME_IMPORT_ALLOWLIST = [
-  '../../../engine/sdk/public-api',
-  '../../engine/sdk/public-api',
-  '../engine/sdk/public-api',
-];
+const GAME_SDK_PUBLIC_IMPORT = /^(?:\.\.\/){1,3}engine\/sdk\/public-api$/;
 
 export function auditGameStateOwnership(input: {
   gameId: string;
@@ -172,7 +168,7 @@ export function auditGameImportBoundaries(input: {
             specifier,
           ) ||
           (!specifier.startsWith('./') &&
-            !GAME_IMPORT_ALLOWLIST.includes(specifier) &&
+            !GAME_SDK_PUBLIC_IMPORT.test(specifier) &&
             !(
               input.file.endsWith('.spec.ts') &&
               /^(?:\.\.\/)+engine\/(?:testing|json)\/public-api$/.test(

@@ -48,6 +48,9 @@ export async function routeRoomCommand(
     case 'room.info':
       await ctx.handleRoomInfo(client, meta);
       break;
+    case 'room.state':
+      await ctx.handleRoomState(client, meta);
+      break;
     case 'room.ping': {
       const record = ctx.asRecord(data);
       const trace = ctx.asRecord(record._trace);
@@ -81,5 +84,7 @@ export async function routeRoomCommand(
 }
 
 function finiteNumberOrNull(value: unknown): number | null {
-  return typeof value === 'number' && Number.isSafeInteger(value) ? value : null;
+  return typeof value === 'number' && Number.isSafeInteger(value)
+    ? value
+    : null;
 }

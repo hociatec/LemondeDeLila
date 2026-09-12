@@ -1,3 +1,4 @@
+import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../ports/presence-transport.port';
 import { parseStrictInteger, stringOrEmpty } from '@shared/utils/public-api';
 
 export type PresenceConnectionContext =
@@ -143,7 +144,9 @@ export function mergePresencePlayersFromOrigins(
     left < right ? -1 : left > right ? 1 : 0,
   );
   for (const [, entry] of origins) {
-    combined.push(...(entry.players ?? []).slice(0, 1_000));
+    combined.push(
+      ...(entry.players ?? []).slice(0, MAX_PRESENCE_PLAYERS_PER_ORIGIN),
+    );
   }
 
   const byUser = new Map<number, PresencePublicPlayer>();

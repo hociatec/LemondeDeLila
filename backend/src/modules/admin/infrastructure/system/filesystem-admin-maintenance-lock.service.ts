@@ -16,6 +16,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { randomUUID } from 'node:crypto';
+import { operationalSettings } from '../../../../platform/config/public-api';
 import type { AdminMaintenanceLock } from '../../application/ports/admin-maintenance-lock.port';
 import {
   RedisDistributedLeaseService,
@@ -24,7 +25,6 @@ import {
 
 @Injectable()
 export class FilesystemAdminMaintenanceLockService implements AdminMaintenanceLock {
-  private static readonly LOCK_TTL_MS = 15 * 60 * 1000;
   private static readonly MAX_LOCK_BYTES = 4096;
   private readonly logger = new Logger(
     FilesystemAdminMaintenanceLockService.name,
@@ -52,7 +52,7 @@ export class FilesystemAdminMaintenanceLockService implements AdminMaintenanceLo
     const lease: RedisDistributedLease | null = this.distributedLeases
       ? await this.distributedLeases.acquire(
           'lemonde:admin:maintenance',
-          FilesystemAdminMaintenanceLockService.LOCK_TTL_MS,
+          operationalSettings.maintenanceLeaseMs,
         )
       : null;
     if (this.distributedLeases && !lease) {

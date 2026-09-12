@@ -53,4 +53,22 @@ export function assertInitializationValues(
   }
   for (const [id, value] of Object.entries(initialization.tracks ?? {}))
     perPlayer(value, `initialization.tracks.${id}`);
+  for (const [index, deal] of (initialization.deals ?? []).entries()) {
+    if (!Number.isSafeInteger(deal.count) || deal.count < 1)
+      fail(`initialization.deals.${index}.count`, 'quantité invalide');
+  }
+  for (const [index, placement] of (
+    initialization.gridPlacements ?? []
+  ).entries()) {
+    for (const [positionIndex, position] of placement.positions.entries()) {
+      if (
+        !Number.isSafeInteger(position.x) ||
+        !Number.isSafeInteger(position.y)
+      )
+        fail(
+          `initialization.gridPlacements.${index}.positions.${positionIndex}`,
+          'coordonnées invalides',
+        );
+    }
+  }
 }

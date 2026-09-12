@@ -50,11 +50,22 @@ export class SocialProfileSettingsService implements OnModuleInit {
     return this.cache ?? this.defaults();
   }
 
+  async getFresh(): Promise<SocialProfileSettings> {
+    const existing = await this.repo.find();
+    if (existing) {
+      const settings = this.normalize(existing);
+      this.cache = settings;
+      return settings;
+    }
+    this.cache = null;
+    await this.ensureSeeded();
+    return this.get();
+  }
+
   async update(
     patch: Partial<SocialProfileSettings>,
   ): Promise<SocialProfileSettings> {
-    await this.ensureSeeded();
-    const current = this.get();
+    const current = await this.getFresh();
     const next = this.normalize({ ...current, ...patch });
     await this.repo.save(next);
     this.cache = next;

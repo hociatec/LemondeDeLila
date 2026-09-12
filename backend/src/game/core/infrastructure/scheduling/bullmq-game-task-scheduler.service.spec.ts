@@ -15,7 +15,7 @@ jest.mock('bullmq', () => ({
   Worker: jest.fn(() => ({ on: jest.fn(), close: jest.fn() })),
 }));
 
-function harness() {
+function harness(nowMs = 1000) {
   jest.clearAllMocks();
   const metrics = {
     recordTimerExecution: jest.fn(),
@@ -24,6 +24,7 @@ function harness() {
   const service = new BullmqGameTaskSchedulerService(
     new ConfigService({ GAME_TASK_REDIS_URL: 'redis://test' }),
     metrics as unknown as GameEngineMetricsService,
+    { now: () => nowMs },
   );
   const processor = jest.fn().mockResolvedValue(undefined);
   service.registerProcessor(processor);
@@ -49,6 +50,7 @@ it('waits for the BullMQ worker before closing its queue and Redis connection', 
   const service = new BullmqGameTaskSchedulerService(
     new ConfigService({ GAME_TASK_REDIS_URL: 'redis://test' }),
     { recordTimerExecution: jest.fn() } as unknown as GameEngineMetricsService,
+    { now: () => 1000 },
     shutdown,
   );
   service.registerProcessor(async () => undefined);
@@ -94,7 +96,7 @@ it.each([{ data: null }, { data: { ...task, dueAtMs: NaN } }])(
 
 it('moves an early delivery back to delayed with its lock token instead of losing it through deduplication', async () => {
   const test = harness();
-  const dueAtMs = Date.now() + 60000;
+  const dueAtMs = 61000;
   const moveToDelayed = jest.fn().mockResolvedValue(undefined);
   await expect(
     test.process({ data: { ...task, dueAtMs }, moveToDelayed }, 'lock-token'),
@@ -110,6 +112,13 @@ it('dispatches a validated due task and records its execution', async () => {
   expect(test.processor).toHaveBeenCalledWith(expect.objectContaining(task));
   expect(test.metrics.recordTimerExecution).toHaveBeenCalledWith(
     'example',
-    expect.any(Number),
+    999,
   );
+});
+
+it('executes exactly at the injected deadline, independent of wall time', async () => {
+  const test = harness(42);
+  await test.process({ data: { ...task, dueAtMs: 42 } });
+  expect(test.processor).toHaveBeenCalledTimes(1);
+  expect(test.metrics.recordTimerExecution).toHaveBeenCalledWith('example', 0);
 });

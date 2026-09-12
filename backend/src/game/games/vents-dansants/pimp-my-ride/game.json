@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "car-parts",
+      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.hands",
+      "id": "players",
+      "deck": "car-parts",
+      "initial": 3,
+      "visibility": "owner"
+    },
+    {
+      "component": "inventory.set",
+      "id": "pimp-my-ride.car-parts",
+      "items": { "$content": "content/catalogue.json#/cardIds" },
+      "visibility": "public"
+    },
+    {
+      "component": "inventory.set",
+      "id": "pimp-my-ride.completed-1",
+      "items": { "$content": "content/catalogue.json#/cardIds" },
+      "visibility": "public"
+    },
+    {
+      "component": "inventory.set",
+      "id": "pimp-my-ride.completed-2",
+      "items": { "$content": "content/catalogue.json#/cardIds" },
+      "visibility": "public"
+    },
+    {
+      "component": "inventory.set",
+      "id": "pimp-my-ride.completed-3",
+      "items": { "$content": "content/catalogue.json#/cardIds" },
+      "visibility": "public"
+    }
+  ],
+  "setup": {
+    "counters": { "pimp-my-ride.car-name-index": 0 },
+    "resources": {
+      "pimp-my-ride.completed-count": 0,
+      "pimp-my-ride.completed-1-name": 0,
+      "pimp-my-ride.completed-2-name": 0,
+      "pimp-my-ride.completed-3-name": 0
+    },
+    "startRound": false
+  },
+  "resourceIds": [
+    "pimp-my-ride.completed-count",
+    "pimp-my-ride.completed-1-name",
+    "pimp-my-ride.completed-2-name",
+    "pimp-my-ride.completed-3-name"
+  ],
+  "shortcuts": [
+    { "key": "C", "type": "action", "actionType": "play_card" },
+    { "key": "D", "type": "action", "actionType": "discard_card" },
+    { "key": "S", "type": "action", "actionType": "pass" }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": ["play_card", "discard_card", "pass"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "play_card": { "recipe": "car-assembly-play" },
+    "discard_card": { "recipe": "car-assembly-discard" },
+    "pass": { "recipe": "car-assembly-pass" }
+  },
+  "victory": { "kind": "by-car-assembly" },
+  "carAssembly": {
+    "deckId": "car-parts",
+    "handId": "players",
+    "currentInventoryId": "pimp-my-ride.car-parts",
+    "completedInventoryIds": [
+      "pimp-my-ride.completed-1",
+      "pimp-my-ride.completed-2",
+      "pimp-my-ride.completed-3"
+    ],
+    "completedNameResources": [
+      "pimp-my-ride.completed-1-name",
+      "pimp-my-ride.completed-2-name",
+      "pimp-my-ride.completed-3-name"
+    ],
+    "completedCountResource": "pimp-my-ride.completed-count",
+    "carNameCounter": "pimp-my-ride.car-name-index",
+    "cards": { "$content": "content/catalogue.json#/cards" },
+    "categoryOrder": [
+      "carrosserie",
+      "roues",
+      "moteur",
+      "volant",
+      "sieges",
+      "phares",
+      "accessoires"
+    ],
+    "carNames": { "$content": "content/catalogue.json#/carNames" },
+    "carsToWin": 3,
+    "finishReason": "three-cars",
+    "eventNamespace": "pimp-my-ride"
+  }
+}

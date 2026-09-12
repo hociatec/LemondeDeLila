@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "2",
+  "definitionVersion": "3",
+  "snapshotMigrations": [
+    { "fromVersion": "tout-pres-de-maman@content:f766ed9f", "toVersion": "2" },
+    { "fromVersion": "tout-pres-de-maman@content:6c60e669", "toVersion": "2" }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [
+    { "kind": "race", "trackId": "forest", "spaces": 40, "overshoot": "bounce" }
+  ],
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "events",
+      "cards": { "$content": "content/catalogue.json#/cards" },
+      "shuffle": true,
+      "empty": "recycle"
+    }
+  ],
+  "setup": { "resources": { "eucalyptus": 2 }, "startRound": false },
+  "resourceIds": ["eucalyptus"],
+  "shortcuts": [
+    { "key": "D", "type": "action", "actionType": "roll" },
+    { "key": "P", "type": "interface", "id": "position" },
+    { "key": "S", "type": "interface", "id": "score" }
+  ],
+  "initialPhase": "playing",
+  "phases": { "playing": { "actions": ["roll"], "terminal": true } },
+  "actions": { "roll": { "recipe": "maman-race-roll" } },
+  "victory": { "kind": "by-maman-race" },
+  "mamanRace": {
+    "trackId": "forest",
+    "diceId": "main",
+    "deckId": "events",
+    "tokenResource": "eucalyptus",
+    "bonusRerollStatus": "maman.bonus-reroll",
+    "tokensToWin": 3,
+    "maxDepth": 12,
+    "finishReason": "maman-found",
+    "eventNamespace": "maman",
+    "tiles": { "$content": "content/catalogue.json#/tiles" },
+    "cards": { "$content": "content/catalogue.json#/cards" }
+  }
+}

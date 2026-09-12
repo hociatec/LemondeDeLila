@@ -4,12 +4,19 @@ import {
 } from '../../../core/domain/errors/game-domain.errors';
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import type { PlayerState } from '../../../core/application/models/game-state.model';
+import {
+  orderedSubmissionValues,
+  recordSubmissionValue,
+  submissionValueOrder,
+} from './submission-value-order';
 
 export type SubmissionSession<TSubmission = unknown> = {
   id: string;
   kind: 'submission' | 'vote';
   participantPlayerIds: number[];
   valuesByPlayerId: Record<string, TSubmission>;
+  /** Persisted insertion order; objects alone lose it in MySQL JSON storage. */
+  valueOrder?: number[];
   allowedValues: readonly TSubmission[] | null;
   secret: boolean;
   closed: boolean;
@@ -67,7 +74,10 @@ export class GameSubmissionController<TSubmission = unknown> {
     protected readonly state: SubmissionKitState<TSubmission>,
     protected readonly players: readonly PlayerState[],
     protected readonly emit: SubmissionEmitter,
-  ) {}
+  ) {
+    for (const session of Object.values(state.sessions))
+      submissionValueOrder(session);
+  }
 
   open(options: {
     id: string;
@@ -83,7 +93,7 @@ export class GameSubmissionController<TSubmission = unknown> {
     value: TValue,
   ): void {
     const session = this.requireOpen(id, 'submission', playerId);
-    session.valuesByPlayerId[String(playerId)] = structuredClone(value);
+    recordSubmissionValue(session, playerId, value);
     this.emit(
       'submission.received',
       { sessionId: id, playerId },
@@ -115,7 +125,7 @@ export class GameSubmissionController<TSubmission = unknown> {
         playerId,
       });
     }
-    session.valuesByPlayerId[String(playerId)] = structuredClone(value);
+    recordSubmissionValue(session, playerId, value);
     this.emit(
       'submission.replaced',
       { sessionId: id, playerId },
@@ -148,7 +158,12 @@ export class GameSubmissionController<TSubmission = unknown> {
 
   session(id: string): SubmissionSession<TSubmission> | null {
     const session = this.state.sessions[id];
-    return session ? structuredClone(session) : null;
+    return session
+      ? {
+          ...structuredClone(session),
+          valuesByPlayerId: orderedSubmissionValues(session),
+        }
+      : null;
   }
 
   reorderPending(id: string, playerIds: readonly number[]): void {
@@ -187,17 +202,15 @@ export class GameSubmissionController<TSubmission = unknown> {
     session.revealed = true;
     this.emit('submissions.revealed', {
       sessionId: id,
-      valuesByPlayerId: structuredClone(session.valuesByPlayerId),
+      valuesByPlayerId: orderedSubmissionValues(session),
     });
-    return structuredClone(session.valuesByPlayerId as Record<string, TValue>);
+    return orderedSubmissionValues(session) as Record<string, TValue>;
   }
 
   values<TValue extends TSubmission = TSubmission>(
     id: string,
   ): Record<string, TValue> {
-    return structuredClone(
-      this.require(id).valuesByPlayerId as Record<string, TValue>,
-    );
+    return orderedSubmissionValues(this.require(id)) as Record<string, TValue>;
   }
 
   clear(id: string): void {
@@ -242,6 +255,7 @@ export class GameSubmissionController<TSubmission = unknown> {
       kind,
       participantPlayerIds,
       valuesByPlayerId: {},
+      valueOrder: [],
       allowedValues: allowedValues ? structuredClone(allowedValues) : null,
       secret: options.secret ?? true,
       closed: false,

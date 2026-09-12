@@ -5,59 +5,26 @@ import {
   BotRoomNotFoundError,
   BotRoomOwnerRequiredError,
 } from '../../errors/bot-application.errors';
-import type { BotManagedRoomRecord } from '../../read-models/bot-room.record';
-import { OPEN_BOT_MANAGED_ROOM_STATUSES } from '../../models/bot-room-status';
+import type { BotMutationDecision } from '../../models/bot-mutation.model';
 
+/** Translates the owning domain's decision into the Bot error contract. */
 export class BotRoomPolicyService {
-  requireRoom(room: BotManagedRoomRecord | null): BotManagedRoomRecord {
-    if (!room) {
-      throw new BotRoomNotFoundError();
+  requireAllowed(decision: BotMutationDecision): void {
+    switch (decision) {
+      case 'allowed':
+        return;
+      case 'room-not-found':
+        throw new BotRoomNotFoundError();
+      case 'owner-required':
+        throw new BotRoomOwnerRequiredError();
+      case 'room-started':
+        throw new BotRoomAlreadyStartedError();
+      case 'room-full':
+        throw new BotRoomFullError();
+      case 'minimum-participants':
+        throw new BotMinimumParticipantsError();
+      default:
+        throw new Error('Unknown room bot mutation decision');
     }
-    return room;
-  }
-
-  ensureOwner(room: BotManagedRoomRecord, userId: number): void {
-    if (room.ownerId !== userId) {
-      throw new BotRoomOwnerRequiredError();
-    }
-  }
-
-  ensureRoomOpen(room: BotManagedRoomRecord): void {
-    if (!this.isRoomOpen(room)) {
-      throw new BotRoomAlreadyStartedError();
-    }
-  }
-
-  ensureCapacity(
-    room: BotManagedRoomRecord,
-    humans: number,
-    bots: number,
-  ): void {
-    if (humans + bots >= room.maxPlayers) {
-      throw new BotRoomFullError();
-    }
-  }
-
-  ensureStartedRoomCanRemoveBot(
-    room: BotManagedRoomRecord,
-    humans: number,
-    bots: number,
-  ): void {
-    if (this.isRoomOpen(room)) {
-      return;
-    }
-    if (humans + bots - 1 < 2) {
-      throw new BotMinimumParticipantsError();
-    }
-  }
-
-  private isRoomOpen(room: BotManagedRoomRecord): boolean {
-    if (room.startedAt) {
-      return false;
-    }
-    const status = (room.status || '').toLowerCase();
-    return OPEN_BOT_MANAGED_ROOM_STATUSES.includes(
-      status as (typeof OPEN_BOT_MANAGED_ROOM_STATUSES)[number],
-    );
   }
 }

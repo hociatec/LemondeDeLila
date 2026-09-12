@@ -47,3 +47,39 @@ it('expires bans and cached ban information using the injected business clock', 
   await service.getChatBanInfo(42);
   expect(users.findChatBanByUserId).toHaveBeenCalledTimes(2);
 });
+
+it('checks persistence before a chat command even when an allowed value is cached', async () => {
+  const chat: PresenceChatPort = {
+    getHistory: jest.fn(),
+    recordMessage: jest.fn(),
+    editOwnMessage: jest.fn(),
+    deleteOwnMessage: jest.fn(),
+  };
+  const users = {
+    findChatBanByUserId: jest
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        chatBannedUntil: new Date(10_000),
+        chatBanReason: 'moderation',
+      }),
+  };
+  const service = new PresenceChatService(chat, users, { now: () => 1_000 });
+  await expect(service.getChatBanInfo(42)).resolves.toEqual({
+    until: null,
+    reason: null,
+  });
+
+  await expect(
+    service.sendMessage({ id: 42, username: 'Ada' }, 'hello'),
+  ).resolves.toEqual({
+    kind: 'denied',
+    payload: {
+      message: 'Accès au tchat refusé.',
+      reason: 'moderation',
+      until: new Date(10_000).toISOString(),
+    },
+  });
+  expect(chat.recordMessage).not.toHaveBeenCalled();
+  expect(users.findChatBanByUserId).toHaveBeenCalledTimes(2);
+});

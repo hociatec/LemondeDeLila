@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "2",
+  "definitionVersion": "1",
+  "snapshotMigrations": [
+    {
+      "fromVersion": "olympia@content:25cb5135",
+      "toVersion": "2"
+    },
+    {
+      "fromVersion": "olympia@content:5429cc55",
+      "toVersion": "2"
+    }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "divinite",
+      "cards": { "$content": "content/catalogue.json#/decks/divinite" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.deck",
+      "id": "heros",
+      "cards": { "$content": "content/catalogue.json#/decks/heros" },
+      "catalog": { "$content": "content/catalogue.json#/cardIds" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.deck",
+      "id": "creatures",
+      "cards": { "$content": "content/catalogue.json#/decks/creatures" },
+      "shuffle": true
+    },
+    {
+      "component": "cards.deck",
+      "id": "exploits",
+      "cards": { "$content": "content/catalogue.json#/decks/exploits" },
+      "shuffle": true
+    },
+    {
+      "component": "cards.deck",
+      "id": "actions",
+      "cards": { "$content": "content/catalogue.json#/decks/actions" },
+      "shuffle": true
+    },
+    {
+      "component": "cards.deck",
+      "id": "attaques",
+      "cards": { "$content": "content/catalogue.json#/decks/attaques" },
+      "shuffle": true
+    },
+    {
+      "component": "cards.deck",
+      "id": "evenements",
+      "cards": { "$content": "content/catalogue.json#/decks/evenements" },
+      "shuffle": true
+    },
+    {
+      "component": "cards.hands",
+      "id": "players",
+      "deck": "heros",
+      "acceptedDecks": [
+        "creatures",
+        "exploits",
+        "actions",
+        "attaques",
+        "evenements"
+      ],
+      "initial": 0,
+      "visibility": "owner"
+    },
+    {
+      "component": "cards.hands",
+      "id": "divinities",
+      "deck": "divinite",
+      "initial": 0,
+      "visibility": "public"
+    }
+  ],
+  "setup": {
+    "deals": [
+      { "deckId": "divinite", "handId": "divinities", "count": 1 },
+      { "deckId": "creatures", "handId": "players", "count": 2 },
+      {
+        "deckId": "actions",
+        "fallbackDeckId": "attaques",
+        "handId": "players",
+        "count": 1
+      }
+    ]
+  },
+  "resourceIds": [],
+  "shortcuts": [
+    { "key": "C", "type": "action", "actionType": "play_card" },
+    { "key": "P", "type": "action", "actionType": "pass" }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": ["draw_card", "play_card", "pass"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "draw_card": { "recipe": "olympia-draw" },
+    "play_card": { "recipe": "olympia-play" },
+    "pass": { "recipe": "olympia-pass" }
+  },
+  "victory": { "kind": "by-olympia" },
+  "olympia": {
+    "handId": "players",
+    "deckIds": [
+      "heros",
+      "creatures",
+      "exploits",
+      "actions",
+      "attaques",
+      "evenements"
+    ],
+    "targetScore": 30,
+    "winnerReason": "prestige-30",
+    "cards": { "$content": "content/catalogue.json#/cards" }
+  }
+}

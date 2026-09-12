@@ -4,7 +4,12 @@ import { environmentValidationSchema } from './environment-validation';
 export function validateEnvironment(
   input: Record<string, unknown>,
 ): Record<string, unknown> {
-  if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).length > 512) {
+  if (
+    !input ||
+    typeof input !== 'object' ||
+    Array.isArray(input) ||
+    Object.keys(input).length > 512
+  ) {
     throw new Error('Configuration invalide');
   }
   const result = environmentValidationSchema.validate(input, {

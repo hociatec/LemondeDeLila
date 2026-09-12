@@ -5,7 +5,13 @@ export function isAllowedWsOrigin(
   production: boolean,
 ): boolean {
   if (origin === undefined) return true;
-  if (typeof origin !== 'string' || origin.length > 512 || !origin || origin === 'null') return false;
+  if (
+    typeof origin !== 'string' ||
+    origin.length > 512 ||
+    !origin ||
+    origin === 'null'
+  )
+    return false;
   try {
     const parsed = new URL(origin);
     if (
@@ -16,7 +22,9 @@ export function isAllowedWsOrigin(
   } catch {
     return false;
   }
-  const allowed = (typeof configuredOrigins === 'string' ? configuredOrigins : '')
+  const allowed = (
+    typeof configuredOrigins === 'string' ? configuredOrigins : ''
+  )
     .slice(0, 16_384)
     .split(',')
     .map((entry) => entry.trim())

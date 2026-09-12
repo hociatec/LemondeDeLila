@@ -1,0 +1,233 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "village",
+      "spaces": 42
+    }
+  ],
+  "components": [
+    {
+      "id": "zone-1",
+      "cards": {
+        "$content": "content/catalogue.json#/zones/0/cards"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "zone-2",
+      "cards": {
+        "$content": "content/catalogue.json#/zones/1/cards"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "zone-3",
+      "cards": {
+        "$content": "content/catalogue.json#/zones/2/cards"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "zone-4",
+      "cards": {
+        "$content": "content/catalogue.json#/zones/3/cards"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "zone-5",
+      "cards": {
+        "$content": "content/catalogue.json#/zones/4/cards"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "zone-6",
+      "cards": {
+        "$content": "content/catalogue.json#/zones/5/cards"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "zone-7",
+      "cards": {
+        "$content": "content/catalogue.json#/zones/6/cards"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "zone-8",
+      "cards": {
+        "$content": "content/catalogue.json#/zones/7/cards"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "village",
+      "groups": {
+        "1": {
+          "kind": "resource",
+          "id": "village-zone-1"
+        },
+        "2": {
+          "kind": "resource",
+          "id": "village-zone-2"
+        },
+        "3": {
+          "kind": "resource",
+          "id": "village-zone-3"
+        },
+        "4": {
+          "kind": "resource",
+          "id": "village-zone-4"
+        },
+        "5": {
+          "kind": "resource",
+          "id": "village-zone-5"
+        },
+        "6": {
+          "kind": "resource",
+          "id": "village-zone-6"
+        },
+        "7": {
+          "kind": "resource",
+          "id": "village-zone-7"
+        },
+        "8": {
+          "kind": "resource",
+          "id": "village-zone-8"
+        }
+      },
+      "total": {
+        "kind": "score"
+      },
+      "component": "collection.view"
+    }
+  ],
+  "setup": {},
+  "resourceIds": [
+    "village-zone-1",
+    "village-zone-2",
+    "village-zone-3",
+    "village-zone-4",
+    "village-zone-5",
+    "village-zone-6",
+    "village-zone-7",
+    "village-zone-8"
+  ],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    },
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position"
+    },
+    {
+      "key": "S",
+      "type": "interface",
+      "id": "score"
+    }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": ["roll"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "collection-race-roll",
+      "documentation": "Lance le dé, déplace le pion et collecte le métier atteint."
+    }
+  },
+  "victory": {
+    "kind": "by-collection-race"
+  },
+  "collectionRace": {
+    "trackId": "village",
+    "diceId": "main",
+    "finishReason": "village-complete",
+    "eventNamespace": "mon-village",
+    "collectedEvent": "mon-village.card.collected",
+    "tiles": {
+      "$content": "content/catalogue.json#/tiles"
+    },
+    "zones": [
+      {
+        "id": 1,
+        "minimumTile": 1,
+        "maximumTile": 6,
+        "deckId": "zone-1",
+        "resourceId": "village-zone-1"
+      },
+      {
+        "id": 2,
+        "minimumTile": 7,
+        "maximumTile": 13,
+        "deckId": "zone-2",
+        "resourceId": "village-zone-2"
+      },
+      {
+        "id": 3,
+        "minimumTile": 14,
+        "maximumTile": 20,
+        "deckId": "zone-3",
+        "resourceId": "village-zone-3"
+      },
+      {
+        "id": 4,
+        "minimumTile": 21,
+        "maximumTile": 25,
+        "deckId": "zone-4",
+        "resourceId": "village-zone-4"
+      },
+      {
+        "id": 5,
+        "minimumTile": 26,
+        "maximumTile": 31,
+        "deckId": "zone-5",
+        "resourceId": "village-zone-5"
+      },
+      {
+        "id": 6,
+        "minimumTile": 32,
+        "maximumTile": 36,
+        "deckId": "zone-6",
+        "resourceId": "village-zone-6"
+      },
+      {
+        "id": 7,
+        "minimumTile": 37,
+        "maximumTile": 41,
+        "deckId": "zone-7",
+        "resourceId": "village-zone-7"
+      },
+      {
+        "id": 8,
+        "minimumTile": 42,
+        "maximumTile": 42,
+        "deckId": "zone-8",
+        "resourceId": "village-zone-8"
+      }
+    ]
+  }
+}

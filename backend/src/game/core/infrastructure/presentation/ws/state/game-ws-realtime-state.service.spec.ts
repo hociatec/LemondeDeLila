@@ -139,6 +139,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
       expect.objectContaining({
         metadata: expect.objectContaining({ roomStartedAt: startedAt }),
       }),
+      null,
     );
   });
 
@@ -209,6 +210,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
           expect.objectContaining({ id: -9, isBot: true }),
         ]),
       }),
+      null,
     );
   });
 
@@ -389,7 +391,11 @@ describe('GameWsRealtimeStateService run isolation', () => {
 
   it('preserves the run marker when an action replaces metadata', async () => {
     const previous = {
-      ...gameState({ roomRunId: 2, generatedAt: 'setup-config' }),
+      ...gameState({
+        roomRunId: 2,
+        generatedAt: 'setup-config',
+        restoreId: 'previous-restore',
+      }),
       version: 4,
     };
     const next = gameState({ generatedAt: 'turn-choice' });
@@ -433,6 +439,7 @@ describe('GameWsRealtimeStateService run isolation', () => {
       'lama',
       4,
       next,
+      'previous-restore',
     );
   });
 

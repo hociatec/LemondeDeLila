@@ -40,7 +40,10 @@ export class AppAdminBugReportsAdapter implements AdminBugReportsPort {
     return this.createReport.execute(input);
   }
 
-  list(options: { offset?: number; limit?: number }): Promise<BugReportRecord[]> {
+  list(options: {
+    offset?: number;
+    limit?: number;
+  }): Promise<BugReportRecord[]> {
     return this.listReports.execute(options);
   }
 
@@ -86,4 +89,3 @@ export class AppAdminBugReportsAdapter implements AdminBugReportsPort {
     return this.countCommentsService.execute(reportIds);
   }
 }
-

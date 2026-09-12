@@ -3,16 +3,18 @@ import { DataSource } from 'typeorm';
 import type { MessagingUserReader } from '../../../../application/ports/messaging-user.repository';
 import type { MessageUser } from '../../../../application/models/message-user.model';
 
+type UserRow = { id?: unknown; username?: unknown };
+
 @Injectable()
 export class MessagingUserTypeormRepository implements MessagingUserReader {
   constructor(private readonly dataSource: DataSource) {}
 
   async findById(id: number): Promise<MessageUser | null> {
-    const rows = await this.dataSource.query(
+    const rows = await this.dataSource.query<UserRow[]>(
       'SELECT id, username FROM users WHERE id = ? LIMIT 1',
       [id],
     );
-    const user = rows[0] as { id?: unknown; username?: unknown } | undefined;
+    const user = rows[0];
     if (!user) return null;
     const userId = toPositiveSafeId(user?.id);
     if (userId === null) return null;
@@ -23,11 +25,11 @@ export class MessagingUserTypeormRepository implements MessagingUserReader {
   }
 
   async findByUsername(username: string): Promise<MessageUser | null> {
-    const rows = await this.dataSource.query(
+    const rows = await this.dataSource.query<UserRow[]>(
       'SELECT id, username FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1',
       [username],
     );
-    const user = rows[0] as { id?: unknown; username?: unknown } | undefined;
+    const user = rows[0];
     if (!user) return null;
     const userId = toPositiveSafeId(user?.id);
     if (userId === null) return null;

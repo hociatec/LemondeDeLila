@@ -66,7 +66,11 @@ export class MnemoQuizStoreService
   }
 
   createCategory(name: string): MnemoQuizCategory {
-    const normalized = requireText(name, 'Nom de categorie requis', MAX_MNEMO_CATEGORY_NAME_LENGTH);
+    const normalized = requireText(
+      name,
+      'Nom de categorie requis',
+      MAX_MNEMO_CATEGORY_NAME_LENGTH,
+    );
     const category = {
       id: this.uniqueCategoryId(slugify(normalized)),
       name: normalized,
@@ -79,7 +83,11 @@ export class MnemoQuizStoreService
 
   renameCategory(categoryId: string, name: string): MnemoQuizCategory {
     const category = this.requireCategory(categoryId);
-    category.name = requireText(name, 'Nom de categorie requis', MAX_MNEMO_CATEGORY_NAME_LENGTH);
+    category.name = requireText(
+      name,
+      'Nom de categorie requis',
+      MAX_MNEMO_CATEGORY_NAME_LENGTH,
+    );
     this.persist();
     return structuredClone(category);
   }
@@ -294,7 +302,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
 
-function requireText(value: string, message: string, maxLength = MAX_MNEMO_TEXT_LENGTH): string {
+function requireText(
+  value: string,
+  message: string,
+  maxLength = MAX_MNEMO_TEXT_LENGTH,
+): string {
   if (typeof value !== 'string') throw new Error(message);
   const normalized = value.trim();
   if (!normalized) throw new Error(message);

@@ -3,6 +3,11 @@ import { RoomPayload } from '../models/room-payload.model';
 export const ROOM_GAME_PORT = Symbol('ROOM_GAME_PORT');
 
 export interface RoomGamePort {
+  authorizeGameAccess(
+    roomId: number,
+    userId: number,
+    mode: 'read' | 'write',
+  ): Promise<void>;
   getRoomPayload(roomId: number): Promise<RoomPayload>;
   refreshRoomPayload(roomId: number): Promise<RoomPayload>;
   resetRoom(roomId: number, userId: number): Promise<void>;

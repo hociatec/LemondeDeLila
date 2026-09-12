@@ -1,3 +1,4 @@
+import { ROOM_GAME_RUN_READER } from '../application/ports/room-game-run-reader.port';
 import { ROOM_BOTS_REPOSITORY } from '../application/ports/room-bots.repository';
 import { Module } from '@nestjs/common';
 import { ACTIVE_ROOM_PARTICIPANTS_READER } from '../application/ports/active-room-participants-reader.port';
@@ -14,6 +15,7 @@ import { ROOM_PRESENTATION_PROVIDERS } from './room.module.providers.presentatio
   imports: ROOM_MODULE_IMPORTS,
   providers: [...ROOM_CORE_PROVIDERS, ...ROOM_PRESENTATION_PROVIDERS],
   exports: [
+    ROOM_GAME_RUN_READER,
     ROOM_BOTS_REPOSITORY,
     ACTIVE_ROOM_PARTICIPANTS_READER,
     RoomMaintenanceSettingsService,

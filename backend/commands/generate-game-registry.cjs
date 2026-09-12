@@ -3,8 +3,11 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { jsonContentAssets } = require('./json-content-assets.cjs');
 
 function walk(directory) {
+  const definitions = ['game.ts', 'game.json'].map(name => path.join(directory, name)).filter(file => fs.existsSync(file));
+  if (definitions.length) return definitions;
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const target = path.join(directory, entry.name);
     if (entry.isDirectory()) return walk(target);
@@ -22,6 +25,7 @@ function generateGameRegistry(options = {}) {
     directory: path.relative(gamesRoot, path.dirname(file)).replaceAll(path.sep, '/'),
   }));
   const codes = new Set();
+  const assetsByGame = games.map(file => file.endsWith('.json') ? jsonContentAssets(path.dirname(file)) : []);
   for (const file of games) {
     const directory = path.dirname(file);
     const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'manifest.json'), 'utf8').replace(/^\uFEFF/, ''));
@@ -38,12 +42,16 @@ function generateGameRegistry(options = {}) {
       .replace(/\.(?:ts|json)$/, '');
     const target = relative.startsWith('.') ? relative : `./${relative}`;
     if (file.endsWith('game.json')) {
-      return `import manifest${index} from '${target.replace(/\/game$/, '/manifest.json')}';\nimport document${index} from '${target}.json';`;
+      const assets = assetsByGame[index].map((asset, assetIndex) => {
+        const assetPath = path.relative(path.dirname(output), asset.file).replaceAll(path.sep, '/');
+        return `import asset${index}_${assetIndex} from '${assetPath.startsWith('.') ? assetPath : `./${assetPath}`}';`;
+      });
+      return [`import manifest${index} from '${target.replace(/\/game$/, '/manifest.json')}';`, `import document${index} from '${target}.json';`, ...assets].join('\n');
     }
     return `import game${index} from '${target}';\nimport manifest${index} from '${target.replace(/\/game$/, '/manifest.json')}';`;
   });
   const jsonGames = games.flatMap((file, index) => file.endsWith('game.json')
-    ? [`const game${index} = compileJsonGame(manifest${index}, document${index});`] : []);
+    ? [`const game${index} = compileJsonGame(manifest${index}, document${index}${assetsByGame[index].length ? `, { ${assetsByGame[index].map((asset, assetIndex) => `${JSON.stringify(asset.relative)}: asset${index}_${assetIndex}`).join(', ')} }` : ''});`] : []);
   if (jsonGames.length) imports.unshift("import { compileJsonGame } from '../engine/json/public-api';");
   const entries = games.map((file, index) => `  game${index},`);
   const packages = games.map((file, index) => `  Object.freeze({ definition: game${index}, manifest: manifest${index} }),`);

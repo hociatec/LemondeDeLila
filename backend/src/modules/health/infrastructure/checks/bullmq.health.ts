@@ -26,7 +26,10 @@ export class BullmqHealthIndicator extends HealthIndicator {
 
   async check(key: string): Promise<HealthIndicatorResult> {
     if (typeof key !== 'string' || !key.trim() || key.length > 128) {
-      throw new HealthCheckError('Invalid health-check key', this.getStatus('bullmq', false));
+      throw new HealthCheckError(
+        'Invalid health-check key',
+        this.getStatus('bullmq', false),
+      );
     }
     const url =
       this.config.get<string>('GAME_TASK_REDIS_URL') ??
@@ -65,13 +68,15 @@ export class BullmqHealthIndicator extends HealthIndicator {
         'queued-jobs',
         queued / Math.max(1, queued + 100),
       );
-      const configuredMaximumFailed = Number(this.config.get<number>(
-        'HEALTH_MAX_FAILED_JOBS',
-        100,
-      ));
-      const maximumFailed = Number.isSafeInteger(configuredMaximumFailed) && configuredMaximumFailed >= 0 && configuredMaximumFailed <= 1_000_000
-        ? configuredMaximumFailed
-        : 100;
+      const configuredMaximumFailed = Number(
+        this.config.get<number>('HEALTH_MAX_FAILED_JOBS', 100),
+      );
+      const maximumFailed =
+        Number.isSafeInteger(configuredMaximumFailed) &&
+        configuredMaximumFailed >= 0 &&
+        configuredMaximumFailed <= 1_000_000
+          ? configuredMaximumFailed
+          : 100;
       const status = this.getStatus(key, counts.failed <= maximumFailed, {
         ...counts,
         maximumFailed,

@@ -100,8 +100,8 @@ export class RoomEmptyCleanupService {
       activeHumans,
       bots,
     });
-    await this.events.publishRoomDeleted(room.id);
     await this.rooms.delete(room.id);
+    await this.events.publishRoomDeleted(room.id);
     this.runtimeState.clearRoomBans(room.id);
     await context.invalidateRoomPayloadCache(room.id);
     this.presence.broadcastPresence();

@@ -58,20 +58,23 @@ export class RoomGatewayJoinWorkflow {
     for (let offset = 0; offset < connected.length; offset += 100) {
       await allCompleted(
         connected.slice(offset, offset + 100).map(async ({ socket, meta }) => {
-        try {
-          await this.membership.joinRoom(roomId, meta.userId, {
-            allowPrivate: isPrivate,
-          });
-        } catch {
-          return;
-        }
-        meta.role = 'participant';
-        this.realtimeTracker.setSocketParticipantRoom(socket, roomId);
-        try {
-          context.safeSend(socket, this.presenter.presentRolePromoted(roomId));
-        } catch {
-          // A closed socket does not invalidate the persisted promotion.
-        }
+          try {
+            await this.membership.joinRoom(roomId, meta.userId, {
+              allowPrivate: isPrivate,
+            });
+          } catch {
+            return;
+          }
+          meta.role = 'participant';
+          this.realtimeTracker.setSocketParticipantRoom(socket, roomId);
+          try {
+            context.safeSend(
+              socket,
+              this.presenter.presentRolePromoted(roomId),
+            );
+          } catch {
+            // A closed socket does not invalidate the persisted promotion.
+          }
         }),
       );
     }

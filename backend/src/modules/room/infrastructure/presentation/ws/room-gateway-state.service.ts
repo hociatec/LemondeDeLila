@@ -30,12 +30,23 @@ type StateContext = {
   promoteConnectedSpectatorsToParticipantsForRoom: (
     roomId: number,
   ) => Promise<void>;
+  nextRoomRealtimeVersion: (roomId: number) => {
+    streamId: string;
+    sequence: number;
+    snapshot: true;
+  };
+  currentRoomRealtimeVersion: (roomId: number) => {
+    streamId: string;
+    sequence: number;
+    snapshot: true;
+  };
 };
 
 @Injectable()
 export class RoomGatewayStateService {
   private static readonly MAX_TRACKED_ROOMS = 10_000;
   private readonly announcements: RoomGatewayAnnouncements;
+  private readonly publicationQueues = new Map<number, Promise<void>>();
 
   constructor(
     private readonly roomState: RoomStateService,
@@ -47,6 +58,15 @@ export class RoomGatewayStateService {
   }
 
   async sendRoomState(ctx: StateContext, roomId: number): Promise<void> {
+    return this.enqueuePublication(roomId, () =>
+      this.publishRoomState(ctx, roomId),
+    );
+  }
+
+  private async publishRoomState(
+    ctx: StateContext,
+    roomId: number,
+  ): Promise<void> {
     try {
       let payload = await this.roomState.getRoomPayload(roomId);
 
@@ -69,7 +89,12 @@ export class RoomGatewayStateService {
       ctx.lastRoomStatusByRoomId.set(roomId, nextStatus);
 
       payload = projectRoomRoster(payload, ctx.clients.values(), roomId);
-      await this.broadcaster.broadcast(ctx, roomId, payload);
+      await this.broadcaster.broadcast(
+        ctx,
+        roomId,
+        payload,
+        ctx.nextRoomRealtimeVersion(roomId),
+      );
     } catch {
       // la table a peut-etre ete supprimee, on ignore
     }
@@ -104,6 +129,16 @@ export class RoomGatewayStateService {
     roomId: number,
     payload: RoomPayload,
   ): Promise<void> {
+    return this.enqueuePublication(roomId, () =>
+      this.publishRoomPayload(ctx, roomId, payload),
+    );
+  }
+
+  private async publishRoomPayload(
+    ctx: StateContext,
+    roomId: number,
+    payload: RoomPayload,
+  ): Promise<void> {
     const previousStatus = (ctx.lastRoomStatusByRoomId.get(roomId) ?? '')
       .toLowerCase()
       .trim();
@@ -113,7 +148,12 @@ export class RoomGatewayStateService {
 
     payload = projectRoomRoster(payload, ctx.clients.values(), roomId);
     const focusIntent = this.announcements.focusIntent(ctx, roomId, payload);
-    await this.broadcaster.broadcast(ctx, roomId, payload);
+    await this.broadcaster.broadcast(
+      ctx,
+      roomId,
+      payload,
+      ctx.nextRoomRealtimeVersion(roomId),
+    );
     if (focusIntent) {
       await ctx.broadcast(roomId, 'room.focus', focusIntent);
       await this.broadcastRoomIntent(
@@ -188,6 +228,17 @@ export class RoomGatewayStateService {
     roomId: number,
     opts?: RoomRosterOptions,
   ): Promise<void> {
+    return this.enqueuePublication(roomId, () =>
+      this.publishRoomStateToClient(ctx, client, roomId, opts),
+    );
+  }
+
+  private async publishRoomStateToClient(
+    ctx: StateContext,
+    client: WebSocket,
+    roomId: number,
+    opts?: RoomRosterOptions,
+  ): Promise<void> {
     try {
       const payload = projectRoomRoster(
         await this.roomState.getRoomPayload(roomId),
@@ -210,7 +261,11 @@ export class RoomGatewayStateService {
           : payload;
       ctx.safeSend(
         client,
-        this.presenter.presentRoomUpdated(roomId, payloadForClient),
+        this.presenter.presentRoomUpdated(
+          roomId,
+          payloadForClient,
+          ctx.currentRoomRealtimeVersion(roomId),
+        ),
       );
       if (focusIntent) {
         this.announcements.sendFocus(ctx, client, roomId, focusIntent);
@@ -265,5 +320,21 @@ export class RoomGatewayStateService {
         ctx.lastRoomStatusByRoomId.delete(oldest);
       }
     }
+  }
+
+  private enqueuePublication(
+    roomId: number,
+    operation: () => Promise<void>,
+  ): Promise<void> {
+    const previous = this.publicationQueues.get(roomId) ?? Promise.resolve();
+    const current = previous.then(operation, operation);
+    this.publicationQueues.set(roomId, current);
+    const release = () => {
+      if (this.publicationQueues.get(roomId) === current) {
+        this.publicationQueues.delete(roomId);
+      }
+    };
+    void current.then(release, release);
+    return current;
   }
 }

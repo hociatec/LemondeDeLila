@@ -272,6 +272,14 @@ function audit() {
     if (!/^\d{13}-[A-Z][A-Za-z0-9]+\.ts$/.test(basename)) {
       violations.push(`migration non descriptive: ${basename}`);
     }
+    const declaredName = fs.readFileSync(file, 'utf8').match(/^\s*(?:readonly\s+)?name\s*=\s*['"]([^'"]+)['"]/m)?.[1];
+    // Immutable historical no-op; MigrationDataSource normalizes its runtime
+    // name. migration-history.spec.ts continues to enforce its original hash.
+    const legacyNoop = basename === '1735900000000-ImportLegacySettingsJson.ts'
+      && declaredName === 'ImportLegacySettingsJson1735900000';
+    if (declaredName && !legacyNoop && !declaredName.endsWith(basename.slice(0, 13))) {
+      violations.push(`migration name timestamp differs from filename: ${basename}`);
+    }
   }
   return violations;
 }

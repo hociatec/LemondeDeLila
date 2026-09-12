@@ -144,5 +144,4 @@ export class UserTypeormRepository implements UserRepository {
       password: user.password ?? null,
     };
   }
-
 }

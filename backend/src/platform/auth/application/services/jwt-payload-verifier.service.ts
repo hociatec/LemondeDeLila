@@ -136,7 +136,8 @@ function isStringArray(value: unknown): value is string[] {
     Array.isArray(value) &&
     value.length <= 32 &&
     value.every(
-      (item) => typeof item === 'string' && item.length > 0 && item.length <= 64,
+      (item) =>
+        typeof item === 'string' && item.length > 0 && item.length <= 64,
     )
   );
 }

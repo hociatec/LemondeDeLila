@@ -227,7 +227,7 @@ export class WxUpdateReleaseService {
     }
     const lease = await this.distributedLeases.acquire(
       'lemonde:update:publication',
-      15 * 60 * 1000,
+      operationalSettings.clientWxPublicationLeaseMs,
     );
     if (!lease) throw new ConflictException('Publication WX déjà en cours.');
     const assertHeld = async () => {

@@ -1,7 +1,7 @@
-import type { BotRoomRepository } from '../../ports/bot-room.repository';
+import type { BotRoomReader } from '../../ports/bot-room-reader.port';
 
 export class GetRoomBotStatsService {
-  constructor(private readonly rooms: BotRoomRepository) {}
+  constructor(private readonly rooms: BotRoomReader) {}
 
   async execute(roomId: number) {
     const total = await this.rooms.countBotsForRoom(roomId);

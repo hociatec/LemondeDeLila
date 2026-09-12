@@ -1,3 +1,4 @@
+import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../ports/presence-transport.port';
 import type { WebSocket } from 'ws';
 import type { PresenceClient } from '../models/presence-client.model';
 import type { PresenceEvent } from '../ports/presence-transport.port';
@@ -66,6 +67,54 @@ describe('PresenceService', () => {
     service.unregister(tavern.value);
     expect(service.findClient(tavern.value)).toBeUndefined();
     service.unregister(home.value);
+  });
+
+  it('keeps admitted unique players within the transport snapshot capacity', () => {
+    const connections = Array.from(
+      { length: MAX_PRESENCE_PLAYERS_PER_ORIGIN },
+      () => socket(),
+    );
+    for (const [index, connection] of connections.entries()) {
+      expect(
+        service.register(connection.value, {
+          id: index + 1,
+          username: 'Player',
+        }),
+      ).toBe(true);
+    }
+    const extra = socket();
+    expect(
+      service.register(extra.value, {
+        id: MAX_PRESENCE_PLAYERS_PER_ORIGIN + 1,
+        username: 'Extra',
+      }),
+    ).toBe(false);
+    expect(service.findClient(extra.value)).toBeUndefined();
+    expect(
+      service.register(extra.value, { id: 1, username: 'Second socket' }),
+    ).toBe(true);
+    service.unregister(connections[1].value);
+    expect(
+      service.register(socket().value, {
+        id: MAX_PRESENCE_PLAYERS_PER_ORIGIN + 1,
+        username: 'New',
+      }),
+    ).toBe(true);
+  });
+
+  it('withdraws local presence and closes sockets before disconnecting its transport', async () => {
+    const client = socket();
+    service.register(client.value, { id: 1, username: 'Local' });
+    await service.onModuleDestroy();
+    expect(client.close).toHaveBeenCalledWith(1001, 'server shutdown');
+    expect(service.findClient(client.value)).toBeUndefined();
+    expect(transport.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ players: [], sequence: 1 }),
+    );
+    expect(service.register(socket().value, { id: 2, username: 'Late' })).toBe(
+      false,
+    );
+    expect(jest.getTimerCount()).toBe(0);
   });
 
   it('delegates chat operations and broadcasts chat only to chat clients', async () => {
@@ -172,6 +221,35 @@ describe('PresenceService', () => {
       expect.stringContaining('presence-update'),
     );
     expect(transport.publish).toHaveBeenCalled();
+  });
+
+  it('versions each client stream and serves an explicit full resynchronization', async () => {
+    const target = socket();
+    service.register(target.value, { id: 1, username: 'Lila' });
+    service.broadcastPresence();
+    await settle();
+    const first = JSON.parse(String(target.send.mock.calls.at(-1)?.[0]));
+    messages.handle.mockImplementation(async (_from, _raw, callbacks) => {
+      callbacks.presenceSync?.(target.value);
+    });
+
+    await service.handleClientPayload(
+      service.findClient(target.value) as PresenceClient,
+      JSON.stringify({ type: 'presence-sync' }),
+    );
+    const second = JSON.parse(String(target.send.mock.calls.at(-1)?.[0]));
+
+    expect(first.realtime).toEqual({
+      streamId: expect.any(String),
+      sequence: 1,
+      snapshot: true,
+    });
+    expect(second.realtime).toEqual({
+      streamId: first.realtime.streamId,
+      sequence: 2,
+      snapshot: true,
+    });
+    expect(second.players).toEqual(first.players);
   });
 
   it('removes and closes a socket whose send fails', async () => {

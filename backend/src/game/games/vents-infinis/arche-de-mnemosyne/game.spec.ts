@@ -1,7 +1,13 @@
+import { compileJsonGame } from '../../../engine/json/public-api';
 import { testGame } from '../../../engine/testing/public-api';
+import document from './game.json';
+import manifest from './manifest.json';
+import quiz from './quiz.json';
 
-import gameDefinition from './game';
-import { MNEMO_SESSION } from './rules';
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/quiz.json': quiz,
+});
+const MNEMO_SESSION = 'mnemosyne.current';
 
 describe('Arche de Mnémosyne declarative game', () => {
   it('keeps correctness private and resolves simultaneous answers deterministically', async () => {

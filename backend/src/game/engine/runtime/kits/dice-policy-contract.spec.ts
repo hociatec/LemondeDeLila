@@ -89,3 +89,32 @@ it('checks the sum of a legacy roll without policy metadata', () => {
   state.rolls.main.total = 6;
   expect(() => assertValidEngineKits({ dice: state }, [definition])).toThrow();
 });
+
+it('recovers a missing legacy last-roll marker from definition order', () => {
+  const first = diceKit({ id: 'z-first', count: 1, sides: 6 });
+  const second = diceKit({ id: 'a-second', count: 1, sides: 6 });
+  const state = {
+    rolls: {
+      'a-second': { values: [2], total: 2 },
+      'z-first': { values: [1], total: 1 },
+    },
+    rollsByPlayer: {},
+    lastRollId: null,
+    sequence: 2,
+  };
+  const controller = new GameDiceController(
+    state,
+    {
+      next: () => 0,
+      int: () => 0,
+      pick: <T>(values: readonly T[]) => values[0] ?? null,
+      shuffle: <T>(values: readonly T[]) => [...values],
+    },
+    undefined,
+    [first, second],
+  );
+
+  expect(state.lastRollId).toBe('a-second');
+  controller.reset('a-second');
+  expect(state.lastRollId).toBe('z-first');
+});

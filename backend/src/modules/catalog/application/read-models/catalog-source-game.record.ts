@@ -13,4 +13,3 @@ export type CatalogSourceGame = {
   rulesPath?: string;
 };
 /** Explicitly named data contract at the application boundary. */
-

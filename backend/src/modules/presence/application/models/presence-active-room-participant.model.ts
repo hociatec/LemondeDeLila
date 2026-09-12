@@ -8,4 +8,3 @@ export type PresenceActiveRoomParticipant = {
   } | null;
 };
 /** Explicitly named data contract at the application boundary. */
-

@@ -1,6 +1,10 @@
 import { testGame } from '../../../engine/testing/public-api';
+import { compileJsonGame } from '../../../engine/json/public-api';
 
-import gameDefinition from './game';
+import document from './game.json';
+import manifest from './manifest.json';
+
+const gameDefinition = compileJsonGame(manifest, document);
 
 describe('Corridor declarative game', () => {
   it('configures walls and unique pawns with generic choices', async () => {

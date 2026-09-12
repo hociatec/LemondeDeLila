@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebSocket } from 'ws';
 import { getErrorDetails } from '../../../../../shared/utils/public-api';
-import type { PresentedErrorPayload } from '../../../../serialization/public-api';
+import {
+  stringifyExternalJson,
+  type PresentedErrorPayload,
+} from '../../../../serialization/public-api';
 import { decodeWsEnvelope } from '../../../../ws/public-api';
 import type { RealtimeIncomingMessage } from './realtime-api.types';
 import type { RealtimeResponseFrame } from './realtime-request-replay.service';
@@ -24,19 +27,14 @@ export class RealtimeApiTransportService {
       configured <= 1_048_576
         ? configured
         : 65_536;
-    return decodeWsEnvelope(
-      raw,
-      maxBytes,
-    );
+    return decodeWsEnvelope(raw, maxBytes);
   }
 
   send(client: WebSocket, payload: unknown) {
     if (client.readyState !== WebSocket.OPEN) return;
     try {
-      const serialized = JSON.stringify(payload);
-      if (
-        Buffer.byteLength(serialized, 'utf8') > MAX_REALTIME_OUTBOUND_BYTES
-      ) {
+      const serialized = stringifyExternalJson(payload);
+      if (Buffer.byteLength(serialized, 'utf8') > MAX_REALTIME_OUTBOUND_BYTES) {
         client.close(1009, 'Message too large');
         return;
       }

@@ -3,7 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import { writeFileAtomic } from '../../../../platform/filesystem/public-api';
+import { copyFileAtomic } from '../../../../platform/filesystem/public-api';
 import {
   SOUND_KEYS,
   type SoundKey,
@@ -145,21 +145,24 @@ export class SoundsReencoder {
           'Fichier audio transcodé trop volumineux.',
         );
       }
-      const bytes = await fs.promises.readFile(transcoded.outputPath);
-      const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
+      const sha256 = await sha256File(transcoded.outputPath);
       if (sha256 === path.basename(sourcePath).replace(/\.(wav|mp3)$/i, '')) {
         return { kind: 'skipped' };
       }
       const soundDir = path.join(this.deps.dataRoot(), soundId);
       await fs.promises.mkdir(soundDir, { recursive: true });
-      await writeFileAtomic(path.join(soundDir, `${sha256}.wav`), bytes);
+      await copyFileAtomic(
+        transcoded.outputPath,
+        path.join(soundDir, `${sha256}.wav`),
+        MAX_REENCODED_AUDIO_BYTES,
+      );
       await this.deps.removeUnusedFilesForSoundId(soundId, sha256);
       return {
         kind: 'updated',
         entry: {
           soundId,
           sha256,
-          bytes: bytes.length,
+          bytes: outputStat.size,
           uploadedAt: this.deps.now(),
           url: `/api/sounds/${encodeURIComponent(soundId)}/${sha256}.wav`,
         },
@@ -188,6 +191,14 @@ export class SoundsReencoder {
     await this.deps.writeManifest(manifest);
     await this.deps.notifySoundsUpdated(manifest.updatedAt);
   }
+}
+
+async function sha256File(filePath: string): Promise<string> {
+  const hash = crypto.createHash('sha256');
+  for await (const chunk of fs.createReadStream(filePath)) {
+    hash.update(chunk as Buffer);
+  }
+  return hash.digest('hex');
 }
 
 function cloneManifest(manifest: SoundManifest): SoundManifest {

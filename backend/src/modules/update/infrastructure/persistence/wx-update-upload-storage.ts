@@ -8,7 +8,10 @@ import {
   StorageCapacityError,
   writeFileAtomic,
 } from '../../../../platform/filesystem/public-api';
-import { readEnvironment } from '../../../../platform/config/public-api';
+import {
+  readEnvironment,
+  operationalSettings,
+} from '../../../../platform/config/public-api';
 import { parseStrictInteger } from '../../../../shared/utils/public-api';
 
 const MAX_UPLOAD_DIRECTORY_ENTRIES = 10_000;
@@ -136,10 +139,7 @@ export class WxUpdateUploadStorage {
     overflowMessage: string;
     sizeMessage: string;
   }): Promise<void> {
-    if (
-      !Number.isSafeInteger(input.expectedBytes) ||
-      input.expectedBytes < 0
-    ) {
+    if (!Number.isSafeInteger(input.expectedBytes) || input.expectedBytes < 0) {
       throw new BadRequestException('Taille attendue du chunk WX invalide.');
     }
     const prefix = `${input.kind}.`;
@@ -174,8 +174,10 @@ export class WxUpdateUploadStorage {
   }
 
   async removeParts(dir: string): Promise<void> {
-    const entries = (await fs.promises.readdir(dir).catch(() => []))
-      .slice(0, MAX_UPLOAD_DIRECTORY_ENTRIES);
+    const entries = (await fs.promises.readdir(dir).catch(() => [])).slice(
+      0,
+      MAX_UPLOAD_DIRECTORY_ENTRIES,
+    );
     await allCompleted(
       entries
         .filter((name) => /^(artifact|installer)\.\d+\.part$/.test(name))
@@ -184,11 +186,13 @@ export class WxUpdateUploadStorage {
   }
 
   async pruneExpired(): Promise<void> {
-    const expiration = Date.now() - 24 * 60 * 60 * 1000;
-    const entries = (await fs.promises
-      .readdir(this.uploadsRoot, { withFileTypes: true })
-      .catch(() => []))
-      .slice(0, MAX_UPLOAD_DIRECTORY_ENTRIES);
+    const expiration =
+      Date.now() - operationalSettings.clientWxUploadRetentionMs;
+    const entries = (
+      await fs.promises
+        .readdir(this.uploadsRoot, { withFileTypes: true })
+        .catch(() => [])
+    ).slice(0, MAX_UPLOAD_DIRECTORY_ENTRIES);
     await allCompleted(
       entries
         .filter((entry) => entry.isDirectory())
@@ -247,7 +251,8 @@ function isWxUploadMeta(value: unknown): value is WxUploadMeta {
     typeof item.version === 'string' &&
     item.version.length > 0 &&
     item.version.length <= 128 &&
-    typeof item.sequence === 'number' && Number.isSafeInteger(item.sequence) &&
+    typeof item.sequence === 'number' &&
+    Number.isSafeInteger(item.sequence) &&
     item.sequence >= 0 &&
     typeof item.publishedAt === 'string' &&
     item.publishedAt.length <= 64 &&
@@ -257,19 +262,22 @@ function isWxUploadMeta(value: unknown): value is WxUploadMeta {
       (typeof item.minimumVersion === 'string' &&
         item.minimumVersion.length <= 128)) &&
     (item.mandatoryAt === null ||
-      (typeof item.mandatoryAt === 'string' && item.mandatoryAt.length <= 64)) &&
+      (typeof item.mandatoryAt === 'string' &&
+        item.mandatoryAt.length <= 64)) &&
     typeof item.sha256 === 'string' &&
     /^[a-f0-9]{64}$/i.test(item.sha256) &&
     typeof item.signature === 'string' &&
     item.signature.length > 0 &&
     item.signature.length <= 4096 &&
-    typeof item.totalBytes === 'number' && Number.isSafeInteger(item.totalBytes) &&
+    typeof item.totalBytes === 'number' &&
+    Number.isSafeInteger(item.totalBytes) &&
     item.totalBytes >= 0 &&
     (item.installerSha256 === null ||
       (typeof item.installerSha256 === 'string' &&
         /^[a-f0-9]{64}$/i.test(item.installerSha256))) &&
     (item.installerTotalBytes === null ||
-      (typeof item.installerTotalBytes === 'number' && Number.isSafeInteger(item.installerTotalBytes) &&
+      (typeof item.installerTotalBytes === 'number' &&
+        Number.isSafeInteger(item.installerTotalBytes) &&
         item.installerTotalBytes >= 0)) &&
     (item.completedAt === null ||
       (typeof item.completedAt === 'string' && item.completedAt.length <= 64))

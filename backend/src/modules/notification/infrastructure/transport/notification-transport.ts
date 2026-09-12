@@ -3,6 +3,8 @@ import {
   type PubSubEventMetadata,
 } from '../../../../platform/pubsub/public-api';
 import { RedisClientFactory } from '../../../../platform/redis/public-api';
+import { isBoundedJsonInput } from '../../../../platform/validation/public-api';
+import { stringifyExternalJson } from '../../../../platform/serialization/public-api';
 
 export type NotificationEvent = {
   userId: number;
@@ -92,7 +94,7 @@ function decodeNotificationEvent(value: unknown): NotificationEvent | null {
   };
   try {
     if (
-      Buffer.byteLength(JSON.stringify(event), 'utf8') >
+      Buffer.byteLength(stringifyExternalJson(event), 'utf8') >
       MAX_NOTIFICATION_EVENT_BYTES
     ) {
       return null;
@@ -104,6 +106,8 @@ function decodeNotificationEvent(value: unknown): NotificationEvent | null {
 }
 
 function assertNotificationEventSize(event: NotificationEvent): void {
+  if (!isBoundedJsonInput(event, { allowUndefinedProperties: true }))
+    throw new TypeError('Notification event must contain plain JSON data');
   if (
     !event.type ||
     event.type.length > 128 ||
@@ -111,7 +115,7 @@ function assertNotificationEventSize(event: NotificationEvent): void {
   ) {
     throw new RangeError('Notification event metadata invalide');
   }
-  const bytes = Buffer.byteLength(JSON.stringify(event), 'utf8');
+  const bytes = Buffer.byteLength(stringifyExternalJson(event), 'utf8');
   if (bytes > MAX_NOTIFICATION_EVENT_BYTES) {
     throw new RangeError('Notification event trop volumineux');
   }

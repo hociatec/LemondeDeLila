@@ -63,6 +63,31 @@ describe('MysqlGameRoomLockService', () => {
     expect(runner.release).toHaveBeenCalledTimes(1);
   });
 
+  it('preserves a committed result when returning the connection to the pool fails', async () => {
+    const { service, runner, destroy } = setup(1);
+    jest
+      .mocked(runner.release)
+      .mockRejectedValueOnce(new Error('pool unavailable'));
+    await expect(
+      service.runExclusive(9, async () => 'committed'),
+    ).resolves.toBe('committed');
+    expect(destroy).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves the business error when returning the connection to the pool fails', async () => {
+    const { service, runner, destroy } = setup(1);
+    const failure = new Error('business rejection');
+    jest
+      .mocked(runner.release)
+      .mockRejectedValueOnce(new Error('pool unavailable'));
+    await expect(
+      service.runExclusive(9, async () => {
+        throw failure;
+      }),
+    ).rejects.toBe(failure);
+    expect(destroy).toHaveBeenCalledTimes(1);
+  });
+
   it('releases the runner even when connection acquisition fails', async () => {
     const { service, runner } = setup(1);
     const failure = new Error('connection unavailable');

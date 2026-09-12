@@ -7,13 +7,19 @@ export function getErrorMessage(
   fallback = 'erreur inconnue',
 ): string {
   if (value instanceof Error) {
-    return (value.message.trim() || fallback).slice(0, MAX_ERROR_MESSAGE_LENGTH);
+    return (value.message.trim() || fallback).slice(
+      0,
+      MAX_ERROR_MESSAGE_LENGTH,
+    );
   }
   if (typeof value === 'string') {
     return (value.trim() || fallback).slice(0, MAX_ERROR_MESSAGE_LENGTH);
   }
   if (isRecord(value) && typeof value.message === 'string') {
-    return (value.message.trim() || fallback).slice(0, MAX_ERROR_MESSAGE_LENGTH);
+    return (value.message.trim() || fallback).slice(
+      0,
+      MAX_ERROR_MESSAGE_LENGTH,
+    );
   }
   return fallback.slice(0, MAX_ERROR_MESSAGE_LENGTH);
 }
@@ -29,9 +35,9 @@ export function getErrorDetails(value: unknown): string {
 }
 
 export function getErrorCode(value: unknown): string | null {
-    return isRecord(value) && typeof value.code === 'string'
-      ? value.code.slice(0, MAX_ERROR_CODE_LENGTH)
-      : null;
+  return isRecord(value) && typeof value.code === 'string'
+    ? value.code.slice(0, MAX_ERROR_CODE_LENGTH)
+    : null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

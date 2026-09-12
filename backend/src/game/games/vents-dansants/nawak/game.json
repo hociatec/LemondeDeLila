@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "1",
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "patterns": [
+    {
+      "kind": "submission-judge",
+      "submissionId": "nawak.answers",
+      "voteId": "nawak.votes",
+      "secret": true,
+      "targetScore": 5,
+      "winnerReason": "target-score"
+    }
+  ],
+  "components": [],
+  "setup": { "firstPlayer": "first", "startRound": true },
+  "resourceIds": [],
+  "shortcuts": [
+    { "key": "C", "type": "action", "actionType": "choose_answer" },
+    { "key": "V", "type": "action", "actionType": "vote_answer" }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": ["choose_answer", "vote_answer"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "choose_answer": { "recipe": "nawak-choose" },
+    "vote_answer": { "recipe": "nawak-vote" }
+  },
+  "victory": { "kind": "by-nawak" },
+  "nawak": {
+    "answerSubmissionId": "nawak.answers",
+    "voteSubmissionId": "nawak.votes",
+    "targetScore": 5,
+    "winnerReason": "target-score",
+    "challenges": { "$content": "content/catalogue.json#/challenges" }
+  }
+}

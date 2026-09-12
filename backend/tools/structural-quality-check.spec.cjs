@@ -108,6 +108,29 @@ test('detects oversized standalone functions', () => {
   );
 });
 
+test('checks nested callbacks separately from their container factory', () => {
+  withFixture(
+    {
+      'factory.ts': [
+        'export function factory() {',
+        '  return {',
+        '    first: () => {',
+        '      return 1;',
+        '    },',
+        '    second: () => {',
+        '      return 2;',
+        '    },',
+        '  };',
+        '}',
+      ].join('\n'),
+    },
+    (root) => {
+      const analysis = analyzeStructure({ root, contract });
+      assert.equal(analysis.violations.length, 0);
+    },
+  );
+});
+
 test('rejects new debt and increases while allowing reductions', () => {
   const existing = {
     rule: 'file-lines',
@@ -127,10 +150,8 @@ test('rejects new debt and increases while allowing reductions', () => {
     1,
   );
   assert.equal(
-    compareWithBaseline(
-      [{ ...existing, file: 'new.ts', actual: 13 }],
-      baseline,
-    ).length,
+    compareWithBaseline([{ ...existing, file: 'new.ts', actual: 13 }], baseline)
+      .length,
     1,
   );
 });

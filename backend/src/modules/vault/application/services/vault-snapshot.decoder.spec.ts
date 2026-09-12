@@ -20,6 +20,14 @@ const snapshot = () => ({
   },
 });
 
+it.each([
+  '2026-02-30T00:00:00Z',
+  '2026-09-08T00:00:00',
+  '2026-09-08T24:00:00Z',
+])('rejects savedAt %s before restoration', (savedAt) => {
+  expect(decodeVaultRoomSnapshot({ ...snapshot(), savedAt })).toBeNull();
+});
+
 it('accepts the versioned snapshot envelope and rejects invalid dates, bounds and identities', () => {
   expect(decodeVaultRoomSnapshot(snapshot())).not.toBeNull();
   const changes: ((value: ReturnType<typeof snapshot>) => void)[] = [

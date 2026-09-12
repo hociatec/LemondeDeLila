@@ -210,6 +210,18 @@ describe('VaultRoomSnapshotsService', () => {
     expect(firstSnapshot.game?.state?.metadata?.roomId).toBe(10);
     expect(firstSnapshot.game?.state?.turn?.currentPlayerId).toBe(-7);
 
+    const listed = await service.list(1);
+    expect(listed).toHaveLength(1);
+    expect(Object.keys(listed[0]).sort()).toEqual([
+      'createdAt',
+      'gameType',
+      'id',
+      'name',
+      'playersLabel',
+      'roomName',
+    ]);
+    expect(await service.list(2)).toEqual([]);
+
     const restored = await service.restore(1, firstSave.id);
     expect(restored.roomId).toBe(20);
     expect(bots.addSystemBot).toHaveBeenCalledTimes(1);
@@ -245,6 +257,19 @@ describe('VaultRoomSnapshotsService', () => {
     expect(snapshotStore.size).toBe(2);
     expect(rooms.adminDestroyRoom).toHaveBeenCalledWith(30);
     expect(rooms.adminDestroyRoom).toHaveBeenCalledTimes(3);
+
+    // Ownership is decided by Room, before reading a possibly stale projection
+    // or exporting private game state, even for an explicit snapshot ID.
+    rooms.requireRoomForOwnerAction.mockRejectedValueOnce(
+      new Error('ownership changed'),
+    );
+    const payloadReads = rooms.getRoomPayload.mock.calls.length;
+    await expect(service.save(1, 30, independentSave.id)).rejects.toThrow(
+      'ownership changed',
+    );
+    expect(rooms.getRoomPayload).toHaveBeenCalledTimes(payloadReads);
+    expect(rooms.adminDestroyRoom).toHaveBeenCalledTimes(3);
+    expect(snapshotStore.size).toBe(2);
   });
 
   it('abandonRestoredRoom deletes both the restored room and its linked snapshot', async () => {

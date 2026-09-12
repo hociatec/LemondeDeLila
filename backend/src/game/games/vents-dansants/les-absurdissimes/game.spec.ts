@@ -1,6 +1,12 @@
 import { testGame } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import gameDefinition from './game';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import manifest from './manifest.json';
+import document from './game.json';
+import cards from './content/cards.json';
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/cards.json': cards,
+});
 
 describe('Les Absurdissimes declarative game', () => {
   it('keeps answers private until judging and completes a round', async () => {

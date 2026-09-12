@@ -174,7 +174,9 @@ export class RealtimeApiConnectionService {
     try {
       const roomId = Number(session.roomId ?? 0);
       if (!Number.isSafeInteger(roomId) || roomId <= 0) return;
-      const gameType = String(session.gameType ?? '').trim().slice(0, 100);
+      const gameType = String(session.gameType ?? '')
+        .trim()
+        .slice(0, 100);
       await this.handler.handleIncoming(
         client,
         session,

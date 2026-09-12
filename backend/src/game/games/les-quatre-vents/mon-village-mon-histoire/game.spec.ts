@@ -1,7 +1,13 @@
 import { testGame } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import { VILLAGE_ZONES } from './content';
-import gameDefinition from './game';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import document from './game.json';
+import manifest from './manifest.json';
+import catalogue from './content/catalogue.json';
+
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Mon Village, Mon Histoire declarative game', () => {
   it('uses deterministic components, collects cards and replays exactly', async () => {
@@ -23,7 +29,7 @@ describe('Mon Village, Mon Histoire declarative game', () => {
 
     const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
     expect(Object.keys(kits.cards?.decks ?? {})).toHaveLength(
-      VILLAGE_ZONES.length,
+      catalogue.zones.length,
     );
     expect(JSON.stringify(kits.cards?.decks)).not.toContain('title');
   });

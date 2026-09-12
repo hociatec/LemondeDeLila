@@ -27,6 +27,21 @@ it('distinguishes explicit null from missing and numeric values in nullable cont
 });
 
 describe('numeric action and choice inputs', () => {
+  it('accepts human and bot player IDs while rejecting zero and unsafe IDs', () => {
+    const input = gameInput.playerId();
+    for (const value of [1, -1, 42, -42])
+      expect(input.parse(value)).toBe(value);
+    expect(input.parse('-42')).toBe(-42);
+    for (const value of [
+      0,
+      -0,
+      1.5,
+      NaN,
+      Infinity,
+      Number.MAX_SAFE_INTEGER + 1,
+    ])
+      expect(() => input.parse(value)).toThrow(GamePayloadValidationError);
+  });
   it('supports strict JSON numbers and closed content objects without changing client defaults', () => {
     const options = { unknownKeys: 'reject' as const };
     const schema = gameInput.object(

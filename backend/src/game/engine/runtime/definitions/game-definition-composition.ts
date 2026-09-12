@@ -33,6 +33,11 @@ export function mergeInitialization(
     counters: mergeInitializationRecords(pattern.counters, game.counters),
     tracks: mergeInitializationRecords(pattern.tracks, game.tracks),
     pawns,
+    deals: [...(pattern.deals ?? []), ...(game.deals ?? [])],
+    gridPlacements: [
+      ...(pattern.gridPlacements ?? []),
+      ...(game.gridPlacements ?? []),
+    ],
   });
 }
 
@@ -48,6 +53,9 @@ function compactInitialization(value: GameInitialization): GameInitialization {
   if (value.tracks && Object.keys(value.tracks).length > 0)
     compact.tracks = value.tracks;
   if (value.pawns && value.pawns.length > 0) compact.pawns = value.pawns;
+  if (value.deals && value.deals.length > 0) compact.deals = value.deals;
+  if (value.gridPlacements && value.gridPlacements.length > 0)
+    compact.gridPlacements = value.gridPlacements;
   return compact;
 }
 

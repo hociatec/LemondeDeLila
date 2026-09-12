@@ -1,4 +1,7 @@
-import { InternalServerErrorException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { spawn } from 'child_process';
 import ffmpegStatic from 'ffmpeg-static';
 import ffprobeStatic from 'ffprobe-static';
@@ -32,6 +35,7 @@ export function ffprobePath(): string {
 }
 
 const AUDIO_PROCESS_CONCURRENCY = 2;
+const AUDIO_PROCESS_QUEUE_LIMIT = 16;
 let activeAudioProcesses = 0;
 const waitingAudioProcesses: Array<() => void> = [];
 
@@ -53,7 +57,11 @@ async function spawnAudioProcess(
   args: string[],
   timeoutMs = operationalSettings.soundProbeTimeoutMs,
 ): Promise<AudioProcessResult> {
-  if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 100 || timeoutMs > 120_000) {
+  if (
+    !Number.isSafeInteger(timeoutMs) ||
+    timeoutMs < 100 ||
+    timeoutMs > 120_000
+  ) {
     throw new RangeError('Délai du processus audio invalide.');
   }
   if (!Array.isArray(args) || args.length > 128) {
@@ -122,7 +130,25 @@ function acquireAudioProcessSlot(): Promise<void> {
     activeAudioProcesses += 1;
     return Promise.resolve();
   }
-  return new Promise((resolve) => waitingAudioProcesses.push(resolve));
+  if (waitingAudioProcesses.length >= AUDIO_PROCESS_QUEUE_LIMIT) {
+    return Promise.reject(
+      new ServiceUnavailableException('File audio saturée.'),
+    );
+  }
+  return new Promise((resolve, reject) => {
+    const admit = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    const timer = setTimeout(() => {
+      const index = waitingAudioProcesses.indexOf(admit);
+      if (index >= 0) waitingAudioProcesses.splice(index, 1);
+      reject(
+        new ServiceUnavailableException('Délai de la file audio dépassé.'),
+      );
+    }, operationalSettings.soundProcessQueueTimeoutMs);
+    waitingAudioProcesses.push(admit);
+  });
 }
 
 function releaseAudioProcessSlot(): void {

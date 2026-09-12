@@ -53,3 +53,23 @@ it('expires at the injected clock boundary and isolates returned names', async (
   expect((await cache.getEnabledNames()).sort()).toEqual(['One', 'Source']);
   expect(registry.listEnabledNames).toHaveBeenCalledTimes(2);
 });
+
+it('refreshes from the registry for a name-selection decision', async () => {
+  const registry = Object.assign(
+    Object.create(BotNameRegistryService.prototype) as BotNameRegistryService,
+    {
+      listEnabledNames: jest
+        .fn()
+        .mockResolvedValueOnce(['Stale'])
+        .mockResolvedValueOnce(['Current']),
+    },
+  );
+  const cache = new BotNameCacheService(
+    registry,
+    { namesCacheTtlMs: 10_000 },
+    { now: () => 1_000 },
+  );
+  await expect(cache.getEnabledNames()).resolves.toEqual(['Stale']);
+  await expect(cache.refreshEnabledNames()).resolves.toEqual(['Current']);
+  expect(registry.listEnabledNames).toHaveBeenCalledTimes(2);
+});

@@ -388,8 +388,7 @@ function projectPending(
     blocking: pending.blocking,
   };
   if (!expected) return common;
-  const data = pending.data ? structuredClone(pending.data) : undefined;
-  if (data) delete data.continuationData;
+  const data = projectChoiceData(pending.data);
   const kind = typeof data?.kind === 'string' ? data.kind : '';
   const options = Array.isArray(data?.options) ? data.options : [];
   if (
@@ -408,4 +407,23 @@ function projectPending(
     choices: pending.choices ? [...pending.choices] : undefined,
     data,
   };
+}
+
+function projectChoiceData(source: PendingState['data']): PendingState['data'] {
+  if (!source) return undefined;
+  const fields = [
+    'kind',
+    'choiceId',
+    'options',
+    'min',
+    'max',
+    'timeoutStrategy',
+    'timeoutValue',
+    'deadlineMs',
+  ] as const;
+  return Object.fromEntries(
+    fields
+      .filter((field) => Object.hasOwn(source, field))
+      .map((field) => [field, structuredClone(source[field])]),
+  );
 }

@@ -1,13 +1,23 @@
 import { testGame } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import { TAXI_CLIENTS, TAXI_EVENTS, TAXI_TILES } from './content';
-import gameDefinition from './game';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import document from './game.json';
+import manifest from './manifest.json';
+import board from './content/board.json';
+import clients from './content/clients.json';
+import events from './content/events.json';
+
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/board.json': board,
+  'content/clients.json': clients,
+  'content/events.json': events,
+});
 
 describe('Taxi Express declarative game', () => {
   it('runs the complete mission flow without leaking other clients', async () => {
-    expect(TAXI_TILES).toHaveLength(25);
-    expect(TAXI_CLIENTS).toHaveLength(18);
-    expect(TAXI_EVENTS).toHaveLength(25);
+    expect(board.tiles).toHaveLength(25);
+    expect(clients.cards).toHaveLength(18);
+    expect(events.cards).toHaveLength(25);
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(137);
     await game.start();
     await game.as(1).do('roll', {});

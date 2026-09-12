@@ -9,7 +9,8 @@ export function getErrorPayload(
   value: unknown,
   fallback = 'Erreur inconnue',
 ): PresentedErrorPayload {
-  const safeFallback = typeof fallback === 'string' ? fallback.slice(0, 2_000) : 'Erreur inconnue';
+  const safeFallback =
+    typeof fallback === 'string' ? fallback.slice(0, 2_000) : 'Erreur inconnue';
   if (
     isRecord(value) &&
     value.presentToClient === 'code' &&
@@ -41,10 +42,12 @@ function httpClientMessage(value: unknown): string | null {
     return null;
   }
   if (!Number.isInteger(status) || status < 400 || status >= 500) return null;
-  if (typeof response === 'string') return response.trim().slice(0, 2_000) || null;
+  if (typeof response === 'string')
+    return response.trim().slice(0, 2_000) || null;
   if (!isRecord(response)) return null;
   const message = response.message;
-  if (typeof message === 'string') return message.trim().slice(0, 2_000) || null;
+  if (typeof message === 'string')
+    return message.trim().slice(0, 2_000) || null;
   if (Array.isArray(message)) {
     const joined = message
       .filter((item) => typeof item === 'string')

@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "sacred-circles",
+      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.hands",
+      "id": "players",
+      "deck": "sacred-circles",
+      "initial": 6,
+      "visibility": "owner"
+    },
+    {
+      "component": "inventory.set",
+      "id": "sacred-circles-completed",
+      "items": { "$content": "content/catalogue.json#/cardIds" },
+      "visibility": "public"
+    }
+  ],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    { "key": "F", "type": "action", "actionType": "form_circle" },
+    { "key": "D", "type": "action", "actionType": "discard_card" },
+    { "key": "S", "type": "action", "actionType": "pass" }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": ["form_circle", "discard_card", "pass"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "form_circle": { "recipe": "card-circles-form" },
+    "discard_card": { "recipe": "card-circles-discard" },
+    "pass": { "recipe": "card-circles-pass" }
+  },
+  "victory": { "kind": "by-card-circles" },
+  "cardCircles": {
+    "deckId": "sacred-circles",
+    "handId": "players",
+    "inventoryId": "sacred-circles-completed",
+    "cards": { "$content": "content/catalogue.json#/cards" },
+    "themes": { "$content": "content/catalogue.json#/themes" },
+    "cardsPerCircle": 6,
+    "circlesToWin": 3,
+    "handMinimum": 6,
+    "handLimit": 8,
+    "finishReason": "three-circles",
+    "eventNamespace": "cercles"
+  }
+}

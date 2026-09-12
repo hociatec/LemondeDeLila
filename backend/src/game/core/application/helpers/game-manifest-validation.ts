@@ -50,8 +50,10 @@ export function assertGameManifestMatches(
     Number(manifest.maxPlayers) > 64
   )
     fail('limites de joueurs');
-  if (manifest.summary !== undefined &&
-      (typeof manifest.summary !== 'string' || manifest.summary.length > 2000))
+  if (
+    manifest.summary !== undefined &&
+    (typeof manifest.summary !== 'string' || manifest.summary.length > 2000)
+  )
     fail('summary');
   if (manifest.summary !== expected.summary) fail('summary');
 }

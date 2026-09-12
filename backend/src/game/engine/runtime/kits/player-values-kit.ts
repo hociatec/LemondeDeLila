@@ -1,8 +1,11 @@
 import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRankingController } from './ranking-kit';
+import { prepareResourceExchange } from './resource-exchange';
 import {
   assertGameCount,
   assertGameValue,
   assertPlayerValueId,
+  assertGamePlayerId,
 } from './numeric-invariants';
 import type {
   PlayerStatus,
@@ -47,6 +50,7 @@ export class GameScoreController {
   ) {}
 
   get(playerId: number): number {
+    assertGamePlayerId(playerId);
     return this.state.scores[String(playerId)] ?? 0;
   }
 
@@ -87,17 +91,10 @@ export class GameScoreController {
   }
 
   ranking(direction: 'asc' | 'desc' = 'desc'): number[][] {
-    const factor = direction === 'desc' ? -1 : 1;
-    const sorted = Object.entries(this.state.scores).sort(
-      (left, right) =>
-        factor * (left[1] - right[1]) || Number(left[0]) - Number(right[0]),
+    return new GameRankingController().tiers(
+      Object.keys(this.state.scores).map(Number),
+      { value: (playerId) => this.get(playerId), direction },
     );
-    const ranks: number[][] = [];
-    for (const [playerId, score] of sorted) {
-      const previous = sorted.findIndex((entry) => entry[1] === score);
-      (ranks[previous] ??= []).push(Number(playerId));
-    }
-    return ranks.filter((rank) => rank.length > 0);
   }
 
   leaders(): number[] {
@@ -115,6 +112,7 @@ export class GameResourcesController<TResourceId extends string = string> {
   ) {}
 
   get(playerId: number, resource: TResourceId): number {
+    assertGamePlayerId(playerId);
     assertPlayerValueId(resource);
     return this.state.resources[resource]?.[String(playerId)] ?? 0;
   }
@@ -167,6 +165,8 @@ export class GameResourcesController<TResourceId extends string = string> {
     amount: number,
   ): void {
     const normalizedAmount = this.normalizePositiveAmount(amount);
+    assertGamePlayerId(from);
+    assertGamePlayerId(to);
     assertPlayerValueId(resource);
     if (from === to) return;
     const fromKey = String(from);
@@ -211,6 +211,38 @@ export class GameResourcesController<TResourceId extends string = string> {
       resource,
       amount: normalizedAmount,
     });
+  }
+
+  exchange(
+    leftPlayerId: number,
+    rightPlayerId: number,
+    left: { resource: TResourceId; amount: number },
+    right: { resource: TResourceId; amount: number },
+  ): void {
+    const changes = prepareResourceExchange(
+      this.state.resources,
+      leftPlayerId,
+      rightPlayerId,
+      left,
+      right,
+    );
+    const resources: Record<string, Record<string, number>> = this.state
+      .resources;
+    for (const change of changes)
+      (resources[change.resource] ??= {})[String(change.playerId)] =
+        change.value;
+    for (const change of changes)
+      this.emit('resource.changed', {
+        ...change,
+        delta: change.value - change.previous,
+      });
+    if (changes.length > 0)
+      this.emit('resource.exchanged', {
+        leftPlayerId,
+        rightPlayerId,
+        left: { ...left },
+        right: { ...right },
+      });
   }
 
   private normalizePositiveAmount(amount: number): number {
@@ -261,6 +293,13 @@ export class GameCountersController<TCounterId extends string = string> {
 
   subtract(counter: TCounterId, amount: number): number {
     return this.add(counter, -amount);
+  }
+
+  /** Atomically reads and clears a transient aggregate counter. */
+  drain(counter: TCounterId): number {
+    const value = this.get(counter);
+    if (value !== 0) this.set(counter, 0);
+    return value;
   }
 }
 

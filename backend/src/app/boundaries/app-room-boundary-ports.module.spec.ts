@@ -3,12 +3,15 @@ import { Test } from '@nestjs/testing';
 import { AppGameRoomPortsModule } from './app-game-room-ports.module';
 import {
   GAME_ROOM_CONTEXT_PORT,
+  GAME_ROOM_RUN_READER,
+  type GameRoomRunReader,
   GAME_ROOM_EVENTS_PORT,
   type GameRoomContextPort,
   type GameRoomEventsPort,
 } from '../../game/public-api';
 import {
   ROOM_GAME_PORT,
+  ROOM_GAME_RUN_READER,
   ROOM_EVENTS_PORT,
 } from '../../modules/room/public-api';
 import { AppPresenceReadersModule } from './app-presence-readers.module';
@@ -24,6 +27,8 @@ import {
 import { CountRoomBotsService } from '../../modules/bot/public-api';
 import {
   BOT_ROOM_REPOSITORY,
+  BOT_ROOM_READER,
+  type BotRoomReader,
   type BotRoomRepository,
 } from '../../modules/bot/composition-api';
 import { BotModule } from '../../modules/bot/composition-api';
@@ -40,7 +45,7 @@ import {
   PRESENCE_ROOM_PARTICIPANT_REPOSITORY,
   type PresenceRoomParticipantRepository,
 } from '../../modules/presence/composition-api';
-import { asRoomId } from '../../shared/interfaces/public-api';
+import { asRoomId, asUserId } from '../../shared/interfaces/public-api';
 
 const participants = {
   listActiveRoomsByUserIds: jest.fn().mockResolvedValue([]),
@@ -51,6 +56,7 @@ const snapshots = {
 const bots = { countBotsForRoom: jest.fn().mockResolvedValue(2) };
 const vaultRooms = { getRoomPayload: jest.fn() };
 const gameRooms = {
+  authorizeGameAccess: jest.fn().mockResolvedValue(undefined),
   getRoomPayload: jest.fn().mockResolvedValue({
     room: {
       id: 42,
@@ -66,6 +72,7 @@ const gameRooms = {
   }),
 };
 const gameEvents = { onRoomDeleted: jest.fn() };
+const gameRuns = { isCurrent: jest.fn(async () => true) };
 
 @Module({
   providers: [
@@ -74,6 +81,7 @@ const gameEvents = { onRoomDeleted: jest.fn() };
     { provide: ROOM_VAULT_PORT, useValue: vaultRooms },
     { provide: ROOM_GAME_PORT, useValue: gameRooms },
     { provide: ROOM_EVENTS_PORT, useValue: gameEvents },
+    { provide: ROOM_GAME_RUN_READER, useValue: gameRuns },
   ],
   exports: [
     ACTIVE_ROOM_PARTICIPANTS_READER,
@@ -81,6 +89,7 @@ const gameEvents = { onRoomDeleted: jest.fn() };
     ROOM_VAULT_PORT,
     ROOM_GAME_PORT,
     ROOM_EVENTS_PORT,
+    ROOM_GAME_RUN_READER,
   ],
 })
 class RoomFixtureModule {}
@@ -102,9 +111,11 @@ class Consumer {
     @Inject(ROOM_VAULT_SNAPSHOT_REPOSITORY)
     readonly snapshots: RoomVaultSnapshotRepository,
     @Inject(BOT_ROOM_REPOSITORY) readonly bots: BotRoomRepository,
+    @Inject(BOT_ROOM_READER) readonly botReader: BotRoomReader,
     @Inject(VAULT_ROOM_PORT) readonly vaultRooms: VaultRoomPort,
     @Inject(GAME_ROOM_CONTEXT_PORT) readonly gameRooms: GameRoomContextPort,
     @Inject(GAME_ROOM_EVENTS_PORT) readonly gameEvents: GameRoomEventsPort,
+    @Inject(GAME_ROOM_RUN_READER) readonly gameRuns: GameRoomRunReader,
   ) {}
 }
 @Module({ providers: [Consumer] })
@@ -132,14 +143,22 @@ it('binds room and vault ports across independent Nest modules', async () => {
     .compile();
   try {
     const consumer = app.get(Consumer);
+    expect(consumer.gameRuns).toBe(gameRuns);
     expect(consumer.participants).toBe(participants);
     expect(consumer.snapshots).toBe(snapshots);
     expect(consumer.bots).toBe(bots);
+    await expect(consumer.botReader.countBotsForRoom(42)).resolves.toBe(2);
     expect(consumer.vaultRooms).toBe(vaultRooms);
     expect(consumer.gameRooms).toEqual(
       expect.objectContaining({ getRoomPayload: expect.any(Function) }),
     );
     expect(consumer.gameEvents).toBe(gameEvents);
+    await consumer.gameRooms.authorizeGameAccess(
+      asRoomId(42),
+      asUserId(7),
+      'write',
+    );
+    expect(gameRooms.authorizeGameAccess).toHaveBeenCalledWith(42, 7, 'write');
     await expect(
       consumer.gameRooms.getRoomPayload(asRoomId(42)),
     ).resolves.toEqual(

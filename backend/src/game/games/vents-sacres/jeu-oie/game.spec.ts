@@ -1,6 +1,12 @@
 import { testGame } from '../../../engine/testing/public-api';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import document from './game.json';
+import manifest from './manifest.json';
+import catalogue from './content/catalogue.json';
 
-import gameDefinition from './game';
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Jeu de l’Oie declarative game', () => {
   it('selects unique pawns through generic choices then rolls and replays', async () => {

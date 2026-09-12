@@ -14,7 +14,9 @@ export function hasMinimumParticipants(
   const humanCount = Number.isSafeInteger(humans)
     ? Math.min(64, Math.max(0, humans))
     : 0;
-  const botCount = Number.isSafeInteger(bots) ? Math.min(64, Math.max(0, bots)) : 0;
+  const botCount = Number.isSafeInteger(bots)
+    ? Math.min(64, Math.max(0, bots))
+    : 0;
   return humanCount + botCount >= resolveMinimumParticipants(minimum);
 }
 

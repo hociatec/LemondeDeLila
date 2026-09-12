@@ -5,10 +5,10 @@ import type {
 import { Logger } from '@nestjs/common';
 import Redis from 'ioredis';
 import { bestEffort } from '../../../observability/public-api';
+import { operationalSettings } from '../../../config/public-api';
 
 export class RedisSessionStore implements SessionStateStore {
   private static readonly MAX_SESSION_BYTES = 64 * 1024;
-  private static readonly SESSION_TTL_SECONDS = 24 * 60 * 60;
   private readonly logger = new Logger(RedisSessionStore.name);
   private readonly redis: Redis;
   private readonly prefix = 'ws:session:';
@@ -49,7 +49,7 @@ export class RedisSessionStore implements SessionStateStore {
       key,
       serialized,
       'EX',
-      RedisSessionStore.SESSION_TTL_SECONDS,
+      operationalSettings.sessionTtlSeconds,
     );
   }
 

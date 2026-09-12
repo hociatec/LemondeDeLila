@@ -1,15 +1,13 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   GAME_ROOM_CONTEXT_PORT,
   type GameRoomContextPort,
   type GameRoomPayload,
 } from '../../../application/ports/game-room.port';
-import { asRoomId, asUserId } from '../../../../../shared/interfaces/public-api';
+import {
+  asRoomId,
+  asUserId,
+} from '../../../../../shared/interfaces/public-api';
 
 @Injectable()
 export class GameWsRoomContextService {
@@ -18,29 +16,20 @@ export class GameWsRoomContextService {
     private readonly roomGame: GameRoomContextPort,
   ) {}
 
-  async ensureReadable(roomId: number, userId: number): Promise<void> {
-    const payload = await this.roomGame.getRoomPayload(asRoomId(roomId));
-    const room = payload.room;
-    if (!room.isPrivate) return;
-
-    const isOwner = room.owner?.id === userId;
-    const isParticipant = (room.players ?? []).some(
-      (participant) => participant.id === userId,
+  ensureReadable(roomId: number, userId: number): Promise<void> {
+    return this.roomGame.authorizeGameAccess(
+      asRoomId(roomId),
+      asUserId(userId),
+      'read',
     );
-    if (!isOwner && !isParticipant) {
-      throw new ForbiddenException('Accès non autorisé');
-    }
   }
 
-  async ensureWritable(roomId: number, userId: number): Promise<void> {
-    const room = (await this.roomGame.getRoomPayload(asRoomId(roomId))).room;
-    const isOwner = room.owner?.id === userId;
-    const isParticipant = (room.players ?? []).some(
-      (participant) => participant.id === userId,
+  ensureWritable(roomId: number, userId: number): Promise<void> {
+    return this.roomGame.authorizeGameAccess(
+      asRoomId(roomId),
+      asUserId(userId),
+      'write',
     );
-    if (!isOwner && !isParticipant) {
-      throw new ForbiddenException('Action de jeu non autorisée');
-    }
   }
 
   async transition(

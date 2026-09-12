@@ -1,6 +1,7 @@
 import { RealtimeRequestReplayService } from './realtime-request-replay.service';
 import type { RealtimeClientSession } from './realtime-api.types';
 import type { WebSocket } from 'ws';
+import { operationalSettings } from '../../../../config/public-api';
 
 const session: RealtimeClientSession = {
   socket: {} as WebSocket,
@@ -77,4 +78,38 @@ it('does not let an old failed execution delete a newer entry with the same key'
   expect(replay.begin(session, 'command', 'id').kind).toBe('execute');
   first.fail();
   expect(replay.begin(session, 'command', 'id').kind).toBe('replay');
+});
+
+it('retains completed receipts under saturation until their TTL expires', () => {
+  let now = 0;
+  const replay = new RealtimeRequestReplayService({ now: () => now });
+  for (
+    let id = 0;
+    id < operationalSettings.realtimeRequestReplayMaxEntries;
+    id++
+  ) {
+    const entry = replay.begin(session, 'command', String(id), { value: 1 });
+    if (entry.kind !== 'execute') throw new Error('Expected execution');
+    entry.complete([]);
+  }
+  expect(replay.begin(session, 'command', 'new').kind).toBe('busy');
+  expect(replay.begin(session, 'command', '0', { value: 1 }).kind).toBe(
+    'replay',
+  );
+  expect(replay.begin(session, 'command', '0', { value: 2 }).kind).toBe(
+    'collision',
+  );
+  now = operationalSettings.realtimeRequestReplayTtlMs;
+  expect(replay.begin(session, 'command', 'new').kind).toBe('execute');
+});
+
+it('cannot revoke a completed receipt through a late failure callback', async () => {
+  const replay = new RealtimeRequestReplayService({ now: () => 1000 });
+  const first = replay.begin(session, 'command', 'id');
+  if (first.kind !== 'execute') throw new Error('Expected execution');
+  first.complete([{ type: 'success' }]);
+  first.fail();
+  const retry = replay.begin(session, 'command', 'id');
+  if (retry.kind !== 'replay') throw new Error('Expected replay');
+  await expect(retry.frames).resolves.toEqual([{ type: 'success' }]);
 });

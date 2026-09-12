@@ -5,10 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import {
-  ADMIN_BOT_PORT,
-  type AdminBotPort,
-} from '../../ports/admin-bot.port';
+import { ADMIN_BOT_PORT, type AdminBotPort } from '../../ports/admin-bot.port';
 function mapBotApplicationError(error: unknown): unknown {
   if (
     error == null ||
@@ -90,8 +87,12 @@ export class AdminBotsService {
       throw new BadRequestException('Identifiant de nom de bot invalide.');
     }
     const normalizedUpdate = {
-      ...(update.name === undefined ? {} : { name: normalizeBotName(update.name) }),
-      ...(update.enabled === undefined ? {} : { enabled: update.enabled === true }),
+      ...(update.name === undefined
+        ? {}
+        : { name: normalizeBotName(update.name) }),
+      ...(update.enabled === undefined
+        ? {}
+        : { enabled: update.enabled === true }),
     };
     try {
       await this.bots.updateName(id, normalizedUpdate);
@@ -115,7 +116,8 @@ export class AdminBotsService {
 }
 
 function normalizeBotName(value: unknown): string {
-  const normalized = typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
+  const normalized =
+    typeof value === 'string' ? value.replace(/\s+/g, ' ').trim() : '';
   if (!normalized || normalized.length > 150) {
     throw new BadRequestException('Nom de bot invalide.');
   }

@@ -4,17 +4,18 @@ import type { RoomUserRepository } from '../../../../application/ports/room-user
 import type { RoomUserRecord } from '../../../../application/models/room-user.model';
 import { asUserId } from '../../../../../../shared/interfaces/public-api';
 
+type UserRow = { id?: unknown; username?: unknown; roles?: unknown };
+
 @Injectable()
 export class RoomUserTypeormRepository implements RoomUserRepository {
   constructor(private readonly dataSource: DataSource) {}
 
   async findById(id: number): Promise<RoomUserRecord | null> {
-    const rows = await this.dataSource.query(
+    const rows = await this.dataSource.query<UserRow[]>(
       'SELECT id, username, roles FROM users WHERE id = ? LIMIT 1',
       [id],
     );
-    const row = rows[0] as
-      { id?: unknown; username?: unknown; roles?: unknown } | undefined;
+    const row = rows[0];
     if (!row) return null;
     const userId = toPositiveSafeId(row?.id);
     if (userId === null) return null;

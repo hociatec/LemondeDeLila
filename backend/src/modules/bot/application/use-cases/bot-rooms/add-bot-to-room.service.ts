@@ -21,17 +21,11 @@ export class AddBotToRoomService {
     roomId: number,
     userId: number,
   ): Promise<BotRoomRecord> {
-    const room = this.policy.requireRoom(await rooms.findRoomById(roomId));
-    this.policy.ensureOwner(room, userId);
-    this.policy.ensureRoomOpen(room);
-
-    const [humans, existingBots] = await Promise.all([
-      rooms.countActiveHumansForRoom(room.id),
-      rooms.listBotsForRoom(room.id),
-    ]);
-    this.policy.ensureCapacity(room, humans, existingBots.length);
-
+    this.policy.requireAllowed(
+      await rooms.assessBotMutation(roomId, { kind: 'add', actorId: userId }),
+    );
+    const existingBots = await rooms.listBotsForRoom(roomId);
     const name = await this.names.pickName(existingBots);
-    return rooms.createBot({ roomId: room.id, name });
+    return rooms.createBot({ roomId: roomId, name });
   }
 }

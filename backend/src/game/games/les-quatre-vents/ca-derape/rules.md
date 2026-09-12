@@ -24,3 +24,7 @@ Atteindre (ou dépasser) la case 30 en premier.
 
 ## Fin de partie
 La partie se termine dès qu’un joueur atteint la case Arrivée.
+
+Si un effet fait arriver plusieurs joueurs simultanément, l'identifiant numérique
+le plus petit les départage, y compris les identifiants négatifs des bots. Cette
+règle explicite est portée par la version de règles 3.

@@ -30,3 +30,7 @@ Le premier joueur à atteindre le score convenu (7 points par défaut) est décl
 
 ## Ambiance
 Ce jeu est une ode au non-sens : jouez des prénoms improbables, défendez-les avec panache, sabotez vos amis et n’oubliez pas de crier « Gérard président ! » quand c’est mérité.
+
+Le jury automatique choisit, parmi les soumissions non vides, le joueur dont
+l'identifiant numérique est le plus petit. Ce départage est indépendant de
+l'ordre d'arrivée des soumissions, y compris pour les bots ; règles version 2.

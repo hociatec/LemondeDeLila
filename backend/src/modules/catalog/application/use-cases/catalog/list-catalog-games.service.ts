@@ -15,10 +15,12 @@ export class ListCatalogGamesService {
     private readonly mapper: CatalogMapperService,
   ) {}
 
-  async execute(): Promise<CatalogGame[]> {
-    const cached = this.cache.getGames();
-    if (cached) {
-      return cached;
+  async execute(options: { fresh?: boolean } = {}): Promise<CatalogGame[]> {
+    if (options.fresh !== true) {
+      const cached = this.cache.getGames();
+      if (cached) {
+        return cached;
+      }
     }
 
     const revision = this.cache.revision();

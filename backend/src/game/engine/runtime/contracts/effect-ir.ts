@@ -4,7 +4,11 @@ import type { StatusScope } from '../kits/player-values-contracts';
 export type EffectTarget =
   | { kind: 'self' }
   | { kind: 'player'; playerId: number }
-  | { kind: 'next' }
+  | { kind: 'next'; order?: 'seating' | 'turn' }
+  | { kind: 'previous'; order?: 'seating' | 'turn' }
+  | { kind: 'random-player' }
+  | { kind: 'leader'; ties: 'all' | 'lowest-id' | 'random' }
+  | { kind: 'last'; ties: 'all' | 'lowest-id' | 'random' }
   | { kind: 'all-players' }
   | { kind: 'all-opponents' }
   | { kind: 'random-opponent' }
@@ -22,7 +26,36 @@ export type EffectTarget =
       chooserPlayerId?: number;
     };
 
+export type EffectComparison = 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte';
+
 export type EffectCondition =
+  | {
+      kind: 'score';
+      compare: EffectComparison;
+      amount: number;
+      target?: EffectTarget;
+    }
+  | {
+      kind: 'resource';
+      resource: string;
+      compare: EffectComparison;
+      amount: number;
+      target?: EffectTarget;
+    }
+  | {
+      kind: 'inventory-count';
+      inventoryId: string;
+      itemId?: string;
+      compare: EffectComparison;
+      amount: number;
+      target?: EffectTarget;
+    }
+  | {
+      kind: 'owns-asset';
+      registryId: string;
+      assetId: string;
+      target?: EffectTarget;
+    }
   | {
       kind: 'has-resource';
       resource: string;
@@ -123,6 +156,13 @@ export type GameEffectInstruction =
       target?: EffectTarget;
     }
   | {
+      kind: 'exchange-resources';
+      left: EffectTarget;
+      right: EffectTarget;
+      leftOffer: { resource: string; amount: number };
+      rightOffer: { resource: string; amount: number };
+    }
+  | {
       kind: 'transfer-resource';
       resource: string;
       amount: number;
@@ -142,6 +182,12 @@ export type GameEffectInstruction =
       count?: number;
       from: EffectTarget;
       to?: EffectTarget;
+    }
+  | {
+      kind: 'exchange-random-cards';
+      handId: string;
+      left: EffectTarget;
+      right: EffectTarget;
     }
   | {
       kind: 'swap-hands';
@@ -194,6 +240,9 @@ export type GameEffectInstruction =
       right: EffectTarget;
     }
   | { kind: 'complete-turn' }
+  | { kind: 'start-round' }
+  | { kind: 'end-round' }
+  | { kind: 'eliminate-player'; target?: EffectTarget }
   | {
       kind: 'custom';
       effectId: string;

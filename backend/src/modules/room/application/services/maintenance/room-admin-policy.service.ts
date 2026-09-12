@@ -26,7 +26,7 @@ export class RoomAdminPolicyService {
       throw new RoomInvalidUserIdError();
     }
     const targetRaw = candidateKeys
-      .map((key) => row[key])
+      .map((key): unknown => Reflect.get(row, key))
       .find((value) => value !== undefined && value !== null);
     const targetUserId = parseStrictInteger(targetRaw, { min: 1 });
     if (targetUserId === null) {

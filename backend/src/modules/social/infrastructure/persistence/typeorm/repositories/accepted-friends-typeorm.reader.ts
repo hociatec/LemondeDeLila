@@ -29,7 +29,8 @@ export class AcceptedFriendsTypeormReader implements AcceptedFriendsReader {
           : relation.requester?.id,
       )
       .filter(
-        (id): id is number => Number.isSafeInteger(id) && id > 0 && id !== userId,
+        (id): id is number =>
+          Number.isSafeInteger(id) && id > 0 && id !== userId,
       );
   }
 }

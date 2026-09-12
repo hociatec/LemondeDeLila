@@ -42,4 +42,3 @@ export type NotificationInboxContactRow = {
   readAt: Date | null;
 };
 /** Explicitly named data contract at the application boundary. */
-

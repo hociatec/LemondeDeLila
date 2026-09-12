@@ -38,5 +38,6 @@
     "1770600000000-AuditHotQueryIndexes.ts":  "30e50b630c8236e1226527a2f70d544fdb87d285bb43fc0ffd84ffe34dfbb864",
     "1770700000000-CanonicalizeSocialRelationshipPairs.ts":  "c6912298d9c83b1970b16a62bec450db002ec7ad9de052a720a8af10512e0a1e",
     "1770800000000-EnforceSingleActiveGameMatch.ts":  "8e8e82cabb42ce6d45de66481f91a0fefb249a5f8f0f08e3d104853c790b1fb7",
-    "1771000000000-DecoupleUserForeignKeys.ts":  "b1da2030c2e7f6d900fc93812eec3b3874bd418cbc6cd93380c1d4b739a7f67c"
+    "1771000000000-DecoupleUserForeignKeys.ts":  "b1da2030c2e7f6d900fc93812eec3b3874bd418cbc6cd93380c1d4b739a7f67c",
+    "1771100000000-PersistRoomInvites.ts":  "c785322c75cef4daf339def126135b458a4636b5d5a34c1b7ee179a52913960c"
 }

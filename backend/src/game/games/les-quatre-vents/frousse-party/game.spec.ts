@@ -1,7 +1,12 @@
 import { testGame } from '../../../engine/testing/public-api';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import manifest from './manifest.json';
+import document from './game.json';
+import catalogue from './content/catalogue.json';
 
-import { FROUSSE_CARDS } from './content';
-import gameDefinition from './game';
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Frousse Party declarative game', () => {
   it('runs the haunted race deterministically without leaking pending internals', async () => {
@@ -11,7 +16,7 @@ describe('Frousse Party declarative game', () => {
     await game.choose(2, 'fantome-peureux');
     const actor = game.state().turn?.currentPlayerId ?? 1;
     await game.as(actor).do('roll', {});
-    expect(game.inspect.deckCount()).toBe(FROUSSE_CARDS.length - 1);
+    expect(game.inspect.deckCount()).toBe(catalogue.cards.length - 1);
     expect('pendingSwap' in game.view(actor)).toBe(false);
     expect(await game.replay()).toEqual(game.state());
   });

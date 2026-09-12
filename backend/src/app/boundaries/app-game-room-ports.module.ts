@@ -1,15 +1,16 @@
 import { Global, Module } from '@nestjs/common';
 import {
+  GAME_ROOM_RUN_READER,
   GAME_ROOM_CONTEXT_PORT,
   GAME_ROOM_EVENTS_PORT,
   type GameRoomContextPort,
-  type GameRoomEventsPort,
 } from '../../game/public-api';
 import {
+  ROOM_GAME_RUN_READER,
   ROOM_GAME_PORT,
   ROOM_EVENTS_PORT,
   type RoomGamePort,
-  type RoomEventsPort,
+  type RoomPayload,
 } from '../../modules/room/public-api';
 import { RoomModule } from '../../modules/room/composition-api';
 import {
@@ -17,17 +18,17 @@ import {
   asRoomId,
   asUserId,
 } from '../../shared/interfaces/public-api';
-import type { RoomPayload } from '../../modules/room/application/models/room-payload.model';
 
 @Global()
 @Module({
   imports: [RoomModule],
   providers: [
+    { provide: GAME_ROOM_RUN_READER, useExisting: ROOM_GAME_RUN_READER },
     {
       provide: GAME_ROOM_CONTEXT_PORT,
       inject: [ROOM_GAME_PORT],
       useFactory: (rooms: RoomGamePort): GameRoomContextPort => {
-        const project = async (payload: RoomPayload) => ({
+        const project = (payload: RoomPayload) => ({
           room: {
             id: asRoomId(payload.room.id),
             isPrivate: payload.room.isPrivate,
@@ -46,6 +47,8 @@ import type { RoomPayload } from '../../modules/room/application/models/room-pay
           },
         });
         return {
+          authorizeGameAccess: (roomId, userId, mode) =>
+            rooms.authorizeGameAccess(roomId, userId, mode),
           getRoomPayload: async (roomId) =>
             project(await rooms.getRoomPayload(roomId)),
           refreshRoomPayload: async (roomId) =>
@@ -58,10 +61,13 @@ import type { RoomPayload } from '../../modules/room/application/models/room-pay
     },
     {
       provide: GAME_ROOM_EVENTS_PORT,
-      inject: [ROOM_EVENTS_PORT],
-      useFactory: (events: RoomEventsPort): GameRoomEventsPort => events,
+      useExisting: ROOM_EVENTS_PORT,
     },
   ],
-  exports: [GAME_ROOM_CONTEXT_PORT, GAME_ROOM_EVENTS_PORT],
+  exports: [
+    GAME_ROOM_CONTEXT_PORT,
+    GAME_ROOM_EVENTS_PORT,
+    GAME_ROOM_RUN_READER,
+  ],
 })
 export class AppGameRoomPortsModule {}

@@ -26,6 +26,12 @@ import { standardTurn } from './kits/turn-kit';
 import { createDeclarativeState } from './state/declarative-state.factory';
 import { loadDeclarativeState } from './content/game-state-loader';
 import { assertValidGameSession } from './state/game-session-contracts';
+import { assertRestoredSessionHeader } from './state/restored-session-header';
+import { assertRestoredEffects } from './state/restored-effects';
+import { indexComponents } from './definitions/game-definition-component-validator';
+import type { GameEffectValidationReferences } from './contracts/effect-validation';
+import { GameStateViolationError } from '../../core/domain/errors/game-domain.errors';
+import { assertSerializableState } from './state/assert-serializable-state';
 import { assertCompiledGameDefinition } from './definitions/compiled-game-definition-brand';
 import { DeclarativeGameQueries } from './projection/declarative-game-queries';
 
@@ -46,12 +52,16 @@ export class DeclarativeGameRuntime<
   protected readonly choices: DeclarativeChoiceRuntime<TState, TActions>;
   private readonly actions: DeclarativeActionController<TState, TActions>;
   private readonly lifecycle: DeclarativeLifecycle<TState, TActions>;
+  private readonly effectReferences: GameEffectValidationReferences;
 
   constructor(
     protected readonly definition: CompiledGameDefinition<TState, TActions>,
   ) {
     super();
     assertCompiledGameDefinition(definition);
+    this.effectReferences = indexComponents(definition, (path, reason) => {
+      throw new GameStateViolationError(`${path}: ${reason}`);
+    });
     this.gameType = definition.id;
     this.displayName = definition.displayName;
     this.category = definition.category;
@@ -86,6 +96,8 @@ export class DeclarativeGameRuntime<
           ctx: context,
         })
       : ({} as TState);
+    assertSerializableState(runtime.game, 'state.game');
+    runtime.game = structuredClone(runtime.game);
     this.lifecycle.enterInitialPhase(runtime, context);
     if (runtime.engine.configuration.complete) {
       assertValidGameSession(runtime, this.definition.components ?? []);
@@ -203,7 +215,7 @@ export class DeclarativeGameRuntime<
   }
 
   protected runtimeState(state: GameState): DeclarativeState<TState> {
-    return loadDeclarativeState(
+    const runtime = loadDeclarativeState<TState>(
       state,
       this.definition.id,
       this.definition.stateVersion,
@@ -212,6 +224,15 @@ export class DeclarativeGameRuntime<
       this.definition.content.snapshotMigrations,
       this.definition.contentDigest,
     );
+    assertRestoredSessionHeader(
+      runtime,
+      this.definition.phases ?? {},
+      this.definition.components ?? [],
+    );
+    assertValidGameSession(runtime, this.definition.components ?? []);
+    this.context(runtime, null).assertValidKits();
+    assertRestoredEffects(runtime, this.effectReferences);
+    return runtime;
   }
 
   protected actionDefinition(type: string): GameActionShape<TState> {

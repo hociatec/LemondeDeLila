@@ -113,11 +113,17 @@ function timeoutValue<TState extends object>(
 ): unknown {
   if (data.timeoutStrategy === 'pass') return null;
   if (data.timeoutStrategy === 'default') return data.timeoutValue;
+  if (isMultiChoice(data.kind)) {
+    const { minimum } = choiceBounds(data);
+    if (minimum === 0) return [];
+    if (data.timeoutStrategy === 'random')
+      return context.random.shuffle(options).slice(0, minimum);
+    if (data.timeoutStrategy === 'last') return options.slice(-minimum);
+    return options.slice(0, minimum);
+  }
   if (data.timeoutStrategy === 'last') return options.at(-1);
   if (data.timeoutStrategy === 'random') return context.random.pick(options);
-  if (!isMultiChoice(data.kind)) return options[0];
-  const { minimum } = choiceBounds(data);
-  return options.slice(0, minimum);
+  return options[0];
 }
 
 function ensureValidValue(

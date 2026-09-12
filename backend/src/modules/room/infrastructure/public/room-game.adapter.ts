@@ -1,3 +1,4 @@
+import { RoomGameAccessService } from '../../application/services/membership/room-game-access.service';
 import { Injectable } from '@nestjs/common';
 import type { RoomGamePort } from '../../application/ports/room-game.port';
 import { RoomLifecycleFacadeService } from '../../application/services/lifecycle/room-lifecycle-facade.service';
@@ -10,7 +11,16 @@ export class RoomGameAdapter implements RoomGamePort {
     private readonly lifecycle: RoomLifecycleFacadeService,
     private readonly membership: RoomMembershipFacadeService,
     private readonly roomState: RoomStateService,
+    private readonly gameAccess: RoomGameAccessService,
   ) {}
+
+  authorizeGameAccess(
+    roomId: number,
+    userId: number,
+    mode: 'read' | 'write',
+  ): Promise<void> {
+    return this.gameAccess.authorize(roomId, userId, mode);
+  }
 
   getRoomPayload(roomId: number) {
     return this.roomState.getRoomPayload(roomId);

@@ -1,79 +1,55 @@
+import { GENERATED_GAME_PACKAGES } from '../../../composition/generated-game-registry';
+import { compileJsonGame } from '../../../engine/json/public-api';
+
 const catalogues = [
-  {
-    game: 'les-quatre-vents/contes-et-cacahuetes',
-    asset: 'content-data.json',
-    path: ['decks', 'bonus'],
-  },
-  {
-    game: 'vents-dansants/la-grande-mine-de-barbak',
-    asset: 'content-data.json',
-    path: ['cards'],
-  },
-  {
-    game: 'les-quatre-vents/frousse-party',
-    asset: 'catalogue.json',
-    path: ['cards'],
-  },
-  {
-    game: 'vents-dansants/les-mains-de-la-terre',
-    asset: 'catalogue.json',
-    path: ['cards'],
-  },
-  {
-    game: 'les-quatre-vents/en-attendant-minuit',
-    asset: 'catalogue.json',
-    path: ['cards'],
-  },
-  {
-    game: 'les-quatre-vents/a-fond-les-ballons',
-    asset: 'catalogue.json',
-    path: ['cards'],
-  },
-  {
-    game: 'les-quatre-vents/galopons-ensemble',
-    asset: 'catalogue.json',
-    path: ['cards'],
-  },
-  {
-    game: 'les-quatre-vents/ca-derape',
-    asset: 'catalogue.json',
-    path: ['cards'],
-  },
-];
+  ['contes-et-cacahuetes', ['contes', 'decks', 'bonus']],
+  ['la-grande-mine-de-barbak', ['mineDomain', 'cards']],
+  ['frousse-party', ['frousseRace', 'cards']],
+  ['les-mains-de-la-terre', ['professionFamilies', 'cards']],
+  ['en-attendant-minuit', ['midnightRace', 'cards']],
+  ['a-fond-les-ballons', ['balloonRace', 'cards']],
+  ['galopons-ensemble', ['galoponsRace', 'cards']],
+  ['ca-derape', ['derapeRace', 'cards']],
+] as const;
 
 describe.each(catalogues)(
-  '$game canonical card instructions',
-  ({ game, asset, path }) => {
-    const assetPath = `../../../games/${game}/${asset}`;
-    const contentPath = `../../../games/${game}/content`;
-
+  '%s canonical JSON card instructions',
+  (gameId, path) => {
     it.each(['missing', 'unknown-reference'])(
-      'rejects %s effects in authored JSON instead of supplying a TypeScript fallback',
+      'rejects %s effects instead of supplying a fallback',
       (mutation) => {
-        const source = structuredClone(
-          jest.requireActual<Record<string, unknown>>(assetPath),
+        const entry = GENERATED_GAME_PACKAGES.find(
+          (candidate) =>
+            (candidate.manifest as { code?: string }).code === gameId,
         );
+        if (!entry) throw new Error('Missing game package ' + gameId);
+        const definition = compileJsonGame(
+          entry.manifest as Parameters<typeof compileJsonGame>[0],
+          entry.definition.content.data,
+        );
+        const source = structuredClone(definition.content.data) as Record<
+          string,
+          unknown
+        >;
         const cards = path.reduce<unknown>((value, key) => {
           if (!value || typeof value !== 'object')
-            throw new Error('Invalid test catalogue');
+            throw new Error('Invalid canonical card path');
           return (value as Record<string, unknown>)[key];
         }, source);
         if (!Array.isArray(cards) || !cards[0])
-          throw new Error('Missing test card');
+          throw new Error('Missing canonical card');
         const card = cards[0] as { effects?: unknown };
         if (mutation === 'missing') delete card.effects;
         else
           card.effects = [
             { kind: 'custom', effectId: 'undeclared-effect', data: {} },
           ];
-        try {
-          jest.isolateModules(() => {
-            jest.doMock(assetPath, () => source);
-            expect(() => jest.requireActual(contentPath)).toThrow();
-          });
-        } finally {
-          jest.dontMock(assetPath);
-        }
+        expect(() =>
+          compileJsonGame(
+            entry.manifest as Parameters<typeof compileJsonGame>[0],
+            source,
+          ),
+        ).toThrow();
       },
     );
   },

@@ -2,7 +2,17 @@ import {
   GameAutomationPlannerService,
   type AutomationPlan,
 } from './game-automation-planner.service';
-import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleInit,
+  Optional,
+} from '@nestjs/common';
+import {
+  GAME_ROOM_RUN_READER,
+  type GameRoomRunReader,
+} from '../ports/game-room-run-reader.port';
 import type { GameRuntime } from '../ports/game-runtime.port';
 import { GameTaskDispatchService } from './game-task-dispatch.service';
 import type { GameState } from '../models/game-state.model';
@@ -48,6 +58,7 @@ export class GameRealtimeAutomationService implements OnModuleInit {
     private readonly scheduler: GameTaskDispatchService,
     private readonly executor: GameCommandExecutorService,
     private readonly queue: GameRoomCommandQueueService,
+    @Inject(GAME_ROOM_RUN_READER) private readonly rooms: GameRoomRunReader,
     @Optional() private readonly metrics?: GameEngineMetricsService,
     @Optional() private readonly registry?: GameRegistryService,
   ) {}
@@ -134,15 +145,23 @@ export class GameRealtimeAutomationService implements OnModuleInit {
   private async resolveExecution(
     task: GameScheduledTask,
   ): Promise<AutomationExecution | null> {
-    const handler = this.registry?.getHandler(task.gameType);
-    if (!handler)
-      throw new Error(`Runtime de jeu indisponible: ${task.gameType}`);
     const current = await this.engine.exportInternalState(
       task.roomId,
       task.gameType,
     );
     if (!current || String(current.status).toLowerCase() === 'finished')
       return null;
+    if (
+      !(await this.rooms.isCurrent(
+        task.roomId,
+        task.gameType,
+        current.metadata?.roomRunId ?? null,
+      ))
+    )
+      return null;
+    const handler = this.registry?.getHandler(task.gameType);
+    if (!handler)
+      throw new Error(`Runtime de jeu indisponible: ${task.gameType}`);
     const plan = this.planner.resolve(handler, current);
     return plan ? { handler, current, plan } : null;
   }

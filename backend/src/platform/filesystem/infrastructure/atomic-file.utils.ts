@@ -7,10 +7,19 @@ export async function writeFileAtomic(
   targetPath: string,
   data: string | Buffer,
 ): Promise<void> {
-  if (typeof targetPath !== 'string' || !targetPath || targetPath.length > 4096) {
+  if (
+    typeof targetPath !== 'string' ||
+    !targetPath ||
+    targetPath.length > 4096
+  ) {
     throw new Error('Invalid atomic-file target path');
   }
-  if ((Buffer.isBuffer(data) ? data.byteLength : Buffer.byteLength(data, 'utf8')) > 256 * 1024 * 1024) {
+  if (
+    (Buffer.isBuffer(data)
+      ? data.byteLength
+      : Buffer.byteLength(data, 'utf8')) >
+    256 * 1024 * 1024
+  ) {
     throw new Error('Atomic-file payload too large');
   }
   const directory = path.dirname(targetPath);
@@ -30,6 +39,59 @@ export async function writeFileAtomic(
     await bestEffortCleanup(
       () => fs.rm(temporary, { force: true }),
       'remove temporary file',
+    );
+    throw error;
+  }
+}
+
+export async function copyFileAtomic(
+  sourcePath: string,
+  targetPath: string,
+  maxBytes = 256 * 1024 * 1024,
+): Promise<void> {
+  if (
+    typeof sourcePath !== 'string' ||
+    !sourcePath ||
+    sourcePath.length > 4096 ||
+    typeof targetPath !== 'string' ||
+    !targetPath ||
+    targetPath.length > 4096 ||
+    !Number.isSafeInteger(maxBytes) ||
+    maxBytes < 1
+  ) {
+    throw new Error('Invalid atomic-file copy');
+  }
+  const sourceStat = await fs.stat(sourcePath);
+  if (
+    !sourceStat.isFile() ||
+    sourceStat.size < 1 ||
+    sourceStat.size > maxBytes
+  ) {
+    throw new Error('Atomic-file source too large');
+  }
+  const directory = path.dirname(targetPath);
+  await fs.mkdir(directory, { recursive: true });
+  const temporary = path.join(
+    directory,
+    `.${path.basename(targetPath)}.${process.pid}.${randomUUID()}.tmp`,
+  );
+  try {
+    await fs.copyFile(sourcePath, temporary, fsSync.constants.COPYFILE_EXCL);
+    const copiedStat = await fs.stat(temporary);
+    if (!copiedStat.isFile() || copiedStat.size !== sourceStat.size) {
+      throw new Error('Atomic-file copy size mismatch');
+    }
+    const handle = await fs.open(temporary, 'r+');
+    try {
+      await handle.sync();
+    } finally {
+      await handle.close();
+    }
+    await renameWithTransientRetry(temporary, targetPath);
+  } catch (error) {
+    await bestEffortCleanup(
+      () => fs.rm(temporary, { force: true }),
+      'remove temporary copy',
     );
     throw error;
   }
@@ -64,10 +126,19 @@ export function writeFileAtomicSync(
   targetPath: string,
   data: string | Buffer,
 ): void {
-  if (typeof targetPath !== 'string' || !targetPath || targetPath.length > 4096) {
+  if (
+    typeof targetPath !== 'string' ||
+    !targetPath ||
+    targetPath.length > 4096
+  ) {
     throw new Error('Invalid atomic-file target path');
   }
-  if ((Buffer.isBuffer(data) ? data.byteLength : Buffer.byteLength(data, 'utf8')) > 256 * 1024 * 1024) {
+  if (
+    (Buffer.isBuffer(data)
+      ? data.byteLength
+      : Buffer.byteLength(data, 'utf8')) >
+    256 * 1024 * 1024
+  ) {
     throw new Error('Atomic-file payload too large');
   }
   const directory = path.dirname(targetPath);
@@ -116,7 +187,12 @@ async function bestEffortCleanup(
 }
 
 export function assertPathInside(root: string, candidate: string): string {
-  if (typeof root !== 'string' || typeof candidate !== 'string' || root.length > 4096 || candidate.length > 4096) {
+  if (
+    typeof root !== 'string' ||
+    typeof candidate !== 'string' ||
+    root.length > 4096 ||
+    candidate.length > 4096
+  ) {
     throw new Error('Chemin filesystem invalide');
   }
   const normalizedRoot = path.resolve(root);

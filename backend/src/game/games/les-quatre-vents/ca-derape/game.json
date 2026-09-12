@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [{ "kind": "race", "trackId": "derape", "spaces": 30 }],
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "situations",
+      "cards": { "$content": "content/catalogue.json#/cards" },
+      "shuffle": true
+    }
+  ],
+  "setup": {
+    "startRound": false,
+    "counters": { "ca-derape.next-player-delta": 0 }
+  },
+  "resourceIds": [
+    "ca-derape.last-roll",
+    "ca-derape.last-move",
+    "ca-derape.idle-turns"
+  ],
+  "shortcuts": [{ "key": "D", "type": "action", "actionType": "roll" }],
+  "initialPhase": "playing",
+  "phases": { "playing": { "actions": ["roll"], "terminal": true } },
+  "actions": { "roll": { "recipe": "derape-race-roll" } },
+  "victory": { "kind": "by-derape-race" },
+  "derapeRace": {
+    "trackId": "derape",
+    "diceId": "main",
+    "deckId": "situations",
+    "nextDeltaChoiceId": "ca-derape.next-delta",
+    "maxDepth": 16,
+    "finishReason": "finish-line",
+    "resources": {
+      "lastRoll": "ca-derape.last-roll",
+      "lastMove": "ca-derape.last-move",
+      "idleTurns": "ca-derape.idle-turns"
+    },
+    "counterId": "ca-derape.next-player-delta",
+    "mirrorStatusId": "ca-derape.mirror-roll",
+    "tiles": { "$content": "content/catalogue.json#/tiles" },
+    "cards": { "$content": "content/catalogue.json#/cards" }
+  }
+}

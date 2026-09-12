@@ -88,4 +88,3 @@ export type TableAmbienceDefinitionsFile = {
   items: TableAmbienceDefinition[];
 };
 /** Explicitly named data contract at the application boundary. */
-

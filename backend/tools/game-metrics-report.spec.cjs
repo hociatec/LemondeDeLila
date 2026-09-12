@@ -21,6 +21,13 @@ test('counts JSON game programs as declarative code and assets as content', () =
     assert.equal(game.contentLoc, 1);
     assert.equal(game.customRulesLoc, 0);
     assert.equal(game.declarativeShare, 1);
+    assert.equal(game.jsonOnly, true);
+    assert.equal(game.typescriptLoc, 0);
+    fs.writeFileSync(path.join(root, 'game.ts'), 'export const callback = () => 1;');
+    const [regression] = measureGames(root);
+    assert.equal(regression.jsonOnly, false);
+    assert.equal(regression.typescriptLoc, 1);
+    assert.equal(growthReviews([regression], [game])[0].reason, 'json-only-regression');
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -45,7 +52,7 @@ test('flags significant custom growth and new games independently of content vol
   );
   assert.equal(
     growthReviews([{ ...before[0], customRulesLoc: 450 }], before).length,
-    0,
+    1,
   );
   assert.equal(
     growthReviews([{ ...before[0], gameId: 'new' }], before)[0].reason,

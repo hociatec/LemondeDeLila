@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "1",
+  "snapshotMigrations": [
+    {
+      "fromVersion": "entre-rites-et-lumieres@content:6b100bc2",
+      "toVersion": "1"
+    }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "patterns": [],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "ask_card"
+    },
+    {
+      "key": "S",
+      "type": "action",
+      "actionType": "pass"
+    }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": ["ask_card", "pass"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "ask_card": {
+      "recipe": "rites-ask-card"
+    },
+    "pass": {
+      "recipe": "rites-pass"
+    }
+  },
+  "victory": {
+    "kind": "by-rites"
+  },
+  "rites": {
+    "cards": {
+      "$content": "content/catalogue.json#/cards"
+    }
+  }
+}

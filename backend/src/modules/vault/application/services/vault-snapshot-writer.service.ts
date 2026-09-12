@@ -91,7 +91,10 @@ export class VaultSnapshotWriterService {
     @Inject(VAULT_ROOM_SNAPSHOT_REPOSITORY)
     private readonly snapshots: VaultRoomSnapshotRepository,
     @Inject(VAULT_ROOM_PORT)
-    private readonly rooms: VaultRoomPort,
+    private readonly rooms: Pick<
+      VaultRoomPort,
+      'adminDestroyRoom' | 'getRoomPayload' | 'requireRoomForOwnerAction'
+    >,
     @Inject(VAULT_GAME_PORT)
     private readonly game: VaultGamePort,
     @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
@@ -125,19 +128,8 @@ export class VaultSnapshotWriterService {
     ownerUserId: number,
     roomId: number,
   ): Promise<PreparedSnapshot> {
+    await this.rooms.requireRoomForOwnerAction(roomId, ownerUserId);
     const payload = await this.rooms.getRoomPayload(roomId);
-    const isOwner = payload?.room?.owner?.id === ownerUserId;
-    const isPlayer = payload?.room?.players?.some(
-      (player) => player?.id === ownerUserId,
-    );
-    if (!isOwner && !isPlayer) {
-      throw new BadRequestException("Vous n'êtes pas sur cette table.");
-    }
-    if (!isOwner) {
-      throw new BadRequestException(
-        'Seul le propriétaire de la table peut sauvegarder.',
-      );
-    }
     const started =
       String(payload.room.status ?? '').toLowerCase() === 'started' ||
       Boolean(payload.room.startedAt);

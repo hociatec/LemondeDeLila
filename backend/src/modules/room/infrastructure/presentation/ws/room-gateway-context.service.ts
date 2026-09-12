@@ -64,6 +64,10 @@ export class RoomGatewayContextService {
           this.lifecycleContext(),
           roomId,
         ),
+      nextRoomRealtimeVersion: (roomId: number) =>
+        this.runtime.nextRoomRealtimeVersion(roomId),
+      currentRoomRealtimeVersion: (roomId: number) =>
+        this.runtime.currentRoomRealtimeVersion(roomId),
     };
   }
 

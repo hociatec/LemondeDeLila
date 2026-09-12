@@ -1,5 +1,6 @@
 import * as Joi from 'joi';
 import { applicationEnvironment } from './environment-application-options';
+import { operationalEnvironment } from './environment-operational-options';
 
 type EnvValidationInput = Record<string, unknown>;
 
@@ -21,7 +22,11 @@ const databaseEnvironment = {
     .min(1)
     .max(120000)
     .default(10000),
-  DB_QUERY_TIMEOUT_MS: Joi.number().integer().min(100).max(120000).default(30000),
+  DB_QUERY_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(100)
+    .max(120000)
+    .default(30000),
   DB_STARTUP_RETRY_ATTEMPTS: Joi.number().integer().min(0).max(10).default(5),
   DB_STARTUP_RETRY_DELAY_MS: Joi.number()
     .integer()
@@ -108,25 +113,6 @@ const runtimeEnvironment = {
   ADMIN_MAINTENANCE_ALLOWED_IPS: Joi.string().optional(),
   ADMIN_MAINTENANCE_LOCK_PATH: Joi.string().min(1).optional(),
   ADMIN_MAINTENANCE_REQUIRE_DISTRIBUTED: Joi.boolean().default(false),
-  MAINTENANCE_COMMAND_TIMEOUT_MS: Joi.number()
-    .integer()
-    .positive()
-    .default(600000),
-  SOUND_PROBE_TIMEOUT_MS: Joi.number().integer().positive().default(15000),
-  SOUND_TRANSCODE_TIMEOUT_MS: Joi.number().integer().positive().default(30000),
-  CLIENT_UPDATE_DISCONNECT_DELAY_MS: Joi.number()
-    .integer()
-    .positive()
-    .default(1200),
-  ROOM_CLEANUP_TICK_MS: Joi.number().integer().positive().default(30000),
-  ROOM_CLEANUP_INITIAL_DELAY_MS: Joi.number()
-    .integer()
-    .positive()
-    .default(5000),
-  ROOM_INVITE_TTL_MS: Joi.number().integer().positive().default(600000),
-  WS_RECONNECT_BACKOFF_MS: Joi.number().integer().positive().default(300),
-  REALTIME_REQUEST_REPLAY_TTL_MS: Joi.number().integer().positive().optional(),
-  REALTIME_REQUEST_REPLAY_MAX_ENTRIES: Joi.number().integer().positive().optional(),
 };
 
 const updateEnvironment = {
@@ -166,6 +152,7 @@ const websocketEnvironment = {
 
 export const environmentValidationSchema = Joi.object({
   ...applicationEnvironment,
+  ...operationalEnvironment,
   ...coreEnvironment,
   ...databaseEnvironment,
   ...authEnvironment,
@@ -193,7 +180,11 @@ function validateCrossModuleEnvironment(
   if (
     Number.isFinite(bioMin) &&
     Number.isFinite(bioMax) &&
-    (bioMin < 0 || bioMax < 0 || bioMin > 10000 || bioMax > 10000 || bioMin > bioMax)
+    (bioMin < 0 ||
+      bioMax < 0 ||
+      bioMin > 10000 ||
+      bioMax > 10000 ||
+      bioMin > bioMax)
   ) {
     return customError(
       helpers,

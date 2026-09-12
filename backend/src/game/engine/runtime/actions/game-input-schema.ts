@@ -287,7 +287,7 @@ export const gameInput = {
   },
 
   playerId(): GameInputSchema<PlayerId> {
-    const input = this.number({ integer: true, min: 1 });
+    const input = this.number({ integer: true });
     return taggedMap(input, 'player-id', toPlayerId);
   },
 

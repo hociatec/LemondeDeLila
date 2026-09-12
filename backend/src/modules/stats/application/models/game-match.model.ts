@@ -11,4 +11,3 @@ export type GameMatchRecord = {
   winnerUserId: number | null;
 };
 /** Explicitly named data contract at the application boundary. */
-

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "2",
+  "category": "JeuxDePlateaux",
+  "world": "VentsSacres",
+  "patterns": [
+    {
+      "kind": "pawn-race",
+      "pawnSetId": "foulees",
+      "pawns": { "$content": "content/catalogue.json#/pawns" },
+      "perPlayer": 4,
+      "spaces": 56,
+      "initialPosition": -1,
+      "homeStretchFrom": 52
+    }
+  ],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [{ "key": "D", "type": "action", "actionType": "roll" }],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": { "actions": [], "transitions": ["turn"] },
+    "turn": { "actions": ["roll"], "terminal": true }
+  },
+  "actions": { "roll": { "recipe": "foulees-race-roll" } },
+  "victory": { "kind": "by-foulees-race" },
+  "fouleesRace": {
+    "setId": "foulees",
+    "diceId": "main",
+    "familyChoiceId": "foulees.family",
+    "moveChoiceId": "foulees.move",
+    "families": { "$content": "content/catalogue.json#/families" },
+    "trackLength": 52,
+    "homeLength": 4,
+    "safeTiles": { "$content": "content/catalogue.json#/board/safeTiles" },
+    "finishReason": "four-pawns-home"
+  }
+}

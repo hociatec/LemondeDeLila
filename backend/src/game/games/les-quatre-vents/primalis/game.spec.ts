@@ -1,6 +1,13 @@
 import { testGame } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import gameDefinition from './game';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import document from './game.json';
+import manifest from './manifest.json';
+import catalogue from './content/catalogue.json';
+
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Primalis declarative game', () => {
   it('runs deterministic dice, board effects, turns and replay', async () => {

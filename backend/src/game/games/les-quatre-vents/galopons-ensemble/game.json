@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [{ "kind": "race", "trackId": "galopons", "spaces": 40 }],
+  "components": [
+    {
+      "component": "pawn.set",
+      "id": "galopons",
+      "pawns": { "$content": "content/catalogue.json#/pawns" },
+      "perPlayer": 1
+    },
+    {
+      "component": "cards.deck",
+      "id": "adventure",
+      "cards": { "$content": "content/catalogue.json#/cards" },
+      "shuffle": true,
+      "empty": "recycle"
+    }
+  ],
+  "setup": { "firstPlayer": "first", "startRound": true },
+  "resourceIds": ["apple"],
+  "shortcuts": [{ "key": "D", "type": "action", "actionType": "roll" }],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": { "actions": [], "transitions": ["playing"] },
+    "playing": { "actions": ["roll"], "terminal": true }
+  },
+  "actions": { "roll": { "recipe": "galopons-race-roll" } },
+  "victory": { "kind": "by-galopons-race" },
+  "galoponsRace": {
+    "trackId": "galopons",
+    "diceId": "main",
+    "deckId": "adventure",
+    "pawnSetId": "galopons",
+    "pawnChoiceId": "galopons.pawn",
+    "appleResource": "apple",
+    "iouPrefix": "galopons.iou",
+    "returningStatus": "galopons.returning",
+    "applesToWin": 3,
+    "maxDepth": 12,
+    "finishReason": "three-apples-at-finish",
+    "tiles": { "$content": "content/catalogue.json#/tiles" },
+    "cards": { "$content": "content/catalogue.json#/cards" }
+  }
+}

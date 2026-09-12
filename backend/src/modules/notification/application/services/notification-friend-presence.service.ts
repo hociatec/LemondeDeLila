@@ -6,9 +6,9 @@ import {
   type FriendPresenceNotifier,
 } from '../ports/friend-presence-notifier.port';
 import {
-  NOTIFICATION_FRIENDSHIP_REPOSITORY,
-  type NotificationFriendshipRepository,
-} from '../ports/notification-friendship.repository';
+  NOTIFICATION_FRIENDS_READER,
+  type NotificationFriendsReader,
+} from '../ports/notification-friends-reader.port';
 
 @Injectable()
 export class NotificationFriendPresenceService {
@@ -17,8 +17,8 @@ export class NotificationFriendPresenceService {
   private readonly logger = new Logger(NotificationFriendPresenceService.name);
 
   constructor(
-    @Inject(NOTIFICATION_FRIENDSHIP_REPOSITORY)
-    private readonly friendships: NotificationFriendshipRepository,
+    @Inject(NOTIFICATION_FRIENDS_READER)
+    private readonly friendships: NotificationFriendsReader,
     @Inject(FRIEND_PRESENCE_NOTIFIER)
     private readonly notifier: FriendPresenceNotifier,
   ) {}
@@ -46,8 +46,10 @@ export class NotificationFriendPresenceService {
 
       const payload = {
         userId,
-        username: (String(username || '').trim().slice(0, 255) ||
-          `user#${userId}`),
+        username:
+          String(username || '')
+            .trim()
+            .slice(0, 255) || `user#${userId}`,
       };
 
       this.logger.log(

@@ -4,7 +4,7 @@ import {
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
-import { assertGameCount } from './numeric-invariants';
+import { assertGameCount, assertGamePlayerId } from './numeric-invariants';
 
 export type TrackDefinition = {
   readonly component: 'movement.track';
@@ -114,7 +114,9 @@ export class GameMovementController {
         });
       }
       for (const [playerId, position] of Object.entries(positions)) {
+        assertGamePlayerId(Number(playerId));
         if (
+          String(Number(playerId)) !== playerId ||
           !Number.isInteger(position) ||
           position < 0 ||
           position >= track.spaces
@@ -130,10 +132,13 @@ export class GameMovementController {
   }
 
   position(trackId: string, playerId: number): number {
+    assertGamePlayerId(playerId);
+    this.requireTrack(trackId);
     return this.state.positions[trackId]?.[String(playerId)] ?? 0;
   }
 
   positions(trackId: string): Record<number, number> {
+    this.requireTrack(trackId);
     return Object.fromEntries(
       Object.entries(this.state.positions[trackId] ?? {}).map(
         ([playerId, position]) => [Number(playerId), position],

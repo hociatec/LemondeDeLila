@@ -1,7 +1,12 @@
 import { testGame } from '../../../engine/testing/public-api';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import manifest from './manifest.json';
+import document from './game.json';
+import catalogue from './content/catalogue.json';
 
-import { GALOPONS_CARDS } from './content';
-import gameDefinition from './game';
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Galopons ensemble declarative game', () => {
   it('selects unique horses and starts a deterministic apple race', async () => {
@@ -11,7 +16,7 @@ describe('Galopons ensemble declarative game', () => {
     await game.choose(2, 'mustang');
     await game.as(1).do('roll', {});
     expect(game.inspect.setupComplete()).toBe(true);
-    expect(game.inspect.deckCount()).toBe(GALOPONS_CARDS.length - 1);
+    expect(game.inspect.deckCount()).toBe(catalogue.cards.length - 1);
     expect(await game.replay()).toEqual(game.state());
   });
 });

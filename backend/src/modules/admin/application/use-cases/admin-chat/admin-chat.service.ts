@@ -28,7 +28,9 @@ export class AdminChatService {
         ? Math.min(500, configuredLimit)
         : 500;
     const limit =
-      typeof requestedLimit === 'number' && Number.isSafeInteger(requestedLimit) && requestedLimit > 0
+      typeof requestedLimit === 'number' &&
+      Number.isSafeInteger(requestedLimit) &&
+      requestedLimit > 0
         ? Math.min(500, requestedLimit)
         : fallbackLimit;
     const rows = await this.chat.adminListMessages(
@@ -84,7 +86,11 @@ export class AdminChatService {
   }
 
   async deleteMessage(messageId: string) {
-    if (typeof messageId !== 'string' || !messageId.trim() || messageId.length > 64) {
+    if (
+      typeof messageId !== 'string' ||
+      !messageId.trim() ||
+      messageId.length > 64
+    ) {
       throw new BadRequestException('Identifiant de message invalide');
     }
     const ok = await this.chat.adminDeleteMessage(messageId);

@@ -2,6 +2,19 @@ import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.
 import type { PlayerValuesKitState } from './player-values-contracts';
 
 export function assertPlayerValues(state: PlayerValuesKitState): void {
+  for (const values of [
+    state.scores,
+    ...Object.values(state.resources),
+    state.statuses,
+    state.scheduledSkips,
+    state.scheduledExtraTurns,
+  ]) {
+    for (const key of Object.keys(values)) {
+      assertGamePlayerId(Number(key));
+      if (String(Number(key)) !== key)
+        throw new GameRuleViolationError('PLAYER_KEY_INVALID');
+    }
+  }
   for (const value of Object.values(state.scores)) assertGameValue(value);
   for (const [id, values] of Object.entries(state.resources)) {
     assertPlayerValueId(id);
@@ -18,6 +31,11 @@ export function assertPlayerValues(state: PlayerValuesKitState): void {
     assertGameCount(value);
   for (const value of Object.values(state.scheduledExtraTurns))
     assertGameCount(value);
+}
+
+export function assertGamePlayerId(playerId: number): void {
+  if (!Number.isSafeInteger(playerId) || playerId === 0)
+    throw new GameRuleViolationError('PLAYER_ID_INVALID');
 }
 
 export function assertPlayerValueId(id: string): void {

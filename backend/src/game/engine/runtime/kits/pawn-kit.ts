@@ -50,6 +50,7 @@ export const pawns = {
       perPlayer?: number;
     },
   ): PawnSetDefinition {
+    assertPawnTrack(definition);
     const perPlayer = definition.perPlayer ?? 1;
     const ids = definition.pawns.map((pawn) => pawn.id);
     if (
@@ -73,6 +74,34 @@ export const pawns = {
     });
   },
 };
+
+function assertPawnTrack(
+  definition: Omit<PawnSetDefinition, 'component' | 'perPlayer'>,
+): void {
+  if (
+    definition.spaces !== undefined &&
+    (!Number.isSafeInteger(definition.spaces) || definition.spaces < 1)
+  )
+    throw new GameConfigurationError('Invalid pawn track size');
+  for (const [field, value] of Object.entries({
+    initialPosition: definition.initialPosition,
+    entryPosition: definition.entryPosition,
+    homeStretchFrom: definition.homeStretchFrom,
+  })) {
+    if (value === undefined) continue;
+    if (
+      !Number.isSafeInteger(value) ||
+      value < (field === 'initialPosition' ? -1 : 0) ||
+      (definition.spaces !== undefined && value >= definition.spaces)
+    )
+      throw new GameConfigurationError(`Invalid pawn track ${field}`);
+  }
+  if (
+    definition.entryRoll !== undefined &&
+    (!Number.isSafeInteger(definition.entryRoll) || definition.entryRoll < 1)
+  )
+    throw new GameConfigurationError('Invalid pawn entry roll');
+}
 
 export class GamePawnController {
   constructor(

@@ -53,6 +53,28 @@ function nodeLines(sourceFile, node) {
   return end - start + 1;
 }
 
+function functionLines(sourceFile, node) {
+  const nestedLines = new Set();
+  const collectNested = (child) => {
+    if (
+      child !== node &&
+      (ts.isFunctionDeclaration(child) ||
+        ts.isArrowFunction(child) ||
+        ts.isFunctionExpression(child))
+    ) {
+      const start = sourceFile.getLineAndCharacterOfPosition(
+        child.getStart(sourceFile),
+      ).line;
+      const end = sourceFile.getLineAndCharacterOfPosition(child.end).line;
+      for (let line = start; line <= end; line += 1) nestedLines.add(line);
+      return;
+    }
+    ts.forEachChild(child, collectNested);
+  };
+  ts.forEachChild(node, collectNested);
+  return Math.max(1, nodeLines(sourceFile, node) - nestedLines.size);
+}
+
 function nodeStartLine(sourceFile, node) {
   return (
     sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
@@ -69,14 +91,7 @@ function isConstructorDependencyExempt(relative, contract) {
   );
 }
 
-function createViolation({
-  rule,
-  file,
-  subject,
-  line,
-  actual,
-  limit,
-}) {
+function createViolation({ rule, file, subject, line, actual, limit }) {
   return { rule, file, subject, line, actual, limit };
 }
 
@@ -96,7 +111,10 @@ function analyzeFile(filePath, options) {
   const fileLines = source.split(/\r?\n/).length;
 
   const checkFunction = (node, subject) => {
-    const lines = nodeLines(sourceFile, node);
+    // A factory that groups callbacks is a container, not one monolithic
+    // executable function. Each nested callback is visited and checked on its
+    // own, so exclude its body from the enclosing function's line count.
+    const lines = functionLines(sourceFile, node);
     if (lines <= limits.methodLines) return;
     violations.push(
       createViolation({
@@ -219,7 +237,9 @@ function analyzeStructure({
   const files = walkTypeScriptFiles(root, contract);
   const violations = files
     .flatMap((filePath) => analyzeFile(filePath, { root, contract }))
-    .sort((left, right) => violationKey(left).localeCompare(violationKey(right)));
+    .sort((left, right) =>
+      violationKey(left).localeCompare(violationKey(right)),
+    );
   return { files: files.length, violations };
 }
 
@@ -255,7 +275,11 @@ function writeBaseline(analysis, contract) {
     generatedAt: new Date().toISOString(),
     violations: analysis.violations,
   };
-  fs.writeFileSync(baselineFile, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+  fs.writeFileSync(
+    baselineFile,
+    `${JSON.stringify(payload, null, 2)}\n`,
+    'utf8',
+  );
 }
 
 function printViolation(violation) {

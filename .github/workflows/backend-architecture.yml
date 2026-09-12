@@ -34,11 +34,13 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - name: Install static analysis dependencies
         run: npm ci --ignore-scripts --include=dev
-      - name: Test architecture guards
-        run: npm run architecture:test
-      - name: Check application boundaries
-        run: npm run architecture:check
+      - name: Create audit output directory
+        run: node -e "require('node:fs').mkdirSync('logs', { recursive: true })"
+      - name: Check quality and test regression guards
+        run: npm run quality:check
       - name: Check runtime cycles and compiler separation
         run: npm run runtime:separation:audit
       - name: Check source layout
         run: npm run layout:audit
+      - name: Check application contract ownership
+        run: npm run application:contracts:audit
