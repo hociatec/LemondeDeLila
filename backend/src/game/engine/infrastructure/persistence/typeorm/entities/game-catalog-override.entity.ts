@@ -2,16 +2,16 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'game_catalog_overrides' })
 export class GameCatalogOverrideEntity {
-  @PrimaryColumn({ type: 'varchar', length: 120 })
+  @PrimaryColumn({ name: 'game_type', type: 'varchar', length: 100 })
   gameType!: string;
 
   @Column({ type: 'boolean', nullable: true })
   enabled!: boolean | null;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ name: 'min_players', type: 'int', nullable: true })
   minPlayers!: number | null;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ name: 'max_players', type: 'int', nullable: true })
   maxPlayers!: number | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -26,9 +26,9 @@ export class GameCatalogOverrideEntity {
   @Column({ type: 'varchar', length: 32, nullable: true })
   status!: string | null;
 
-  @Column({ type: 'boolean', nullable: true })
+  @Column({ name: 'chat_enabled', type: 'boolean', nullable: true })
   chatEnabled!: boolean | null;
 
-  @Column({ type: 'boolean', nullable: true })
+  @Column({ name: 'chat_sounds_enabled', type: 'boolean', nullable: true })
   chatSoundsEnabled!: boolean | null;
 }
