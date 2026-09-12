@@ -96,13 +96,37 @@ conformes les jeux historiques dont l'ownership reste dans le backlog.
   des snapshots incompatibles.
 - Réutilisation des capacités existantes ; toute nouvelle abstraction moteur
   justifie au moins deux usages équivalents.
-- Règles lisibles comme décisions métier ; `game.ts` décrit les capacités.
+- Règles lisibles comme décisions métier ; un jeu sans mécanique nouvelle
+  utilise `manifest.json`, `game.json` et ses contenus JSON. Une extension
+  TypeScript passe exclusivement par le SDK et doit justifier le manque du DSL.
 - Tests de contrat, typecheck, lint, build, vérification du dist et quality:check.
 
 Le compilateur, le générateur et les audits vérifient la structure, les imports,
 les cycles, les définitions et la surface SDK. L'équivalence sémantique, l'ownership
 et la lisibilité demandent aussi une revue humaine ; un audit vert ne les prouve
 pas à lui seul.
+
+## Definition of Done d'une nouvelle primitive moteur
+
+- Décrire la mécanique et ses usages réels équivalents ; plusieurs usages sont
+  requis lorsqu'il s'agit d'une composition, ou justifier son caractère fondamental.
+- Faire évoluer ensemble l'union discriminée, le schéma JSON fermé, les références
+  et capabilities, le compilateur et l'exécuteur. Aucun callback dans le JSON.
+- Étendre les tables exhaustives de `json-capabilities.spec.ts` et les tests de
+  compilation/rejet, d'exécution, de visibilité et de sauvegarde/restauration.
+- Valider toutes les destinations et quantités avant une mutation composée ;
+  tester l'absence de mutation et d'événement lors d'un refus.
+- Conserver l'horloge/RNG injectés et des ordres/départages explicites. Comparer
+  les traces des usages migrés ; réviser les versions si leur comportement change.
+- Documenter la syntaxe auteur, revoir le contrat SDK et exécuter typage, lint,
+  tests, build et chaîne qualité sans relever les seuils ni masquer de dette.
+
+Le suivi `game:metrics` distingue désormais les lignes TypeScript et JSON des
+fichiers auteur. `jsonOnly` signifie présence de `game.json` et absence de
+TypeScript auteur, hors tests. La réapparition de TypeScript dans un tel jeu
+fait échouer le contrôle ; toute croissance des règles spécifiques est signalée.
+Le ratio historique fondé sur les noms de fichiers reste un indicateur de revue,
+jamais une preuve de migration complète.
 
 ## Definition of Done d'un nouveau module
 

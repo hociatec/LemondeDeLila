@@ -1,10 +1,16 @@
+import { dealDeferredCards } from './deferred-card-deal';
 import {
   GameNotFoundError,
   GameRuleViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
 import { GameCardsDeckController } from './cards-deck-controller';
-import type { CardValue, HandsDefinition } from './cards-contracts';
+import type { CardId, CardValue, HandsDefinition } from './cards-contracts';
 import { sameSerializableValue } from '../state/serializable-value';
+import { assertCardHandDestination } from './card-hand-invariants';
+import {
+  assertGameCount,
+  assertGamePlayerId,
+} from '../kits/numeric-invariants';
 
 function requireHandDefinition(
   definitions: ReadonlyMap<string, HandsDefinition>,
@@ -30,9 +36,8 @@ export class GameCardsController extends GameCardsDeckController {
   ): void => {
     const definition = this.zoneDefinitions.get(zoneId);
     if (!definition) throw new GameNotFoundError(`Zone inconnue: ${zoneId}`);
-    (this.state.zones[zoneId] ??= []).push(
-      this.toPersistentCard(definition.deck, card),
-    );
+    const persistentCard = this.toPersistentCard(definition.deck, card);
+    (this.state.zones[zoneId] ??= []).push(persistentCard);
   };
 
   readonly takeFromZone = <TCard extends CardValue>(
@@ -59,9 +64,11 @@ export class GameCardsController extends GameCardsDeckController {
     card: TCard,
   ): void {
     const definition = requireHandDefinition(this.handDefinitions, handId);
+    assertGamePlayerId(playerId);
+    const persistentCard = this.toPersistentCard(definition.deck, card);
     const hands = (this.state.hands[handId] ??= {});
     const hand = (hands[String(playerId)] ??= []);
-    hand.push(this.toPersistentCard(definition.deck, card));
+    hand.push(persistentCard);
     this.emit(
       'card.received',
       { handId, playerId },
@@ -78,6 +85,7 @@ export class GameCardsController extends GameCardsDeckController {
     playerId: number,
     card: TCard,
   ): void {
+    assertCardHandDestination(this.handDefinitions, handId, deckId, playerId);
     const hand = this.persistentHand(handId, playerId);
     const persistentCard = this.toPersistentCard(deckId, card);
     const index = hand.findIndex((candidate) =>
@@ -134,6 +142,7 @@ export class GameCardsController extends GameCardsDeckController {
     playerId: number,
     card: TCard,
   ): TCard {
+    assertCardHandDestination(this.handDefinitions, handId, deckId, playerId);
     const discarded = this.take(handId, playerId, card);
     this.discard(deckId, discarded);
     return discarded;
@@ -176,6 +185,10 @@ export class GameCardsController extends GameCardsDeckController {
   }
 
   shuffleHands(handId: string, playerIds: readonly number[]): void {
+    requireHandDefinition(this.handDefinitions, handId);
+    if (new Set(playerIds).size !== playerIds.length)
+      throw new GameRuleViolationError('CARD_SHUFFLE_PARTICIPANTS_INVALID');
+    for (const playerId of playerIds) assertGamePlayerId(playerId);
     const sizes = playerIds.map(
       (playerId) => this.persistentHand(handId, playerId).length,
     );
@@ -200,6 +213,7 @@ export class GameCardsController extends GameCardsDeckController {
     toPlayerId: number,
     card: TCard,
   ): void {
+    assertGamePlayerId(toPlayerId);
     const transferred = this.take(handId, fromPlayerId, card);
     this.give(handId, toPlayerId, transferred);
     this.emit('card.transferred', {
@@ -214,6 +228,9 @@ export class GameCardsController extends GameCardsDeckController {
     leftPlayerId: number,
     rightPlayerId: number,
   ): void {
+    requireHandDefinition(this.handDefinitions, handId);
+    assertGamePlayerId(leftPlayerId);
+    assertGamePlayerId(rightPlayerId);
     if (leftPlayerId === rightPlayerId) return;
     const leftCard = this.random.pick(this.hand<TCard>(handId, leftPlayerId));
     const rightCard = this.random.pick(this.hand<TCard>(handId, rightPlayerId));
@@ -232,6 +249,7 @@ export class GameCardsController extends GameCardsDeckController {
     fromPlayerId: number,
     toPlayerId: number,
   ): TCard | null {
+    assertGamePlayerId(toPlayerId);
     const card = this.random.shuffle(this.hand<TCard>(handId, fromPlayerId))[0];
     if (card == null) return null;
     this.transfer(handId, fromPlayerId, toPlayerId, card);
@@ -239,6 +257,9 @@ export class GameCardsController extends GameCardsDeckController {
   }
 
   swapHands(handId: string, leftPlayerId: number, rightPlayerId: number): void {
+    requireHandDefinition(this.handDefinitions, handId);
+    assertGamePlayerId(leftPlayerId);
+    assertGamePlayerId(rightPlayerId);
     const hands = (this.state.hands[handId] ??= {});
     const left = hands[String(leftPlayerId)] ?? [];
     const right = hands[String(rightPlayerId)] ?? [];
@@ -256,6 +277,7 @@ export class GameCardsController extends GameCardsDeckController {
     deckId: string,
     playerId: number,
   ): TCard | null {
+    assertCardHandDestination(this.handDefinitions, handId, deckId, playerId);
     const card = this.random.shuffle(this.hand<TCard>(handId, playerId))[0];
     if (card == null) return null;
     this.play(handId, deckId, playerId, card);
@@ -321,9 +343,13 @@ export class GameCardsController extends GameCardsDeckController {
     if (!required) {
       throw new GameNotFoundError(`Famille de cartes inconnue: ${setId}`);
     }
-    const present = required.filter((cardId) =>
-      this.hand<string>(definition.hand, playerId).includes(cardId),
-    );
+    const available = [...this.hand<string>(definition.hand, playerId)];
+    const present = required.filter((cardId) => {
+      const index = available.indexOf(cardId);
+      if (index < 0) return false;
+      available.splice(index, 1);
+      return true;
+    });
     if (!options.allowIncomplete && present.length !== required.length) {
       return false;
     }
@@ -342,16 +368,22 @@ export class GameCardsController extends GameCardsDeckController {
       }
     }
     completed.push(setId);
+    (this.state.completedSets[collectionId] ??= {})[String(playerId)] =
+      completed;
     this.emit('cards.set-completed', { collectionId, playerId, setId });
     return true;
   }
 
   playerCompletedSets(collectionId: string, playerId: number): string[] {
-    const byPlayer = (this.state.completedSets[collectionId] ??= {});
-    return (byPlayer[String(playerId)] ??= []);
+    this.requireSets(collectionId);
+    assertGamePlayerId(playerId);
+    return [
+      ...(this.state.completedSets[collectionId]?.[String(playerId)] ?? []),
+    ];
   }
 
   completedSetCounts(collectionId: string): Record<number, number> {
+    this.requireSets(collectionId);
     const byPlayer = this.state.completedSets[collectionId] ?? {};
     return Object.fromEntries(
       Object.entries(byPlayer).map(([playerId, setIds]) => [
@@ -366,7 +398,25 @@ export class GameCardsController extends GameCardsDeckController {
     handId: string,
     playerIds: readonly number[],
     count: number,
+    deferredCardIds?: readonly CardId[],
   ): void {
+    assertGameCount(count, 100_000);
+    if (new Set(playerIds).size !== playerIds.length)
+      throw new GameRuleViolationError('CARD_DEAL_PARTICIPANTS_INVALID');
+    for (const playerId of playerIds)
+      assertCardHandDestination(this.handDefinitions, handId, deckId, playerId);
+    if (deferredCardIds) {
+      for (const id of deferredCardIds) this.toPersistentCard(deckId, id);
+      dealDeferredCards(
+        this,
+        deckId,
+        handId,
+        playerIds,
+        count,
+        deferredCardIds,
+      );
+      return;
+    }
     for (let round = 0; round < Math.max(0, count); round += 1) {
       for (const playerId of playerIds) {
         if (this.drawToHand(deckId, handId, playerId) == null) return;

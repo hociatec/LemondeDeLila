@@ -3,4 +3,3 @@ export type SocialProfileSettings = {
   bioMaxLength: number;
 };
 /** Explicitly named data contract at the application boundary. */
-

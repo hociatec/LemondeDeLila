@@ -1,6 +1,12 @@
 import { testGame } from '../../../engine/testing/public-api';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import document from './game.json';
+import manifest from './manifest.json';
+import catalogue from './content/catalogue.json';
 
-import gameDefinition from './game';
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Le Marché des Merveilles declarative game', () => {
   it('validates economy actions, persistent protection and replay', async () => {

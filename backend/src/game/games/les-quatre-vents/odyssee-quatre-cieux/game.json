@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "2",
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [
+    {
+      "kind": "pawn-race",
+      "pawnSetId": "odyssee",
+      "pawns": [
+        {
+          "id": "0:0",
+          "label": "Aube"
+        },
+        {
+          "id": "0:1",
+          "label": "Brise"
+        },
+        {
+          "id": "0:2",
+          "label": "Comète"
+        },
+        {
+          "id": "0:3",
+          "label": "Dune"
+        },
+        {
+          "id": "1:0",
+          "label": "Aube"
+        },
+        {
+          "id": "1:1",
+          "label": "Brise"
+        },
+        {
+          "id": "1:2",
+          "label": "Comète"
+        },
+        {
+          "id": "1:3",
+          "label": "Dune"
+        },
+        {
+          "id": "2:0",
+          "label": "Aube"
+        },
+        {
+          "id": "2:1",
+          "label": "Brise"
+        },
+        {
+          "id": "2:2",
+          "label": "Comète"
+        },
+        {
+          "id": "2:3",
+          "label": "Dune"
+        },
+        {
+          "id": "3:0",
+          "label": "Aube"
+        },
+        {
+          "id": "3:1",
+          "label": "Brise"
+        },
+        {
+          "id": "3:2",
+          "label": "Comète"
+        },
+        {
+          "id": "3:3",
+          "label": "Dune"
+        }
+      ],
+      "perPlayer": 4,
+      "spaces": 62,
+      "initialPosition": -1,
+      "entryRoll": 6,
+      "entryPosition": 0,
+      "exactFinish": true,
+      "homeStretchFrom": 56
+    }
+  ],
+  "pawnRace": {
+    "setId": "odyssee",
+    "diceId": "main",
+    "choiceId": "odyssee.move",
+    "finishAt": 61,
+    "finishReason": "all-pawns-arrived",
+    "extraTurnRolls": [
+      6
+    ]
+  },
+  "components": [],
+  "setup": {
+    "pawns": [
+      {
+        "setId": "odyssee",
+        "assignment": "grouped"
+      }
+    ],
+    "startRound": false
+  },
+  "resourceIds": [],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": [
+        "roll"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "pawn-race-roll",
+      "documentation": "Lance le dé et déplace automatiquement ou demande un pion."
+    }
+  },
+  "victory": {
+    "kind": "by-pawn-race"
+  },
+  "shortcuts": [
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position"
+    },
+    {
+      "key": "E",
+      "type": "interface",
+      "id": "stable"
+    },
+    {
+      "key": "S",
+      "type": "interface",
+      "id": "score"
+    }
+  ]
+}

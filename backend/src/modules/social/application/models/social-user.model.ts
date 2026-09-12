@@ -8,4 +8,3 @@ export type SocialSearchUserSummary = SocialUserSummary & {
   profileVisibility: 'public' | 'friends' | 'private';
 };
 /** Explicitly named data contract at the application boundary. */
-

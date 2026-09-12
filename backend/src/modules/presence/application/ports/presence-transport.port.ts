@@ -1,5 +1,8 @@
 import type { PresencePublicPlayer } from '../services/presence-state.utils';
 
+/** Every admitted local player must fit in one complete origin snapshot. */
+export const MAX_PRESENCE_PLAYERS_PER_ORIGIN = 1_000;
+
 export type PresenceEvent = {
   players: PresencePublicPlayer[];
   origin: string | null;

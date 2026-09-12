@@ -1,0 +1,302 @@
+[
+  {
+    "id": "quiz-01",
+    "prompt": "Quel fruit contient le plus de vitamine C ?",
+    "choices": [
+      "banane",
+      "kiwi",
+      "pomme"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "id": "quiz-02",
+    "prompt": "Quel légume est en réalité un fruit ?",
+    "choices": [
+      "carotte",
+      "brocoli",
+      "tomate"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "id": "quiz-03",
+    "prompt": "Quel fruit a ses graines à l'extérieur ?",
+    "choices": [
+      "cerise",
+      "fraise",
+      "raisin"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "id": "quiz-04",
+    "prompt": "Quel fruit est connu comme le \"roi des fruits\" en Asie ?",
+    "choices": [
+      "durian",
+      "mangue",
+      "ananas"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-05",
+    "prompt": "Quelle est la couleur naturelle de la carotte originelle ?",
+    "choices": [
+      "orange",
+      "jaune",
+      "violet"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "id": "quiz-06",
+    "prompt": "Quel fruit est aussi appelé \"pomme cannelle\" ?",
+    "choices": [
+      "prune",
+      "pomme",
+      "poire"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "id": "quiz-07",
+    "prompt": "Quel légume peut être blanc, vert ou violet et ressemble à un petit arbre ?",
+    "choices": [
+      "brocoli",
+      "artichaut",
+      "chou-fleur"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-08",
+    "prompt": "Quel fruit est souvent utilisé pour faire du guacamole ?",
+    "choices": [
+      "concombre",
+      "courgette",
+      "avocat"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "id": "quiz-09",
+    "prompt": "Quel fruit a un nom qui signifie \"pêche sauvage\" en japonais ?",
+    "choices": [
+      "kaki",
+      "yuzu",
+      "litchi"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-10",
+    "prompt": "Quel fruit tropical est composé principalement d'eau et très rafraîchissant ?",
+    "choices": [
+      "ananas",
+      "pastèque",
+      "mangue"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "id": "quiz-11",
+    "prompt": "Quel légume est utilisé pour faire des frites ?",
+    "choices": [
+      "carotte",
+      "pomme-de-terre",
+      "navet"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "id": "quiz-12",
+    "prompt": "Quel fruit est connu pour être riche en antioxydants et souvent rouge foncé ?",
+    "choices": [
+      "grenade",
+      "cerise",
+      "groseille"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-13",
+    "prompt": "Quel fruit exotique a une peau piquante et une chair jaune ?",
+    "choices": [
+      "litchi",
+      "ananas",
+      "fruit-du-dragon"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "id": "quiz-14",
+    "prompt": "Quel légume vert est souvent utilisé dans les salades et a un goût légèrement poivré ?",
+    "choices": [
+      "roquette",
+      "épinard",
+      "laitue"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-15",
+    "prompt": "Quel fruit est souvent associé à Halloween ?",
+    "choices": [
+      "pastèque",
+      "citrouille",
+      "pomme"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "id": "quiz-16",
+    "prompt": "Quel légume est une racine orange souvent croquée crue ?",
+    "choices": [
+      "carotte",
+      "navet",
+      "radis"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-17",
+    "prompt": "Quel fruit peut être jaune, vert ou rouge et est souvent mangé en tranches ?",
+    "choices": [
+      "poire",
+      "pomme",
+      "pêche"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "id": "quiz-18",
+    "prompt": "Quel fruit a une peau rugueuse et une chair orange sucrée ?",
+    "choices": [
+      "papaye",
+      "orange",
+      "mangue"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "id": "quiz-19",
+    "prompt": "Quel légume est souvent utilisé pour faire une soupe appelée \"velouté\" ?",
+    "choices": [
+      "potiron",
+      "courgette",
+      "concombre"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-20",
+    "prompt": "Quel fruit est considéré comme un symbole de paix dans certaines cultures ?",
+    "choices": [
+      "grenade",
+      "olive",
+      "pomme"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "id": "quiz-21",
+    "prompt": "Quel fruit est le plus consommé au monde ?",
+    "choices": [
+      "banane",
+      "pomme",
+      "orange"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-22",
+    "prompt": "Quel légume est souvent mariné pour faire des pickles ?",
+    "choices": [
+      "carotte",
+      "chou-fleur",
+      "concombre"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "id": "quiz-23",
+    "prompt": "Quel fruit est petit, bleu et utilisé dans les muffins et les tartes ?",
+    "choices": [
+      "myrtille",
+      "groseille",
+      "cassis"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-24",
+    "prompt": "Quel légume est utilisé dans la cuisine italienne pour faire des lasagnes ?",
+    "choices": [
+      "aubergine",
+      "courgette",
+      "poivron"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-25",
+    "prompt": "Quel fruit est célèbre pour son utilisation dans le cidre ?",
+    "choices": [
+      "poire",
+      "cerise",
+      "pomme"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "id": "quiz-26",
+    "prompt": "Quel légume est souvent appelé \"Trompette de la mort\" ?",
+    "choices": [
+      "aubergine",
+      "piment",
+      "champignon"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "id": "quiz-27",
+    "prompt": "Quel fruit est rond, orange et a une peau épaisse et rugueuse ?",
+    "choices": [
+      "mandarine",
+      "orange",
+      "pamplemousse"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "id": "quiz-28",
+    "prompt": "Quel légume a des feuilles vertes et est souvent utilisé dans les salades ?",
+    "choices": [
+      "laitue",
+      "épinard",
+      "chou-fleur"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "id": "quiz-29",
+    "prompt": "Quel fruit exotique a une chair blanche et des graines noires ?",
+    "choices": [
+      "kiwi",
+      "fruit-du-dragon",
+      "fruit-de-la-passion"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "id": "quiz-30",
+    "prompt": "Quel légume est souvent utilisé pour faire des chips ?",
+    "choices": [
+      "pomme-de-terre",
+      "panais",
+      "topinambour"
+    ],
+    "answerIndex": 0
+  }
+]

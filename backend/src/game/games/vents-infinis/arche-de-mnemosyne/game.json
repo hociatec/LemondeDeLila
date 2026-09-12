@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "2",
+  "snapshotMigrations": [
+    {
+      "fromVersion": "arche-de-mnemosyne@content:a3c99fcc",
+      "toVersion": "1"
+    }
+  ],
+  "category": "Quiz",
+  "world": "VentsInfinis",
+  "patterns": [],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [{ "key": "Space", "type": "action", "actionType": "draw" }],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": { "actions": [], "transitions": ["playing"] },
+    "playing": {
+      "actions": ["draw", "answer", "timeout"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "draw": { "recipe": "mnemosyne-draw" },
+    "answer": { "recipe": "mnemosyne-answer" },
+    "timeout": { "recipe": "mnemosyne-timeout" }
+  },
+  "victory": { "kind": "by-mnemosyne" },
+  "mnemosyne": {
+    "categories": { "$content": "content/quiz.json#/categories" },
+    "questions": { "$content": "content/quiz.json#/questions" },
+    "defaults": {
+      "categoryId": "all",
+      "targetPoints": 20,
+      "useTimer": true,
+      "timerSeconds": 30,
+      "interQuestionSeconds": 15,
+      "correctSoloPoints": 2,
+      "correctMultiPoints": 1,
+      "wrongPoints": 0,
+      "timeoutPoints": -1
+    }
+  }
+}

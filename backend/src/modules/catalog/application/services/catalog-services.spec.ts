@@ -144,6 +144,33 @@ describe('catalog services', () => {
     expect(source.listGames).toHaveBeenCalledTimes(1);
   });
 
+  it('bypasses cached catalog data for an authoritative decision read', async () => {
+    const source = {
+      listGames: jest
+        .fn()
+        .mockResolvedValue([{ id: 'current', name: 'Current' }]),
+    } as unknown as CatalogGameSourcePort;
+    const cache = new CatalogCacheService(
+      { ttlMs: 1_000 },
+      { now: () => Date.now() },
+    );
+    cache.setGames(
+      new CatalogMapperService().toCatalogGames([
+        { id: 'stale', name: 'Stale' },
+      ]),
+    );
+    const service = new ListCatalogGamesService(
+      source,
+      cache,
+      new CatalogMapperService(),
+    );
+
+    await expect(service.execute({ fresh: true })).resolves.toEqual([
+      expect.objectContaining({ id: 'current' }),
+    ]);
+    expect(source.listGames).toHaveBeenCalledTimes(1);
+  });
+
   it('does not poison the cache when the source fails', async () => {
     const source = {
       listGames: jest

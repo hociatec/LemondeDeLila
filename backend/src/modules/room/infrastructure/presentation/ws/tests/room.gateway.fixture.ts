@@ -225,6 +225,7 @@ export function createGatewayFixture(): GatewayFixture {
     handleTogglePrivacy: (...args: any[]) =>
       gateway.handleTogglePrivacy(...args),
     handleRoomInfo: jest.fn().mockResolvedValue(undefined),
+    handleRoomState: jest.fn().mockResolvedValue(undefined),
     handleBotAdd: jest.fn().mockResolvedValue(undefined),
     handleBotRemove: jest.fn().mockResolvedValue(undefined),
     handleRoomCreate: (...args: any[]) => gateway.handleRoomCreate(...args),

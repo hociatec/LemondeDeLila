@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "1",
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "patterns": [],
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "battle",
+      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "catalog": { "$content": "content/catalogue.json#/cardIds" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.hands",
+      "id": "players",
+      "deck": "battle",
+      "initial": 27,
+      "visibility": "owner"
+    }
+  ],
+  "setup": { "firstPlayer": "first", "startRound": true },
+  "resourceIds": [],
+  "shortcuts": [
+    { "key": "Space", "type": "action", "actionType": "draw_card" }
+  ],
+  "initialPhase": "selection",
+  "phases": {
+    "selection": {
+      "actions": ["draw_card"],
+      "transitions": ["battle-face-down"]
+    },
+    "battle-face-down": {
+      "actions": ["draw_card"],
+      "transitions": ["battle-face-up", "selection"]
+    },
+    "battle-face-up": {
+      "actions": ["draw_card"],
+      "transitions": ["battle-face-down", "selection"]
+    }
+  },
+  "actions": {
+    "draw_card": { "recipe": "zig-et-zag-draw" }
+  },
+  "victory": { "kind": "by-zig-et-zag" },
+  "zigEtZag": {
+    "deckId": "battle",
+    "handId": "players",
+    "totalCards": 54,
+    "cards": { "$content": "content/catalogue.json#/cards" }
+  }
+}

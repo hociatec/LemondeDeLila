@@ -16,7 +16,10 @@ export type AdminBotSettings = {
 export interface AdminBotPort {
   listNames(): Promise<AdminBotName[]>;
   createName(name: string, enabled: boolean): Promise<void>;
-  updateName(id: number, update: { name?: string; enabled?: boolean }): Promise<void>;
+  updateName(
+    id: number,
+    update: { name?: string; enabled?: boolean },
+  ): Promise<void>;
   deleteName(id: number): Promise<void>;
   getSettings(): AdminBotSettings;
   updateSettings(update: Partial<AdminBotSettings>): Promise<AdminBotSettings>;

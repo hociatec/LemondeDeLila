@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "1",
+  "snapshotMigrations": [
+    {
+      "fromVersion": "corridor@content:1adb0e9e",
+      "toVersion": "1"
+    }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "VentsSacres",
+  "patterns": [],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    { "key": "M", "type": "action", "actionType": "corridor_place_wall" }
+  ],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": {
+      "actions": [],
+      "transitions": ["playing"]
+    },
+    "playing": {
+      "actions": ["corridor_move", "corridor_place_wall"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "corridor_move": { "recipe": "corridor-move" },
+    "corridor_place_wall": { "recipe": "corridor-place-wall" }
+  },
+  "victory": { "kind": "by-corridor" },
+  "corridor": {
+    "boardId": "corridor",
+    "pawnSetId": "corridor",
+    "pawnChoiceId": "corridor.pawn",
+    "wallsResourceId": "corridor.walls",
+    "wallsOverlayId": "walls",
+    "size": 9,
+    "defaultWallsPerPlayer": 10,
+    "startPositions": [
+      { "x": 4, "y": 0 },
+      { "x": 4, "y": 8 }
+    ],
+    "pawns": [
+      {
+        "id": "vent",
+        "label": "Le vent",
+        "description": "Rapide et changeant, il traverse le corridor sans hésiter."
+      },
+      {
+        "id": "eau",
+        "label": "L’eau",
+        "description": "Souple et patiente, elle contourne les obstacles avec précision."
+      },
+      {
+        "id": "terre",
+        "label": "La terre",
+        "description": "Stable et solide, elle avance avec régularité."
+      },
+      {
+        "id": "feu",
+        "label": "Le feu",
+        "description": "Direct et audacieux, il cherche la ligne d’arrivée."
+      }
+    ]
+  }
+}

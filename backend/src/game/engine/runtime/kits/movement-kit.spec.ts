@@ -5,6 +5,19 @@ import {
 } from './movement-kit';
 
 describe('GameMovementController', () => {
+  it('rejects invalid players and unknown tracks without movement or events', () => {
+    const state = createMovementKitState();
+    const emit = jest.fn();
+    const controller = new GameMovementController(state, emit);
+    controller.createTrack(movement.track({ id: 'track', spaces: 4 }));
+    const before = structuredClone(state);
+    for (const playerId of [0, NaN, Infinity, 1.5])
+      expect(() => controller.move('track', playerId, 1)).toThrow();
+    expect(() => controller.position('missing', 1)).toThrow();
+    expect(() => controller.positions('missing')).toThrow();
+    expect(state).toEqual(before);
+    expect(emit).not.toHaveBeenCalled();
+  });
   it('adds the reached tile narration to the landing event', () => {
     const events: Array<{ type: string; data: Record<string, unknown> }> = [];
     const state = createMovementKitState();

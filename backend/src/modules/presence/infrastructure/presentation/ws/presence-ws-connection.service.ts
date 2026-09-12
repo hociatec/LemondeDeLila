@@ -103,7 +103,14 @@ export class PresenceWsConnectionService {
       }
     }
 
-    this.presence.register(client, payload, context);
+    if (!this.presence.register(client, payload, context)) {
+      this.sendError(
+        client,
+        'Service de présence indisponible. Réessayez plus tard.',
+      );
+      client.close(1013, 'presence unavailable');
+      return;
+    }
     client.on(
       'message',
       (raw) =>
@@ -155,7 +162,10 @@ export class PresenceWsConnectionService {
       ((args && args[0]) as WsRequestLike | undefined) ??
       wsClient.upgradeReq ??
       wsClient.req;
-    const urlCandidate = String(wsClient.url || request?.url || '').slice(0, 4096);
+    const urlCandidate = String(wsClient.url || request?.url || '').slice(
+      0,
+      4096,
+    );
 
     try {
       const url = new URL(urlCandidate, 'ws://localhost');

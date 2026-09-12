@@ -26,7 +26,11 @@ export class AdminRoomsService {
     if (input.confirm !== true) {
       throw new BadRequestException('Confirmation requise.');
     }
-    const olderThanMinutes = boundedInteger(input.olderThanMinutes, 0, 365 * 24 * 60);
+    const olderThanMinutes = boundedInteger(
+      input.olderThanMinutes,
+      0,
+      365 * 24 * 60,
+    );
     const limit = boundedInteger(input.limit, 1, 5_000);
 
     return this.rooms.adminCleanupRooms({
@@ -60,7 +64,11 @@ export class AdminRoomsService {
     }
 
     const roomId = String(input.roomId ?? '').trim();
-    if (!/^\d+$/.test(roomId) || Number(roomId) <= 0 || !Number.isSafeInteger(Number(roomId))) {
+    if (
+      !/^\d+$/.test(roomId) ||
+      Number(roomId) <= 0 ||
+      !Number.isSafeInteger(Number(roomId))
+    ) {
       throw new BadRequestException('Identifiant de salle invalide.');
     }
     return this.rooms.adminDestroyRoom(roomId);
@@ -83,9 +91,17 @@ export class AdminRoomsService {
   }
 }
 
-function boundedInteger(value: unknown, min: number, max: number): number | undefined {
+function boundedInteger(
+  value: unknown,
+  min: number,
+  max: number,
+): number | undefined {
   if (value === undefined) return undefined;
-  if (!Number.isSafeInteger(value) || (value as number) < min || (value as number) > max) {
+  if (
+    !Number.isSafeInteger(value) ||
+    (value as number) < min ||
+    (value as number) > max
+  ) {
     throw new BadRequestException('Paramètre numérique invalide.');
   }
   return value as number;

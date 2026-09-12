@@ -78,6 +78,8 @@ function measureGames(root) {
         contentLoc: 0,
         declarativeLoc: 0,
         customRulesLoc: 0,
+        typescriptLoc: 0,
+        jsonLoc: 0,
         files: [],
       };
       for (const file of walk(directory).filter(
@@ -94,6 +96,8 @@ function measureGames(root) {
           ).length;
         const kind = category(file);
         game[kind] += loc;
+        if (file.endsWith('.ts')) game.typescriptLoc += loc;
+        if (file.endsWith('.json')) game.jsonLoc += loc;
         game.files.push({
           file: path.relative(repo, file).replaceAll('\\', '/'),
           category: kind,
@@ -104,6 +108,7 @@ function measureGames(root) {
       const logicLoc = game.declarativeLoc + game.customRulesLoc;
       return {
         ...game,
+        jsonOnly: fs.existsSync(path.join(directory, 'game.json')) && game.typescriptLoc === 0,
         declarativeShare: logicLoc === 0 ? null : game.declarativeLoc / logicLoc,
       };
     })
@@ -118,9 +123,16 @@ function growthReviews(current, previous) {
       reviews.push({ gameId: game.gameId, reason: 'new-game' });
       continue;
     }
+    const wasJsonOnly = before.jsonOnly ?? (
+      before.files?.some((file) => file.file.endsWith('/game.json')) &&
+      !before.files?.some((file) => file.file.endsWith('.ts'))
+    );
+    if (wasJsonOnly && !game.jsonOnly)
+      reviews.push({ gameId: game.gameId, reason: 'json-only-regression' });
     for (const metric of ['declarativeLoc', 'customRulesLoc']) {
       const delta = game[metric] - before[metric];
-      if (delta >= 100 && game[metric] >= before[metric] * 1.2)
+      if ((metric === 'customRulesLoc' && delta > 0) ||
+        (delta >= 100 && game[metric] >= before[metric] * 1.2))
         reviews.push({
           gameId: game.gameId,
           metric,
@@ -143,9 +155,9 @@ function main() {
           .games
       : [];
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     methodology:
-      'Non-empty lines excluding // comments; game.json, game.ts and configuration.ts count as declarative. declarativeShare = declarativeLoc / (declarativeLoc + customRulesLoc), excluding content assets; this is a filename-based indicator, not semantic proof. Call sequences are lexical review aids, not execution traces. Types and helper files count as custom code.',
+      'Non-empty lines excluding // comments. typescriptLoc and jsonLoc count author files by extension, excluding tests and manifests. jsonOnly requires game.json and no author TypeScript. The historical declarativeShare is filename-based, counts game.ts/configuration.ts as declarative, and is not proof of JSON-only authoring. Every increase of customRulesLoc requests review. A JSON-only game gaining TypeScript fails the command. Call sequences are lexical review aids, not execution traces.',
     games,
     growthReviews: compareIndex >= 0 ? growthReviews(games, previous) : [],
     structuralDuplicates: inspectDuplicates(root),
@@ -157,6 +169,8 @@ function main() {
   console.log(
     `game-metrics: ${games.length} jeux; ${report.growthReviews.length} revues de croissance; ${report.structuralDuplicates.length} groupes de duplication`,
   );
+  if (report.growthReviews.some((review) => review.reason === 'json-only-regression'))
+    process.exitCode = 1;
 }
 
 module.exports = { measureGames, growthReviews, inspectFunctions };

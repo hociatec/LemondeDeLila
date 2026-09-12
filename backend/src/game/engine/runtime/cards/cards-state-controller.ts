@@ -1,5 +1,15 @@
 import { cloneStaticContent } from '../content/content-immutability';
 import {
+  assertGameCount,
+  assertGamePlayerId,
+} from '../kits/numeric-invariants';
+import { assertCardStateShape } from './card-state-invariants';
+import { assertHandDeckDefinitions } from './hand-deck-definitions';
+import {
+  assertCardHandDestination,
+  assertCardRecipients,
+} from './card-hand-invariants';
+import {
   GameConfigurationError,
   GameNotFoundError,
   GameRuleViolationError,
@@ -11,6 +21,7 @@ import {
   contentIdKey,
   isIdentifiedCard,
   type CardCatalog,
+  type CardId,
   type CardSetsDefinition,
   type CardZoneDefinition,
   type CardValue,
@@ -31,6 +42,7 @@ export abstract class GameCardsStateController {
     handId: string,
     playerIds: readonly number[],
     count: number,
+    deferredCardIds?: readonly CardId[],
   ): void;
 
   constructor(
@@ -48,7 +60,10 @@ export abstract class GameCardsStateController {
       | CardZoneDefinition
     )[] = [],
   ) {
+    assertCardStateShape(state);
     for (const definition of definitions) this.registerDefinition(definition);
+    for (const hand of this.handDefinitions.values())
+      assertHandDeckDefinitions(hand, this.deckDefinitions);
     for (const [deckId, deck] of Object.entries(this.state.decks)) {
       this.state.decks[deckId] = deck.map((card) =>
         this.toPersistentCard(deckId, card),
@@ -76,6 +91,12 @@ export abstract class GameCardsStateController {
   }
 
   protected readonly catalogs = new Map<string, CardCatalog>();
+  private readonly deckIds = new Set<string>();
+  private readonly deckDefinitions = new Map<
+    string,
+    DeckDefinition<CardValue>
+  >();
+  private readonly cardIdentifiers = new Map<string, ReadonlySet<string>>();
   protected readonly handDefinitions = new Map<string, HandsDefinition>();
   protected readonly setDefinitions = new Map<string, CardSetsDefinition>();
   protected readonly zoneDefinitions = new Map<string, CardZoneDefinition>();
@@ -96,17 +117,36 @@ export abstract class GameCardsStateController {
   }
 
   createHands(definition: HandsDefinition, playerIds: readonly number[]): void {
+    assertHandDeckDefinitions(definition, this.deckDefinitions);
+    assertCardRecipients(playerIds);
+    assertGameCount(definition.initial, 100_000);
+    this.lifecycle(definition.deck);
     this.handDefinitions.set(definition.id, definition);
     this.state.hands[definition.id] = Object.fromEntries(
       playerIds.map((playerId) => [String(playerId), []]),
     );
-    this.deal(definition.deck, definition.id, playerIds, definition.initial);
+    this.deal(
+      definition.deck,
+      definition.id,
+      playerIds,
+      definition.initial,
+      definition.initialDeferredCardIds,
+    );
   }
 
   createSets(
     definition: CardSetsDefinition,
     playerIds: readonly number[],
   ): void {
+    assertCardRecipients(playerIds);
+    this.lifecycle(definition.deck);
+    if (playerIds.length > 0)
+      assertCardHandDestination(
+        this.handDefinitions,
+        definition.hand,
+        definition.deck,
+        playerIds[0],
+      );
     this.setDefinitions.set(definition.id, definition);
     this.state.completedSets[definition.id] = Object.fromEntries(
       playerIds.map((playerId) => [String(playerId), []]),
@@ -114,15 +154,18 @@ export abstract class GameCardsStateController {
   }
 
   readonly createZone = (definition: CardZoneDefinition): void => {
+    this.lifecycle(definition.deck);
     this.zoneDefinitions.set(definition.id, definition);
     this.state.zones[definition.id] = [];
   };
 
   removeDeck(deckId: string): void {
+    this.deckDefinitions.delete(deckId);
     delete this.state.decks[deckId];
     delete this.state.discards[deckId];
     delete this.state.deckLifecycles[deckId];
     this.catalogs.delete(deckId);
+    this.deckIds.delete(deckId);
   }
 
   resetHands(handId: string): void {
@@ -141,15 +184,32 @@ export abstract class GameCardsStateController {
   };
 
   assertValid(): void {
-    for (const [deckId, deck] of Object.entries(this.state.decks)) {
-      if (!Array.isArray(deck) || !Array.isArray(this.state.discards[deckId])) {
-        throw new GameStateViolationError('État de pioche invalide', {
-          deckId,
+    assertCardStateShape(this.state);
+    for (const deckId of Object.keys(this.state.decks)) {
+      if (!this.deckIds.has(deckId))
+        throw new GameStateViolationError('Pioche non définie', { deckId });
+    }
+    for (const handId of Object.keys(this.state.hands)) {
+      if (!this.handDefinitions.has(handId))
+        throw new GameStateViolationError('Main non définie', { handId });
+    }
+    for (const zoneId of Object.keys(this.state.zones)) {
+      if (!this.zoneDefinitions.has(zoneId))
+        throw new GameStateViolationError('Zone non définie', { zoneId });
+    }
+    for (const [collectionId, players] of Object.entries(
+      this.state.completedSets,
+    )) {
+      const definition = this.setDefinitions.get(collectionId);
+      if (
+        !definition ||
+        Object.values(players).some((sets) =>
+          sets.some((setId) => !Object.hasOwn(definition.sets, setId)),
+        )
+      )
+        throw new GameStateViolationError('Famille non définie', {
+          collectionId,
         });
-      }
-      if (!this.state.deckLifecycles[deckId]) {
-        throw new GameStateViolationError('Cycle de pioche absent', { deckId });
-      }
     }
     for (const [handId, definition] of Object.entries(
       Object.fromEntries(this.handDefinitions),
@@ -159,11 +219,6 @@ export abstract class GameCardsStateController {
         throw new GameStateViolationError('État de main invalide', {
           handId,
           deckId: definition.deck,
-        });
-      }
-      if (Object.values(hands).some((hand) => !Array.isArray(hand))) {
-        throw new GameStateViolationError('Contenu de main invalide', {
-          handId,
         });
       }
     }
@@ -223,12 +278,17 @@ export abstract class GameCardsStateController {
   }
 
   clearHands(handId: string, playerIds: readonly number[]): void {
+    assertCardRecipients(playerIds);
+    if (!this.handDefinitions.has(handId))
+      throw new GameNotFoundError(`Main inconnue: ${handId}`);
     this.state.hands[handId] = Object.fromEntries(
       playerIds.map((playerId) => [String(playerId), []]),
     );
   }
 
   protected lifecycle(deckId: string): DeckLifecycleState {
+    if (!Object.hasOwn(this.state.decks, deckId))
+      throw new GameNotFoundError(`Pioche inconnue: ${deckId}`);
     return (this.state.deckLifecycles[deckId] ??= {
       empty: 'exhaust',
       exhausted: false,
@@ -246,18 +306,30 @@ export abstract class GameCardsStateController {
   }
 
   protected persistentHand(handId: string, playerId: number): CardValue[] {
-    const hands = (this.state.hands[handId] ??= {});
-    return (hands[String(playerId)] ??= []);
+    assertGamePlayerId(playerId);
+    if (!this.handDefinitions.has(handId))
+      throw new GameNotFoundError(`Main inconnue: ${handId}`);
+    return this.state.hands[handId]?.[String(playerId)] ?? [];
   }
 
   private registerCatalog<TCard extends CardValue>(
     definition: DeckDefinition<TCard>,
   ): void {
-    const identifiedCards = definition.cards.filter(isIdentifiedCard);
-    if (
-      definition.cards.length === 0 ||
-      identifiedCards.length !== definition.cards.length
-    ) {
+    this.deckIds.add(definition.id);
+    this.deckDefinitions.set(definition.id, definition);
+    const content = definition.catalog ?? definition.cards;
+    const identifiers = content.map((card) =>
+      isIdentifiedCard(card)
+        ? contentIdKey(card.id)
+        : typeof card === 'string' || typeof card === 'number'
+          ? contentIdKey(card)
+          : null,
+    );
+    if (identifiers.every((id) => id !== null))
+      this.cardIdentifiers.set(definition.id, new Set(identifiers));
+    else this.cardIdentifiers.delete(definition.id);
+    const identifiedCards = content.filter(isIdentifiedCard);
+    if (content.length === 0 || identifiedCards.length !== content.length) {
       this.catalogs.delete(definition.id);
       return;
     }
@@ -296,6 +368,14 @@ export abstract class GameCardsStateController {
     deckId: string,
     card: TCard,
   ): CardValue {
+    const identifier = isIdentifiedCard(card)
+      ? contentIdKey(card.id)
+      : typeof card === 'string' || typeof card === 'number'
+        ? contentIdKey(card)
+        : null;
+    const known = this.cardIdentifiers.get(deckId);
+    if (known && (identifier === null || !known.has(identifier)))
+      throw new GameRuleViolationError('UNKNOWN_CARD_CONTENT', { deckId });
     const catalog = this.catalogs.get(deckId);
     if (!catalog || !isIdentifiedCard(card)) {
       return structuredClone(card);

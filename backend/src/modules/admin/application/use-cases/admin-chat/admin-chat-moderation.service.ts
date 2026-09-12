@@ -25,7 +25,7 @@ export interface UnbanAdminChatUserCommand {
 export class AdminChatModerationService {
   constructor(
     @Inject(ADMIN_USER_REPOSITORY)
-    private readonly users: AdminUserRepository,
+    private readonly users: Pick<AdminUserRepository, 'findById' | 'save'>,
     @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
   ) {}
 
@@ -92,11 +92,16 @@ function assertUserId(value: unknown): asserts value is number {
   }
 }
 
-function assertDuration(value: unknown): asserts value is number | null | undefined {
+function assertDuration(
+  value: unknown,
+): asserts value is number | null | undefined {
   if (
     value !== undefined &&
     value !== null &&
-    (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0 || value > 36_500)
+    (typeof value !== 'number' ||
+      !Number.isSafeInteger(value) ||
+      value < 0 ||
+      value > 36_500)
   ) {
     throw new BadRequestException('Durée de bannissement invalide');
   }

@@ -11,11 +11,13 @@ import { RoomBot } from '../infrastructure/persistence/typeorm/entities/room-bot
 import { RoomMaintenanceSettingsEntity } from '../infrastructure/persistence/typeorm/entities/room-maintenance-settings.entity';
 import { RoomParticipant } from '../infrastructure/persistence/typeorm/entities/room-participant.entity';
 import { Room } from '../infrastructure/persistence/typeorm/entities/room.entity';
+import { RoomInviteEntity } from '../infrastructure/persistence/typeorm/entities/room-invite.entity';
 
 export const ROOM_MODULE_IMPORTS = [
   BusinessClockModule,
   TypeOrmModule.forFeature([
     Room,
+    RoomInviteEntity,
     RoomParticipant,
     RoomBot,
     RoomMaintenanceSettingsEntity,

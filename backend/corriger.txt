@@ -1,1 +1,1 @@
-Il reste encore ces points visibles dans ce snapshot :
+Snapshot JSON complet :

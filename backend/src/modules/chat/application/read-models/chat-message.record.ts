@@ -1,4 +1,7 @@
-import type { MessageId, UserId } from '../../../../shared/interfaces/public-api';
+import type {
+  MessageId,
+  UserId,
+} from '../../../../shared/interfaces/public-api';
 
 export type ChatBroadcastUser = {
   id: UserId;
@@ -33,4 +36,3 @@ export type ChatNormalizedMessage = {
   };
 };
 /** Explicitly named data contract at the application boundary. */
-

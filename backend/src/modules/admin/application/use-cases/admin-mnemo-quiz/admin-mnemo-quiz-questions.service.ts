@@ -60,7 +60,11 @@ export class AdminMnemoQuizQuestionsService {
   }
 
   update(command: UpdateAdminMnemoQuestionCommand) {
-    if (typeof command.id !== 'string' || !command.id.trim() || command.id.length > 128) {
+    if (
+      typeof command.id !== 'string' ||
+      !command.id.trim() ||
+      command.id.length > 128
+    ) {
       throw new BadRequestException('Identifiant de question invalide.');
     }
     const patch: MnemoQuestionPatch = {};
@@ -73,7 +77,8 @@ export class AdminMnemoQuizQuestionsService {
     }
     if (command.status !== undefined) {
       const status = this.normalizeStatus(command.status);
-      if (!status) throw new BadRequestException('Statut de question invalide.');
+      if (!status)
+        throw new BadRequestException('Statut de question invalide.');
       patch.status = status;
     }
 
@@ -131,9 +136,7 @@ function normalizeAnswers(value: unknown): string[] {
     typeof answer === 'string' ? answer.trim() : '',
   );
   if (
-    answers.some(
-      (answer) => !answer || answer.length > MAX_MNEMO_TEXT_LENGTH,
-    )
+    answers.some((answer) => !answer || answer.length > MAX_MNEMO_TEXT_LENGTH)
   ) {
     throw new BadRequestException('Réponse Mnemo invalide.');
   }

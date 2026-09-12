@@ -36,6 +36,22 @@ de room existantes sont également collectées en best effort et ne participent
 ni à la décision de victoire ni au commit du jeu. Une exigence future de
 comptabilité exhaustive devra leur ajouter une intention durable par run.
 
+La politique d'échec est fixée par nature d'effet :
+
+| Effet                             | Moment          | Politique                                                                                          |
+| --------------------------------- | --------------- | -------------------------------------------------------------------------------------------------- |
+| état, événements et snapshot Game | transaction SQL | rollback atomique et conflit CAS renvoyé au caller                                                 |
+| réveil d'un automatisme           | après commit    | job idempotent, cinq tentatives avec backoff, puis dead letter ; la réconciliation SQL le retrouve |
+| annulation d'un ancien réveil     | après commit    | abandon sûr si absent ; nouvel état/version rend l'ancien job inopérant                            |
+| projection WS, présence, lobby    | après commit    | best effort puis reconstruction depuis SQL à la lecture/reconnexion                                |
+| statistique secondaire            | après commit    | abandon journalisé ; elle ne décide jamais du résultat métier                                      |
+
+Le code auteur et le moteur synchrone ne peuvent appeler aucune API externe :
+l'audit `game-external-effects` interdit `async`, timers, réseau, processus et
+promesses dans les règles. Une nouvelle catégorie d'effet d'infrastructure doit
+donc être ajoutée à cette matrice avec son identité, sa reprise et un test de
+panne avant d'être raccordée.
+
 Les tests de reprise couvrent réémission, panne SQL, isolation d'une session
 illisible, pagination et arrêt. Les tests du scheduler et des contrats de
 tâches couvrent les doublons, restaurations, générations et échéances.

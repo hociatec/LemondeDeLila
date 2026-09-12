@@ -14,7 +14,10 @@ export class VaultRoomSnapshotsService {
     @Inject(VAULT_ROOM_SNAPSHOT_REPOSITORY)
     private readonly snapshots: VaultRoomSnapshotRepository,
     @Inject(VAULT_ROOM_PORT)
-    private readonly rooms: VaultRoomPort,
+    private readonly rooms: Pick<
+      VaultRoomPort,
+      'adminDestroyRoom' | 'requireRoomForOwnerAction'
+    >,
     private readonly writer: VaultSnapshotWriterService,
     private readonly restorer: VaultSnapshotRestoreService,
   ) {}
@@ -43,7 +46,12 @@ export class VaultRoomSnapshotsService {
 
   async delete(ownerUserId: number, snapshotId: string): Promise<boolean> {
     const id = String(snapshotId ?? '').trim();
-    if (!id || id.length > 128 || !Number.isSafeInteger(ownerUserId) || ownerUserId <= 0) {
+    if (
+      !id ||
+      id.length > 128 ||
+      !Number.isSafeInteger(ownerUserId) ||
+      ownerUserId <= 0
+    ) {
       throw new BadRequestException('id requis');
     }
     return this.snapshots.deleteByIdForOwner(id, ownerUserId);
@@ -102,7 +110,9 @@ export class VaultRoomSnapshotsService {
     let snapshotId: string;
     try {
       const room = await this.rooms.requireRoomForOwnerAction(id, ownerUserId);
-      snapshotId = String(room.restoredFromSnapshotId ?? '').trim().slice(0, 128);
+      snapshotId = String(room.restoredFromSnapshotId ?? '')
+        .trim()
+        .slice(0, 128);
       if (!snapshotId || room.restoredOwnerUserId !== ownerUserId) {
         return false;
       }

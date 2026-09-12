@@ -10,6 +10,25 @@ const validBase = {
   WS_TICKET_SECRET: 'b'.repeat(32),
 };
 
+it.each([
+  'CLIENT_WX_COMPLETION_LEASE_MS',
+  'CLIENT_WX_PUBLICATION_LEASE_MS',
+  'ADMIN_MAINTENANCE_LEASE_MS',
+])('enforces the Redis lease bounds at startup for %s', (key) => {
+  for (const value of [4999, 86400001, 5000.5]) {
+    expect(
+      environmentValidationSchema.validate({ ...validBase, [key]: value })
+        .error,
+    ).toBeDefined();
+  }
+  for (const value of [5000, 900000, 86400000]) {
+    expect(
+      environmentValidationSchema.validate({ ...validBase, [key]: value })
+        .error,
+    ).toBeUndefined();
+  }
+});
+
 const validProduction = {
   ...validBase,
   NODE_ENV: 'production',

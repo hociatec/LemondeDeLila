@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "4",
+  "snapshotMigrations": [
+    {
+      "fromVersion": "voyage-en-terre-de-brumes@content:f37084a0@format:2",
+      "toVersion": "1"
+    }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "ireland",
+      "spaces": 71,
+      "overshoot": "bounce"
+    }
+  ],
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "legend",
+      "cards": { "$content": "content/catalogue.json#/legend" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.deck",
+      "id": "farce",
+      "cards": { "$content": "content/catalogue.json#/farce" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.deck",
+      "id": "treasure",
+      "cards": { "$content": "content/catalogue.json#/treasure" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.deck",
+      "id": "landscape",
+      "cards": { "$content": "content/catalogue.json#/landscape" },
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "collection.view",
+      "id": "voyage",
+      "groups": {
+        "legend": { "kind": "resource", "id": "voyage.collection.legend" },
+        "farce": { "kind": "resource", "id": "voyage.collection.farce" },
+        "treasure": { "kind": "resource", "id": "voyage.collection.treasure" },
+        "landscape": { "kind": "resource", "id": "voyage.collection.landscape" }
+      }
+    }
+  ],
+  "setup": {
+    "startRound": false,
+    "counters": {
+      "voyage.finish-started": 0,
+      "voyage.finish-countdown": 0
+    }
+  },
+  "resourceIds": [
+    "voyage.collection.legend",
+    "voyage.collection.farce",
+    "voyage.collection.treasure",
+    "voyage.collection.landscape"
+  ],
+  "shortcuts": [
+    { "key": "D", "type": "action", "actionType": "roll" },
+    { "key": "P", "type": "interface", "id": "position" },
+    { "key": "C", "type": "interface", "id": "cards" }
+  ],
+  "initialPhase": "playing",
+  "phases": { "playing": { "actions": ["roll"], "terminal": true } },
+  "actions": { "roll": { "recipe": "voyage-roll" } },
+  "victory": { "kind": "by-voyage" },
+  "voyage": {
+    "trackId": "ireland",
+    "diceId": "main",
+    "choiceId": "voyage.choice",
+    "lastTargetStatusId": "voyage.last-target",
+    "finishStartedCounterId": "voyage.finish-started",
+    "finishCountdownCounterId": "voyage.finish-countdown",
+    "collectionResourcePrefix": "voyage.collection.",
+    "collectionKinds": ["legend", "farce", "treasure", "landscape"],
+    "tiles": { "$content": "content/catalogue.json#/tiles" },
+    "decks": {
+      "legend": { "$content": "content/catalogue.json#/legend" },
+      "farce": { "$content": "content/catalogue.json#/farce" },
+      "treasure": { "$content": "content/catalogue.json#/treasure" },
+      "landscape": { "$content": "content/catalogue.json#/landscape" }
+    }
+  }
+}

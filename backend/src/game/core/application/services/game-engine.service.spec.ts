@@ -93,6 +93,18 @@ describe('GameEngineService room cleanup', () => {
     });
   });
 
+  it('never clears a restored snapshot that reuses the stale numeric version', async () => {
+    const engine = createEngine();
+    const original: GameState = { ...state('original'), version: 4 };
+    await engine.restoreInternalState(4, 'lama', original);
+    const restored: GameState = { ...state('restored'), version: 4 };
+    await engine.restoreInternalState(4, 'lama', restored);
+    await engine.clearInternalStateIf(4, 'lama', original);
+    expect(await engine.exportInternalState(4, 'lama')).toEqual(restored);
+    await engine.clearInternalStateIf(4, 'lama', restored);
+    expect(await engine.exportInternalState(4, 'lama')).toBeNull();
+  });
+
   it('records commands atomically and replays snapshots plus events', async () => {
     const engine = createEngine();
     let current: GameState = { ...state('initial'), version: 1 };

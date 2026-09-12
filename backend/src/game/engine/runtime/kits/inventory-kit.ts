@@ -5,7 +5,11 @@ import {
   GameStateViolationError,
 } from '../../../core/domain/errors/game-domain.errors';
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
-import { assertGameCount } from './numeric-invariants';
+import {
+  assertGameCount,
+  assertGamePlayerId,
+  assertPlayerValueId,
+} from './numeric-invariants';
 
 const MAX_INVENTORY_ITEMS = 100_000;
 
@@ -26,6 +30,7 @@ export function createInventoryKitState(): InventoryKitState {
 
 export const inventory = {
   set(definition: Omit<InventoryDefinition, 'component'>): InventoryDefinition {
+    for (const itemId of definition.items ?? []) assertPlayerValueId(itemId);
     if (
       definition.items?.some((itemId) => !itemId.trim()) ||
       new Set(definition.items ?? []).size !== (definition.items?.length ?? 0)
@@ -75,15 +80,23 @@ export class GameInventoryController {
   }
 
   assertValid(): void {
+    for (const id of Object.keys(this.state.byPlayer))
+      this.requireDefinition(id);
     for (const [inventoryId, definition] of this.definitions) {
       const inventories = this.state.byPlayer[inventoryId];
-      if (!inventories) {
+      if (
+        !inventories ||
+        typeof inventories !== 'object' ||
+        Array.isArray(inventories)
+      ) {
         throw new GameStateViolationError('Inventaire absent', { inventoryId });
       }
       const allowed = definition.items ? new Set(definition.items) : null;
-      for (const items of Object.values(inventories)) {
+      for (const [playerId, items] of Object.entries(inventories)) {
+        assertGamePlayerId(Number(playerId));
         if (
           !Array.isArray(items) ||
+          String(Number(playerId)) !== playerId ||
           items.length > MAX_INVENTORY_ITEMS ||
           (allowed && items.some((itemId) => !allowed.has(itemId)))
         ) {
@@ -91,19 +104,21 @@ export class GameInventoryController {
             inventoryId,
           });
         }
+        for (const itemId of items) assertPlayerValueId(itemId);
       }
     }
   }
 
   items(inventoryId: string, playerId: number): string[] {
+    assertGamePlayerId(playerId);
     this.requireDefinition(inventoryId);
-    const byPlayer = (this.state.byPlayer[inventoryId] ??= {});
-    return (byPlayer[String(playerId)] ??= []);
+    return [...(this.state.byPlayer[inventoryId]?.[String(playerId)] ?? [])];
   }
 
   add(inventoryId: string, playerId: number, itemId: string, count = 1): void {
     this.assertCanAdd(inventoryId, playerId, itemId, count);
-    const items = this.items(inventoryId, playerId);
+    const byPlayer = (this.state.byPlayer[inventoryId] ??= {});
+    const items = (byPlayer[String(playerId)] ??= []);
     for (let index = 0; index < count; index += 1) {
       items.push(itemId);
     }
@@ -125,6 +140,7 @@ export class GameInventoryController {
     count = 1,
   ): void {
     assertGameCount(count, MAX_INVENTORY_ITEMS);
+    assertGamePlayerId(playerId);
     this.requireItem(inventoryId, itemId);
     const items = this.state.byPlayer[inventoryId]?.[String(playerId)] ?? [];
     assertGameCount(items.length + count, MAX_INVENTORY_ITEMS);
@@ -138,7 +154,8 @@ export class GameInventoryController {
   ): void {
     assertGameCount(count, MAX_INVENTORY_ITEMS);
     this.requireItem(inventoryId, itemId);
-    const items = this.items(inventoryId, playerId);
+    assertGamePlayerId(playerId);
+    const items = this.state.byPlayer[inventoryId]?.[String(playerId)] ?? [];
     if (this.quantity(inventoryId, playerId, itemId) < count) {
       throw new GameRuleViolationError('INSUFFICIENT_INVENTORY', {
         inventoryId,
@@ -260,6 +277,8 @@ export class GameInventoryController {
   }
 
   swap(inventoryId: string, leftPlayerId: number, rightPlayerId: number): void {
+    assertGamePlayerId(leftPlayerId);
+    assertGamePlayerId(rightPlayerId);
     const definition = this.requireDefinition(inventoryId);
     const byPlayer = (this.state.byPlayer[inventoryId] ??= {});
     const left = byPlayer[String(leftPlayerId)] ?? [];
@@ -328,6 +347,7 @@ export class GameInventoryController {
   }
 
   private requireItem(inventoryId: string, itemId: string): void {
+    assertPlayerValueId(itemId);
     const definition = this.requireDefinition(inventoryId);
     if (definition.items && !definition.items.includes(itemId)) {
       throw new GameNotFoundError(`Objet d’inventaire inconnu: ${itemId}`);

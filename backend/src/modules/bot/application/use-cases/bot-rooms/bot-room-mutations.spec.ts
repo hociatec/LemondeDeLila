@@ -17,15 +17,9 @@ describe('distributed bot room mutations', () => {
           return result;
         },
       ),
-      findRoomById: jest.fn(async () => {
-        order.push('room');
-        return {
-          id: 4,
-          ownerId: 1,
-          maxPlayers: 4,
-          status: 'open',
-          startedAt: null,
-        };
+      assessBotMutation: jest.fn(async () => {
+        order.push('permission');
+        return 'allowed';
       }),
       countActiveHumansForRoom: jest.fn().mockResolvedValue(1),
       listBotsForRoom: jest.fn().mockResolvedValue([]),
@@ -45,6 +39,12 @@ describe('distributed bot room mutations', () => {
       id: 8,
       name: 'Nova',
     });
-    expect(order).toEqual(['lock', 'room', 'create', 'unlock']);
+    expect(order).toEqual(['lock', 'permission', 'create', 'unlock']);
+    jest.spyOn(rooms, 'assessBotMutation').mockResolvedValue('owner-required');
+    await expect(service.execute(4, 2)).rejects.toMatchObject({
+      code: 'BOT_ROOM_OWNER_REQUIRED',
+    });
+    expect(names.pickName).toHaveBeenCalledTimes(1);
+    expect(rooms.createBot).toHaveBeenCalledTimes(1);
   });
 });

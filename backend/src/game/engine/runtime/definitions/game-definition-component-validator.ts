@@ -11,6 +11,7 @@ import {
 } from '../effects/game-effect-reference-validator';
 import { assertStaticEffectReferences } from './static-effect-references';
 import { assertComponentCatalog } from './component-catalog-validation';
+import { assertHandDeckDefinitions } from '../cards/hand-deck-definitions';
 import type {
   DefinitionToValidate,
   ValidationFailure,
@@ -38,9 +39,12 @@ type ComponentReferences = Omit<
   tracks: Set<string>;
   diceSets: Set<string>;
   handDecks: Map<string, string>;
+  handAcceptedDecks: Map<string, ReadonlySet<string>>;
   cardIdsByDeck: Map<string, ReadonlySet<string>>;
   trackSpaces: Map<string, number>;
   resources: Set<string>;
+  inventoryItems: Map<string, ReadonlySet<string> | null>;
+  ownershipAssets: Map<string, ReadonlySet<string>>;
 };
 
 export function assertComponentDefinitions(
@@ -59,7 +63,7 @@ export function assertComponentDefinitions(
   );
 }
 
-function indexComponents(
+export function indexComponents(
   definition: DefinitionToValidate,
   fail: ValidationFailure,
 ): ComponentReferences {
@@ -71,8 +75,11 @@ function indexComponents(
     diceSets: new Set(),
     effects: definition.effects,
     handDecks: new Map(),
+    handAcceptedDecks: new Map(),
     cardIdsByDeck: new Map(),
     trackSpaces: new Map(),
+    inventoryItems: new Map(),
+    ownershipAssets: new Map(),
     resources: new Set([
       ...Object.keys(definition.initialization?.resources ?? {}),
       ...(definition.resourceIds ?? []),
@@ -102,25 +109,25 @@ function indexComponents(
     assertComponentCatalog(component, fail);
     if (component.component === 'cards.deck') {
       references.decks.set(component.id, component);
-      references.cardIdsByDeck.set(
-        component.id,
-        new Set(
-          component.cards.flatMap((card) => {
-            const cardId =
-              typeof card === 'object' && card != null && 'id' in card
-                ? card.id
-                : card;
-            return typeof cardId === 'string' ? [cardId] : [];
-          }),
-        ),
-      );
+      references.cardIdsByDeck.set(component.id, indexDeckCardIds(component));
     }
     if (component.component === 'cards.hands') {
       references.hands.set(component.id, component);
       references.handDecks.set(component.id, component.deck);
+      references.handAcceptedDecks.set(
+        component.id,
+        new Set([component.deck, ...(component.acceptedDecks ?? [])]),
+      );
     }
-    if (component.component === 'inventory.set')
+    if (component.component === 'inventory.set') {
       references.inventories.set(component.id, component);
+      references.inventoryItems.set(
+        component.id,
+        component.items ? new Set(component.items) : null,
+      );
+    }
+    if (component.component === 'ownership.registry')
+      references.ownershipAssets.set(component.id, new Set(component.assets));
     if (component.component === 'movement.track') {
       references.tracks.add(component.id);
       references.trackSpaces.set(component.id, component.spaces);
@@ -129,6 +136,18 @@ function indexComponents(
       references.diceSets.add(component.id);
   }
   return references;
+}
+
+function indexDeckCardIds(deck: DeckDefinition): ReadonlySet<string> {
+  return new Set(
+    (deck.catalog ?? deck.cards).flatMap((card) => {
+      const id =
+        typeof card === 'object' && card != null && 'id' in card
+          ? card.id
+          : card;
+      return typeof id === 'string' ? [id] : [];
+    }),
+  );
 }
 
 function assertComponent(
@@ -144,6 +163,8 @@ function assertComponent(
   }
   if (component.component === 'cards.sets')
     assertCardSets(component, references, fail);
+  if (component.component === 'cards.hands')
+    assertHandDeckDefinitions(component, references.decks);
   if (component.component === 'economy.market')
     assertMarket(component, references, fail);
   if (component.component === 'movement.track') {
@@ -182,7 +203,10 @@ function assertComponent(
   if (component.component === 'collection.view')
     assertCollectionResources(component, references, fail);
   if (component.component !== 'cards.deck') return;
-  for (const [index, card] of component.cards.entries()) {
+  for (const [index, card] of [
+    ...component.cards,
+    ...(component.catalog ?? []),
+  ].entries()) {
     if (
       card != null &&
       typeof card === 'object' &&

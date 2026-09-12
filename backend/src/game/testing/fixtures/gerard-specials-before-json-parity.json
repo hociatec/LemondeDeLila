@@ -1,0 +1,271 @@
+[
+  {
+    "card": "special-chaos-temporel",
+    "seed": 24,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-chaos-temporel"
+      }
+    },
+    "events": 89,
+    "sha256": "fe40c29c58ce4a2e4e00c1e4606194fca4fcefa19f4ad0b8f8ab68120fc36b7d"
+  },
+  {
+    "card": "special-chuchotement-confus",
+    "seed": 28,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-chuchotement-confus",
+        "targetPlayerId": 1
+      }
+    },
+    "events": 90,
+    "sha256": "9ccc1b9682d99a3734278ac7a064d55eedf5379df2c0bcfa03b4ef8910177eb5"
+  },
+  {
+    "card": "special-defense-totale",
+    "seed": 37,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-defense-totale"
+      }
+    },
+    "events": 87,
+    "sha256": "80d7627e3dfba11c02173f9edc003afd877c2e20e2f344053373cbd7d9f98857"
+  },
+  {
+    "card": "special-double-prenom",
+    "seed": 7,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-double-prenom"
+      }
+    },
+    "events": 88,
+    "sha256": "39feb5ebdb725e973db5ab4fd0f021fb4132c130a43da991ee01591776e13288"
+  },
+  {
+    "card": "special-double-theme",
+    "seed": 8,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-double-theme"
+      }
+    },
+    "events": 88,
+    "sha256": "f5d8d0951e076836e9d319fd04b79a45d5636c79b8015f7e81d70b5c1e0897b1"
+  },
+  {
+    "card": "special-echange-force",
+    "seed": 31,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-echange-force",
+        "targetPlayerId": 1
+      }
+    },
+    "events": 90,
+    "sha256": "b79794a103b006ae085e7eb0753874af6fe8daa69b0b7c5dc3c7de1b45ec31c8"
+  },
+  {
+    "card": "special-effet-domino",
+    "seed": 15,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-effet-domino"
+      }
+    },
+    "events": 89,
+    "sha256": "0ea0bc470513d34ec07f7e7fa0afaebfe6ca38180757a36f54b589f8e51a5743"
+  },
+  {
+    "card": "special-interdiction",
+    "seed": 2,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-interdiction",
+        "name": "name-242"
+      }
+    },
+    "events": 87,
+    "sha256": "c30a54b4ee50db67bb736f16d7e7077f731bc26d6fdae9a327c54372c6349a47"
+  },
+  {
+    "card": "special-inversion",
+    "seed": 5,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-inversion"
+      }
+    },
+    "events": 88,
+    "sha256": "d3f01bca195b8001e979af05b55dfb7aac283f200538cfd16c5cda4c98937a12"
+  },
+  {
+    "card": "special-inversion-role",
+    "seed": 4,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-inversion-role"
+      }
+    },
+    "events": 88,
+    "sha256": "a0486a9761062bb981da6c88629a8d74c5458e7892508e3cbe8993b7a22adf67"
+  },
+  {
+    "card": "special-jury-mystere",
+    "seed": 21,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-jury-mystere",
+        "targetPlayerId": 1
+      }
+    },
+    "events": 88,
+    "sha256": "b793fc8c59b287f4e53be435781e4bc8b55b76e758fcb00dc6885abf178eba25"
+  },
+  {
+    "card": "special-main-fantome",
+    "seed": 19,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-main-fantome",
+        "targetPlayerId": 3
+      }
+    },
+    "events": 89,
+    "sha256": "f6965b7ffd26481ed9b3e9953b132ed9bf6a98d3d14e7d66735e8201890f85c1"
+  },
+  {
+    "card": "special-mega-combo",
+    "seed": 6,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-mega-combo"
+      }
+    },
+    "events": 88,
+    "sha256": "8929236ba6bf23221b2dbb9c06e65510ef654cc3e44c2f077a8d146e53d6476d"
+  },
+  {
+    "card": "special-panique-generale",
+    "seed": 2,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-panique-generale"
+      }
+    },
+    "events": 114,
+    "sha256": "e84e0b9f0939e0636b6890f80f14315dc765cdf6419e123f886186c28344fd78"
+  },
+  {
+    "card": "special-prenom-fantome",
+    "seed": 3,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-prenom-fantome"
+      }
+    },
+    "events": 88,
+    "sha256": "d38ab02bdc27cdb04481abbd7e041c2f8d85f5902493cd1fddfc03482e054253"
+  },
+  {
+    "card": "special-prenom-volant",
+    "seed": 6,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-prenom-volant",
+        "targetPlayerId": 1
+      }
+    },
+    "events": 88,
+    "sha256": "b2d7dba0941d5a8dd168c7a3ec92cdac150e63a4d3332e31e56d0aae1f45823a"
+  },
+  {
+    "card": "special-retour-envoyeur",
+    "seed": 1,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-retour-envoyeur"
+      }
+    },
+    "events": 87,
+    "sha256": "85f49e5e5c354d11a5cad25d9d4f5fe98bd13d16a207e697c803de2c1abbc208"
+  },
+  {
+    "card": "special-sabotage",
+    "seed": 48,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-sabotage",
+        "targetPlayerId": 1
+      }
+    },
+    "events": 88,
+    "sha256": "9e38073c83af2678f54294fc8a344c45780e0f55888505103f93b948e1ecec3b"
+  },
+  {
+    "card": "special-theme-secret",
+    "seed": 23,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-theme-secret"
+      }
+    },
+    "events": 88,
+    "sha256": "00dcbf9f40903fdc9ea490c776c21169a9281ea7a4c327a0e5e320d6b82082ab"
+  },
+  {
+    "card": "special-ultra-sabotage",
+    "seed": 1,
+    "actorId": 2,
+    "action": {
+      "type": "play_special",
+      "payload": {
+        "cardId": "special-ultra-sabotage",
+        "targetPlayerId": 1,
+        "secondaryTargetId": 3
+      }
+    },
+    "events": 89,
+    "sha256": "b38fcd375c60e11e0a3f3339dfe3700035ea9d70f995cd9608730765499ff874"
+  }
+]

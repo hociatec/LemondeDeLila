@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import type { RoomEventPublisherPort } from '../../application/ports/room-event-publisher.port';
 import type {
   LobbyChangedListener,
   RoomDeletedListener,
@@ -7,25 +8,41 @@ import type {
 } from '../../application/ports/room-events.port';
 
 @Injectable()
-export class RoomEventsBusService implements RoomEventsPort {
+export class RoomEventsBusService
+  implements RoomEventsPort, RoomEventPublisherPort, OnModuleDestroy
+{
+  private destroyed = false;
   private static readonly MAX_LISTENERS = 128;
-  private readonly roomStateUpdatedListeners = new Set<RoomStateUpdatedListener>();
+  private readonly roomStateUpdatedListeners =
+    new Set<RoomStateUpdatedListener>();
   private readonly roomDeletedListeners = new Set<RoomDeletedListener>();
   private readonly lobbyChangedListeners = new Set<LobbyChangedListener>();
 
+  onModuleDestroy(): void {
+    this.destroyed = true;
+    this.roomStateUpdatedListeners.clear();
+    this.roomDeletedListeners.clear();
+    this.lobbyChangedListeners.clear();
+  }
+
   onRoomStateUpdated(listener: RoomStateUpdatedListener): void {
-    if (this.roomStateUpdatedListeners.size < RoomEventsBusService.MAX_LISTENERS) {
+    if (this.destroyed) return;
+    if (
+      this.roomStateUpdatedListeners.size < RoomEventsBusService.MAX_LISTENERS
+    ) {
       this.roomStateUpdatedListeners.add(listener);
     }
   }
 
   onRoomDeleted(listener: RoomDeletedListener): void {
+    if (this.destroyed) return;
     if (this.roomDeletedListeners.size < RoomEventsBusService.MAX_LISTENERS) {
       this.roomDeletedListeners.add(listener);
     }
   }
 
   onLobbyChanged(listener: LobbyChangedListener): void {
+    if (this.destroyed) return;
     if (this.lobbyChangedListeners.size < RoomEventsBusService.MAX_LISTENERS) {
       this.lobbyChangedListeners.add(listener);
     }

@@ -13,9 +13,7 @@ import { extractTraceMeta } from './room-command.helpers';
 import { RoomGatewayLifecyclePresenter } from './room-gateway-lifecycle.presenter';
 import type { AuthedClient, ClientMeta } from './room-gateway.types';
 import type { LifecycleContext } from './room-gateway-lifecycle.types';
-import {
-  removeSocketFromRoomMembership,
-} from './room-socket-membership.helpers';
+import { removeSocketFromRoomMembership } from './room-socket-membership.helpers';
 import { RoomGatewayJoinWorkflow } from './room-gateway-join.workflow';
 import { RoomGatewayCreationWorkflow } from './room-gateway-creation.workflow';
 

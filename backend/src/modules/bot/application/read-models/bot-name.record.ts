@@ -5,4 +5,3 @@ export type BotNameRecord = {
   createdAt: Date;
 };
 /** Explicitly named data contract at the application boundary. */
-

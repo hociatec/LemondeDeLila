@@ -7,4 +7,3 @@ export type BugReportCommentRecord = {
   createdByUsername: string;
 };
 /** Explicitly named data contract at the application boundary. */
-

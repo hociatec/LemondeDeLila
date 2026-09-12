@@ -1,5 +1,6 @@
 import type { VaultRoomSnapshot } from '../../vault.types';
 import { isVaultGameState } from '../models/vault-game-state.model';
+import { parseExplicitInstant } from '../../../../shared/utils/public-api';
 
 export function decodeVaultRoomSnapshot(
   value: unknown,
@@ -8,7 +9,7 @@ export function decodeVaultRoomSnapshot(
     !isRecord(value) ||
     value.version !== 1 ||
     typeof value.savedAt !== 'string' ||
-    !Number.isFinite(Date.parse(value.savedAt)) ||
+    parseExplicitInstant(value.savedAt) === null ||
     !isRecord(value.room) ||
     !isRecord(value.roster) ||
     !isRecord(value.game)

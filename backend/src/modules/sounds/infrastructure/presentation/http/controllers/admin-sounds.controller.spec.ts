@@ -51,4 +51,19 @@ describe('AdminSoundsController', () => {
     );
     expect(out.enabled).toBe(false);
   });
+
+  it('rejects unknown body fields', async () => {
+    const controller = new AdminSoundsController(
+      {} as ConstructorParameters<typeof AdminSoundsController>[0],
+    );
+    const ambience = { name: 'Forest', admin: true };
+    const enabled = { enabled: true, hidden: true };
+
+    await expect(
+      controller.createTableAmbience(ambience),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      controller.setTableAmbienceEnabled('TableAmbience1', enabled),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
 });

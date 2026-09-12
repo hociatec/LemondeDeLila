@@ -1,6 +1,12 @@
+import { compileJsonGame } from '../../../engine/json/public-api';
 import { testGame } from '../../../engine/testing/public-api';
+import catalogue from './catalogue.json';
+import document from './game.json';
+import manifest from './manifest.json';
 
-import gameDefinition from './game';
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Zig et Zag declarative game', () => {
   it('captures distinct bonus cards after a tied battle', async () => {

@@ -33,9 +33,7 @@ export class RedisDistributedLeaseService implements OnModuleDestroy {
     this.production = config.get<string>('NODE_ENV') === 'production';
     const url =
       config.get<string>('UPDATE_REDIS_URL') ?? config.get<string>('REDIS_URL');
-    this.client = url
-      ? redisFactory.create(url, 'distributed-lease')
-      : null;
+    this.client = url ? redisFactory.create(url, 'distributed-lease') : null;
   }
 
   onModuleDestroy(): void {
@@ -51,7 +49,9 @@ export class RedisDistributedLeaseService implements OnModuleDestroy {
     }
     if (!this.client) {
       if (this.production) {
-        throw new Error('Redis est requis en production pour les verrous distribues');
+        throw new Error(
+          'Redis est requis en production pour les verrous distribues',
+        );
       }
       return null;
     }
@@ -63,26 +63,29 @@ export class RedisDistributedLeaseService implements OnModuleDestroy {
 
     let released = false;
     let lost = false;
-    const renewTimer = setInterval(() => {
-      if (released) return;
-      void client
-        .eval(RENEW_SCRIPT, 1, key, token, String(ttlMs))
-        .then((renewed) => {
-          if (renewed !== 1 && !released) {
-            lost = true;
-            this.logger.error(`Bail Redis perdu key=${key}`);
-          }
-        })
-        .catch((error: unknown) => {
-          if (!released) {
-            this.logger.warn(
-              `Renouvellement bail Redis impossible key=${key}: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-            );
-          }
-        });
-    }, Math.max(1_000, Math.floor(ttlMs / 3)));
+    const renewTimer = setInterval(
+      () => {
+        if (released) return;
+        void client
+          .eval(RENEW_SCRIPT, 1, key, token, String(ttlMs))
+          .then((renewed) => {
+            if (renewed !== 1 && !released) {
+              lost = true;
+              this.logger.error(`Bail Redis perdu key=${key}`);
+            }
+          })
+          .catch((error: unknown) => {
+            if (!released) {
+              this.logger.warn(
+                `Renouvellement bail Redis impossible key=${key}: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+            }
+          });
+      },
+      Math.max(1_000, Math.floor(ttlMs / 3)),
+    );
     renewTimer.unref?.();
     return {
       isHeld: async () => {

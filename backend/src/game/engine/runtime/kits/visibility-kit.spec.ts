@@ -47,4 +47,19 @@ describe('visibility kit', () => {
     expect(source.safe.value).toBe(1);
     expect(projected).not.toHaveProperty('secret');
   });
+
+  it('detaches nested private values and exposes none to spectators', () => {
+    const state = { hands: { '1': [{ card: 'mine' }], '2': ['secret'] } };
+    const rules = { hands: privateByPlayer() };
+    const projected = projectVisibility(state, rules, 1);
+    expect(projected).toEqual({ hands: { '1': [{ card: 'mine' }] } });
+    const hands = projected.hands;
+    if (!hands || typeof hands !== 'object' || !('1' in hands))
+      throw new Error('Missing private hand');
+    const cards = hands['1'];
+    if (!Array.isArray(cards)) throw new Error('Expected cards');
+    Object.assign(cards[0], { card: 'changed' });
+    expect(state.hands['1'][0].card).toBe('mine');
+    expect(projectVisibility(state, rules, null)).toEqual({ hands: {} });
+  });
 });

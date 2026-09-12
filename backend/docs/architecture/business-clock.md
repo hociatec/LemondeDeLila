@@ -33,3 +33,32 @@ horodatages métier des événements utilisent le contexte d'exécution. Les err
 de validation n'inventent plus de timestamp système : elles conservent le contexte
 fourni par leur appelant. `gameNowDate()` convertit l'instant de l'unique scope
 moteur via `businessMsToDate`.
+
+L'attente des verrous MySQL et les intervalles depuis le dernier pong utilisent
+aussi `performance.now()`. Un saut de l'horloge civile ne raccourcit ni ne
+prolonge artificiellement le délai réseau. Les instants de publication, les
+fenêtres de métriques horodatées et les échéances Unix BullMQ restent des dates
+civiles ; ils ne sont pas des mesures de durée d'exécution. La durée virtuelle
+du simulateur est du temps de jeu simulé, distinct du coût de calcul.
+
+## Durées de conservation et baux
+
+Les consommateurs lisent les valeurs nommées dans `operationalSettings`. Les
+bornes au démarrage se trouvent dans `environment-operational-options.ts` et les
+variables sont documentées dans `.env.example`. Les durées WS spécifiques restent
+regroupées dans `ws-runtime.config.ts`, et le rate limiting dans sa factory dédiée.
+
+| Usage | Variable | Défaut |
+| --- | --- | --- |
+| Déduplication des notifications | `NOTIFICATION_DEDUPLICATION_TTL_MS` | 5 minutes |
+| Upload WX abandonné | `CLIENT_WX_UPLOAD_RETENTION_MS` | 24 heures |
+| Bail de finalisation WX | `CLIENT_WX_COMPLETION_LEASE_MS` | 15 minutes |
+| Bail de publication WX | `CLIENT_WX_PUBLICATION_LEASE_MS` | 15 minutes |
+| Fichier de verrou WX ancien | `CLIENT_WX_PUBLICATION_LOCK_STALE_MS` | 2 heures |
+| Bail de maintenance | `ADMIN_MAINTENANCE_LEASE_MS` | 15 minutes |
+| Session Redis | `SESSION_TTL_SECONDS` | 24 heures |
+
+Les baux Redis sont bornés entre 5 secondes et 24 heures, conformément au service
+de baux. La conservation des uploads concerne les fichiers temporaires ; elle ne
+supprime pas les anciennes releases publiées. Les fenêtres de modification de
+messages restent une politique métier nommée de Chat.

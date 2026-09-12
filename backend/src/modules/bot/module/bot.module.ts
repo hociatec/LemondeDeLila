@@ -1,3 +1,7 @@
+import {
+  BOT_ROOM_READER,
+  type BotRoomReader,
+} from '../application/ports/bot-room-reader.port';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BusinessClockModule } from '../../../platform/time/public-api';
@@ -39,10 +43,7 @@ import { createBotNameCacheConfig } from '../infrastructure/config/bot-name-cach
 import { BotNameTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/bot-name-typeorm.repository';
 
 @Module({
-  imports: [
-    BusinessClockModule,
-    TypeOrmModule.forFeature([BotName]),
-  ],
+  imports: [BusinessClockModule, TypeOrmModule.forFeature([BotName])],
   providers: [
     BotNameTypeormRepository,
     {
@@ -156,9 +157,8 @@ import { BotNameTypeormRepository } from '../infrastructure/persistence/typeorm/
     },
     {
       provide: GetLastRoomBotService,
-      useFactory: (rooms: BotRoomRepository) =>
-        new GetLastRoomBotService(rooms),
-      inject: [BOT_ROOM_REPOSITORY],
+      useFactory: (rooms: BotRoomReader) => new GetLastRoomBotService(rooms),
+      inject: [BOT_ROOM_READER],
     },
     {
       provide: RenameRoomBotService,
@@ -167,14 +167,13 @@ import { BotNameTypeormRepository } from '../infrastructure/persistence/typeorm/
     },
     {
       provide: GetRoomBotStatsService,
-      useFactory: (rooms: BotRoomRepository) =>
-        new GetRoomBotStatsService(rooms),
-      inject: [BOT_ROOM_REPOSITORY],
+      useFactory: (rooms: BotRoomReader) => new GetRoomBotStatsService(rooms),
+      inject: [BOT_ROOM_READER],
     },
     {
       provide: CountRoomBotsService,
-      useFactory: (rooms: BotRoomRepository) => new CountRoomBotsService(rooms),
-      inject: [BOT_ROOM_REPOSITORY],
+      useFactory: (rooms: BotRoomReader) => new CountRoomBotsService(rooms),
+      inject: [BOT_ROOM_READER],
     },
     {
       provide: RemoveAllRoomBotsService,

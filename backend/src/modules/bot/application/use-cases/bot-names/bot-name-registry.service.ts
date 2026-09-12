@@ -12,7 +12,9 @@ export class BotNameRegistryService {
         .slice(0, BotNameRegistryService.MAX_NAMES)
         .map((row) => row.name);
     }
-    return rows.slice(0, BotNameRegistryService.MAX_NAMES).map((row) => row.name);
+    return rows
+      .slice(0, BotNameRegistryService.MAX_NAMES)
+      .map((row) => row.name);
   }
 
   private async seedDefaultNames(): Promise<void> {

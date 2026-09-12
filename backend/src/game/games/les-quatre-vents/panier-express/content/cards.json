@@ -1,0 +1,955 @@
+{
+  "events": [
+    {
+      "id": "promo-surprise",
+      "label": "Promo surprise",
+      "effectDescription": "Piochez 2 cartes Courses",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.draw-course",
+          "data": {
+            "count": 2,
+            "everyone": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "coup-de-chance",
+      "label": "Coup de chance",
+      "effectDescription": "Avancez de 2 cases",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.move-and-resolve",
+          "data": {
+            "delta": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "stand-exceptionnel",
+      "label": "Stand exceptionnel",
+      "effectDescription": "Piochez 1 carte Courses",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.draw-course",
+          "data": {
+            "count": 1,
+            "everyone": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "fidelite-recompensee",
+      "label": "Fidelite recompensee",
+      "effectDescription": "Rejouez immédiatement",
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "panier-bonus",
+      "label": "Panier bonus",
+      "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+      "effects": [
+        {
+          "kind": "steal-random-inventory",
+          "inventoryId": "market-items",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.steal",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "tirage-chanceux",
+      "label": "Tirage chanceux",
+      "effectDescription": "Piochez 3 cartes Courses",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.draw-course",
+          "data": {
+            "count": 3,
+            "everyone": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "don-du-maraicher",
+      "label": "Don du maraicher",
+      "effectDescription": "Piochez 1 carte Courses",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.draw-course",
+          "data": {
+            "count": 1,
+            "everyone": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "journee-bio",
+      "label": "Journee bio",
+      "effectDescription": "Tout le monde pioche 1 carte Courses",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.draw-course",
+          "data": {
+            "count": 1,
+            "everyone": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "stand-ouvert-en-avance",
+      "label": "Stand ouvert en avance",
+      "effectDescription": "Avancez jusqu’au prochain stand",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.nearest-stand",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "echange-spontane",
+      "label": "Echange spontane",
+      "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+      "effects": [
+        {
+          "kind": "steal-random-inventory",
+          "inventoryId": "market-items",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.steal",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "marche-anime",
+      "label": "Marche anime",
+      "effectDescription": "Tout le monde pioche 1 carte Courses",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.draw-course",
+          "data": {
+            "count": 1,
+            "everyone": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "producteur-genereux",
+      "label": "Producteur genereux",
+      "effectDescription": "Piochez 2 cartes Courses",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.draw-course",
+          "data": {
+            "count": 2,
+            "everyone": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "recette-express",
+      "label": "Recette express",
+      "effectDescription": "Piochez 1 carte Courses",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.draw-course",
+          "data": {
+            "count": 1,
+            "everyone": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "stand-en-fete",
+      "label": "Stand en fete",
+      "effectDescription": "Tout le monde pioche 1 carte Courses",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.draw-course",
+          "data": {
+            "count": 1,
+            "everyone": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "rupture-de-stock",
+      "label": "Rupture de stock",
+      "effectDescription": "Perdez 1 légume de votre inventaire",
+      "effects": [
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "stand-ferme",
+      "label": "Stand ferme",
+      "effectDescription": "Passez 1 tour",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "emballage-defectueux",
+      "label": "Emballage defectueux",
+      "effectDescription": "Perdez 1 légume de votre inventaire",
+      "effects": [
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "retour-en-arriere",
+      "label": "Retour en arriere",
+      "effectDescription": "Reculez de 3 cases",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.move-and-resolve",
+          "data": {
+            "delta": -3
+          }
+        }
+      ]
+    },
+    {
+      "id": "marche-bonde",
+      "label": "Marche bonde",
+      "effectDescription": "Passez 1 tour",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "stand-detrempe",
+      "label": "Stand detrempe",
+      "effectDescription": "Passez 1 tour",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "file-attente-interminable",
+      "label": "File attente interminable",
+      "effectDescription": "Passez 2 tours",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 2,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "erreur-de-livraison",
+      "label": "Erreur de livraison",
+      "effectDescription": "Perdez 1 légume de votre inventaire",
+      "effects": [
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "produit-avarie",
+      "label": "Produit avarie",
+      "effectDescription": "Perdez 1 légume de votre inventaire",
+      "effects": [
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "emballage-oublie",
+      "label": "Emballage oublie",
+      "effectDescription": "Perdez 1 légume de votre inventaire",
+      "effects": [
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "intemperie-au-marche",
+      "label": "Intemperie au marche",
+      "effectDescription": "Reculez de 2 cases",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.move-and-resolve",
+          "data": {
+            "delta": -2
+          }
+        }
+      ]
+    },
+    {
+      "id": "panne-de-caisse",
+      "label": "Panne de caisse",
+      "effectDescription": "Passez 1 tour",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    },
+    {
+      "id": "inspection-sanitaire",
+      "label": "Inspection sanitaire",
+      "effectDescription": "Révélez votre inventaire pendant un tour",
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "panier.reveal",
+          "turns": 1,
+          "scope": "turn"
+        }
+      ]
+    },
+    {
+      "id": "chariot-perce",
+      "label": "Chariot perce",
+      "effectDescription": "Perdez 2 légumes de votre inventaire",
+      "effects": [
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "echange-obligatoire",
+      "label": "Echange obligatoire",
+      "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+      "effects": [
+        {
+          "kind": "steal-random-inventory",
+          "inventoryId": "market-items",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.steal",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "inversion-de-panier",
+      "label": "Inversion de panier",
+      "effectDescription": "Choisissez un adversaire et échangez vos inventaires",
+      "effects": [
+        {
+          "kind": "swap-inventories",
+          "inventoryId": "market-items",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.swap-inventories",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "troc-improvise",
+      "label": "Troc improvise",
+      "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+      "effects": [
+        {
+          "kind": "steal-random-inventory",
+          "inventoryId": "market-items",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.steal",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "changement-de-saison",
+      "label": "Changement de saison",
+      "effectDescription": "Tout le monde perd 1 légume de son inventaire",
+      "effects": [
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 1
+        },
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 1,
+          "target": {
+            "kind": "all-opponents"
+          }
+        }
+      ]
+    },
+    {
+      "id": "produit-oublie",
+      "label": "Produit oublie",
+      "effectDescription": "Perdez 1 légume de votre inventaire",
+      "effects": [
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "offre-ephemere",
+      "label": "Offre ephemere",
+      "effectDescription": "Rejouez immédiatement",
+      "effects": [
+        {
+          "kind": "extra-turn",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "stand-surprise",
+      "label": "Stand surprise",
+      "effectDescription": "Avancez jusqu’au prochain stand",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.nearest-stand",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "conseil-de-voisinage",
+      "label": "Conseil de voisinage",
+      "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+      "effects": [
+        {
+          "kind": "steal-random-inventory",
+          "inventoryId": "market-items",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.steal",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "controle-des-inventaires",
+      "label": "Controle des inventaires",
+      "effectDescription": "Révélez votre inventaire pendant un tour",
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "panier.reveal",
+          "turns": 1,
+          "scope": "turn"
+        }
+      ]
+    },
+    {
+      "id": "carton-abime",
+      "label": "Carton abime",
+      "effectDescription": "Perdez 1 légume de votre inventaire",
+      "effects": [
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "file-inversee",
+      "label": "File inversee",
+      "effectDescription": "Inversez le sens du jeu",
+      "effects": [
+        {
+          "kind": "add-status",
+          "status": "panier.reversed-until-owner-turn",
+          "scope": "until-used"
+        },
+        {
+          "kind": "reverse-turn-order"
+        }
+      ]
+    },
+    {
+      "id": "pause-fatigue",
+      "label": "Pause fatigue",
+      "effectDescription": "Passez 1 tour",
+      "effects": [
+        {
+          "kind": "skip-turn",
+          "count": 1,
+          "target": {
+            "kind": "self"
+          }
+        }
+      ]
+    }
+  ],
+  "exchanges": [
+    {
+      "id": "echange-amiable",
+      "label": "Echange amiable",
+      "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.strategic-swap",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.strategic-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "troc-fruit-legume",
+      "label": "Troc fruit legume",
+      "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.strategic-swap",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.strategic-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "echange-devant",
+      "label": "Echange devant",
+      "effectDescription": "Échangez un légume au hasard avec un adversaire",
+      "effects": [
+        {
+          "kind": "exchange-random-inventory",
+          "inventoryId": "market-items",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.random-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "echange-derriere",
+      "label": "Echange derriere",
+      "effectDescription": "Échangez un légume au hasard avec un adversaire",
+      "effects": [
+        {
+          "kind": "exchange-random-inventory",
+          "inventoryId": "market-items",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.random-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "echange-force",
+      "label": "Echange force",
+      "effectDescription": "Échangez un légume au hasard avec un adversaire",
+      "effects": [
+        {
+          "kind": "exchange-random-inventory",
+          "inventoryId": "market-items",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.random-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "troc-rapide",
+      "label": "Troc rapide",
+      "effectDescription": "Échangez un légume au hasard avec un adversaire",
+      "effects": [
+        {
+          "kind": "exchange-random-inventory",
+          "inventoryId": "market-items",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.random-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "panier-mixe",
+      "label": "Panier mixe",
+      "effectDescription": "Choisissez un adversaire et échangez vos inventaires",
+      "effects": [
+        {
+          "kind": "swap-inventories",
+          "inventoryId": "market-items",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.swap-inventories",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "echange-strategique",
+      "label": "Echange strategique",
+      "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.strategic-swap",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.strategic-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "chariot-echange",
+      "label": "Chariot echange",
+      "effectDescription": "Choisissez un adversaire et échangez vos inventaires",
+      "effects": [
+        {
+          "kind": "swap-inventories",
+          "inventoryId": "market-items",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.swap-inventories",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "echange-masque",
+      "label": "Echange masque",
+      "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.strategic-swap",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.strategic-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "vol-discret",
+      "label": "Vol discret",
+      "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+      "effects": [
+        {
+          "kind": "steal-random-inventory",
+          "inventoryId": "market-items",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.steal",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "panier-collectif",
+      "label": "Panier collectif",
+      "effectDescription": "Échangez un légume au hasard avec un adversaire",
+      "effects": [
+        {
+          "kind": "exchange-random-inventory",
+          "inventoryId": "market-items",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.random-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "echange-impose",
+      "label": "Echange impose",
+      "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.strategic-swap",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.strategic-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "defausse-aleatoire",
+      "label": "Defausse aleatoire",
+      "effectDescription": "Perdez un légume de votre inventaire",
+      "effects": [
+        {
+          "kind": "discard-random-inventory",
+          "inventoryId": "market-items",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "echange-simultane",
+      "label": "Echange simultane",
+      "effectDescription": "Échangez un légume au hasard avec un adversaire",
+      "effects": [
+        {
+          "kind": "exchange-random-inventory",
+          "inventoryId": "market-items",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.random-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "marche-noir",
+      "label": "Marche noir",
+      "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
+      "effects": [
+        {
+          "kind": "steal-random-inventory",
+          "inventoryId": "market-items",
+          "from": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.steal",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "troc-equitable",
+      "label": "Troc equitable",
+      "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "panier.strategic-swap",
+          "data": {},
+          "target": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.strategic-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    },
+    {
+      "id": "echange-saison",
+      "label": "Echange saison",
+      "effectDescription": "Échangez un légume au hasard avec un adversaire",
+      "effects": [
+        {
+          "kind": "exchange-random-inventory",
+          "inventoryId": "market-items",
+          "left": {
+            "kind": "self"
+          },
+          "right": {
+            "kind": "chosen-opponent",
+            "choiceId": "panier.random-swap",
+            "optional": false
+          }
+        },
+        {
+          "kind": "complete-turn"
+        }
+      ]
+    }
+  ]
+}

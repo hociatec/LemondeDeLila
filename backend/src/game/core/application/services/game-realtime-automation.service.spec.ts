@@ -9,6 +9,52 @@ import type {
 import { GameRealtimeAutomationService } from './game-realtime-automation.service';
 
 describe('GameRealtimeAutomationService', () => {
+  it('refuses automation after room reset even before session reconciliation', async () => {
+    const test = harness();
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'example',
+      handler: test.runtime,
+      state: test.current,
+    });
+    await Promise.resolve();
+    const task = test.scheduled[0];
+    if (!task) throw new Error('Missing task');
+    test.rooms.isCurrent.mockResolvedValue(false);
+    await test.processor()(task);
+    expect(test.executor.execute).not.toHaveBeenCalled();
+    expect(test.engine.compareAndSetInternalState).not.toHaveBeenCalled();
+    test.rooms.isCurrent.mockRejectedValueOnce(
+      new Error('database unavailable'),
+    );
+    await expect(test.processor()(task)).rejects.toThrow(
+      'database unavailable',
+    );
+    expect(test.executor.execute).not.toHaveBeenCalled();
+  });
+  it.each(['deleted', 'finished'])(
+    'discards a %s session task even when its old runtime is no longer installed',
+    async (status) => {
+      const test = harness();
+      test.service.schedule({
+        roomId: 12,
+        gameType: 'example',
+        handler: test.runtime,
+        state: test.current,
+      });
+      await Promise.resolve();
+      const task = test.scheduled[0];
+      if (!task) throw new Error('Missing task');
+      test.engine.exportInternalState.mockResolvedValue(
+        status === 'deleted' ? null : state({ status: 'finished' }),
+      );
+      test.registry.getHandler.mockReturnValue(undefined);
+      await expect(test.processor()(task)).resolves.toBeUndefined();
+      expect(test.executor.execute).not.toHaveBeenCalled();
+      expect(test.engine.compareAndSetInternalState).not.toHaveBeenCalled();
+      expect(test.registry.getHandler).not.toHaveBeenCalled();
+    },
+  );
   it('invalidates a pre-restoration delivery with identical run, generation and versions', async () => {
     const test = harness(state({ metadata: { restoreId: 'new-restore' } }));
     test.service.schedule({
@@ -128,6 +174,10 @@ describe('GameRealtimeAutomationService', () => {
         command(),
       ),
     };
+    const registry = {
+      getHandler: jest.fn((): GameRuntime | undefined => runtime),
+    };
+    const rooms = { isCurrent: jest.fn(async () => true) };
     const service = new GameRealtimeAutomationService(
       engine as never,
       new GameAutomationPlannerService(
@@ -139,12 +189,15 @@ describe('GameRealtimeAutomationService', () => {
       new GameTaskDispatchService(scheduler),
       executor as never,
       queue as never,
+      rooms,
       undefined,
-      { getHandler: () => runtime } as never,
+      registry as never,
     );
     service.onModuleInit();
     return {
       service,
+      rooms,
+      registry,
       scheduler,
       scheduled,
       engine,

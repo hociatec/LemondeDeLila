@@ -40,14 +40,20 @@ export class RoomMaintenanceSettingsTypeormRepository implements RoomMaintenance
   }
 }
 
-function normalizeSettings(settings: RoomMaintenanceSettingsRecord): RoomMaintenanceSettingsRecord {
+function normalizeSettings(
+  settings: RoomMaintenanceSettingsRecord,
+): RoomMaintenanceSettingsRecord {
   return {
     id: Number.isSafeInteger(settings.id) && settings.id > 0 ? settings.id : 1,
     autoCleanupEnabled: settings.autoCleanupEnabled === true,
-    autoCleanupIntervalSeconds: Number.isSafeInteger(settings.autoCleanupIntervalSeconds)
+    autoCleanupIntervalSeconds: Number.isSafeInteger(
+      settings.autoCleanupIntervalSeconds,
+    )
       ? Math.max(1, Math.min(86_400, settings.autoCleanupIntervalSeconds))
       : 300,
-    autoCleanupOlderThanMinutes: Number.isSafeInteger(settings.autoCleanupOlderThanMinutes)
+    autoCleanupOlderThanMinutes: Number.isSafeInteger(
+      settings.autoCleanupOlderThanMinutes,
+    )
       ? Math.max(1, Math.min(525_600, settings.autoCleanupOlderThanMinutes))
       : 60,
     autoCleanupLimit: Number.isSafeInteger(settings.autoCleanupLimit)

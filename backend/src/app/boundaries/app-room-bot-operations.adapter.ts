@@ -20,4 +20,3 @@ export class AppRoomBotOperationsAdapter implements RoomBotOperationsPort {
     await this.removeBots.execute(roomId);
   }
 }
-

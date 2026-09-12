@@ -27,4 +27,3 @@ export type FlatCategory = {
   parentId: string | null;
 };
 /** Explicitly named data contract at the application boundary. */
-

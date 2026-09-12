@@ -15,6 +15,7 @@ export class GameContentService {
   ) {}
 
   async getRules(gameType: string): Promise<string> {
+    await this.overrides?.reload();
     const overrideRules = this.overrides?.getGameOverride(gameType)?.rules;
     if (typeof overrideRules === 'string' && overrideRules.trim().length > 0) {
       return overrideRules;

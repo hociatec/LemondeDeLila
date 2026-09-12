@@ -12,7 +12,9 @@ export function assertPhaseGraph(
   if (names.length > 512) fail('phases', 'trop de phases');
   if (names.length === 0) fail('phases', 'au moins une phase est requise');
   const edges = new Map<string, readonly string[]>();
-  for (const [name, phase] of Object.entries(phases)) {
+  for (const [name, candidate] of Object.entries(phases)) {
+    const phase: unknown = candidate;
+    if (!isRecord(phase)) fail(`phases.${name}`, 'objet de phase requis');
     if (name.length > 128) fail(`phases.${name}`, 'nom de phase trop long');
     if (phase.terminal !== undefined && typeof phase.terminal !== 'boolean')
       fail(`phases.${name}.terminal`, 'booléen requis');
@@ -26,11 +28,15 @@ export function assertPhaseGraph(
         ))
     )
       fail(`phases.${name}.transitions`, 'liste de noms de phases requise');
+    if (phase.next !== undefined && typeof phase.next !== 'string')
+      fail(`phases.${name}.next`, 'nom de phase requis');
+    const transitions: string[] = Array.isArray(phase.transitions)
+      ? phase.transitions.filter(
+          (target): target is string => typeof target === 'string',
+        )
+      : [];
     const exits = [
-      ...new Set([
-        ...(phase.transitions ?? []),
-        ...(phase.next ? [phase.next] : []),
-      ]),
+      ...new Set([...transitions, ...(phase.next ? [phase.next] : [])]),
     ];
     if (phase.terminal && exits.length > 0)
       fail(
@@ -61,4 +67,8 @@ export function assertPhaseGraph(
     if (!reached.has(name))
       fail(`phases.${name}`, 'phase inaccessible depuis la phase initiale');
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }

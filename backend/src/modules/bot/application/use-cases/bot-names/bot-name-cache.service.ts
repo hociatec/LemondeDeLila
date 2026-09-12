@@ -28,6 +28,10 @@ export class BotNameCacheService {
       return this.shuffle(cached.values);
     }
 
+    return this.refreshEnabledNames();
+  }
+
+  async refreshEnabledNames(): Promise<string[]> {
     const generation = this.generation;
     const rows = (await this.registry.listEnabledNames())
       .filter((name): name is string => typeof name === 'string')

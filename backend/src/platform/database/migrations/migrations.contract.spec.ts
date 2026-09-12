@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { createMysqlConnectionOptions } from '../mysql-connection-options';
 
 describe('database migrations contract', () => {
   const directory = __dirname;
@@ -22,7 +23,7 @@ describe('database migrations contract', () => {
 
   it('places the newest migrations after the game-session baseline', () => {
     expect(basename(files.at(-1) ?? '')).toBe(
-      '1771000000000-DecoupleUserForeignKeys.ts',
+      '1771100000000-PersistRoomInvites.ts',
     );
   });
 
@@ -51,5 +52,20 @@ describe('database migrations contract', () => {
       'bot_names',
     ]);
     expect(dropped).toEqual([...created].reverse());
+  });
+
+  it('runs MySQL migrations without a transaction spanning DDL or backfills', () => {
+    const options = createMysqlConnectionOptions(() => undefined);
+    expect(options.migrationsTransactionMode).toBe('none');
+  });
+
+  it('keeps the timeline data move bounded by key and item limits', () => {
+    const source = readFileSync(
+      join(directory, '1770400000000-SplitGameSessionTimeline.ts'),
+      'utf8',
+    );
+    expect(source).toMatch(/ROW_BATCH_SIZE\s*=\s*250/);
+    expect(source).toMatch(/MAX_TIMELINE_ITEMS\s*=\s*100_000/);
+    expect(source).toMatch(/LIMIT \? OFFSET \?/);
   });
 });

@@ -86,16 +86,21 @@ export class GameEconomyController {
   }
 
   assertValid(): void {
+    for (const id of Object.keys(this.state.prices)) this.requireMarket(id);
     for (const [marketId, definition] of this.definitions) {
       const prices = this.state.prices[marketId];
-      if (!prices) {
+      if (!prices || typeof prices !== 'object' || Array.isArray(prices)) {
         throw new GameStateViolationError('Prix de marché absents', {
           marketId,
         });
       }
+      if (Object.keys(prices).length !== Object.keys(definition.prices).length)
+        throw new GameStateViolationError('Catalogue de prix incomplet', {
+          marketId,
+        });
       for (const [itemId, price] of Object.entries(prices)) {
         if (
-          !(itemId in definition.prices) ||
+          !Object.hasOwn(definition.prices, itemId) ||
           !Number.isFinite(price) ||
           price < (definition.minPrice ?? 0) ||
           price > (definition.maxPrice ?? Number.MAX_SAFE_INTEGER)
@@ -224,15 +229,20 @@ export class GameEconomyController {
     const market = this.requireMarket(marketId);
     return this.inventories
       .items(market.inventory, playerId)
-      .reduce((total, itemId) => total + this.price(marketId, itemId), 0);
+      .reduce((total, itemId) => {
+        const value = total + this.price(marketId, itemId);
+        assertGameValue(value);
+        return value;
+      }, 0);
   }
 
   netWorth(marketId: string, playerId: number): number {
     const market = this.requireMarket(marketId);
-    return (
+    const value =
       this.resources.get(playerId, market.currency) +
-      this.inventoryValue(marketId, playerId)
-    );
+      this.inventoryValue(marketId, playerId);
+    assertGameValue(value);
+    return value;
   }
 
   private requireMarket(marketId: string): MarketDefinition {

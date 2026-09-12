@@ -107,20 +107,24 @@ export class AdminContactWorkflowService {
     if (rows.length === 0) return;
     const now = businessMsToIso(this.clock.now());
     const handled = normalizedStatus === 'handled';
+    const updates = rows.map((row) => ({
+      id: row.id,
+      payload: {
+        ...(row.payload ?? {}),
+        status: normalizedStatus,
+        handled,
+        statusAt: now,
+        statusByUserId: from.id,
+        statusByUsername: from.username,
+        handledAt: handled ? now : null,
+        handledByUserId: handled ? from.id : null,
+        handledByUsername: handled ? from.username : null,
+      },
+    }));
+    await this.inbox.updatePayloads(updates);
     await allCompleted(
-      rows.map(async (row) => {
-        const payload = {
-          ...(row.payload ?? {}),
-          status: normalizedStatus,
-          handled,
-          statusAt: now,
-          statusByUserId: from.id,
-          statusByUsername: from.username,
-          handledAt: handled ? now : null,
-          handledByUserId: handled ? from.id : null,
-          handledByUsername: handled ? from.username : null,
-        };
-        await this.inbox.updatePayload(row.id, payload);
+      rows.map(async (row, index) => {
+        const payload = updates[index].payload;
         const item: AdminContactItem = {
           kind: 'admin_contact',
           id: row.id,

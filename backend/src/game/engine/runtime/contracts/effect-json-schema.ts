@@ -35,7 +35,11 @@ const targeted = (
 const targets = {
   self: variant('self'),
   player: variant('player', { playerId: integer }),
-  next: variant('next'),
+  next: variant('next', { order: { enum: ['seating', 'turn'] } }, []),
+  previous: variant('previous', { order: { enum: ['seating', 'turn'] } }, []),
+  'random-player': variant('random-player'),
+  leader: variant('leader', { ties: { enum: ['all', 'lowest-id', 'random'] } }),
+  last: variant('last', { ties: { enum: ['all', 'lowest-id', 'random'] } }),
   'all-players': variant('all-players'),
   'all-opponents': variant('all-opponents'),
   'random-opponent': variant('random-opponent'),
@@ -57,6 +61,26 @@ const targets = {
 } satisfies Record<EffectTarget['kind'], AuthorSchema>;
 
 const conditions = {
+  score: targeted('score', {
+    compare: { enum: ['eq', 'ne', 'lt', 'lte', 'gt', 'gte'] },
+    amount: number,
+  }),
+  resource: targeted('resource', {
+    resource: id,
+    compare: { enum: ['eq', 'ne', 'lt', 'lte', 'gt', 'gte'] },
+    amount: number,
+  }),
+  'inventory-count': targeted(
+    'inventory-count',
+    {
+      inventoryId: id,
+      itemId: id,
+      compare: { enum: ['eq', 'ne', 'lt', 'lte', 'gt', 'gte'] },
+      amount: { type: 'integer', minimum: 0 },
+    },
+    ['inventoryId', 'compare', 'amount'],
+  ),
+  'owns-asset': targeted('owns-asset', { registryId: id, assetId: id }),
   'has-resource': targeted('has-resource', {
     resource: id,
     amount: { type: 'number', minimum: 0 },
@@ -131,6 +155,18 @@ const instructions = {
     from: target,
     to: target,
   }),
+  'exchange-resources': variant('exchange-resources', {
+    left: target,
+    right: target,
+    leftOffer: object({ resource: id, amount: positive }, [
+      'resource',
+      'amount',
+    ]),
+    rightOffer: object({ resource: id, amount: positive }, [
+      'resource',
+      'amount',
+    ]),
+  }),
   'give-card': variant('give-card', {
     handId: id,
     cardId: id,
@@ -143,6 +179,11 @@ const instructions = {
     ['handId', 'from'],
   ),
   'swap-hands': variant('swap-hands', {
+    handId: id,
+    left: target,
+    right: target,
+  }),
+  'exchange-random-cards': variant('exchange-random-cards', {
     handId: id,
     left: target,
     right: target,
@@ -185,6 +226,9 @@ const instructions = {
     right: target,
   }),
   'complete-turn': variant('complete-turn'),
+  'start-round': variant('start-round'),
+  'end-round': variant('end-round'),
+  'eliminate-player': targeted('eliminate-player', {}),
   custom: targeted('custom', { effectId: id, data: ref('json') }, ['effectId']),
 } satisfies Record<GameEffectInstruction['kind'], AuthorSchema>;
 

@@ -31,6 +31,8 @@ export type DeckDefinition<TCard extends CardValue> = {
   readonly component: 'cards.deck';
   id: string;
   cards: readonly TCard[];
+  /** Accepted content universe, when setup or exchanges add cards outside the initial pile. */
+  catalog?: readonly TCard[];
   shuffle?: boolean;
   empty?: 'exhaust' | 'recycle';
 };
@@ -44,7 +46,11 @@ export type HandsDefinition<TDeckId extends string = string> = {
   readonly component: 'cards.hands';
   id: string;
   deck: TDeckId;
+  /** Additional source/discard decks covered by the primary deck's catalog. */
+  acceptedDecks?: readonly TDeckId[];
   initial: number;
+  /** Skip these cards during initial dealing, then restore them on top in draw order. */
+  initialDeferredCardIds?: readonly CardId[];
   visibility: 'owner' | 'public';
   ownerVisibility?: 'always' | 'active-round';
 };
@@ -110,6 +116,7 @@ export const cards = {
   deck<TCard extends CardValue>(
     definition: Omit<DeckDefinition<TCard>, 'component'>,
   ): DeckDefinition<TCard> {
+    assertDeckCatalog(definition);
     const identifiedCards = definition.cards.filter(isIdentifiedCard);
     if (
       identifiedCards.length > 0 &&
@@ -133,7 +140,16 @@ export const cards = {
   hands<const TDeckId extends string>(
     definition: Omit<HandsDefinition<TDeckId>, 'component'>,
   ): HandsDefinition<TDeckId> {
-    return Object.freeze({ ...definition, component: 'cards.hands' });
+    return deepFreeze({
+      ...definition,
+      component: 'cards.hands',
+      ...(definition.acceptedDecks
+        ? { acceptedDecks: [...definition.acceptedDecks] }
+        : {}),
+      ...(definition.initialDeferredCardIds
+        ? { initialDeferredCardIds: [...definition.initialDeferredCardIds] }
+        : {}),
+    });
   },
 
   zone<const TDeckId extends string>(
@@ -172,6 +188,31 @@ export function isIdentifiedCard<TValue>(
 
 export function contentIdKey(id: CardContentId): string {
   return `${typeof id}:${String(id)}`;
+}
+
+function assertDeckCatalog(
+  definition: Omit<DeckDefinition<CardValue>, 'component'>,
+): void {
+  if (!definition.catalog) return;
+  const identified = definition.catalog.filter(isIdentifiedCard);
+  if (identified.length > 0 && identified.length !== definition.catalog.length)
+    throw new GameConfigurationError(
+      'A card catalog cannot mix objects and free identifiers',
+    );
+  if (identified.length > 0) cardContent(identified);
+  const identity = (card: CardValue): string => {
+    if (isIdentifiedCard(card)) return contentIdKey(card.id);
+    if (typeof card === 'string' || typeof card === 'number')
+      return contentIdKey(card);
+    throw new GameConfigurationError(
+      'An explicit card catalog requires persistent identifiers',
+    );
+  };
+  const accepted = new Set(definition.catalog.map(identity));
+  if (definition.cards.some((card) => !accepted.has(identity(card))))
+    throw new GameConfigurationError(
+      `Initial card absent from catalog: ${definition.id}`,
+    );
 }
 
 function deepFreeze<TValue>(value: TValue): TValue {

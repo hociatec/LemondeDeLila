@@ -33,6 +33,7 @@ export interface GameStateStore {
     roomId: RoomId,
     gameType: GameId,
     expectedVersion: number,
+    expectedRestoreId?: string | null,
   ): Promise<void>;
   clearRoom(roomId: RoomId): Promise<void>;
 }

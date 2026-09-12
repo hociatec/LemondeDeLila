@@ -18,7 +18,13 @@ export class ActiveRoomParticipantsTypeormReader implements ActiveRoomParticipan
     userIds: number[],
   ): Promise<ActiveRoomParticipant[]> {
     const normalizedUserIds = Array.isArray(userIds)
-      ? [...new Set(userIds.filter((userId) => Number.isSafeInteger(userId) && userId > 0))].slice(0, 1_000)
+      ? [
+          ...new Set(
+            userIds.filter(
+              (userId) => Number.isSafeInteger(userId) && userId > 0,
+            ),
+          ),
+        ].slice(0, 1_000)
       : [];
     if (normalizedUserIds.length === 0) {
       return [];

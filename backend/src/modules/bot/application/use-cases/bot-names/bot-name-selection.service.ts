@@ -16,7 +16,7 @@ export class BotNameSelectionService {
         .toLowerCase(),
     );
     const exclude = new Set(names);
-    const candidates = await this.cache.getEnabledNames();
+    const candidates = await this.cache.refreshEnabledNames();
     for (const candidate of candidates.slice(0, 10_000)) {
       const sanitized = this.normalizer.sanitize(candidate);
       if (!exclude.has(sanitized.toLowerCase())) {

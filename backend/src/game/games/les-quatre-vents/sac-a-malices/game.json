@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "2",
+  "snapshotMigrations": [
+    {
+      "fromVersion": "sac-a-malices@content:2959fe7b@format:2",
+      "toVersion": "1"
+    }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [],
+  "components": [],
+  "setup": {
+    "counters": {
+      "sac.pot": 0
+    },
+    "startRound": false
+  },
+  "resourceIds": ["money", "sac.jail-cards"],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    }
+  ],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": {
+      "actions": [],
+      "transitions": ["playing"]
+    },
+    "playing": {
+      "actions": [
+        "roll",
+        "build",
+        "sell_building",
+        "mortgage",
+        "unmortgage",
+        "pay_fine",
+        "use_jail_card"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": { "recipe": "sac-roll" },
+    "build": { "recipe": "sac-build" },
+    "sell_building": { "recipe": "sac-sell-building" },
+    "mortgage": { "recipe": "sac-mortgage" },
+    "unmortgage": { "recipe": "sac-unmortgage" },
+    "pay_fine": { "recipe": "sac-pay-fine" },
+    "use_jail_card": { "recipe": "sac-use-jail-card" }
+  },
+  "victory": {
+    "kind": "by-sac"
+  },
+  "sac": {
+    "$content": "content/catalogue.json"
+  }
+}

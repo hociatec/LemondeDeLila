@@ -44,9 +44,20 @@ export type RoomAdminContext = {
 export class RoomAdminMaintenanceService {
   constructor(
     @Inject(ROOM_REPOSITORY)
-    private readonly rooms: RoomRepository,
-    private readonly realtimeTracker: RoomRealtimeTrackerService,
-    private readonly runtimeState: RoomRuntimeStateService,
+    private readonly rooms: Pick<
+      RoomRepository,
+      'exists' | 'delete' | 'save' | 'listForAdmin' | 'listCleanupCandidateIds'
+    >,
+    @Inject(RoomRealtimeTrackerService)
+    private readonly realtimeTracker: Pick<
+      RoomRealtimeTrackerService,
+      'countActivePlayers' | 'hasActivePlayers'
+    >,
+    @Inject(RoomRuntimeStateService)
+    private readonly runtimeState: Pick<
+      RoomRuntimeStateService,
+      'clearRoomBans'
+    >,
     @Inject(ROOM_EVENT_PUBLISHER)
     private readonly roomEvents: RoomEventPublisherPort,
   ) {}
@@ -62,8 +73,8 @@ export class RoomAdminMaintenanceService {
       throw new NotFoundException('Room introuvable.');
     }
 
-    await this.roomEvents.publishRoomDeleted(id);
     await this.rooms.delete(id);
+    await this.roomEvents.publishRoomDeleted(id);
     this.runtimeState.clearRoomBans(id);
     await ctx.invalidateRoomPayloadCache(id);
     await this.roomEvents.publishLobbyChanged(id, 'deleted');

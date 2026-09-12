@@ -63,6 +63,7 @@ export class GameRegistryService {
   async listGames(
     options: ListGamesOptions = {},
   ): Promise<GameCatalogDefinition[]> {
+    await this.overrides?.reload();
     const manifests = this.getManifestCache();
     const defs = Array.from(this.handlers.values()).map((handler) => {
       const entry = manifests.get(handler.gameType);

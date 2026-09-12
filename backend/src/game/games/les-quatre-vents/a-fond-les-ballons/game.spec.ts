@@ -1,7 +1,17 @@
-import { testGame } from '../../../engine/testing/public-api';
+import {
+  DeclarativeGameRuntime,
+  testGame,
+} from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import { A_FOND_CARD_COUNT } from './rules';
-import gameDefinition from './game';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import catalogue from './catalogue.json';
+import document from './game.json';
+import manifest from './manifest.json';
+
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
+const A_FOND_CARD_COUNT = catalogue.cards.length;
 
 describe('À fond les ballons declarative game', () => {
   it('requires every participant to choose a pawn in roster order', async () => {
@@ -166,5 +176,24 @@ describe('À fond les ballons declarative game', () => {
       }),
     );
     expect(await game.replay()).toEqual(game.state());
+  });
+
+  it('continues a legacy snapshot waiting for a card draw', async () => {
+    const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(83);
+    await game.start();
+    await game.choose(1, 'capitaine-cacahuete');
+    await game.choose(2, 'professeur-gribouille');
+    const legacy = game.state();
+    Reflect.set(legacy.game, 'awaitingCardDraw', true);
+    legacy.engine!.contentVersion = 'a-fond-les-ballons@content:c5adb978';
+    const actorId = legacy.turn!.currentPlayerId!;
+
+    const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
+      legacy,
+      [{ type: 'draw_card', payload: {}, meta: { actorId } }],
+    );
+
+    expect(Reflect.get(restored.game, 'awaitingCardDraw')).toBe(false);
+    expect(restored.engine?.contentVersion).toBe('1');
   });
 });

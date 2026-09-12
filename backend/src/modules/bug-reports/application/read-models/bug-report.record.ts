@@ -12,4 +12,3 @@ export type BugReportRecord = {
   createdByUsername: string;
 };
 /** Explicitly named data contract at the application boundary. */
-

@@ -77,3 +77,39 @@ it('does not hide a failure to stop a source', async () => {
   });
   await expect(shutdown.stopSources()).rejects.toThrow('worker did not stop');
 });
+
+it('rejects normalized duplicate sources without replacing their cleanup', async () => {
+  const shutdown = new ApplicationShutdownService();
+  const stop = jest.fn();
+  shutdown.registerSource('worker', stop);
+  expect(() => shutdown.registerSource(' worker ', () => undefined)).toThrow();
+  await shutdown.stopSources();
+  expect(stop).toHaveBeenCalledTimes(1);
+});
+
+it('waits for every source and reports all failures', async () => {
+  const shutdown = new ApplicationShutdownService();
+  const worker = deferred();
+  const firstError = new Error('first source');
+  const secondError = new Error('second source');
+  shutdown.registerSource('first', () => {
+    throw firstError;
+  });
+  shutdown.registerSource('worker', async () => {
+    await worker.promise;
+    throw secondError;
+  });
+  let settled = false;
+  const stopping = shutdown.stopSources().catch((error: unknown) => {
+    settled = true;
+    return error;
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(settled).toBe(false);
+  worker.resolve();
+  const error = await stopping;
+  expect(error).toBeInstanceOf(AggregateError);
+  if (!(error instanceof AggregateError)) throw new Error('Expected failures');
+  expect(error.errors).toEqual([firstError, secondError]);
+});

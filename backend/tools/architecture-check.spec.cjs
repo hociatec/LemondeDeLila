@@ -24,12 +24,40 @@ test('only the declared boundary assembly directory belongs to root composition'
   assert.equal(describeComponent('modules/room/application/service.ts', contract).kind, 'domain');
 });
 
+test('rejects repository exports through aliases and barrels but accepts specialized readers', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-api-repositories-'));
+  try {
+    const fixtures = {
+      'modules/user/application/ports/user.repository.ts': 'export interface UserRepository { save(): void }',
+      'modules/user/application/ports/user-reader.port.ts': 'export interface UserReader { find(): Promise<number> }',
+      'modules/user/application/public-api.ts': "export { UserRepository as AccountStore } from './ports/user.repository';",
+      'modules/user/public-api.ts': "export * from './application/public-api'; export type { UserReader } from './application/ports/user-reader.port';",
+      'modules/social/application/ports/friend-reader.port.ts': 'export interface FriendReader { find(): Promise<number> }',
+      'modules/social/public-api.ts': "export type { FriendReader } from './application/ports/friend-reader.port';",
+    };
+    for (const [relative, content] of Object.entries(fixtures)) {
+      const file = path.join(root, relative);
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, content);
+    }
+    const violations = analyzeArchitecture({ root, contract }).violations;
+    const exports = violations.filter(item => item.rule === 'business-api-repository-export');
+    assert(exports.length >= 1);
+    assert(exports.every(item => JSON.stringify(item).includes('user.repository.ts')));
+    assert(!violations.some(item => item.rule === 'business-api-repository-export' && JSON.stringify(item).includes('modules/social')));
+  } finally {
+    assert(fs.realpathSync(root).startsWith(fs.realpathSync(os.tmpdir()) + path.sep));
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('rejects nested contract models and mutable application dependencies in migrations', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-contract-migration-'));
   try {
     const fixtures = {
       'modules/user/application/contracts/nested/user.model.ts': 'export interface UserModel {}',
       'modules/user/application/contracts/user.record.ts': 'export interface UserRecord {}',
+      'modules/user/application/contracts/nested/user.repository.ts': 'export abstract class UserRepository {}',
       'modules/user/application/models/user.model.ts': 'export interface UserModel {}',
       'modules/user/application/contracts/user.contract.ts': 'export interface UserContract {}',
       'platform/database/migrations/100-invalid.ts': "import type { UserModel } from '../../../modules/user/application/models/user.model';",
@@ -42,7 +70,7 @@ test('rejects nested contract models and mutable application dependencies in mig
       fs.writeFileSync(file, content);
     }
     const violations = analyzeArchitecture({ root, contract }).violations;
-    assert.equal(violations.filter(item => item.rule === 'contracts-no-data-model').length, 2);
+    assert.equal(violations.filter(item => item.rule === 'contracts-no-data-model').length, 3);
     assert.equal(violations.filter(item => item.rule === 'migration-no-application-dependency').length, 2);
   } finally {
     assert(fs.realpathSync(root).startsWith(fs.realpathSync(os.tmpdir()) + path.sep));

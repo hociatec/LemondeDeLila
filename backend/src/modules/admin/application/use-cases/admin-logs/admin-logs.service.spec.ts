@@ -3,10 +3,10 @@ import * as fs from 'fs';
 import { AdminLogsService } from '../../../infrastructure/filesystem/admin-logs.service';
 
 jest.mock('fs', () => ({
-    promises: {
-      readdir: jest.fn(),
-      lstat: jest.fn(),
-      stat: jest.fn(),
+  promises: {
+    readdir: jest.fn(),
+    lstat: jest.fn(),
+    stat: jest.fn(),
     readFile: jest.fn(),
   },
 }));

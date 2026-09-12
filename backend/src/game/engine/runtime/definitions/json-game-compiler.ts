@@ -1,128 +1,193 @@
-import type { DefinedGameAction } from '../contracts/author-rule-contracts';
-import { defineAction } from './game-definition-builders';
+import { programHandlers } from './json-game-program-handlers';
+import { cardSelectionRules } from '../recipes/gameplay/card-selection.recipes';
+import { assertCardSelectionReferences } from './json-card-selection-schema';
 import { defineGame } from './game-definition';
-import { gameInput } from '../actions/game-input-schema';
 import { defineGameContent } from '../content/game-content';
-import { parseJsonGame } from './json-game-schema';
+import {
+  resolveJsonContent,
+  type JsonContentAssets,
+} from '../content/json-content-bundle';
+import { parseJsonGame } from './json-game-parser';
 import { compileJsonPattern } from './json-game-patterns';
-import { assertBoardReferences } from './json-board-schema';
-import { boardTurnRules } from '../recipes/gameplay/board-turn.recipes';
-import { thresholdVictory } from '../automation/threshold-victory';
+import { compileJsonPrograms } from './json-game-program-compiler';
+import { assertBoardPawnCapacity } from './json-board-pawn-capacity';
+import { jsonProgramInitialization } from './json-program-initialization';
+import {
+  standardVictory,
+  assertStandardVictoryReferences,
+} from './json-standard-victory';
+import { compileJsonActions } from './json-game-action-compiler';
+import { assertProgramReferences } from './json-program-reference-validation';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import { assertGameManifestMatches } from '../../../core/application/helpers/game-manifest-validation';
+import type { JsonGameManifest } from './json-game-manifest';
 
-export type JsonGameManifest = {
-  code: string;
-  engine: string;
-  name: string;
-  summary: string;
-  minPlayers: number;
-  maxPlayers: number;
-};
+export type { JsonGameManifest } from './json-game-manifest';
 
-/** Compile data once. All executable callbacks are engine-owned. */
-export function compileJsonGame(manifest: JsonGameManifest, source: unknown) {
+export function compileJsonGame(
+  manifest: JsonGameManifest,
+  source: unknown,
+  assets?: JsonContentAssets,
+) {
   assertGameManifestMatches(manifest, manifest);
   if (!manifest.code.trim())
     throw new GameConfigurationError('Empty JSON game identifier');
-  const content = defineGameContent(manifest.code, source, {
+  const resolvedSource = resolveJsonContent(source, assets);
+  const metadata = parseJsonGame(resolvedSource);
+  const content = defineGameContent(manifest.code, resolvedSource, {
+    version: metadata.contentVersion,
     formatVersion: 1,
+    snapshotMigrations: metadata.snapshotMigrations,
     schema: { parse: parseJsonGame },
   });
   const document = content.data;
   const fail = (path: string, reason: string): never => {
     throw new GameConfigurationError(`${manifest.code}.${path}: ${reason}`);
   };
-  const patterns = document.patterns?.map(compileJsonPattern);
-  assertDocumentReferences(document, patterns, fail);
-  const board = document.board ? boardTurnRules(document.board) : null;
-  const actions = compileActions(document, board, fail);
-  // The common definition validator checks all static effects, including
-  // actions, cards, landing effects and their nested conditions/reactions.
-  return defineGame<Record<string, never>>()<
-    typeof actions,
-    object,
-    typeof document.setup,
-    readonly [],
-    NonNullable<typeof patterns>,
-    typeof document.components,
-    typeof document.resourceIds
-  >({
-    id: manifest.code,
-    displayName: manifest.name,
-    description: manifest.summary,
-    category: document.category,
-    subcategory: document.world,
-    players: { min: manifest.minPlayers, max: manifest.maxPlayers },
-    content,
-    rulesVersion: document.definitionVersion,
+  const programs = compileJsonPrograms(document);
+  const {
+    grid,
+    judged,
     patterns,
-    shortcuts: document.shortcuts,
-    components: document.components,
-    initialization: board
-      ? Object.keys(document.setup).length === 0
-        ? undefined
-        : { ...document.setup, startRound: false }
-      : document.setup,
-    resourceIds: document.resourceIds,
-    initialPhase: document.initialPhase,
-    phases: document.phases,
-    actions,
-    ...(board
-      ? {
-          setup: board.setup,
-          choices: board.choices,
-          effects: board.effects,
-          automatic: board.automatic,
-          bot: {
-            choose: ({ availableActions }) => {
-              const type =
-                availableActions.find(
-                  (id) =>
-                    'recipe' in document.actions[id] &&
-                    document.actions[id].recipe === 'board-draw',
-                ) ?? availableActions[0];
-              return type ? { type, payload: {} } : null;
-            },
-          },
-        }
-      : {}),
-    ...(document.victory.kind === 'by-board'
-      ? {}
-      : { victory: thresholdVictory(document.victory) }),
-  });
+    collectionRace,
+    ecosystemRace,
+    nawak,
+    mnemosyne,
+  } = programs;
+  assertDocumentReferences(document, patterns, manifest, fail);
+  const actions = compileJsonActions(document, programs, fail);
+  const events = [
+    ...(grid?.events ?? []),
+    ...(judged?.events ?? []),
+    ...(collectionRace?.events ?? []),
+    ...(ecosystemRace?.events ?? []),
+    ...(nawak?.events ?? []),
+    ...(mnemosyne?.events ?? []),
+    ...(programs.sac?.events ?? []),
+  ];
+  const components = [...document.components, ...(mnemosyne?.components ?? [])];
+  for (const program of [
+    programs.corridor,
+    programs.catPattes,
+    programs.contes,
+    programs.rites,
+    programs.sac,
+  ])
+    components.push(
+      ...(program?.components ?? []).filter(
+        (component) => component.component !== 'cards.zone',
+      ),
+    );
+  const handlers = programHandlers(document, programs);
+  const buildDefinition = () =>
+    defineGame<Record<string, never>>()<
+      typeof actions,
+      JsonGameViewExtension,
+      typeof document.setup,
+      typeof events,
+      NonNullable<typeof patterns>,
+      typeof components,
+      typeof document.resourceIds
+    >({
+      id: manifest.code,
+      displayName: manifest.name,
+      description: manifest.summary,
+      category: document.category,
+      subcategory: document.world,
+      players: { min: manifest.minPlayers, max: manifest.maxPlayers },
+      presentation: document.presentation,
+      content,
+      events,
+      rulesVersion: document.definitionVersion,
+      patterns,
+      shortcuts: document.shortcuts,
+      components,
+      initialization: jsonProgramInitialization(document),
+      resourceIds: document.resourceIds,
+      initialPhase: document.initialPhase,
+      phases: document.phases,
+      actions,
+      ...handlers,
+      choices: selectionChoices(document, handlers.choices),
+      ...(isProgramVictory(document.victory)
+        ? {}
+        : { victory: standardVictory(document.victory) }),
+    });
+  return buildDefinition();
 }
 
 type JsonDocument = ReturnType<typeof parseJsonGame>;
 type JsonFailure = (path: string, reason: string) => never;
+type JsonGameViewExtension = {
+  progress?: Readonly<Record<number, unknown>>;
+  currentChallengeId?: string;
+  lastRound?: unknown;
+  currentTheme?: string | null;
+  secondTheme?: string | null;
+  buildings?: Readonly<Record<number, unknown>>;
+};
+
+function isProgramVictory(
+  victory: JsonDocument['victory'],
+): victory is Extract<JsonDocument['victory'], { kind: `by-${string}` }> {
+  return victory.kind.startsWith('by-');
+}
+
+function selectionChoices(
+  document: JsonDocument,
+  inherited: ReturnType<typeof programHandlers>['choices'],
+) {
+  return {
+    ...inherited,
+    ...Object.fromEntries(
+      Object.values(document.actions).flatMap((action) =>
+        'selectCards' in action
+          ? [
+              [
+                action.selectCards.choiceId,
+                cardSelectionRules(action.selectCards).choice,
+              ],
+            ]
+          : [],
+      ),
+    ),
+  };
+}
 
 function assertDocumentReferences(
   document: JsonDocument,
   patterns: ReturnType<typeof compileJsonPattern>[] | undefined,
+  manifest: JsonGameManifest,
   fail: JsonFailure,
 ): void {
   const resources = new Set(document.resourceIds);
-  if (document.board)
-    assertBoardReferences(
-      document.board,
-      [
-        ...document.components,
-        ...(patterns ?? []).flatMap((pattern) => pattern.components ?? []),
-      ],
-      document.phases,
-      document.initialPhase,
-    );
-  if (
-    document.board &&
-    (document.setup.firstPlayer !== undefined ||
-      document.setup.startRound !== undefined)
-  )
-    fail('setup', 'board owns the starting player and round');
-  if (document.victory.kind === 'by-board' && !document.board)
-    fail('victory', 'board required');
+  assertStandardVictoryReferences(
+    document.victory,
+    [
+      ...document.components,
+      ...(patterns ?? []).flatMap((pattern) => pattern.components ?? []),
+    ],
+    resources,
+    fail,
+  );
+  assertProgramReferences(document, patterns, manifest, fail);
+  assertBoardPawnCapacity(document, manifest.maxPlayers, fail);
+  assertSelections(document, patterns, fail);
   for (const [id, action] of Object.entries(document.actions)) {
-    if ('recipe' in action && !document.board)
+    if ('recipe' in action && action.recipe === 'grid-place' && !document.grid)
+      fail(`actions.${id}`, 'grid required');
+    if (
+      'recipe' in action &&
+      action.recipe.startsWith('board-') &&
+      !document.board
+    )
       fail(`actions.${id}`, 'board required');
+    if (
+      'recipe' in action &&
+      action.recipe.startsWith('judged-') &&
+      !document.judgedCards
+    )
+      fail(`actions.${id}`, 'judged card program required');
   }
   for (const shortcut of document.shortcuts ?? []) {
     if (
@@ -140,31 +205,36 @@ function assertDocumentReferences(
   if (
     document.victory.kind === 'resource-at-least' &&
     !resources.has(document.victory.resource)
-  ) {
+  )
     fail('victory.resource', `unknown resource ${document.victory.resource}`);
-  }
 }
 
-function compileActions(
+function assertSelections(
   document: JsonDocument,
-  board: ReturnType<typeof boardTurnRules> | null,
+  patterns: ReturnType<typeof compileJsonPattern>[] | undefined,
   fail: JsonFailure,
-) {
-  const actions: Record<
-    string,
-    DefinedGameAction<Record<string, never>, Record<string, never>>
-  > = Object.fromEntries(
-    Object.entries(document.actions).map(([id, action]) => [
-      id,
-      'recipe' in action
-        ? action.recipe === 'board-roll'
-          ? (board?.roll ?? fail(`actions.${id}`, 'board required'))
-          : (board?.draw ?? fail(`actions.${id}`, 'board required'))
-        : defineAction<Record<string, never>, Record<string, never>>({
-            input: gameInput.object({}),
-            execute: ({ ctx }) => ctx.effects.run(...action.effects),
-          }),
-    ]),
+): void {
+  const choices = new Set<string>(
+    [
+      document.board?.pawnSelection?.choiceId,
+      document.board?.directionChoiceId,
+      document.board?.quiz?.choiceId,
+      document.board?.exchange?.takeChoiceId,
+      document.board?.exchange?.giveChoiceId,
+      document.grid?.pawnSelection?.choiceId,
+      document.eventRace?.pawnSelection.choiceId,
+      document.pawnRace?.choiceId,
+    ].filter((id): id is string => id !== undefined),
   );
-  return actions;
+  for (const action of Object.values(document.actions)) {
+    if (!('selectCards' in action)) continue;
+    const program = action.selectCards;
+    if (choices.has(program.choiceId) || program.choiceId.startsWith('engine.'))
+      fail('actions.selectCards.choiceId', 'duplicate or reserved choice');
+    choices.add(program.choiceId);
+    assertCardSelectionReferences(program, [
+      ...document.components,
+      ...(patterns ?? []).flatMap((pattern) => pattern.components ?? []),
+    ]);
+  }
 }

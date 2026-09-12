@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "snapshotMigrations": [
+    {
+      "fromVersion": "contes-et-cacahuetes@content:32cd4133",
+      "toVersion": "1"
+    }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [],
+  "components": [],
+  "setup": {
+    "firstPlayer": "random",
+    "startRound": true
+  },
+  "resourceIds": ["contes.reroll-token", "contes.malus-shield"],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    }
+  ],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": {
+      "actions": [],
+      "transitions": ["playing"]
+    },
+    "playing": {
+      "actions": ["roll"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "contes-roll"
+    }
+  },
+  "victory": {
+    "kind": "by-contes"
+  },
+  "contes": {
+    "trackId": "story-road",
+    "pawnSetId": "contes",
+    "pawnChoiceId": "contes.pawn",
+    "resolutionFlag": "contes.resolution",
+    "maxChainDepth": 32,
+    "resources": {
+      "reroll": "contes.reroll-token",
+      "shield": "contes.malus-shield"
+    },
+    "statuses": {
+      "protectNextMalus": "contes.protect-next-malus",
+      "cape": "contes.cape",
+      "replaceOne": "contes.replace-one",
+      "noBonus": "contes.no-bonus",
+      "forcedOne": "contes.forced-one",
+      "reverseNextTurn": "contes.reverse-next-turn",
+      "blocked": "contes.blocked",
+      "keyOfGold": "contes.key-of-gold"
+    },
+    "tiles": {
+      "$content": "content/catalogue.json#/tiles"
+    },
+    "pawns": {
+      "$content": "content/catalogue.json#/pawns"
+    },
+    "decks": {
+      "$content": "content/catalogue.json#/decks"
+    }
+  }
+}

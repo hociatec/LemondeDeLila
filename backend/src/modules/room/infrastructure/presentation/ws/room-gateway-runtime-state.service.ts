@@ -1,4 +1,5 @@
 import { Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Server, WebSocket } from 'ws';
 import { RoomChatStore } from './room-chat-state';
 import type { RoomSnapshot } from './room-announcement.helpers';
@@ -27,6 +28,8 @@ export class RoomGatewayRuntimeStateService implements OnModuleDestroy {
   readonly participantDisconnectGraceMs = 60_000;
   readonly logger = new Logger(RoomGatewayRuntimeStateService.name);
   private readonly messageQueues = new WeakMap<WebSocket, Promise<void>>();
+  private readonly realtimeStreamId = randomUUID();
+  private readonly roomRealtimeSequences = new Map<number, number>();
 
   constructor(readonly presenter: RoomGatewayStatePresenter) {}
 
@@ -77,6 +80,25 @@ export class RoomGatewayRuntimeStateService implements OnModuleDestroy {
     this.lastRoomStatusByRoomId.clear();
     this.lastRoomSnapshotByRoomId.clear();
     this.roomChat.clear();
+    this.roomRealtimeSequences.clear();
+  }
+
+  nextRoomRealtimeVersion(roomId: number) {
+    const sequence = (this.roomRealtimeSequences.get(roomId) ?? 0) + 1;
+    this.roomRealtimeSequences.set(roomId, sequence);
+    return {
+      streamId: this.realtimeStreamId,
+      sequence,
+      snapshot: true as const,
+    };
+  }
+
+  currentRoomRealtimeVersion(roomId: number) {
+    return {
+      streamId: this.realtimeStreamId,
+      sequence: this.roomRealtimeSequences.get(roomId) ?? 0,
+      snapshot: true as const,
+    };
   }
 
   async broadcast(

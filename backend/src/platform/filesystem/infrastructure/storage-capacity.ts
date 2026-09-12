@@ -77,7 +77,10 @@ async function directorySize(root: string): Promise<number> {
     if (!current) continue;
     scannedDirectories += 1;
     if (scannedDirectories > MAX_SCANNED_DIRECTORIES) {
-      throw new StorageCapacityError('quota', 'Arborescence de stockage trop volumineuse.');
+      throw new StorageCapacityError(
+        'quota',
+        'Arborescence de stockage trop volumineuse.',
+      );
     }
     const entries = await fs.promises.readdir(current, { withFileTypes: true });
     for (const entry of entries) {
@@ -86,11 +89,21 @@ async function directorySize(root: string): Promise<number> {
       else if (entry.isFile()) {
         scannedFiles += 1;
         if (scannedFiles > MAX_SCANNED_FILES) {
-          throw new StorageCapacityError('quota', 'Nombre de fichiers de stockage trop élevé.');
+          throw new StorageCapacityError(
+            'quota',
+            'Nombre de fichiers de stockage trop élevé.',
+          );
         }
         const size = (await fs.promises.stat(target)).size;
-        if (!Number.isSafeInteger(size) || size < 0 || total > Number.MAX_SAFE_INTEGER - size) {
-          throw new StorageCapacityError('quota', 'Taille de stockage invalide.');
+        if (
+          !Number.isSafeInteger(size) ||
+          size < 0 ||
+          total > Number.MAX_SAFE_INTEGER - size
+        ) {
+          throw new StorageCapacityError(
+            'quota',
+            'Taille de stockage invalide.',
+          );
         }
         total += size;
       }

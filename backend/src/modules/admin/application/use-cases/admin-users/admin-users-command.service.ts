@@ -36,7 +36,15 @@ import {
 export class AdminUsersCommandService {
   constructor(
     @Inject(ADMIN_USER_REPOSITORY)
-    private readonly users: AdminUserRepository,
+    private readonly users: Pick<
+      AdminUserRepository,
+      | 'create'
+      | 'delete'
+      | 'findByEmail'
+      | 'findById'
+      | 'findByUsername'
+      | 'save'
+    >,
     private readonly passwords: AdminUserPasswordService,
     private readonly bans: AdminUserBanPolicyService,
     @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
@@ -243,7 +251,11 @@ function assertSafeUserId(id: number): void {
 }
 
 function validateCredentials(email: unknown, username: unknown): void {
-  if (typeof email !== 'string' || email.trim().length === 0 || email.length > 320) {
+  if (
+    typeof email !== 'string' ||
+    email.trim().length === 0 ||
+    email.length > 320
+  ) {
     throw new BadRequestException('Email invalide');
   }
   validateUsername(username);

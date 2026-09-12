@@ -1,5 +1,9 @@
 import { GameRankingController } from '../../../engine/runtime/kits/ranking-kit';
-import { swapClosestBehind } from '../../../games/les-quatre-vents/contes-et-cacahuetes/resolution';
+import { createContesResolution } from '../../../engine/runtime/recipes/gameplay/contes-resolution';
+
+const resolution = createContesResolution({
+  trackId: 'story-road',
+} as never);
 
 it.each([
   [1, 3, 2, 4, 5],
@@ -15,7 +19,7 @@ it.each([
       5: 12,
     };
     const swap = jest.fn();
-    swapClosestBehind(1, {
+    resolution.swapClosestBehind(1, {
       players: { all: () => ids.map((id) => ({ id })) },
       movement: {
         position: (_track: string, id: number) => positions[id],
@@ -29,7 +33,7 @@ it.each([
 
 it('does not swap when nobody is strictly behind', () => {
   const swap = jest.fn();
-  swapClosestBehind(1, {
+  resolution.swapClosestBehind(1, {
     players: { all: () => [{ id: 1 }, { id: 2 }] },
     movement: { position: () => 10, swap },
     ranking: new GameRankingController(),

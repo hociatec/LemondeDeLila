@@ -48,3 +48,8 @@ export {
   ROOM_BOT_OPERATIONS_PORT,
   type RoomBotOperationsPort,
 } from './application/ports/room-bot-operations.port';
+
+export {
+  ROOM_GAME_RUN_READER,
+  type RoomGameRunReader,
+} from './application/ports/room-game-run-reader.port';

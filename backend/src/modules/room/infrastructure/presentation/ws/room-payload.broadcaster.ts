@@ -4,6 +4,7 @@ import type { RoomPayload } from '../../../application/models/room-payload.model
 import { RoomClientPolicyService } from '../../../application/services/membership/room-client-policy.service';
 import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
 import type { ClientMeta } from './room-gateway.types';
+import type { RoomRealtimeVersion } from './room-gateway-state.presenter';
 
 type RoomBroadcastSocket = {
   readonly readyState: number;
@@ -30,6 +31,7 @@ export class RoomPayloadBroadcaster {
     ctx: RoomBroadcastContext,
     roomId: number,
     payload: RoomPayload,
+    realtime: RoomRealtimeVersion,
   ): Promise<void> {
     const targets = ctx.rooms.get(roomId);
     const silentTargets = ctx.silentRooms.get(roomId);
@@ -44,10 +46,14 @@ export class RoomPayloadBroadcaster {
       const cached = serializedByActions.get(cacheKey);
       if (cached) return cached;
       const message = JSON.stringify(
-        this.presenter.presentRoomUpdated(roomId, {
-          ...payload,
-          room: { ...payload.room, allowedActions: actions },
-        }),
+        this.presenter.presentRoomUpdated(
+          roomId,
+          {
+            ...payload,
+            room: { ...payload.room, allowedActions: actions },
+          },
+          realtime,
+        ),
       );
       if (Buffer.byteLength(message, 'utf8') > MAX_WS_OUTBOUND_BYTES) {
         throw new Error('Room payload too large');

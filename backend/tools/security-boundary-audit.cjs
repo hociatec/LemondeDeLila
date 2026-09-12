@@ -128,6 +128,30 @@ function audit() {
       /requireUser\(session\)/,
     ],
     [
+      'modules/room/infrastructure/presentation/ws/room-lobby-invites.service.ts',
+      /requireOwnedRoom\([\s\S]*requireInviteRecipient\(/,
+    ],
+    [
+      'game/core/infrastructure/presentation/ws/game-ws.handler.ts',
+      /ensureReadable\(roomId, user\.id\)[\s\S]*ensureWritable\(roomId, user\.id\)/,
+    ],
+    [
+      'modules/vault/application/services/vault-snapshot-writer.service.ts',
+      /requireRoomForOwnerAction\(roomId, ownerUserId\)[\s\S]*findByIdForOwner\(requestedId, ownerUserId\)/,
+    ],
+    [
+      'modules/vault/application/services/vault-snapshot-restore.service.ts',
+      /findByIdForOwner\(id, ownerUserId\)/,
+    ],
+    [
+      'modules/messaging/application/services/private-messaging.service.ts',
+      /isSender[\s\S]*isRecipient[\s\S]*ForbiddenException[\s\S]*recipient\?\.id !== userId/,
+    ],
+    [
+      'modules/notification/application/services/admin-contact.service.ts',
+      /replyFromStaffToUser\([\s\S]*this\.assertStaff\(from\.roles\)/,
+    ],
+    [
       'modules/notification/infrastructure/persistence/typeorm/repositories/notification-inbox-typeorm.repository.ts',
       /\.andWhere\('user_id = :userId', \{ userId \}\)/,
     ],
@@ -149,6 +173,14 @@ function audit() {
     ['main.ts', /isBoundedJsonInput\(request\.body\)/],
     ['platform/ws/infrastructure/presentation/ws/ws-message-codec.ts', /isBoundedJsonInput\(parsed\)/],
     ['modules/presence/application/services/presence-client-message.service.ts', /isBoundedJsonInput\(value\)/],
+    [
+      'modules/presence/application/services/presence-client-message.service.ts',
+      /presenceMessageKeys\(record\.type\)[\s\S]*hasOnlyAllowedKeys\(record, keys\)/,
+    ],
+    [
+      'modules/room/infrastructure/presentation/ws/room-intent-decoder.ts',
+      /hasOnlyAllowedKeys\(envelope, \['intentId', 'data', '_trace'\]\)[\s\S]*hasOnlyAllowedKeys\(commandPayload, \[\.\.\.allowedKeys, '_trace'\]\)/,
+    ],
     ['modules/notification/infrastructure/presentation/ws/notification-ws-connection.service.ts', /isBoundedJsonInput\(value\)/],
     ['platform/ws/infrastructure/platform/lila-ws.adapter.ts', /isAllowedWsOrigin/],
     ['main.ts', /json\(\{ limit: '256kb' \}\)/],
@@ -161,10 +193,46 @@ function audit() {
       'modules/update/infrastructure/persistence/wx-update-upload.service.ts',
       /ENOSPC/,
     ],
+    [
+      'modules/update/infrastructure/http/ci-wx-update.controller.ts',
+      /hasOnlyAllowedKeys\(body,[\s\S]*?'installerTotalBytes'[\s\S]*?hasOnlyAllowedKeys\(body, \['uploadId', 'index', 'kind'\]\)[\s\S]*?hasOnlyAllowedKeys\(body, \['uploadId'\]\)/,
+    ],
+    [
+      'modules/sounds/infrastructure/presentation/http/controllers/admin-sounds.controller.ts',
+      /requireExactBody\(body, \['name'\]\)[\s\S]*?requireExactBody\(body, \['enabled'\]\)/,
+    ],
+    [
+      'game/core/application/models/validated-game-action.model.ts',
+      /isBoundedJsonInput\(action,[\s\S]*?whitelist: true,[\s\S]*?forbidNonWhitelisted: true/,
+    ],
     ['platform/filesystem/infrastructure/atomic-file.utils.ts', /handle\.sync\(\)[\s\S]*fs\.rename/],
     [
       'platform/filesystem/infrastructure/atomic-file.utils.ts',
       /fsSync\.fsyncSync[\s\S]*fsSync\.renameSync/,
+    ],
+    [
+      'modules/sounds/infrastructure/storage/sounds-upload.manager.ts',
+      /(?=[\s\S]*createReadStream\(filePath\))(?=[\s\S]*copyFileAtomic\()/,
+    ],
+    [
+      'modules/sounds/infrastructure/storage/sounds-reencoder.ts',
+      /(?=[\s\S]*createReadStream\(filePath\))(?=[\s\S]*copyFileAtomic\()/,
+    ],
+    [
+      'modules/sounds/infrastructure/storage/sounds-audio-process.ts',
+      /(?=[\s\S]*AUDIO_PROCESS_QUEUE_LIMIT)(?=[\s\S]*maxOutputBytes)(?=[\s\S]*setTimeout\()(?=[\s\S]*child\.kill\('SIGKILL'\))/,
+    ],
+    [
+      'modules/sounds/infrastructure/presentation/http/controllers/admin-sounds.controller.ts',
+      /diskStorage\([\s\S]*limits: \{ fileSize: 250 \* 1024 \* 1024 \}/,
+    ],
+    [
+      'modules/update/infrastructure/http/ci-wx-update.controller.ts',
+      /dest: os\.tmpdir\(\)[\s\S]*limits: \{ fileSize: 15 \* 1024 \* 1024 \}/,
+    ],
+    [
+      'modules/update/infrastructure/persistence/wx-update-upload-storage.ts',
+      /MAX_UPLOAD_DIRECTORY_ENTRIES[\s\S]*createReadStream\([\s\S]*combinedBytes > input\.expectedBytes/,
     ],
     [
       'modules/sounds/infrastructure/storage/sounds.service.ts',
@@ -183,6 +251,65 @@ function audit() {
     const source = fs.readFileSync(path.join(root, name), 'utf8');
     if (!contract.test(source))
       violations.push(`${name}: garde de saturation/entrée absente`);
+  }
+  const authoritativeReadContracts = [
+    [
+      'modules/room/application/services/state/room-payload.service.ts',
+      /getRoomPayload\(roomId: number\)[\s\S]*?return this\.refreshRoomPayload\(roomId\)/,
+    ],
+    [
+      'modules/room/application/services/membership/room-game-access.service.ts',
+      /Authorization deliberately reads persistence[\s\S]*?findByIdWithPayloadRelations/,
+    ],
+    [
+      'modules/catalog/application/use-cases/catalog/get-catalog-game.service.ts',
+      /listGames\.execute\(\{ fresh: true \}\)/,
+    ],
+    [
+      'modules/bot/application/use-cases/bot-names/bot-name-selection.service.ts',
+      /cache\.refreshEnabledNames\(\)/,
+    ],
+    [
+      'game/core/application/services/game-registry.service.ts',
+      /async listGames[\s\S]*?await this\.overrides\?\.reload\(\)/,
+    ],
+    [
+      'game/core/application/services/game-content.service.ts',
+      /async getRules[\s\S]*?await this\.overrides\?\.reload\(\)/,
+    ],
+    [
+      'modules/chat/application/use-cases/chat/list-recent-normalized-chat-messages.service.ts',
+      /listRecentMessages\.execute\([\s\S]*?ChatMessageCacheService\.CACHE_LIMIT/,
+    ],
+    [
+      'modules/social/application/services/social-profile.service.ts',
+      /const settings = await this\.settings\.getFresh\(\)/,
+    ],
+  ];
+  for (const [name, contract] of authoritativeReadContracts) {
+    const source = fs.readFileSync(path.join(root, name), 'utf8');
+    if (!contract.test(source)) {
+      violations.push(
+        `${name}: décision ou lecture métier fondée sur un cache`,
+      );
+    }
+  }
+  const presenceChatSource = fs.readFileSync(
+    path.join(
+      root,
+      'modules/presence/application/services/presence-chat.service.ts',
+    ),
+    'utf8',
+  );
+  if (
+    (
+      presenceChatSource.match(/getAuthoritativeChatBanPayload\(user\.id\)/g) ??
+      []
+    ).length !== 3
+  ) {
+    violations.push(
+      'modules/presence/application/services/presence-chat.service.ts: commandes chat sans lecture de bannissement persistée',
+    );
   }
   const authorizationMatrix = fs.readFileSync(
     path.resolve(

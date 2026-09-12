@@ -90,6 +90,7 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     state: GameState,
   ): Promise<GameState> {
     this.assertKey(roomId, gameType);
+    assertGameStateSize(state, this.snapshotPolicy.maxStateBytes);
     const restored = structuredClone(state);
     restored.metadata = { ...restored.metadata, restoreId: randomUUID() };
     assertGameStateSize(restored, this.snapshotPolicy.maxStateBytes);
@@ -115,6 +116,7 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
 
   async compareAndSet(commit: GameStateCommit): Promise<GameStateCommitResult> {
     this.assertKey(commit.roomId, commit.gameType);
+    assertGameStateSize(commit.next, this.snapshotPolicy.maxStateBytes);
     if (
       !Number.isSafeInteger(commit.expectedVersion) ||
       commit.expectedVersion < 1
@@ -181,13 +183,26 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     roomId: number,
     gameType: string,
     expectedVersion: number,
+    expectedRestoreId?: string | null,
   ): Promise<void> {
     this.assertKey(roomId, gameType);
     if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 1) {
       throw new RangeError('Invalid game session version');
     }
     await this.repository.manager.transaction(async (manager) => {
-      const result = await manager.getRepository(GameSessionEntity).delete({
+      const repository = manager.getRepository(GameSessionEntity);
+      if (expectedRestoreId !== undefined) {
+        const current = await repository.findOne({
+          where: { roomId, gameType },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (
+          !current ||
+          (current.state.metadata?.restoreId ?? null) !== expectedRestoreId
+        )
+          return;
+      }
+      const result = await repository.delete({
         roomId,
         gameType,
         version: expectedVersion,

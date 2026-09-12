@@ -38,13 +38,17 @@ export class GameLoggerService {
 
   constructor(private readonly config: ConfigService) {
     const configuredLevel = this.config.get<string>('LOG_LEVEL', 'info');
-    const logLevel = typeof configuredLevel === 'string' && configuredLevel.length <= 32
-      ? configuredLevel
-      : 'info';
+    const logLevel =
+      typeof configuredLevel === 'string' && configuredLevel.length <= 32
+        ? configuredLevel
+        : 'info';
     const enableFiles = this.config.get<boolean>('LOG_FILES_ENABLED', true);
     const logDir = enableFiles
       ? this.ensureDirectory(
-          String(this.config.get<string>('LOG_DIR', 'logs') || 'logs').slice(0, 4096),
+          String(this.config.get<string>('LOG_DIR', 'logs') || 'logs').slice(
+            0,
+            4096,
+          ),
         )
       : null;
     const transports: winston.transport[] = [
@@ -165,7 +169,8 @@ export class GameLoggerService {
     },
     context: GameLogContext,
   ): void {
-    if (!action || typeof action.type !== 'string' || action.type.length > 128) return;
+    if (!action || typeof action.type !== 'string' || action.type.length > 128)
+      return;
     this.info('Player action', {
       ...context,
       action: {

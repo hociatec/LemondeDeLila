@@ -51,43 +51,32 @@ export class AdminContactDeliveryService {
       userId,
       rowId: index === 0 ? firstRowId : randomUUID(),
     }));
+    await this.inbox.createMany(
+      rows.map(({ userId, rowId }) => ({
+        id: rowId,
+        userId,
+        kind: ADMIN_CONTACT_KIND,
+        createdAt,
+        contactId: baseItem.contactId,
+        fromUserId: baseItem.fromUserId,
+        fromUsername: baseItem.fromUsername,
+        toUserId: baseItem.toUserId ?? null,
+        message: baseItem.message,
+        payload: {
+          status: 'open',
+          handled: false,
+          statusAt: null,
+          statusByUserId: null,
+          statusByUsername: null,
+        },
+      })),
+    );
     await allCompleted(
       rows.map(({ userId, rowId }) =>
-        this.deliverToRecipient(baseItem, userId, rowId, createdAt),
+        this.notifyRecipient(userId, { ...baseItem, id: rowId }),
       ),
     );
     return { ...baseItem, id: firstRowId };
-  }
-
-  private async deliverToRecipient(
-    baseItem: Omit<AdminContactItem, 'id'>,
-    userId: number,
-    rowId: string,
-    createdAt: Date,
-  ): Promise<void> {
-    const item: AdminContactItem = { ...baseItem, id: rowId };
-    await this.inbox.create({
-      id: rowId,
-      userId,
-      kind: ADMIN_CONTACT_KIND,
-      createdAt,
-      contactId: baseItem.contactId,
-      fromUserId: baseItem.fromUserId,
-      fromUsername: baseItem.fromUsername,
-      toUserId: baseItem.toUserId ?? null,
-      message: baseItem.message,
-      payload: {
-        status: 'open',
-        handled: false,
-        statusAt: null,
-        statusByUserId: null,
-        statusByUsername: null,
-      },
-    });
-    // The SQL inbox row is the durable business event. Socket notification is
-    // deliberately best-effort and must never be treated as the reliable
-    // side effect of this write, so it does not require an outbox record.
-    await this.notifyRecipient(userId, item);
   }
 
   private async notifyRecipient(

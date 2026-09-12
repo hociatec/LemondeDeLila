@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   assertPathInside,
+  copyFileAtomic,
   writeFileAtomic,
   writeFileAtomicSync,
 } from './atomic-file.utils';
@@ -30,6 +31,25 @@ describe('atomic file utilities', () => {
     const result = await fs.readFile(target, 'utf8');
     expect([left, right]).toContain(result);
     expect(await fs.readdir(path.dirname(target))).toEqual(['value.json']);
+  });
+
+  it('copies an upload atomically while enforcing its byte bound', async () => {
+    const source = path.join(root, 'source.bin');
+    const target = path.join(root, 'published', 'target.bin');
+    await fs.writeFile(source, Buffer.alloc(64 * 1024, 7));
+
+    await expect(
+      copyFileAtomic(source, target, 64 * 1024),
+    ).resolves.toBeUndefined();
+    await expect(fs.readFile(target)).resolves.toEqual(
+      Buffer.alloc(64 * 1024, 7),
+    );
+    await expect(
+      copyFileAtomic(source, path.join(root, 'too-large.bin'), 1024),
+    ).rejects.toThrow('source too large');
+    await expect(fs.readdir(path.join(root, 'published'))).resolves.toEqual([
+      'target.bin',
+    ]);
   });
 
   it('rejects path traversal outside the storage root', () => {

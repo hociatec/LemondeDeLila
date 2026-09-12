@@ -92,7 +92,12 @@ export class VaultSnapshotRestoreService {
     snapshotId: string,
   ): Promise<{ roomId: number }> {
     const id = String(snapshotId ?? '').trim();
-    if (!id || id.length > 128 || !Number.isSafeInteger(ownerUserId) || ownerUserId <= 0) {
+    if (
+      !id ||
+      id.length > 128 ||
+      !Number.isSafeInteger(ownerUserId) ||
+      ownerUserId <= 0
+    ) {
       throw new BadRequestException('id requis');
     }
     const entity = await this.snapshots.findByIdForOwner(id, ownerUserId);
@@ -100,12 +105,14 @@ export class VaultSnapshotRestoreService {
       throw new BadRequestException('Sauvegarde introuvable');
     }
     const snapshot = parseSnapshot(entity.snapshotJson);
-    const humans = (snapshot.roster.players ?? []).slice(0, 64).filter(
-      (player) =>
-        typeof player?.id === 'number' &&
-        Number.isSafeInteger(player.id) &&
-        player.id > 0,
-    );
+    const humans = (snapshot.roster.players ?? [])
+      .slice(0, 64)
+      .filter(
+        (player) =>
+          typeof player?.id === 'number' &&
+          Number.isSafeInteger(player.id) &&
+          player.id > 0,
+      );
     if (humans.length === 0) {
       throw new BadRequestException('Sauvegarde invalide : aucun joueur');
     }

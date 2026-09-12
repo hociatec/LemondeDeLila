@@ -1,4 +1,5 @@
 import type { GameContext } from '../definitions/game-author-context';
+import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
 import type { EffectEngineState } from '../contracts/effect-ir';
 import type { PrimitiveEffectHandlers } from './effect-primitive-executor';
 import type { EffectTargetResolver } from './effect-target-resolver';
@@ -23,6 +24,7 @@ function createControlHandlers<TState extends object>({
   | 'complete-turn'
   | 'reverse-turn-order'
   | 'transfer-resource'
+  | 'exchange-resources'
 > {
   return {
     'extra-turn': (instruction) => {
@@ -54,6 +56,19 @@ function createControlHandlers<TState extends object>({
             instruction.amount,
           ),
       ),
+    'exchange-resources': (instruction) =>
+      targets.applyToPair(
+        instruction,
+        instruction.left,
+        instruction.right,
+        (left, right) =>
+          context.resources.exchange(
+            left,
+            right,
+            instruction.leftOffer,
+            instruction.rightOffer,
+          ),
+      ),
   };
 }
 
@@ -61,7 +76,7 @@ function createCardHandlers<TState extends object>({
   context,
   targets,
 }: HandlerInput<TState>): HandlerGroup<
-  'give-card' | 'steal-card' | 'swap-hands'
+  'give-card' | 'steal-card' | 'swap-hands' | 'exchange-random-cards'
 > {
   return {
     'give-card': (instruction) =>
@@ -102,6 +117,18 @@ function createCardHandlers<TState extends object>({
         instruction.right,
         (leftPlayerId, rightPlayerId) =>
           context.cards.swapHands(
+            instruction.handId,
+            leftPlayerId,
+            rightPlayerId,
+          ),
+      ),
+    'exchange-random-cards': (instruction) =>
+      targets.applyToPair(
+        instruction,
+        instruction.left,
+        instruction.right,
+        (leftPlayerId, rightPlayerId) =>
+          context.cards.exchangeRandom(
             instruction.handId,
             leftPlayerId,
             rightPlayerId,
@@ -289,9 +316,36 @@ export function createPrimitiveEffectHandlers<TState extends object>(
 ): PrimitiveEffectHandlers {
   return {
     ...createControlHandlers(input),
+    ...createRoundAndEliminationHandlers(input),
     ...createCardHandlers(input),
     ...createInventoryHandlers(input),
     ...createCollectionHandlers(input),
     ...createPlayerValueHandlers(input),
+  };
+}
+
+function createRoundAndEliminationHandlers<TState extends object>({
+  context,
+  targets,
+}: HandlerInput<TState>): HandlerGroup<
+  'start-round' | 'end-round' | 'eliminate-player'
+> {
+  return {
+    'start-round': () => {
+      if (context.round.status() === 'playing')
+        throw new GameRuleViolationError('ROUND_ALREADY_PLAYING');
+      context.round.start(context.players.current()?.id);
+      return true;
+    },
+    'end-round': () => {
+      if (context.round.status() !== 'playing')
+        throw new GameRuleViolationError('ROUND_NOT_PLAYING');
+      context.round.end();
+      return true;
+    },
+    'eliminate-player': (instruction) =>
+      targets.applyToTargets(instruction, (playerId) =>
+        context.match.eliminate(playerId),
+      ),
   };
 }

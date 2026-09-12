@@ -2,6 +2,8 @@ import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ApplicationShutdownService } from '../../../../platform/lifecycle/public-api';
 import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
+import { operationalSettings } from '../../../../platform/config/public-api';
+import { isBoundedJsonInput } from '../../../../platform/validation/public-api';
 import type { NotificationDispatcher } from '../../application/ports/notification-dispatcher.port';
 import {
   NotificationTransport,
@@ -9,9 +11,9 @@ import {
 } from '../transport/notification-transport';
 import { getErrorDetails } from '../../../../shared/utils/public-api';
 import type { PubSubEventMetadata } from '../../../../platform/pubsub/public-api';
+import { stringifyExternalJson } from '../../../../platform/serialization/public-api';
 
 const MAX_NOTIFICATION_MESSAGE_BYTES = 1024 * 1024;
-const NOTIFICATION_DEDUPLICATION_TTL_MS = 5 * 60 * 1000;
 const MAX_PROCESSED_NOTIFICATION_IDS = 4096;
 
 @Injectable()
@@ -65,7 +67,11 @@ export class NotificationDispatchService
     payload: Record<string, unknown>,
   ) {
     if (!Number.isSafeInteger(userId) || userId <= 0) return;
-    if (!isValidNotificationType(type)) return;
+    if (
+      !isValidNotificationType(type) ||
+      !isBoundedJsonInput(payload, { allowUndefinedProperties: true })
+    )
+      return;
     try {
       await this.transport.publish({
         userId,
@@ -86,7 +92,11 @@ export class NotificationDispatchService
   // Broadcast to all connected users.
   // Implementation detail: userId=0 is treated as a "global" event and dispatched to every socket.
   async notifyAll(type: string, payload: Record<string, unknown>) {
-    if (!isValidNotificationType(type)) return;
+    if (
+      !isValidNotificationType(type) ||
+      !isBoundedJsonInput(payload, { allowUndefinedProperties: true })
+    )
+      return;
     try {
       await this.transport.publish({
         userId: 0,
@@ -165,7 +175,7 @@ export class NotificationDispatchService
     }
     const now = Date.now();
     for (const [eventId, seenAt] of this.processedEventIds) {
-      if (now - seenAt >= NOTIFICATION_DEDUPLICATION_TTL_MS)
+      if (now - seenAt >= operationalSettings.notificationDeduplicationTtlMs)
         this.processedEventIds.delete(eventId);
     }
     if (this.processedEventIds.has(metadata.eventId)) return;
@@ -283,7 +293,9 @@ export class NotificationDispatchService
 function serializeNotification(type: string, payload: unknown): string | null {
   try {
     if (!isValidNotificationType(type)) return null;
-    const message = JSON.stringify({ type, payload });
+    if (!isBoundedJsonInput(payload, { allowUndefinedProperties: true }))
+      return null;
+    const message = stringifyExternalJson({ type, payload });
     return message &&
       Buffer.byteLength(message, 'utf8') <= MAX_NOTIFICATION_MESSAGE_BYTES
       ? message

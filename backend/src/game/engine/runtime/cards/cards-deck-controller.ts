@@ -1,13 +1,37 @@
 import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
 import { GameCardsStateController } from './cards-state-controller';
+import { assertCardHandDestination } from './card-hand-invariants';
+import { assertGameCount } from '../kits/numeric-invariants';
 import type { CardValue } from './cards-contracts';
 import { sameSerializableValue } from '../state/serializable-value';
 
 export abstract class GameCardsDeckController extends GameCardsStateController {
-  discard<TCard extends CardValue>(deckId: string, card: TCard): void {
-    (this.state.discards[deckId] ??= []).push(
-      this.toPersistentCard(deckId, card),
+  deckCards<TCard extends CardValue>(deckId: string): TCard[] {
+    this.lifecycle(deckId);
+    return this.state.decks[deckId].map((card) =>
+      this.fromPersistentCard<TCard>(deckId, card),
     );
+  }
+
+  takeFromDeck<TCard extends CardValue>(deckId: string, card: TCard): TCard {
+    this.lifecycle(deckId);
+    const persistent = this.toPersistentCard(deckId, card);
+    const deck = this.state.decks[deckId];
+    const index = deck.findIndex((candidate) =>
+      sameSerializableValue(candidate, persistent),
+    );
+    if (index < 0)
+      throw new GameRuleViolationError('CARD_NOT_IN_DECK', { deckId });
+    const [taken] = deck.splice(index, 1);
+    this.lifecycle(deckId).exhausted = false;
+    this.emit('card.drawn', { deckId });
+    return this.fromPersistentCard<TCard>(deckId, taken);
+  }
+
+  discard<TCard extends CardValue>(deckId: string, card: TCard): void {
+    this.lifecycle(deckId);
+    const persistent = this.toPersistentCard(deckId, card);
+    (this.state.discards[deckId] ??= []).push(persistent);
     this.emit('card.discarded', { deckId, card });
   }
 
@@ -68,6 +92,7 @@ export abstract class GameCardsDeckController extends GameCardsStateController {
     playerId: number,
     options: { recycle?: boolean } = {},
   ): TCard | null {
+    assertCardHandDestination(this.handDefinitions, handId, deckId, playerId);
     const card = options.recycle
       ? this.drawOrRecycle<TCard>(deckId)
       : this.draw<TCard>(deckId);
@@ -82,6 +107,8 @@ export abstract class GameCardsDeckController extends GameCardsStateController {
     count: number,
     options: { recycle?: boolean } = {},
   ): TCard[] {
+    assertGameCount(count, 100_000);
+    assertCardHandDestination(this.handDefinitions, handId, deckId, playerId);
     const drawn: TCard[] = [];
     for (let index = 0; index < Math.max(0, count); index += 1) {
       const card = this.drawToHand<TCard>(deckId, handId, playerId, options);
@@ -114,8 +141,11 @@ export abstract class GameCardsDeckController extends GameCardsStateController {
   }
 
   recycle(deckId: string): void {
+    this.lifecycle(deckId);
     const discard = this.state.discards[deckId] ?? [];
     if (discard.length === 0) return;
+    if (this.state.decks[deckId].length > 0)
+      throw new GameRuleViolationError('CARD_DECK_NOT_EMPTY', { deckId });
     const count = discard.length;
     this.state.decks[deckId] = this.random.shuffle(discard);
     this.state.discards[deckId] = [];
@@ -127,6 +157,7 @@ export abstract class GameCardsDeckController extends GameCardsStateController {
     deckId: string,
     cards: readonly TCard[],
   ): void {
+    this.lifecycle(deckId);
     const deck = (this.state.decks[deckId] ??= []);
     this.state.decks[deckId] = [
       ...cards.map((card) => this.toPersistentCard(deckId, card)),
@@ -136,6 +167,7 @@ export abstract class GameCardsDeckController extends GameCardsStateController {
   }
 
   private drawOne<TCard extends CardValue>(deckId: string): TCard | null {
+    this.lifecycle(deckId);
     const deck = this.state.decks[deckId] ?? [];
     const persistentCard = deck.shift();
     if (persistentCard == null) return null;

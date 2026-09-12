@@ -58,6 +58,7 @@ export type RoomCommandContext = {
     receivedAtMs: number,
   ) => Promise<void>;
   handleRoomInfo: (client: WebSocket, meta: ClientMeta) => Promise<void>;
+  handleRoomState: (client: WebSocket, meta: ClientMeta) => Promise<void>;
   handleBotAdd: (
     meta: ClientMeta,
     payload: unknown,

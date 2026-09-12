@@ -22,7 +22,6 @@ import { AdminLogsService } from '../infrastructure/filesystem/admin-logs.servic
 import { AdminMnemoQuizCategoriesService } from '../application/use-cases/admin-mnemo-quiz/admin-mnemo-quiz-categories.service';
 import { AdminMnemoQuizPresenterService } from '../application/use-cases/admin-mnemo-quiz/admin-mnemo-quiz-presenter.service';
 import { AdminMnemoQuizQuestionsService } from '../application/use-cases/admin-mnemo-quiz/admin-mnemo-quiz-questions.service';
-import { AdminPerfService } from '../application/use-cases/admin-perf/admin-perf.service';
 import { AdminProfileService } from '../application/use-cases/admin-profile/admin-profile.service';
 import { AdminRoleDefinitionsCatalogService } from '../application/use-cases/admin-roles/admin-role-definitions-catalog.service';
 import { AdminRolesService } from '../application/use-cases/admin-roles/admin-roles.service';
@@ -71,7 +70,6 @@ export const ADMIN_USE_CASE_PROVIDERS = [
   AdminChatService,
   AdminChatModerationService,
   AdminLogsService,
-  AdminPerfService,
   AdminProfileService,
   AdminRoleDefinitionsCatalogService,
   AdminRolesService,

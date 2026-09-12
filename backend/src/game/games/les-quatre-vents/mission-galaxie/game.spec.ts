@@ -1,6 +1,13 @@
 import { testGame } from '../../../engine/testing/public-api';
+import { compileJsonGame } from '../../../engine/json/public-api';
 
-import gameDefinition from './game';
+import catalogue from './catalogue.json';
+import document from './game.json';
+import manifest from './manifest.json';
+
+const gameDefinition = compileJsonGame(manifest, document, {
+  'content/catalogue.json': catalogue,
+});
 
 describe('Mission Galaxie declarative game', () => {
   it('resolves a deterministic launch and replay', async () => {

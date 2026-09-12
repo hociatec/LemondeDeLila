@@ -3,21 +3,22 @@ import {
   GAME_ROOM_EVENTS_PORT,
   type GameRoomEventsPort,
 } from '../../../application/ports/game-room.port';
-import { GameWsRealtimeStateService } from './state/game-ws-realtime-state.service';
+import { GameAutomationRecoveryService } from '../../scheduling/game-automation-recovery.service';
 
 @Injectable()
 export class GameRoomLifecycleResetBinder implements OnModuleInit {
   constructor(
     @Inject(GAME_ROOM_EVENTS_PORT)
     private readonly roomEvents: GameRoomEventsPort,
-    private readonly realtime: GameWsRealtimeStateService,
+    @Inject(GameAutomationRecoveryService)
+    private readonly recovery: Pick<GameAutomationRecoveryService, 'recover'>,
   ) {}
 
   onModuleInit(): void {
-    this.roomEvents.onLobbyChanged((roomId, reason) => {
+    this.roomEvents.onLobbyChanged((_roomId, reason) => {
       if (reason !== 'reset') return;
-      return this.realtime.clearRoom(roomId);
+      return this.recovery.recover();
     });
-    this.roomEvents.onRoomDeleted((roomId) => this.realtime.clearRoom(roomId));
+    this.roomEvents.onRoomDeleted(() => this.recovery.recover());
   }
 }

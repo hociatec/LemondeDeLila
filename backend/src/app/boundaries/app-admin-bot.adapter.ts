@@ -54,4 +54,3 @@ export class AppAdminBotAdapter implements AdminBotPort {
     return this.settings.updateSettings(update);
   }
 }
-

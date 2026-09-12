@@ -135,7 +135,7 @@ export class RoomGatewaySessionService {
   async canSpectate(
     roomId: number,
     userId: number,
-    invitesCanSpectate: (roomId: number, userId: number) => boolean,
+    invitesCanSpectate: (roomId: number, userId: number) => Promise<boolean>,
   ): Promise<boolean> {
     try {
       if (this.roomState.isBanned(roomId, userId)) {
@@ -144,7 +144,7 @@ export class RoomGatewaySessionService {
       const state = await this.roomState.getRoomPayload(roomId);
       const access = this.clientPolicy.spectatorAccess(state, userId);
       return access === 'invitation'
-        ? invitesCanSpectate(roomId, userId)
+        ? await invitesCanSpectate(roomId, userId)
         : access === 'allow';
     } catch {
       return false;

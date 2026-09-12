@@ -122,6 +122,7 @@ export class GameRoomStateLifecycle {
       resolved.gameType,
       expectedVersion,
       next,
+      previous.metadata?.restoreId ?? null,
     );
     if (!result.committed) throw new GameStateConflictError();
     // The store drains transient domain events before persistence. Broadcast
@@ -195,6 +196,7 @@ export class GameRoomStateLifecycle {
       gameType,
       this.ensureVersion(existing),
       next,
+      existing.metadata?.restoreId ?? null,
     );
     return result.committed
       ? {
@@ -235,6 +237,7 @@ export class GameRoomStateLifecycle {
       gameType,
       this.ensureVersion(existing),
       refreshed,
+      existing.metadata?.restoreId ?? null,
     );
     return result.committed
       ? {

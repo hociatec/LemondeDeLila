@@ -42,3 +42,33 @@ it('keeps bot participants in pending and submitted lists without revealing secr
     '-2': { card: 'bot-card' },
   });
 });
+
+it('derives the global stage independently of persisted session key order', () => {
+  const closedVote = {
+    id: 'closed-vote',
+    kind: 'vote' as const,
+    participantPlayerIds: [1],
+    valuesByPlayerId: { '1': 'yes' },
+    allowedValues: ['yes'],
+    secret: false,
+    closed: true,
+    revealed: false,
+  };
+  const openVote = {
+    ...closedVote,
+    id: 'open-vote',
+    valuesByPlayerId: {},
+    closed: false,
+  };
+  const state = {
+    sessions: { closed: closedVote, open: openVote },
+    judges: {},
+  };
+  const reordered = {
+    ...state,
+    sessions: { open: openVote, closed: closedVote },
+  };
+
+  expect(projectSubmissions(state, 1).stage).toBe('voting');
+  expect(projectSubmissions(reordered, 1).stage).toBe('voting');
+});

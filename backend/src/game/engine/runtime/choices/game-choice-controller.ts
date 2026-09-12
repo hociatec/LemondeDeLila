@@ -11,11 +11,11 @@ export type ChoiceTimeout<TValue> = {
   value?: TValue;
 };
 
-export type ChoiceOptions<TValue> = {
+export type ChoiceOptions<TValue, TResult = TValue> = {
   id: string;
   player: number;
   options: readonly TValue[];
-  timeout?: ChoiceTimeout<TValue>;
+  timeout?: ChoiceTimeout<TResult>;
   label?: (value: TValue) => string;
   data?: Readonly<object>;
 };
@@ -34,7 +34,10 @@ export class GameChoiceController {
   }
 
   many<TValue>(
-    options: ChoiceOptions<TValue> & { min?: number; max?: number },
+    options: ChoiceOptions<TValue, readonly TValue[]> & {
+      min?: number;
+      max?: number;
+    },
   ): void {
     this.create(
       'many',
@@ -93,7 +96,7 @@ export class GameChoiceController {
     );
   }
 
-  ordering<TValue>(options: ChoiceOptions<TValue>): void {
+  ordering<TValue>(options: ChoiceOptions<TValue, readonly TValue[]>): void {
     this.create(
       'ordering',
       options,
@@ -106,7 +109,12 @@ export class GameChoiceController {
     this.create('vote', options, 1, 1);
   }
 
-  players(options: ChoiceOptions<number> & { min: number; max: number }): void {
+  players(
+    options: ChoiceOptions<number, readonly number[]> & {
+      min: number;
+      max: number;
+    },
+  ): void {
     this.create('players', options, options.min, options.max);
   }
 
@@ -237,7 +245,7 @@ export class GameChoiceController {
       | 'ordering'
       | 'vote'
       | 'confirm',
-    options: ChoiceOptions<TValue>,
+    options: ChoiceOptions<TValue, unknown>,
     min: number,
     max: number,
     mode: { enqueue?: boolean; playerIds?: number[] } = {},

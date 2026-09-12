@@ -7,6 +7,12 @@ import type {
 } from './dto/room-intent.ws.dto';
 import type { PresentedErrorPayload } from '../../../../../platform/serialization/public-api';
 
+export type RoomRealtimeVersion = {
+  streamId: string;
+  sequence: number;
+  snapshot: true;
+};
+
 @Injectable()
 export class RoomGatewayStatePresenter {
   presentStateUpdated(roomId: number) {
@@ -17,11 +23,16 @@ export class RoomGatewayStatePresenter {
     };
   }
 
-  presentRoomUpdated(roomId: number, payload: RoomPayload) {
+  presentRoomUpdated(
+    roomId: number,
+    payload: RoomPayload,
+    realtime: RoomRealtimeVersion,
+  ) {
     return {
       type: 'room.updated',
       roomId,
       payload,
+      realtime,
     };
   }
 

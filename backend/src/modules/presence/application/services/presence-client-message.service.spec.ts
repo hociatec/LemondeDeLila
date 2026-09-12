@@ -82,6 +82,43 @@ describe('PresenceClientMessageService', () => {
     expect(presenceChanged).toHaveBeenCalledTimes(1);
   });
 
+  it('routes an explicit presence snapshot request without changing context', async () => {
+    const socket = createSocket();
+    const client = createClient(socket);
+    const presenceSync = jest.fn();
+    const service = new PresenceClientMessageService(
+      chat as unknown as PresenceChatService,
+      { now: () => 1000 },
+    );
+
+    await service.handle(client, JSON.stringify({ type: 'presence-sync' }), {
+      broadcastChat: jest.fn(),
+      presenceChanged: jest.fn(),
+      presenceSync,
+    });
+
+    expect(presenceSync).toHaveBeenCalledWith(socket);
+    expect(client.contextLocked).toBe(false);
+  });
+
+  it('routes an explicit chat history resynchronization', async () => {
+    const socket = createSocket();
+    const client = createClient(socket);
+    const chatSync = jest.fn().mockResolvedValue(undefined);
+    const service = new PresenceClientMessageService(
+      chat as unknown as PresenceChatService,
+      { now: () => 1000 },
+    );
+
+    await service.handle(client, JSON.stringify({ type: 'chat-sync' }), {
+      broadcastChat: jest.fn(),
+      presenceChanged: jest.fn(),
+      chatSync,
+    });
+
+    expect(chatSync).toHaveBeenCalledWith(socket);
+  });
+
   it('diffuse un message chat accepté', async () => {
     const socket = createSocket();
     const client = createClient(socket);
@@ -151,6 +188,8 @@ it('rejects oversized UTF-8, nested injection and deep payloads before chat disp
   for (let i = 0; i < 33; i++) nested = { child: nested };
   for (const raw of [
     '{"type":"chat-send","text":"hello","extra":{"__proto__":{}}}',
+    JSON.stringify({ type: 'chat-send', text: 'hello', extra: true }),
+    JSON.stringify({ type: 'unknown-command' }),
     JSON.stringify({ type: 'chat-send', text: 'é'.repeat(9000) }),
     JSON.stringify({ type: 'chat-send', extra: nested }),
   ])

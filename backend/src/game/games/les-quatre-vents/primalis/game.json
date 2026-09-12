@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "comet",
+      "spaces": 11
+    }
+  ],
+  "components": [],
+  "setup": {
+    "resources": {
+      "herbivores": 2,
+      "carnivores": 0,
+      "eggs": 0,
+      "leaves": 2
+    },
+    "counters": {
+      "primalis.danger-amplified": 0
+    },
+    "startRound": false
+  },
+  "resourceIds": ["herbivores", "carnivores", "eggs", "leaves"],
+  "shortcuts": [
+    { "key": "P", "type": "interface", "id": "position" },
+    { "key": "S", "type": "interface", "id": "score" },
+    { "key": "V", "type": "interface", "id": "ressources" }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": ["roll"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "ecosystem-race-roll",
+      "documentation": "Lance le dé, collecte des ressources et avance la comète."
+    }
+  },
+  "victory": {
+    "kind": "by-ecosystem-race"
+  },
+  "ecosystemRace": {
+    "trackId": "comet",
+    "diceId": "main",
+    "tiles": {
+      "$content": "content/catalogue.json#/tiles"
+    },
+    "faces": ["herbivore", "carnivore", "egg", "leaf", "danger", "herbivore"],
+    "resources": {
+      "herbivores": "herbivores",
+      "carnivores": "carnivores",
+      "eggs": "eggs",
+      "leaves": "leaves"
+    },
+    "dangerCounter": "primalis.danger-amplified",
+    "finishReason": "comet-impact",
+    "resolvedEvent": "primalis.roll.resolved",
+    "eventNamespace": "primalis"
+  }
+}

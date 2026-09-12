@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  OnModuleInit,
+} from '@nestjs/common';
 import {
   ROLE_DEFINITION_REPOSITORY,
   type RoleDefinitionRepository,
@@ -60,9 +65,7 @@ export class AdminRoleDefinitionsCatalogService implements OnModuleInit {
     }
 
     const nextName =
-      update.name === undefined
-        ? current.name
-        : normalizeRoleName(update.name);
+      update.name === undefined ? current.name : normalizeRoleName(update.name);
     if (nextName !== name) {
       const existing = await this.roles.findByName(nextName);
       if (existing) {

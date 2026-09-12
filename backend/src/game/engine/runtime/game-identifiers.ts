@@ -13,7 +13,7 @@ export type TileId = string & { readonly [tileIdBrand]: true };
 export type PlayerMap<TValue> = Record<string, TValue>;
 
 export function playerId(value: number): PlayerId {
-  if (!Number.isSafeInteger(value) || value < 1) {
+  if (!Number.isSafeInteger(value) || value === 0) {
     throw new GamePayloadValidationError(
       `Identifiant de joueur invalide: ${value}`,
     );
@@ -42,10 +42,10 @@ export function playerMap<TValue>(
   }
   if (
     players.some(
-      (player) =>
+      (player: PlayerState) =>
         !player ||
         !Number.isSafeInteger(player.id) ||
-        player.id < 1 ||
+        player.id === 0 ||
         typeof player.username !== 'string' ||
         player.username.length > 255,
     )
@@ -53,7 +53,7 @@ export function playerMap<TValue>(
     throw new GamePayloadValidationError('Joueur invalide');
   }
   return Object.fromEntries(
-    players.map((player) => [
+    players.map((player: PlayerState) => [
       String(player.id),
       structuredClone(
         typeof initial === 'function'

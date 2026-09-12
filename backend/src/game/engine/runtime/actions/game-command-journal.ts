@@ -1,4 +1,5 @@
 import type { GameState } from '../../../core/application/models/game-state.model';
+import { GameActionRejectedError } from '../../../core/domain/errors/game-domain.errors';
 
 const MAX_COMMAND_RECEIPTS = 256;
 
@@ -8,6 +9,8 @@ export type GameCommandReceipt = {
   actionType: string;
   acceptedAtMs: number;
   resultVersion: number;
+  /** Absent on legacy snapshots; their receipt cannot prove an identical retry. */
+  requestFingerprint?: string;
 };
 
 export type GameCommandJournalState = {
@@ -45,6 +48,20 @@ export function recordCommandReceipt(
     ),
     structuredClone(receipt),
   ].slice(-MAX_COMMAND_RECEIPTS);
+}
+
+export function assertMatchingCommandReceipt(
+  receipt: GameCommandReceipt,
+  requestFingerprint: string | undefined,
+): void {
+  // The digest includes both the authoritative actor and the action type.
+  if (
+    !receipt.requestFingerprint ||
+    receipt.requestFingerprint !== requestFingerprint
+  )
+    throw new GameActionRejectedError(
+      'Identifiant de commande déjà utilisé avec un contenu différent ou invérifiable.',
+    );
 }
 
 export function normalizeCommandId(value: unknown): string | null {

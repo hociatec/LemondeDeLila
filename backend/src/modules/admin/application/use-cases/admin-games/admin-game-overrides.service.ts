@@ -27,11 +27,13 @@ export class AdminGameOverridesService {
     if (typeof command.maxPlayers === 'number') {
       update.maxPlayers = normalizePlayerCount(command.maxPlayers);
     }
-    if (typeof command.name === 'string') update.name = normalizeText(command.name, 255);
+    if (typeof command.name === 'string')
+      update.name = normalizeText(command.name, 255);
     if (typeof command.description === 'string') {
       update.description = normalizeText(command.description, 255);
     }
-    if (typeof command.rules === 'string') update.rules = normalizeText(command.rules, 4 * 1024 * 1024);
+    if (typeof command.rules === 'string')
+      update.rules = normalizeText(command.rules, 4 * 1024 * 1024);
     if (
       command.status !== undefined &&
       !['construction', 'beta', 'finished'].includes(command.status)

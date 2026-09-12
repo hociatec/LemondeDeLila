@@ -1,0 +1,21 @@
+{
+  "goods": ["gemmes", "potions", "reliques", "ingredients"],
+  "labels": {
+    "gemmes": "Gemmes",
+    "potions": "Potions",
+    "reliques": "Reliques",
+    "ingredients": "Ingrédients"
+  },
+  "initialPrices": {
+    "gemmes": 5,
+    "potions": 4,
+    "reliques": 7,
+    "ingredients": 3
+  },
+  "rules": {
+    "startingCoins": 12,
+    "maxRounds": 6,
+    "protectCost": 2,
+    "rumorCost": 1
+  }
+}

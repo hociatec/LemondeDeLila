@@ -1,0 +1,280 @@
+
+1. **Migration des jeux restants vers le modèle déclaratif** : seuls certains jeux, notamment Panier Express et Course des Étoiles, démontrent actuellement le modèle 100 % JSON. Les autres jeux contiennent encore du TypeScript spécifique important.
+
+2. **Stress-test du moteur JSON avec un jeu complexe** : migrer un jeu comme `gerard-president`, `sac-a-malices` ou `contes-et-cacahuetes` pour vérifier que le DSL couvre réellement les mécaniques complexes sans créer de primitives spécifiques artificielles.
+
+3. **Réduction du TypeScript spécifique des gros jeux** : chaque gros `rules.ts`, `effects.ts`, `resolution.ts`, `setup-rules.ts`, `rule-bindings.ts` doit être audité pour identifier les mécaniques encore génériques.
+
+4. **Suppression progressive des `rule-bindings.ts` génériques** : lorsqu’un binding ne fait qu’associer un événement à un effet, cette association devrait pouvoir être déclarée directement dans `game.json`.
+
+5. **Suppression progressive des `setup-rules.ts` génériques** : distribution, placement, ressources initiales, ordre de jeu et sélection de pion standards doivent être déclaratifs.
+
+6. **Déplacement des effets standards vers le JSON** : un effet composé uniquement de `movement`, `cards`, `score`, `resources`, `inventory`, `choice`, etc. ne devrait pas nécessiter un `effects.ts` spécifique.
+
+7. **Généralisation des conditions de victoire standards** : arrivée, score cible, nombre de manches, dernier joueur, ressources, etc. doivent pouvoir être déclarés sans TypeScript.
+
+8. **Généralisation complète des fins de tour et fins de manche** : un jeu ne doit pas réimplémenter la plomberie lifecycle standard.
+
+9. **Généralisation des selectors de joueurs** : self, next, previous, opponent, leader, last, random, chosen player, etc.
+
+10. **Généralisation des sélections de cartes** : deck/hand/discard, filtres, min/max, target, timeout et fallback.
+
+11. **Généralisation des séquences répétitives** : les motifs du type `draw → choose → resolve → discard → completeTurn` doivent devenir recipes/patterns lorsqu’ils sont communs.
+
+12. **Généralisation des échanges** : les échanges standards de cartes, ressources ou inventory doivent appartenir aux composants moteur appropriés.
+
+13. **Poursuite de la réduction des validations de contenu spécifiques** : les `isCard`, `isTile`, gardes et schemas répétitifs doivent utiliser des combinators génériques lorsque leur structure est réellement commune.
+
+14. **Modularisation des gros `game.json`** : Panier Express prouve que le 100 % JSON fonctionne, mais un `game.json` de plusieurs milliers de lignes n’est pas une cible auteur optimale.
+
+15. **Séparation composition/contenu** : viser plutôt :
+
+```text
+game.json
+content/
+  board.json
+  pawns.json
+  cards.json
+  quizzes.json
+  products.json
+```
+
+tout en compilant l’ensemble comme une seule définition.
+
+16. **Support uniforme des références entre fichiers JSON** : `game.json` doit pouvoir référencer proprement les différents contenus sans connaissance filesystem dans le jeu.
+
+17. **Validation complète des références JSON** : deck IDs, tracks, resources, cards, pawns, phases, actions, effects et autres références doivent être résolues avant démarrage.
+
+18. **Validation des capabilities JSON** : impossible de déclarer `cards.draw` sans Cards, `movement.move` sans Movement, etc.
+
+19. **Schema canonique des effects JSON** : conserver une union discriminée stable et fermée.
+
+20. **Schema canonique des conditions JSON** : `all`, `any`, `not`, comparaisons, resources, score, position, ownership, inventory, etc.
+
+21. **Schema canonique des selectors/targets JSON** : éviter les conventions différentes selon les jeux.
+
+22. **Ne jamais introduire de JavaScript arbitraire dans les JSON** : pas de `eval`, expressions textuelles ou pseudo-code.
+
+23. **Empêcher le DSL JSON de devenir un langage généraliste** : privilégier des primitives métier expressives aux constructions `foreach/variables/scopes` excessivement génériques.
+
+24. **Ergonomie auteur du DSL** : un JSON valide techniquement mais extrêmement difficile à lire n’atteint pas complètement l’objectif de simplification des jeux.
+
+25. **Politique réelle de `schemaVersion`** : définir exactement quand elle change et comment une ancienne définition est migrée/refusée.
+
+26. **Politique réelle de `definitionVersion`** : définir ce qui constitue une modification des règles et comment elle affecte une partie existante.
+
+27. **Politique réelle de `contentVersion`** : définir ce qui constitue une modification du contenu.
+
+28. **Compatibilité snapshots ↔ definitionVersion** : une ancienne partie doit savoir quelle définition elle utilisait.
+
+29. **Compatibilité snapshots ↔ contentVersion** : une partie sauvegardée ne doit pas utiliser silencieusement le nouveau contenu après déploiement.
+
+30. **Conservation ou migration des anciennes versions de contenu** : tant qu’une partie sauvegardée les référence.
+
+31. **Migration des snapshots** : prévoir un mécanisme explicite lorsqu’une nouvelle version runtime rend un ancien state incompatible.
+
+32. **Validation complète avant restauration** : state, components, scheduler, effects, content references et versions.
+
+33. **Immutabilité réelle de `CompiledGameDefinition`** : garantir techniquement que la définition compilée partagée ne peut pas être mutée.
+
+34. **Isolation du state entre parties** : aucune référence mutable provenant du contenu ou du state initial ne doit être partagée entre deux parties.
+
+35. **Sérialisabilité totale des snapshots** : aucune closure, fonction, instance non sérialisable ou structure sans codec explicite.
+
+36. **Déterminisme des collections** : lorsqu’un ordre influence le gameplay, cet ordre doit être explicite.
+
+37. **Déterminisme des selectors aléatoires** : toujours passer par le RNG moteur.
+
+38. **Tie-breakers explicites** : aucun classement ne doit dépendre accidentellement de l’ordre d’une collection ou d’une query DB.
+
+39. **Validation des IDs à compilation** : components, effects, automatic rules, cards, tiles, etc. doivent être uniques dans leur scope.
+
+40. **Validation complète des phases** : transitions, phases inconnues et phases terminales.
+
+41. **Protection contre les boucles d’automatic rules** : une définition JSON ne doit pas pouvoir créer une boucle infinie incontrôlée.
+
+42. **Atomicité des mutations du moteur** : une erreur en milieu de résolution ne doit jamais laisser un state partiellement modifié.
+
+43. **Séparation mutation déterministe / I/O** : aucune opération réseau/DB/queue irréversible avant commit logique de la mutation.
+
+44. **Ordre des effects explicitement défini** : particulièrement lorsque plusieurs effects automatiques sont déclenchés.
+
+45. **Gestion des échecs des effects infrastructure** : définir retry, compensation ou abandon selon leur nature.
+
+46. **CI anti-cycle** : maintenant que les cycles TypeScript ont disparu, transformer `0 cycle` en invariant automatique.
+
+47. **CI des frontières des jeux** : conserver automatiquement `0 node:*`, `0 Nest`, `0 TypeORM`, `0 core/runtime direct`, `0 filesystem`.
+
+48. **CI des `contracts/`** : empêcher que les anciens dossiers redeviennent des fourre-tout avec models/records/repositories.
+
+49. **CI des `public-api` métier** : empêcher les futurs réexports directs d’`infrastructure/**`.
+
+50. **CI des dépendances de couches moteur** : empêcher une primitive basse de recommencer à dépendre du compiler/runtime supérieur.
+
+51. **Réduction/minimalité des ports inter-domaines** : maintenant que les imports sont propres, vérifier qu’un consumer ne reçoit pas un repository entier lorsqu’un reader spécialisé suffit.
+
+52. **Réévaluation des repositories exposés par les `public-api`** : notamment User, Messaging, Social, Bot, Presence et Room.
+
+53. **Ne pas reconstruire une règle d’un domaine depuis un autre domaine** : demander une capability explicite au domaine propriétaire.
+
+54. **Séparation API métier / composition Nest** : conserver une distinction nette entre ce qu’un bounded context offre fonctionnellement et ce que le composition root doit importer pour câbler Nest.
+
+55. **Garder les adapters de `app/boundaries` sans logique métier** : wiring uniquement.
+
+56. **Supprimer les wrappers devenus pass-through** : après les différents refactors de ports/adapters.
+
+57. **Événements inter-domaines critiques fiables** : si certains nécessitent une garantie transactionnelle, mettre en place outbox/inbox ou mécanisme équivalent.
+
+58. **Idempotence des consumers** : un event délivré deux fois ne doit pas appliquer deux fois la mutation.
+
+59. **Versionnement des événements durables** : event ID + schema version lorsque nécessaire.
+
+60. **Ne jamais utiliser une Entity ORM comme event payload public**.
+
+61. **Idempotence des jobs BullMQ/scheduler** : un retry ne doit pas dupliquer une mutation.
+
+62. **Détection des jobs obsolètes** : notamment après restore/reset/end game.
+
+63. **Réconciliation scheduler après restauration** : un ancien job ne doit pas s’appliquer au nouvel état par erreur.
+
+64. **Politique de concurrence par partie** : sérialisation, lock ou optimistic concurrency clairement définie.
+
+65. **Protection contre stale writes** : un ancien state ne doit pas écraser une version plus récente.
+
+66. **Robustesse des locks distribués** : timeout, crash du holder, stale lock, multi-instance.
+
+67. **Version/sequence realtime** : permettre au client de détecter les états arrivant hors ordre.
+
+68. **Resynchronisation realtime complète** : le client doit pouvoir récupérer un snapshot cohérent après perte de messages.
+
+69. **Idempotence des commandes WS** : même request ID + payload différent doit être détecté.
+
+70. **Authorization métier sur chaque commande sensible** : authentification socket seule insuffisante.
+
+71. **Identité serveur prioritaire** : ne jamais faire confiance à un `userId` client lorsque l’identité est connue via JWT/session.
+
+72. **Projection client en whitelist** : ne jamais sérialiser le state complet puis supprimer les secrets.
+
+73. **Visibilité générique des données cachées** : cards/hands/private choices doivent être protégés par le moteur.
+
+74. **Isolation des APIs debug/snapshot** : jamais accessibles à un joueur standard.
+
+75. **Horloge métier obligatoire partout où le temps influence une règle** : continuer à maintenir cette discipline sur les futurs services.
+
+76. **Séparer BusinessClock et mesure technique de performance**.
+
+77. **TTL métier nommés et centralisés** : éviter les constantes temporelles magiques dispersées.
+
+78. **Presence multi-instance** : garantir expiration, reconnexion, nettoyage des états fantômes et convergence.
+
+79. **Ne pas utiliser Redis Pub/Sub comme transport fiable pour un événement critique**.
+
+80. **Caches non sources de vérité** : une panne du cache ne doit pas modifier la vérité métier.
+
+81. **Uploads bornés** : taille, durée de traitement et consommation mémoire.
+
+82. **Validation réelle du contenu uploadé** : pas seulement MIME/extension fournis par le client.
+
+83. **Publication atomique des fichiers/releases** : jamais d’artefact partiellement publié.
+
+84. **Intégrité des releases** : checksum/hash lorsque pertinent.
+
+85. **Gestion des anciennes releases encore référencées**.
+
+86. **Locks filesystem uniquement locaux** : ne jamais les considérer comme garantie distribuée.
+
+87. **Redaction des logs** : tokens, secrets, cookies et données sensibles.
+
+88. **Cardinalité maîtrisée des métriques** : éviter userId/gameId/roomId comme labels non bornés.
+
+89. **Liveness/readiness distinctes**.
+
+90. **Graceful shutdown complet** : listeners, commandes, workers, WS, DB, Redis et opérations critiques.
+
+91. **Rate limiting des surfaces abusables** : login, chat, invitations, uploads, commandes coûteuses.
+
+92. **Rate limiting compatible multi-instance lorsque nécessaire**.
+
+93. **Rotation/révocation des refresh tokens selon le modèle de sécurité**.
+
+94. **Aucun secret critique avec fallback permissif en production**.
+
+95. **Bornes des payloads externes** : taille/profondeur JSON, champs inconnus, nombres invalides.
+
+96. **Validation runtime des frontières externes** : ne pas se contenter des types TypeScript.
+
+97. **Repositories sans fuite TypeORM/QueryBuilder vers application/domain**.
+
+98. **Read models dédiés pour les lectures complexes** : éviter de reconstruire inutilement des aggregates.
+
+99. **Ownership unique des tables/entities** : chaque donnée persistence doit avoir un bounded context propriétaire.
+
+100. **Relations ORM bidirectionnelles uniquement lorsqu’elles sont réellement nécessaires**.
+
+101. **Surveillance des N+1** sur les relations importantes.
+
+102. **Migrations DB autonomes** : ne pas dépendre du code métier courant.
+
+103. **Migrations déjà publiées immuables**.
+
+104. **Migrations lourdes conçues pour limiter locks et transactions longues**.
+
+105. **Retries infrastructure sûrs pour les opérations non idempotentes**.
+
+106. **`shared` doit rester minimal** : les nouvelles abstractions de gameplay vont dans le moteur, pas dans `shared`.
+
+107. **Éliminer les abstractions sans valeur** : éviter l’over-engineering produit par la chasse à la dette zéro.
+
+108. **Supprimer les wrappers/facades qui n’apportent ni frontière, ni politique, ni transformation**.
+
+109. **Continuer à challenger les gros fichiers `support.ts`, `helper.ts`, `manager.ts`** lorsqu’ils cachent plusieurs responsabilités.
+
+110. **Utiliser des unions discriminées pour les options conditionnelles complexes** afin d’éviter le retour des assertions `!`.
+
+111. **Convention stable `Entity / Model / Record / DTO / Command / Query / Port / Adapter`**.
+
+112. **Convention stable `null` / `undefined` aux frontières externes**.
+
+113. **Ne jamais transformer silencieusement une date invalide en “maintenant”**.
+
+114. **Invariants Resources centralisés dans Economy/Resources**.
+
+115. **Invariants Inventory centralisés dans Inventory**.
+
+116. **Invariants Cards/Ownership centralisés dans leurs kits**.
+
+117. **Invariants Movement centralisés dans Movement**.
+
+118. **Invariants Score/Ranking centralisés dans leurs composants**.
+
+119. **Definition of Done d’un nouveau jeu** : zéro infrastructure, zéro mécanique générique recodée, contenu validé/versionné, SDK/JSON uniquement.
+
+120. **Definition of Done d’une nouvelle primitive moteur** : véritablement générique, schema/validation/compiler/runtime cohérents et plusieurs usages réels lorsque pertinent.
+
+121. **Audit de duplication structurelle entre les jeux restants** : pas uniquement copier/coller exact.
+
+122. **Suivi du ratio déclaratif / TypeScript par jeu** : détecter immédiatement un jeu qui recommence à accumuler de la plomberie.
+
+123. **Suppression des allowlists temporaires une fois les migrations terminées**.
+
+124. **Suppression des anciennes APIs/loaders/adapters après migration complète**.
+
+125. **Passe finale dead code** après migration des jeux.
+
+126. **Passe finale exports publics inutiles**.
+
+127. **Passe finale state ownership**.
+
+128. **Passe finale sérialisabilité des states/snapshots**.
+
+129. **Passe finale déterminisme**.
+
+130. **Passe finale versionnement/compatibilité**.
+
+131. **Passe finale sécurité des frontières externes**.
+
+132. **Passe finale observabilité et comportement de production**.
+
+133. **Migrer suffisamment de jeux complexes pour démontrer que le moteur JSON est réellement général**, et pas seulement adapté à Panier Express/Course des Étoiles.
+
+134. **Atteindre le test final du moteur** : un nouveau jeu n’introduisant aucune mécanique nouvelle doit pouvoir être créé avec uniquement `manifest.json`, `game.json` et ses fichiers de contenu JSON.

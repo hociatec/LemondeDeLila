@@ -1,36 +1,20 @@
-import {
-  BotMinimumParticipantsError,
-  BotRoomAlreadyStartedError,
-  BotRoomFullError,
-  BotRoomOwnerRequiredError,
-} from '../../errors/bot-application.errors';
-import type { BotManagedRoomRecord } from '../../read-models/bot-room.record';
 import { BotRoomPolicyService } from './bot-room-policy.service';
+import type { BotMutationDecision } from '../../models/bot-mutation.model';
 
-describe('BotRoomPolicyService', () => {
-  const room = (overrides: Partial<BotManagedRoomRecord> = {}) =>
-    ({
-      ownerId: 1,
-      maxPlayers: 4,
-      status: 'open',
-      startedAt: null,
-      ...overrides,
-    }) as BotManagedRoomRecord;
-  const policy = new BotRoomPolicyService();
+it.each<[BotMutationDecision, string]>([
+  ['room-not-found', 'BOT_ROOM_NOT_FOUND'],
+  ['owner-required', 'BOT_ROOM_OWNER_REQUIRED'],
+  ['room-started', 'BOT_ROOM_ALREADY_STARTED'],
+  ['room-full', 'BOT_ROOM_FULL'],
+  ['minimum-participants', 'BOT_MINIMUM_PARTICIPANTS'],
+])('preserves the Bot error contract for %s', (decision, code) => {
+  expect(() => new BotRoomPolicyService().requireAllowed(decision)).toThrow(
+    expect.objectContaining({ code }),
+  );
+});
 
-  it('enforces owner, room lifecycle and capacity', () => {
-    expect(() => policy.ensureOwner(room(), 2)).toThrow(
-      BotRoomOwnerRequiredError,
-    );
-    expect(() => policy.ensureRoomOpen(room({ status: 'started' }))).toThrow(
-      BotRoomAlreadyStartedError,
-    );
-    expect(() => policy.ensureCapacity(room(), 3, 1)).toThrow(BotRoomFullError);
-  });
-
-  it('keeps at least two participants when removing a bot after start', () => {
-    expect(() =>
-      policy.ensureStartedRoomCanRemoveBot(room({ status: 'started' }), 1, 1),
-    ).toThrow(BotMinimumParticipantsError);
-  });
+it('accepts the owning domain permission', () => {
+  expect(() =>
+    new BotRoomPolicyService().requireAllowed('allowed'),
+  ).not.toThrow();
 });

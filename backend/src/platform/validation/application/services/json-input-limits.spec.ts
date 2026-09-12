@@ -10,6 +10,43 @@ class TextPayload {
 }
 
 describe('untrusted JSON boundaries', () => {
+  it('rejects instances, accessors and non-JSON array properties without executing them', () => {
+    const getter = jest.fn(() => 'secret');
+    class Entity {
+      password = 'private';
+    }
+    class CustomArray extends Array<number> {}
+    for (const value of [
+      new Entity(),
+      new CustomArray(),
+      new Array(2),
+      Object.defineProperty({}, 'password', { get: getter, enumerable: true }),
+      Object.assign([1], { extra: true }),
+      Object.defineProperty({}, 'hidden', { value: true }),
+    ])
+      expect(
+        isBoundedJsonInput(value, { allowUndefinedProperties: true }),
+      ).toBe(false);
+    expect(getter).not.toHaveBeenCalled();
+  });
+
+  it('allows optional object fields explicitly and repeated references without allowing cycles', () => {
+    const shared = { id: 1, optional: undefined };
+    expect(
+      isBoundedJsonInput(
+        { left: shared, right: shared },
+        { allowUndefinedProperties: true },
+      ),
+    ).toBe(true);
+    expect(
+      isBoundedJsonInput([undefined], { allowUndefinedProperties: true }),
+    ).toBe(false);
+    const cycle: Record<string, unknown> = {};
+    cycle.self = cycle;
+    expect(isBoundedJsonInput(cycle, { allowUndefinedProperties: true })).toBe(
+      false,
+    );
+  });
   it('normalizes ordinary text while preserving credentials', () => {
     expect(
       normalizeInputStrings({ text: '  Ａ  ', password: '  Ａ  ' }),

@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "2",
+  "category": "Cartes",
+  "world": "VentsDansants",
+  "components": [
+    {
+      "id": "white",
+      "cards": {
+        "$content": "content/cards.json#/whiteCards"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "black",
+      "cards": {
+        "$content": "content/cards.json#/blackCards"
+      },
+      "shuffle": true,
+      "empty": "recycle",
+      "component": "cards.deck"
+    },
+    {
+      "id": "answers",
+      "deck": "black",
+      "initial": 10,
+      "visibility": "owner",
+      "component": "cards.hands"
+    }
+  ],
+  "resourceIds": [],
+  "setup": {},
+  "initialPhase": "play",
+  "phases": {
+    "play": {
+      "actions": [
+        "play_card"
+      ],
+      "transitions": [
+        "judge"
+      ]
+    },
+    "judge": {
+      "actions": [
+        "judge_pick"
+      ],
+      "transitions": [
+        "play"
+      ]
+    }
+  },
+  "actions": {
+    "play_card": {
+      "recipe": "judged-submit-card"
+    },
+    "judge_pick": {
+      "recipe": "judged-pick"
+    }
+  },
+  "victory": {
+    "kind": "by-judged-cards"
+  },
+  "shortcuts": [
+    {
+      "key": "C",
+      "type": "action",
+      "actionType": "play_card"
+    },
+    {
+      "key": "J",
+      "type": "action",
+      "actionType": "judge_pick"
+    }
+  ],
+  "judgedCards": {
+    "judgeId": "absurdissimes.judge",
+    "submissionId": "absurdissimes.answers",
+    "promptDeckId": "white",
+    "answerDeckId": "black",
+    "answerHandId": "answers",
+    "collectingPhase": "play",
+    "judgingPhase": "judge",
+    "scoreToWin": 10,
+    "winningReason": "target-score",
+    "submittedMessage": "absurdissimes.answer.submitted",
+    "revealedEvent": "absurdissimes.submissions.revealed",
+    "botSelection": "random"
+  }
+}

@@ -1,5 +1,6 @@
 export {
   assertPathInside,
+  copyFileAtomic,
   writeFileAtomic,
   writeFileAtomicSync,
 } from './infrastructure/atomic-file.utils';

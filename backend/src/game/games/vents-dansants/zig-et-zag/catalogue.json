@@ -1,0 +1,498 @@
+{
+  "cards": [
+    {
+      "id": "banane-libellule",
+      "name": "Libellule (Banane)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 2
+    },
+    {
+      "id": "banane-souris",
+      "name": "Souris (Banane)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 3
+    },
+    {
+      "id": "banane-poisson",
+      "name": "Poisson (Banane)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 4
+    },
+    {
+      "id": "banane-poule",
+      "name": "Poule (Banane)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 5
+    },
+    {
+      "id": "banane-lezard",
+      "name": "Lézard (Banane)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 6
+    },
+    {
+      "id": "banane-chevre",
+      "name": "Chèvre (Banane)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 7
+    },
+    {
+      "id": "banane-chat",
+      "name": "Chat (Banane)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 8
+    },
+    {
+      "id": "banane-dauphin",
+      "name": "Dauphin (Banane)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 9
+    },
+    {
+      "id": "banane-loup",
+      "name": "Loup (Banane)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 10
+    },
+    {
+      "id": "banane-bergere",
+      "name": "Bergère (Banane)",
+      "type": "figure",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 11
+    },
+    {
+      "id": "banane-marin",
+      "name": "Marin (Banane)",
+      "type": "figure",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 12
+    },
+    {
+      "id": "banane-parachutiste",
+      "name": "Parachutiste (Banane)",
+      "type": "figure",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 13
+    },
+    {
+      "id": "banane-astronaute",
+      "name": "Astronaute (Banane)",
+      "type": "figure",
+      "color": "vert-sauge",
+      "family": "banane",
+      "value": 14
+    },
+    {
+      "id": "dentifrice-libellule",
+      "name": "Libellule (Dentifrice)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 2
+    },
+    {
+      "id": "dentifrice-souris",
+      "name": "Souris (Dentifrice)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 3
+    },
+    {
+      "id": "dentifrice-poisson",
+      "name": "Poisson (Dentifrice)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 4
+    },
+    {
+      "id": "dentifrice-poule",
+      "name": "Poule (Dentifrice)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 5
+    },
+    {
+      "id": "dentifrice-lezard",
+      "name": "Lézard (Dentifrice)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 6
+    },
+    {
+      "id": "dentifrice-chevre",
+      "name": "Chèvre (Dentifrice)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 7
+    },
+    {
+      "id": "dentifrice-chat",
+      "name": "Chat (Dentifrice)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 8
+    },
+    {
+      "id": "dentifrice-dauphin",
+      "name": "Dauphin (Dentifrice)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 9
+    },
+    {
+      "id": "dentifrice-loup",
+      "name": "Loup (Dentifrice)",
+      "type": "simple",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 10
+    },
+    {
+      "id": "dentifrice-bergere",
+      "name": "Bergère (Dentifrice)",
+      "type": "figure",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 11
+    },
+    {
+      "id": "dentifrice-marin",
+      "name": "Marin (Dentifrice)",
+      "type": "figure",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 12
+    },
+    {
+      "id": "dentifrice-parachutiste",
+      "name": "Parachutiste (Dentifrice)",
+      "type": "figure",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 13
+    },
+    {
+      "id": "dentifrice-astronaute",
+      "name": "Astronaute (Dentifrice)",
+      "type": "figure",
+      "color": "vert-sauge",
+      "family": "dentifrice",
+      "value": 14
+    },
+    {
+      "id": "pantoufle-libellule",
+      "name": "Libellule (Pantoufle)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 2
+    },
+    {
+      "id": "pantoufle-souris",
+      "name": "Souris (Pantoufle)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 3
+    },
+    {
+      "id": "pantoufle-poisson",
+      "name": "Poisson (Pantoufle)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 4
+    },
+    {
+      "id": "pantoufle-poule",
+      "name": "Poule (Pantoufle)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 5
+    },
+    {
+      "id": "pantoufle-lezard",
+      "name": "Lézard (Pantoufle)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 6
+    },
+    {
+      "id": "pantoufle-chevre",
+      "name": "Chèvre (Pantoufle)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 7
+    },
+    {
+      "id": "pantoufle-chat",
+      "name": "Chat (Pantoufle)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 8
+    },
+    {
+      "id": "pantoufle-dauphin",
+      "name": "Dauphin (Pantoufle)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 9
+    },
+    {
+      "id": "pantoufle-loup",
+      "name": "Loup (Pantoufle)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 10
+    },
+    {
+      "id": "pantoufle-bergere",
+      "name": "Bergère (Pantoufle)",
+      "type": "figure",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 11
+    },
+    {
+      "id": "pantoufle-marin",
+      "name": "Marin (Pantoufle)",
+      "type": "figure",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 12
+    },
+    {
+      "id": "pantoufle-parachutiste",
+      "name": "Parachutiste (Pantoufle)",
+      "type": "figure",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 13
+    },
+    {
+      "id": "pantoufle-astronaute",
+      "name": "Astronaute (Pantoufle)",
+      "type": "figure",
+      "color": "bleu-ardoise",
+      "family": "pantoufle",
+      "value": 14
+    },
+    {
+      "id": "bougie-libellule",
+      "name": "Libellule (Bougie)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 2
+    },
+    {
+      "id": "bougie-souris",
+      "name": "Souris (Bougie)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 3
+    },
+    {
+      "id": "bougie-poisson",
+      "name": "Poisson (Bougie)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 4
+    },
+    {
+      "id": "bougie-poule",
+      "name": "Poule (Bougie)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 5
+    },
+    {
+      "id": "bougie-lezard",
+      "name": "Lézard (Bougie)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 6
+    },
+    {
+      "id": "bougie-chevre",
+      "name": "Chèvre (Bougie)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 7
+    },
+    {
+      "id": "bougie-chat",
+      "name": "Chat (Bougie)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 8
+    },
+    {
+      "id": "bougie-dauphin",
+      "name": "Dauphin (Bougie)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 9
+    },
+    {
+      "id": "bougie-loup",
+      "name": "Loup (Bougie)",
+      "type": "simple",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 10
+    },
+    {
+      "id": "bougie-bergere",
+      "name": "Bergère (Bougie)",
+      "type": "figure",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 11
+    },
+    {
+      "id": "bougie-marin",
+      "name": "Marin (Bougie)",
+      "type": "figure",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 12
+    },
+    {
+      "id": "bougie-parachutiste",
+      "name": "Parachutiste (Bougie)",
+      "type": "figure",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 13
+    },
+    {
+      "id": "bougie-astronaute",
+      "name": "Astronaute (Bougie)",
+      "type": "figure",
+      "color": "bleu-ardoise",
+      "family": "bougie",
+      "value": 14
+    },
+    {
+      "id": "joker-montgolfiere",
+      "name": "Montgolfière",
+      "type": "joker",
+      "color": "vert-sauge",
+      "value": 15,
+      "allowedFamilies": [
+        "banane",
+        "dentifrice"
+      ]
+    },
+    {
+      "id": "joker-fusee",
+      "name": "Fusée",
+      "type": "joker",
+      "color": "bleu-ardoise",
+      "value": 15,
+      "allowedFamilies": [
+        "pantoufle",
+        "bougie"
+      ]
+    }
+  ],
+  "cardIds": [
+    "banane-libellule",
+    "banane-souris",
+    "banane-poisson",
+    "banane-poule",
+    "banane-lezard",
+    "banane-chevre",
+    "banane-chat",
+    "banane-dauphin",
+    "banane-loup",
+    "banane-bergere",
+    "banane-marin",
+    "banane-parachutiste",
+    "banane-astronaute",
+    "dentifrice-libellule",
+    "dentifrice-souris",
+    "dentifrice-poisson",
+    "dentifrice-poule",
+    "dentifrice-lezard",
+    "dentifrice-chevre",
+    "dentifrice-chat",
+    "dentifrice-dauphin",
+    "dentifrice-loup",
+    "dentifrice-bergere",
+    "dentifrice-marin",
+    "dentifrice-parachutiste",
+    "dentifrice-astronaute",
+    "pantoufle-libellule",
+    "pantoufle-souris",
+    "pantoufle-poisson",
+    "pantoufle-poule",
+    "pantoufle-lezard",
+    "pantoufle-chevre",
+    "pantoufle-chat",
+    "pantoufle-dauphin",
+    "pantoufle-loup",
+    "pantoufle-bergere",
+    "pantoufle-marin",
+    "pantoufle-parachutiste",
+    "pantoufle-astronaute",
+    "bougie-libellule",
+    "bougie-souris",
+    "bougie-poisson",
+    "bougie-poule",
+    "bougie-lezard",
+    "bougie-chevre",
+    "bougie-chat",
+    "bougie-dauphin",
+    "bougie-loup",
+    "bougie-bergere",
+    "bougie-marin",
+    "bougie-parachutiste",
+    "bougie-astronaute",
+    "joker-montgolfiere",
+    "joker-fusee"
+  ]
+}

@@ -1,3 +1,5 @@
+import { assertGameValue } from './numeric-invariants';
+
 export type RankingCriterion = {
   value: (playerId: number) => number;
   direction?: 'asc' | 'desc';
@@ -15,6 +17,15 @@ export class GameRankingController {
     ...criteria: readonly RankingCriterion[]
   ): RankingEntry[] {
     if (
+      criteria.some(
+        (criterion) =>
+          criterion.direction !== undefined &&
+          criterion.direction !== 'asc' &&
+          criterion.direction !== 'desc',
+      )
+    )
+      throw new GameRuleViolationError('RANKING_DIRECTION_INVALID');
+    if (
       new Set(playerIds).size !== playerIds.length ||
       playerIds.some((id) => !Number.isSafeInteger(id) || id === 0)
     ) {
@@ -24,13 +35,8 @@ export class GameRankingController {
       playerId,
       values: criteria.map((criterion) => criterion.value(playerId)),
     }));
-    if (
-      entries.some((entry) =>
-        entry.values.some((value) => !Number.isFinite(value)),
-      )
-    ) {
-      throw new GameRuleViolationError('RANKING_CRITERION_INVALID');
-    }
+    for (const entry of entries)
+      for (const value of entry.values) assertGameValue(value);
     entries.sort((left, right) => {
       for (const [index, criterion] of criteria.entries()) {
         const factor = criterion.direction === 'asc' ? 1 : -1;

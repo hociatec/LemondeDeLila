@@ -57,7 +57,11 @@ export function projectVisibility(
       projected[key] =
         viewerPlayerId == null
           ? {}
-          : { [String(viewerPlayerId)]: byPlayer[String(viewerPlayerId)] };
+          : {
+              [String(viewerPlayerId)]: structuredClone(
+                byPlayer[String(viewerPlayerId)],
+              ),
+            };
       continue;
     }
     projected[key] = structuredClone(value);

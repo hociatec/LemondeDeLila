@@ -97,7 +97,9 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
   ): Promise<{ statusCode: number; body: string }> {
     return new Promise((resolve) => {
       const safeTimeoutMs =
-        Number.isSafeInteger(timeoutMs) && timeoutMs >= 1 && timeoutMs <= 120_000
+        Number.isSafeInteger(timeoutMs) &&
+        timeoutMs >= 1 &&
+        timeoutMs <= 120_000
           ? timeoutMs
           : 10_000;
       let settled = false;
@@ -174,7 +176,10 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
       }
       const key = line.slice(0, idx).trim();
       if (key.length > 128) continue;
-      const value = line.slice(idx + 1).trim().slice(0, 4096);
+      const value = line
+        .slice(idx + 1)
+        .trim()
+        .slice(0, 4096);
       out[key] = value;
     }
     return out;

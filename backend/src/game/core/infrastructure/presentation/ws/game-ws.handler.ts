@@ -130,8 +130,8 @@ export class GameWsHandler {
   async action(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const roomId = this.commands.resolveRoomId(payload);
-    await this.rooms.ensureWritable(roomId, user.id);
     return this.queue.run(roomId, async () => {
+      await this.rooms.ensureWritable(roomId, user.id);
       const resolved = await this.realtime.resolve(roomId);
       this.realtime.bind(session, roomId, resolved.gameType);
       const actions = this.rebaseInternalRefreshVersion(

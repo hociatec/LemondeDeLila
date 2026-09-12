@@ -6,17 +6,24 @@ import type {
   SocialUserSummary,
 } from '../../../../application/models/social-user.model';
 
+type UserRow = { id?: unknown; username?: unknown; avatar?: unknown };
+type SearchRow = {
+  id: number;
+  username: string;
+  avatar: string | null;
+  profileVisibility: 'public' | 'friends' | 'private';
+};
+
 @Injectable()
 export class SocialUserTypeormRepository implements SocialUserReader {
   constructor(private readonly dataSource: DataSource) {}
 
   async findById(id: number): Promise<SocialUserSummary | null> {
-    const rows = await this.dataSource.query(
+    const rows = await this.dataSource.query<UserRow[]>(
       'SELECT id, username, avatar FROM users WHERE id = ? LIMIT 1',
       [id],
     );
-    const user = rows[0] as
-      { id?: unknown; username?: unknown; avatar?: unknown } | undefined;
+    const user = rows[0];
     if (!user) return null;
     const userId = toPositiveSafeId(user?.id);
     if (userId === null) {
@@ -41,7 +48,7 @@ export class SocialUserTypeormRepository implements SocialUserReader {
       Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 100) : 50;
     const buildQuery = (accentInsensitive: boolean) =>
       accentInsensitive
-        ? this.dataSource.query(
+        ? this.dataSource.query<SearchRow[]>(
             `SELECT u.id AS id, u.username AS username, u.avatar AS avatar,
               COALESCE(p.visibility, 'public') AS profileVisibility
              FROM users u LEFT JOIN social_profiles p ON p.user_id = u.id
@@ -49,7 +56,7 @@ export class SocialUserTypeormRepository implements SocialUserReader {
              ORDER BY u.username COLLATE utf8mb4_0900_ai_ci ASC, u.id ASC LIMIT ?`,
             [`%${sanitized}%`, excludeUserId, safeLimit],
           )
-        : this.dataSource.query(
+        : this.dataSource.query<SearchRow[]>(
             `SELECT u.id AS id, u.username AS username, u.avatar AS avatar,
               COALESCE(p.visibility, 'public') AS profileVisibility
              FROM users u LEFT JOIN social_profiles p ON p.user_id = u.id
@@ -58,12 +65,7 @@ export class SocialUserTypeormRepository implements SocialUserReader {
             [`%${sanitized.toLowerCase()}%`, excludeUserId, safeLimit],
           );
 
-    let rows: Array<{
-      id: number;
-      username: string;
-      avatar: string | null;
-      profileVisibility: 'public' | 'friends' | 'private';
-    }>;
+    let rows: SearchRow[];
 
     try {
       rows = await buildQuery(true);

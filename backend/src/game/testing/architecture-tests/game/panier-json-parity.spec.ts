@@ -6,8 +6,22 @@ import {
 } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../engine/json/public-api';
 import manifest from '../../../games/les-quatre-vents/panier-express/manifest.json';
-import document from '../../../games/les-quatre-vents/panier-express/game.json';
+import { resolveJsonContent } from '../../../engine/json/public-api';
+import composition from '../../../games/les-quatre-vents/panier-express/game.json';
+import board from '../../../games/les-quatre-vents/panier-express/content/board.json';
+import cards from '../../../games/les-quatre-vents/panier-express/content/cards.json';
+import pawns from '../../../games/les-quatre-vents/panier-express/content/pawns.json';
+import products from '../../../games/les-quatre-vents/panier-express/content/products.json';
+import quizzes from '../../../games/les-quatre-vents/panier-express/content/quizzes.json';
 import reference from '../../fixtures/panier-before-json-parity.json';
+
+const document = resolveJsonContent(composition, {
+  'content/board.json': board,
+  'content/cards.json': cards,
+  'content/pawns.json': pawns,
+  'content/products.json': products,
+  'content/quizzes.json': quizzes,
+});
 
 // Captured from the previous TypeScript rules BEFORE replacing them with JSON.
 it.each(reference)(

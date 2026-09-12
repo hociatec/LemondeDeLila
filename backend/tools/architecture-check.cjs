@@ -404,6 +404,12 @@ function analyzeArchitecture({
         ['domain', 'game'].includes(sourceInfo.component.kind)) {
       for (const origin of exportOrigins(filePath)) {
         const targetInfo = describeFile(origin, contract, root);
+        if (/\.repository\.ts$/.test(targetInfo.relative)) {
+          violations.push(makeViolation(
+            'business-api-repository-export', sourceInfo, targetInfo, null,
+            `Business public entry exposes a persistence repository: ${targetInfo.relative}`,
+          ));
+        }
         if (targetInfo.relative.includes('/infrastructure/') || targetInfo.layer === 'module') {
           violations.push(makeViolation(
             'business-api-infrastructure-export', sourceInfo, targetInfo, null,
@@ -412,10 +418,10 @@ function analyzeArchitecture({
         }
       }
     }
-    if (/(?:^|\/)contracts\/.*\.(?:model|record)\.ts$/.test(sourceInfo.relative)) {
+    if (/(?:^|\/)contracts\/.*\.(?:model|record|repository)\.ts$/.test(sourceInfo.relative)) {
       violations.push(makeViolation(
         'contracts-no-data-model', sourceInfo, null, 'contracts',
-        'Data models and persistence records belong outside contracts directories',
+        'Data models, persistence records and repositories belong outside contracts directories',
       ));
     }
     if (/[-.]reader(?:\.port)?\.ts$/.test(filePath) ||

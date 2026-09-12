@@ -1,7 +1,8 @@
 # Ownership des tables
 
 Inventaire des 26 entités TypeORM déclarées dans `src`, vérifié le 8 septembre
-2026 : chaque nom de table apparaît une seule fois et possède un owner désigné.
+2026, revérifié le 11 septembre par `app/database/typeorm-entities.spec.ts` :
+chaque nom de table apparaît une seule fois et possède un owner désigné.
 L'owner est responsable de son schéma et de ses invariants. Cet inventaire
 n'affirme pas que tous les accès historiques respectent déjà cette frontière :
 en particulier, les accès transverses à `users` restent à migrer.

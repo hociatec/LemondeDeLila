@@ -259,6 +259,72 @@ describe('WxUpdateReleaseService', () => {
     ).toHaveLength(512);
   });
 
+  it('rejects an installer missing its DOS signature', async () => {
+    const installer = validPePayload();
+    installer.writeUInt16LE(0, 0);
+    const installerZipPath = path.join(root, 'missing-dos.exe');
+    await fs.promises.writeFile(installerZipPath, installer);
+    await expect(
+      publishRelease({
+        releaseId: 'missing-dos',
+        version: '1.0.0',
+        sequence: 1,
+        content: validZipPayload('client'),
+        installerZipPath,
+      }),
+    ).rejects.toThrow('Installateur WX invalide');
+    expect(await releases.getLatest()).toBeNull();
+  });
+
+  it('reads a bounded PE header at its declared offset beyond the DOS stub', async () => {
+    const installer = Buffer.alloc(1024);
+    installer.writeUInt16LE(0x5a4d, 0);
+    installer.writeUInt32LE(0x200, 0x3c);
+    installer.writeUInt32LE(0x00004550, 0x200);
+    installer.writeUInt16LE(0x8664, 0x204);
+    installer.writeUInt16LE(1, 0x206);
+    const installerZipPath = path.join(root, 'large-stub.exe');
+    await fs.promises.writeFile(installerZipPath, installer);
+    const manifest = await publishRelease({
+      releaseId: 'large-stub',
+      version: '1.0.0',
+      sequence: 1,
+      content: validZipPayload('client'),
+      installerZipPath,
+    });
+    expect(manifest.installer?.size).toBe(1024);
+  });
+
+  it('rejects bytes changed between validation and staging without replacing the manifest', async () => {
+    await publishRelease({
+      releaseId: 'trusted',
+      version: '1.0.0',
+      sequence: 1,
+      content: validZipPayload('trusted'),
+    });
+    const copy = jest
+      .spyOn(fs.promises, 'copyFile')
+      .mockImplementationOnce(async (_source, destination) => {
+        await fs.promises.writeFile(destination, validZipPayload('modified'));
+      });
+    try {
+      await expect(
+        publishRelease({
+          releaseId: 'changed',
+          version: '1.0.1',
+          sequence: 2,
+          content: validZipPayload('original'),
+        }),
+      ).rejects.toThrow('changé pendant la publication');
+      expect((await releases.getLatest())?.releaseId).toBe('trusted');
+      expect(
+        fs.existsSync(path.join(root, 'artifacts', 'releases', 'changed')),
+      ).toBe(false);
+    } finally {
+      copy.mockRestore();
+    }
+  });
+
   it('publishes an immutable, signed manifest and enforces the minimum version', async () => {
     const archive = path.join(root, 'client.zip');
     const installer = path.join(root, 'installer.zip');
@@ -320,6 +386,22 @@ describe('WxUpdateReleaseService', () => {
       '/releases/1.4.2-release-abc/client-wx-1.4.2-windows-x64.zip',
     );
     expect(manifest.installer?.sha256).toBe(installerSha256);
+    const validator = new WxUpdateArtifactValidatorService();
+    expect(validator.verifyManifest(manifest, 2048)).toBe(true);
+    for (const tampered of [
+      { ...manifest, sequence: manifest.sequence + 1 },
+      { ...manifest, minimumVersion: '9.9.9' },
+      {
+        ...manifest,
+        artifact: { ...manifest.artifact, sha256: '0'.repeat(64) },
+      },
+      {
+        ...manifest,
+        installer: { ...manifest.installer, sha256: '0'.repeat(64) },
+      },
+    ]) {
+      expect(validator.verifyManifest(tampered, 2048)).toBe(false);
+    }
     expect(manifest.installer?.url).toContain(
       '/releases/1.4.2-release-abc/LeMondeDeLilaWX-1.4.2-Setup.exe',
     );
@@ -352,7 +434,7 @@ describe('WxUpdateReleaseService', () => {
     ).rejects.toThrow('Identifiant de release WX invalide');
   });
 
-  it('keeps only the active release and resumes cleanup on an idempotent retry', async () => {
+  it('preserves previously issued artifact URLs across publication and retries', async () => {
     const releasesDir = path.join(root, 'artifacts', 'releases');
     await publishRelease({
       releaseId: '1.4.1-release-old',
@@ -360,7 +442,11 @@ describe('WxUpdateReleaseService', () => {
       sequence: 1,
       content: validZipPayload('old-release'),
     });
-    await fs.promises.writeFile(path.join(releasesDir, 'orphan.tmp'), 'stale');
+    const oldPath = path.join(
+      releasesDir,
+      '1.4.1-release-old',
+      'client-wx-1.4.1-windows-x64.zip',
+    );
 
     const latestInput = {
       releaseId: '1.4.2-release-latest',
@@ -370,16 +456,27 @@ describe('WxUpdateReleaseService', () => {
     };
     await publishRelease(latestInput);
 
-    expect(await fs.promises.readdir(releasesDir)).toEqual([
+    expect((await fs.promises.readdir(releasesDir)).sort()).toEqual([
+      '1.4.1-release-old',
       latestInput.releaseId,
     ]);
-    await fs.promises.mkdir(path.join(releasesDir, 'interrupted-cleanup'));
+    const staging = path.join(root, 'artifacts', '.staging');
+    await fs.promises.mkdir(staging, { recursive: true });
+    await fs.promises.writeFile(
+      path.join(staging, 'interrupted.tmp'),
+      'partial',
+    );
 
     await publishRelease(latestInput);
 
-    expect(await fs.promises.readdir(releasesDir)).toEqual([
+    expect((await fs.promises.readdir(releasesDir)).sort()).toEqual([
+      '1.4.1-release-old',
       latestInput.releaseId,
     ]);
+    expect(await fs.promises.readFile(oldPath)).toEqual(
+      validZipPayload('old-release'),
+    );
+    expect(fs.existsSync(staging)).toBe(false);
     expect((await releases.getLatest())?.releaseId).toBe(latestInput.releaseId);
   });
 });

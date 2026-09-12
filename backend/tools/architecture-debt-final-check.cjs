@@ -39,8 +39,8 @@ for (const file of files) {
   if (/\bFeatureFlag\b|featureFlag|feature-flag/i.test(source)) {
     violations.push(`${relative}: feature flag applicatif non stabilisé`);
   }
-  if (/\b(?:Legacy|Compat(?:ibility)?)(?:Adapter|Api|Service)\b/i.test(source)) {
-    violations.push(`${relative}: adaptateur/API de compatibilité applicatif`);
+  if (/\b(?:Legacy|Compat(?:ibility)?)(?:Adapter|Api|Service|Loader)\b/i.test(source)) {
+    violations.push(`${relative}: adapter, API, service ou loader de compatibilité applicatif`);
   }
 }
 

@@ -21,7 +21,10 @@ export class RedisHealthIndicator extends HealthIndicator {
 
   async check(key: string): Promise<HealthIndicatorResult> {
     if (typeof key !== 'string' || !key.trim() || key.length > 128) {
-      throw new HealthCheckError('Invalid health-check key', this.getStatus('redis', false));
+      throw new HealthCheckError(
+        'Invalid health-check key',
+        this.getStatus('redis', false),
+      );
     }
     const targets = redisReadinessTargets(this.config);
     const urls = [

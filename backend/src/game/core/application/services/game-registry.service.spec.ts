@@ -59,6 +59,7 @@ it('refuses inconsistent catalogue limits before registering a runtime', () => {
 
 it('keeps administrative player limits inside the supported runtime range', async () => {
   const overrides = {
+    reload: jest.fn(async () => undefined),
     getGameOverride: () => ({ minPlayers: 1, maxPlayers: 10 }),
   } as unknown as GameCatalogOverridesService;
   const service = new GameRegistryService(
@@ -74,4 +75,5 @@ it('keeps administrative player limits inside the supported runtime range', asyn
   expect(await service.listGames()).toEqual([
     expect.objectContaining({ minPlayers: 2, maxPlayers: 6 }),
   ]);
+  expect(overrides.reload).toHaveBeenCalledTimes(1);
 });

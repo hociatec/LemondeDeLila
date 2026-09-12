@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import type { GameState } from '../models/game-state.model';
+import { assertSerializableState } from '../../../engine/runtime/state/assert-serializable-state';
 import type {
   GameEvent,
   GameSnapshot,
@@ -47,6 +48,7 @@ export class GameEngineService {
     const typedRoomId = asRoomId(roomId);
     const typedGameId = asGameId(gameType);
     try {
+      assertSerializableState(state);
       this.ensureVersion(state);
       const restored = this.clone(state);
       drainPendingGameEvents(restored);
@@ -139,6 +141,7 @@ export class GameEngineService {
       asRoomId(roomId),
       asGameId(gameType),
       this.ensureVersion(expected),
+      expected.metadata?.restoreId ?? null,
     );
   }
 
@@ -219,6 +222,7 @@ export class GameEngineService {
   }
 
   private clone(state: GameState): GameState {
+    assertSerializableState(state);
     return structuredClone(state);
   }
 }

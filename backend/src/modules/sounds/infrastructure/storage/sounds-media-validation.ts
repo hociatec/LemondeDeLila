@@ -25,7 +25,10 @@ export function readProbedSoundDuration(
   output: string,
   extension: string,
 ): number {
-  if (typeof output !== 'string' || Buffer.byteLength(output, 'utf8') > 256 * 1024) {
+  if (
+    typeof output !== 'string' ||
+    Buffer.byteLength(output, 'utf8') > 256 * 1024
+  ) {
     throw new BadRequestException('Analyse du contenu audio trop volumineuse.');
   }
   let probe: unknown;

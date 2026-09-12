@@ -1,7 +1,8 @@
 import type {
-  BotManagedRoomRecord,
-  BotRoomRecord,
-} from '../read-models/room-bot.record';
+  BotMutationRequest,
+  BotMutationDecision,
+} from '../models/bot-mutation.model';
+import type { BotRoomRecord } from '../read-models/room-bot.record';
 
 export interface CreateBotForRoomInput {
   roomId: number;
@@ -13,7 +14,10 @@ export interface RoomBotsRepository {
     roomId: number,
     operation: (rooms: RoomBotsRepository) => Promise<T>,
   ): Promise<T>;
-  findRoomById(roomId: number): Promise<BotManagedRoomRecord | null>;
+  assessBotMutation(
+    roomId: number,
+    request: BotMutationRequest,
+  ): Promise<BotMutationDecision>;
   listBotsForRoom(roomId: number): Promise<BotRoomRecord[]>;
   createBot(input: CreateBotForRoomInput): Promise<BotRoomRecord>;
   findBotById(roomId: number, botId: number): Promise<BotRoomRecord | null>;

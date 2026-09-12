@@ -112,6 +112,18 @@ function auditFile(file) {
     }
     if (ts.isCallExpression(node)) {
       const method = propertyName(node);
+      if (
+        nPlusOneSensitive &&
+        method === 'map' &&
+        node.arguments.some(
+          argument =>
+            (ts.isArrowFunction(argument) || ts.isFunctionExpression(argument)) &&
+            argument.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.AsyncKeyword) &&
+            containsPersistenceCall(argument),
+        )
+      ) {
+        violations.push(`${name}: accès persistant dans un map async sensible au N+1`);
+      }
       if (method === 'query' && !DIRECT_SQL_ADAPTERS.has(name)) {
         violations.push(`${name}: SQL direct hors adapter dédié`);
       }
@@ -166,6 +178,27 @@ function containsAwait(node) {
   return found;
 }
 
+function containsPersistenceCall(node) {
+  let found = false;
+  const visit = child => {
+    if (
+      ts.isCallExpression(child) &&
+      ts.isPropertyAccessExpression(child.expression) &&
+      ts.isPropertyAccessExpression(child.expression.expression) &&
+      child.expression.expression.expression.kind === ts.SyntaxKind.ThisKeyword &&
+      /(repo|repository|inbox|rooms|users|messages|relationships|participants|stats)/i.test(
+        child.expression.expression.name.text,
+      )
+    ) {
+      found = true;
+      return;
+    }
+    if (!found) ts.forEachChild(child, visit);
+  };
+  visit(node);
+  return found;
+}
+
 function audit() {
   const violations = files().flatMap(auditFile);
   const lockSource = fs.readFileSync(
@@ -214,6 +247,30 @@ function audit() {
     const source = fs.readFileSync(path.join(root, name), 'utf8');
     if (!contract.test(source)) {
       violations.push(`${name}: mapping uniforme des erreurs DB absent`);
+    }
+  }
+  const readModelContracts = [
+    [
+      'modules/room/application/services/state/room-payload.service.ts',
+      /ROOM_PAYLOAD_READER[\s\S]*findPayload\(roomId\)/,
+    ],
+    [
+      'modules/room/infrastructure/persistence/typeorm/repositories/room-payload-typeorm.reader.ts',
+      /select:[\s\S]*take:\s*64[\s\S]*take:\s*64/,
+    ],
+    [
+      'game/core/infrastructure/persistence/typeorm/mysql-game-active-sessions.reader.ts',
+      /select\([\s\S]*take\(limit\)/,
+    ],
+    [
+      'modules/user/infrastructure/persistence/typeorm/repositories/staff-users-typeorm.reader.ts',
+      /select:[\s\S]*take:/,
+    ],
+  ];
+  for (const [name, contract] of readModelContracts) {
+    const source = fs.readFileSync(path.join(root, name), 'utf8');
+    if (!contract.test(source)) {
+      violations.push(`${name}: read model dédié et borné absent`);
     }
   }
   return violations;

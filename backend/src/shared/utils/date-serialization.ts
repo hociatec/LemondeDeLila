@@ -39,12 +39,24 @@ export function businessMsToIso(value: number): string {
 
 /** Parses only instants carrying an explicit UTC designator or numeric offset. */
 export function parseExplicitInstant(value: unknown): number | null {
+  if (typeof value !== 'string') return null;
+  const instant = value.trim();
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(Z|[+-]\d{2}:?\d{2})$/i.exec(
+      instant,
+    );
+  if (!match) return null;
+  const [, year, month, day, hour, minute, second] = match;
+  // Date.parse normalizes dates such as February 30 instead of rejecting them.
+  const calendar = new Date(`${year}-${month}-${day}T00:00:00.000Z`);
   if (
-    typeof value !== 'string' ||
-    !/(?:Z|[+-]\d{2}:?\d{2})$/i.test(value.trim())
-  ) {
+    !Number.isFinite(calendar.getTime()) ||
+    calendar.toISOString().slice(0, 10) !== `${year}-${month}-${day}` ||
+    Number(hour) > 23 ||
+    Number(minute) > 59 ||
+    Number(second) > 59
+  )
     return null;
-  }
-  const parsed = Date.parse(value);
+  const parsed = Date.parse(instant);
   return Number.isFinite(parsed) ? parsed : null;
 }

@@ -10,7 +10,7 @@ export class GetCatalogGameService {
   async execute(id: string): Promise<CatalogGame | undefined> {
     if (typeof id !== 'string' || !id.trim() || id.length > 128)
       return undefined;
-    const games = await this.listGames.execute();
+    const games = await this.listGames.execute({ fresh: true });
     return games.find((game) => game.id === id);
   }
 }

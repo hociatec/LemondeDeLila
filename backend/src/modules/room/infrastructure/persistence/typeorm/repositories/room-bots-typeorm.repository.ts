@@ -5,6 +5,11 @@ import { Room } from '../entities/room.entity';
 import { RoomParticipant } from '../entities/room-participant.entity';
 import { IsNull, Repository } from 'typeorm';
 import type {
+  BotMutationRequest,
+  BotMutationDecision,
+} from '../../../../application/models/bot-mutation.model';
+import { assessRoomBotMutation } from '../../../../application/services/membership/room-bot-mutation-policy';
+import type {
   RoomBotsRepository,
   CreateBotForRoomInput,
 } from '../../../../application/ports/room-bots.repository';
@@ -46,7 +51,22 @@ export class RoomBotsTypeormRepository implements RoomBotsRepository {
     });
   }
 
-  async findRoomById(roomId: number): Promise<BotManagedRoomRecord | null> {
+  async assessBotMutation(
+    roomId: number,
+    request: BotMutationRequest,
+  ): Promise<BotMutationDecision> {
+    const room = await this.findRoomById(roomId);
+    if (!room) return 'room-not-found';
+    const [humans, bots] = await Promise.all([
+      this.countActiveHumansForRoom(roomId),
+      this.countBotsForRoom(roomId),
+    ]);
+    return assessRoomBotMutation(room, request, humans, bots);
+  }
+
+  private async findRoomById(
+    roomId: number,
+  ): Promise<BotManagedRoomRecord | null> {
     if (!Number.isSafeInteger(roomId) || roomId <= 0) return null;
     const room = await this.rooms.findOne({
       where: { id: roomId },

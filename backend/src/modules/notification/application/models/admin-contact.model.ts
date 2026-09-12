@@ -41,4 +41,3 @@ export type AdminContactThreadSummary = {
   handledByUsername?: string | null;
 };
 /** Explicitly named data contract at the application boundary. */
-

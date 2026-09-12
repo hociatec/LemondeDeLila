@@ -8,6 +8,7 @@ import {
   requireResourceReference,
   validateEffectCondition,
   validateEffectTarget,
+  validateInstructionTargets,
 } from './game-effect-reference-validator';
 
 import type {
@@ -52,11 +53,7 @@ function validateInstruction(
   references: GameEffectValidationReferences,
   fail: ValidationFailure,
 ): void {
-  validateEffectTarget(
-    'target' in instruction ? instruction.target : undefined,
-    `${path}.target`,
-    fail,
-  );
+  validateInstructionTargets(instruction, path, references, fail);
   const input = { instruction, path, references, fail };
   if (
     validateControlInstruction(input) ||
@@ -110,12 +107,12 @@ function validateReactionInstruction({
   fail,
 }: ValidationInput): boolean {
   if (instruction.kind !== 'reaction') return false;
-  validateEffectTarget(instruction.reactor, `${path}.reactor`, fail);
   if (instruction.availability) {
     validateEffectTarget(
       instruction.availability.owner,
       `${path}.availability.owner`,
       fail,
+      references.playerIds,
     );
     if (instruction.availability.kind === 'cards') {
       requireReference(
@@ -212,8 +209,6 @@ function validateMovementInstruction({
     `${path}.trackId`,
     fail,
   );
-  validateEffectTarget(instruction.left, `${path}.left`, fail);
-  validateEffectTarget(instruction.right, `${path}.right`, fail);
   return true;
 }
 
@@ -241,7 +236,13 @@ function validateCardInstruction({
     );
     requirePositiveInteger(instruction.count, `${path}.count`, fail);
     const handDeck = references.handDecks?.get(instruction.handId);
-    if (handDeck != null && handDeck !== instruction.deckId)
+    if (
+      handDeck != null &&
+      handDeck !== instruction.deckId &&
+      !references.handAcceptedDecks
+        ?.get(instruction.handId)
+        ?.has(instruction.deckId)
+    )
       fail(`${path}.deckId`, 'pioche différente de celle de la main');
     return true;
   }
@@ -259,8 +260,6 @@ function validateCardInstruction({
       `${path}.cardId`,
       fail,
     );
-    validateEffectTarget(instruction.from, `${path}.from`, fail);
-    validateEffectTarget(instruction.to, `${path}.to`, fail);
     return true;
   }
   if (instruction.kind === 'steal-card') {
@@ -270,21 +269,21 @@ function validateCardInstruction({
       `${path}.handId`,
       fail,
     );
-    validateEffectTarget(instruction.from, `${path}.from`, fail);
-    validateEffectTarget(instruction.to, `${path}.to`, fail);
     if (instruction.count != null)
       requirePositiveInteger(instruction.count, `${path}.count`, fail);
     return true;
   }
-  if (instruction.kind !== 'swap-hands') return false;
+  if (
+    instruction.kind !== 'swap-hands' &&
+    instruction.kind !== 'exchange-random-cards'
+  )
+    return false;
   requireReference(
     references.hands,
     instruction.handId,
     `${path}.handId`,
     fail,
   );
-  validateEffectTarget(instruction.left, `${path}.left`, fail);
-  validateEffectTarget(instruction.right, `${path}.right`, fail);
   return true;
 }
 
@@ -311,8 +310,6 @@ function validateInventoryInstruction({
       `${path}.inventoryId`,
       fail,
     );
-    validateEffectTarget(instruction.from, `${path}.from`, fail);
-    validateEffectTarget(instruction.to, `${path}.to`, fail);
     if (instruction.count != null)
       requirePositiveInteger(instruction.count, `${path}.count`, fail);
     return true;
@@ -328,8 +325,6 @@ function validateInventoryInstruction({
     `${path}.inventoryId`,
     fail,
   );
-  validateEffectTarget(instruction.left, `${path}.left`, fail);
-  validateEffectTarget(instruction.right, `${path}.right`, fail);
   return true;
 }
 
@@ -339,6 +334,19 @@ function validatePlayerValueInstruction({
   references,
   fail,
 }: ValidationInput): boolean {
+  if (instruction.kind === 'exchange-resources') {
+    for (const side of ['leftOffer', 'rightOffer'] as const) {
+      const offer = instruction[side];
+      requireResourceReference(
+        references,
+        offer.resource,
+        `${path}.${side}.resource`,
+        fail,
+      );
+      requirePositiveInteger(offer.amount, `${path}.${side}.amount`, fail);
+    }
+    return true;
+  }
   if (
     instruction.kind === 'gain-resource' ||
     instruction.kind === 'lose-resource' ||
@@ -351,10 +359,6 @@ function validatePlayerValueInstruction({
       fail,
     );
     requireFinite(instruction.amount, `${path}.amount`, fail);
-    if (instruction.kind === 'transfer-resource') {
-      validateEffectTarget(instruction.from, `${path}.from`, fail);
-      validateEffectTarget(instruction.to, `${path}.to`, fail);
-    }
     return true;
   }
   if (instruction.kind === 'gain-score') {
@@ -430,7 +434,12 @@ function validateMiscInstruction({
     }
     return true;
   }
-  return ['choose-player', 'complete-turn', 'reverse-turn-order'].includes(
-    instruction.kind,
-  );
+  return [
+    'choose-player',
+    'complete-turn',
+    'reverse-turn-order',
+    'start-round',
+    'end-round',
+    'eliminate-player',
+  ].includes(instruction.kind);
 }

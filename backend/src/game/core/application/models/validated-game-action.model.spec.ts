@@ -82,6 +82,20 @@ describe('ValidatedActionDto', () => {
       expect(result.type).toBe('draw');
       expect(result.payload).toBeUndefined();
     });
+
+    it('rejects unknown fields and structurally unbounded values', async () => {
+      await expect(
+        validateAction({ type: 'draw', unexpected: true }),
+      ).rejects.toThrow(PayloadValidationError);
+      await expect(
+        validateAction({ type: 'draw', payload: { score: Number.NaN } }),
+      ).rejects.toThrow(PayloadValidationError);
+      let payload: Record<string, unknown> = {};
+      for (let depth = 0; depth < 34; depth += 1) payload = { payload };
+      await expect(validateAction({ type: 'draw', payload })).rejects.toThrow(
+        PayloadValidationError,
+      );
+    });
   });
 
   describe('validateActions', () => {

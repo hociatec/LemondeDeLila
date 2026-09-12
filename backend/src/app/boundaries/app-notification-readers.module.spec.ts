@@ -7,9 +7,9 @@ import { ACCEPTED_FRIENDS_READER } from '../../modules/social/public-api';
 import { SocialModule } from '../../modules/social/composition-api';
 import {
   NOTIFICATION_UNREAD_MESSAGE_COUNTER,
-  NOTIFICATION_FRIENDSHIP_REPOSITORY,
+  NOTIFICATION_FRIENDS_READER,
   type NotificationUnreadMessageCounter,
-  type NotificationFriendshipRepository,
+  type NotificationFriendsReader,
 } from '../../modules/notification/public-api';
 
 const messages = { countUnreadForRecipient: jest.fn().mockResolvedValue(3) };
@@ -32,8 +32,8 @@ class NotificationConsumer {
   constructor(
     @Inject(NOTIFICATION_UNREAD_MESSAGE_COUNTER)
     readonly messages: NotificationUnreadMessageCounter,
-    @Inject(NOTIFICATION_FRIENDSHIP_REPOSITORY)
-    readonly friends: NotificationFriendshipRepository,
+    @Inject(NOTIFICATION_FRIENDS_READER)
+    readonly friends: NotificationFriendsReader,
   ) {}
 }
 

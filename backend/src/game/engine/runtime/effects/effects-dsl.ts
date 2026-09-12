@@ -19,7 +19,23 @@ export const gameEffects = {
   target: {
     self,
     player: (playerId: number): EffectTarget => ({ kind: 'player', playerId }),
-    next: (): EffectTarget => ({ kind: 'next' }),
+    next: (order?: 'seating' | 'turn'): EffectTarget => ({
+      kind: 'next',
+      ...(order === undefined ? {} : { order }),
+    }),
+    previous: (order?: 'seating' | 'turn'): EffectTarget => ({
+      kind: 'previous',
+      ...(order === undefined ? {} : { order }),
+    }),
+    randomPlayer: (): EffectTarget => ({ kind: 'random-player' }),
+    leader: (ties: 'all' | 'lowest-id' | 'random'): EffectTarget => ({
+      kind: 'leader',
+      ties,
+    }),
+    last: (ties: 'all' | 'lowest-id' | 'random'): EffectTarget => ({
+      kind: 'last',
+      ties,
+    }),
     allPlayers: (): EffectTarget => ({ kind: 'all-players' }),
     allOpponents: (): EffectTarget => ({ kind: 'all-opponents' }),
     randomOpponent: (): EffectTarget => ({ kind: 'random-opponent' }),
@@ -152,6 +168,16 @@ export const gameEffects = {
     left: EffectTarget,
     right: EffectTarget,
   ): GameEffectInstruction => ({ kind: 'swap-hands', handId, left, right }),
+  exchangeRandomCards: (
+    handId: string,
+    left: EffectTarget,
+    right: EffectTarget,
+  ): GameEffectInstruction => ({
+    kind: 'exchange-random-cards',
+    handId,
+    left,
+    right,
+  }),
   stealInventory: (options: {
     inventoryId: string;
     from: EffectTarget;

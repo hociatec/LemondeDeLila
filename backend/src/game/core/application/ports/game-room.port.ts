@@ -1,4 +1,8 @@
-import type { GameId, RoomId, UserId } from '../../../../shared/interfaces/public-api';
+import type {
+  GameId,
+  RoomId,
+  UserId,
+} from '../../../../shared/interfaces/public-api';
 
 export type GameRoomPayload = {
   room: {
@@ -17,6 +21,11 @@ export type GameRoomPayload = {
 export const GAME_ROOM_CONTEXT_PORT = Symbol('GAME_ROOM_CONTEXT_PORT');
 
 export interface GameRoomContextPort {
+  authorizeGameAccess(
+    roomId: RoomId,
+    userId: UserId,
+    mode: 'read' | 'write',
+  ): Promise<void>;
   getRoomPayload(roomId: RoomId): Promise<GameRoomPayload>;
   refreshRoomPayload(roomId: RoomId): Promise<GameRoomPayload>;
   resetRoom(roomId: RoomId, userId: UserId): Promise<void>;

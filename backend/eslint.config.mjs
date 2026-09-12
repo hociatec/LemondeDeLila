@@ -77,6 +77,13 @@ export default tseslint.config(
     },
   },
   {
+    // Reviewed migrations are checksum-protected and must remain byte-stable.
+    files: ['src/platform/database/migrations/[0-9]*.ts'],
+    rules: {
+      'prettier/prettier': 'off',
+    },
+  },
+  {
     files: ['src/**/*.ts'],
     ignores: [
       'src/**/*.spec.ts',
@@ -183,6 +190,33 @@ export default tseslint.config(
     ignores: ['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/tests/**/*.ts'],
     rules: {
       'no-restricted-syntax': ['error', ...deterministicGameSyntax, noDoubleCast],
+    },
+  },
+  {
+    files: [
+      'src/modules/*/application/**/*.ts',
+      'src/modules/*/domain/**/*.ts',
+      'src/game/core/application/**/*.ts',
+      'src/game/engine/runtime/**/*.ts',
+    ],
+    ignores: ['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/tests/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        noDoubleCast,
+        {
+          selector: "CallExpression[callee.object.name='Date'][callee.property.name='now']",
+          message: 'Lire le temps métier via une horloge injectée.',
+        },
+        {
+          selector: "NewExpression[callee.name='Date'][arguments.length=0]",
+          message: 'Lire le temps métier via une horloge injectée.',
+        },
+        {
+          selector: "CallExpression[callee.name='Date']",
+          message: 'Lire le temps métier via une horloge injectée.',
+        },
+      ],
     },
   },
 );

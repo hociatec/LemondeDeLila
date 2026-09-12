@@ -35,7 +35,11 @@ reste donc borné par upload. Les sorties cumulées stdout/stderr des outils
 audio sont limitées à 1 Mio. Les archives WX sont assemblées par flux et leur
 taille exacte est contrôlée ; la limite par artefact est de 2 Gio par défaut,
 configurable par `CLIENT_WX_MAX_ARTIFACT_BYTES`. Ces limites individuelles ne
-remplacent pas une limite globale de travaux audio concurrents.
+remplacent pas une limite globale de travaux audio concurrents. Les processus
+audio sont limités à deux simultanément par instance et seize en attente.
+L'attente expire après `SOUND_PROCESS_QUEUE_TIMEOUT_MS` (15 s par défaut,
+120 s maximum) ; saturation et expiration répondent avec une erreur 503.
+Les attentes expirées sont retirées de la file et ne démarrent jamais plus tard.
 
 Les noms originaux ne choisissent pas les fichiers publiés. Les sons utilisent
 une clé validée et un SHA-256 ; WX emploie un identifiant de release contrôlé,

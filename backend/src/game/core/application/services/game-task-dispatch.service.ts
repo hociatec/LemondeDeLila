@@ -24,7 +24,13 @@ export class GameTaskDispatchService {
   }
 
   schedule(task: GameScheduledTask): void {
-    if (!task || typeof task.key !== 'string' || !task.key || task.key.length > 256) return;
+    if (
+      !task ||
+      typeof task.key !== 'string' ||
+      !task.key ||
+      task.key.length > 256
+    )
+      return;
     this.enqueue(task.key, () =>
       this.scheduler.schedule(task).catch((error: unknown) => {
         this.report(

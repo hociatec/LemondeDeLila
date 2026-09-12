@@ -23,4 +23,3 @@ export type GameMatchSummary = {
   winnerUserId: number | null;
 };
 /** Explicitly named data contract at the application boundary. */
-

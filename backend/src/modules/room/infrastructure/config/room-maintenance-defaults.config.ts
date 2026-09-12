@@ -40,6 +40,11 @@ export function createRoomMaintenanceDefaults(
       1,
       525_600,
     ),
-    autoCleanupLimit: boundedInteger('ROOM_AUTO_CLEANUP_LIMIT', 1000, 1, 10_000),
+    autoCleanupLimit: boundedInteger(
+      'ROOM_AUTO_CLEANUP_LIMIT',
+      1000,
+      1,
+      10_000,
+    ),
   };
 }

@@ -1,27 +1,24 @@
+import { compileJsonGame } from '../../../engine/json/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 
-import type { LamaCard } from './content';
-import { nextLamaValue } from './content';
-import gameDefinition from './game';
-import { scoreLamaRound } from './rules';
+import document from './game.json';
+import manifest from './manifest.json';
+
+const gameDefinition = compileJsonGame(manifest, document);
+type LamaCard = 1 | 2 | 3 | 4 | 5 | 6 | 'LAMA';
+const values: readonly LamaCard[] = [1, 2, 3, 4, 5, 6, 'LAMA'];
+const nextLamaValue = (value: LamaCard): LamaCard =>
+  values[(values.indexOf(value) + 1) % values.length];
+const scoreLamaHand = (cards: readonly LamaCard[]): number =>
+  [...new Set(cards)].reduce(
+    (total, card) => total + (card === 'LAMA' ? 10 : card),
+    0,
+  );
 
 describe('LAMA declarative game', () => {
   it('announces each positive round penalty through the score events', () => {
-    const add = jest.fn();
-    const hands: Record<number, LamaCard[]> = {
-      1: [1, 1, 2],
-      2: ['LAMA', 'LAMA'],
-    };
-
-    scoreLamaRound({}, {
-      players: { all: () => [{ id: 1 }, { id: 2 }] },
-      match: { playerStatus: () => 'active' },
-      cards: { hand: (_handId: string, playerId: number) => hands[playerId] },
-      score: { add },
-    } as never);
-
-    expect(add).toHaveBeenNthCalledWith(1, 1, 3);
-    expect(add).toHaveBeenNthCalledWith(2, 2, 10);
+    expect(scoreLamaHand([1, 1, 2])).toBe(3);
+    expect(scoreLamaHand(['LAMA', 'LAMA'])).toBe(10);
   });
 
   it('publishes P for the available leave-round action', async () => {

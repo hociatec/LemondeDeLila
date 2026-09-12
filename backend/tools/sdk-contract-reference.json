@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "apiVersion": "6.5.0",
+  "apiVersion": "6.16.0",
   "typescript": "5.9.3",
   "entry": "src/game/engine/sdk/public-api.ts",
   "external": [],
@@ -31,7 +31,7 @@
     },
     {
       "file": "src/game/engine/runtime/actions/game-command-journal.ts",
-      "sha256": "153595f47c376d53e0e6d7324224f43a76865bb82c2873628354e16c6fe541c1"
+      "sha256": "f8335220d0ea19b79dbc9df832deaf53ae1542170b616833c8129ed598d9186b"
     },
     {
       "file": "src/game/engine/runtime/actions/game-input-schema.ts",
@@ -55,15 +55,15 @@
     },
     {
       "file": "src/game/engine/runtime/cards/cards-contracts.ts",
-      "sha256": "1efe28897ed7b6294fc772f428c9510cabb0f6c7e27ff44d264b3c60ebd83c15"
+      "sha256": "7a759d36172f67fccdad4e1c9def7194b768072345212bffd4a33f86a694e186"
     },
     {
       "file": "src/game/engine/runtime/cards/cards-deck-controller.ts",
-      "sha256": "25d1f66d535b746cf711b903d91e74e854854fea6b7858d97b7b15e0c5532b99"
+      "sha256": "62cc93344d54bffafce3575f920968d285e97c899500d4a42530299ec2f9cb79"
     },
     {
       "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
-      "sha256": "320894d94b64d3795f62ee930a1a4b0ab1134ad73486e0116a8d30ea457da2de"
+      "sha256": "996b5f11ab71c8c95e03185e5e3530ddb37a8eb9be06fa24e503eaba22f5889a"
     },
     {
       "file": "src/game/engine/runtime/cards/cards-kit.ts",
@@ -71,7 +71,7 @@
     },
     {
       "file": "src/game/engine/runtime/cards/cards-state-controller.ts",
-      "sha256": "7597c8f4ca32e69fcf7510065fe859641b5319825bb6af5ed0444904f1e52e5c"
+      "sha256": "6a5692420b12ce21ddc553bc8915cd86e40eb24cca399ada925bfbb90d6aae3c"
     },
     {
       "file": "src/game/engine/runtime/cards/cards-view.ts",
@@ -83,7 +83,7 @@
     },
     {
       "file": "src/game/engine/runtime/choices/game-choice-controller.ts",
-      "sha256": "4ff20a5c92c6bb1e681b69e2af58967d9c65f0d81d440ff0ca1868015056949c"
+      "sha256": "2cc282a3e00517443a5ee3e842d4a47a651c3c8563e9ac40ba4b14d839fb3d24"
     },
     {
       "file": "src/game/engine/runtime/configuration/configuration-kit.ts",
@@ -159,7 +159,7 @@
     },
     {
       "file": "src/game/engine/runtime/contracts/effect-ir.ts",
-      "sha256": "b3a43970165b8247b1c0f5e3fe5125d0cced2586cbed00e25962b1505d153161"
+      "sha256": "803736fc3b6011889f52ada396c49425b3d066293b74b342e544192641a9909c"
     },
     {
       "file": "src/game/engine/runtime/contracts/effect-resolver.ts",
@@ -183,7 +183,7 @@
     },
     {
       "file": "src/game/engine/runtime/definitions/component-kit.ts",
-      "sha256": "0df47f826a1359d1a4684954166b22e0ae85ff53a189e5e6a1022c768d498ce0"
+      "sha256": "4b91463c6ddf26cf2a23457e92820aa20ff93ea84b632079a1cf1c634c4f3cc2"
     },
     {
       "file": "src/game/engine/runtime/definitions/game-author-context.ts",
@@ -231,7 +231,7 @@
     },
     {
       "file": "src/game/engine/runtime/effects/effects-dsl.ts",
-      "sha256": "95cba5b3eb2b8dbf3e22cfb0b86ae9381ca92f9b3e43ca6a342ddf211b6ab48d"
+      "sha256": "95f29d3393255f3c83c3622d1e62b4be7404dd3551e2edd9dce8e764bfdf4b11"
     },
     {
       "file": "src/game/engine/runtime/effects/effects-kit.ts",
@@ -263,7 +263,7 @@
     },
     {
       "file": "src/game/engine/runtime/kits/dice-kit.ts",
-      "sha256": "d2c2ddbf47134aa13644a665a718abb914113825d24426ffa02e0973921737dc"
+      "sha256": "ed1e5927e4b9ab5326391d6916fa75f42ae835b98eab916b96851ffd4b005f1f"
     },
     {
       "file": "src/game/engine/runtime/kits/economy-kit.ts",
@@ -303,7 +303,7 @@
     },
     {
       "file": "src/game/engine/runtime/kits/player-values-kit.ts",
-      "sha256": "fc72f61b99852130012686624680b003ba706530fb82c4b8621e72885b299a33"
+      "sha256": "519cff31a98d1ef84b5eb7170a4c94becf41ba79281d2b7dd3f04fbc169f0fea"
     },
     {
       "file": "src/game/engine/runtime/kits/quiz-kit.ts",
@@ -411,7 +411,7 @@
     },
     {
       "file": "src/game/engine/runtime/submissions/submission-controller.ts",
-      "sha256": "30577928b50467a84fd2d69ecddda67bd15da88d913e8e8c22afad6a68b8de60"
+      "sha256": "5f6d5260640d9a2bbd6ed4cb74f93e8cd4e462e6bfcd49b1aff46103c1c758d0"
     },
     {
       "file": "src/game/engine/runtime/submissions/submission-flow-controller.ts",

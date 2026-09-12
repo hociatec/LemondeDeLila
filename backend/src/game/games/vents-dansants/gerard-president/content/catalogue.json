@@ -1,0 +1,1844 @@
+{
+  "names": [
+    {
+      "id": "name-1",
+      "name": "Annie"
+    },
+    {
+      "id": "name-2",
+      "name": "Cindy"
+    },
+    {
+      "id": "name-3",
+      "name": "Rodrigue"
+    },
+    {
+      "id": "name-4",
+      "name": "Eude"
+    },
+    {
+      "id": "name-5",
+      "name": "Mireille"
+    },
+    {
+      "id": "name-6",
+      "name": "Sofiane"
+    },
+    {
+      "id": "name-7",
+      "name": "Josette"
+    },
+    {
+      "id": "name-8",
+      "name": "Steve"
+    },
+    {
+      "id": "name-9",
+      "name": "Chantal"
+    },
+    {
+      "id": "name-10",
+      "name": "Enzo"
+    },
+    {
+      "id": "name-11",
+      "name": "Raymonde"
+    },
+    {
+      "id": "name-12",
+      "name": "Abdoul"
+    },
+    {
+      "id": "name-13",
+      "name": "Samantha"
+    },
+    {
+      "id": "name-14",
+      "name": "Jocelyn"
+    },
+    {
+      "id": "name-15",
+      "name": "Mégane"
+    },
+    {
+      "id": "name-16",
+      "name": "Norbert"
+    },
+    {
+      "id": "name-17",
+      "name": "Tiffany"
+    },
+    {
+      "id": "name-18",
+      "name": "Luigi"
+    },
+    {
+      "id": "name-19",
+      "name": "Ginette"
+    },
+    {
+      "id": "name-20",
+      "name": "Brian"
+    },
+    {
+      "id": "name-21",
+      "name": "Gisèle"
+    },
+    {
+      "id": "name-22",
+      "name": "Ahmed"
+    },
+    {
+      "id": "name-23",
+      "name": "Noémie"
+    },
+    {
+      "id": "name-24",
+      "name": "Michel"
+    },
+    {
+      "id": "name-25",
+      "name": "Betty"
+    },
+    {
+      "id": "name-26",
+      "name": "Léon"
+    },
+    {
+      "id": "name-27",
+      "name": "Tiphaine"
+    },
+    {
+      "id": "name-28",
+      "name": "Mustapha"
+    },
+    {
+      "id": "name-29",
+      "name": "Djamila"
+    },
+    {
+      "id": "name-30",
+      "name": "Fabrice"
+    },
+    {
+      "id": "name-31",
+      "name": "Nadège"
+    },
+    {
+      "id": "name-32",
+      "name": "Corentin"
+    },
+    {
+      "id": "name-33",
+      "name": "Ludivine"
+    },
+    {
+      "id": "name-34",
+      "name": "Monique"
+    },
+    {
+      "id": "name-35",
+      "name": "Solange"
+    },
+    {
+      "id": "name-36",
+      "name": "Cédric"
+    },
+    {
+      "id": "name-37",
+      "name": "Patricia"
+    },
+    {
+      "id": "name-38",
+      "name": "Gonzague"
+    },
+    {
+      "id": "name-39",
+      "name": "Gaëtane"
+    },
+    {
+      "id": "name-40",
+      "name": "Mamadou"
+    },
+    {
+      "id": "name-41",
+      "name": "Denise"
+    },
+    {
+      "id": "name-42",
+      "name": "Maurice"
+    },
+    {
+      "id": "name-43",
+      "name": "Priscillia"
+    },
+    {
+      "id": "name-44",
+      "name": "Anatole"
+    },
+    {
+      "id": "name-45",
+      "name": "Hortense"
+    },
+    {
+      "id": "name-46",
+      "name": "Marvin"
+    },
+    {
+      "id": "name-47",
+      "name": "Gertrude"
+    },
+    {
+      "id": "name-48",
+      "name": "Saïd"
+    },
+    {
+      "id": "name-49",
+      "name": "Dominique"
+    },
+    {
+      "id": "name-50",
+      "name": "Paulette"
+    },
+    {
+      "id": "name-51",
+      "name": "Karim"
+    },
+    {
+      "id": "name-52",
+      "name": "Bernadette"
+    },
+    {
+      "id": "name-53",
+      "name": "Lucien"
+    },
+    {
+      "id": "name-54",
+      "name": "Natacha"
+    },
+    {
+      "id": "name-55",
+      "name": "Hubert"
+    },
+    {
+      "id": "name-56",
+      "name": "Béatrice"
+    },
+    {
+      "id": "name-57",
+      "name": "Séverine"
+    },
+    {
+      "id": "name-58",
+      "name": "Momo"
+    },
+    {
+      "id": "name-59",
+      "name": "Blanche"
+    },
+    {
+      "id": "name-60",
+      "name": "René"
+    },
+    {
+      "id": "name-61",
+      "name": "Thérèse"
+    },
+    {
+      "id": "name-62",
+      "name": "Paco"
+    },
+    {
+      "id": "name-63",
+      "name": "Blaise"
+    },
+    {
+      "id": "name-64",
+      "name": "Eugène"
+    },
+    {
+      "id": "name-65",
+      "name": "Pascaline"
+    },
+    {
+      "id": "name-66",
+      "name": "Zohra"
+    },
+    {
+      "id": "name-67",
+      "name": "Albert"
+    },
+    {
+      "id": "name-68",
+      "name": "Léontine"
+    },
+    {
+      "id": "name-69",
+      "name": "Grégoire"
+    },
+    {
+      "id": "name-70",
+      "name": "Smaïl"
+    },
+    {
+      "id": "name-71",
+      "name": "Mirella"
+    },
+    {
+      "id": "name-72",
+      "name": "Roger"
+    },
+    {
+      "id": "name-73",
+      "name": "Gladys"
+    },
+    {
+      "id": "name-74",
+      "name": "Tanguy"
+    },
+    {
+      "id": "name-75",
+      "name": "Fernand"
+    },
+    {
+      "id": "name-76",
+      "name": "Amal"
+    },
+    {
+      "id": "name-77",
+      "name": "Lionel"
+    },
+    {
+      "id": "name-78",
+      "name": "Suzy"
+    },
+    {
+      "id": "name-79",
+      "name": "Baptiste"
+    },
+    {
+      "id": "name-80",
+      "name": "Latifa"
+    },
+    {
+      "id": "name-81",
+      "name": "Armand"
+    },
+    {
+      "id": "name-82",
+      "name": "Pierrette"
+    },
+    {
+      "id": "name-83",
+      "name": "Thierry"
+    },
+    {
+      "id": "name-84",
+      "name": "Bébert"
+    },
+    {
+      "id": "name-85",
+      "name": "Claudine"
+    },
+    {
+      "id": "name-86",
+      "name": "Abdellah"
+    },
+    {
+      "id": "name-87",
+      "name": "Noël"
+    },
+    {
+      "id": "name-88",
+      "name": "Denise"
+    },
+    {
+      "id": "name-89",
+      "name": "Charlotte"
+    },
+    {
+      "id": "name-90",
+      "name": "Elvis"
+    },
+    {
+      "id": "name-91",
+      "name": "Karine"
+    },
+    {
+      "id": "name-92",
+      "name": "Gaston"
+    },
+    {
+      "id": "name-93",
+      "name": "Roxane"
+    },
+    {
+      "id": "name-94",
+      "name": "Jacqueline"
+    },
+    {
+      "id": "name-95",
+      "name": "Hans"
+    },
+    {
+      "id": "name-96",
+      "name": "Aïcha"
+    },
+    {
+      "id": "name-97",
+      "name": "Katia"
+    },
+    {
+      "id": "name-98",
+      "name": "Bertrand"
+    },
+    {
+      "id": "name-99",
+      "name": "Véro"
+    },
+    {
+      "id": "name-100",
+      "name": "Alfred"
+    },
+    {
+      "id": "name-101",
+      "name": "Mirela"
+    },
+    {
+      "id": "name-102",
+      "name": "Isidore"
+    },
+    {
+      "id": "name-103",
+      "name": "Soraya"
+    },
+    {
+      "id": "name-104",
+      "name": "Francis"
+    },
+    {
+      "id": "name-105",
+      "name": "Samira"
+    },
+    {
+      "id": "name-106",
+      "name": "Géraldine"
+    },
+    {
+      "id": "name-107",
+      "name": "Bernard"
+    },
+    {
+      "id": "name-108",
+      "name": "Laïla"
+    },
+    {
+      "id": "name-109",
+      "name": "Vincent"
+    },
+    {
+      "id": "name-110",
+      "name": "Irène"
+    },
+    {
+      "id": "name-111",
+      "name": "Pierre"
+    },
+    {
+      "id": "name-112",
+      "name": "Nina"
+    },
+    {
+      "id": "name-113",
+      "name": "Mehdi"
+    },
+    {
+      "id": "name-114",
+      "name": "Joséphine"
+    },
+    {
+      "id": "name-115",
+      "name": "Prosper"
+    },
+    {
+      "id": "name-116",
+      "name": "Loubna"
+    },
+    {
+      "id": "name-117",
+      "name": "Claude"
+    },
+    {
+      "id": "name-118",
+      "name": "Nadine"
+    },
+    {
+      "id": "name-119",
+      "name": "Philibert"
+    },
+    {
+      "id": "name-120",
+      "name": "?liane"
+    },
+    {
+      "id": "name-121",
+      "name": "Pascal"
+    },
+    {
+      "id": "name-122",
+      "name": "Zineb"
+    },
+    {
+      "id": "name-123",
+      "name": "Florent"
+    },
+    {
+      "id": "name-124",
+      "name": "Mirette"
+    },
+    {
+      "id": "name-125",
+      "name": "Kamel"
+    },
+    {
+      "id": "name-126",
+      "name": "Gilberte"
+    },
+    {
+      "id": "name-127",
+      "name": "Rachid"
+    },
+    {
+      "id": "name-128",
+      "name": "Clotilde"
+    },
+    {
+      "id": "name-129",
+      "name": "Diego"
+    },
+    {
+      "id": "name-130",
+      "name": "Agnès"
+    },
+    {
+      "id": "name-131",
+      "name": "Sabrina"
+    },
+    {
+      "id": "name-132",
+      "name": "Constant"
+    },
+    {
+      "id": "name-133",
+      "name": "Marlène"
+    },
+    {
+      "id": "name-134",
+      "name": "Roger"
+    },
+    {
+      "id": "name-135",
+      "name": "Didier"
+    },
+    {
+      "id": "name-136",
+      "name": "Soso"
+    },
+    {
+      "id": "name-137",
+      "name": "Frédégonde"
+    },
+    {
+      "id": "name-138",
+      "name": "Dédé"
+    },
+    {
+      "id": "name-139",
+      "name": "Océane"
+    },
+    {
+      "id": "name-140",
+      "name": "Patrick"
+    },
+    {
+      "id": "name-141",
+      "name": "Edmon"
+    },
+    {
+      "id": "name-142",
+      "name": "Sylvette"
+    },
+    {
+      "id": "name-143",
+      "name": "Aboubakar"
+    },
+    {
+      "id": "name-144",
+      "name": "Céline"
+    },
+    {
+      "id": "name-145",
+      "name": "Fabien"
+    },
+    {
+      "id": "name-146",
+      "name": "Malika"
+    },
+    {
+      "id": "name-147",
+      "name": "Serge"
+    },
+    {
+      "id": "name-148",
+      "name": "Rose"
+    },
+    {
+      "id": "name-149",
+      "name": "Justin"
+    },
+    {
+      "id": "name-150",
+      "name": "Paule"
+    },
+    {
+      "id": "name-151",
+      "name": "Marcel"
+    },
+    {
+      "id": "name-152",
+      "name": "Sue"
+    },
+    {
+      "id": "name-153",
+      "name": "Paul"
+    },
+    {
+      "id": "name-154",
+      "name": "Sonia"
+    },
+    {
+      "id": "name-155",
+      "name": "Henri"
+    },
+    {
+      "id": "name-156",
+      "name": "Maïté"
+    },
+    {
+      "id": "name-157",
+      "name": "Yannis"
+    },
+    {
+      "id": "name-158",
+      "name": "Gino"
+    },
+    {
+      "id": "name-159",
+      "name": "Léonard"
+    },
+    {
+      "id": "name-160",
+      "name": "Zouina"
+    },
+    {
+      "id": "name-161",
+      "name": "Roberte"
+    },
+    {
+      "id": "name-162",
+      "name": "Nicolas"
+    },
+    {
+      "id": "name-163",
+      "name": "Ghislaine"
+    },
+    {
+      "id": "name-164",
+      "name": "Loïc"
+    },
+    {
+      "id": "name-165",
+      "name": "Lydie"
+    },
+    {
+      "id": "name-166",
+      "name": "Damien"
+    },
+    {
+      "id": "name-167",
+      "name": "Violette"
+    },
+    {
+      "id": "name-168",
+      "name": "Samy"
+    },
+    {
+      "id": "name-169",
+      "name": "Tony"
+    },
+    {
+      "id": "name-170",
+      "name": "Janine"
+    },
+    {
+      "id": "name-171",
+      "name": "Béatrice"
+    },
+    {
+      "id": "name-172",
+      "name": "Jamel"
+    },
+    {
+      "id": "name-173",
+      "name": "Nicole"
+    },
+    {
+      "id": "name-174",
+      "name": "Jacques"
+    },
+    {
+      "id": "name-175",
+      "name": "Maël"
+    },
+    {
+      "id": "name-176",
+      "name": "Bérengère"
+    },
+    {
+      "id": "name-177",
+      "name": "Philippe"
+    },
+    {
+      "id": "name-178",
+      "name": "Adama"
+    },
+    {
+      "id": "name-179",
+      "name": "Fabienne"
+    },
+    {
+      "id": "name-180",
+      "name": "Framboise."
+    },
+    {
+      "id": "name-181",
+      "name": "Abigaïl"
+    },
+    {
+      "id": "name-182",
+      "name": "Amandine"
+    },
+    {
+      "id": "name-183",
+      "name": "Ange"
+    },
+    {
+      "id": "name-184",
+      "name": "Apollinaire"
+    },
+    {
+      "id": "name-185",
+      "name": "Archibald"
+    },
+    {
+      "id": "name-186",
+      "name": "Arielle"
+    },
+    {
+      "id": "name-187",
+      "name": "Arsène"
+    },
+    {
+      "id": "name-188",
+      "name": "Assia"
+    },
+    {
+      "id": "name-189",
+      "name": "Aurore"
+    },
+    {
+      "id": "name-190",
+      "name": "Axel"
+    },
+    {
+      "id": "name-191",
+      "name": "Babette"
+    },
+    {
+      "id": "name-192",
+      "name": "Barbara"
+    },
+    {
+      "id": "name-193",
+      "name": "Basile"
+    },
+    {
+      "id": "name-194",
+      "name": "Bella"
+    },
+    {
+      "id": "name-195",
+      "name": "Benoît"
+    },
+    {
+      "id": "name-196",
+      "name": "Bianca"
+    },
+    {
+      "id": "name-197",
+      "name": "Bintou"
+    },
+    {
+      "id": "name-198",
+      "name": "Brenda"
+    },
+    {
+      "id": "name-199",
+      "name": "Brigitte"
+    },
+    {
+      "id": "name-200",
+      "name": "Camilia"
+    },
+    {
+      "id": "name-201",
+      "name": "Cassandre"
+    },
+    {
+      "id": "name-202",
+      "name": "Cassius"
+    },
+    {
+      "id": "name-203",
+      "name": "Cécilia"
+    },
+    {
+      "id": "name-204",
+      "name": "Charlène"
+    },
+    {
+      "id": "name-205",
+      "name": "Chloé"
+    },
+    {
+      "id": "name-206",
+      "name": "Christelle"
+    },
+    {
+      "id": "name-207",
+      "name": "Chrysostome"
+    },
+    {
+      "id": "name-208",
+      "name": "Clémentine"
+    },
+    {
+      "id": "name-209",
+      "name": "Cléopâtre"
+    },
+    {
+      "id": "name-210",
+      "name": "Colin"
+    },
+    {
+      "id": "name-211",
+      "name": "Colette"
+    },
+    {
+      "id": "name-212",
+      "name": "Constance"
+    },
+    {
+      "id": "name-213",
+      "name": "Constantin"
+    },
+    {
+      "id": "name-214",
+      "name": "Coraline"
+    },
+    {
+      "id": "name-215",
+      "name": "Cunégonde"
+    },
+    {
+      "id": "name-216",
+      "name": "Cyprien"
+    },
+    {
+      "id": "name-217",
+      "name": "Daphné"
+    },
+    {
+      "id": "name-218",
+      "name": "Dédéla"
+    },
+    {
+      "id": "name-219",
+      "name": "Delphine"
+    },
+    {
+      "id": "name-220",
+      "name": "Dimitri"
+    },
+    {
+      "id": "name-221",
+      "name": "Djibril"
+    },
+    {
+      "id": "name-222",
+      "name": "Dolly"
+    },
+    {
+      "id": "name-223",
+      "name": "Dylan"
+    },
+    {
+      "id": "name-224",
+      "name": "?glantine"
+    },
+    {
+      "id": "name-225",
+      "name": "?léonore"
+    },
+    {
+      "id": "name-226",
+      "name": "?lise"
+    },
+    {
+      "id": "name-227",
+      "name": "?lodie"
+    },
+    {
+      "id": "name-228",
+      "name": "?mile"
+    },
+    {
+      "id": "name-229",
+      "name": "?milie"
+    },
+    {
+      "id": "name-230",
+      "name": "?phrem"
+    },
+    {
+      "id": "name-231",
+      "name": "Ernest"
+    },
+    {
+      "id": "name-232",
+      "name": "Esméralda"
+    },
+    {
+      "id": "name-233",
+      "name": "Eugénie"
+    },
+    {
+      "id": "name-234",
+      "name": "Fanny"
+    },
+    {
+      "id": "name-235",
+      "name": "Fatou"
+    },
+    {
+      "id": "name-236",
+      "name": "Faustine"
+    },
+    {
+      "id": "name-237",
+      "name": "Félicien"
+    },
+    {
+      "id": "name-238",
+      "name": "Fernande"
+    },
+    {
+      "id": "name-239",
+      "name": "Flavien"
+    },
+    {
+      "id": "name-240",
+      "name": "Florence"
+    },
+    {
+      "id": "name-241",
+      "name": "Frida"
+    },
+    {
+      "id": "name-242",
+      "name": "Gaël"
+    },
+    {
+      "id": "name-243",
+      "name": "Geneviève"
+    },
+    {
+      "id": "name-244",
+      "name": "Georges"
+    },
+    {
+      "id": "name-245",
+      "name": "Gérard"
+    },
+    {
+      "id": "name-246",
+      "name": "Ghislain"
+    },
+    {
+      "id": "name-247",
+      "name": "Giscard"
+    },
+    {
+      "id": "name-248",
+      "name": "Guillaume"
+    },
+    {
+      "id": "name-249",
+      "name": "Guy"
+    },
+    {
+      "id": "name-250",
+      "name": "Huguette"
+    },
+    {
+      "id": "name-251",
+      "name": "Idriss"
+    },
+    {
+      "id": "name-252",
+      "name": "Igor"
+    },
+    {
+      "id": "name-253",
+      "name": "Iman"
+    },
+    {
+      "id": "name-254",
+      "name": "Ingrid"
+    },
+    {
+      "id": "name-255",
+      "name": "Irina"
+    },
+    {
+      "id": "name-256",
+      "name": "Ismaël"
+    },
+    {
+      "id": "name-257",
+      "name": "Ivan"
+    },
+    {
+      "id": "name-258",
+      "name": "Izia"
+    },
+    {
+      "id": "name-259",
+      "name": "Jacky"
+    },
+    {
+      "id": "name-260",
+      "name": "Jade"
+    },
+    {
+      "id": "name-261",
+      "name": "Jamila"
+    },
+    {
+      "id": "name-262",
+      "name": "Jérémie"
+    },
+    {
+      "id": "name-263",
+      "name": "Jocelyne"
+    },
+    {
+      "id": "name-264",
+      "name": "José"
+    },
+    {
+      "id": "name-265",
+      "name": "Josiane"
+    },
+    {
+      "id": "name-266",
+      "name": "Jules"
+    },
+    {
+      "id": "name-267",
+      "name": "Juliette"
+    },
+    {
+      "id": "name-268",
+      "name": "Justine"
+    },
+    {
+      "id": "name-269",
+      "name": "Kaïs"
+    },
+    {
+      "id": "name-270",
+      "name": "Katell"
+    },
+    {
+      "id": "name-271",
+      "name": "Kevin"
+    },
+    {
+      "id": "name-272",
+      "name": "Kézia"
+    },
+    {
+      "id": "name-273",
+      "name": "Kheira"
+    },
+    {
+      "id": "name-274",
+      "name": "Koumba"
+    },
+    {
+      "id": "name-275",
+      "name": "Léandre"
+    },
+    {
+      "id": "name-276",
+      "name": "Léa"
+    },
+    {
+      "id": "name-277",
+      "name": "Léna"
+    },
+    {
+      "id": "name-278",
+      "name": "Léoncie"
+    },
+    {
+      "id": "name-279",
+      "name": "Lino"
+    },
+    {
+      "id": "name-280",
+      "name": "Lison"
+    },
+    {
+      "id": "name-281",
+      "name": "Louison"
+    },
+    {
+      "id": "name-282",
+      "name": "Louka,"
+    },
+    {
+      "id": "name-283",
+      "name": "Lucette"
+    },
+    {
+      "id": "name-284",
+      "name": "Lucie"
+    },
+    {
+      "id": "name-285",
+      "name": "Lysandre"
+    },
+    {
+      "id": "name-286",
+      "name": "Madeleine"
+    },
+    {
+      "id": "name-287",
+      "name": "Mahé."
+    },
+    {
+      "id": "name-288",
+      "name": "Marc"
+    },
+    {
+      "id": "name-289",
+      "name": "Marie"
+    },
+    {
+      "id": "name-290",
+      "name": "Nathalie"
+    },
+    {
+      "id": "name-291",
+      "name": "Sébastien"
+    },
+    {
+      "id": "name-292",
+      "name": "Sophie"
+    },
+    {
+      "id": "name-293",
+      "name": "Sylvie"
+    },
+    {
+      "id": "name-294",
+      "name": "Yolande"
+    }
+  ],
+  "themes": [
+    {
+      "id": "theme-1",
+      "text": "Le prénom qui survivrait à une apocalypse de zombies."
+    },
+    {
+      "id": "theme-2",
+      "text": "Le prénom qui devrait être interdit par décret."
+    },
+    {
+      "id": "theme-3",
+      "text": "Le prénom le plus flippant dans une cave à 2h du matin."
+    },
+    {
+      "id": "theme-4",
+      "text": "Le prénom d’un sorcier pas doué mais super motivé."
+    },
+    {
+      "id": "theme-5",
+      "text": "Le prénom d’un prof de sport ultra-sévère."
+    },
+    {
+      "id": "theme-6",
+      "text": "Le prénom d’une personne qui mange des cornichons au petit déj."
+    },
+    {
+      "id": "theme-7",
+      "text": "Le prénom du plus grand séducteur de camping."
+    },
+    {
+      "id": "theme-8",
+      "text": "Le prénom d’un joueur de pétanque légendaire."
+    },
+    {
+      "id": "theme-9",
+      "text": "Le prénom d’un dictateur de salon de thé."
+    },
+    {
+      "id": "theme-10",
+      "text": "Le prénom d’une idole oubliée des années 80."
+    },
+    {
+      "id": "theme-11",
+      "text": "Le prénom qui défonce tout à Mario Kart."
+    },
+    {
+      "id": "theme-12",
+      "text": "Le prénom d’un chat psychopathe."
+    },
+    {
+      "id": "theme-13",
+      "text": "Le prénom d’un maître du karaoké."
+    },
+    {
+      "id": "theme-14",
+      "text": "Le prénom d’un espion qui se fait toujours griller."
+    },
+    {
+      "id": "theme-15",
+      "text": "Le prénom d’un animateur de télé parlant trop fort."
+    },
+    {
+      "id": "theme-16",
+      "text": "Le prénom d’un ninja avec une sciatique."
+    },
+    {
+      "id": "theme-17",
+      "text": "Le prénom d’un Youtubeur faisant des tutos de pliage de serviettes."
+    },
+    {
+      "id": "theme-18",
+      "text": "Le prénom d’un pâtissier en reconversion dans le métal."
+    },
+    {
+      "id": "theme-19",
+      "text": "Le prénom d’un dresseur de pigeons acrobates."
+    },
+    {
+      "id": "theme-20",
+      "text": "Le prénom d’un gourou de secte vegan astrale."
+    },
+    {
+      "id": "theme-21",
+      "text": "Le prénom le plus ringard de la galaxie."
+    },
+    {
+      "id": "theme-22",
+      "text": "Le prénom d’un ancien cascadeur reconverti en banquier."
+    },
+    {
+      "id": "theme-23",
+      "text": "Le prénom d’un membre d’un boys band improbable."
+    },
+    {
+      "id": "theme-24",
+      "text": "Le prénom d’une mamie championne d’arts martiaux."
+    },
+    {
+      "id": "theme-25",
+      "text": "Le prénom d’un vendeur de tapis capable de vendre à un moine."
+    },
+    {
+      "id": "theme-26",
+      "text": "Le prénom d’un mannequin pour pulls moches."
+    },
+    {
+      "id": "theme-27",
+      "text": "Le prénom d’un organisateur de mariages catastrophiques."
+    },
+    {
+      "id": "theme-28",
+      "text": "Le prénom d’un invité relou à tous les anniversaires."
+    },
+    {
+      "id": "theme-29",
+      "text": "Le prénom d’un prof de yoga fumant en cachette."
+    },
+    {
+      "id": "theme-30",
+      "text": "Le prénom d’un plombier super-héros du dimanche."
+    },
+    {
+      "id": "theme-31",
+      "text": "Le prénom d’une star de série télé oubliée."
+    },
+    {
+      "id": "theme-32",
+      "text": "Le prénom qui a toujours une anecdote gênante."
+    },
+    {
+      "id": "theme-33",
+      "text": "Le prénom d’un candidat de télé-réalité médiévale."
+    },
+    {
+      "id": "theme-34",
+      "text": "Le prénom d’un DJ de mariage coincé dans les années disco."
+    },
+    {
+      "id": "theme-35",
+      "text": "Le prénom d’un personnage de film d’horreur qui meurt en première partie."
+    },
+    {
+      "id": "theme-36",
+      "text": "Le prénom d’un coach de vie qui pleure devant Top Chef."
+    },
+    {
+      "id": "theme-37",
+      "text": "Le prénom d’un ado rebelle à l’école de tricot."
+    },
+    {
+      "id": "theme-38",
+      "text": "Le prénom d’un roi déchu du dancefloor."
+    },
+    {
+      "id": "theme-39",
+      "text": "Le prénom d’un mec qui vit encore chez sa mère à 52 ans."
+    },
+    {
+      "id": "theme-40",
+      "text": "Le prénom d’un aventurier qui a peur des pigeons."
+    },
+    {
+      "id": "theme-41",
+      "text": "Le prénom d’un ou d’une ex qu’on ne regrette vraiment pas."
+    },
+    {
+      "id": "theme-42",
+      "text": "Le prénom d’un joueur d’échecs ultra-suspect."
+    },
+    {
+      "id": "theme-43",
+      "text": "Le prénom d’un campeur qui parle aux moustiques."
+    },
+    {
+      "id": "theme-44",
+      "text": "Le prénom d’un joueur de baby-foot invincible."
+    },
+    {
+      "id": "theme-45",
+      "text": "Le prénom d’un sculpteur de fromages."
+    },
+    {
+      "id": "theme-46",
+      "text": "Le prénom parfait pour un hamster."
+    },
+    {
+      "id": "theme-47",
+      "text": "Le prénom d’un influenceur qui fait des unboxings de Tupperware."
+    },
+    {
+      "id": "theme-48",
+      "text": "Le prénom d’un ange gardien très distrait."
+    },
+    {
+      "id": "theme-49",
+      "text": "Le prénom d’un livreur de pizza qui arrive toujours froid."
+    },
+    {
+      "id": "theme-50",
+      "text": "Le prénom d’un pote qu’on invite jamais mais qui vient toujours."
+    },
+    {
+      "id": "theme-51",
+      "text": "Le prénom d’un présentateur météo dépressif."
+    },
+    {
+      "id": "theme-52",
+      "text": "Le prénom d’un roi de la sieste."
+    },
+    {
+      "id": "theme-53",
+      "text": "Le prénom d’un mime qui parle tout le temps."
+    },
+    {
+      "id": "theme-54",
+      "text": "Le prénom d’un chanteur qui rate toutes ses notes."
+    },
+    {
+      "id": "theme-55",
+      "text": "Le prénom d’un vendeur de lunettes aveugle."
+    },
+    {
+      "id": "theme-56",
+      "text": "Le prénom d’un barman allergique à l’alcool."
+    },
+    {
+      "id": "theme-57",
+      "text": "Le prénom d’un éleveur de lamas star de TikTok."
+    },
+    {
+      "id": "theme-58",
+      "text": "Le prénom d’un chevalier du Moyen Âge mais en claquettes."
+    },
+    {
+      "id": "theme-59",
+      "text": "Le prénom d’un stagiaire en mission sur la Lune."
+    },
+    {
+      "id": "theme-60",
+      "text": "Le prénom d’un super-héros super-inutile."
+    },
+    {
+      "id": "theme-61",
+      "text": "Le prénom d’un poète incompris parce qu’il écrit en morse."
+    },
+    {
+      "id": "theme-62",
+      "text": "Le prénom d’un cuisinier qui confond sucre et sel."
+    },
+    {
+      "id": "theme-63",
+      "text": "Le prénom d’un magicien qui perd toujours ses cartes."
+    },
+    {
+      "id": "theme-64",
+      "text": "Le prénom d’un mec qui se bat contre les ventilateurs."
+    },
+    {
+      "id": "theme-65",
+      "text": "Le prénom d’un président d’un club de flûte infernal."
+    },
+    {
+      "id": "theme-66",
+      "text": "Le prénom d’un animateur de bingo sous acide."
+    },
+    {
+      "id": "theme-67",
+      "text": "Le prénom d’un photographe photophobe."
+    },
+    {
+      "id": "theme-68",
+      "text": "Le prénom d’un moniteur d’auto-école qui ne sait pas conduire."
+    },
+    {
+      "id": "theme-69",
+      "text": "Le prénom d’un fan de Star Wars qui croit que Yoda est un Pokémon."
+    },
+    {
+      "id": "theme-70",
+      "text": "Le prénom d’un concierge de manoir hanté mais optimiste."
+    },
+    {
+      "id": "theme-71",
+      "text": "Le prénom d’un styliste de bottes ringard."
+    },
+    {
+      "id": "theme-72",
+      "text": "Le prénom d’un collectionneur de cuillères qui les appelle toutes « Roger »."
+    },
+    {
+      "id": "theme-73",
+      "text": "Le prénom d’un médium qui fait peur à son miroir."
+    },
+    {
+      "id": "theme-74",
+      "text": "Le prénom d’un capitaine de bateau en mousse."
+    },
+    {
+      "id": "theme-75",
+      "text": "Le prénom d’un sportif de canapé."
+    },
+    {
+      "id": "theme-76",
+      "text": "Le prénom d’un vendeur d’aspirateurs qui ne le passe jamais."
+    },
+    {
+      "id": "theme-77",
+      "text": "Le prénom d’un philosophe de fast-food."
+    },
+    {
+      "id": "theme-78",
+      "text": "Le prénom d’un écolo qui mange des sachets bio."
+    },
+    {
+      "id": "theme-79",
+      "text": "Le prénom d’un tailleur de barbe pour hérissons."
+    },
+    {
+      "id": "theme-80",
+      "text": "Le prénom qui inspire la plus grande crainte dans un concours de karaoké"
+    },
+    {
+      "id": "theme-81",
+      "text": "Le prénom d’un animateur de colo qui se fait tirer les cheveux par les enfants."
+    },
+    {
+      "id": "theme-82",
+      "text": "Le prénom d’un pilote d’avion qui dort pendant les annonces."
+    },
+    {
+      "id": "theme-83",
+      "text": "Le prénom d’un mannequin pour charentaises."
+    },
+    {
+      "id": "theme-84",
+      "text": "Le prénom d’un ado qui fait des tutos maquillage pour serpents."
+    },
+    {
+      "id": "theme-85",
+      "text": "Le prénom d’un ancien champion de cache-cache jamais retrouvé."
+    },
+    {
+      "id": "theme-86",
+      "text": "Le prénom d’un bricoleur qui détruit tout sauf son égo."
+    },
+    {
+      "id": "theme-87",
+      "text": "Le prénom d’un dresseur de plantes carnivores affectueuses."
+    },
+    {
+      "id": "theme-88",
+      "text": "Le prénom d’un voisin qui espionne avec un drone rose fluo."
+    },
+    {
+      "id": "theme-89",
+      "text": "Le prénom d’un joueur de Uno banni à vie."
+    },
+    {
+      "id": "theme-90",
+      "text": "Le prénom d’un chef d’orchestre de klaxons."
+    },
+    {
+      "id": "theme-91",
+      "text": "Le prénom d’un gourou qui ne croit même pas à sa propre secte."
+    },
+    {
+      "id": "theme-92",
+      "text": "Le prénom d’un tiktokeur qui fait des danses à la poste."
+    },
+    {
+      "id": "theme-93",
+      "text": "Le prénom d’un facteur qui confond toujours les boîtes aux lettres."
+    },
+    {
+      "id": "theme-94",
+      "text": "Le prénom d’un expert en camouflages en pleine canicule."
+    },
+    {
+      "id": "theme-95",
+      "text": "Le prénom d’un vendeur de yaourts parlant en alexandrins."
+    },
+    {
+      "id": "theme-96",
+      "text": "Le prénom d’un gardien de musée volant ses propres objets."
+    },
+    {
+      "id": "theme-97",
+      "text": "Le prénom d’un imitateur de cloches."
+    },
+    {
+      "id": "theme-98",
+      "text": "Le prénom d’un pirate des Caraïbes allergique au rhum."
+    },
+    {
+      "id": "theme-99",
+      "text": "Le prénom d’un médium qui confond les signes astrologiques avec des plats."
+    },
+    {
+      "id": "theme-100",
+      "text": "Le prénom d’un capitaine de pédalo mégalomane"
+    }
+  ],
+  "specialCards": [
+    {
+      "id": "special-sabotage",
+      "name": "Carte Sabotage",
+      "description": "Cette carte te permet de désigner un joueur et de l’obliger à justifier à voix haute un prénom qui n’est pas le sien, choisi au hasard parmi ceux posés. Il devra improviser une explication absurde, logique ou hilarante pour ce prénom, même s’il ne l’a pas joué. De quoi créer des situations gênantes ou tordantes, surtout quand le sabotage tombe sur un prénom complètement improbable !",
+      "effect": "sabotage",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.sabotage",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-double-prenom",
+      "name": "Carte Double Prénom",
+      "description": "Grâce à cette carte, tu peux jouer deux prénoms ensemble au lieu d’un seul. Ils doivent former un « combo » crédible, absurde ou ridicule : à toi de créer une association qui fera mouche. Exemple : « Bébert-Francis » pour un coach de zumba mystique, ou « Brigitte-Damoclès » pour une astrologue de supermarché. Tu joues cette carte au moment où tu poses tes prénoms.",
+      "effect": "double-prenom",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.double-prenom",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-double-theme",
+      "name": "Carte Double Thème",
+      "description": "Lorsque tu es le joueur actif et que tu dois lire un thème, tu peux jouer cette carte pour en piocher un deuxième et combiner les deux. Tous les joueurs devront proposer un prénom qui colle aux deux situations en même temps. Cela donne des fusions absurdes comme : « Le prénom d’un ancien cascadeur qui donne des cours de flûte à des hyènes » ou « Le prénom d’une grand-mère recherchée par Interpol ». Fou rire garanti par surcharge d’imagination !",
+      "effect": "double-theme",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.double-theme",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-interdiction",
+      "name": "Carte Interdiction",
+      "description": "Avec cette carte, tu annonces immédiatement après lecture du thème qu’un prénom précis est interdit ce tour-ci. Aucun joueur ne pourra poser ce prénom, même s’il est parfait pour le thème. Par exemple, tu peux dire : « Interdiction de jouer “Kevin” ! » et regarder les autres paniquer s’ils l’avaient en main. Cela perturbe les plans et force à improviser.",
+      "effect": "interdiction",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.interdiction",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-main-fantome",
+      "name": "Carte Main Fantôme",
+      "description": "Tu choisis un joueur, qui devra ce tour-ci jouer un prénom au hasard depuis sa main (sans le regarder !). Il pose la carte face cachée à l’aveugle, et découvre en même temps que tout le monde quel prénom il a envoyé au jury. Parfait pour ajouter un brin de chaos et d’auto-sabotage imprévisible.",
+      "effect": "main-fantome",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.main-fantome",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-defense-totale",
+      "name": "Carte Défense Totale",
+      "description": "Cette carte te protège pendant un tour. Si quelqu’un tente de te saboter, t’interdire un prénom que tu avais, ou t’imposer une carte Main Fantôme, tu peux dire « Non ! » et annuler l’effet immédiatement. Tu peux aussi l’utiliser pour éviter de devoir justifier ton prénom si tu es désigné. À jouer juste après qu’un effet te cible.",
+      "effect": "defense-totale",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.defense-totale",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-echange-force",
+      "name": "Carte Échange Forcé",
+      "description": "Tu désignes un joueur et échangez 1 carte prénom de vos mains, au hasard ou choisie (selon ton choix). Cela peut te sauver d’une main pourrie ou ruiner celle d’un adversaire juste avant un thème parfait.",
+      "effect": "echange-force",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.echange-force",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-panique-generale",
+      "name": "Carte Panique Générale",
+      "description": "À jouer juste après la lecture d'un thème. Tous les joueurs doivent défausser 3 cartes prénom de leur main et repiocher autant. Ça redistribue les chances et peut déséquilibrer les stratégies. Parfait quand tu sens que d'autres ont de trop bonnes mains !",
+      "effect": "panique-generale",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.panique-generale",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-retour-envoyeur",
+      "name": "Carte Retour à l’envoyeur",
+      "description": "Si tu es ciblé par une carte spéciale (Sabotage, Main Fantôme, etc.), tu peux jouer celle-ci pour renvoyer l’effet vers le joueur qui l’a lancé. Petit moment de revanche satisfaisant et de tension imprévisible.",
+      "effect": "retour-envoyeur",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.retour-envoyeur",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-theme-secret",
+      "name": "Carte Thème Secret",
+      "description": "Tu es le joueur actif et tu tires le thème en secret. Tu annonces seulement une version raccourcie ou très vague (par exemple « Le thème est… étrange ! »). Tous les joueurs doivent proposer un prénom à l’aveugle. Puis, tu révèles le thème exact après lecture des prénoms. Cela crée des retournements de situation hilarants et injustes… donc forcément très drôles.",
+      "effect": "theme-secret",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.theme-secret",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-chuchotement-confus",
+      "name": "Carte Chuchotement Confus",
+      "description": "Tu choisis un joueur qui devra chuchoter son prénom à son voisin de gauche. Le voisin doit ensuite défendre ce prénom à haute voix comme s’il était le sien. Confusion et fous rires garantis !",
+      "effect": "chuchotement-confus",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.chuchotement-confus",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-mega-combo",
+      "name": "Carte Méga Combo",
+      "description": "Permet de jouer trois prénoms en un seul, reliés par une histoire complètement improbable. Exemple : « Gérard, Joséphine et Bob-Le-Cactus, survivants d’une apocalypse de crème chantilly. »",
+      "effect": "mega-combo",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.mega-combo",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-inversion",
+      "name": "Carte Inversion",
+      "description": "Tous les joueurs doivent échanger leur carte prénom jouée avec celle d’un autre joueur de leur choix avant la révélation. Le Maître du Thème voit alors des choix inattendus et absurdes.",
+      "effect": "inversion",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.inversion",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-jury-mystere",
+      "name": "Carte Jury Mystère",
+      "description": "Pour un tour seulement, le Maître du Thème n’est pas le joueur actif, mais un joueur choisi au hasard parmi ceux qui ont posé un prénom. Il choisit le gagnant à la place. Chaos garanti !",
+      "effect": "jury-mystere",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.jury-mystere",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-effet-domino",
+      "name": "Carte Effet Domino",
+      "description": "Tu choisis un joueur ciblé : après avoir joué cette carte, chaque joueur suivant doit ajouter un adjectif ridicule à son prénom avant de le poser. Exemple : « Gérard-Écureuil-Volant. »",
+      "effect": "effet-domino",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.effet-domino",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-prenom-fantome",
+      "name": "Carte Prénom Fantôme",
+      "description": "Tu joues cette carte après que tous les prénoms soient posés : tu peux ajouter un prénom « fantôme » invisible pour le Maître du Thème. Il devra défendre ce prénom en imaginant qu’il a été joué par quelqu’un.",
+      "effect": "prenom-fantome",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.prenom-fantome",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-inversion-role",
+      "name": "Carte Inversion de Rôle",
+      "description": "Pour ce tour, tous les joueurs deviennent Maîtres du Thème et doivent voter à main levée pour choisir le prénom gagnant. Chaque joueur vote pour celui qu’il juge le plus absurde, même si ce n’est pas le sien.",
+      "effect": "inversion-role",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.inversion-role",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-chaos-temporel",
+      "name": "Carte Chaos Temporel",
+      "description": "Joue cette carte pour remonter le tour précédent : tous les joueurs reprennent leur prénom posé au tour précédent et le rejouent, mais avec une justification encore plus absurde.",
+      "effect": "chaos-temporel",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.chaos-temporel",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-ultra-sabotage",
+      "name": "Carte Ultra Sabotage",
+      "description": "Similaire à Sabotage, mais cible deux joueurs à la fois, qui doivent chacun justifier un prénom choisi au hasard. Les explications croisées peuvent devenir catastrophiquement drôles.",
+      "effect": "ultra-sabotage",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.ultra-sabotage",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "special-prenom-volant",
+      "name": "Carte Prénom Volant",
+      "description": "Tu choisis un joueur dont tu peux voler une carte prénom de sa main pour la jouer immédiatement, en plus de ton propre prénom. Le joueur volé doit piocher une nouvelle carte en compensation.",
+      "effect": "prenom-volant",
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "gerard.prenom-volant",
+          "data": {}
+        }
+      ]
+    }
+  ]
+}

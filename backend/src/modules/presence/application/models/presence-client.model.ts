@@ -47,6 +47,7 @@ export type PresenceIncomingPayload =
       roomId?: unknown;
       roomName?: unknown;
     }
+  | { type: 'presence-sync' }
+  | { type: 'chat-sync' }
   | { type: 'presence-activity'; at?: unknown };
 /** Explicitly named data contract at the application boundary. */
-

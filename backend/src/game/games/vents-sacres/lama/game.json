@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "2",
+  "snapshotMigrations": [
+    { "fromVersion": "lama@content:bc467eda", "toVersion": "1" }
+  ],
+  "category": "JeuxDeCartes",
+  "world": "VentsSacres",
+  "patterns": [],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "presentation": {
+    "score": {
+      "label": "Jetons",
+      "unit": { "singular": "jeton", "plural": "jetons" },
+      "changeNarration": "delta-and-total",
+      "visibility": "active-match"
+    }
+  },
+  "shortcuts": [
+    { "key": "Space", "type": "action", "actionType": "draw", "label": "Piocher" },
+    { "key": "S", "type": "interface", "id": "score", "label": "Jetons" },
+    { "key": "C", "type": "interface", "id": "discard", "label": "Carte au-dessus" }
+  ],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": { "actions": [], "transitions": ["turn"] },
+    "turn": {
+      "actions": ["lama_play", "draw", "lama_pass", "lama_quit"],
+      "transitions": ["return"]
+    },
+    "return": { "actions": [], "transitions": ["pause", "turn"] },
+    "pause": { "actions": [], "transitions": ["turn"] }
+  },
+  "actions": {
+    "lama_play": { "recipe": "lama-play" },
+    "draw": { "recipe": "lama-draw" },
+    "lama_pass": { "recipe": "lama-pass" },
+    "lama_quit": { "recipe": "lama-quit" }
+  },
+  "victory": { "kind": "by-lama" },
+  "lama": {
+    "deckId": "lama",
+    "handId": "lama-hands",
+    "returnChoiceId": "lama.return",
+    "pauseChoiceId": "lama.pause",
+    "drawnTurnFlag": "lama.drawn",
+    "cards": [
+      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+      2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+      3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+      4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+      5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+      6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+      "LAMA","LAMA","LAMA","LAMA","LAMA","LAMA","LAMA","LAMA","LAMA","LAMA",
+      "LAMA","LAMA","LAMA","LAMA","LAMA","LAMA","LAMA","LAMA","LAMA","LAMA"
+    ],
+    "defaults": {
+      "loseAtScore": 40,
+      "roundPauseSeconds": 0,
+      "allowPlayAfterDraw": false,
+      "startingHandSize": 6,
+      "copiesPerCardValue": 8,
+      "returnTokenFromRound": 2
+    }
+  }
+}

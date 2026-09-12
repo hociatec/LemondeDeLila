@@ -8,6 +8,7 @@ import type {
 import type { GameState } from '../models/game-state.model';
 import type { GameSnapshotPolicy } from '../ports/game-event-store.port';
 import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
+import { assertSerializableState } from '../../../engine/runtime/state/assert-serializable-state';
 import { assertGameStatePatch } from './game-state-patch-contract';
 import { createStatePatch, applyStatePatch } from './game-state-patch';
 import {
@@ -28,6 +29,7 @@ export function replayTimeline(
     [...timeline.snapshots]
       .filter((candidate) => candidate.seq <= untilSequence)
       .sort((left, right) => right.seq - left.seq)[0] ?? timeline.initial;
+  assertSerializableState(snapshot.state);
   let state = structuredClone(snapshot.state);
   let sequence = snapshot.seq;
   const events = [...timeline.events].sort(
@@ -139,6 +141,7 @@ export function assertGameStateSize(
   state: GameState,
   maxStateBytes: number | null | undefined,
 ): void {
+  assertSerializableState(state);
   const limit = positiveThreshold(maxStateBytes);
   if (limit == null) return;
   const bytes = Buffer.byteLength(JSON.stringify(state), 'utf8');
@@ -151,6 +154,7 @@ export function assertGameStateSize(
 }
 
 function createGameSnapshot(state: GameState, seq: number): GameSnapshot {
+  assertSerializableState(state);
   return {
     seq,
     version: state.version ?? 1,

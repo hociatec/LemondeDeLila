@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import { WsApiHubService } from '../../../../../platform/ws/public-api';
 
 type Subscription = {
@@ -13,10 +13,15 @@ export class RoomLobbyRefreshService implements OnModuleDestroy {
     null;
   private flushTimer: NodeJS.Timeout | null = null;
   private readonly flushDelayMs = 250;
+  private destroyed = false;
 
-  constructor(private readonly hub: WsApiHubService) {}
+  constructor(
+    @Inject(WsApiHubService)
+    private readonly hub: Pick<WsApiHubService, 'send'>,
+  ) {}
 
   onModuleDestroy(): void {
+    this.destroyed = true;
     if (this.flushTimer) clearTimeout(this.flushTimer);
     this.flushTimer = null;
     this.pending = null;
@@ -24,6 +29,7 @@ export class RoomLobbyRefreshService implements OnModuleDestroy {
   }
 
   subscribe(connectionId: string, gameType?: string | null) {
+    if (this.destroyed) return;
     const normalizedConnectionId =
       typeof connectionId === 'string' ? connectionId.trim() : '';
     if (!normalizedConnectionId || normalizedConnectionId.length > 128) return;
@@ -48,12 +54,11 @@ export class RoomLobbyRefreshService implements OnModuleDestroy {
   }
 
   notifyRefresh(roomId?: number | null, reason?: string | null) {
+    if (this.destroyed) return;
     // Coalesce bursts (join/leave/bot/etc.) into a single refresh push.
     const next = {
       roomId:
-        typeof roomId === 'number' &&
-        Number.isSafeInteger(roomId) &&
-        roomId > 0
+        typeof roomId === 'number' && Number.isSafeInteger(roomId) && roomId > 0
           ? roomId
           : null,
       reason:

@@ -49,6 +49,11 @@ export class EffectTargetResolver<TState extends object> {
     const actorId = this.state.actorPlayerId;
     if (selector.kind === 'player') return [selector.playerId];
     if (selector.kind === 'self') return actorId == null ? [] : [actorId];
+    if (
+      (selector.kind === 'next' || selector.kind === 'previous') &&
+      selector.order === 'turn'
+    )
+      return this.turnTarget(selector.kind);
     if (selector.kind === 'next') {
       const next =
         actorId == null
@@ -56,6 +61,21 @@ export class EffectTargetResolver<TState extends object> {
           : this.context.players.after(actorId);
       return next ? [next.id] : [];
     }
+    if (selector.kind === 'previous') {
+      const previous =
+        actorId == null
+          ? this.context.players.previous()
+          : this.context.players.before(actorId);
+      return previous ? [previous.id] : [];
+    }
+    if (selector.kind === 'random-player') {
+      const selected = this.context.random.pick(
+        this.context.players.active().map((player) => player.id),
+      );
+      return selected == null ? [] : [selected];
+    }
+    if (selector.kind === 'leader' || selector.kind === 'last')
+      return this.rankedTargets(selector);
     if (selector.kind === 'all-players') {
       return this.context.players.all().map((player) => player.id);
     }
@@ -68,6 +88,16 @@ export class EffectTargetResolver<TState extends object> {
       const selected = this.context.random.pick(opponents);
       return selected == null ? [] : [selected];
     }
+    return this.chosenTargets(selector, instruction);
+  }
+
+  private chosenTargets(
+    selector: Extract<
+      EffectTarget,
+      { kind: 'chosen-player' | 'chosen-opponent' }
+    >,
+    instruction: GameEffectInstruction,
+  ): number[] | null {
     const choiceId = selector.choiceId ?? 'engine.effect.player';
     if (
       this.state.playerChoiceResolved &&
@@ -91,6 +121,37 @@ export class EffectTargetResolver<TState extends object> {
     }
     this.state.queue.unshift(structuredClone(instruction));
     return null;
+  }
+
+  private rankedTargets(
+    selector: Extract<EffectTarget, { kind: 'leader' | 'last' }>,
+  ): number[] {
+    const ranked = this.context.players.active().map((player) => ({
+      id: player.id,
+      score: this.context.score.get(player.id),
+    }));
+    if (!ranked.length) return [];
+    const extreme =
+      selector.kind === 'leader'
+        ? Math.max(...ranked.map((player) => player.score))
+        : Math.min(...ranked.map((player) => player.score));
+    const tied = ranked
+      .filter((player) => player.score === extreme)
+      .map((player) => player.id);
+    if (selector.ties === 'all') return tied;
+    if (selector.ties === 'lowest-id') return [Math.min(...tied)];
+    const selected = this.context.random.pick(tied);
+    return selected == null ? [] : [selected];
+  }
+
+  private turnTarget(kind: 'next' | 'previous'): number[] {
+    const players = this.context.players.active();
+    const actorId =
+      this.state.actorPlayerId ?? this.context.players.current()?.id;
+    const index = players.findIndex((player) => player.id === actorId);
+    if (index < 0) return [];
+    const offset = this.context.turn.direction() * (kind === 'next' ? 1 : -1);
+    return [players[(index + offset + players.length) % players.length].id];
   }
 
   requestPlayerChoice(

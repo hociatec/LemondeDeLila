@@ -1,8 +1,11 @@
-﻿import { Injectable } from '@nestjs/common';
+﻿import { Inject, Injectable } from '@nestjs/common';
 import { requireAdmin } from '../../../../../platform/realtime/public-api';
 import type { WsSession } from '../../../../../platform/realtime/public-api';
 import { PayloadValidationService } from '../../../../../platform/validation/public-api';
-import { AdminPerfService } from '../../../application/use-cases/admin-perf/admin-perf.service';
+import {
+  ADMIN_PERF_PORT,
+  type AdminPerfPort,
+} from '../../../application/ports/admin-perf.port';
 import { AdminPerfSnapshotWsDto } from './dto/admin-ws.dto';
 import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
 
@@ -10,7 +13,7 @@ import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
 export class AdminPerfWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
-    private readonly perf: AdminPerfService,
+    @Inject(ADMIN_PERF_PORT) private readonly perf: AdminPerfPort,
   ) {}
 
   perfSnapshot(session: WsSession, payload: unknown) {

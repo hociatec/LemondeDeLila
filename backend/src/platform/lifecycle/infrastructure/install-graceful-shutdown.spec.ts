@@ -89,3 +89,33 @@ it('drains a real WebSocket command, then its disconnect write, before resource 
     await adapter.dispose();
   }
 });
+
+it('continues every shutdown phase after cleanup failures and reports them together', async () => {
+  const shutdown = new ApplicationShutdownService();
+  const sourceError = new Error('source failed');
+  const socketError = new Error('socket failed');
+  shutdown.registerSource('failing-source', () => {
+    throw sourceError;
+  });
+  const server = createServer();
+  const closeResources = jest.fn(async () => undefined);
+  const closeSockets = jest.fn(async () => {
+    throw socketError;
+  });
+  const app = {
+    close: closeResources,
+    getHttpServer: () => server,
+  } as unknown as INestApplication;
+  const close = installGracefulShutdown(
+    app,
+    shutdown,
+    { closeConnections: closeSockets },
+    jest.fn(),
+  );
+  const error = await close().catch((reason: unknown) => reason);
+  expect(error).toBeInstanceOf(AggregateError);
+  if (!(error instanceof AggregateError)) throw new Error('Expected failures');
+  expect(error.errors).toEqual([sourceError, socketError]);
+  expect(closeSockets).toHaveBeenCalledTimes(1);
+  expect(closeResources).toHaveBeenCalledTimes(1);
+});

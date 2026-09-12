@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "VentsSacres",
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "goose-board",
+      "spaces": 64,
+      "overshoot": "bounce"
+    }
+  ],
+  "components": [
+    {
+      "id": "goose",
+      "component": "pawn.set",
+      "perPlayer": 1,
+      "pawns": [
+        { "id": "coq-rockeur", "label": "Coq rockeur" },
+        { "id": "vache-artistique", "label": "Vache artistique" },
+        { "id": "cochon-gourmand", "label": "Cochon gourmand" },
+        { "id": "poule-scientifique", "label": "Poule scientifique" },
+        { "id": "chevre-acrobate", "label": "Chèvre acrobate" },
+        { "id": "marmotte-reveuse", "label": "Marmotte rêveuse" }
+      ]
+    }
+  ],
+  "setup": {
+    "tracks": {
+      "goose-board": 1
+    }
+  },
+  "resourceIds": [],
+  "shortcuts": [
+    { "key": "D", "type": "action", "actionType": "roll" },
+    { "key": "P", "type": "interface", "id": "position" }
+  ],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": {
+      "actions": [],
+      "transitions": ["playing"]
+    },
+    "playing": {
+      "actions": ["roll"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "goose-race-roll",
+      "documentation": "Lance le dé et résout toutes les cases spéciales."
+    }
+  },
+  "victory": {
+    "kind": "by-goose-race"
+  },
+  "gooseRace": {
+    "trackId": "goose-board",
+    "diceId": "main",
+    "playingPhase": "playing",
+    "wellStatus": "goose.in-well",
+    "finishReason": "case-63",
+    "maxDepth": 20,
+    "bridgeDestination": 12,
+    "tiles": {
+      "$content": "content/catalogue.json#/tiles"
+    },
+    "pawnSelection": {
+      "setId": "goose",
+      "choiceId": "goose.pawn"
+    }
+  }
+}

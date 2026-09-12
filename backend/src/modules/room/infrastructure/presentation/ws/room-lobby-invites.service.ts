@@ -53,13 +53,13 @@ export class RoomLobbyInvitesService {
         alreadyInRoom: true,
       });
     }
-    const existing = this.invites.findActive(room.id, dto.userId);
+    const existing = await this.invites.findActive(room.id, dto.userId);
     if (existing) {
       return this.presenter.presentInviteSent(
         this.presenter.presentExistingInvite(room, existing),
       );
     }
-    const invite = this.invites.create(room.id, user.id, dto.userId);
+    const invite = await this.invites.create(room.id, user.id, dto.userId);
     await this.notifications.notifyUser(
       dto.userId,
       'room.lobby.invite.received',
@@ -91,19 +91,26 @@ export class RoomLobbyInvitesService {
     const activeIds = new Set<number>(
       await this.lobbyRepo.listActiveParticipantUserIds(room.id),
     );
-    const players = this.presence
+    const candidates = this.presence
       .listPlayers()
       .filter((player) => player.id !== user.id)
       .filter((player) => player.availability !== 'absent')
       .filter((player) => !activeIds.has(player.id))
-      .slice(0, 1_000)
+      .slice(0, 1_000);
+    const pendingRecipientIds = new Set(
+      await this.invites.activeRecipientIds(
+        room.id,
+        candidates.map((player) => player.id),
+      ),
+    );
+    const players = candidates
       .map((player) => ({
         id: player.id,
         username: player.username,
         availability: player.availability ?? null,
         location: player.location ?? null,
         currentRoom: player.currentRoom ?? null,
-        pendingInvite: Boolean(this.invites.findActive(room.id, player.id)),
+        pendingInvite: pendingRecipientIds.has(player.id),
       }))
       .sort((left, right) =>
         left.username.localeCompare(right.username, undefined, {
@@ -115,7 +122,7 @@ export class RoomLobbyInvitesService {
 
   async respond(user: LobbyUser, dto: RoomInviteRespondDto) {
     const invite = this.policy.requireInviteRecipient(
-      this.invites.get(dto.invitationId),
+      await this.invites.get(dto.invitationId),
       user.id,
     );
     if (!invite) {
@@ -128,7 +135,7 @@ export class RoomLobbyInvitesService {
     if (dto.accept) {
       return this.accept(user, invite, dto.invitationId);
     }
-    this.invites.delete(dto.invitationId);
+    await this.invites.delete(dto.invitationId);
     await this.notifyResponse(invite, dto.invitationId, user, false);
     return this.presenter.presentInviteResponded({
       invitationId: dto.invitationId,
@@ -149,7 +156,7 @@ export class RoomLobbyInvitesService {
       await this.membership.joinRoom(invite.roomId, user.id, {
         allowPrivate: true,
       });
-      this.invites.consume(invitationId);
+      await this.invites.consume(invitationId);
       await this.refreshRoom(invite.roomId);
     } catch (error) {
       if (!getErrorMessage(error, '').toLowerCase().includes('demarr')) {
@@ -173,7 +180,7 @@ export class RoomLobbyInvitesService {
     invitationId: string,
     room: RoomPayload['room'],
   ) {
-    this.invites.consume(invitationId, { keep: true });
+    await this.invites.consume(invitationId, { keep: true });
     await this.refreshRoom(invite.roomId);
     await this.notifyResponse(invite, invitationId, user, true);
     return this.presenter.presentInviteAccepted(invite.roomId, room, true);

@@ -3,7 +3,11 @@ import {
   testGame,
 } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import gameDefinition from './game';
+import { compileJsonGame } from '../../../engine/json/public-api';
+import manifest from './manifest.json';
+import document from './game.json';
+
+const gameDefinition = compileJsonGame(manifest, document);
 
 describe('Odyssée des Quatre Cieux declarative game', () => {
   it('uses the stored die rather than a copied roll when completing a choice', async () => {

@@ -8,7 +8,11 @@ export class AdminLogsConfigService implements AdminLogsConfigPort {
 
   getLogDir(): string {
     const configured = this.config.get<string>('LOG_DIR');
-    if (typeof configured !== 'string' || !configured.trim() || configured.length > 4096) {
+    if (
+      typeof configured !== 'string' ||
+      !configured.trim() ||
+      configured.length > 4096
+    ) {
       return 'log';
     }
     return configured.trim();

@@ -7,6 +7,26 @@ import {
   serializeOptionalDate,
 } from './date-serialization';
 
+it.each([
+  '2026-02-30T12:00:00Z',
+  '2025-02-29T12:00:00Z',
+  '2026-04-31T12:00:00+02:00',
+  '2026-09-10T24:00:00Z',
+  '2026-09-10T12:60:00Z',
+  '2026-09-10T12:00:60Z',
+  '2026-09-10T12:00:00+25:00',
+  'September 10, 2026 12:00:00Z',
+])('rejects invalid or ambiguous instant %s without normalization', (value) => {
+  expect(parseExplicitInstant(value)).toBeNull();
+});
+
+it.each(['2024-02-29T23:00:00Z', '2026-09-10T12:00:00.123+0200'])(
+  'accepts valid explicit instant %s',
+  (value) => {
+    expect(parseExplicitInstant(value)).toBe(Date.parse(value));
+  },
+);
+
 it('serializes a stored date in UTC and preserves an absent optional date', () => {
   expect(serializeDate(new Date('2026-09-08T12:00:00+02:00'))).toBe(
     '2026-09-08T10:00:00.000Z',

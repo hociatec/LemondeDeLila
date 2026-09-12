@@ -3,6 +3,7 @@ import {
   WS_RUNTIME_CONFIG,
   type WsRuntimeConfig,
 } from '../ports/ws-runtime-config.port';
+import { stringifyExternalJson } from '../../../serialization/public-api';
 
 type WsSocketLike = {
   readyState: number;
@@ -115,10 +116,8 @@ export class WsApiHubService implements OnModuleDestroy {
       return false;
     }
     try {
-      const serialized = JSON.stringify(message);
-      if (
-        Buffer.byteLength(serialized, 'utf8') > MAX_OUTBOUND_MESSAGE_BYTES
-      ) {
+      const serialized = stringifyExternalJson(message);
+      if (Buffer.byteLength(serialized, 'utf8') > MAX_OUTBOUND_MESSAGE_BYTES) {
         this.logger.warn(
           `Message WS sortant trop volumineux connectionId=${connectionId}`,
         );

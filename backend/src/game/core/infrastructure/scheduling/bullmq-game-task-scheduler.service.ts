@@ -1,4 +1,8 @@
 import { allCompleted } from '../../../../shared/utils/public-api';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ApplicationShutdownService } from '../../../../platform/lifecycle/public-api';
 import { ConfigService } from '@nestjs/config';
@@ -36,6 +40,7 @@ export class BullmqGameTaskSchedulerService
   constructor(
     config: ConfigService,
     private readonly metrics: GameEngineMetricsService,
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
     @Inject(ApplicationShutdownService)
     private readonly shutdown = new ApplicationShutdownService(),
   ) {
@@ -88,7 +93,7 @@ export class BullmqGameTaskSchedulerService
         } catch {
           throw new UnrecoverableError('Invalid game scheduled task');
         }
-        const startedAtMs = Date.now();
+        const startedAtMs = this.clock.now();
         if (task.dueAtMs > startedAtMs) {
           await job.moveToDelayed(task.dueAtMs, token);
           throw new DelayedError();
@@ -127,8 +132,7 @@ export class BullmqGameTaskSchedulerService
       }
       const terminal =
         error instanceof UnrecoverableError ||
-        job.attemptsMade >=
-        (job.opts.attempts ?? IDEMPOTENT_TASK_ATTEMPTS);
+        job.attemptsMade >= (job.opts.attempts ?? IDEMPOTENT_TASK_ATTEMPTS);
       this.metrics.recordTimerFailure(task.gameType, terminal);
       this.logger.error(
         JSON.stringify({
@@ -167,7 +171,7 @@ export class BullmqGameTaskSchedulerService
     await this.removeSuperseded(correlatedTask);
     await this.queue.add('execute', correlatedTask, {
       jobId,
-      delay: Math.max(0, correlatedTask.dueAtMs - Date.now()),
+      delay: Math.max(0, correlatedTask.dueAtMs - this.clock.now()),
     });
     this.metrics.recordTimerScheduled(correlatedTask.gameType);
   }

@@ -7,7 +7,12 @@ export function playingLog(
 ): void {
   try {
     if (typeof label !== 'string' || !label || label.length > 128) return;
-    if (!payload || typeof payload !== 'object' || Object.keys(payload).length > 128) return;
+    if (
+      !payload ||
+      typeof payload !== 'object' ||
+      Object.keys(payload).length > 128
+    )
+      return;
     const line = JSON.stringify({
       ts: new Date().toISOString(),
       label,

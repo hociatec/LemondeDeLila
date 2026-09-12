@@ -1,0 +1,2245 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "1",
+  "snapshotMigrations": [
+    {
+      "fromVersion": "cat-pattes@content:b15666ae",
+      "toVersion": "1"
+    }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "patterns": [],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    {
+      "key": "Space",
+      "type": "action",
+      "actionType": "draw"
+    },
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "discard_card"
+    }
+  ],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": {
+      "actions": [],
+      "transitions": ["playing"]
+    },
+    "playing": {
+      "actions": ["draw", "play_card", "discard_card"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "draw": {
+      "recipe": "cat-pattes-draw"
+    },
+    "play_card": {
+      "recipe": "cat-pattes-play"
+    },
+    "discard_card": {
+      "recipe": "cat-pattes-discard"
+    }
+  },
+  "victory": {
+    "kind": "by-cat-pattes"
+  },
+  "catPattes": {
+    "deckId": "cat-pattes",
+    "handId": "players",
+    "trackId": "cat-pattes",
+    "goal": 1000,
+    "initialHandSize": 6,
+    "defaultRounds": 3,
+    "statusPrefix": "cat-pattes.",
+    "cards": [
+      {
+        "id": "pattes-10-1",
+        "name": "Pas feutré",
+        "description": "Un mouvement discret, précis, presque invisible.",
+        "effect": "Vous avancez de 10 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 10
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 10
+      },
+      {
+        "id": "pattes-10-2",
+        "name": "Pas feutré",
+        "description": "Un mouvement discret, précis, presque invisible.",
+        "effect": "Vous avancez de 10 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 10
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 10
+      },
+      {
+        "id": "pattes-10-3",
+        "name": "Pas feutré",
+        "description": "Un mouvement discret, précis, presque invisible.",
+        "effect": "Vous avancez de 10 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 10
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 10
+      },
+      {
+        "id": "pattes-10-4",
+        "name": "Pas feutré",
+        "description": "Un mouvement discret, précis, presque invisible.",
+        "effect": "Vous avancez de 10 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 10
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 10
+      },
+      {
+        "id": "pattes-10-5",
+        "name": "Pas feutré",
+        "description": "Un mouvement discret, précis, presque invisible.",
+        "effect": "Vous avancez de 10 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 10
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 10
+      },
+      {
+        "id": "pattes-10-6",
+        "name": "Pas feutré",
+        "description": "Un mouvement discret, précis, presque invisible.",
+        "effect": "Vous avancez de 10 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 10
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 10
+      },
+      {
+        "id": "pattes-20-1",
+        "name": "Petite foulée",
+        "description": "Avancer tranquillement, la queue bien droite.",
+        "effect": "Vous progressez de 20 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 20
+      },
+      {
+        "id": "pattes-20-2",
+        "name": "Petite foulée",
+        "description": "Avancer tranquillement, la queue bien droite.",
+        "effect": "Vous progressez de 20 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 20
+      },
+      {
+        "id": "pattes-20-3",
+        "name": "Petite foulée",
+        "description": "Avancer tranquillement, la queue bien droite.",
+        "effect": "Vous progressez de 20 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 20
+      },
+      {
+        "id": "pattes-20-4",
+        "name": "Petite foulée",
+        "description": "Avancer tranquillement, la queue bien droite.",
+        "effect": "Vous progressez de 20 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 20
+      },
+      {
+        "id": "pattes-20-5",
+        "name": "Petite foulée",
+        "description": "Avancer tranquillement, la queue bien droite.",
+        "effect": "Vous progressez de 20 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 20
+      },
+      {
+        "id": "pattes-20-6",
+        "name": "Petite foulée",
+        "description": "Avancer tranquillement, la queue bien droite.",
+        "effect": "Vous progressez de 20 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 20
+      },
+      {
+        "id": "pattes-20-7",
+        "name": "Petite foulée",
+        "description": "Avancer tranquillement, la queue bien droite.",
+        "effect": "Vous progressez de 20 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 20
+      },
+      {
+        "id": "pattes-20-8",
+        "name": "Petite foulée",
+        "description": "Avancer tranquillement, la queue bien droite.",
+        "effect": "Vous progressez de 20 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 20
+      },
+      {
+        "id": "pattes-20-9",
+        "name": "Petite foulée",
+        "description": "Avancer tranquillement, la queue bien droite.",
+        "effect": "Vous progressez de 20 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 20
+      },
+      {
+        "id": "pattes-20-10",
+        "name": "Petite foulée",
+        "description": "Avancer tranquillement, la queue bien droite.",
+        "effect": "Vous progressez de 20 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 20
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 20
+      },
+      {
+        "id": "pattes-50-1",
+        "name": "Sprint du matin",
+        "description": "Votre chat déborde d'énergie pour l'instant.",
+        "effect": "Vous vous élancez de 50 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 50
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 50
+      },
+      {
+        "id": "pattes-50-2",
+        "name": "Sprint du matin",
+        "description": "Votre chat déborde d'énergie pour l'instant.",
+        "effect": "Vous vous élancez de 50 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 50
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 50
+      },
+      {
+        "id": "pattes-50-3",
+        "name": "Sprint du matin",
+        "description": "Votre chat déborde d'énergie pour l'instant.",
+        "effect": "Vous vous élancez de 50 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 50
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 50
+      },
+      {
+        "id": "pattes-50-4",
+        "name": "Sprint du matin",
+        "description": "Votre chat déborde d'énergie pour l'instant.",
+        "effect": "Vous vous élancez de 50 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 50
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 50
+      },
+      {
+        "id": "pattes-50-5",
+        "name": "Sprint du matin",
+        "description": "Votre chat déborde d'énergie pour l'instant.",
+        "effect": "Vous vous élancez de 50 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 50
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 50
+      },
+      {
+        "id": "pattes-50-6",
+        "name": "Sprint du matin",
+        "description": "Votre chat déborde d'énergie pour l'instant.",
+        "effect": "Vous vous élancez de 50 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 50
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 50
+      },
+      {
+        "id": "pattes-50-7",
+        "name": "Sprint du matin",
+        "description": "Votre chat déborde d'énergie pour l'instant.",
+        "effect": "Vous vous élancez de 50 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 50
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 50
+      },
+      {
+        "id": "pattes-50-8",
+        "name": "Sprint du matin",
+        "description": "Votre chat déborde d'énergie pour l'instant.",
+        "effect": "Vous vous élancez de 50 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 50
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 50
+      },
+      {
+        "id": "pattes-50-9",
+        "name": "Sprint du matin",
+        "description": "Votre chat déborde d'énergie pour l'instant.",
+        "effect": "Vous vous élancez de 50 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 50
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 50
+      },
+      {
+        "id": "pattes-50-10",
+        "name": "Sprint du matin",
+        "description": "Votre chat déborde d'énergie pour l'instant.",
+        "effect": "Vous vous élancez de 50 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 50
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 50
+      },
+      {
+        "id": "pattes-80-1",
+        "name": "Course-poursuite",
+        "description": "Quelque chose a bougé. Il faut foncer.",
+        "effect": "Vous bondissez de 80 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 80
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 80
+      },
+      {
+        "id": "pattes-80-2",
+        "name": "Course-poursuite",
+        "description": "Quelque chose a bougé. Il faut foncer.",
+        "effect": "Vous bondissez de 80 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 80
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 80
+      },
+      {
+        "id": "pattes-80-3",
+        "name": "Course-poursuite",
+        "description": "Quelque chose a bougé. Il faut foncer.",
+        "effect": "Vous bondissez de 80 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 80
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 80
+      },
+      {
+        "id": "pattes-80-4",
+        "name": "Course-poursuite",
+        "description": "Quelque chose a bougé. Il faut foncer.",
+        "effect": "Vous bondissez de 80 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 80
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 80
+      },
+      {
+        "id": "pattes-80-5",
+        "name": "Course-poursuite",
+        "description": "Quelque chose a bougé. Il faut foncer.",
+        "effect": "Vous bondissez de 80 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 80
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 80
+      },
+      {
+        "id": "pattes-80-6",
+        "name": "Course-poursuite",
+        "description": "Quelque chose a bougé. Il faut foncer.",
+        "effect": "Vous bondissez de 80 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 80
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 80
+      },
+      {
+        "id": "pattes-80-7",
+        "name": "Course-poursuite",
+        "description": "Quelque chose a bougé. Il faut foncer.",
+        "effect": "Vous bondissez de 80 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 80
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 80
+      },
+      {
+        "id": "pattes-80-8",
+        "name": "Course-poursuite",
+        "description": "Quelque chose a bougé. Il faut foncer.",
+        "effect": "Vous bondissez de 80 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 80
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 80
+      },
+      {
+        "id": "pattes-80-9",
+        "name": "Course-poursuite",
+        "description": "Quelque chose a bougé. Il faut foncer.",
+        "effect": "Vous bondissez de 80 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 80
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 80
+      },
+      {
+        "id": "pattes-80-10",
+        "name": "Course-poursuite",
+        "description": "Quelque chose a bougé. Il faut foncer.",
+        "effect": "Vous bondissez de 80 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 80
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 80
+      },
+      {
+        "id": "pattes-130-1",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-2",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-3",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-4",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-5",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-6",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-7",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-8",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-9",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-10",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-11",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-130-12",
+        "name": "Chasse à la souris",
+        "description": "Concentration maximale. Objectif en vue.",
+        "effect": "Vous foncez sur 130 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 130
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 130
+      },
+      {
+        "id": "pattes-150-1",
+        "name": "Turbochat",
+        "description": "Quand tout s'aligne: vitesse, instinct et panache.",
+        "effect": "Vous vous déchaînez sur 150 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 150
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 150
+      },
+      {
+        "id": "pattes-150-2",
+        "name": "Turbochat",
+        "description": "Quand tout s'aligne: vitesse, instinct et panache.",
+        "effect": "Vous vous déchaînez sur 150 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 150
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 150
+      },
+      {
+        "id": "pattes-150-3",
+        "name": "Turbochat",
+        "description": "Quand tout s'aligne: vitesse, instinct et panache.",
+        "effect": "Vous vous déchaînez sur 150 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 150
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 150
+      },
+      {
+        "id": "pattes-150-4",
+        "name": "Turbochat",
+        "description": "Quand tout s'aligne: vitesse, instinct et panache.",
+        "effect": "Vous vous déchaînez sur 150 pattes.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.move",
+            "data": {
+              "value": 150
+            }
+          }
+        ],
+        "type": "pattes",
+        "value": 150
+      },
+      {
+        "id": "obstacle-gamelle-1",
+        "name": "Gamelle vide",
+        "description": "Impossible d'avancer le ventre vide.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retire.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "gamelle"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "gamelle"
+      },
+      {
+        "id": "obstacle-gamelle-2",
+        "name": "Gamelle vide",
+        "description": "Impossible d'avancer le ventre vide.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retire.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "gamelle"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "gamelle"
+      },
+      {
+        "id": "obstacle-gamelle-3",
+        "name": "Gamelle vide",
+        "description": "Impossible d'avancer le ventre vide.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retire.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "gamelle"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "gamelle"
+      },
+      {
+        "id": "obstacle-pluie-1",
+        "name": "Pluie torrentielle",
+        "description": "Tout est mouillé, glissant, et franchement désagréable.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "pluie"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "pluie"
+      },
+      {
+        "id": "obstacle-pluie-2",
+        "name": "Pluie torrentielle",
+        "description": "Tout est mouillé, glissant, et franchement désagréable.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "pluie"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "pluie"
+      },
+      {
+        "id": "obstacle-pluie-3",
+        "name": "Pluie torrentielle",
+        "description": "Tout est mouillé, glissant, et franchement désagréable.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "pluie"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "pluie"
+      },
+      {
+        "id": "obstacle-pluie-4",
+        "name": "Pluie torrentielle",
+        "description": "Tout est mouillé, glissant, et franchement désagréable.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "pluie"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "pluie"
+      },
+      {
+        "id": "obstacle-pluie-5",
+        "name": "Pluie torrentielle",
+        "description": "Tout est mouillé, glissant, et franchement désagréable.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "pluie"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "pluie"
+      },
+      {
+        "id": "obstacle-chien-1",
+        "name": "Chien enragé",
+        "description": "Beaucoup trop enthousiaste. Beaucoup trop proche.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "chien"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "chien"
+      },
+      {
+        "id": "obstacle-chien-2",
+        "name": "Chien enragé",
+        "description": "Beaucoup trop enthousiaste. Beaucoup trop proche.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "chien"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "chien"
+      },
+      {
+        "id": "obstacle-chien-3",
+        "name": "Chien enragé",
+        "description": "Beaucoup trop enthousiaste. Beaucoup trop proche.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "chien"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "chien"
+      },
+      {
+        "id": "obstacle-coussin-1",
+        "name": "Coussin piégé",
+        "description": "Il avait l'air confortable, erreur fatale.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "coussin"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "coussin"
+      },
+      {
+        "id": "obstacle-coussin-2",
+        "name": "Coussin piégé",
+        "description": "Il avait l'air confortable, erreur fatale.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "coussin"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "coussin"
+      },
+      {
+        "id": "obstacle-coussin-3",
+        "name": "Coussin piégé",
+        "description": "Il avait l'air confortable, erreur fatale.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "coussin"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "coussin"
+      },
+      {
+        "id": "obstacle-sol-1",
+        "name": "Sol ciré",
+        "description": "Vos pattes partent toutes seules, mais pas dans le bon sens.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "sol"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "sol"
+      },
+      {
+        "id": "obstacle-sol-2",
+        "name": "Sol ciré",
+        "description": "Vos pattes partent toutes seules, mais pas dans le bon sens.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "sol"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "sol"
+      },
+      {
+        "id": "obstacle-sol-3",
+        "name": "Sol ciré",
+        "description": "Vos pattes partent toutes seules, mais pas dans le bon sens.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "sol"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "sol"
+      },
+      {
+        "id": "obstacle-sol-4",
+        "name": "Sol ciré",
+        "description": "Vos pattes partent toutes seules, mais pas dans le bon sens.",
+        "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+        "effects": [
+          {
+            "kind": "add-status",
+            "status": "cat-pattes.obstacle",
+            "scope": "round",
+            "data": {
+              "obstacle": "sol"
+            },
+            "target": {
+              "kind": "chosen-opponent",
+              "choiceId": "cat-pattes.obstacle",
+              "optional": false
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "obstacle",
+        "obstacle": "sol"
+      },
+      {
+        "id": "parade-croquettes-1",
+        "name": "Croquettes",
+        "description": "Un plein d'énergie instantané.",
+        "effect": "Retire Gamelle vide.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "croquettes"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "croquettes"
+      },
+      {
+        "id": "parade-croquettes-2",
+        "name": "Croquettes",
+        "description": "Un plein d'énergie instantané.",
+        "effect": "Retire Gamelle vide.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "croquettes"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "croquettes"
+      },
+      {
+        "id": "parade-croquettes-3",
+        "name": "Croquettes",
+        "description": "Un plein d'énergie instantané.",
+        "effect": "Retire Gamelle vide.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "croquettes"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "croquettes"
+      },
+      {
+        "id": "parade-croquettes-4",
+        "name": "Croquettes",
+        "description": "Un plein d'énergie instantané.",
+        "effect": "Retire Gamelle vide.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "croquettes"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "croquettes"
+      },
+      {
+        "id": "parade-croquettes-5",
+        "name": "Croquettes",
+        "description": "Un plein d'énergie instantané.",
+        "effect": "Retire Gamelle vide.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "croquettes"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "croquettes"
+      },
+      {
+        "id": "parade-croquettes-6",
+        "name": "Croquettes",
+        "description": "Un plein d'énergie instantané.",
+        "effect": "Retire Gamelle vide.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "croquettes"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "croquettes"
+      },
+      {
+        "id": "parade-rayon-1",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-2",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-3",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-4",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-5",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-6",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-7",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-8",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-9",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-10",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-11",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-12",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-13",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-rayon-14",
+        "name": "Rayon de soleil",
+        "description": "Indispensable pour démarrer ou repartir du bon pied.",
+        "effect": "Active le soleil. Retire Pluie torrentielle.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "rayon"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "rayon"
+      },
+      {
+        "id": "parade-dodo-1",
+        "name": "Dodo réparateur",
+        "description": "Un petit somme, et tout va mieux.",
+        "effect": "Retire Chien enragé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "dodo"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "dodo"
+      },
+      {
+        "id": "parade-dodo-2",
+        "name": "Dodo réparateur",
+        "description": "Un petit somme, et tout va mieux.",
+        "effect": "Retire Chien enragé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "dodo"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "dodo"
+      },
+      {
+        "id": "parade-dodo-3",
+        "name": "Dodo réparateur",
+        "description": "Un petit somme, et tout va mieux.",
+        "effect": "Retire Chien enragé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "dodo"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "dodo"
+      },
+      {
+        "id": "parade-dodo-4",
+        "name": "Dodo réparateur",
+        "description": "Un petit somme, et tout va mieux.",
+        "effect": "Retire Chien enragé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "dodo"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "dodo"
+      },
+      {
+        "id": "parade-dodo-5",
+        "name": "Dodo réparateur",
+        "description": "Un petit somme, et tout va mieux.",
+        "effect": "Retire Chien enragé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "dodo"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "dodo"
+      },
+      {
+        "id": "parade-dodo-6",
+        "name": "Dodo réparateur",
+        "description": "Un petit somme, et tout va mieux.",
+        "effect": "Retire Chien enragé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "dodo"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "dodo"
+      },
+      {
+        "id": "parade-coussin-1",
+        "name": "Nouveau coussin",
+        "description": "Celui-ci est sûr. Normalement.",
+        "effect": "Retire Coussin piégé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "coussin"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "coussin"
+      },
+      {
+        "id": "parade-coussin-2",
+        "name": "Nouveau coussin",
+        "description": "Celui-ci est sûr. Normalement.",
+        "effect": "Retire Coussin piégé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "coussin"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "coussin"
+      },
+      {
+        "id": "parade-coussin-3",
+        "name": "Nouveau coussin",
+        "description": "Celui-ci est sûr. Normalement.",
+        "effect": "Retire Coussin piégé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "coussin"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "coussin"
+      },
+      {
+        "id": "parade-coussin-4",
+        "name": "Nouveau coussin",
+        "description": "Celui-ci est sûr. Normalement.",
+        "effect": "Retire Coussin piégé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "coussin"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "coussin"
+      },
+      {
+        "id": "parade-coussin-5",
+        "name": "Nouveau coussin",
+        "description": "Celui-ci est sûr. Normalement.",
+        "effect": "Retire Coussin piégé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "coussin"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "coussin"
+      },
+      {
+        "id": "parade-coussin-6",
+        "name": "Nouveau coussin",
+        "description": "Celui-ci est sûr. Normalement.",
+        "effect": "Retire Coussin piégé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "coussin"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "coussin"
+      },
+      {
+        "id": "parade-saut-1",
+        "name": "Saut agile",
+        "description": "Une pirouette bien placée règle beaucoup de problèmes.",
+        "effect": "Retire Sol ciré.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "saut"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "saut"
+      },
+      {
+        "id": "parade-saut-2",
+        "name": "Saut agile",
+        "description": "Une pirouette bien placée règle beaucoup de problèmes.",
+        "effect": "Retire Sol ciré.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "saut"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "saut"
+      },
+      {
+        "id": "parade-saut-3",
+        "name": "Saut agile",
+        "description": "Une pirouette bien placée règle beaucoup de problèmes.",
+        "effect": "Retire Sol ciré.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "saut"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "saut"
+      },
+      {
+        "id": "parade-saut-4",
+        "name": "Saut agile",
+        "description": "Une pirouette bien placée règle beaucoup de problèmes.",
+        "effect": "Retire Sol ciré.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "saut"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "saut"
+      },
+      {
+        "id": "parade-saut-5",
+        "name": "Saut agile",
+        "description": "Une pirouette bien placée règle beaucoup de problèmes.",
+        "effect": "Retire Sol ciré.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "saut"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "saut"
+      },
+      {
+        "id": "parade-saut-6",
+        "name": "Saut agile",
+        "description": "Une pirouette bien placée règle beaucoup de problèmes.",
+        "effect": "Retire Sol ciré.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.parade",
+            "data": {
+              "parade": "saut"
+            }
+          },
+          {
+            "kind": "complete-turn"
+          }
+        ],
+        "type": "parade",
+        "parade": "saut"
+      },
+      {
+        "id": "bot-reserve",
+        "name": "Réserve secrète",
+        "description": "Plus jamais à court de croquettes.",
+        "effect": "Ignore Gamelle vide.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.power",
+            "data": {
+              "power": "reserve"
+            }
+          }
+        ],
+        "type": "bot",
+        "bot": "reserve"
+      },
+      {
+        "id": "bot-chat-ninja",
+        "name": "Chat Ninja",
+        "description": "Les chiens ? Quels chiens ?",
+        "effect": "Ignore Chien enragé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.power",
+            "data": {
+              "power": "chat-ninja"
+            }
+          }
+        ],
+        "type": "bot",
+        "bot": "chat-ninja"
+      },
+      {
+        "id": "bot-patte-blindee",
+        "name": "Patte blindée",
+        "description": "Les pièges ne font plus peur.",
+        "effect": "Ignore Coussin piégé.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.power",
+            "data": {
+              "power": "patte-blindee"
+            }
+          }
+        ],
+        "type": "bot",
+        "bot": "patte-blindee"
+      },
+      {
+        "id": "bot-passage-star",
+        "name": "Passage de star",
+        "description": "Toujours prioritaire. Toujours prêt. Toujours stylé.",
+        "effect": "Ignore Pluie torrentielle et Sol ciré, et joue sans soleil.",
+        "effects": [
+          {
+            "kind": "custom",
+            "effectId": "cat-pattes.power",
+            "data": {
+              "power": "passage-star"
+            }
+          }
+        ],
+        "type": "bot",
+        "bot": "passage-star"
+      }
+    ]
+  }
+}

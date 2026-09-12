@@ -55,6 +55,7 @@ export class InMemoryGameSessionStore
     state: GameState,
   ): Promise<GameState> {
     const key = this.key(roomId, gameType);
+    assertGameStateSize(state, this.snapshotPolicy.maxStateBytes);
     const restored = structuredClone(state);
     restored.metadata = { ...restored.metadata, restoreId: randomUUID() };
     assertGameStateSize(restored, this.snapshotPolicy.maxStateBytes);
@@ -70,6 +71,7 @@ export class InMemoryGameSessionStore
   }
 
   async compareAndSet(commit: GameStateCommit): Promise<GameStateCommitResult> {
+    assertGameStateSize(commit.next, this.snapshotPolicy.maxStateBytes);
     const key = this.key(commit.roomId, commit.gameType);
     const current = this.states.get(key);
     const currentVersion = current?.version ?? 0;
@@ -121,9 +123,15 @@ export class InMemoryGameSessionStore
     roomId: number,
     gameType: string,
     expectedVersion: number,
+    expectedRestoreId?: string | null,
   ): Promise<void> {
     const key = this.key(roomId, gameType);
-    if (this.states.get(key)?.version === expectedVersion) {
+    const current = this.states.get(key);
+    if (
+      current?.version === expectedVersion &&
+      (expectedRestoreId === undefined ||
+        (current.metadata?.restoreId ?? null) === expectedRestoreId)
+    ) {
       this.states.delete(key);
       this.timelines.delete(key);
     }

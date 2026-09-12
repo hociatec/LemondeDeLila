@@ -41,16 +41,26 @@ export function executeRegisteredPrimitive(
       return handlers['roll-dice'](instruction);
     case 'complete-turn':
       return handlers['complete-turn'](instruction);
+    case 'start-round':
+      return handlers['start-round'](instruction);
+    case 'end-round':
+      return handlers['end-round'](instruction);
+    case 'eliminate-player':
+      return handlers['eliminate-player'](instruction);
     case 'reverse-turn-order':
       return handlers['reverse-turn-order'](instruction);
     case 'transfer-resource':
       return handlers['transfer-resource'](instruction);
+    case 'exchange-resources':
+      return handlers['exchange-resources'](instruction);
     case 'give-card':
       return handlers['give-card'](instruction);
     case 'steal-card':
       return handlers['steal-card'](instruction);
     case 'swap-hands':
       return handlers['swap-hands'](instruction);
+    case 'exchange-random-cards':
+      return handlers['exchange-random-cards'](instruction);
     case 'swap-positions':
       return handlers['swap-positions'](instruction);
     case 'steal-random-inventory':

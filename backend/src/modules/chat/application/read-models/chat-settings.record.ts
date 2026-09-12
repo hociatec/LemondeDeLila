@@ -3,4 +3,3 @@ export type ChatSettings = {
   editWindowSeconds: number;
 };
 /** Explicitly named data contract at the application boundary. */
-

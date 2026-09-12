@@ -39,6 +39,17 @@ test('current backlog reconciles with lot evidence', () => {
   assert.deepEqual(JSON.parse(result.stdout).retainedClosed, []);
 });
 
+test('accepts multiline JSON snapshot points with Windows line endings', () => {
+  const result = checkFixture((directory) => {
+    fs.writeFileSync(path.join(directory, 'corriger.txt'),
+      'Snapshot JSON complet :\r\n\r\n15. Content modules\r\n\r\n```text\r\ncontent/cards.json\r\n```\r\n');
+    fs.writeFileSync(path.join(directory, 'docs/quality/open-debt-register-2026-09-10.md'),
+      '| 15 | backend | Content modules | backend/corriger.txt#15 | open | proof documented and removal from corriger.txt |\n');
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout).openCount, 1);
+});
+
 test('rejects extra backlog content', () => {
   const result = checkFixture((directory) => {
     const file = path.join(directory, 'corriger.txt');

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "snapshotMigrations": [
+    { "fromVersion": "aventure-sauvage@content:c48df7e1", "toVersion": "1" },
+    { "fromVersion": "aventure-sauvage@content:f577dff1", "toVersion": "1" }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "LesQuatreVents",
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "jungle",
+      "spaces": 30,
+      "winOnFinish": "jungle-finish"
+    }
+  ],
+  "components": [
+    {
+      "id": "avatars",
+      "pawns": {
+        "$content": "content/pawns.json"
+      },
+      "component": "pawn.set",
+      "perPlayer": 1
+    },
+    {
+      "id": "animal",
+      "cards": {
+        "$content": "content/cards.json#/animal"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    },
+    {
+      "id": "patte",
+      "cards": {
+        "$content": "content/cards.json#/patte"
+      },
+      "shuffle": true,
+      "component": "cards.deck"
+    }
+  ],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    },
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position"
+    }
+  ],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": {
+      "actions": [],
+      "transitions": ["playing"]
+    },
+    "playing": {
+      "actions": ["roll"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "event-race-roll",
+      "documentation": "Lance le dé et résout immédiatement la case de jungle."
+    }
+  },
+  "victory": {
+    "kind": "by-event-race"
+  },
+  "eventRace": {
+    "trackId": "jungle",
+    "diceId": "main",
+    "playingPhase": "playing",
+    "landingEffectId": "aventure.resolve-landing",
+    "tiles": {
+      "$content": "content/board.json"
+    },
+    "pawnSelection": {
+      "setId": "avatars",
+      "choiceId": "aventure.pawn"
+    }
+  }
+}

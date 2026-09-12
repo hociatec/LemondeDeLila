@@ -5,7 +5,7 @@ Statut : accepté.
 `game/core` porte les contrats applicatifs, la persistance et l'exécution
 durable. `game/engine/runtime` porte le modèle déclaratif déterministe.
 `game/engine/sdk/public-api.ts` est la façade auteur TypeScript et expose explicitement
-les 81 symboles de la version 6.5. La version 3.0 retire `testGame` de la surface
+les 81 symboles de la version 6.16. La version 3.0 retire `testGame` de la surface
 de production : les tests importent `engine/testing/public-api`, qui expose
 également `GameTestKit`, `GameSimulator` et `DeclarativeGameRuntime`.
 La version 4.0 retire `loadGameContent`, `freezeGameContent` et `gameContentAssets` au profit de

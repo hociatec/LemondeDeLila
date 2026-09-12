@@ -17,8 +17,8 @@ export class RoomSocketHeartbeat {
 
   start(client: WebSocket): void {
     this.stop(client);
-    this.lastPong.set(client, Date.now());
-    const onPong = () => this.lastPong.set(client, Date.now());
+    this.lastPong.set(client, performance.now());
+    const onPong = () => this.lastPong.set(client, performance.now());
     client.on('pong', onPong);
 
     const heartbeat = setInterval(() => {
@@ -28,8 +28,8 @@ export class RoomSocketHeartbeat {
           return;
         }
 
-        const last = this.lastPong.get(client) ?? Date.now();
-        if (Date.now() - last > this.pingIntervalMs * 2) {
+        const last = this.lastPong.get(client) ?? performance.now();
+        if (performance.now() - last > this.pingIntervalMs * 2) {
           this.stop(client);
           try {
             client.terminate();

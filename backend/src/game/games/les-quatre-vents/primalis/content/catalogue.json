@@ -1,0 +1,70 @@
+{
+  "tiles": [
+    {
+      "n": 0,
+      "title": "Le ciel est clair. Rien ne presse. La vie respire librement.",
+      "description": "Pas de bonus ni de malus. Profitez de ce calme pour observer votre tribu.",
+      "type": "comet"
+    },
+    {
+      "n": 1,
+      "title": "Une lueur pÃ¢le apparaÃ®t trÃ¨s loin, comme un grain de poussiÃ¨re brillant.",
+      "description": "Vous sentez un frisson dans lâ€™air. Si vous lancez Å’uf ou Feuille ce tour-ci, vous pouvez doubler la collecte.",
+      "type": "comet"
+    },
+    {
+      "n": 2,
+      "title": "Les oiseaux anciens changent lÃ©gÃ¨rement leur trajectoire dans le vent.",
+      "description": "Attention, un prÃ©dateur rÃ´de. Si vous avez plus de carnivores que dâ€™herbivores, vous perdez un herbivore.",
+      "type": "comet"
+    },
+    {
+      "n": 3,
+      "title": "Une fine traÃ®nÃ©e se devine dans le ciel du soir.",
+      "description": "Le vent porte des graines et petits fruits. Si vous lancez Feuille, vous ajoutez 1 ressource supplÃ©mentaire.",
+      "type": "comet"
+    },
+    {
+      "n": 4,
+      "title": "Certains herbivores lÃ¨vent la tÃªte, comme Ã  lâ€™Ã©coute dâ€™un souffle lointain.",
+      "description": "Si vous lancez Carnivore ce tour, vous pouvez prendre un Å“uf en plus de votre carnivore.",
+      "type": "comet"
+    },
+    {
+      "n": 5,
+      "title": "Le sol garde encore sa chaleur paisible, mais lâ€™air semble plus tendu.",
+      "description": "Les ressources sont rares. Si vous lancez Å’uf ou Feuille, vous ne pouvez collecter quâ€™une seule unitÃ© (normal).",
+      "type": "comet"
+    },
+    {
+      "n": 6,
+      "title": "La lueur grandit. Les cimes des arbres scintillent sous un Ã©trange reflet.",
+      "description": "La tension monte. Tous les joueurs subissent un Danger supplÃ©mentaire si quelquâ€™un lance Danger.",
+      "type": "comet"
+    },
+    {
+      "n": 7,
+      "title": "Un murmure court parmi les grandes plumes et les Ã©cailles anciennes.",
+      "description": "Un souffle magique vous favorise. Vous gagnez automatiquement 1 Feuille, en plus de vos effets de dÃ©.",
+      "type": "comet"
+    },
+    {
+      "n": 8,
+      "title": "Les ombres sâ€™allongent, la lumiÃ¨re devient plus scintillante, presque irrÃ©elle.",
+      "description": "La comÃ¨te se rapproche. Si vous lancez Herbivore ou Carnivore, vous pouvez choisir de relancer le dÃ© une fois pour tenter dâ€™obtenir un Å“uf ou une feuille.",
+      "type": "comet"
+    },
+    {
+      "n": 9,
+      "title": "Le ciel tremble doucement. Le monde retient sa respiration.",
+      "description": "Tout danger est amplifiÃ©. Si vous lancez Danger, avancez de deux cases sur la piste au lieu dâ€™une.",
+      "type": "comet"
+    },
+    {
+      "n": 10,
+      "title": "La comÃ¨te touche la Terre. Lâ€™Ã¨re sâ€™achÃ¨ve. Lâ€™histoire devient souvenir.",
+      "description": "Fin de partie. Comptez vos dinosaures et votre nourriture pour dÃ©terminer le survivant ultime.",
+      "type": "comet"
+    }
+  ]
+}

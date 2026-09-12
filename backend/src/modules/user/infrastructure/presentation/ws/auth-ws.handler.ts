@@ -37,7 +37,10 @@ export class AuthWsHandler {
     return { type: WS_EVENTS.auth.refreshOk, payload: result };
   }
 
-  async logout(session: import('../../../../../platform/ws/public-api').WsSession, payload: unknown) {
+  async logout(
+    session: import('../../../../../platform/ws/public-api').WsSession,
+    payload: unknown,
+  ) {
     const dto = this.validator.validate(RefreshTokenDto, payload);
     if (dto.allSessions && !session.user?.id) {
       throw new Error('Session authentifiee requise');

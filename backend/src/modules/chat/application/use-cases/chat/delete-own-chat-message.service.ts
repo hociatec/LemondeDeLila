@@ -29,12 +29,7 @@ export class DeleteOwnChatMessageService {
 
   async execute(userId: number, messageId: string): Promise<boolean> {
     const id = typeof messageId === 'string' ? messageId.trim() : '';
-    if (
-      !Number.isSafeInteger(userId) ||
-      userId <= 0 ||
-      !id ||
-      id.length > 128
-    )
+    if (!Number.isSafeInteger(userId) || userId <= 0 || !id || id.length > 128)
       return false;
     const message = await this.messages.findByMessageId(id);
     if (!message || !message.user?.id) {

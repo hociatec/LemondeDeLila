@@ -360,7 +360,8 @@ it('captures immutable rules and refuses old snapshots when JSON changes without
   expect(Object.isFrozen(original.content.data)).toBe(true);
   const changed = compileJsonGame(manifest, source);
   expect(changed.rulesVersion).toBe(original.rulesVersion);
-  expect(changed.contentVersion).not.toBe(original.contentVersion);
+  expect(changed.contentVersion).toBe(original.contentVersion);
+  expect(changed.contentDigest).not.toBe(original.contentDigest);
   expect(() =>
     new DeclarativeGameRuntime(changed).getAvailableActions(snapshot, 1),
   ).toThrow(/incompatible/);

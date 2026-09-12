@@ -7,6 +7,10 @@ import { REDIS_CORE_PROVIDERS } from './redis.module.providers.core';
 @Global()
 @Module({
   providers: [...REDIS_CORE_PROVIDERS, RedisDistributedLeaseService],
-  exports: [RedisClientFactory, RedisRateLimitStorage, RedisDistributedLeaseService],
+  exports: [
+    RedisClientFactory,
+    RedisRateLimitStorage,
+    RedisDistributedLeaseService,
+  ],
 })
 export class RedisModule {}

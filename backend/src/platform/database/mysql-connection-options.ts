@@ -11,11 +11,7 @@ export function createMysqlConnectionOptions(
   read: ReadDatabaseSetting,
 ): MysqlOptions {
   const url = read('DATABASE_URL');
-  if (
-    typeof url === 'string' &&
-    url.trim() &&
-    url.trim().length > 4096
-  ) {
+  if (typeof url === 'string' && url.trim() && url.trim().length > 4096) {
     throw new Error('Invalid database setting: DATABASE_URL');
   }
   return {
@@ -49,6 +45,10 @@ export function createMysqlConnectionOptions(
       connectionLimit: databaseInteger(read, 'DB_POOL_SIZE', 10, 1, 1000),
     },
     synchronize: false,
+    // MySQL commits DDL implicitly. Wrapping a migration in a transaction only
+    // keeps data backfills and metadata locks alive for longer and gives a false
+    // rollback guarantee. Each migration must therefore be restartable.
+    migrationsTransactionMode: 'none',
     logging: false,
   };
 }

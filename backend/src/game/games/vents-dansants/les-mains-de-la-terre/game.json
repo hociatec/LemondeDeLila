@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "3",
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "professions",
+      "cards": [
+        "metier-isserande-berbere",
+        "metier-forgeron-dogon",
+        "metier-potier-zapoteque",
+        "metier-tanneur-de-fez",
+        "metier-charpentier-japonais",
+        "metier-sculptrice-de-calebasses",
+        "metier-cueilleur-de-the",
+        "metier-berger-nomade",
+        "metier-apiculteur-traditionnel",
+        "metier-cueilleur-de-champignons",
+        "metier-chasseur-cueilleur-pygmee",
+        "metier-eleveuse-de-yaks",
+        "metier-pecheur-sur-echasses",
+        "metier-plongeuse-de-perles",
+        "metier-chasseur-inuit",
+        "metier-constructeur-de-pirogues",
+        "metier-ramasseur-dalgues",
+        "metier-capitaine-de-boutre",
+        "metier-calligraphe-chinois",
+        "metier-sculpteur-inuit",
+        "metier-masqueur-balinais",
+        "metier-peintre-dicones",
+        "metier-fabricante-de-poupees-kokeshi",
+        "metier-brodeur-touareg",
+        "metier-fauconnier-kazakh",
+        "metier-gardien-de-temple",
+        "metier-dompteur-de-serpents",
+        "metier-maitre-de-the",
+        "metier-marionnettiste-wayang",
+        "metier-ramasseur-de-truffes",
+        "metier-developpeur-de-jeux-video",
+        "metier-specialiste-en-drones",
+        "metier-concepteur-denergies-renouvelables",
+        "metier-bio-architecte",
+        "metier-imprimeuse-3d-medicale",
+        "metier-concepteur-de-textiles-ecologiques",
+        "metier-medecin-ayurvedique",
+        "metier-guerisseur-traditionnel",
+        "metier-rebouteux-andin",
+        "metier-chaman-siberien",
+        "metier-accoucheuse-bedouine",
+        "metier-herboriste-coreenne",
+        "special-voyage-autour-du-monde",
+        "special-metier-disparu",
+        "special-formation-express",
+        "special-greve-mondiale",
+        "special-boussole-perdue",
+        "special-passation-de-savoir",
+        "special-fete-du-metier"
+      ],
+      "shuffle": true,
+      "empty": "recycle"
+    },
+    {
+      "component": "cards.hands",
+      "id": "players",
+      "deck": "professions",
+      "initial": 6,
+      "initialDeferredCardIds": [
+        "special-voyage-autour-du-monde",
+        "special-metier-disparu",
+        "special-formation-express",
+        "special-greve-mondiale",
+        "special-boussole-perdue",
+        "special-passation-de-savoir",
+        "special-fete-du-metier"
+      ],
+      "visibility": "owner"
+    },
+    {
+      "component": "cards.sets",
+      "id": "profession-families",
+      "hand": "players",
+      "deck": "professions",
+      "visibility": "public",
+      "sets": {
+        "tradition": [
+          "metier-isserande-berbere",
+          "metier-forgeron-dogon",
+          "metier-potier-zapoteque",
+          "metier-tanneur-de-fez",
+          "metier-charpentier-japonais",
+          "metier-sculptrice-de-calebasses"
+        ],
+        "nature": [
+          "metier-cueilleur-de-the",
+          "metier-berger-nomade",
+          "metier-apiculteur-traditionnel",
+          "metier-cueilleur-de-champignons",
+          "metier-chasseur-cueilleur-pygmee",
+          "metier-eleveuse-de-yaks"
+        ],
+        "mer": [
+          "metier-pecheur-sur-echasses",
+          "metier-plongeuse-de-perles",
+          "metier-chasseur-inuit",
+          "metier-constructeur-de-pirogues",
+          "metier-ramasseur-dalgues",
+          "metier-capitaine-de-boutre"
+        ],
+        "art": [
+          "metier-calligraphe-chinois",
+          "metier-sculpteur-inuit",
+          "metier-masqueur-balinais",
+          "metier-peintre-dicones",
+          "metier-fabricante-de-poupees-kokeshi",
+          "metier-brodeur-touareg"
+        ],
+        "insolites": [
+          "metier-fauconnier-kazakh",
+          "metier-gardien-de-temple",
+          "metier-dompteur-de-serpents",
+          "metier-maitre-de-the",
+          "metier-marionnettiste-wayang",
+          "metier-ramasseur-de-truffes"
+        ],
+        "innovation": [
+          "metier-developpeur-de-jeux-video",
+          "metier-specialiste-en-drones",
+          "metier-concepteur-denergies-renouvelables",
+          "metier-bio-architecte",
+          "metier-imprimeuse-3d-medicale",
+          "metier-concepteur-de-textiles-ecologiques"
+        ],
+        "sante": [
+          "metier-medecin-ayurvedique",
+          "metier-guerisseur-traditionnel",
+          "metier-rebouteux-andin",
+          "metier-chaman-siberien",
+          "metier-accoucheuse-bedouine",
+          "metier-herboriste-coreenne"
+        ]
+      }
+    }
+  ],
+  "setup": {},
+  "resourceIds": ["les-mains.extra-draws"],
+  "shortcuts": [{ "key": "D", "type": "action", "actionType": "request_card" }],
+  "initialPhase": "playing",
+  "phases": { "playing": { "actions": ["request_card"], "terminal": true } },
+  "actions": { "request_card": { "recipe": "profession-families-request" } },
+  "victory": { "kind": "by-profession-families" },
+  "professionFamilies": {
+    "deckId": "professions",
+    "handId": "players",
+    "setsId": "profession-families",
+    "cards": { "$content": "content/catalogue.json#/cards" },
+    "familyIds": [
+      "tradition",
+      "nature",
+      "mer",
+      "art",
+      "insolites",
+      "innovation",
+      "sante"
+    ],
+    "extraDrawResource": "les-mains.extra-draws",
+    "freeRequestStatus": "les-mains.free-family-request",
+    "vanishedStatus": "les-mains.vanished-used",
+    "finishReason": "families-complete",
+    "eventNamespace": "les-mains"
+  }
+}

@@ -1,0 +1,547 @@
+{
+  "cards": [
+    {
+      "id": "totem-1",
+      "name": "L’Aigle visionnaire",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-2",
+      "name": "Le Loup protecteur",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-3",
+      "name": "L’Ours guérisseur",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-4",
+      "name": "Le Bison sacré",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-5",
+      "name": "Le Colibri messager",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-6",
+      "name": "Le Renard rusé",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-7",
+      "name": "Le Cerf élégant",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-8",
+      "name": "Le Castor bâtisseur",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-9",
+      "name": "Le Puma silencieux",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-10",
+      "name": "Le Serpent de transformation",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-11",
+      "name": "La Tortue éternelle",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-12",
+      "name": "La Grenouille chanteuse",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-13",
+      "name": "Le Corbeau du mystère",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-14",
+      "name": "Le Coyote farceur",
+      "theme": "totem"
+    },
+    {
+      "id": "totem-15",
+      "name": "La Libellule de l’illusion",
+      "theme": "totem"
+    },
+    {
+      "id": "nature-1",
+      "name": "Le Feu du renouveau",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-2",
+      "name": "L’Eau des profondeurs",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-3",
+      "name": "Le Vent des montagnes",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-4",
+      "name": "La Terre-mère",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-5",
+      "name": "La Forêt vivante",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-6",
+      "name": "La Rivière sacrée",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-7",
+      "name": "Le Soleil guérisseur",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-8",
+      "name": "La Lune des cycles",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-9",
+      "name": "L’Orage purificateur",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-10",
+      "name": "La Neige silencieuse",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-11",
+      "name": "Le Désert des visions",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-12",
+      "name": "La Pluie nourricière",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-13",
+      "name": "L’Arbre aux ancêtres",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-14",
+      "name": "La Caverne des esprits",
+      "theme": "nature"
+    },
+    {
+      "id": "nature-15",
+      "name": "Le Rocher du souvenir",
+      "theme": "nature"
+    },
+    {
+      "id": "plante-1",
+      "name": "La Sauge blanche",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-2",
+      "name": "Le Cèdre purifiant",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-3",
+      "name": "Le Tabac sacré",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-4",
+      "name": "Le Maïs doré",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-5",
+      "name": "La Citrouille nourricière",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-6",
+      "name": "Le Haricot de sagesse",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-7",
+      "name": "L’Aloe médicinale",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-8",
+      "name": "L’Amarante rouge",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-9",
+      "name": "La Mandragore",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-10",
+      "name": "Le Peyotl",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-11",
+      "name": "Le Copal fumigène",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-12",
+      "name": "L’Achillée guérisseuse",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-13",
+      "name": "Le Foin d’odeur",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-14",
+      "name": "Le Nénuphar lunaire",
+      "theme": "plante"
+    },
+    {
+      "id": "plante-15",
+      "name": "Le Thé du Labrador",
+      "theme": "plante"
+    },
+    {
+      "id": "esprit-1",
+      "name": "Le Grand Esprit",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-2",
+      "name": "La Femme Bison Blanc",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-3",
+      "name": "L’Esprit du Tambour",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-4",
+      "name": "L’Ancêtre silencieux",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-5",
+      "name": "L’Enfant de lumière",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-6",
+      "name": "L’Ombre intérieure",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-7",
+      "name": "Le Rêveur du ciel",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-8",
+      "name": "L’Observateur invisible",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-9",
+      "name": "L’Esprit du Feu",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-10",
+      "name": "L’Être-Aigle",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-11",
+      "name": "Le Cheval sans bride",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-12",
+      "name": "L’Esprit des quatre vents",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-13",
+      "name": "Le Porteur de Plume",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-14",
+      "name": "Le Veilleur du crépuscule",
+      "theme": "esprit"
+    },
+    {
+      "id": "esprit-15",
+      "name": "La Danse de l’âme",
+      "theme": "esprit"
+    },
+    {
+      "id": "parole-1",
+      "name": "« Écoute le vent, il te parle »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-2",
+      "name": "« Nous sommes les gardiens de la Terre »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-3",
+      "name": "« Chaque pas est une prière »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-4",
+      "name": "« Ton cœur connaît le chemin »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-5",
+      "name": "« Tout est lié »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-6",
+      "name": "« Le silence est la voix des Anciens »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-7",
+      "name": "« La vérité est dans le cercle »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-8",
+      "name": "« Respecte ce que tu ne comprends pas »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-9",
+      "name": "« Tu es une étincelle du grand feu »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-10",
+      "name": "« Marche en beauté »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-11",
+      "name": "« Le tambour bat pour tous »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-12",
+      "name": "« Les plumes tombent, mais l’esprit s’élève »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-13",
+      "name": "« Le rêve enseigne mieux que la parole »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-14",
+      "name": "« N’oublie jamais d’où tu viens »",
+      "theme": "parole"
+    },
+    {
+      "id": "parole-15",
+      "name": "« Le monde est un miroir sacré »",
+      "theme": "parole"
+    },
+    {
+      "id": "nation-1",
+      "name": "Hopi — Les gardiens du temps",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-2",
+      "name": "Navajo — Les tisseurs de lumière",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-3",
+      "name": "Lakota — Le peuple du bison",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-4",
+      "name": "Cherokee — Ceux qui marchent avec sagesse",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-5",
+      "name": "Inuit — Les enfants de la glace",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-6",
+      "name": "Haïda — Les sculpteurs de totems",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-7",
+      "name": "Mapuche — Les enfants de la Terre du Sud",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-8",
+      "name": "Tupi — Les esprits des forêts tropicales",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-9",
+      "name": "Quechua — Les bâtisseurs des Andes",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-10",
+      "name": "Arawak — Les rêveurs des îles",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-11",
+      "name": "Apache — Les guerriers du désert",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-12",
+      "name": "Algonquin — Les voix de la rivière",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-13",
+      "name": "Zuni — Les protecteurs des anciens savoirs",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-14",
+      "name": "Guarani — Les porteurs de chants",
+      "theme": "nation"
+    },
+    {
+      "id": "nation-15",
+      "name": "Ojibwé — Ceux qui dessinent les rêves",
+      "theme": "nation"
+    }
+  ],
+  "cardIds": [
+    "totem-1",
+    "totem-2",
+    "totem-3",
+    "totem-4",
+    "totem-5",
+    "totem-6",
+    "totem-7",
+    "totem-8",
+    "totem-9",
+    "totem-10",
+    "totem-11",
+    "totem-12",
+    "totem-13",
+    "totem-14",
+    "totem-15",
+    "nature-1",
+    "nature-2",
+    "nature-3",
+    "nature-4",
+    "nature-5",
+    "nature-6",
+    "nature-7",
+    "nature-8",
+    "nature-9",
+    "nature-10",
+    "nature-11",
+    "nature-12",
+    "nature-13",
+    "nature-14",
+    "nature-15",
+    "plante-1",
+    "plante-2",
+    "plante-3",
+    "plante-4",
+    "plante-5",
+    "plante-6",
+    "plante-7",
+    "plante-8",
+    "plante-9",
+    "plante-10",
+    "plante-11",
+    "plante-12",
+    "plante-13",
+    "plante-14",
+    "plante-15",
+    "esprit-1",
+    "esprit-2",
+    "esprit-3",
+    "esprit-4",
+    "esprit-5",
+    "esprit-6",
+    "esprit-7",
+    "esprit-8",
+    "esprit-9",
+    "esprit-10",
+    "esprit-11",
+    "esprit-12",
+    "esprit-13",
+    "esprit-14",
+    "esprit-15",
+    "parole-1",
+    "parole-2",
+    "parole-3",
+    "parole-4",
+    "parole-5",
+    "parole-6",
+    "parole-7",
+    "parole-8",
+    "parole-9",
+    "parole-10",
+    "parole-11",
+    "parole-12",
+    "parole-13",
+    "parole-14",
+    "parole-15",
+    "nation-1",
+    "nation-2",
+    "nation-3",
+    "nation-4",
+    "nation-5",
+    "nation-6",
+    "nation-7",
+    "nation-8",
+    "nation-9",
+    "nation-10",
+    "nation-11",
+    "nation-12",
+    "nation-13",
+    "nation-14",
+    "nation-15"
+  ],
+  "themes": ["totem", "nature", "plante", "esprit", "parole", "nation"]
+}

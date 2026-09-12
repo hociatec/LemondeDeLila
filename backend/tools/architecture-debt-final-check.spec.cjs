@@ -13,6 +13,43 @@ test('architecture debt final invariants remain enforceable', () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
+test('rejects obsolete compatibility APIs, adapters and loaders', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-obsolete-api-'));
+  try {
+    fs.mkdirSync(path.join(directory, 'tools'));
+    fs.mkdirSync(path.join(directory, 'src'));
+    const script = path.join(
+      directory,
+      'tools',
+      'architecture-debt-final-check.cjs',
+    );
+    fs.copyFileSync(
+      path.join(__dirname, 'architecture-debt-final-check.cjs'),
+      script,
+    );
+    fs.writeFileSync(
+      path.join(directory, 'tools', 'architecture-baseline.json'),
+      JSON.stringify({ groups: [] }),
+    );
+    fs.writeFileSync(
+      path.join(directory, 'tools', 'structural-quality-baseline.json'),
+      JSON.stringify({ violations: [] }),
+    );
+    fs.writeFileSync(
+      path.join(directory, 'src', 'compat.ts'),
+      'export class LegacyLoader {}\nexport class CompatibilityApi {}\n',
+    );
+    const result = spawnSync(process.execPath, [script], {
+      cwd: directory,
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /loader de compatibilité applicatif/);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 for (const [file, field] of [
   ['architecture-baseline.json', 'groups'],
   ['structural-quality-baseline.json', 'violations'],

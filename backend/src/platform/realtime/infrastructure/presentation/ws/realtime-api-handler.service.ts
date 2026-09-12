@@ -1,4 +1,5 @@
 import { RealtimeApiTransportService } from './realtime-api-transport.service';
+import { WS_EVENTS } from './ws-events';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import {
@@ -59,7 +60,17 @@ export class RealtimeApiHandlerService {
       return;
     }
 
-    if (!(await this.rateLimit.allow(session.user?.id, session.peerAddress))) {
+    const authentication =
+      decoded.type === WS_EVENTS.auth.login ||
+      decoded.type === WS_EVENTS.auth.register ||
+      decoded.type === WS_EVENTS.auth.refresh;
+    if (
+      !(await this.rateLimit.allow(
+        session.user?.id,
+        session.peerAddress,
+        authentication ? 'authentication' : 'standard',
+      ))
+    ) {
       this.perf.record('ws.message.rejected', 0, {
         reason: 'rate-limit',
         type: decoded.type,
@@ -88,7 +99,7 @@ export class RealtimeApiHandlerService {
     if (replay.kind === 'busy') {
       this.transport.error(
         client,
-        'Trop de commandes en cours',
+        'Trop de commandes récentes. Réessayez dans quelques instants.',
         type,
         requestId,
       );

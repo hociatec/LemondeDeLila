@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "2",
+  "snapshotMigrations": [
+    {
+      "fromVersion": "gerard-president@content:25d38394",
+      "toVersion": "1"
+    }
+  ],
+  "category": "JeuxDePlateaux",
+  "world": "VentsDansants",
+  "patterns": [],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    {
+      "key": "C",
+      "type": "action",
+      "actionType": "play_name"
+    },
+    {
+      "key": "S",
+      "type": "action",
+      "actionType": "play_special"
+    }
+  ],
+  "initialPhase": "waiting-theme",
+  "phases": {
+    "waiting-theme": {
+      "actions": ["set_theme"],
+      "transitions": ["collecting-names", "choosing-winner"]
+    },
+    "collecting-names": {
+      "actions": ["play_name", "play_special", "pass"],
+      "transitions": ["choosing-winner"]
+    },
+    "choosing-winner": {
+      "actions": ["choose_winner"],
+      "transitions": ["waiting-theme", "collecting-names"]
+    }
+  },
+  "actions": {
+    "set_theme": {
+      "recipe": "gerard-set-theme"
+    },
+    "play_name": {
+      "recipe": "gerard-play-name"
+    },
+    "play_special": {
+      "recipe": "gerard-play-special"
+    },
+    "choose_winner": {
+      "recipe": "gerard-choose-winner"
+    },
+    "pass": {
+      "recipe": "gerard-pass"
+    }
+  },
+  "victory": {
+    "kind": "by-gerard"
+  },
+  "gerard": {
+    "targetScore": 7,
+    "names": {
+      "$content": "content/catalogue.json#/names"
+    },
+    "themes": {
+      "$content": "content/catalogue.json#/themes"
+    },
+    "specialCards": {
+      "$content": "content/catalogue.json#/specialCards"
+    }
+  }
+}

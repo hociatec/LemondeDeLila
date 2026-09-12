@@ -31,7 +31,11 @@ it('separates permissions, reuses identical frames and prunes broken sockets', a
   const fixture = buildTestRoomPayload();
   const payload = { ...fixture, room: { ...fixture.room, bots: [] } };
   const before = structuredClone(payload);
-  await broadcaster.broadcast({ clients, rooms, silentRooms }, 10, payload);
+  await broadcaster.broadcast({ clients, rooms, silentRooms }, 10, payload, {
+    streamId: 'process-a',
+    sequence: 7,
+    snapshot: true,
+  });
   expect(owner.send).toHaveBeenCalledTimes(1);
   expect(guest.send).toHaveBeenCalledTimes(1);
   expect(silentGuest.send.mock.calls[0][0]).toEqual(
@@ -42,4 +46,7 @@ it('separates permissions, reuses identical frames and prunes broken sockets', a
   expect(rooms.get(10)?.has(broken)).toBe(false);
   expect(broken.close).toHaveBeenCalledTimes(1);
   expect(payload).toEqual(before);
+  expect(JSON.parse(String(owner.send.mock.calls[0][0]))).toMatchObject({
+    realtime: { streamId: 'process-a', sequence: 7, snapshot: true },
+  });
 });

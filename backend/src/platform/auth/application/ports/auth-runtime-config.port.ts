@@ -23,8 +23,11 @@ export function readAuthRuntimeConfigFromEnv(): AuthRuntimeConfig {
     jwtPrivateKeyPath: trimOrNull(readEnvironment('JWT_PRIVATE_KEY_PATH')),
     jwtPublicKeyPem: trimOrNull(readEnvironment('JWT_PUBLIC_KEY_PEM')),
     jwtPublicKeyPath: trimOrNull(readEnvironment('JWT_PUBLIC_KEY_PATH')),
-    jwtIssuer: (trimOrNull(readEnvironment('JWT_ISSUER')) ?? 'le-monde-de-lila').slice(0, 128),
-    jwtAudience: trimOrNull(readEnvironment('JWT_AUDIENCE'))?.slice(0, 128) ?? null,
+    jwtIssuer: (
+      trimOrNull(readEnvironment('JWT_ISSUER')) ?? 'le-monde-de-lila'
+    ).slice(0, 128),
+    jwtAudience:
+      trimOrNull(readEnvironment('JWT_AUDIENCE'))?.slice(0, 128) ?? null,
     jwtClockToleranceSeconds:
       Number.isFinite(clockToleranceRaw) &&
       clockToleranceRaw >= 0 &&

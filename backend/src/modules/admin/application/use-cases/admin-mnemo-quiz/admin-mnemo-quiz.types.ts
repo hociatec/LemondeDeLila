@@ -28,6 +28,12 @@ export interface UpdateAdminMnemoQuestionCommand {
 export type MnemoQuestionPatch = Partial<
   Pick<
     MnemoQuizQuestion,
-    'categoryId' | 'question' | 'status' | 'correct' | 'wrong1' | 'wrong2' | 'wrong3'
+    | 'categoryId'
+    | 'question'
+    | 'status'
+    | 'correct'
+    | 'wrong1'
+    | 'wrong2'
+    | 'wrong3'
   >
 >;

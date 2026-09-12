@@ -69,11 +69,11 @@ async function configureApplication(
   config: ConfigService,
   shutdown: ApplicationShutdownService,
 ): Promise<void> {
-
   const nodeEnvRaw = config.get<string>('NODE_ENV', 'development');
-  const nodeEnv = typeof nodeEnvRaw === 'string' && nodeEnvRaw.length <= 64
-    ? nodeEnvRaw.toLowerCase()
-    : 'development';
+  const nodeEnv =
+    typeof nodeEnvRaw === 'string' && nodeEnvRaw.length <= 64
+      ? nodeEnvRaw.toLowerCase()
+      : 'development';
   const trustedProxies = String(config.get<string>('TRUSTED_PROXY_CIDRS') ?? '')
     .split(',')
     .map((value) => value.trim().slice(0, 128))
@@ -135,9 +135,12 @@ async function configureApplication(
   if (openApiEnabled) configureOpenApi(app);
 
   const configuredPort = Number(config.get<number>('PORT', 3000));
-  const port = Number.isSafeInteger(configuredPort) && configuredPort >= 1 && configuredPort <= 65_535
-    ? configuredPort
-    : 3000;
+  const port =
+    Number.isSafeInteger(configuredPort) &&
+    configuredPort >= 1 &&
+    configuredPort <= 65_535
+      ? configuredPort
+      : 3000;
   await app.listen(port);
   installGracefulShutdown(app, shutdown, sockets, reportShutdownError);
   bootstrapLogger.log(`listening on ${port}`);

@@ -161,7 +161,10 @@ export class WxUpdateArtifactValidatorService {
     return hash.digest('hex');
   }
 
-  private async assertZipStructure(filePath: string, fileSize: number): Promise<void> {
+  private async assertZipStructure(
+    filePath: string,
+    fileSize: number,
+  ): Promise<void> {
     const readSize = Math.min(fileSize, 65_557);
     const handle = await fs.promises.open(filePath, 'r');
     try {
@@ -197,19 +200,32 @@ export class WxUpdateArtifactValidatorService {
     filePath: string,
     fileSize: number,
   ): Promise<void> {
-    if (fileSize < 0x100) throw new BadRequestException('Installateur WX invalide.');
+    if (fileSize < 0x100)
+      throw new BadRequestException('Installateur WX invalide.');
     const handle = await fs.promises.open(filePath, 'r');
     try {
-      const header = Buffer.alloc(0x100);
+      const header = Buffer.alloc(0x40);
       await handle.read(header, 0, header.length, 0);
       const peOffset = header.readUInt32LE(0x3c);
       if (
+        header.readUInt16LE(0) !== 0x5a4d ||
         peOffset < 0x40 ||
-        peOffset + 24 > fileSize ||
-        peOffset + 24 > header.length ||
-        header.readUInt32LE(peOffset) !== 0x00004550 ||
-        header.readUInt16LE(peOffset + 4) !== 0x8664 ||
-        header.readUInt16LE(peOffset + 6) < 1
+        peOffset + 24 > fileSize
+      ) {
+        throw new BadRequestException('Installateur WX invalide.');
+      }
+      const peHeader = Buffer.alloc(24);
+      const { bytesRead } = await handle.read(
+        peHeader,
+        0,
+        peHeader.length,
+        peOffset,
+      );
+      if (
+        bytesRead !== peHeader.length ||
+        peHeader.readUInt32LE(0) !== 0x00004550 ||
+        peHeader.readUInt16LE(4) !== 0x8664 ||
+        peHeader.readUInt16LE(6) < 1
       ) {
         throw new BadRequestException('Installateur WX invalide.');
       }

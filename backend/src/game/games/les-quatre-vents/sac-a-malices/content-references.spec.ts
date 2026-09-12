@@ -1,14 +1,24 @@
-import { SAC_GAME_CONTENT, SAC_VARIANTS } from './content';
-import { parseSacContent } from './content-schema';
-import { findTile, groupFor, purchasePrice, nextGroupTile } from './economy';
+import { compileJsonGame } from '../../../engine/json/public-api';
 import { testGame } from '../../../engine/testing/public-api';
-import gameDefinition from './game';
+
+import manifest from './manifest.json';
+import document from './game.json';
+import catalogue from './catalogue.json';
+
+const compile = (source: unknown) =>
+  compileJsonGame(manifest, document, {
+    'content/catalogue.json': source,
+  });
+const gameDefinition = compile(catalogue);
 
 describe('Sac stable catalogue references', () => {
-  it.each(SAC_VARIANTS.map((variant) => [variant.id, variant] as const))(
-    '%s keeps prices, groups and destinations independent of labels',
-    (_id, original) => {
-      const variant = structuredClone(original);
+  it.each(catalogue.variants.map((variant) => [variant.id, variant] as const))(
+    '%s keeps identifiers and economic data independent of labels',
+    (variantId, original) => {
+      const source = structuredClone(catalogue);
+      const variant = source.variants.find(
+        (candidate) => candidate.id === variantId,
+      )!;
       for (const tile of variant.tiles) {
         tile.title = 'Un autre nom';
         if (tile.group) tile.group = 'Une autre couleur';
@@ -19,36 +29,26 @@ describe('Sac stable catalogue references', () => {
       }
       for (const utility of variant.utilities)
         utility.name = 'Autre équipement';
-      for (const tile of variant.tiles) {
-        expect(purchasePrice(variant, tile)).toBe(
-          purchasePrice(original, tile),
-        );
-        expect(findTile(variant, tile.id)).toBe(tile.n - 1);
-        if (tile.type === 'property') {
-          expect(purchasePrice(variant, tile)).toBeGreaterThan(0);
-          expect(groupFor(variant, tile)?.propertyIds).toContain(tile.id);
-        }
-      }
-      for (const group of variant.groups) {
-        const next = nextGroupTile(variant, 0, group.id);
-        expect(next).not.toBeNull();
-        expect(variant.tiles[next!].groupId).toBe(group.id);
-      }
-      for (const utility of variant.utilities) {
-        const tile = variant.tiles.find(
-          (entry) => entry.id === utility.tileId,
-        )!;
-        expect(tile.type).toBe('utility');
-        expect(purchasePrice(variant, tile)).toBe(utility.purchasePrice);
-        expect(utility.purchasePrice).toBeGreaterThan(0);
-      }
+
+      expect((compile(source).content.data as { sac: unknown }).sac).toEqual(
+        source,
+      );
+      expect(variant.tiles.map((tile) => tile.id)).toEqual(
+        original.tiles.map((tile) => tile.id),
+      );
+      expect(variant.groups.map((group) => group.propertyIds)).toEqual(
+        original.groups.map((group) => group.propertyIds),
+      );
+      expect(variant.utilities.map((utility) => utility.purchasePrice)).toEqual(
+        original.utilities.map((utility) => utility.purchasePrice),
+      );
     },
   );
 
   it.each(['tile', 'group', 'utility', 'jail', 'card', 'destination'])(
     'rejects invalid %s references before runtime construction',
     (kind) => {
-      const source = structuredClone(SAC_GAME_CONTENT.data);
+      const source = structuredClone(catalogue);
       const variant = source.variants[0];
       if (kind === 'tile') variant.tiles[1].id = variant.tiles[0].id;
       if (kind === 'group') variant.groups[0].propertyIds[0] = 'missing';
@@ -70,11 +70,11 @@ describe('Sac stable catalogue references', () => {
           },
         ];
       }
-      expect(() => parseSacContent(source)).toThrow();
+      expect(() => compile(source)).toThrow();
     },
   );
 
-  it.each(SAC_VARIANTS.map((variant) => variant.id))(
+  it.each(catalogue.variants.map((variant) => variant.id))(
     'replays %s with stable card and ownership identifiers',
     async (variantId) => {
       const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(131);

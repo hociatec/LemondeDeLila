@@ -172,6 +172,17 @@ export class RoomGatewayDispatcherService {
           client,
           meta,
         ),
+      handleRoomState: async (client: WebSocket, meta: ClientMeta) => {
+        if (!Number.isSafeInteger(meta.roomId) || meta.roomId <= 0) {
+          await this.runtime.sendError(client, 'Aucune table active.');
+          return;
+        }
+        await this.contexts.state.sendRoomStateToClient(
+          this.contexts.stateContext(),
+          client,
+          meta.roomId,
+        );
+      },
     };
   }
 
