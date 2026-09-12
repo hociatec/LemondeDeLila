@@ -34,6 +34,23 @@ test('imports content modules in stable order, including a content file named ga
   });
 });
 
+test('maps a legacy root catalogue to its content reference', async () => {
+  await fixture(({ root, game }) => {
+    fs.rmSync(path.join(game, 'content'), { recursive: true });
+    fs.writeFileSync(path.join(game, 'catalogue.json'), '{"cards":[]}');
+    assert.deepEqual(jsonContentAssets(game).map(asset => asset.relative), [
+      'content/catalogue.json',
+    ]);
+    assert.equal(generateGameRegistry({ sourceRoot: root }), 1);
+    const generated = fs.readFileSync(
+      path.join(root, 'composition/generated-game-registry.ts'),
+      'utf8',
+    );
+    assert.match(generated, /import asset0_0 from '.*sample\/catalogue.json'/);
+    assert.match(generated, /"content\/catalogue.json": asset0_0/);
+  });
+});
+
 test('does not replace a generated registry when a content module is invalid', async () => {
   await fixture(({ root, game }) => {
     generateGameRegistry({ sourceRoot: root });

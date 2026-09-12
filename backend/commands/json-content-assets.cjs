@@ -5,11 +5,8 @@ const path = require('node:path');
 /** Filesystem access belongs to registry generation, never to a game runtime. */
 function jsonContentAssets(gameDirectory) {
   const directory = path.join(gameDirectory, 'content');
+  const legacyCatalogue = path.join(gameDirectory, 'catalogue.json');
   const legacyQuiz = path.join(gameDirectory, 'quiz.json');
-  if (!fs.existsSync(directory))
-    return fs.existsSync(legacyQuiz)
-      ? [{ file: legacyQuiz, relative: 'content/quiz.json' }]
-      : [];
   const root = fs.realpathSync(gameDirectory);
   const assets = [];
   let bytes = 0;
@@ -36,15 +33,27 @@ function jsonContentAssets(gameDirectory) {
       }
     }
   }
-  if (fs.lstatSync(directory).isSymbolicLink())
-    throw new Error('JSON content directory links are forbidden');
-  visit(directory);
-  if (fs.existsSync(legacyQuiz)) {
-    bytes += fs.statSync(legacyQuiz).size;
+  if (fs.existsSync(directory)) {
+    if (fs.lstatSync(directory).isSymbolicLink())
+      throw new Error('JSON content directory links are forbidden');
+    visit(directory);
+  }
+  for (const [file, relative] of [
+    [legacyCatalogue, 'content/catalogue.json'],
+    [legacyQuiz, 'content/quiz.json'],
+  ]) {
+    if (!fs.existsSync(file)) continue;
+    if (fs.lstatSync(file).isSymbolicLink())
+      throw new Error(`JSON content links are forbidden: ${file}`);
+    if (assets.some(asset => asset.relative === relative))
+      throw new Error(`Duplicate JSON content path: ${relative}`);
+    if (assets.length >= 256)
+      throw new Error('JSON content bundle is too large');
+    bytes += fs.statSync(file).size;
     if (bytes > 8 * 1024 * 1024)
       throw new Error('JSON content bundle is too large');
-    JSON.parse(fs.readFileSync(legacyQuiz, 'utf8'));
-    assets.push({ file: legacyQuiz, relative: 'content/quiz.json' });
+    JSON.parse(fs.readFileSync(file, 'utf8'));
+    assets.push({ file, relative });
   }
   return assets.sort((a, b) =>
     a.relative < b.relative ? -1 : a.relative > b.relative ? 1 : 0,
