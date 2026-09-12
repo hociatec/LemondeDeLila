@@ -41,3 +41,11 @@ ne remplace pas l'artefact officiel Node 24 produit par la CI. Une certification
 de production complète exige encore le résultat du job Node 24 avec
 MySQL/Redis/BullMQ, l'identité de l'artefact effectivement déployé et le rapport
 du dernier exercice de restauration.
+
+Le workflow a été durci pour produire cette preuve sans dépendre de la machine
+locale : `release-artifact` attend désormais `real-integration`, qui exerce
+MySQL, Redis, BullMQ et deux instances backend. Le générateur exige explicitement
+Node 24 dans ce job et l'archive ainsi que son SHA-256 sont publiés sous le nom
+`backend-deployment-node24-<SHA Git>`. Le succès d'une exécution distante de ce
+workflow et l'exercice de restauration restent, par nature, des preuves externes
+à joindre à la release ; ce document ne les présume pas.

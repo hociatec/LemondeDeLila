@@ -38,10 +38,29 @@ const quality = readWorkflow('backend-quality.yml');
 if (quality !== null && !/push:\s*\n\s*branches:\s*\[main\]/.test(quality)) {
   violations.push('backend-quality.yml: push sur main absent');
 }
-for (const required of [
-  '.github/CODEOWNERS',
-  '.github/dependabot.yml',
-]) {
+
+const backendArchitecture = readWorkflow('backend-architecture.yml');
+if (backendArchitecture !== null) {
+  for (const [contract, requiredPattern] of [
+    [
+      "l'artefact doit attendre l'intégration réelle",
+      /release-artifact:[\s\S]*?needs:\s*\[[^\]]*real-integration[^\]]*\]/,
+    ],
+    [
+      "l'artefact de release doit exiger Node 24",
+      /release-artifact:[\s\S]*?BACKEND_ARTIFACT_NODE_MAJOR:\s*["']?24["']?/,
+    ],
+    [
+      "l'archive et son checksum doivent être publiés",
+      /release-artifact:[\s\S]*?actions\/upload-artifact@[a-f0-9]{40}[\s\S]*?backend-deployment\.tar\.gz\.sha256/,
+    ],
+  ]) {
+    if (!requiredPattern.test(backendArchitecture)) {
+      violations.push(`backend-architecture.yml: ${contract}`);
+    }
+  }
+}
+for (const required of ['.github/CODEOWNERS', '.github/dependabot.yml']) {
   if (!fs.existsSync(path.join(repositoryRoot, required))) {
     violations.push(`${required}: fichier de gouvernance absent`);
   }

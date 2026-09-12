@@ -11,6 +11,20 @@ const { spawnSync } = require('node:child_process');
 const backendRoot = path.resolve(__dirname, '..');
 const output = path.resolve(process.argv[2] || 'backend-deployment.tar.gz');
 
+function assertRequiredNodeMajor() {
+  const required = String(process.env.BACKEND_ARTIFACT_NODE_MAJOR || '').trim();
+  if (required === '') return;
+  if (!/^\d+$/.test(required)) {
+    throw new Error('BACKEND_ARTIFACT_NODE_MAJOR doit être un entier');
+  }
+  const actual = process.versions.node.split('.')[0];
+  if (actual !== required) {
+    throw new Error(
+      `Artefact refusé sous Node ${process.version}; Node ${required} est requis`,
+    );
+  }
+}
+
 function requirePath(relative) {
   const target = path.join(backendRoot, relative);
   if (!fs.existsSync(target))
@@ -68,6 +82,7 @@ function archiveArguments(output, staging) {
 }
 
 function main() {
+  assertRequiredNodeMajor();
   requirePath('dist/main.js');
   requirePath('node_modules');
   if (fs.existsSync(path.join(backendRoot, 'node_modules/jest'))) {

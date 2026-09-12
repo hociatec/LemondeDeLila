@@ -49,6 +49,8 @@ jobs:
         run: npm run layout:audit
       - name: Check application contract ownership
         run: npm run application:contracts:audit
+      - name: Check updatecmd deployment contracts
+        run: ../tools/updatecmd/tests/main-sync.spec.sh && ../tools/updatecmd/tests/wx-signature-contract.spec.sh
 
   real-integration:
     needs: architecture
@@ -74,7 +76,7 @@ jobs:
         run: npm run test:integration:real
 
   release-artifact:
-    needs: architecture
+    needs: [architecture, real-integration]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -99,3 +101,15 @@ jobs:
         run: npm run typecheck:prod && npm run build && npm run verify:dist
       - name: Build the production-only deployment artifact
         run: npm prune --omit=dev && npm run artifact:create -- logs/backend-deployment.tar.gz
+        env:
+          BACKEND_ARTIFACT_NODE_MAJOR: "24"
+      - name: Upload the certified Node 24 deployment artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: backend-deployment-node24-${{ github.sha }}
+          path: |
+            backend/logs/backend-deployment.tar.gz
+            backend/logs/backend-deployment.tar.gz.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
