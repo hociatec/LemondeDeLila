@@ -21,7 +21,8 @@ describe('Nawak declarative game', () => {
       game.view('Bob') as unknown as { kits: StableGameKitsView }
     ).kits;
     expect(
-      bobKits.submissions.sessions['nawak.answers'].valuesByPlayerId,
+      bobKits.submissions.sessions['choice-anonymous-vote.answers']
+        .valuesByPlayerId,
     ).toBeUndefined();
     await game.as('Bob').do('choose_answer', { answerIndex: 1 });
     await game.as('Charly').do('choose_answer', { answerIndex: 2 });

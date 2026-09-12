@@ -74,7 +74,7 @@ export interface GameRuleProgram<
   readonly visibility?: Readonly<Record<string, VisibilityRule>>;
   /** Visibility policy applied to system score/resource/status projections. */
   readonly playerValuesVisibility?: PlayerValuesVisibility;
-  /** Small game-specific addition merged into the generic PlayerView. */
+  /** Small game-authored addition merged into the generic PlayerView. */
   readonly viewExtension?: (input: {
     state: TState;
     actor: PlayerState | null;

@@ -1,5 +1,5 @@
 import type { GamePattern } from '../contracts/pattern-definition';
-import { jsonProgramExtensions } from '../extensions/json-program-extension-registry';
+import { jsonEffectPacks } from '../effect-packs/json-effect-pack-registry';
 import type { JsonGameManifest } from './json-game-manifest';
 import type { JsonGameDocument } from './json-game-schema';
 
@@ -13,7 +13,7 @@ export function assertProgramReferences(
   fail: JsonFailure,
 ): void {
   const sources = new Map<string, unknown>(Object.entries(document));
-  const active = jsonProgramExtensions.filter((extension) =>
+  const active = jsonEffectPacks.filter((extension) =>
     sources.has(extension.documentKey),
   );
   if (active.length > 1) fail('programs', 'one game program per definition');
@@ -51,7 +51,7 @@ export function assertProgramReferences(
           (!winOnFinish || Boolean(pattern.winOnFinish)),
       ),
   };
-  for (const extension of jsonProgramExtensions) {
+  for (const extension of jsonEffectPacks) {
     const source = sources.get(extension.documentKey);
     const enabled = source !== undefined;
     if (

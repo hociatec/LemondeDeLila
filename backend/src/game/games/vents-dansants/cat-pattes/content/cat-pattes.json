@@ -5,7 +5,7 @@
   "goal": 1000,
   "initialHandSize": 6,
   "defaultRounds": 3,
-  "statusPrefix": "cat-pattes.",
+  "statusPrefix": "paw-round.",
   "cards": [
     {
       "id": "pattes-10-1",
@@ -15,7 +15,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 10
           }
@@ -32,7 +32,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 10
           }
@@ -49,7 +49,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 10
           }
@@ -66,7 +66,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 10
           }
@@ -83,7 +83,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 10
           }
@@ -100,7 +100,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 10
           }
@@ -117,7 +117,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 20
           }
@@ -134,7 +134,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 20
           }
@@ -151,7 +151,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 20
           }
@@ -168,7 +168,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 20
           }
@@ -185,7 +185,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 20
           }
@@ -202,7 +202,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 20
           }
@@ -219,7 +219,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 20
           }
@@ -236,7 +236,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 20
           }
@@ -253,7 +253,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 20
           }
@@ -270,7 +270,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 20
           }
@@ -287,7 +287,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 50
           }
@@ -304,7 +304,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 50
           }
@@ -321,7 +321,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 50
           }
@@ -338,7 +338,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 50
           }
@@ -355,7 +355,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 50
           }
@@ -372,7 +372,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 50
           }
@@ -389,7 +389,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 50
           }
@@ -406,7 +406,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 50
           }
@@ -423,7 +423,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 50
           }
@@ -440,7 +440,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 50
           }
@@ -457,7 +457,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 80
           }
@@ -474,7 +474,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 80
           }
@@ -491,7 +491,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 80
           }
@@ -508,7 +508,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 80
           }
@@ -525,7 +525,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 80
           }
@@ -542,7 +542,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 80
           }
@@ -559,7 +559,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 80
           }
@@ -576,7 +576,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 80
           }
@@ -593,7 +593,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 80
           }
@@ -610,7 +610,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 80
           }
@@ -627,7 +627,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -644,7 +644,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -661,7 +661,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -678,7 +678,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -695,7 +695,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -712,7 +712,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -729,7 +729,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -746,7 +746,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -763,7 +763,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -780,7 +780,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -797,7 +797,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -814,7 +814,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 130
           }
@@ -831,7 +831,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 150
           }
@@ -848,7 +848,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 150
           }
@@ -865,7 +865,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 150
           }
@@ -882,7 +882,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.move",
+          "effectId": "paw-round.move",
           "data": {
             "value": 150
           }
@@ -899,14 +899,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "gamelle"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -925,14 +925,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "gamelle"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -951,14 +951,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "gamelle"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -977,14 +977,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "pluie"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1003,14 +1003,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "pluie"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1029,14 +1029,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "pluie"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1055,14 +1055,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "pluie"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1081,14 +1081,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "pluie"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1107,14 +1107,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "chien"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1133,14 +1133,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "chien"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1159,14 +1159,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "chien"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1185,14 +1185,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "coussin"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1211,14 +1211,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "coussin"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1237,14 +1237,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "coussin"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1263,14 +1263,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "sol"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1289,14 +1289,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "sol"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1315,14 +1315,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "sol"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1341,14 +1341,14 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "cat-pattes.obstacle",
+          "status": "paw-round.obstacle",
           "scope": "round",
           "data": {
             "obstacle": "sol"
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "cat-pattes.obstacle",
+            "choiceId": "paw-round.obstacle",
             "optional": false
           }
         },
@@ -1360,14 +1360,14 @@
       "obstacle": "sol"
     },
     {
-      "id": "parade-croquettes-1",
+      "id": "cards-ordered-parade-croquettes-1",
       "name": "Croquettes",
       "description": "Un plein d'énergie instantané.",
       "effect": "Retire Gamelle vide.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "croquettes"
           }
@@ -1380,14 +1380,14 @@
       "parade": "croquettes"
     },
     {
-      "id": "parade-croquettes-2",
+      "id": "cards-ordered-parade-croquettes-2",
       "name": "Croquettes",
       "description": "Un plein d'énergie instantané.",
       "effect": "Retire Gamelle vide.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "croquettes"
           }
@@ -1400,14 +1400,14 @@
       "parade": "croquettes"
     },
     {
-      "id": "parade-croquettes-3",
+      "id": "cards-ordered-parade-croquettes-3",
       "name": "Croquettes",
       "description": "Un plein d'énergie instantané.",
       "effect": "Retire Gamelle vide.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "croquettes"
           }
@@ -1420,14 +1420,14 @@
       "parade": "croquettes"
     },
     {
-      "id": "parade-croquettes-4",
+      "id": "cards-ordered-parade-croquettes-4",
       "name": "Croquettes",
       "description": "Un plein d'énergie instantané.",
       "effect": "Retire Gamelle vide.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "croquettes"
           }
@@ -1440,14 +1440,14 @@
       "parade": "croquettes"
     },
     {
-      "id": "parade-croquettes-5",
+      "id": "cards-ordered-parade-croquettes-5",
       "name": "Croquettes",
       "description": "Un plein d'énergie instantané.",
       "effect": "Retire Gamelle vide.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "croquettes"
           }
@@ -1460,14 +1460,14 @@
       "parade": "croquettes"
     },
     {
-      "id": "parade-croquettes-6",
+      "id": "cards-ordered-parade-croquettes-6",
       "name": "Croquettes",
       "description": "Un plein d'énergie instantané.",
       "effect": "Retire Gamelle vide.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "croquettes"
           }
@@ -1480,14 +1480,14 @@
       "parade": "croquettes"
     },
     {
-      "id": "parade-rayon-1",
+      "id": "cards-ordered-parade-rayon-1",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1500,14 +1500,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-2",
+      "id": "cards-ordered-parade-rayon-2",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1520,14 +1520,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-3",
+      "id": "cards-ordered-parade-rayon-3",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1540,14 +1540,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-4",
+      "id": "cards-ordered-parade-rayon-4",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1560,14 +1560,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-5",
+      "id": "cards-ordered-parade-rayon-5",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1580,14 +1580,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-6",
+      "id": "cards-ordered-parade-rayon-6",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1600,14 +1600,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-7",
+      "id": "cards-ordered-parade-rayon-7",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1620,14 +1620,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-8",
+      "id": "cards-ordered-parade-rayon-8",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1640,14 +1640,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-9",
+      "id": "cards-ordered-parade-rayon-9",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1660,14 +1660,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-10",
+      "id": "cards-ordered-parade-rayon-10",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1680,14 +1680,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-11",
+      "id": "cards-ordered-parade-rayon-11",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1700,14 +1700,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-12",
+      "id": "cards-ordered-parade-rayon-12",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1720,14 +1720,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-13",
+      "id": "cards-ordered-parade-rayon-13",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1740,14 +1740,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-rayon-14",
+      "id": "cards-ordered-parade-rayon-14",
       "name": "Rayon de soleil",
       "description": "Indispensable pour démarrer ou repartir du bon pied.",
       "effect": "Active le soleil. Retire Pluie torrentielle.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "rayon"
           }
@@ -1760,14 +1760,14 @@
       "parade": "rayon"
     },
     {
-      "id": "parade-dodo-1",
+      "id": "cards-ordered-parade-dodo-1",
       "name": "Dodo réparateur",
       "description": "Un petit somme, et tout va mieux.",
       "effect": "Retire Chien enragé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "dodo"
           }
@@ -1780,14 +1780,14 @@
       "parade": "dodo"
     },
     {
-      "id": "parade-dodo-2",
+      "id": "cards-ordered-parade-dodo-2",
       "name": "Dodo réparateur",
       "description": "Un petit somme, et tout va mieux.",
       "effect": "Retire Chien enragé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "dodo"
           }
@@ -1800,14 +1800,14 @@
       "parade": "dodo"
     },
     {
-      "id": "parade-dodo-3",
+      "id": "cards-ordered-parade-dodo-3",
       "name": "Dodo réparateur",
       "description": "Un petit somme, et tout va mieux.",
       "effect": "Retire Chien enragé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "dodo"
           }
@@ -1820,14 +1820,14 @@
       "parade": "dodo"
     },
     {
-      "id": "parade-dodo-4",
+      "id": "cards-ordered-parade-dodo-4",
       "name": "Dodo réparateur",
       "description": "Un petit somme, et tout va mieux.",
       "effect": "Retire Chien enragé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "dodo"
           }
@@ -1840,14 +1840,14 @@
       "parade": "dodo"
     },
     {
-      "id": "parade-dodo-5",
+      "id": "cards-ordered-parade-dodo-5",
       "name": "Dodo réparateur",
       "description": "Un petit somme, et tout va mieux.",
       "effect": "Retire Chien enragé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "dodo"
           }
@@ -1860,14 +1860,14 @@
       "parade": "dodo"
     },
     {
-      "id": "parade-dodo-6",
+      "id": "cards-ordered-parade-dodo-6",
       "name": "Dodo réparateur",
       "description": "Un petit somme, et tout va mieux.",
       "effect": "Retire Chien enragé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "dodo"
           }
@@ -1880,14 +1880,14 @@
       "parade": "dodo"
     },
     {
-      "id": "parade-coussin-1",
+      "id": "cards-ordered-parade-coussin-1",
       "name": "Nouveau coussin",
       "description": "Celui-ci est sûr. Normalement.",
       "effect": "Retire Coussin piégé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "coussin"
           }
@@ -1900,14 +1900,14 @@
       "parade": "coussin"
     },
     {
-      "id": "parade-coussin-2",
+      "id": "cards-ordered-parade-coussin-2",
       "name": "Nouveau coussin",
       "description": "Celui-ci est sûr. Normalement.",
       "effect": "Retire Coussin piégé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "coussin"
           }
@@ -1920,14 +1920,14 @@
       "parade": "coussin"
     },
     {
-      "id": "parade-coussin-3",
+      "id": "cards-ordered-parade-coussin-3",
       "name": "Nouveau coussin",
       "description": "Celui-ci est sûr. Normalement.",
       "effect": "Retire Coussin piégé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "coussin"
           }
@@ -1940,14 +1940,14 @@
       "parade": "coussin"
     },
     {
-      "id": "parade-coussin-4",
+      "id": "cards-ordered-parade-coussin-4",
       "name": "Nouveau coussin",
       "description": "Celui-ci est sûr. Normalement.",
       "effect": "Retire Coussin piégé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "coussin"
           }
@@ -1960,14 +1960,14 @@
       "parade": "coussin"
     },
     {
-      "id": "parade-coussin-5",
+      "id": "cards-ordered-parade-coussin-5",
       "name": "Nouveau coussin",
       "description": "Celui-ci est sûr. Normalement.",
       "effect": "Retire Coussin piégé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "coussin"
           }
@@ -1980,14 +1980,14 @@
       "parade": "coussin"
     },
     {
-      "id": "parade-coussin-6",
+      "id": "cards-ordered-parade-coussin-6",
       "name": "Nouveau coussin",
       "description": "Celui-ci est sûr. Normalement.",
       "effect": "Retire Coussin piégé.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "coussin"
           }
@@ -2000,14 +2000,14 @@
       "parade": "coussin"
     },
     {
-      "id": "parade-saut-1",
+      "id": "cards-ordered-parade-saut-1",
       "name": "Saut agile",
       "description": "Une pirouette bien placée règle beaucoup de problèmes.",
       "effect": "Retire Sol ciré.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "saut"
           }
@@ -2020,14 +2020,14 @@
       "parade": "saut"
     },
     {
-      "id": "parade-saut-2",
+      "id": "cards-ordered-parade-saut-2",
       "name": "Saut agile",
       "description": "Une pirouette bien placée règle beaucoup de problèmes.",
       "effect": "Retire Sol ciré.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "saut"
           }
@@ -2040,14 +2040,14 @@
       "parade": "saut"
     },
     {
-      "id": "parade-saut-3",
+      "id": "cards-ordered-parade-saut-3",
       "name": "Saut agile",
       "description": "Une pirouette bien placée règle beaucoup de problèmes.",
       "effect": "Retire Sol ciré.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "saut"
           }
@@ -2060,14 +2060,14 @@
       "parade": "saut"
     },
     {
-      "id": "parade-saut-4",
+      "id": "cards-ordered-parade-saut-4",
       "name": "Saut agile",
       "description": "Une pirouette bien placée règle beaucoup de problèmes.",
       "effect": "Retire Sol ciré.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "saut"
           }
@@ -2080,14 +2080,14 @@
       "parade": "saut"
     },
     {
-      "id": "parade-saut-5",
+      "id": "cards-ordered-parade-saut-5",
       "name": "Saut agile",
       "description": "Une pirouette bien placée règle beaucoup de problèmes.",
       "effect": "Retire Sol ciré.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "saut"
           }
@@ -2100,14 +2100,14 @@
       "parade": "saut"
     },
     {
-      "id": "parade-saut-6",
+      "id": "cards-ordered-parade-saut-6",
       "name": "Saut agile",
       "description": "Une pirouette bien placée règle beaucoup de problèmes.",
       "effect": "Retire Sol ciré.",
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.parade",
+          "effectId": "paw-round.parade",
           "data": {
             "parade": "saut"
           }
@@ -2127,7 +2127,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.power",
+          "effectId": "paw-round.power",
           "data": {
             "power": "reserve"
           }
@@ -2144,7 +2144,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.power",
+          "effectId": "paw-round.power",
           "data": {
             "power": "chat-ninja"
           }
@@ -2161,7 +2161,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.power",
+          "effectId": "paw-round.power",
           "data": {
             "power": "patte-blindee"
           }
@@ -2178,7 +2178,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "cat-pattes.power",
+          "effectId": "paw-round.power",
           "data": {
             "power": "passage-star"
           }

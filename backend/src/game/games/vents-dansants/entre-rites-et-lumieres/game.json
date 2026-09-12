@@ -35,16 +35,16 @@
   },
   "actions": {
     "ask_card": {
-      "recipe": "rites-ask-card"
+      "recipe": "cards-ritual-phases-ask-card"
     },
     "pass": {
-      "recipe": "rites-pass"
+      "recipe": "cards-ritual-phases-pass"
     }
   },
   "victory": {
-    "kind": "by-rites"
+    "kind": "by-ritual-phases"
   },
-  "rites": {
+  "ritualPhases": {
     "cards": {
       "$content": "content/catalogue.json#/cards"
     }

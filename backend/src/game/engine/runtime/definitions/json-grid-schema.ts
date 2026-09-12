@@ -1,4 +1,4 @@
-import type { GridPlacementProgram } from '../extensions/grid-placement/program';
+import type { GridPlacementProgram } from '../effect-packs/spatial-grid-placement/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

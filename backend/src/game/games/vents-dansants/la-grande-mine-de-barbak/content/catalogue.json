@@ -373,7 +373,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.recover-discard",
+          "effectId": "cards-public-domain.recover-discard",
           "data": {}
         }
       ]
@@ -462,7 +462,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-treasure-all",
+          "effectId": "cards-public-domain.remove-treasure-all",
           "data": {
             "count": 1
           }
@@ -486,14 +486,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.draw-passive",
+          "effectId": "cards-public-domain.draw-passive",
           "data": {
             "count": 1
           }
         },
         {
           "kind": "custom",
-          "effectId": "mine.draw-passive",
+          "effectId": "cards-public-domain.draw-passive",
           "data": {
             "count": 1
           },
@@ -512,7 +512,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.draw-passive",
+          "effectId": "cards-public-domain.draw-passive",
           "data": {
             "count": 2
           }
@@ -538,7 +538,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "mine.discard-next-draw",
+          "status": "cards-public-domain.discard-next-draw",
           "scope": "until-used"
         }
       ]
@@ -568,14 +568,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.draw-passive",
+          "effectId": "cards-public-domain.draw-passive",
           "data": {
             "count": 3
           }
         },
         {
           "kind": "custom",
-          "effectId": "mine.trim-hand",
+          "effectId": "cards-public-domain.trim-hand",
           "data": {}
         }
       ]
@@ -589,7 +589,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.double-next-player",
+          "effectId": "cards-public-domain.double-next-player",
           "data": {}
         }
       ]
@@ -608,7 +608,7 @@
           "count": 1,
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "mine.event-target",
+            "choiceId": "cards-public-domain.event-target",
             "optional": false
           }
         }
@@ -647,7 +647,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-treasure",
+          "effectId": "cards-public-domain.remove-treasure",
           "data": {}
         }
       ]
@@ -677,11 +677,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain",
+          "effectId": "cards-public-domain.remove-domain",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "mine.monster-target",
+            "choiceId": "cards-public-domain.monster-target",
             "optional": false
           }
         }
@@ -696,11 +696,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain",
+          "effectId": "cards-public-domain.remove-domain",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "mine.monster-target",
+            "choiceId": "cards-public-domain.monster-target",
             "optional": false
           }
         }
@@ -715,7 +715,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain-all",
+          "effectId": "cards-public-domain.remove-domain-all",
           "data": {}
         }
       ]
@@ -729,11 +729,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain",
+          "effectId": "cards-public-domain.remove-domain",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "mine.monster-target",
+            "choiceId": "cards-public-domain.monster-target",
             "optional": false
           }
         }
@@ -748,11 +748,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain",
+          "effectId": "cards-public-domain.remove-domain",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "mine.monster-target",
+            "choiceId": "cards-public-domain.monster-target",
             "optional": false
           }
         }
@@ -767,11 +767,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain",
+          "effectId": "cards-public-domain.remove-domain",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "mine.monster-target",
+            "choiceId": "cards-public-domain.monster-target",
             "optional": false
           }
         }
@@ -786,7 +786,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain-all",
+          "effectId": "cards-public-domain.remove-domain-all",
           "data": {}
         }
       ]
@@ -800,11 +800,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain",
+          "effectId": "cards-public-domain.remove-domain",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "mine.monster-target",
+            "choiceId": "cards-public-domain.monster-target",
             "optional": false
           }
         }
@@ -819,11 +819,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain",
+          "effectId": "cards-public-domain.remove-domain",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "mine.monster-target",
+            "choiceId": "cards-public-domain.monster-target",
             "optional": false
           }
         }
@@ -838,11 +838,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain",
+          "effectId": "cards-public-domain.remove-domain",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "mine.monster-target",
+            "choiceId": "cards-public-domain.monster-target",
             "optional": false
           }
         }
@@ -857,11 +857,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-domain",
+          "effectId": "cards-public-domain.remove-domain",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "mine.monster-target",
+            "choiceId": "cards-public-domain.monster-target",
             "optional": false
           }
         }
@@ -894,7 +894,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.remove-treasure-all",
+          "effectId": "cards-public-domain.remove-treasure-all",
           "data": {
             "count": 2
           }
@@ -910,7 +910,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.finish",
+          "effectId": "cards-public-domain.finish",
           "data": {}
         }
       ]
@@ -924,7 +924,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mine.finish",
+          "effectId": "cards-public-domain.finish",
           "data": {}
         }
       ]

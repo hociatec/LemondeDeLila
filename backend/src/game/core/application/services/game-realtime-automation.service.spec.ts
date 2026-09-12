@@ -384,7 +384,7 @@ describe('GameRealtimeAutomationService', () => {
         playerIds: [1, -7],
         resolvedPlayerIds: [],
         data: {
-          choiceId: 'a-fond-les-ballons.pawn',
+          choiceId: 'race-chained-tile-cards.pawn',
           options: ['blue', 'red'],
         },
       },
@@ -459,7 +459,7 @@ describe('GameRealtimeAutomationService', () => {
         type: 'choice',
         playerId: -7,
         data: {
-          choiceId: 'a-fond-les-ballons.pawn',
+          choiceId: 'race-chained-tile-cards.pawn',
           options: ['blue', 'red'],
         },
       },

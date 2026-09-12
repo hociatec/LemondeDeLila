@@ -30,9 +30,10 @@ describe('Sac stable catalogue references', () => {
       for (const utility of variant.utilities)
         utility.name = 'Autre équipement';
 
-      expect((compile(source).content.data as { sac: unknown }).sac).toEqual(
-        source,
-      );
+      expect(
+        (compile(source).content.data as { propertyEconomy: unknown })
+          .propertyEconomy,
+      ).toEqual(source);
       expect(variant.tiles.map((tile) => tile.id)).toEqual(
         original.tiles.map((tile) => tile.id),
       );
@@ -59,7 +60,7 @@ describe('Sac stable catalogue references', () => {
         variant.chance[0].effects = [
           {
             kind: 'custom',
-            effectId: 'sac.movement',
+            effectId: 'board-property-economy.movement',
             data: {
               movement: {
                 kind: 'tile',

@@ -8,7 +8,7 @@
   ],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
-  "patterns": [{ "kind": "race", "trackId": "galaxy", "spaces": 50 }],
+  "patterns": [{ "kind": "race", "trackId": "quizEvent", "spaces": 50 }],
   "components": [
     {
       "component": "cards.deck",
@@ -37,16 +37,16 @@
   ],
   "initialPhase": "playing",
   "phases": { "playing": { "actions": ["roll"], "terminal": true } },
-  "actions": { "roll": { "recipe": "galaxy-race-roll" } },
-  "victory": { "kind": "by-galaxy-race" },
-  "galaxyRace": {
-    "trackId": "galaxy",
+  "actions": { "roll": { "recipe": "race-quiz-event-track-roll" } },
+  "victory": { "kind": "by-quiz-event-race" },
+  "quizEventRace": {
+    "trackId": "quizEvent",
     "diceId": "main",
     "questionDeckId": "questions",
     "challengeDeckId": "challenges",
     "eventDeckId": "events",
-    "answerChoiceId": "mission-galaxie.answer",
-    "eventMoveChoiceId": "mission-galaxie.event-move",
+    "answerChoiceId": "race-quiz-event-track.answer",
+    "eventMoveChoiceId": "race-quiz-event-track.event-move",
     "tiles": { "$content": "content/catalogue.json#/tiles" },
     "questions": { "$content": "content/catalogue.json#/questions" },
     "challenges": { "$content": "content/catalogue.json#/challenges" },

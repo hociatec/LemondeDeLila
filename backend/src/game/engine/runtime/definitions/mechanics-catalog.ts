@@ -9,7 +9,7 @@ export type MechanismAdmission = {
   composesCapabilities?: boolean;
 };
 
-/** Formal rule used during reviews before promoting game-specific code. */
+/** Formal rule used during reviews before promoting repeated authoring code. */
 export function classifyMechanism(input: MechanismAdmission): MechanismLayer {
   if (input.universalInvariant) return 'core';
   if (input.occurrences < MECHANIC_EXTRACTION_THRESHOLD) return 'local';

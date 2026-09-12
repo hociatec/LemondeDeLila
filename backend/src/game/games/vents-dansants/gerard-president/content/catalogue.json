@@ -1588,7 +1588,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.sabotage",
+          "effectId": "cards-theme-name.sabotage",
           "data": {}
         }
       ]
@@ -1601,7 +1601,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.double-prenom",
+          "effectId": "cards-theme-name.double-prenom",
           "data": {}
         }
       ]
@@ -1614,7 +1614,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.double-theme",
+          "effectId": "cards-theme-name.double-theme",
           "data": {}
         }
       ]
@@ -1627,7 +1627,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.interdiction",
+          "effectId": "cards-theme-name.interdiction",
           "data": {}
         }
       ]
@@ -1640,7 +1640,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.main-fantome",
+          "effectId": "cards-theme-name.main-fantome",
           "data": {}
         }
       ]
@@ -1653,7 +1653,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.defense-totale",
+          "effectId": "cards-theme-name.defense-totale",
           "data": {}
         }
       ]
@@ -1666,7 +1666,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.echange-force",
+          "effectId": "cards-theme-name.echange-force",
           "data": {}
         }
       ]
@@ -1679,7 +1679,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.panique-generale",
+          "effectId": "cards-theme-name.panique-generale",
           "data": {}
         }
       ]
@@ -1692,7 +1692,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.retour-envoyeur",
+          "effectId": "cards-theme-name.retour-envoyeur",
           "data": {}
         }
       ]
@@ -1705,7 +1705,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.theme-secret",
+          "effectId": "cards-theme-name.theme-secret",
           "data": {}
         }
       ]
@@ -1718,7 +1718,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.chuchotement-confus",
+          "effectId": "cards-theme-name.chuchotement-confus",
           "data": {}
         }
       ]
@@ -1731,7 +1731,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.mega-combo",
+          "effectId": "cards-theme-name.mega-combo",
           "data": {}
         }
       ]
@@ -1744,7 +1744,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.inversion",
+          "effectId": "cards-theme-name.inversion",
           "data": {}
         }
       ]
@@ -1757,7 +1757,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.jury-mystere",
+          "effectId": "cards-theme-name.jury-mystere",
           "data": {}
         }
       ]
@@ -1770,7 +1770,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.effet-domino",
+          "effectId": "cards-theme-name.effet-domino",
           "data": {}
         }
       ]
@@ -1783,7 +1783,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.prenom-fantome",
+          "effectId": "cards-theme-name.prenom-fantome",
           "data": {}
         }
       ]
@@ -1796,7 +1796,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.inversion-role",
+          "effectId": "cards-theme-name.inversion-role",
           "data": {}
         }
       ]
@@ -1809,7 +1809,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.chaos-temporel",
+          "effectId": "cards-theme-name.chaos-temporel",
           "data": {}
         }
       ]
@@ -1822,7 +1822,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.ultra-sabotage",
+          "effectId": "cards-theme-name.ultra-sabotage",
           "data": {}
         }
       ]
@@ -1835,7 +1835,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "gerard.prenom-volant",
+          "effectId": "cards-theme-name.prenom-volant",
           "data": {}
         }
       ]

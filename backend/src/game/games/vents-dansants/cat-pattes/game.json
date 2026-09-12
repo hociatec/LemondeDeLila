@@ -30,34 +30,28 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "playing"
-      ]
+      "transitions": ["playing"]
     },
     "playing": {
-      "actions": [
-        "draw",
-        "play_card",
-        "discard_card"
-      ],
+      "actions": ["draw", "play_card", "discard_card"],
       "terminal": true
     }
   },
   "actions": {
     "draw": {
-      "recipe": "cat-pattes-draw"
+      "recipe": "paw-round-draw"
     },
     "play_card": {
-      "recipe": "cat-pattes-play"
+      "recipe": "paw-round-play"
     },
     "discard_card": {
-      "recipe": "cat-pattes-discard"
+      "recipe": "paw-round-discard"
     }
   },
   "victory": {
-    "kind": "by-cat-pattes"
+    "kind": "by-paw-scoring"
   },
-  "catPattes": {
+  "pawScoring": {
     "$content": "content/cat-pattes.json"
   }
 }

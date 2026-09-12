@@ -22,9 +22,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "morpion_play"
-      ],
+      "actions": ["morpion_play"],
       "terminal": true
     }
   },

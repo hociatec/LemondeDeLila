@@ -2,7 +2,7 @@ import { compileJsonGame } from './json-game-compiler';
 import { testGame } from '../../../core/testing/game-test-kit';
 import { DeclarativeGameRuntime } from '../declarative-game.runtime';
 import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
-import type { CardSelectionProgram } from '../extensions/card-selection/program';
+import type { CardSelectionProgram } from '../effect-packs/choice-card-occurrences/program';
 import type { CardValue } from '../cards/cards-contracts';
 import manifest from '../../../testing/fixtures/json-course/manifest.json';
 import document from '../../../testing/fixtures/json-course/game.json';

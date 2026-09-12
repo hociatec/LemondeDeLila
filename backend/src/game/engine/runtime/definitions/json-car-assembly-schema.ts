@@ -1,4 +1,4 @@
-import type { CarAssemblyProgram } from '../extensions/car-assembly/program';
+import type { CarAssemblyProgram } from '../effect-packs/cards-ordered-assembly/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

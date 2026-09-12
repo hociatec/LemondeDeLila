@@ -4,11 +4,13 @@
   "definitionVersion": "3",
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
-  "patterns": [{ "kind": "race", "trackId": "galopons", "spaces": 40 }],
+  "patterns": [
+    { "kind": "race", "trackId": "bidirectionalCollision", "spaces": 40 }
+  ],
   "components": [
     {
       "component": "pawn.set",
-      "id": "galopons",
+      "id": "bidirectionalCollision",
       "pawns": { "$content": "content/catalogue.json#/pawns" },
       "perPlayer": 1
     },
@@ -28,17 +30,17 @@
     "setup": { "actions": [], "transitions": ["playing"] },
     "playing": { "actions": ["roll"], "terminal": true }
   },
-  "actions": { "roll": { "recipe": "galopons-race-roll" } },
-  "victory": { "kind": "by-galopons-race" },
-  "galoponsRace": {
-    "trackId": "galopons",
+  "actions": { "roll": { "recipe": "race-bidirectional-collision-roll" } },
+  "victory": { "kind": "by-bidirectional-collision-race" },
+  "bidirectionalCollisionRace": {
+    "trackId": "bidirectionalCollision",
     "diceId": "main",
     "deckId": "adventure",
-    "pawnSetId": "galopons",
-    "pawnChoiceId": "galopons.pawn",
+    "pawnSetId": "bidirectionalCollision",
+    "pawnChoiceId": "bidirectionalCollision.pawn",
     "appleResource": "apple",
-    "iouPrefix": "galopons.iou",
-    "returningStatus": "galopons.returning",
+    "iouPrefix": "bidirectionalCollision.iou",
+    "returningStatus": "bidirectionalCollision.returning",
     "applesToWin": 3,
     "maxDepth": 12,
     "finishReason": "three-apples-at-finish",

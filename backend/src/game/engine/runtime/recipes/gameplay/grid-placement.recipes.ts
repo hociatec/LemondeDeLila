@@ -1,4 +1,4 @@
-import type { GridPlacementProgram } from '../../extensions/grid-placement/program';
+import type { GridPlacementProgram } from '../../effect-packs/spatial-grid-placement/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import type { ChoiceResolverShape } from '../../contracts/author-rule-contracts';
 import { defineAction, defineChoice } from '../../actions/action-builders';

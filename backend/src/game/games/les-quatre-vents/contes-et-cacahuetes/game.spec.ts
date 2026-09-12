@@ -41,7 +41,8 @@ describe('Contes et Cacahuètes declarative game', () => {
     await game.choose(1, catalogue.pawns[0].id);
     await game.choose(2, catalogue.pawns[1].id);
     const legacy = game.state();
-    legacy.engine!.contentVersion = 'contes-et-cacahuetes@content:32cd4133';
+    legacy.engine!.contentVersion =
+      'contes-et-cacahuetes@content:32cd4133';
     const actorId = legacy.turn!.currentPlayerId!;
 
     const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(

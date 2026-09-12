@@ -10,7 +10,7 @@ import {
   type ReservedGameViewKeys,
 } from '../contracts/author-rule-contracts';
 
-/** Preferred helper for a minimal game-specific `viewExtension`. */
+/** Preferred helper for a minimal game-authored `viewExtension`. */
 export function gameViewExtension<TValue extends object>(
   extension: TValue & ReservedGameViewKeys,
 ): GameViewExtension<TValue> {

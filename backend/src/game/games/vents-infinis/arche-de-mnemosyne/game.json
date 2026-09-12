@@ -24,12 +24,12 @@
     }
   },
   "actions": {
-    "draw": { "recipe": "mnemosyne-draw" },
-    "answer": { "recipe": "mnemosyne-answer" },
-    "timeout": { "recipe": "mnemosyne-timeout" }
+    "draw": { "recipe": "choice-simultaneous-quiz-draw" },
+    "answer": { "recipe": "choice-simultaneous-quiz-answer" },
+    "timeout": { "recipe": "choice-simultaneous-quiz-timeout" }
   },
-  "victory": { "kind": "by-mnemosyne" },
-  "mnemosyne": {
+  "victory": { "kind": "by-simultaneous-quiz" },
+  "simultaneousQuiz": {
     "categories": { "$content": "content/quiz.json#/categories" },
     "questions": { "$content": "content/quiz.json#/questions" },
     "defaults": {

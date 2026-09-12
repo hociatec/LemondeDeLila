@@ -50,8 +50,8 @@
     "playing": { "actions": ["roll", "draw_card"], "terminal": true }
   },
   "actions": {
-    "roll": { "recipe": "balloon-race-roll" },
-    "draw_card": { "recipe": "balloon-race-draw" }
+    "roll": { "recipe": "race-chained-tile-cards-roll" },
+    "draw_card": { "recipe": "race-chained-tile-cards-draw" }
   },
   "victory": {
     "kind": "track-finish",
@@ -59,14 +59,14 @@
     "ties": "lowest-id",
     "reason": "golden-nut"
   },
-  "balloonRace": {
+  "chainedTileRace": {
     "trackId": "balloons",
     "pawnSetId": "balloons-pawns",
-    "pawnChoiceId": "a-fond-les-ballons.pawn",
+    "pawnChoiceId": "race-chained-tile-cards.pawn",
     "deckId": "loufoque",
     "diceId": "main",
-    "trapImmunityStatusId": "a-fond-les-ballons.trap-immunity",
-    "awaitingCardStatusId": "a-fond-les-ballons.awaiting-card",
+    "trapImmunityStatusId": "race-chained-tile-cards.trap-immunity",
+    "awaitingCardStatusId": "race-chained-tile-cards.awaiting-card",
     "cards": { "$content": "content/catalogue.json#/cards" },
     "pawns": { "$content": "content/catalogue.json#/pawns" },
     "tiles": { "$content": "content/catalogue.json#/tiles" },

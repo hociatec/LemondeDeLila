@@ -426,7 +426,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": 3
           }
@@ -439,7 +439,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.roll",
+          "effectId": "race-bounce-quiz.roll",
           "data": {}
         }
       ]
@@ -450,7 +450,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": 2
           }
@@ -463,7 +463,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "minuit.ignore-next-malus",
+          "status": "race-bounce-quiz.ignore-next-malus",
           "scope": "until-used"
         }
       ]
@@ -474,7 +474,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move-to-type",
+          "effectId": "race-bounce-quiz.move-to-type",
           "data": {
             "type": "card",
             "direction": "forward"
@@ -498,7 +498,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": 4
           }
@@ -511,11 +511,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.gift",
+          "effectId": "race-bounce-quiz.gift",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "minuit.gift",
+            "choiceId": "race-bounce-quiz.gift",
             "optional": false
           }
         },
@@ -530,7 +530,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "minuit.ignore-next-skip",
+          "status": "race-bounce-quiz.ignore-next-skip",
           "scope": "until-used"
         }
       ]
@@ -541,11 +541,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.swap",
+          "effectId": "race-bounce-quiz.swap",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "minuit.swap",
+            "choiceId": "race-bounce-quiz.swap",
             "optional": true
           }
         },
@@ -560,7 +560,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": 6
           }
@@ -573,7 +573,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": 2
           }
@@ -586,7 +586,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": -2
           }
@@ -599,7 +599,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": 1
           }
@@ -625,7 +625,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": 2
           }
@@ -638,7 +638,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": -1
           }
@@ -651,7 +651,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": -2
           }
@@ -664,7 +664,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": 1
           }
@@ -700,7 +700,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move-to-type",
+          "effectId": "race-bounce-quiz.move-to-type",
           "data": {
             "type": "card",
             "direction": "backward"
@@ -714,7 +714,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": 2
           }
@@ -740,7 +740,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": -3
           }
@@ -753,7 +753,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "minuit.force-draw-next-turn",
+          "status": "race-bounce-quiz.force-draw-next-turn",
           "scope": "until-used"
         }
       ]
@@ -777,7 +777,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": -2
           }
@@ -790,7 +790,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": -1
           }
@@ -803,7 +803,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.swap-behind",
+          "effectId": "race-bounce-quiz.swap-behind",
           "data": {}
         }
       ]
@@ -867,7 +867,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move",
+          "effectId": "race-bounce-quiz.move",
           "data": {
             "delta": -2
           }
@@ -880,7 +880,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "minuit.move-to-type",
+          "effectId": "race-bounce-quiz.move-to-type",
           "data": {
             "type": "neutral",
             "direction": "backward"

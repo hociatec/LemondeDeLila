@@ -7,7 +7,7 @@
   "patterns": [
     {
       "kind": "pawn-race",
-      "pawnSetId": "foulees",
+      "pawnSetId": "teamPawn",
       "pawns": { "$content": "content/catalogue.json#/pawns" },
       "perPlayer": 4,
       "spaces": 56,
@@ -24,13 +24,13 @@
     "setup": { "actions": [], "transitions": ["turn"] },
     "turn": { "actions": ["roll"], "terminal": true }
   },
-  "actions": { "roll": { "recipe": "foulees-race-roll" } },
-  "victory": { "kind": "by-foulees-race" },
-  "fouleesRace": {
-    "setId": "foulees",
+  "actions": { "roll": { "recipe": "race-team-pawn-capture-roll" } },
+  "victory": { "kind": "by-team-pawn-race" },
+  "teamPawnRace": {
+    "setId": "teamPawn",
     "diceId": "main",
-    "familyChoiceId": "foulees.family",
-    "moveChoiceId": "foulees.move",
+    "familyChoiceId": "teamPawn.family",
+    "moveChoiceId": "teamPawn.move",
     "families": { "$content": "content/catalogue.json#/families" },
     "trackLength": 52,
     "homeLength": 4,

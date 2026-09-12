@@ -3,12 +3,12 @@ name: Backend architecture
 on:
   push:
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend-architecture.yml'
+      - "backend/**"
+      - ".github/workflows/backend-architecture.yml"
   pull_request:
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend-architecture.yml'
+      - "backend/**"
+      - ".github/workflows/backend-architecture.yml"
   workflow_dispatch:
 
 permissions:
@@ -29,18 +29,73 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: '24'
+          node-version: "24"
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - name: Install static analysis dependencies
         run: npm ci --ignore-scripts --include=dev
       - name: Create audit output directory
-        run: node -e "require('node:fs').mkdirSync('logs', { recursive: true })"
+        run: |
+          node -e "require('node:fs').mkdirSync('logs', { recursive: true })"
       - name: Check quality and test regression guards
         run: npm run quality:check
+      - name: Enforce zero TypeScript source cycles
+        run: npm run cycles:audit
+      - name: Check lint rules
+        run: npm run lint
       - name: Check runtime cycles and compiler separation
         run: npm run runtime:separation:audit
       - name: Check source layout
         run: npm run layout:audit
       - name: Check application contract ownership
         run: npm run application:contracts:audit
+
+  real-integration:
+    needs: architecture
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --include=dev
+      - name: Exercise MySQL, Redis, BullMQ and two backend instances
+        run: npm run test:integration:real
+
+  release-artifact:
+    needs: architecture
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --include=dev
+      - name: Reject high-severity production dependency vulnerabilities
+        run: npm audit --omit=dev --audit-level=high
+      - name: Typecheck and build production code
+        run: npm run typecheck:prod && npm run build && npm run verify:dist
+      - name: Build the production-only deployment artifact
+        run: npm prune --omit=dev && npm run artifact:create -- logs/backend-deployment.tar.gz

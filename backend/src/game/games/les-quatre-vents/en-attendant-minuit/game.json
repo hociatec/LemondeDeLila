@@ -35,21 +35,21 @@
     "setup": { "actions": [], "transitions": ["playing"] },
     "playing": { "actions": ["roll"], "terminal": true }
   },
-  "actions": { "roll": { "recipe": "midnight-race-roll" } },
-  "victory": { "kind": "by-midnight-race" },
-  "midnightRace": {
+  "actions": { "roll": { "recipe": "race-bounce-quiz-roll" } },
+  "victory": { "kind": "by-bounce-quiz-race" },
+  "bounceQuizRace": {
     "trackId": "minuit",
     "diceId": "main",
     "deckId": "noel",
     "pawnSetId": "minuit",
-    "pawnChoiceId": "minuit.pawn",
-    "answerChoiceId": "minuit.resolve",
+    "pawnChoiceId": "race-bounce-quiz.pawn",
+    "answerChoiceId": "race-bounce-quiz.resolve",
     "maxDepth": 24,
-    "finishReason": "midnight",
+    "finishReason": "bounceQuiz",
     "statuses": {
-      "ignoreNextMalus": "minuit.ignore-next-malus",
-      "ignoreNextSkip": "minuit.ignore-next-skip",
-      "forceDrawNextTurn": "minuit.force-draw-next-turn"
+      "ignoreNextMalus": "race-bounce-quiz.ignore-next-malus",
+      "ignoreNextSkip": "race-bounce-quiz.ignore-next-skip",
+      "forceDrawNextTurn": "race-bounce-quiz.force-draw-next-turn"
     },
     "tiles": { "$content": "content/catalogue.json#/tiles" },
     "cards": { "$content": "content/catalogue.json#/cards" }

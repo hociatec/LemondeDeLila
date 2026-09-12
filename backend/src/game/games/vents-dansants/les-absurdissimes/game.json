@@ -35,20 +35,12 @@
   "initialPhase": "play",
   "phases": {
     "play": {
-      "actions": [
-        "play_card"
-      ],
-      "transitions": [
-        "judge"
-      ]
+      "actions": ["play_card"],
+      "transitions": ["judge"]
     },
     "judge": {
-      "actions": [
-        "judge_pick"
-      ],
-      "transitions": [
-        "play"
-      ]
+      "actions": ["judge_pick"],
+      "transitions": ["play"]
     }
   },
   "actions": {

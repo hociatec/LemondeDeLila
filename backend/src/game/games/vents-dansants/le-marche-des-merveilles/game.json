@@ -15,7 +15,7 @@
       "startingCurrency": 12,
       "minPrice": 1,
       "maxPrice": 10,
-      "turnsCounterId": "wonder-market.turns-taken",
+      "turnsCounterId": "collection-market-exchange.turns-taken",
       "maxRounds": 6,
       "winnerReason": "market-closed"
     }
@@ -39,20 +39,20 @@
     }
   },
   "actions": {
-    "buy": { "recipe": "wonder-market-buy" },
-    "sell": { "recipe": "wonder-market-sell" },
-    "rumor": { "recipe": "wonder-market-rumor" },
-    "protect": { "recipe": "wonder-market-protect" },
-    "steal_deal": { "recipe": "wonder-market-steal" },
-    "pass": { "recipe": "wonder-market-pass" }
+    "buy": { "recipe": "collection-market-exchange-buy" },
+    "sell": { "recipe": "collection-market-exchange-sell" },
+    "rumor": { "recipe": "collection-market-exchange-rumor" },
+    "protect": { "recipe": "collection-market-exchange-protect" },
+    "steal_deal": { "recipe": "collection-market-exchange-steal" },
+    "pass": { "recipe": "collection-market-exchange-pass" }
   },
-  "victory": { "kind": "by-wonder-market" },
-  "wonderMarket": {
+  "victory": { "kind": "by-market-exchange" },
+  "marketExchange": {
     "marketId": "wonders",
     "inventoryId": "wonder-goods",
     "currency": "coins",
     "goods": { "$content": "content/catalogue.json#/goods" },
-    "turnsCounterId": "wonder-market.turns-taken",
+    "turnsCounterId": "collection-market-exchange.turns-taken",
     "maxRounds": 6,
     "rumorCost": 1,
     "protectCost": 2,

@@ -1,11 +1,11 @@
 import type { JsonGameDocument } from './json-game-schema';
-import { jsonProgramExtensions } from '../extensions/json-program-extension-registry';
+import { jsonEffectPacks } from '../effect-packs/json-effect-pack-registry';
 
 export function jsonProgramInitialization(document: JsonGameDocument) {
   if (Object.keys(document.setup).length === 0) return undefined;
   const sources = new Map<string, unknown>(Object.entries(document));
   if (
-    !jsonProgramExtensions.some(
+    !jsonEffectPacks.some(
       (extension) => extension.ownsSetup && sources.has(extension.documentKey),
     )
   )

@@ -1,4 +1,4 @@
-import type { DeliveryRaceProgram } from '../extensions/delivery-race/program';
+import type { DeliveryRaceProgram } from '../effect-packs/race-route-delivery/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

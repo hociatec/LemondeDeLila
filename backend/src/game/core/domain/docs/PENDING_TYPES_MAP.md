@@ -31,7 +31,7 @@ Date de scan: 2026-02-18
 - `play_name`
 - `play_special`
 - `answer_quiz`
-- `lama_play`
+- `cards-discard-penalty-play`
 - `lama_return`
 
 ## Types admin / edition (Arche de Mnemosyne)

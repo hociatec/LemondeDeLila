@@ -73,9 +73,9 @@
     }
   },
   "actions": {
-    "play_card": { "recipe": "car-assembly-play" },
-    "discard_card": { "recipe": "car-assembly-discard" },
-    "pass": { "recipe": "car-assembly-pass" }
+    "play_card": { "recipe": "cards-ordered-assembly-play" },
+    "discard_card": { "recipe": "cards-ordered-assembly-discard" },
+    "pass": { "recipe": "cards-ordered-assembly-pass" }
   },
   "victory": { "kind": "by-car-assembly" },
   "carAssembly": {

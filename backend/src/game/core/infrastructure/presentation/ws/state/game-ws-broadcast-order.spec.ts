@@ -96,12 +96,12 @@ it('does not record a transport refusal as a sent state', () => {
 
 it('clears only the exact game identity even when connection IDs contain delimiters', () => {
   const { publish, connections, service, hub } = fixture();
-  connections[0].meta.gameType = 'lama-plus';
-  publish(1, 10, 'lama-plus');
+  connections[0].meta.gameType = 'cards-discard-penalty-plus';
+  publish(1, 10, 'cards-discard-penalty-plus');
   service['clearSentVersions'](4, 'lama');
-  publish(1, 9, 'lama-plus');
+  publish(1, 9, 'cards-discard-penalty-plus');
   expect(hub.send).toHaveBeenCalledTimes(1);
-  service['clearSentVersions'](4, 'lama-plus');
-  publish(1, 1, 'lama-plus');
+  service['clearSentVersions'](4, 'cards-discard-penalty-plus');
+  publish(1, 1, 'cards-discard-penalty-plus');
   expect(hub.send).toHaveBeenCalledTimes(2);
 });

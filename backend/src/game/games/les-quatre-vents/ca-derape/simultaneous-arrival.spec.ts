@@ -29,7 +29,7 @@ it('breaks simultaneous arrival ties by numeric ID, including bot IDs', async ()
                 player.id,
                 catalogue.tiles.length - 1,
               );
-            ctx.effects.run(gameEffects.custom('ca-derape.mark-winner'));
+            ctx.effects.run(gameEffects.custom('race-hazard.mark-winner'));
           },
         }),
       },

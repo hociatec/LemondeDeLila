@@ -41,9 +41,9 @@
     }
   },
   "actions": {
-    "form_circle": { "recipe": "card-circles-form" },
-    "discard_card": { "recipe": "card-circles-discard" },
-    "pass": { "recipe": "card-circles-pass" }
+    "form_circle": { "recipe": "collection-themed-circles-form" },
+    "discard_card": { "recipe": "collection-themed-circles-discard" },
+    "pass": { "recipe": "collection-themed-circles-pass" }
   },
   "victory": { "kind": "by-card-circles" },
   "cardCircles": {

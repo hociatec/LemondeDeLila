@@ -52,7 +52,7 @@ const runtimeDomains = [
   'definitions',
   'effects',
   'events',
-  'extensions',
+  'effect-packs',
   'kits',
   'lifecycle',
   'patterns',

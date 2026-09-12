@@ -1,7 +1,7 @@
 import type {
   GooseRaceProgram,
   GooseTile,
-} from '../../extensions/goose-race/program';
+} from '../../effect-packs/race-goose-track/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction, defineChoice } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';

@@ -1,4 +1,4 @@
-import type { ParadeProgram } from '../extensions/parade/program';
+import type { ParadeProgram } from '../effect-packs/cards-ordered-parade/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

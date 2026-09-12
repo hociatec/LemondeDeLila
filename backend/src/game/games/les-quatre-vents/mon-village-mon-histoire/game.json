@@ -155,14 +155,14 @@
   },
   "actions": {
     "roll": {
-      "recipe": "collection-race-roll",
+      "recipe": "collection-track-zones-roll",
       "documentation": "Lance le dé, déplace le pion et collecte le métier atteint."
     }
   },
   "victory": {
-    "kind": "by-collection-race"
+    "kind": "by-track-zone-collection"
   },
-  "collectionRace": {
+  "trackZoneCollection": {
     "trackId": "village",
     "diceId": "main",
     "finishReason": "village-complete",

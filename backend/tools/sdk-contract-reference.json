@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "apiVersion": "6.16.0",
+  "apiVersion": "6.17.0",
   "typescript": "5.9.3",
   "entry": "src/game/engine/sdk/public-api.ts",
   "external": [],
@@ -395,7 +395,7 @@
     },
     {
       "file": "src/game/engine/runtime/recipes/gameplay/pawn-selection.recipes.ts",
-      "sha256": "ac11a4ca26b8805780164cbad75926c6fe1fb4d4f5a100e51bdcbf0522ce7204"
+      "sha256": "bf4bcbe259e96a53b08208dc9aa5718ddc0c6b33a4e44de827f7827b0a032d2b"
     },
     {
       "file": "src/game/engine/runtime/recipes/gameplay/scoring-submission.recipes.ts",

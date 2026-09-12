@@ -7,7 +7,7 @@ import quiz from './quiz.json';
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/quiz.json': quiz,
 });
-const MNEMO_SESSION = 'mnemosyne.current';
+const MNEMO_SESSION = 'choice-simultaneous-quiz.current';
 
 describe('Arche de Mnémosyne declarative game', () => {
   it('keeps correctness private and resolves simultaneous answers deterministically', async () => {

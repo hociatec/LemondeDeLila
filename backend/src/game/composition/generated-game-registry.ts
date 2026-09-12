@@ -120,123 +120,45 @@ import document37 from '../games/vents-sacres/lama/game.json';
 import manifest38 from '../games/vents-sacres/morpion/manifest.json';
 import document38 from '../games/vents-sacres/morpion/game.json';
 import asset38_0 from '../games/vents-sacres/morpion/content/pawns.json';
-const game0 = compileJsonGame(manifest0, document0, {
-  'content/catalogue.json': asset0_0,
-});
-const game1 = compileJsonGame(manifest1, document1, {
-  'content/board.json': asset1_0,
-  'content/cards.json': asset1_1,
-  'content/pawns.json': asset1_2,
-});
-const game2 = compileJsonGame(manifest2, document2, {
-  'content/catalogue.json': asset2_0,
-});
-const game3 = compileJsonGame(manifest3, document3, {
-  'content/catalogue.json': asset3_0,
-});
-const game4 = compileJsonGame(manifest4, document4, {
-  'content/catalogue.json': asset4_0,
-});
-const game5 = compileJsonGame(manifest5, document5, {
-  'content/catalogue.json': asset5_0,
-});
-const game6 = compileJsonGame(manifest6, document6, {
-  'content/catalogue.json': asset6_0,
-});
-const game7 = compileJsonGame(manifest7, document7, {
-  'content/catalogue.json': asset7_0,
-});
-const game8 = compileJsonGame(manifest8, document8, {
-  'content/catalogue.json': asset8_0,
-});
+const game0 = compileJsonGame(manifest0, document0, { "content/catalogue.json": asset0_0 });
+const game1 = compileJsonGame(manifest1, document1, { "content/board.json": asset1_0, "content/cards.json": asset1_1, "content/pawns.json": asset1_2 });
+const game2 = compileJsonGame(manifest2, document2, { "content/catalogue.json": asset2_0 });
+const game3 = compileJsonGame(manifest3, document3, { "content/catalogue.json": asset3_0 });
+const game4 = compileJsonGame(manifest4, document4, { "content/catalogue.json": asset4_0 });
+const game5 = compileJsonGame(manifest5, document5, { "content/catalogue.json": asset5_0 });
+const game6 = compileJsonGame(manifest6, document6, { "content/catalogue.json": asset6_0 });
+const game7 = compileJsonGame(manifest7, document7, { "content/catalogue.json": asset7_0 });
+const game8 = compileJsonGame(manifest8, document8, { "content/catalogue.json": asset8_0 });
 const game9 = compileJsonGame(manifest9, document9);
-const game10 = compileJsonGame(manifest10, document10, {
-  'content/board.json': asset10_0,
-  'content/cards.json': asset10_1,
-  'content/pawns.json': asset10_2,
-  'content/products.json': asset10_3,
-  'content/quizzes.json': asset10_4,
-});
-const game11 = compileJsonGame(manifest11, document11, {
-  'content/catalogue.json': asset11_0,
-});
-const game12 = compileJsonGame(manifest12, document12, {
-  'content/catalogue.json': asset12_0,
-});
-const game13 = compileJsonGame(manifest13, document13, {
-  'content/catalogue.json': asset13_0,
-});
-const game14 = compileJsonGame(manifest14, document14, {
-  'content/board.json': asset14_0,
-  'content/clients.json': asset14_1,
-  'content/events.json': asset14_2,
-});
-const game15 = compileJsonGame(manifest15, document15, {
-  'content/catalogue.json': asset15_0,
-});
-const game16 = compileJsonGame(manifest16, document16, {
-  'content/catalogue.json': asset16_0,
-});
-const game17 = compileJsonGame(manifest17, document17, {
-  'content/cat-pattes.json': asset17_0,
-});
-const game18 = compileJsonGame(manifest18, document18, {
-  'content/catalogue.json': asset18_0,
-});
-const game19 = compileJsonGame(manifest19, document19, {
-  'content/catalogue.json': asset19_0,
-});
-const game20 = compileJsonGame(manifest20, document20, {
-  'content/catalogue.json': asset20_0,
-});
-const game21 = compileJsonGame(manifest21, document21, {
-  'content/catalogue.json': asset21_0,
-});
-const game22 = compileJsonGame(manifest22, document22, {
-  'content/catalogue.json': asset22_0,
-});
-const game23 = compileJsonGame(manifest23, document23, {
-  'content/catalogue.json': asset23_0,
-});
-const game24 = compileJsonGame(manifest24, document24, {
-  'content/catalogue.json': asset24_0,
-});
-const game25 = compileJsonGame(manifest25, document25, {
-  'content/catalogue.json': asset25_0,
-});
-const game26 = compileJsonGame(manifest26, document26, {
-  'content/cards.json': asset26_0,
-});
-const game27 = compileJsonGame(manifest27, document27, {
-  'content/catalogue.json': asset27_0,
-});
-const game28 = compileJsonGame(manifest28, document28, {
-  'content/catalogue.json': asset28_0,
-});
-const game29 = compileJsonGame(manifest29, document29, {
-  'content/catalogue.json': asset29_0,
-});
-const game30 = compileJsonGame(manifest30, document30, {
-  'content/catalogue.json': asset30_0,
-});
-const game31 = compileJsonGame(manifest31, document31, {
-  'content/catalogue.json': asset31_0,
-});
-const game32 = compileJsonGame(manifest32, document32, {
-  'content/quiz.json': asset32_0,
-});
+const game10 = compileJsonGame(manifest10, document10, { "content/board.json": asset10_0, "content/cards.json": asset10_1, "content/pawns.json": asset10_2, "content/products.json": asset10_3, "content/quizzes.json": asset10_4 });
+const game11 = compileJsonGame(manifest11, document11, { "content/catalogue.json": asset11_0 });
+const game12 = compileJsonGame(manifest12, document12, { "content/catalogue.json": asset12_0 });
+const game13 = compileJsonGame(manifest13, document13, { "content/catalogue.json": asset13_0 });
+const game14 = compileJsonGame(manifest14, document14, { "content/board.json": asset14_0, "content/clients.json": asset14_1, "content/events.json": asset14_2 });
+const game15 = compileJsonGame(manifest15, document15, { "content/catalogue.json": asset15_0 });
+const game16 = compileJsonGame(manifest16, document16, { "content/catalogue.json": asset16_0 });
+const game17 = compileJsonGame(manifest17, document17, { "content/cat-pattes.json": asset17_0 });
+const game18 = compileJsonGame(manifest18, document18, { "content/catalogue.json": asset18_0 });
+const game19 = compileJsonGame(manifest19, document19, { "content/catalogue.json": asset19_0 });
+const game20 = compileJsonGame(manifest20, document20, { "content/catalogue.json": asset20_0 });
+const game21 = compileJsonGame(manifest21, document21, { "content/catalogue.json": asset21_0 });
+const game22 = compileJsonGame(manifest22, document22, { "content/catalogue.json": asset22_0 });
+const game23 = compileJsonGame(manifest23, document23, { "content/catalogue.json": asset23_0 });
+const game24 = compileJsonGame(manifest24, document24, { "content/catalogue.json": asset24_0 });
+const game25 = compileJsonGame(manifest25, document25, { "content/catalogue.json": asset25_0 });
+const game26 = compileJsonGame(manifest26, document26, { "content/cards.json": asset26_0 });
+const game27 = compileJsonGame(manifest27, document27, { "content/catalogue.json": asset27_0 });
+const game28 = compileJsonGame(manifest28, document28, { "content/catalogue.json": asset28_0 });
+const game29 = compileJsonGame(manifest29, document29, { "content/catalogue.json": asset29_0 });
+const game30 = compileJsonGame(manifest30, document30, { "content/catalogue.json": asset30_0 });
+const game31 = compileJsonGame(manifest31, document31, { "content/catalogue.json": asset31_0 });
+const game32 = compileJsonGame(manifest32, document32, { "content/quiz.json": asset32_0 });
 const game33 = compileJsonGame(manifest33, document33);
 const game34 = compileJsonGame(manifest34, document34);
-const game35 = compileJsonGame(manifest35, document35, {
-  'content/catalogue.json': asset35_0,
-});
-const game36 = compileJsonGame(manifest36, document36, {
-  'content/catalogue.json': asset36_0,
-});
+const game35 = compileJsonGame(manifest35, document35, { "content/catalogue.json": asset35_0 });
+const game36 = compileJsonGame(manifest36, document36, { "content/catalogue.json": asset36_0 });
 const game37 = compileJsonGame(manifest37, document37);
-const game38 = compileJsonGame(manifest38, document38, {
-  'content/pawns.json': asset38_0,
-});
+const game38 = compileJsonGame(manifest38, document38, { "content/pawns.json": asset38_0 });
 
 /** Generated by commands/generate-game-registry.cjs. Do not edit manually. */
 export const GENERATED_GAME_DEFINITIONS: readonly unknown[] = Object.freeze([
@@ -280,6 +202,7 @@ export const GENERATED_GAME_DEFINITIONS: readonly unknown[] = Object.freeze([
   game37,
   game38,
 ]);
+
 export const GENERATED_GAME_PACKAGES: readonly {
   definition: unknown;
   manifest: unknown;

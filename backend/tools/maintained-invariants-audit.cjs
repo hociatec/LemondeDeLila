@@ -19,6 +19,7 @@ const contains = (file, expression) =>
 
 for (const file of [
   'tools/runtime-dependency-graph.spec.cjs',
+  'tools/engine-effect-pack-governance.spec.cjs',
   'tools/game-engine-architecture-check.cjs',
   'tools/runtime-separation-audit.cjs',
   'tools/game-content-structure-audit.cjs',
@@ -29,11 +30,13 @@ for (const file of [
   'tools/operability-audit.cjs',
   'tools/observability-contract-check.cjs',
   'tools/dead-code-audit.cjs',
+  'tools/game-state-ownership-audit.cjs',
+  'tools/game-state-ownership-audit.spec.cjs',
   'src/game/engine/runtime/definitions/component-reference-validation.spec.ts',
   'src/game/engine/runtime/definitions/json-version-policy.spec.ts',
   'src/game/engine/runtime/definitions/json-restored-session.spec.ts',
   'src/game/engine/runtime/definitions/static-effect-references.spec.ts',
-  'src/game/engine/runtime/extensions/json-program-extension-registry.spec.ts',
+  'src/game/engine/runtime/effect-packs/json-effect-pack-registry.spec.ts',
   'src/game/engine/runtime/state/assert-serializable-state.spec.ts',
   'src/game/engine/runtime/state/setup-state-isolation.spec.ts',
   'src/game/engine/runtime/lifecycle/automatic-stabilization.spec.ts',
@@ -45,7 +48,7 @@ for (const file of [
   'src/platform/lifecycle/application/application-shutdown.service.spec.ts',
   'src/modules/update/infrastructure/persistence/wx-update-release.service.spec.ts',
   'src/modules/user/infrastructure/security/redis-refresh-token.service.spec.ts',
-  'docs/architecture/engine-extension-governance.md',
+  'docs/architecture/engine-effect-pack-governance.md',
   'docs/architecture/engine-snapshot-migrations.md',
   'docs/architecture/game-automation-delivery.md',
   'docs/architecture/game-event-contract.md',
@@ -54,6 +57,9 @@ for (const file of [
   'docs/architecture/production-readiness.md',
   'docs/quality/corrections-130-2026-09-12.md',
   'docs/quality/corrections-100-generic-engine-2026-09-12.md',
+  'docs/quality/corrections-60-extension-generalization-2026-09-12.md',
+  'docs/quality/corrections-110-extension-finalization-2026-09-12.md',
+  'docs/quality/generic-effect-packs-2026-09-12.md',
 ])
   exists(file);
 
@@ -61,6 +67,31 @@ contains(
   'tools/runtime-dependency-graph.spec.cjs',
   /complete production source tree has no TypeScript dependency cycle/,
 );
+contains(
+  'tools/engine-effect-pack-governance.cjs',
+  /Effect-pack production LOC grew/,
+);
+contains('tools/engine-effect-pack-governance.cjs', /genericScopeEffectPacks/);
+contains('tools/engine-effect-pack-governance.cjs', /structuralReviews/);
+contains('tools/engine-effect-pack-governance.cjs', /linesPerConsumer/);
+contains('tools/engine-effect-pack-governance.cjs', /reuseEvidence/);
+contains(
+  'tools/engine-effect-pack-governance.cjs',
+  /imports another effect-pack implementation/,
+);
+contains(
+  'tools/engine-effect-pack-governance.json',
+  /forbiddenEngineVocabulary/,
+);
+contains(
+  'tools/engine-effect-pack-governance.cjs',
+  /name\.startsWith\(`\$\{profile\.domain\}-`\)/,
+);
+contains(
+  'src/game/engine/runtime/contracts/json-effect-pack.ts',
+  /scope: 'generic'/,
+);
+contains('tools/game-state-ownership-audit.cjs', /top-level let\/var/);
 contains(
   'tools/game-engine-architecture-check.cjs',
   /json-game-no-executable-source/,
@@ -71,12 +102,12 @@ contains(
   /freezeAuthorSchema/,
 );
 contains(
-  'src/game/engine/runtime/extensions/json-program-extension-registry.ts',
+  'src/game/engine/runtime/effect-packs/json-effect-pack-registry.ts',
   /Object\.freeze/,
 );
 contains(
-  'src/game/engine/runtime/contracts/json-program-extension.ts',
-  /defineJsonProgramExtension/,
+  'src/game/engine/runtime/contracts/json-effect-pack.ts',
+  /defineJsonEffectPack/,
 );
 contains(
   'src/game/engine/runtime/content/content-immutability.ts',
@@ -110,6 +141,19 @@ contains(
   'src/game/core/infrastructure/scheduling/game-task-job-id.ts',
   /restoreId/,
 );
+contains(
+  '../.github/workflows/backend-architecture.yml',
+  /npm run test:integration:real/,
+);
+contains(
+  '../.github/workflows/backend-architecture.yml',
+  /npm run artifact:create/,
+);
+contains('../.github/workflows/backend-architecture.yml', /npm run lint/);
+contains(
+  '../.github/workflows/backend-architecture.yml',
+  /npm audit --omit=dev --audit-level=high/,
+);
 
 const errors = read('src/game/core/domain/errors/game-errors.ts');
 assert(
@@ -140,9 +184,13 @@ for (const file of walk(gameRoot).filter(
 const scripts = JSON.parse(read('package.json')).scripts;
 for (const command of [
   'architecture:test',
+  'cycles:audit',
   'game-engine:audit',
-  'engine:extensions:audit',
+  'engine:effects:audit',
   'invariants:audit',
+  'state-ownership:audit',
+  'final:code-surface',
+  'final:game-contracts',
   'security:audit',
   'persistence:audit',
   'retries:audit',

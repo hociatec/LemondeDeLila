@@ -4,6 +4,7 @@
 **/dist/
 **/publish/
 **/node_modules/
+backend/backend-deployment.tar.gz
 client-wx/build/
 
 # Local env

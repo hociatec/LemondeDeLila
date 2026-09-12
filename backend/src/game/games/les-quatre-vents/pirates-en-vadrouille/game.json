@@ -54,17 +54,17 @@
     },
     {
       "component": "collection.view",
-      "id": "pirate-loot",
+      "id": "treasureTrack-loot",
       "groups": {
         "treasures": { "kind": "inventory", "id": "pirates-treasure" },
         "obstacles": { "kind": "inventory", "id": "pirates-obstacle" },
         "bonus": { "kind": "inventory", "id": "pirates-bonus" },
-        "gold": { "kind": "resource", "id": "pirate-gold" }
+        "gold": { "kind": "resource", "id": "treasureTrack-gold" }
       }
     }
   ],
-  "setup": { "resources": { "pirate-gold": 0 }, "startRound": false },
-  "resourceIds": ["pirate-gold"],
+  "setup": { "resources": { "treasureTrack-gold": 0 }, "startRound": false },
+  "resourceIds": ["treasureTrack-gold"],
   "shortcuts": [
     { "key": "D", "type": "action", "actionType": "roll" },
     { "key": "P", "type": "interface", "id": "position" },
@@ -74,12 +74,12 @@
   "phases": { "playing": { "actions": ["roll"], "terminal": true } },
   "actions": {
     "roll": {
-      "recipe": "pirate-race-roll",
+      "recipe": "race-treasure-track-roll",
       "documentation": "Lance le dÃ©, avance et rÃ©sout la case atteinte."
     }
   },
-  "victory": { "kind": "by-pirate-race" },
-  "pirateRace": {
+  "victory": { "kind": "by-treasure-track-race" },
+  "treasureTrackRace": {
     "trackId": "island",
     "diceId": "main",
     "tiles": { "$content": "content/catalogue.json#/tiles" },
@@ -93,7 +93,7 @@
       "obstacle": "pirates-obstacle",
       "bonus": "pirates-bonus"
     },
-    "goldResource": "pirate-gold",
+    "goldResource": "treasureTrack-gold",
     "obstacleImmunityStatus": "pirates.obstacle-immunity",
     "collectionLimit": 5,
     "requiredTreasures": 3,

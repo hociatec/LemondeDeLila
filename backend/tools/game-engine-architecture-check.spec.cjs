@@ -363,7 +363,7 @@ test('locks the complete public SDK surface, including type exports', () => {
   );
 });
 
-test('rejects game-specific throw representations', () => {
+test('rejects game-authored throw representations', () => {
   const { inspectGameImports } = require('./game-import-boundaries.cjs');
   const file = path.resolve('fixture/game/rules.ts');
   const result = inspectGameImports(

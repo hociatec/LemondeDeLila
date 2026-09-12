@@ -14,7 +14,7 @@ describe('JSON parade schema', () => {
         resourceIds: [],
         initialPhase: 'playing',
         phases: { playing: { actions: ['play'], terminal: true } },
-        actions: { play: { recipe: 'parade-play' } },
+        actions: { play: { recipe: 'cards-ordered-parade-play' } },
         victory: { kind: 'by-parade' },
         parade: {
           deckId: 'deck',

@@ -28,7 +28,7 @@ for (const file of files(path.join(runtime, 'contracts'))) {
     path.basename(file) !== 'game-rule-program.ts'
   )
     violations.push(
-      `${file}: single-consumer author program belongs in runtime/extensions`,
+      `${file}: single-consumer author program belongs in runtime/effect-packs`,
     );
   const source = fs.readFileSync(file, 'utf8');
   if (/\b(?:import|export)\s+(?!type\b)[\s\S]*?from\s+['"]\.\.\//m.test(source))
@@ -36,37 +36,38 @@ for (const file of files(path.join(runtime, 'contracts'))) {
       `${file}: runtime contract has a value dependency on a higher layer`,
     );
 }
-const extensionsRoot = path.join(runtime, 'extensions');
-const extensionPolicy = JSON.parse(
+const effectPacksRoot = path.join(runtime, 'effect-packs');
+const effectPackPolicy = JSON.parse(
   fs.readFileSync(
-    path.resolve('tools/engine-extension-governance.json'),
+    path.resolve('tools/engine-effect-pack-governance.json'),
     'utf8',
   ),
 );
-const extensions = fs
-  .readdirSync(extensionsRoot, { withFileTypes: true })
+const effectPacks = fs
+  .readdirSync(effectPacksRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory());
-for (const extension of extensions) {
-  const directory = path.join(extensionsRoot, extension.name);
+for (const effectPack of effectPacks) {
+  const directory = path.join(effectPacksRoot, effectPack.name);
   const entries = files(directory);
   const program = path.join(directory, 'program.ts');
   if (!entries.includes(program))
     violations.push(`${directory}: program.ts is missing`);
-  const profile = extensionPolicy.profiles[extension.name];
-  const implementation = path.join(directory, 'extension.ts');
+  const profile = effectPackPolicy.profiles[effectPack.name];
+  const implementation = path.join(directory, 'effect-pack.ts');
   if (profile?.property && !entries.includes(implementation))
-    violations.push(`${directory}: extension.ts is missing`);
+    violations.push(`${directory}: effect-pack.ts is missing`);
+  if (profile?.property && entries.includes(implementation)) {
+    const implementationSource = fs.readFileSync(implementation, 'utf8');
+    if (!implementationSource.includes("scope: 'generic'"))
+      violations.push(`${implementation}: effect pack must be generic`);
+    if (!implementationSource.includes(`domain: '${profile.domain}'`))
+      violations.push(`${implementation}: effect-pack domain is incorrect`);
+  }
   if (!entries.includes(program)) continue;
   const source = fs.readFileSync(program, 'utf8');
-  const marker =
-    profile?.classification === 'reusable'
-      ? 'Reusable JSON authoring extension'
-      : 'Single-consumer JSON authoring extension';
-  if (!source.includes(marker))
-    violations.push(`${program}: extension classification is undocumented`);
   if (/from\s+['"]\.\.\/(?!\.\.\/contracts\/)/.test(source))
     violations.push(
-      `${program}: extension contract reaches outside low-level contracts`,
+      `${program}: effect-pack contract reaches outside low-level contracts`,
     );
 }
 for (const file of files(path.join(runtime, 'kits'))) {

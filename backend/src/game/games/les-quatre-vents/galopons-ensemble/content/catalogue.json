@@ -6,7 +6,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": 2
           }
@@ -56,11 +56,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.give-apple",
+          "effectId": "bidirectionalCollision.give-apple",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "galopons.give-apple",
+            "choiceId": "bidirectionalCollision.give-apple",
             "optional": false
           }
         },
@@ -75,7 +75,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": -2
           }
@@ -88,7 +88,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": 1
           }
@@ -114,7 +114,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move-to-region",
+          "effectId": "bidirectionalCollision.move-to-region",
           "data": {
             "region": "foret"
           }
@@ -127,7 +127,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": -1
           }
@@ -150,7 +150,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": 3
           }
@@ -177,7 +177,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": -1
           }
@@ -236,7 +236,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": 4
           }
@@ -249,7 +249,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": -1
           }
@@ -262,13 +262,13 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.help-advance",
+          "effectId": "bidirectionalCollision.help-advance",
           "data": {
             "delta": 2
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "galopons.help-advance",
+            "choiceId": "bidirectionalCollision.help-advance",
             "optional": false
           }
         },
@@ -306,7 +306,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move-to-region",
+          "effectId": "bidirectionalCollision.move-to-region",
           "data": {
             "region": "montagne"
           }
@@ -348,7 +348,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": -1
           }
@@ -361,7 +361,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": 2
           }
@@ -374,13 +374,13 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.pair-advance",
+          "effectId": "bidirectionalCollision.pair-advance",
           "data": {
             "delta": 1
           },
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "galopons.pair-advance",
+            "choiceId": "bidirectionalCollision.pair-advance",
             "optional": false
           }
         },
@@ -415,7 +415,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "galopons.move",
+          "effectId": "bidirectionalCollision.move",
           "data": {
             "delta": -2
           }

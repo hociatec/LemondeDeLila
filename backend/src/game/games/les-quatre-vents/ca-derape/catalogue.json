@@ -9,14 +9,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 1
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -30,14 +30,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 2
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -51,14 +51,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 1
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -72,14 +72,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 2
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -93,14 +93,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 3
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -114,14 +114,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 2
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -135,14 +135,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 3
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -156,14 +156,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 2
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -177,14 +177,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 3
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -198,14 +198,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 1
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -219,14 +219,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 2
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -240,14 +240,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 3
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -261,14 +261,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 5
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -282,14 +282,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 6
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -303,14 +303,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 7
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -324,14 +324,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 6
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -345,14 +345,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 8
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -366,14 +366,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 5
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -387,14 +387,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 7
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -408,14 +408,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 6
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -428,12 +428,12 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.skip-penalty",
+          "effectId": "race-hazard.skip-penalty",
           "data": {}
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -447,14 +447,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": -2
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -467,12 +467,12 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.skip-penalty",
+          "effectId": "race-hazard.skip-penalty",
           "data": {}
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -486,14 +486,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": -1
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -506,12 +506,12 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.skip-penalty",
+          "effectId": "race-hazard.skip-penalty",
           "data": {}
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -525,14 +525,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": -3
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -546,14 +546,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": -2
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -567,14 +567,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": -1
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -588,14 +588,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": -3
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -609,14 +609,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": -1
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -629,12 +629,12 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.skip-penalty",
+          "effectId": "race-hazard.skip-penalty",
           "data": {}
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -648,14 +648,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": -4
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -668,7 +668,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.special",
+          "effectId": "race-hazard.special",
           "data": {
             "effect": "take-lead",
             "delta": 0
@@ -676,7 +676,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -690,7 +690,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.special",
+          "effectId": "race-hazard.special",
           "data": {
             "effect": "move-and-shield",
             "delta": 4
@@ -698,7 +698,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -711,7 +711,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.special",
+          "effectId": "race-hazard.special",
           "data": {
             "effect": "leapfrog",
             "delta": 0
@@ -719,7 +719,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -732,7 +732,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.special",
+          "effectId": "race-hazard.special",
           "data": {
             "effect": "next-multiple-five",
             "delta": 0
@@ -740,7 +740,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -754,7 +754,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.special",
+          "effectId": "race-hazard.special",
           "data": {
             "effect": "move-and-replay",
             "delta": 3
@@ -762,7 +762,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -776,7 +776,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.special",
+          "effectId": "race-hazard.special",
           "data": {
             "effect": "move-and-swap",
             "delta": 2
@@ -784,7 +784,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -798,14 +798,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 5
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -819,14 +819,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.move",
+          "effectId": "race-hazard.move",
           "data": {
             "delta": 3
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -839,14 +839,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.global",
+          "effectId": "race-hazard.global",
           "data": {
             "effect": "shuffle"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -859,14 +859,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.global",
+          "effectId": "race-hazard.global",
           "data": {
             "effect": "reverse-ranking"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -879,14 +879,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.global",
+          "effectId": "race-hazard.global",
           "data": {
             "effect": "skip-all"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -899,14 +899,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.global",
+          "effectId": "race-hazard.global",
           "data": {
             "effect": "advance-all"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -919,14 +919,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.global",
+          "effectId": "race-hazard.global",
           "data": {
             "effect": "retreat-all"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -939,7 +939,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -952,14 +952,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.global",
+          "effectId": "race-hazard.global",
           "data": {
             "effect": "skip-all"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -972,14 +972,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.global",
+          "effectId": "race-hazard.global",
           "data": {
             "effect": "advance-all"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -992,14 +992,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.global",
+          "effectId": "race-hazard.global",
           "data": {
             "effect": "cycle-ranking"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1012,14 +1012,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.global",
+          "effectId": "race-hazard.global",
           "data": {
             "effect": "random-roll-all"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1032,14 +1032,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.conditional",
+          "effectId": "race-hazard.conditional",
           "data": {
             "effect": "leader-retreat-others-advance"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1052,14 +1052,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.conditional",
+          "effectId": "race-hazard.conditional",
           "data": {
             "effect": "last-advance"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1072,14 +1072,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.conditional",
+          "effectId": "race-hazard.conditional",
           "data": {
             "effect": "after-retreat"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1092,14 +1092,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.conditional",
+          "effectId": "race-hazard.conditional",
           "data": {
             "effect": "cancel-skip"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1112,14 +1112,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.conditional",
+          "effectId": "race-hazard.conditional",
           "data": {
             "effect": "multiple-five"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1132,14 +1132,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.conditional",
+          "effectId": "race-hazard.conditional",
           "data": {
             "effect": "after-idle"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1152,14 +1152,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.conditional",
+          "effectId": "race-hazard.conditional",
           "data": {
             "effect": "shared-position"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1172,14 +1172,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.conditional",
+          "effectId": "race-hazard.conditional",
           "data": {
             "effect": "replay"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1192,14 +1192,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.conditional",
+          "effectId": "race-hazard.conditional",
           "data": {
             "effect": "join-ahead"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1212,14 +1212,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.conditional",
+          "effectId": "race-hazard.conditional",
           "data": {
             "effect": "after-one-step"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1232,14 +1232,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.rule",
+          "effectId": "race-hazard.rule",
           "data": {
             "effect": "roll-two"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1252,14 +1252,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.rule",
+          "effectId": "race-hazard.rule",
           "data": {
             "effect": "draw-extra"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1272,14 +1272,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.rule",
+          "effectId": "race-hazard.rule",
           "data": {
             "effect": "double-move"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1292,14 +1292,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.rule",
+          "effectId": "race-hazard.rule",
           "data": {
             "effect": "retreat-one"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1312,14 +1312,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.rule",
+          "effectId": "race-hazard.rule",
           "data": {
             "effect": "shield"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1332,14 +1332,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.rule",
+          "effectId": "race-hazard.rule",
           "data": {
             "effect": "advance-two"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1352,14 +1352,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.rule",
+          "effectId": "race-hazard.rule",
           "data": {
             "effect": "choose-next-player"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1372,14 +1372,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.rule",
+          "effectId": "race-hazard.rule",
           "data": {
             "effect": "choose-next-delta"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1392,14 +1392,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.rule",
+          "effectId": "race-hazard.rule",
           "data": {
             "effect": "double-roll"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1412,14 +1412,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.rule",
+          "effectId": "race-hazard.rule",
           "data": {
             "effect": "mirror-roll"
           }
         },
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1432,7 +1432,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1445,7 +1445,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1458,7 +1458,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1471,7 +1471,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1484,7 +1484,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1497,7 +1497,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1510,7 +1510,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1523,7 +1523,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1536,7 +1536,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
@@ -1549,7 +1549,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "ca-derape.mark-winner",
+          "effectId": "race-hazard.mark-winner",
           "data": {}
         }
       ]
