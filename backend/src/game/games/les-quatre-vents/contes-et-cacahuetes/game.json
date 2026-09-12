@@ -16,7 +16,10 @@
     "firstPlayer": "random",
     "startRound": true
   },
-  "resourceIds": ["contes.reroll-token", "contes.malus-shield"],
+  "resourceIds": [
+    "choice-story-challenge.reroll-token",
+    "choice-story-challenge.malus-shield"
+  ],
   "shortcuts": [
     {
       "key": "D",
@@ -37,31 +40,31 @@
   },
   "actions": {
     "roll": {
-      "recipe": "contes-roll"
+      "recipe": "choice-story-challenge-roll"
     }
   },
   "victory": {
-    "kind": "by-contes"
+    "kind": "by-story-challenge"
   },
-  "contes": {
+  "storyChallenge": {
     "trackId": "story-road",
-    "pawnSetId": "contes",
-    "pawnChoiceId": "contes.pawn",
-    "resolutionFlag": "contes.resolution",
+    "pawnSetId": "storyChallenge",
+    "pawnChoiceId": "choice-story-challenge.pawn",
+    "resolutionFlag": "choice-story-challenge.resolution",
     "maxChainDepth": 32,
     "resources": {
-      "reroll": "contes.reroll-token",
-      "shield": "contes.malus-shield"
+      "reroll": "choice-story-challenge.reroll-token",
+      "shield": "choice-story-challenge.malus-shield"
     },
     "statuses": {
-      "protectNextMalus": "contes.protect-next-malus",
-      "cape": "contes.cape",
-      "replaceOne": "contes.replace-one",
-      "noBonus": "contes.no-bonus",
-      "forcedOne": "contes.forced-one",
-      "reverseNextTurn": "contes.reverse-next-turn",
-      "blocked": "contes.blocked",
-      "keyOfGold": "contes.key-of-gold"
+      "protectNextMalus": "choice-story-challenge.protect-next-malus",
+      "cape": "choice-story-challenge.cape",
+      "replaceOne": "choice-story-challenge.replace-one",
+      "noBonus": "choice-story-challenge.no-bonus",
+      "forcedOne": "choice-story-challenge.forced-one",
+      "reverseNextTurn": "choice-story-challenge.reverse-next-turn",
+      "blocked": "choice-story-challenge.blocked",
+      "keyOfGold": "choice-story-challenge.key-of-gold"
     },
     "tiles": {
       "$content": "content/catalogue.json#/tiles"

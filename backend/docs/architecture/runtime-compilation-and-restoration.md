@@ -1,22 +1,20 @@
 # Compilation, états persistés et automatisation
 
-## Noyau et extensions d'auteur
+## Noyau et packs d'effets
 
 `runtime/contracts` contient uniquement l'IR et les capacités stables du noyau.
-Les 39 sections de programme actuellement utilisées par un seul jeu sont
-assumées comme dette de migration et placées sous
-`runtime/extensions/<section>/program.ts`. Leur contrat ne peut dépendre que de
-l'IR bas niveau. L'audit de séparation refuse un `*-program.ts` dans les
-contrats centraux, une extension non marquée ou un fichier supplémentaire dans
-son dossier.
+Les programmes sérialisables et leurs implémentations sont placés sous
+`runtime/effect-packs/<domaine>-<mécanique>/`. Chaque nom commence par l'un des
+domaines `board`, `cards`, `choice`, `collection`, `race` ou `spatial`. Leur
+contrat ne peut dépendre que de l'IR bas niveau. L'audit de séparation refuse un
+`*-program.ts` dans les contrats centraux, un pack non générique, un domaine
+incohérent ou un nom lié à un jeu plutôt qu'à une mécanique.
 
-Chaque section reste fermée, validée par son schéma et compilée avant
-l'exécution. Pour toute nouvelle règle, l'ordre de préférence est : effect
-existant, recipe ou pattern réutilisable, nouvelle primitive générique, puis
-extension temporaire documentée. Une extension peut rejoindre le noyau après
-usage par plusieurs jeux et suppression de tout vocabulaire propre au premier
-jeu. Le nombre d'extensions est donc une mesure de dette, pas une surface
-publique à faire croître.
+Chaque pack reste fermé, validé par son schéma et compilé avant l'exécution. Pour
+toute nouvelle règle, l'ordre de préférence est : effet existant, recette ou
+pattern réutilisable, puis nouvelle primitive ou nouveau pack générique dans le
+domaine approprié. Aucun emplacement d'extension propre à un jeu n'existe ; les
+jeux ne fournissent que des données et composent ces capacités.
 
 ## Définition auteur et artefact runtime
 
@@ -45,8 +43,9 @@ après cette correction du hash ; son ancien snapshot sera refusé si elle diff�
 Trois valeurs indépendantes sont persistées dans l'en-tête moteur :
 `schemaVersion` (format de l'état du jeu), `contentVersion` (contenu statique),
 `rulesVersion` (règles). Elles sont distinctes de la version du SDK moteur.
-La projection publique générique possède son propre `viewVersion` ; une extension
-de jeu ne peut pas le remplacer. Les versions d'extensions restent un autre sujet.
+La projection publique générique possède son propre `viewVersion` ; un pack
+d'effets ne peut pas le remplacer. La version des règles reste portée par
+`rulesVersion`.
 
 `loadDeclarativeState` vérifie les données avant le clonage, exige l'en-tête,
 compare les trois versions puis valide le scheduler. Toute divergence de version

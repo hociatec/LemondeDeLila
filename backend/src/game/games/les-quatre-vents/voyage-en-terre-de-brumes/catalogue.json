@@ -525,11 +525,9 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.lose-random-card",
+          "effectId": "choice-chapter-encounter.lose-random-card",
           "data": {
-            "allowed": [
-              "landscape"
-            ]
+            "allowed": ["landscape"]
           }
         }
       ],
@@ -571,7 +569,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.schedule-target",
+          "effectId": "choice-chapter-encounter.schedule-target",
           "data": {
             "effect": "swap-card",
             "count": 1
@@ -598,7 +596,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.schedule-target",
+          "effectId": "choice-chapter-encounter.schedule-target",
           "data": {
             "effect": "skip-turn",
             "count": 1
@@ -661,7 +659,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.swap-last-player",
+          "effectId": "choice-chapter-encounter.swap-last-player",
           "data": {}
         }
       ],
@@ -785,7 +783,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.schedule-target",
+          "effectId": "choice-chapter-encounter.schedule-target",
           "data": {
             "effect": "swap-card",
             "count": 1
@@ -857,7 +855,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.schedule-target",
+          "effectId": "choice-chapter-encounter.schedule-target",
           "data": {
             "effect": "swap-card",
             "count": 1
@@ -920,7 +918,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.schedule-target",
+          "effectId": "choice-chapter-encounter.schedule-target",
           "data": {
             "effect": "swap-card",
             "count": 1
@@ -1238,7 +1236,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.schedule-target",
+          "effectId": "choice-chapter-encounter.schedule-target",
           "data": {
             "effect": "swap-card",
             "count": 1
@@ -1310,7 +1308,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.schedule-target",
+          "effectId": "choice-chapter-encounter.schedule-target",
           "data": {
             "effect": "swap-card",
             "count": 1
@@ -1337,7 +1335,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.schedule-target",
+          "effectId": "choice-chapter-encounter.schedule-target",
           "data": {
             "effect": "swap-card",
             "count": 1
@@ -1364,7 +1362,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "voyage.schedule-target",
+          "effectId": "choice-chapter-encounter.schedule-target",
           "data": {
             "effect": "swap-card",
             "count": 2

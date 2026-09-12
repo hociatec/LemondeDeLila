@@ -16,7 +16,7 @@ describe('Ça Dérape declarative game', () => {
     expect(game.inspect.deckCount()).toBe(catalogue.cards.length);
     await game.as(1).do('roll', {});
     const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
-    expect(kits.resources['ca-derape.last-roll']['1']).toBeGreaterThanOrEqual(
+    expect(kits.resources['race-hazard.last-roll']['1']).toBeGreaterThanOrEqual(
       1,
     );
     expect(kits.dice?.byPlayer['1']?.main.total).toBeGreaterThanOrEqual(1);

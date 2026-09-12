@@ -115,7 +115,7 @@
   },
   "actions": {
     "roll": {
-      "recipe": "pawn-race-roll",
+      "recipe": "race-multi-pawn-roll",
       "documentation": "Lance le dé et déplace automatiquement ou demande un pion."
     }
   },

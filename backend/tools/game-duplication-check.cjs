@@ -6,7 +6,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 const ts = require('typescript');
 
-const gamesRoot = path.resolve(__dirname, '..', 'src', 'game', 'games');
+const effectPacksRoot = path.resolve(
+  __dirname,
+  '..',
+  'src',
+  'game',
+  'engine',
+  'runtime',
+  'effect-packs',
+);
 const minimumTokens = 160;
 const requiredGames = 2;
 
@@ -20,8 +28,8 @@ function walk(directory) {
   });
 }
 
-function gameId(file) {
-  return path.basename(path.dirname(file));
+function packId(root, file) {
+  return path.relative(root, file).split(path.sep)[0];
 }
 
 function signature(source) {
@@ -65,9 +73,11 @@ function signature(source) {
     : null;
 }
 
-function inspectDuplicates(root = gamesRoot) {
+function inspectDuplicates(root = effectPacksRoot) {
   const groups = new Map();
-  for (const file of walk(root)) {
+  for (const file of walk(root).filter(
+    (candidate) => path.dirname(candidate) !== root,
+  )) {
     const source = fs.readFileSync(file, 'utf8');
     const sourceFile = ts.createSourceFile(
       file,
@@ -90,7 +100,7 @@ function inspectDuplicates(root = gamesRoot) {
             occurrences: [],
           };
           group.occurrences.push({
-            game: gameId(file),
+            pack: packId(root, file),
             file: path.relative(path.resolve(__dirname, '..'), file),
             line:
               sourceFile.getLineAndCharacterOfPosition(
@@ -107,7 +117,7 @@ function inspectDuplicates(root = gamesRoot) {
 
   return [...groups.values()].filter(
     (group) =>
-      new Set(group.occurrences.map((entry) => entry.game)).size >=
+      new Set(group.occurrences.map((entry) => entry.pack)).size >=
       requiredGames,
   );
 }
@@ -116,13 +126,13 @@ function main() {
   const violations = inspectDuplicates();
   if (violations.length === 0) {
     console.log(
-      'game-duplication: OK (fonctions normalisees, tous les fichiers TS, seuil de deux jeux)',
+      'effect-pack-duplication: OK (fonctions normalisées, seuil de deux packs)',
     );
     return;
   }
   for (const violation of violations) {
     console.error(
-      `Mécanique dupliquée (${violation.tokens} tokens) dans au moins ${requiredGames} jeux:`,
+      `Mécanique dupliquée (${violation.tokens} tokens) dans au moins ${requiredGames} packs:`,
     );
     for (const occurrence of violation.occurrences) {
       console.error(`  ${occurrence.file}:${occurrence.line}`);

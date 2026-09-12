@@ -21,8 +21,8 @@ import { assertProgramReferences } from './json-program-reference-validation';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import { assertGameManifestMatches } from '../../../core/application/helpers/game-manifest-validation';
 import type { JsonGameManifest } from './json-game-manifest';
-import type { JsonGameViewExtension } from '../contracts/json-program-extension';
-import { jsonProgramExtensions } from '../extensions/json-program-extension-registry';
+import type { JsonGameViewAugmentation } from '../contracts/json-effect-pack';
+import { jsonEffectPacks } from '../effect-packs/json-effect-pack-registry';
 
 export type { JsonGameManifest } from './json-game-manifest';
 
@@ -56,7 +56,7 @@ export function compileJsonGame(
   const buildDefinition = () =>
     defineGame<Record<string, never>>()<
       typeof actions,
-      JsonGameViewExtension,
+      JsonGameViewAugmentation,
       typeof document.setup,
       typeof events,
       NonNullable<typeof patterns>,
@@ -165,7 +165,7 @@ function assertSelections(
 ): void {
   const sources = new Map<string, unknown>(Object.entries(document));
   const choices = new Set<string>();
-  for (const extension of jsonProgramExtensions) {
+  for (const extension of jsonEffectPacks) {
     const source = sources.get(extension.documentKey);
     if (source === undefined) continue;
     for (const choiceId of extension.collectChoiceIds(source))

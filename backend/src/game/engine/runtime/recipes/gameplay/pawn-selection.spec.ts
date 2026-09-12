@@ -88,3 +88,22 @@ it('initializes pawn selection in declared order with a fresh game state each ti
     }),
   );
 });
+
+it('completes a generic selection by entering its phase and restoring the round starter', () => {
+  const recipe = sequentialPawnSelection({
+    setId: 'pawns',
+    choiceId: 'choose-pawn',
+    completePhase: 'playing',
+  });
+  const ctx = {
+    players: { all: () => [] },
+    turn: { to: jest.fn() },
+    phase: { transitionTo: jest.fn() },
+    round: { starter: () => 7 },
+  };
+
+  recipe.requestAll([], ctx as never);
+
+  expect(ctx.phase.transitionTo).toHaveBeenCalledWith('playing');
+  expect(ctx.turn.to).toHaveBeenCalledWith(7);
+});

@@ -2,19 +2,19 @@ import type { JsonGameDocument as JsonDocument } from './json-game-schema';
 import type { CompiledJsonPrograms as Programs } from './json-game-program-compiler';
 import { publicField } from '../kits/visibility-kit';
 import { boardBot, recipeBot } from './json-program-bots';
-import { jsonProgramExtensions } from '../extensions/json-program-extension-registry';
+import { jsonEffectPacks } from '../effect-packs/json-effect-pack-registry';
 import type {
-  JsonExtensionHandlerContext,
-  JsonExtensionHandlers,
-} from '../contracts/json-program-extension';
+  JsonEffectPackHandlerContext,
+  JsonEffectPackHandlers,
+} from '../contracts/json-effect-pack';
 
 export function programHandlers(
   document: JsonDocument,
   programs: Programs,
-): JsonExtensionHandlers {
+): JsonEffectPackHandlers {
   const sources = new Map<string, unknown>(Object.entries(document));
   const compiledPrograms = new Map<string, unknown>(Object.entries(programs));
-  const context: JsonExtensionHandlerContext = {
+  const context: JsonEffectPackHandlerContext = {
     recipeBot: (recipe) => recipeBot(document, recipe),
     boardBot: () => boardBot(document),
     publicStatuses: () => ({ statuses: publicField() }),
@@ -30,7 +30,7 @@ export function programHandlers(
         );
       }),
   };
-  for (const extension of jsonProgramExtensions) {
+  for (const extension of jsonEffectPacks) {
     const source = sources.get(extension.documentKey);
     const compiled = compiledPrograms.get(extension.outputKey);
     if (source === undefined || compiled === null || compiled === undefined)

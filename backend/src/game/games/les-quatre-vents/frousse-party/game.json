@@ -15,7 +15,7 @@
   "components": [
     {
       "component": "pawn.set",
-      "id": "frousse",
+      "id": "protectedHaunted",
       "pawns": { "$content": "content/catalogue.json#/pawns" },
       "perPlayer": 1
     },
@@ -35,29 +35,29 @@
     "setup": { "actions": [], "transitions": ["playing"] },
     "playing": { "actions": ["roll"], "terminal": true }
   },
-  "actions": { "roll": { "recipe": "frousse-race-roll" } },
-  "victory": { "kind": "by-frousse-race" },
-  "frousseRace": {
+  "actions": { "roll": { "recipe": "race-protected-haunted-track-roll" } },
+  "victory": { "kind": "by-protected-haunted-race" },
+  "protectedHauntedRace": {
     "trackId": "manor",
     "diceId": "main",
     "deckId": "frights",
-    "pawnSetId": "frousse",
-    "pawnChoiceId": "frousse.pawn",
-    "swapChoiceId": "frousse.swap",
+    "pawnSetId": "protectedHaunted",
+    "pawnChoiceId": "protectedHaunted.pawn",
+    "swapChoiceId": "protectedHaunted.swap",
     "maxChainDepth": 24,
     "finishReason": "escaped-manor",
-    "eventNamespace": "frousse",
+    "eventNamespace": "protectedHaunted",
     "statuses": {
-      "ignoreNextTrap": "frousse.ignore-next-trap",
-      "ignoreTrapUntilNextDraw": "frousse.ignore-trap-until-next-draw",
-      "ignoreNextPrank": "frousse.ignore-next-prank",
-      "ignoreNextGhost": "frousse.ignore-next-ghost",
-      "nextMoveCap": "frousse.next-move-cap",
-      "nextRollMalus": "frousse.next-roll-malus",
-      "nextRollKeepLowest": "frousse.next-roll-keep-lowest",
-      "nextRollDouble": "frousse.next-roll-double",
-      "nextRollIfThreeBackTwo": "frousse.next-roll-if-three-back-two",
-      "blocked": "frousse.blocked"
+      "ignoreNextTrap": "protectedHaunted.ignore-next-trap",
+      "ignoreTrapUntilNextDraw": "protectedHaunted.ignore-trap-until-next-draw",
+      "ignoreNextPrank": "protectedHaunted.ignore-next-prank",
+      "ignoreNextGhost": "protectedHaunted.ignore-next-ghost",
+      "nextMoveCap": "protectedHaunted.next-move-cap",
+      "nextRollMalus": "protectedHaunted.next-roll-malus",
+      "nextRollKeepLowest": "protectedHaunted.next-roll-keep-lowest",
+      "nextRollDouble": "protectedHaunted.next-roll-double",
+      "nextRollIfThreeBackTwo": "protectedHaunted.next-roll-if-three-back-two",
+      "blocked": "protectedHaunted.blocked"
     },
     "tiles": { "$content": "content/catalogue.json#/tiles" },
     "cards": { "$content": "content/catalogue.json#/cards" }

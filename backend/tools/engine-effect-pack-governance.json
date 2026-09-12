@@ -1,0 +1,361 @@
+{
+  "maximumProgramFiles": 39,
+  "maximumProgramLines": 1106,
+  "maximumProductionLines": 13308,
+  "maximumBehaviorLines": 13232,
+  "maximumRegisteredEffectPacks": 38,
+  "forbiddenEngineVocabulary": [
+    "balloon",
+    "banana",
+    "catPattes",
+    "collectionRace",
+    "contes",
+    "corridor",
+    "derape",
+    "ecosystem",
+    "foulees",
+    "frousse",
+    "galaxyRace",
+    "galopons",
+    "gerard",
+    "lama",
+    "maman",
+    "midnight",
+    "minuit",
+    "mine",
+    "mnemosyne",
+    "natureFamilies",
+    "nawak",
+    "olympia",
+    "pirate",
+    "professionFamilies",
+    "rites",
+    "rite",
+    "sac",
+    "voyage",
+    "wonderMarket",
+    "zigEtZag",
+    "zig",
+    "les-mains",
+    "bande-a-banane"
+  ],
+  "largeSingleConsumerReviewLines": 300,
+  "largeSingleConsumerReviews": {
+    "race-chained-tile-cards": "Compared with event-race and track-round; chained tile/card resolution remains unique.",
+    "collection-species-troops": "Compared with collection and card primitives; species troops, traps and troop completion remain unique.",
+    "choice-simultaneous-paw-scoring": "Compared with card-selection and scoring-submission; simultaneous paw scoring and obstacles remain unique.",
+    "choice-story-challenge": "Compared with judged-cards and choice primitives; mixed story, challenge and laughter resolution remains unique.",
+    "board-path-walls": "Compared with board-game and grid-placement; wall legality and path preservation remain unique.",
+    "race-directional-hazards": "Compared with track-round and board landings; directional movement and chained hazards remain unique.",
+    "race-team-pawn-capture": "Compared with pawn-race; family groups, multiple pawns and capture remain unique.",
+    "race-protected-haunted-track": "Compared with event-race and track-round; haunted protection and blocking remain unique.",
+    "race-quiz-event-track": "Compared with movement-quiz and event-race; combined quiz, challenge and event choices remain unique.",
+    "race-bidirectional-collision": "Compared with pawn-race and track-round; bidirectional movement and collisions remain unique.",
+    "cards-theme-name": "Compared with judged-cards and card-actions; name/theme composition and special cards remain unique.",
+    "cards-discard-penalty": "Compared with card-actions; discard legality, quitting and unique-value penalties remain unique.",
+    "race-paired-pawns": "Compared with pawn-race and track-round; paired parent/child movement and reunion victory remain unique.",
+    "race-bounce-quiz": "Compared with movement-quiz and track-round; bouncing movement, quiz and protection remain unique.",
+    "cards-public-domain": "Compared with card-actions and collection primitives; public-domain resolution remains unique.",
+    "choice-simultaneous-quiz": "Compared with movement-quiz and scoring-submission; configurable simultaneous quiz remains unique.",
+    "cards-shared-prestige": "Compared with card-actions and shared hands; prestige statuses and exploit rules remain unique.",
+    "collection-family-effects": "Compared with family-request and collection primitives; profession requests and triggered effects remain a distinct configurable pattern.",
+    "cards-ritual-phases": "Compared with collection and card primitives; ritual phases and light scoring remain unique.",
+    "board-property-economy": "Compared with board-turn, board-landings and economy-kit; mortgages, jail, ownership and city economy remain unique.",
+    "choice-chapter-encounter": "Compared with track-round and collection primitives; chapters, encounters and final countdown remain unique.",
+    "cards-battle-ties": "Compared with card-actions; successive ties and battle resolution remain unique."
+  },
+  "structuralReviews": [
+    {
+      "operations": [
+        "/straight:movement.position",
+        "/straight:ranking.rank",
+        "/if.then:movement.swap"
+      ],
+      "profiles": [
+        "choice-story-challenge",
+        "race-quiz-event-track",
+        "race-bounce-quiz"
+      ],
+      "decision": "Keep composed primitives: each profile selects a different target (closest, behind, or rule-specific), so a callback wrapper would add indirection without a shared invariant."
+    },
+    {
+      "operations": [
+        "/straight:cards.drawOrRecycle",
+        "/if.then:cards.give",
+        "/if.else:cards.discard"
+      ],
+      "profiles": ["cards-public-domain", "collection-family-request"],
+      "decision": "Keep composed primitives: classification and post-draw behavior differ; the shared draw/give/discard operations are already provided by the Cards kit."
+    }
+  ],
+  "effectDomains": {
+    "board": [
+      "board-movement-landings",
+      "board-path-walls",
+      "board-property-economy"
+    ],
+    "cards": [
+      "cards-ordered-assembly",
+      "cards-theme-name",
+      "cards-judged-submission",
+      "cards-discard-penalty",
+      "cards-public-domain",
+      "cards-shared-prestige",
+      "cards-ordered-parade",
+      "cards-ritual-phases",
+      "cards-battle-ties"
+    ],
+    "choice": [
+      "choice-card-occurrences",
+      "choice-simultaneous-paw-scoring",
+      "choice-story-challenge",
+      "choice-simultaneous-quiz",
+      "choice-anonymous-vote",
+      "choice-chapter-encounter"
+    ],
+    "collection": [
+      "collection-species-troops",
+      "collection-themed-circles",
+      "collection-track-zones",
+      "collection-family-request",
+      "collection-family-effects",
+      "collection-market-exchange"
+    ],
+    "race": [
+      "race-chained-tile-cards",
+      "race-route-delivery",
+      "race-directional-hazards",
+      "race-resource-track",
+      "race-event-cards",
+      "race-team-pawn-capture",
+      "race-protected-haunted-track",
+      "race-quiz-event-track",
+      "race-bidirectional-collision",
+      "race-goose-track",
+      "race-paired-pawns",
+      "race-bounce-quiz",
+      "race-multi-pawn",
+      "race-treasure-track"
+    ],
+    "spatial": ["spatial-grid-placement"]
+  },
+  "genericGameplayFiles": [
+    "board-choices.ts",
+    "board-effect-bindings.ts",
+    "board-landings.ts",
+    "board-turn.recipes.ts",
+    "card-actions.recipes.ts",
+    "card-dice.recipes.ts",
+    "card-recipe.helpers.ts",
+    "card-selection.recipes.ts",
+    "event-race.recipes.ts",
+    "goose-race.recipes.ts",
+    "grid-placement.recipes.ts",
+    "judged-cards.recipes.ts",
+    "movement-quiz.recipes.ts",
+    "pawn-race.recipes.ts",
+    "pawn-selection-groups.spec.ts",
+    "pawn-selection-groups.ts",
+    "pawn-selection.spec.ts",
+    "pawn-selection.recipes.ts",
+    "scoring-submission.recipes.ts",
+    "track-round.recipes.ts"
+  ],
+  "profiles": {
+    "race-chained-tile-cards": {
+      "property": "chainedTileRace",
+      "mechanic": "chained track landings and card movement",
+      "domain": "race"
+    },
+    "collection-species-troops": {
+      "property": "speciesTroops",
+      "mechanic": "species troop collection with traps",
+      "domain": "collection"
+    },
+    "board-movement-landings": {
+      "property": "board",
+      "mechanic": "parameterized board movement and landing effects",
+      "domain": "board"
+    },
+    "cards-ordered-assembly": {
+      "property": "carAssembly",
+      "mechanic": "ordered vehicle-part assembly",
+      "domain": "cards"
+    },
+    "collection-themed-circles": {
+      "property": "cardCircles",
+      "mechanic": "themed card circle completion",
+      "domain": "collection"
+    },
+    "choice-card-occurrences": {
+      "property": null,
+      "mechanic": "bounded card occurrence selection",
+      "domain": "choice"
+    },
+    "choice-simultaneous-paw-scoring": {
+      "property": "pawScoring",
+      "mechanic": "simultaneous paw scoring rounds",
+      "domain": "choice"
+    },
+    "collection-track-zones": {
+      "property": "trackZoneCollection",
+      "mechanic": "track race with zone collection",
+      "domain": "collection"
+    },
+    "choice-story-challenge": {
+      "property": "storyChallenge",
+      "mechanic": "story response, challenge and laughter rounds",
+      "domain": "choice"
+    },
+    "board-path-walls": {
+      "property": "pathWalls",
+      "mechanic": "pawn grid paths and wall placement",
+      "domain": "board"
+    },
+    "race-route-delivery": {
+      "property": "deliveryRace",
+      "mechanic": "route delivery race",
+      "domain": "race"
+    },
+    "race-directional-hazards": {
+      "property": "directionalHazardRace",
+      "mechanic": "directional racing with chained hazards",
+      "domain": "race"
+    },
+    "race-resource-track": {
+      "property": "resourceTrackRace",
+      "mechanic": "resource collection track race",
+      "domain": "race"
+    },
+    "race-event-cards": {
+      "property": "eventRace",
+      "mechanic": "track race with event cards",
+      "domain": "race"
+    },
+    "race-team-pawn-capture": {
+      "property": "teamPawnRace",
+      "mechanic": "multi-pawn family race and capture",
+      "domain": "race"
+    },
+    "race-protected-haunted-track": {
+      "property": "protectedHauntedRace",
+      "mechanic": "protected haunted track movement",
+      "domain": "race"
+    },
+    "race-quiz-event-track": {
+      "property": "quizEventRace",
+      "mechanic": "quiz, challenge and event track race",
+      "domain": "race"
+    },
+    "race-bidirectional-collision": {
+      "property": "bidirectionalCollisionRace",
+      "mechanic": "bidirectional horse race and collisions",
+      "domain": "race"
+    },
+    "cards-theme-name": {
+      "property": "themeNameCards",
+      "mechanic": "name and theme card combinations",
+      "domain": "cards"
+    },
+    "race-goose-track": {
+      "property": "gooseRace",
+      "mechanic": "parameterized goose-style race",
+      "domain": "race"
+    },
+    "spatial-grid-placement": {
+      "property": "grid",
+      "mechanic": "grid token placement",
+      "domain": "spatial"
+    },
+    "cards-judged-submission": {
+      "property": "judgedCards",
+      "mechanic": "private submissions with a rotating judge",
+      "domain": "cards"
+    },
+    "cards-discard-penalty": {
+      "property": "discardPenaltyCards",
+      "mechanic": "discard rounds and unique-value penalties",
+      "domain": "cards"
+    },
+    "race-paired-pawns": {
+      "property": "pairedPawnRace",
+      "mechanic": "parent-and-child reunion race",
+      "domain": "race"
+    },
+    "race-bounce-quiz": {
+      "property": "bounceQuizRace",
+      "mechanic": "bouncing race with quiz and protection",
+      "domain": "race"
+    },
+    "cards-public-domain": {
+      "property": "publicDomainCards",
+      "mechanic": "private cards resolved into a public domain",
+      "domain": "cards"
+    },
+    "choice-simultaneous-quiz": {
+      "property": "simultaneousQuiz",
+      "mechanic": "configurable simultaneous quiz",
+      "domain": "choice"
+    },
+    "collection-family-request": {
+      "property": "familyRequest",
+      "mechanic": "family requests and completed sets",
+      "domain": "collection"
+    },
+    "choice-anonymous-vote": {
+      "property": "anonymousVote",
+      "mechanic": "anonymous answers and voting",
+      "domain": "choice"
+    },
+    "cards-shared-prestige": {
+      "property": "sharedPrestigeCards",
+      "mechanic": "shared prestige-card hand",
+      "domain": "cards"
+    },
+    "cards-ordered-parade": {
+      "property": "parade",
+      "mechanic": "ordered parade collection",
+      "domain": "cards"
+    },
+    "race-multi-pawn": {
+      "property": "pawnRace",
+      "mechanic": "parameterized multi-pawn race",
+      "domain": "race"
+    },
+    "race-treasure-track": {
+      "property": "treasureTrackRace",
+      "mechanic": "treasure collection track race",
+      "domain": "race"
+    },
+    "collection-family-effects": {
+      "property": "familyEffects",
+      "mechanic": "profession-family requests and effects",
+      "domain": "collection"
+    },
+    "cards-ritual-phases": {
+      "property": "ritualPhases",
+      "mechanic": "ritual card phases and light scoring",
+      "domain": "cards"
+    },
+    "board-property-economy": {
+      "property": "propertyEconomy",
+      "mechanic": "large city board economy",
+      "domain": "board"
+    },
+    "choice-chapter-encounter": {
+      "property": "chapterEncounter",
+      "mechanic": "journey chapters and encounters",
+      "domain": "choice"
+    },
+    "collection-market-exchange": {
+      "property": "marketExchange",
+      "mechanic": "market collection and exchange",
+      "domain": "collection"
+    },
+    "cards-battle-ties": {
+      "property": "battleTies",
+      "mechanic": "successive-tie card battle",
+      "domain": "cards"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import type { GooseRaceProgram } from '../extensions/goose-race/program';
+import type { GooseRaceProgram } from '../effect-packs/race-goose-track/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

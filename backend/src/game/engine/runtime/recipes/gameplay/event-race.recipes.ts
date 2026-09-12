@@ -1,4 +1,4 @@
-import type { EventRaceProgram } from '../../extensions/event-race/program';
+import type { EventRaceProgram } from '../../effect-packs/race-event-cards/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import type { GameEffectInstruction } from '../../contracts/effect-ir';
 import { defineChoice } from '../../actions/action-builders';

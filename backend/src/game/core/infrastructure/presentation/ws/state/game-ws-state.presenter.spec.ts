@@ -878,7 +878,9 @@ describe('GameWsStatePresenter', () => {
         kits: {
           cards: {
             hands: {
-              'lama-hands': { byPlayer: { '1': [1, 2, 'LAMA'] } },
+              'cards-discard-penalty-hands': {
+                byPlayer: { '1': [1, 2, 'LAMA'] },
+              },
             },
           },
         },
@@ -972,7 +974,9 @@ describe('GameWsStatePresenter', () => {
         kits: {
           cards: {
             hands: {
-              'lama-hands': { byPlayer: { '1': [2, 3, 'LAMA'] } },
+              'cards-discard-penalty-hands': {
+                byPlayer: { '1': [2, 3, 'LAMA'] },
+              },
             },
           },
         },

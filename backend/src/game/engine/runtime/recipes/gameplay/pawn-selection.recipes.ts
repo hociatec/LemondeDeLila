@@ -18,7 +18,8 @@ type SequentialPawnSelectionOptions<TState extends object> = {
     pawnId: string;
     ctx: GameContext<TState>;
   }) => void;
-  complete: (input: { ctx: GameContext<TState> }) => void;
+  complete?: (input: { ctx: GameContext<TState> }) => void;
+  completePhase?: string;
 };
 
 type PawnSelectionSetup<TState extends object> = (input: {
@@ -63,7 +64,7 @@ export function sequentialPawnSelection<TState extends object>(
   ): void => {
     const participants = orderedPawnSelectionParticipants(playerIds, ctx);
     if (participants.length === 0) {
-      options.complete({ ctx });
+      completePawnSelection(options, ctx);
       return;
     }
     const first = participants[0];
@@ -86,7 +87,7 @@ export function sequentialPawnSelection<TState extends object>(
       requestPawnSelection(options, next.id, participantIds, ctx);
       return;
     }
-    options.complete({ ctx });
+    completePawnSelection(options, ctx);
   };
   const setup = (
     initialState: () => TState,
@@ -107,6 +108,16 @@ export function sequentialPawnSelection<TState extends object>(
     };
   };
   return Object.freeze({ request, requestAll, resolve, setup });
+}
+
+function completePawnSelection<TState extends object>(
+  options: SequentialPawnSelectionOptions<TState>,
+  ctx: GameContext<TState>,
+): void {
+  if (options.completePhase) ctx.phase.transitionTo(options.completePhase);
+  const starterId = ctx.round.starter();
+  if (options.completePhase && starterId != null) ctx.turn.to(starterId);
+  options.complete?.({ ctx });
 }
 
 function requestPawnSelection<TState extends object>(

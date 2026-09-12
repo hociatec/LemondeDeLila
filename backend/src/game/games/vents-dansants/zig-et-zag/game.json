@@ -43,10 +43,10 @@
     }
   },
   "actions": {
-    "draw_card": { "recipe": "zig-et-zag-draw" }
+    "draw_card": { "recipe": "cards-battle-ties-draw" }
   },
-  "victory": { "kind": "by-zig-et-zag" },
-  "zigEtZag": {
+  "victory": { "kind": "by-battle-ties" },
+  "battleTies": {
     "deckId": "battle",
     "handId": "players",
     "totalCards": 54,

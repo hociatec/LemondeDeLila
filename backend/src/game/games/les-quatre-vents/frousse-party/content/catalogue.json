@@ -392,7 +392,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -3
           }
@@ -422,7 +422,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.blocked",
+          "status": "protectedHaunted.blocked",
           "scope": "until-used",
           "data": {
             "rule": {
@@ -441,7 +441,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -2
           }
@@ -471,7 +471,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -486,7 +486,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.goto",
+          "effectId": "protectedHaunted.goto",
           "data": {
             "position": 0
           }
@@ -501,7 +501,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.next-move-cap",
+          "status": "protectedHaunted.next-move-cap",
           "scope": "until-used",
           "data": {
             "value": 1
@@ -517,7 +517,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.blocked",
+          "status": "protectedHaunted.blocked",
           "scope": "until-used",
           "data": {
             "rule": {
@@ -536,7 +536,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -4
           }
@@ -566,7 +566,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.blocked",
+          "status": "protectedHaunted.blocked",
           "scope": "until-used",
           "data": {
             "rule": {
@@ -585,7 +585,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -615,7 +615,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -630,7 +630,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.blocked",
+          "status": "protectedHaunted.blocked",
           "scope": "until-used",
           "data": {
             "rule": {
@@ -648,7 +648,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -5
           }
@@ -678,7 +678,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -3
           }
@@ -693,7 +693,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.blocked",
+          "status": "protectedHaunted.blocked",
           "scope": "until-used",
           "data": {
             "rule": {
@@ -715,7 +715,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -2
           }
@@ -745,11 +745,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.swap",
+          "effectId": "protectedHaunted.swap",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "frousse.swap",
+            "choiceId": "protectedHaunted.swap",
             "optional": true
           }
         },
@@ -766,7 +766,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 2
           }
@@ -785,7 +785,7 @@
         },
         {
           "kind": "add-status",
-          "status": "frousse.next-roll-malus",
+          "status": "protectedHaunted.next-roll-malus",
           "scope": "until-used",
           "data": {
             "value": -2
@@ -816,7 +816,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -831,7 +831,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -861,7 +861,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -3
           }
@@ -880,7 +880,7 @@
         },
         {
           "kind": "add-status",
-          "status": "frousse.next-roll-keep-lowest",
+          "status": "protectedHaunted.next-roll-keep-lowest",
           "scope": "until-used"
         }
       ]
@@ -893,7 +893,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -4
           }
@@ -908,7 +908,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.ignore-next-trap",
+          "status": "protectedHaunted.ignore-next-trap",
           "scope": "until-used"
         }
       ]
@@ -936,7 +936,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -955,7 +955,7 @@
         },
         {
           "kind": "add-status",
-          "status": "frousse.next-roll-keep-lowest",
+          "status": "protectedHaunted.next-roll-keep-lowest",
           "scope": "until-used"
         }
       ]
@@ -983,11 +983,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.swap",
+          "effectId": "protectedHaunted.swap",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "frousse.swap",
+            "choiceId": "protectedHaunted.swap",
             "optional": false
           }
         },
@@ -1004,7 +1004,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -5
           }
@@ -1019,7 +1019,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.goto",
+          "effectId": "protectedHaunted.goto",
           "data": {
             "position": 19
           }
@@ -1034,7 +1034,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 1
           }
@@ -1064,7 +1064,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.next-roll-if-three-back-two",
+          "status": "protectedHaunted.next-roll-if-three-back-two",
           "scope": "until-used"
         },
         {
@@ -1081,7 +1081,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 2
           }
@@ -1096,7 +1096,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.ignore-next-trap",
+          "status": "protectedHaunted.ignore-next-trap",
           "scope": "until-used"
         }
       ]
@@ -1109,7 +1109,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 4
           }
@@ -1124,7 +1124,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.next-roll-double",
+          "status": "protectedHaunted.next-roll-double",
           "scope": "until-used"
         }
       ]
@@ -1137,7 +1137,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move-others",
+          "effectId": "protectedHaunted.move-others",
           "data": {
             "delta": 3
           },
@@ -1162,7 +1162,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 2
           }
@@ -1177,7 +1177,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.ignore-trap-until-next-draw",
+          "status": "protectedHaunted.ignore-trap-until-next-draw",
           "scope": "until-used"
         }
       ]
@@ -1190,7 +1190,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 3
           }
@@ -1217,7 +1217,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 5
           }
@@ -1244,7 +1244,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.ignore-next-ghost",
+          "status": "protectedHaunted.ignore-next-ghost",
           "scope": "until-used"
         }
       ]
@@ -1257,7 +1257,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 2
           }
@@ -1272,7 +1272,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 6
           }
@@ -1287,7 +1287,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.ignore-next-prank",
+          "status": "protectedHaunted.ignore-next-prank",
           "scope": "until-used"
         }
       ]
@@ -1300,7 +1300,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.goto",
+          "effectId": "protectedHaunted.goto",
           "data": {
             "position": 39
           }
@@ -1330,7 +1330,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -3
           }
@@ -1362,7 +1362,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.blocked",
+          "status": "protectedHaunted.blocked",
           "scope": "until-used",
           "data": {
             "rule": {
@@ -1382,7 +1382,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -2
           }
@@ -1414,7 +1414,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -1430,7 +1430,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.goto",
+          "effectId": "protectedHaunted.goto",
           "data": {
             "position": 0
           }
@@ -1446,7 +1446,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.next-move-cap",
+          "status": "protectedHaunted.next-move-cap",
           "scope": "until-used",
           "data": {
             "value": 1
@@ -1463,7 +1463,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.blocked",
+          "status": "protectedHaunted.blocked",
           "scope": "until-used",
           "data": {
             "rule": {
@@ -1483,7 +1483,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -4
           }
@@ -1515,7 +1515,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.blocked",
+          "status": "protectedHaunted.blocked",
           "scope": "until-used",
           "data": {
             "rule": {
@@ -1535,7 +1535,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -1567,7 +1567,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -1583,7 +1583,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.blocked",
+          "status": "protectedHaunted.blocked",
           "scope": "until-used",
           "data": {
             "rule": {
@@ -1602,7 +1602,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -5
           }
@@ -1634,7 +1634,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -3
           }
@@ -1650,7 +1650,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.blocked",
+          "status": "protectedHaunted.blocked",
           "scope": "until-used",
           "data": {
             "rule": {
@@ -1673,7 +1673,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -2
           }
@@ -1705,11 +1705,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.swap",
+          "effectId": "protectedHaunted.swap",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "frousse.swap",
+            "choiceId": "protectedHaunted.swap",
             "optional": true
           }
         },
@@ -1727,7 +1727,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 2
           }
@@ -1747,7 +1747,7 @@
         },
         {
           "kind": "add-status",
-          "status": "frousse.next-roll-malus",
+          "status": "protectedHaunted.next-roll-malus",
           "scope": "until-used",
           "data": {
             "value": -2
@@ -1780,7 +1780,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -1796,7 +1796,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -1828,7 +1828,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -3
           }
@@ -1848,7 +1848,7 @@
         },
         {
           "kind": "add-status",
-          "status": "frousse.next-roll-keep-lowest",
+          "status": "protectedHaunted.next-roll-keep-lowest",
           "scope": "until-used"
         }
       ],
@@ -1862,7 +1862,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -4
           }
@@ -1878,7 +1878,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.ignore-next-trap",
+          "status": "protectedHaunted.ignore-next-trap",
           "scope": "until-used"
         }
       ],
@@ -1908,7 +1908,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -1
           }
@@ -1928,7 +1928,7 @@
         },
         {
           "kind": "add-status",
-          "status": "frousse.next-roll-keep-lowest",
+          "status": "protectedHaunted.next-roll-keep-lowest",
           "scope": "until-used"
         }
       ],
@@ -1958,11 +1958,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.swap",
+          "effectId": "protectedHaunted.swap",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "frousse.swap",
+            "choiceId": "protectedHaunted.swap",
             "optional": false
           }
         },
@@ -1980,7 +1980,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": -5
           }
@@ -1996,7 +1996,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.goto",
+          "effectId": "protectedHaunted.goto",
           "data": {
             "position": 19
           }
@@ -2012,7 +2012,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 1
           }
@@ -2044,7 +2044,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.next-roll-if-three-back-two",
+          "status": "protectedHaunted.next-roll-if-three-back-two",
           "scope": "until-used"
         },
         {
@@ -2062,7 +2062,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 2
           }
@@ -2078,7 +2078,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.ignore-next-trap",
+          "status": "protectedHaunted.ignore-next-trap",
           "scope": "until-used"
         }
       ],
@@ -2092,7 +2092,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 4
           }
@@ -2108,7 +2108,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.next-roll-double",
+          "status": "protectedHaunted.next-roll-double",
           "scope": "until-used"
         }
       ],
@@ -2122,7 +2122,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move-others",
+          "effectId": "protectedHaunted.move-others",
           "data": {
             "delta": 3
           },
@@ -2148,7 +2148,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 2
           }
@@ -2164,7 +2164,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.ignore-trap-until-next-draw",
+          "status": "protectedHaunted.ignore-trap-until-next-draw",
           "scope": "until-used"
         }
       ],
@@ -2178,7 +2178,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 3
           }
@@ -2207,7 +2207,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 5
           }
@@ -2236,7 +2236,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.ignore-next-ghost",
+          "status": "protectedHaunted.ignore-next-ghost",
           "scope": "until-used"
         }
       ],
@@ -2250,7 +2250,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 2
           }
@@ -2266,7 +2266,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.move",
+          "effectId": "protectedHaunted.move",
           "data": {
             "delta": 6
           }
@@ -2282,7 +2282,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "frousse.ignore-next-prank",
+          "status": "protectedHaunted.ignore-next-prank",
           "scope": "until-used"
         }
       ],
@@ -2296,7 +2296,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "frousse.goto",
+          "effectId": "protectedHaunted.goto",
           "data": {
             "position": 39
           }

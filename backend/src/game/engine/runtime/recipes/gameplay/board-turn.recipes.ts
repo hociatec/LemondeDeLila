@@ -1,7 +1,7 @@
 import type { ChoiceResolverShape } from '../../contracts/author-rule-contracts';
 import { boardChoices } from './board-choices';
 import { boardEffectBindings } from './board-effect-bindings';
-import type { BoardGameProgram } from '../../extensions/board-game/program';
+import type { BoardGameProgram } from '../../effect-packs/board-movement-landings/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import type { GameEffectInstruction } from '../../contracts/effect-ir';
 import { defineAction, defineChoice } from '../../actions/action-builders';

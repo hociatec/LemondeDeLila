@@ -56,7 +56,7 @@
   },
   "actions": {
     "roll": {
-      "recipe": "delivery-race-roll",
+      "recipe": "race-route-delivery-roll",
       "documentation": "Prend un client, révèle un obstacle, lance le dé et résout le trajet."
     }
   },

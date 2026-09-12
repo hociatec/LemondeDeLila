@@ -7,8 +7,8 @@
   "patterns": [
     {
       "kind": "submission-judge",
-      "submissionId": "nawak.answers",
-      "voteId": "nawak.votes",
+      "submissionId": "choice-anonymous-vote.answers",
+      "voteId": "choice-anonymous-vote.votes",
       "secret": true,
       "targetScore": 5,
       "winnerReason": "target-score"
@@ -29,13 +29,13 @@
     }
   },
   "actions": {
-    "choose_answer": { "recipe": "nawak-choose" },
-    "vote_answer": { "recipe": "nawak-vote" }
+    "choose_answer": { "recipe": "choice-anonymous-vote-choose" },
+    "vote_answer": { "recipe": "choice-anonymous-vote-vote" }
   },
-  "victory": { "kind": "by-nawak" },
-  "nawak": {
-    "answerSubmissionId": "nawak.answers",
-    "voteSubmissionId": "nawak.votes",
+  "victory": { "kind": "by-anonymous-vote" },
+  "anonymousVote": {
+    "answerSubmissionId": "choice-anonymous-vote.answers",
+    "voteSubmissionId": "choice-anonymous-vote.votes",
     "targetScore": 5,
     "winnerReason": "target-score",
     "challenges": { "$content": "content/catalogue.json#/challenges" }

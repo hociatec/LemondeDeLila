@@ -69,7 +69,7 @@
   },
   "actions": {
     "roll": {
-      "recipe": "event-race-roll",
+      "recipe": "race-event-cards-roll",
       "documentation": "Lance le dé et résout immédiatement la case de jungle."
     }
   },

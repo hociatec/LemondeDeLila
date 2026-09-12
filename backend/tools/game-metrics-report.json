@@ -95,10 +95,10 @@
     {
       "gameId": "ca-derape",
       "contentLoc": 1710,
-      "declarativeLoc": 47,
+      "declarativeLoc": 49,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 1757,
+      "jsonLoc": 1759,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/ca-derape/catalogue.json",
@@ -109,7 +109,7 @@
         {
           "file": "src/game/games/les-quatre-vents/ca-derape/game.json",
           "category": "declarativeLoc",
-          "loc": 47,
+          "loc": 49,
           "functions": []
         }
       ],
@@ -119,10 +119,10 @@
     {
       "gameId": "cat-pattes",
       "contentLoc": 2191,
-      "declarativeLoc": 63,
+      "declarativeLoc": 57,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 2254,
+      "jsonLoc": 2248,
       "files": [
         {
           "file": "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json",
@@ -133,7 +133,7 @@
         {
           "file": "src/game/games/vents-dansants/cat-pattes/game.json",
           "category": "declarativeLoc",
-          "loc": 63,
+          "loc": 57,
           "functions": []
         }
       ],
@@ -166,8 +166,8 @@
     },
     {
       "gameId": "contes-et-cacahuetes",
-      "contentLoc": 1668,
-      "declarativeLoc": 76,
+      "contentLoc": 1665,
+      "declarativeLoc": 79,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
       "jsonLoc": 1744,
@@ -175,13 +175,13 @@
         {
           "file": "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json",
           "category": "contentLoc",
-          "loc": 1668,
+          "loc": 1665,
           "functions": []
         },
         {
           "file": "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json",
           "category": "declarativeLoc",
-          "loc": 76,
+          "loc": 79,
           "functions": []
         }
       ],
@@ -347,10 +347,10 @@
     {
       "gameId": "galopons-ensemble",
       "contentLoc": 770,
-      "declarativeLoc": 48,
+      "declarativeLoc": 50,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 818,
+      "jsonLoc": 820,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json",
@@ -361,7 +361,7 @@
         {
           "file": "src/game/games/les-quatre-vents/galopons-ensemble/game.json",
           "category": "declarativeLoc",
-          "loc": 48,
+          "loc": 50,
           "functions": []
         }
       ],
@@ -491,15 +491,15 @@
     {
       "gameId": "lama",
       "contentLoc": 0,
-      "declarativeLoc": 69,
+      "declarativeLoc": 219,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 69,
+      "jsonLoc": 219,
       "files": [
         {
           "file": "src/game/games/vents-sacres/lama/game.json",
           "category": "declarativeLoc",
-          "loc": 69,
+          "loc": 219,
           "functions": []
         }
       ],
@@ -533,10 +533,10 @@
     {
       "gameId": "les-absurdissimes",
       "contentLoc": 4006,
-      "declarativeLoc": 91,
+      "declarativeLoc": 83,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 4097,
+      "jsonLoc": 4089,
       "files": [
         {
           "file": "src/game/games/vents-dansants/les-absurdissimes/content/cards.json",
@@ -547,7 +547,7 @@
         {
           "file": "src/game/games/vents-dansants/les-absurdissimes/game.json",
           "category": "declarativeLoc",
-          "loc": 91,
+          "loc": 83,
           "functions": []
         }
       ],
@@ -557,10 +557,10 @@
     {
       "gameId": "les-mains-de-la-terre",
       "contentLoc": 436,
-      "declarativeLoc": 174,
+      "declarativeLoc": 176,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 610,
+      "jsonLoc": 612,
       "files": [
         {
           "file": "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json",
@@ -571,7 +571,7 @@
         {
           "file": "src/game/games/vents-dansants/les-mains-de-la-terre/game.json",
           "category": "declarativeLoc",
-          "loc": 174,
+          "loc": 176,
           "functions": []
         }
       ],
@@ -580,16 +580,16 @@
     },
     {
       "gameId": "mission-galaxie",
-      "contentLoc": 840,
+      "contentLoc": 734,
       "declarativeLoc": 57,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 897,
+      "jsonLoc": 791,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json",
           "category": "contentLoc",
-          "loc": 840,
+          "loc": 734,
           "functions": []
         },
         {
@@ -629,10 +629,10 @@
     {
       "gameId": "morpion",
       "contentLoc": 56,
-      "declarativeLoc": 89,
+      "declarativeLoc": 87,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 145,
+      "jsonLoc": 143,
       "files": [
         {
           "file": "src/game/games/vents-sacres/morpion/content/pawns.json",
@@ -643,7 +643,7 @@
         {
           "file": "src/game/games/vents-sacres/morpion/game.json",
           "category": "declarativeLoc",
-          "loc": 89,
+          "loc": 87,
           "functions": []
         }
       ],
@@ -677,15 +677,15 @@
     {
       "gameId": "odyssee-quatre-cieux",
       "contentLoc": 0,
-      "declarativeLoc": 142,
+      "declarativeLoc": 138,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 142,
+      "jsonLoc": 138,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/odyssee-quatre-cieux/game.json",
           "category": "declarativeLoc",
-          "loc": 142,
+          "loc": 138,
           "functions": []
         }
       ],
@@ -719,10 +719,10 @@
     {
       "gameId": "panier-express",
       "contentLoc": 2261,
-      "declarativeLoc": 201,
+      "declarativeLoc": 196,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 2462,
+      "jsonLoc": 2457,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/panier-express/content/board.json",
@@ -757,7 +757,7 @@
         {
           "file": "src/game/games/les-quatre-vents/panier-express/game.json",
           "category": "declarativeLoc",
-          "loc": 201,
+          "loc": 196,
           "functions": []
         }
       ],
@@ -838,16 +838,16 @@
     },
     {
       "gameId": "sac-a-malices",
-      "contentLoc": 9482,
+      "contentLoc": 9222,
       "declarativeLoc": 63,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 9545,
+      "jsonLoc": 9285,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json",
           "category": "contentLoc",
-          "loc": 9482,
+          "loc": 9222,
           "functions": []
         },
         {
@@ -899,10 +899,10 @@
     {
       "gameId": "tout-pres-de-maman",
       "contentLoc": 717,
-      "declarativeLoc": 47,
+      "declarativeLoc": 53,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 764,
+      "jsonLoc": 770,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json",
@@ -913,7 +913,7 @@
         {
           "file": "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json",
           "category": "declarativeLoc",
-          "loc": 47,
+          "loc": 53,
           "functions": []
         }
       ],
@@ -922,22 +922,22 @@
     },
     {
       "gameId": "voyage-en-terre-de-brumes",
-      "contentLoc": 1441,
-      "declarativeLoc": 100,
+      "contentLoc": 1439,
+      "declarativeLoc": 112,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 1541,
+      "jsonLoc": 1551,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/catalogue.json",
           "category": "contentLoc",
-          "loc": 1441,
+          "loc": 1439,
           "functions": []
         },
         {
           "file": "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json",
           "category": "declarativeLoc",
-          "loc": 100,
+          "loc": 112,
           "functions": []
         }
       ],

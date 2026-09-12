@@ -74,15 +74,10 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "playing"
-      ]
+      "transitions": ["playing"]
     },
     "playing": {
-      "actions": [
-        "roll",
-        "draw_card"
-      ],
+      "actions": ["roll", "draw_card"],
       "terminal": true
     }
   },

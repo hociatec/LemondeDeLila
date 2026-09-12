@@ -69,7 +69,7 @@ describe('Gérard président declarative game', () => {
     const name = game.inspect.hand(2)[0];
     await game.as(2).do('play_name', { names: [name] });
     const kits = (game.view(3) as unknown as { kits: StableGameKitsView }).kits;
-    const session = kits.submissions.sessions['gerard.names'];
+    const session = kits.submissions.sessions['cards-theme-name.names'];
     expect(session.submittedPlayerIds).toEqual([2]);
     expect(session.valuesByPlayerId).toBeUndefined();
     expect(session.ownValue).toBeUndefined();
@@ -88,7 +88,8 @@ describe('Gérard président declarative game', () => {
   it('continues snapshots created before the JSON migration', async () => {
     const game = await testGame(gameDefinition).players(3).seed(55).start();
     const source = game.state();
-    source.engine.contentVersion = 'gerard-president@content:25d38394';
+    source.engine.contentVersion =
+      'gerard-president@content:25d38394';
     const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
       source,
       [],

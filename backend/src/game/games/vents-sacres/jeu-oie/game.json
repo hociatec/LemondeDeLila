@@ -50,7 +50,7 @@
   },
   "actions": {
     "roll": {
-      "recipe": "goose-race-roll",
+      "recipe": "race-goose-track-roll",
       "documentation": "Lance le dé et résout toutes les cases spéciales."
     }
   },

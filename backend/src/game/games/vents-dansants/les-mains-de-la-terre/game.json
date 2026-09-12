@@ -145,13 +145,15 @@
     }
   ],
   "setup": {},
-  "resourceIds": ["les-mains.extra-draws"],
+  "resourceIds": ["collection-family-effects.extra-draws"],
   "shortcuts": [{ "key": "D", "type": "action", "actionType": "request_card" }],
   "initialPhase": "playing",
   "phases": { "playing": { "actions": ["request_card"], "terminal": true } },
-  "actions": { "request_card": { "recipe": "profession-families-request" } },
-  "victory": { "kind": "by-profession-families" },
-  "professionFamilies": {
+  "actions": {
+    "request_card": { "recipe": "collection-family-effects-request" }
+  },
+  "victory": { "kind": "by-family-effects" },
+  "familyEffects": {
     "deckId": "professions",
     "handId": "players",
     "setsId": "profession-families",
@@ -165,9 +167,9 @@
       "innovation",
       "sante"
     ],
-    "extraDrawResource": "les-mains.extra-draws",
-    "freeRequestStatus": "les-mains.free-family-request",
-    "vanishedStatus": "les-mains.vanished-used",
+    "extraDrawResource": "collection-family-effects.extra-draws",
+    "freeRequestStatus": "collection-family-effects.free-family-request",
+    "vanishedStatus": "collection-family-effects.vanished-used",
     "finishReason": "families-complete",
     "eventNamespace": "les-mains"
   }

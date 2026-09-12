@@ -37,15 +37,15 @@
     "playing": { "actions": ["play_card", "pass"], "terminal": true }
   },
   "actions": {
-    "play_card": { "recipe": "mine-domain-play" },
-    "pass": { "recipe": "mine-domain-pass" }
+    "play_card": { "recipe": "cards-public-domain-play" },
+    "pass": { "recipe": "cards-public-domain-pass" }
   },
-  "victory": { "kind": "by-mine-domain" },
-  "mineDomain": {
+  "victory": { "kind": "by-public-domain-cards" },
+  "publicDomainCards": {
     "deckId": "mine",
     "handId": "players",
     "inventoryId": "mine-domains",
-    "discardNextDrawStatus": "mine.discard-next-draw",
+    "discardNextDrawStatus": "cards-public-domain.discard-next-draw",
     "handLimit": 5,
     "finishReason": "mine-collapsed",
     "eventNamespace": "grande-mine",

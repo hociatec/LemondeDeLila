@@ -107,12 +107,12 @@
     }
   },
   "actions": {
-    "draw_card": { "recipe": "olympia-draw" },
-    "play_card": { "recipe": "olympia-play" },
-    "pass": { "recipe": "olympia-pass" }
+    "draw_card": { "recipe": "cards-shared-prestige-draw" },
+    "play_card": { "recipe": "cards-shared-prestige-play" },
+    "pass": { "recipe": "cards-shared-prestige-pass" }
   },
-  "victory": { "kind": "by-olympia" },
-  "olympia": {
+  "victory": { "kind": "by-shared-prestige-cards" },
+  "sharedPrestigeCards": {
     "handId": "players",
     "deckIds": [
       "heros",

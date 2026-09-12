@@ -19,7 +19,7 @@ export type GameEventMapOf<
     : never;
 };
 
-/** Canonical typed registry for game-specific events. */
+/** Canonical typed registry for game-authored events. */
 export function defineEvents<
   const TDefinitions extends readonly GameEventDefinition<string, object>[],
 >(...definitions: TDefinitions): TDefinitions {

@@ -122,28 +122,29 @@ it('uses the released LAMA order in a configured round', () => {
   const payload = structuredClone(jsonDefinition('lama').content.data) as {
     lama: { cards: unknown[] };
   };
-  payload.lama.cards.reverse();
+  payload.discardPenaltyCards.cards.reverse();
   expect(recompileJson('lama', payload).content.data).toEqual(payload);
-  payload.lama.cards.push('LAMA');
+  payload.discardPenaltyCards.cards.push('LAMA');
   expect(() => recompileJson('lama', payload)).toThrow();
 });
 
 it('uses released Gerard names and effects in rule catalogues', () => {
   const payload = structuredClone(
-    jsonDefinition('gerard-president').content.data,
+    jsonDefinition('cards-theme-name-president').content.data,
   ) as {
     gerard: {
       names: Array<Record<string, unknown>>;
       specialCards: Array<Record<string, unknown>>;
     };
   };
-  const names = payload.gerard.names;
+  const names = payload.themeNameCards.names;
   names[0].name = 'Prénom de la release';
-  expect(recompileJson('gerard-president', payload).content.data).toEqual(
-    payload,
-  );
-  payload.gerard.specialCards[1].id = payload.gerard.specialCards[0].id;
-  expect(() => recompileJson('gerard-president', payload)).toThrow();
+  expect(
+    recompileJson('cards-theme-name-president', payload).content.data,
+  ).toEqual(payload);
+  payload.themeNameCards.specialCards[1].id =
+    payload.themeNameCards.specialCards[0].id;
+  expect(() => recompileJson('cards-theme-name-president', payload)).toThrow();
 });
 
 it('rejects Mnemosyne questions in an unknown category', () => {
@@ -167,11 +168,11 @@ it('uses released Entre Rites cards from the JSON program', () => {
   ) as {
     rites: { cards: Array<Record<string, unknown>> };
   };
-  payload.rites.cards[0].name = 'Carte de la release';
+  payload.ritualPhases.cards[0].name = 'Carte de la release';
   expect(
     recompileJson('entre-rites-et-lumieres', payload).content.data,
   ).toEqual(payload);
-  payload.rites.cards[1].id = payload.rites.cards[0].id;
+  payload.ritualPhases.cards[1].id = payload.ritualPhases.cards[0].id;
   expect(() => recompileJson('entre-rites-et-lumieres', payload)).toThrow();
 });
 
@@ -181,19 +182,22 @@ it('uses released Cat Pattes cards from the JSON program', () => {
   ) as {
     catPattes: { cards: Array<Record<string, unknown>> };
   };
-  payload.catPattes.cards[0].name = 'Carte de la release';
+  payload.pawScoring.cards[0].name = 'Carte de la release';
   expect(recompileJson('cat-pattes', payload).content.data).toEqual(payload);
-  payload.catPattes.cards[1].id = payload.catPattes.cards[0].id;
+  payload.pawScoring.cards[1].id = payload.pawScoring.cards[0].id;
   expect(() => recompileJson('cat-pattes', payload)).toThrow();
 });
 
 it('reloads the released Voyage payload into its rules catalogue', () => {
-  const initial = jsonDefinition('voyage-en-terre-de-brumes');
+  const initial = jsonDefinition('choice-chapter-encounter-en-terre-de-brumes');
   const payload = structuredClone(initial.content.data) as {
     voyage: { tiles: Array<{ title: string }> };
   };
   payload.voyage.tiles[0].title = 'Titre de la release';
-  const released = recompileJson('voyage-en-terre-de-brumes', payload);
+  const released = recompileJson(
+    'choice-chapter-encounter-en-terre-de-brumes',
+    payload,
+  );
   expect(released.content.data).toEqual(payload);
 });
 

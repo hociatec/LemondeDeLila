@@ -7,7 +7,7 @@
   "components": [
     {
       "component": "cards.deck",
-      "id": "banana",
+      "id": "species",
       "cards": { "$content": "content/catalogue.json#/cardIds" },
       "shuffle": true,
       "empty": "recycle"
@@ -15,13 +15,13 @@
     {
       "component": "cards.hands",
       "id": "players",
-      "deck": "banana",
+      "deck": "species",
       "initial": 5,
       "visibility": "owner"
     },
     {
       "component": "inventory.set",
-      "id": "banana-troops",
+      "id": "species-troops",
       "visibility": "public"
     }
   ],
@@ -36,15 +36,15 @@
     "playing": { "actions": ["play_card", "pass"], "terminal": true }
   },
   "actions": {
-    "play_card": { "recipe": "banana-troops-play" },
-    "pass": { "recipe": "banana-troops-pass" }
+    "play_card": { "recipe": "collection-species-troops-play" },
+    "pass": { "recipe": "collection-species-troops-pass" }
   },
-  "victory": { "kind": "by-banana-troops" },
-  "bananaTroops": {
-    "deckId": "banana",
+  "victory": { "kind": "by-species-troops" },
+  "speciesTroops": {
+    "deckId": "species",
     "handId": "players",
-    "inventoryId": "banana-troops",
-    "exchangeChoiceId": "banana.exchange-card",
+    "inventoryId": "species-troops",
+    "exchangeChoiceId": "species.exchange-card",
     "handLimit": 7,
     "victoryReason": "five-species",
     "species": ["capucin", "mandrill", "gibbon", "babouin", "macaque"],

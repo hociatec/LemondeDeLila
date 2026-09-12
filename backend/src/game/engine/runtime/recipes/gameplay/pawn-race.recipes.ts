@@ -1,6 +1,6 @@
 import { defineAction, defineChoice } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
-import type { PawnRaceProgram } from '../../extensions/pawn-race/program';
+import type { PawnRaceProgram } from '../../effect-packs/race-multi-pawn/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import type { PawnMove } from '../../kits/pawn-kit';
 import { GameRuleViolationError } from '../../../../core/domain/errors/game-domain.errors';

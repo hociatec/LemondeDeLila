@@ -1,4 +1,4 @@
-import type { JudgedCardsProgram } from '../../extensions/judged-cards/program';
+import type { JudgedCardsProgram } from '../../effect-packs/cards-judged-submission/program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';

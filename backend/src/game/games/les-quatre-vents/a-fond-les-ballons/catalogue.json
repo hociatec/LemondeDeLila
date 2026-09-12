@@ -7,7 +7,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": -2
           },
@@ -38,7 +38,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 1
           },
@@ -76,7 +76,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 4
           },
@@ -93,7 +93,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": -1
           },
@@ -103,7 +103,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": -1
           },
@@ -120,7 +120,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 2
           },
@@ -137,7 +137,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": -1
           },
@@ -168,7 +168,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.next-tile",
+          "effectId": "race-chained-tile-cards.next-tile",
           "data": {
             "tile": "bonus"
           }
@@ -196,7 +196,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": -1
           },
@@ -213,7 +213,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 2
           },
@@ -230,7 +230,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 3
           },
@@ -247,7 +247,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": -1
           },
@@ -264,7 +264,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.next-tile",
+          "effectId": "race-chained-tile-cards.next-tile",
           "data": {
             "tile": "folie"
           }
@@ -292,7 +292,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 2
           },
@@ -309,7 +309,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 1
           },
@@ -340,7 +340,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 1
           },
@@ -350,7 +350,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 1
           },
@@ -381,7 +381,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 4
           },
@@ -423,7 +423,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.repeat-roll",
+          "effectId": "race-chained-tile-cards.repeat-roll",
           "data": {},
           "target": {
             "kind": "self"
@@ -431,7 +431,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.repeat-roll",
+          "effectId": "race-chained-tile-cards.repeat-roll",
           "data": {},
           "target": {
             "kind": "all-opponents"
@@ -446,7 +446,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": -1
           },
@@ -463,11 +463,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.swap",
+          "effectId": "race-chained-tile-cards.swap",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "a-fond-les-ballons.swap",
+            "choiceId": "race-chained-tile-cards.swap",
             "optional": false
           }
         },
@@ -483,7 +483,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.go-to",
+          "effectId": "race-chained-tile-cards.go-to",
           "data": {
             "position": 12
           }
@@ -511,7 +511,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 1
           },
@@ -528,7 +528,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 2
           },
@@ -545,7 +545,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 3
           },
@@ -562,7 +562,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.boutique",
+          "effectId": "race-chained-tile-cards.boutique",
           "data": {}
         }
       ]
@@ -574,7 +574,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.go-to",
+          "effectId": "race-chained-tile-cards.go-to",
           "data": {
             "position": 0
           }
@@ -588,7 +588,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "a-fond-les-ballons.trap-immunity",
+          "status": "race-chained-tile-cards.trap-immunity",
           "turns": 2,
           "scope": "turn",
           "stack": true
@@ -602,7 +602,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": -5
           },
@@ -619,7 +619,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.random-move",
+          "effectId": "race-chained-tile-cards.random-move",
           "data": {},
           "target": {
             "kind": "self"
@@ -627,7 +627,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.random-move",
+          "effectId": "race-chained-tile-cards.random-move",
           "data": {},
           "target": {
             "kind": "all-opponents"
@@ -642,7 +642,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.move",
+          "effectId": "race-chained-tile-cards.move",
           "data": {
             "delta": 2
           },
@@ -659,7 +659,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "a-fond-les-ballons.finish-if-slide",
+          "effectId": "race-chained-tile-cards.finish-if-slide",
           "data": {}
         }
       ]

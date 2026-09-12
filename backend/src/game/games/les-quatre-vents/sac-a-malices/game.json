@@ -14,11 +14,11 @@
   "components": [],
   "setup": {
     "counters": {
-      "sac.pot": 0
+      "board-property-economy.pot": 0
     },
     "startRound": false
   },
-  "resourceIds": ["money", "sac.jail-cards"],
+  "resourceIds": ["money", "board-property-economy.jail-cards"],
   "shortcuts": [
     {
       "key": "D",
@@ -46,18 +46,18 @@
     }
   },
   "actions": {
-    "roll": { "recipe": "sac-roll" },
-    "build": { "recipe": "sac-build" },
-    "sell_building": { "recipe": "sac-sell-building" },
-    "mortgage": { "recipe": "sac-mortgage" },
-    "unmortgage": { "recipe": "sac-unmortgage" },
-    "pay_fine": { "recipe": "sac-pay-fine" },
-    "use_jail_card": { "recipe": "sac-use-jail-card" }
+    "roll": { "recipe": "board-property-economy-roll" },
+    "build": { "recipe": "board-property-economy-build" },
+    "sell_building": { "recipe": "board-property-economy-sell-building" },
+    "mortgage": { "recipe": "board-property-economy-mortgage" },
+    "unmortgage": { "recipe": "board-property-economy-unmortgage" },
+    "pay_fine": { "recipe": "board-property-economy-pay-fine" },
+    "use_jail_card": { "recipe": "board-property-economy-use-jail-card" }
   },
   "victory": {
-    "kind": "by-sac"
+    "kind": "by-property-economy"
   },
-  "sac": {
+  "propertyEconomy": {
     "$content": "content/catalogue.json"
   }
 }

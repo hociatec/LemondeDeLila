@@ -1,4 +1,4 @@
-import type { CardCirclesProgram } from '../extensions/card-circles/program';
+import type { CardCirclesProgram } from '../effect-packs/collection-themed-circles/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,

@@ -49,11 +49,11 @@
     "playing": { "actions": ["ask_card", "pass"], "terminal": true }
   },
   "actions": {
-    "ask_card": { "recipe": "nature-families-ask" },
-    "pass": { "recipe": "nature-families-pass" }
+    "ask_card": { "recipe": "collection-family-request-ask" },
+    "pass": { "recipe": "collection-family-request-pass" }
   },
-  "victory": { "kind": "by-nature-families" },
-  "natureFamilies": {
+  "victory": { "kind": "by-family-request" },
+  "familyRequest": {
     "deckId": "nature",
     "handId": "players",
     "setsId": "nature-families",

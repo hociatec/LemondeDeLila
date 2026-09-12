@@ -221,7 +221,7 @@
           "handId": "players",
           "from": {
             "kind": "chosen-opponent",
-            "choiceId": "banana.steal",
+            "choiceId": "species.steal",
             "optional": false
           }
         }
@@ -238,7 +238,7 @@
           "handId": "players",
           "from": {
             "kind": "chosen-opponent",
-            "choiceId": "banana.steal",
+            "choiceId": "species.steal",
             "optional": false
           }
         }
@@ -255,7 +255,7 @@
           "handId": "players",
           "from": {
             "kind": "chosen-opponent",
-            "choiceId": "banana.steal",
+            "choiceId": "species.steal",
             "optional": false
           }
         }
@@ -272,7 +272,7 @@
           "handId": "players",
           "from": {
             "kind": "chosen-opponent",
-            "choiceId": "banana.steal",
+            "choiceId": "species.steal",
             "optional": false
           }
         }
@@ -289,7 +289,7 @@
           "handId": "players",
           "from": {
             "kind": "chosen-opponent",
-            "choiceId": "banana.steal",
+            "choiceId": "species.steal",
             "optional": false
           }
         }
@@ -303,11 +303,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "banana.exchange-random",
+          "effectId": "species.exchange-random",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "banana.exchange",
+            "choiceId": "species.exchange",
             "optional": false
           }
         }
@@ -321,11 +321,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "banana.exchange-random",
+          "effectId": "species.exchange-random",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "banana.exchange",
+            "choiceId": "species.exchange",
             "optional": false
           }
         }
@@ -339,11 +339,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "banana.exchange-random",
+          "effectId": "species.exchange-random",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "banana.exchange",
+            "choiceId": "species.exchange",
             "optional": false
           }
         }
@@ -357,11 +357,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "banana.exchange-random",
+          "effectId": "species.exchange-random",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "banana.exchange",
+            "choiceId": "species.exchange",
             "optional": false
           }
         }
@@ -375,11 +375,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "banana.exchange-random",
+          "effectId": "species.exchange-random",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "banana.exchange",
+            "choiceId": "species.exchange",
             "optional": false
           }
         }
@@ -393,7 +393,7 @@
       "effects": [
         {
           "kind": "draw-cards",
-          "deckId": "banana",
+          "deckId": "species",
           "handId": "players",
           "count": 2,
           "recycle": true
@@ -408,7 +408,7 @@
       "effects": [
         {
           "kind": "draw-cards",
-          "deckId": "banana",
+          "deckId": "species",
           "handId": "players",
           "count": 2,
           "recycle": true
@@ -423,7 +423,7 @@
       "effects": [
         {
           "kind": "draw-cards",
-          "deckId": "banana",
+          "deckId": "species",
           "handId": "players",
           "count": 2,
           "recycle": true
@@ -438,7 +438,7 @@
       "effects": [
         {
           "kind": "draw-cards",
-          "deckId": "banana",
+          "deckId": "species",
           "handId": "players",
           "count": 2,
           "recycle": true
@@ -453,7 +453,7 @@
       "effects": [
         {
           "kind": "draw-cards",
-          "deckId": "banana",
+          "deckId": "species",
           "handId": "players",
           "count": 2,
           "recycle": true
@@ -543,7 +543,7 @@
       "effects": [
         {
           "kind": "discard-random",
-          "deckId": "banana",
+          "deckId": "species",
           "handId": "players",
           "count": 1
         }
@@ -557,7 +557,7 @@
       "effects": [
         {
           "kind": "discard-random",
-          "deckId": "banana",
+          "deckId": "species",
           "handId": "players",
           "count": 1
         }
@@ -571,7 +571,7 @@
       "effects": [
         {
           "kind": "discard-random",
-          "deckId": "banana",
+          "deckId": "species",
           "handId": "players",
           "count": 1
         }
@@ -585,7 +585,7 @@
       "effects": [
         {
           "kind": "discard-random",
-          "deckId": "banana",
+          "deckId": "species",
           "handId": "players",
           "count": 1
         }
@@ -599,7 +599,7 @@
       "effects": [
         {
           "kind": "discard-random",
-          "deckId": "banana",
+          "deckId": "species",
           "handId": "players",
           "count": 1
         }

@@ -46,7 +46,9 @@ it.each(['Une traduction', 'La réponse affichée'])(
     expect(JSON.stringify(game.view(1))).toContain(label);
     await expect(game.choose(1, label)).rejects.toThrow();
     await game.choose(1, 'answer-2');
-    expect(game.resource(1, 'voyage.collection.legend')).toBe(1);
+    expect(game.resource(1, 'choice-chapter-encounter.collection.legend')).toBe(
+      1,
+    );
     expect(game.inspect.positions()[1]).toBe(position + 2);
     expect(await game.replay()).toEqual(game.state());
   },
@@ -58,6 +60,8 @@ it('does not reward an incorrect answer ID', async () => {
   await game.as(1).do('roll', {});
   const position = game.inspect.positions()[1];
   await game.choose(1, 'answer-1');
-  expect(game.resource(1, 'voyage.collection.legend')).toBe(0);
+  expect(game.resource(1, 'choice-chapter-encounter.collection.legend')).toBe(
+    0,
+  );
   expect(game.inspect.positions()[1]).toBe(position);
 });

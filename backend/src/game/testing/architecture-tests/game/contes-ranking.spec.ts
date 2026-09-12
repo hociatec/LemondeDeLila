@@ -1,7 +1,7 @@
 import { GameRankingController } from '../../../engine/runtime/kits/ranking-kit';
-import { createContesResolution } from '../../../engine/runtime/extensions/contes/contes-resolution';
+import { createStoryChallengeResolution } from '../../../engine/runtime/effect-packs/choice-story-challenge/story-challenge-resolution';
 
-const resolution = createContesResolution({
+const resolution = createStoryChallengeResolution({
   trackId: 'story-road',
 } as never);
 

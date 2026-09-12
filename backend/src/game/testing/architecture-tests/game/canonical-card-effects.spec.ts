@@ -2,7 +2,7 @@ import { GENERATED_GAME_PACKAGES } from '../../../composition/generated-game-reg
 import { compileJsonGame } from '../../../engine/json/public-api';
 
 const catalogues = [
-  ['contes-et-cacahuetes', ['contes', 'decks', 'bonus']],
+  ['choice-story-challenge-et-cacahuetes', ['contes', 'decks', 'bonus']],
   ['la-grande-mine-de-barbak', ['mineDomain', 'cards']],
   ['frousse-party', ['frousseRace', 'cards']],
   ['les-mains-de-la-terre', ['professionFamilies', 'cards']],

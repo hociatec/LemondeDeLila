@@ -14,7 +14,7 @@ export type GameBotDefinition<
   TActions extends GameActionMap<TState>,
 > = NonNullable<CompiledGameDefinition<TState, TActions>['bot']>;
 
-/** Typed bindings for game-specific rules kept outside the composition entry. */
+/** Typed bindings for game-authored rules kept outside the composition entry. */
 export type GameRuleBindings<
   TState extends object,
   TViewExtension extends object = object,

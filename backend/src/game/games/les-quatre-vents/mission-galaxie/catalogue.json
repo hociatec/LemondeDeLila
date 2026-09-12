@@ -277,12 +277,7 @@
       "id": 1,
       "title": "Planète proche",
       "prompt": "Votre vaisseau s'approche du Soleil. Quelle planète orbite le plus près de cette étoile ?",
-      "choices": [
-        "Mercure",
-        "Vénus",
-        "Mars",
-        "Jupiter"
-      ],
+      "choices": ["Mercure", "Vénus", "Mars", "Jupiter"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -291,12 +286,7 @@
       "id": 2,
       "title": "Notre galaxie",
       "prompt": "Comment s'appelle la galaxie qui contient la Terre ?",
-      "choices": [
-        "La Voie Lactée",
-        "Andromède",
-        "Orion",
-        "Sagittarius"
-      ],
+      "choices": ["La Voie Lactée", "Andromède", "Orion", "Sagittarius"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -305,12 +295,7 @@
       "id": 3,
       "title": "Planète rouge",
       "prompt": "Une planète rouge apparaît sur vos instruments. Quel est son nom ?",
-      "choices": [
-        "Mars",
-        "Vénus",
-        "Mercure",
-        "Jupiter"
-      ],
+      "choices": ["Mars", "Vénus", "Mercure", "Jupiter"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -319,12 +304,7 @@
       "id": 4,
       "title": "Géante gazeuse",
       "prompt": "Quel géant du système solaire est plus imposant que toutes les autres planètes ?",
-      "choices": [
-        "Jupiter",
-        "Saturne",
-        "Neptune",
-        "Uranus"
-      ],
+      "choices": ["Jupiter", "Saturne", "Neptune", "Uranus"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -347,12 +327,7 @@
       "id": 6,
       "title": "Compagnon terrestre",
       "prompt": "Quel astre accompagne toujours la Terre ?",
-      "choices": [
-        "La Lune",
-        "Phobos",
-        "Mars",
-        "Vénus"
-      ],
+      "choices": ["La Lune", "Phobos", "Mars", "Vénus"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -361,12 +336,7 @@
       "id": 7,
       "title": "Objet changeant",
       "prompt": "Chaque nuit, vous observez un corps brillant dont l'allure varie légèrement. De quel astre s'agit-il ?",
-      "choices": [
-        "La Lune",
-        "Jupiter",
-        "Vénus",
-        "Une étoile filante"
-      ],
+      "choices": ["La Lune", "Jupiter", "Vénus", "Une étoile filante"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -403,12 +373,7 @@
       "id": 10,
       "title": "Anneaux célèbres",
       "prompt": "Une planète entourée d'anneaux majestueux se profile. Quel est son nom ?",
-      "choices": [
-        "Saturne",
-        "Jupiter",
-        "Uranus",
-        "Neptune"
-      ],
+      "choices": ["Saturne", "Jupiter", "Uranus", "Neptune"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -431,12 +396,7 @@
       "id": 12,
       "title": "Planète la plus chaude",
       "prompt": "Même si elle n'est pas la plus proche du Soleil, quelle planète détient le record de chaleur ?",
-      "choices": [
-        "Vénus",
-        "Mercure",
-        "Mars",
-        "Jupiter"
-      ],
+      "choices": ["Vénus", "Mercure", "Mars", "Jupiter"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -489,11 +449,7 @@
       "id": 1,
       "title": "Chiffres stellaires",
       "prompt": "Quelle est la somme de 3, 5 et 2 ?",
-      "choices": [
-        "10",
-        "8",
-        "9"
-      ],
+      "choices": ["10", "8", "9"],
       "correctIndex": 0,
       "correctDelta": 2,
       "wrongDelta": -1
@@ -502,11 +458,7 @@
       "id": 2,
       "title": "Calcul orbital",
       "prompt": "Votre vaisseau avance de 4 cases puis 3 cases. Quelle distance totale parcourue ?",
-      "choices": [
-        "7",
-        "6",
-        "8"
-      ],
+      "choices": ["7", "6", "8"],
       "correctIndex": 0,
       "correctDelta": 2,
       "wrongDelta": -1
@@ -515,11 +467,7 @@
       "id": 3,
       "title": "Ordre cosmique",
       "prompt": "Vous traversez une zone planétaire puis galactique. Quelle zone vient ensuite ?",
-      "choices": [
-        "Cosmique",
-        "Planétaire",
-        "Stellaire"
-      ],
+      "choices": ["Cosmique", "Planétaire", "Stellaire"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -528,11 +476,7 @@
       "id": 4,
       "title": "Logique des astres",
       "prompt": "Quel type d'astre ne produit pas sa propre lumière ?",
-      "choices": [
-        "Une planète",
-        "Une étoile",
-        "Une galaxie"
-      ],
+      "choices": ["Une planète", "Une étoile", "Une galaxie"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -541,11 +485,7 @@
       "id": 5,
       "title": "Mémoire spatiale",
       "prompt": "Souvenez-vous : étoile, planète, satellite. Quel élément était en deuxième position ?",
-      "choices": [
-        "Planète",
-        "Étoile",
-        "Satellite"
-      ],
+      "choices": ["Planète", "Étoile", "Satellite"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -554,11 +494,7 @@
       "id": 6,
       "title": "Distance interstellaire",
       "prompt": "Un signal parcourt 300 unités par seconde. Combien parcourt-il en 2 secondes ?",
-      "choices": [
-        "600",
-        "500",
-        "900"
-      ],
+      "choices": ["600", "500", "900"],
       "correctIndex": 0,
       "correctDelta": 2,
       "wrongDelta": -1
@@ -567,11 +503,7 @@
       "id": 7,
       "title": "Devinette gravitationnelle",
       "prompt": "Quel objet empêche la lumière de s'échapper ?",
-      "choices": [
-        "Un trou noir",
-        "Une comète",
-        "Une planète"
-      ],
+      "choices": ["Un trou noir", "Une comète", "Une planète"],
       "correctIndex": 0,
       "correctDelta": 2,
       "wrongDelta": -1
@@ -580,11 +512,7 @@
       "id": 8,
       "title": "Suite logique planétaire",
       "prompt": "Mercure, Vénus, Terre... quelle planète vient ensuite ?",
-      "choices": [
-        "Mars",
-        "Jupiter",
-        "Saturne"
-      ],
+      "choices": ["Mars", "Jupiter", "Saturne"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -593,11 +521,7 @@
       "id": 9,
       "title": "Déplacement net",
       "prompt": "Vous avancez de 5 cases puis reculez de 2. Quel est le déplacement final ?",
-      "choices": [
-        "3",
-        "7",
-        "2"
-      ],
+      "choices": ["3", "7", "2"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -606,11 +530,7 @@
       "id": 10,
       "title": "Observation céleste",
       "prompt": "Quel type d'astre produit lumière et chaleur ?",
-      "choices": [
-        "Une étoile",
-        "Une planète",
-        "Un satellite"
-      ],
+      "choices": ["Une étoile", "Une planète", "Un satellite"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -619,11 +539,7 @@
       "id": 11,
       "title": "Comparaison cosmique",
       "prompt": "Quelle planète est la plus grande ?",
-      "choices": [
-        "Jupiter",
-        "Mars",
-        "Mercure"
-      ],
+      "choices": ["Jupiter", "Mars", "Mercure"],
       "correctIndex": 0,
       "correctDelta": 2,
       "wrongDelta": -1
@@ -632,11 +548,7 @@
       "id": 12,
       "title": "Logique temporelle",
       "prompt": "Un événement se produit avant le décollage puis pendant le voyage. Que vient ensuite ?",
-      "choices": [
-        "L'atterrissage",
-        "Le décollage",
-        "L'observation"
-      ],
+      "choices": ["L'atterrissage", "Le décollage", "L'observation"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -645,11 +557,7 @@
       "id": 13,
       "title": "Raisonnement spatial",
       "prompt": "Quel objet trace un trait lumineux en traversant l'atmosphère ?",
-      "choices": [
-        "Une étoile filante",
-        "Une planète",
-        "Une galaxie"
-      ],
+      "choices": ["Une étoile filante", "Une planète", "Une galaxie"],
       "correctIndex": 0,
       "correctDelta": 2,
       "wrongDelta": -1
@@ -658,11 +566,7 @@
       "id": 14,
       "title": "Mémoire courte",
       "prompt": "Souvenez-vous : comète, astéroïde, planète. Quel élément était le premier ?",
-      "choices": [
-        "Comète",
-        "Astéroïde",
-        "Planète"
-      ],
+      "choices": ["Comète", "Astéroïde", "Planète"],
       "correctIndex": 0,
       "correctDelta": 1,
       "wrongDelta": -1
@@ -671,11 +575,7 @@
       "id": 15,
       "title": "Calcul final",
       "prompt": "Vous lancez un dé et obtenez 6 puis 1. Quel est le total ?",
-      "choices": [
-        "7",
-        "6",
-        "8"
-      ],
+      "choices": ["7", "6", "8"],
       "correctIndex": 0,
       "correctDelta": 2,
       "wrongDelta": -1
@@ -709,7 +609,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mission-galaxie.move",
+          "effectId": "race-quiz-event-track.move",
           "data": {
             "delta": 3
           }
@@ -723,7 +623,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mission-galaxie.move",
+          "effectId": "race-quiz-event-track.move",
           "data": {
             "delta": -2
           }
@@ -737,7 +637,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mission-galaxie.move",
+          "effectId": "race-quiz-event-track.move",
           "data": {
             "delta": 2
           }
@@ -771,20 +671,14 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mission-galaxie.choose-player-move",
+          "effectId": "race-quiz-event-track.choose-player-move",
           "data": {
             "cardId": 8,
-            "deltas": [
-              2,
-              -2
-            ]
+            "deltas": [2, -2]
           }
         }
       ],
-      "moveDeltas": [
-        2,
-        -2
-      ]
+      "moveDeltas": [2, -2]
     },
     {
       "id": 9,
@@ -815,7 +709,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "mission-galaxie.goto",
+          "effectId": "race-quiz-event-track.goto",
           "data": {
             "target": 45
           }

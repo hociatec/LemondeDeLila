@@ -1,4 +1,4 @@
-import type { CardSelectionProgram } from '../extensions/card-selection/program';
+import type { CardSelectionProgram } from '../effect-packs/choice-card-occurrences/program';
 import type { GameComponentDefinition } from './component-kit';
 import {
   authorObject as object,

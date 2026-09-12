@@ -457,7 +457,7 @@
       "effects": [
         {
           "kind": "lose-resource",
-          "resource": "pirate-gold",
+          "resource": "treasureTrack-gold",
           "amount": 1,
           "target": {
             "kind": "self"
@@ -502,7 +502,7 @@
       "effects": [
         {
           "kind": "lose-resource",
-          "resource": "pirate-gold",
+          "resource": "treasureTrack-gold",
           "amount": 1,
           "target": {
             "kind": "self"
@@ -623,7 +623,7 @@
       "effects": [
         {
           "kind": "gain-resource",
-          "resource": "pirate-gold",
+          "resource": "treasureTrack-gold",
           "amount": 1,
           "target": {
             "kind": "self"

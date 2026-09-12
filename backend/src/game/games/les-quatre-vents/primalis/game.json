@@ -39,14 +39,14 @@
   },
   "actions": {
     "roll": {
-      "recipe": "ecosystem-race-roll",
+      "recipe": "race-resource-track-roll",
       "documentation": "Lance le dé, collecte des ressources et avance la comète."
     }
   },
   "victory": {
-    "kind": "by-ecosystem-race"
+    "kind": "by-resource-track-race"
   },
-  "ecosystemRace": {
+  "resourceTrackRace": {
     "trackId": "comet",
     "diceId": "main",
     "tiles": {

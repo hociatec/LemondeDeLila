@@ -49,27 +49,39 @@
     },
     {
       "component": "collection.view",
-      "id": "voyage",
+      "id": "chapterEncounter",
       "groups": {
-        "legend": { "kind": "resource", "id": "voyage.collection.legend" },
-        "farce": { "kind": "resource", "id": "voyage.collection.farce" },
-        "treasure": { "kind": "resource", "id": "voyage.collection.treasure" },
-        "landscape": { "kind": "resource", "id": "voyage.collection.landscape" }
+        "legend": {
+          "kind": "resource",
+          "id": "choice-chapter-encounter.collection.legend"
+        },
+        "farce": {
+          "kind": "resource",
+          "id": "choice-chapter-encounter.collection.farce"
+        },
+        "treasure": {
+          "kind": "resource",
+          "id": "choice-chapter-encounter.collection.treasure"
+        },
+        "landscape": {
+          "kind": "resource",
+          "id": "choice-chapter-encounter.collection.landscape"
+        }
       }
     }
   ],
   "setup": {
     "startRound": false,
     "counters": {
-      "voyage.finish-started": 0,
-      "voyage.finish-countdown": 0
+      "choice-chapter-encounter.finish-started": 0,
+      "choice-chapter-encounter.finish-countdown": 0
     }
   },
   "resourceIds": [
-    "voyage.collection.legend",
-    "voyage.collection.farce",
-    "voyage.collection.treasure",
-    "voyage.collection.landscape"
+    "choice-chapter-encounter.collection.legend",
+    "choice-chapter-encounter.collection.farce",
+    "choice-chapter-encounter.collection.treasure",
+    "choice-chapter-encounter.collection.landscape"
   ],
   "shortcuts": [
     { "key": "D", "type": "action", "actionType": "roll" },
@@ -78,16 +90,16 @@
   ],
   "initialPhase": "playing",
   "phases": { "playing": { "actions": ["roll"], "terminal": true } },
-  "actions": { "roll": { "recipe": "voyage-roll" } },
-  "victory": { "kind": "by-voyage" },
-  "voyage": {
+  "actions": { "roll": { "recipe": "choice-chapter-encounter-roll" } },
+  "victory": { "kind": "by-chapter-encounter" },
+  "chapterEncounter": {
     "trackId": "ireland",
     "diceId": "main",
-    "choiceId": "voyage.choice",
-    "lastTargetStatusId": "voyage.last-target",
-    "finishStartedCounterId": "voyage.finish-started",
-    "finishCountdownCounterId": "voyage.finish-countdown",
-    "collectionResourcePrefix": "voyage.collection.",
+    "choiceId": "choice-chapter-encounter.choice",
+    "lastTargetStatusId": "choice-chapter-encounter.last-target",
+    "finishStartedCounterId": "choice-chapter-encounter.finish-started",
+    "finishCountdownCounterId": "choice-chapter-encounter.finish-countdown",
+    "collectionResourcePrefix": "choice-chapter-encounter.collection.",
     "collectionKinds": ["legend", "farce", "treasure", "landscape"],
     "tiles": { "$content": "content/catalogue.json#/tiles" },
     "decks": {

@@ -248,7 +248,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": 1
           },
@@ -264,7 +264,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": -1
           },
@@ -294,7 +294,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": 2
           },
@@ -323,7 +323,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": -2
           },
@@ -339,7 +339,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move-to-type",
+          "effectId": "pairedPawn.move-to-type",
           "data": {
             "type": "card",
             "direction": "forward"
@@ -353,11 +353,11 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.transfer-token",
+          "effectId": "pairedPawn.transfer-token",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "maman.transfer-token",
+            "choiceId": "pairedPawn.transfer-token",
             "optional": false
           }
         },
@@ -372,7 +372,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move-to-type",
+          "effectId": "pairedPawn.move-to-type",
           "data": {
             "type": "token",
             "direction": "backward"
@@ -386,7 +386,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": -1
           },
@@ -396,7 +396,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": -1
           },
@@ -412,7 +412,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "maman.bonus-reroll",
+          "status": "pairedPawn.bonus-reroll",
           "scope": "until-used"
         }
       ]
@@ -450,7 +450,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": 3
           },
@@ -466,7 +466,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move-to-type",
+          "effectId": "pairedPawn.move-to-type",
           "data": {
             "type": "bonds",
             "direction": "backward"
@@ -480,7 +480,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.roll-move",
+          "effectId": "pairedPawn.roll-move",
           "data": {}
         }
       ]
@@ -491,7 +491,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": -1
           },
@@ -507,7 +507,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": 2
           },
@@ -523,7 +523,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": -2
           },
@@ -553,7 +553,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": 1
           },
@@ -563,7 +563,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": 1
           },
@@ -592,7 +592,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.roll-threshold-move",
+          "effectId": "pairedPawn.roll-threshold-move",
           "data": {}
         }
       ]
@@ -603,7 +603,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move-to-type",
+          "effectId": "pairedPawn.move-to-type",
           "data": {
             "type": "bonds",
             "direction": "forward"
@@ -632,7 +632,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": 1
           },
@@ -642,11 +642,11 @@
         },
         {
           "kind": "custom",
-          "effectId": "maman.share-advance",
+          "effectId": "pairedPawn.share-advance",
           "data": {},
           "target": {
             "kind": "chosen-opponent",
-            "choiceId": "maman.share-advance",
+            "choiceId": "pairedPawn.share-advance",
             "optional": false
           }
         },
@@ -679,7 +679,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": 2
           },
@@ -703,7 +703,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "maman.move",
+          "effectId": "pairedPawn.move",
           "data": {
             "delta": 1
           },

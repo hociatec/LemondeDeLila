@@ -43,25 +43,25 @@
   },
   "actions": {
     "set_theme": {
-      "recipe": "gerard-set-theme"
+      "recipe": "cards-theme-name-set-theme"
     },
     "play_name": {
-      "recipe": "gerard-play-name"
+      "recipe": "cards-theme-name-play-name"
     },
     "play_special": {
-      "recipe": "gerard-play-special"
+      "recipe": "cards-theme-name-play-special"
     },
     "choose_winner": {
-      "recipe": "gerard-choose-winner"
+      "recipe": "cards-theme-name-choose-winner"
     },
     "pass": {
-      "recipe": "gerard-pass"
+      "recipe": "cards-theme-name-pass"
     }
   },
   "victory": {
-    "kind": "by-gerard"
+    "kind": "by-theme-name-cards"
   },
-  "gerard": {
+  "themeNameCards": {
     "targetScore": 7,
     "names": {
       "$content": "content/catalogue.json#/names"

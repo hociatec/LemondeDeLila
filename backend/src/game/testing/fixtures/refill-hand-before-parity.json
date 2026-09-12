@@ -18,19 +18,19 @@
     "sha256": "6c0e90cbf41ed30ec2eca99bb66b7e4c586de64b23a1d954d05203f1ff404690"
   },
   {
-    "game": "gerard-president",
+    "game": "cards-theme-name-president",
     "seed": 1,
     "events": 408,
     "sha256": "6c1c397be111fbec5b03a0e8258d7db73e467c8b22030dbe169297351cef40c1"
   },
   {
-    "game": "gerard-president",
+    "game": "cards-theme-name-president",
     "seed": 7,
     "events": 408,
     "sha256": "58917dfc9032cc1d930f92f95c1b9105f2f3ce995ecf295525daf5ab5f096a65"
   },
   {
-    "game": "gerard-president",
+    "game": "cards-theme-name-president",
     "seed": 42,
     "events": 408,
     "sha256": "1097930dcb196aa23347e9c52dd4c9b581787e846e6d41ede1b2964f5292191e"

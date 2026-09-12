@@ -15,7 +15,7 @@
   "setup": {},
   "resourceIds": [],
   "shortcuts": [
-    { "key": "M", "type": "action", "actionType": "corridor_place_wall" }
+    { "key": "M", "type": "action", "actionType": "pathWalls_place_wall" }
   ],
   "initialPhase": "setup",
   "phases": {
@@ -24,20 +24,20 @@
       "transitions": ["playing"]
     },
     "playing": {
-      "actions": ["corridor_move", "corridor_place_wall"],
+      "actions": ["pathWalls_move", "pathWalls_place_wall"],
       "terminal": true
     }
   },
   "actions": {
-    "corridor_move": { "recipe": "corridor-move" },
-    "corridor_place_wall": { "recipe": "corridor-place-wall" }
+    "pathWalls_move": { "recipe": "board-path-walls-move" },
+    "pathWalls_place_wall": { "recipe": "board-path-walls-place-wall" }
   },
-  "victory": { "kind": "by-corridor" },
-  "corridor": {
-    "boardId": "corridor",
-    "pawnSetId": "corridor",
-    "pawnChoiceId": "corridor.pawn",
-    "wallsResourceId": "corridor.walls",
+  "victory": { "kind": "by-path-walls" },
+  "pathWalls": {
+    "boardId": "pathWalls",
+    "pawnSetId": "pathWalls",
+    "pawnChoiceId": "board-path-walls.pawn",
+    "wallsResourceId": "board-path-walls.walls",
     "wallsOverlayId": "walls",
     "size": 9,
     "defaultWallsPerPlayer": 10,
@@ -49,7 +49,7 @@
       {
         "id": "vent",
         "label": "Le vent",
-        "description": "Rapide et changeant, il traverse le corridor sans hésiter."
+        "description": "Rapide et changeant, il traverse le pathWalls sans hésiter."
       },
       {
         "id": "eau",

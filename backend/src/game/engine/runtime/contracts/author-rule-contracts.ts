@@ -127,7 +127,7 @@ export type ReservedGameViewKeys = {
   readonly effect?: never;
 };
 
-/** Game-specific fragment isolated under `game`; engine namespaces are reserved. */
+/** Game-authored fragment isolated under `game`; engine namespaces are reserved. */
 export type GameViewExtension<TValue extends object> = Readonly<
   TValue & ReservedGameViewKeys
 >;

@@ -22,15 +22,15 @@
   ],
   "setup": {
     "resources": {
-      "parade.candy.Chamallow": 0,
-      "parade.candy.Chocobon": 0,
-      "parade.candy.Balisto": 0
+      "cards-ordered-parade.candy.Chamallow": 0,
+      "cards-ordered-parade.candy.Chocobon": 0,
+      "cards-ordered-parade.candy.Balisto": 0
     }
   },
   "resourceIds": [
-    "parade.candy.Chamallow",
-    "parade.candy.Chocobon",
-    "parade.candy.Balisto"
+    "cards-ordered-parade.candy.Chamallow",
+    "cards-ordered-parade.candy.Chocobon",
+    "cards-ordered-parade.candy.Balisto"
   ],
   "shortcuts": [
     { "key": "C", "type": "action", "actionType": "play_card" },
@@ -41,8 +41,8 @@
     "playing": { "actions": ["play_card", "pass"], "terminal": true }
   },
   "actions": {
-    "play_card": { "recipe": "parade-play" },
-    "pass": { "recipe": "parade-pass" }
+    "play_card": { "recipe": "cards-ordered-parade-play" },
+    "pass": { "recipe": "cards-ordered-parade-pass" }
   },
   "victory": { "kind": "by-parade" },
   "parade": {
@@ -52,7 +52,7 @@
     "sequence": { "$content": "content/catalogue.json#/sequence" },
     "rewards": { "$content": "content/catalogue.json#/rewards" },
     "resourceValues": { "$content": "content/catalogue.json#/resourceValues" },
-    "finishReason": "parade-complete",
+    "finishReason": "cards-ordered-parade-complete",
     "eventNamespace": "parade"
   }
 }

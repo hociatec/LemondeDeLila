@@ -24,7 +24,9 @@ describe('Sac structured cards', () => {
       const compiled = compileJsonGame(manifest, document, {
         'content/catalogue.json': edited,
       });
-      expect((compiled.content.data as { sac: unknown }).sac).toEqual(edited);
+      expect(
+        (compiled.content.data as { propertyEconomy: unknown }).propertyEconomy,
+      ).toEqual(edited);
       for (const tile of variant.tiles.filter((tile) => tile.type === 'tax')) {
         expect(Number.isSafeInteger(tile.taxAmount)).toBe(true);
         expect(tile.taxAmount).toBeGreaterThanOrEqual(0);
@@ -53,7 +55,11 @@ describe('Sac structured cards', () => {
     ).toThrow();
 
     malformed.variants[0].chance[0].effects = [
-      { kind: 'custom', effectId: 'sac.money', data: { delta: null } },
+      {
+        kind: 'custom',
+        effectId: 'board-property-economy.money',
+        data: { delta: null },
+      },
     ];
     expect(() =>
       compileJsonGame(manifest, document, {
@@ -77,7 +83,8 @@ describe('Sac à Malices declarative game', () => {
   it('continues snapshots created before the JSON migration', async () => {
     const game = await testGame(gameDefinition).players(2).seed(132).start();
     const source = game.state();
-    source.engine.contentVersion = 'sac-a-malices@content:2959fe7b@format:2';
+    source.engine.contentVersion =
+      'sac-a-malices@content:2959fe7b@format:2';
     const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
       source,
       [],

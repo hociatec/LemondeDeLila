@@ -131,7 +131,10 @@ it('preserves saved Maman gameplay after JSON normalization', async () => {
 });
 
 it('preserves saved Sac gameplay after JSON normalization', async () => {
-  await verifyMigration(sac, 'sac-a-malices@content:2959fe7b@format:2');
+  await verifyMigration(
+    sac,
+    'board-property-economy-a-malices@content:2959fe7b@format:2',
+  );
 });
 
 it('preserves Dame Nature snapshots when quiz metadata uses answer indices', async () => {

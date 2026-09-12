@@ -46,7 +46,7 @@ export interface GameStateWithActions {
   kits: Record<string, unknown>;
   effect: Record<string, unknown>;
   game: object;
-  /** Version identity for the game-specific extension; absent in older servers. */
+  /** Version identity for the generic effect pack; absent in older servers. */
   gameContract?: {
     stateVersion: number;
     rulesVersion: string;

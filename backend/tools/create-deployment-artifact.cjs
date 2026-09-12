@@ -38,6 +38,35 @@ function sha256(file) {
   return hash.digest('hex');
 }
 
+function archiveArguments(output, staging) {
+  const version = spawnSync('tar', ['--version'], { encoding: 'utf8' });
+  if (version.status !== 0) throw new Error('Commande tar indisponible');
+  if (/GNU tar/i.test(version.stdout))
+    return [
+      '--sort=name',
+      '--mtime=UTC 1970-01-01',
+      '--owner=0',
+      '--group=0',
+      '--numeric-owner',
+      '-czf',
+      output,
+      '-C',
+      staging,
+      '.',
+    ];
+  return [
+    '-czf',
+    output,
+    '--format',
+    'ustar',
+    '--mtime',
+    '1970-01-01 00:00:00Z',
+    '-C',
+    staging,
+    '.',
+  ];
+}
+
 function main() {
   requirePath('dist/main.js');
   requirePath('node_modules');
@@ -74,22 +103,9 @@ function main() {
       `${JSON.stringify(manifest, null, 2)}\n`,
     );
     fs.mkdirSync(path.dirname(output), { recursive: true });
-    const result = spawnSync(
-      'tar',
-      [
-        '--sort=name',
-        '--mtime=UTC 1970-01-01',
-        '--owner=0',
-        '--group=0',
-        '--numeric-owner',
-        '-czf',
-        output,
-        '-C',
-        staging,
-        '.',
-      ],
-      { stdio: 'inherit' },
-    );
+    const result = spawnSync('tar', archiveArguments(output, staging), {
+      stdio: 'inherit',
+    });
     if (result.status !== 0) throw new Error('Création tar impossible');
     const digest = sha256(output);
     fs.writeFileSync(`${output}.sha256`, `${digest}\n`);

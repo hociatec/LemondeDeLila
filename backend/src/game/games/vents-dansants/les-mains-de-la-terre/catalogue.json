@@ -301,12 +301,12 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "les-mains.exchange-random",
+          "effectId": "collection-family-effects.exchange-random",
           "data": {}
         },
         {
           "kind": "custom",
-          "effectId": "les-mains.log-special",
+          "effectId": "collection-family-effects.log-special",
           "data": {
             "cardId": "special-voyage-autour-du-monde"
           }
@@ -320,12 +320,12 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "les-mains.complete-vanished",
+          "effectId": "collection-family-effects.complete-vanished",
           "data": {}
         },
         {
           "kind": "custom",
-          "effectId": "les-mains.log-special",
+          "effectId": "collection-family-effects.log-special",
           "data": {
             "cardId": "special-metier-disparu"
           }
@@ -339,7 +339,7 @@
       "effects": [
         {
           "kind": "gain-resource",
-          "resource": "les-mains.extra-draws",
+          "resource": "collection-family-effects.extra-draws",
           "amount": 1,
           "target": {
             "kind": "self"
@@ -347,7 +347,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "les-mains.log-special",
+          "effectId": "collection-family-effects.log-special",
           "data": {
             "cardId": "special-formation-express"
           }
@@ -368,7 +368,7 @@
         },
         {
           "kind": "custom",
-          "effectId": "les-mains.log-special",
+          "effectId": "collection-family-effects.log-special",
           "data": {
             "cardId": "special-greve-mondiale"
           }
@@ -382,12 +382,12 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "les-mains.mix-hands",
+          "effectId": "collection-family-effects.mix-hands",
           "data": {}
         },
         {
           "kind": "custom",
-          "effectId": "les-mains.log-special",
+          "effectId": "collection-family-effects.log-special",
           "data": {
             "cardId": "special-boussole-perdue"
           }
@@ -401,12 +401,12 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "les-mains.pass-knowledge",
+          "effectId": "collection-family-effects.pass-knowledge",
           "data": {}
         },
         {
           "kind": "custom",
-          "effectId": "les-mains.log-special",
+          "effectId": "collection-family-effects.log-special",
           "data": {
             "cardId": "special-passation-de-savoir"
           }
@@ -420,12 +420,12 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "les-mains.free-family-request",
+          "status": "collection-family-effects.free-family-request",
           "scope": "until-used"
         },
         {
           "kind": "custom",
-          "effectId": "les-mains.log-special",
+          "effectId": "collection-family-effects.log-special",
           "data": {
             "cardId": "special-fete-du-metier"
           }

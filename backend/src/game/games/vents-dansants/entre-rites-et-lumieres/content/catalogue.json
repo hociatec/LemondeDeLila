@@ -254,7 +254,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "rites.draw-two",
+          "effectId": "cards-ritual-phases.draw-two",
           "data": {},
           "target": {
             "kind": "self"
@@ -271,7 +271,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "rites.draw-one",
+          "effectId": "cards-ritual-phases.draw-one",
           "data": {},
           "target": {
             "kind": "self"
@@ -288,7 +288,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "rites.collect",
+          "effectId": "cards-ritual-phases.collect",
           "data": {},
           "target": {
             "kind": "self"
@@ -305,7 +305,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "rites.resurrect",
+          "effectId": "cards-ritual-phases.resurrect",
           "data": {},
           "target": {
             "kind": "self"
@@ -322,7 +322,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "rites.silence",
+          "status": "cards-ritual-phases.silence",
           "scope": "until-used",
           "target": {
             "kind": "self"
@@ -345,7 +345,7 @@
           },
           "right": {
             "kind": "chosen-opponent",
-            "choiceId": "rites.swap-hands",
+            "choiceId": "cards-ritual-phases.swap-hands",
             "optional": false
           }
         },
@@ -363,7 +363,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "rites.free-family",
+          "effectId": "cards-ritual-phases.free-family",
           "data": {},
           "target": {
             "kind": "self"
@@ -380,7 +380,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "rites.dawn-cycle",
+          "effectId": "cards-ritual-phases.dawn-cycle",
           "data": {},
           "target": {
             "kind": "self"
@@ -397,7 +397,7 @@
       "effects": [
         {
           "kind": "add-status",
-          "status": "rites.peace",
+          "status": "cards-ritual-phases.peace",
           "turns": 2,
           "scope": "global-turn",
           "target": {
@@ -415,7 +415,7 @@
       "effects": [
         {
           "kind": "custom",
-          "effectId": "rites.steal-choice",
+          "effectId": "cards-ritual-phases.steal-choice",
           "data": {},
           "target": {
             "kind": "self"

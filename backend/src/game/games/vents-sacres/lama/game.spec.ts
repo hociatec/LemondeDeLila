@@ -22,7 +22,9 @@ describe('LAMA declarative game', () => {
   });
 
   it('publishes P for the available leave-round action', async () => {
-    expect(gameDefinition.actions.lama_quit.ui).toMatchObject({
+    expect(
+      gameDefinition.actions['cards-discard-penalty-quit'].ui,
+    ).toMatchObject({
       shortcut: 'P',
       label: 'Sortir de la manche',
     });
@@ -31,10 +33,13 @@ describe('LAMA declarative game', () => {
     await game.start();
     await game.as(1).do('game.configure', {});
     const actor = game.state().turn?.currentPlayerId ?? 1;
-    expect(game.availableActions(actor)).toContain('lama_quit');
-    await game.as(actor).do('lama_quit', {});
-    const hiddenHand = (game.view(actor) as any).kits.cards.hands['lama-hands']
-      .byPlayer[String(actor)];
+    expect(game.availableActions(actor)).toContain(
+      'cards-discard-penalty-quit',
+    );
+    await game.as(actor).do('cards-discard-penalty-quit', {});
+    const hiddenHand = (game.view(actor) as any).kits.cards.hands[
+      'cards-discard-penalty-hands'
+    ].byPlayer[String(actor)];
     expect(hiddenHand).toEqual({ count: game.inspect.hand(actor).length });
   });
 
@@ -67,15 +72,16 @@ describe('LAMA declarative game', () => {
     expect(scores).toEqual({ '1': 0, '2': 0 });
     const actor = game.state().turn?.currentPlayerId ?? 1;
     const actions = game.availableActions(actor);
-    if (actions.includes('lama_play')) {
+    if (actions.includes('cards-discard-penalty-play')) {
       const state = game.state() as ReturnType<typeof game.state> & {
         engine: { kits: { cards: { discards: Record<string, LamaCard[]> } } };
       };
-      const top = state.engine.kits.cards.discards.lama.at(-1);
+      const top = state.engine.kits.cards.discards.discardPenaltyCards.at(-1);
       const value = game.inspect.hand(actor).find((card) => {
         return top != null && (card === top || card === nextLamaValue(top));
       });
-      if (value != null) await game.as(actor).do('lama_play', { value });
+      if (value != null)
+        await game.as(actor).do('cards-discard-penalty-play', { value });
     } else await game.as(actor).do('draw', {});
     expect(game.inspect.hand(1).length).toBeGreaterThan(0);
     expect(await game.replay()).toEqual(game.state());
@@ -87,11 +93,11 @@ describe('LAMA declarative game', () => {
     await game.as(1).do('game.configure', {});
     const actor = game.state().turn?.currentPlayerId ?? 1;
     const actions = game.availableActions(actor);
-    if (actions.includes('lama_play')) {
+    if (actions.includes('cards-discard-penalty-play')) {
       const state = game.state() as ReturnType<typeof game.state> & {
         engine: { kits: { cards: { discards: Record<string, LamaCard[]> } } };
       };
-      const top = state.engine.kits.cards.discards.lama.at(-1);
+      const top = state.engine.kits.cards.discards.discardPenaltyCards.at(-1);
       const value = game.inspect
         .hand(actor)
         .find(
@@ -99,13 +105,18 @@ describe('LAMA declarative game', () => {
             top != null && (card === top || card === nextLamaValue(top)),
         );
       expect(value).toBeDefined();
-      await game.as(actor).do('lama_play', { value: value! });
+      await game.as(actor).do('cards-discard-penalty-play', { value: value! });
     } else {
       await game.as(actor).do('draw', {});
     }
     expect(game.state().turn?.currentPlayerId).not.toBe(actor);
     expect(game.availableActions(actor)).not.toEqual(
-      expect.arrayContaining(['lama_play', 'draw', 'lama_pass', 'lama_quit']),
+      expect.arrayContaining([
+        'cards-discard-penalty-play',
+        'draw',
+        'cards-discard-penalty-pass',
+        'cards-discard-penalty-quit',
+      ]),
     );
     await expect(game.as(actor).do('draw', {})).rejects.toThrow();
   });
@@ -118,7 +129,7 @@ describe('LAMA declarative game', () => {
     await game.as(1).do('game.configure', {});
     const leavingPlayer = game.state().turn?.currentPlayerId ?? 1;
 
-    await game.as(leavingPlayer).do('lama_quit', {});
+    await game.as(leavingPlayer).do('cards-discard-penalty-quit', {});
 
     const nextPlayer = game.state().turn?.currentPlayerId;
     expect(nextPlayer).toBeDefined();

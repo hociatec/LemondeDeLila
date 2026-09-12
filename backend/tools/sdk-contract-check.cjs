@@ -77,7 +77,7 @@ function captureContract({ directory, entry, options }) {
   }).sort((a, b) => a.file < b.file ? -1 : a.file > b.file ? 1 : 0);
   return {
     snapshot: {
-      schemaVersion: 1, apiVersion: '6.16.0', typescript: ts.version,
+      schemaVersion: 1, apiVersion: '6.17.0', typescript: ts.version,
       entry: normalize(path.relative(directory, entry)),
       external: [...external].sort(),
       files: files.map(({ file, body }) => ({ file,
