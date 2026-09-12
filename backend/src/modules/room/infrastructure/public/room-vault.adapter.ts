@@ -10,7 +10,7 @@ import { RoomStateService } from '../../application/services/state/room-state.se
 import type { RoomCreateCommand } from '../../application/models/room-create-command';
 import type { Room } from '../persistence/typeorm/entities/room.entity';
 import type { RoomRecord } from '../../application/models/room-record.model';
-import type { RoomVaultSnapshotSource } from '../../application/contracts/room-vault-snapshot-source';
+import type { RoomSnapshotProjection } from '../../application/contracts/room-snapshot-projection';
 
 @Injectable()
 export class RoomVaultAdapter implements RoomVaultPort {
@@ -21,7 +21,7 @@ export class RoomVaultAdapter implements RoomVaultPort {
     private readonly roomState: RoomStateService,
   ) {}
 
-  async getRoomPayload(roomId: number): Promise<RoomVaultSnapshotSource> {
+  async getRoomPayload(roomId: number): Promise<RoomSnapshotProjection> {
     const { room } = await this.roomState.getRoomPayload(roomId);
     return {
       schemaVersion: 1,

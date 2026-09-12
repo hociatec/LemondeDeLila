@@ -1,8 +1,8 @@
 /** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
+import type { TrackRaceProgram } from '../../contracts/track-race-contract';
+
 /** A race that transports cards to numbered destinations while events block paths. */
-export type DeliveryRaceProgram = {
-  trackId: string;
-  diceId: string;
+export type DeliveryRaceProgram = TrackRaceProgram & {
   clientDeckId: string;
   clientHandId: string;
   eventDeckId: string;
@@ -10,7 +10,6 @@ export type DeliveryRaceProgram = {
   blockedPositionAttribute: string;
   positionOffset: number;
   targetScore: number;
-  finishReason: string;
   eventNamespace: string;
   tiles: readonly { id: string | number; title: string }[];
 };

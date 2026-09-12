@@ -1,4 +1,4 @@
-import type { RoomVaultSnapshotSource } from '../contracts/room-vault-snapshot-source';
+import type { RoomSnapshotProjection } from '../contracts/room-snapshot-projection';
 import type { RoomCreateCommand } from '../models/room-create-command';
 
 export const ROOM_VAULT_PORT = Symbol('ROOM_VAULT_PORT');
@@ -19,7 +19,7 @@ export type RoomVaultRoomRecord = {
 };
 
 export interface RoomVaultPort {
-  getRoomPayload(roomId: number): Promise<RoomVaultSnapshotSource>;
+  getRoomPayload(roomId: number): Promise<RoomSnapshotProjection>;
   requireRoomForOwnerAction(
     roomId: number,
     userId: number,

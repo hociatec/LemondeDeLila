@@ -1,5 +1,5 @@
-/** Versioned snapshot input, independent of lobby payloads and ORM entities. */
-export type VaultRoomSnapshotSource = {
+/** Versioned capture input consumed by Vault; never a Room aggregate or lobby DTO. */
+export type VaultSnapshotCaptureInput = {
   schemaVersion: 1;
   room: {
     id: number;

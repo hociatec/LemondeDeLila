@@ -7,7 +7,8 @@ export interface GameErrorContext {
   playerId?: number;
   turnIndex?: number;
   action?: unknown;
-  timestamp: Date;
+  /** Optional technical observation time supplied by an infrastructure caller. */
+  timestamp?: Date;
   [key: string]: unknown;
 }
 
@@ -38,25 +39,25 @@ export class GameError extends Error {
 
 export class GameValidationError extends GameError {
   constructor(message: string, context: Partial<GameErrorContext> = {}) {
-    super(message, { timestamp: new Date(), ...context }, 'high');
+    super(message, { ...context }, 'high');
   }
 }
 
 export class GameStateError extends GameError {
   constructor(message: string, context: Partial<GameErrorContext> = {}) {
-    super(message, { timestamp: new Date(), ...context }, 'critical');
+    super(message, { ...context }, 'critical');
   }
 }
 
 export class PlayerActionError extends GameError {
   constructor(message: string, context: Partial<GameErrorContext> = {}) {
-    super(message, { timestamp: new Date(), ...context }, 'medium');
+    super(message, { ...context }, 'medium');
   }
 }
 
 export class GameContentError extends GameError {
   constructor(message: string, context: Partial<GameErrorContext> = {}) {
-    super(message, { timestamp: new Date(), ...context }, 'critical');
+    super(message, { ...context }, 'critical');
   }
 }
 

@@ -1,5 +1,6 @@
 /** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
 import type { GameEffectInstruction } from '../../contracts/effect-ir';
+import type { TrackRaceProgram } from '../../contracts/track-race-contract';
 
 export type GalaxyRaceTile = {
   n: number;
@@ -38,9 +39,7 @@ export type GalaxyEventCard = {
   moveDeltas?: readonly number[];
 };
 
-export type GalaxyRaceProgram = {
-  trackId: string;
-  diceId: string;
+export type GalaxyRaceProgram = TrackRaceProgram & {
   questionDeckId: string;
   challengeDeckId: string;
   eventDeckId: string;
@@ -51,5 +50,4 @@ export type GalaxyRaceProgram = {
   challenges: readonly GalaxyChoiceCard[];
   events: readonly GalaxyEventCard[];
   maxDepth: number;
-  finishReason: string;
 };

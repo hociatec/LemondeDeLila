@@ -1,5 +1,5 @@
-/** Versioned snapshot input, independent of lobby payloads and ORM entities. */
-export type RoomVaultSnapshotSource = {
+/** Versioned, read-only projection produced by Room for snapshot capture. */
+export type RoomSnapshotProjection = {
   schemaVersion: 1;
   room: {
     id: number;

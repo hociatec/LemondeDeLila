@@ -1,20 +1,18 @@
 /** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
 import type { GameEffectInstruction } from '../../contracts/effect-ir';
+import type { TrackRaceProgram } from '../../contracts/track-race-contract';
 
 export type FrousseBlock =
   | { kind: 'one-of'; allowed: number[] }
   | { kind: 'minimum'; minimum: number }
   | { kind: 'even' };
 
-export type FrousseRaceProgram = {
-  trackId: string;
-  diceId: string;
+export type FrousseRaceProgram = TrackRaceProgram & {
   deckId: string;
   pawnSetId: string;
   pawnChoiceId: string;
   swapChoiceId: string;
   maxChainDepth: number;
-  finishReason: string;
   eventNamespace: string;
   statuses: {
     ignoreNextTrap: string;

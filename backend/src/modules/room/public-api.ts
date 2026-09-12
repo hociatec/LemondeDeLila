@@ -1,4 +1,4 @@
-export type { RoomVaultSnapshotSource } from './application/contracts/room-vault-snapshot-source';
+export type { RoomSnapshotProjection } from './application/contracts/room-snapshot-projection';
 export {
   ACTIVE_ROOM_PARTICIPANTS_READER,
   type ActiveRoomParticipantsReader,

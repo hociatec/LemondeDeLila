@@ -1,45 +1,8 @@
-import { jsonPawnRaceSchema } from './json-pawn-race-schema';
 import { jsonCardSelectionSchema } from './json-card-selection-schema';
 import { jsonCardValueSchema } from './json-card-value-schema';
 import { jsonComponent as component } from './json-component-schema-helper';
 import { jsonVictorySchema } from './json-victory-schema';
-import { jsonBoardSchema } from './json-board-schema';
-import { jsonGridSchema } from './json-grid-schema';
-import { jsonJudgedCardsSchema } from './json-judged-cards-schema';
-import { jsonEventRaceSchema } from './json-event-race-schema';
-import { jsonDeliveryRaceSchema } from './json-delivery-race-schema';
-import { jsonGooseRaceSchema } from './json-goose-race-schema';
-import { jsonCollectionRaceSchema } from './json-collection-race-schema';
-import { jsonCorridorSchema } from './json-corridor-schema';
-import { jsonContesSchema } from './json-contes-schema';
-import { jsonLamaSchema } from './json-lama-schema';
-import { jsonEcosystemRaceSchema } from './json-ecosystem-race-schema';
-import { jsonPirateRaceSchema } from './json-pirate-race-schema';
-import { jsonParadeSchema } from './json-parade-schema';
-import { jsonNatureFamiliesSchema } from './json-nature-families-schema';
-import { jsonCarAssemblySchema } from './json-car-assembly-schema';
-import { jsonCatPattesSchema } from './json-cat-pattes-schema';
-import { jsonWonderMarketSchema } from './json-wonder-market-schema';
-import { jsonMamanRaceSchema } from './json-maman-race-schema';
-import { jsonCardCirclesSchema } from './json-card-circles-schema';
-import { jsonMineDomainSchema } from './json-mine-domain-schema';
-import { jsonMnemosyneSchema } from './json-mnemosyne-schema';
-import { jsonFrousseRaceSchema } from './json-frousse-race-schema';
-import { jsonGaloponsRaceSchema } from './json-galopons-race-schema';
-import { jsonProfessionFamiliesSchema } from './json-profession-families-schema';
-import { jsonFouleesRaceSchema } from './json-foulees-race-schema';
-import { jsonGalaxyRaceSchema } from './json-galaxy-race-schema';
-import { jsonGerardSchema } from './json-gerard-schema';
-import { jsonRitesSchema } from './json-rites-schema';
-import { jsonSacSchema } from './json-sac-schema';
-import { jsonMidnightRaceSchema } from './json-midnight-race-schema';
-import { jsonBananaTroopsSchema } from './json-banana-troops-schema';
-import { jsonBalloonRaceSchema } from './json-balloon-race-schema';
-import { jsonVoyageSchema } from './json-voyage-schema';
-import { jsonDerapeRaceSchema } from './json-derape-race-schema';
-import { jsonNawakSchema } from './json-nawak-schema';
-import { jsonOlympiaSchema } from './json-olympia-schema';
-import { jsonZigEtZagSchema } from './json-zig-et-zag-schema';
+import { jsonProgramExtensionSchemas } from '../extensions/json-program-extension-schemas';
 import { jsonCollectionViewComponentSchema } from './json-collection-view-schema';
 import { jsonContentMigrationsSchema } from './json-content-migration-schema';
 import { effectJsonDefinitions } from '../contracts/effect-json-schema';
@@ -198,44 +161,7 @@ export const jsonGameSchema = freezeAuthorSchema({
         [],
       ),
       patterns: array(jsonGamePatternSchema),
-      board: jsonBoardSchema,
-      grid: jsonGridSchema,
-      judgedCards: jsonJudgedCardsSchema,
-      eventRace: jsonEventRaceSchema,
-      deliveryRace: jsonDeliveryRaceSchema,
-      gooseRace: jsonGooseRaceSchema,
-      collectionRace: jsonCollectionRaceSchema,
-      corridor: jsonCorridorSchema,
-      contes: jsonContesSchema,
-      lama: jsonLamaSchema,
-      ecosystemRace: jsonEcosystemRaceSchema,
-      pirateRace: jsonPirateRaceSchema,
-      parade: jsonParadeSchema,
-      natureFamilies: jsonNatureFamiliesSchema,
-      carAssembly: jsonCarAssemblySchema,
-      catPattes: jsonCatPattesSchema,
-      wonderMarket: jsonWonderMarketSchema,
-      mamanRace: jsonMamanRaceSchema,
-      cardCircles: jsonCardCirclesSchema,
-      mineDomain: jsonMineDomainSchema,
-      mnemosyne: jsonMnemosyneSchema,
-      frousseRace: jsonFrousseRaceSchema,
-      galoponsRace: jsonGaloponsRaceSchema,
-      professionFamilies: jsonProfessionFamiliesSchema,
-      fouleesRace: jsonFouleesRaceSchema,
-      galaxyRace: jsonGalaxyRaceSchema,
-      gerard: jsonGerardSchema,
-      rites: jsonRitesSchema,
-      sac: jsonSacSchema,
-      midnightRace: jsonMidnightRaceSchema,
-      bananaTroops: jsonBananaTroopsSchema,
-      balloonRace: jsonBalloonRaceSchema,
-      voyage: jsonVoyageSchema,
-      derapeRace: jsonDerapeRaceSchema,
-      nawak: jsonNawakSchema,
-      olympia: jsonOlympiaSchema,
-      zigEtZag: jsonZigEtZagSchema,
-      pawnRace: jsonPawnRaceSchema,
+      ...jsonProgramExtensionSchemas,
       shortcuts: array({
         oneOf: [
           object(
