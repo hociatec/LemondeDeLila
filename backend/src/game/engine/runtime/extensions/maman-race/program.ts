@@ -1,5 +1,6 @@
 /** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
 import type { GameEffectInstruction } from '../../contracts/effect-ir';
+import type { TrackRaceProgram } from '../../contracts/track-race-contract';
 
 export type MamanTileType =
   | 'start'
@@ -13,15 +14,12 @@ export type MamanTileType =
   | 'meeting'
   | 'finish';
 
-export type MamanRaceProgram = {
-  trackId: string;
-  diceId: string;
+export type MamanRaceProgram = TrackRaceProgram & {
   deckId: string;
   tokenResource: string;
   bonusRerollStatus: string;
   tokensToWin: number;
   maxDepth: number;
-  finishReason: string;
   eventNamespace: string;
   tiles: readonly {
     id: number;

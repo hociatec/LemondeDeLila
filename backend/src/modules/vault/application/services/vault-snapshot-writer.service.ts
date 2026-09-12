@@ -1,4 +1,4 @@
-import type { VaultRoomSnapshotSource } from '../contracts/vault-room-snapshot-source';
+import type { VaultSnapshotCaptureInput } from '../contracts/vault-snapshot-capture-input';
 import {
   BadRequestException,
   ConflictException,
@@ -33,7 +33,7 @@ type PreparedSnapshot = {
 };
 
 function buildSnapshot(
-  payload: VaultRoomSnapshotSource,
+  payload: VaultSnapshotCaptureInput,
   gameType: string,
   state: VaultGameState,
   savedAt: string,

@@ -1,11 +1,10 @@
 /** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
 import type { GameEffectInstruction } from '../../contracts/effect-ir';
+import type { TrackRaceProgram } from '../../contracts/track-race-contract';
 
 export type PirateDeckKind = 'treasure' | 'obstacle' | 'bonus';
 
-export type PirateRaceProgram = {
-  trackId: string;
-  diceId: string;
+export type PirateRaceProgram = TrackRaceProgram & {
   tiles: readonly {
     n: number;
     title: string;
@@ -27,7 +26,6 @@ export type PirateRaceProgram = {
   requiredTreasures: number;
   requiredGold: number;
   retreatSpaces: number;
-  finishReason: string;
   stealEffectId: string;
   eventNamespace: string;
 };

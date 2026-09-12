@@ -17,6 +17,13 @@ en imposant simultanément son identifiant et celui de son propriétaire.
 `room` utilise son propre port applicatif sans enregistrer l'entité de `vault`
 ni accéder à son repository TypeORM.
 
+Les anciens noms symétriques `RoomVaultSnapshotSource` et
+`VaultRoomSnapshotSource` masquaient deux responsabilités. Ils sont remplacés
+par `RoomSnapshotProjection`, projection produite par Room, et
+`VaultSnapshotCaptureInput`, entrée consommée et possédée par Vault. Les modules
+restent découplés ; un test de composition vérifie leur compatibilité structurelle
+exacte sans faire dépendre un contexte métier de l’autre.
+
 `AppPresenceReadersModule` et `AppVaultPortsModule` relient les contrats par
 `useExisting` dans la composition de l'application. Une composition alternative
 doit fournir ces ports ou importer les modules de composition correspondants.

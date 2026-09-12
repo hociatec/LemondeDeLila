@@ -1,10 +1,10 @@
 /** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
+import type { TrackRaceProgram } from '../../contracts/track-race-contract';
+
 export type EcosystemFace =
   'herbivore' | 'carnivore' | 'egg' | 'leaf' | 'danger';
 
-export type EcosystemRaceProgram = {
-  trackId: string;
-  diceId: string;
+export type EcosystemRaceProgram = TrackRaceProgram & {
   tiles: readonly {
     n: number;
     title: string;
@@ -19,7 +19,6 @@ export type EcosystemRaceProgram = {
     leaves: string;
   };
   dangerCounter: string;
-  finishReason: string;
   resolvedEvent: string;
   eventNamespace: string;
 };

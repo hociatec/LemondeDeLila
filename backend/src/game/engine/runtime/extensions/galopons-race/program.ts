@@ -1,11 +1,10 @@
 /** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
 import type { GameEffectInstruction } from '../../contracts/effect-ir';
+import type { TrackRaceProgram } from '../../contracts/track-race-contract';
 
 export type GaloponsRegion = 'prairie' | 'riviere' | 'foret' | 'montagne';
 
-export type GaloponsRaceProgram = {
-  trackId: string;
-  diceId: string;
+export type GaloponsRaceProgram = TrackRaceProgram & {
   deckId: string;
   pawnSetId: string;
   pawnChoiceId: string;
@@ -14,7 +13,6 @@ export type GaloponsRaceProgram = {
   returningStatus: string;
   applesToWin: number;
   maxDepth: number;
-  finishReason: string;
   tiles: readonly {
     n: number;
     type: 'start' | 'neutral' | 'card' | 'bonus' | 'skip' | 'finish';

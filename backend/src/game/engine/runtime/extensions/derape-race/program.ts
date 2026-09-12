@@ -1,13 +1,11 @@
 /** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
 import type { GameEffectInstruction } from '../../contracts/effect-ir';
+import type { TrackRaceProgram } from '../../contracts/track-race-contract';
 
-export type DerapeRaceProgram = {
-  trackId: string;
-  diceId: string;
+export type DerapeRaceProgram = TrackRaceProgram & {
   deckId: string;
   nextDeltaChoiceId: string;
   maxDepth: number;
-  finishReason: string;
   resources: { lastRoll: string; lastMove: string; idleTurns: string };
   counterId: string;
   mirrorStatusId: string;

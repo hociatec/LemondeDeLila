@@ -1,4 +1,4 @@
-import type { VaultRoomSnapshotSource } from '../contracts/vault-room-snapshot-source';
+import type { VaultSnapshotCaptureInput } from '../contracts/vault-snapshot-capture-input';
 
 export const VAULT_ROOM_PORT = Symbol('VAULT_ROOM_PORT');
 
@@ -28,7 +28,7 @@ export type VaultRoomRecord = {
 };
 
 export interface VaultRoomPort {
-  getRoomPayload(roomId: number): Promise<VaultRoomSnapshotSource>;
+  getRoomPayload(roomId: number): Promise<VaultSnapshotCaptureInput>;
   requireRoomForOwnerAction(
     roomId: number,
     userId: number,

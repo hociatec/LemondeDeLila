@@ -1,8 +1,7 @@
 /** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
-export type CollectionRaceProgram = {
-  trackId: string;
-  diceId: string;
-  finishReason: string;
+import type { TrackRaceProgram } from '../../contracts/track-race-contract';
+
+export type CollectionRaceProgram = TrackRaceProgram & {
   eventNamespace: string;
   collectedEvent: string;
   tiles: readonly {

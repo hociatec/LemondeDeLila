@@ -1,4 +1,6 @@
 /** Single-consumer JSON authoring extension; prefer shared effects and patterns for new rules. */
+import type { TrackRaceProgram } from '../../contracts/track-race-contract';
+
 export type GooseTile = {
   id: string;
   label: string;
@@ -18,12 +20,9 @@ export type GooseTile = {
   turnsToSkip?: number;
   backTo?: number;
 };
-export type GooseRaceProgram = {
-  trackId: string;
-  diceId: string;
+export type GooseRaceProgram = TrackRaceProgram & {
   playingPhase: string;
   wellStatus: string;
-  finishReason: string;
   maxDepth: number;
   bridgeDestination: number;
   tiles: readonly GooseTile[];
