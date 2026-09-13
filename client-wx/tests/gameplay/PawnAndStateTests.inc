@@ -70,6 +70,10 @@ void TestGameLogCursor()
         "Seule la nouvelle entree doit etre publiee.");
     Expect(cursor.ExtractNew({"B", "C", "D"}) == std::vector<std::string>({"D"}),
         "Le curseur doit supporter un journal tronque cote serveur.");
+    Expect(cursor.ExtractNew({"roll-1|Meme resultat", "roll-2|Meme resultat"}) ==
+            std::vector<std::string>({
+                "roll-1|Meme resultat", "roll-2|Meme resultat"}),
+        "Deux evenements distincts doivent rester publies meme si leur texte est identique.");
     cursor.Reset();
     Expect(cursor.ExtractNew({"D"}) == std::vector<std::string>({"D"}),
         "La reinitialisation doit ouvrir une nouvelle session.");
