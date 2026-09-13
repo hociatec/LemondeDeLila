@@ -196,4 +196,43 @@ describe('À fond les ballons declarative game', () => {
     expect(Reflect.get(restored.game, 'awaitingCardDraw')).toBe(false);
     expect(restored.engine?.contentVersion).toBe('1');
   });
+
+  it('completes a tornado turn only once when its target is automatic', async () => {
+    const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(83);
+    await game.start();
+    await game.choose(1, 'capitaine-cacahuete');
+    await game.choose(2, 'professeur-gribouille');
+
+    const source = game.state() as ReturnType<typeof game.state> & {
+      engine: {
+        kits: {
+          movement: { positions: Record<string, Record<string, number>> };
+        };
+      };
+    };
+    const actorId = source.turn!.currentPlayerId!;
+    const opponentId = source.players!.find(({ id }) => id !== actorId)!.id;
+    source.engine!.kits!.movement!.positions.balloons[String(actorId)] = 2;
+
+    const resolved = new DeclarativeGameRuntime(gameDefinition).applyActions(
+      source,
+      [{ type: 'roll', payload: {}, meta: { actorId } }],
+    );
+    const resolvedEngine = (
+      resolved as unknown as {
+        engine?: {
+          kits?: { dice?: { rolls: Record<string, { total: number }> } };
+          pendingEvents?: Array<{ type: string }>;
+        };
+      }
+    ).engine;
+
+    expect(resolvedEngine?.kits?.dice?.rolls.main?.total).toBe(5);
+    expect(resolved.turn?.currentPlayerId).toBe(opponentId);
+    expect(
+      resolvedEngine?.pendingEvents?.filter(
+        (event) => event.type === 'turn.started',
+      ),
+    ).toHaveLength(1);
+  });
 });
