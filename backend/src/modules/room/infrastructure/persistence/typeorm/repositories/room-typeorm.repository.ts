@@ -125,29 +125,10 @@ export class RoomTypeormRepository implements RoomRepository {
     return toRoomRecord(
       await this.rooms.findOne({
         where: { id },
-        select: {
-          id: true,
-          name: true,
-          gameType: true,
-          maxPlayers: true,
-          isPrivate: true,
-          status: true,
-          createdAt: true,
-          startedAt: true,
-          runId: true,
-          tableAmbienceSoundId: true,
-          restoredFromSnapshotId: true,
-          restoredOwnerUserId: true,
-          owner: { id: true, username: true, roles: true },
-          participants: {
-            id: true,
-            role: true,
-            joinedAt: true,
-            leftAt: true,
-            user: { id: true, username: true, roles: true },
-          },
-          bots: { id: true, name: true },
-        },
+        // Do not combine a nested partial `select` with several relations.
+        // TypeORM wraps this query in a DISTINCT subquery and emits relation
+        // columns twice on MySQL (for example `Room__Room_owner_id`), which
+        // prevents game.join from authorizing access to the room.
         relations: {
           owner: true,
           participants: { user: true },
