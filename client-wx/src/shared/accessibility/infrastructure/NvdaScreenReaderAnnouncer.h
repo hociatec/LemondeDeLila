@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include <wx/string.h>
 
 #ifdef __WXMSW__
@@ -18,15 +20,18 @@ public:
     NvdaScreenReaderAnnouncer& operator=(const NvdaScreenReaderAnnouncer&) = delete;
 
     [[nodiscard]] bool Speak(const wxString& message) const noexcept;
+    [[nodiscard]] std::optional<bool> IsSpeaking() const noexcept;
 
 private:
 #ifdef __WXMSW__
     using TestIfRunning = int(__cdecl*)();
     using SpeakText = int(__cdecl*)(const wchar_t*);
+    using IsSpeakingFunction = int(__cdecl*)(bool*);
 
     HMODULE module_ = nullptr;
     TestIfRunning testIfRunning_ = nullptr;
     SpeakText speakText_ = nullptr;
+    IsSpeakingFunction isSpeaking_ = nullptr;
 #endif
 };
 }

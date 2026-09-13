@@ -54,6 +54,8 @@ NvdaScreenReaderAnnouncer::NvdaScreenReaderAnnouncer()
             module_ = module;
             testIfRunning_ = reinterpret_cast<TestIfRunning>(test);
             speakText_ = reinterpret_cast<SpeakText>(speak);
+            isSpeaking_ = reinterpret_cast<IsSpeakingFunction>(FindExport(module, {
+                "nvdaControllerClient_isSpeaking", "nvdaController_isSpeaking"}));
             return;
         }
         FreeLibrary(module);
@@ -85,6 +87,27 @@ bool NvdaScreenReaderAnnouncer::Speak(const wxString& message) const noexcept
 #else
     static_cast<void>(message);
     return false;
+#endif
+}
+
+std::optional<bool> NvdaScreenReaderAnnouncer::IsSpeaking() const noexcept
+{
+#ifdef __WXMSW__
+    if (testIfRunning_ == nullptr || isSpeaking_ == nullptr ||
+        testIfRunning_() != 0)
+        return std::nullopt;
+    try
+    {
+        bool speaking = false;
+        if (isSpeaking_(&speaking) != 0) return std::nullopt;
+        return speaking;
+    }
+    catch (...)
+    {
+        return std::nullopt;
+    }
+#else
+    return std::nullopt;
 #endif
 }
 }
