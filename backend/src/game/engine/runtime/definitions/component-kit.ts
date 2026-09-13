@@ -287,7 +287,9 @@ function initializeFirstPlayer<TState extends object>(
         ? context.random.pick(players)
         : players[0];
   if (!firstPlayer) return;
-  context.turn.to(firstPlayer.id);
+  if (initialization.startRound === false)
+    context.turn.to(firstPlayer.id, { announce: false });
+  else context.turn.to(firstPlayer.id);
   if (initialization.startRound ?? true) context.round.start(firstPlayer.id);
 }
 

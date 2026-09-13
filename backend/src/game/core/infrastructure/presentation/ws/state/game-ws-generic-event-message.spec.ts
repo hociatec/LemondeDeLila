@@ -59,7 +59,7 @@ describe('genericGameEventMessage', () => {
   it('describes the destination without repeating the technical movement', () => {
     expect(message('pawn.moved', { from: 0, to: 3 }, 1, 1)).toBe('');
     expect(message('pawn.landed', { playerId: 2, position: 6 }, 2, 1)).toBe(
-      'Baloo arrive sur la case 6.',
+      'Baloo arrive sur la case 7.',
     );
     expect(
       message(
@@ -74,7 +74,22 @@ describe('genericGameEventMessage', () => {
         1,
       ),
     ).toBe(
-      'Vous arrivez sur la case 3 : Sentier tranquille. Description : Une étape sans effet particulier.',
+      'Vous arrivez sur la case 4 : Sentier tranquille. Description : Une étape sans effet particulier.',
+    );
+    expect(
+      message(
+        'pawn.landed',
+        {
+          playerId: 1,
+          position: 4,
+          tileLabel: 'Case 5 — Piège gluant',
+          tileDescription: 'Effet : reculez immédiatement de 2 cases.',
+        },
+        1,
+        1,
+      ),
+    ).toBe(
+      'Vous arrivez sur la case 5 : Piège gluant. Effet : reculez immédiatement de 2 cases.',
     );
   });
 });

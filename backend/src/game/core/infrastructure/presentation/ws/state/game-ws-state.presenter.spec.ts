@@ -688,12 +688,21 @@ describe('GameWsStatePresenter', () => {
       {
         id: '10:0',
         type: 'turn.started',
-        data: { playerId: 1 },
+        data: { playerId: 1, turnNumber: 1 },
+      },
+      {
+        id: '10:intermediate',
+        type: 'pawn.assigned',
+        data: {
+          playerId: 1,
+          pawnId: 'capitaine-cacahuete',
+          pawnLabel: 'Capitaine Cacahuète',
+        },
       },
       {
         id: '10:1',
         type: 'turn.started',
-        data: { playerId: 1 },
+        data: { playerId: 1, turnNumber: 1 },
       },
     ];
     const handler = {
@@ -726,7 +735,10 @@ describe('GameWsStatePresenter', () => {
       .map((event: any) => event.data.message)
       .filter(Boolean);
 
-    expect(messages).toEqual(["C'est au tour de Hacene."]);
+    expect(messages).toEqual([
+      'Vous avez choisi « Capitaine Cacahuète ».',
+      "C'est au tour de Hacene.",
+    ]);
   });
 
   it('explains manual draws and movement bonuses to players and spectators', () => {
@@ -761,6 +773,14 @@ describe('GameWsStatePresenter', () => {
         data: {
           key: 'game.pawn.bonus-advance',
           params: { playerId: 2, spaces: 2 },
+        },
+      },
+      {
+        id: '11:4',
+        type: 'game.message',
+        data: {
+          key: 'game.positions.swapped',
+          params: { actorId: 2, targetId: 1 },
         },
       },
     ];
@@ -807,6 +827,7 @@ describe('GameWsStatePresenter', () => {
       'Bonus : vous avancez de 2 cases.',
       'Mina doit piocher une carte.',
       'Bonus : Mina avance de 2 cases.',
+      'Mina échange sa place avec vous.',
     ]);
   });
 

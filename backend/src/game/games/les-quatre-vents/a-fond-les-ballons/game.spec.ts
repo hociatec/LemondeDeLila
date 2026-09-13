@@ -222,7 +222,14 @@ describe('À fond les ballons declarative game', () => {
       resolved as unknown as {
         engine?: {
           kits?: { dice?: { rolls: Record<string, { total: number }> } };
-          pendingEvents?: Array<{ type: string }>;
+          pendingEvents?: Array<{
+            type: string;
+            data: {
+              key?: string;
+              position?: number;
+              tileDescription?: string;
+            };
+          }>;
         };
       }
     ).engine;
@@ -234,5 +241,22 @@ describe('À fond les ballons declarative game', () => {
         (event) => event.type === 'turn.started',
       ),
     ).toHaveLength(1);
+    expect(
+      resolvedEngine?.pendingEvents?.find(
+        (event) => event.type === 'pawn.landed' && event.data.position === 7,
+      )?.data.tileDescription,
+    ).toBe('Effet : échangez votre place avec un autre joueur.');
+    const tornadoEvents = resolvedEngine?.pendingEvents ?? [];
+    const swapAnnouncementIndex = tornadoEvents.findIndex(
+      (event) =>
+        event.type === 'game.message' &&
+        event.data.key === 'game.positions.swapped',
+    );
+    const firstSwapLandingIndex = tornadoEvents.findIndex(
+      (event, index) =>
+        index > swapAnnouncementIndex && event.type === 'pawn.landed',
+    );
+    expect(swapAnnouncementIndex).toBeGreaterThanOrEqual(0);
+    expect(firstSwapLandingIndex).toBeGreaterThan(swapAnnouncementIndex);
   });
 });

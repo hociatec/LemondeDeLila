@@ -27,6 +27,10 @@ export type ChainedTileRaceProgram = {
   awaitingCardStatusId: string;
   cards: readonly ChainedTileCard[];
   pawns: readonly { id: string; label: string; description: string }[];
-  tiles: readonly { type: ChainedTileType; label: string }[];
+  tiles: readonly {
+    type: ChainedTileType;
+    label: string;
+    description?: string;
+  }[];
   maxResolutionDepth: number;
 };
