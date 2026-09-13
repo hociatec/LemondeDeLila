@@ -91,13 +91,19 @@ function boardAndPlayerMessage(
   if (type === 'pawn.moved') return '';
   if (type === 'pawn.landed') {
     const name = player(data.playerId);
-    if (!name || !value('position')) return '';
+    const internalPosition = numberValue(data.position);
+    if (!name || internalPosition == null) return '';
     const verb = name === 'Vous' ? 'arrivez' : 'arrive';
     const label = tileLabel(value('tileLabel'));
     const description = value('tileDescription');
+    const descriptionText = /^(?:Description|Effet)\s*:/iu.test(description)
+      ? description
+      : description
+        ? `Description : ${description}`
+        : '';
     return [
-      `${name} ${verb} sur la case ${value('position')}${label ? ` : ${label}` : ''}.`,
-      description ? `Description : ${description}` : '',
+      `${name} ${verb} sur la case ${internalPosition + 1}${label ? ` : ${label}` : ''}.`,
+      descriptionText,
     ]
       .filter(Boolean)
       .join(' ');

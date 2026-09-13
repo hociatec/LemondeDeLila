@@ -14,7 +14,13 @@ type Context = GameContext<State>;
 type Card = ChainedTileRaceProgram['cards'][number];
 
 export function chainedTileRaceRules(source: ChainedTileRaceProgram) {
-  const program = structuredClone(source);
+  const program: ChainedTileRaceProgram = {
+    ...structuredClone(source),
+    tiles: source.tiles.map((tile) => ({
+      ...structuredClone(tile),
+      description: tile.description || tileEffectDescription(tile.type),
+    })),
+  };
   const pawns = sequentialPawnSelection<State>({
     setId: program.pawnSetId,
     choiceId: program.pawnChoiceId,
@@ -258,11 +264,11 @@ function effects(program: ChainedTileRaceProgram) {
       apply: ({ actorPlayerId, targetPlayerIds, ctx }) => {
         const target = targetPlayerIds[0];
         if (actorPlayerId == null || target == null) return;
-        ctx.movement.swap(program.trackId, actorPlayerId, target);
         ctx.events.message('game.positions.swapped', {
           actorId: actorPlayerId,
           targetId: target,
         });
+        ctx.movement.swap(program.trackId, actorPlayerId, target);
       },
     }),
     'race-chained-tile-cards.go-to': defineEffect<State, { position: number }>({
@@ -322,6 +328,22 @@ function effects(program: ChainedTileRaceProgram) {
       },
     }),
   };
+}
+
+function tileEffectDescription(
+  type: ChainedTileRaceProgram['tiles'][number]['type'],
+): string {
+  if (type === 'bonus') return 'Effet : avancez immédiatement de 2 cases.';
+  if (type === 'folie') return 'Effet : piochez une carte Loufoque.';
+  if (type === 'piege') return 'Effet : reculez immédiatement de 2 cases.';
+  if (type === 'glissade')
+    return 'Effet : avancez ou reculez aléatoirement de 1 à 3 cases.';
+  if (type === 'tornade')
+    return 'Effet : échangez votre place avec un autre joueur.';
+  if (type === 'chaton') return 'Effet : retournez à la case de départ.';
+  if (type === 'finish') return 'Effet : vous remportez la partie.';
+  if (type === 'start') return 'Case de départ.';
+  return 'Aucun effet.';
 }
 
 function boutique(

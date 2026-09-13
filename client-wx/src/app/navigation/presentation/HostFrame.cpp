@@ -125,9 +125,6 @@ void HostFrame::RestoreContentFocusAfterActivation()
 
     auto* focused = wxWindow::FindFocus();
 
-    if (focused != nullptr && wxGetTopLevelParent(focused) != this)
-        return;
-
     if (restoreFocusAfterActivation_)
     {
         restoreFocusAfterActivation_ = false;

@@ -42,7 +42,9 @@ export class GameWsStateMessagesPresenter {
       });
     const presented = this.presentLatestByType(latestByType, presentEvent);
     const recent = this.withoutRepeatedTurnAnnouncements(
-      recentEvents.map((event) => presentEvent(event)),
+      this.withoutDuplicateTurnIdentities(
+        recentEvents.map((event) => presentEvent(event)),
+      ),
     );
     return {
       ...system,
@@ -152,6 +154,30 @@ export class GameWsStateMessagesPresenter {
     });
   }
 
+  private withoutDuplicateTurnIdentities(
+    events: Record<string, unknown>[],
+  ): Record<string, unknown>[] {
+    const seen = new Set<string>();
+    return [...events]
+      .reverse()
+      .map((event) => {
+        if (this.stringValue(event.type) !== 'turn.started') return event;
+        const data = this.asRecord(event.data);
+        const playerId = this.numberValue(data.playerId);
+        const turnNumber = this.numberValue(data.turnNumber);
+        if (playerId == null || turnNumber == null) return event;
+        const identity = `${playerId}:${turnNumber}`;
+        if (!seen.has(identity)) {
+          seen.add(identity);
+          return event;
+        }
+        const remainingData = { ...data };
+        delete remainingData.message;
+        return { ...event, data: remainingData };
+      })
+      .reverse();
+  }
+
   private eventMessage(
     type: string,
     data: Record<string, unknown>,
@@ -235,6 +261,14 @@ export class GameWsStateMessagesPresenter {
         : `${namedPlayer} doit choisir son pion.`;
     if (messageKey === 'game.pawn.bonus-advance' && namedPlayer)
       return this.pawnBonusMessage(namedPlayer, params);
+    if (messageKey === 'game.positions.swapped') {
+      const actor = player(params.actorId);
+      const target = player(params.targetId);
+      if (!actor || !target) return '';
+      if (actor === 'Vous') return `Vous échangez votre place avec ${target}.`;
+      if (target === 'Vous') return `${actor} échange sa place avec vous.`;
+      return `${actor} échange sa place avec ${target}.`;
+    }
     if (messageKey === 'game.player.passed' && namedPlayer)
       return this.withNextTurn(
         namedPlayer === 'Vous'
