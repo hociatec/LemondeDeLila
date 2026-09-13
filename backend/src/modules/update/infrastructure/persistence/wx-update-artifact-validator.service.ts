@@ -221,10 +221,11 @@ export class WxUpdateArtifactValidatorService {
         peHeader.length,
         peOffset,
       );
+      const machine = peHeader.readUInt16LE(4);
       if (
         bytesRead !== peHeader.length ||
         peHeader.readUInt32LE(0) !== 0x00004550 ||
-        peHeader.readUInt16LE(4) !== 0x8664 ||
+        (machine !== 0x014c && machine !== 0x8664) ||
         peHeader.readUInt16LE(6) < 1
       ) {
         throw new BadRequestException('Installateur WX invalide.');
