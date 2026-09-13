@@ -41,11 +41,10 @@ publishedAt=$WX_PUBLISHED_AT
 mandatoryAt=-
 minimumVersion=-
 artifactSize=$WX_ARTIFACT_SIZE
-artifactSha256=$WX_ARTIFACT_SHA256
-installerSha256=$WX_INSTALLER_SHA256")"
+artifactSha256=$WX_ARTIFACT_SHA256")"
 ACTUAL_CANONICAL="$(<"$RUN_DIR/wx-manifest-canonical.txt")"
 [[ "$ACTUAL_CANONICAL" == "$EXPECTED_CANONICAL" ]] \
-  || die "Le contrat de signature WX ne correspond plus au backend."
+  || die "Le contrat de signature WX ne correspond plus aux clients installés."
 
 openssl dgst -sha256 \
   -verify <(openssl pkey -in "$WX_MANIFEST_PRIVATE_KEY" -pubout) \

@@ -56,6 +56,9 @@ export type WxUpdateSignatureFields = Pick<
 export function canonicalizeWxUpdateSignature(
   fields: WxUpdateSignatureFields,
 ): string {
+  // Keep the v2 payload byte-for-byte compatible with clients already in the
+  // field. The installer is independently protected by its SHA-256 metadata,
+  // HTTPS delivery and Authenticode signature.
   return [
     'lila-client-wx-manifest-v2',
     `product=${WX_UPDATE_PRODUCT}`,
@@ -70,6 +73,5 @@ export function canonicalizeWxUpdateSignature(
     `minimumVersion=${fields.minimumVersion ?? '-'}`,
     `artifactSize=${fields.artifactSize}`,
     `artifactSha256=${fields.artifactSha256.toLowerCase()}`,
-    `installerSha256=${fields.installerSha256?.toLowerCase() ?? '-'}`,
   ].join('\n');
 }
