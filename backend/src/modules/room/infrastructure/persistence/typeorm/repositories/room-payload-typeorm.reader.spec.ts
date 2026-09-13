@@ -55,7 +55,9 @@ it('loads the payload projection through bounded relation queries', async () => 
   expect(participantFind).toHaveBeenCalledWith(
     expect.objectContaining({
       select: {
+        id: true,
         role: true,
+        joinedAt: true,
         leftAt: true,
         user: { id: true, username: true },
       },

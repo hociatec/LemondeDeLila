@@ -1,6 +1,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { getMetadataArgsStorage } from 'typeorm';
+import { Room } from '../../modules/room/infrastructure/persistence/typeorm/entities/room.entity';
+import { RoomParticipant } from '../../modules/room/infrastructure/persistence/typeorm/entities/room-participant.entity';
 import { ORM_ENTITIES } from './typeorm-entities';
 
 function entityClasses(directory: string): string[] {
@@ -40,4 +42,14 @@ it('assigns each physical table to exactly one registered entity', () => {
     expect(owners.has(identity)).toBe(false);
     owners.set(identity, table.target);
   }
+});
+
+it('keeps relations explicit so TypeORM does not join the same alias twice', () => {
+  const roomEntities = new Set<unknown>([Room, RoomParticipant]);
+  const eagerRelations = getMetadataArgsStorage().relations.filter(
+    (relation) =>
+      roomEntities.has(relation.target) && relation.options.eager === true,
+  );
+
+  expect(eagerRelations).toEqual([]);
 });

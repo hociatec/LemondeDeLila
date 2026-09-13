@@ -26,7 +26,7 @@ export class RoomParticipant {
   @JoinColumn({ name: 'room_id' })
   room!: Relation<RoomPersistenceRef>;
 
-  @ManyToOne('User', { eager: true })
+  @ManyToOne('User')
   @JoinColumn({ name: 'user_id' })
   user!: Relation<RoomUserPersistenceRef>;
 
