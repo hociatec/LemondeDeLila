@@ -32,7 +32,9 @@ export class RedisDistributedLeaseService implements OnModuleDestroy {
   constructor(config: ConfigService, redisFactory: RedisClientFactory) {
     this.production = config.get<string>('NODE_ENV') === 'production';
     const url =
-      config.get<string>('UPDATE_REDIS_URL') ?? config.get<string>('REDIS_URL');
+      config.get<string>('UPDATE_REDIS_URL') ||
+      config.get<string>('REDIS_URL') ||
+      config.get<string>('SESSION_STORE_REDIS_URL');
     this.client = url ? redisFactory.create(url, 'distributed-lease') : null;
   }
 
