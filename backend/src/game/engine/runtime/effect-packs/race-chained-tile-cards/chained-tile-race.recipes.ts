@@ -28,6 +28,7 @@ export function chainedTileRaceRules(source: ChainedTileRaceProgram) {
         ctx.phase.current() === 'playing' &&
         !awaiting(program, actor.id, state, ctx),
       execute: ({ state, actor, ctx }) => {
+        const turnNumber = ctx.turn.number();
         const total = ctx.dice.roll(program.diceId).total;
         ctx.events.message('game.dice.rolled', {
           playerId: actor.id,
@@ -35,7 +36,11 @@ export function chainedTileRaceRules(source: ChainedTileRaceProgram) {
           total,
         });
         moveBy(program, state, actor.id, total, 0, ctx);
-        if (!awaiting(program, actor.id, state, ctx)) ctx.turn.complete();
+        if (
+          ctx.turn.number() === turnNumber &&
+          !awaiting(program, actor.id, state, ctx)
+        )
+          ctx.turn.complete();
       },
     }),
     draw: defineAction<State, Record<string, never>>({
@@ -47,12 +52,17 @@ export function chainedTileRaceRules(source: ChainedTileRaceProgram) {
         ctx.players.current()?.id === actor.id &&
         awaiting(program, actor.id, state, ctx),
       execute: ({ state, actor, ctx }) => {
+        const turnNumber = ctx.turn.number();
         if (Reflect.has(state, 'awaitingCardDraw'))
           Reflect.set(state, 'awaitingCardDraw', false);
         for (const player of ctx.players.all())
           ctx.status.remove(player.id, program.awaitingCardStatusId);
         drawCard(program, actor.id, ctx);
-        if (!awaiting(program, actor.id, state, ctx)) ctx.turn.complete();
+        if (
+          ctx.turn.number() === turnNumber &&
+          !awaiting(program, actor.id, state, ctx)
+        )
+          ctx.turn.complete();
       },
     }),
     setup: pawns.setup(() => ({})),
