@@ -44,12 +44,8 @@ void GamePlayPanel::PublishLogMessages(const std::vector<std::string>& messages)
 {
     const auto freshMessages = logCursor_.ExtractNew(messages);
     if (!onHistoryMessage_) return;
-    for (const auto& message : freshMessages)
-    {
-        const auto separator = message.find('|');
-        onHistoryMessage_(FromUtf8(separator == std::string::npos
-            ? message : message.substr(separator + 1)), true);
-    }
+    const auto announcement = history::BuildLogAnnouncement(freshMessages);
+    if (!announcement.empty()) onHistoryMessage_(FromUtf8(announcement), true);
 }
 
 void GamePlayPanel::ClearView()

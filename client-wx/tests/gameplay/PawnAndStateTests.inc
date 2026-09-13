@@ -58,7 +58,17 @@ void TestPawnSelectionHiddenForPassiveViewer()
 
 void TestGameLogCursor()
 {
+    using lila::modules::gameplay::presentation::history::BuildLogAnnouncement;
     using lila::modules::gameplay::presentation::history::GameLogCursor;
+    Expect(BuildLogAnnouncement({
+               "roll-1|Vous lancez le de et obtenez 3.",
+               "land-1|Vous arrivez sur la case 3 : Sentier tranquille."}) ==
+            "Vous lancez le de et obtenez 3.\n"
+            "Vous arrivez sur la case 3 : Sentier tranquille.",
+        "Les evenements d'une meme mise a jour doivent former une seule annonce.");
+    Expect(BuildLogAnnouncement({"message-sans-identite", "empty|"}) ==
+            "message-sans-identite",
+        "Le regroupement doit accepter les messages sans identite et ignorer le texte vide.");
     GameLogCursor cursor;
     Expect(cursor.ExtractNew({"A", "B"}) == std::vector<std::string>({"A", "B"}),
         "Le premier journal doit etre publie une seule fois.");
