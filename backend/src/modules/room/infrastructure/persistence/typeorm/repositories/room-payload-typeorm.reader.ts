@@ -40,7 +40,9 @@ export class RoomPayloadTypeormReader implements RoomPayloadReader {
       this.participants.find({
         where: { room: { id: roomId }, leftAt: IsNull() },
         select: {
+          id: true,
           role: true,
+          joinedAt: true,
           leftAt: true,
           user: { id: true, username: true },
         },

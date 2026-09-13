@@ -38,7 +38,7 @@ export class Room {
   @Column({ type: 'varchar', length: 50, default: 'setup' })
   status!: string;
 
-  @ManyToOne('User', { eager: true, nullable: true })
+  @ManyToOne('User', { nullable: true })
   @JoinColumn({ name: 'owner_id' })
   owner?: Relation<RoomUserPersistenceRef> | null;
 
