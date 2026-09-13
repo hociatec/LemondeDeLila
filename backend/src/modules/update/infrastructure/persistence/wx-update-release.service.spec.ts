@@ -375,7 +375,6 @@ describe('WxUpdateReleaseService', () => {
         'minimumVersion=1.4.2',
         `artifactSize=${content.length}`,
         `artifactSha256=${sha256}`,
-        `installerSha256=${installerSha256}`,
       ].join('\n'),
     );
     const signature = sign(
@@ -407,10 +406,6 @@ describe('WxUpdateReleaseService', () => {
       {
         ...manifest,
         artifact: { ...manifest.artifact, sha256: '0'.repeat(64) },
-      },
-      {
-        ...manifest,
-        installer: { ...manifest.installer, sha256: '0'.repeat(64) },
       },
     ]) {
       expect(validator.verifyManifest(tampered, 2048)).toBe(false);

@@ -354,8 +354,7 @@ publishedAt=$WX_PUBLISHED_AT
 mandatoryAt=$canonical_mandatory
 minimumVersion=$canonical_minimum
 artifactSize=$WX_ARTIFACT_SIZE
-artifactSha256=$WX_ARTIFACT_SHA256
-installerSha256=$WX_INSTALLER_SHA256" >"$canonical"
+artifactSha256=$WX_ARTIFACT_SHA256" >"$canonical"
   openssl dgst -sha256 -sign "$WX_MANIFEST_PRIVATE_KEY" -out "$signature_file" "$canonical"
   WX_MANIFEST_SIGNATURE="$(base64 -w 0 "$signature_file")"
   openssl dgst -sha256 -verify <(openssl pkey -in "$WX_MANIFEST_PRIVATE_KEY" -pubout) \
