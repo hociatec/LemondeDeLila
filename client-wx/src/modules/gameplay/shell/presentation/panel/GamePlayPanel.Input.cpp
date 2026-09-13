@@ -95,9 +95,11 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             return true;
         }
         // The dice control is the default action of the gameplay zone when no
-        // selectable list owns Enter. Space is never routed here.
+        // selectable list owns Enter. For other games, leave Enter available
+        // to the stable room anchor so it can deliberately open the detailed
+        // hand, grid or action interface. Space is never routed here.
         if (ActivateDiceRoll()) return true;
-        return true;
+        return false;
     }
     if (key == "F5")
     {

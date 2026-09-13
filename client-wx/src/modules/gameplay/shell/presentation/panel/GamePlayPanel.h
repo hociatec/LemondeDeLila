@@ -84,6 +84,7 @@ public:
     bool HandleZoneActivation();
     [[nodiscard]] bool HandleKey(wxKeyEvent& event);
     [[nodiscard]] wxWindow* PreferredNavigationTarget() const;
+    [[nodiscard]] wxWindow* RequiredInteractionTarget() const;
 
 private:
     void BuildLayout();

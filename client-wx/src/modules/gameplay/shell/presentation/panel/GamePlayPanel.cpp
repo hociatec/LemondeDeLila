@@ -188,4 +188,28 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
         infoPanelChoice_->GetCount() > 0) return infoPanelChoice_;
     return nullptr;
 }
+
+wxWindow* GamePlayPanel::RequiredInteractionTarget() const
+{
+    if (IsFinished()) return nullptr;
+    if (confirmationPanel_ != nullptr && confirmationPanel_->IsActive())
+    {
+        const auto targets = confirmationPanel_->TabTargets();
+        if (!targets.empty()) return targets.front();
+    }
+    if (promptPanel_ != nullptr && promptPanel_->IsActive())
+    {
+        const auto targets = promptPanel_->TabTargets();
+        if (!targets.empty()) return targets.front();
+    }
+    if (!roomStarted_) return nullptr;
+    if (pawnSelectionPanel_ != nullptr)
+        if (auto* target = pawnSelectionPanel_->NavigationTarget()) return target;
+    if (state_.pending && state_.pending->workflowKind == "pawn") return nullptr;
+    if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
+        return choicesList_;
+    if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
+        return orderingChoices_;
+    return nullptr;
+}
 }
