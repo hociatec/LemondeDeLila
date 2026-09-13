@@ -6,6 +6,9 @@
 
 namespace lila::modules::gameplay::presentation::history
 {
+[[nodiscard]] std::string BuildLogAnnouncement(
+    const std::vector<std::string>& messages);
+
 class GameLogCursor final
 {
 public:

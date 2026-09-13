@@ -9,6 +9,25 @@ std::string Identity(const std::string& message)
     const auto separator = message.find('|');
     return separator == std::string::npos ? message : message.substr(0, separator);
 }
+
+std::string MessageText(const std::string& message)
+{
+    const auto separator = message.find('|');
+    return separator == std::string::npos ? message : message.substr(separator + 1);
+}
+}
+
+std::string BuildLogAnnouncement(const std::vector<std::string>& messages)
+{
+    std::string announcement;
+    for (const auto& message : messages)
+    {
+        const auto text = MessageText(message);
+        if (text.empty()) continue;
+        if (!announcement.empty()) announcement += '\n';
+        announcement += text;
+    }
+    return announcement;
 }
 
 std::vector<std::string> GameLogCursor::ExtractNew(
