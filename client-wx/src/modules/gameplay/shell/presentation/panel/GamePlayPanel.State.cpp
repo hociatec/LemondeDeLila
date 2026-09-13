@@ -51,6 +51,9 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     const bool hadVisibleHand = !state_.kits.VisibleHand().empty();
     const bool receivesVisibleHand = !state.kits.VisibleHand().empty();
     const bool hadActivePawnSelection = pawnSelectionPanel_->IsActive();
+    const bool hadInlinePrompt = IsInlinePromptVisible();
+    const bool hadActionableChoices = state_.pending &&
+        application::GamePendingSelectionPolicy::HasActionableChoices(*state_.pending);
     const bool focusWasInsideGame =
         lila::shared::accessibility::NavigationController::IsDescendantOf(
             focusedBefore.get(), this);
@@ -185,6 +188,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     UpdateInfoPanel();
     infoText_->Show(!infoText_->GetValue().empty());
     SyncInlinePrompt();
+    const bool inlinePromptBecameActive =
+        !hadInlinePrompt && IsInlinePromptVisible();
     const auto visiblePawnSelection = roomStarted_
         ? pawnSelection_
         : std::optional<domain::PawnSelection>{};
@@ -193,6 +198,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     pawnSelectionPanel_->Apply(visiblePawnSelection);
     const bool pawnSelectionBecameActive =
         !hadActivePawnSelection && pawnSelectionPanel_->IsActive();
+    const bool actionableChoicesBecameActive =
+        !hadActionableChoices && hasActionableChoices;
     SyncContentVisibility();
     Layout();
     if (GetParent()) GetParent()->Layout();
@@ -201,7 +208,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     const bool shouldRefreshZoneFocus =
         (!focusPreserved && focusWasInsideGame) ||
         (!hadVisibleHand && receivesVisibleHand) ||
-        pawnSelectionCompleted || pawnSelectionBecameActive;
+        pawnSelectionCompleted || pawnSelectionBecameActive ||
+        inlinePromptBecameActive || actionableChoicesBecameActive;
     if (shouldRefreshZoneFocus && onZoneFocusRequested_)
         onZoneFocusRequested_();
     const bool setupProjectionCompleted = startConfigurationFlow_.ObserveSetup(

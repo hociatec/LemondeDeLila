@@ -47,10 +47,7 @@ RoomPanel::~RoomPanel()
 lila::shared::accessibility::FocusManager::Plan RoomPanel::BuildFocusPlan()
 {
     lila::shared::accessibility::FocusManager::Plan plan;
-    auto* gameTarget = gamePlayPanel_->PreferredNavigationTarget();
-    plan.AddWindow(gameTarget != nullptr
-        ? gameTarget
-        : static_cast<wxWindow*>(gameZoneAnchor_));
+    plan.AddWindow(gameZoneAnchor_);
     return plan;
 }
 

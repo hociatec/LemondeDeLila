@@ -51,7 +51,7 @@ void RoomPanel::BindEvents()
                 lila::shared::accessibility::NavigationController::IsDescendantOf(
                     focused, gamePlayPanel_);
             if (!focusInsideGame) return;
-            auto* target = gamePlayPanel_->PreferredNavigationTarget();
+            auto* target = gamePlayPanel_->RequiredInteractionTarget();
             static_cast<void>(
                 lila::shared::accessibility::NavigationController::Focus(
                     target != nullptr ? target : static_cast<wxWindow*>(gameZoneAnchor_)));
@@ -77,10 +77,7 @@ void RoomPanel::BindEvents()
         [this]()
         {
             lila::shared::accessibility::NavigationController::Scope scope;
-            auto* gameTarget = gamePlayPanel_->PreferredNavigationTarget();
-            scope.Add(gameTarget != nullptr
-                ? gameTarget
-                : static_cast<wxWindow*>(gameZoneAnchor_));
+            scope.Add(gameZoneAnchor_);
             if (chatInput_->IsShown()) scope.Add(chatInput_);
             scope.Add(history_);
             return scope;
