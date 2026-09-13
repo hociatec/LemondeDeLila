@@ -4,17 +4,17 @@ Cette certification porte sur le dépôt complet et sa chaîne de livraison au
 12 septembre 2026. Le backend est livré comme artefact Node pour un service
 systemd ; Docker ne fait pas partie du contrat de déploiement de ce dépôt.
 
-| Domaine              | Contrat vérifié dans le dépôt                                                                                                                 |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| dépendances          | `package-lock.json`, installation CI par `npm ci --ignore-scripts`, audit de gouvernance et versions Node 24                                  |
-| intégration continue | actions épinglées par SHA, `quality:check`, graphe sans cycle, séparation runtime/compiler et audits de frontières                            |
-| artefact             | build TypeScript, dépendances de production seules, manifeste avec SHA Git et checksum du lockfile, archive reproductible et checksum SHA-256 |
-| configuration        | validation centralisée au démarrage, secrets de production sans valeur de repli, limites HTTP/WS et Redis séparés                             |
-| sécurité de session  | quotas HTTP/WS distribués et rotation à usage unique des refresh tokens Redis                                                                 |
-| santé                | `/health/live` pour le processus et `/health/ready` pour MySQL, Redis et BullMQ avec délais bornés                                            |
-| arrêt                | SIGTERM/SIGINT, refus des nouvelles entrées, arrêt des sources, double drain, fermeture WS/queues/Redis/Nest                                  |
-| observabilité        | corrélation HTTP/WS/jobs/pubsub, logs nettoyés, métriques bornées, télémétrie des conflits CAS, verrous et dead letters                       |
-| validation réelle    | scripts MySQL, Redis/BullMQ, deux instances, campagnes de jeu, reprise après sinistre et charge Room                                          |
+| Domaine              | Contrat vérifié dans le dépôt                                                                                                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| dépendances          | `package-lock.json`, installation CI par `npm ci --ignore-scripts`, audit de gouvernance et versions Node 24                                                                                   |
+| intégration continue | actions épinglées par SHA, `quality:check`, graphe sans cycle, séparation runtime/compiler et audits de frontières                                                                             |
+| artefact             | après intégration réelle réussie : build Node 24, dépendances de production seules, manifeste avec SHA Git et checksum du lockfile, archive reproductible et checksum SHA-256 publié par la CI |
+| configuration        | validation centralisée au démarrage, secrets de production sans valeur de repli, limites HTTP/WS et Redis séparés                                                                              |
+| sécurité de session  | quotas HTTP/WS distribués et rotation à usage unique des refresh tokens Redis                                                                                                                  |
+| santé                | `/health/live` pour le processus et `/health/ready` pour MySQL, Redis et BullMQ avec délais bornés                                                                                             |
+| arrêt                | SIGTERM/SIGINT, refus des nouvelles entrées, arrêt des sources, double drain, fermeture WS/queues/Redis/Nest                                                                                   |
+| observabilité        | corrélation HTTP/WS/jobs/pubsub, logs nettoyés, métriques bornées, télémétrie des conflits CAS, verrous et dead letters                                                                        |
+| validation réelle    | scripts MySQL, Redis/BullMQ, deux instances, campagnes de jeu, reprise après sinistre et charge Room                                                                                           |
 
 Le pipeline de contenu est indépendant de l'artefact applicatif. Ses releases
 sont immuables, adressées par checksum, activées atomiquement et conservées tant
@@ -40,6 +40,12 @@ npm run build
 npm run verify:dist
 npm run test:integration:real
 ```
+
+Dans `backend-architecture.yml`, le job `release-artifact` dépend du succès du
+job `real-integration`. Le générateur refuse l'artefact certifié si le runtime
+n'est pas Node 24, puis la CI publie l'archive et son fichier SHA-256 sous un nom
+contenant le SHA Git. Un artefact construit localement ou par un job qui n'a pas
+franchi cette dépendance reste une preuve de processus, pas un artefact certifié.
 
 ## Limite de la certification
 
