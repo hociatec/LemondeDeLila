@@ -67,7 +67,10 @@ void ChatFrame::SetBusyState(bool isBusy, const wxString& statusMessage)
         SyncActionState();
     }
 
-    static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposerPlan()));
+    if (IsShownOnScreen())
+    {
+        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
+    }
 }
 
 void ChatFrame::OpenChat()
@@ -78,7 +81,6 @@ void ChatFrame::OpenChat()
     }
 
     SetBusyState(true, lila::shared::text::FromUtf8(lila::shared::text::ui::ChatConnecting));
-    static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposerPlan()));
     InvalidateOpenChatRequest();
     const std::size_t requestId = activeOpenChatRequestId_;
     auto* service = &chatService_;
