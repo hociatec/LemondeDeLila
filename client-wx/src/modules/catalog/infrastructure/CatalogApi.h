@@ -6,21 +6,25 @@
 
 namespace lila::shared::network::realtime
 {
-class RealtimeApiClient;
+class AuthenticatedRealtimeApiClient;
 }
+
+namespace lila::modules::session::application { class SessionStore; }
 
 namespace lila::modules::catalog::infrastructure
 {
 class CatalogApi final : public application::ICatalogGateway
 {
 public:
-    explicit CatalogApi(
-        lila::shared::network::realtime::RealtimeApiClient& client) noexcept;
+    CatalogApi(
+        lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client,
+        lila::modules::session::application::SessionStore& sessionStore) noexcept;
 
     [[nodiscard]] domain::CatalogSnapshot GetCatalog(
         std::stop_token stopToken) const override;
 
 private:
-    lila::shared::network::realtime::RealtimeApiClient& client_;
+    lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client_;
+    lila::modules::session::application::SessionStore& sessionStore_;
 };
 }

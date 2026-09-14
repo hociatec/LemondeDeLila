@@ -40,23 +40,13 @@ void GameComposition::Assemble(
     const StepLogger& setStep)
 {
     setStep("Creation du service catalogue");
-    catalogWebSocketClient = detail::CreateWebSocketClient();
-    shared::network::websocket::WebSocketHeaders catalogHeaders;
-    catalogHeaders.emplace(
-        std::string(shared::network::ws::ClientProductHeader),
-        std::string(shared::network::ws::ClientProduct));
-    catalogHeaders.emplace(
-        std::string(shared::network::ws::ClientVersionHeader),
-        shared::config::AppConfig::ResolveClientVersion());
-    catalogRealtimeApiClient =
-        std::make_unique<shared::network::realtime::RealtimeApiClient>(
-            shared::config::AppConfig::ResolveBackendApiWs(),
-            std::move(catalogHeaders),
-            *catalogWebSocketClient);
-    catalogApi = std::make_unique<modules::catalog::infrastructure::CatalogApi>(
-        *catalogRealtimeApiClient);
-    catalogService = std::make_unique<modules::catalog::application::CatalogService>(
-        *catalogApi);
+    detail::CreateAuthenticatedServiceStack(
+        catalogWebSocketClient,
+        catalogRealtimeApiClient,
+        catalogApi,
+        catalogService,
+        *network.wsTicketProvider,
+        sessionStore);
 
     roomInvitationWebSocketClient = detail::CreateWebSocketClient();
     roomInvitationMonitor = std::make_unique<modules::rooms::application::RoomInvitationMonitor>(

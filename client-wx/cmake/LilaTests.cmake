@@ -2,6 +2,7 @@ include_guard(GLOBAL)
 
 add_executable(lemonde_de_lila_wx_tests
     tests/NetworkProtocolTests.cpp
+    src/modules/catalog/infrastructure/CatalogApi.cpp
     src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp
     src/modules/catalog/presentation/CatalogShelfNavigator.cpp
     src/modules/rooms/infrastructure/RoomPayloadCodec.cpp
@@ -49,6 +50,7 @@ add_executable(lemonde_de_lila_wx_tests
     src/shared/config/infrastructure/AppDataPaths.cpp
     src/shared/network/infrastructure/http/WsTicketProvider.cpp
     src/shared/network/infrastructure/http/WsTicketTransport.cpp
+    src/shared/network/application/realtime/AuthenticatedRealtimeApiClient.cpp
     src/shared/network/application/realtime/RealtimeProtocol.cpp
     src/shared/security/infrastructure/SecurityUtils.cpp
     src/shared/security/domain/JwtPayload.cpp

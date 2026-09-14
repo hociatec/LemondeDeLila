@@ -27,6 +27,7 @@
 #include "modules/chat/infrastructure/ChatProtocol.h"
 #include "modules/chat/presentation/ChatMessageActions.h"
 #include "modules/catalog/infrastructure/CatalogPayloadCodec.h"
+#include "modules/catalog/infrastructure/CatalogApi.h"
 #include "modules/catalog/presentation/CatalogShelfNavigator.h"
 #include "modules/storybook/infrastructure/StoryBookPayloadCodec.h"
 #include "modules/storybook/presentation/StoryBookNavigator.h"
@@ -60,6 +61,7 @@
 #include "shared/domain/identifiers/DomainTypes.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/realtime/RealtimeProtocol.h"
+#include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/domain/WebSocketConstants.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
@@ -128,6 +130,7 @@ int main()
         run("ActionButtonKeyboardSemantics", TestActionButtonKeyboardSemantics);
         run("NavigationControllerKeyboardSemantics", TestNavigationControllerKeyboardSemantics);
         run("CatalogPayloadCodecReadsShelfTree", TestCatalogPayloadCodecReadsShelfTree);
+        run("CatalogApiAuthenticatesCatalogRequest", TestCatalogApiAuthenticatesCatalogRequest);
         run("CatalogShelfNavigatorRestoresParentSelection", TestCatalogShelfNavigatorRestoresParentSelection);
         run("RoomPayloadCodecs", TestRoomPayloadCodecs);
         run("RoomSessionGatewayUsesBackendHandshakeContract", TestRoomSessionGatewayUsesBackendHandshakeContract);

@@ -7,7 +7,6 @@
 namespace lila::shared::network::realtime
 {
 class AuthenticatedRealtimeApiClient;
-class RealtimeApiClient;
 }
 
 namespace lila::shared::network::websocket
@@ -44,7 +43,7 @@ struct GameComposition final
         const StepLogger& setStep);
 
     std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> catalogWebSocketClient;
-    std::unique_ptr<lila::shared::network::realtime::RealtimeApiClient> catalogRealtimeApiClient;
+    std::unique_ptr<lila::shared::network::realtime::AuthenticatedRealtimeApiClient> catalogRealtimeApiClient;
     std::unique_ptr<lila::modules::catalog::infrastructure::CatalogApi> catalogApi;
     std::unique_ptr<lila::modules::catalog::application::CatalogService> catalogService;
     std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> roomLobbyWebSocketClient;
