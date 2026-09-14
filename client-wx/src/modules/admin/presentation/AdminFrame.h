@@ -18,6 +18,9 @@ class wxStaticText;
 class wxTextCtrl;
 class wxWindow;
 class wxString;
+class wxButton;
+class wxChoice;
+class wxPanel;
 namespace lila::shared::ui::controls { class VerticalMenu; }
 namespace lila::modules::admin::application { class AdminService; }
 
@@ -61,6 +64,11 @@ private:
     void FocusCurrentMenu();
     void FocusResult();
     void FocusResultDetails();
+    void FocusPagination();
+    void ResetPagination(const domain::AdminCommand& command, const nlohmann::json& payload);
+    void UpdatePagination(const nlohmann::json& result, std::size_t displayedCount);
+    void ChangePage(int direction);
+    void ChangePageSize();
     bool HandleKey(int keyCode);
 
     application::AdminService& service_;
@@ -73,6 +81,11 @@ private:
     wxStaticText* resultSummaryLabel_ = nullptr;
     wxStaticText* statusLabel_ = nullptr;
     wxTextCtrl* resultText_ = nullptr;
+    wxPanel* paginationPanel_ = nullptr;
+    wxStaticText* paginationLabel_ = nullptr;
+    wxButton* previousPageButton_ = nullptr;
+    wxButton* nextPageButton_ = nullptr;
+    wxChoice* pageSizeChoice_ = nullptr;
     std::vector<std::string> resultDetails_;
     std::vector<const domain::AdminCommand*> visibleCommands_;
     std::array<std::size_t, 14> commandSelections_{};
@@ -81,6 +94,9 @@ private:
     bool loading_ = false;
     std::string maintenanceToken_;
     bool maintenanceTokenInitialized_ = false;
+    const domain::AdminCommand* paginationCommand_ = nullptr;
+    nlohmann::json paginationPayload_ = nlohmann::json::object();
+    std::vector<int> pageSizeChoices_;
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
 };
 }

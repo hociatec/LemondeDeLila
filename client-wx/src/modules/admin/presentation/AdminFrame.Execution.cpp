@@ -2,7 +2,6 @@
 
 #include <utility>
 #include <memory>
-
 #include <nlohmann/json.hpp>
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
@@ -14,6 +13,7 @@
 #include "modules/admin/application/AdminService.h"
 #include "modules/admin/presentation/AdminCommandDialog.h"
 #include "modules/admin/presentation/AdminResultFormatter.h"
+#include "modules/admin/domain/AdminPagination.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/security/infrastructure/SecurityUtils.h"
 #include "shared/security/domain/SensitiveString.h"
@@ -68,12 +68,22 @@ bool AdminFrame::PreparePayload(
     const domain::AdminCommand& command,
     nlohmann::json& payload)
 {
-    const bool needsInput = command.payloadTemplate != "{}";
+    bool needsInput = false;
+    for (const auto& item : payload.items())
+        if (!domain::IsAdminPaginationField(command.id, item.key()))
+        {
+            needsInput = true;
+            break;
+        }
     if (needsInput)
     {
         AdminCommandDialog dialog(this, command, payload);
         if (dialog.ShowModal() != wxID_OK) return false;
-        payload = dialog.Payload();
+        auto businessPayload = dialog.Payload();
+        for (const auto& item : payload.items())
+            if (domain::IsAdminPaginationField(command.id, item.key()))
+                businessPayload[item.key()] = item.value();
+        payload = std::move(businessPayload);
     }
 
     bool needsFile = false;
@@ -130,6 +140,7 @@ void AdminFrame::ExecuteCommand(
     const domain::AdminCommand& command,
     nlohmann::json payload)
 {
+    ResetPagination(command, payload);
     requestSlot_.Cancel();
     const auto generation = requestSlot_.CurrentToken();
     loading_ = true;
@@ -222,6 +233,7 @@ void AdminFrame::ShowResult(
     resultsMenu_->SetItems(items);
     resultsMenu_->Show(!items.empty());
     resultText_->SetValue(lila::shared::text::FromUtf8(presentation.details));
+    UpdatePagination(result, presentation.entries.size());
     Layout();
 }
 

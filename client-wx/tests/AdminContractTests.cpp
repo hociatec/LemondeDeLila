@@ -7,6 +7,7 @@
 
 #include "modules/admin/domain/AdminCommand.h"
 #include "modules/admin/domain/AdminFormMetadata.h"
+#include "modules/admin/domain/AdminPagination.h"
 #include "modules/admin/infrastructure/AdminPayloadValidator.h"
 #include "modules/admin/presentation/AdminResultFormatter.h"
 #include "shared/network/application/http/AuthenticatedHttpClient.h"
@@ -114,6 +115,27 @@ int main()
         "users.ban", "durationDays").optional);
     assert(lila::modules::admin::domain::GetAdminFieldMetadata(
         "users.ban", "bannedUntil").optional);
+
+    using lila::modules::admin::domain::AdminPaginationMode;
+    const auto userPagination =
+        lila::modules::admin::domain::GetAdminPaginationSpec("users.list");
+    assert(userPagination.mode == AdminPaginationMode::PageNumber);
+    assert(userPagination.defaultPageSize == 20);
+    assert(userPagination.maximumPageSize == 100);
+    assert(lila::modules::admin::domain::IsAdminPaginationField("users.list", "page"));
+    assert(lila::modules::admin::domain::IsAdminPaginationField("users.list", "limit"));
+    assert(!lila::modules::admin::domain::IsAdminPaginationField("users.list", "search"));
+    const auto bugPagination =
+        lila::modules::admin::domain::GetAdminPaginationSpec("bugs.list");
+    assert(bugPagination.mode == AdminPaginationMode::Offset);
+    const auto roomPagination =
+        lila::modules::admin::domain::GetAdminPaginationSpec("rooms.list");
+    assert(roomPagination.mode == AdminPaginationMode::DisplayLimit);
+    assert(roomPagination.maximumPageSize == 1000);
+    assert(lila::modules::admin::domain::IsAdminPaginationField("rooms.list", "limit"));
+    assert(!lila::modules::admin::domain::IsAdminPaginationField("rooms.cleanup", "limit"));
+    assert((lila::modules::admin::domain::AdminPageSizeChoices(userPagination, 20) ==
+        std::vector<int>{10, 20, 50, 100}));
 
     const auto gamesUpdate = nlohmann::json::parse(findCommand("games.update").payloadTemplate);
     assert(gamesUpdate.contains("enabled"));

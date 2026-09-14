@@ -5,6 +5,9 @@
 
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
+#include <wx/button.h>
+#include <wx/choice.h>
+#include <wx/panel.h>
 
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/text/presentation/encoding/Encoding.h"
@@ -55,11 +58,17 @@ void AdminFrame::BindEvents()
         }
         if (keyCode == WXK_TAB)
         {
-            FocusResultDetails();
+            if (paginationPanel_ != nullptr && paginationPanel_->IsShown())
+                FocusPagination();
+            else
+                FocusResultDetails();
             return true;
         }
         return false;
     });
+    previousPageButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { ChangePage(-1); });
+    nextPageButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { ChangePage(1); });
+    pageSizeChoice_->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) { ChangePageSize(); });
     resultText_->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
     {
         const auto keyCode = event.GetKeyCode();
@@ -86,6 +95,10 @@ void AdminFrame::ShowSections()
     sectionsMenu_->SetSelectedIndexSilently(selectedSection_);
     sectionsMenu_->Show();
     commandsMenu_->Hide();
+    paginationPanel_->Hide();
+    paginationCommand_ = nullptr;
+    paginationPayload_ = nlohmann::json::object();
+    pageSizeChoices_.clear();
     showingCommands_ = false;
     titleLabel_->SetLabel(wxString(L"Administration"));
     SetStatus(wxString(sections[selectedSection_].description.data()));
@@ -117,6 +130,10 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         wxString(L"\n\nChoisissez une opération dans la liste. Son formulaire métier s’ouvrira avec les champs adaptés."));
     resultSummaryLabel_->SetLabel(wxString(L"Aide de la rubrique"));
     resultsMenu_->Hide();
+    paginationPanel_->Hide();
+    paginationCommand_ = nullptr;
+    paginationPayload_ = nlohmann::json::object();
+    pageSizeChoices_.clear();
     resultDetails_.clear();
     SetStatus(items.empty() ? wxString(L"Aucune action disponible.") :
         wxString(visibleCommands_[commandsMenu_->GetSelectedIndex()]->description));
@@ -168,6 +185,15 @@ void AdminFrame::FocusResultDetails()
     resultText_->SetInsertionPoint(0);
     resultText_->SetFocus();
     lila::shared::accessibility::AccessibilityUtils::NotifyFocus(*resultText_);
+}
+
+void AdminFrame::FocusPagination()
+{
+    if (previousPageButton_ != nullptr && previousPageButton_->IsShown() &&
+        previousPageButton_->IsEnabled())
+        previousPageButton_->SetFocus();
+    else if (pageSizeChoice_ != nullptr && pageSizeChoice_->IsShown())
+        pageSizeChoice_->SetFocus();
 }
 
 void AdminFrame::SetStatus(const wxString& message, bool isError)
