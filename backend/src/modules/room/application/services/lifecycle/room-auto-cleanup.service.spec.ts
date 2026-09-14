@@ -45,7 +45,28 @@ describe('RoomAutoCleanupService durability policy', () => {
     expect(cleanup).toHaveBeenNthCalledWith(
       2,
       { actor: 'system' },
-      expect.objectContaining({ dryRun: false, excludeActivePlayers: true }),
+      expect.objectContaining({
+        dryRun: false,
+        excludeActivePlayers: true,
+        includePrivate: true,
+        includeStarted: true,
+      }),
+    );
+  });
+
+  it('recovers private rooms left behind when an in-memory disconnect expires', async () => {
+    const cleanup = jest.fn().mockResolvedValue({ deleted: 1, matched: 1 });
+    const service = createService(cleanup);
+
+    await (service as unknown as { tick: () => Promise<void> }).tick();
+
+    expect(cleanup).toHaveBeenCalledWith(
+      { actor: 'system' },
+      expect.objectContaining({
+        includePrivate: true,
+        olderThanMinutes: 60,
+        excludeActivePlayers: true,
+      }),
     );
   });
 

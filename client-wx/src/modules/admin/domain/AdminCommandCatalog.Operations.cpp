@@ -10,7 +10,7 @@ void AppendOperationsCommands(std::vector<AdminCommand>& c)
     using S = AdminSection; using T = AdminTransport;
     c.insert(c.end(), {
         {"dashboard.perf", S::Dashboard, L"État des performances", L"Mesures des cinq dernières minutes.", T::ApiWebSocket, std::string(ws::admin::perf::Snapshot), {}, R"({"windowSeconds":300})"},
-        {"dashboard.rooms", S::Dashboard, L"Salles actives", L"Résumé des salles visibles.", T::ApiWebSocket, std::string(ws::admin::rooms::List), {}, R"({"limit":20,"includePrivate":true,"includeStarted":true})"},
+        {"dashboard.rooms", S::Dashboard, L"Salles récentes", L"Salles persistées, y compris celles sans joueur connecté.", T::ApiWebSocket, std::string(ws::admin::rooms::List), {}, R"({"limit":20,"includePrivate":true,"includeStarted":true})"},
 
         {"settings.profile.get", S::Settings, L"Lire les paramètres de profil", L"Bornes des biographies.", T::ApiWebSocket, std::string(ws::admin::profile::SettingsGet)},
         {"settings.profile.update", S::Settings, L"Modifier les paramètres de profil", L"La valeur minimale doit rester inférieure au maximum.", T::ApiWebSocket, std::string(ws::admin::profile::SettingsUpdate), {}, R"({"bioMinLength":0,"bioMaxLength":2000})"},
@@ -32,15 +32,15 @@ void AppendOperationsCommands(std::vector<AdminCommand>& c)
         {"sounds.reencode.all", S::Sounds, L"Tout réencoder", L"Réencoder l'ensemble des sons.", T::HttpJson, "POST /api/admin/sounds/reencode", {}, "{}", true},
         {"sounds.cleanup", S::Sounds, L"Nettoyer les fichiers inutilisés", L"Supprimer les versions non référencées.", T::HttpJson, "POST /api/admin/sounds/cleanup", {}, "{}", true},
 
-        {"maintenance.health", S::Maintenance, L"Vérifier la santé", L"Interroger le health check interne.", T::HttpJson, "GET /api/admin/maintenance/health", {}, "{}", false, true},
+        {"maintenance.health", S::Maintenance, L"Vérifier la santé", L"Interroger le contrôle de santé interne.", T::HttpJson, "GET /api/admin/maintenance/health", {}, "{}", false, true},
         {"maintenance.deploy.status", S::Maintenance, L"Statut du déploiement", L"État de l'unité systemd.", T::HttpJson, "GET /api/admin/maintenance/deploy/status", {}, "{}", false, true},
-        {"maintenance.deploy.logs", S::Maintenance, L"Logs du déploiement", L"Nombre de lignes entre 1 et 10000.", T::HttpJson, "GET /api/admin/maintenance/deploy/logs", {}, R"({"tail":200})", false, true},
-        {"maintenance.service.status", S::Maintenance, L"Statut du backend", L"État du service systemd.", T::HttpJson, "GET /api/admin/maintenance/service/status", {}, "{}", false, true},
+        {"maintenance.deploy.logs", S::Maintenance, L"Journaux du déploiement", L"Nombre de lignes entre 1 et 10000.", T::HttpJson, "GET /api/admin/maintenance/deploy/logs", {}, R"({"tail":200})", false, true},
+        {"maintenance.service.status", S::Maintenance, L"Statut du serveur", L"État du service systemd.", T::HttpJson, "GET /api/admin/maintenance/service/status", {}, "{}", false, true},
         {"maintenance.deploy", S::Maintenance, L"Déployer", L"Démarrer l'unité de déploiement.", T::HttpJson, "POST /api/admin/maintenance/deploy", {}, "{}", true, true},
-        {"maintenance.dryRun", S::Maintenance, L"Tester le build", L"Exécuter npm run build sans redémarrer.", T::HttpJson, "POST /api/admin/maintenance/deploy/dry-run", {}, "{}", true, true},
+        {"maintenance.dryRun", S::Maintenance, L"Tester la compilation", L"Compiler sans redémarrer le serveur.", T::HttpJson, "POST /api/admin/maintenance/deploy/dry-run", {}, "{}", true, true},
         {"maintenance.migrations", S::Maintenance, L"Exécuter les migrations", L"Appliquer les migrations de base de données.", T::HttpJson, "POST /api/admin/maintenance/migrations/run", {}, "{}", true, true},
-        {"maintenance.restart", S::Maintenance, L"Redémarrer le backend", L"La connexion sera momentanément interrompue.", T::HttpJson, "POST /api/admin/maintenance/service/restart", {}, "{}", true, true},
-        {"maintenance.buildRestart", S::Maintenance, L"Build et redémarrage", L"Compiler puis redémarrer le backend.", T::HttpJson, "POST /api/admin/maintenance/service/build-restart", {}, "{}", true, true},
+        {"maintenance.restart", S::Maintenance, L"Redémarrer le serveur", L"La connexion sera momentanément interrompue.", T::HttpJson, "POST /api/admin/maintenance/service/restart", {}, "{}", true, true},
+        {"maintenance.buildRestart", S::Maintenance, L"Compiler et redémarrer", L"Compiler puis redémarrer le serveur.", T::HttpJson, "POST /api/admin/maintenance/service/build-restart", {}, "{}", true, true},
         {"maintenance.daemonReload", S::Maintenance, L"Recharger systemd", L"Exécuter systemctl daemon-reload.", T::HttpJson, "POST /api/admin/maintenance/systemd/daemon-reload", {}, "{}", true, true},
     });
 }

@@ -81,7 +81,10 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
     const res = await this.adminMaintenance.adminCleanupRooms(
       this.roomAdminContext.createContext(),
       {
-        includePrivate: false,
+        // A delayed disconnect is kept in memory to allow a short reconnect.
+        // If the process stops during that grace period, the durable room can
+        // otherwise survive forever because private rooms used to be skipped.
+        includePrivate: true,
         includeStarted: true,
         olderThanMinutes: s.autoCleanupOlderThanMinutes,
         limit: s.autoCleanupLimit,

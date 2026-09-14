@@ -34,8 +34,8 @@ const std::vector<AdminSectionDescriptor>& GetAdminSections()
         {AdminSection::Roles, L"Rôles", L"Définitions et permissions déclarées."},
         {AdminSection::Settings, L"Réglages globaux", L"Profil, diffusion et statistiques."},
         {AdminSection::Sounds, L"Sons", L"Diagnostic, fichiers et ambiances."},
-        {AdminSection::Observability, L"Journaux et performances", L"Logs et mesures serveur."},
-        {AdminSection::Maintenance, L"Maintenance", L"Déploiement et service backend."},
+        {AdminSection::Observability, L"Journaux et performances", L"Journaux et mesures du serveur."},
+        {AdminSection::Maintenance, L"Maintenance", L"Déploiement et service du serveur."},
     };
     return sections;
 }

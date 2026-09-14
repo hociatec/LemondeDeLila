@@ -118,8 +118,8 @@ bool AdminFrame::EnsureMaintenanceToken()
     if (maintenanceTokenInitialized_) return true;
     wxPasswordEntryDialog dialog(
         this,
-        wxString(L"Saisissez le token de maintenance. Laissez vide si ce serveur n'en exige pas. Il restera uniquement en mémoire jusqu'à la fermeture de la console."),
-        wxString(L"Token de maintenance"));
+        wxString(L"Saisissez le jeton de maintenance. Laissez vide si ce serveur n'en exige pas. Il restera uniquement en mémoire jusqu'à la fermeture de la console."),
+        wxString(L"Jeton de maintenance"));
     if (dialog.ShowModal() != wxID_OK) return false;
     maintenanceToken_ = lila::shared::text::ToUtf8(dialog.GetValue());
     maintenanceTokenInitialized_ = true;

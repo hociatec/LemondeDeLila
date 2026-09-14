@@ -194,4 +194,17 @@ int main()
             {"status", "in_progress"},
         });
     assert(translatedStatus.find("En cours") != std::string::npos);
+
+    const auto roomResult = lila::modules::admin::presentation::FormatAdminResult({
+        {"activePlayers", 0}, {"botsCount", 0}, {"gameType", "panier-express"},
+        {"isPrivate", true}, {"maxPlayers", 10}, {"ownerUsername", "hacene"},
+        {"playersCount", 0}, {"status", "setup"},
+    });
+    assert(roomResult.find("Active players") == std::string::npos);
+    assert(roomResult.find("Game type") == std::string::npos);
+    assert(roomResult.find("Is private") == std::string::npos);
+    assert(roomResult.find("Joueurs connectés : 0") != std::string::npos);
+    assert(roomResult.find("Type de jeu : panier-express") != std::string::npos);
+    assert(roomResult.find("Salle privée : Oui") != std::string::npos);
+    assert(roomResult.find("Statut : Préparation") != std::string::npos);
 }
