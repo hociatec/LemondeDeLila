@@ -27,4 +27,6 @@ struct SoundDescriptor final
 
 [[nodiscard]] std::span<const SoundDescriptor> GetSoundCatalog() noexcept;
 [[nodiscard]] const SoundDescriptor* FindSoundDescriptor(SoundCue cue) noexcept;
+[[nodiscard]] const SoundDescriptor* FindSoundDescriptorByServerId(
+    std::string_view soundId) noexcept;
 }

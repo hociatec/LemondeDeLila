@@ -41,10 +41,11 @@ wxString ListValue(const nlohmann::json& value)
 AdminCommandDialog::AdminCommandDialog(
     wxWindow* parent,
     const domain::AdminCommand& command,
-    const nlohmann::json& initialPayload)
+    const nlohmann::json& initialPayload,
+    SoundPreviewHandler onSoundPreview)
     : wxDialog(parent, wxID_ANY, wxString(command.label), wxDefaultPosition,
           wxSize(720, 620), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
-      command_(command)
+      command_(command), onSoundPreview_(std::move(onSoundPreview))
 {
     auto* root = new wxBoxSizer(wxVERTICAL);
     auto* introduction = new wxStaticText(this, wxID_ANY, wxString(command.description));
@@ -202,6 +203,21 @@ nlohmann::json AdminCommandDialog::ReadValue(const FieldControl& field) const
 void AdminCommandDialog::HandleKey(wxKeyEvent& event)
 {
     const auto keyCode = event.GetKeyCode();
+    if (keyCode == WXK_SPACE && command_.id == "sounds.upload" && onSoundPreview_)
+    {
+        auto* focused = wxWindow::FindFocus();
+        const auto field = std::find_if(fields_.begin(), fields_.end(),
+            [focused](const FieldControl& candidate)
+            {
+                return candidate.key == "soundId" && candidate.editor == focused;
+            });
+        if (field != fields_.end())
+        {
+            const auto value = ReadValue(*field);
+            if (value.is_string()) onSoundPreview_(value.get<std::string>());
+            return;
+        }
+    }
     if (keyCode == WXK_ESCAPE)
     {
         EndModal(wxID_CANCEL);

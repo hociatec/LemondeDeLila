@@ -2,8 +2,10 @@
 
 #include <array>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include <nlohmann/json.hpp>
@@ -21,8 +23,10 @@ class wxString;
 class wxButton;
 class wxChoice;
 class wxPanel;
+class wxTimer;
 namespace lila::shared::ui::controls { class VerticalMenu; }
 namespace lila::modules::admin::application { class AdminService; }
+namespace lila::modules::audio::application { class IAudioService; }
 
 namespace lila::modules::admin::presentation
 {
@@ -36,6 +40,7 @@ public:
     AdminFrame(
         wxWindow* parent,
         application::AdminService& service,
+        lila::modules::audio::application::IAudioService& audioService,
         CloseRequestedHandler onCloseRequested,
         JoinRoomRequestedHandler onJoinRoomRequested,
         std::size_t initialSection = 0);
@@ -69,9 +74,11 @@ private:
     void UpdatePagination(const nlohmann::json& result, std::size_t displayedCount);
     void ChangePage(int direction);
     void ChangePageSize();
+    void PreviewSound(std::string_view soundId);
     bool HandleKey(int keyCode);
 
     application::AdminService& service_;
+    lila::modules::audio::application::IAudioService& audioService_;
     CloseRequestedHandler onCloseRequested_;
     JoinRoomRequestedHandler onJoinRoomRequested_;
     lila::shared::ui::controls::VerticalMenu* sectionsMenu_ = nullptr;
@@ -98,5 +105,6 @@ private:
     nlohmann::json paginationPayload_ = nlohmann::json::object();
     std::vector<int> pageSizeChoices_;
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
+    std::unique_ptr<wxTimer> previewTimer_;
 };
 }

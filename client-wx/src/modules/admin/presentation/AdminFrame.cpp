@@ -3,7 +3,10 @@
 #include <algorithm>
 #include <utility>
 
+#include <wx/timer.h>
+
 #include "modules/admin/application/AdminService.h"
+#include "modules/audio/application/IAudioService.h"
 #include "shared/security/infrastructure/SecurityUtils.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
@@ -12,11 +15,13 @@ namespace lila::modules::admin::presentation
 AdminFrame::AdminFrame(
     wxWindow* parent,
     application::AdminService& service,
+    lila::modules::audio::application::IAudioService& audioService,
     CloseRequestedHandler onCloseRequested,
     JoinRoomRequestedHandler onJoinRoomRequested,
     std::size_t initialSection)
     : lila::shared::accessibility::NonFocusablePanel(parent, 0),
-      service_(service), onCloseRequested_(std::move(onCloseRequested)),
+      service_(service), audioService_(audioService),
+      onCloseRequested_(std::move(onCloseRequested)),
       onJoinRoomRequested_(std::move(onJoinRoomRequested)),
       selectedSection_(std::min(initialSection, domain::GetAdminSections().size() - 1))
 {
@@ -27,6 +32,7 @@ AdminFrame::AdminFrame(
 
 AdminFrame::~AdminFrame()
 {
+    if (previewTimer_ && previewTimer_->IsRunning()) audioService_.StopLoop();
     requestSlot_.Cancel();
     lila::shared::security::SecureWipeString(maintenanceToken_);
 }

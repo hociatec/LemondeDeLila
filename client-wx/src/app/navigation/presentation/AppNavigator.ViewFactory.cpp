@@ -78,7 +78,7 @@ wxWindow* AppNavigator::CreateCoreView(ViewId viewId)
             });
     case ViewId::Admin:
         return new modules::admin::presentation::AdminFrame(
-            hostFrame_->ContentParent(), adminService_,
+            hostFrame_->ContentParent(), adminService_, audioService_,
             [this](std::size_t section)
             {
                 lastAdminSection_ = section;

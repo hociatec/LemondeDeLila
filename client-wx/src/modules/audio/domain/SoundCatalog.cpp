@@ -1,6 +1,7 @@
 #include "modules/audio/domain/SoundCatalog.h"
 
 #include <array>
+#include <cctype>
 
 namespace lila::modules::audio::domain
 {
@@ -86,5 +87,17 @@ const SoundDescriptor* FindSoundDescriptor(SoundCue cue) noexcept
 {
     const auto index = static_cast<std::size_t>(cue);
     return index < Catalog.size() ? &Catalog[index] : nullptr;
+}
+
+const SoundDescriptor* FindSoundDescriptorByServerId(std::string_view soundId) noexcept
+{
+    for (const auto& descriptor : Catalog)
+    {
+        if (descriptor.key.size() != soundId.size() || soundId.empty()) continue;
+        if (std::tolower(static_cast<unsigned char>(descriptor.key.front())) !=
+            std::tolower(static_cast<unsigned char>(soundId.front()))) continue;
+        if (descriptor.key.substr(1) == soundId.substr(1)) return &descriptor;
+    }
+    return nullptr;
 }
 }
