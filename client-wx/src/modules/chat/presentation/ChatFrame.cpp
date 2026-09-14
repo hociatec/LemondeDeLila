@@ -99,6 +99,8 @@ lila::shared::accessibility::FocusManager::Plan ChatFrame::BuildFocusPlan()
 
 void ChatFrame::OpenForNavigation()
 {
+    contentPanel_->Hide();
+    Layout();
     ResetFocusToComposer();
     OpenChat();
 }
@@ -109,7 +111,7 @@ void ChatFrame::ResetFocusToComposer()
     isHistoryActionMode_ = false;
     selectedActionMessageId_.reset();
     SyncActionState();
-    if (focusController_ != nullptr && IsShownOnScreen())
+    if (focusController_ != nullptr && contentPanel_->IsShown() && IsShownOnScreen())
     {
         static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(
             focusController_->BuildComposerPlan()));

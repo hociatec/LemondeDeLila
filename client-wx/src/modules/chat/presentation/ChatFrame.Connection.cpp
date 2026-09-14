@@ -114,6 +114,8 @@ void ChatFrame::OpenChat()
                 return;
             }
 
+            contentPanel_->Show();
+            Layout();
             RefreshHistory();
             SyncActionState();
             static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(focusController_->BuildComposerPlan()));
