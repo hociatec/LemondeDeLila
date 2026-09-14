@@ -9,12 +9,12 @@ void AppendModerationCommands(std::vector<AdminCommand>& c)
 {
     using S = AdminSection; using T = AdminTransport;
     c.insert(c.end(), {
-        {"users.list", S::Users, L"Rechercher les utilisateurs", L"Filtres et pagination.", T::HttpJson, "GET /api/admin/users", {}, R"({"search":"","status":"all","page":1,"limit":20})"},
+        {"users.list", S::Users, L"Rechercher les utilisateurs", L"Recherche, rôle, statut, dates et pagination.", T::HttpJson, "GET /api/admin/users", {}, R"({"search":"","role":"","status":"all","createdAfter":"","createdBefore":"","page":1,"limit":20})"},
         {"users.get", S::Users, L"Consulter un utilisateur", L"Renseigner son identifiant.", T::HttpJson, "GET /api/admin/users/{id}", {}, R"({"id":1})"},
-        {"users.create", S::Users, L"Créer un utilisateur", L"Le mot de passe est optionnel.", T::HttpJson, "POST /api/admin/users", {}, R"({"email":"","username":"","roles":["ROLE_USER"]})"},
-        {"users.update", S::Users, L"Modifier un utilisateur", L"Seuls les champs fournis changent.", T::HttpJson, "PATCH /api/admin/users/{id}", {}, R"({"id":1,"username":"","roles":["ROLE_USER"]})"},
+        {"users.create", S::Users, L"Créer un utilisateur", L"Le mot de passe est optionnel.", T::HttpJson, "POST /api/admin/users", {}, R"({"email":"","username":"","password":"","roles":["ROLE_USER"],"avatar":""})"},
+        {"users.update", S::Users, L"Modifier un utilisateur", L"Seuls les champs fournis changent.", T::HttpJson, "PATCH /api/admin/users/{id}", {}, R"({"id":1,"email":"","username":"","password":"","roles":["ROLE_USER"],"avatar":"","bannedUntil":"","banReason":""})"},
         {"users.resetPassword", S::Users, L"Réinitialiser le mot de passe", L"Le secret temporaire ne sera affiché qu'une fois.", T::HttpJson, "POST /api/admin/users/{id}/reset-password", {}, R"({"id":1})", true},
-        {"users.ban", S::Users, L"Bannir un compte", L"Motif et durée en jours.", T::HttpJson, "POST /api/admin/users/{id}/ban", {}, R"({"id":1,"reason":"","durationDays":1})", true},
+        {"users.ban", S::Users, L"Bannir un compte", L"Motif et durée en jours.", T::HttpJson, "POST /api/admin/users/{id}/ban", {}, R"({"id":1,"reason":"","durationDays":1,"bannedUntil":""})", true},
         {"users.unban", S::Users, L"Débannir un compte", L"Retirer le bannissement du compte.", T::HttpJson, "POST /api/admin/users/{id}/unban", {}, R"({"id":1})", true},
         {"users.delete", S::Users, L"Supprimer un utilisateur", L"Suppression définitive du compte.", T::HttpJson, "DELETE /api/admin/users/{id}", {}, R"({"id":1})", true},
 

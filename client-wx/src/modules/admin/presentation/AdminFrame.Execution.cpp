@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
+#include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/textdlg.h>
 #include <wx/weakref.h>
@@ -17,6 +18,7 @@
 #include "shared/security/infrastructure/SecurityUtils.h"
 #include "shared/security/domain/SensitiveString.h"
 #include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::admin::presentation
 {
@@ -190,8 +192,47 @@ void AdminFrame::CompleteCommand(
         passwordDialog.ShowModal();
         *temporaryPassword = "<affiché une seule fois>";
     }
-    resultText_->SetValue(lila::shared::text::FromUtf8(FormatAdminResult(*result)));
+    ShowResult(command, *result);
     SetStatus(wxString(L"Opération terminée : ") + wxString(command.label));
     FocusResult();
+}
+
+void AdminFrame::ShowResult(
+    const domain::AdminCommand& command,
+    const nlohmann::json& result)
+{
+    const auto presentation = BuildAdminResultPresentation(result);
+    resultSummaryLabel_->SetLabel(
+        wxString(command.label) + wxString(L" — ") +
+        lila::shared::text::FromUtf8(presentation.summary));
+    resultDetails_.clear();
+
+    std::vector<lila::shared::ui::controls::VerticalMenuItem> items;
+    items.reserve(presentation.entries.size());
+    resultDetails_.reserve(presentation.entries.size());
+    for (std::size_t index = 0; index < presentation.entries.size(); ++index)
+    {
+        items.push_back({
+            std::to_string(index),
+            lila::shared::text::FromUtf8(presentation.entries[index].label),
+        });
+        resultDetails_.push_back(presentation.entries[index].details);
+    }
+
+    resultsMenu_->SetItems(items);
+    resultsMenu_->Show(!items.empty());
+    resultText_->SetValue(lila::shared::text::FromUtf8(presentation.details));
+    Layout();
+}
+
+void AdminFrame::ShowResultDetails(std::size_t index)
+{
+    if (index >= resultDetails_.size()) return;
+    resultText_->SetValue(lila::shared::text::FromUtf8(resultDetails_[index]));
+    resultText_->SetInsertionPoint(0);
+    SetStatus(lila::shared::text::FromUtf8(
+        "Élément " + std::to_string(index + 1) + " sur " +
+        std::to_string(resultDetails_.size()) +
+        ". Entrée ou Tabulation pour lire le détail."));
 }
 }

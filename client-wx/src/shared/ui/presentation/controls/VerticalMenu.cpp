@@ -157,4 +157,10 @@ wxWindow* VerticalMenu::GetFirstButton() const
     return entries_.empty() ? static_cast<wxWindow*>(listBox_) : entries_.front();
 }
 
+void VerticalMenu::SetAccessibleName(const wxString& name)
+{
+    SetName(name);
+    if (listBox_ != nullptr) listBox_->SetName(name);
+}
+
 }
