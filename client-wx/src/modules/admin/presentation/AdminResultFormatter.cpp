@@ -27,6 +27,50 @@ std::string Humanize(std::string_view key)
         {"names", "Noms de bots"}, {"page", "Page"}, {"limit", "Par page"},
         {"content", "Contenu"}, {"reason", "Motif"},
         {"bannedUntil", "Banni jusqu’au"}, {"createdBy", "Créé par"},
+        {"activePlayers", "Joueurs connectés"}, {"botsCount", "Nombre de bots"},
+        {"gameType", "Type de jeu"}, {"isPrivate", "Salle privée"},
+        {"maxPlayers", "Nombre maximal de joueurs"},
+        {"ownerUsername", "Propriétaire"}, {"playersCount", "Participants inscrits"},
+        {"roomId", "Identifiant de salle"}, {"roomIds", "Identifiants des salles"},
+        {"started", "Partie démarrée"}, {"spectatorOnly", "Spectateurs uniquement"},
+        {"bots", "Bots"}, {"matched", "Salles trouvées"},
+        {"deleted", "Éléments supprimés"}, {"delivered", "Destinataires atteints"},
+        {"userId", "Identifiant utilisateur"}, {"messageId", "Identifiant du message"},
+        {"reportId", "Identifiant du rapport"}, {"contactId", "Identifiant du contact"},
+        {"categoryId", "Identifiant de catégorie"}, {"parentId", "Catégorie parente"},
+        {"chatEnabled", "Tchat activé"}, {"chatSoundsEnabled", "Sons du tchat activés"},
+        {"minPlayers", "Nombre minimal de joueurs"}, {"rules", "Règles"},
+        {"createdBefore", "Créé avant"}, {"createdAfter", "Créé après"},
+        {"temporaryPassword", "Mot de passe temporaire"},
+        {"banReason", "Motif du bannissement"}, {"rolesUpdated", "Rôles modifiés"},
+        {"assignments", "Affectations"}, {"answers", "Réponses"},
+        {"correctIndex", "Index de la bonne réponse"}, {"handled", "Traité"},
+        {"includeDeleted", "Inclure les éléments supprimés"},
+        {"includePrivate", "Inclure les salles privées"},
+        {"includeStarted", "Inclure les parties démarrées"},
+        {"joinableOnly", "Salles intégrables uniquement"},
+        {"dryRun", "Simulation"}, {"olderThanMinutes", "Âge minimal en minutes"},
+        {"autoCleanupEnabled", "Nettoyage automatique activé"},
+        {"autoCleanupOlderThanMinutes", "Âge minimal du nettoyage automatique"},
+        {"autoCleanupIntervalSeconds", "Intervalle du nettoyage en secondes"},
+        {"autoCleanupLimit", "Limite du nettoyage"},
+        {"chatHistoryLimit", "Taille de l’historique du tchat"},
+        {"editWindowSeconds", "Délai de modification en secondes"},
+        {"bioMinLength", "Longueur minimale de biographie"},
+        {"bioMaxLength", "Longueur maximale de biographie"},
+        {"botTurnDelayMs", "Délai d’un tour de bot en millisecondes"},
+        {"botStartDelayMs", "Délai de démarrage du bot en millisecondes"},
+        {"botDrawDelayMs", "Délai de pioche du bot en millisecondes"},
+        {"generatedAt", "Généré le"}, {"windowSeconds", "Fenêtre en secondes"},
+        {"count", "Nombre"}, {"averageMs", "Moyenne en millisecondes"},
+        {"p95Ms", "95e centile en millisecondes"},
+        {"maxMs", "Maximum en millisecondes"}, {"lastAt", "Dernière mesure le"},
+        {"lastValue", "Dernière valeur"}, {"file", "Fichier"},
+        {"lines", "Lignes"}, {"logs", "Journaux"}, {"tail", "Nombre de lignes"},
+        {"statusCode", "Code de réponse"}, {"scheduled", "Planifié"},
+        {"service", "Service"}, {"unit", "Unité système"}, {"command", "Commande"},
+        {"state", "État"}, {"activeState", "État du service"},
+        {"subState", "Sous-état du service"}, {"loadState", "État du chargement"},
     };
     for (const auto& [value, label] : Known)
         if (key == value) return std::string(label);
@@ -56,7 +100,8 @@ std::string Scalar(const nlohmann::json& value)
 
 std::string ScalarForKey(std::string_view key, const nlohmann::json& value)
 {
-    if (key == "status" && value.is_string())
+    if ((key == "status" || key == "state" || key == "activeState" ||
+         key == "subState" || key == "loadState") && value.is_string())
     {
         const auto status = value.get<std::string>();
         static const std::pair<std::string_view, std::string_view> Statuses[]{
@@ -66,7 +111,12 @@ std::string ScalarForKey(std::string_view key, const nlohmann::json& value)
             {"done", "Terminé"}, {"refused", "Refusé"},
             {"validated", "Validé"}, {"to_edit", "À modifier"},
             {"trash", "Corbeille"}, {"construction", "En construction"},
-            {"finished", "Terminé"}, {"beta", "Bêta"},
+            {"finished", "Terminé"}, {"beta", "Bêta"}, {"setup", "Préparation"},
+            {"waiting", "En attente de joueurs"}, {"ready", "Prête"},
+            {"started", "En cours"}, {"closed", "Fermée"},
+            {"up", "Disponible"}, {"down", "Indisponible"},
+            {"online", "En ligne"}, {"offline", "Hors ligne"},
+            {"inactive", "Inactif"}, {"failed", "Échec"},
         };
         for (const auto& [raw, label] : Statuses)
             if (status == raw) return std::string(label);
