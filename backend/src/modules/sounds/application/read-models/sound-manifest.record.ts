@@ -7,6 +7,7 @@ export const SOUND_KEYS = [
   'MainMenuMusic',
   'TavernAmbience',
   'TavernOpened',
+  'TavernClosed',
   'DiceRolled',
   'DrawCard',
   'ChatMessageSent',
@@ -32,6 +33,8 @@ export const SOUND_KEYS = [
   'RoomOpened',
   'RoomJoined',
   'RoomExit',
+  'RoomMemberJoined',
+  'RoomMemberLeft',
   'TableStarted',
   'PawnPicked',
   'PawnPlacedSelf',
@@ -73,6 +76,7 @@ export type SoundManifestEntry = {
 export type SoundManifest = {
   updatedAt: string;
   sounds: Partial<Record<SoundKey, SoundManifestEntry>>;
+  disabled: SoundKey[];
 };
 
 export type TableAmbienceSoundKey = Extract<SoundKey, `TableAmbience${number}`>;

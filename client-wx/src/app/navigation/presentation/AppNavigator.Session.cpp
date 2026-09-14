@@ -60,7 +60,8 @@ void AppNavigator::CloseApplication(bool forUpdate)
         return;
     }
     closing_ = true;
-    audioService_.ShutdownImmediately();
+    audioService_.SetBackground(lila::modules::audio::domain::AudioBackground::None);
+    audioService_.Play(lila::modules::audio::domain::SoundCue::ClientClosing);
     presenceMonitor_.Stop();
     roomInvitationMonitor_.Stop();
     if (invitationResponseTask_)
@@ -152,6 +153,7 @@ void AppNavigator::FinishCloseApplication()
         return;
     }
     closeFinalized_ = true;
+    audioService_.ShutdownImmediately();
     if (closeRevocationTimeout_ != nullptr)
     {
         closeRevocationTimeout_->Stop();

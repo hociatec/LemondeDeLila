@@ -205,6 +205,7 @@ function cloneManifest(manifest: SoundManifest): SoundManifest {
   return {
     updatedAt: manifest.updatedAt,
     sounds: { ...(manifest.sounds ?? {}) },
+    disabled: [...(manifest.disabled ?? [])],
   };
 }
 

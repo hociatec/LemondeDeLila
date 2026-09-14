@@ -20,6 +20,7 @@ import {
   SoundKey,
   SoundManifest,
 } from '../../application/read-models/sound-manifest.record';
+import { SOUND_CATALOG } from '../../application/read-models/sound-catalog.record';
 import {
   NOTIFICATION_DISPATCHER,
   type NotificationDispatcher,
@@ -196,7 +197,7 @@ export class SoundsService {
       this.logger.warn(
         `Manifest audio absent ou invalide, utilisation d'un manifest vide: ${errorMessage(error)}`,
       );
-      return { updatedAt: new Date().toISOString(), sounds: {} };
+      return { updatedAt: new Date().toISOString(), sounds: {}, disabled: [] };
     }
   }
 
@@ -262,6 +263,67 @@ export class SoundsService {
     return { ...manifest, sounds };
   }
 
+  async getAdminCatalog() {
+    const manifest = await this.getPublicManifest();
+    const disabled = new Set(manifest.disabled ?? []);
+    const categories = new Map<
+      string,
+      Map<string, Array<Record<string, unknown>>>
+    >();
+
+    for (const definition of SOUND_CATALOG) {
+      let screens = categories.get(definition.category);
+      if (!screens) {
+        screens = new Map();
+        categories.set(definition.category, screens);
+      }
+      let sounds = screens.get(definition.screen);
+      if (!sounds) {
+        sounds = [];
+        screens.set(definition.screen, sounds);
+      }
+      const configured = manifest.sounds[definition.soundId];
+      sounds.push({
+        soundId: definition.soundId,
+        event: definition.event,
+        loop: definition.loop,
+        enabled: !disabled.has(definition.soundId),
+        source: configured ? 'personnalisé' : 'par défaut',
+        ...(configured ?? {}),
+      });
+    }
+
+    return {
+      updatedAt: manifest.updatedAt,
+      categories: [...categories].map(([name, screens]) => ({
+        name,
+        screens: [...screens].map(([name, sounds]) => ({ name, sounds })),
+      })),
+    };
+  }
+
+  async setSoundEnabled(soundIdRaw: string, enabled: boolean) {
+    const soundId = normalizeSoundKey(soundIdRaw);
+    const manifest = await this.readManifest();
+    const disabled = new Set(manifest.disabled ?? []);
+    if (enabled) disabled.delete(soundId);
+    else disabled.add(soundId);
+    const updatedAt = new Date().toISOString();
+    await this.writeManifest({
+      ...manifest,
+      updatedAt,
+      disabled: [...disabled],
+    });
+    await this.notifications.notifyAll('sounds.updated', {
+      soundId,
+      sha256: manifest.sounds[soundId]?.sha256 ?? null,
+      url: manifest.sounds[soundId]?.url ?? null,
+      enabled,
+      updatedAt,
+    });
+    return { soundId, enabled, updatedAt };
+  }
+
   async setSound(
     soundIdRaw: string,
     tempFilePath: string,
@@ -285,6 +347,7 @@ export class SoundsService {
     const next = {
       updatedAt: new Date().toISOString(),
       sounds: { ...(manifest.sounds || {}) },
+      disabled: [...(manifest.disabled ?? [])],
     };
     delete next.sounds[soundId];
     await this.writeManifest(next);

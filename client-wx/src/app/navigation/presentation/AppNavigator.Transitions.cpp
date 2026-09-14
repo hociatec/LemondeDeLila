@@ -47,6 +47,10 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
     {
         audioService_.Play(lila::modules::audio::domain::SoundCue::TavernOpened);
     }
+    else if (previousViewId == ViewId::Catalog && nextViewId != ViewId::Catalog)
+    {
+        audioService_.Play(lila::modules::audio::domain::SoundCue::TavernClosed);
+    }
     if (!hostFrame_->IsShown())
     {
         hostFrame_->Show(true);
