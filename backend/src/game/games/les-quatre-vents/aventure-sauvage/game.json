@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "contentVersion": "1",
-  "definitionVersion": "3",
+  "definitionVersion": "4",
   "snapshotMigrations": [
     { "fromVersion": "aventure-sauvage@content:c48df7e1", "toVersion": "1" },
     { "fromVersion": "aventure-sauvage@content:f577dff1", "toVersion": "1" }
@@ -54,6 +54,11 @@
       "key": "P",
       "type": "interface",
       "id": "position"
+    },
+    {
+      "key": "Space",
+      "type": "action",
+      "actionType": "draw_card"
     }
   ],
   "initialPhase": "setup",
@@ -63,14 +68,18 @@
       "transitions": ["playing"]
     },
     "playing": {
-      "actions": ["roll"],
+      "actions": ["roll", "draw_card"],
       "terminal": true
     }
   },
   "actions": {
     "roll": {
       "recipe": "race-event-cards-roll",
-      "documentation": "Lance le dé et résout immédiatement la case de jungle."
+      "documentation": "Lance le dé et résout la case de jungle."
+    },
+    "draw_card": {
+      "recipe": "race-event-cards-draw",
+      "documentation": "Pioche avec Espace la carte demandée par la case."
     }
   },
   "victory": {

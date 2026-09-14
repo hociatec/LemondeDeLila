@@ -33,9 +33,17 @@ export const effectPack = defineJsonEffectPack({
     setup: compiled.setup,
     choices: compiled.choices,
     effects: compiled.effects,
-    bot: context.recipeBot('race-event-cards-roll'),
+    bot: {
+      choose: ({ availableActions }) => {
+        const type =
+          context.actionFor(availableActions, ['race-event-cards-draw']) ??
+          context.actionFor(availableActions, ['race-event-cards-roll']);
+        return type ? { type, payload: {} } : null;
+      },
+    },
   }),
   actions: (compiled) => ({
     'race-event-cards-roll': compiled.roll,
+    'race-event-cards-draw': compiled.draw,
   }),
 });

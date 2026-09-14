@@ -5,6 +5,7 @@ import type { DiceRollPolicy } from '../../kits/dice-kit';
 import type { GameContext } from '../../definitions/game-author-context';
 import { cardEventIdentity } from './card-recipe.helpers';
 import type { CardValue } from '../../cards/cards-kit';
+import { resolvedCardEventData } from './card-event-presentation';
 
 export type DrawAndResolveOptions<TCard extends CardValue, TResult> = {
   deckId: string;
@@ -98,6 +99,7 @@ export function drawAndResolve<
         deckId: options.deckId,
         automatic: options.automatic ?? true,
         ...cardEventIdentity(card),
+        ...resolvedCardEventData(card),
         ...options.eventData?.(card),
       });
       return options.resolve(card);

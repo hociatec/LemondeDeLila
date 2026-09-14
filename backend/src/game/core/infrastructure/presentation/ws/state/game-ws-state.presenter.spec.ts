@@ -562,6 +562,100 @@ describe('GameWsStatePresenter', () => {
     ).toBe('Vous piochez « Coup de chance ». Effet : Avancez de 2 cases.');
   });
 
+  it('narrates chained landings and draws once each', () => {
+    const events = [
+      {
+        id: '12:0',
+        sequence: 0,
+        type: 'pawn.landed',
+        data: { playerId: 1, position: 5 },
+      },
+      {
+        id: '12:1',
+        sequence: 1,
+        type: 'pawn.landed',
+        data: { playerId: 1, position: 5, tileLabel: 'Animal rigolo' },
+      },
+      {
+        id: '12:2',
+        sequence: 2,
+        type: 'card.drawn',
+        data: { playerId: 1, deckId: 'animal' },
+      },
+      {
+        id: '12:3',
+        sequence: 3,
+        type: 'game.message',
+        data: {
+          key: 'game.card.drawn',
+          params: {
+            playerId: 1,
+            revealed: true,
+            cardLabel: 'Rencontre animale 1',
+            effectDescription: 'Avancez de 2 cases',
+          },
+        },
+      },
+      {
+        id: '12:4',
+        sequence: 4,
+        type: 'pawn.landed',
+        data: { playerId: 1, position: 7 },
+      },
+      {
+        id: '12:5',
+        sequence: 5,
+        type: 'pawn.landed',
+        data: { playerId: 1, position: 7, tileLabel: 'Sentier 8' },
+      },
+      {
+        id: '12:6',
+        sequence: 6,
+        type: 'turn.started',
+        data: { playerId: 2 },
+      },
+    ];
+    const players = [
+      { id: 1, username: 'Lila' },
+      { id: 2, username: 'Mina' },
+    ];
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'started' },
+          players: { all: players },
+          events: {
+            recent: events,
+            latestByType: Object.fromEntries(
+              events.map((event) => [event.type, event]),
+            ),
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state: { status: 'started', players } as unknown as GameState,
+      handler,
+      roomId: 6,
+      gameType: 'aventure-sauvage',
+      version: 12,
+      viewerPlayerId: 1,
+    });
+    const messages = (payload.system as any).events.recent
+      .map((event: any) => event.data.message)
+      .filter(Boolean);
+
+    expect(messages).toEqual([
+      'Vous arrivez sur la case 6 : Animal rigolo.',
+      'Vous piochez « Rencontre animale 1 ». Effet : Avancez de 2 cases.',
+      'Vous arrivez sur la case 8 : Sentier 8.',
+      "C'est au tour de Mina.",
+    ]);
+  });
+
   it('announces a player leaving a round through the standard event', () => {
     const state = {
       status: 'started',

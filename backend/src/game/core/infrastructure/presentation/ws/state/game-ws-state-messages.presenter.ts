@@ -9,6 +9,11 @@ type GamePresentationDescriptor = NonNullable<
 type ScorePresentationDescriptor = NonNullable<
   GamePresentationDescriptor['score']
 >;
+type PairedTurn = { eventId: string; data: Record<string, unknown> };
+type PresentationRelations = {
+  suppressedEventIds: ReadonlySet<string>;
+  turnByMessageId: ReadonlyMap<string, PairedTurn>;
+};
 
 export class GameWsStateMessagesPresenter {
   withServerMessages(
@@ -19,22 +24,16 @@ export class GameWsStateMessagesPresenter {
     const playerNames = this.playerNames(system);
     const events = this.asRecord(system.events);
     const latestByType = this.asRecord(events.latestByType);
-    const semanticMessageKey = this.semanticMessageKey(latestByType);
     const receivedCardData = this.asRecord(
       this.asRecord(latestByType['card.received']).data,
     );
     const recentEvents = Array.isArray(events.recent) ? events.recent : [];
-    const pairedTurn = this.pairedTurnAfterSemanticMessage(
-      recentEvents,
-      this.asRecord(latestByType['game.message']),
-      semanticMessageKey,
-    );
+    const relations = this.presentationRelations(recentEvents, latestByType);
     const started = isActiveMatchStatus(this.asRecord(system.match).status);
     const presentEvent = (rawEvent: unknown): Record<string, unknown> =>
       this.presentEvent({
         rawEvent,
-        semanticMessageKey,
-        pairedTurn,
+        relations,
         playerNames,
         started,
         viewerPlayerId,
@@ -65,12 +64,6 @@ export class GameWsStateMessagesPresenter {
     return names;
   }
 
-  private semanticMessageKey(latestByType: Record<string, unknown>): string {
-    return this.stringValue(
-      this.asRecord(this.asRecord(latestByType['game.message']).data).key,
-    );
-  }
-
   private presentLatestByType(
     latestByType: Record<string, unknown>,
     presentEvent: (rawEvent: unknown) => Record<string, unknown>,
@@ -84,8 +77,7 @@ export class GameWsStateMessagesPresenter {
 
   private presentEvent(input: {
     rawEvent: unknown;
-    semanticMessageKey: string;
-    pairedTurn: { eventId: string; data: Record<string, unknown> };
+    relations: PresentationRelations;
     playerNames: ReadonlyMap<number, string>;
     started: boolean;
     viewerPlayerId: number | null;
@@ -95,7 +87,9 @@ export class GameWsStateMessagesPresenter {
     const event = this.asRecord(input.rawEvent);
     const data = this.asRecord(event.data);
     const type = this.stringValue(event.type);
-    if (this.isSupersededByGameMessage(type, event, input)) return event;
+    const eventId = this.stringValue(event.id);
+    if (input.relations.suppressedEventIds.has(eventId)) return event;
+    const pairedTurn = input.relations.turnByMessageId.get(eventId);
     const message = this.eventMessage(
       type,
       data,
@@ -104,29 +98,10 @@ export class GameWsStateMessagesPresenter {
       input.started,
       input.viewerPlayerId,
       input.receivedCardData,
-      input.pairedTurn.data,
+      pairedTurn?.data ?? {},
       input.presentation,
     );
     return message ? { ...event, data: { ...data, message } } : event;
-  }
-
-  private isSupersededByGameMessage(
-    type: string,
-    event: Record<string, unknown>,
-    input: { semanticMessageKey: string; pairedTurn: { eventId: string } },
-  ): boolean {
-    return (
-      (type === 'card.drawn' &&
-        input.semanticMessageKey === 'game.card.drawn') ||
-      (type === 'card.received' &&
-        input.semanticMessageKey === 'game.card.drawn') ||
-      (type === 'card.played' &&
-        input.semanticMessageKey === 'game.card.played') ||
-      (type === 'turn.started' &&
-        this.stringValue(event.id) === input.pairedTurn.eventId) ||
-      (input.semanticMessageKey === 'game.round.started' &&
-        isInitialRoundEvent(type))
-    );
   }
 
   private withoutDuplicateTurnIdentities(
@@ -330,33 +305,134 @@ export class GameWsStateMessagesPresenter {
     return messages.join('\n');
   }
 
-  private pairedTurnAfterSemanticMessage(
+  private presentationRelations(
     recentEvents: unknown[],
-    semanticEvent: Record<string, unknown>,
-    semanticKey: string,
-  ): { eventId: string; data: Record<string, unknown> } {
-    if (
-      semanticKey !== 'game.card.drawn' &&
-      semanticKey !== 'game.player.passed'
-    )
-      return { eventId: '', data: {} };
-    const semanticId = this.stringValue(semanticEvent.id);
-    const semanticIndex = recentEvents.findIndex(
-      (rawEvent) => this.stringValue(this.asRecord(rawEvent).id) === semanticId,
-    );
-    if (!semanticId || semanticIndex < 0) return { eventId: '', data: {} };
-    for (const rawEvent of recentEvents.slice(semanticIndex + 1)) {
-      const event = this.asRecord(rawEvent);
-      const type = this.stringValue(event.type);
-      if (type === 'game.message') break;
-      if (type === 'turn.started') {
-        return {
-          eventId: this.stringValue(event.id),
-          data: this.asRecord(event.data),
-        };
+    latestByType: Record<string, unknown>,
+  ): PresentationRelations {
+    const orderedRecent = this.orderedUniqueEvents(recentEvents);
+    const ordered = this.orderedUniqueEvents([
+      ...recentEvents,
+      ...Object.values(latestByType),
+    ]);
+    const suppressedEventIds = new Set<string>();
+    const turnByMessageId = new Map<string, PairedTurn>();
+    for (let index = 0; index < ordered.length; index += 1) {
+      const semantic = this.asRecord(ordered[index]);
+      if (this.stringValue(semantic.type) !== 'game.message') continue;
+      const semanticId = this.stringValue(semantic.id);
+      const key = this.stringValue(this.asRecord(semantic.data).key);
+      const commandId = this.eventCommandId(semanticId);
+      const supersededTypes = this.supersededTypes(key);
+      if (supersededTypes.length > 0) {
+        for (const rawEvent of ordered) {
+          const event = this.asRecord(rawEvent);
+          const eventId = this.stringValue(event.id);
+          if (
+            this.eventCommandId(eventId) === commandId &&
+            supersededTypes.includes(this.stringValue(event.type))
+          )
+            suppressedEventIds.add(eventId);
+        }
       }
     }
-    return { eventId: '', data: {} };
+    for (let index = 0; index < orderedRecent.length; index += 1) {
+      const semantic = this.asRecord(orderedRecent[index]);
+      if (this.stringValue(semantic.type) !== 'game.message') continue;
+      const semanticId = this.stringValue(semantic.id);
+      const key = this.stringValue(this.asRecord(semantic.data).key);
+      if (key !== 'game.card.drawn' && key !== 'game.player.passed') continue;
+      for (const rawEvent of orderedRecent.slice(index + 1)) {
+        const event = this.asRecord(rawEvent);
+        const type = this.stringValue(event.type);
+        if (type === 'game.message') break;
+        if (type !== 'turn.started') {
+          if (suppressedEventIds.has(this.stringValue(event.id))) continue;
+          break;
+        }
+        const eventId = this.stringValue(event.id);
+        turnByMessageId.set(semanticId, {
+          eventId,
+          data: this.asRecord(event.data),
+        });
+        suppressedEventIds.add(eventId);
+        break;
+      }
+    }
+    this.suppressDuplicateLandings(ordered, suppressedEventIds);
+    return { suppressedEventIds, turnByMessageId };
+  }
+
+  private suppressDuplicateLandings(
+    events: Record<string, unknown>[],
+    suppressedEventIds: Set<string>,
+  ): void {
+    const bestByLanding = new Map<
+      string,
+      { eventId: string; narrationScore: number }
+    >();
+    for (const event of events) {
+      if (this.stringValue(event.type) !== 'pawn.landed') continue;
+      const eventId = this.stringValue(event.id);
+      const data = this.asRecord(event.data);
+      const playerId = this.numberValue(data.playerId);
+      const position = this.numberValue(data.position);
+      if (!eventId || playerId == null || position == null) continue;
+      const identity = `${this.eventCommandId(eventId)}:${playerId}:${position}`;
+      const narrationScore =
+        Number(Boolean(this.stringValue(data.tileLabel))) +
+        Number(Boolean(this.stringValue(data.tileDescription)));
+      const previous = bestByLanding.get(identity);
+      if (!previous) {
+        bestByLanding.set(identity, { eventId, narrationScore });
+        continue;
+      }
+      if (narrationScore >= previous.narrationScore) {
+        suppressedEventIds.add(previous.eventId);
+        bestByLanding.set(identity, { eventId, narrationScore });
+      } else {
+        suppressedEventIds.add(eventId);
+      }
+    }
+  }
+
+  private orderedUniqueEvents(events: unknown[]): Record<string, unknown>[] {
+    const unique = new Map<string, Record<string, unknown>>();
+    for (const rawEvent of events) {
+      const event = this.asRecord(rawEvent);
+      const id = this.stringValue(event.id);
+      if (id && !unique.has(id)) unique.set(id, event);
+    }
+    return [...unique.values()].sort((left, right) => {
+      const leftSequence = this.numberValue(left.sequence);
+      const rightSequence = this.numberValue(right.sequence);
+      if (leftSequence != null && rightSequence != null)
+        return leftSequence - rightSequence;
+      return (
+        (this.numberValue(left.occurredAtMs) ?? 0) -
+        (this.numberValue(right.occurredAtMs) ?? 0)
+      );
+    });
+  }
+
+  private supersededTypes(messageKey: string): string[] {
+    if (messageKey === 'game.card.drawn')
+      return ['card.drawn', 'card.received'];
+    if (messageKey === 'game.card.played') return ['card.played'];
+    if (messageKey === 'game.round.started')
+      return [
+        'match.started',
+        'round.started',
+        'turn.started',
+        'card.drawn',
+        'card.received',
+        'card.discarded',
+      ];
+    return [];
+  }
+
+  private eventCommandId(eventId: string): string {
+    const separator = eventId.lastIndexOf(':');
+    return separator < 0 ? eventId : eventId.slice(0, separator);
   }
 
   private withNextTurn(
@@ -408,17 +484,6 @@ export class GameWsStateMessagesPresenter {
     const number = typeof value === 'number' ? value : Number.NaN;
     return Number.isSafeInteger(number) ? number : null;
   }
-}
-
-function isInitialRoundEvent(type: string): boolean {
-  return (
-    type === 'match.started' ||
-    type === 'round.started' ||
-    type === 'turn.started' ||
-    type === 'card.drawn' ||
-    type === 'card.received' ||
-    type === 'card.discarded'
-  );
 }
 
 function scoreUnit(
