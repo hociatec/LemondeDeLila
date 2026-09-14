@@ -85,7 +85,6 @@ bool AdminFrame::PreparePayload(
                 businessPayload[item.key()] = item.value();
         payload = std::move(businessPayload);
     }
-
     bool needsFile = false;
     if (command.transport == domain::AdminTransport::HttpMultipart)
     {
