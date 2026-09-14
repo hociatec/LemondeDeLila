@@ -8,6 +8,7 @@
 #include "bootstrap/composition/infrastructure/network/NetworkComposition.h"
 #include "bootstrap/composition/infrastructure/social/SocialComposition.h"
 #include "bootstrap/composition/infrastructure/user/UserComposition.h"
+#include "bootstrap/composition/infrastructure/admin/AdminComposition.h"
 
 namespace lila::app::navigation
 {
@@ -34,6 +35,7 @@ private:
     AudioComposition audio_;
     GameComposition game_;
     SocialComposition social_;
+    AdminComposition admin_;
     std::unique_ptr<lila::app::navigation::AppNavigator> navigator_;
 };
 }

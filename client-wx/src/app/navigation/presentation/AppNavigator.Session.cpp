@@ -41,6 +41,9 @@ void AppNavigator::ShowSession(std::size_t selectedIndex, bool resetInitialFocus
 
     presenceMonitor_.Start();
     roomInvitationMonitor_.Start();
+    // Rebuild the menu from the current JWT roles. A refresh token rotation may
+    // have granted or removed administrative access while another view was open.
+    ResetView(ViewId::MainMenu);
     auto* view = GetOrCreateView(ViewId::MainMenu);
     if (resetInitialFocus)
     {

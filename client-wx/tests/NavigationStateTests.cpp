@@ -1,12 +1,56 @@
 #include <cassert>
+#include <set>
 
 #include "modules/social/presentation/SocialNavigationState.h"
 #include "modules/messaging/presentation/MessagingNavigationState.h"
 #include "modules/options/presentation/OptionsEditSession.h"
 #include "modules/catalog/application/CatalogVisibilityPolicy.h"
+#include "modules/admin/domain/AdminCommand.h"
+#include "modules/main_menu/presentation/MainMenuContent.h"
+#include "modules/session/domain/Session.h"
 
 int main()
 {
+    using lila::modules::session::domain::Session;
+    Session regularSession;
+    regularSession.roles = {"ROLE_USER"};
+    assert(!regularSession.IsAdmin());
+    Session adminSession;
+    adminSession.roles = {"ROLE_USER", "ROLE_ADMIN"};
+    assert(adminSession.IsAdmin());
+
+    const auto regularMenu =
+        lila::modules::main_menu::presentation::GetMainMenuEntries(false);
+    const auto adminMenu =
+        lila::modules::main_menu::presentation::GetMainMenuEntries(true);
+    assert(adminMenu.size() == regularMenu.size() + 1);
+    assert(adminMenu[3].action ==
+        lila::modules::main_menu::presentation::MainMenuAction::OpenAdmin);
+
+    const auto& adminCommands = lila::modules::admin::domain::GetAdminCommands();
+    assert(adminCommands.size() >= 60);
+    std::set<std::string> commandIds;
+    bool hasHttp = false;
+    bool hasApiWs = false;
+    bool hasNotifyWs = false;
+    bool hasMaintenanceProtection = false;
+    for (const auto& command : adminCommands)
+    {
+        assert(!command.id.empty());
+        assert(!command.operation.empty());
+        assert(commandIds.insert(command.id).second);
+        hasHttp = hasHttp || command.transport ==
+            lila::modules::admin::domain::AdminTransport::HttpJson;
+        hasApiWs = hasApiWs || command.transport ==
+            lila::modules::admin::domain::AdminTransport::ApiWebSocket;
+        hasNotifyWs = hasNotifyWs || command.transport ==
+            lila::modules::admin::domain::AdminTransport::NotificationWebSocket;
+        hasMaintenanceProtection = hasMaintenanceProtection || command.maintenanceToken;
+    }
+    assert(hasHttp && hasApiWs && hasNotifyWs && hasMaintenanceProtection);
+    for (const auto& section : lila::modules::admin::domain::GetAdminSections())
+        assert(!lila::modules::admin::domain::CommandsForSection(section.id).empty());
+
     using lila::modules::social::presentation::SocialNavigationState;
     using lila::modules::social::presentation::SocialSection;
     SocialNavigationState social(3);

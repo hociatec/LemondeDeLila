@@ -2,6 +2,7 @@
 #include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/security/infrastructure/SecurityUtils.h"
+#include "shared/security/domain/JwtPayload.h"
 
 #include <ctime>
 #include <stdexcept>
@@ -140,6 +141,14 @@ std::string SessionStore::RefreshAccessToken(std::stop_token stopToken)
             updated.token = std::move(result.token);
             updated.refreshToken = std::move(result.refreshToken);
             updated.expiresAt = result.expiresAt;
+            try
+            {
+                updated.roles = lila::shared::security::ReadJwtRoles(updated.token);
+            }
+            catch (...)
+            {
+                updated.roles.clear();
+            }
             if (!updated.IsAuthenticated())
             {
                 supersededRefreshToken = std::move(updated.refreshToken);

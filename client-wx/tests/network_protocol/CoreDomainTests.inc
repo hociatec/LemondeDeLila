@@ -27,6 +27,10 @@ void TestJwtPayloadExpiration()
     Expect(
         lila::shared::security::ReadJwtExpiration(valid) == 4102444800LL,
         "Expiration JWT attendue");
+    const std::string withRoles =
+        "header.eyJ1c2VybmFtZSI6ImFsaWNlIiwiaWQiOjcsImV4cCI6NDEwMjQ0NDgwMCwicm9sZXMiOlsiUk9MRV9VU0VSIiwiUk9MRV9BRE1JTiJdfQ.signature";
+    const auto roles = lila::shared::security::ReadJwtRoles(withRoles);
+    Expect(roles.size() == 2 && roles[1] == "ROLE_ADMIN", "Roles JWT attendus");
 
     bool rejected = false;
     try
@@ -138,4 +142,3 @@ void TestJsonFileStorageRejectsCorruptedFiles()
 
     std::cout << "[TEST PASSED] JsonFileStorageRejectsCorruptedFiles\n";
 }
-

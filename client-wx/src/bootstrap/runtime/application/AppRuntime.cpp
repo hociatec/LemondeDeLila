@@ -22,6 +22,7 @@ void AppRuntime::Assemble(const StepLogger& setStep)
         *user_.optionsStore,
         *audio_.audioService,
         setStep);
+    admin_.Assemble(network_, *user_.sessionStore, setStep);
     CreateNavigator(setStep);
 }
 
@@ -61,6 +62,7 @@ void AppRuntime::CreateNavigator(const StepLogger& setStep)
         *social_.socialService,
         *social_.presenceMonitor};
     app::navigation::AudioNavigationDependencies audio{*audio_.audioService};
-    navigator_ = std::make_unique<app::navigation::AppNavigator>(auth, game, social, audio);
+    app::navigation::AdminNavigationDependencies admin{*admin_.service};
+    navigator_ = std::make_unique<app::navigation::AppNavigator>(auth, game, social, audio, admin);
 }
 }

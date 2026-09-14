@@ -23,7 +23,8 @@ AppNavigator::AppNavigator(
     AuthNavigationDependencies auth,
     GameNavigationDependencies game,
     SocialNavigationDependencies social,
-    AudioNavigationDependencies audio)
+    AudioNavigationDependencies audio,
+    AdminNavigationDependencies admin)
     : loginUseCase_(auth.loginUseCase),
       registerUseCase_(auth.registerUseCase),
       sessionStore_(auth.sessionStore),
@@ -40,7 +41,8 @@ AppNavigator::AppNavigator(
       messagingService_(social.messagingService),
       socialService_(social.socialService),
       presenceMonitor_(social.presenceMonitor),
-      audioService_(audio.audioService)
+      audioService_(audio.audioService),
+      adminService_(admin.adminService)
 {
 }
 

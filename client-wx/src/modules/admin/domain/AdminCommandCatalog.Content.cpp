@@ -1,0 +1,54 @@
+#include "modules/admin/domain/AdminCommand.h"
+#include "generated/protocol/WsMessageTypes.generated.h"
+
+namespace lila::modules::admin::domain
+{
+namespace ws = lila::shared::network::ws::types;
+
+void AppendContentCommands(std::vector<AdminCommand>& c)
+{
+    using S = AdminSection; using T = AdminTransport;
+    c.insert(c.end(), {
+        {"rooms.list", S::Rooms, L"Lister les salles", L"Inclure les salles privées ou démarrées.", T::ApiWebSocket, std::string(ws::admin::rooms::List), {}, R"({"limit":200,"includePrivate":true,"includeStarted":false})"},
+        {"rooms.joinable", S::Rooms, L"Lister les salles intégrables", L"Salles ouvertes avec joueurs actifs.", T::ApiWebSocket, std::string(ws::admin::rooms::List), {}, R"({"limit":200,"joinableOnly":true})"},
+        {"rooms.join", S::Rooms, L"Intégrer une salle", L"Utiliser le flux normal comme joueur ou spectateur.", T::LocalAction, "join-room", {}, R"({"roomId":1,"spectator":true})"},
+        {"rooms.destroy", S::Rooms, L"Détruire une salle", L"Supprimer immédiatement une salle.", T::ApiWebSocket, std::string(ws::admin::rooms::Destroy), {}, R"({"roomId":1,"confirm":true})", true},
+        {"rooms.cleanup.preview", S::Rooms, L"Prévisualiser le nettoyage", L"Dry-run excluant les joueurs actifs.", T::ApiWebSocket, std::string(ws::admin::rooms::Cleanup), {}, R"({"confirm":true,"dryRun":true,"includePrivate":false,"includeStarted":false,"olderThanMinutes":60,"limit":1000})"},
+        {"rooms.cleanup", S::Rooms, L"Exécuter le nettoyage", L"Supprimer les salles correspondant aux filtres.", T::ApiWebSocket, std::string(ws::admin::rooms::Cleanup), {}, R"({"confirm":true,"dryRun":false,"includePrivate":false,"includeStarted":false,"olderThanMinutes":60,"limit":1000})", true},
+        {"rooms.settings.get", S::Rooms, L"Lire le nettoyage automatique", L"Paramètres courants.", T::ApiWebSocket, std::string(ws::admin::rooms::SettingsGet)},
+        {"rooms.settings.update", S::Rooms, L"Modifier le nettoyage automatique", L"Activation, âge, intervalle et limite.", T::ApiWebSocket, std::string(ws::admin::rooms::SettingsUpdate), {}, R"({"autoCleanupEnabled":true,"autoCleanupOlderThanMinutes":60,"autoCleanupIntervalSeconds":300,"autoCleanupLimit":1000})"},
+
+        {"games.list", S::Games, L"Lister les jeux", L"Catalogue incluant les jeux désactivés.", T::ApiWebSocket, std::string(ws::admin::games::List)},
+        {"games.enable", S::Games, L"Activer ou désactiver un jeu", L"Modification rapide de disponibilité.", T::ApiWebSocket, std::string(ws::admin::games::SetEnabled), {}, R"({"gameType":"","enabled":true})"},
+        {"games.update", S::Games, L"Modifier un jeu", L"Overrides de catalogue et de tchat.", T::ApiWebSocket, std::string(ws::admin::games::Update), {}, R"({"gameType":"","name":"","description":"","minPlayers":2,"maxPlayers":8,"status":"finished","chatEnabled":true,"chatSoundsEnabled":true})"},
+        {"games.reset", S::Games, L"Réinitialiser un jeu", L"Supprimer tous ses overrides.", T::ApiWebSocket, std::string(ws::admin::games::Reset), {}, R"({"gameType":""})", true},
+        {"categories.list", S::Games, L"Lister les catégories", L"Arbre et affectations.", T::ApiWebSocket, std::string(ws::admin::games::Categories)},
+        {"categories.create", S::Games, L"Créer une catégorie", L"parentId peut être null.", T::ApiWebSocket, std::string(ws::admin::games::CategoryCreate), std::string(ws::admin::games::Categories), R"({"name":"","parentId":null})"},
+        {"categories.update", S::Games, L"Modifier une catégorie", L"Nom ou parent.", T::ApiWebSocket, std::string(ws::admin::games::CategoryUpdate), std::string(ws::admin::games::Categories), R"({"id":"","name":"","parentId":null})"},
+        {"categories.assign", S::Games, L"Affecter une catégorie", L"Associer un jeu, null pour retirer.", T::ApiWebSocket, std::string(ws::admin::games::CategoryAssign), {}, R"({"gameType":"","categoryId":null})"},
+        {"categories.delete", S::Games, L"Supprimer une catégorie", L"Suppression et réconciliation.", T::ApiWebSocket, std::string(ws::admin::games::CategoryDelete), std::string(ws::admin::games::Categories), R"({"id":""})", true},
+
+        {"bots.names", S::Bots, L"Lister les noms", L"Noms disponibles et activation.", T::ApiWebSocket, std::string(ws::admin::bots::NamesList)},
+        {"bots.create", S::Bots, L"Créer un nom", L"Nom de bot, 150 caractères maximum.", T::ApiWebSocket, std::string(ws::admin::bots::NameCreate), std::string(ws::admin::bots::NamesList), R"({"name":"","enabled":true})"},
+        {"bots.update", S::Bots, L"Modifier un nom", L"Nom et activation.", T::ApiWebSocket, std::string(ws::admin::bots::NameUpdate), std::string(ws::admin::bots::NamesList), R"({"id":1,"name":"","enabled":true})"},
+        {"bots.delete", S::Bots, L"Supprimer un nom", L"Retirer un nom de bot.", T::ApiWebSocket, std::string(ws::admin::bots::NameDelete), std::string(ws::admin::bots::NamesList), R"({"id":1})", true},
+        {"bots.settings.get", S::Bots, L"Lire les temporisations", L"Délais actuels des bots.", T::ApiWebSocket, std::string(ws::admin::bots::SettingsGet)},
+        {"bots.settings.update", S::Bots, L"Modifier les temporisations", L"Délais entre 0 et 600000 ms.", T::ApiWebSocket, std::string(ws::admin::bots::SettingsUpdate), {}, R"({"botTurnDelayMs":500,"botStartDelayMs":500,"botDrawDelayMs":500})"},
+
+        {"mnemo.categories", S::MnemoQuiz, L"Lister les catégories", L"Catégories du quiz Mnemo.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::Categories)},
+        {"mnemo.category.create", S::MnemoQuiz, L"Créer une catégorie", L"Nom de la catégorie.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::CategoryCreate), std::string(ws::admin::quiz::mnemo::Categories), R"({"name":""})"},
+        {"mnemo.category.update", S::MnemoQuiz, L"Renommer une catégorie", L"Identifiant et nouveau nom.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::CategoryUpdate), std::string(ws::admin::quiz::mnemo::Categories), R"({"id":"","name":""})"},
+        {"mnemo.category.delete", S::MnemoQuiz, L"Supprimer une catégorie", L"Suppression définitive.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::CategoryDelete), std::string(ws::admin::quiz::mnemo::Categories), R"({"id":""})", true},
+        {"mnemo.questions", S::MnemoQuiz, L"Lister les questions", L"Filtres facultatifs catégorie/statut.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::Questions), {}, "{}"},
+        {"mnemo.question.create", S::MnemoQuiz, L"Créer une question", L"Exactement quatre réponses.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::QuestionCreate), std::string(ws::admin::quiz::mnemo::Questions), R"({"categoryId":"","question":"","answers":["","","",""],"correctIndex":0,"status":"pending"})"},
+        {"mnemo.question.update", S::MnemoQuiz, L"Modifier une question", L"Seuls les champs fournis changent.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::QuestionUpdate), std::string(ws::admin::quiz::mnemo::Questions), R"({"id":"","question":"","answers":["","","",""],"correctIndex":0,"status":"pending"})"},
+        {"mnemo.question.delete", S::MnemoQuiz, L"Supprimer une question", L"Suppression définitive.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::QuestionDelete), std::string(ws::admin::quiz::mnemo::Questions), R"({"id":""})", true},
+
+        {"roles.list", S::Roles, L"Lister les rôles", L"Rôles et définitions.", T::ApiWebSocket, std::string(ws::admin::roles::List)},
+        {"roles.definitions", S::Roles, L"Lister les définitions", L"Descriptions et permissions.", T::ApiWebSocket, std::string(ws::admin::roles::Definitions)},
+        {"roles.create", S::Roles, L"Créer un rôle", L"Permissions déclaratives.", T::ApiWebSocket, std::string(ws::admin::roles::Create), std::string(ws::admin::roles::Definitions), R"({"name":"ROLE_","description":"","permissions":["admin.users"]})"},
+        {"roles.update", S::Roles, L"Modifier un rôle", L"Renommage, description ou permissions.", T::ApiWebSocket, std::string(ws::admin::roles::Update), std::string(ws::admin::roles::Definitions), R"({"name":"ROLE_","description":"","permissions":["admin.users"]})"},
+        {"roles.delete", S::Roles, L"Supprimer un rôle", L"Suppression de la définition.", T::ApiWebSocket, std::string(ws::admin::roles::Delete), std::string(ws::admin::roles::Definitions), R"({"name":"ROLE_"})", true},
+    });
+}
+}

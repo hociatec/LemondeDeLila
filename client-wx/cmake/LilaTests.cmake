@@ -148,7 +148,44 @@ lila_add_test_executable(lemonde_de_lila_wx_messaging_selection_tests
 )
 lila_add_test_executable(lemonde_de_lila_wx_navigation_state_tests
     tests/NavigationStateTests.cpp
+    src/modules/main_menu/presentation/MainMenuContent.cpp
+    src/modules/admin/domain/AdminCommandCatalog.cpp
+    src/modules/admin/domain/AdminCommandCatalog.Moderation.cpp
+    src/modules/admin/domain/AdminCommandCatalog.Content.cpp
+    src/modules/admin/domain/AdminCommandCatalog.Operations.cpp
+    src/shared/security/infrastructure/SecurityUtils.cpp
 )
+lila_add_test_executable(lemonde_de_lila_wx_admin_contract_tests
+    tests/AdminContractTests.cpp
+    src/modules/admin/domain/AdminCommandCatalog.cpp
+    src/modules/admin/domain/AdminCommandCatalog.Moderation.cpp
+    src/modules/admin/domain/AdminCommandCatalog.Content.cpp
+    src/modules/admin/domain/AdminCommandCatalog.Operations.cpp
+    src/modules/admin/domain/AdminFormMetadata.cpp
+    src/modules/admin/infrastructure/AdminPayloadValidator.cpp
+    src/modules/admin/presentation/AdminResultFormatter.cpp
+    src/shared/network/application/http/AuthenticatedHttpClient.cpp
+)
+target_link_libraries(
+    lemonde_de_lila_wx_admin_contract_tests
+    PRIVATE nlohmann_json::nlohmann_json
+)
+if(WIN32)
+    target_sources(lemonde_de_lila_wx_admin_contract_tests PRIVATE
+        src/shared/text/presentation/encoding/Encoding.cpp
+    )
+    target_link_libraries(lemonde_de_lila_wx_admin_contract_tests PRIVATE winhttp wx::base)
+endif()
+if(EXISTS "${LILA_BACKEND_ROOT}")
+    find_program(LILA_ADMIN_COVERAGE_NODE_EXECUTABLE node REQUIRED)
+    add_test(
+        NAME lemonde_de_lila_wx_admin_backend_coverage_tests
+        COMMAND "${LILA_ADMIN_COVERAGE_NODE_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/scripts/VerifyAdminClientCoverage.mjs"
+            --backend-root "${LILA_BACKEND_ROOT}"
+            --client-root "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+endif()
 lila_add_test_executable(lemonde_de_lila_wx_social_profile_mapper_tests
     tests/SocialProfileMapperTests.cpp
 )

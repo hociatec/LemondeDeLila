@@ -19,9 +19,9 @@ constexpr int WindowHeight = 640;
 
 wxString ResolveStatusMessage(
     const lila::modules::options::application::OptionsStore& optionsStore,
+    const std::vector<lila::modules::main_menu::presentation::MainMenuEntry>& entries,
     std::size_t index)
 {
-    const auto entries = lila::modules::main_menu::presentation::GetMainMenuEntries();
     if (index >= entries.size())
     {
         return wxString();
@@ -47,6 +47,7 @@ MainMenuFrame::MainMenuFrame(
     OpenChatRequestedHandler onOpenChatRequested,
     OpenSocialRequestedHandler onOpenSocialRequested,
     OpenOptionsRequestedHandler onOpenOptionsRequested,
+    OpenAdminRequestedHandler onOpenAdminRequested,
     LogoutRequestedHandler onLogoutRequested,
     std::size_t initialSelectedIndex)
     : lila::shared::accessibility::NonFocusablePanel(parent, 0),
@@ -57,8 +58,10 @@ MainMenuFrame::MainMenuFrame(
       onOpenChatRequested_(std::move(onOpenChatRequested)),
       onOpenSocialRequested_(std::move(onOpenSocialRequested)),
       onOpenOptionsRequested_(std::move(onOpenOptionsRequested)),
+      onOpenAdminRequested_(std::move(onOpenAdminRequested)),
       onLogoutRequested_(std::move(onLogoutRequested))
 {
+    entries_ = GetMainMenuEntries(sessionStore_.Current().IsAdmin());
     SetMinSize(wxSize(WindowWidth, WindowHeight));
     lila::shared::logging::LogInfo("MainMenu", "Constructor: begin.");
     BuildLayout();
@@ -71,7 +74,7 @@ MainMenuFrame::MainMenuFrame(
     {
         selectedMenuIndex_ = std::min(initialSelectedIndex, menu_->GetItemCount() - 1);
         menu_->SetSelectedIndexSilently(selectedMenuIndex_);
-        SetStatus(ResolveStatusMessage(optionsStore_, selectedMenuIndex_), false);
+        SetStatus(ResolveStatusMessage(optionsStore_, entries_, selectedMenuIndex_), false);
     }
     lila::shared::logging::LogInfo("MainMenu", "Constructor: end.");
 }

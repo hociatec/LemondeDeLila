@@ -33,9 +33,12 @@ struct NetworkComposition final
     std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> authenticatedRealtimeWebSocketClient;
     std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> presenceChatWebSocketClient;
     std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> presenceWebSocketClient;
+    std::unique_ptr<lila::shared::network::websocket::IWebSocketClient> notificationWebSocketClient;
     std::unique_ptr<lila::shared::network::http::IWsTicketProvider> wsTicketProvider;
     std::unique_ptr<lila::shared::network::realtime::RealtimeApiClient> realtimeApiClient;
     std::unique_ptr<lila::shared::network::realtime::AuthenticatedRealtimeApiClient>
         authenticatedRealtimeApiClient;
+    std::unique_ptr<lila::shared::network::realtime::AuthenticatedRealtimeApiClient>
+        notificationRealtimeApiClient;
 };
 }

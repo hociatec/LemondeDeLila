@@ -16,11 +16,13 @@ AuthenticatedRealtimeApiClient::AuthenticatedRealtimeApiClient(
     std::string clientVersion,
     websocket::IWebSocketClient& webSocketClient,
     http::IWsTicketProvider& wsTicketProvider,
-    std::chrono::milliseconds requestTimeout)
+    std::chrono::milliseconds requestTimeout,
+    std::string ticketScope)
     : endpoint_(std::move(endpoint)),
       clientVersion_(std::move(clientVersion)),
       webSocketClient_(webSocketClient),
       wsTicketProvider_(wsTicketProvider),
+      ticketScope_(std::move(ticketScope)),
       requestTimeout_(requestTimeout)
 {
 }
@@ -56,7 +58,7 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
             headers.emplace(
                 std::string(lila::shared::network::ws::WsTicketHeader),
                 wsTicketProvider_.GetTicket(
-                    std::string(lila::shared::network::ws::WsTicketScopeApi),
+                    ticketScope_,
                     bearerToken));
         }
 

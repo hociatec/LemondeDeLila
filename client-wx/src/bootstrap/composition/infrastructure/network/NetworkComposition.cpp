@@ -11,6 +11,7 @@
 #include "shared/network/application/realtime/RealtimeApiClient.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
 #include "shared/network/domain/WebSocketConstants.h"
+#include "shared/network/domain/UrlUtils.h"
 #include "shared/network/infrastructure/http/WsTicketProvider.h"
 
 namespace lila::bootstrap
@@ -25,6 +26,7 @@ void NetworkComposition::Assemble(const StepLogger& setStep)
     authenticatedRealtimeWebSocketClient = detail::CreateWebSocketClient();
     presenceChatWebSocketClient = detail::CreateWebSocketClient();
     presenceWebSocketClient = detail::CreateWebSocketClient();
+    notificationWebSocketClient = detail::CreateWebSocketClient();
 
     setStep("Creation du fournisseur de tickets");
     wsTicketProvider = std::make_unique<shared::network::http::WsTicketProvider>(
@@ -50,5 +52,17 @@ void NetworkComposition::Assemble(const StepLogger& setStep)
             shared::config::AppConfig::ResolveClientVersion(),
             *authenticatedRealtimeWebSocketClient,
             *wsTicketProvider);
+
+    setStep("Creation du client de notifications authentifie");
+    notificationRealtimeApiClient =
+        std::make_unique<shared::network::realtime::AuthenticatedRealtimeApiClient>(
+            shared::network::ExtractOrigin(
+                shared::config::AppConfig::ResolveBackendApiWs()) +
+                std::string(shared::network::ws::NotifyPath),
+            shared::config::AppConfig::ResolveClientVersion(),
+            *notificationWebSocketClient,
+            *wsTicketProvider,
+            std::chrono::milliseconds{shared::network::NetworkTimeouts::ReceiveMs},
+            "notify");
 }
 }

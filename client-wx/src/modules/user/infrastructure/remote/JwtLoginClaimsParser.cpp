@@ -18,6 +18,7 @@ JwtLoginClaims JwtLoginClaimsParser::Parse(const std::string& token)
         payload,
         lila::modules::user::infrastructure::remote::fields::JwtUserId.data());
     claims.expiresAt = lila::shared::security::ReadJwtExpirationClaim(payload);
+    claims.roles = lila::shared::security::ReadJwtRolesClaim(payload);
     return claims;
 }
 }

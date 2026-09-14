@@ -62,8 +62,31 @@ c++ "${COMMON_FLAGS[@]}" \
 
 c++ "${COMMON_FLAGS[@]}" \
   "$ROOT/tests/NavigationStateTests.cpp" \
+  "$ROOT/src/modules/main_menu/presentation/MainMenuContent.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminCommandCatalog.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Moderation.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Content.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Operations.cpp" \
+  "$ROOT/src/shared/security/infrastructure/SecurityUtils.cpp" \
   -o "$BUILD_DIR/navigation-state-tests"
 "$BUILD_DIR/navigation-state-tests"
+
+c++ "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
+  "$ROOT/tests/AdminContractTests.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminCommandCatalog.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Moderation.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Content.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Operations.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminFormMetadata.cpp" \
+  "$ROOT/src/modules/admin/infrastructure/AdminPayloadValidator.cpp" \
+  "$ROOT/src/modules/admin/presentation/AdminResultFormatter.cpp" \
+  "$ROOT/src/shared/network/application/http/AuthenticatedHttpClient.cpp" \
+  -o "$BUILD_DIR/admin-contract-tests"
+"$BUILD_DIR/admin-contract-tests"
+
+node "$ROOT/scripts/VerifyAdminClientCoverage.mjs" \
+  --backend-root "$ROOT/../backend" \
+  --client-root "$ROOT"
 
 c++ "${COMMON_FLAGS[@]}" \
   "$ROOT/tests/UpdateTrustPolicyTests.cpp" \

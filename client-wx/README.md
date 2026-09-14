@@ -3,7 +3,8 @@
 Client de bureau Windows en C++20 et wxWidgets. Il couvre l’authentification,
 les salons, le jeu, le chat, la messagerie, le social, le catalogue, le livre
 des contes, le classement, le coffre, les options, l’audio et les mises à jour
-automatiques.
+automatiques. Les comptes portant `ROLE_ADMIN` disposent également d'une
+console native d'administration.
 
 ## Architecture
 
@@ -64,6 +65,33 @@ en-têtes de `src/generated/protocol` à partir de
 `../backend/contracts/client-wx-fields.json` et des événements WebSocket. Sous
 Windows, cette étape utilise PowerShell ; ailleurs, Node.js. Sans backend
 local, les contrats versionnés dans le client sont utilisés.
+
+## Console d'administration
+
+L'entrée « Administration » apparaît dans le menu principal uniquement pour
+un JWT contenant `ROLE_ADMIN` ou `admin`. Le backend revérifie les droits sur
+chaque opération. La console couvre les utilisateurs, le tchat, les contacts,
+les rapports de bugs, les salles, le catalogue, les bots, le quiz Mnemo, les
+rôles, les réglages globaux, les sons, l'observabilité et la maintenance.
+
+Chaque espace propose ses opérations métier et ouvre un formulaire accessible
+avec libellés français, contrôles booléens, choix, nombres, textes multilignes
+et listes. Les champs facultatifs peuvent être inclus explicitement ; le JSON
+reste confiné à la couche de transport. Les résultats sont présentés sous forme
+de fiches et de listes lisibles. Les opérations sensibles demandent le mot
+`CONFIRMER`. Le token de maintenance est demandé séparément, conservé
+uniquement en mémoire et effacé en quittant la console. Les réponses ne sont
+pas envoyées dans `client.log`.
+
+La navigation suit le contrat clavier du client : `Entrée` ouvre une section,
+une opération ou valide un formulaire ; `Échap` revient au niveau précédent,
+puis ferme la console depuis sa racine. Dans un texte multiligne, `Entrée`
+insère naturellement une nouvelle ligne.
+
+Le test `VerifyAdminClientCoverage.mjs` compare directement le catalogue aux
+contrôleurs et registres du backend. Il échoue lorsqu'une route HTTP admin, une
+route WebSocket `admin.*` ou une commande de contacts staff n'a plus
+d'équivalent client explicite.
 
 ## Mise à jour automatique
 

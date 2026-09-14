@@ -89,4 +89,29 @@ std::int64_t ReadJwtExpiration(const std::string& token)
 {
     return ReadJwtExpirationClaim(DecodeJwtPayload(token));
 }
+
+std::vector<std::string> ReadJwtRolesClaim(const nlohmann::json& payload)
+{
+    const auto roles = payload.find("roles");
+    if (roles == payload.end()) return {};
+    if (!roles->is_array() || roles->size() > 32)
+        throw std::runtime_error(lila::shared::errors::JwtTokenInvalid);
+
+    std::vector<std::string> result;
+    result.reserve(roles->size());
+    for (const auto& role : *roles)
+    {
+        if (!role.is_string()) throw std::runtime_error(lila::shared::errors::JwtTokenInvalid);
+        auto value = role.get<std::string>();
+        if (value.empty() || value.size() > 64)
+            throw std::runtime_error(lila::shared::errors::JwtTokenInvalid);
+        result.push_back(std::move(value));
+    }
+    return result;
+}
+
+std::vector<std::string> ReadJwtRoles(const std::string& token)
+{
+    return ReadJwtRolesClaim(DecodeJwtPayload(token));
+}
 }

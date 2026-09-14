@@ -2,6 +2,7 @@
 
 #include <span>
 #include <string_view>
+#include <vector>
 
 namespace lila::modules::main_menu::presentation
 {
@@ -12,6 +13,7 @@ enum class MainMenuAction
     OpenSocial,
     OpenAbout,
     OpenOptions,
+    OpenAdmin,
     Logout,
 };
 
@@ -22,5 +24,5 @@ struct MainMenuEntry
     std::wstring_view statusMessage;
 };
 
-[[nodiscard]] std::span<const MainMenuEntry> GetMainMenuEntries();
+[[nodiscard]] std::vector<MainMenuEntry> GetMainMenuEntries(bool includeAdmin);
 }

@@ -6,6 +6,9 @@
 #include <cstdint>
 #include <ctime>
 #include <string>
+#include <algorithm>
+#include <string_view>
+#include <vector>
 
 namespace lila::modules::session::domain
 {
@@ -15,6 +18,7 @@ struct Session
     std::string username;
     std::string token;
     std::string refreshToken;
+    std::vector<std::string> roles;
     std::int64_t expiresAt = 0;
     bool resumeOnce = false;
     std::int64_t resumeUntil = 0;
@@ -30,6 +34,7 @@ struct Session
           username(other.username),
           token(other.token),
           refreshToken(other.refreshToken),
+          roles(other.roles),
           expiresAt(other.expiresAt),
           resumeOnce(other.resumeOnce),
           resumeUntil(other.resumeUntil)
@@ -48,6 +53,7 @@ struct Session
         username = other.username;
         token = other.token;
         refreshToken = other.refreshToken;
+        roles = other.roles;
         expiresAt = other.expiresAt;
         resumeOnce = other.resumeOnce;
         resumeUntil = other.resumeUntil;
@@ -59,6 +65,7 @@ struct Session
           username(std::move(other.username)),
           token(std::move(other.token)),
           refreshToken(std::move(other.refreshToken)),
+          roles(std::move(other.roles)),
           expiresAt(other.expiresAt),
           resumeOnce(other.resumeOnce),
           resumeUntil(other.resumeUntil)
@@ -79,6 +86,7 @@ struct Session
         username = std::move(other.username);
         token = std::move(other.token);
         refreshToken = std::move(other.refreshToken);
+        roles = std::move(other.roles);
         expiresAt = other.expiresAt;
         resumeOnce = other.resumeOnce;
         resumeUntil = other.resumeUntil;
@@ -122,6 +130,16 @@ struct Session
         }
 
         return true;
+    }
+
+    [[nodiscard]] bool HasRole(std::string_view role) const
+    {
+        return std::find(roles.begin(), roles.end(), role) != roles.end();
+    }
+
+    [[nodiscard]] bool IsAdmin() const
+    {
+        return HasRole("ROLE_ADMIN") || HasRole("admin");
     }
 };
 }

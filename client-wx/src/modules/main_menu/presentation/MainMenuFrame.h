@@ -1,6 +1,8 @@
 #pragma once
 
 #include <functional>
+#include <vector>
+#include "modules/main_menu/presentation/MainMenuContent.h"
 #include "shared/accessibility/application/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 
@@ -31,6 +33,7 @@ public:
     using OpenChatRequestedHandler = std::function<void(std::size_t selectedIndex)>;
     using OpenSocialRequestedHandler = std::function<void(std::size_t selectedIndex)>;
     using OpenOptionsRequestedHandler = std::function<void(std::size_t selectedIndex)>;
+    using OpenAdminRequestedHandler = std::function<void(std::size_t selectedIndex)>;
 
     MainMenuFrame(
         wxWindow* parent,
@@ -41,6 +44,7 @@ public:
         OpenChatRequestedHandler onOpenChatRequested,
         OpenSocialRequestedHandler onOpenSocialRequested,
         OpenOptionsRequestedHandler onOpenOptionsRequested,
+        OpenAdminRequestedHandler onOpenAdminRequested,
         LogoutRequestedHandler onLogoutRequested,
         std::size_t initialSelectedIndex = 0);
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
@@ -61,6 +65,7 @@ private:
     OpenChatRequestedHandler onOpenChatRequested_;
     OpenSocialRequestedHandler onOpenSocialRequested_;
     OpenOptionsRequestedHandler onOpenOptionsRequested_;
+    OpenAdminRequestedHandler onOpenAdminRequested_;
     LogoutRequestedHandler onLogoutRequested_;
     wxStaticText* titleLabel_ = nullptr;
     wxStaticText* welcomeLabel_ = nullptr;
@@ -69,5 +74,6 @@ private:
     std::size_t selectedMenuIndex_ = 0;
     wxStaticText* statusLabel_ = nullptr;
     wxStaticText* versionLabel_ = nullptr;
+    std::vector<MainMenuEntry> entries_;
 };
 }

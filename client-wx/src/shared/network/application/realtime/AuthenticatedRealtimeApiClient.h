@@ -23,7 +23,8 @@ public:
         websocket::IWebSocketClient& webSocketClient,
         http::IWsTicketProvider& wsTicketProvider,
         std::chrono::milliseconds requestTimeout =
-            std::chrono::milliseconds{NetworkTimeouts::ReceiveMs});
+            std::chrono::milliseconds{NetworkTimeouts::ReceiveMs},
+        std::string ticketScope = "api");
 
     [[nodiscard]] RealtimeApiResponse Send(
         const RealtimeApiRequest& request,
@@ -35,6 +36,7 @@ private:
     std::string clientVersion_;
     websocket::IWebSocketClient& webSocketClient_;
     http::IWsTicketProvider& wsTicketProvider_;
+    std::string ticketScope_;
     std::chrono::milliseconds requestTimeout_;
     mutable std::timed_mutex requestMutex_;
 };

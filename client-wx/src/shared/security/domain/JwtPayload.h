@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include <nlohmann/json_fwd.hpp>
 
@@ -10,4 +11,6 @@ namespace lila::shared::security
 [[nodiscard]] nlohmann::json DecodeJwtPayload(const std::string& token);
 [[nodiscard]] std::int64_t ReadJwtExpirationClaim(const nlohmann::json& payload);
 [[nodiscard]] std::int64_t ReadJwtExpiration(const std::string& token);
+[[nodiscard]] std::vector<std::string> ReadJwtRolesClaim(const nlohmann::json& payload);
+[[nodiscard]] std::vector<std::string> ReadJwtRoles(const std::string& token);
 }
