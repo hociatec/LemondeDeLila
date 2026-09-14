@@ -2,7 +2,7 @@ import type { QueryRunner } from 'typeorm';
 import { PersistRoomInvites1771100000000 } from './1771100000000-PersistRoomInvites';
 
 it('creates a reversible invite table with cascade ownership and lookup indexes', async () => {
-  const query = jest.fn(async () => undefined);
+  const query = jest.fn(async (_sql: string) => undefined);
   const runner = { query } as unknown as QueryRunner;
   const migration = new PersistRoomInvites1771100000000();
   await migration.up(runner);

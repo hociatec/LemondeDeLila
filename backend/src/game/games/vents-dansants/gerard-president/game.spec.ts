@@ -87,13 +87,14 @@ describe('Gérard président declarative game', () => {
 
   it('continues snapshots created before the JSON migration', async () => {
     const game = await testGame(gameDefinition).players(3).seed(55).start();
-    const source = game.state();
-    source.engine.contentVersion =
-      'gerard-president@content:25d38394';
+    const source = game.state() as ReturnType<typeof game.state> & {
+      engine: { contentVersion: string };
+    };
+    source.engine.contentVersion = 'gerard-president@content:25d38394';
     const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
       source,
       [],
-    );
+    ) as typeof source;
     expect(restored.engine.contentVersion).toBe('1');
   });
 });

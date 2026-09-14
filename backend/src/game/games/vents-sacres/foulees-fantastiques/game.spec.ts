@@ -26,7 +26,7 @@ describe('Foulées Fantastiques declarative game', () => {
     }
     const state = game.state();
     const pending = state.pending!;
-    expect(pending.data?.choiceId).toBe('foulees.move');
+    expect(pending.data?.choiceId).toBe('teamPawn.move');
     expect(pending.data?.continuationData).toEqual({
       actorId: pending.playerId,
     });
@@ -64,7 +64,7 @@ describe('Foulées Fantastiques declarative game', () => {
       .system;
     expect(system.setup.complete).toBe(true);
     const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
-    expect(kits.pawns?.sets.foulees.assignments).toEqual({
+    expect(kits.pawns?.sets.teamPawn.assignments).toEqual({
       '1': ['equides:0', 'equides:1', 'equides:2', 'equides:3'],
       '2': ['oiseaux:0', 'oiseaux:1', 'oiseaux:2', 'oiseaux:3'],
     });

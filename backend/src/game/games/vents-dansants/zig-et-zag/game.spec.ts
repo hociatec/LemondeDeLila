@@ -16,12 +16,13 @@ describe('Zig et Zag declarative game', () => {
       const actor = game.availableActions(1).includes('draw_card') ? 1 : 2;
       await game.as(actor).do('draw_card', {});
     }
-    const onTable = game
-      .state()
-      .game.battle.plays.reduce(
-        (count, play) => count + play.playedCards.length,
-        0,
-      );
+    const state = game.state() as unknown as {
+      game: { battle: { plays: Array<{ playedCards: unknown[] }> } };
+    };
+    const onTable = state.game.battle.plays.reduce(
+      (count, play) => count + play.playedCards.length,
+      0,
+    );
     expect(
       game.inspect.hand(1).length +
         game.inspect.hand(2).length +

@@ -40,17 +40,21 @@ describe('Contes et Cacahuètes declarative game', () => {
     await game.start();
     await game.choose(1, catalogue.pawns[0].id);
     await game.choose(2, catalogue.pawns[1].id);
-    const legacy = game.state();
-    legacy.engine!.contentVersion =
-      'contes-et-cacahuetes@content:32cd4133';
+    const legacy = game.state() as ReturnType<typeof game.state> & {
+      engine: {
+        contentVersion: string;
+        kits?: { dice?: unknown };
+      };
+    };
+    legacy.engine!.contentVersion = 'contes-et-cacahuetes@content:32cd4133';
     const actorId = legacy.turn!.currentPlayerId!;
 
     const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
       legacy,
       [{ type: 'roll', payload: {}, meta: { actorId } }],
-    );
+    ) as typeof legacy;
 
-    expect(restored.engine?.contentVersion).toBe('1');
-    expect(restored.engine?.kits?.dice).toBeDefined();
+    expect(restored.engine.contentVersion).toBe('1');
+    expect(restored.engine.kits?.dice).toBeDefined();
   });
 });

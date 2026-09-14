@@ -14,8 +14,10 @@ describe('RoomPayloadService', () => {
       {
         findPayload: jest.fn().mockResolvedValue(room),
       } as ServiceArguments[0],
-      { build: jest.fn().mockResolvedValue(payload) } as ServiceArguments[1],
-      cache as ServiceArguments[2],
+      {
+        build: jest.fn().mockResolvedValue(payload),
+      } as unknown as ServiceArguments[1],
+      cache as unknown as ServiceArguments[2],
     );
 
     await expect(service.getRoomPayload(4)).resolves.toBe(payload);
@@ -28,10 +30,12 @@ describe('RoomPayloadService', () => {
       {
         findPayload: jest.fn().mockResolvedValue({ id: 4 }),
       } as ServiceArguments[0],
-      { build: jest.fn().mockResolvedValue(payload) } as ServiceArguments[1],
+      {
+        build: jest.fn().mockResolvedValue(payload),
+      } as unknown as ServiceArguments[1],
       {
         persist: jest.fn().mockRejectedValue(new Error('cache down')),
-      } as ServiceArguments[2],
+      } as unknown as ServiceArguments[2],
     );
 
     await expect(service.getRoomPayload(4)).resolves.toBe(payload);
@@ -46,7 +50,7 @@ describe('RoomPayloadService', () => {
     const service = new RoomPayloadService(
       {} as ServiceArguments[0],
       {} as ServiceArguments[1],
-      cache as ServiceArguments[2],
+      cache as unknown as ServiceArguments[2],
     );
 
     await expect(
@@ -69,8 +73,8 @@ describe('RoomPayloadService', () => {
     };
     const service = new RoomPayloadService(
       repository as ServiceArguments[0],
-      builder as ServiceArguments[1],
-      cache as ServiceArguments[2],
+      builder as unknown as ServiceArguments[1],
+      cache as unknown as ServiceArguments[2],
     );
 
     await expect(service.refreshRoomPayload(4)).resolves.toBe(payload);

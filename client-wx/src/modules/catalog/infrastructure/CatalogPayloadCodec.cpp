@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include <nlohmann/json.hpp>
 
@@ -121,7 +122,7 @@ void AttachGames(domain::CatalogShelf& shelf, const std::vector<domain::CatalogG
 }
 }
 
-std::vector<domain::CatalogShelf> ReadShelvesPayload(const nlohmann::json& payload)
+domain::CatalogSnapshot ReadCatalogPayload(const nlohmann::json& payload)
 {
     if (!payload.is_object())
     {
@@ -143,6 +144,6 @@ std::vector<domain::CatalogShelf> ReadShelvesPayload(const nlohmann::json& paylo
         AttachGames(shelf, games);
         shelves.push_back(std::move(shelf));
     }
-    return shelves;
+    return {std::move(shelves), payload.value("isAdmin", false)};
 }
 }

@@ -23,7 +23,7 @@ CatalogApi::CatalogApi(
 {
 }
 
-std::vector<domain::CatalogShelf> CatalogApi::GetShelves(std::stop_token stopToken) const
+domain::CatalogSnapshot CatalogApi::GetCatalog(std::stop_token stopToken) const
 {
     if (stopToken.stop_requested())
     {
@@ -42,6 +42,6 @@ std::vector<domain::CatalogShelf> CatalogApi::GetShelves(std::stop_token stopTok
     {
         return {};
     }
-    return codec::ReadShelvesPayload(response.payload);
+    return codec::ReadCatalogPayload(response.payload);
 }
 }

@@ -79,8 +79,9 @@ export const jsonEffectPacks = Object.freeze([
   boardMovementLandingsEffectPack,
 ] as const);
 
-/** Generic effect packs indexed by engine domain for authoring and audits. */
-export const jsonEffectPacksByDomain = Object.freeze({
+export type RegisteredJsonEffectPack = (typeof jsonEffectPacks)[number];
+type EffectPacksByDomain = Record<string, readonly RegisteredJsonEffectPack[]>;
+export const jsonEffectPacksByDomain: EffectPacksByDomain = Object.freeze({
   board: Object.freeze(
     jsonEffectPacks.filter((pack) => pack.domain === 'board'),
   ),
@@ -98,5 +99,3 @@ export const jsonEffectPacksByDomain = Object.freeze({
     jsonEffectPacks.filter((pack) => pack.domain === 'spatial'),
   ),
 });
-
-export type RegisteredJsonEffectPack = (typeof jsonEffectPacks)[number];

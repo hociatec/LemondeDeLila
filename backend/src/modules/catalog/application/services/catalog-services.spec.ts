@@ -171,6 +171,36 @@ describe('catalog services', () => {
     expect(source.listGames).toHaveBeenCalledTimes(1);
   });
 
+  it('loads disabled games for an administrator without poisoning the public cache', async () => {
+    const source = {
+      listGames: jest
+        .fn()
+        .mockResolvedValueOnce([{ id: 'public', name: 'Public' }])
+        .mockResolvedValueOnce([
+          { id: 'public', name: 'Public' },
+          { id: 'disabled', name: 'Disabled', status: 'construction' },
+        ]),
+    } as unknown as CatalogGameSourcePort;
+    const cache = new CatalogCacheService(
+      { ttlMs: 1_000 },
+      { now: () => Date.now() },
+    );
+    const service = new ListCatalogGamesService(
+      source,
+      cache,
+      new CatalogMapperService(),
+    );
+
+    await expect(service.execute()).resolves.toHaveLength(1);
+    await expect(
+      service.execute({ includeDisabled: true }),
+    ).resolves.toHaveLength(2);
+    await expect(service.execute()).resolves.toHaveLength(1);
+    expect(source.listGames).toHaveBeenNthCalledWith(2, {
+      includeDisabled: true,
+    });
+  });
+
   it('does not poison the cache when the source fails', async () => {
     const source = {
       listGames: jest

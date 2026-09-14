@@ -183,7 +183,9 @@ describe('À fond les ballons declarative game', () => {
     await game.start();
     await game.choose(1, 'capitaine-cacahuete');
     await game.choose(2, 'professeur-gribouille');
-    const legacy = game.state();
+    const legacy = game.state() as ReturnType<typeof game.state> & {
+      engine: { contentVersion: string };
+    };
     Reflect.set(legacy.game, 'awaitingCardDraw', true);
     legacy.engine!.contentVersion = 'a-fond-les-ballons@content:c5adb978';
     const actorId = legacy.turn!.currentPlayerId!;
@@ -191,10 +193,10 @@ describe('À fond les ballons declarative game', () => {
     const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
       legacy,
       [{ type: 'draw_card', payload: {}, meta: { actorId } }],
-    );
+    ) as typeof legacy;
 
     expect(Reflect.get(restored.game, 'awaitingCardDraw')).toBe(false);
-    expect(restored.engine?.contentVersion).toBe('1');
+    expect(restored.engine.contentVersion).toBe('1');
   });
 
   it('completes a tornado turn only once when its target is automatic', async () => {

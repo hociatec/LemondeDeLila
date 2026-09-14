@@ -10,10 +10,11 @@ export class CatalogWsHandler {
     private readonly validator: PayloadValidationService,
   ) {}
 
-  async all() {
-    const categories = await this.catalog.getCategoriesTree();
-    const games = await this.catalog.getAllGames();
-    return { type: 'catalog.all', payload: { categories, games } };
+  async all(isAdmin = false) {
+    const { categories, games } = await this.catalog.getSnapshot({
+      includeDisabled: isAdmin,
+    });
+    return { type: 'catalog.all', payload: { categories, games, isAdmin } };
   }
 
   async categories() {

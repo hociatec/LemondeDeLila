@@ -15,13 +15,13 @@ it('builds chat history from persistence instead of a stale process cache', asyn
     execute: jest.fn().mockResolvedValue(authoritative),
   };
   const service = new ListRecentNormalizedChatMessagesService(
-    cache as ConstructorParameters<
+    cache as unknown as ConstructorParameters<
       typeof ListRecentNormalizedChatMessagesService
     >[0],
-    presenter as ConstructorParameters<
+    presenter as unknown as ConstructorParameters<
       typeof ListRecentNormalizedChatMessagesService
     >[1],
-    listRecentMessages as ConstructorParameters<
+    listRecentMessages as unknown as ConstructorParameters<
       typeof ListRecentNormalizedChatMessagesService
     >[2],
   );

@@ -82,13 +82,14 @@ describe('Sac à Malices declarative game', () => {
 
   it('continues snapshots created before the JSON migration', async () => {
     const game = await testGame(gameDefinition).players(2).seed(132).start();
-    const source = game.state();
-    source.engine.contentVersion =
-      'sac-a-malices@content:2959fe7b@format:2';
+    const source = game.state() as ReturnType<typeof game.state> & {
+      engine: { contentVersion: string };
+    };
+    source.engine.contentVersion = 'sac-a-malices@content:2959fe7b@format:2';
     const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
       source,
       [],
-    );
+    ) as typeof source;
     expect(restored.engine.contentVersion).toBe('1');
   });
 });

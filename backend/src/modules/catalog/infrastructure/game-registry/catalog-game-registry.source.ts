@@ -8,8 +8,12 @@ import { CatalogGameSourcePort } from '../../application/ports/catalog-game-sour
 export class CatalogGameRegistrySource implements CatalogGameSourcePort {
   constructor(private readonly registry: GameRegistryService) {}
 
-  async listGames(): Promise<CatalogSourceGame[]> {
-    const definitions = await this.registry.listGames();
+  async listGames(
+    options: { includeDisabled?: boolean } = {},
+  ): Promise<CatalogSourceGame[]> {
+    const definitions = await this.registry.listGames({
+      includeDisabledOverrides: options.includeDisabled === true,
+    });
     return definitions.slice(0, 2_000).map((definition) => ({
       id: definition.id,
       name: definition.name,

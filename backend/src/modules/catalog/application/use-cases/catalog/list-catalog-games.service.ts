@@ -15,8 +15,10 @@ export class ListCatalogGamesService {
     private readonly mapper: CatalogMapperService,
   ) {}
 
-  async execute(options: { fresh?: boolean } = {}): Promise<CatalogGame[]> {
-    if (options.fresh !== true) {
+  async execute(
+    options: { fresh?: boolean; includeDisabled?: boolean } = {},
+  ): Promise<CatalogGame[]> {
+    if (options.fresh !== true && options.includeDisabled !== true) {
       const cached = this.cache.getGames();
       if (cached) {
         return cached;
@@ -24,8 +26,11 @@ export class ListCatalogGamesService {
     }
 
     const revision = this.cache.revision();
-    const definitions = await this.source.listGames();
+    const definitions = await this.source.listGames({
+      includeDisabled: options.includeDisabled === true,
+    });
     const games = this.mapper.toCatalogGames(definitions);
+    if (options.includeDisabled === true) return games;
     return this.cache.setGames(games, revision);
   }
 }

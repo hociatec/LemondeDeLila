@@ -16,10 +16,10 @@ describe('external content releases', () => {
   afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
 
   it('loads a payload only when its manifest and checksum are exact', () => {
-    writeRelease('discardPenaltyCards', { cards: [{ id: 1 }] });
+    writeRelease('discard-penalty-cards', { cards: [{ id: 1 }] });
 
     expect(
-      loadExternalGameContent('discardPenaltyCards', {
+      loadExternalGameContent('discard-penalty-cards', {
         LILA_CONTENT_RELEASE_DIR: root,
       }),
     ).toEqual({
@@ -32,10 +32,13 @@ describe('external content releases', () => {
   });
 
   it('rejects altered payloads, invalid manifests and escaping paths', () => {
-    writeRelease('discardPenaltyCards', { cards: [] });
-    fs.writeFileSync(path.join(root, 'games/discardPenaltyCards.json'), '{}\n');
+    writeRelease('discard-penalty-cards', { cards: [] });
+    fs.writeFileSync(
+      path.join(root, 'games/discard-penalty-cards.json'),
+      '{}\n',
+    );
     expect(() =>
-      loadExternalGameContent('discardPenaltyCards', {
+      loadExternalGameContent('discard-penalty-cards', {
         LILA_CONTENT_RELEASE_DIR: root,
       }),
     ).toThrow('Checksum');
@@ -50,10 +53,12 @@ describe('external content releases', () => {
     const hash = 'a'.repeat(64);
     fs.writeFileSync(
       path.join(root, 'manifest.json'),
-      JSON.stringify(manifest('discardPenaltyCards', '../outside.json', hash)),
+      JSON.stringify(
+        manifest('discard-penalty-cards', '../outside.json', hash),
+      ),
     );
     expect(() =>
-      loadExternalGameContent('discardPenaltyCards', {
+      loadExternalGameContent('discard-penalty-cards', {
         LILA_CONTENT_RELEASE_DIR: root,
       }),
     ).toThrow('hors release');
@@ -62,22 +67,26 @@ describe('external content releases', () => {
   it('wraps unreadable and malformed JSON as domain errors', () => {
     const raw = '{';
     const hash = sha256(raw);
-    fs.writeFileSync(path.join(root, 'games/discardPenaltyCards.json'), raw);
+    fs.writeFileSync(path.join(root, 'games/discard-penalty-cards.json'), raw);
     fs.writeFileSync(
       path.join(root, 'manifest.json'),
       JSON.stringify(
-        manifest('discardPenaltyCards', 'games/discardPenaltyCards.json', hash),
+        manifest(
+          'discard-penalty-cards',
+          'games/discard-penalty-cards.json',
+          hash,
+        ),
       ),
     );
     expect(() =>
-      loadExternalGameContent('discardPenaltyCards', {
+      loadExternalGameContent('discard-penalty-cards', {
         LILA_CONTENT_RELEASE_DIR: root,
       }),
     ).toThrow(GameContentValidationError);
 
     fs.rmSync(path.join(root, 'manifest.json'));
     expect(() =>
-      loadExternalGameContent('discardPenaltyCards', {
+      loadExternalGameContent('discard-penalty-cards', {
         LILA_CONTENT_RELEASE_DIR: root,
       }),
     ).toThrow('Manifest de contenu invalide');
@@ -86,19 +95,20 @@ describe('external content releases', () => {
   it.each(['manifest', 'entry', 'gameId'] as const)(
     'rejects unknown release metadata or invalid identifiers at %s',
     (location) => {
-      writeRelease('discardPenaltyCards', { cards: [] });
+      writeRelease('discard-penalty-cards', { cards: [] });
       const file = path.join(root, 'manifest.json');
       const value = JSON.parse(fs.readFileSync(file, 'utf8')) as ReturnType<
         typeof manifest
       >;
       if (location === 'manifest') Object.assign(value, { ignored: true });
       if (location === 'entry')
-        Object.assign(value.games.discardPenaltyCards, { ignored: true });
+        Object.assign(value.games['discard-penalty-cards'], { ignored: true });
       if (location === 'gameId')
-        value.games['../discardPenaltyCards'] = value.games.discardPenaltyCards;
+        value.games['../discard-penalty-cards'] =
+          value.games['discard-penalty-cards'];
       fs.writeFileSync(file, JSON.stringify(value));
       expect(() =>
-        loadExternalGameContent('discardPenaltyCards', {
+        loadExternalGameContent('discard-penalty-cards', {
           LILA_CONTENT_RELEASE_DIR: root,
         }),
       ).toThrow('Contrat de release');

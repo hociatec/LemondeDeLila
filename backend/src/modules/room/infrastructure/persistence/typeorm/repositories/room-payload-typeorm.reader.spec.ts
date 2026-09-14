@@ -27,9 +27,9 @@ it('loads the payload projection through bounded relation queries', async () => 
     .fn()
     .mockResolvedValue([{ id: 4, name: 'Noodle', createdAt: new Date() }]);
   const reader = new RoomPayloadTypeormReader(
-    { findOne: roomFindOne } as ReaderArguments[0],
-    { find: participantFind } as ReaderArguments[1],
-    { find: botFind } as ReaderArguments[2],
+    { findOne: roomFindOne } as unknown as ReaderArguments[0],
+    { find: participantFind } as unknown as ReaderArguments[1],
+    { find: botFind } as unknown as ReaderArguments[2],
   );
 
   await expect(reader.findPayload(8)).resolves.toEqual({
@@ -78,9 +78,9 @@ it('loads the payload projection through bounded relation queries', async () => 
 it('rejects invalid identifiers without querying persistence', async () => {
   const roomFindOne = jest.fn();
   const reader = new RoomPayloadTypeormReader(
-    { findOne: roomFindOne } as ReaderArguments[0],
-    { find: jest.fn() } as ReaderArguments[1],
-    { find: jest.fn() } as ReaderArguments[2],
+    { findOne: roomFindOne } as unknown as ReaderArguments[0],
+    { find: jest.fn() } as unknown as ReaderArguments[1],
+    { find: jest.fn() } as unknown as ReaderArguments[2],
   );
   await expect(reader.findPayload(0)).resolves.toBeNull();
   expect(roomFindOne).not.toHaveBeenCalled();

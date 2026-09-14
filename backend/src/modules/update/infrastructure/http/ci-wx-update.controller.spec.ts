@@ -38,7 +38,7 @@ it('rejects unknown fields on each WX command boundary', () => {
     complete: jest.fn(),
   };
   const controller = new CiWxUpdateController(
-    uploads as ConstructorParameters<typeof CiWxUpdateController>[0],
+    uploads as unknown as ConstructorParameters<typeof CiWxUpdateController>[0],
   );
   expect(() =>
     controller.init({ releaseId: 'release', unexpected: true }),

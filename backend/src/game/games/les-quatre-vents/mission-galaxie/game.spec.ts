@@ -17,10 +17,14 @@ describe('Mission Galaxie declarative game', () => {
     expect(game.state().game).toEqual({});
     const view = game.view(1) as unknown as {
       kits: {
-        movement: { tracks: { galaxy: { positions: Record<string, number> } } };
+        movement: {
+          tracks: { quizEvent: { positions: Record<string, number> } };
+        };
       };
     };
-    expect(view.kits.movement.tracks.galaxy.positions['1']).toBeGreaterThan(0);
+    expect(view.kits.movement.tracks.quizEvent.positions['1']).toBeGreaterThan(
+      0,
+    );
     expect(await game.replay()).toEqual(game.state());
   });
 

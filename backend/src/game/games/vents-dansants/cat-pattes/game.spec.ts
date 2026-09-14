@@ -39,18 +39,24 @@ describe('Cat Pattes declarative game', () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(73);
     await game.start();
     await game.as(1).do('game.configure', { roundsToPlay: 2 });
-    const legacy = game.state();
+    const legacy = game.state() as ReturnType<typeof game.state> & {
+      engine: {
+        contentVersion: string;
+        kits?: {
+          cards?: { hands?: Record<string, Record<string, unknown[]>> };
+        };
+      };
+    };
     legacy.engine!.contentVersion = 'cat-pattes@content:b15666ae';
     const actorId = legacy.turn!.currentPlayerId!;
 
     const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
       legacy,
       [{ type: 'draw', payload: {}, meta: { actorId } }],
-    );
+    ) as typeof legacy;
 
     expect(restored.engine?.contentVersion).toBe('1');
-    const cards = restored.engine?.kits?.cards as
-      { hands?: Record<string, Record<string, unknown[]>> } | undefined;
+    const cards = restored.engine.kits?.cards;
     expect(cards?.hands?.players?.[String(actorId)]).toHaveLength(7);
   });
 });
