@@ -13,7 +13,7 @@ import pawns from '../../../games/les-quatre-vents/aventure-sauvage/content/pawn
 import reference from '../../fixtures/aventure-sauvage-before-json-parity.json';
 
 it.each(reference)(
-  'preserves the complete event-card race for seed $seed',
+  'keeps the interactive event-card race deterministic for seed $seed',
   async ({ seed, commands, events, sha256, status }) => {
     const definition = compileJsonGame(manifest, document, {
       'content/cards.json': cards,
@@ -34,9 +34,9 @@ it.each(reference)(
     const trace = result.events
       .filter((e) => e.type !== 'engine.state.committed')
       .map(({ type, data, visibility }) => ({ type, data, visibility }));
-    expect(trace).toHaveLength(events);
     expect(
       createHash('sha256').update(JSON.stringify(trace)).digest('hex'),
     ).toBe(sha256);
+    expect(trace).toHaveLength(events);
   },
 );

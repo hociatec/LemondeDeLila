@@ -9,6 +9,7 @@ export type JsonGameRecipe =
   | 'judged-submit-card'
   | 'judged-pick'
   | 'race-event-cards-roll'
+  | 'race-event-cards-draw'
   | 'race-route-delivery-roll'
   | 'race-goose-track-roll'
   | 'collection-track-zones-roll'
