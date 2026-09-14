@@ -5,6 +5,35 @@ namespace lila::modules::update::launcher
 {
 namespace
 {
+bool CreateForegroundProcess(
+    const fs::path& executable,
+    std::wstring& command,
+    const fs::path& directory,
+    DWORD creationFlags,
+    PROCESS_INFORMATION& information)
+{
+    STARTUPINFOW startup{};
+    startup.cb = sizeof(startup);
+    if (!CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr,
+            FALSE, creationFlags | CREATE_SUSPENDED, nullptr,
+            directory.c_str(), &startup, &information)) {
+        return false;
+    }
+
+    // Le droit de prendre le premier plan doit être accordé avant que le
+    // processus enfant commence à créer ses fenêtres. Cette transmission est
+    // particulièrement importante pendant le relais entre deux lanceurs.
+    static_cast<void>(AllowSetForegroundWindow(information.dwProcessId));
+    if (ResumeThread(information.hThread) == static_cast<DWORD>(-1)) {
+        TerminateProcess(information.hProcess, 0x4C494C41);
+        CloseHandle(information.hThread);
+        CloseHandle(information.hProcess);
+        information = {};
+        return false;
+    }
+    return true;
+}
+
 void ClearReleaseDiagnostics(const fs::path& versions) noexcept
 {
     try {
@@ -49,17 +78,11 @@ Process LaunchClient(const fs::path& directory)
     ClearReleaseDiagnostics(directory.parent_path());
     const fs::path executable = directory / AppExecutable;
     std::wstring command = L"\"" + executable.wstring() + L"\"";
-    STARTUPINFOW startup{};
-    startup.cb = sizeof(startup);
     PROCESS_INFORMATION information{};
-    if (!CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr,
-            FALSE, 0, nullptr, directory.c_str(), &startup, &information)) {
+    if (!CreateForegroundProcess(
+            executable, command, directory, 0, information)) {
         throw std::runtime_error("Unable to launch client.");
     }
-    // Le client est un enfant du lanceur démarré explicitement par
-    // l'utilisateur. Autoriser cet enfant à restaurer sa fenêtre évite que
-    // Windows la laisse derrière les autres applications.
-    static_cast<void>(AllowSetForegroundWindow(information.dwProcessId));
     CloseHandle(information.hThread);
     Process result;
     result.handle = information.hProcess;
@@ -116,12 +139,11 @@ LauncherReplacement SpawnLauncherReplacement(
     }
     std::wstring command = L"\"" + candidate.wstring() + L"\" --replace-launcher " +
         std::to_wstring(GetCurrentProcessId()) + L" \"" + target.wstring() + L"\"";
-    STARTUPINFOW startup{};
-    startup.cb = sizeof(startup);
     PROCESS_INFORMATION process{};
-    if (!CreateProcessW(candidate.c_str(), command.data(), nullptr, nullptr,
-            FALSE, CREATE_NO_WINDOW, nullptr, candidate.parent_path().c_str(),
-            &startup, &process)) return LauncherReplacement::Failed;
+    if (!CreateForegroundProcess(
+            candidate, command, candidate.parent_path(), CREATE_NO_WINDOW, process)) {
+        return LauncherReplacement::Failed;
+    }
     CloseHandle(process.hThread);
     CloseHandle(process.hProcess);
     return LauncherReplacement::Spawned;
@@ -160,11 +182,9 @@ int ReplaceLauncher(DWORD parentProcessId, const fs::path& target)
     }
     std::wstring command = L"\"" + target.wstring() + L"\"";
     if (!replaced) command += L" --skip-launcher-replace-once";
-    STARTUPINFOW startup{};
-    startup.cb = sizeof(startup);
     PROCESS_INFORMATION process{};
-    if (!CreateProcessW(target.c_str(), command.data(), nullptr, nullptr,
-            FALSE, 0, nullptr, target.parent_path().c_str(), &startup, &process)) return 3;
+    if (!CreateForegroundProcess(
+            target, command, target.parent_path(), 0, process)) return 3;
     CloseHandle(process.hThread);
     CloseHandle(process.hProcess);
     return resultCode;
