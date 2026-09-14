@@ -3,6 +3,8 @@
 #include <array>
 #include <unordered_map>
 
+#include <nlohmann/json.hpp>
+
 namespace lila::modules::admin::domain
 {
 namespace
@@ -51,11 +53,35 @@ const std::unordered_map<std::string_view, std::wstring_view> Labels{
     {"windowSeconds", L"Fenêtre de mesure en secondes"},
 };
 
-bool IsUpdateOptional(std::string_view command, std::string_view field)
+const std::unordered_map<std::string_view, std::wstring_view> Help{
+    {"id", L"Identifiant affiché dans la liste de résultats."},
+    {"userId", L"Identifiant numérique de l’utilisateur."},
+    {"roomId", L"Identifiant numérique de la salle."},
+    {"roles", L"Un rôle par ligne, par exemple ROLE_USER."},
+    {"permissions", L"Une permission par ligne."},
+    {"answers", L"Exactement quatre réponses, une par ligne."},
+    {"correctIndex", L"Index de la bonne réponse : 0 pour la première, jusqu’à 3."},
+    {"createdAfter", L"Date ISO 8601, par exemple 2026-09-14T12:00:00Z."},
+    {"createdBefore", L"Date ISO 8601, par exemple 2026-09-14T12:00:00Z."},
+    {"bannedUntil", L"Date ISO 8601. Laisser ce champ non inclus pour utiliser la durée."},
+    {"durationDays", L"Durée entière comprise entre 1 et 36500 jours."},
+    {"parentId", L"Laisser vide pour une catégorie racine."},
+    {"categoryId", L"Laisser le filtre non inclus pour afficher toutes les catégories."},
+    {"filePath", L"Le sélecteur de fichier s’ouvrira si ce champ est vide."},
+};
+
+bool IsCommandOptional(std::string_view command, std::string_view field)
 {
+    if (command == "users.create")
+        return field == "password" || field == "roles" || field == "avatar";
     if (command == "users.update") return field != "id";
+    if (command == "users.ban")
+        return field == "durationDays" || field == "bannedUntil";
+    if (command == "bugs.update") return field != "id";
     if (command == "games.update") return field != "gameType";
     if (command == "roles.update") return field != "name";
+    if (command == "mnemo.questions")
+        return field == "categoryId" || field == "status";
     constexpr std::array<std::string_view, 4> IdUpdates{
         "categories.update", "bots.update", "mnemo.category.update", "mnemo.question.update"};
     for (const auto value : IdUpdates)
@@ -71,6 +97,7 @@ AdminFieldMetadata GetAdminFieldMetadata(
     AdminFieldMetadata result;
     if (const auto found = Labels.find(fieldName); found != Labels.end()) result.label = found->second;
     else result.label.assign(fieldName.begin(), fieldName.end());
+    if (const auto found = Help.find(fieldName); found != Help.end()) result.help = found->second;
 
     if (fieldName == "content" || fieldName == "description" || fieldName == "rules" ||
         fieldName == "message" || fieldName == "question")
@@ -81,15 +108,30 @@ AdminFieldMetadata GetAdminFieldMetadata(
     {
         result.kind = AdminFieldKind::Choice;
         if (commandId == "users.list")
+        {
             result.choices = {"all", "active", "banned"};
+            result.choiceLabels = {L"Tous", L"Actifs", L"Bannis"};
+        }
         else if (commandId.starts_with("games."))
+        {
             result.choices = {"construction", "beta", "finished"};
+            result.choiceLabels = {L"En construction", L"Bêta", L"Terminé"};
+        }
         else if (commandId.starts_with("contacts."))
+        {
             result.choices = {"open", "in_progress", "handled"};
+            result.choiceLabels = {L"Ouvert", L"En cours", L"Traité"};
+        }
         else if (commandId.starts_with("mnemo."))
+        {
             result.choices = {"validated", "pending", "to_edit", "trash"};
+            result.choiceLabels = {L"Validée", L"En attente", L"À modifier", L"Corbeille"};
+        }
         else
+        {
             result.choices = {"pending", "in_progress", "to_test", "done", "refused"};
+            result.choiceLabels = {L"En attente", L"En cours", L"À tester", L"Terminé", L"Refusé"};
+        }
     }
 
     constexpr std::array<std::string_view, 8> FilterFields{
@@ -97,10 +139,57 @@ AdminFieldMetadata GetAdminFieldMetadata(
         "includeDeleted", "includeStarted", "includePrivate"};
     for (const auto value : FilterFields)
         if (fieldName == value) result.optional = true;
-    result.optional = result.optional || IsUpdateOptional(commandId, fieldName);
+    result.optional = result.optional || IsCommandOptional(commandId, fieldName);
     result.includedByDefault = !result.optional ||
         (fieldName != "search" && fieldName != "role" && fieldName != "createdAfter" &&
-         fieldName != "createdBefore" && !IsUpdateOptional(commandId, fieldName));
+         fieldName != "createdBefore" && !IsCommandOptional(commandId, fieldName));
     return result;
+}
+
+std::optional<AdminFormValidationError> ValidateAdminFormPayload(
+    std::string_view commandId,
+    const nlohmann::json& payload)
+{
+    if (!payload.is_object()) return AdminFormValidationError{"", L"Formulaire invalide."};
+    for (const auto& field : payload.items())
+    {
+        const auto metadata = GetAdminFieldMetadata(commandId, field.key());
+        if (!metadata.optional && field.key() != "filePath" && field.value().is_string() &&
+            field.value().get_ref<const std::string&>().find_first_not_of(" \t\r\n") ==
+                std::string::npos)
+            return AdminFormValidationError{field.key(), metadata.label + L" est requis."};
+    }
+
+    if (const auto answers = payload.find("answers"); answers != payload.end())
+    {
+        if (!answers->is_array() || answers->size() != 4)
+            return AdminFormValidationError{"answers", L"Saisissez exactement quatre réponses."};
+        for (const auto& answer : *answers)
+            if (!answer.is_string() ||
+                answer.get_ref<const std::string&>().find_first_not_of(" \t\r\n") ==
+                    std::string::npos)
+                return AdminFormValidationError{
+                    "answers", L"Chaque réponse doit contenir du texte."};
+    }
+    if (const auto index = payload.find("correctIndex"); index != payload.end() &&
+        (!index->is_number_integer() || index->get<long long>() < 0 ||
+         index->get<long long>() > 3))
+        return AdminFormValidationError{
+            "correctIndex", L"L’index de la bonne réponse doit être compris entre 0 et 3."};
+
+    const auto invalidRange = [&payload](std::string_view minimum, std::string_view maximum)
+    {
+        const auto min = payload.find(minimum);
+        const auto max = payload.find(maximum);
+        return min != payload.end() && max != payload.end() && min->is_number() &&
+            max->is_number() && min->get<double>() > max->get<double>();
+    };
+    if (invalidRange("minPlayers", "maxPlayers"))
+        return AdminFormValidationError{
+            "maxPlayers", L"Le maximum de joueurs doit être supérieur ou égal au minimum."};
+    if (invalidRange("bioMinLength", "bioMaxLength"))
+        return AdminFormValidationError{
+            "bioMaxLength", L"La longueur maximale doit être supérieure ou égale au minimum."};
+    return std::nullopt;
 }
 }

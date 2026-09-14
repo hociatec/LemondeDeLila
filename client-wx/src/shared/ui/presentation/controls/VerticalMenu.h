@@ -63,6 +63,7 @@ public:
     [[nodiscard]] std::optional<std::string_view> GetSelectedItemId() const;
     [[nodiscard]] wxWindow* GetSelectedControl() const;
     [[nodiscard]] wxWindow* GetFirstButton() const;
+    void SetAccessibleName(const wxString& name);
     void ApplyTheme();
 
 private:

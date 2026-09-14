@@ -20,8 +20,13 @@ std::string Humanize(std::string_view key)
         {"updatedAt", "Modifié le"}, {"roles", "Rôles"}, {"total", "Total"},
         {"ok", "Succès"}, {"error", "Erreur"}, {"items", "Éléments"},
         {"users", "Utilisateurs"}, {"rooms", "Salles"}, {"messages", "Messages"},
-        {"categories", "Catégories"}, {"questions", "Questions"},
-        {"permissions", "Permissions"}, {"events", "Événements"},
+        {"games", "Jeux"}, {"categories", "Catégories"},
+        {"questions", "Questions"}, {"definitions", "Définitions"},
+        {"roles", "Rôles"}, {"permissions", "Permissions"},
+        {"events", "Événements"}, {"sections", "Fils de contact"},
+        {"names", "Noms de bots"}, {"page", "Page"}, {"limit", "Par page"},
+        {"content", "Contenu"}, {"reason", "Motif"},
+        {"bannedUntil", "Banni jusqu’au"}, {"createdBy", "Créé par"},
     };
     for (const auto& [value, label] : Known)
         if (key == value) return std::string(label);
@@ -49,6 +54,26 @@ std::string Scalar(const nlohmann::json& value)
     return value.dump();
 }
 
+std::string ScalarForKey(std::string_view key, const nlohmann::json& value)
+{
+    if (key == "status" && value.is_string())
+    {
+        const auto status = value.get<std::string>();
+        static const std::pair<std::string_view, std::string_view> Statuses[]{
+            {"active", "Actif"}, {"banned", "Banni"}, {"open", "Ouvert"},
+            {"in_progress", "En cours"}, {"handled", "Traité"},
+            {"pending", "En attente"}, {"to_test", "À tester"},
+            {"done", "Terminé"}, {"refused", "Refusé"},
+            {"validated", "Validé"}, {"to_edit", "À modifier"},
+            {"trash", "Corbeille"}, {"construction", "En construction"},
+            {"finished", "Terminé"}, {"beta", "Bêta"},
+        };
+        for (const auto& [raw, label] : Statuses)
+            if (status == raw) return std::string(label);
+    }
+    return Scalar(value);
+}
+
 std::string ItemTitle(const nlohmann::json& value, std::size_t index)
 {
     constexpr std::string_view Keys[]{"username", "name", "title", "subject", "id", "type"};
@@ -59,7 +84,24 @@ std::string ItemTitle(const nlohmann::json& value, std::size_t index)
             if (found != value.end() && (found->is_string() || found->is_number()))
                 return Scalar(*found);
         }
+    if (value.is_primitive()) return Scalar(value);
     return "Élément " + std::to_string(index + 1);
+}
+
+std::pair<std::string_view, const nlohmann::json*> FindPrimaryList(
+    const nlohmann::json& payload)
+{
+    if (payload.is_array()) return {"Résultats", &payload};
+    if (!payload.is_object()) return {{}, nullptr};
+    constexpr std::string_view Keys[]{
+        "items", "users", "rooms", "messages", "games", "categories",
+        "questions", "definitions", "roles", "events", "sections", "names"};
+    for (const auto key : Keys)
+    {
+        const auto found = payload.find(key);
+        if (found != payload.end() && found->is_array()) return {key, &*found};
+    }
+    return {{}, nullptr};
 }
 
 void Append(std::ostringstream& output, const nlohmann::json& value, int depth);
@@ -70,7 +112,8 @@ void AppendObject(std::ostringstream& output, const nlohmann::json& value, int d
     for (const auto& item : value.items())
     {
         output << indentation << Humanize(item.key()) << " : ";
-        if (item.value().is_primitive()) output << Scalar(item.value()) << '\n';
+        if (item.value().is_primitive())
+            output << ScalarForKey(item.key(), item.value()) << '\n';
         else
         {
             output << '\n';
@@ -108,5 +151,32 @@ std::string FormatAdminResult(const nlohmann::json& payload)
     auto result = output.str();
     if (result.empty()) result = "Opération terminée sans contenu.";
     return result;
+}
+
+AdminResultPresentation BuildAdminResultPresentation(const nlohmann::json& payload)
+{
+    AdminResultPresentation presentation;
+    const auto [key, list] = FindPrimaryList(payload);
+    if (list == nullptr)
+    {
+        presentation.details = FormatAdminResult(payload);
+        presentation.summary = "Résultat disponible en lecture seule.";
+        return presentation;
+    }
+
+    const auto label = key == "Résultats" ? std::string(key) : Humanize(key);
+    presentation.summary = label + " : " + std::to_string(list->size()) + " élément" +
+        (list->size() > 1 ? "s." : ".");
+    presentation.entries.reserve(list->size());
+    for (std::size_t index = 0; index < list->size(); ++index)
+    {
+        presentation.entries.push_back({
+            std::to_string(index + 1) + ". " + ItemTitle((*list)[index], index),
+            FormatAdminResult((*list)[index]),
+        });
+    }
+    presentation.details = presentation.entries.empty()
+        ? "La liste est vide." : presentation.entries.front().details;
+    return presentation;
 }
 }

@@ -23,26 +23,41 @@ void AdminFrame::BuildLayout()
     auto* contentSizer = new wxBoxSizer(wxHORIZONTAL);
     const std::span<const lila::shared::ui::controls::VerticalMenuItem> empty;
     sectionsMenu_ = new lila::shared::ui::controls::VerticalMenu(
-        content, empty, lila::shared::ui::controls::VerticalMenuRole::Entries);
+        content, empty, lila::shared::ui::controls::VerticalMenuRole::Menu);
     commandsMenu_ = new lila::shared::ui::controls::VerticalMenu(
-        content, empty, lila::shared::ui::controls::VerticalMenuRole::Entries);
+        content, empty, lila::shared::ui::controls::VerticalMenuRole::Menu);
     sectionsMenu_->SetMinSize(wxSize(360, -1));
     commandsMenu_->SetMinSize(wxSize(420, -1));
 
+    sectionsMenu_->SetAccessibleName(wxString(L"Rubriques d’administration"));
+    commandsMenu_->SetAccessibleName(wxString(L"Opérations de la rubrique"));
+
+    auto* resultPanel = new lila::shared::accessibility::NonFocusablePanel(content);
+    auto* resultSizer = new wxBoxSizer(wxVERTICAL);
+    resultSummaryLabel_ = new wxStaticText(
+        resultPanel, wxID_ANY, wxString(L"Aide de la rubrique"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *sectionsMenu_, wxString(L"Rubriques d’administration"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *commandsMenu_, wxString(L"Opérations de la rubrique"));
+        *resultSummaryLabel_, wxString(L"Résumé du résultat"));
+    resultSizer->Add(resultSummaryLabel_, 0, wxEXPAND | wxBOTTOM, 8);
+
+    resultsMenu_ = new lila::shared::ui::controls::VerticalMenu(
+        resultPanel, empty, lila::shared::ui::controls::VerticalMenuRole::List);
+    resultsMenu_->SetAccessibleName(wxString(L"Éléments du résultat"));
+    resultsMenu_->SetMinSize(wxSize(-1, 180));
+    resultsMenu_->Hide();
+    resultSizer->Add(resultsMenu_, 0, wxEXPAND | wxBOTTOM, 8);
 
     resultText_ = new wxTextCtrl(
-        content, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+        resultPanel, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_DONTWRAP);
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *resultText_, wxString(L"Résultat de l’opération administrateur"),
         wxString(L"Zone de résultat en lecture seule. Utilisez les flèches pour lire le contenu et Échap pour revenir aux opérations."));
     contentSizer->Add(sectionsMenu_, 0, wxEXPAND | wxRIGHT, 16);
     contentSizer->Add(commandsMenu_, 0, wxEXPAND | wxRIGHT, 16);
-    contentSizer->Add(resultText_, 1, wxEXPAND);
+    resultSizer->Add(resultText_, 1, wxEXPAND);
+    resultPanel->SetSizer(resultSizer);
+    contentSizer->Add(resultPanel, 1, wxEXPAND);
     content->SetSizer(contentSizer);
     rootSizer->Add(content, 1, wxEXPAND | wxALL, 24);
 

@@ -20,7 +20,7 @@ void AppendContentCommands(std::vector<AdminCommand>& c)
 
         {"games.list", S::Games, L"Lister les jeux", L"Catalogue incluant les jeux désactivés.", T::ApiWebSocket, std::string(ws::admin::games::List)},
         {"games.enable", S::Games, L"Activer ou désactiver un jeu", L"Modification rapide de disponibilité.", T::ApiWebSocket, std::string(ws::admin::games::SetEnabled), {}, R"({"gameType":"","enabled":true})"},
-        {"games.update", S::Games, L"Modifier un jeu", L"Overrides de catalogue et de tchat.", T::ApiWebSocket, std::string(ws::admin::games::Update), {}, R"({"gameType":"","name":"","description":"","minPlayers":2,"maxPlayers":8,"status":"finished","chatEnabled":true,"chatSoundsEnabled":true})"},
+        {"games.update", S::Games, L"Modifier un jeu", L"Overrides de catalogue et de tchat.", T::ApiWebSocket, std::string(ws::admin::games::Update), {}, R"({"gameType":"","enabled":true,"name":"","description":"","rules":"","minPlayers":2,"maxPlayers":8,"status":"finished","chatEnabled":true,"chatSoundsEnabled":true})"},
         {"games.reset", S::Games, L"Réinitialiser un jeu", L"Supprimer tous ses overrides.", T::ApiWebSocket, std::string(ws::admin::games::Reset), {}, R"({"gameType":""})", true},
         {"categories.list", S::Games, L"Lister les catégories", L"Arbre et affectations.", T::ApiWebSocket, std::string(ws::admin::games::Categories)},
         {"categories.create", S::Games, L"Créer une catégorie", L"parentId peut être null.", T::ApiWebSocket, std::string(ws::admin::games::CategoryCreate), std::string(ws::admin::games::Categories), R"({"name":"","parentId":null})"},
@@ -39,7 +39,7 @@ void AppendContentCommands(std::vector<AdminCommand>& c)
         {"mnemo.category.create", S::MnemoQuiz, L"Créer une catégorie", L"Nom de la catégorie.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::CategoryCreate), std::string(ws::admin::quiz::mnemo::Categories), R"({"name":""})"},
         {"mnemo.category.update", S::MnemoQuiz, L"Renommer une catégorie", L"Identifiant et nouveau nom.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::CategoryUpdate), std::string(ws::admin::quiz::mnemo::Categories), R"({"id":"","name":""})"},
         {"mnemo.category.delete", S::MnemoQuiz, L"Supprimer une catégorie", L"Suppression définitive.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::CategoryDelete), std::string(ws::admin::quiz::mnemo::Categories), R"({"id":""})", true},
-        {"mnemo.questions", S::MnemoQuiz, L"Lister les questions", L"Filtres facultatifs catégorie/statut.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::Questions), {}, "{}"},
+        {"mnemo.questions", S::MnemoQuiz, L"Lister les questions", L"Filtres facultatifs catégorie/statut.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::Questions), {}, R"({"categoryId":"","status":"pending"})"},
         {"mnemo.question.create", S::MnemoQuiz, L"Créer une question", L"Exactement quatre réponses.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::QuestionCreate), std::string(ws::admin::quiz::mnemo::Questions), R"({"categoryId":"","question":"","answers":["","","",""],"correctIndex":0,"status":"pending"})"},
         {"mnemo.question.update", S::MnemoQuiz, L"Modifier une question", L"Seuls les champs fournis changent.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::QuestionUpdate), std::string(ws::admin::quiz::mnemo::Questions), R"({"id":"","question":"","answers":["","","",""],"correctIndex":0,"status":"pending"})"},
         {"mnemo.question.delete", S::MnemoQuiz, L"Supprimer une question", L"Suppression définitive.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::QuestionDelete), std::string(ws::admin::quiz::mnemo::Questions), R"({"id":""})", true},
@@ -47,7 +47,7 @@ void AppendContentCommands(std::vector<AdminCommand>& c)
         {"roles.list", S::Roles, L"Lister les rôles", L"Rôles et définitions.", T::ApiWebSocket, std::string(ws::admin::roles::List)},
         {"roles.definitions", S::Roles, L"Lister les définitions", L"Descriptions et permissions.", T::ApiWebSocket, std::string(ws::admin::roles::Definitions)},
         {"roles.create", S::Roles, L"Créer un rôle", L"Permissions déclaratives.", T::ApiWebSocket, std::string(ws::admin::roles::Create), std::string(ws::admin::roles::Definitions), R"({"name":"ROLE_","description":"","permissions":["admin.users"]})"},
-        {"roles.update", S::Roles, L"Modifier un rôle", L"Renommage, description ou permissions.", T::ApiWebSocket, std::string(ws::admin::roles::Update), std::string(ws::admin::roles::Definitions), R"({"name":"ROLE_","description":"","permissions":["admin.users"]})"},
+        {"roles.update", S::Roles, L"Modifier un rôle", L"Renommage, description ou permissions.", T::ApiWebSocket, std::string(ws::admin::roles::Update), std::string(ws::admin::roles::Definitions), R"({"name":"ROLE_","newName":"","description":"","permissions":["admin.users"]})"},
         {"roles.delete", S::Roles, L"Supprimer un rôle", L"Suppression de la définition.", T::ApiWebSocket, std::string(ws::admin::roles::Delete), std::string(ws::admin::roles::Definitions), R"({"name":"ROLE_"})", true},
     });
 }

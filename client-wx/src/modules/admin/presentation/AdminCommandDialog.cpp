@@ -25,7 +25,6 @@ wxString StringValue(const nlohmann::json& value)
     if (value.is_null()) return {};
     return lila::shared::text::FromUtf8(value.dump());
 }
-
 wxString ListValue(const nlohmann::json& value)
 {
     if (!value.is_array()) return StringValue(value);
@@ -38,7 +37,6 @@ wxString ListValue(const nlohmann::json& value)
     return text;
 }
 }
-
 AdminCommandDialog::AdminCommandDialog(
     wxWindow* parent,
     const domain::AdminCommand& command,
@@ -69,7 +67,6 @@ AdminCommandDialog::AdminCommandDialog(
     CentreOnParent();
     CallAfter([this] { FocusFirstField(); });
 }
-
 void AdminCommandDialog::BuildFields(
     const nlohmann::json& initialPayload,
     wxFlexGridSizer& fieldsSizer)
@@ -87,10 +84,16 @@ void AdminCommandDialog::BuildFields(
         if (field.metadata.kind == domain::AdminFieldKind::Choice)
         {
             auto* choice = new wxChoice(scroll, wxID_ANY);
-            for (const auto& value : field.metadata.choices)
-                choice->Append(lila::shared::text::FromUtf8(value));
-            const auto selected = choice->FindString(StringValue(field.initialValue));
-            choice->SetSelection(selected == wxNOT_FOUND ? 0 : selected);
+            for (std::size_t index = 0; index < field.metadata.choices.size(); ++index)
+                choice->Append(field.metadata.choiceLabels.size() == field.metadata.choices.size()
+                    ? wxString(field.metadata.choiceLabels[index])
+                    : lila::shared::text::FromUtf8(field.metadata.choices[index]));
+            const auto rawValue = field.initialValue.is_string() ?
+                field.initialValue.get<std::string>() : std::string{};
+            const auto selected = std::find(
+                field.metadata.choices.begin(), field.metadata.choices.end(), rawValue);
+            choice->SetSelection(selected == field.metadata.choices.end() ? 0 :
+                static_cast<int>(std::distance(field.metadata.choices.begin(), selected)));
             field.editor = choice;
         }
         else if (field.initialValue.is_boolean())
@@ -146,25 +149,28 @@ void AdminCommandDialog::BuildFields(
         fields_.push_back(std::move(field));
     }
 }
-
 void AdminCommandDialog::FocusFirstField()
 {
     if (!fields_.empty()) FocusField(fields_.front());
 }
-
 void AdminCommandDialog::FocusField(const FieldControl& field)
 {
     auto* target = field.include != nullptr && !field.include->GetValue()
         ? static_cast<wxWindow*>(field.include) : field.editor;
     if (target != nullptr) target->SetFocus();
 }
-
 nlohmann::json AdminCommandDialog::ReadValue(const FieldControl& field) const
 {
     if (const auto* checkbox = dynamic_cast<wxCheckBox*>(field.editor))
         return checkbox->GetValue();
     if (const auto* choice = dynamic_cast<wxChoice*>(field.editor))
-        return lila::shared::text::ToUtf8(choice->GetStringSelection());
+    {
+        const auto selected = choice->GetSelection();
+        if (selected == wxNOT_FOUND ||
+            static_cast<std::size_t>(selected) >= field.metadata.choices.size())
+            throw std::runtime_error("Une valeur de la liste est attendue.");
+        return field.metadata.choices[static_cast<std::size_t>(selected)];
+    }
     const auto* text = dynamic_cast<wxTextCtrl*>(field.editor);
     if (text == nullptr) throw std::runtime_error("Contrôle de formulaire inconnu.");
     const auto raw = lila::shared::text::ToUtf8(text->GetValue());
@@ -191,7 +197,6 @@ nlohmann::json AdminCommandDialog::ReadValue(const FieldControl& field) const
     if (field.initialValue.is_null()) return raw.empty() ? nlohmann::json(nullptr) : nlohmann::json(raw);
     return raw;
 }
-
 void AdminCommandDialog::HandleKey(wxKeyEvent& event)
 {
     const auto keyCode = event.GetKeyCode();
@@ -214,31 +219,4 @@ void AdminCommandDialog::HandleKey(wxKeyEvent& event)
     if (TransferDataFromWindow()) EndModal(wxID_OK);
 }
 
-bool AdminCommandDialog::TransferDataFromWindow()
-{
-    payload_ = nlohmann::json::object();
-    for (const auto& field : fields_)
-    {
-        try
-        {
-            if (field.include == nullptr || field.include->GetValue())
-                payload_[field.key] = ReadValue(field);
-        }
-        catch (const std::exception& error)
-        {
-            wxMessageBox(
-                field.metadata.label + wxString(L" : ") +
-                    lila::shared::text::FromUtf8(error.what()),
-                wxString(L"Paramètre invalide"), wxOK | wxICON_ERROR, this);
-            CallAfter([this, key = field.key]
-            {
-                const auto found = std::find_if(fields_.begin(), fields_.end(),
-                    [&key](const FieldControl& candidate) { return candidate.key == key; });
-                if (found != fields_.end()) FocusField(*found);
-            });
-            return false;
-        }
-    }
-    return true;
-}
 }

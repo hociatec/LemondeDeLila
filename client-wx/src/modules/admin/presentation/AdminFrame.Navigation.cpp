@@ -38,12 +38,37 @@ void AdminFrame::BindEvents()
         },
         [this](std::size_t index) { ActivateCommand(index); });
     commandsMenu_->SetKeyHandler([this](int keyCode) { return HandleKey(keyCode); });
+    lila::shared::ui::navigation::BindMenuHandlers(
+        *resultsMenu_,
+        [this](std::size_t index) { ShowResultDetails(index); },
+        [this](std::size_t index)
+        {
+            ShowResultDetails(index);
+            FocusResultDetails();
+        });
+    resultsMenu_->SetKeyHandler([this](int keyCode)
+    {
+        if (keyCode == WXK_ESCAPE)
+        {
+            FocusCurrentMenu();
+            return true;
+        }
+        if (keyCode == WXK_TAB)
+        {
+            FocusResultDetails();
+            return true;
+        }
+        return false;
+    });
     resultText_->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
     {
         const auto keyCode = event.GetKeyCode();
         if (keyCode == WXK_ESCAPE || keyCode == WXK_TAB)
         {
-            FocusCurrentMenu();
+            if (resultsMenu_->IsShown() && resultsMenu_->GetSelectedControl() != nullptr)
+                resultsMenu_->GetSelectedControl()->SetFocus();
+            else
+                FocusCurrentMenu();
             return;
         }
         event.Skip();
@@ -90,6 +115,9 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
     resultText_->SetValue(
         wxString(domain::GetAdminSections()[sectionIndex].description.data()) +
         wxString(L"\n\nChoisissez une opération dans la liste. Son formulaire métier s’ouvrira avec les champs adaptés."));
+    resultSummaryLabel_->SetLabel(wxString(L"Aide de la rubrique"));
+    resultsMenu_->Hide();
+    resultDetails_.clear();
     SetStatus(items.empty() ? wxString(L"Aucune action disponible.") :
         wxString(visibleCommands_[commandsMenu_->GetSelectedIndex()]->description));
     Layout();
@@ -124,6 +152,17 @@ void AdminFrame::FocusCurrentMenu()
 }
 
 void AdminFrame::FocusResult()
+{
+    if (resultsMenu_ != nullptr && resultsMenu_->IsShown() &&
+        resultsMenu_->GetSelectedControl() != nullptr)
+    {
+        resultsMenu_->GetSelectedControl()->SetFocus();
+        return;
+    }
+    FocusResultDetails();
+}
+
+void AdminFrame::FocusResultDetails()
 {
     if (resultText_ == nullptr) return;
     resultText_->SetInsertionPoint(0);

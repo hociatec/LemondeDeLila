@@ -56,8 +56,11 @@ private:
         std::optional<lila::shared::errors::AppError> error,
         std::optional<nlohmann::json> result);
     void SetStatus(const wxString& message, bool isError = false);
+    void ShowResult(const domain::AdminCommand& command, const nlohmann::json& result);
+    void ShowResultDetails(std::size_t index);
     void FocusCurrentMenu();
     void FocusResult();
+    void FocusResultDetails();
     bool HandleKey(int keyCode);
 
     application::AdminService& service_;
@@ -65,9 +68,12 @@ private:
     JoinRoomRequestedHandler onJoinRoomRequested_;
     lila::shared::ui::controls::VerticalMenu* sectionsMenu_ = nullptr;
     lila::shared::ui::controls::VerticalMenu* commandsMenu_ = nullptr;
+    lila::shared::ui::controls::VerticalMenu* resultsMenu_ = nullptr;
     wxStaticText* titleLabel_ = nullptr;
+    wxStaticText* resultSummaryLabel_ = nullptr;
     wxStaticText* statusLabel_ = nullptr;
     wxTextCtrl* resultText_ = nullptr;
+    std::vector<std::string> resultDetails_;
     std::vector<const domain::AdminCommand*> visibleCommands_;
     std::array<std::size_t, 14> commandSelections_{};
     std::size_t selectedSection_ = 0;
