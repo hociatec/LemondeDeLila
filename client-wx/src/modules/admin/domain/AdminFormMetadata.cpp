@@ -67,7 +67,7 @@ const std::unordered_map<std::string_view, std::wstring_view> Help{
     {"durationDays", L"Durée entière comprise entre 1 et 36500 jours."},
     {"parentId", L"Laisser vide pour une catégorie racine."},
     {"categoryId", L"Laisser le filtre non inclus pour afficher toutes les catégories."},
-    {"filePath", L"Le sélecteur de fichier s’ouvrira si ce champ est vide."},
+    {"filePath", L"Le sélecteur de fichier s’ouvrira si ce champ est vide."}, {"soundId", L"Dans le remplacement d’un son, appuyez sur Espace pour écouter le son actuel."},
 };
 
 void SetSoundChoices(AdminFieldMetadata& result)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <functional>
 #include <vector>
 
 #include <nlohmann/json.hpp>
@@ -19,10 +20,13 @@ namespace lila::modules::admin::presentation
 class AdminCommandDialog final : public wxDialog
 {
 public:
+    using SoundPreviewHandler = std::function<void(std::string_view)>;
+
     AdminCommandDialog(
         wxWindow* parent,
         const domain::AdminCommand& command,
-        const nlohmann::json& initialPayload);
+        const nlohmann::json& initialPayload,
+        SoundPreviewHandler onSoundPreview = {});
 
     [[nodiscard]] const nlohmann::json& Payload() const noexcept { return payload_; }
 
@@ -44,6 +48,7 @@ private:
     bool TransferDataFromWindow() override;
 
     const domain::AdminCommand& command_;
+    SoundPreviewHandler onSoundPreview_;
     wxWindow* fieldsParent_ = nullptr;
     std::vector<FieldControl> fields_;
     nlohmann::json payload_ = nlohmann::json::object();

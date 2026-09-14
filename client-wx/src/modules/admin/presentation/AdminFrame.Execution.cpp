@@ -9,7 +9,6 @@
 #include <wx/textctrl.h>
 #include <wx/textdlg.h>
 #include <wx/weakref.h>
-
 #include "modules/admin/application/AdminService.h"
 #include "modules/admin/presentation/AdminCommandDialog.h"
 #include "modules/admin/presentation/AdminResultFormatter.h"
@@ -77,7 +76,8 @@ bool AdminFrame::PreparePayload(
         }
     if (needsInput)
     {
-        AdminCommandDialog dialog(this, command, payload);
+        AdminCommandDialog dialog(this, command, payload,
+            [this](std::string_view soundId) { PreviewSound(soundId); });
         if (dialog.ShowModal() != wxID_OK) return false;
         auto businessPayload = dialog.Payload();
         for (const auto& item : payload.items())

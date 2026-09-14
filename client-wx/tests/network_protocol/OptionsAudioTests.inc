@@ -29,6 +29,11 @@ void TestSoundCatalogAndPerCueOptionsRoundTrip()
         catalog.size() == static_cast<std::size_t>(lila::modules::audio::domain::SoundCue::Count),
         "Tous les sons doivent etre presents dans le catalogue");
     Expect(options.size() == catalog.size(), "Chaque son doit avoir un libelle d'option");
+    const auto* roomJoin =
+        lila::modules::audio::domain::FindSoundDescriptorByServerId("RoomMemberJoined");
+    Expect(roomJoin != nullptr &&
+        roomJoin->cue == lila::modules::audio::domain::SoundCue::RoomMemberJoined,
+        "Un identifiant serveur doit retrouver son son client");
 
     std::unordered_set<std::string> keys;
     for (std::size_t index = 0; index < catalog.size(); ++index)
