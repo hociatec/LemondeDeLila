@@ -73,11 +73,6 @@ ChatFrame::ChatFrame(
         };
     chatService_.AttachEventHandlers(eventHandlers_);
 
-    CallAfter(
-        [this]()
-        {
-            OpenChat();
-        });
 }
 
 ChatFrame::~ChatFrame()
@@ -100,6 +95,12 @@ lila::shared::accessibility::FocusManager::Plan ChatFrame::BuildFocusPlan()
     }
 
     return focusController_->BuildComposerPlan();
+}
+
+void ChatFrame::OpenForNavigation()
+{
+    ResetFocusToComposer();
+    OpenChat();
 }
 
 void ChatFrame::ResetFocusToComposer()

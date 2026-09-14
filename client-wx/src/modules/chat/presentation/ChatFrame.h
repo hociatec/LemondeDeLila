@@ -50,7 +50,7 @@ public:
         ExitRequestedHandler onExitRequested);
     ~ChatFrame() override;
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
-    void ResetFocusToComposer();
+    void OpenForNavigation();
 
 private:
     struct NavigationSnapshot final
@@ -83,6 +83,7 @@ private:
     void HandleEditSelected();
     void HandleDeleteSelected();
     bool ConfirmClose();
+    void ResetFocusToComposer();
     void InvalidateOpenChatRequest();
     void RequestCloseToSession();
     [[nodiscard]] std::optional<domain::ChatMessage> GetSelectedMessage() const;

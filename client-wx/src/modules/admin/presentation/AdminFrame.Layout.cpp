@@ -5,6 +5,9 @@
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
+#include <wx/button.h>
+#include <wx/choice.h>
+#include <wx/panel.h>
 
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
@@ -39,6 +42,31 @@ void AdminFrame::BuildLayout()
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *resultSummaryLabel_, wxString(L"Résumé du résultat"));
     resultSizer->Add(resultSummaryLabel_, 0, wxEXPAND | wxBOTTOM, 8);
+
+    paginationPanel_ = new wxPanel(resultPanel, wxID_ANY);
+    auto* paginationSizer = new wxBoxSizer(wxHORIZONTAL);
+    paginationLabel_ = new wxStaticText(
+        paginationPanel_, wxID_ANY, wxString(L"Pagination"));
+    previousPageButton_ = new wxButton(
+        paginationPanel_, wxID_ANY, wxString(L"Page précédente"));
+    nextPageButton_ = new wxButton(
+        paginationPanel_, wxID_ANY, wxString(L"Page suivante"));
+    pageSizeChoice_ = new wxChoice(paginationPanel_, wxID_ANY);
+    paginationSizer->Add(paginationLabel_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 12);
+    paginationSizer->Add(previousPageButton_, 0, wxRIGHT, 8);
+    paginationSizer->Add(nextPageButton_, 0, wxRIGHT, 12);
+    paginationSizer->Add(pageSizeChoice_, 0, wxALIGN_CENTER_VERTICAL);
+    paginationPanel_->SetSizer(paginationSizer);
+    paginationPanel_->Hide();
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *paginationLabel_, wxString(L"État de la pagination"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *previousPageButton_, wxString(L"Afficher la page précédente"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *nextPageButton_, wxString(L"Afficher la page suivante"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *pageSizeChoice_, wxString(L"Nombre d’éléments affichés par page"));
+    resultSizer->Add(paginationPanel_, 0, wxEXPAND | wxBOTTOM, 8);
 
     resultsMenu_ = new lila::shared::ui::controls::VerticalMenu(
         resultPanel, empty, lila::shared::ui::controls::VerticalMenuRole::List);

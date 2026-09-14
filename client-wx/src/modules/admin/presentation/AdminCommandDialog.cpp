@@ -14,6 +14,7 @@
 
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "modules/admin/domain/AdminPagination.h"
 
 namespace lila::modules::admin::presentation
 {
@@ -75,6 +76,7 @@ void AdminCommandDialog::BuildFields(
     const auto orderedPayload = nlohmann::ordered_json::parse(command_.payloadTemplate);
     for (const auto& item : orderedPayload.items())
     {
+        if (domain::IsAdminPaginationField(command_.id, item.key())) continue;
         FieldControl field;
         field.key = item.key();
         const auto initial = initialPayload.find(item.key());

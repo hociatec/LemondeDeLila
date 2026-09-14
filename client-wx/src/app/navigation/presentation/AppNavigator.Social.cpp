@@ -14,11 +14,11 @@ void AppNavigator::ShowChat(std::size_t selectedIndex)
     messagingOpenedFromSocial_ = false;
     auto* view = GetOrCreateView(ViewId::Chat);
     focusTransition_.Forget(view);
+    ReplaceView(ViewId::Chat, view);
     if (auto* chat = dynamic_cast<modules::chat::presentation::ChatFrame*>(view))
     {
-        chat->ResetFocusToComposer();
+        chat->OpenForNavigation();
     }
-    ReplaceView(ViewId::Chat, view);
 }
 
 void AppNavigator::ShowMessagingFromSocial(std::size_t socialMenuIndex)

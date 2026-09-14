@@ -132,5 +132,6 @@ void ChatFrame::PresentConnectionError(const std::string& message)
     ShowAccessibleErrorDialog(
         lila::shared::text::FromUtf8(safeMessage),
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatFrameHeader));
+    RequestCloseToSession();
 }
 }
