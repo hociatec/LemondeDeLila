@@ -300,6 +300,7 @@ target_link_libraries(lemonde_de_lila_wx PRIVATE
 if(WIN32)
     target_link_libraries(lemonde_de_lila_wx PRIVATE
         winhttp
+        bcrypt
         crypt32
         "${LILA_BASS_IMPORT_LIBRARY}"
     )
