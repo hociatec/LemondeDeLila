@@ -9,7 +9,7 @@ namespace
 constexpr std::array Files{
     L"ClientOpened.wav", L"ClientConnected.wav", L"ClientDisconnected.wav",
     L"ClientDisconnected.wav", L"RoomOpened.wav", L"MainMenuMusic.wav",
-    L"TavernAmbience.wav", L"TavernOpened.wav", L"DiceRolled.wav",
+    L"TavernAmbience.wav", L"TavernOpened.wav", L"RoomExit.wav", L"DiceRolled.wav",
     L"InvitationSent.wav", L"ChatMessageSent.wav", L"ChatMessageReceived.wav",
     L"ChatMessageSent.wav", L"ChatMessageReceived.wav", L"PrivateMessageSent.wav",
     L"PrivateMessageReceived.wav", L"FriendConnected.wav", L"FriendDisconnected.wav",
@@ -17,7 +17,8 @@ constexpr std::array Files{
     L"GameDefeat.wav", L"RoomOpened.wav", L"RoomExit.wav", L"DiceRolled.wav",
     L"InvitationSent.wav", L"FriendInvitationReceived.wav", L"AdminContactSent.wav",
     L"AdminContactReceived.wav", L"ChatMessageReceived.wav", L"RoomOpened.wav",
-    L"RoomJoined.wav", L"RoomExit.wav", L"RoomOpened.wav", L"DiceRolled.wav",
+    L"RoomJoined.wav", L"RoomExit.wav", L"RoomJoined.wav", L"RoomExit.wav",
+    L"RoomOpened.wav", L"DiceRolled.wav",
     L"DiceRolled.wav", L"DiceRolled.wav", L"DiceRolled.wav", L"DiceRolled.wav",
     L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav",
     L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav",

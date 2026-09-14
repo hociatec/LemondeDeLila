@@ -37,7 +37,17 @@ export function decodeSoundManifest(value: unknown): SoundManifest | null {
     }
     sounds[entry.soundId] = entry;
   }
-  return { updatedAt: value.updatedAt, sounds };
+  const disabledRaw = value.disabled ?? [];
+  if (
+    !Array.isArray(disabledRaw) ||
+    disabledRaw.some(
+      (key) => typeof key !== 'string' || !SOUND_KEY_SET.has(key),
+    )
+  ) {
+    return null;
+  }
+  const disabled = [...new Set(disabledRaw)] as SoundKey[];
+  return { updatedAt: value.updatedAt, sounds, disabled };
 }
 
 function isSoundManifestEntry(

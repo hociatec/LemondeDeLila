@@ -4,6 +4,8 @@
 #include <wx/textctrl.h>
 #include <wx/window.h>
 
+#include <unordered_set>
+
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/rooms/application/RoomStateUpdatePolicy.h"
 #include "modules/rooms/presentation/model/RoomPresentationModel.h"
@@ -18,15 +20,41 @@
 
 namespace lila::modules::rooms::presentation
 {
+namespace
+{
+std::unordered_set<int> HumanMemberIds(const domain::RoomState& room)
+{
+    std::unordered_set<int> result;
+    for (const auto& member : room.players) result.insert(member.id);
+    for (const auto& member : room.spectators) result.insert(member.id);
+    return result;
+}
+}
+
 void RoomPanel::ApplyRoom(domain::RoomState room)
 {
     if (!application::RoomStateUpdatePolicy::ShouldApply(room_, room)) return;
+    const bool isRealtimeUpdate = room_.id != 0 && room_.id == room.id;
+    const bool wasStarted = room_.started || room_.status == "started";
+    const bool willBeStarted = room.started || room.status == "started";
+    const auto previousMembers = isRealtimeUpdate
+        ? HumanMemberIds(room_)
+        : std::unordered_set<int>{};
+    const auto nextMembers = isRealtimeUpdate
+        ? HumanMemberIds(room)
+        : std::unordered_set<int>{};
     const bool resetCompleted =
         pendingRealtimeCommand_ == domain::RoomCommand::Reset;
     room_ = std::move(room);
     pendingRealtimeCommand_.reset();
     if (resetCompleted) gamePlayPanel_->ResetRoomSetup();
     audioService_.StartTableAmbience(room_.tableAmbienceSoundId);
+    if (isRealtimeUpdate && !wasStarted && willBeStarted)
+        audioService_.Play(lila::modules::audio::domain::SoundCue::TableStarted);
+    if (isRealtimeUpdate && nextMembers.size() > previousMembers.size())
+        audioService_.Play(lila::modules::audio::domain::SoundCue::RoomMemberJoined);
+    else if (isRealtimeUpdate && nextMembers.size() < previousMembers.size())
+        audioService_.Play(lila::modules::audio::domain::SoundCue::RoomMemberLeft);
     state_ = State::Ready;
     ShowRoom();
     if (resetCompleted)

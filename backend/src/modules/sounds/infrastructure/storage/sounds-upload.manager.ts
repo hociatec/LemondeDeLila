@@ -235,6 +235,7 @@ export class SoundsUploadManager {
     await this.dependencies.writeManifest({
       updatedAt: entry.uploadedAt,
       sounds: { ...(manifest.sounds || {}), [soundId]: entry },
+      disabled: (manifest.disabled ?? []).filter((key) => key !== soundId),
     });
     return entry;
   }

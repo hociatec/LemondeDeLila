@@ -69,6 +69,23 @@ export class AdminSoundsController {
     return this.sounds.diagnoseSounds();
   }
 
+  @Get('catalog')
+  async catalog() {
+    return this.sounds.getAdminCatalog();
+  }
+
+  @Put(':soundId/enabled')
+  async setSoundEnabled(
+    @Param('soundId') soundId: string,
+    @Body() body: TableAmbienceEnabledBody,
+  ) {
+    this.requireExactBody(body, ['enabled']);
+    if (typeof body?.enabled !== 'boolean') {
+      throw new BadRequestException('Champ "enabled" booléen requis.');
+    }
+    return this.sounds.setSoundEnabled(soundId, body.enabled);
+  }
+
   @Get('table-ambiences')
   async listTableAmbiences() {
     return this.sounds.listTableAmbiencesWithFilter({

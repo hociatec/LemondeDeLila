@@ -170,6 +170,14 @@ int main()
         "games.update", {{"gameType", "jeu"}, {"minPlayers", 2}, {"maxPlayers", 8}}));
     assert(!lila::modules::admin::domain::ValidateAdminFormPayload(
         "sounds.upload", {{"soundId", "ChatMessageSent"}, {"filePath", ""}}));
+    const auto soundField = lila::modules::admin::domain::GetAdminFieldMetadata(
+        "sounds.upload", "soundId");
+    assert(soundField.kind ==
+        lila::modules::admin::domain::AdminFieldKind::Choice);
+    assert(std::find(soundField.choices.begin(), soundField.choices.end(),
+        "RoomMemberJoined") != soundField.choices.end());
+    assert(std::find(soundField.choiceLabels.begin(), soundField.choiceLabels.end(),
+        L"Table — un participant a rejoint") != soundField.choiceLabels.end());
 
     const auto formatted = lila::modules::admin::presentation::FormatAdminResult({
         {"users", {{{"id", 7}, {"username", "Lila"}, {"enabled", true}}}},

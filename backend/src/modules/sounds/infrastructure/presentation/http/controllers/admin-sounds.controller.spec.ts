@@ -2,6 +2,29 @@ import { BadRequestException } from '@nestjs/common';
 import { AdminSoundsController } from './admin-sounds.controller';
 
 describe('AdminSoundsController', () => {
+  it('returns the categorized sound catalog', async () => {
+    const sounds: any = {
+      getAdminCatalog: jest.fn().mockResolvedValue({ categories: [] }),
+    };
+    const controller = new AdminSoundsController(sounds);
+
+    await expect(controller.catalog()).resolves.toEqual({ categories: [] });
+    expect(sounds.getAdminCatalog).toHaveBeenCalledTimes(1);
+  });
+
+  it('enables or disables a standard sound', async () => {
+    const sounds: any = {
+      setSoundEnabled: jest
+        .fn()
+        .mockResolvedValue({ soundId: 'TavernOpened', enabled: false }),
+    };
+    const controller = new AdminSoundsController(sounds);
+
+    await controller.setSoundEnabled('TavernOpened', { enabled: false });
+
+    expect(sounds.setSoundEnabled).toHaveBeenCalledWith('TavernOpened', false);
+  });
+
   it('lists table ambiences including disabled entries', async () => {
     const sounds: any = {
       listTableAmbiencesWithFilter: jest.fn().mockResolvedValue({

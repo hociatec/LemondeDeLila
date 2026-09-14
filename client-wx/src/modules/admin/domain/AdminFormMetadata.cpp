@@ -70,6 +70,58 @@ const std::unordered_map<std::string_view, std::wstring_view> Help{
     {"filePath", L"Le sélecteur de fichier s’ouvrira si ce champ est vide."},
 };
 
+void SetSoundChoices(AdminFieldMetadata& result)
+{
+    struct Choice final { const char* id; const wchar_t* label; };
+    constexpr Choice choices[]{
+        {"ClientOpened", L"Application — ouverture"}, {"ClientConnected", L"Application — connexion"},
+        {"ClientDisconnected", L"Application — déconnexion"}, {"ClientClosing", L"Application — fermeture"},
+        {"ClientUpdateWarning", L"Application — avertissement de mise à jour"},
+        {"MainMenuMusic", L"Application — musique du menu principal"},
+        {"TavernAmbience", L"Taverne — ambiance"}, {"TavernOpened", L"Taverne — entrée"},
+        {"TavernClosed", L"Taverne — sortie"},
+        {"RoomOpened", L"Table — création et entrée"}, {"RoomJoined", L"Table — rejoindre"},
+        {"RoomExit", L"Table — sortie"},
+        {"RoomMemberJoined", L"Table — un participant a rejoint"},
+        {"RoomMemberLeft", L"Table — un participant est parti"},
+        {"TableStarted", L"Table — démarrage de la partie"},
+        {"InvitationSent", L"Table — invitation envoyée"},
+        {"InvitationReceived", L"Table — invitation reçue"},
+        {"DiceRolled", L"Jeu — lancer de dé"},
+        {"DrawCard", L"Jeu — pioche"},
+        {"PawnPicked", L"Jeu — pion sélectionné"}, {"PawnPlacedSelf", L"Jeu — votre pion placé"},
+        {"PawnPlacedOpponent", L"Jeu — pion adverse placé"},
+        {"WallPlacedSelf", L"Jeu — votre mur placé"}, {"WallPlacedOpponent", L"Jeu — mur adverse placé"},
+        {"GameVictory", L"Jeu — victoire"}, {"GameDefeat", L"Jeu — défaite"},
+        {"QuizCorrect", L"Jeu — bonne réponse"}, {"QuizWrong", L"Jeu — mauvaise réponse"},
+        {"RoundEnded", L"Jeu — fin de manche"},
+        {"ChatMessageSent", L"Tchat général — message envoyé"},
+        {"ChatMessageReceived", L"Tchat général — message reçu"},
+        {"TableChatMessageSent", L"Tchat de table — message envoyé"},
+        {"TableChatMessageReceived", L"Tchat de table — message reçu"},
+        {"PrivateMessageSent", L"Messages privés — message envoyé"},
+        {"PrivateMessageReceived", L"Messages privés — message reçu"},
+        {"AdminContactSent", L"Contact administration — message envoyé"},
+        {"AdminContactReceived", L"Contact administration — réponse reçue"},
+        {"BugReportCommentReceived", L"Rapports de bug — commentaire reçu"},
+        {"FriendConnected", L"Amis — connexion"}, {"FriendDisconnected", L"Amis — déconnexion"},
+        {"FriendInvitationSent", L"Amis — demande envoyée"},
+        {"FriendInvitationReceived", L"Amis — demande reçue"},
+    };
+    result.kind = AdminFieldKind::Choice;
+    for (const auto& choice : choices)
+    {
+        result.choices.emplace_back(choice.id);
+        result.choiceLabels.emplace_back(choice.label);
+    }
+    for (int index = 1; index <= 20; ++index)
+    {
+        result.choices.emplace_back("TableAmbience" + std::to_string(index));
+        result.choiceLabels.emplace_back(
+            L"Ambiances de table — emplacement " + std::to_wstring(index));
+    }
+}
+
 bool IsCommandOptional(std::string_view command, std::string_view field)
 {
     if (command == "users.create")
@@ -104,6 +156,8 @@ AdminFieldMetadata GetAdminFieldMetadata(
         result.kind = AdminFieldKind::Multiline;
     if (fieldName == "roles" || fieldName == "permissions" || fieldName == "answers")
         result.kind = AdminFieldKind::StringList;
+    if (fieldName == "soundId" && commandId.starts_with("sounds."))
+        SetSoundChoices(result);
     if (fieldName == "status")
     {
         result.kind = AdminFieldKind::Choice;
