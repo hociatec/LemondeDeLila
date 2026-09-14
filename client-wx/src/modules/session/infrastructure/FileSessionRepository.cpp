@@ -36,6 +36,16 @@ domain::Session ParseSession(const nlohmann::json& document)
         document,
         lila::modules::session::infrastructure::fields::Token.data());
     session.token = lila::shared::security::UnprotectSecret(protectedOrRawToken);
+    try
+    {
+        session.roles = lila::shared::security::ReadJwtRoles(session.token);
+    }
+    catch (...)
+    {
+        // Legacy test/dev sessions did not always carry a decodable JWT payload.
+        // Such a session remains non-admin and the server still validates the token.
+        session.roles.clear();
+    }
     session.refreshToken = lila::shared::security::UnprotectSecret(
         lila::shared::data::json::ReadOptionalString(document, "refreshToken"));
 

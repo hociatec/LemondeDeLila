@@ -1,0 +1,205 @@
+#include "modules/admin/presentation/AdminCommandDialog.h"
+
+#include <stdexcept>
+
+#include <wx/checkbox.h>
+#include <wx/choice.h>
+#include <wx/msgdlg.h>
+#include <wx/scrolwin.h>
+#include <wx/sizer.h>
+#include <wx/stattext.h>
+#include <wx/textctrl.h>
+#include <wx/tokenzr.h>
+
+#include "shared/text/presentation/encoding/Encoding.h"
+
+namespace lila::modules::admin::presentation
+{
+namespace
+{
+wxString StringValue(const nlohmann::json& value)
+{
+    if (value.is_string()) return lila::shared::text::FromUtf8(value.get<std::string>());
+    if (value.is_null()) return {};
+    return lila::shared::text::FromUtf8(value.dump());
+}
+
+wxString ListValue(const nlohmann::json& value)
+{
+    if (!value.is_array()) return StringValue(value);
+    wxString text;
+    for (const auto& item : value)
+    {
+        if (!text.empty()) text += L"\n";
+        text += StringValue(item);
+    }
+    return text;
+}
+}
+
+AdminCommandDialog::AdminCommandDialog(
+    wxWindow* parent,
+    const domain::AdminCommand& command,
+    const nlohmann::json& initialPayload)
+    : wxDialog(parent, wxID_ANY, wxString(command.label), wxDefaultPosition,
+          wxSize(720, 620), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
+      command_(command)
+{
+    auto* root = new wxBoxSizer(wxVERTICAL);
+    auto* introduction = new wxStaticText(this, wxID_ANY, wxString(command.description));
+    introduction->Wrap(660);
+    root->Add(introduction, 0, wxEXPAND | wxALL, 16);
+
+    auto* scroll = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+        wxVSCROLL | wxTAB_TRAVERSAL);
+    fieldsParent_ = scroll;
+    scroll->SetScrollRate(0, 16);
+    auto* fieldsSizer = new wxFlexGridSizer(2, 10, 12);
+    fieldsSizer->AddGrowableCol(1, 1);
+    scroll->SetSizer(fieldsSizer);
+    root->Add(scroll, 1, wxEXPAND | wxLEFT | wxRIGHT, 16);
+    BuildFields(initialPayload);
+    for (auto& field : fields_)
+    {
+        auto* rowLabel = new wxStaticText(scroll, wxID_ANY, field.metadata.label);
+        fieldsSizer->Add(rowLabel, 0, wxALIGN_CENTER_VERTICAL | wxTOP, 5);
+        auto* valueSizer = new wxBoxSizer(wxVERTICAL);
+        if (field.metadata.optional)
+        {
+            field.include = new wxCheckBox(scroll, wxID_ANY, wxString(L"Inclure ce paramètre"));
+            field.include->SetValue(field.metadata.includedByDefault);
+            field.editor->Enable(field.metadata.includedByDefault);
+            auto* editor = field.editor;
+            field.include->Bind(wxEVT_CHECKBOX, [editor](wxCommandEvent& event)
+            {
+                editor->Enable(event.IsChecked());
+            });
+            valueSizer->Add(field.include, 0, wxBOTTOM, 3);
+        }
+        valueSizer->Add(field.editor, field.metadata.kind == domain::AdminFieldKind::Multiline ||
+            field.metadata.kind == domain::AdminFieldKind::StringList ? 1 : 0, wxEXPAND);
+        fieldsSizer->Add(valueSizer, 1, wxEXPAND);
+    }
+    root->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 16);
+    SetSizer(root);
+    SetAffirmativeId(wxID_OK);
+    SetEscapeId(wxID_CANCEL);
+    Bind(wxEVT_CHAR_HOOK, &AdminCommandDialog::HandleKey, this);
+    CentreOnParent();
+}
+
+void AdminCommandDialog::BuildFields(const nlohmann::json& initialPayload)
+{
+    auto* scroll = fieldsParent_;
+    for (const auto& item : initialPayload.items())
+    {
+        FieldControl field;
+        field.key = item.key();
+        field.initialValue = item.value();
+        field.metadata = domain::GetAdminFieldMetadata(command_.id, item.key());
+        if (field.metadata.kind == domain::AdminFieldKind::Choice)
+        {
+            auto* choice = new wxChoice(scroll, wxID_ANY);
+            for (const auto& value : field.metadata.choices)
+                choice->Append(lila::shared::text::FromUtf8(value));
+            const auto selected = choice->FindString(StringValue(item.value()));
+            choice->SetSelection(selected == wxNOT_FOUND ? 0 : selected);
+            field.editor = choice;
+        }
+        else if (item.value().is_boolean())
+        {
+            auto* checkbox = new wxCheckBox(scroll, wxID_ANY, wxString(L"Oui"));
+            checkbox->SetValue(item.value().get<bool>());
+            field.editor = checkbox;
+        }
+        else
+        {
+            const bool multiline = field.metadata.kind == domain::AdminFieldKind::Multiline ||
+                field.metadata.kind == domain::AdminFieldKind::StringList ||
+                item.value().is_array() || item.value().is_object();
+            auto* text = new wxTextCtrl(scroll, wxID_ANY,
+                field.metadata.kind == domain::AdminFieldKind::StringList
+                    ? ListValue(item.value()) : StringValue(item.value()),
+                wxDefaultPosition, multiline ? wxSize(-1, 90) : wxDefaultSize,
+                multiline ? wxTE_MULTILINE : 0);
+            field.editor = text;
+        }
+        field.editor->SetName(field.metadata.label);
+        if (!field.metadata.help.empty()) field.editor->SetToolTip(field.metadata.help);
+        fields_.push_back(std::move(field));
+    }
+}
+
+nlohmann::json AdminCommandDialog::ReadValue(const FieldControl& field) const
+{
+    if (const auto* checkbox = dynamic_cast<wxCheckBox*>(field.editor))
+        return checkbox->GetValue();
+    if (const auto* choice = dynamic_cast<wxChoice*>(field.editor))
+        return lila::shared::text::ToUtf8(choice->GetStringSelection());
+    const auto* text = dynamic_cast<wxTextCtrl*>(field.editor);
+    if (text == nullptr) throw std::runtime_error("Contrôle de formulaire inconnu.");
+    const auto raw = lila::shared::text::ToUtf8(text->GetValue());
+    if (field.metadata.kind == domain::AdminFieldKind::StringList)
+    {
+        nlohmann::json result = nlohmann::json::array();
+        wxStringTokenizer lines(text->GetValue(), L"\n", wxTOKEN_STRTOK);
+        while (lines.HasMoreTokens())
+        {
+            auto line = lines.GetNextToken();
+            line.Trim(true).Trim(false);
+            if (!line.empty()) result.push_back(lila::shared::text::ToUtf8(line));
+        }
+        return result;
+    }
+    if (field.initialValue.is_number())
+    {
+        const auto parsed = nlohmann::json::parse(raw);
+        if (!parsed.is_number()) throw std::runtime_error("Un nombre est attendu.");
+        return parsed;
+    }
+    if (field.initialValue.is_array() || field.initialValue.is_object())
+        return nlohmann::json::parse(raw);
+    if (field.initialValue.is_null()) return raw.empty() ? nlohmann::json(nullptr) : nlohmann::json(raw);
+    return raw;
+}
+
+void AdminCommandDialog::HandleKey(wxKeyEvent& event)
+{
+    const auto keyCode = event.GetKeyCode();
+    if (keyCode == WXK_ESCAPE)
+    {
+        EndModal(wxID_CANCEL);
+        return;
+    }
+    if (keyCode != WXK_RETURN && keyCode != WXK_NUMPAD_ENTER)
+    {
+        event.Skip();
+        return;
+    }
+    const auto* focusedText = dynamic_cast<wxTextCtrl*>(wxWindow::FindFocus());
+    if (focusedText != nullptr && focusedText->IsMultiLine())
+    {
+        event.Skip();
+        return;
+    }
+    if (TransferDataFromWindow()) EndModal(wxID_OK);
+}
+
+bool AdminCommandDialog::TransferDataFromWindow()
+{
+    try
+    {
+        payload_ = nlohmann::json::object();
+        for (const auto& field : fields_)
+            if (field.include == nullptr || field.include->GetValue())
+                payload_[field.key] = ReadValue(field);
+        return true;
+    }
+    catch (const std::exception& error)
+    {
+        wxMessageBox(lila::shared::text::FromUtf8(error.what()),
+            wxString(L"Paramètre invalide"), wxOK | wxICON_ERROR, this);
+        return false;
+    }
+}
+}

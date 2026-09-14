@@ -5,6 +5,11 @@ namespace lila::modules::audio::application
 class IAudioService;
 }
 
+namespace lila::modules::admin::application
+{
+class AdminService;
+}
+
 namespace lila::modules::catalog::application
 {
 class CatalogService;
@@ -106,5 +111,10 @@ struct SocialNavigationDependencies final
 struct AudioNavigationDependencies final
 {
     lila::modules::audio::application::IAudioService& audioService;
+};
+
+struct AdminNavigationDependencies final
+{
+    lila::modules::admin::application::AdminService& adminService;
 };
 }

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "shared/text/presentation/catalog/UiTexts.h"
 
@@ -18,13 +19,15 @@ struct AuthenticationResult
     int userId = 0;
     std::int64_t expiresAt = 0;
     std::string username;
+    std::vector<std::string> roles;
 
     [[nodiscard]] static AuthenticationResult Ok(
         std::string resolvedUsername,
         std::string resolvedToken,
         std::string resolvedRefreshToken,
         int resolvedUserId,
-        std::int64_t resolvedExpiresAt)
+        std::int64_t resolvedExpiresAt,
+        std::vector<std::string> resolvedRoles)
     {
         AuthenticationResult result;
         result.success = true;
@@ -34,6 +37,7 @@ struct AuthenticationResult
         result.userId = resolvedUserId;
         result.expiresAt = resolvedExpiresAt;
         result.username = std::move(resolvedUsername);
+        result.roles = std::move(resolvedRoles);
         return result;
     }
 

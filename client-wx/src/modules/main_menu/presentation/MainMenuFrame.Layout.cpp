@@ -40,12 +40,11 @@ void MainMenuFrame::BuildLayout()
     navigationLabel_->Hide();
     navigationSizer->Add(navigationLabel_, 0, wxBOTTOM, 12);
 
-    const auto entries = GetMainMenuEntries();
     std::vector<lila::shared::ui::controls::VerticalMenuItem> menuItems;
-    menuItems.reserve(entries.size());
-    for (std::size_t index = 0; index < entries.size(); ++index)
+    menuItems.reserve(entries_.size());
+    for (std::size_t index = 0; index < entries_.size(); ++index)
     {
-        menuItems.push_back({std::to_string(index), wxString(entries[index].label.data())});
+        menuItems.push_back({std::to_string(index), wxString(entries_[index].label.data())});
     }
     menu_ = new lila::shared::ui::controls::VerticalMenu(
         navigationPanel,

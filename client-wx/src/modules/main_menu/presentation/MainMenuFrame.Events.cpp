@@ -48,8 +48,7 @@ void MainMenuFrame::OnLogoutClicked(wxCommandEvent& event)
 
 void MainMenuFrame::OnMenuSelectionChanged(std::size_t index)
 {
-    const auto entries = GetMainMenuEntries();
-    if (index >= entries.size())
+    if (index >= entries_.size())
     {
         return;
     }
@@ -60,18 +59,17 @@ void MainMenuFrame::OnMenuSelectionChanged(std::size_t index)
         return;
     }
 
-    SetStatus(wxString(entries[index].statusMessage.data()));
+    SetStatus(wxString(entries_[index].statusMessage.data()));
 }
 
 void MainMenuFrame::OnMenuActivated(std::size_t index)
 {
-    const auto entries = GetMainMenuEntries();
-    if (index >= entries.size())
+    if (index >= entries_.size())
     {
         return;
     }
 
-    switch (entries[index].action)
+    switch (entries_[index].action)
     {
     case MainMenuAction::OpenAbout:
         if (onOpenAboutRequested_)
@@ -83,6 +81,12 @@ void MainMenuFrame::OnMenuActivated(std::size_t index)
         if (onOpenOptionsRequested_)
         {
             onOpenOptionsRequested_(index);
+        }
+        return;
+    case MainMenuAction::OpenAdmin:
+        if (onOpenAdminRequested_)
+        {
+            onOpenAdminRequested_(index);
         }
         return;
     case MainMenuAction::OpenSocial:

@@ -6,6 +6,7 @@
 #include "modules/home/presentation/HomeFrame.h"
 #include "modules/main_menu/presentation/MainMenuFrame.h"
 #include "modules/options/presentation/OptionsFrame.h"
+#include "modules/admin/presentation/AdminFrame.h"
 #include "shared/logging/application/Logger.h"
 
 namespace lila::app::navigation
@@ -54,6 +55,7 @@ wxWindow* AppNavigator::CreateCoreView(ViewId viewId)
             [this](std::size_t menuIndex) { ShowChat(menuIndex); },
             [this](std::size_t menuIndex) { ShowSocial(menuIndex); },
             [this](std::size_t menuIndex) { ShowOptions(menuIndex); },
+            [this](std::size_t menuIndex) { ShowAdmin(menuIndex); },
             [this](std::size_t menuIndex) { OnLogoutRequested(menuIndex); },
             lastMainMenuSelection_);
     case ViewId::About:
@@ -74,6 +76,16 @@ wxWindow* AppNavigator::CreateCoreView(ViewId viewId)
                 ResetView(ViewId::Chat);
                 ShowSession(lastMainMenuSelection_);
             });
+    case ViewId::Admin:
+        return new modules::admin::presentation::AdminFrame(
+            hostFrame_->ContentParent(), adminService_,
+            [this](std::size_t section)
+            {
+                lastAdminSection_ = section;
+                ShowSession(lastMainMenuSelection_);
+            },
+            [this](int roomId, bool spectator) { JoinRoom(roomId, spectator); },
+            lastAdminSection_);
     default:
         return nullptr;
     }

@@ -67,6 +67,7 @@ void AppNavigator::OnLoginSucceeded(const modules::user::domain::AuthenticationR
     session.username = result.username;
     session.token = result.token;
     session.refreshToken = result.refreshToken;
+    session.roles = result.roles;
     session.expiresAt = result.expiresAt;
     sessionStore_.Open(
         std::move(session),
@@ -153,7 +154,7 @@ void AppNavigator::ResetSessionViews()
         ViewId::MainMenu, ViewId::Catalog, ViewId::JoinRooms, ViewId::Vault,
         ViewId::Room, ViewId::StoryBook, ViewId::Leaderboard, ViewId::Chat,
         ViewId::Messaging, ViewId::Social, ViewId::Presence, ViewId::About,
-        ViewId::Options};
+        ViewId::Options, ViewId::Admin};
     for (const auto viewId : sessionViews)
     {
         ResetView(viewId);

@@ -46,7 +46,8 @@ domain::AuthenticationResult WsAuthenticationService::Login(const domain::LoginC
             payload.token,
             payload.refreshToken,
             resolvedUserId,
-            claims.expiresAt);
+            claims.expiresAt,
+            std::move(claims.roles));
     }
     catch (const std::exception& exception)
     {

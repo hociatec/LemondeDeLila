@@ -19,6 +19,7 @@ enum class ViewId
     Presence,
     About,
     Options,
+    Admin,
     Count
 };
 }

@@ -67,3 +67,20 @@ The codebase is structured around Clean Architecture principles:
 - **Unit Testing**: `ctest --preset windows-vcpkg-debug` exécute tous les contrats réseau, session, options, gameplay, audio et mise à jour. Les grands scénarios sont découpés en segments sous `tests/network_protocol` et `tests/gameplay`.
 - **Quality Tooling**: Optional CMake switches expose `clang-tidy`, `cppcheck`, `AddressSanitizer`, and compiler-supported sanitizer runs. See `QUALITY.md`.
 - **Parser Hardening**: la cible `lemonde_de_lila_wx_parser_robustness_tests` rejoue un corpus versionné sur les entrées realtime, chat et UTF-8.
+
+---
+
+## 5. Administration native
+
+- `src/modules/admin` owns the administration command catalog, application facade, gateways, and wxWidgets shell.
+- `AdminCommandDialog` turns each command contract into a labelled business form; transport JSON is never edited directly by the administrator. `AdminFormMetadata` owns field labels, choices, multiline/list semantics, and optional-field behavior.
+- `AdminResultFormatter` renders response objects and collections as readable records and lists instead of exposing raw transport JSON.
+- The admin shell and its modal business forms enforce the same keyboard stack: Enter opens or validates, Escape pops one level, and multiline editors retain Enter for line breaks.
+- The main menu exposes administration only when the current JWT contains `ROLE_ADMIN` or `admin`. This is a presentation policy only: backend guards remain authoritative.
+- Admin API operations use the authenticated `/ws/api` client. Staff contact threads use a distinct authenticated client for `/ws/notify` and request tickets with scope `notify`.
+- Full user CRUD, sounds, and maintenance use `AuthenticatedHttpClient`. It adds the bearer token, supports JSON and multipart bodies, bounds response sizes, and cooperates with cancellation.
+- Maintenance's `x-admin-maintenance-token` is held only in the `AdminFrame` lifetime, wiped on exit, and is never persisted or logged.
+- All commands run through `BackgroundExecutor`; completion is marshalled through `wxWeakRef` and rejected when its `AsyncRequestSlot` generation is stale.
+- Destructive commands require both a warning and the explicit word `CONFIRMER`. Server responses are displayed in a read-only result region and are not copied to `client.log`.
+- `AdminCommandCatalog.*.cpp` documents the effective response type when it differs from the request event (for example `admin.users.rolesUpdated` or refreshed category collections).
+- `scripts/VerifyAdminClientCoverage.mjs` compares that catalog with every backend HTTP admin controller, registered `admin.*` WebSocket route, and staff-contact command. The test makes backend additions fail CI until the client mapping is updated.

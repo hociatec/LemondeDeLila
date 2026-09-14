@@ -40,7 +40,8 @@ public:
         AuthNavigationDependencies auth,
         GameNavigationDependencies game,
         SocialNavigationDependencies social,
-        AudioNavigationDependencies audio);
+        AudioNavigationDependencies audio,
+        AdminNavigationDependencies admin);
     ~AppNavigator();
 
     bool Start();
@@ -64,6 +65,7 @@ private:
     void ShowPresence();
     void ShowAbout(std::size_t selectedIndex);
     void ShowOptions(std::size_t selectedIndex);
+    void ShowAdmin(std::size_t selectedIndex);
     void CloseApplication(bool forUpdate = false);
     void FinishCloseApplication();
     void OnSessionRevocationFinished();
@@ -101,12 +103,14 @@ private:
     lila::modules::social::application::SocialService& socialService_;
     lila::modules::presence::application::PresenceMonitor& presenceMonitor_;
     lila::modules::audio::application::IAudioService& audioService_;
+    lila::modules::admin::application::AdminService& adminService_;
     HostFrame* hostFrame_ = nullptr;
     domain::ViewId currentViewId_ = domain::ViewId::None;
     wxWindow* currentView_ = nullptr;
     ViewRegistry views_;
     std::size_t lastMainMenuSelection_ = 0;
     std::size_t lastSocialMenuSelection_ = 0;
+    std::size_t lastAdminSection_ = 0;
     bool messagingOpenedFromSocial_ = false;
     bool resetVaultFocusOnNextOpen_ = false;
     bool sessionDataPrewarmed_ = false;
