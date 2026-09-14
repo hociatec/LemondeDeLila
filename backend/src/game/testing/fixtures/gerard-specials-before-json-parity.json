@@ -10,7 +10,7 @@
       }
     },
     "events": 89,
-    "sha256": "fe40c29c58ce4a2e4e00c1e4606194fca4fcefa19f4ad0b8f8ab68120fc36b7d"
+    "sha256": "b373ff87dcee76cf524e93ddf472c763c9ef5fb8180784961792b3290763f6ef"
   },
   {
     "card": "special-chuchotement-confus",
@@ -24,7 +24,7 @@
       }
     },
     "events": 90,
-    "sha256": "9ccc1b9682d99a3734278ac7a064d55eedf5379df2c0bcfa03b4ef8910177eb5"
+    "sha256": "d8b2a89221c57316d47fdcede6d6d07e459dbb3287048de938665d92621f4cce"
   },
   {
     "card": "special-defense-totale",
@@ -37,7 +37,7 @@
       }
     },
     "events": 87,
-    "sha256": "80d7627e3dfba11c02173f9edc003afd877c2e20e2f344053373cbd7d9f98857"
+    "sha256": "65508c1255123b184e11008f50eedb576ff5d5866d85385af1921ddac8416f81"
   },
   {
     "card": "special-double-prenom",
@@ -50,7 +50,7 @@
       }
     },
     "events": 88,
-    "sha256": "39feb5ebdb725e973db5ab4fd0f021fb4132c130a43da991ee01591776e13288"
+    "sha256": "b9383719d572b0eff230971c19944811ab2986a50400f2bf48ee63bd157db7eb"
   },
   {
     "card": "special-double-theme",
@@ -63,7 +63,7 @@
       }
     },
     "events": 88,
-    "sha256": "f5d8d0951e076836e9d319fd04b79a45d5636c79b8015f7e81d70b5c1e0897b1"
+    "sha256": "f056565acf3c04b97d071c8056df6c26cb98cbcd15f52cc9c99f0105939902bf"
   },
   {
     "card": "special-echange-force",
@@ -77,7 +77,7 @@
       }
     },
     "events": 90,
-    "sha256": "b79794a103b006ae085e7eb0753874af6fe8daa69b0b7c5dc3c7de1b45ec31c8"
+    "sha256": "10a4bbf34bc44ccaed30dd854b4664a30b6f9d883cb5ce732f268a703415e4b1"
   },
   {
     "card": "special-effet-domino",
@@ -90,7 +90,7 @@
       }
     },
     "events": 89,
-    "sha256": "0ea0bc470513d34ec07f7e7fa0afaebfe6ca38180757a36f54b589f8e51a5743"
+    "sha256": "e21bc0444525439e9f17485809f095d989779a3b3b8723553e0ed9cbf8f558a0"
   },
   {
     "card": "special-interdiction",
@@ -104,7 +104,7 @@
       }
     },
     "events": 87,
-    "sha256": "c30a54b4ee50db67bb736f16d7e7077f731bc26d6fdae9a327c54372c6349a47"
+    "sha256": "a615349fc3d5039480b648d7d9692dd77b99d76c887f919574f476b56a9669b7"
   },
   {
     "card": "special-inversion",
@@ -117,7 +117,7 @@
       }
     },
     "events": 88,
-    "sha256": "d3f01bca195b8001e979af05b55dfb7aac283f200538cfd16c5cda4c98937a12"
+    "sha256": "40d00cc295e6d00c9c3b843583442bcd601af9af17e14983660982068f1e9961"
   },
   {
     "card": "special-inversion-role",
@@ -130,7 +130,7 @@
       }
     },
     "events": 88,
-    "sha256": "a0486a9761062bb981da6c88629a8d74c5458e7892508e3cbe8993b7a22adf67"
+    "sha256": "d713dd0ef9729d4dcc788325ada70dd3f8f48cd6b72515ad76c2d9ce263d4e7d"
   },
   {
     "card": "special-jury-mystere",
@@ -144,7 +144,7 @@
       }
     },
     "events": 88,
-    "sha256": "b793fc8c59b287f4e53be435781e4bc8b55b76e758fcb00dc6885abf178eba25"
+    "sha256": "cd64855e933f8cc0a1af90f01eecc42740c667fbd420bb56cd7c582555925b73"
   },
   {
     "card": "special-main-fantome",
@@ -158,7 +158,7 @@
       }
     },
     "events": 89,
-    "sha256": "f6965b7ffd26481ed9b3e9953b132ed9bf6a98d3d14e7d66735e8201890f85c1"
+    "sha256": "65287e767504dcf98753d5ff8ba3f5983e5854a6aac3e41f4b4c05a68e217e9d"
   },
   {
     "card": "special-mega-combo",
@@ -171,7 +171,7 @@
       }
     },
     "events": 88,
-    "sha256": "8929236ba6bf23221b2dbb9c06e65510ef654cc3e44c2f077a8d146e53d6476d"
+    "sha256": "0b3626f8b49a678b6790c2f81d45042e359ed2eb8e140b86be6b5fe79769d538"
   },
   {
     "card": "special-panique-generale",
@@ -184,7 +184,7 @@
       }
     },
     "events": 114,
-    "sha256": "e84e0b9f0939e0636b6890f80f14315dc765cdf6419e123f886186c28344fd78"
+    "sha256": "2f71dd6ba97046a68c81657b604c65c269c94556f82ad29e10de2f12ddbbaca4"
   },
   {
     "card": "special-prenom-fantome",
@@ -197,7 +197,7 @@
       }
     },
     "events": 88,
-    "sha256": "d38ab02bdc27cdb04481abbd7e041c2f8d85f5902493cd1fddfc03482e054253"
+    "sha256": "734f2971975fefbe8dd23f9d3317292ffae3cb6252a2a27a941edfc80eeac972"
   },
   {
     "card": "special-prenom-volant",
@@ -211,7 +211,7 @@
       }
     },
     "events": 88,
-    "sha256": "b2d7dba0941d5a8dd168c7a3ec92cdac150e63a4d3332e31e56d0aae1f45823a"
+    "sha256": "964e8601748e606ecf411e632a4c2b483e09942a5e121cc68025ac4acfdee044"
   },
   {
     "card": "special-retour-envoyeur",
@@ -224,7 +224,7 @@
       }
     },
     "events": 87,
-    "sha256": "85f49e5e5c354d11a5cad25d9d4f5fe98bd13d16a207e697c803de2c1abbc208"
+    "sha256": "6b07f3fcc3099279420fdcba0e1792a945f0abe77c446aa8bbb129482a1ff11f"
   },
   {
     "card": "special-sabotage",
@@ -238,7 +238,7 @@
       }
     },
     "events": 88,
-    "sha256": "9e38073c83af2678f54294fc8a344c45780e0f55888505103f93b948e1ecec3b"
+    "sha256": "f994ddc8d12aa639cccdc624de22bd4eb9a3aceaf1e64e886ef0233fa93390d7"
   },
   {
     "card": "special-theme-secret",
@@ -251,7 +251,7 @@
       }
     },
     "events": 88,
-    "sha256": "00dcbf9f40903fdc9ea490c776c21169a9281ea7a4c327a0e5e320d6b82082ab"
+    "sha256": "23c376a285401ec04af0b49c033591e064bfe57ef5a4ec8cefd0e329185b1789"
   },
   {
     "card": "special-ultra-sabotage",
@@ -266,6 +266,6 @@
       }
     },
     "events": 89,
-    "sha256": "b38fcd375c60e11e0a3f3339dfe3700035ea9d70f995cd9608730765499ff874"
+    "sha256": "5dac4195aa47d6e9197ee7c3e28031e1cdb57404298287f356cd5f7a225fd1d5"
   }
 ]

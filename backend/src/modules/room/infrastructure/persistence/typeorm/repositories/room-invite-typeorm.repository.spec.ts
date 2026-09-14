@@ -11,7 +11,7 @@ function fixture(current: RoomInviteEntity | null) {
   const manager = {
     getRepository: () => rows,
     transaction: async (work: (manager: EntityManager) => Promise<unknown>) =>
-      work(manager as EntityManager),
+      work(manager as unknown as EntityManager),
   };
   const repository = {
     manager,

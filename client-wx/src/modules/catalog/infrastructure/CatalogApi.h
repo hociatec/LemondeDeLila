@@ -17,7 +17,8 @@ public:
     explicit CatalogApi(
         lila::shared::network::realtime::RealtimeApiClient& client) noexcept;
 
-    [[nodiscard]] std::vector<domain::CatalogShelf> GetShelves(std::stop_token stopToken) const override;
+    [[nodiscard]] domain::CatalogSnapshot GetCatalog(
+        std::stop_token stopToken) const override;
 
 private:
     lila::shared::network::realtime::RealtimeApiClient& client_;

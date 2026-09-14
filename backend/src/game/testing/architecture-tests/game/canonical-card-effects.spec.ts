@@ -2,14 +2,14 @@ import { GENERATED_GAME_PACKAGES } from '../../../composition/generated-game-reg
 import { compileJsonGame } from '../../../engine/json/public-api';
 
 const catalogues = [
-  ['choice-story-challenge-et-cacahuetes', ['contes', 'decks', 'bonus']],
-  ['la-grande-mine-de-barbak', ['mineDomain', 'cards']],
-  ['frousse-party', ['frousseRace', 'cards']],
-  ['les-mains-de-la-terre', ['professionFamilies', 'cards']],
-  ['en-attendant-minuit', ['midnightRace', 'cards']],
-  ['a-fond-les-ballons', ['balloonRace', 'cards']],
-  ['galopons-ensemble', ['galoponsRace', 'cards']],
-  ['ca-derape', ['derapeRace', 'cards']],
+  ['contes-et-cacahuetes', ['storyChallenge', 'decks', 'bonus']],
+  ['la-grande-mine-de-barbak', ['publicDomainCards', 'cards']],
+  ['frousse-party', ['protectedHauntedRace', 'cards']],
+  ['les-mains-de-la-terre', ['familyEffects', 'cards']],
+  ['en-attendant-minuit', ['bounceQuizRace', 'cards']],
+  ['a-fond-les-ballons', ['chainedTileRace', 'cards']],
+  ['galopons-ensemble', ['bidirectionalCollisionRace', 'cards']],
+  ['ca-derape', ['directionalHazardRace', 'cards']],
 ] as const;
 
 describe.each(catalogues)(
@@ -25,7 +25,11 @@ describe.each(catalogues)(
         if (!entry) throw new Error('Missing game package ' + gameId);
         const definition = compileJsonGame(
           entry.manifest as Parameters<typeof compileJsonGame>[0],
-          entry.definition.content.data,
+          (
+            entry.definition as {
+              content: { data: object };
+            }
+          ).content.data,
         );
         const source = structuredClone(definition.content.data) as Record<
           string,

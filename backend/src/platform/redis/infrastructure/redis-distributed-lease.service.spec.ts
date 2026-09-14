@@ -7,7 +7,7 @@ function createFactory() {
   const factory: RedisClientFactory = Object.create(
     RedisClientFactory.prototype,
   );
-  const client = { disconnect: jest.fn() } as Redis;
+  const client = { disconnect: jest.fn() } as unknown as Redis;
   const create = jest.spyOn(factory, 'create').mockReturnValue(client);
   return { factory, create };
 }

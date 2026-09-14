@@ -9,7 +9,7 @@
 
 #include <wx/string.h>
 
-#include "modules/catalog/domain/CatalogShelf.h"
+#include "modules/catalog/domain/CatalogSnapshot.h"
 #include "modules/catalog/presentation/CatalogShelfNavigator.h"
 #include "shared/accessibility/application/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
@@ -76,7 +76,7 @@ private:
     void ShowStaticRoot(State state);
     void LoadShelves();
     void CancelCatalogLoad();
-    void ApplyShelves(std::vector<domain::CatalogShelf> shelves);
+    void ApplyCatalog(domain::CatalogSnapshot catalog);
     void RebuildFilteredShelves();
     void ShowCurrentShelves();
     void FocusMenuIfVisible();
@@ -94,7 +94,9 @@ private:
     wxStaticText* statusLabel_ = nullptr;
     CatalogShelfNavigator shelfNavigator_;
     std::vector<domain::CatalogShelf> allShelves_;
+    bool administrator_ = false;
     std::optional<bool> appliedBetaSetting_;
+    std::optional<bool> appliedAdministratorSetting_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> activeTask_;
     std::size_t rootSelectedIndex_ = 0;
     std::size_t catalogRequestId_ = 0;

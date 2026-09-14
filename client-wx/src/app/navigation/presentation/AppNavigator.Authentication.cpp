@@ -37,7 +37,7 @@ void AppNavigator::PrewarmSessionData()
     catalogPrewarmTask_ = lila::shared::concurrency::RunAsync(
         [catalogService, socialService](std::stop_token stopToken)
         {
-            static_cast<void>(catalogService->LoadShelves(stopToken));
+            static_cast<void>(catalogService->LoadCatalog(stopToken));
             if (stopToken.stop_requested()) return;
 
             static_cast<void>(socialService->LoadFriends());

@@ -3,6 +3,7 @@
 #include "modules/social/presentation/SocialNavigationState.h"
 #include "modules/messaging/presentation/MessagingNavigationState.h"
 #include "modules/options/presentation/OptionsEditSession.h"
+#include "modules/catalog/application/CatalogVisibilityPolicy.h"
 
 int main()
 {
@@ -55,4 +56,20 @@ int main()
     assert(edit.HasUnsavedChanges(changed));
     edit.CaptureInitial(changed);
     assert(!edit.HasUnsavedChanges(changed));
+
+    using lila::modules::catalog::application::CatalogVisibilityPolicy;
+    lila::modules::catalog::domain::CatalogGame betaGame;
+    betaGame.name = "Jeu test";
+    betaGame.status = "beta";
+    assert(!CatalogVisibilityPolicy::IsVisible(betaGame, false, false));
+    assert(CatalogVisibilityPolicy::IsVisible(betaGame, true, false));
+    assert(CatalogVisibilityPolicy::IsVisible(betaGame, false, true));
+    assert(CatalogVisibilityPolicy::DisplayName(betaGame, false) == "Jeu test");
+    assert(CatalogVisibilityPolicy::DisplayName(betaGame, true) ==
+        "Jeu test (bêta)");
+
+    auto constructionGame = betaGame;
+    constructionGame.status = "construction";
+    assert(!CatalogVisibilityPolicy::IsVisible(constructionGame, true, false));
+    assert(CatalogVisibilityPolicy::IsVisible(constructionGame, false, true));
 }

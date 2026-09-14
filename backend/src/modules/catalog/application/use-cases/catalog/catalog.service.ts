@@ -6,6 +6,7 @@ import {
   FlatCategory,
 } from '../../read-models/catalog-game.record';
 import { CatalogCacheService } from '../../services/catalog-cache.service';
+import { CatalogMapperService } from '../../services/catalog-mapper.service';
 import { GetCatalogGameService } from './get-catalog-game.service';
 import { ListCatalogCategoriesService } from './list-catalog-categories.service';
 import { ListCatalogCategoriesTreeService } from './list-catalog-categories-tree.service';
@@ -23,10 +24,19 @@ export class CatalogService {
     private readonly listFlatCategories: ListCatalogFlatCategoriesService,
     private readonly listGamesForCategory: ListCatalogGamesForCategoryService,
     private readonly cache: CatalogCacheService,
+    private readonly mapper: CatalogMapperService,
   ) {}
 
   async getAllGames(): Promise<CatalogGame[]> {
     return this.listGames.execute();
+  }
+
+  async getSnapshot(options: { includeDisabled?: boolean } = {}): Promise<{
+    categories: CategoryNode[];
+    games: CatalogGame[];
+  }> {
+    const games = await this.listGames.execute(options);
+    return { categories: this.mapper.buildCategoryTree(games), games };
   }
 
   async getCategories(): Promise<string[]> {

@@ -15,7 +15,13 @@ export class CatalogWsRegistrar implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.registry.register('catalog.all', () => this.handler.all());
+    this.registry.register('catalog.all', (session) => {
+      const roles = Array.isArray(session.user?.roles)
+        ? session.user.roles
+        : [];
+      const isAdmin = roles.includes('ROLE_ADMIN') || roles.includes('admin');
+      return this.handler.all(isAdmin);
+    });
     this.registry.register('catalog.categories', () =>
       this.handler.categories(),
     );

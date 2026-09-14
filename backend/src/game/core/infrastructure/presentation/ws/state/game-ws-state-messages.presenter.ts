@@ -1,6 +1,7 @@
 import type { GameRuntimeDescriptor } from '../../../../application/ports/game-runtime.port';
 import { genericGameEventMessage } from './game-ws-generic-event-message';
 import { cardMessageLabel, scalarMessageText } from './game-ws-message-values';
+import { withoutRepeatedTurnAnnouncements } from './game-ws-turn-announcements';
 
 type GamePresentationDescriptor = NonNullable<
   GameRuntimeDescriptor['presentation']
@@ -41,7 +42,7 @@ export class GameWsStateMessagesPresenter {
         presentation,
       });
     const presented = this.presentLatestByType(latestByType, presentEvent);
-    const recent = this.withoutRepeatedTurnAnnouncements(
+    const recent = withoutRepeatedTurnAnnouncements(
       this.withoutDuplicateTurnIdentities(
         recentEvents.map((event) => presentEvent(event)),
       ),
@@ -126,32 +127,6 @@ export class GameWsStateMessagesPresenter {
       (input.semanticMessageKey === 'game.round.started' &&
         isInitialRoundEvent(type))
     );
-  }
-
-  private withoutRepeatedTurnAnnouncements(
-    events: Record<string, unknown>[],
-  ): Record<string, unknown>[] {
-    let previousLastLine = '';
-    return events.map((event) => {
-      const data = this.asRecord(event.data);
-      const message = this.stringValue(data.message);
-      if (!message) return event;
-      const lines = message
-        .split('\n')
-        .map((line) => line.trim())
-        .filter(Boolean);
-      const isRepeatedTurn =
-        lines.length === 1 &&
-        lines[0].startsWith("C'est au tour de ") &&
-        lines[0] === previousLastLine;
-      if (isRepeatedTurn) {
-        const remainingData = { ...data };
-        delete remainingData.message;
-        return { ...event, data: remainingData };
-      }
-      previousLastLine = lines.at(-1) ?? previousLastLine;
-      return event;
-    });
   }
 
   private withoutDuplicateTurnIdentities(

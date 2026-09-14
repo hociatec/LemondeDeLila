@@ -147,7 +147,10 @@ describe('LAMA declarative game', () => {
     const message = game.state().log.at(-1);
     expect(message?.key).toBe('game.card.drawn');
     const params = message?.params ?? {};
-    expect(params).toMatchObject({ playerId: actor, deckId: 'lama' });
+    expect(params).toMatchObject({
+      playerId: actor,
+      deckId: 'discardPenaltyCards',
+    });
     expect(params).not.toHaveProperty('cardId');
     expect(params).not.toHaveProperty('cardLabel');
   });

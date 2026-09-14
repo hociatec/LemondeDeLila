@@ -42,12 +42,14 @@ describe('Entre Rites & Lumières declarative game', () => {
       .players(['Alice', 'Bob'])
       .seed(48)
       .start();
-    const source = game.state();
+    const source = game.state() as ReturnType<typeof game.state> & {
+      engine: { contentVersion: string };
+    };
     source.engine.contentVersion = 'entre-rites-et-lumieres@content:6b100bc2';
     const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
       source,
       [],
-    );
+    ) as typeof source;
     expect(restored.engine.contentVersion).toBe('1');
   });
 });

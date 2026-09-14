@@ -2,7 +2,6 @@
 
 #include <optional>
 #include <algorithm>
-#include <cctype>
 #include <stop_token>
 #include <string>
 #include <utility>
@@ -11,6 +10,7 @@
 #include <wx/weakref.h>
 
 #include "modules/catalog/application/CatalogService.h"
+#include "modules/catalog/application/CatalogVisibilityPolicy.h"
 #include "modules/options/application/OptionsStore.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "modules/catalog/domain/CatalogErrorMessages.h"
@@ -55,14 +55,14 @@ void CatalogPanel::LoadShelves()
 
     auto* service = &catalogService_;
     wxWeakRef<CatalogPanel> weakThis(this);
-    activeTask_ = lila::shared::concurrency::RunAsync<std::vector<domain::CatalogShelf>>(
+    activeTask_ = lila::shared::concurrency::RunAsync<domain::CatalogSnapshot>(
         [service](std::stop_token stopToken)
         {
-            return service->LoadShelves(stopToken);
+            return service->LoadCatalog(stopToken);
         },
         [weakThis, requestId](
             std::optional<lila::shared::errors::AppError> error,
-            std::optional<std::vector<domain::CatalogShelf>> shelves) mutable
+            std::optional<domain::CatalogSnapshot> catalog) mutable
         {
             if (!weakThis)
             {
@@ -70,7 +70,7 @@ void CatalogPanel::LoadShelves()
             }
 
             weakThis->CallAfter(
-                [weakThis, requestId, error = std::move(error), shelves = std::move(shelves)]() mutable
+                [weakThis, requestId, error = std::move(error), catalog = std::move(catalog)]() mutable
                 {
                     if (!weakThis)
                     {
@@ -82,7 +82,7 @@ void CatalogPanel::LoadShelves()
                         return;
                     }
                     weakThis->activeTask_.reset();
-                    if (error.has_value() || !shelves.has_value())
+                    if (error.has_value() || !catalog.has_value())
                     {
                         if (error.has_value())
                         {
@@ -100,7 +100,7 @@ void CatalogPanel::LoadShelves()
                         return;
                     }
 
-                    weakThis->ApplyShelves(std::move(*shelves));
+                    weakThis->ApplyCatalog(std::move(*catalog));
                 });
         },
         lila::shared::concurrency::BackgroundTaskPriority::Normal,
@@ -117,10 +117,12 @@ void CatalogPanel::CancelCatalogLoad()
     }
 }
 
-void CatalogPanel::ApplyShelves(std::vector<domain::CatalogShelf> shelves)
+void CatalogPanel::ApplyCatalog(domain::CatalogSnapshot catalog)
 {
-    allShelves_ = std::move(shelves);
+    allShelves_ = std::move(catalog.shelves);
+    administrator_ = catalog.administrator;
     appliedBetaSetting_.reset();
+    appliedAdministratorSetting_.reset();
     RebuildFilteredShelves();
     ShowCurrentShelves();
 }
@@ -128,24 +130,22 @@ void CatalogPanel::ApplyShelves(std::vector<domain::CatalogShelf> shelves)
 void CatalogPanel::RebuildFilteredShelves()
 {
     const bool betaEnabled = optionsStore_.Current().general.enableBetaGames;
-    if (appliedBetaSetting_ == betaEnabled)
+    if (appliedBetaSetting_ == betaEnabled &&
+        appliedAdministratorSetting_ == administrator_)
     {
         shelfNavigator_.ResetToRoot();
         return;
     }
     auto filtered = allShelves_;
-    const auto filterShelf = [betaEnabled](auto&& self, domain::CatalogShelf& shelf) -> void
+    const auto filterShelf = [betaEnabled, administrator = administrator_](
+        auto&& self, domain::CatalogShelf& shelf) -> void
     {
         std::erase_if(
             shelf.games,
-            [betaEnabled](const domain::CatalogGame& game)
+            [betaEnabled, administrator](const domain::CatalogGame& game)
             {
-                std::string status = game.status;
-                std::transform(status.begin(), status.end(), status.begin(), [](unsigned char value)
-                {
-                    return static_cast<char>(std::tolower(value));
-                });
-                return status == "construction" || (status == "beta" && !betaEnabled);
+                return !application::CatalogVisibilityPolicy::IsVisible(
+                    game, betaEnabled, administrator);
             });
         for (auto& child : shelf.children)
         {
@@ -158,6 +158,7 @@ void CatalogPanel::RebuildFilteredShelves()
     }
     shelfNavigator_.Reset(std::move(filtered));
     appliedBetaSetting_ = betaEnabled;
+    appliedAdministratorSetting_ = administrator_;
 }
 
 void CatalogPanel::ShowCurrentShelves()
@@ -171,7 +172,9 @@ void CatalogPanel::ShowCurrentShelves()
         items.reserve(games.size());
         for (const auto& game : games)
         {
-            items.push_back({game.id, lila::shared::text::FromUtf8(game.name)});
+            const auto label = application::CatalogVisibilityPolicy::DisplayName(
+                game, administrator_);
+            items.push_back({game.id, lila::shared::text::FromUtf8(label)});
         }
     }
     else

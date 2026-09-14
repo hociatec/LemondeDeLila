@@ -407,7 +407,7 @@ describe('GameRealtimeAutomationService', () => {
 
     expect(test.scheduled[0]).toEqual(
       expect.objectContaining({
-        signature: 'bot:-7:choice:a-fond-les-ballons.pawn:round:0:turn:2',
+        signature: 'bot:-7:choice:race-chained-tile-cards.pawn:round:0:turn:2',
       }),
     );
     const task = test.scheduled[0]!;
@@ -478,7 +478,7 @@ describe('GameRealtimeAutomationService', () => {
     expect(test.scheduler.schedule).toHaveBeenCalledWith(
       expect.objectContaining({
         generation: 5,
-        signature: 'bot:-7:choice:a-fond-les-ballons.pawn:round:0:turn:2',
+        signature: 'bot:-7:choice:race-chained-tile-cards.pawn:round:0:turn:2',
       }),
     );
   });

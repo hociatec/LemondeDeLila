@@ -1,8 +1,8 @@
 {
   "maximumProgramFiles": 39,
-  "maximumProgramLines": 1106,
-  "maximumProductionLines": 13308,
-  "maximumBehaviorLines": 13232,
+  "maximumProgramLines": 1110,
+  "maximumProductionLines": 13344,
+  "maximumBehaviorLines": 13268,
   "maximumRegisteredEffectPacks": 38,
   "forbiddenEngineVocabulary": [
     "balloon",

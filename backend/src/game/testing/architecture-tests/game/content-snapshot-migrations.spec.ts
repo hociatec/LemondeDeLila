@@ -127,14 +127,11 @@ it('preserves saved Pirates gameplay after JSON normalization', async () => {
   await verifyMigration(pirates, 'pirates-en-vadrouille@content:ddf4bb7f');
 });
 it('preserves saved Maman gameplay after JSON normalization', async () => {
-  await verifyMigration(maman, 'tout-pres-de-maman@content:f766ed9f');
+  await verifyMigration(maman, 'tout-pres-de-pairedPawn@content:f766ed9f');
 });
 
 it('preserves saved Sac gameplay after JSON normalization', async () => {
-  await verifyMigration(
-    sac,
-    'board-property-economy-a-malices@content:2959fe7b@format:2',
-  );
+  await verifyMigration(sac, 'sac-a-malices@content:2959fe7b@format:2');
 });
 
 it('preserves Dame Nature snapshots when quiz metadata uses answer indices', async () => {

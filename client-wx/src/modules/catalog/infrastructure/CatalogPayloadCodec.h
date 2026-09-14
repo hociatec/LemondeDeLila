@@ -1,12 +1,10 @@
 #pragma once
 
-#include <vector>
-
 #include <nlohmann/json_fwd.hpp>
 
-#include "modules/catalog/domain/CatalogShelf.h"
+#include "modules/catalog/domain/CatalogSnapshot.h"
 
 namespace lila::modules::catalog::infrastructure::codec
 {
-[[nodiscard]] std::vector<domain::CatalogShelf> ReadShelvesPayload(const nlohmann::json& payload);
+[[nodiscard]] domain::CatalogSnapshot ReadCatalogPayload(const nlohmann::json& payload);
 }

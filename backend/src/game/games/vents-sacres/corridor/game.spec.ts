@@ -14,7 +14,7 @@ describe('Corridor declarative game', () => {
     await game.choose(1, 'vent');
     await game.choose(2, 'eau');
     expect(game.inspect.setupComplete()).toBe(true);
-    expect(game.availableActions(1)).toContain('corridor_move');
+    expect(game.availableActions(1)).toContain('pathWalls_move');
   });
 
   it('moves legally and replays deterministically', async () => {
@@ -23,7 +23,7 @@ describe('Corridor declarative game', () => {
     await game.as(1).do('game.configure', { wallsPerPlayer: 10 });
     await game.choose(1, 'vent');
     await game.choose(2, 'eau');
-    await game.as(1).do('corridor_move', { x: 4, y: 1 });
+    await game.as(1).do('pathWalls_move', { x: 4, y: 1 });
     expect(await game.replay()).toEqual(game.state());
   });
 });

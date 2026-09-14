@@ -19,6 +19,7 @@ void TestCatalogPayloadCodecReadsShelfTree()
                 {"children", nlohmann::json::array()},
             },
         })},
+        {"isAdmin", true},
         {"games", nlohmann::json::array({{
             {"id", "four-winds"},
             {"name", "Les quatre vents"},
@@ -28,7 +29,9 @@ void TestCatalogPayloadCodecReadsShelfTree()
         }})},
     };
 
-    const auto shelves = lila::modules::catalog::infrastructure::codec::ReadShelvesPayload(payload);
+    const auto catalog = lila::modules::catalog::infrastructure::codec::ReadCatalogPayload(payload);
+    const auto& shelves = catalog.shelves;
+    Expect(catalog.administrator, "Le droit administrateur du catalogue doit etre conserve");
     Expect(shelves.size() == 2, "Deux etageres catalogue attendues");
     Expect(shelves[0].id == "sacred-winds", "Identifiant de la premiere etagere attendu");
     Expect(shelves[0].children.size() == 1, "Sous-etagere attendue");
@@ -36,10 +39,17 @@ void TestCatalogPayloadCodecReadsShelfTree()
     Expect(shelves[0].children[0].games.size() == 1, "Jeu attache a la sous-etagere attendu");
     Expect(shelves[0].children[0].games[0].id == "four-winds", "Identifiant de jeu attendu");
 
+    auto publicPayload = payload;
+    publicPayload.erase("isAdmin");
+    Expect(
+        !lila::modules::catalog::infrastructure::codec::ReadCatalogPayload(publicPayload)
+             .administrator,
+        "Le catalogue doit refuser le mode administrateur par defaut");
+
     bool threw = false;
     try
     {
-        static_cast<void>(lila::modules::catalog::infrastructure::codec::ReadShelvesPayload(
+        static_cast<void>(lila::modules::catalog::infrastructure::codec::ReadCatalogPayload(
             nlohmann::json{{"categories", nlohmann::json::object()}}));
     }
     catch (const std::exception&)

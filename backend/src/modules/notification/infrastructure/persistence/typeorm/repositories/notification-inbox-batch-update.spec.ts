@@ -30,12 +30,15 @@ it('updates a contact thread in one bounded statement', async () => {
 });
 
 it('persists large deliveries atomically in bounded chunks', async () => {
-  const save = jest.fn(async () => []);
+  const save = jest.fn(async (items: unknown[]) => items);
   const rows = {
     create: jest.fn((value) => value),
     save,
   };
-  const manager = {
+  const manager: {
+    getRepository: () => typeof rows;
+    transaction: jest.Mock;
+  } = {
     getRepository: () => rows,
     transaction: jest.fn(async (work) => work(manager)),
   };

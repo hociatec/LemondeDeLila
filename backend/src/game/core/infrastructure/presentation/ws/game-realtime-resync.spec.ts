@@ -44,7 +44,10 @@ it('rebuilds an authorized full snapshot after a missed game version', async () 
   );
 
   await expect(
-    handler.state({ user: { id: 7 }, connectionId: 'client-7' }, {}),
+    handler.state(
+      { user: { id: 7, username: 'Lila' }, connectionId: 'client-7' },
+      {},
+    ),
   ).resolves.toEqual({
     type: 'game.state',
     payload: { roomId: 4, runId: 3, version: 9 },

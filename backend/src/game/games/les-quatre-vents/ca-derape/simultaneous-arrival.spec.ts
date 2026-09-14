@@ -19,13 +19,14 @@ it('breaks simultaneous arrival ties by numeric ID, including bot IDs', async ()
   const game = await testGame(
     defineGame<NoGameState>()({
       ...definition,
+      bot: undefined,
       actions: {
         roll: defineAction<NoGameState, Record<string, never>>({
           input: gameInput.object({}),
           execute: ({ ctx }) => {
             for (const player of ctx.players.all())
               ctx.movement.moveTo(
-                'derape',
+                'directionalHazard',
                 player.id,
                 catalogue.tiles.length - 1,
               );
