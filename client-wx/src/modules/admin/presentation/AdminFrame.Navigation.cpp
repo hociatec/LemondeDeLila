@@ -38,6 +38,16 @@ void AdminFrame::BindEvents()
         },
         [this](std::size_t index) { ActivateCommand(index); });
     commandsMenu_->SetKeyHandler([this](int keyCode) { return HandleKey(keyCode); });
+    resultText_->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
+    {
+        const auto keyCode = event.GetKeyCode();
+        if (keyCode == WXK_ESCAPE || keyCode == WXK_TAB)
+        {
+            FocusCurrentMenu();
+            return;
+        }
+        event.Skip();
+    });
 }
 
 void AdminFrame::ShowSections()
@@ -88,6 +98,11 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
 
 bool AdminFrame::HandleKey(int keyCode)
 {
+    if (keyCode == WXK_TAB)
+    {
+        FocusResult();
+        return true;
+    }
     if (keyCode != WXK_ESCAPE) return false;
     if (loading_) requestSlot_.Cancel();
     loading_ = false;
@@ -108,11 +123,19 @@ void AdminFrame::FocusCurrentMenu()
         menu->GetSelectedControl()->SetFocus();
 }
 
+void AdminFrame::FocusResult()
+{
+    if (resultText_ == nullptr) return;
+    resultText_->SetInsertionPoint(0);
+    resultText_->SetFocus();
+    lila::shared::accessibility::AccessibilityUtils::NotifyFocus(*resultText_);
+}
+
 void AdminFrame::SetStatus(const wxString& message, bool isError)
 {
     (void)isError;
     statusLabel_->SetLabel(message);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(
+    lila::shared::accessibility::AccessibilityUtils::AnnounceStatus(
         *statusLabel_, message);
     Layout();
 }

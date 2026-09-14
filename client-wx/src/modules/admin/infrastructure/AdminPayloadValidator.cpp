@@ -45,8 +45,8 @@ void ValidateNode(nlohmann::json& node, std::size_t depth, std::size_t& count)
 
 nlohmann::json ValidateAndNormalizeAdminPayload(const nlohmann::json& payload)
 {
-    if (!payload.is_object())
-        throw std::runtime_error("La réponse administrateur doit être un objet JSON.");
+    if (!payload.is_object() && !payload.is_array())
+        throw std::runtime_error("La réponse administrateur doit être un objet ou une liste JSON.");
     auto normalized = payload;
     std::size_t count = 0;
     ValidateNode(normalized, 0, count);

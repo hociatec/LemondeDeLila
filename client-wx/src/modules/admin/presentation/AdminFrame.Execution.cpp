@@ -192,6 +192,6 @@ void AdminFrame::CompleteCommand(
     }
     resultText_->SetValue(lila::shared::text::FromUtf8(FormatAdminResult(*result)));
     SetStatus(wxString(L"Opération terminée : ") + wxString(command.label));
-    FocusCurrentMenu();
+    FocusResult();
 }
 }

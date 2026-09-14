@@ -10,6 +10,7 @@
 #include "modules/admin/domain/AdminFormMetadata.h"
 
 class wxCheckBox;
+class wxFlexGridSizer;
 class wxKeyEvent;
 class wxWindow;
 
@@ -35,7 +36,9 @@ private:
         wxWindow* editor = nullptr;
     };
 
-    void BuildFields(const nlohmann::json& initialPayload);
+    void BuildFields(const nlohmann::json& initialPayload, wxFlexGridSizer& fieldsSizer);
+    void FocusFirstField();
+    void FocusField(const FieldControl& field);
     [[nodiscard]] nlohmann::json ReadValue(const FieldControl& field) const;
     void HandleKey(wxKeyEvent& event);
     bool TransferDataFromWindow() override;
