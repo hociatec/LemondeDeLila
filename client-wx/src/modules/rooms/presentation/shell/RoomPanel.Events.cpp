@@ -77,7 +77,13 @@ void RoomPanel::BindEvents()
         [this]()
         {
             lila::shared::accessibility::NavigationController::Scope scope;
-            scope.Add(gameZoneAnchor_);
+            // Promote the current interactive control (notably a visible
+            // hand) into the table's main navigation. The stable zone anchor
+            // remains the fallback when the game has nothing to interact with.
+            auto* gameTarget = gamePlayPanel_->RequiredInteractionTarget();
+            scope.Add(gameTarget != nullptr
+                ? gameTarget
+                : static_cast<wxWindow*>(gameZoneAnchor_));
             if (chatInput_->IsShown()) scope.Add(chatInput_);
             scope.Add(history_);
             return scope;

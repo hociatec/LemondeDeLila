@@ -210,6 +210,11 @@ wxWindow* GamePlayPanel::RequiredInteractionTarget() const
         return choicesList_;
     if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
         return orderingChoices_;
+    // When the viewer receives a hand, promote it above the stable game-zone
+    // anchor. RoomPanel still guards this request so a realtime update cannot
+    // steal focus from chat or history.
+    if (handPanel_ != nullptr)
+        if (auto* target = handPanel_->NavigationTarget()) return target;
     return nullptr;
 }
 }
