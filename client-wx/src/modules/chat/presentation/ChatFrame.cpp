@@ -84,6 +84,13 @@ ChatFrame::~ChatFrame()
 
 lila::shared::accessibility::FocusManager::Plan ChatFrame::BuildFocusPlan()
 {
+    if (contentPanel_ == nullptr || !contentPanel_->IsShown())
+    {
+        lila::shared::accessibility::FocusManager::Plan plan;
+        plan.AddWindow(statusLabel_);
+        return plan;
+    }
+
     if (focusController_ == nullptr)
     {
         return {};
