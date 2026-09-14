@@ -61,6 +61,57 @@ void TestCatalogPayloadCodecReadsShelfTree()
     std::cout << "[TEST PASSED] CatalogPayloadCodecReadsShelfTree\n";
 }
 
+void TestCatalogApiAuthenticatesCatalogRequest()
+{
+    lila::modules::session::application::SessionStore sessionStore(
+        std::make_unique<InMemorySessionRepository>());
+    lila::modules::session::domain::Session session;
+    session.userId = lila::shared::domain::UserId{7};
+    session.username = "admin";
+    session.token = "header.admin.signature";
+    session.expiresAt = 4102444800LL;
+    sessionStore.Open(session, false);
+
+    FakeRoomWebSocketClient socket;
+    FakeRoomTicketProvider tickets;
+    lila::shared::network::realtime::AuthenticatedRealtimeApiClient client(
+        "wss://example.test/api", "1.2.3", socket, tickets);
+    lila::modules::catalog::infrastructure::CatalogApi api(client, sessionStore);
+
+    auto catalogFuture = std::async(
+        std::launch::async,
+        [&api]() { return api.GetCatalog({}); });
+    const auto request = nlohmann::json::parse(socket.WaitForSentPayload(1));
+    socket.QueueResponse(nlohmann::json{
+        {"type", "catalog.all"},
+        {"requestId", request.at("requestId")},
+        {"payload", {
+            {"categories", nlohmann::json::array()},
+            {"games", nlohmann::json::array()},
+            {"isAdmin", true},
+        }},
+    }.dump());
+
+    const auto catalog = catalogFuture.get();
+    Expect(catalog.administrator, "Le catalogue authentifie doit conserver le droit admin");
+    Expect(request.at("type") == "catalog.all", "Requete catalog.all attendue");
+    Expect(
+        tickets.requestedScope == lila::shared::network::ws::WsTicketScopeApi,
+        "Ticket de portee API attendu pour le catalogue");
+    Expect(
+        tickets.requestedBearerToken == session.token,
+        "JWT du catalogue transmis au fournisseur de ticket attendu");
+    Expect(
+        socket.headers.at(std::string(lila::shared::network::ws::AuthorizationHeader)) ==
+            "Bearer " + session.token,
+        "Header Authorization Bearer attendu pour le catalogue");
+    Expect(
+        socket.headers.at(std::string(lila::shared::network::ws::WsTicketHeader)) == "room-ticket",
+        "Header ticket attendu pour le catalogue");
+
+    std::cout << "[TEST PASSED] CatalogApiAuthenticatesCatalogRequest\n";
+}
+
 void TestRoomPayloadCodecs()
 {
     const auto publicRooms = lila::modules::rooms::infrastructure::codec::ReadPublicRooms({
