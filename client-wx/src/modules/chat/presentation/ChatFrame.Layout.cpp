@@ -43,14 +43,14 @@ void ChatFrame::BuildLayout()
     headerSizer->Add(statusLabel_, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 6);
     headerPanel->SetSizer(headerSizer);
 
-    auto* contentPanel = new lila::shared::accessibility::NonFocusablePanel(root);
+    contentPanel_ = new lila::shared::accessibility::NonFocusablePanel(root);
     auto* contentSizer = new wxBoxSizer(wxVERTICAL);
     auto* historyLabel = new wxStaticText(
-        contentPanel,
+        contentPanel_,
         wxID_ANY,
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatMessagesHeader));
     historyCtrl_ = new wxTextCtrl(
-        contentPanel,
+        contentPanel_,
         wxID_ANY,
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatNoMessage),
         wxDefaultPosition,
@@ -63,22 +63,22 @@ void ChatFrame::BuildLayout()
 
     auto* historyActionSizer = new wxBoxSizer(wxHORIZONTAL);
     editMessageButton_ = new wxButton(
-        contentPanel,
+        contentPanel_,
         wxID_ANY,
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatEditMessageAction));
     deleteMessageButton_ = new wxButton(
-        contentPanel,
+        contentPanel_,
         wxID_ANY,
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatDeleteMessageAction));
     historyActionSizer->Add(editMessageButton_, 0, wxRIGHT, 10);
     historyActionSizer->Add(deleteMessageButton_, 0);
 
     auto* inputLabel = new wxStaticText(
-        contentPanel,
+        contentPanel_,
         wxID_ANY,
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatYourMessageHint));
     inputCtrl_ = new wxTextCtrl(
-        contentPanel,
+        contentPanel_,
         wxID_ANY,
         wxEmptyString,
         wxDefaultPosition,
@@ -97,10 +97,11 @@ void ChatFrame::BuildLayout()
          historyCtrl_,
          editMessageButton_,
          deleteMessageButton_});
-    contentPanel->SetSizer(contentSizer);
+    contentPanel_->SetSizer(contentSizer);
+    contentPanel_->Hide();
 
     rootSizer->Add(headerPanel, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, 28);
-    rootSizer->Add(contentPanel, 1, wxEXPAND | wxALL, 24);
+    rootSizer->Add(contentPanel_, 1, wxEXPAND | wxALL, 24);
     root->SetSizer(rootSizer);
 
     auto* frameSizer = new wxBoxSizer(wxVERTICAL);

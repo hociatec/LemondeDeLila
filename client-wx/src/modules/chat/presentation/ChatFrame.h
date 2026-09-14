@@ -100,6 +100,7 @@ private:
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
     wxTextCtrl* statusLabel_ = nullptr;
+    wxWindow* contentPanel_ = nullptr;
     wxTextCtrl* historyCtrl_ = nullptr;
     wxTextCtrl* inputCtrl_ = nullptr;
     wxButton* editMessageButton_ = nullptr;
