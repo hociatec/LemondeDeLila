@@ -6,6 +6,7 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
@@ -28,10 +29,17 @@ void AdminFrame::BuildLayout()
     sectionsMenu_->SetMinSize(wxSize(360, -1));
     commandsMenu_->SetMinSize(wxSize(420, -1));
 
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *sectionsMenu_, wxString(L"Rubriques d’administration"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *commandsMenu_, wxString(L"Opérations de la rubrique"));
+
     resultText_ = new wxTextCtrl(
         content, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_DONTWRAP);
-    resultText_->SetName(wxString(L"Résultat de l'opération administrateur"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *resultText_, wxString(L"Résultat de l’opération administrateur"),
+        wxString(L"Zone de résultat en lecture seule. Utilisez les flèches pour lire le contenu et Échap pour revenir aux opérations."));
     contentSizer->Add(sectionsMenu_, 0, wxEXPAND | wxRIGHT, 16);
     contentSizer->Add(commandsMenu_, 0, wxEXPAND | wxRIGHT, 16);
     contentSizer->Add(resultText_, 1, wxEXPAND);
@@ -42,6 +50,8 @@ void AdminFrame::BuildLayout()
         this, wxID_ANY,
         wxString(L"Flèches : naviguer. Entrée : ouvrir ou valider. Échap : revenir à l’écran précédent."));
     rootSizer->Add(statusLabel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 24);
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *statusLabel_, wxString(L"État de la console d’administration"));
     SetSizer(rootSizer);
 }
 }

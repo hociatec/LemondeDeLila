@@ -57,6 +57,7 @@ private:
         std::optional<nlohmann::json> result);
     void SetStatus(const wxString& message, bool isError = false);
     void FocusCurrentMenu();
+    void FocusResult();
     bool HandleKey(int keyCode);
 
     application::AdminService& service_;

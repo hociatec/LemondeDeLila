@@ -80,11 +80,16 @@ AdminFieldMetadata GetAdminFieldMetadata(
     if (fieldName == "status")
     {
         result.kind = AdminFieldKind::Choice;
-        result.choices = commandId.starts_with("games.")
-            ? std::vector<std::string>{"construction", "beta", "finished"}
-            : commandId.starts_with("contacts.")
-                ? std::vector<std::string>{"open", "in_progress", "handled"}
-                : std::vector<std::string>{"pending", "in_progress", "resolved", "refused"};
+        if (commandId == "users.list")
+            result.choices = {"all", "active", "banned"};
+        else if (commandId.starts_with("games."))
+            result.choices = {"construction", "beta", "finished"};
+        else if (commandId.starts_with("contacts."))
+            result.choices = {"open", "in_progress", "handled"};
+        else if (commandId.starts_with("mnemo."))
+            result.choices = {"validated", "pending", "to_edit", "trash"};
+        else
+            result.choices = {"pending", "in_progress", "to_test", "done", "refused"};
     }
 
     constexpr std::array<std::string_view, 8> FilterFields{
