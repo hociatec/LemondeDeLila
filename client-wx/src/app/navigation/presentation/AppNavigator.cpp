@@ -51,6 +51,7 @@ AppNavigator::~AppNavigator()
     sessionStore_.SetSessionExpiredHandler({});
     roomInvitationMonitor_.SetInvitationHandler({});
     roomInvitationMonitor_.Stop();
+    StopSessionChat();
     presenceMonitor_.Stop();
     if (invitationResponseTask_) invitationResponseTask_->RequestCancel();
 }

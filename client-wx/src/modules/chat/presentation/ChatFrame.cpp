@@ -24,6 +24,12 @@ namespace
 constexpr int WindowWidth = 1100;
 constexpr int WindowHeight = 760;
 
+bool IsStartupStatus(const std::string& message)
+{
+    return message == lila::shared::errors::ChatConnecting
+        || message == lila::shared::errors::ChatAuthenticating
+        || message == lila::shared::errors::ChatLoadingData;
+}
 }
 
 namespace lila::modules::chat::presentation
@@ -58,7 +64,10 @@ ChatFrame::ChatFrame(
             CallAfter(
                 [this, message, isError]()
                 {
-                    UpdateStatus(lila::shared::text::FromUtf8(message), isError);
+                    if (!IsStartupStatus(message))
+                    {
+                        UpdateStatus(lila::shared::text::FromUtf8(message), isError);
+                    }
                     SyncActionState();
                 });
         };
@@ -106,10 +115,23 @@ lila::shared::accessibility::FocusManager::Plan ChatFrame::BuildFocusPlan()
 
 void ChatFrame::OpenForNavigation()
 {
-    contentPanel_->Hide();
+    contentPanel_->Show();
     Layout();
     ResetFocusToComposer();
-    OpenChat();
+    RefreshHistory();
+
+    const auto state = chatService_.State();
+    if (state == domain::ChatState::Disconnected || state == domain::ChatState::Error)
+    {
+        OpenChat();
+        return;
+    }
+
+    SetBusyState(false);
+    if (state == domain::ChatState::Connected)
+    {
+        UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ChatConnected));
+    }
 }
 
 void ChatFrame::ResetFocusToComposer()

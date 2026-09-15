@@ -31,8 +31,6 @@ void ChatService::StopReceiveLoop() noexcept
 
 bool ChatService::Open()
 {
-    Close();
-
     if (!optionsStore_.Current().chat.chatEnabled)
     {
         SetStatus(lila::shared::errors::ChatDisabled, true);
@@ -45,36 +43,48 @@ bool ChatService::Open()
         return false;
     }
 
+    std::uint64_t lifecycleGeneration = 0;
+    {
+        std::scoped_lock lock(mutex_);
+        if (state_ == domain::ChatState::Connected
+            || state_ == domain::ChatState::Connecting
+            || state_ == domain::ChatState::Reconnecting)
+        {
+            return true;
+        }
+        lifecycleGeneration = ++lifecycleGeneration_;
+        state_ = domain::ChatState::Connecting;
+        messagesStore_.LoadHistory({}, lila::modules::chat::infrastructure::fields::DefaultHistoryLoadLimit);
+        lastServerError_.reset();
+        reconnectAttempt_ = 0;
+    }
+
     try
     {
-        {
-            std::scoped_lock lock(mutex_);
-            messagesStore_.LoadHistory({}, lila::modules::chat::infrastructure::fields::DefaultHistoryLoadLimit);
-            lastServerError_.reset();
-            reconnectAttempt_ = 0;
-        }
-
-        SetState(domain::ChatState::Connecting);
         SetStatus(lila::shared::errors::ChatConnecting, false);
 
         OpenGateway();
+        if (!IsLifecycleCurrent(lifecycleGeneration)) return false;
         SetStatus(lila::shared::errors::ChatAuthenticating, false);
         SetState(domain::ChatState::Connected);
 
         SetStatus(lila::shared::errors::ChatLoadingData, false);
         ProcessIncomingMessage(gateway_.Receive(), true);
+        if (!IsLifecycleCurrent(lifecycleGeneration)) return false;
         if (State() == domain::ChatState::Error)
         {
-            Close();
+            gateway_.Close();
             return false;
         }
 
         SetStatus(lila::shared::errors::ChatConnected, false);
-        StartReceiveLoop();
+        StartReceiveLoop(lifecycleGeneration);
         return true;
     }
     catch (const lila::shared::network::http::WsTicketRequestError& exception)
     {
+        if (!IsLifecycleCurrent(lifecycleGeneration)) return false;
+        gateway_.Close();
         SetState(domain::ChatState::Error);
         sessionStore_.Clear();
         {
@@ -88,11 +98,12 @@ bool ChatService::Open()
                     + std::to_string(exception.StatusCode())
                     + "), reconnectez-vous."),
             true);
-        Close();
         return false;
     }
     catch (const std::exception& exception)
     {
+        if (!IsLifecycleCurrent(lifecycleGeneration)) return false;
+        gateway_.Close();
         SetState(domain::ChatState::Error);
         const std::string exceptionMessage = exception.what();
         {
@@ -106,9 +117,14 @@ bool ChatService::Open()
             }
         }
         SetStatus(lila::shared::errors::WithDetails(lila::shared::errors::ChatConnectionFailed, exception.what()), true);
-        Close();
         return false;
     }
+}
+
+bool ChatService::IsLifecycleCurrent(std::uint64_t lifecycleGeneration) const
+{
+    std::scoped_lock lock(mutex_);
+    return lifecycleGeneration_ == lifecycleGeneration;
 }
 
 void ChatService::OpenGateway(std::stop_token stopToken)
@@ -136,6 +152,10 @@ void ChatService::OpenGateway(std::stop_token stopToken)
 
 void ChatService::Close()
 {
+    {
+        std::scoped_lock lock(mutex_);
+        ++lifecycleGeneration_;
+    }
     StopReceiveLoop();
 
     bool shouldNotifyClosed = true;

@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <memory>
+#include <cstdint>
 #include <vector>
 
 #include "modules/chat/application/ChatMessageStore.h"
@@ -70,8 +71,9 @@ public:
 
 private:
     void StopReceiveLoop() noexcept;
-    void StartReceiveLoop();
-    void ReceiveLoop(std::stop_token stopToken);
+    void StartReceiveLoop(std::uint64_t lifecycleGeneration);
+    void ReceiveLoop(std::stop_token stopToken, std::uint64_t lifecycleGeneration);
+    [[nodiscard]] bool IsLifecycleCurrent(std::uint64_t lifecycleGeneration) const;
     void ProcessIncomingMessage(const std::string& rawJson, bool fatalError);
     void HandleIncomingError(
         const std::string& message,
@@ -98,5 +100,6 @@ private:
     std::weak_ptr<EventHandlers> eventHandlers_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> receiveTask_;
     int reconnectAttempt_ = 0;
+    std::uint64_t lifecycleGeneration_ = 0;
 };
 }

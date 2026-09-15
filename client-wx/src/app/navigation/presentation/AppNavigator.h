@@ -71,6 +71,8 @@ private:
     void OnSessionRevocationFinished();
     void ArmCloseRevocationTimeout();
     void PrewarmSessionData();
+    void StartSessionChat();
+    void StopSessionChat();
     void HandleRoomInvitation(lila::modules::rooms::domain::RoomInvitation invitation);
     void ReplaceView(domain::ViewId nextViewId, wxWindow* nextView);
     void OnLoginSucceeded(const lila::modules::user::domain::AuthenticationResult& result);
@@ -117,6 +119,7 @@ private:
     domain::ViewId previousViewBeforePresence_ = domain::ViewId::MainMenu;
     domain::ViewId storyBookReturnView_ = domain::ViewId::Catalog;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> catalogPrewarmTask_;
+    std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> chatStartupTask_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> sessionRevocationTask_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> invitationResponseTask_;
     std::deque<lila::modules::rooms::domain::RoomInvitation> pendingInvitations_;

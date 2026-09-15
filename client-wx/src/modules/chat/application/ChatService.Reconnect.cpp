@@ -50,23 +50,25 @@ bool WaitForDelay(std::stop_token stopToken, std::chrono::milliseconds delay)
 }
 }
 
-void ChatService::StartReceiveLoop()
+void ChatService::StartReceiveLoop(std::uint64_t lifecycleGeneration)
 {
     receiveTask_ = lila::shared::concurrency::RunAsync(
-        [this](std::stop_token stopToken)
+        [this, lifecycleGeneration](std::stop_token stopToken)
         {
-            ReceiveLoop(stopToken);
+            ReceiveLoop(stopToken, lifecycleGeneration);
         },
         {},
         lila::shared::concurrency::BackgroundTaskPriority::High,
         lila::shared::errors::ChatReconnectionInterrupted);
 }
 
-void ChatService::ReceiveLoop(std::stop_token stopToken)
+void ChatService::ReceiveLoop(
+    std::stop_token stopToken,
+    std::uint64_t lifecycleGeneration)
 {
     while (true)
     {
-        if (stopToken.stop_requested())
+        if (stopToken.stop_requested() || !IsLifecycleCurrent(lifecycleGeneration))
         {
             break;
         }
@@ -83,7 +85,7 @@ void ChatService::ReceiveLoop(std::stop_token stopToken)
                 lila::shared::errors::WithDetails(
                     lila::shared::errors::ChatReconnecting,
                     receiveError.what()));
-            if (stopToken.stop_requested())
+            if (stopToken.stop_requested() || !IsLifecycleCurrent(lifecycleGeneration))
             {
                 break;
             }
@@ -91,7 +93,7 @@ void ChatService::ReceiveLoop(std::stop_token stopToken)
             SetState(domain::ChatState::Reconnecting);
             SetStatus(lila::shared::errors::ChatReconnecting, false);
 
-            while (!stopToken.stop_requested())
+            while (!stopToken.stop_requested() && IsLifecycleCurrent(lifecycleGeneration))
             {
                 if (WaitForDelay(stopToken, ResolveReconnectDelay(reconnectAttempt_)))
                 {

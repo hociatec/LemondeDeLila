@@ -41,6 +41,7 @@ void AppNavigator::ShowSession(std::size_t selectedIndex, bool resetInitialFocus
 
     presenceMonitor_.Start();
     roomInvitationMonitor_.Start();
+    StartSessionChat();
     // Rebuild the menu from the current JWT roles. A refresh token rotation may
     // have granted or removed administrative access while another view was open.
     ResetView(ViewId::MainMenu);
@@ -62,6 +63,7 @@ void AppNavigator::CloseApplication(bool forUpdate)
     closing_ = true;
     audioService_.SetBackground(lila::modules::audio::domain::AudioBackground::None);
     audioService_.Play(lila::modules::audio::domain::SoundCue::ClientClosing);
+    StopSessionChat();
     presenceMonitor_.Stop();
     roomInvitationMonitor_.Stop();
     if (invitationResponseTask_)

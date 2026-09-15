@@ -80,7 +80,7 @@ void ChatFrame::OpenChat()
         return;
     }
 
-    SetBusyState(true, lila::shared::text::FromUtf8(lila::shared::text::ui::ChatConnecting));
+    SetBusyState(true);
     InvalidateOpenChatRequest();
     const std::size_t requestId = activeOpenChatRequestId_;
     auto* service = &chatService_;

@@ -138,6 +138,25 @@ void TestChatServiceReconnectsAfterTransientFailure()
     std::cout << "[TEST PASSED] ChatServiceReconnectsAfterTransientFailure\n";
 }
 
+void TestChatServiceOpenIsIdempotent()
+{
+    ChatServiceFixture fixture;
+    fixture.gateway.receiveSteps.push_back({false, "history"});
+    Expect(fixture.service.Open(), "Ouverture chat attendue");
+    WaitUntil(
+        [&fixture]() { return !fixture.service.Messages().empty(); },
+        "Historique initial attendu");
+
+    Expect(fixture.service.Open(), "Réouverture idempotente attendue");
+    {
+        std::lock_guard lock(fixture.gateway.mutex_);
+        Expect(fixture.gateway.openCount == 1, "La connexion existante devait être réutilisée");
+    }
+    Expect(!fixture.service.Messages().empty(), "L'historique devait être conservé");
+
+    std::cout << "[TEST PASSED] ChatServiceOpenIsIdempotent\n";
+}
+
 void TestChatServiceSendReportsTransportFailure()
 {
     ChatServiceFixture fixture;
