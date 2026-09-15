@@ -1,8 +1,6 @@
 #include "modules/admin/presentation/AdminCommandDialog.h"
-
 #include <algorithm>
 #include <stdexcept>
-
 #include <wx/checkbox.h>
 #include <wx/choice.h>
 #include <wx/msgdlg.h>
@@ -11,11 +9,9 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/tokenzr.h>
-
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "modules/admin/domain/AdminPagination.h"
-
 namespace lila::modules::admin::presentation
 {
 namespace
@@ -51,7 +47,6 @@ AdminCommandDialog::AdminCommandDialog(
     auto* introduction = new wxStaticText(this, wxID_ANY, wxString(command.description));
     introduction->Wrap(660);
     root->Add(introduction, 0, wxEXPAND | wxALL, 16);
-
     auto* scroll = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         wxVSCROLL | wxTAB_TRAVERSAL);
     fieldsParent_ = scroll;
@@ -120,7 +115,6 @@ void AdminCommandDialog::BuildFields(
         lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
             *field.editor, field.metadata.label, field.metadata.help);
         if (!field.metadata.help.empty()) field.editor->SetToolTip(field.metadata.help);
-
         if (dynamic_cast<wxCheckBox*>(field.editor) != nullptr)
             fieldsSizer.AddSpacer(1);
         else
@@ -250,5 +244,4 @@ void AdminCommandDialog::HandleKey(wxKeyEvent& event)
     }
     if (TransferDataFromWindow()) EndModal(wxID_OK);
 }
-
 }
