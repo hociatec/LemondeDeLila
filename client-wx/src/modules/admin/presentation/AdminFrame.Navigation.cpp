@@ -21,8 +21,10 @@ void AdminFrame::ShowSections()
     const auto& areas = domain::GetAdminAreas();
     items.reserve(areas.size());
     for (std::size_t index = 0; index < areas.size(); ++index)
-        items.push_back({std::string(areas[index].id),
-            wxString(areas[index].group.data()) + L" — " + wxString(areas[index].label.data())});
+        items.push_back({
+            std::string(areas[index].id),
+            wxString(areas[index].label.data()),
+        });
     sectionsMenu_->SetItems(items);
     sectionsMenu_->SetSelectedIndexSilently(selectedSection_);
     sectionsMenu_->Show();
