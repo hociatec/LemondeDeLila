@@ -18,8 +18,8 @@ void AdminFrame::BindEvents()
         [this](std::size_t index)
         {
             selectedSection_ = index;
-            const auto& section = domain::GetAdminSections()[index];
-            SetStatus(wxString(section.description.data()));
+            const auto& area = domain::GetAdminAreas()[index];
+            SetStatus(wxString(area.description.data()));
         },
         [this](std::size_t index) { ShowCommands(index); });
     sectionsMenu_->SetKeyHandler([this](int keyCode) { return HandleKey(keyCode); });
@@ -41,7 +41,7 @@ void AdminFrame::BindEvents()
         [this](std::size_t index)
         {
             ShowResultDetails(index);
-            FocusResultDetails();
+            OpenResultActions(index);
         });
     resultsMenu_->SetKeyHandler([this](int keyCode)
     {

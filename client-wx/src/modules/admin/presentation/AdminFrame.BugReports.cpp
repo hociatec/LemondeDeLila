@@ -1,7 +1,5 @@
 #include "modules/admin/presentation/AdminFrame.h"
 
-#include <algorithm>
-
 #include <wx/button.h>
 #include <wx/msgdlg.h>
 #include <wx/panel.h>
@@ -12,17 +10,6 @@
 
 namespace lila::modules::admin::presentation
 {
-namespace
-{
-const domain::AdminCommand* FindCommand(std::string_view id)
-{
-    const auto& commands = domain::GetAdminCommands();
-    const auto found = std::find_if(commands.begin(), commands.end(),
-        [id](const domain::AdminCommand& command) { return command.id == id; });
-    return found == commands.end() ? nullptr : &*found;
-}
-}
-
 void AdminFrame::SearchBugReports()
 {
     if (loading_) return;
@@ -35,7 +22,7 @@ void AdminFrame::SearchBugReports()
 
 void AdminFrame::RefreshBugReports(bool keepCurrentFocus)
 {
-    const auto* command = FindCommand("bugs.list");
+    const auto* command = domain::FindAdminCommand("bugs.list");
     if (command == nullptr) return;
     if (!bugReportListPayload_.is_object() || bugReportListPayload_.empty())
         bugReportListPayload_ = nlohmann::json::parse(command->payloadTemplate);
@@ -71,7 +58,7 @@ void AdminFrame::EditSelectedBugReport()
     if (loading_ || !selectedResultIndex_ || *selectedResultIndex_ >= resultItems_.size()) return;
     const auto& report = resultItems_[*selectedResultIndex_];
     const auto id = report.value("id", std::string{});
-    const auto* updateCommand = FindCommand("bugs.update");
+    const auto* updateCommand = domain::FindAdminCommand("bugs.update");
     if (id.empty() || updateCommand == nullptr) return;
 
     auto dialogCommand = *updateCommand;
@@ -95,7 +82,7 @@ void AdminFrame::DeleteSelectedBugReport()
     if (loading_ || !selectedResultIndex_ || *selectedResultIndex_ >= resultItems_.size()) return;
     const auto& report = resultItems_[*selectedResultIndex_];
     const auto id = report.value("id", std::string{});
-    const auto* deleteCommand = FindCommand("bugs.delete");
+    const auto* deleteCommand = domain::FindAdminCommand("bugs.delete");
     if (id.empty() || deleteCommand == nullptr) return;
     const auto subject = lila::shared::text::FromUtf8(
         report.value("subject", std::string{"sans sujet"}));

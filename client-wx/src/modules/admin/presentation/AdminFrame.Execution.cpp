@@ -3,13 +3,11 @@
 #include <utility>
 #include <memory>
 #include <nlohmann/json.hpp>
-#include <wx/filedlg.h>
 #include <wx/msgdlg.h>
 #include <wx/textctrl.h>
 #include <wx/textdlg.h>
 #include <wx/weakref.h>
 #include "modules/admin/application/AdminService.h"
-#include "modules/admin/presentation/AdminCommandDialog.h"
 #include "modules/admin/domain/AdminPagination.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/security/infrastructure/SecurityUtils.h"
@@ -38,9 +36,30 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
         SetStatus(wxString(L"Le modèle de requête est invalide."), true);
         return;
     }
-    if (!PreparePayload(command, payload) || !ConfirmDangerous(command)) return;
+    if (showingItemActions_)
+    {
+        ApplyContextToPayload(command, payload);
+        if (commandIndex < contextActionPayloads_.size())
+            for (const auto& item : contextActionPayloads_[commandIndex].items())
+                payload[item.key()] = item.value();
+        if (command.id == "bugs.get")
+        {
+            FocusResultDetails();
+            return;
+        }
+    }
+    const bool direct = showingItemActions_ &&
+        commandIndex < contextActionDirect_.size() && contextActionDirect_[commandIndex];
+    if ((!direct && !PreparePayload(command, payload)) || !ConfirmDangerous(command)) return;
     if (command.transport == domain::AdminTransport::LocalAction)
     {
+        if (command.operation == "preview-sound")
+        {
+            const auto soundId = payload.value("soundId", std::string{});
+            if (soundId.empty()) SetStatus(wxString(L"Identifiant du son absent."), true);
+            else PreviewSound(soundId);
+            return;
+        }
         int roomId = 0;
         bool spectator = false;
         try
@@ -62,67 +81,13 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
             onJoinRoomRequested_(roomId, spectator);
         return;
     }
-    if (command.maintenanceToken && !EnsureMaintenanceToken()) return;
+    refreshAreaAfterCommand_ = showingItemActions_ && ContextCommandMutates(command);
+    if (command.maintenanceToken && !EnsureMaintenanceToken())
+    {
+        refreshAreaAfterCommand_ = false;
+        return;
+    }
     ExecuteCommand(command, std::move(payload));
-}
-
-bool AdminFrame::PreparePayload(
-    const domain::AdminCommand& command,
-    nlohmann::json& payload)
-{
-    bool needsInput = false;
-    for (const auto& item : payload.items())
-        if (!domain::IsAdminPaginationField(command.id, item.key()))
-        {
-            needsInput = true;
-            break;
-        }
-    if (needsInput)
-    {
-        AdminCommandDialog dialog(this, command, payload,
-            [this](std::string_view soundId) { PreviewSound(soundId); });
-        if (dialog.ShowModal() != wxID_OK) return false;
-        auto businessPayload = dialog.Payload();
-        for (const auto& item : payload.items())
-            if (domain::IsAdminPaginationField(command.id, item.key()))
-                businessPayload[item.key()] = item.value();
-        payload = std::move(businessPayload);
-    }
-    bool needsFile = false;
-    if (command.transport == domain::AdminTransport::HttpMultipart)
-    {
-        const auto filePath = payload.find("filePath");
-        if (filePath != payload.end() && !filePath->is_string())
-        {
-            SetStatus(wxString(L"Le chemin du fichier doit être une chaîne de caractères."), true);
-            return false;
-        }
-        needsFile = filePath == payload.end() || filePath->get<std::string>().empty();
-    }
-    if (needsFile)
-    {
-        wxFileDialog picker(
-            this, wxString(L"Choisir un fichier audio"), wxString{}, wxString{},
-            wxString(L"Fichiers audio (*.wav;*.mp3)|*.wav;*.mp3|Tous les fichiers|*.*"),
-            wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-        if (picker.ShowModal() != wxID_OK) return false;
-        payload["filePath"] = lila::shared::text::ToUtf8(picker.GetPath());
-    }
-    return true;
-}
-
-bool AdminFrame::ConfirmDangerous(const domain::AdminCommand& command)
-{
-    if (!command.dangerous) return true;
-    if (wxMessageBox(
-            wxString(L"Cette opération modifie des données sensibles. Voulez-vous continuer ?"),
-            wxString(command.label), wxYES_NO | wxNO_DEFAULT | wxICON_WARNING,
-            this) != wxYES)
-        return false;
-    wxTextEntryDialog confirmation(
-        this, wxString(L"Saisissez CONFIRMER pour exécuter l'opération."),
-        wxString(L"Confirmation renforcée"));
-    return confirmation.ShowModal() == wxID_OK && confirmation.GetValue() == L"CONFIRMER";
 }
 
 bool AdminFrame::EnsureMaintenanceToken()
@@ -189,11 +154,29 @@ void AdminFrame::CompleteCommand(
     {
         keepFocusAfterCommand_ = false;
         refreshBugReportsAfterCommand_ = false;
+        refreshAreaAfterCommand_ = false;
         reportIdToRestore_.reset();
         SetStatus(lila::shared::text::FromUtf8(
             error ? error->UserMessage() : "Réponse administrateur absente."), true);
         FocusCurrentMenu();
         return;
+    }
+    if (refreshAreaAfterCommand_)
+    {
+        refreshAreaAfterCommand_ = false;
+        RestoreAreaFromItem();
+        SetStatus(wxString(L"Modification enregistrée. Actualisation de la liste…"));
+        const auto& area = domain::GetAdminAreas()[selectedSection_];
+        if (area.id == "reports")
+        {
+            RefreshBugReports();
+            return;
+        }
+        if (const auto* refresh = domain::FindAdminCommand(area.automaticCommandId))
+        {
+            ExecuteCommand(*refresh, nlohmann::json::parse(refresh->payloadTemplate));
+            return;
+        }
     }
     if (refreshBugReportsAfterCommand_ &&
         (command.id == "bugs.update" || command.id == "bugs.delete"))

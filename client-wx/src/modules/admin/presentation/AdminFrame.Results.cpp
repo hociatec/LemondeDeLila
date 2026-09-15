@@ -10,11 +10,49 @@
 
 namespace lila::modules::admin::presentation
 {
+namespace
+{
+const nlohmann::json* FindList(const nlohmann::json& result)
+{
+    if (result.is_array()) return &result;
+    if (!result.is_object()) return nullptr;
+    constexpr std::string_view keys[]{
+        "items", "users", "rooms", "messages", "games", "categories",
+        "questions", "definitions", "roles", "events", "sounds", "sections", "names", "reports"};
+    for (const auto key : keys)
+    {
+        const auto found = result.find(key);
+        if (found != result.end() && found->is_array()) return &*found;
+    }
+    return nullptr;
+}
+
+nlohmann::json FlattenSoundCatalog(const nlohmann::json& result)
+{
+    nlohmann::json sounds = nlohmann::json::array();
+    if (!result.is_object() || !result.contains("categories") ||
+        !result["categories"].is_array()) return nlohmann::json{{"sounds", sounds}};
+    for (const auto& category : result["categories"])
+        for (const auto& screen : category.value("screens", nlohmann::json::array()))
+            for (auto sound : screen.value("sounds", nlohmann::json::array()))
+            {
+                const auto categoryName = category.value("name", std::string{});
+                const auto screenName = screen.value("name", std::string{});
+                const auto eventName = sound.value("event", sound.value("soundId", std::string{}));
+                sound["name"] = categoryName + " — " + screenName + " — " + eventName;
+                sounds.push_back(std::move(sound));
+            }
+    return nlohmann::json{{"sounds", std::move(sounds)}};
+}
+}
+
 void AdminFrame::ShowResult(
     const domain::AdminCommand& command,
     const nlohmann::json& result)
 {
-    auto presentation = BuildAdminResultPresentation(result);
+    const auto displayResult = command.id == "sounds.catalog"
+        ? FlattenSoundCatalog(result) : result;
+    auto presentation = BuildAdminResultPresentation(displayResult);
     if (command.id == "bugs.list" && result.is_object())
     {
         const auto reportItems = result.find("items");
@@ -28,7 +66,15 @@ void AdminFrame::ShowResult(
     resultDetails_.clear();
     resultItems_.clear();
     selectedResultIndex_.reset();
+    currentResultItemKind_ = domain::GetAdminAreas()[selectedSection_].itemKind;
+    if (command.id == "bugs.comments") currentResultItemKind_ = domain::AdminItemKind::None;
+    else if (command.id == "mnemo.categories")
+        currentResultItemKind_ = domain::AdminItemKind::MnemoCategory;
+    else if (command.id == "mnemo.questions")
+        currentResultItemKind_ = domain::AdminItemKind::MnemoQuestion;
     reportActionsPanel_->Hide();
+    if (const auto* list = FindList(displayResult))
+        for (const auto& item : *list) resultItems_.push_back(item);
 
     std::vector<lila::shared::ui::controls::VerticalMenuItem> items;
     items.reserve(presentation.entries.size());
@@ -40,13 +86,6 @@ void AdminFrame::ShowResult(
             lila::shared::text::FromUtf8(presentation.entries[index].label),
         });
         resultDetails_.push_back(presentation.entries[index].details);
-    }
-
-    if (command.id == "bugs.list" && result.is_object())
-    {
-        const auto found = result.find("items");
-        if (found != result.end() && found->is_array())
-            for (const auto& item : *found) resultItems_.push_back(item);
     }
 
     resultsMenu_->SetItems(items);
@@ -79,7 +118,9 @@ void AdminFrame::ShowResultDetails(std::size_t index)
     SetStatus(lila::shared::text::FromUtf8(
         "Élément " + std::to_string(index + 1) + " sur " +
         std::to_string(resultDetails_.size()) +
-        ". Entrée ou Tabulation pour lire le détail."));
+        (currentResultItemKind_ == domain::AdminItemKind::None
+            ? ". Entrée ou Tabulation pour lire le détail."
+            : ". Entrée ouvre les actions, Tabulation lit le détail.")));
     UpdateBugReportActions();
 }
 }

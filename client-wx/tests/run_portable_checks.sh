@@ -67,6 +67,7 @@ c++ "${COMMON_FLAGS[@]}" \
   "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Moderation.cpp" \
   "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Content.cpp" \
   "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Operations.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminArea.cpp" \
   "$ROOT/src/shared/security/infrastructure/SecurityUtils.cpp" \
   -o "$BUILD_DIR/navigation-state-tests"
 "$BUILD_DIR/navigation-state-tests"

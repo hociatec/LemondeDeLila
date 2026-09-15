@@ -47,4 +47,12 @@ std::vector<const AdminCommand*> CommandsForSection(AdminSection section)
         if (command.section == section) result.push_back(&command);
     return result;
 }
+
+const AdminCommand* FindAdminCommand(std::string_view id)
+{
+    const auto& commands = GetAdminCommands();
+    for (const auto& command : commands)
+        if (command.id == id) return &command;
+    return nullptr;
+}
 }

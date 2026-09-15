@@ -11,6 +11,7 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/admin/domain/AdminCommand.h"
+#include "modules/admin/domain/AdminArea.h"
 #include "shared/accessibility/application/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
@@ -36,6 +37,7 @@ class AdminFrame final : public lila::shared::accessibility::NonFocusablePanel,
 public:
     using CloseRequestedHandler = std::function<void(std::size_t)>;
     using JoinRoomRequestedHandler = std::function<void(int, bool)>;
+    using OpenStoryBookRequestedHandler = std::function<void(int, std::string)>;
 
     AdminFrame(
         wxWindow* parent,
@@ -43,6 +45,7 @@ public:
         lila::modules::audio::application::IAudioService& audioService,
         CloseRequestedHandler onCloseRequested,
         JoinRoomRequestedHandler onJoinRoomRequested,
+        OpenStoryBookRequestedHandler onOpenStoryBookRequested,
         std::size_t initialSection = 0);
     ~AdminFrame() override;
 
@@ -53,6 +56,7 @@ private:
     void BindEvents();
     void ShowSections();
     void ShowCommands(std::size_t sectionIndex);
+    void LoadAutomaticAreaContent();
     void ActivateCommand(std::size_t commandIndex);
     void ExecuteCommand(const domain::AdminCommand& command, nlohmann::json payload);
     [[nodiscard]] bool ConfirmDangerous(const domain::AdminCommand& command);
@@ -66,6 +70,10 @@ private:
     void SetStatus(const wxString& message, bool isError = false);
     void ShowResult(const domain::AdminCommand& command, const nlohmann::json& result);
     void ShowResultDetails(std::size_t index);
+    void OpenResultActions(std::size_t index);
+    void RestoreAreaFromItem();
+    void ApplyContextToPayload(const domain::AdminCommand& command, nlohmann::json& payload) const;
+    [[nodiscard]] bool ContextCommandMutates(const domain::AdminCommand& command) const;
     void SearchBugReports();
     void EditSelectedBugReport();
     void DeleteSelectedBugReport();
@@ -86,6 +94,7 @@ private:
     lila::modules::audio::application::IAudioService& audioService_;
     CloseRequestedHandler onCloseRequested_;
     JoinRoomRequestedHandler onJoinRoomRequested_;
+    OpenStoryBookRequestedHandler onOpenStoryBookRequested_;
     lila::shared::ui::controls::VerticalMenu* sectionsMenu_ = nullptr;
     lila::shared::ui::controls::VerticalMenu* commandsMenu_ = nullptr;
     lila::shared::ui::controls::VerticalMenu* resultsMenu_ = nullptr;
@@ -107,7 +116,9 @@ private:
     std::vector<std::string> resultDetails_;
     std::vector<nlohmann::json> resultItems_;
     std::vector<const domain::AdminCommand*> visibleCommands_;
-    std::array<std::size_t, 14> commandSelections_{};
+    std::vector<nlohmann::json> contextActionPayloads_;
+    std::vector<bool> contextActionDirect_;
+    std::array<std::size_t, 16> commandSelections_{};
     std::size_t selectedSection_ = 0;
     bool showingCommands_ = false;
     bool loading_ = false;
@@ -120,7 +131,11 @@ private:
     std::optional<std::size_t> selectedResultIndex_;
     std::optional<std::string> reportIdToRestore_;
     bool refreshBugReportsAfterCommand_ = false;
+    bool refreshAreaAfterCommand_ = false;
     bool keepFocusAfterCommand_ = false;
+    bool showingItemActions_ = false;
+    domain::AdminItemKind currentResultItemKind_ = domain::AdminItemKind::None;
+    nlohmann::json contextItem_ = nlohmann::json::object();
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
     std::unique_ptr<wxTimer> previewTimer_;
 };

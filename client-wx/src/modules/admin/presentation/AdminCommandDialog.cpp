@@ -131,13 +131,16 @@ void AdminCommandDialog::BuildFields(
         auto* valueSizer = new wxBoxSizer(wxVERTICAL);
         if (field.metadata.optional)
         {
+            const bool hasInitialValue = initial != initialPayload.end() &&
+                *initial != item.value();
+            const bool included = field.metadata.includedByDefault || hasInitialValue;
             const auto includeLabel = wxString(L"Inclure le champ « ") +
                 field.metadata.label + wxString(L" »");
             field.include = new wxCheckBox(scroll, wxID_ANY, includeLabel);
             lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
                 *field.include, includeLabel);
-            field.include->SetValue(field.metadata.includedByDefault);
-            field.editor->Enable(field.metadata.includedByDefault);
+            field.include->SetValue(included);
+            field.editor->Enable(included);
             auto* editor = field.editor;
             field.include->Bind(wxEVT_CHECKBOX, [editor](wxCommandEvent& event)
             {
