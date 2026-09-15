@@ -18,12 +18,10 @@ int main()
         {"items", {{{"id", "report-1"}, {"status", "rejected"}}}},
     });
     assert(normalized["items"][0]["status"] == "refused");
-
     const auto normalizedList = ValidateAndNormalizeAdminPayload(
         nlohmann::json::array({{{"id", 1}, {"status", "rejected"}}}));
     assert(normalizedList.is_array());
     assert(normalizedList[0]["status"] == "refused");
-
     assert(lila::shared::network::http::UrlEncode("Table Ambiance/1") ==
         "Table%20Ambiance%2F1");
 
@@ -113,7 +111,6 @@ int main()
         "users.ban", "durationDays").optional);
     assert(lila::modules::admin::domain::GetAdminFieldMetadata(
         "users.ban", "bannedUntil").optional);
-
     using lila::modules::admin::domain::AdminPaginationMode;
     const auto userPagination =
         lila::modules::admin::domain::GetAdminPaginationSpec("users.list");
@@ -137,7 +134,6 @@ int main()
     assert(!lila::modules::admin::domain::IsAdminPaginationField("rooms.cleanup", "limit"));
     assert((lila::modules::admin::domain::AdminPageSizeChoices(userPagination, 20) ==
         std::vector<int>{10, 20, 50, 100}));
-
     const auto gamesUpdate = nlohmann::json::parse(findCommand("games.update").payloadTemplate);
     assert(gamesUpdate.contains("enabled"));
     assert(gamesUpdate.contains("rules"));
