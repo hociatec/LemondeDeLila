@@ -46,8 +46,8 @@ SocialListSectionControls BuildSocialListSection(
         emptyText,
         wxDefaultPosition,
         wxDefaultSize,
-        wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
-    controls.emptyState->SetMinSize(wxSize(-1, 80));
+        wxTE_READONLY | wxTE_RICH2 | wxBORDER_NONE);
+    controls.emptyState->SetMinSize(wxSize(-1, 32));
     controls.actions = new lila::shared::ui::controls::VerticalMenu(
         controls.panel,
         lila::shared::ui::navigation::BuildMenuItems(actionItems),

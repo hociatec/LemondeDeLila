@@ -209,6 +209,7 @@ export function pawScoringRules(source: PawScoringProgram) {
       (ctx.status.has(playerId, status.hasSun) ||
         hasPower(playerId, 'passage-star', ctx)) &&
       !isBlocked(playerId, ctx) &&
+      (value !== 150 || ctx.resources.get(playerId, status.turboPlayed) < 2) &&
       value > 0 &&
       ctx.movement.position(program.trackId, playerId) + value <= program.goal
     );
