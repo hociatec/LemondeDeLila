@@ -81,6 +81,16 @@ public:
     {
         std::lock_guard lock(mutex_);
         ++openCount;
+        if (!ticketFailureStatuses.empty())
+        {
+            const auto statusCode = ticketFailureStatuses.front();
+            ticketFailureStatuses.pop_front();
+            if (statusCode != 0)
+            {
+                throw lila::shared::network::http::WsTicketRequestError(
+                    "ticket failed", statusCode);
+            }
+        }
         if (!openFailures.empty())
         {
             const bool shouldFail = openFailures.front();
@@ -143,6 +153,7 @@ public:
     std::mutex mutex_;
     std::condition_variable condition_;
     std::deque<ReceiveStep> receiveSteps;
+    std::deque<unsigned long> ticketFailureStatuses;
     std::deque<bool> openFailures;
     int openCount = 0;
     int closeCount = 0;
@@ -153,4 +164,3 @@ public:
     std::string lastSentPayload;
 };
 }
-

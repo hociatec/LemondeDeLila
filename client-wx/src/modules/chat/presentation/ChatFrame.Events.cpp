@@ -12,6 +12,8 @@ void ChatFrame::BindEvents()
         ChatEventBinder::Widgets{*inputCtrl_, *historyCtrl_, *editMessageButton_, *deleteMessageButton_},
         ChatEventBinder::Handlers{
             [this]() { SendInput(); },
+            [this]() { primaryFocusTarget_ = PrimaryFocusTarget::Composer; },
+            [this]() { primaryFocusTarget_ = PrimaryFocusTarget::History; },
             [this]()
             {
                 ClearNavigationHistory();

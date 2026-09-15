@@ -22,6 +22,8 @@ public:
     struct Handlers
     {
         std::function<void()> send;
+        std::function<void()> inputFocused;
+        std::function<void()> historyFocused;
         std::function<void()> historySelectionChanged;
         std::function<void()> historyClicked;
         std::function<void()> historyActivated;

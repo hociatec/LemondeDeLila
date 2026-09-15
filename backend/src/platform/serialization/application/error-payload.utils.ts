@@ -1,5 +1,5 @@
 export type PresentedErrorPayload =
-  | { message: string }
+  | { message: string; statusCode?: number }
   | {
       code: string;
       params: Readonly<Record<string, unknown>>;
@@ -22,11 +22,13 @@ export function getErrorPayload(
       params: boundedParams(value.details),
     };
   }
-  const publicHttpMessage = httpClientMessage(value);
-  return { message: publicHttpMessage ?? safeFallback };
+  return httpClientError(value, safeFallback) ?? { message: safeFallback };
 }
 
-function httpClientMessage(value: unknown): string | null {
+function httpClientError(
+  value: unknown,
+  fallback: string,
+): { message: string; statusCode: number } | null {
   if (!isRecord(value)) return null;
   const getStatus = value.getStatus;
   const getResponse = value.getResponse;
@@ -42,19 +44,30 @@ function httpClientMessage(value: unknown): string | null {
     return null;
   }
   if (!Number.isInteger(status) || status < 400 || status >= 500) return null;
-  if (typeof response === 'string')
-    return response.trim().slice(0, 2_000) || null;
-  if (!isRecord(response)) return null;
-  const message = response.message;
-  if (typeof message === 'string')
-    return message.trim().slice(0, 2_000) || null;
-  if (Array.isArray(message)) {
-    const joined = message
+  if (typeof response === 'string') {
+    return {
+      message: response.trim().slice(0, 2_000) || fallback,
+      statusCode: status,
+    };
+  }
+  if (!isRecord(response)) return { message: fallback, statusCode: status };
+  const responseMessage = response.message;
+  if (typeof responseMessage === 'string') {
+    return {
+      message: responseMessage.trim().slice(0, 2_000) || fallback,
+      statusCode: status,
+    };
+  }
+  if (Array.isArray(responseMessage)) {
+    const joined = responseMessage
       .filter((item) => typeof item === 'string')
       .join(', ');
-    return joined.trim().slice(0, 2_000) || null;
+    return {
+      message: joined.trim().slice(0, 2_000) || fallback,
+      statusCode: status,
+    };
   }
-  return null;
+  return { message: fallback, statusCode: status };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -14,7 +14,6 @@
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "modules/audio/application/IAudioService.h"
-
 namespace lila::modules::chat::application
 {
 void ChatService::StopReceiveLoop() noexcept
@@ -86,7 +85,10 @@ bool ChatService::Open()
         if (!IsLifecycleCurrent(lifecycleGeneration)) return false;
         gateway_.Close();
         SetState(domain::ChatState::Error);
-        sessionStore_.Clear();
+        if (exception.StatusCode() == 401 || exception.StatusCode() == 403)
+        {
+            sessionStore_.Clear();
+        }
         {
             std::scoped_lock lock(mutex_);
             lastServerError_ = domain::ChatServerError{exception.what(), {}, std::nullopt};
@@ -126,7 +128,6 @@ bool ChatService::IsLifecycleCurrent(std::uint64_t lifecycleGeneration) const
     std::scoped_lock lock(mutex_);
     return lifecycleGeneration_ == lifecycleGeneration;
 }
-
 void ChatService::OpenGateway(std::stop_token stopToken)
 {
     const auto open = [this](const std::string& token)

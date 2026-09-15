@@ -27,8 +27,8 @@ session::application::SessionRefreshResult WsSessionRefresher::Refresh(
     const auto response = remoteDataSource_.Refresh(refreshToken, stopToken);
     if (!response.success)
     {
-        result.rejected = response.errorKind == shared::network::realtime::RealtimeErrorKind::Server
-            || response.errorKind == shared::network::realtime::RealtimeErrorKind::Authentication;
+        result.rejected = response.errorKind ==
+            shared::network::realtime::RealtimeErrorKind::Authentication;
         result.errorMessage = response.errorMessage;
         return result;
     }

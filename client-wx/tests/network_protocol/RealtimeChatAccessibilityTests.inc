@@ -78,11 +78,13 @@ void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
         "req-1",
         "vault.restore");
     Expect(!errorResponse.success, "Echec correle attendu");
-    Expect(
-        errorResponse.errorKind == lila::shared::network::realtime::RealtimeErrorKind::Server,
-        "Erreur serveur attendue");
+    Expect(errorResponse.errorKind == lila::shared::network::realtime::RealtimeErrorKind::Server, "Erreur serveur attendue");
     Expect(errorResponse.errorMessage == "Session expiree", "Message d'erreur attendu");
 
+    const auto unauthorizedResponse = lila::shared::network::realtime::protocol::ParseResponse(
+        R"({"type":"error","context":"auth.refresh","requestId":"req-auth","payload":{"message":"Session expiree","statusCode":401}})", "req-auth", "auth.refresh");
+    Expect(unauthorizedResponse.statusCode == 401, "Statut HTTP temps reel attendu");
+    Expect(unauthorizedResponse.errorKind == lila::shared::network::realtime::RealtimeErrorKind::Authentication, "Erreur d'authentification attendue");
     const auto typedErrorResponse =
         lila::shared::network::realtime::protocol::ParseResponse(
             R"({"type":"notify.admin_contact.error","requestId":"req-contact","payload":{"message":"Contact introuvable"}})",

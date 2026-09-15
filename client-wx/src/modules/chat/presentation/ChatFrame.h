@@ -53,6 +53,12 @@ public:
     void OpenForNavigation();
 
 private:
+    enum class PrimaryFocusTarget
+    {
+        Composer,
+        History
+    };
+
     struct NavigationSnapshot final
     {
         bool isHistoryActionMode;
@@ -108,6 +114,7 @@ private:
     bool isBusy_ = false;
     bool isHistoryActionMode_ = false;
     bool isReturningToSession_ = false;
+    PrimaryFocusTarget primaryFocusTarget_ = PrimaryFocusTarget::Composer;
     std::size_t activeOpenChatRequestId_ = 0;
     std::optional<std::string> selectedActionMessageId_;
     std::vector<domain::ChatMessage> visibleMessages_;
