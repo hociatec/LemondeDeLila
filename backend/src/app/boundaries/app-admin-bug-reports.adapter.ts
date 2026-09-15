@@ -44,6 +44,7 @@ export class AppAdminBugReportsAdapter implements AdminBugReportsPort {
     offset?: number;
     limit?: number;
     search?: string;
+    status?: BugReportStatus;
   }): Promise<BugReportRecord[]> {
     return this.listReports.execute(options);
   }

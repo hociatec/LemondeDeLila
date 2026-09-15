@@ -33,12 +33,16 @@ describe('AdminBugReportsService', () => {
     deps.countComments.mockResolvedValue({ r1: 3 });
     const service = new AdminBugReportsService(deps as any);
 
-    const result = await service.list({ search: '  audio  ' });
+    const result = await service.list({
+      search: '  audio  ',
+      status: 'pending',
+    });
 
     expect(deps.list).toHaveBeenCalledWith({
       offset: 0,
       limit: 50,
       search: 'audio',
+      status: 'pending',
     });
     expect(result).toEqual([
       {

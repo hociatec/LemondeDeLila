@@ -1,6 +1,10 @@
 #include "modules/admin/presentation/AdminFrame.h"
 
+#include <iterator>
+#include <string_view>
+
 #include <wx/button.h>
+#include <wx/choice.h>
 #include <wx/msgdlg.h>
 #include <wx/panel.h>
 #include <wx/textctrl.h>
@@ -10,6 +14,12 @@
 
 namespace lila::modules::admin::presentation
 {
+namespace
+{
+constexpr std::string_view ReportStatuses[]{
+    "pending", "in_progress", "to_test", "done", "refused", "all"};
+}
+
 void AdminFrame::SearchBugReports()
 {
     if (loading_) return;
@@ -18,6 +28,37 @@ void AdminFrame::SearchBugReports()
         lila::shared::text::ToUtf8(reportSearchCtrl_->GetValue());
     bugReportListPayload_["offset"] = 0;
     RefreshBugReports();
+}
+
+void AdminFrame::ChangeBugReportFilter()
+{
+    if (loading_) return;
+    const auto selection = reportStatusFilter_->GetSelection();
+    if (selection == wxNOT_FOUND ||
+        static_cast<std::size_t>(selection) >= std::size(ReportStatuses)) return;
+    const auto status = ReportStatuses[static_cast<std::size_t>(selection)];
+    if (status == "all") bugReportListPayload_.erase("status");
+    else bugReportListPayload_["status"] = status;
+    bugReportListPayload_["offset"] = 0;
+    RefreshBugReports();
+}
+
+void AdminFrame::CreateBugReport()
+{
+    if (loading_) return;
+    const auto* createCommand = domain::FindAdminCommand("bugs.create");
+    if (createCommand == nullptr) return;
+    AdminCommandDialog dialog(
+        this, *createCommand, nlohmann::json::parse(createCommand->payloadTemplate));
+    if (dialog.ShowModal() != wxID_OK) return;
+    reportSearchCtrl_->Clear();
+    reportStatusFilter_->SetSelection(0);
+    bugReportListPayload_["search"] = "";
+    bugReportListPayload_["status"] = "pending";
+    bugReportListPayload_["offset"] = 0;
+    reportIdToRestore_.reset();
+    refreshBugReportsAfterCommand_ = true;
+    ExecuteCommand(*createCommand, dialog.Payload());
 }
 
 void AdminFrame::RefreshBugReports(
@@ -50,9 +91,35 @@ void AdminFrame::UpdateBugReportActions()
     const auto subject = report.value("subject", std::string{"sans sujet"});
     editReportButton_->SetName(
         wxString(L"Modifier le rapport : ") + lila::shared::text::FromUtf8(subject));
+    changeReportStatusButton_->SetName(
+        wxString(L"Classer le rapport : ") + lila::shared::text::FromUtf8(subject));
     deleteReportButton_->SetName(
         wxString(L"Supprimer le rapport : ") + lila::shared::text::FromUtf8(subject));
     Layout();
+}
+
+void AdminFrame::ChangeSelectedBugReportStatus()
+{
+    if (loading_ || !selectedResultIndex_ || *selectedResultIndex_ >= resultItems_.size()) return;
+    const auto& report = resultItems_[*selectedResultIndex_];
+    const auto id = report.value("id", std::string{});
+    const auto* statusCommand = domain::FindAdminCommand("bugs.status");
+    if (id.empty() || statusCommand == nullptr) return;
+
+    auto dialogCommand = *statusCommand;
+    dialogCommand.id = "bugs.status.selected";
+    dialogCommand.label = L"Classer le rapport";
+    dialogCommand.description = L"Choisissez son nouveau classement.";
+    dialogCommand.payloadTemplate = R"({"status":"pending"})";
+    AdminCommandDialog dialog(this, dialogCommand, {
+        {"status", report.value("status", std::string{"pending"})},
+    });
+    if (dialog.ShowModal() != wxID_OK) return;
+    auto payload = dialog.Payload();
+    payload["id"] = id;
+    reportIdToRestore_ = id;
+    refreshBugReportsAfterCommand_ = true;
+    ExecuteCommand(*statusCommand, std::move(payload));
 }
 
 void AdminFrame::EditSelectedBugReport()

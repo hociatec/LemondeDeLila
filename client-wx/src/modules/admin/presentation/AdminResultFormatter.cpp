@@ -108,7 +108,7 @@ std::string ScalarForKey(std::string_view key, const nlohmann::json& value)
         static const std::pair<std::string_view, std::string_view> Statuses[]{
             {"active", "Actif"}, {"banned", "Banni"}, {"open", "Ouvert"},
             {"in_progress", "En cours"}, {"handled", "Traité"},
-            {"pending", "En attente"}, {"to_test", "À tester"},
+            {"pending", "En attente"}, {"to_test", "Corrigé, à tester"},
             {"done", "Terminé"}, {"refused", "Refusé"},
             {"validated", "Validé"}, {"to_edit", "À modifier"},
             {"trash", "Corbeille"}, {"construction", "En construction"},

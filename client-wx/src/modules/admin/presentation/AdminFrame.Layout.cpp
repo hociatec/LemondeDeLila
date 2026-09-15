@@ -45,16 +45,33 @@ void AdminFrame::BuildLayout()
 
     reportSearchPanel_ = new wxPanel(resultPanel, wxID_ANY);
     auto* reportSearchSizer = new wxBoxSizer(wxHORIZONTAL);
+    createReportButton_ = new wxButton(
+        reportSearchPanel_, wxID_ANY, wxString(L"Nouveau rapport"));
+    reportStatusFilter_ = new wxChoice(reportSearchPanel_, wxID_ANY);
+    for (const auto& label : {
+             wxString(L"En attente"), wxString(L"En cours"),
+             wxString(L"Corrigés, à tester"), wxString(L"Terminés"),
+             wxString(L"Refusés"), wxString(L"Tous les rapports")})
+        reportStatusFilter_->Append(label);
+    reportStatusFilter_->SetSelection(0);
     reportSearchCtrl_ = new wxTextCtrl(
         reportSearchPanel_, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
         wxTE_PROCESS_ENTER);
     reportSearchCtrl_->SetMaxLength(200);
     reportSearchButton_ = new wxButton(
         reportSearchPanel_, wxID_ANY, wxString(L"Rechercher"));
+    reportSearchSizer->Add(createReportButton_, 0, wxRIGHT, 8);
+    reportSearchSizer->Add(reportStatusFilter_, 0, wxRIGHT, 8);
     reportSearchSizer->Add(reportSearchCtrl_, 1, wxRIGHT, 8);
     reportSearchSizer->Add(reportSearchButton_, 0);
     reportSearchPanel_->SetSizer(reportSearchSizer);
     reportSearchPanel_->Hide();
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *createReportButton_, wxString(L"Créer un nouveau rapport"),
+        wxString(L"Ouvre la rédaction. Le rapport sera classé en attente."));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *reportStatusFilter_, wxString(L"Classement des rapports affichés"),
+        wxString(L"Choisissez les rapports en attente, en cours, corrigés à tester, terminés, refusés ou tous."));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *reportSearchCtrl_, wxString(L"Rechercher dans les rapports"),
         wxString(L"Saisissez un identifiant, un sujet, un contenu ou un auteur, puis appuyez sur Entrée."));
@@ -108,14 +125,19 @@ void AdminFrame::BuildLayout()
     auto* reportActionsSizer = new wxBoxSizer(wxHORIZONTAL);
     editReportButton_ = new wxButton(
         reportActionsPanel_, wxID_ANY, wxString(L"Modifier ce rapport"));
+    changeReportStatusButton_ = new wxButton(
+        reportActionsPanel_, wxID_ANY, wxString(L"Classer ce rapport"));
     deleteReportButton_ = new wxButton(
         reportActionsPanel_, wxID_ANY, wxString(L"Supprimer ce rapport"));
     reportActionsSizer->Add(editReportButton_, 0, wxRIGHT, 8);
+    reportActionsSizer->Add(changeReportStatusButton_, 0, wxRIGHT, 8);
     reportActionsSizer->Add(deleteReportButton_, 0);
     reportActionsPanel_->SetSizer(reportActionsSizer);
     reportActionsPanel_->Hide();
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *editReportButton_, wxString(L"Modifier le rapport affiché"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *changeReportStatusButton_, wxString(L"Changer le classement du rapport affiché"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *deleteReportButton_, wxString(L"Supprimer le rapport affiché"));
     resultSizer->Add(reportActionsPanel_, 0, wxEXPAND | wxTOP, 8);

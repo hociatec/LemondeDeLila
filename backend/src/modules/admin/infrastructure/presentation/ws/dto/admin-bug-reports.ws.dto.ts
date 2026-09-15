@@ -41,6 +41,11 @@ export class AdminBugReportsListWsDto {
   search?: string;
 
   @IsOptional()
+  @IsString()
+  @IsIn(['pending', 'in_progress', 'to_test', 'done', 'refused'])
+  status?: 'pending' | 'in_progress' | 'to_test' | 'done' | 'refused';
+
+  @IsOptional()
   @StrictIntegerInput()
   @IsInt()
   @Min(0)

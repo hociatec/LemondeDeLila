@@ -237,6 +237,17 @@ void AdminCommandDialog::HandleKey(wxKeyEvent& event)
         event.Skip();
         return;
     }
+    if (command_.id.starts_with("bugs.") && focusedText != nullptr)
+    {
+        const auto current = std::find_if(fields_.begin(), fields_.end(),
+            [focusedText](const FieldControl& field) { return field.editor == focusedText; });
+        if (current != fields_.end() && current->key == "subject")
+        {
+            const auto next = std::next(current);
+            if (next != fields_.end()) FocusField(*next);
+            return;
+        }
+    }
     if (TransferDataFromWindow()) EndModal(wxID_OK);
 }
 

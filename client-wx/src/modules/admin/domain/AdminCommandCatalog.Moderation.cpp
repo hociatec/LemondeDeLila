@@ -33,9 +33,9 @@ void AppendModerationCommands(std::vector<AdminCommand>& c)
         {"contacts.handled", L"Marquer traité", L"Marquer explicitement le fil.", T::NotificationWebSocket, std::string(ws::notify::inbox::SetHandled), {}, R"({"contactId":"","handled":true})"},
         {"contacts.delete", L"Supprimer un fil", L"Suppression du fil de contact.", T::NotificationWebSocket, std::string(ws::notify::inbox::DeleteThread), {}, R"({"contactId":""})", true},
 
-        {"bugs.list", L"Rechercher les rapports", L"Recherche par identifiant, sujet, contenu ou auteur.", T::ApiWebSocket, std::string(ws::admin::bugReports::List), {}, R"({"search":"","offset":0,"limit":50})"},
+        {"bugs.list", L"Rechercher les rapports", L"Recherche et classement par statut.", T::ApiWebSocket, std::string(ws::admin::bugReports::List), {}, R"({"search":"","status":"pending","offset":0,"limit":50})"},
         {"bugs.get", L"Consulter un rapport", L"Détail et nombre de commentaires.", T::ApiWebSocket, std::string(ws::admin::bugReports::Get), {}, R"({"id":""})"},
-        {"bugs.create", L"Créer un rapport", L"Créer au nom de l'admin connecté.", T::ApiWebSocket, std::string(ws::admin::bugReports::Create), {}, R"({"subject":"","content":""})"},
+        {"bugs.create", L"Nouveau rapport", L"Le nouveau rapport sera automatiquement classé en attente.", T::ApiWebSocket, std::string(ws::admin::bugReports::Create), {}, R"({"subject":"","content":""})"},
         {"bugs.update", L"Modifier un rapport", L"Sujet et contenu.", T::ApiWebSocket, std::string(ws::admin::bugReports::Update), {}, R"({"id":"","subject":"","content":""})"},
         {"bugs.status", L"Changer le statut", L"Utiliser refused plutôt que rejected.", T::ApiWebSocket, std::string(ws::admin::bugReports::UpdateStatus), {}, R"({"id":"","status":"in_progress"})"},
         {"bugs.comments", L"Lister les commentaires", L"Commentaires paginés.", T::ApiWebSocket, std::string(ws::admin::bugReports::CommentsList), {}, R"({"reportId":"","offset":0,"limit":50})"},
