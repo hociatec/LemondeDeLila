@@ -2,9 +2,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <unordered_set>
-
 #include <nlohmann/json.hpp>
-
 #include "modules/admin/domain/AdminCommand.h"
 #include "modules/admin/domain/AdminFormMetadata.h"
 #include "modules/admin/domain/AdminPagination.h"
