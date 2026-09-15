@@ -20,7 +20,9 @@ void AdminFrame::SearchBugReports()
     RefreshBugReports();
 }
 
-void AdminFrame::RefreshBugReports(bool keepCurrentFocus)
+void AdminFrame::RefreshBugReports(
+    bool keepCurrentFocus,
+    bool announceLifecycle)
 {
     const auto* command = domain::FindAdminCommand("bugs.list");
     if (command == nullptr) return;
@@ -29,7 +31,7 @@ void AdminFrame::RefreshBugReports(bool keepCurrentFocus)
     bugReportListPayload_["search"] =
         lila::shared::text::ToUtf8(reportSearchCtrl_->GetValue());
     keepFocusAfterCommand_ = keepCurrentFocus;
-    ExecuteCommand(*command, bugReportListPayload_);
+    ExecuteCommand(*command, bugReportListPayload_, announceLifecycle);
 }
 
 void AdminFrame::UpdateBugReportActions()
