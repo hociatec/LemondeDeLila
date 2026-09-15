@@ -207,8 +207,7 @@ int main()
             {"id", "r1"}, {"subject", "Son coupé"}, {"status", "pending"},
             {"createdByUsername", "Lila"}}}}});
     assert(reportPresentation.summary == "Rapports : 1 élément.");
-    assert(reportPresentation.entries[0].label ==
-        "1. Son coupé — En attente — Lila");
+    assert(reportPresentation.entries[0].label == "1. Son coupé — En attente — Lila");
 
     const auto emptyPresentation =
         lila::modules::admin::presentation::BuildAdminResultPresentation({
