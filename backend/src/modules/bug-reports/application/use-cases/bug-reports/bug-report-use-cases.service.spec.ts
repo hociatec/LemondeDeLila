@@ -18,6 +18,7 @@ type RepoStub = {
     offset: number;
     limit: number;
     search?: string;
+    status?: BugReportRecord['status'];
   }): Promise<BugReportRecord[]>;
   findById(id: string): Promise<BugReportRecord | null>;
   delete(id: string): Promise<boolean>;
@@ -211,12 +212,18 @@ describe('Bug report use cases', () => {
       new BugReportStatusNormalizerService(),
     );
 
-    await service.execute({ offset: -1, limit: 500, search: '  connexion  ' });
+    await service.execute({
+      offset: -1,
+      limit: 500,
+      search: '  connexion  ',
+      status: 'to_test',
+    });
 
     expect(listSpy).toHaveBeenCalledWith({
       offset: 0,
       limit: 100,
       search: 'connexion',
+      status: 'to_test',
     });
   });
 });

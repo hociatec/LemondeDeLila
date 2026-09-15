@@ -47,7 +47,12 @@ export class AdminBugReportsService {
   }
 
   async list(
-    options: { offset?: number; limit?: number; search?: string } = {},
+    options: {
+      offset?: number;
+      limit?: number;
+      search?: string;
+      status?: UpdateAdminBugReportStatusCommand['status'];
+    } = {},
   ) {
     const offset = normalizeOffset(options.offset);
     const limit = normalizeLimit(options.limit);
@@ -56,6 +61,7 @@ export class AdminBugReportsService {
       offset,
       limit,
       ...(search ? { search } : {}),
+      ...(options.status ? { status: options.status } : {}),
     });
     const counts = await this.bugReports.countComments(
       items.map((item) => item.id),

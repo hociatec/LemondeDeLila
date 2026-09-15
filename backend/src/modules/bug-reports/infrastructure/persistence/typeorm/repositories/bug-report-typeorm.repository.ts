@@ -5,7 +5,10 @@ import type {
   BugReportRepository,
   CreateBugReportRecordInput,
 } from '../../../../application/ports/bug-report.repository';
-import type { BugReportRecord } from '../../../../application/read-models/bug-report.record';
+import type {
+  BugReportRecord,
+  BugReportStatus,
+} from '../../../../application/read-models/bug-report.record';
 import { BugReportEntity } from '../entities/bug-report.entity';
 
 const MAX_BUG_REPORT_PAGE_SIZE = 100;
@@ -22,6 +25,7 @@ export class BugReportTypeormRepository implements BugReportRepository {
     offset: number;
     limit: number;
     search?: string;
+    status?: BugReportStatus;
   }): Promise<BugReportRecord[]> {
     const offset = normalizeOffset(options.offset);
     const limit = normalizeLimit(options.limit);
@@ -33,10 +37,17 @@ export class BugReportTypeormRepository implements BugReportRepository {
       .take(limit);
     const search = options.search?.trim();
     if (search) {
-      query.where(
+      query.andWhere(
         '(report.id LIKE :search OR report.subject LIKE :search OR report.content LIKE :search OR report.createdByUsername LIKE :search)',
         { search: `%${escapeLike(search)}%` },
       );
+    }
+    if (options.status === 'refused') {
+      query.andWhere('report.status IN (:...statuses)', {
+        statuses: ['refused', 'rejected'],
+      });
+    } else if (options.status) {
+      query.andWhere('report.status = :status', { status: options.status });
     }
     const items = await query.getMany();
     return items.map((item) => this.toRecord(item));

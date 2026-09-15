@@ -125,6 +125,7 @@ int main()
     assert(bugPagination.mode == AdminPaginationMode::Offset);
     const auto bugList = nlohmann::json::parse(findCommand("bugs.list").payloadTemplate);
     assert(bugList.contains("search"));
+    assert(bugList["status"] == "pending");
     assert(!lila::modules::admin::domain::IsAdminPaginationField("bugs.list", "search"));
     const auto roomPagination =
         lila::modules::admin::domain::GetAdminPaginationSpec("rooms.list");

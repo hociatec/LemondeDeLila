@@ -79,7 +79,10 @@ private:
     void ApplyContextToPayload(const domain::AdminCommand& command, nlohmann::json& payload) const;
     [[nodiscard]] bool ContextCommandMutates(const domain::AdminCommand& command) const;
     void SearchBugReports();
+    void CreateBugReport();
+    void ChangeBugReportFilter();
     void EditSelectedBugReport();
+    void ChangeSelectedBugReportStatus();
     void DeleteSelectedBugReport();
     void RefreshBugReports(
         bool keepCurrentFocus = false,
@@ -109,10 +112,13 @@ private:
     wxStaticText* statusLabel_ = nullptr;
     wxTextCtrl* resultText_ = nullptr;
     wxPanel* reportSearchPanel_ = nullptr;
+    wxButton* createReportButton_ = nullptr;
+    wxChoice* reportStatusFilter_ = nullptr;
     wxTextCtrl* reportSearchCtrl_ = nullptr;
     wxButton* reportSearchButton_ = nullptr;
     wxPanel* reportActionsPanel_ = nullptr;
     wxButton* editReportButton_ = nullptr;
+    wxButton* changeReportStatusButton_ = nullptr;
     wxButton* deleteReportButton_ = nullptr;
     wxPanel* paginationPanel_ = nullptr;
     wxStaticText* paginationLabel_ = nullptr;

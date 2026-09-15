@@ -9,7 +9,12 @@ export class ListBugReportsService {
   ) {}
 
   async execute(
-    options: { offset?: number; limit?: number; search?: string } = {},
+    options: {
+      offset?: number;
+      limit?: number;
+      search?: string;
+      status?: BugReportRecord['status'];
+    } = {},
   ): Promise<BugReportRecord[]> {
     const offsetInput = options.offset ?? 0;
     const limitInput = options.limit ?? 50;
@@ -20,10 +25,14 @@ export class ListBugReportsService {
       ? Math.max(1, Math.min(100, limitInput))
       : 50;
     const search = normalizeSearch(options.search);
+    const status = options.status
+      ? this.normalizer.normalizeStatus(options.status)
+      : undefined;
     const items = await this.repo.list({
       offset,
       limit,
       ...(search ? { search } : {}),
+      ...(status ? { status } : {}),
     });
     return items.map((item) => this.normalizer.normalizeRecord(item));
   }

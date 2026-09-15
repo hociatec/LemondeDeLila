@@ -29,6 +29,7 @@ export interface BugReportRepository {
     offset: number;
     limit: number;
     search?: string;
+    status?: BugReportStatus;
   }): Promise<BugReportRecord[]>;
   findById(id: string): Promise<BugReportRecord | null>;
   save(

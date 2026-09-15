@@ -190,12 +190,18 @@ void AdminFrame::CompleteCommand(
         }
     }
     if (refreshBugReportsAfterCommand_ &&
-        (command.id == "bugs.update" || command.id == "bugs.delete"))
+        (command.id == "bugs.create" || command.id == "bugs.update" ||
+         command.id == "bugs.status" || command.id == "bugs.delete"))
     {
         refreshBugReportsAfterCommand_ = false;
-        SetStatus(command.id == "bugs.delete"
-            ? wxString(L"Rapport supprimé. Actualisation de la liste…")
-            : wxString(L"Rapport modifié. Actualisation de la liste…"));
+        wxString message = L"Rapport modifié. Actualisation de la liste…";
+        if (command.id == "bugs.create")
+            message = L"Rapport créé et classé en attente. Actualisation de la liste…";
+        else if (command.id == "bugs.status")
+            message = L"Classement du rapport enregistré. Actualisation de la liste…";
+        else if (command.id == "bugs.delete")
+            message = L"Rapport supprimé. Actualisation de la liste…";
+        SetStatus(message);
         RefreshBugReports(false, false);
         return;
     }

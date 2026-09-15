@@ -150,6 +150,16 @@ AdminFieldMetadata GetAdminFieldMetadata(
     if (const auto found = Labels.find(fieldName); found != Labels.end()) result.label = found->second;
     else result.label.assign(fieldName.begin(), fieldName.end());
     if (const auto found = Help.find(fieldName); found != Help.end()) result.help = found->second;
+    if (commandId.starts_with("bugs.") && fieldName == "subject")
+    {
+        result.label = L"Sujet du rapport";
+        result.help = L"Intitulé court du rapport. Entrée passe au contenu sans enregistrer.";
+    }
+    if (commandId.starts_with("bugs.") && fieldName == "content")
+    {
+        result.label = L"Contenu du rapport";
+        result.help = L"Description détaillée du rapport. Entrée ajoute une nouvelle ligne.";
+    }
 
     if (fieldName == "content" || fieldName == "description" || fieldName == "rules" ||
         fieldName == "message" || fieldName == "question")
@@ -181,10 +191,15 @@ AdminFieldMetadata GetAdminFieldMetadata(
             result.choices = {"validated", "pending", "to_edit", "trash"};
             result.choiceLabels = {L"Validée", L"En attente", L"À modifier", L"Corbeille"};
         }
+        else if (commandId == "bugs.list")
+        {
+            result.choices = {"all", "pending", "in_progress", "to_test", "done", "refused"};
+            result.choiceLabels = {L"Tous", L"En attente", L"En cours", L"Corrigés, à tester", L"Terminés", L"Refusés"};
+        }
         else
         {
             result.choices = {"pending", "in_progress", "to_test", "done", "refused"};
-            result.choiceLabels = {L"En attente", L"En cours", L"À tester", L"Terminé", L"Refusé"};
+            result.choiceLabels = {L"En attente", L"En cours", L"Corrigé, à tester", L"Terminé", L"Refusé"};
         }
     }
 
