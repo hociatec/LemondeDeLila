@@ -79,6 +79,7 @@ c++ "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
   "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Content.cpp" \
   "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Operations.cpp" \
   "$ROOT/src/modules/admin/domain/AdminFormMetadata.cpp" \
+  "$ROOT/src/modules/admin/domain/AdminFormMetadata.BugReports.cpp" \
   "$ROOT/src/modules/admin/infrastructure/AdminPayloadValidator.cpp" \
   "$ROOT/src/modules/admin/presentation/AdminResultFormatter.cpp" \
   "$ROOT/src/shared/network/application/http/AuthenticatedHttpClient.cpp" \
