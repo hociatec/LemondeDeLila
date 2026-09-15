@@ -61,8 +61,9 @@ std::optional<domain::SocialProfile> SocialService::LoadProfile(std::optional<in
         return api_.GetProfile(userId);
     }
 
-    return ownProfileCache_.GetOrLoad({}, [this](std::stop_token) { return api_.GetProfile(std::nullopt); })
-        .value_or(std::optional<domain::SocialProfile>{});
+    // A failed or incomplete response must never make "Mon profil" unusable
+    // for the remainder of the application session.
+    return api_.GetProfile(std::nullopt);
 }
 
 std::optional<domain::SocialProfile> SocialService::SaveProfile(const domain::SocialProfileUpdate& update) const

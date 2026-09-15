@@ -562,6 +562,58 @@ describe('GameWsStatePresenter', () => {
     ).toBe('Vous piochez « Coup de chance ». Effet : Avancez de 2 cases.');
   });
 
+  it('does not repeat an effect already written on a revealed card', () => {
+    const state = {
+      status: 'started',
+      players: [{ id: 1, username: 'Lila' }],
+    } as unknown as GameState;
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'started' },
+          players: { all: state.players },
+          events: {
+            latestByType: {
+              'game.message': {
+                id: '5:0',
+                type: 'game.message',
+                data: {
+                  key: 'game.card.drawn',
+                  params: {
+                    playerId: 1,
+                    revealed: true,
+                    cardLabel:
+                      "Le sol colle à vos chaussures. Au prochain tour, vous n'avancerez que d'une seule case.",
+                    effectDescription:
+                      "Au prochain tour, vous n'avancerez que d'une seule case.",
+                  },
+                },
+              },
+            },
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+
+    const payload = createPresenter().present({
+      state,
+      handler,
+      roomId: 6,
+      gameType: 'frousse-party',
+      version: 5,
+      viewerPlayerId: 1,
+    });
+
+    expect(
+      ((payload.system as any).events.latestByType['game.message'] as any).data
+        .message,
+    ).toBe(
+      "Vous piochez « Le sol colle à vos chaussures. Au prochain tour, vous n'avancerez que d'une seule case. ».",
+    );
+  });
+
   it('narrates chained landings and draws once each', () => {
     const events = [
       {

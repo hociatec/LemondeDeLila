@@ -253,6 +253,7 @@ export class GameWsStateMessagesPresenter {
     const card = this.displayedCard(input);
     const effectDescription = scalarMessageText(input.params.effectDescription);
     const effectAnnouncement = effectDescription
+      && !card.includes(effectDescription)
       ? ` Effet : ${effectDescription.replace(/[.!?]+$/u, '')}.`
       : '';
     const automatic =
