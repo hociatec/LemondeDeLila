@@ -17,7 +17,8 @@ std::string HumanLabel(std::string id)
         {"count", "Quantité"}, {"value", "Valeur"}, {"total", "Total"},
         {"phase", "Phase"}, {"status", "État"}, {"remaining", "Restant"},
         {"playing", "En cours"}, {"started", "Démarrée"}, {"finished", "Terminée"},
-        {"coins", "Pièces"}, {"points", "Points"}, {"cards", "Cartes"}};
+        {"coins", "Pièces"}, {"points", "Points"}, {"cards", "Cartes"},
+        {"board-path-walls.walls", "Murs disponibles"}};
     if (const auto found = labels.find(id); found != labels.end()) return found->second;
     std::string result;
     result.reserve(id.size() + 4);
