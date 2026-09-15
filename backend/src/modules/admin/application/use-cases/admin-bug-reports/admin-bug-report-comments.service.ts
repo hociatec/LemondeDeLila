@@ -3,6 +3,7 @@ import {
   ADMIN_BUG_REPORTS_PORT,
   type AdminBugReportsPort,
 } from '../../ports/admin-bug-reports.port';
+import { serializeDate } from '../../../../../shared/utils/public-api';
 
 @Injectable()
 export class AdminBugReportCommentsService {
@@ -11,12 +12,16 @@ export class AdminBugReportCommentsService {
     private readonly bugReports: AdminBugReportsPort,
   ) {}
 
-  list(reportId: string, options: { offset?: number; limit?: number } = {}) {
+  async list(
+    reportId: string,
+    options: { offset?: number; limit?: number } = {},
+  ) {
     assertReportId(reportId);
-    return this.bugReports.listComments(reportId, {
+    const comments = await this.bugReports.listComments(reportId, {
       offset: boundedInteger(options.offset, 0, 10_000_000, 0),
       limit: boundedInteger(options.limit, 1, 100, 50),
     });
+    return comments.map(serializeComment);
   }
 
   async add(input: {
@@ -43,11 +48,15 @@ export class AdminBugReportCommentsService {
 
     const counts = await this.bugReports.countComments([reportId]);
     return {
-      comment,
+      comment: serializeComment(comment),
       reportId,
       commentsCount: counts[reportId] ?? 0,
     };
   }
+}
+
+function serializeComment<T extends { createdAt: unknown }>(comment: T) {
+  return { ...comment, createdAt: serializeDate(comment.createdAt) };
 }
 
 function assertReportId(value: unknown): asserts value is string {

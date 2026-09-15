@@ -6,6 +6,7 @@ import type { ListAdminUsersQuery } from '../../../application/use-cases/admin-u
 import { AdminUserRolesUpdateService } from '../../../application/use-cases/admin-users/admin-user-roles-update.service';
 import { AdminUsersCommandService } from '../../../application/use-cases/admin-users/admin-users-command.service';
 import { AdminUsersQueryService } from '../../../application/use-cases/admin-users/admin-users-query.service';
+import { presentAdminUser } from '../../../application/use-cases/admin-users/admin-user.presenter';
 import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
 import {
   AdminBanUserWsDto,
@@ -36,14 +37,20 @@ export class AdminUsersWsHandler {
       limit: dto.limit ?? 20,
     };
     const result = await this.usersQuery.list(query);
-    return { type: WS_EVENTS.admin.users.list, payload: result };
+    return {
+      type: WS_EVENTS.admin.users.list,
+      payload: { ...result, items: result.items.map(presentAdminUser) },
+    };
   }
 
   async usersGet(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminUserIdWsDto, payload);
     const user = await this.usersQuery.get(dto.id);
-    return { type: WS_EVENTS.admin.users.get, payload: { user } };
+    return {
+      type: WS_EVENTS.admin.users.get,
+      payload: { user: presentAdminUser(user) },
+    };
   }
 
   async usersBan(session: WsSession, payload: unknown) {
@@ -55,14 +62,20 @@ export class AdminUsersWsHandler {
       dto.durationDays,
       dto.bannedUntil ?? null,
     );
-    return { type: WS_EVENTS.admin.users.ban, payload: res };
+    return {
+      type: WS_EVENTS.admin.users.ban,
+      payload: { ...res, user: presentAdminUser(res.user) },
+    };
   }
 
   async usersUnban(session: WsSession, payload: unknown) {
     requireAdmin(session);
     const dto = this.validator.validate(AdminUserIdWsDto, payload);
     const res = await this.usersCommand.unban(dto.id);
-    return { type: WS_EVENTS.admin.users.unban, payload: res };
+    return {
+      type: WS_EVENTS.admin.users.unban,
+      payload: { ...res, user: presentAdminUser(res.user) },
+    };
   }
 
   async usersDelete(session: WsSession, payload: unknown) {
@@ -80,6 +93,9 @@ export class AdminUsersWsHandler {
       dto.id,
       dto.roles,
     );
-    return { type: WS_EVENTS.admin.users.rolesUpdated, payload: { user } };
+    return {
+      type: WS_EVENTS.admin.users.rolesUpdated,
+      payload: { user: presentAdminUser(user) },
+    };
   }
 }

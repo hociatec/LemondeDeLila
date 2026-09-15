@@ -5,9 +5,9 @@ export class GameCategoryEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'varchar', length: 120 })
+  @Column({ type: 'varchar', length: 200 })
   name!: string;
 
-  @Column({ type: 'varchar', length: 36, nullable: true })
+  @Column({ name: 'parent_id', type: 'varchar', length: 120, nullable: true })
   parentId!: string | null;
 }

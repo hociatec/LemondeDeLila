@@ -3,6 +3,7 @@ import {
   ADMIN_BUG_REPORTS_PORT,
   type AdminBugReportsPort,
 } from '../../ports/admin-bug-reports.port';
+import { serializeDate } from '../../../../../shared/utils/public-api';
 
 export interface CreateAdminBugReportCommand {
   subject: string;
@@ -35,12 +36,14 @@ export class AdminBugReportsService {
     assertText(command.content, 20_000, 'Contenu invalide');
     assertUserId(command.createdByUserId);
     assertText(command.createdByUsername, 100, "Nom d'utilisateur invalide");
-    return this.bugReports.create({
-      subject: command.subject,
-      content: command.content,
-      createdByUserId: command.createdByUserId,
-      createdByUsername: command.createdByUsername,
-    });
+    return serializeReport(
+      await this.bugReports.create({
+        subject: command.subject,
+        content: command.content,
+        createdByUserId: command.createdByUserId,
+        createdByUsername: command.createdByUsername,
+      }),
+    );
   }
 
   async list(
@@ -58,7 +61,7 @@ export class AdminBugReportsService {
       items.map((item) => item.id),
     );
     return items.map((item) => ({
-      ...item,
+      ...serializeReport(item),
       commentsCount: counts[item.id] ?? 0,
     }));
   }
@@ -71,7 +74,7 @@ export class AdminBugReportsService {
     }
     const counts = await this.bugReports.countComments([report.id]);
     return {
-      ...report,
+      ...serializeReport(report),
       commentsCount: counts[report.id] ?? 0,
     };
   }
@@ -91,7 +94,7 @@ export class AdminBugReportsService {
     if (!report) {
       throw new BadRequestException('Rapport introuvable');
     }
-    return report;
+    return serializeReport(report);
   }
 
   async updateStatus(command: UpdateAdminBugReportStatusCommand) {
@@ -115,7 +118,7 @@ export class AdminBugReportsService {
     if (!report) {
       throw new BadRequestException('Rapport introuvable');
     }
-    return report;
+    return serializeReport(report);
   }
 
   async delete(id: string) {
@@ -126,6 +129,16 @@ export class AdminBugReportsService {
     }
     return { removed: true };
   }
+}
+
+function serializeReport<T extends { createdAt: unknown; updatedAt: unknown }>(
+  report: T,
+) {
+  return {
+    ...report,
+    createdAt: serializeDate(report.createdAt),
+    updatedAt: serializeDate(report.updatedAt),
+  };
 }
 
 function assertReportId(value: unknown): asserts value is string {

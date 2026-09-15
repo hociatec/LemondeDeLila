@@ -23,22 +23,43 @@ export class AdminMnemoQuizPresenterService {
   buildQuestionsPayload(filter?: {
     categoryId?: string;
     status?: MnemoQuestionStatus;
+    offset?: number;
+    limit?: number;
   }) {
-    const questions = this.store.listQuestions(filter).map((question) => ({
-      id: question.id,
-      categoryId: question.categoryId,
-      question: question.question,
-      status: question.status,
-      createdAt: question.createdAt,
-      updatedAt: question.updatedAt,
-      answers: [
-        question.correct,
-        question.wrong1,
-        question.wrong2,
-        question.wrong3,
-      ],
-      correctIndex: 0,
-    }));
-    return { questions };
+    const allQuestions = this.store.listQuestions(filter);
+    const offset = boundedInteger(filter?.offset, 0, 10_000_000, 0);
+    const limit = boundedInteger(filter?.limit, 1, 100, 50);
+    const questions = allQuestions
+      .slice(offset, offset + limit)
+      .map((question) => ({
+        id: question.id,
+        categoryId: question.categoryId,
+        question: question.question,
+        status: question.status,
+        createdAt: question.createdAt,
+        updatedAt: question.updatedAt,
+        answers: [
+          question.correct,
+          question.wrong1,
+          question.wrong2,
+          question.wrong3,
+        ],
+        correctIndex: 0,
+      }));
+    return { questions, total: allQuestions.length, offset, limit };
   }
+}
+
+function boundedInteger(
+  value: unknown,
+  minimum: number,
+  maximum: number,
+  fallback: number,
+): number {
+  return typeof value === 'number' &&
+    Number.isSafeInteger(value) &&
+    value >= minimum &&
+    value <= maximum
+    ? value
+    : fallback;
 }

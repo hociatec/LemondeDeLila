@@ -86,6 +86,8 @@ export class AdminMnemoQuizWsHandler {
       payload: this.presenter.buildQuestionsPayload({
         categoryId: dto.categoryId?.trim() || undefined,
         status: this.questions.normalizeStatus(dto.status),
+        offset: dto.offset,
+        limit: dto.limit,
       }),
     };
   }

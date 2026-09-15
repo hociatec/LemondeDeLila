@@ -10,6 +10,7 @@
 
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
+#include "shared/network/application/realtime/RealtimeProtocol.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
 
 namespace
@@ -137,11 +138,32 @@ void TestCompletedRequestDisarmsDeadline()
     assert(response.success);
     assert(!socket.WasCancelled());
 }
+
+void TestCorrelatedTypedErrorIsReturnedAsServerError()
+{
+    constexpr auto RequestId = "contact-request-1";
+    const auto rawResponse = nlohmann::json({
+        {"type", "notify.admin_contact.error"},
+        {"requestId", RequestId},
+        {"payload", {{"message", "Conversation introuvable."}}},
+    }).dump();
+
+    assert(lila::shared::network::realtime::protocol::IsResponseForRequest(
+        rawResponse, RequestId, "notify.admin_contact.list"));
+
+    const auto response = lila::shared::network::realtime::protocol::ParseResponse(
+        rawResponse, RequestId, "notify.admin_contact.list");
+    assert(!response.success);
+    assert(response.errorKind ==
+        lila::shared::network::realtime::RealtimeErrorKind::Server);
+    assert(response.errorMessage == "Conversation introuvable.");
+}
 }
 
 int main()
 {
     TestHungRequestTimesOut();
     TestCompletedRequestDisarmsDeadline();
+    TestCorrelatedTypedErrorIsReturnedAsServerError();
     return 0;
 }

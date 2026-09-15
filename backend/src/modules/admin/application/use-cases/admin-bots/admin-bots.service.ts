@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ADMIN_BOT_PORT, type AdminBotPort } from '../../ports/admin-bot.port';
+import { serializeOptionalDate } from '../../../../../shared/utils/public-api';
 function mapBotApplicationError(error: unknown): unknown {
   if (
     error == null ||
@@ -43,7 +44,10 @@ export class AdminBotsService {
         id: name.id,
         name: name.name,
         enabled: name.enabled,
-        createdAt: name.createdAt,
+        createdAt:
+          typeof name.createdAt === 'string'
+            ? name.createdAt.slice(0, 64)
+            : serializeOptionalDate(name.createdAt),
       })),
     };
   }
