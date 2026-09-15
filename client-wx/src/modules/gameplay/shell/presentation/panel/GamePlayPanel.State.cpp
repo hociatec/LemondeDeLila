@@ -217,6 +217,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     if (!roomStarted_ && roomStartFlowRequested_ &&
         !startConfigurationFlow_.IsAwaitingActionAcknowledgement() &&
         state_.system.setup.complete &&
+        !pawnSelection_.has_value() &&
         (setupProjectionCompleted || ActivePrompt() == nullptr))
     {
         roomStartFlowRequested_ = false;
