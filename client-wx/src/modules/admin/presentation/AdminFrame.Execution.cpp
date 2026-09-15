@@ -105,14 +105,16 @@ bool AdminFrame::EnsureMaintenanceToken()
 
 void AdminFrame::ExecuteCommand(
     const domain::AdminCommand& command,
-    nlohmann::json payload)
+    nlohmann::json payload,
+    bool announceLifecycle)
 {
     if (command.id == "bugs.list") bugReportListPayload_ = payload;
     ResetPagination(command, payload);
     requestSlot_.Cancel();
     const auto generation = requestSlot_.CurrentToken();
     loading_ = true;
-    SetStatus(wxString(L"Opération en cours…"));
+    if (announceLifecycle)
+        SetStatus(wxString(L"Opération en cours…"));
     auto* service = &service_;
     const auto* commandPointer = &command;
     const auto maintenanceToken =
@@ -124,18 +126,23 @@ void AdminFrame::ExecuteCommand(
             return service->Execute(
                 *commandPointer, payload, maintenanceToken->Value(), stopToken);
         },
-        [weakThis, generation, commandPointer](
+        [weakThis, generation, commandPointer, announceLifecycle](
             std::optional<lila::shared::errors::AppError> error,
             std::optional<nlohmann::json> result) mutable
         {
             if (!weakThis) return;
             weakThis->CallAfter(
-                [weakThis, generation, commandPointer, error = std::move(error),
+                [weakThis, generation, commandPointer, announceLifecycle,
+                 error = std::move(error),
                  result = std::move(result)]() mutable
                 {
                     if (weakThis)
                         weakThis->CompleteCommand(
-                            generation, *commandPointer, std::move(error), std::move(result));
+                            generation,
+                            *commandPointer,
+                            announceLifecycle,
+                            std::move(error),
+                            std::move(result));
                 });
         },
         lila::shared::concurrency::BackgroundTaskPriority::High,
@@ -145,6 +152,7 @@ void AdminFrame::ExecuteCommand(
 void AdminFrame::CompleteCommand(
     lila::shared::concurrency::AsyncRequestSlot::Token generation,
     const domain::AdminCommand& command,
+    bool announceLifecycle,
     std::optional<lila::shared::errors::AppError> error,
     std::optional<nlohmann::json> result)
 {
@@ -169,12 +177,15 @@ void AdminFrame::CompleteCommand(
         const auto& area = domain::GetAdminAreas()[selectedSection_];
         if (area.id == "reports")
         {
-            RefreshBugReports();
+            RefreshBugReports(false, false);
             return;
         }
         if (const auto* refresh = domain::FindAdminCommand(area.automaticCommandId))
         {
-            ExecuteCommand(*refresh, nlohmann::json::parse(refresh->payloadTemplate));
+            ExecuteCommand(
+                *refresh,
+                nlohmann::json::parse(refresh->payloadTemplate),
+                false);
             return;
         }
     }
@@ -185,7 +196,7 @@ void AdminFrame::CompleteCommand(
         SetStatus(command.id == "bugs.delete"
             ? wxString(L"Rapport supprimé. Actualisation de la liste…")
             : wxString(L"Rapport modifié. Actualisation de la liste…"));
-        RefreshBugReports();
+        RefreshBugReports(false, false);
         return;
     }
     const auto temporaryPassword = result->find("temporaryPassword");
@@ -203,7 +214,8 @@ void AdminFrame::CompleteCommand(
         *temporaryPassword = "<affiché une seule fois>";
     }
     ShowResult(command, *result);
-    SetStatus(wxString(L"Opération terminée : ") + wxString(command.label));
+    if (announceLifecycle)
+        SetStatus(wxString(L"Opération terminée : ") + wxString(command.label));
     if (keepFocusAfterCommand_)
     {
         keepFocusAfterCommand_ = false;

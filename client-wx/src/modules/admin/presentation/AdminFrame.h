@@ -58,13 +58,17 @@ private:
     void ShowCommands(std::size_t sectionIndex);
     void LoadAutomaticAreaContent();
     void ActivateCommand(std::size_t commandIndex);
-    void ExecuteCommand(const domain::AdminCommand& command, nlohmann::json payload);
+    void ExecuteCommand(
+        const domain::AdminCommand& command,
+        nlohmann::json payload,
+        bool announceLifecycle = true);
     [[nodiscard]] bool ConfirmDangerous(const domain::AdminCommand& command);
     [[nodiscard]] bool PreparePayload(const domain::AdminCommand& command, nlohmann::json& payload);
     [[nodiscard]] bool EnsureMaintenanceToken();
     void CompleteCommand(
         lila::shared::concurrency::AsyncRequestSlot::Token generation,
         const domain::AdminCommand& command,
+        bool announceLifecycle,
         std::optional<lila::shared::errors::AppError> error,
         std::optional<nlohmann::json> result);
     void SetStatus(const wxString& message, bool isError = false);
@@ -77,7 +81,9 @@ private:
     void SearchBugReports();
     void EditSelectedBugReport();
     void DeleteSelectedBugReport();
-    void RefreshBugReports(bool keepCurrentFocus = false);
+    void RefreshBugReports(
+        bool keepCurrentFocus = false,
+        bool announceLifecycle = true);
     void UpdateBugReportActions();
     void FocusCurrentMenu();
     void FocusResult();

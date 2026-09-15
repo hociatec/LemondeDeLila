@@ -102,13 +102,16 @@ void AdminFrame::LoadAutomaticAreaContent()
     if (area.automaticCommandId.empty()) return;
     if (area.id == "reports")
     {
-        RefreshBugReports(true);
+        RefreshBugReports(true, false);
         return;
     }
     const auto* command = domain::FindAdminCommand(area.automaticCommandId);
     if (command == nullptr) return;
     keepFocusAfterCommand_ = true;
-    ExecuteCommand(*command, nlohmann::json::parse(command->payloadTemplate));
+    ExecuteCommand(
+        *command,
+        nlohmann::json::parse(command->payloadTemplate),
+        false);
 }
 
 bool AdminFrame::HandleKey(int keyCode)
