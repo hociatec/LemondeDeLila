@@ -43,6 +43,32 @@ export class SocialRelationshipService {
     });
   }
 
+  async getRelationshipState(userId: number, targetId: number) {
+    requireUserIds(userId, targetId);
+    if (userId === targetId) {
+      return emptyRelationshipState();
+    }
+
+    const relations = await this.relationships.findRelationsBetween(
+      userId,
+      targetId,
+    );
+    const pending = relations.find((relation) => relation.status === 'pending');
+    return {
+      isFriend: relations.some((relation) => relation.status === 'accepted'),
+      isBlocked: relations.some(
+        (relation) =>
+          relation.status === 'blocked' && relation.requester.id === userId,
+      ),
+      blockedByTarget: relations.some(
+        (relation) =>
+          relation.status === 'blocked' && relation.requester.id === targetId,
+      ),
+      outgoingRequest: pending?.requester.id === userId,
+      incomingRequest: pending?.requester.id === targetId,
+    };
+  }
+
   async listRequests(userId: number, direction: SocialDirection) {
     if (!isValidUserId(userId)) return [];
     const relations = await this.relationships.listPendingForUser(
@@ -306,4 +332,14 @@ function requireUserIds(left: number, right: number): void {
   if (!isValidUserId(left) || !isValidUserId(right)) {
     throw new HttpException('Identifiant utilisateur invalide.', 400);
   }
+}
+
+function emptyRelationshipState() {
+  return {
+    isFriend: false,
+    isBlocked: false,
+    blockedByTarget: false,
+    outgoingRequest: false,
+    incomingRequest: false,
+  };
 }

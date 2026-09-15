@@ -6,6 +6,7 @@
 
 #include "modules/social/domain/SocialFriendRequest.h"
 #include "modules/social/domain/SocialProfile.h"
+#include "modules/social/domain/SocialRelationshipState.h"
 #include "modules/social/domain/SocialUser.h"
 #include "modules/social/application/ISocialGateway.h"
 #include "shared/cache/application/SingleFlightCache.h"
@@ -25,6 +26,7 @@ public:
     [[nodiscard]] std::vector<domain::SocialFriendRequest> LoadIncomingRequests() const;
     [[nodiscard]] std::vector<domain::SocialFriendRequest> LoadOutgoingRequests() const;
     [[nodiscard]] std::vector<domain::SocialUser> LoadBlockedUsers() const;
+    [[nodiscard]] domain::SocialRelationshipState LoadRelationshipState(int userId) const;
     [[nodiscard]] std::optional<domain::SocialProfile> LoadProfile(std::optional<int> userId = std::nullopt) const;
     [[nodiscard]] std::optional<domain::SocialProfile> SaveProfile(const domain::SocialProfileUpdate& update) const;
     void AcceptFriend(int userId) const;

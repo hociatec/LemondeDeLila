@@ -49,15 +49,12 @@ void PresenceFrame::LoadSocialState(int userId)
                     }
                     if (error.has_value())
                     {
-                        const auto previousId = weakThis->selectedPlayer_.has_value()
-                            ? std::optional<int>{weakThis->selectedPlayer_->id}
-                            : std::nullopt;
                         weakThis->busy_ = false;
-                        weakThis->page_ = Page::Players;
-                        weakThis->selectedPlayer_.reset();
-                        weakThis->socialState_.reset();
-                        weakThis->RebuildPlayers(previousId, true);
-                        weakThis->UpdateStatus(FromUtf8(error->UserMessage()), true);
+                        weakThis->socialState_ = PresenceSocialState{.relationshipAvailable = false};
+                        weakThis->RebuildActions();
+                        weakThis->UpdateStatus(
+                            wxString(L"Les actions d'amitié sont temporairement indisponibles. Les autres actions restent accessibles."),
+                            true);
                         return;
                     }
                     weakThis->busy_ = false;
@@ -93,6 +90,19 @@ void PresenceFrame::RunSelectedAction()
     if (action == "message")
     {
         SendPrivateMessage(userId, username);
+        return;
+    }
+    if (action.starts_with("social."))
+    {
+        if (onOpenSocialSectionRequested_)
+        {
+            const std::size_t menuIndex = action == "social.friends" ? 1
+                : action == "social.incoming" ? 2
+                : action == "social.outgoing" ? 3
+                : action == "social.blocked" ? 4
+                : 5;
+            onOpenSocialSectionRequested_(menuIndex);
+        }
         return;
     }
 

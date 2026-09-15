@@ -49,6 +49,11 @@ std::vector<domain::SocialUser> SocialService::LoadBlockedUsers() const
         .value_or(std::vector<domain::SocialUser>{});
 }
 
+domain::SocialRelationshipState SocialService::LoadRelationshipState(int userId) const
+{
+    return api_.GetRelationshipState(userId);
+}
+
 std::optional<domain::SocialProfile> SocialService::LoadProfile(std::optional<int> userId) const
 {
     if (userId.has_value())

@@ -116,28 +116,43 @@ std::vector<MenuItem> PresencePresentationModel::BuildPlayerItems(
 std::vector<MenuItem> PresencePresentationModel::BuildActionItems(const PresenceSocialState& socialState)
 {
     std::vector<MenuItem> items;
-    items.push_back(socialState.isBlocked ? MenuItem{"unblock", wxString(L"Débloquer")} : MenuItem{"block", wxString(L"Bloquer")});
-    if (socialState.isFriend)
+    if (socialState.relationshipAvailable)
     {
-        items.push_back({"friend.remove", wxString(L"Retirer de mes amis")});
-    }
-    else if (socialState.incomingRequest)
-    {
-        items.push_back({"friend.accept", wxString(L"Accepter la demande d'ami")});
-        items.push_back({"friend.reject", wxString(L"Refuser la demande d'ami")});
-    }
-    else if (socialState.outgoingRequest)
-    {
-        items.push_back({"friend.cancel", wxString(L"Annuler ma demande d'ami")});
-    }
-    else
-    {
-        items.push_back({"friend.add", wxString(L"Ajouter en ami")});
+        items.push_back(socialState.isBlocked ? MenuItem{"unblock", wxString(L"Débloquer")} : MenuItem{"block", wxString(L"Bloquer")});
+        if (socialState.isFriend)
+        {
+            items.push_back({"friend.remove", wxString(L"Retirer de mes amis")});
+        }
+        else if (socialState.incomingRequest)
+        {
+            items.push_back({"friend.accept", wxString(L"Accepter la demande d'ami")});
+            items.push_back({"friend.reject", wxString(L"Refuser la demande d'ami")});
+        }
+        else if (socialState.outgoingRequest)
+        {
+            items.push_back({"friend.cancel", wxString(L"Annuler ma demande d'ami")});
+        }
+        else if (!socialState.blockedByTarget)
+        {
+            items.push_back({"friend.add", wxString(L"Ajouter en ami")});
+        }
     }
     items.push_back({"storybook", wxString(L"Voir son livre des contes")});
     items.push_back({"bio", wxString(L"Voir sa bio")});
     items.push_back({"message", wxString(L"Envoyer un message priv\u00E9")});
     return items;
+}
+
+std::vector<MenuItem> PresencePresentationModel::BuildSelfActionItems()
+{
+    return {
+        {"storybook", wxString(L"Voir mon livre des contes")},
+        {"social.friends", wxString(L"Voir mes amis")},
+        {"social.incoming", wxString(L"Voir mes demandes reçues")},
+        {"social.outgoing", wxString(L"Voir mes demandes envoyées")},
+        {"social.blocked", wxString(L"Voir mes utilisateurs bloqués")},
+        {"social.profile", wxString(L"Voir ou modifier mon profil")},
+    };
 }
 
 bool PresencePresentationModel::IsSelf(

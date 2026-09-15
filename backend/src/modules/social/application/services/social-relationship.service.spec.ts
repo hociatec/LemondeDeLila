@@ -63,6 +63,30 @@ describe('SocialRelationshipService', () => {
     });
   });
 
+  it('returns the relationship state for one target with one repository read', async () => {
+    const { service, relationships } = setup();
+    relationships.findRelationsBetween.mockResolvedValue([
+      pending,
+      {
+        ...pending,
+        id: 8,
+        status: 'blocked',
+        requester: bob,
+        addressee: alice,
+      },
+    ]);
+
+    await expect(service.getRelationshipState(1, 2)).resolves.toEqual({
+      isFriend: false,
+      isBlocked: false,
+      blockedByTarget: true,
+      outgoingRequest: true,
+      incomingRequest: false,
+    });
+    expect(relationships.findRelationsBetween).toHaveBeenCalledTimes(1);
+    expect(relationships.findRelationsBetween).toHaveBeenCalledWith(1, 2);
+  });
+
   it('recovers idempotently from a concurrent unique-pair failure', async () => {
     const { service, relationships, notifications } = setup();
     relationships.findRelationsBetween

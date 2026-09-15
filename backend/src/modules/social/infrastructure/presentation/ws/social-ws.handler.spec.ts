@@ -12,7 +12,16 @@ const session: WsSession = {
 
 async function fixture() {
   const profiles = { getProfile: jest.fn(), updateProfile: jest.fn() };
-  const relationships = { requestFriend: jest.fn() };
+  const relationships = {
+    requestFriend: jest.fn(),
+    getRelationshipState: jest.fn().mockResolvedValue({
+      isFriend: true,
+      isBlocked: false,
+      blockedByTarget: false,
+      outgoingRequest: false,
+      incomingRequest: false,
+    }),
+  };
   const module = await Test.createTestingModule({
     providers: [
       SocialWsHandler,
@@ -32,6 +41,15 @@ it('keeps the viewer and relationship actor distinct from the supplied target', 
   expect(profiles.getProfile).toHaveBeenLastCalledWith(7, 7);
   await handler.requestFriend(session, { userId: 42 });
   expect(relationships.requestFriend).toHaveBeenCalledWith(7, 42);
+  await expect(
+    handler.getRelationshipState(session, { userId: 42 }),
+  ).resolves.toEqual({
+    type: 'social.relationship.get',
+    payload: {
+      state: expect.objectContaining({ isFriend: true }),
+    },
+  });
+  expect(relationships.getRelationshipState).toHaveBeenCalledWith(7, 42);
 });
 
 it('rejects an injected profile owner and anonymous writes', async () => {

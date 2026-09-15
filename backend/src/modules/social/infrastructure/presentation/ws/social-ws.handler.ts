@@ -27,6 +27,16 @@ export class SocialWsHandler {
     return { type: WS_EVENTS.social.friendsList, payload: { items } };
   }
 
+  async getRelationshipState(session: WsSession, payload: unknown) {
+    const user = requireUser(session);
+    const dto = this.validator.validate(SocialUserIdDto, payload);
+    const state = await this.relationships.getRelationshipState(
+      user.id,
+      dto.userId,
+    );
+    return { type: WS_EVENTS.social.relationshipGet, payload: { state } };
+  }
+
   async listRequests(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const dto = this.validator.validate(SocialRequestListDto, payload);

@@ -69,6 +69,7 @@ public:
         std::size_t initialSelectedMenuIndex = 0);
     ~SocialFrame() override;
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
+    void OpenMenuIndex(std::size_t menuIndex);
 
 private:
     using Screen = SocialNavigationState::Screen;

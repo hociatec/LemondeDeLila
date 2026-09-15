@@ -32,6 +32,7 @@ export const WS_EVENTS = {
     get: 'users.get',
   },
   social: {
+    relationshipGet: 'social.relationship.get',
     friendsList: 'social.friends.list',
     friendsRequests: 'social.friends.requests',
     friendsBlocked: 'social.friends.blocked',

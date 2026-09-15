@@ -44,6 +44,15 @@ std::vector<domain::SocialUser> SocialApi::GetBlockedUsers() const
     return codec::ReadUsersPayload(event, response.payload);
 }
 
+domain::SocialRelationshipState SocialApi::GetRelationshipState(int userId) const
+{
+    const auto response = Send(
+        std::string(lila::shared::network::ws::types::social::RelationshipGet),
+        {{std::string(lila::modules::social::infrastructure::fields::UserId), userId}},
+        lila::shared::errors::SocialLoadRelationshipFailed);
+    return codec::ReadRelationshipStatePayload(response.payload);
+}
+
 bool SocialApi::RequestFriend(int userId) const
 {
     return Send(

@@ -8,6 +8,7 @@
 
 #include "modules/social/domain/SocialFriendRequest.h"
 #include "modules/social/domain/SocialProfile.h"
+#include "modules/social/domain/SocialRelationshipState.h"
 #include "modules/social/domain/SocialUser.h"
 #include "shared/network/application/realtime/RealtimeApiClient.h"
 
@@ -22,4 +23,6 @@ namespace lila::modules::social::infrastructure::codec
 [[nodiscard]] std::optional<domain::SocialProfile> ReadProfilePayload(
     const lila::shared::network::realtime::RealtimeApiResponse& response,
     const char* objectError);
+[[nodiscard]] domain::SocialRelationshipState ReadRelationshipStatePayload(
+    const nlohmann::json& payload);
 }

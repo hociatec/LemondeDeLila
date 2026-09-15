@@ -15,8 +15,10 @@ namespace lila::modules::presence::presentation
 {
 struct PresenceSocialState final
 {
+    bool relationshipAvailable = true;
     bool isFriend = false;
     bool isBlocked = false;
+    bool blockedByTarget = false;
     bool outgoingRequest = false;
     bool incomingRequest = false;
 };
@@ -30,6 +32,7 @@ public:
         const std::vector<domain::PresencePlayer>& players);
     [[nodiscard]] static std::vector<lila::shared::ui::controls::VerticalMenuItem> BuildActionItems(
         const PresenceSocialState& socialState);
+    [[nodiscard]] static std::vector<lila::shared::ui::controls::VerticalMenuItem> BuildSelfActionItems();
     [[nodiscard]] static bool IsSelf(
         const domain::PresencePlayer& player,
         const lila::modules::session::domain::Session& session);

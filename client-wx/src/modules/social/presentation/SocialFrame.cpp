@@ -38,6 +38,15 @@ namespace lila::modules::social::presentation
 {
 SocialFrame::~SocialFrame() = default;
 
+void SocialFrame::OpenMenuIndex(std::size_t menuIndex)
+{
+    navigationState_ = SocialNavigationState(menuIndex);
+    if (screenCoordinator_ != nullptr)
+    {
+        screenCoordinator_->ActivateMenuIndex(menuIndex);
+    }
+}
+
 SocialFrame::SocialFrame(
     wxWindow* parent,
     lila::modules::social::application::SocialService& socialService,
