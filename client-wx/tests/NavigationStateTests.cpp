@@ -49,8 +49,6 @@ int main()
         hasMaintenanceProtection = hasMaintenanceProtection || command.maintenanceToken;
     }
     assert(hasHttp && hasApiWs && hasNotifyWs && hasMaintenanceProtection);
-    for (const auto& section : lila::modules::admin::domain::GetAdminSections())
-        assert(!lila::modules::admin::domain::CommandsForSection(section.id).empty());
     const auto& adminAreas = lila::modules::admin::domain::GetAdminAreas();
     assert(adminAreas.size() == 16);
     assert(adminAreas.front().group == L"JEUX");

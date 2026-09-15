@@ -7,24 +7,6 @@
 
 namespace lila::modules::admin::domain
 {
-enum class AdminSection
-{
-    Dashboard,
-    Users,
-    Chat,
-    Contacts,
-    BugReports,
-    Rooms,
-    Games,
-    Bots,
-    MnemoQuiz,
-    Roles,
-    Settings,
-    Sounds,
-    Observability,
-    Maintenance,
-};
-
 enum class AdminTransport
 {
     ApiWebSocket,
@@ -38,7 +20,6 @@ struct AdminCommand final
 {
     AdminCommand(
         std::string commandId,
-        AdminSection commandSection,
         std::wstring commandLabel,
         std::wstring commandDescription,
         AdminTransport commandTransport,
@@ -47,8 +28,8 @@ struct AdminCommand final
         std::string defaultPayload = "{}",
         bool isDangerous = false,
         bool requiresMaintenanceToken = false)
-        : id(std::move(commandId)), section(commandSection),
-          label(std::move(commandLabel)), description(std::move(commandDescription)),
+        : id(std::move(commandId)), label(std::move(commandLabel)),
+          description(std::move(commandDescription)),
           transport(commandTransport), operation(std::move(commandOperation)),
           expectedResponseType(std::move(responseType)),
           payloadTemplate(std::move(defaultPayload)), dangerous(isDangerous),
@@ -57,7 +38,6 @@ struct AdminCommand final
     }
 
     std::string id;
-    AdminSection section = AdminSection::Dashboard;
     std::wstring label;
     std::wstring description;
     AdminTransport transport = AdminTransport::ApiWebSocket;
@@ -68,15 +48,6 @@ struct AdminCommand final
     bool maintenanceToken = false;
 };
 
-struct AdminSectionDescriptor final
-{
-    AdminSection id;
-    std::wstring_view label;
-    std::wstring_view description;
-};
-
 [[nodiscard]] const std::vector<AdminCommand>& GetAdminCommands();
-[[nodiscard]] const std::vector<AdminSectionDescriptor>& GetAdminSections();
-[[nodiscard]] std::vector<const AdminCommand*> CommandsForSection(AdminSection section);
 [[nodiscard]] const AdminCommand* FindAdminCommand(std::string_view id);
 }
