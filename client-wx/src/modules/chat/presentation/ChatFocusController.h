@@ -21,6 +21,7 @@ public:
 
     void BindNavigation(wxWindow& owner, std::function<bool()> historyActionModeProvider);
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildComposerPlan() const;
+    [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildHistoryPlan() const;
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFirstHistoryActionPlan() const;
 
 private:

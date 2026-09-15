@@ -57,6 +57,13 @@ lila::shared::accessibility::FocusManager::Plan ChatFocusController::BuildCompos
     return plan;
 }
 
+lila::shared::accessibility::FocusManager::Plan ChatFocusController::BuildHistoryPlan() const
+{
+    FocusManager::Plan plan;
+    plan.AddWindow(&history_);
+    return plan;
+}
+
 lila::shared::accessibility::FocusManager::Plan ChatFocusController::BuildFirstHistoryActionPlan() const
 {
     FocusManager::Plan plan;

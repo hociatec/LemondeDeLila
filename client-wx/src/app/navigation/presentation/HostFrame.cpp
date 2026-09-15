@@ -98,7 +98,15 @@ void HostFrame::OnActivate(wxActivateEvent& event)
         [weakThis]()
         {
             if (auto* frame = weakThis.get())
+            {
                 frame->RestoreContentFocusAfterActivation();
+                frame->CallAfter(
+                    [weakThis]()
+                    {
+                        if (auto* activeFrame = weakThis.get())
+                            activeFrame->RestoreContentFocusAfterActivation();
+                    });
+            }
         });
     event.Skip();
 }

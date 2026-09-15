@@ -15,7 +15,7 @@ describe('getErrorPayload', () => {
     ).toEqual({ code: 'ROOM_FORBIDDEN', params: { roomId: 2 } });
     expect(
       getErrorPayload(new BadRequestException('Payload invalide')),
-    ).toEqual({ message: 'Payload invalide' });
+    ).toEqual({ message: 'Payload invalide', statusCode: 400 });
   });
 
   it('never exposes infrastructure and server error details', () => {

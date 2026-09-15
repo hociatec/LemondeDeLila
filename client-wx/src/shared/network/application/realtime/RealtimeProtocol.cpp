@@ -151,7 +151,19 @@ RealtimeApiResponse ParseResponse(
 
     if (matchingError)
     {
-        response.errorKind = RealtimeErrorKind::Server;
+        const auto statusCodeIterator = response.payload.find(
+            lila::shared::network::realtime::fields::StatusCode.data());
+        if (statusCodeIterator != response.payload.end() && statusCodeIterator->is_number_integer())
+        {
+            const auto statusCode = statusCodeIterator->get<long long>();
+            if (statusCode >= 100 && statusCode <= 599)
+            {
+                response.statusCode = static_cast<unsigned long>(statusCode);
+            }
+        }
+        response.errorKind = response.statusCode == 401 || response.statusCode == 403
+            ? RealtimeErrorKind::Authentication
+            : RealtimeErrorKind::Server;
         response.errorMessage = lila::shared::data::json::ReadOptionalString(
             response.payload,
             lila::shared::network::realtime::fields::Message.data());

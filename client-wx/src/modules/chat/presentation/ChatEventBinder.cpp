@@ -25,12 +25,22 @@ void InvokeChatHandler(const std::function<void()>& handler)
 void ChatEventBinder::Bind(wxWindow& owner, Widgets widgets, Handlers handlers)
 {
     widgets.input.Bind(wxEVT_TEXT_ENTER, [send = handlers.send](wxCommandEvent&) { InvokeChatHandler(send); });
+    widgets.input.Bind(
+        wxEVT_SET_FOCUS,
+        [focused = handlers.inputFocused](wxFocusEvent& event)
+        {
+            InvokeChatHandler(focused);
+            event.Skip();
+        });
     widgets.history.Bind(
         wxEVT_SET_FOCUS,
-        [&history = widgets.history, changed = handlers.historySelectionChanged](wxFocusEvent& event)
+        [&history = widgets.history,
+         focused = handlers.historyFocused,
+         changed = handlers.historySelectionChanged](wxFocusEvent& event)
         {
             history.SetInsertionPointEnd();
             history.ShowPosition(history.GetLastPosition());
+            InvokeChatHandler(focused);
             InvokeChatHandler(changed);
             event.Skip();
         });

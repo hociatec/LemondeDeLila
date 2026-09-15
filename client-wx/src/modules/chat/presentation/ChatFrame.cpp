@@ -28,7 +28,9 @@ bool IsStartupStatus(const std::string& message)
 {
     return message == lila::shared::errors::ChatConnecting
         || message == lila::shared::errors::ChatAuthenticating
-        || message == lila::shared::errors::ChatLoadingData;
+        || message == lila::shared::errors::ChatLoadingData
+        || message == lila::shared::errors::ChatReconnecting
+        || message == lila::shared::errors::ChatReconnected;
 }
 }
 
@@ -110,7 +112,9 @@ lila::shared::accessibility::FocusManager::Plan ChatFrame::BuildFocusPlan()
         return focusController_->BuildFirstHistoryActionPlan();
     }
 
-    return focusController_->BuildComposerPlan();
+    return primaryFocusTarget_ == PrimaryFocusTarget::History
+        ? focusController_->BuildHistoryPlan()
+        : focusController_->BuildComposerPlan();
 }
 
 void ChatFrame::OpenForNavigation()
@@ -136,6 +140,7 @@ void ChatFrame::OpenForNavigation()
 
 void ChatFrame::ResetFocusToComposer()
 {
+    primaryFocusTarget_ = PrimaryFocusTarget::Composer;
     ClearNavigationHistory();
     isHistoryActionMode_ = false;
     selectedActionMessageId_.reset();

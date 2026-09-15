@@ -12,6 +12,7 @@ inline constexpr std::string_view ProtocolVersion = "protocolVersion";
 inline constexpr std::string_view ClientVersion = "clientVersion";
 inline constexpr std::string_view Success = "success";
 inline constexpr std::string_view Message = "message";
+inline constexpr std::string_view StatusCode = "statusCode";
 inline constexpr std::string_view Error = "error";
 inline constexpr std::string_view ErrorType = "error";
 }

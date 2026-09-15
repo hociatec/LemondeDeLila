@@ -48,6 +48,11 @@ bool WaitForDelay(std::stop_token stopToken, std::chrono::milliseconds delay)
 
     return stopToken.stop_requested();
 }
+
+bool IsAuthenticationRejection(unsigned long statusCode)
+{
+    return statusCode == 401 || statusCode == 403;
+}
 }
 
 void ChatService::StartReceiveLoop(std::uint64_t lifecycleGeneration)
@@ -111,15 +116,27 @@ void ChatService::ReceiveLoop(
                 }
                 catch (const lila::shared::network::http::WsTicketRequestError& reconnectError)
                 {
-                    SetState(domain::ChatState::Error);
-                    sessionStore_.Clear();
-                    SetStatus(
-                        std::string(lila::shared::errors::ChatReconnectionInterrupted)
-                        + " " + lila::shared::errors::ChatReconnectionTicketRejected
-                        + " " + std::to_string(reconnectError.StatusCode())
-                        + ").",
-                        true);
-                    return;
+                    if (IsAuthenticationRejection(reconnectError.StatusCode()))
+                    {
+                        SetState(domain::ChatState::Error);
+                        sessionStore_.Clear();
+                        SetStatus(
+                            std::string(lila::shared::errors::ChatReconnectionInterrupted)
+                            + " " + lila::shared::errors::ChatReconnectionTicketRejected
+                            + " " + std::to_string(reconnectError.StatusCode())
+                            + ").",
+                            true);
+                        return;
+                    }
+
+                    ++reconnectAttempt_;
+                    lila::shared::logging::LogWarning(
+                        "Chat",
+                        lila::shared::errors::WithDetails(
+                            lila::shared::errors::ChatReconnectionInterrupted,
+                            reconnectError.what()));
+                    SetState(domain::ChatState::Reconnecting);
+                    SetStatus(lila::shared::errors::ChatReconnecting, false);
                 }
                 catch (const std::exception& reconnectError)
                 {
