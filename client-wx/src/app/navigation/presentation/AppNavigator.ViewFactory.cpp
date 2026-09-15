@@ -74,7 +74,7 @@ wxWindow* AppNavigator::CreateCoreView(ViewId viewId)
             optionsStore_,
             [this]()
             {
-                chatService_.Close();
+                StopSessionChat();
                 ResetView(ViewId::Chat);
                 ShowSession(lastMainMenuSelection_);
             });

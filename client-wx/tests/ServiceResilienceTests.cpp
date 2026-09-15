@@ -45,6 +45,7 @@ int main()
         TestEnsureSuccessOrThrowClearsExpiredSession();
         TestChatServiceCloseInterruptsReceiveLoop();
         TestChatServiceReconnectsAfterTransientFailure();
+        TestChatServiceOpenIsIdempotent();
         TestChatServiceSendReportsTransportFailure();
         TestRoomSessionServiceReconnectsAndRepublishesState();
         TestGameSessionServiceReconnectsAndRepublishesState();

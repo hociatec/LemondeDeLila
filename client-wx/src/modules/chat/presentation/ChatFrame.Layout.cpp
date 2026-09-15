@@ -28,7 +28,7 @@ void ChatFrame::BuildLayout()
     statusLabel_ = new wxTextCtrl(
         headerPanel,
         wxID_ANY,
-        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatFrameOpeningMessage),
+        wxEmptyString,
         wxDefaultPosition,
         wxDefaultSize,
         wxTE_READONLY | wxTE_CENTER | wxBORDER_NONE);

@@ -80,6 +80,7 @@ void AppNavigator::OnLogoutRequested(std::size_t)
     lastMainMenuSelection_ = 0;
     audioService_.Play(lila::modules::audio::domain::SoundCue::ClientDisconnected);
     messagingOpenedFromSocial_ = false;
+    StopSessionChat();
     presenceMonitor_.Stop();
     roomInvitationMonitor_.Stop();
     if (invitationResponseTask_)
@@ -126,6 +127,7 @@ void AppNavigator::OnSessionExpired()
         "Session expired. Returning to authentication.");
     lastMainMenuSelection_ = 0;
     messagingOpenedFromSocial_ = false;
+    StopSessionChat();
     presenceMonitor_.Stop();
     roomInvitationMonitor_.Stop();
     if (invitationResponseTask_)

@@ -97,7 +97,6 @@ void ChatFrame::HandleEscape()
         return;
     }
 
-    chatService_.Close();
     RequestCloseToSession();
 }
 
