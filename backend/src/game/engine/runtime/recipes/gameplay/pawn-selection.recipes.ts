@@ -137,7 +137,9 @@ function requestPawnSelection<TState extends object>(
       player: playerId,
       options: groups.map((group) => group.id),
       label: (id) => groups.find((group) => group.id === id)?.label ?? id,
-      data: { pawnSelectionPlayerIds: [...playerIds] },
+      // A family assigns the player's complete set of pawns. It is therefore
+      // exposed as a pawn workflow just like a single-pawn selection.
+      data: { kind: 'pawn', pawnSelectionPlayerIds: [...playerIds] },
     });
     return;
   }

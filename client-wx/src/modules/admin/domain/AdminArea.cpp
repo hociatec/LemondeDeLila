@@ -27,7 +27,7 @@ const std::vector<AdminArea>& GetAdminAreas()
         {"notifications", L"COMMUNICATION", L"Notifications", L"Demandes adressées à l’équipe d’administration.",
          {"contacts.threads"}, "contacts.threads", AdminItemKind::Contact},
         {"reports", L"COMMUNICATION", L"Rapports de bug", L"Rapports regroupés par statut et commentaires.",
-         {"bugs.create", "bugs.list"}, "bugs.list", AdminItemKind::BugReport},
+         {"bugs.create"}, "bugs.list", AdminItemKind::BugReport},
         {"chat", L"OUTILS", L"Tchat (modération)", L"Messages, sanctions et paramètres du tchat.",
          {"chat.clear", "chat.settings.get", "chat.settings.update", "chat.messages"},
          "chat.messages", AdminItemKind::ChatMessage},
