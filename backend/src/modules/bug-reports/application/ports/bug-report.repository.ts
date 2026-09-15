@@ -25,7 +25,11 @@ export interface CreateBugReportCommentRecordInput {
 }
 
 export interface BugReportRepository {
-  list(options: { offset: number; limit: number }): Promise<BugReportRecord[]>;
+  list(options: {
+    offset: number;
+    limit: number;
+    search?: string;
+  }): Promise<BugReportRecord[]>;
   findById(id: string): Promise<BugReportRecord | null>;
   save(
     report: CreateBugReportRecordInput | BugReportRecord,

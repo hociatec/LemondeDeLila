@@ -128,6 +128,9 @@ int main()
     const auto bugPagination =
         lila::modules::admin::domain::GetAdminPaginationSpec("bugs.list");
     assert(bugPagination.mode == AdminPaginationMode::Offset);
+    const auto bugList = nlohmann::json::parse(findCommand("bugs.list").payloadTemplate);
+    assert(bugList.contains("search"));
+    assert(!lila::modules::admin::domain::IsAdminPaginationField("bugs.list", "search"));
     const auto roomPagination =
         lila::modules::admin::domain::GetAdminPaginationSpec("rooms.list");
     assert(roomPagination.mode == AdminPaginationMode::DisplayLimit);
@@ -199,6 +202,13 @@ int main()
     assert(userPresentation.entries[0].label == "1. Lila");
     assert(userPresentation.entries[1].details.find("Milo") != std::string::npos);
     assert(userPresentation.details == userPresentation.entries[0].details);
+    const auto reportPresentation = lila::modules::admin::presentation::
+        BuildAdminResultPresentation({{"reports", {{
+            {"id", "r1"}, {"subject", "Son coupé"}, {"status", "pending"},
+            {"createdByUsername", "Lila"}}}}});
+    assert(reportPresentation.summary == "Rapports : 1 élément.");
+    assert(reportPresentation.entries[0].label ==
+        "1. Son coupé — En attente — Lila");
 
     const auto emptyPresentation =
         lila::modules::admin::presentation::BuildAdminResultPresentation({

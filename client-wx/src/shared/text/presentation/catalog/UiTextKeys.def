@@ -8,7 +8,6 @@ LILA_UI_TEXT(RegistrationSuccessMessage, "Compte créé, vous pouvez vous connec
 LILA_UI_TEXT(KeyboardNavigationHint, "Flèches haut/bas : naviguer. Entrée : sélectionner. Échap : revenir.")
 LILA_UI_TEXT(ChatFrameTitle, "Tchat - %s")
 LILA_UI_TEXT(ChatFrameHeader, "Tchat")
-LILA_UI_TEXT(ChatFrameSubtitle, "Tchat global du client")
 LILA_UI_TEXT(ChatFrameOpeningMessage, "Ouverture du tchat...")
 LILA_UI_TEXT(ChatMessagesHeader, "Messages")
 LILA_UI_TEXT(ChatNoMessage, "Aucun message.")

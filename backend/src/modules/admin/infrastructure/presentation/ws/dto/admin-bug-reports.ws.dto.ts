@@ -36,6 +36,11 @@ export class AdminBugReportIdWsDto {
 
 export class AdminBugReportsListWsDto {
   @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  search?: string;
+
+  @IsOptional()
   @StrictIntegerInput()
   @IsInt()
   @Min(0)

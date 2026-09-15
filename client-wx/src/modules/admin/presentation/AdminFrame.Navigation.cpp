@@ -10,80 +10,11 @@
 #include <wx/panel.h>
 
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
-#include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/security/infrastructure/SecurityUtils.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
-#include "shared/ui/presentation/navigation/MenuBlueprint.h"
 
 namespace lila::modules::admin::presentation
 {
-void AdminFrame::BindEvents()
-{
-    lila::shared::ui::navigation::BindMenuHandlers(
-        *sectionsMenu_,
-        [this](std::size_t index)
-        {
-            selectedSection_ = index;
-            const auto& section = domain::GetAdminSections()[index];
-            SetStatus(wxString(section.description.data()));
-        },
-        [this](std::size_t index) { ShowCommands(index); });
-    sectionsMenu_->SetKeyHandler([this](int keyCode) { return HandleKey(keyCode); });
-    lila::shared::ui::navigation::BindMenuHandlers(
-        *commandsMenu_,
-        [this](std::size_t index)
-        {
-            if (index < visibleCommands_.size())
-            {
-                commandSelections_[selectedSection_] = index;
-                SetStatus(wxString(visibleCommands_[index]->description));
-            }
-        },
-        [this](std::size_t index) { ActivateCommand(index); });
-    commandsMenu_->SetKeyHandler([this](int keyCode) { return HandleKey(keyCode); });
-    lila::shared::ui::navigation::BindMenuHandlers(
-        *resultsMenu_,
-        [this](std::size_t index) { ShowResultDetails(index); },
-        [this](std::size_t index)
-        {
-            ShowResultDetails(index);
-            FocusResultDetails();
-        });
-    resultsMenu_->SetKeyHandler([this](int keyCode)
-    {
-        if (keyCode == WXK_ESCAPE)
-        {
-            FocusCurrentMenu();
-            return true;
-        }
-        if (keyCode == WXK_TAB)
-        {
-            if (paginationPanel_ != nullptr && paginationPanel_->IsShown())
-                FocusPagination();
-            else
-                FocusResultDetails();
-            return true;
-        }
-        return false;
-    });
-    previousPageButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { ChangePage(-1); });
-    nextPageButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { ChangePage(1); });
-    pageSizeChoice_->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) { ChangePageSize(); });
-    resultText_->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
-    {
-        const auto keyCode = event.GetKeyCode();
-        if (keyCode == WXK_ESCAPE || keyCode == WXK_TAB)
-        {
-            if (resultsMenu_->IsShown() && resultsMenu_->GetSelectedControl() != nullptr)
-                resultsMenu_->GetSelectedControl()->SetFocus();
-            else
-                FocusCurrentMenu();
-            return;
-        }
-        event.Skip();
-    });
-}
-
 void AdminFrame::ShowSections()
 {
     std::vector<lila::shared::ui::controls::VerticalMenuItem> items;
@@ -95,10 +26,17 @@ void AdminFrame::ShowSections()
     sectionsMenu_->SetSelectedIndexSilently(selectedSection_);
     sectionsMenu_->Show();
     commandsMenu_->Hide();
+    reportSearchPanel_->Hide();
+    reportActionsPanel_->Hide();
     paginationPanel_->Hide();
     paginationCommand_ = nullptr;
     paginationPayload_ = nlohmann::json::object();
     pageSizeChoices_.clear();
+    resultItems_.clear();
+    selectedResultIndex_.reset();
+    reportIdToRestore_.reset();
+    refreshBugReportsAfterCommand_ = false;
+    keepFocusAfterCommand_ = false;
     showingCommands_ = false;
     titleLabel_->SetLabel(wxString(L"Administration"));
     SetStatus(wxString(sections[selectedSection_].description.data()));
@@ -111,6 +49,14 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
     if (loading_ || sectionIndex >= domain::GetAdminSections().size()) return;
     selectedSection_ = sectionIndex;
     visibleCommands_ = domain::CommandsForSection(domain::GetAdminSections()[sectionIndex].id);
+    const bool bugReports = domain::GetAdminSections()[sectionIndex].id ==
+        domain::AdminSection::BugReports;
+    if (bugReports)
+        std::erase_if(visibleCommands_, [](const domain::AdminCommand* command)
+        {
+            return command->id == "bugs.get" || command->id == "bugs.update" ||
+                command->id == "bugs.delete";
+        });
     std::vector<lila::shared::ui::controls::VerticalMenuItem> items;
     items.reserve(visibleCommands_.size());
     for (const auto* command : visibleCommands_)
@@ -130,15 +76,20 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         wxString(L"\n\nChoisissez une opération dans la liste. Son formulaire métier s’ouvrira avec les champs adaptés."));
     resultSummaryLabel_->SetLabel(wxString(L"Aide de la rubrique"));
     resultsMenu_->Hide();
+    reportSearchPanel_->Show(bugReports);
+    reportActionsPanel_->Hide();
     paginationPanel_->Hide();
     paginationCommand_ = nullptr;
     paginationPayload_ = nlohmann::json::object();
     pageSizeChoices_.clear();
     resultDetails_.clear();
+    resultItems_.clear();
+    selectedResultIndex_.reset();
     SetStatus(items.empty() ? wxString(L"Aucune action disponible.") :
         wxString(visibleCommands_[commandsMenu_->GetSelectedIndex()]->description));
     Layout();
     FocusCurrentMenu();
+    if (bugReports) RefreshBugReports(true);
 }
 
 bool AdminFrame::HandleKey(int keyCode)

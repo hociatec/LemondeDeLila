@@ -16,6 +16,7 @@ export interface AdminBugReportsPort {
   list(options: {
     offset?: number;
     limit?: number;
+    search?: string;
   }): Promise<BugReportRecord[]>;
   get(id: string): Promise<BugReportRecord | null>;
   update(

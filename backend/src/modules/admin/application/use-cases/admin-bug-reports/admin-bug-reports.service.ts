@@ -43,10 +43,17 @@ export class AdminBugReportsService {
     });
   }
 
-  async list(options: { offset?: number; limit?: number } = {}) {
+  async list(
+    options: { offset?: number; limit?: number; search?: string } = {},
+  ) {
     const offset = normalizeOffset(options.offset);
     const limit = normalizeLimit(options.limit);
-    const items = await this.bugReports.list({ offset, limit });
+    const search = normalizeSearch(options.search);
+    const items = await this.bugReports.list({
+      offset,
+      limit,
+      ...(search ? { search } : {}),
+    });
     const counts = await this.bugReports.countComments(
       items.map((item) => item.id),
     );
@@ -157,4 +164,8 @@ function normalizeLimit(value: unknown): number {
   return Number.isSafeInteger(value) && (value as number) > 0
     ? Math.min(100, value as number)
     : 50;
+}
+
+function normalizeSearch(value: unknown): string {
+  return typeof value === 'string' ? value.trim().slice(0, 200) : '';
 }

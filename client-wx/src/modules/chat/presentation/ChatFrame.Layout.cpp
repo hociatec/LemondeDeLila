@@ -25,10 +25,6 @@ void ChatFrame::BuildLayout()
         headerPanel,
         wxID_ANY,
         lila::shared::text::FromUtf8(lila::shared::text::ui::ChatFrameHeader));
-    auto* subtitleLabel = new wxStaticText(
-        headerPanel,
-        wxID_ANY,
-        lila::shared::text::FromUtf8(lila::shared::text::ui::ChatFrameSubtitle));
     statusLabel_ = new wxTextCtrl(
         headerPanel,
         wxID_ANY,
@@ -37,9 +33,7 @@ void ChatFrame::BuildLayout()
         wxDefaultSize,
         wxTE_READONLY | wxTE_CENTER | wxBORDER_NONE);
     titleLabel->Hide();
-    subtitleLabel->Hide();
     headerSizer->Add(titleLabel, 0, wxALIGN_CENTER_HORIZONTAL);
-    headerSizer->Add(subtitleLabel, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 4);
     headerSizer->Add(statusLabel_, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP, 6);
     headerPanel->SetSizer(headerSizer);
 

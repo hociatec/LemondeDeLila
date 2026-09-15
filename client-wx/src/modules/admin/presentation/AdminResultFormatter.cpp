@@ -20,13 +20,14 @@ std::string Humanize(std::string_view key)
         {"updatedAt", "Modifié le"}, {"roles", "Rôles"}, {"total", "Total"},
         {"ok", "Succès"}, {"error", "Erreur"}, {"items", "Éléments"},
         {"users", "Utilisateurs"}, {"rooms", "Salles"}, {"messages", "Messages"},
-        {"games", "Jeux"}, {"categories", "Catégories"},
+        {"games", "Jeux"}, {"reports", "Rapports"}, {"categories", "Catégories"},
         {"questions", "Questions"}, {"definitions", "Définitions"},
         {"roles", "Rôles"}, {"permissions", "Permissions"},
         {"events", "Événements"}, {"sections", "Fils de contact"},
         {"names", "Noms de bots"}, {"page", "Page"}, {"limit", "Par page"},
         {"content", "Contenu"}, {"reason", "Motif"},
         {"bannedUntil", "Banni jusqu’au"}, {"createdBy", "Créé par"},
+        {"createdByUsername", "Auteur"}, {"commentsCount", "Commentaires"},
         {"activePlayers", "Joueurs connectés"}, {"botsCount", "Nombre de bots"},
         {"gameType", "Type de jeu"}, {"isPrivate", "Salle privée"},
         {"maxPlayers", "Nombre maximal de joueurs"},
@@ -128,12 +129,25 @@ std::string ItemTitle(const nlohmann::json& value, std::size_t index)
 {
     constexpr std::string_view Keys[]{"username", "name", "title", "subject", "id", "type"};
     if (value.is_object())
+    {
+        const auto subject = value.find("subject");
+        const auto status = value.find("status");
+        if (subject != value.end() && subject->is_string() &&
+            status != value.end() && status->is_string())
+        {
+            auto title = Scalar(*subject) + " — " + ScalarForKey("status", *status);
+            const auto author = value.find("createdByUsername");
+            if (author != value.end() && author->is_string())
+                title += " — " + Scalar(*author);
+            return title;
+        }
         for (const auto key : Keys)
         {
             const auto found = value.find(key);
             if (found != value.end() && (found->is_string() || found->is_number()))
                 return Scalar(*found);
         }
+    }
     if (value.is_primitive()) return Scalar(value);
     return "Élément " + std::to_string(index + 1);
 }
@@ -145,7 +159,7 @@ std::pair<std::string_view, const nlohmann::json*> FindPrimaryList(
     if (!payload.is_object()) return {{}, nullptr};
     constexpr std::string_view Keys[]{
         "items", "users", "rooms", "messages", "games", "categories",
-        "questions", "definitions", "roles", "events", "sections", "names"};
+        "questions", "definitions", "roles", "events", "sections", "names", "reports"};
     for (const auto key : Keys)
     {
         const auto found = payload.find(key);
