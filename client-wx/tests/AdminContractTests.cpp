@@ -9,7 +9,6 @@
 #include "modules/admin/infrastructure/AdminPayloadValidator.h"
 #include "modules/admin/presentation/AdminResultFormatter.h"
 #include "shared/network/application/http/AuthenticatedHttpClient.h"
-
 int main()
 {
     using lila::modules::admin::domain::GetAdminCommands;
@@ -24,7 +23,6 @@ int main()
     assert(normalizedList[0]["status"] == "refused");
     assert(lila::shared::network::http::UrlEncode("Table Ambiance/1") ==
         "Table%20Ambiance%2F1");
-
     const auto findCommand = [](std::string_view id) -> const auto&
     {
         const auto& commands = GetAdminCommands();
@@ -82,7 +80,6 @@ int main()
         "users.update", "username");
     assert(optionalUsername.optional);
     assert(!optionalUsername.includedByDefault);
-
     const auto userStatus = lila::modules::admin::domain::GetAdminFieldMetadata(
         "users.list", "status");
     assert(userStatus.choices == std::vector<std::string>({"all", "active", "banned"}));
@@ -96,7 +93,6 @@ int main()
         "mnemo.question.update", "status");
     assert(mnemoStatus.choices ==
         std::vector<std::string>({"validated", "pending", "to_edit", "trash"}));
-
     const auto userCreate = nlohmann::json::parse(findCommand("users.create").payloadTemplate);
     assert(userCreate.contains("password"));
     assert(userCreate.contains("avatar"));
@@ -140,7 +136,6 @@ int main()
     assert(gamesUpdate.contains("rules"));
     const auto rolesUpdate = nlohmann::json::parse(findCommand("roles.update").payloadTemplate);
     assert(rolesUpdate.contains("newName"));
-
     const auto questionFilters = nlohmann::json::parse(
         findCommand("mnemo.questions").payloadTemplate);
     assert(questionFilters.contains("categoryId"));
@@ -155,7 +150,6 @@ int main()
         "mnemo.questions", "categoryId").optional);
     assert(lila::modules::admin::domain::GetAdminFieldMetadata(
         "mnemo.questions", "status").optional);
-
     const auto missingUsername = lila::modules::admin::domain::ValidateAdminFormPayload(
         "users.create", {{"email", "admin@example.test"}, {"username", "   "}});
     assert(missingUsername.has_value());
