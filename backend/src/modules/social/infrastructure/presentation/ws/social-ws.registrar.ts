@@ -11,6 +11,10 @@ export class SocialWsRegistrar implements OnModuleInit {
   ) {}
 
   onModuleInit() {
+    this.registry.register(
+      WS_EVENTS.social.relationshipGet,
+      (session, payload) => this.handler.getRelationshipState(session, payload),
+    );
     this.registry.register(WS_EVENTS.social.friendsList, (session, _payload) =>
       this.handler.listFriends(session),
     );

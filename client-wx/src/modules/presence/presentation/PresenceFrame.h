@@ -29,6 +29,7 @@ public:
     using CloseRequestedHandler = std::function<void()>;
     using ExitRequestedHandler = std::function<void()>;
     using OpenStoryBookRequestedHandler = std::function<void(int userId, std::string username)>;
+    using OpenSocialSectionRequestedHandler = std::function<void(std::size_t menuIndex)>;
 
     PresenceFrame(
         wxWindow* parent,
@@ -37,6 +38,7 @@ public:
         lila::modules::messaging::application::MessagingService& messagingService,
         lila::modules::session::application::SessionStore& sessionStore,
         OpenStoryBookRequestedHandler onOpenStoryBookRequested,
+        OpenSocialSectionRequestedHandler onOpenSocialSectionRequested,
         CloseRequestedHandler onCloseRequested,
         ExitRequestedHandler onExitRequested);
     ~PresenceFrame() override;
@@ -74,6 +76,7 @@ private:
     lila::modules::session::application::SessionStore& sessionStore_;
     std::unique_ptr<class PresenceActionController> actionController_;
     OpenStoryBookRequestedHandler onOpenStoryBookRequested_;
+    OpenSocialSectionRequestedHandler onOpenSocialSectionRequested_;
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
     wxStaticText* titleLabel_ = nullptr;

@@ -8,6 +8,7 @@
 
 #include "modules/social/domain/SocialFriendRequest.h"
 #include "modules/social/domain/SocialProfile.h"
+#include "modules/social/domain/SocialRelationshipState.h"
 #include "modules/social/domain/SocialUser.h"
 #include "modules/social/application/ISocialGateway.h"
 #include "shared/network/application/realtime/RealtimeApiClient.h"
@@ -34,6 +35,7 @@ public:
     [[nodiscard]] std::vector<domain::SocialUser> GetFriends() const override;
     [[nodiscard]] std::vector<domain::SocialFriendRequest> GetRequests(const std::string& direction) const override;
     [[nodiscard]] std::vector<domain::SocialUser> GetBlockedUsers() const override;
+    [[nodiscard]] domain::SocialRelationshipState GetRelationshipState(int userId) const override;
     [[nodiscard]] bool RequestFriend(int userId) const override;
     [[nodiscard]] bool AcceptFriend(int userId) const override;
     [[nodiscard]] bool RejectFriend(int userId) const override;

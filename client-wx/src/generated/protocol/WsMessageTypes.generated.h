@@ -49,6 +49,7 @@ inline constexpr std::string_view Get = "users.get";
 
 namespace social
 {
+inline constexpr std::string_view RelationshipGet = "social.relationship.get";
 inline constexpr std::string_view FriendsList = "social.friends.list";
 inline constexpr std::string_view FriendsRequests = "social.friends.requests";
 inline constexpr std::string_view FriendsBlocked = "social.friends.blocked";

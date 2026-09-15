@@ -169,6 +169,7 @@
             "social.friends.unblock",
             "social.profile.get",
             "social.profile.update",
+            "social.relationship.get",
             "social.user.search",
             "users.get",
             "users.list"
@@ -338,6 +339,7 @@
                   "social.friends.unblock",
                   "social.profile.get",
                   "social.profile.update",
+                  "social.relationship.get",
                   "social.user.search",
                   "users.get",
                   "users.list"

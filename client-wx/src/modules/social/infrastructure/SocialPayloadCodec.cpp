@@ -125,4 +125,20 @@ std::optional<domain::SocialProfile> ReadProfilePayload(
             return ReadProfile(profile);
         });
 }
+
+domain::SocialRelationshipState ReadRelationshipStatePayload(
+    const nlohmann::json& payload)
+{
+    const auto& state = ReadRequiredObjectStrict(
+        payload,
+        lila::modules::social::infrastructure::fields::RelationshipState.data(),
+        lila::shared::errors::SocialRelationshipStateMustBeObject);
+    return {
+        ReadRequiredBool(state, lila::modules::social::infrastructure::fields::RelationshipIsFriend.data()),
+        ReadRequiredBool(state, lila::modules::social::infrastructure::fields::RelationshipIsBlocked.data()),
+        ReadRequiredBool(state, lila::modules::social::infrastructure::fields::RelationshipBlockedByTarget.data()),
+        ReadRequiredBool(state, lila::modules::social::infrastructure::fields::RelationshipOutgoingRequest.data()),
+        ReadRequiredBool(state, lila::modules::social::infrastructure::fields::RelationshipIncomingRequest.data()),
+    };
+}
 }

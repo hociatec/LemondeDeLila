@@ -6,6 +6,7 @@
 
 #include "modules/social/domain/SocialFriendRequest.h"
 #include "modules/social/domain/SocialProfile.h"
+#include "modules/social/domain/SocialRelationshipState.h"
 #include "modules/social/domain/SocialUser.h"
 
 namespace lila::modules::social::application
@@ -17,6 +18,7 @@ public:
     [[nodiscard]] virtual std::vector<domain::SocialUser> GetFriends() const = 0;
     [[nodiscard]] virtual std::vector<domain::SocialFriendRequest> GetRequests(const std::string& direction) const = 0;
     [[nodiscard]] virtual std::vector<domain::SocialUser> GetBlockedUsers() const = 0;
+    [[nodiscard]] virtual domain::SocialRelationshipState GetRelationshipState(int userId) const = 0;
     [[nodiscard]] virtual bool RequestFriend(int userId) const = 0;
     [[nodiscard]] virtual bool AcceptFriend(int userId) const = 0;
     [[nodiscard]] virtual bool RejectFriend(int userId) const = 0;

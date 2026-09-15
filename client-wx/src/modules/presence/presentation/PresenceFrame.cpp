@@ -22,6 +22,7 @@ PresenceFrame::PresenceFrame(
     lila::modules::messaging::application::MessagingService& messagingService,
     lila::modules::session::application::SessionStore& sessionStore,
     OpenStoryBookRequestedHandler onOpenStoryBookRequested,
+    OpenSocialSectionRequestedHandler onOpenSocialSectionRequested,
     CloseRequestedHandler onCloseRequested,
     ExitRequestedHandler onExitRequested)
     : lila::shared::accessibility::NonFocusablePanel(parent, 0),
@@ -29,6 +30,7 @@ PresenceFrame::PresenceFrame(
       sessionStore_(sessionStore),
       actionController_(std::make_unique<PresenceActionController>(socialService, messagingService)),
       onOpenStoryBookRequested_(std::move(onOpenStoryBookRequested)),
+      onOpenSocialSectionRequested_(std::move(onOpenSocialSectionRequested)),
       onCloseRequested_(std::move(onCloseRequested)),
       onExitRequested_(std::move(onExitRequested))
 {

@@ -4,6 +4,7 @@
 
 #include "modules/presence/presentation/PresencePresentationModel.h"
 #include "modules/session/application/SessionStore.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
 #include "shared/accessibility/application/NavigationController.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
@@ -44,7 +45,15 @@ void PresenceFrame::ActivatePlayer()
     }
     if (IsSelf(*player))
     {
-        detailsLabel_->SetLabel(wxString(L"Ceci est votre propre profil de presence."));
+        selectedPlayer_ = *player;
+        socialState_.reset();
+        page_ = Page::Actions;
+        titleLabel_->SetLabel(PresencePresentationModel::BuildPlayerLabel(*player));
+        menu_->SetItems(PresencePresentationModel::BuildSelfActionItems());
+        menu_->SetSelectedIndexSilently(0);
+        detailsLabel_->SetLabel(wxEmptyString);
+        UpdateStatus(wxString(L"Flèches : naviguer. Entrée : sélectionner. Échap : retour."));
+        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
         return;
     }
     selectedPlayer_ = *player;

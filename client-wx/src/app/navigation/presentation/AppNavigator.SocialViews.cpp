@@ -66,6 +66,16 @@ wxWindow* AppNavigator::CreateSocialView(ViewId viewId)
             {
                 ShowUserStoryBook(userId, std::move(username), ViewId::Presence);
             },
+            [this](std::size_t menuIndex)
+            {
+                lastSocialMenuSelection_ = menuIndex;
+                auto* view = GetOrCreateView(ViewId::Social);
+                if (auto* social = dynamic_cast<modules::social::presentation::SocialFrame*>(view))
+                {
+                    social->OpenMenuIndex(menuIndex);
+                }
+                ReplaceView(ViewId::Social, view);
+            },
             [this]() { ReplaceView(previousViewBeforePresence_, GetOrCreateView(previousViewBeforePresence_)); },
             [this]() { CloseApplication(); });
     default:
