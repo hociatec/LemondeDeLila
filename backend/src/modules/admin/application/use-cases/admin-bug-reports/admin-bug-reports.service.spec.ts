@@ -17,8 +17,18 @@ describe('AdminBugReportsService', () => {
   it('enriches list items with commentsCount', async () => {
     const deps = createDeps();
     deps.list.mockResolvedValue([
-      { id: 'r1', subject: 'A' },
-      { id: 'r2', subject: 'B' },
+      {
+        id: 'r1',
+        subject: 'A',
+        createdAt: new Date('2026-08-20T10:00:00.000Z'),
+        updatedAt: new Date('2026-08-21T10:00:00.000Z'),
+      },
+      {
+        id: 'r2',
+        subject: 'B',
+        createdAt: new Date('2026-08-22T10:00:00.000Z'),
+        updatedAt: new Date('2026-08-23T10:00:00.000Z'),
+      },
     ]);
     deps.countComments.mockResolvedValue({ r1: 3 });
     const service = new AdminBugReportsService(deps as any);
@@ -31,8 +41,20 @@ describe('AdminBugReportsService', () => {
       search: 'audio',
     });
     expect(result).toEqual([
-      { id: 'r1', subject: 'A', commentsCount: 3 },
-      { id: 'r2', subject: 'B', commentsCount: 0 },
+      {
+        id: 'r1',
+        subject: 'A',
+        commentsCount: 3,
+        createdAt: '2026-08-20T10:00:00.000Z',
+        updatedAt: '2026-08-21T10:00:00.000Z',
+      },
+      {
+        id: 'r2',
+        subject: 'B',
+        commentsCount: 0,
+        createdAt: '2026-08-22T10:00:00.000Z',
+        updatedAt: '2026-08-23T10:00:00.000Z',
+      },
     ]);
   });
 

@@ -150,6 +150,12 @@ int main()
         findCommand("mnemo.questions").payloadTemplate);
     assert(questionFilters.contains("categoryId"));
     assert(questionFilters.contains("status"));
+    assert(questionFilters["offset"] == 0);
+    assert(questionFilters["limit"] == 50);
+    const auto mnemoPagination =
+        lila::modules::admin::domain::GetAdminPaginationSpec("mnemo.questions");
+    assert(mnemoPagination.mode == AdminPaginationMode::Offset);
+    assert(mnemoPagination.maximumPageSize == 100);
     assert(lila::modules::admin::domain::GetAdminFieldMetadata(
         "mnemo.questions", "categoryId").optional);
     assert(lila::modules::admin::domain::GetAdminFieldMetadata(

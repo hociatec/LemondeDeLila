@@ -6,9 +6,13 @@ export interface AdminGameCategoriesPort {
   ): Promise<void>;
   assignCategory(gameType: string, categoryId: string | null): Promise<void>;
   deleteCategory(id: string): Promise<void>;
-  getAssignment(gameType: string): string | null | undefined;
-  getCategories(): unknown;
-  listAssignments(): unknown;
+  getAssignment(gameType: string): Promise<string | null | undefined>;
+  getCategories(): Promise<
+    Array<{ id: string; name: string; parentId: string | null }>
+  >;
+  listAssignments(): Promise<
+    Array<{ gameType: string; categoryId: string | null }>
+  >;
 }
 
 export const ADMIN_GAME_CATEGORIES_PORT = Symbol('ADMIN_GAME_CATEGORIES_PORT');

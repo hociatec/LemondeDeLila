@@ -4,13 +4,23 @@ import { AdminBugReportCommentsService } from './admin-bug-report-comments.servi
 describe('AdminBugReportCommentsService', () => {
   it('lists comments for a report', async () => {
     const bugReports = {
-      listComments: jest.fn().mockResolvedValue([{ id: 'c1' }]),
+      listComments: jest.fn().mockResolvedValue([
+        {
+          id: 'c1',
+          createdAt: new Date('2026-08-20T10:00:00.000Z'),
+        },
+      ]),
       addComment: jest.fn(),
       countComments: jest.fn(),
     };
     const service = new AdminBugReportCommentsService(bugReports as any);
 
-    await expect(service.list('r1')).resolves.toEqual([{ id: 'c1' }]);
+    await expect(service.list('r1')).resolves.toEqual([
+      {
+        id: 'c1',
+        createdAt: '2026-08-20T10:00:00.000Z',
+      },
+    ]);
     expect(bugReports.listComments).toHaveBeenCalledWith('r1', {
       offset: 0,
       limit: 50,
@@ -43,7 +53,10 @@ describe('AdminBugReportCommentsService', () => {
   it('returns the created comment with updated count', async () => {
     const bugReports = {
       listComments: jest.fn(),
-      addComment: jest.fn().mockResolvedValue({ id: 'c1' }),
+      addComment: jest.fn().mockResolvedValue({
+        id: 'c1',
+        createdAt: new Date('2026-08-20T10:00:00.000Z'),
+      }),
       countComments: jest.fn().mockResolvedValue({ r1: 4 }),
     };
     const service = new AdminBugReportCommentsService(bugReports as any);
@@ -56,7 +69,7 @@ describe('AdminBugReportCommentsService', () => {
         createdByUsername: 'admin',
       }),
     ).resolves.toEqual({
-      comment: { id: 'c1' },
+      comment: { id: 'c1', createdAt: '2026-08-20T10:00:00.000Z' },
       reportId: 'r1',
       commentsCount: 4,
     });

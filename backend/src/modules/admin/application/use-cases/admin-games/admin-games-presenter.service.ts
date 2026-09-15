@@ -24,9 +24,13 @@ export class AdminGamesPresenterService {
   ) {}
 
   async buildGamesPayload() {
-    const games = await this.registry.listGames({
-      includeDisabledOverrides: true,
-    });
+    const [games, assignments] = await Promise.all([
+      this.registry.listGames({ includeDisabledOverrides: true }),
+      this.categories.listAssignments(),
+    ]);
+    const categoryByGame = new Map(
+      assignments.map(({ gameType, categoryId }) => [gameType, categoryId]),
+    );
 
     const payload = games
       .map((game) => {
@@ -45,7 +49,7 @@ export class AdminGamesPresenterService {
               ? game.chatSoundsEnabled
               : true;
         const status = override?.status ?? 'finished';
-        const categoryId = this.categories.getAssignment(game.id);
+        const categoryId = categoryByGame.get(game.id);
 
         return {
           id: game.id,
@@ -68,10 +72,14 @@ export class AdminGamesPresenterService {
     return { games: payload };
   }
 
-  buildCategoriesPayload() {
+  async buildCategoriesPayload() {
+    const [categories, assignments] = await Promise.all([
+      this.categories.getCategories(),
+      this.categories.listAssignments(),
+    ]);
     return {
-      categories: this.categories.getCategories(),
-      assignments: this.categories.listAssignments(),
+      categories,
+      assignments,
     };
   }
 }

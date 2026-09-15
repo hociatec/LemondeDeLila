@@ -50,6 +50,13 @@ void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
             "req-1",
             "vault.restore"),
         "L'erreur d'une autre requete doit etre ignoree");
+    Expect(
+        lila::shared::network::realtime::protocol::IsResponseForRequest(
+            R"({"type":"notify.admin_contact.error","requestId":"req-contact","payload":{"message":"Contact introuvable"}})",
+            "req-contact",
+            "notify.admin_contact.reply",
+            "notify.admin_contact.sent"),
+        "Une erreur metier typee et correlee doit terminer la requete");
 
     const auto response = lila::shared::network::realtime::protocol::ParseResponse(
         R"({"type":"response.type","requestId":"req-1","success":true,"payload":{"ok":true}})",
@@ -75,6 +82,21 @@ void TestRealtimeProtocolStrictCorrelationAndPayloadValidation()
         errorResponse.errorKind == lila::shared::network::realtime::RealtimeErrorKind::Server,
         "Erreur serveur attendue");
     Expect(errorResponse.errorMessage == "Session expiree", "Message d'erreur attendu");
+
+    const auto typedErrorResponse =
+        lila::shared::network::realtime::protocol::ParseResponse(
+            R"({"type":"notify.admin_contact.error","requestId":"req-contact","payload":{"message":"Contact introuvable"}})",
+            "req-contact",
+            "notify.admin_contact.reply",
+            "notify.admin_contact.sent");
+    Expect(!typedErrorResponse.success, "Echec metier type attendu");
+    Expect(
+        typedErrorResponse.errorKind ==
+            lila::shared::network::realtime::RealtimeErrorKind::Server,
+        "Erreur serveur typee attendue");
+    Expect(
+        typedErrorResponse.errorMessage == "Contact introuvable",
+        "Message d'erreur metier type attendu");
 
     bool threw = false;
     try

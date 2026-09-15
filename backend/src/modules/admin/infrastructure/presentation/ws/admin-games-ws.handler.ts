@@ -30,12 +30,12 @@ export class AdminGamesWsHandler {
     };
   }
 
-  gamesCategoriesList(session: WsSession, payload: unknown) {
+  async gamesCategoriesList(session: WsSession, payload: unknown) {
     requireAdmin(session);
     this.validator.validate(AdminGameCategoriesListWsDto, payload ?? {});
     return {
       type: WS_EVENTS.admin.games.categories,
-      payload: this.games.listCategories(),
+      payload: await this.games.listCategories(),
     };
   }
 

@@ -18,6 +18,12 @@ const std::string& ResolveExpectedResponseType(
 {
     return responseType.empty() ? requestType : responseType;
 }
+
+bool IsTypedErrorResponse(const std::string& type)
+{
+    constexpr std::string_view Suffix = ".error";
+    return type.size() > Suffix.size() && type.ends_with(Suffix);
+}
 }
 
 namespace lila::shared::network::realtime::protocol
@@ -78,8 +84,10 @@ bool IsResponseForRequest(
         decoded, lila::shared::network::realtime::fields::Context.data());
     const bool matchingType = !expectedRequestType.empty()
         && type == ResolveExpectedResponseType(expectedRequestType, expectedResponseType);
-    const bool matchingError = type == lila::shared::network::realtime::fields::ErrorType
-        && context == expectedRequestType;
+    const bool matchingError =
+        (type == lila::shared::network::realtime::fields::ErrorType &&
+         context == expectedRequestType) ||
+        IsTypedErrorResponse(type);
     return !requestId.empty() && requestId == expectedRequestId &&
         (matchingType || matchingError);
 }
@@ -111,8 +119,10 @@ RealtimeApiResponse ParseResponse(
         decoded, lila::shared::network::realtime::fields::Context.data());
     const bool matchingType = !expectedRequestType.empty()
         && response.type == ResolveExpectedResponseType(expectedRequestType, expectedResponseType);
-    const bool matchingError = response.type == lila::shared::network::realtime::fields::ErrorType
-        && context == expectedRequestType;
+    const bool matchingError =
+        (response.type == lila::shared::network::realtime::fields::ErrorType &&
+         context == expectedRequestType) ||
+        IsTypedErrorResponse(response.type);
     if (!matchingType && !matchingError)
     {
         throw RealtimeProtocolError(lila::shared::errors::InvalidRealtimeResponse);
@@ -139,7 +149,7 @@ RealtimeApiResponse ParseResponse(
         response.payload = *payloadIterator;
     }
 
-    if (response.type == std::string(lila::shared::network::realtime::fields::ErrorType))
+    if (matchingError)
     {
         response.errorKind = RealtimeErrorKind::Server;
         response.errorMessage = lila::shared::data::json::ReadOptionalString(

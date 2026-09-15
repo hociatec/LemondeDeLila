@@ -28,4 +28,24 @@ describe('AdminBotsService', () => {
       ],
     });
   });
+
+  it('serializes database dates before sending them over WebSocket', async () => {
+    const bots = {
+      listNames: jest.fn(async () => [
+        {
+          id: 1,
+          name: 'Alpha',
+          enabled: true,
+          createdAt: new Date('2026-08-20T10:00:00.000Z'),
+        },
+      ]),
+    };
+    const service = new AdminBotsService(bots as any);
+
+    await expect(service.listNames()).resolves.toEqual({
+      names: [
+        expect.objectContaining({ createdAt: '2026-08-20T10:00:00.000Z' }),
+      ],
+    });
+  });
 });

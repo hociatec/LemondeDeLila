@@ -53,6 +53,18 @@ export class AdminMnemoQuizQuestionsListWsDto {
   @IsOptional()
   @IsIn(['validated', 'pending', 'to_edit', 'trash'])
   status?: 'validated' | 'pending' | 'to_edit' | 'trash';
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(10_000_000)
+  offset?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
 }
 
 export class AdminMnemoQuizQuestionCreateWsDto {

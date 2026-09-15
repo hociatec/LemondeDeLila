@@ -26,7 +26,8 @@ struct AdminPaginationSpec final
 {
     if (commandId == "users.list")
         return {AdminPaginationMode::PageNumber, 20, 100};
-    if (commandId == "bugs.list" || commandId == "bugs.comments")
+    if (commandId == "bugs.list" || commandId == "bugs.comments" ||
+        commandId == "mnemo.questions")
         return {AdminPaginationMode::Offset, 50, 100};
     if (commandId == "rooms.list" || commandId == "rooms.joinable" ||
         commandId == "dashboard.rooms")
