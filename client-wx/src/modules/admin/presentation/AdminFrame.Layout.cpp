@@ -49,21 +49,13 @@ void AdminFrame::BuildLayout()
         reportSearchPanel_, wxID_ANY, wxString(L"Nouveau rapport"));
     reportStatusFilter_ = new wxChoice(reportSearchPanel_, wxID_ANY);
     for (const auto& label : {
-             wxString(L"En attente"), wxString(L"En cours"),
+             wxString(L"Tous les rapports"), wxString(L"En attente"), wxString(L"En cours"),
              wxString(L"Corrigés, à tester"), wxString(L"Terminés"),
-             wxString(L"Refusés"), wxString(L"Tous les rapports")})
+             wxString(L"Refusés")})
         reportStatusFilter_->Append(label);
     reportStatusFilter_->SetSelection(0);
-    reportSearchCtrl_ = new wxTextCtrl(
-        reportSearchPanel_, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
-        wxTE_PROCESS_ENTER);
-    reportSearchCtrl_->SetMaxLength(200);
-    reportSearchButton_ = new wxButton(
-        reportSearchPanel_, wxID_ANY, wxString(L"Rechercher"));
     reportSearchSizer->Add(createReportButton_, 0, wxRIGHT, 8);
-    reportSearchSizer->Add(reportStatusFilter_, 0, wxRIGHT, 8);
-    reportSearchSizer->Add(reportSearchCtrl_, 1, wxRIGHT, 8);
-    reportSearchSizer->Add(reportSearchButton_, 0);
+    reportSearchSizer->Add(reportStatusFilter_, 0);
     reportSearchPanel_->SetSizer(reportSearchSizer);
     reportSearchPanel_->Hide();
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
@@ -72,11 +64,6 @@ void AdminFrame::BuildLayout()
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
         *reportStatusFilter_, wxString(L"Classement des rapports affichés"),
         wxString(L"Choisissez les rapports en attente, en cours, corrigés à tester, terminés, refusés ou tous."));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *reportSearchCtrl_, wxString(L"Rechercher dans les rapports"),
-        wxString(L"Saisissez un identifiant, un sujet, un contenu ou un auteur, puis appuyez sur Entrée."));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *reportSearchButton_, wxString(L"Lancer la recherche de rapports"));
     resultSizer->Add(reportSearchPanel_, 0, wxEXPAND | wxBOTTOM, 8);
 
     paginationPanel_ = new wxPanel(resultPanel, wxID_ANY);

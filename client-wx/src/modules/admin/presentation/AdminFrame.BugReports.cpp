@@ -17,7 +17,7 @@ namespace lila::modules::admin::presentation
 namespace
 {
 constexpr std::string_view ReportStatuses[]{
-    "pending", "in_progress", "to_test", "done", "refused", "all"};
+    "all", "pending", "in_progress", "to_test", "done", "refused"};
 }
 
 void AdminFrame::SearchBugReports()
@@ -51,10 +51,9 @@ void AdminFrame::CreateBugReport()
     AdminCommandDialog dialog(
         this, *createCommand, nlohmann::json::parse(createCommand->payloadTemplate));
     if (dialog.ShowModal() != wxID_OK) return;
-    reportSearchCtrl_->Clear();
     reportStatusFilter_->SetSelection(0);
-    bugReportListPayload_["search"] = "";
-    bugReportListPayload_["status"] = "pending";
+    bugReportListPayload_.erase("search");
+    bugReportListPayload_.erase("status");
     bugReportListPayload_["offset"] = 0;
     reportIdToRestore_.reset();
     refreshBugReportsAfterCommand_ = true;
@@ -69,8 +68,11 @@ void AdminFrame::RefreshBugReports(
     if (command == nullptr) return;
     if (!bugReportListPayload_.is_object() || bugReportListPayload_.empty())
         bugReportListPayload_ = nlohmann::json::parse(command->payloadTemplate);
-    bugReportListPayload_["search"] =
-        lila::shared::text::ToUtf8(reportSearchCtrl_->GetValue());
+    const auto selection = reportStatusFilter_->GetSelection();
+    if (selection == wxNOT_FOUND || selection == 0)
+        bugReportListPayload_.erase("status");
+    else
+        bugReportListPayload_["status"] = ReportStatuses[static_cast<std::size_t>(selection)];
     keepFocusAfterCommand_ = keepCurrentFocus;
     ExecuteCommand(*command, bugReportListPayload_, announceLifecycle);
 }

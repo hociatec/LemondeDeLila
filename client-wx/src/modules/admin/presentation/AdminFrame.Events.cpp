@@ -62,14 +62,10 @@ void AdminFrame::BindEvents()
         }
         return false;
     });
-    reportSearchCtrl_->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent&) { SearchBugReports(); });
-    reportSearchButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { SearchBugReports(); });
     createReportButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { CreateBugReport(); });
     reportStatusFilter_->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) { ChangeBugReportFilter(); });
     for (auto* control : {static_cast<wxWindow*>(createReportButton_),
-                          static_cast<wxWindow*>(reportStatusFilter_),
-                          static_cast<wxWindow*>(reportSearchCtrl_),
-                          static_cast<wxWindow*>(reportSearchButton_)})
+                          static_cast<wxWindow*>(reportStatusFilter_)})
         control->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
         {
             if (event.GetKeyCode() == WXK_ESCAPE)

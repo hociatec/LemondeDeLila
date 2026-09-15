@@ -4,6 +4,7 @@ import type { WsSession } from '../../../../../platform/realtime/public-api';
 import { PayloadValidationService } from '../../../../../platform/validation/public-api';
 import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
 import { AdminBugReportsService } from '../../../application/use-cases/admin-bug-reports/admin-bug-reports.service';
+import { AdminBugReportCommentsService } from '../../../application/use-cases/admin-bug-reports/admin-bug-report-comments.service';
 import {
   AdminBugReportCreateWsDto,
   AdminBugReportIdWsDto,
@@ -17,6 +18,7 @@ export class AdminBugReportsWsHandler {
   constructor(
     private readonly validator: PayloadValidationService,
     private readonly bugReports: AdminBugReportsService,
+    private readonly comments: AdminBugReportCommentsService,
   ) {}
 
   async create(session: WsSession, payload: unknown) {
@@ -45,9 +47,10 @@ export class AdminBugReportsWsHandler {
     requireAdmin(session);
     const dto = this.validator.validate(AdminBugReportIdWsDto, payload);
     const report = await this.bugReports.get(dto.id);
+    const comments = await this.comments.list(dto.id);
     return {
       type: WS_EVENTS.admin.bugReports.get,
-      payload: { report },
+      payload: { report, comments },
     };
   }
 
