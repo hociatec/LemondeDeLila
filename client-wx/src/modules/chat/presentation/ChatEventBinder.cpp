@@ -5,9 +5,11 @@
 #include <wx/button.h>
 #include <wx/event.h>
 #include <wx/textctrl.h>
+#include <wx/weakref.h>
 #include <wx/window.h>
 
 #include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
 
 namespace lila::modules::chat::presentation
 {
@@ -42,6 +44,18 @@ void ChatEventBinder::Bind(wxWindow& owner, Widgets widgets, Handlers handlers)
             history.ShowPosition(history.GetLastPosition());
             InvokeChatHandler(focused);
             InvokeChatHandler(changed);
+            // Windows can restore the native focus without sending a usable
+            // accessibility focus event after the application is reactivated.
+            // Re-announce the named history control once that restoration has
+            // settled, so screen readers do not report an unknown focus.
+            const wxWeakRef<wxTextCtrl> weakHistory(&history);
+            history.CallAfter(
+                [weakHistory]()
+                {
+                    auto* restoredHistory = weakHistory.get();
+                    if (restoredHistory != nullptr && wxWindow::FindFocus() == restoredHistory)
+                        lila::shared::accessibility::AccessibilityUtils::NotifyFocus(*restoredHistory);
+                });
             event.Skip();
         });
     widgets.history.Bind(
