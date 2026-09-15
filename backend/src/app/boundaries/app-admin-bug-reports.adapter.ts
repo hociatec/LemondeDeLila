@@ -43,6 +43,7 @@ export class AppAdminBugReportsAdapter implements AdminBugReportsPort {
   list(options: {
     offset?: number;
     limit?: number;
+    search?: string;
   }): Promise<BugReportRecord[]> {
     return this.listReports.execute(options);
   }

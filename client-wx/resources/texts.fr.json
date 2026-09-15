@@ -9,7 +9,6 @@
   "KeyboardNavigationHint": "Flèches haut/bas : naviguer. Entrée : sélectionner. Échap : revenir.",
   "ChatFrameTitle": "Tchat - %s",
   "ChatFrameHeader": "Tchat",
-  "ChatFrameSubtitle": "Tchat global du client",
   "ChatFrameOpeningMessage": "Ouverture du tchat...",
   "ChatMessagesHeader": "Messages",
   "ChatNoMessage": "Aucun message.",

@@ -5,19 +5,16 @@
 #include <nlohmann/json.hpp>
 #include <wx/filedlg.h>
 #include <wx/msgdlg.h>
-#include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/textdlg.h>
 #include <wx/weakref.h>
 #include "modules/admin/application/AdminService.h"
 #include "modules/admin/presentation/AdminCommandDialog.h"
-#include "modules/admin/presentation/AdminResultFormatter.h"
 #include "modules/admin/domain/AdminPagination.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/security/infrastructure/SecurityUtils.h"
 #include "shared/security/domain/SensitiveString.h"
 #include "shared/text/presentation/encoding/Encoding.h"
-#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::admin::presentation
 {
@@ -25,6 +22,12 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
 {
     if (loading_ || commandIndex >= visibleCommands_.size()) return;
     const auto& command = *visibleCommands_[commandIndex];
+    if (command.id == "bugs.list")
+    {
+        reportSearchCtrl_->SetFocus();
+        SetStatus(wxString(L"Saisissez votre recherche puis appuyez sur Entrée. Laissez vide pour tout afficher."));
+        return;
+    }
     nlohmann::json payload;
     try
     {
@@ -139,6 +142,7 @@ void AdminFrame::ExecuteCommand(
     const domain::AdminCommand& command,
     nlohmann::json payload)
 {
+    if (command.id == "bugs.list") bugReportListPayload_ = payload;
     ResetPagination(command, payload);
     requestSlot_.Cancel();
     const auto generation = requestSlot_.CurrentToken();
@@ -183,9 +187,22 @@ void AdminFrame::CompleteCommand(
     loading_ = false;
     if (error.has_value() || !result.has_value())
     {
+        keepFocusAfterCommand_ = false;
+        refreshBugReportsAfterCommand_ = false;
+        reportIdToRestore_.reset();
         SetStatus(lila::shared::text::FromUtf8(
             error ? error->UserMessage() : "Réponse administrateur absente."), true);
         FocusCurrentMenu();
+        return;
+    }
+    if (refreshBugReportsAfterCommand_ &&
+        (command.id == "bugs.update" || command.id == "bugs.delete"))
+    {
+        refreshBugReportsAfterCommand_ = false;
+        SetStatus(command.id == "bugs.delete"
+            ? wxString(L"Rapport supprimé. Actualisation de la liste…")
+            : wxString(L"Rapport modifié. Actualisation de la liste…"));
+        RefreshBugReports();
         return;
     }
     const auto temporaryPassword = result->find("temporaryPassword");
@@ -204,46 +221,12 @@ void AdminFrame::CompleteCommand(
     }
     ShowResult(command, *result);
     SetStatus(wxString(L"Opération terminée : ") + wxString(command.label));
-    FocusResult();
-}
-
-void AdminFrame::ShowResult(
-    const domain::AdminCommand& command,
-    const nlohmann::json& result)
-{
-    const auto presentation = BuildAdminResultPresentation(result);
-    resultSummaryLabel_->SetLabel(
-        wxString(command.label) + wxString(L" — ") +
-        lila::shared::text::FromUtf8(presentation.summary));
-    resultDetails_.clear();
-
-    std::vector<lila::shared::ui::controls::VerticalMenuItem> items;
-    items.reserve(presentation.entries.size());
-    resultDetails_.reserve(presentation.entries.size());
-    for (std::size_t index = 0; index < presentation.entries.size(); ++index)
+    if (keepFocusAfterCommand_)
     {
-        items.push_back({
-            std::to_string(index),
-            lila::shared::text::FromUtf8(presentation.entries[index].label),
-        });
-        resultDetails_.push_back(presentation.entries[index].details);
+        keepFocusAfterCommand_ = false;
+        FocusCurrentMenu();
     }
-
-    resultsMenu_->SetItems(items);
-    resultsMenu_->Show(!items.empty());
-    resultText_->SetValue(lila::shared::text::FromUtf8(presentation.details));
-    UpdatePagination(result, presentation.entries.size());
-    Layout();
+    else FocusResult();
 }
 
-void AdminFrame::ShowResultDetails(std::size_t index)
-{
-    if (index >= resultDetails_.size()) return;
-    resultText_->SetValue(lila::shared::text::FromUtf8(resultDetails_[index]));
-    resultText_->SetInsertionPoint(0);
-    SetStatus(lila::shared::text::FromUtf8(
-        "Élément " + std::to_string(index + 1) + " sur " +
-        std::to_string(resultDetails_.size()) +
-        ". Entrée ou Tabulation pour lire le détail."));
-}
 }

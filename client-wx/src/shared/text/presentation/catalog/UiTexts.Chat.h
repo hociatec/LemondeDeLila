@@ -6,7 +6,6 @@ namespace lila::shared::text::ui
 {
 inline constexpr UiTextRef ChatFrameTitle{UiTextKey::ChatFrameTitle};
 inline constexpr UiTextRef ChatFrameHeader{UiTextKey::ChatFrameHeader};
-inline constexpr UiTextRef ChatFrameSubtitle{UiTextKey::ChatFrameSubtitle};
 inline constexpr UiTextRef ChatFrameOpeningMessage{UiTextKey::ChatFrameOpeningMessage};
 inline constexpr UiTextRef ChatMessagesHeader{UiTextKey::ChatMessagesHeader};
 inline constexpr UiTextRef ChatNoMessage{UiTextKey::ChatNoMessage};

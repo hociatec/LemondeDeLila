@@ -43,6 +43,25 @@ void AdminFrame::BuildLayout()
         *resultSummaryLabel_, wxString(L"Résumé du résultat"));
     resultSizer->Add(resultSummaryLabel_, 0, wxEXPAND | wxBOTTOM, 8);
 
+    reportSearchPanel_ = new wxPanel(resultPanel, wxID_ANY);
+    auto* reportSearchSizer = new wxBoxSizer(wxHORIZONTAL);
+    reportSearchCtrl_ = new wxTextCtrl(
+        reportSearchPanel_, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+        wxTE_PROCESS_ENTER);
+    reportSearchCtrl_->SetMaxLength(200);
+    reportSearchButton_ = new wxButton(
+        reportSearchPanel_, wxID_ANY, wxString(L"Rechercher"));
+    reportSearchSizer->Add(reportSearchCtrl_, 1, wxRIGHT, 8);
+    reportSearchSizer->Add(reportSearchButton_, 0);
+    reportSearchPanel_->SetSizer(reportSearchSizer);
+    reportSearchPanel_->Hide();
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *reportSearchCtrl_, wxString(L"Rechercher dans les rapports"),
+        wxString(L"Saisissez un identifiant, un sujet, un contenu ou un auteur, puis appuyez sur Entrée."));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *reportSearchButton_, wxString(L"Lancer la recherche de rapports"));
+    resultSizer->Add(reportSearchPanel_, 0, wxEXPAND | wxBOTTOM, 8);
+
     paginationPanel_ = new wxPanel(resultPanel, wxID_ANY);
     auto* paginationSizer = new wxBoxSizer(wxHORIZONTAL);
     paginationLabel_ = new wxStaticText(
@@ -84,6 +103,22 @@ void AdminFrame::BuildLayout()
     contentSizer->Add(sectionsMenu_, 0, wxEXPAND | wxRIGHT, 16);
     contentSizer->Add(commandsMenu_, 0, wxEXPAND | wxRIGHT, 16);
     resultSizer->Add(resultText_, 1, wxEXPAND);
+
+    reportActionsPanel_ = new wxPanel(resultPanel, wxID_ANY);
+    auto* reportActionsSizer = new wxBoxSizer(wxHORIZONTAL);
+    editReportButton_ = new wxButton(
+        reportActionsPanel_, wxID_ANY, wxString(L"Modifier ce rapport"));
+    deleteReportButton_ = new wxButton(
+        reportActionsPanel_, wxID_ANY, wxString(L"Supprimer ce rapport"));
+    reportActionsSizer->Add(editReportButton_, 0, wxRIGHT, 8);
+    reportActionsSizer->Add(deleteReportButton_, 0);
+    reportActionsPanel_->SetSizer(reportActionsSizer);
+    reportActionsPanel_->Hide();
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *editReportButton_, wxString(L"Modifier le rapport affiché"));
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
+        *deleteReportButton_, wxString(L"Supprimer le rapport affiché"));
+    resultSizer->Add(reportActionsPanel_, 0, wxEXPAND | wxTOP, 8);
     resultPanel->SetSizer(resultSizer);
     contentSizer->Add(resultPanel, 1, wxEXPAND);
     content->SetSizer(contentSizer);

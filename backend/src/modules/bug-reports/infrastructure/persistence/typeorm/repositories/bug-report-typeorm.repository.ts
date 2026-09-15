@@ -21,14 +21,24 @@ export class BugReportTypeormRepository implements BugReportRepository {
   async list(options: {
     offset: number;
     limit: number;
+    search?: string;
   }): Promise<BugReportRecord[]> {
     const offset = normalizeOffset(options.offset);
     const limit = normalizeLimit(options.limit);
-    const items = await this.repo.find({
-      order: { createdAt: 'DESC', id: 'DESC' },
-      skip: offset,
-      take: limit,
-    });
+    const query = this.repo
+      .createQueryBuilder('report')
+      .orderBy('report.createdAt', 'DESC')
+      .addOrderBy('report.id', 'DESC')
+      .skip(offset)
+      .take(limit);
+    const search = options.search?.trim();
+    if (search) {
+      query.where(
+        '(report.id LIKE :search OR report.subject LIKE :search OR report.content LIKE :search OR report.createdByUsername LIKE :search)',
+        { search: `%${escapeLike(search)}%` },
+      );
+    }
+    const items = await query.getMany();
     return items.map((item) => this.toRecord(item));
   }
 
@@ -66,6 +76,10 @@ export class BugReportTypeormRepository implements BugReportRepository {
       createdByUsername: entity.createdByUsername,
     };
   }
+}
+
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (character) => `\\${character}`);
 }
 
 function normalizeOffset(value: number): number {

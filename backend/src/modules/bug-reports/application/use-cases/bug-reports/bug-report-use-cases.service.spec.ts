@@ -14,7 +14,11 @@ import type { BugReportCommentRepository } from '../../ports/bug-report.reposito
 
 type RepoStub = {
   save(entity: BugReportRecord): Promise<BugReportRecord>;
-  list(): Promise<BugReportRecord[]>;
+  list(options?: {
+    offset: number;
+    limit: number;
+    search?: string;
+  }): Promise<BugReportRecord[]>;
   findById(id: string): Promise<BugReportRecord | null>;
   delete(id: string): Promise<boolean>;
   exists(id: string): Promise<boolean>;
@@ -197,5 +201,22 @@ describe('Bug report use cases', () => {
     const ok = await deleteBugReport.execute(created.id);
     expect(ok).toBe(true);
     expect(await getBugReport.execute(created.id)).toBeNull();
+  });
+
+  it('normalizes report search before querying the repository', async () => {
+    const repo = createRepoStub();
+    const listSpy = jest.spyOn(repo, 'list');
+    const service = new ListBugReportsService(
+      repo as unknown as BugReportRepository,
+      new BugReportStatusNormalizerService(),
+    );
+
+    await service.execute({ offset: -1, limit: 500, search: '  connexion  ' });
+
+    expect(listSpy).toHaveBeenCalledWith({
+      offset: 0,
+      limit: 100,
+      search: 'connexion',
+    });
   });
 });
