@@ -190,7 +190,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     SyncInlinePrompt();
     const bool inlinePromptBecameActive =
         !hadInlinePrompt && IsInlinePromptVisible();
-    const auto visiblePawnSelection = roomStarted_
+    const auto visiblePawnSelection = (roomStarted_ || roomStartFlowRequested_ || roomStartPending_)
         ? pawnSelection_
         : std::optional<domain::PawnSelection>{};
     const bool pawnSelectionCompleted =
