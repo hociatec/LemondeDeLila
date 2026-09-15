@@ -104,6 +104,14 @@ wxString RoomPresentationModel::BuildDetails(
     if (!gameEngine.empty())
         details += wxString(L" Moteur : ") +
             lila::shared::text::FromUtf8(std::string(gameEngine)) + wxString(L".");
+    if (!RoomActionPolicy::AllowsServer(room, RoomServerAction::Reset))
+    {
+        const auto owner = room.ownerName.empty()
+            ? wxString(L"le propriétaire")
+            : lila::shared::text::FromUtf8(room.ownerName);
+        details += wxString(L"\nSeul ") + owner +
+            wxString(L" peut démarrer, configurer ou réinitialiser cette table.");
+    }
     details += wxString(L"\n") + BuildPlayers(room);
     return details;
 }

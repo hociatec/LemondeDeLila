@@ -249,13 +249,16 @@ export function pathWallsRules(source: PathWallsProgram) {
     },
     config: defineConfiguration<State, { wallsPerPlayer: number }>({
       input: gameInput.object({
-        wallsPerPlayer: gameInput.number({ integer: true, min: 0, max: 20 }),
+        wallsPerPlayer: gameInput.label(
+          'Nombre de murs par joueur',
+          gameInput.number({ integer: true, min: 0, max: 20 }),
+        ),
       }),
       defaults: { wallsPerPlayer: program.defaultWallsPerPlayer },
       phase: phases.initialPhase,
       permission: 'owner',
       ui: {
-        title: 'Configuration du PathWalls',
+        title: 'Configuration de Corridor',
         submitLabel: 'Choisir les pions',
       },
       onConfigured: ({ config, ctx }) => start(config.wallsPerPlayer, ctx),
