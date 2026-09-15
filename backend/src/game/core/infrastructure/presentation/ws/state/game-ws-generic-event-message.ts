@@ -74,6 +74,9 @@ function boardAndPlayerMessage(
 ): string {
   const { type, data } = input;
   if (type === 'resource.changed') {
+    // Corridor publishes its initial wall stock to the resources panel. It is
+    // setup data, not a game event that belongs in the spoken history.
+    if (value('resource') === 'board-path-walls.walls') return '';
     const name = player(data.playerId);
     const resource = humanLabel(value('resource'));
     return name && resource && value('value')
