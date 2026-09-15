@@ -23,7 +23,7 @@ std::string Humanize(std::string_view key)
         {"games", "Jeux"}, {"reports", "Rapports"}, {"categories", "Catégories"},
         {"questions", "Questions"}, {"definitions", "Définitions"},
         {"roles", "Rôles"}, {"permissions", "Permissions"},
-        {"events", "Événements"}, {"sections", "Fils de contact"},
+        {"events", "Événements"}, {"sounds", "Sons"}, {"sections", "Fils de contact"},
         {"names", "Noms de bots"}, {"page", "Page"}, {"limit", "Par page"},
         {"content", "Contenu"}, {"reason", "Motif"},
         {"bannedUntil", "Banni jusqu’au"}, {"createdBy", "Créé par"},
@@ -159,7 +159,7 @@ std::pair<std::string_view, const nlohmann::json*> FindPrimaryList(
     if (!payload.is_object()) return {{}, nullptr};
     constexpr std::string_view Keys[]{
         "items", "users", "rooms", "messages", "games", "categories",
-        "questions", "definitions", "roles", "events", "sections", "names", "reports"};
+        "questions", "definitions", "roles", "events", "sounds", "sections", "names", "reports"};
     for (const auto key : Keys)
     {
         const auto found = payload.find(key);

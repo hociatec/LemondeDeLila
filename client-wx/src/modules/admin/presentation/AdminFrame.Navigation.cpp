@@ -18,10 +18,11 @@ namespace lila::modules::admin::presentation
 void AdminFrame::ShowSections()
 {
     std::vector<lila::shared::ui::controls::VerticalMenuItem> items;
-    const auto& sections = domain::GetAdminSections();
-    items.reserve(sections.size());
-    for (std::size_t index = 0; index < sections.size(); ++index)
-        items.push_back({std::to_string(index), wxString(sections[index].label.data())});
+    const auto& areas = domain::GetAdminAreas();
+    items.reserve(areas.size());
+    for (std::size_t index = 0; index < areas.size(); ++index)
+        items.push_back({std::string(areas[index].id),
+            wxString(areas[index].group.data()) + L" — " + wxString(areas[index].label.data())});
     sectionsMenu_->SetItems(items);
     sectionsMenu_->SetSelectedIndexSilently(selectedSection_);
     sectionsMenu_->Show();
@@ -36,27 +37,30 @@ void AdminFrame::ShowSections()
     selectedResultIndex_.reset();
     reportIdToRestore_.reset();
     refreshBugReportsAfterCommand_ = false;
+    refreshAreaAfterCommand_ = false;
     keepFocusAfterCommand_ = false;
+    showingItemActions_ = false;
+    currentResultItemKind_ = domain::AdminItemKind::None;
+    contextItem_ = nlohmann::json::object();
+    contextActionPayloads_.clear();
+    contextActionDirect_.clear();
     showingCommands_ = false;
     titleLabel_->SetLabel(wxString(L"Administration"));
-    SetStatus(wxString(sections[selectedSection_].description.data()));
+    SetStatus(wxString(areas[selectedSection_].description.data()));
     Layout();
     FocusCurrentMenu();
 }
 
 void AdminFrame::ShowCommands(std::size_t sectionIndex)
 {
-    if (loading_ || sectionIndex >= domain::GetAdminSections().size()) return;
+    if (loading_ || sectionIndex >= domain::GetAdminAreas().size()) return;
     selectedSection_ = sectionIndex;
-    visibleCommands_ = domain::CommandsForSection(domain::GetAdminSections()[sectionIndex].id);
-    const bool bugReports = domain::GetAdminSections()[sectionIndex].id ==
-        domain::AdminSection::BugReports;
-    if (bugReports)
-        std::erase_if(visibleCommands_, [](const domain::AdminCommand* command)
-        {
-            return command->id == "bugs.get" || command->id == "bugs.update" ||
-                command->id == "bugs.delete";
-        });
+    const auto& area = domain::GetAdminAreas()[sectionIndex];
+    visibleCommands_.clear();
+    for (const auto commandId : area.commandIds)
+        if (const auto* command = domain::FindAdminCommand(commandId))
+            visibleCommands_.push_back(command);
+    const bool bugReports = area.id == "reports";
     std::vector<lila::shared::ui::controls::VerticalMenuItem> items;
     items.reserve(visibleCommands_.size());
     for (const auto* command : visibleCommands_)
@@ -70,9 +74,9 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
     showingCommands_ = true;
     titleLabel_->SetLabel(
         wxString(L"Administration — ") +
-        wxString(domain::GetAdminSections()[sectionIndex].label.data()));
+        wxString(area.label.data()));
     resultText_->SetValue(
-        wxString(domain::GetAdminSections()[sectionIndex].description.data()) +
+        wxString(area.description.data()) +
         wxString(L"\n\nChoisissez une opération dans la liste. Son formulaire métier s’ouvrira avec les champs adaptés."));
     resultSummaryLabel_->SetLabel(wxString(L"Aide de la rubrique"));
     resultsMenu_->Hide();
@@ -89,7 +93,22 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         wxString(visibleCommands_[commandsMenu_->GetSelectedIndex()]->description));
     Layout();
     FocusCurrentMenu();
-    if (bugReports) RefreshBugReports(true);
+    LoadAutomaticAreaContent();
+}
+
+void AdminFrame::LoadAutomaticAreaContent()
+{
+    const auto& area = domain::GetAdminAreas()[selectedSection_];
+    if (area.automaticCommandId.empty()) return;
+    if (area.id == "reports")
+    {
+        RefreshBugReports(true);
+        return;
+    }
+    const auto* command = domain::FindAdminCommand(area.automaticCommandId);
+    if (command == nullptr) return;
+    keepFocusAfterCommand_ = true;
+    ExecuteCommand(*command, nlohmann::json::parse(command->payloadTemplate));
 }
 
 bool AdminFrame::HandleKey(int keyCode)
@@ -102,7 +121,11 @@ bool AdminFrame::HandleKey(int keyCode)
     if (keyCode != WXK_ESCAPE) return false;
     if (loading_) requestSlot_.Cancel();
     loading_ = false;
-    if (showingCommands_) ShowSections();
+    if (showingItemActions_)
+    {
+        RestoreAreaFromItem();
+    }
+    else if (showingCommands_) ShowSections();
     else
     {
         lila::shared::security::SecureWipeString(maintenanceToken_);

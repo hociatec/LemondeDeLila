@@ -78,4 +78,5 @@ struct AdminSectionDescriptor final
 [[nodiscard]] const std::vector<AdminCommand>& GetAdminCommands();
 [[nodiscard]] const std::vector<AdminSectionDescriptor>& GetAdminSections();
 [[nodiscard]] std::vector<const AdminCommand*> CommandsForSection(AdminSection section);
+[[nodiscard]] const AdminCommand* FindAdminCommand(std::string_view id);
 }

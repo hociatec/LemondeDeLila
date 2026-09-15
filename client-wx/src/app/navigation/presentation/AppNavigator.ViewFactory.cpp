@@ -1,5 +1,7 @@
 #include "app/navigation/presentation/AppNavigator.h"
 
+#include <utility>
+
 #include "app/navigation/presentation/HostFrame.h"
 #include "modules/about/presentation/AboutFrame.h"
 #include "modules/chat/application/ChatService.h"
@@ -85,6 +87,10 @@ wxWindow* AppNavigator::CreateCoreView(ViewId viewId)
                 ShowSession(lastMainMenuSelection_);
             },
             [this](int roomId, bool spectator) { JoinRoom(roomId, spectator); },
+            [this](int userId, std::string username)
+            {
+                ShowUserStoryBook(userId, std::move(username), ViewId::Admin);
+            },
             lastAdminSection_);
     default:
         return nullptr;

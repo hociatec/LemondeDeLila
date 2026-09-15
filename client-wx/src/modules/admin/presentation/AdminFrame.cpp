@@ -18,12 +18,14 @@ AdminFrame::AdminFrame(
     lila::modules::audio::application::IAudioService& audioService,
     CloseRequestedHandler onCloseRequested,
     JoinRoomRequestedHandler onJoinRoomRequested,
+    OpenStoryBookRequestedHandler onOpenStoryBookRequested,
     std::size_t initialSection)
     : lila::shared::accessibility::NonFocusablePanel(parent, 0),
       service_(service), audioService_(audioService),
       onCloseRequested_(std::move(onCloseRequested)),
       onJoinRoomRequested_(std::move(onJoinRoomRequested)),
-      selectedSection_(std::min(initialSection, domain::GetAdminSections().size() - 1))
+      onOpenStoryBookRequested_(std::move(onOpenStoryBookRequested)),
+      selectedSection_(std::min(initialSection, domain::GetAdminAreas().size() - 1))
 {
     BuildLayout();
     BindEvents();

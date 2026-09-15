@@ -6,6 +6,7 @@
 #include "modules/options/presentation/OptionsEditSession.h"
 #include "modules/catalog/application/CatalogVisibilityPolicy.h"
 #include "modules/admin/domain/AdminCommand.h"
+#include "modules/admin/domain/AdminArea.h"
 #include "modules/main_menu/presentation/MainMenuContent.h"
 #include "modules/session/domain/Session.h"
 
@@ -50,6 +51,12 @@ int main()
     assert(hasHttp && hasApiWs && hasNotifyWs && hasMaintenanceProtection);
     for (const auto& section : lila::modules::admin::domain::GetAdminSections())
         assert(!lila::modules::admin::domain::CommandsForSection(section.id).empty());
+    const auto& adminAreas = lila::modules::admin::domain::GetAdminAreas();
+    assert(adminAreas.size() == 16);
+    assert(adminAreas.front().group == L"JEUX");
+    assert(adminAreas[4].group == L"UTILISATEURS");
+    assert(adminAreas[7].group == L"COMMUNICATION");
+    assert(adminAreas[10].group == L"OUTILS");
 
     using lila::modules::social::presentation::SocialNavigationState;
     using lila::modules::social::presentation::SocialSection;
