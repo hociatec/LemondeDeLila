@@ -45,12 +45,14 @@ describe('PresenceClientMessageService', () => {
       chat as unknown as PresenceChatService,
       { now: () => 1000 },
     );
+    const presenceChanged = jest.fn();
     await service.handle(
       client,
       JSON.stringify({ type: 'presence-activity', at }),
-      { broadcastChat: jest.fn(), presenceChanged: jest.fn() },
+      { broadcastChat: jest.fn(), presenceChanged },
     );
     expect(client.lastInteractionAt).toBe(expected);
+    expect(presenceChanged).toHaveBeenCalledTimes(1);
   });
 
   it('normalise et verrouille le contexte de table reçu', async () => {

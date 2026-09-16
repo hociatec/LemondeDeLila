@@ -17,7 +17,7 @@ void VerticalMenu::BuildEntryLayout(std::span<const VerticalMenuItem> items)
 
 void VerticalMenu::SetItemsForNavigation(
     std::span<const VerticalMenuItem> items,
-    std::size_t selectedIndex)
+    std::size_t selectedIndex, bool quiet)
 {
     if (role_ != VerticalMenuRole::Entries)
     {
@@ -69,6 +69,14 @@ void VerticalMenu::SetItemsForNavigation(
     itemIds_.reserve(items.size());
     for (std::size_t index = 0; index < items.size(); ++index)
     {
+        if (quiet)
+        {
+            // Update accessible data without native name-change notifications.
+            entries_[index]->SetLiveLabel(items[index].label);
+            itemIds_.push_back(items[index].id);
+            continue;
+        }
+        entries_[index]->ClearLiveLabel();
         if (entries_[index]->GetLabel() != items[index].label)
             entries_[index]->SetLabel(items[index].label);
         if (entries_[index]->GetName() != items[index].label)
@@ -77,12 +85,13 @@ void VerticalMenu::SetItemsForNavigation(
     }
     itemCount_ = items.size();
     selectedIndex_ = target;
-    ApplyTheme();
+    if (!quiet) ApplyTheme();
     Layout();
 }
 
 void VerticalMenu::SetEntryItems(std::span<const VerticalMenuItem> items)
 {
+    for (auto* entry : entries_) entry->ClearLiveLabel();
     bool unchanged = items.size() == entries_.size() && items.size() == itemIds_.size();
     for (std::size_t index = 0; unchanged && index < items.size(); ++index)
     {

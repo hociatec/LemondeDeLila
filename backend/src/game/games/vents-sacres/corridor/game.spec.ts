@@ -11,10 +11,14 @@ import manifest from './manifest.json';
 const gameDefinition = compileJsonGame(manifest, document);
 
 describe('Corridor declarative game', () => {
-  it('starts immediately after wall configuration without a pawn choice', async () => {
+  it('requires distinct pawn choices after wall configuration', async () => {
     const game = testGame(gameDefinition).players(['Vent', 'Eau']).seed(57);
     await game.start();
     await game.as(1).do('game.configure', { wallsPerPlayer: 10 });
+    expect(game.state().pending?.playerId).toBe(1);
+    expect(game.availableActions(1)).not.toContain('pathWalls_move');
+    await game.choose(1, 'vent');
+    await game.choose(2, 'eau');
     expect(game.state().pending).toBeNull();
     expect(game.inspect.setupComplete()).toBe(true);
     expect(game.availableActions(1)).toContain('pathWalls_move');
@@ -23,12 +27,14 @@ describe('Corridor declarative game', () => {
     expect(kits.pawns?.sets.pathWalls.assignments['2']).toEqual(['eau']);
   });
 
-  it('lets the bot play after the first human move without a pawn choice', async () => {
+  it('lets the bot play after mandatory pawn selection', async () => {
     const game = testGame(gameDefinition)
       .players(['Alice', { username: 'Bot', isBot: true }])
       .seed(58);
     await game.start();
     await game.as(1).do('game.configure', { wallsPerPlayer: 0 });
+    await game.choose(1, 'vent');
+    await game.choose(-2, 'eau');
     expect(game.state().pending).toBeNull();
     expect(game.availableActions(1)).not.toContain('pathWalls_place_wall');
     await game.as(1).do('pathWalls_move', { x: 4, y: 1 });
@@ -50,7 +56,33 @@ describe('Corridor declarative game', () => {
     const game = testGame(gameDefinition).players(['Vent', 'Eau']).seed(58);
     await game.start();
     await game.as(1).do('game.configure', { wallsPerPlayer: 10 });
+    await game.choose(1, 'vent');
+    await game.choose(2, 'eau');
     await game.as(1).do('pathWalls_move', { x: 4, y: 1 });
+    expect(await game.replay()).toEqual(game.state());
+  });
+
+  it('blocks crossings, consumes wall stock and retains the wall in replay', async () => {
+    const game = testGame(gameDefinition).players(['Vent', 'Eau']).seed(58);
+    await game.start();
+    await game.as(1).do('game.configure', { wallsPerPlayer: 1 });
+    await game.choose(1, 'vent');
+    await game.choose(2, 'eau');
+    await game
+      .as(1)
+      .do('pathWalls_place_wall', { x: 4, y: 0, orientation: 'h' });
+    await expect(
+      game.as(2).do('pathWalls_place_wall', {
+        x: 4,
+        y: 0,
+        orientation: 'v',
+      }),
+    ).rejects.toThrow();
+    await game.as(2).do('pathWalls_move', { x: 4, y: 7 });
+    expect(game.availableActions(1)).not.toContain('pathWalls_place_wall');
+    await expect(
+      game.as(1).do('pathWalls_move', { x: 4, y: 1 }),
+    ).rejects.toThrow();
     expect(await game.replay()).toEqual(game.state());
   });
 });

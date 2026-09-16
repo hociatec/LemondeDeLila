@@ -6,6 +6,8 @@
 #include <stop_token>
 #include <string>
 #include <vector>
+#include <thread>
+#include <condition_variable>
 
 #include "modules/presence/domain/PresencePlayer.h"
 
@@ -33,6 +35,8 @@ public:
 
     void Start();
     void Stop();
+    void SetContext(std::string context);
+    void ReportInteraction();
     void SetPlayersChangedHandler(PlayersChangedHandler handler);
     [[nodiscard]] std::vector<domain::PresencePlayer> Players() const;
     [[nodiscard]] std::string Status() const;
@@ -40,6 +44,7 @@ public:
 
 private:
     void ReceiveLoop(std::stop_token stopToken);
+    void PublishActivity(std::stop_token stopToken);
     void Connect(std::stop_token stopToken);
     void ApplyUpdate(const std::string& rawJson);
     void SetStatus(std::string status);
@@ -55,7 +60,11 @@ private:
     std::vector<domain::PresencePlayer> players_;
     std::string status_ = "Présence déconnectée.";
     bool hasSnapshot_ = false;
+    std::string context_ = "home";
+    bool contextDirty_ = true;
+    bool interactionDirty_ = false;
+    std::jthread activityThread_;
     PlayersChangedHandler onPlayersChanged_;
-    std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> receiveTask_;
+    std::jthread receiveThread_;
 };
 }

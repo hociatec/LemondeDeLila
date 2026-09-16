@@ -224,13 +224,28 @@ export class PresenceService implements OnModuleDestroy {
         playersByUser.set(user.id, candidate);
         continue;
       }
-      const currentScore = scorePresenceActivity(existing.activity);
-      const candidateScore = scorePresenceActivity(candidate.activity);
-      if (candidateScore < currentScore) {
+      // An idle transport (notably the persistent chat subscription) must not
+      // override the screen explicitly reported by the foreground client.
+      if (existing.contextLocked && !candidate.contextLocked) continue;
+      if (candidate.contextLocked && !existing.contextLocked) {
         playersByUser.set(user.id, candidate);
         continue;
       }
-      if (candidateScore === currentScore) {
+      const currentScore = scorePresenceActivity(existing.activity);
+      const candidateScore = scorePresenceActivity(candidate.activity);
+      if (
+        (candidate.lastInteractionAt ?? 0) >
+          (existing.lastInteractionAt ?? 0) ||
+        (candidate.lastInteractionAt === existing.lastInteractionAt &&
+          candidateScore < currentScore)
+      ) {
+        playersByUser.set(user.id, candidate);
+        continue;
+      }
+      if (
+        candidateScore === currentScore &&
+        candidate.lastInteractionAt === existing.lastInteractionAt
+      ) {
         existing.contextLocked =
           existing.contextLocked || candidate.contextLocked;
         if (!existing.currentRoom && candidate.currentRoom) {

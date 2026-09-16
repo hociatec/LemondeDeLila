@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "contentVersion": "1",
-  "definitionVersion": "3",
+  "definitionVersion": "4",
   "category": "JeuxDePlateaux",
   "world": "VentsSacres",
   "components": [
@@ -82,7 +82,7 @@
       "setId": "morpion",
       "choiceId": "morpion.pawn",
       "order": "players",
-      "automatic": true
+      "automatic": false
     }
   }
 }

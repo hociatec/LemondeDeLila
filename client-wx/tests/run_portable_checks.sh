@@ -162,6 +162,9 @@ c++ "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
 
 c++ "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
   "$ROOT/tests/ServiceResilienceTests.cpp" \
+  "$ROOT/src/modules/presence/application/PresenceMonitor.cpp" \
+  "$ROOT/src/modules/presence/application/PresenceMonitor.Activity.cpp" \
+  "$ROOT/src/modules/presence/infrastructure/PresencePayloadCodec.cpp" \
   "$ROOT/src/modules/chat/application/ChatService.cpp" \
   "$ROOT/src/modules/chat/application/ChatService.Connection.cpp" \
   "$ROOT/src/modules/chat/application/ChatService.Heartbeat.cpp" \

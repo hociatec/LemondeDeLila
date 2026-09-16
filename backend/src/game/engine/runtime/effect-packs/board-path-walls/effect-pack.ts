@@ -20,11 +20,14 @@ export const effectPack = defineJsonEffectPack({
     initialization: compiled.initialization,
     bot: {
       choose: ({ actor, availableActions, ctx }) => {
+        const turn = compiled.botTurn(actor.id, ctx);
+        if (!turn) return null;
         const type = context.actionFor(availableActions, [
-          'board-path-walls-move',
+          turn.kind === 'wall'
+            ? 'board-path-walls-place-wall'
+            : 'board-path-walls-move',
         ]);
-        const move = compiled.firstMove(actor.id, ctx);
-        return type && move ? { type, payload: move } : null;
+        return type ? { type, payload: turn.payload } : null;
       },
     },
   }),

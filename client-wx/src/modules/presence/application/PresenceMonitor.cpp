@@ -40,30 +40,19 @@ PresenceMonitor::~PresenceMonitor()
 
 void PresenceMonitor::Start()
 {
-    if (receiveTask_ != nullptr || !sessionStore_.HasActiveSession())
+    if (receiveThread_.joinable() || !sessionStore_.HasActiveSession())
     {
         return;
     }
 
-    receiveTask_ = lila::shared::concurrency::RunAsync(
-        [this](std::stop_token stopToken)
-        {
-            ReceiveLoop(stopToken);
-        },
-        [this](std::optional<lila::shared::errors::AppError>)
-        {
-            receiveTask_.reset();
-            SetStatus("Présence déconnectée.");
-        });
+    receiveThread_ = std::jthread([this](std::stop_token token) { ReceiveLoop(token); });
+    activityThread_ = std::jthread([this](std::stop_token token) { PublishActivity(token); });
 }
 
 void PresenceMonitor::Stop()
 {
-    if (receiveTask_ != nullptr)
-    {
-        receiveTask_->RequestCancel();
-        receiveTask_.reset();
-    }
+    activityThread_.request_stop();
+    receiveThread_.request_stop();
     try
     {
         webSocketClient_.Close();
@@ -71,11 +60,16 @@ void PresenceMonitor::Stop()
     catch (...)
     {
     }
+    if (activityThread_.joinable()) activityThread_.join();
+    if (receiveThread_.joinable()) receiveThread_.join();
 
     std::scoped_lock lock(mutex_);
     players_.clear();
     status_ = "Présence déconnectée.";
     hasSnapshot_ = false;
+    context_ = "home";
+    contextDirty_ = true;
+    interactionDirty_ = false;
 }
 
 void PresenceMonitor::SetPlayersChangedHandler(PlayersChangedHandler handler)
@@ -104,10 +98,22 @@ bool PresenceMonitor::HasSnapshot() const
 
 void PresenceMonitor::ReceiveLoop(std::stop_token stopToken)
 {
-    Connect(stopToken);
     while (!stopToken.stop_requested())
     {
-        ApplyUpdate(webSocketClient_.Receive());
+        try
+        {
+            Connect(stopToken);
+            while (!stopToken.stop_requested()) ApplyUpdate(webSocketClient_.Receive());
+        }
+        catch (...)
+        {
+            if (stopToken.stop_requested()) break;
+            SetStatus("Reconnexion de la présence...");
+            std::mutex waitMutex;
+            std::condition_variable_any wake;
+            std::unique_lock lock(waitMutex);
+            wake.wait_for(lock, stopToken, std::chrono::seconds(1), [] { return false; });
+        }
     }
 }
 
@@ -123,7 +129,7 @@ void PresenceMonitor::Connect(std::stop_token stopToken)
     };
     lila::modules::session::application::ConnectWithSessionRefresh(
         sessionStore_, stopToken, [this] { webSocketClient_.Close(); }, connect);
-    webSocketClient_.Send(lila::modules::presence::infrastructure::TavernContextPayload());
+    { std::scoped_lock lock(mutex_); contextDirty_ = true; }
     SetStatus("Présence connectée.");
 }
 
@@ -142,6 +148,7 @@ void PresenceMonitor::ApplyUpdate(const std::string& rawJson)
         std::scoped_lock lock(mutex_);
         if (hasSnapshot_)
         {
+            if (players_ == *next) return;
             for (const auto& player : *next)
             {
                 const bool wasPresent = std::ranges::any_of(
