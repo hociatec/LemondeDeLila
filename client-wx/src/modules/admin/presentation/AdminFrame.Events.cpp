@@ -55,7 +55,8 @@ void AdminFrame::BindEvents()
     {
         if (keyCode == WXK_ESCAPE)
         {
-            if (commandsMenu_->IsShown()) FocusCurrentMenu();
+            if (reportSearchPanel_->IsShown()) reportStatusMenu_->GetSelectedControl()->SetFocus();
+            else if (commandsMenu_->IsShown()) FocusCurrentMenu();
             else ShowSections();
             return true;
         }
@@ -176,6 +177,8 @@ void AdminFrame::BindEvents()
         {
             if (resultsMenu_->IsShown() && resultsMenu_->GetSelectedControl() != nullptr)
                 resultsMenu_->GetSelectedControl()->SetFocus();
+            else if (reportSearchPanel_->IsShown())
+                reportStatusMenu_->GetSelectedControl()->SetFocus();
             else if (commandsMenu_->IsShown())
                 FocusCurrentMenu();
             else ShowSections();

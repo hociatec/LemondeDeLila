@@ -59,19 +59,6 @@ void AdminFrame::ShowResult(
         if (reportItems != result.end() && reportItems->is_array())
             presentation = BuildAdminResultPresentation(
                 nlohmann::json{{"reports", *reportItems}});
-        const auto selection = reportStatusMenu_->GetSelectedIndex();
-        if (selection < reportStatusCounts_.size())
-            reportStatusCounts_[selection] = reportItems != result.end() && reportItems->is_array()
-                ? reportItems->size() : 0;
-        const std::array<wxString, 5> labels{
-            L"En attente", L"En cours", L"Corrigés, à tester", L"Terminés", L"Refusés"};
-        std::vector<lila::shared::ui::controls::VerticalMenuItem> statuses;
-        for (std::size_t index = 0; index < labels.size(); ++index)
-            statuses.push_back({std::to_string(index), labels[index] + wxString::Format(
-                L" (%zu rapport%s)", reportStatusCounts_[index],
-                reportStatusCounts_[index] == 1 ? L"" : L"s")});
-        reportStatusMenu_->SetItems(statuses);
-        reportStatusMenu_->SetSelectedIndexSilently(selection);
     }
     resultSummaryLabel_->SetLabel(
         wxString(command.label) + wxString(L" — ") +
