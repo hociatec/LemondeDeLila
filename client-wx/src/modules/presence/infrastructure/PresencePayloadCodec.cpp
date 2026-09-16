@@ -9,48 +9,6 @@ namespace lila::modules::presence::infrastructure
 {
 namespace
 {
-int ScoreAvailability(const std::string& value)
-{
-    std::string normalized = value;
-    std::ranges::transform(normalized, normalized.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    if (normalized == "available" || normalized == "disponible")
-    {
-        return 0;
-    }
-    if (normalized == "occupied" || normalized == "occupe")
-    {
-        return 1;
-    }
-    if (normalized == "absent")
-    {
-        return 2;
-    }
-    return 3;
-}
-
-int ScoreActivity(const std::string& value)
-{
-    std::string normalized = value;
-    std::ranges::transform(normalized, normalized.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    if (normalized == "table")
-    {
-        return 0;
-    }
-    if (normalized == "messaging" || normalized == "social" || normalized == "notifications" || normalized == "other")
-    {
-        return 1;
-    }
-    if (normalized == "chat")
-    {
-        return 2;
-    }
-    if (normalized == "tavern" || normalized == "stats")
-    {
-        return 3;
-    }
-    return 4;
-}
-
 std::string ReadString(const nlohmann::json& node, const char* key, std::string fallback = {})
 {
     const auto it = node.find(key);
@@ -101,15 +59,7 @@ std::optional<std::vector<domain::PresencePlayer>> ReadPresenceUpdate(const std:
         players,
         [](const domain::PresencePlayer& left, const domain::PresencePlayer& right)
         {
-            if (ScoreAvailability(left.availability) != ScoreAvailability(right.availability))
-            {
-                return ScoreAvailability(left.availability) < ScoreAvailability(right.availability);
-            }
-            if (ScoreActivity(left.activity) != ScoreActivity(right.activity))
-            {
-                return ScoreActivity(left.activity) < ScoreActivity(right.activity);
-            }
-            return left.username < right.username;
+            return left.username == right.username ? left.id < right.id : left.username < right.username;
         });
     return players;
 }

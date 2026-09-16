@@ -242,4 +242,8 @@ void TestGridActionResolutionUsesBoardAndCell()
         actions, GameGridTarget{"right", "A1", 0, 0});
     Expect(resolved && resolved->payload.at("boardId") == "right",
         "La résolution d'une cellule doit inclure son boardId.");
+    actions = {{"wall", "", "", {{"x", 0}, {"y", 0}, {"orientation", "h"}}},
+        {"move", "", "", {{"x", 0}, {"y", 0}}}};
+    const auto move = GameGridActionResolver::Resolve(actions, {"board", "0,0", 0, 0});
+    Expect(move && move->type == "move", "Enter must never silently place a wall");
 }

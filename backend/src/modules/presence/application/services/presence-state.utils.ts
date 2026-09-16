@@ -134,12 +134,19 @@ export function mergePresencePlayersFromOrigins(
 
     const currentScore = scorePresenceActivity(existing.activity);
     const candidateScore = scorePresenceActivity(candidate.activity);
-    if (candidateScore < currentScore) {
+    if (
+      candidate.lastInteractionAt > existing.lastInteractionAt ||
+      (candidate.lastInteractionAt === existing.lastInteractionAt &&
+        candidateScore < currentScore)
+    ) {
       byUser.set(candidate.id, candidate);
       continue;
     }
 
-    if (candidateScore === currentScore) {
+    if (
+      candidateScore === currentScore &&
+      candidate.lastInteractionAt === existing.lastInteractionAt
+    ) {
       if (!existing.currentRoom && candidate.currentRoom) {
         existing.currentRoom = candidate.currentRoom;
       }

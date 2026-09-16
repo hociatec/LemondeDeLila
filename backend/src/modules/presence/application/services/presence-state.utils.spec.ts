@@ -39,7 +39,7 @@ describe('presence state utilities', () => {
       mergePresencePlayersFromOrigins(new Map([...entries].reverse())),
     );
     expect(first.map((entry) => entry.id)).toEqual([1, 2]);
-    expect(first[0].currentRoom?.id).toBe(3);
+    expect(first[0].currentRoom?.id).toBe(9);
     expect(first[0].lastInteractionAt).toBe(20);
   });
   describe('parsePresenceRoomId', () => {
@@ -177,9 +177,9 @@ describe('presence state utilities', () => {
     ]);
 
     expect(mergePresencePlayersFromOrigins(playersByOrigin)).toEqual([
-      player(1, 'table', 5, { id: 7, name: 'Partie' }, true),
+      player(1, 'home', 10),
       player(2, 'chat', 20, { id: 8, name: 'Salon' }, false),
-      player(3, 'chat', 10, { id: 9, name: 'Table #9' }, true),
+      player(3, 'chat', 10, null, null),
       player(4, 'stats', 30),
     ]);
   });

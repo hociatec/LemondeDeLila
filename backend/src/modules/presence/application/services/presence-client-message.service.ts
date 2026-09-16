@@ -55,6 +55,7 @@ export class PresenceClientMessageService {
         payload.at >= 0
           ? Math.min(payload.at, now)
           : now;
+      callbacks.presenceChanged();
       return;
     }
     if (payload.type === 'presence-sync') {

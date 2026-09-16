@@ -56,7 +56,7 @@ public:
     void SetKeyHandler(KeyHandler handler);
     void SetSelectedIndexSilently(std::size_t index);
     void SetItems(std::span<const VerticalMenuItem> items);
-    void SetItemsForNavigation(std::span<const VerticalMenuItem> items, std::size_t selectedIndex);
+    void SetItemsForNavigation(std::span<const VerticalMenuItem> items, std::size_t selectedIndex, bool quiet = false);
     [[nodiscard]] std::size_t GetSelectedIndex() const;
     [[nodiscard]] std::size_t GetItemCount() const;
     [[nodiscard]] std::string_view GetItemId(std::size_t index) const;

@@ -8,6 +8,8 @@ bool GameGridActionResolver::Targets(
     const domain::GameAction& action, const GameGridTarget& target)
 {
     if (action.disabled || !action.payload.is_object()) return false;
+    // An oriented edge is a wall placement, not a move onto the cell.
+    if (action.payload.contains("orientation")) return false;
     const auto board = action.payload.find("boardId");
     if (board != action.payload.end() &&
         (!board->is_string() || board->get<std::string>() != target.boardId)) return false;

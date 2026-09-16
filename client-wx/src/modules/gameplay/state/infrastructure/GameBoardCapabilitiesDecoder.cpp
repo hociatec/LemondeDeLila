@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
+#include "modules/gameplay/grid/application/GameGridCoordinate.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -144,6 +145,36 @@ std::optional<domain::GameGridView> GameBoardCapabilitiesDecoder::Grid(
                     for (const auto& rawOverlay : layer.value())
                     {
                         if (!rawOverlay.is_object()) continue;
+                        const auto orientation = detail::ReadString(rawOverlay, "orientation");
+                        const auto x = Integer(rawOverlay, "x");
+                        const auto y = Integer(rawOverlay, "y");
+                        if (layer.key() == "walls" && x && y &&
+                            (orientation == "h" || orientation == "v") &&
+                            *x >= 0 && *y >= 0 && *x < board.width - 1 && *y < board.height - 1)
+                        {
+                            const bool horizontal = orientation == "h";
+                            for (int segment = 0; segment < 2; ++segment)
+                            {
+                                const int ax = *x + (horizontal ? segment : 0);
+                                const int ay = *y + (horizontal ? 0 : segment);
+                                const int bx = ax + (horizontal ? 0 : 1);
+                                const int by = ay + (horizontal ? 1 : 0);
+                                for (int side = 0; side < 2; ++side)
+                                {
+                                    domain::GameGridOverlayView edge;
+                                    edge.boardId = board.id;
+                                    edge.layer = "walls";
+                                    edge.kind = "wall";
+                                    edge.cellId = std::to_string(side ? bx : ax) + "," +
+                                        std::to_string(side ? by : ay);
+                                    edge.label = std::string(horizontal ? "horizontal" : "vertical") +
+                                        ", passage bloqué vers " + application::grid::GridCoordinate(
+                                            side ? ax : bx, side ? ay : by);
+                                    board.overlays.push_back(std::move(edge));
+                                }
+                            }
+                            continue;
+                        }
                         domain::GameGridOverlayView overlay;
                         overlay.boardId = board.id;
                         overlay.layer = layer.key();

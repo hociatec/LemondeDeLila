@@ -29,6 +29,8 @@
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/domain/identifiers/DomainTypes.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
+#include "shared/network/application/websocket/IWebSocketClient.h"
+#include "modules/presence/application/PresenceMonitor.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 
 #include "network_protocol/Support.Session.inc"
@@ -39,11 +41,13 @@
 #include "network_protocol/ChatTicketResilienceTests.inc"
 #include "network_protocol/GameSessionReconnectTests.inc"
 #include "network_protocol/RoomSessionConcurrencyTests.inc"
+#include "network_protocol/PresenceMonitorTests.inc"
 
 int main()
 {
     try
     {
+        TestPresenceActivityAndReconnect();
         TestEnsureSuccessOrThrowClearsExpiredSession();
         TestChatServiceCloseInterruptsReceiveLoop();
         TestChatServiceReconnectsAfterTransientFailure();

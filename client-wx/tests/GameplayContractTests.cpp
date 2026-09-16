@@ -26,6 +26,7 @@
 #include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
+#include "modules/gameplay/state/infrastructure/GameBoardCapabilitiesDecoder.h"
 #include "modules/gameplay/shortcuts/application/GameGenericShortcutPolicy.h"
 
 namespace
@@ -93,6 +94,22 @@ int main()
 {
     try
     {
+        for (const auto orientation : {"h", "v"})
+        {
+            const auto grid = lila::modules::gameplay::infrastructure::GameBoardCapabilitiesDecoder::Grid(
+                {{"boards", {{"test", {{"width", 9}, {"height", 9},
+                    {"overlays", {{"walls", nlohmann::json::array({
+                        {{"x", 0}, {"y", 0}, {"orientation", orientation}}
+                    })}}}}}}}});
+            const auto& edges = grid->boards[0].overlays;
+            Expect(edges.size() == 4, "A wall must describe both sides of both blocked passages");
+            Expect(edges[0].cellId == "0,0", "Wall must be attached to its cell");
+            Expect(edges[0].label == (std::string(orientation) == "h"
+                ? "horizontal, passage bloqué vers A2" : "vertical, passage bloqué vers B1"),
+                "Wall orientation and blocked destination must be readable");
+            Expect(edges[1].label.find("vers A1") != std::string::npos,
+                "Wall must also be readable from the opposite side");
+        }
         TestServerDrivenPrompt();
         TestStaleSetupPromptIsIgnoredDuringRound();
         TestPromptWithoutItsServerActionCannotReopen();

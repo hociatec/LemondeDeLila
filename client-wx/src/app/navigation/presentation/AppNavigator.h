@@ -5,6 +5,7 @@
 #include <string>
 
 #include <wx/timer.h>
+#include <wx/eventfilter.h>
 
 #include "app/navigation/domain/ViewId.h"
 #include "app/navigation/presentation/NavigationDependencies.h"
@@ -33,7 +34,7 @@ namespace lila::app::navigation
 {
 class HostFrame;
 
-class AppNavigator final
+class AppNavigator final : public wxEventFilter
 {
 public:
     AppNavigator(
@@ -48,6 +49,7 @@ public:
     void FocusCurrentView();
 
 private:
+    int FilterEvent(wxEvent& event) override;
     void ShowHome();
     void ShowSession(std::size_t selectedIndex = 0, bool resetInitialFocus = false);
     void ShowCatalog(std::size_t selectedIndex);

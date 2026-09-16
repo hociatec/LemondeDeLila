@@ -10,6 +10,7 @@ import { pawns } from '../../kits/pawn-kit';
 import { gridGame } from '../../patterns/gameplay-pattern-round-economy';
 import { sequentialPawnSelection } from '../../recipes/gameplay/pawn-selection.recipes';
 import { rejectRule } from '../../../../core/domain/errors/game-domain.errors';
+import { choosePathWallsTurn } from './path-walls.bot';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
@@ -28,7 +29,6 @@ export function pathWallsRules(source: PathWallsProgram) {
   const pawnSelection = sequentialPawnSelection<State>({
     setId: program.pawnSetId,
     choiceId: program.pawnChoiceId,
-    automatic: true,
     complete: ({ ctx }) => {
       phases.transition(ctx, 'playing');
       const first = ctx.players.all()[0];
@@ -260,7 +260,7 @@ export function pathWallsRules(source: PathWallsProgram) {
       permission: 'owner',
       ui: {
         title: 'Configuration de Corridor',
-        submitLabel: 'Jouer',
+        submitLabel: 'Choisir les pions',
       },
       onConfigured: ({ config, ctx }) => start(config.wallsPerPlayer, ctx),
     }),
@@ -271,7 +271,23 @@ export function pathWallsRules(source: PathWallsProgram) {
           pawnSelection.resolve(actor.id, value, ctx),
       }),
     },
-    firstMove: (actorId: number, ctx: Context) => legalMoves(actorId, ctx)[0],
+    botTurn: (actorId: number, ctx: Context) => {
+      const opponent = ctx.players
+        .all()
+        .find((player) => player.id !== actorId);
+      if (!opponent) return null;
+      const placed = positions(ctx);
+      return choosePathWallsTurn({
+        size: program.size,
+        own: placed[actorId],
+        opponent: placed[opponent.id],
+        goal: goalY(actorId, ctx),
+        opponentGoal: goalY(opponent.id, ctx),
+        moves: legalMoves(actorId, ctx),
+        walls: walls(ctx),
+        candidates: legalWalls(actorId, ctx),
+      });
+    },
   };
 }
 function add(a: PathWallsPosition, b: PathWallsPosition): PathWallsPosition {

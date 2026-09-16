@@ -14,5 +14,6 @@ struct PresencePlayer final
     std::string currentRoomName;
     std::string availability;
     std::string location;
+    bool operator==(const PresencePlayer&) const = default;
 };
 }

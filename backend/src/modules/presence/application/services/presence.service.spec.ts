@@ -117,6 +117,35 @@ describe('PresenceService', () => {
     expect(jest.getTimerCount()).toBe(0);
   });
 
+  it('uses the latest active screen instead of an idle background chat connection', async () => {
+    const background = socket();
+    const foreground = socket();
+    service.register(background.value, { id: 1, username: 'Lila' }, 'chat');
+    now += 100;
+    service.register(foreground.value, { id: 1, username: 'Lila' }, 'home');
+    service.broadcastPresence();
+    await settle();
+    expect(service.listPlayers()[0].activity).toBe('home');
+    const current = service.findClient(foreground.value)!;
+    current.context = 'messaging';
+    current.contextLocked = true;
+    current.lastInteractionAt = ++now;
+    service.broadcastPresence();
+    await settle();
+    expect(service.listPlayers()[0]).toEqual(
+      expect.objectContaining({
+        activity: 'messaging',
+        availability: 'occupied',
+        location: 'messagerie',
+      }),
+    );
+    now += 100;
+    service.register(background.value, { id: 1, username: 'Lila' }, 'chat');
+    service.broadcastPresence();
+    await settle();
+    expect(service.listPlayers()[0].activity).toBe('messaging');
+  });
+
   it('delegates chat operations and broadcasts chat only to chat clients', async () => {
     const chat = socket();
     const table = socket();

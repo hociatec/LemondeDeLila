@@ -114,6 +114,7 @@ describe('Room start flow', () => {
     };
     const stats = { startMatch: jest.fn(async () => undefined) };
     const events = { publishLobbyChanged: jest.fn(async () => undefined) };
+    const presence = { broadcastPresence: jest.fn() };
     const lifecycle = new RoomLifecycleService(
       rooms as never,
       participants as never,
@@ -122,6 +123,7 @@ describe('Room start flow', () => {
       stats as never,
       events as never,
       { now: () => Date.now() },
+      presence,
     );
     const current = room();
     const context = {
@@ -136,11 +138,13 @@ describe('Room start flow', () => {
       'Au moins 3 participants sont requis',
     );
     expect(rooms.save).not.toHaveBeenCalled();
+    expect(presence.broadcastPresence).not.toHaveBeenCalled();
 
     context.countBots.mockResolvedValueOnce(2);
     await expect(lifecycle.startRoom(context, 42, 1)).resolves.toBe(current);
     expect(current.status).toBe('started');
     expect(rooms.save).toHaveBeenCalledTimes(1);
+    expect(presence.broadcastPresence).toHaveBeenCalledTimes(1);
   });
 
   it('supports games whose backend manifest explicitly permits solo play', async () => {

@@ -42,7 +42,7 @@ public:
             return wxACC_INVALID_ARG;
         }
 
-        *name = entry->GetName();
+        *name = entry->AccessibleLabel();
         if (name->empty())
         {
             *name = entry->GetLabel();
@@ -150,7 +150,7 @@ wxSize VerticalMenuEntry::DoGetBestClientSize() const
 {
     wxClientDC dc(const_cast<VerticalMenuEntry*>(this));
     dc.SetFont(GetFont());
-    const wxSize textSize = dc.GetTextExtent(GetLabel());
+    const wxSize textSize = dc.GetTextExtent(PresentedLabel());
     return wxSize(textSize.GetWidth() + 2 * HorizontalPadding, EntryHeight);
 }
 
@@ -178,8 +178,8 @@ void VerticalMenuEntry::OnPaint(wxPaintEvent& event)
     dc.Clear();
     dc.SetFont(GetFont());
     dc.SetTextForeground(GetForegroundColour());
-    const wxSize textSize = dc.GetTextExtent(GetLabel());
-    dc.DrawText(GetLabel(), HorizontalPadding, (bounds.GetHeight() - textSize.GetHeight()) / 2);
+    const wxSize textSize = dc.GetTextExtent(PresentedLabel());
+    dc.DrawText(PresentedLabel(), HorizontalPadding, (bounds.GetHeight() - textSize.GetHeight()) / 2);
 
     if (focused)
     {

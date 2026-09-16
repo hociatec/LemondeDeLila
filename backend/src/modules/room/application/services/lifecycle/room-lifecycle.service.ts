@@ -40,6 +40,10 @@ import {
   resolveMinimumParticipants,
 } from './room-start-policy';
 import { buildUniqueActiveRoomPlayers } from '../membership/room-participant-roster';
+import {
+  ROOM_PRESENCE_PORT,
+  type RoomPresencePort,
+} from '../../ports/room-presence.port';
 
 export type RoomLifecycleContext = {
   invalidateRoomPayloadCache: (roomId: number) => Promise<void>;
@@ -65,6 +69,7 @@ export class RoomLifecycleService {
     @Inject(ROOM_EVENT_PUBLISHER)
     private readonly roomEvents: RoomEventPublisherPort,
     @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
+    @Inject(ROOM_PRESENCE_PORT) private readonly presence?: RoomPresencePort,
   ) {}
 
   async togglePrivacy(
@@ -105,6 +110,7 @@ export class RoomLifecycleService {
       await context.invalidateRoomPayloadCache(room.id);
     }
     await this.roomEvents.publishLobbyChanged(room.id, 'started');
+    this.presence?.broadcastPresence();
 
     try {
       const activeParticipants =
@@ -135,6 +141,7 @@ export class RoomLifecycleService {
     await this.rooms.save(room);
     await context.invalidateRoomPayloadCache(room.id);
     await this.roomEvents.publishLobbyChanged(room.id, 'started');
+    this.presence?.broadcastPresence();
     return room;
   }
 
@@ -175,6 +182,7 @@ export class RoomLifecycleService {
       await context.invalidateRoomPayloadCache(room.id);
     }
     await this.roomEvents.publishLobbyChanged(room.id, 'reset');
+    this.presence?.broadcastPresence();
     return room;
   }
 
@@ -192,6 +200,7 @@ export class RoomLifecycleService {
     const room = await context.requireRoom(existing.id);
     await context.invalidateRoomPayloadCache(room.id);
     await this.roomEvents.publishLobbyChanged(room.id, 'reset');
+    this.presence?.broadcastPresence();
     return room;
   }
 
@@ -208,6 +217,7 @@ export class RoomLifecycleService {
     const room = await context.requireRoom(existing.id);
     await context.invalidateRoomPayloadCache(room.id);
     await this.roomEvents.publishLobbyChanged(room.id, 'finished');
+    this.presence?.broadcastPresence();
     await this.roomEvents.publishRoomStateUpdated(room.id);
     return room;
   }

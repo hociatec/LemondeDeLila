@@ -7,6 +7,7 @@
 
 #include "app/navigation/presentation/HostFrame.h"
 #include "modules/audio/application/IAudioService.h"
+#include "modules/presence/application/PresenceMonitor.h"
 #include "shared/accessibility/application/FocusPlanView.h"
 #include "shared/logging/application/Logger.h"
 
@@ -25,6 +26,23 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
     }
     currentViewId_ = nextViewId;
     currentView_ = nextView;
+    // Opening the presence overlay must not replace the underlying activity.
+    if (nextViewId != ViewId::Presence)
+    {
+        std::string context = "home";
+        switch (nextViewId)
+        {
+        case ViewId::Room: context = "table"; break;
+        case ViewId::Catalog: case ViewId::JoinRooms: context = "tavern"; break;
+        case ViewId::Chat: context = "chat"; break;
+        case ViewId::Messaging: context = "messaging"; break;
+        case ViewId::Social: context = "social"; break;
+        case ViewId::StoryBook: case ViewId::Leaderboard: context = "stats"; break;
+        case ViewId::Admin: case ViewId::Options: case ViewId::Vault: context = "other"; break;
+        default: break;
+        }
+        presenceMonitor_.SetContext(std::move(context));
+    }
 
     if (hostFrame_ == nullptr)
     {

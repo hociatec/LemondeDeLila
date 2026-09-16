@@ -1,4 +1,5 @@
 #include "modules/presence/presentation/PresenceFrame.h"
+#include <algorithm>
 
 #include <wx/stattext.h>
 
@@ -46,7 +47,7 @@ void PresenceFrame::RebuildPlayers(std::optional<int> preferredPlayerId, bool fo
     auto items = hasSnapshot
         ? PresencePresentationModel::BuildPlayerItems(players_)
         : std::vector<MenuItem>{};
-    std::size_t selectedIndex = 0;
+    std::size_t selectedIndex = items.empty() ? 0 : std::min(menu_->GetSelectedIndex(), items.size() - 1);
     for (std::size_t index = 0; index < players_.size(); ++index)
     {
         const auto& player = players_[index];
@@ -55,11 +56,8 @@ void PresenceFrame::RebuildPlayers(std::optional<int> preferredPlayerId, bool fo
             selectedIndex = index;
         }
     }
-    menu_->SetItems(items);
-    if (selectedIndex < menu_->GetItemCount())
-    {
-        menu_->SetSelectedIndexSilently(selectedIndex);
-    }
+    // Keep the focused native control attached to the same player on live updates.
+    menu_->SetItemsForNavigation(items, selectedIndex, true);
 
     titleLabel_->SetLabel(hasSnapshot
         ? PresencePresentationModel::BuildTitle(players_.size())
@@ -112,7 +110,7 @@ void PresenceFrame::ShowLoadingActions()
 
 void PresenceFrame::UpdateStatus(const wxString& message, bool isError)
 {
-    statusLabel_->SetLabel(message);
+    if (statusLabel_->GetLabel() != message) statusLabel_->SetLabel(message);
     statusLabel_->SetForegroundColour(isError ? wxColour(240, 130, 130) : lila::shared::ui::Theme::Accent());
     Layout();
 }
