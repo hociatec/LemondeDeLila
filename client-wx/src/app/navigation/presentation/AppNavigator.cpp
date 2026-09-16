@@ -60,7 +60,8 @@ AppNavigator::~AppNavigator()
 
 int AppNavigator::FilterEvent(wxEvent& event)
 {
-    if (event.GetEventType() == wxEVT_KEY_DOWN || event.GetEventType() == wxEVT_LEFT_DOWN ||
+    if (event.GetEventType() == wxEVT_KEY_DOWN || event.GetEventType() == wxEVT_CHAR_HOOK ||
+        event.GetEventType() == wxEVT_LEFT_DOWN ||
         event.GetEventType() == wxEVT_RIGHT_DOWN || event.GetEventType() == wxEVT_MOUSEWHEEL ||
         event.GetEventType() == wxEVT_MOTION)
         presenceMonitor_.ReportInteraction();
