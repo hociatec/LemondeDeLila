@@ -48,6 +48,7 @@ std::vector<std::string> EventMessages(const domain::GameState& state)
 void GamePlayPanel::ApplyState(domain::GameState state)
 {
     const wxWeakRef<wxWindow> focusedBefore(wxWindow::FindFocus());
+    const bool hadVisibleGrid = gridPanel_->IsShown();
     const bool hadVisibleHand = !state_.kits.VisibleHand().empty();
     const bool receivesVisibleHand = !state.kits.VisibleHand().empty();
     const bool hadActivePawnSelection = pawnSelectionPanel_->IsActive();
@@ -209,6 +210,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     const bool shouldRefreshZoneFocus =
         (!focusPreserved && focusWasInsideGame) ||
         (!hadVisibleHand && receivesVisibleHand) ||
+        (!hadVisibleGrid && gridPanel_->IsShown()) ||
         pawnSelectionCompleted || pawnSelectionBecameActive ||
         inlinePromptBecameActive || actionableChoicesBecameActive;
     if (shouldRefreshZoneFocus && onZoneFocusRequested_)

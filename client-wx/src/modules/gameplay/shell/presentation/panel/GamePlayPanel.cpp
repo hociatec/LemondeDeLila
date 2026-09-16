@@ -215,6 +215,10 @@ wxWindow* GamePlayPanel::RequiredInteractionTarget() const
     // steal focus from chat or history.
     if (handPanel_ != nullptr)
         if (auto* target = handPanel_->NavigationTarget()) return target;
+    // A board replaces the zone anchor even during the opponent's turn.
+    // Keep it directly navigable without an extra Enter to activate it.
+    if (state_.kits.Dice() == nullptr && gridPanel_ != nullptr && gridPanel_->IsShown())
+        if (auto* target = gridPanel_->NavigationTarget()) return target;
     return nullptr;
 }
 }
