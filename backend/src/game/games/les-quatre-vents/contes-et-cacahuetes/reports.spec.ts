@@ -45,6 +45,26 @@ function top(state: any, deck: string, ids: number[]) {
 }
 
 describe('Contes reports: chained cards and blocked turns', () => {
+  it('declares separate position and race-ranking shortcuts', () => {
+    const shortcuts = runtime.getShortcuts();
+    expect(shortcuts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: 'P',
+          type: 'interface',
+          id: 'position',
+        }),
+        expect.objectContaining({
+          key: 'S',
+          type: 'interface',
+          id: 'race-ranking',
+        }),
+      ]),
+    );
+    expect(shortcuts.filter((shortcut) => shortcut.key === 'S')).toHaveLength(
+      1,
+    );
+  });
   it('finishes both chest draws even when laughter interrupts the first one', async () => {
     const base = await fixture();
     let interrupted = 0;

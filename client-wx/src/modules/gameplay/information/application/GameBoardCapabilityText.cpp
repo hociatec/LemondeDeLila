@@ -33,6 +33,35 @@ std::optional<std::string> BuildBoardCapabilityText(
     const domain::GameState& state, const std::string& capability)
 {
     std::ostringstream out;
+    if (capability == "race-ranking" && state.kits.movement)
+    {
+        for (const auto& track : state.kits.movement->tracks)
+        {
+            out << "Classement de la course";
+            if (state.kits.movement->tracks.size() > 1) out << " — " << track.id;
+            out << '\n';
+            std::vector<std::pair<int, int>> ranked;
+            for (const auto& player : state.system.players)
+            {
+                const auto found = track.positions.find(std::to_string(player.id));
+                ranked.emplace_back(player.id, found == track.positions.end() ? 0 : found->second);
+            }
+            std::stable_sort(ranked.begin(), ranked.end(),
+                [](const auto& left, const auto& right) { return left.second > right.second; });
+            std::size_t rank = 0;
+            for (std::size_t index = 0; index < ranked.size(); ++index)
+            {
+                const auto [playerId, position] = ranked[index];
+                if (index == 0 || ranked[index - 1].second != position) rank = index + 1;
+                const auto remaining = std::max(0, track.spaces - 1 - position);
+                out << "Rang " << rank << " — " << Player(state, playerId) << " : ";
+                if (remaining == 0) out << "arrivée atteinte";
+                else out << remaining << (remaining == 1 ? " case" : " cases") << " avant l'arrivée";
+                out << ".\n";
+            }
+        }
+        return out.str();
+    }
     if (capability == "position" && state.kits.movement)
     {
         if (!state.viewerPlayerId) return "Votre position est indisponible.";

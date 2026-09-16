@@ -58,7 +58,7 @@ public:
     using HistoryMessageHandler = std::function<void(const wxString&, bool)>;
     using TableShortcutHandler = std::function<bool(wxKeyEvent&)>;
     using GameSoundEventHandler = std::function<void(
-        const std::string&, const std::vector<int>& winnerPlayerIds)>;
+        const std::string&, int playerId, const std::vector<int>& winnerPlayerIds)>;
     using RoomStartRequestedHandler = std::function<void()>;
 
     explicit GamePlayPanel(
