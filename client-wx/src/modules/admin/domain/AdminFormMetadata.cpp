@@ -108,7 +108,6 @@ bool IsCommandOptional(std::string_view command, std::string_view field)
     if (command == "users.update") return field != "id";
     if (command == "users.ban")
         return field == "durationDays" || field == "bannedUntil";
-    if (command == "bugs.update") return field != "id";
     if (command == "games.update") return field != "gameType";
     if (command == "roles.update") return field != "name";
     if (command == "mnemo.questions")
