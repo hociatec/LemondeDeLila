@@ -1,4 +1,7 @@
-import { testGame } from '../../../engine/testing/public-api';
+import {
+  DeclarativeGameRuntime,
+  testGame,
+} from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import MORPION_PAWNS from './content/pawns.json';
 import { compileJsonGame } from '../../../engine/json/public-api';
@@ -9,6 +12,31 @@ const gameDefinition = compileJsonGame(manifest, document, {
 });
 
 describe('Morpion declarative game', () => {
+  it('alternates human and bot moves and prevents playing twice', async () => {
+    const game = testGame(gameDefinition)
+      .players(['Alice', { username: 'Bot', isBot: true }])
+      .seed(3);
+    await game.start();
+    for (const pawn of MORPION_PAWNS.slice(0, 2))
+      await game.choose(game.state().pending!.playerId!, pawn.id);
+    await game.as(1).do('morpion_play', { x: 0, y: 0 });
+    expect(game.state().turn?.currentPlayerId).toBe(-2);
+    expect(game.availableActions(1)).toEqual([]);
+    await expect(
+      game.as(1).do('morpion_play', { x: 1, y: 0 }),
+    ).rejects.toThrow();
+    const runtime = new DeclarativeGameRuntime(gameDefinition);
+    const actions = runtime.getBotActions(game.state(), -2);
+    expect(actions).toHaveLength(1);
+    const state = runtime.applyActions(
+      game.state(),
+      actions!.map((action) => ({
+        ...action,
+        meta: { ...action.meta, actorId: -2 },
+      })),
+    );
+    expect(state.turn?.currentPlayerId).toBe(1);
+  });
   it('requires a bot to resolve the same sequential pawn choice', async () => {
     const game = testGame(gameDefinition)
       .players(['Alice', { username: 'Bot Croix', isBot: true }])

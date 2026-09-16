@@ -8,6 +8,7 @@
 #include <wx/sizer.h>
 
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
+#include "modules/gameplay/grid/application/GameGridCoordinate.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 
 namespace lila::modules::gameplay::presentation::grid
@@ -50,8 +51,7 @@ std::string Describe(const domain::GameGridCellView& cell,
     const domain::GamePawnsView* pawns)
 {
     std::ostringstream out;
-    out << "Plateau " << board.id << ", ligne " << cell.y + 1
-        << ", colonne " << cell.x + 1;
+    out << application::grid::GridCoordinate(cell.x, cell.y);
     if (cell.blocked) out << ", bloquée";
     else if (!cell.occupied) out << ", libre";
     else out << ", occupée";

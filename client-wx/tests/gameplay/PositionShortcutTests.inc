@@ -1,5 +1,10 @@
 void TestBoardPositionShortcuts()
 {
+    using lila::modules::gameplay::application::grid::GridCoordinate;
+    Expect(GridCoordinate(0, 0) == "A1" && GridCoordinate(0, 1) == "A2" &&
+        GridCoordinate(1, 0) == "B1" && GridCoordinate(2, 2) == "C3" &&
+        GridCoordinate(25, 0) == "Z1" && GridCoordinate(26, 0) == "AA1",
+        "Les cases doivent utiliser des coordonnées compactes, sans nom de plateau.");
     auto payload = BuildGameView({
         {"roomId", 81},
         {"viewerPlayerId", 7},

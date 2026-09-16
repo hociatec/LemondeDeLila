@@ -219,7 +219,7 @@ export class GameRoomStateLifecycle {
     const roomStatus = stringOrEmpty(room.room.status).toLowerCase();
     if (
       (roomStatus !== 'setup' && roomStatus !== 'started') ||
-      stringOrEmpty(existing.phase).toLowerCase() !== 'setup'
+      !this.isRosterConfigurationState(existing)
     ) {
       return { state: existing };
     }
@@ -266,10 +266,13 @@ export class GameRoomStateLifecycle {
   }
 
   private isRosterConfigurationState(state: GameState): boolean {
-    // Declarative games start the match lifecycle before asynchronous setup
-    // choices (pawns, roles, etc.) have finished. Their public status is thus
-    // already "playing" while the phase remains "setup".
-    return stringOrEmpty(state.phase).toLowerCase() === 'setup';
+    // Games such as Morpion already expose phase "playing" in the lobby.
+    // An explicit null start timestamp identifies their pre-start projection;
+    // do not infer this from missing metadata on legacy live snapshots.
+    return (
+      state.metadata?.roomStartedAt === null ||
+      stringOrEmpty(state.phase).toLowerCase() === 'setup'
+    );
   }
 
   private ensureVersion(state: GameState): number {
