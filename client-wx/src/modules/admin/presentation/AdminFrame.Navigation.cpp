@@ -84,6 +84,7 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         : wxString(area.description.data()) +
             wxString(L"\n\nChoisissez une opération dans la liste. Son formulaire métier s’ouvrira avec les champs adaptés."));
     resultSummaryLabel_->SetLabel(wxString(L"Aide de la rubrique"));
+    resultSummaryLabel_->Show(!bugReports);
     resultsMenu_->Hide();
     reportSearchPanel_->Show(bugReports);
     if (bugReports)
@@ -93,9 +94,7 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         std::vector<lila::shared::ui::controls::VerticalMenuItem> statuses;
         statuses.reserve(labels.size());
         for (std::size_t index = 0; index < labels.size(); ++index)
-            statuses.push_back({std::to_string(index), wxString(labels[index]) +
-                wxString::Format(L" (%zu rapport%s)", reportStatusCounts_[index],
-                    reportStatusCounts_[index] == 1 ? L"" : L"s")});
+            statuses.push_back({std::to_string(index), wxString(labels[index])});
         reportStatusMenu_->SetItems(statuses);
         reportStatusMenu_->SetSelectedIndexSilently(0);
     }
