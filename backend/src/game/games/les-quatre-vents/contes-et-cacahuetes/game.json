@@ -22,6 +22,18 @@
   ],
   "shortcuts": [
     {
+      "key": "S",
+      "type": "interface",
+      "id": "race-ranking",
+      "label": "Classement de la course"
+    },
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position",
+      "label": "Ma position"
+    },
+    {
       "key": "D",
       "type": "action",
       "actionType": "roll"

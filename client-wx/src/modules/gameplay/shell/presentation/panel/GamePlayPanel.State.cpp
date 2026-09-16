@@ -104,6 +104,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         for (const auto& event : state_.system.events)
             if (observedEventIdentities_.insert(event.Identity()).second)
                 onGameSoundEvent_(event.type,
+                    event.details.playerId.value_or(event.actorId.value_or(0)),
                     state_.system.match.result
                         ? state_.system.match.result->winnerPlayerIds : std::vector<int>{});
     }

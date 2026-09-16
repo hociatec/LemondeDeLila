@@ -9,6 +9,7 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/audio/application/IAudioService.h"
 #include "modules/audio/domain/SoundCue.h"
+#include "modules/rooms/application/GameSoundPolicy.h"
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
 #include "modules/rooms/presentation/history/HistoryAnnouncementQueue.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
@@ -39,23 +40,11 @@ void RoomPanel::BuildLayout()
     gameZoneAnchor_->SetMinSize(wxSize(360, 80));
     gamePlayPanel_ = new lila::modules::gameplay::presentation::GamePlayPanel(this, gameService_);
     gamePlayPanel_->SetGameSoundEventHandler(
-        [this](const std::string& type, const std::vector<int>& winners)
+        [this](const std::string& type, int playerId, const std::vector<int>& winners)
     {
-        using lila::modules::audio::domain::SoundCue;
-        if (type == "dice.rolled") audioService_.Play(SoundCue::DiceRolled);
-        else if (type == "card.drawn") audioService_.Play(SoundCue::DrawCard);
-        else if (type == "quiz.correct") audioService_.Play(SoundCue::QuizCorrect);
-        else if (type == "quiz.wrong") audioService_.Play(SoundCue::QuizWrong);
-        else if (type == "round.ended") audioService_.Play(SoundCue::RoundEnded);
-        else if (type == "pawn.picked") audioService_.Play(SoundCue::PawnPicked);
-        else if (type == "pawn.placed") audioService_.Play(SoundCue::PawnPlacedOpponent);
-        else if (type == "wall.placed") audioService_.Play(SoundCue::WallPlacedOpponent);
-        else if (type == "match.finished" || type == "game.finished")
-        {
-            const int selfId = currentUserId_ ? currentUserId_() : 0;
-            const bool victory = std::find(winners.begin(), winners.end(), selfId) != winners.end();
-            audioService_.Play(victory ? SoundCue::GameVictory : SoundCue::GameDefeat);
-        }
+        const auto cue = application::ResolveGameSound(
+            type, playerId, currentUserId_ ? currentUserId_() : 0, winners);
+        if (cue) audioService_.Play(*cue);
     });
     gamePlayPanel_->Hide();
     gamePlayPanel_->SetMinSize(wxSize(360, 320));

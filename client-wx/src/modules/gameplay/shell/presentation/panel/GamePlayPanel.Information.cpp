@@ -35,6 +35,9 @@ void GamePlayPanel::RebuildInfoPanelChoices()
     append("turn", L"Tour");
     append("players", L"Joueurs");
     append("setup", L"Configuration");
+    if (state_.kits.movement && std::any_of(state_.system.shortcuts.begin(), state_.system.shortcuts.end(),
+        [](const auto& shortcut) { return shortcut.id == "race-ranking"; }))
+        append("race-ranking", L"Classement de la course");
     for (const auto& [id, label] : Capabilities)
         if (state_.kits.Has(id))
         {

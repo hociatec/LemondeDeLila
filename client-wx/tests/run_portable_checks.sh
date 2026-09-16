@@ -4,6 +4,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${TMPDIR:-/tmp}/lila-portable-tests"
 mkdir -p "$BUILD_DIR"
 COMMON_FLAGS=(-std=c++20 -Wall -Wextra -Wpedantic -Werror -I"$ROOT/src")
+c++ "${COMMON_FLAGS[@]}" "$ROOT/tests/GameSoundPolicyTests.cpp" -o "$BUILD_DIR/game-sound-policy-tests"
+"$BUILD_DIR/game-sound-policy-tests"
 JSON_INCLUDE="$BUILD_DIR/dependencies/nlohmann-json-3.12.0"
 mkdir -p "$JSON_INCLUDE/nlohmann" "$BUILD_DIR/generated"
 
