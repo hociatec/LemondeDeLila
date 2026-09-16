@@ -7,6 +7,7 @@
 #include <wx/textctrl.h>
 
 #include "modules/admin/presentation/AdminResultFormatter.h"
+#include "modules/admin/presentation/AdminBugReportFormatter.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
@@ -60,7 +61,7 @@ void AdminFrame::ShowResult(
         resultText_->Show();
         resultSummaryLabel_->SetLabel(wxString(L"Rapport consulté"));
         resultSummaryLabel_->Show();
-        resultText_->SetValue(lila::shared::text::FromUtf8(presentation.details));
+        resultText_->SetValue(FormatAdminBugReport(result));
         resultText_->SetInsertionPoint(0);
         Layout();
         FocusResultDetails();
