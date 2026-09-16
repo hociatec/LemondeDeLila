@@ -74,6 +74,13 @@ void PresenceFrame::RunSelectedAction()
     const int userId = selectedPlayer_->id;
     const wxString username = FromUtf8(selectedPlayer_->username);
 
+    if (action == "join")
+    {
+        if (selectedPlayer_->currentRoomId.has_value() && onJoinRoomRequested_)
+            onJoinRoomRequested_(*selectedPlayer_->currentRoomId);
+        return;
+    }
+
     if (action == "bio")
     {
         ShowBio(userId, username);

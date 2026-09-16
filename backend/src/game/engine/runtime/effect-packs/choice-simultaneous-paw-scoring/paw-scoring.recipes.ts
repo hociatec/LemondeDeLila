@@ -209,6 +209,9 @@ export function pawScoringRules(source: PawScoringProgram) {
       (ctx.status.has(playerId, status.hasSun) ||
         hasPower(playerId, 'passage-star', ctx)) &&
       !isBlocked(playerId, ctx) &&
+      (currentObstacle(playerId, ctx) !== 'sol' ||
+        hasPower(playerId, 'passage-star', ctx) ||
+        value <= 50) &&
       (value !== 150 || ctx.resources.get(playerId, status.turboPlayed) < 2) &&
       value > 0 &&
       ctx.movement.position(program.trackId, playerId) + value <= program.goal
@@ -264,6 +267,7 @@ export function pawScoringRules(source: PawScoringProgram) {
       addRoundStatus(playerId, status.sunNotReady, ctx);
       ctx.status.remove(playerId, status.obstacleLock);
     } else if (removes) {
+      ctx.status.remove(playerId, status.hasSun);
       ctx.status.remove(playerId, status.sunNotReady);
       addRoundStatus(playerId, status.obstacleLock, ctx);
     }
@@ -274,9 +278,10 @@ export function pawScoringRules(source: PawScoringProgram) {
     if (obstacle && powerIgnoresObstacle([power], obstacle)) {
       ctx.status.remove(playerId, status.obstacle);
       ctx.status.remove(playerId, status.sunNotReady);
-      if (power !== 'passage-star')
+      if (power !== 'passage-star') {
+        ctx.status.remove(playerId, status.hasSun);
         addRoundStatus(playerId, status.obstacleLock, ctx);
-      else ctx.status.remove(playerId, status.obstacleLock);
+      } else ctx.status.remove(playerId, status.obstacleLock);
     }
   }
   function mustCounter(playerId: number, ctx: Context) {
@@ -285,7 +290,9 @@ export function pawScoringRules(source: PawScoringProgram) {
   function isBlocked(playerId: number, ctx: Context) {
     const obstacle = currentObstacle(playerId, ctx);
     return (
-      obstacle != null && !powerIgnoresObstacle(powers(playerId, ctx), obstacle)
+      obstacle != null &&
+      obstacle !== 'sol' &&
+      !powerIgnoresObstacle(powers(playerId, ctx), obstacle)
     );
   }
   function hasPower(playerId: number, power: PawScoringPower, ctx: Context) {

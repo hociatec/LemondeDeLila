@@ -22,7 +22,7 @@ void MessagingView::BuildComposeScreen()
     auto* subjectLabel = new wxStaticText(composePanel, wxID_ANY, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingComposeSubject));
     subjectCtrl = new wxTextCtrl(composePanel, wxID_ANY);
     auto* bodyLabel = new wxStaticText(composePanel, wxID_ANY, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingComposeBody));
-    bodyCtrl = new wxTextCtrl(composePanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2 | wxTE_PROCESS_TAB);
+    bodyCtrl = new wxTextCtrl(composePanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2);
     bodyCtrl->SetMinSize(wxSize(-1, 280));
     auto* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
     sendComposeButton = new wxButton(composePanel, wxID_ANY, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingSendButton));

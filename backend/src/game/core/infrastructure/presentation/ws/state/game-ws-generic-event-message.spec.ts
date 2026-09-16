@@ -30,6 +30,15 @@ describe('genericGameEventMessage', () => {
     );
   });
 
+  it('announces a grid move with human-readable coordinates', () => {
+    expect(
+      message('morpion.mark.placed', { playerId: 1, x: 0, y: 2 }, 1, 1),
+    ).toBe('Vous placez votre pion, ligne 3, colonne 1.');
+    expect(
+      message('morpion.mark.placed', { playerId: 2, x: 1, y: 0 }, 2, 1),
+    ).toBe('Baloo place son pion, ligne 1, colonne 2.');
+  });
+
   it('announces pawn choices differently for the player and the others', () => {
     const data = {
       playerId: 1,

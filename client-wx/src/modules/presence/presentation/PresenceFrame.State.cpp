@@ -89,7 +89,14 @@ void PresenceFrame::RebuildActions()
         return;
     }
 
-    menu_->SetItems(PresencePresentationModel::BuildActionItems(*socialState_));
+    auto items = PresencePresentationModel::BuildActionItems(*socialState_);
+    const auto roomId = selectedPlayer_->currentRoomId;
+    bool sameRoom = false;
+    for (const auto& player : presenceMonitor_.Players())
+        if (IsSelf(player) && player.currentRoomId == roomId) sameRoom = true;
+    if (roomId.has_value() && *roomId > 0 && !sameRoom && onJoinRoomRequested_)
+        items.insert(items.begin(), {"join", wxString(L"Rejoindre sa table")});
+    menu_->SetItems(items);
     menu_->SetSelectedIndexSilently(0);
     detailsLabel_->SetLabel(wxEmptyString);
     UpdateStatus(wxString(L"Flèches : naviguer. Entrée : sélectionner. Échap : retour."));

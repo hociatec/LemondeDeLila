@@ -73,6 +73,13 @@ function boardAndPlayerMessage(
   value: (key: string) => string,
 ): string {
   const { type, data } = input;
+  if (type.endsWith('.mark.placed')) {
+    const name = player(data.playerId);
+    const x = numberValue(data.x);
+    const y = numberValue(data.y);
+    if (!name || x == null || y == null) return '';
+    return `${name} ${name === 'Vous' ? 'placez votre' : 'place son'} pion, ligne ${y + 1}, colonne ${x + 1}.`;
+  }
   if (type === 'resource.changed') {
     // Corridor publishes its initial wall stock to the resources panel. It is
     // setup data, not a game event that belongs in the spoken history.

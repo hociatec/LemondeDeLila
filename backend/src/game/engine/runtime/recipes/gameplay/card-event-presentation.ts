@@ -25,8 +25,13 @@ export function resolvedCardEventData(
     card.description,
   );
   const split = splitCardText(text);
+  const narrative = firstText(card.text);
   const effectDescription =
-    explicitEffect || split.effect || describeEffects(card.effects ?? []);
+    explicitEffect ||
+    split.effect ||
+    (narrative && narrative !== text
+      ? narrative
+      : describeEffects(card.effects ?? []));
   return {
     revealed: true,
     ...(split.label ? { cardLabel: split.label } : {}),

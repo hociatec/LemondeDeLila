@@ -42,7 +42,7 @@ export class MessagingWsNotificationService {
         `Echec notification message pour utilisateur ${recipientId}: ${getErrorMessage(err)}`,
       );
     }
-    await this.counts.notifyCounts(recipientId);
+    await this.notifyCountsBestEffort(recipientId);
   }
 
   async notifyCountsBestEffort(userId: number) {

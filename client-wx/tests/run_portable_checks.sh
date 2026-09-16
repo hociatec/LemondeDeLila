@@ -154,6 +154,7 @@ c++ "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
   "$ROOT/tests/ServiceResilienceTests.cpp" \
   "$ROOT/src/modules/chat/application/ChatService.cpp" \
   "$ROOT/src/modules/chat/application/ChatService.Connection.cpp" \
+  "$ROOT/src/modules/chat/application/ChatService.Heartbeat.cpp" \
   "$ROOT/src/modules/chat/application/ChatService.Messages.cpp" \
   "$ROOT/src/modules/chat/application/ChatService.Reconnect.cpp" \
   "$ROOT/src/modules/chat/application/ChatMessageStore.cpp" \
