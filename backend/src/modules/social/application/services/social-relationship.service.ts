@@ -1,4 +1,5 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { serializeDate } from '../../../../shared/utils/public-api';
 import { isUniqueConstraintViolation } from '../../../../platform/database/public-api';
 import {
   SOCIAL_RELATIONSHIP_REPOSITORY,
@@ -38,7 +39,7 @@ export class SocialRelationshipService {
         id: friend.id,
         username: friend.username,
         avatar: friend.avatar ?? null,
-        since: relation.updatedAt,
+        since: serializeDate(relation.updatedAt),
       };
     });
   }
@@ -88,7 +89,7 @@ export class SocialRelationshipService {
         username: relation.addressee.username,
         avatar: relation.addressee.avatar ?? null,
       },
-      createdAt: relation.createdAt,
+      createdAt: serializeDate(relation.createdAt),
     }));
   }
 
@@ -99,7 +100,7 @@ export class SocialRelationshipService {
       id: relation.addressee.id,
       username: relation.addressee.username,
       avatar: relation.addressee.avatar ?? null,
-      blockedAt: relation.updatedAt,
+      blockedAt: serializeDate(relation.updatedAt),
     }));
   }
 
@@ -143,7 +144,7 @@ export class SocialRelationshipService {
       return {
         id: relation.id,
         status: relation.status,
-        createdAt: relation.createdAt,
+        createdAt: serializeDate(relation.createdAt),
       };
     }
 
@@ -154,7 +155,7 @@ export class SocialRelationshipService {
     return {
       id: saved.id,
       status: saved.status,
-      createdAt: saved.createdAt,
+      createdAt: serializeDate(saved.createdAt),
     };
   }
 
@@ -179,7 +180,7 @@ export class SocialRelationshipService {
       return {
         id: pending.id,
         status: pending.status,
-        createdAt: pending.createdAt,
+        createdAt: serializeDate(pending.createdAt),
       };
     }
     if (
@@ -199,7 +200,7 @@ export class SocialRelationshipService {
     return {
       id: saved.id,
       status: saved.status,
-      updatedAt: saved.updatedAt,
+      updatedAt: serializeDate(saved.updatedAt),
     };
   }
 
@@ -225,7 +226,7 @@ export class SocialRelationshipService {
     return {
       id: saved.id,
       status: saved.status,
-      updatedAt: saved.updatedAt,
+      updatedAt: serializeDate(saved.updatedAt),
     };
   }
 
@@ -295,7 +296,7 @@ export class SocialRelationshipService {
       return {
         id: alreadyBlocked.id,
         status: alreadyBlocked.status,
-        updatedAt: alreadyBlocked.updatedAt,
+        updatedAt: serializeDate(alreadyBlocked.updatedAt),
       };
     }
 
@@ -305,7 +306,11 @@ export class SocialRelationshipService {
     }
 
     const saved = await this.relationships.create(userId, targetId, 'blocked');
-    return { id: saved.id, status: saved.status, updatedAt: saved.updatedAt };
+    return {
+      id: saved.id,
+      status: saved.status,
+      updatedAt: serializeDate(saved.updatedAt),
+    };
   }
 
   async unblockUser(userId: number, targetId: number) {

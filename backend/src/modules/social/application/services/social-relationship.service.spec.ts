@@ -97,7 +97,7 @@ describe('SocialRelationshipService', () => {
     await expect(service.requestFriend(1, 2)).resolves.toEqual({
       id: 7,
       status: 'pending',
-      createdAt: pending.createdAt,
+      createdAt: pending.createdAt.toISOString(),
     });
     expect(notifications.notifyFriendRequested).not.toHaveBeenCalled();
   });
