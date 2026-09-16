@@ -25,6 +25,7 @@
 #include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
 #include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
+#include "modules/gameplay/grid/application/GameGridCoordinate.h"
 #include "modules/gameplay/shortcuts/application/GameGenericShortcutPolicy.h"
 
 namespace
