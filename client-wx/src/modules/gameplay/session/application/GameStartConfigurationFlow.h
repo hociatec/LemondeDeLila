@@ -24,9 +24,9 @@ public:
         return true;
     }
 
-    [[nodiscard]] bool ObserveSetup(const domain::GameSetup& setup) noexcept
+    [[nodiscard]] bool ObserveSetup(const domain::GameSetup& setup, bool waitingForPawns = false) noexcept
     {
-        if (!setup.complete ||
+        if ((!setup.complete && !waitingForPawns) ||
             (phase_ != Phase::AwaitingActionAcknowledgement &&
              phase_ != Phase::AwaitingSetupProjection))
             return false;

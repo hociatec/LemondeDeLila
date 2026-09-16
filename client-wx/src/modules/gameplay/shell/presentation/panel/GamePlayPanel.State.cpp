@@ -217,12 +217,15 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         inlinePromptBecameActive || actionableChoicesBecameActive;
     if (shouldRefreshZoneFocus && onZoneFocusRequested_)
         onZoneFocusRequested_();
+    // Pawn selection may itself keep setup incomplete (Corridor). Start the
+    // room once configuration has produced that workflow so every participant
+    // can reach their pawn controls, including the non-owner.
+    const bool waitingForPawns = state_.pending && state_.pending->workflowKind == "pawn";
     const bool setupProjectionCompleted = startConfigurationFlow_.ObserveSetup(
-        state_.system.setup);
+        state_.system.setup, waitingForPawns);
     if (!roomStarted_ && roomStartFlowRequested_ &&
         !startConfigurationFlow_.IsAwaitingActionAcknowledgement() &&
-        state_.system.setup.complete &&
-        !pawnSelection_.has_value() &&
+        (state_.system.setup.complete || waitingForPawns) &&
         (setupProjectionCompleted || ActivePrompt() == nullptr))
     {
         roomStartFlowRequested_ = false;

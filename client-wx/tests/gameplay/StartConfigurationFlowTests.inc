@@ -34,4 +34,20 @@ void TestStartConfigurationIsSubmittedOnlyOnce()
         "La projection recue avant l'acquittement doit aussi declencher le demarrage.");
     Expect(!flow.Acknowledge("game.action"),
         "L'acquittement tardif ne doit pas demander un second demarrage.");
+
+    // Corridor's setup stays incomplete until both pawns have been chosen.
+    // Receiving the pawn workflow proves the wall configuration succeeded.
+    for (const bool acknowledgementFirst : {false, true})
+    {
+        flow.Reset();
+        setup.complete = false;
+        Expect(flow.TryBeginSubmission(setup), "Configuration des murs attendue");
+        if (acknowledgementFirst)
+            Expect(flow.Acknowledge("game.action"), "Acquittement attendu");
+        Expect(!flow.ObserveSetup(setup), "Une configuration encore ouverte ne doit pas démarrer");
+        Expect(flow.ObserveSetup(setup, true) && flow.IsAwaitingRoomStart(),
+            "Le choix des pions doit débloquer le démarrage même si setup est incomplet");
+        Expect(!flow.ObserveSetup(setup, true), "Pas de double démarrage sur projection répétée");
+        Expect(!flow.Acknowledge("game.action"), "Pas de double démarrage sur acquittement tardif");
+    }
 }
