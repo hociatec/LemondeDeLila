@@ -69,12 +69,12 @@ void RoomPanel::ApplyRoom(domain::RoomState room)
 void RoomPanel::SyncGamePlayPanel()
 {
     const bool isStarted = room_.started || room_.status == "started";
-    gameZoneAnchor_->Show(true);
     if (!gamePlayPanel_->IsOpenFor(room_.id, room_.gameType))
     {
         gamePlayPanel_->Open(room_.id, room_.gameType, room_.gameName, isStarted);
     }
     gamePlayPanel_->SetRoomStarted(isStarted);
+    ScheduleGameZoneFocus();
 }
 
 void RoomPanel::ShowConnecting()

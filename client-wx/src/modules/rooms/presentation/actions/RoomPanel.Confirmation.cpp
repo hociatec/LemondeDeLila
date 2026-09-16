@@ -4,6 +4,7 @@
 
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
 #include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/application/FocusCoordinator.h"
 
 namespace lila::modules::rooms::presentation
 {
@@ -43,6 +44,6 @@ void RoomPanel::RequestResetConfirmation()
     }
     UpdateStatus(wxString(L"R\u00E9initialisation annul\u00E9e."), false, true);
     static_cast<void>(
-        lila::shared::accessibility::NavigationController::Focus(gameZoneAnchor_));
+        lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
 }
 }

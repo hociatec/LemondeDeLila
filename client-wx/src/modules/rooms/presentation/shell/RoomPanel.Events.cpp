@@ -20,14 +20,12 @@ void RoomPanel::BindEvents()
     gameZoneAnchor_->Bind(wxEVT_SET_FOCUS, [this](wxFocusEvent& event)
     {
         event.Skip();
-        CallAfter([weakThis = wxWeakRef<RoomPanel>(this)]()
-        {
-            if (!weakThis || !weakThis->gameZoneAnchor_->HasFocus()) return;
-            auto* top = dynamic_cast<wxTopLevelWindow*>(wxGetTopLevelParent(weakThis.get()));
-            if (top != nullptr && !top->IsActive()) return;
-            if (auto* target = weakThis->gamePlayPanel_->RequiredInteractionTarget())
-                static_cast<void>(lila::shared::accessibility::NavigationController::Focus(target));
-        });
+        ScheduleGameZoneFocus();
+    });
+    Bind(wxEVT_SHOW, [this](wxShowEvent& event)
+    {
+        event.Skip();
+        if (event.IsShown()) ScheduleGameZoneFocus();
     });
     gameZoneAnchor_->SetActivatedHandler(
         [this]()
@@ -56,20 +54,7 @@ void RoomPanel::BindEvents()
             return TryHandleShortcut(event);
         });
     gamePlayPanel_->SetZoneFocusRequestedHandler(
-        [this]()
-        {
-            auto* topLevel = dynamic_cast<wxTopLevelWindow*>(wxGetTopLevelParent(this));
-            if (topLevel != nullptr && !topLevel->IsActive()) return;
-            auto* focused = wxWindow::FindFocus();
-            const bool focusInsideGame = focused == nullptr || focused == gameZoneAnchor_ ||
-                lila::shared::accessibility::NavigationController::IsDescendantOf(
-                    focused, gamePlayPanel_);
-            if (!focusInsideGame) return;
-            auto* target = gamePlayPanel_->RequiredInteractionTarget();
-            static_cast<void>(
-                lila::shared::accessibility::NavigationController::Focus(
-                    target != nullptr ? target : static_cast<wxWindow*>(gameZoneAnchor_)));
-        });
+        [this]() { ScheduleGameZoneFocus(); });
     gamePlayPanel_->SetHistoryMessageHandler(
         [this](const wxString& message, bool allowRepeat)
         {
@@ -103,6 +88,31 @@ void RoomPanel::BindEvents()
             return scope;
         });
     Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event) { HandleShortcut(event); });
+}
+
+void RoomPanel::ScheduleGameZoneFocus()
+{
+    // Resolve after native show/layout and focus-restoration events, not while
+    // the pawn overlay or the entire room is still being hidden/revealed.
+    CallAfter([weakThis = wxWeakRef<RoomPanel>(this)]()
+    {
+        if (!weakThis || !weakThis->IsShownOnScreen()) return;
+        auto* top = dynamic_cast<wxTopLevelWindow*>(wxGetTopLevelParent(weakThis.get()));
+        if (top != nullptr && !top->IsActive()) return;
+        auto* focused = wxWindow::FindFocus();
+        const bool insideGame = focused == nullptr || focused == weakThis.get() ||
+            focused == weakThis->gameZoneAnchor_ ||
+            lila::shared::accessibility::NavigationController::IsDescendantOf(
+                focused, weakThis->gamePlayPanel_);
+        auto* target = weakThis->gamePlayPanel_->RequiredInteractionTarget();
+        if (target != nullptr && !target->IsShownOnScreen()) target = nullptr;
+        // Only one game-zone entry: either the interaction or its fallback.
+        weakThis->gameZoneAnchor_->Show(target == nullptr);
+        weakThis->Layout();
+        if (!insideGame) return; // Never steal focus from chat or history.
+        static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
+            target != nullptr ? target : static_cast<wxWindow*>(weakThis->gameZoneAnchor_)));
+    });
 }
 
 void RoomPanel::SendChat()

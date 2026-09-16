@@ -75,6 +75,8 @@ void GamePlayPanel::SetRoomStarted(bool started)
         RequestRefresh();
     }
     Show(roomStarted_ || roomStartFlowRequested_ || roomStartPending_);
+    Layout();
+    if (GetParent()) GetParent()->Layout();
     if (becameStarted && onZoneFocusRequested_) onZoneFocusRequested_();
 }
 
