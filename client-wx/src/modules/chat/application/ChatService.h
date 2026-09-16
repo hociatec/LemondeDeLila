@@ -72,6 +72,9 @@ public:
 private:
     void StopReceiveLoop() noexcept;
     void StartReceiveLoop(std::uint64_t lifecycleGeneration);
+    void StopHeartbeat() noexcept;
+    void StartHeartbeat(std::uint64_t lifecycleGeneration);
+    void HeartbeatLoop(std::stop_token stopToken, std::uint64_t lifecycleGeneration);
     void ReceiveLoop(std::stop_token stopToken, std::uint64_t lifecycleGeneration);
     [[nodiscard]] bool IsLifecycleCurrent(std::uint64_t lifecycleGeneration) const;
     void ProcessIncomingMessage(const std::string& rawJson, bool fatalError);
@@ -99,6 +102,7 @@ private:
     std::optional<domain::ChatServerError> lastServerError_;
     std::weak_ptr<EventHandlers> eventHandlers_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> receiveTask_;
+    std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> heartbeatTask_;
     int reconnectAttempt_ = 0;
     std::uint64_t lifecycleGeneration_ = 0;
 };
