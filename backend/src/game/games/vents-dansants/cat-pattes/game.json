@@ -1,8 +1,12 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "1",
   "snapshotMigrations": [
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
+    },
     {
       "fromVersion": "cat-pattes@content:b15666ae",
       "toVersion": "1"

@@ -76,6 +76,7 @@ wxWindow* AppNavigator::CreateSocialView(ViewId viewId)
                 }
                 ReplaceView(ViewId::Social, view);
             },
+            [this](int roomId) { JoinRoom(roomId, false); },
             [this]() { ReplaceView(previousViewBeforePresence_, GetOrCreateView(previousViewBeforePresence_)); },
             [this]() { CloseApplication(); });
     default:

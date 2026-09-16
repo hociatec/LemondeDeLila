@@ -1,6 +1,20 @@
 import { resolvedCardEventData } from './card-event-presentation';
 
 describe('resolved card event presentation', () => {
+  it('keeps the narrative when the card has a separate title', () => {
+    expect(
+      resolvedCardEventData({
+        id: 1,
+        title: "Livre à l'envers",
+        text: 'Votre prochain tour se fait en reculant.',
+      }),
+    ).toEqual({
+      revealed: true,
+      cardLabel: "Livre à l'envers",
+      effectDescription: 'Votre prochain tour se fait en reculant.',
+    });
+  });
+
   it('describes an immediately resolved public card and all useful effects', () => {
     expect(
       resolvedCardEventData({

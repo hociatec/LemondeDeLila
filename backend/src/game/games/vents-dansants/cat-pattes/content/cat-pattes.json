@@ -1259,7 +1259,7 @@
       "id": "obstacle-sol-1",
       "name": "Sol ciré",
       "description": "Vos pattes partent toutes seules, mais pas dans le bon sens.",
-      "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+      "effect": "Limite les cartes Pattes à Pas feutré, Petite foulée et Sprint du matin (10, 20 ou 50 pattes), jusqu'à Saut agile ou Passage de star.",
       "effects": [
         {
           "kind": "add-status",
@@ -1285,7 +1285,7 @@
       "id": "obstacle-sol-2",
       "name": "Sol ciré",
       "description": "Vos pattes partent toutes seules, mais pas dans le bon sens.",
-      "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+      "effect": "Limite les cartes Pattes à Pas feutré, Petite foulée et Sprint du matin (10, 20 ou 50 pattes), jusqu'à Saut agile ou Passage de star.",
       "effects": [
         {
           "kind": "add-status",
@@ -1311,7 +1311,7 @@
       "id": "obstacle-sol-3",
       "name": "Sol ciré",
       "description": "Vos pattes partent toutes seules, mais pas dans le bon sens.",
-      "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+      "effect": "Limite les cartes Pattes à Pas feutré, Petite foulée et Sprint du matin (10, 20 ou 50 pattes), jusqu'à Saut agile ou Passage de star.",
       "effects": [
         {
           "kind": "add-status",
@@ -1337,7 +1337,7 @@
       "id": "obstacle-sol-4",
       "name": "Sol ciré",
       "description": "Vos pattes partent toutes seules, mais pas dans le bon sens.",
-      "effect": "Bloque les cartes Pattes tant que l'obstacle n'est pas retiré.",
+      "effect": "Limite les cartes Pattes à Pas feutré, Petite foulée et Sprint du matin (10, 20 ou 50 pattes), jusqu'à Saut agile ou Passage de star.",
       "effects": [
         {
           "kind": "add-status",

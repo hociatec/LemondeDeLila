@@ -157,7 +157,9 @@ function drawCard(
   drawAndResolve<State, Card>(ctx, {
     deckId: program.deckId,
     playerId,
-    eventData: (card) => ({ category: card.category }),
+    // These cards contain their full rule in the narrative. Do not append a
+    // second, derived description (which can expose internal status names).
+    eventData: (card) => ({ category: card.category, effectDescription: '' }),
     resolve: (card) => {
       if (!isProtected(program, playerId, card.category, ctx))
         ctx.effects.schedule(...card.effects);

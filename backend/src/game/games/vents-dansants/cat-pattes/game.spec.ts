@@ -55,7 +55,7 @@ describe('Cat Pattes declarative game', () => {
       [{ type: 'draw', payload: {}, meta: { actorId } }],
     ) as typeof legacy;
 
-    expect(restored.engine?.contentVersion).toBe('1');
+    expect(restored.engine?.contentVersion).toBe('2');
     const cards = restored.engine.kits?.cards;
     expect(cards?.hands?.players?.[String(actorId)]).toHaveLength(7);
   });

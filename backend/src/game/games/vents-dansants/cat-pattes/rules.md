@@ -20,7 +20,8 @@ Atteindre 1 000 pattes avant vos adversaires.
 - Coussin piégé (x3)
 - Sol ciré (x4)
 
-Effet commun : bloque les cartes Pattes tant que l'obstacle n'est pas retiré.
+Gamelle vide, Pluie torrentielle, Chien enragé et Coussin piégé bloquent les cartes Pattes tant que l'obstacle n'est pas retiré.
+Sol ciré limite les cartes Pattes à Pas feutré, Petite foulée et Sprint du matin (10, 20 ou 50 pattes).
 
 ### Cartes Parades (38)
 - Croquettes (x6) : retire Gamelle vide.
@@ -46,7 +47,8 @@ Effet commun : bloque les cartes Pattes tant que l'obstacle n'est pas retiré.
 
 ## Règles clés
 - Les cartes Pattes demandent un soleil actif, sauf effet Pouvoir qui l'ignore.
-- Un obstacle actif bloque les cartes Pattes jusqu'à retrait (ou contournement par un Pouvoir).
+- Après Croquettes, Dodo réparateur, Nouveau coussin ou Saut agile, rejouez Rayon de soleil avant de reprendre les cartes Pattes, sauf avec Passage de star.
+- Turbo-chat est limité à deux utilisations par joueur et par manche.
 - Les Pouvoirs restent actifs.
 
 ## Journal de partie
