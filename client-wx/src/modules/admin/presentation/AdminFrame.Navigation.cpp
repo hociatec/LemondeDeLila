@@ -92,7 +92,8 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         const std::array<std::wstring_view, 5> labels{
             L"En attente", L"En cours", L"Corrigés, à tester", L"Terminés", L"Refusés"};
         std::vector<lila::shared::ui::controls::VerticalMenuItem> statuses;
-        statuses.reserve(labels.size());
+        statuses.reserve(labels.size() + 1);
+        statuses.push_back({"new", wxString(L"Nouveau rapport")});
         for (std::size_t index = 0; index < labels.size(); ++index)
             statuses.push_back({std::to_string(index), wxString(labels[index])});
         reportStatusMenu_->SetItems(statuses);
@@ -110,7 +111,7 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         wxString(visibleCommands_[commandsMenu_->GetSelectedIndex()]->description));
     Layout();
     LoadAutomaticAreaContent();
-    if (bugReports) createReportButton_->SetFocus();
+    if (bugReports) reportStatusMenu_->GetSelectedControl()->SetFocus();
     else FocusCurrentMenu();
 }
 

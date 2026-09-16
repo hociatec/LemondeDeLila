@@ -112,6 +112,8 @@ nlohmann::json ParseHttpPayload(const lila::shared::network::http::HttpResponse&
     {
         const auto found = parsed.find("message");
         if (found != parsed.end() && found->is_string()) message = found->get<std::string>();
+        else if (found != parsed.end() && found->is_array() && !found->empty() &&
+                 (*found)[0].is_string()) message = (*found)[0].get<std::string>();
     }
     throw lila::shared::errors::AppException(
         lila::shared::errors::ToAppError(message, "HTTP admin " + std::to_string(response.statusCode)));
