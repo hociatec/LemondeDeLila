@@ -17,8 +17,7 @@ describe('Morpion declarative game', () => {
       .players(['Alice', { username: 'Bot', isBot: true }])
       .seed(3);
     await game.start();
-    for (const pawn of MORPION_PAWNS.slice(0, 2))
-      await game.choose(game.state().pending!.playerId!, pawn.id);
+    expect(game.state().pending).toBeNull();
     await game.as(1).do('morpion_play', { x: 0, y: 0 });
     expect(game.state().turn?.currentPlayerId).toBe(-2);
     expect(game.availableActions(1)).toEqual([]);
@@ -37,7 +36,7 @@ describe('Morpion declarative game', () => {
     );
     expect(state.turn?.currentPlayerId).toBe(1);
   });
-  it('requires a bot to resolve the same sequential pawn choice', async () => {
+  it('assigns distinct pawns to human and bot without any choice', async () => {
     const game = testGame(gameDefinition)
       .players(['Alice', { username: 'Bot Croix', isBot: true }])
       .seed(3);
@@ -46,41 +45,16 @@ describe('Morpion declarative game', () => {
     const assignments = () =>
       (game.view(1) as unknown as { kits: StableGameKitsView }).kits.pawns?.sets
         .morpion.assignments;
-    expect(assignments()?.['1']).toEqual([]);
-    expect(assignments()?.['-2']).toEqual([]);
-
-    const first = game.state().pending?.playerId;
-    expect(first).not.toBeNull();
-    await game.choose(first!, MORPION_PAWNS[0].id);
-    const second = game.state().pending?.playerId;
-    expect(second).not.toBe(first);
-    expect(game.availableActions(first!)).toEqual([]);
-    expect(game.availableActions(second!)).toContain('choice.resolve');
-    await game.choose(second!, MORPION_PAWNS[1].id);
-
-    expect(assignments()?.[String(first)]).toEqual([MORPION_PAWNS[0].id]);
-    expect(assignments()?.[String(second)]).toEqual([MORPION_PAWNS[1].id]);
+    expect(assignments()?.['1']).toEqual([MORPION_PAWNS[0].id]);
+    expect(assignments()?.['-2']).toEqual([MORPION_PAWNS[1].id]);
+    expect(game.availableActions(1)).toHaveLength(9);
+    expect(game.availableActions(-2)).toEqual([]);
     expect(game.state().pending).toBeNull();
   });
 
-  it('handles pawn choices, available cells, victory, logs and replay', async () => {
+  it('handles available cells, victory, logs and replay without pawn choices', async () => {
     const game = testGame(gameDefinition).players(['Alice', 'Bob']).seed(3);
     await game.start();
-    const firstChooser = game.state().pending?.playerId ?? 1;
-    const secondChooser = firstChooser === 1 ? 2 : 1;
-
-    await game.as(firstChooser).do(
-      'choice.resolve' as never,
-      {
-        value: MORPION_PAWNS[0].id,
-      } as never,
-    );
-    await game.as(secondChooser).do(
-      'choice.resolve' as never,
-      {
-        value: MORPION_PAWNS[1].id,
-      } as never,
-    );
     expect(game.state().pending).toBeNull();
     expect(game.availableActions(1)).toHaveLength(9);
 
@@ -108,20 +82,6 @@ describe('Morpion declarative game', () => {
   it('rejects occupied cells and proposes a strategic legal bot move', async () => {
     const game = testGame(gameDefinition).players(['Alice', 'Bob']).seed(8);
     await game.start();
-    const firstChooser = game.state().pending?.playerId ?? 1;
-    const secondChooser = firstChooser === 1 ? 2 : 1;
-    await game.as(firstChooser).do(
-      'choice.resolve' as never,
-      {
-        value: MORPION_PAWNS[0].id,
-      } as never,
-    );
-    await game.as(secondChooser).do(
-      'choice.resolve' as never,
-      {
-        value: MORPION_PAWNS[1].id,
-      } as never,
-    );
     await game.as(1).do('morpion_play', { x: 1, y: 1 });
 
     await expect(game.as(2).do('morpion_play', { x: 1, y: 1 })).rejects.toThrow(

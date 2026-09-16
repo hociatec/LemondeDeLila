@@ -11,6 +11,7 @@ import {
 type SequentialPawnSelectionOptions<TState extends object> = {
   setId: string;
   choiceId: string;
+  automatic?: boolean;
   groups?: readonly PawnSelectionGroup[];
   label?: (pawn: PawnDefinition) => string;
   assigned?: (input: {
@@ -63,6 +64,16 @@ export function sequentialPawnSelection<TState extends object>(
     ctx: GameContext<TState>,
   ): void => {
     const participants = orderedPawnSelectionParticipants(playerIds, ctx);
+    if (options.automatic) {
+      for (const playerId of participants) {
+        const pawn = ctx.pawns.available(options.setId)[0];
+        if (!pawn) throw new GameRuleViolationError('PAWN_UNAVAILABLE');
+        assignPawnSelection(options.setId, pawn.id, playerId, ctx);
+        options.assigned?.({ playerId, pawnId: pawn.id, ctx });
+      }
+      completePawnSelection(options, ctx);
+      return;
+    }
     if (participants.length === 0) {
       completePawnSelection(options, ctx);
       return;

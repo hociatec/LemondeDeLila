@@ -22,11 +22,15 @@ export const jsonGridSchema = object(
     drawReason: id,
     markEvent: id,
     preferredCells: array(object({ x: coordinate, y: coordinate })),
-    pawnSelection: object({
-      setId: id,
-      choiceId: id,
-      order: { enum: ['players', 'shuffled'] },
-    }),
+    pawnSelection: object(
+      {
+        setId: id,
+        choiceId: id,
+        order: { enum: ['players', 'shuffled'] },
+        automatic: boolean,
+      },
+      ['setId', 'choiceId', 'order'],
+    ),
   },
   [
     'boardId',

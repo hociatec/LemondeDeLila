@@ -61,6 +61,7 @@ function bindSelection(program: GridPlacementProgram) {
   const selection = sequentialPawnSelection<State>({
     setId: config.setId,
     choiceId: config.choiceId,
+    automatic: config.automatic,
     complete: ({ ctx }) => {
       const starter = ctx.round.starter();
       if (starter != null) ctx.turn.to(starter);

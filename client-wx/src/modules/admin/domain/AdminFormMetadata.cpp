@@ -160,7 +160,7 @@ AdminFieldMetadata GetAdminFieldMetadata(
         else
         {
             result.choices = {"pending", "in_progress", "to_test", "done", "refused"};
-            result.choiceLabels = {L"En attente", L"En cours", L"À corriger", L"Terminé", L"Refusé"};
+            result.choiceLabels = {L"En attente", L"En cours", L"À tester", L"Terminé", L"Refusé"};
         }
     }
     ApplyBugReportFieldMetadata(commandId, fieldName, result);

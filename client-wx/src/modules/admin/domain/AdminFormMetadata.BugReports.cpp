@@ -22,13 +22,13 @@ void ApplyBugReportFieldMetadata(
     {
         metadata.choices = {"all", "pending", "in_progress", "to_test", "done", "refused"};
         metadata.choiceLabels = {L"Tous", L"En attente", L"En cours",
-            L"À corriger", L"Terminés", L"Refusés"};
+            L"À tester", L"Terminés", L"Refusés"};
     }
     else if (fieldName == "status")
     {
         metadata.choices = {"pending", "in_progress", "to_test", "done", "refused"};
         metadata.choiceLabels = {
-            L"En attente", L"En cours", L"À corriger", L"Terminé", L"Refusé"};
+            L"En attente", L"En cours", L"À tester", L"Terminé", L"Refusé"};
     }
 }
 }

@@ -13,5 +13,6 @@ export type GridPlacementProgram = {
     setId: string;
     choiceId: string;
     order: 'players' | 'shuffled';
+    automatic?: boolean;
   };
 };
