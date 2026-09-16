@@ -52,7 +52,9 @@ void AppNavigator::PrewarmSessionData()
         {
             if (error.has_value())
             {
-                lila::shared::logging::LogWarning("SessionCache", "Background cache prewarm failed.");
+                lila::shared::logging::LogWarning("SessionCache",
+                    "Préchargement de session échoué : " + error->UserMessage() +
+                    (error->DiagnosticDetails().empty() ? "" : " : " + error->DiagnosticDetails()));
             }
         },
         lila::shared::concurrency::BackgroundTaskPriority::Low,

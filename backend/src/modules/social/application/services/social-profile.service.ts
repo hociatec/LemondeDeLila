@@ -1,4 +1,5 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { serializeDate } from '../../../../shared/utils/public-api';
 import {
   SocialProfileVisibility,
   type SocialProfileRecord,
@@ -46,8 +47,8 @@ export class SocialProfileService {
       victoryMessage: canView ? (profile.victoryMessage ?? '') : '',
       defeatMessage: canView ? (profile.defeatMessage ?? '') : '',
       visibility: profile.visibility,
-      createdAt: profile.createdAt,
-      updatedAt: profile.updatedAt,
+      createdAt: serializeDate(profile.createdAt),
+      updatedAt: serializeDate(profile.updatedAt),
       isOwner: viewerId === targetId,
       canView,
     };

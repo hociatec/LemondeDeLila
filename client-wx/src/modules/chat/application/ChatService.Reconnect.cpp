@@ -85,16 +85,15 @@ void ChatService::ReceiveLoop(
         }
         catch (const std::exception& receiveError)
         {
+            if (stopToken.stop_requested() || !IsLifecycleCurrent(lifecycleGeneration))
+            {
+                break;
+            }
             lila::shared::logging::LogWarning(
                 "Chat",
                 lila::shared::errors::WithDetails(
                     lila::shared::errors::ChatReconnecting,
                     receiveError.what()));
-            if (stopToken.stop_requested() || !IsLifecycleCurrent(lifecycleGeneration))
-            {
-                break;
-            }
-
             SetState(domain::ChatState::Reconnecting);
             SetStatus(lila::shared::errors::ChatReconnecting, false);
 
