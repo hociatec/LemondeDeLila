@@ -86,6 +86,19 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
     resultSummaryLabel_->SetLabel(wxString(L"Aide de la rubrique"));
     resultsMenu_->Hide();
     reportSearchPanel_->Show(bugReports);
+    if (bugReports)
+    {
+        const std::array<std::wstring_view, 5> labels{
+            L"En attente", L"En cours", L"Corrigés, à tester", L"Terminés", L"Refusés"};
+        std::vector<lila::shared::ui::controls::VerticalMenuItem> statuses;
+        statuses.reserve(labels.size());
+        for (std::size_t index = 0; index < labels.size(); ++index)
+            statuses.push_back({std::to_string(index), wxString(labels[index]) +
+                wxString::Format(L" (%zu rapport%s)", reportStatusCounts_[index],
+                    reportStatusCounts_[index] == 1 ? L"" : L"s")});
+        reportStatusMenu_->SetItems(statuses);
+        reportStatusMenu_->SetSelectedIndexSilently(0);
+    }
     reportActionsPanel_->Hide();
     paginationPanel_->Hide();
     paginationCommand_ = nullptr;
@@ -98,7 +111,8 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         wxString(visibleCommands_[commandsMenu_->GetSelectedIndex()]->description));
     Layout();
     LoadAutomaticAreaContent();
-    if (!bugReports) FocusCurrentMenu();
+    if (bugReports) createReportButton_->SetFocus();
+    else FocusCurrentMenu();
 }
 
 void AdminFrame::LoadAutomaticAreaContent()

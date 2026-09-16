@@ -81,6 +81,7 @@ private:
     void SearchBugReports();
     void CreateBugReport();
     void ChangeBugReportFilter();
+    void ConsultSelectedBugReport();
     void EditSelectedBugReport();
     void ChangeSelectedBugReportStatus();
     void DeleteSelectedBugReport();
@@ -113,7 +114,7 @@ private:
     wxTextCtrl* resultText_ = nullptr;
     wxPanel* reportSearchPanel_ = nullptr;
     wxButton* createReportButton_ = nullptr;
-    wxChoice* reportStatusFilter_ = nullptr;
+    lila::shared::ui::controls::VerticalMenu* reportStatusMenu_ = nullptr;
     wxTextCtrl* reportSearchCtrl_ = nullptr;
     wxButton* reportSearchButton_ = nullptr;
     wxPanel* reportActionsPanel_ = nullptr;
@@ -139,6 +140,7 @@ private:
     const domain::AdminCommand* paginationCommand_ = nullptr;
     nlohmann::json paginationPayload_ = nlohmann::json::object();
     nlohmann::json bugReportListPayload_ = nlohmann::json::object();
+    std::array<std::size_t, 5> reportStatusCounts_{};
     std::vector<int> pageSizeChoices_;
     std::optional<std::size_t> selectedResultIndex_;
     std::optional<std::string> reportIdToRestore_;

@@ -27,7 +27,6 @@ void ChatService::StopReceiveLoop() noexcept
     gateway_.Interrupt();
     receiveTask_.reset();
 }
-
 bool ChatService::Open()
 {
     if (!optionsStore_.Current().chat.chatEnabled)
@@ -78,6 +77,7 @@ bool ChatService::Open()
 
         SetStatus(lila::shared::errors::ChatConnected, false);
         StartReceiveLoop(lifecycleGeneration);
+        StartHeartbeat(lifecycleGeneration);
         return true;
     }
     catch (const lila::shared::network::http::WsTicketRequestError& exception)
@@ -158,6 +158,7 @@ void ChatService::Close()
         ++lifecycleGeneration_;
     }
     StopReceiveLoop();
+    StopHeartbeat();
 
     bool shouldNotifyClosed = true;
     {

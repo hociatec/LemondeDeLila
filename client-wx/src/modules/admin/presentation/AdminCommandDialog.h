@@ -43,7 +43,6 @@ private:
     void BuildFields(const nlohmann::json& initialPayload, wxFlexGridSizer& fieldsSizer);
     void FocusFirstField();
     void FocusField(const FieldControl& field);
-    [[nodiscard]] bool MoveFocusByArrow(bool forward);
     [[nodiscard]] nlohmann::json ReadValue(const FieldControl& field) const;
     void HandleKey(wxKeyEvent& event);
     bool TransferDataFromWindow() override;

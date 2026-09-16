@@ -66,15 +66,22 @@ void AdminFrame::BindEvents()
         if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) &&
             resultsMenu_->GetSelectedIndex() == 0 && reportSearchPanel_->IsShown())
         {
-            reportStatusFilter_->SetFocus();
+            reportStatusMenu_->GetSelectedControl()->SetFocus();
             return true;
         }
         return false;
     });
     createReportButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { CreateBugReport(); });
-    reportStatusFilter_->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) { ChangeBugReportFilter(); });
-    for (auto* control : {static_cast<wxWindow*>(createReportButton_),
-                          static_cast<wxWindow*>(reportStatusFilter_)})
+    lila::shared::ui::navigation::BindMenuHandlers(
+        *reportStatusMenu_, [this](std::size_t) {},
+        [this](std::size_t) { ChangeBugReportFilter(); });
+    reportStatusMenu_->SetKeyHandler([this](int keyCode)
+    {
+        if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) && reportStatusMenu_->GetSelectedIndex() == 0)
+        { createReportButton_->SetFocus(); return true; }
+        return keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB;
+    });
+    for (auto* control : {static_cast<wxWindow*>(createReportButton_)})
         control->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
         {
             const auto keyCode = event.GetKeyCode();
@@ -89,26 +96,14 @@ void AdminFrame::BindEvents()
             if ((keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN) &&
                 wxWindow::FindFocus() == createReportButton_)
             {
-                reportStatusFilter_->SetFocus();
-                return;
-            }
-            if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) &&
-                wxWindow::FindFocus() == reportStatusFilter_)
-            {
-                createReportButton_->SetFocus();
-                return;
-            }
-            if ((keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN) &&
-                wxWindow::FindFocus() == reportStatusFilter_)
-            {
-                FocusResult();
+                reportStatusMenu_->GetSelectedControl()->SetFocus();
                 return;
             }
             event.Skip();
         });
     editReportButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EditSelectedBugReport(); });
     changeReportStatusButton_->Bind(
-        wxEVT_BUTTON, [this](wxCommandEvent&) { ChangeSelectedBugReportStatus(); });
+        wxEVT_BUTTON, [this](wxCommandEvent&) { ConsultSelectedBugReport(); });
     deleteReportButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { DeleteSelectedBugReport(); });
     for (auto* button : {editReportButton_, changeReportStatusButton_, deleteReportButton_})
         button->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)

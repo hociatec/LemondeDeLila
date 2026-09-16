@@ -33,12 +33,9 @@ void AdminFrame::SearchBugReports()
 void AdminFrame::ChangeBugReportFilter()
 {
     if (loading_) return;
-    const auto selection = reportStatusFilter_->GetSelection();
-    if (selection == wxNOT_FOUND ||
-        static_cast<std::size_t>(selection) >= std::size(ReportStatuses)) return;
-    const auto status = ReportStatuses[static_cast<std::size_t>(selection)];
-    if (status == "all") bugReportListPayload_.erase("status");
-    else bugReportListPayload_["status"] = status;
+    const auto selection = reportStatusMenu_->GetSelectedIndex();
+    if (selection >= std::size(ReportStatuses) - 1) return;
+    bugReportListPayload_["status"] = ReportStatuses[selection + 1];
     bugReportListPayload_["offset"] = 0;
     RefreshBugReports();
 }
@@ -51,9 +48,8 @@ void AdminFrame::CreateBugReport()
     AdminCommandDialog dialog(
         this, *createCommand, nlohmann::json::parse(createCommand->payloadTemplate));
     if (dialog.ShowModal() != wxID_OK) return;
-    reportStatusFilter_->SetSelection(0);
     bugReportListPayload_.erase("search");
-    bugReportListPayload_.erase("status");
+    bugReportListPayload_["status"] = "pending";
     bugReportListPayload_["offset"] = 0;
     reportIdToRestore_.reset();
     refreshBugReportsAfterCommand_ = true;
@@ -68,11 +64,9 @@ void AdminFrame::RefreshBugReports(
     if (command == nullptr) return;
     if (!bugReportListPayload_.is_object() || bugReportListPayload_.empty())
         bugReportListPayload_ = nlohmann::json::parse(command->payloadTemplate);
-    const auto selection = reportStatusFilter_->GetSelection();
-    if (selection == wxNOT_FOUND || selection == 0)
-        bugReportListPayload_.erase("status");
-    else
-        bugReportListPayload_["status"] = ReportStatuses[static_cast<std::size_t>(selection)];
+    const auto selection = reportStatusMenu_->GetSelectedIndex();
+    if (selection < std::size(ReportStatuses) - 1)
+        bugReportListPayload_["status"] = ReportStatuses[selection + 1];
     keepFocusAfterCommand_ = keepCurrentFocus;
     ExecuteCommand(*command, bugReportListPayload_, announceLifecycle);
 }
@@ -94,10 +88,19 @@ void AdminFrame::UpdateBugReportActions()
     editReportButton_->SetName(
         wxString(L"Modifier le rapport : ") + lila::shared::text::FromUtf8(subject));
     changeReportStatusButton_->SetName(
-        wxString(L"Classer le rapport : ") + lila::shared::text::FromUtf8(subject));
+        wxString(L"Consulter le rapport : ") + lila::shared::text::FromUtf8(subject));
     deleteReportButton_->SetName(
         wxString(L"Supprimer le rapport : ") + lila::shared::text::FromUtf8(subject));
     Layout();
+}
+
+void AdminFrame::ConsultSelectedBugReport()
+{
+    if (loading_ || !selectedResultIndex_ || *selectedResultIndex_ >= resultItems_.size()) return;
+    const auto id = resultItems_[*selectedResultIndex_].value("id", std::string{});
+    const auto* command = domain::FindAdminCommand("bugs.get");
+    if (id.empty() || command == nullptr) return;
+    ExecuteCommand(*command, {{"id", id}});
 }
 
 void AdminFrame::ChangeSelectedBugReportStatus()
