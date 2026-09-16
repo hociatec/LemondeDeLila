@@ -8,6 +8,7 @@
 #include <wx/sizer.h>
 
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
+#include "modules/gameplay/grid/application/GridPlayerCellText.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 
 namespace lila::modules::gameplay::presentation::grid
@@ -48,6 +49,13 @@ std::string Describe(const domain::GameGridCellView& cell,
     const std::vector<domain::GamePlayer>& players,
     const domain::GamePawnsView* pawns)
 {
+    if (board.id == "morpion" || board.id == "pathWalls")
+    {
+        auto text = application::grid::GridPlayerCellText(cell, players);
+        for (const auto& overlay : board.overlays)
+            if (Touches(overlay, cell.id)) text += ", " + OverlayText(overlay, players);
+        return text;
+    }
     std::ostringstream out;
     out << application::grid::GridCoordinate(cell.x, cell.y);
     if (cell.blocked) out << ", bloquée";

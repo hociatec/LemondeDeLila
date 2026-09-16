@@ -29,8 +29,15 @@ export function pathWallsRules(source: PathWallsProgram) {
   const pawnSelection = sequentialPawnSelection<State>({
     setId: program.pawnSetId,
     choiceId: program.pawnChoiceId,
+    announceRequest: false,
     complete: ({ ctx }) => {
       phases.transition(ctx, 'playing');
+      const placed = positions(ctx);
+      for (const player of ctx.players.all())
+        ctx.events.message('game.grid.pawn.positioned', {
+          playerId: player.id,
+          ...placed[player.id],
+        });
       const first = ctx.players.all()[0];
       if (first) ctx.turn.to(first.id);
     },
@@ -51,6 +58,10 @@ export function pathWallsRules(source: PathWallsProgram) {
       const from = positions(ctx)[actor.id];
       ctx.grid.clear(program.boardId, from);
       ctx.grid.set(program.boardId, input, actor.id);
+      ctx.events.message('game.grid.pawn.moved', {
+        playerId: actor.id,
+        ...input,
+      });
       if (input.y === goalY(actor.id, ctx))
         ctx.match.finish({ winners: [actor.id], reason: 'opposite-edge' });
       else ctx.turn.end();

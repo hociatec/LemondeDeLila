@@ -134,7 +134,13 @@ std::optional<domain::GameGridView> GameBoardCapabilitiesDecoder::Grid(
                         cell.ownerId = Integer(*found, "ownerId");
                         cell.label = detail::ReadString(*found, "label");
                     }
-                    else cell.occupied = !found->is_null();
+                    else
+                    {
+                        cell.occupied = !found->is_null();
+                        // These boards store player IDs directly, including negative bot IDs.
+                        if ((board.id == "morpion" || board.id == "pathWalls") && found->is_number_integer())
+                            cell.ownerId = found->get<int>();
+                    }
                 }
                 board.cells.push_back(std::move(cell));
             }

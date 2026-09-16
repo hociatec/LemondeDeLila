@@ -1,5 +1,6 @@
 import type { GameRuntimeDescriptor } from '../../../../application/ports/game-runtime.port';
 import { genericGameEventMessage } from './game-ws-generic-event-message';
+import { gridPawnMessage } from './game-ws-grid-pawn-message';
 import { cardMessageLabel, scalarMessageText } from './game-ws-message-values';
 import { withoutRepeatedTurnAnnouncements } from './game-ws-turn-announcements';
 
@@ -187,6 +188,8 @@ export class GameWsStateMessagesPresenter {
     const messageKey = this.stringValue(data.key);
     const params = this.asRecord(data.params);
     const namedPlayer = player(params.playerId);
+    const gridMessage = gridPawnMessage(messageKey, params, namedPlayer);
+    if (gridMessage) return gridMessage;
     const card =
       scalarMessageText(params.cardLabel) || scalarMessageText(params.cardId);
     if (messageKey === 'game.card.played' && namedPlayer)
