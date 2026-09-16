@@ -16,6 +16,9 @@ namespace lila::modules::admin::presentation
 {
 void AdminFrame::ShowSections()
 {
+    requestSlot_.Cancel();
+    loading_ = false;
+    loadingReportCountsOnly_ = false;
     std::vector<lila::shared::ui::controls::VerticalMenuItem> items;
     const auto& areas = domain::GetAdminAreas();
     items.reserve(areas.size());
@@ -62,6 +65,7 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         if (const auto* command = domain::FindAdminCommand(commandId))
             visibleCommands_.push_back(command);
     const bool bugReports = area.id == "reports";
+    resultText_->Show(!bugReports);
     std::vector<lila::shared::ui::controls::VerticalMenuItem> items;
     items.reserve(visibleCommands_.size());
     for (const auto* command : visibleCommands_)
@@ -167,6 +171,8 @@ bool AdminFrame::HandleKey(int keyCode)
 void AdminFrame::FocusCurrentMenu()
 {
     auto* menu = showingCommands_ ? commandsMenu_ : sectionsMenu_;
+    if (showingCommands_ && !showingItemActions_ && reportSearchPanel_->IsShown())
+        menu = reportStatusMenu_;
     if (menu != nullptr && menu->GetSelectedControl() != nullptr)
         menu->GetSelectedControl()->SetFocus();
 }
