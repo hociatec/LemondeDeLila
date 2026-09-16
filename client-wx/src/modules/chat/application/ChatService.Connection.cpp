@@ -243,8 +243,5 @@ void ChatService::Delete(const std::string& messageId)
     }
 }
 
-void ChatService::SendRawJson(const std::string& payload)
-{
-    gateway_.Send(payload);
-}
+void ChatService::SendRawJson(const std::string& payload) { gateway_.Send(payload); }
 }
