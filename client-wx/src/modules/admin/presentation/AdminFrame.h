@@ -113,7 +113,6 @@ private:
     wxStaticText* statusLabel_ = nullptr;
     wxTextCtrl* resultText_ = nullptr;
     wxPanel* reportSearchPanel_ = nullptr;
-    wxButton* createReportButton_ = nullptr;
     lila::shared::ui::controls::VerticalMenu* reportStatusMenu_ = nullptr;
     wxTextCtrl* reportSearchCtrl_ = nullptr;
     wxButton* reportSearchButton_ = nullptr;

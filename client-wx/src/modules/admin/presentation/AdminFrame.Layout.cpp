@@ -45,18 +45,12 @@ void AdminFrame::BuildLayout()
 
     reportSearchPanel_ = new wxPanel(resultPanel, wxID_ANY);
     auto* reportSearchSizer = new wxBoxSizer(wxVERTICAL);
-    createReportButton_ = new wxButton(
-        reportSearchPanel_, wxID_ANY, wxString(L"Nouveau rapport"));
-    reportSearchSizer->Add(createReportButton_, 0, wxBOTTOM, 8);
     reportStatusMenu_ = new lila::shared::ui::controls::VerticalMenu(
         reportSearchPanel_, empty, lila::shared::ui::controls::VerticalMenuRole::Menu);
-    reportStatusMenu_->SetAccessibleName(wxString(L"Statuts des rapports"));
+    reportStatusMenu_->SetAccessibleName(wxString(L"Rapports : création et statuts"));
     reportSearchSizer->Add(reportStatusMenu_, 0, wxEXPAND);
     reportSearchPanel_->SetSizer(reportSearchSizer);
     reportSearchPanel_->Hide();
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *createReportButton_, wxString(L"Créer un nouveau rapport"),
-        wxString(L"Ouvre la rédaction. Le rapport sera classé en attente."));
     resultSizer->Add(reportSearchPanel_, 0, wxEXPAND | wxBOTTOM, 8);
 
     paginationPanel_ = new wxPanel(resultPanel, wxID_ANY);

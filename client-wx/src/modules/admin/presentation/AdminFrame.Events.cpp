@@ -72,36 +72,14 @@ void AdminFrame::BindEvents()
         }
         return false;
     });
-    createReportButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { CreateBugReport(); });
     lila::shared::ui::navigation::BindMenuHandlers(
         *reportStatusMenu_, [this](std::size_t) {},
-        [this](std::size_t) { ChangeBugReportFilter(); });
+        [this](std::size_t index) { if (index == 0) CreateBugReport(); else ChangeBugReportFilter(); });
     reportStatusMenu_->SetKeyHandler([this](int keyCode)
     {
-        if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) && reportStatusMenu_->GetSelectedIndex() == 0)
-        { createReportButton_->SetFocus(); return true; }
+        if (keyCode == WXK_ESCAPE) { ShowSections(); return true; }
         return keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB;
     });
-    for (auto* control : {static_cast<wxWindow*>(createReportButton_)})
-        control->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
-        {
-            const auto keyCode = event.GetKeyCode();
-            if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB)
-                return;
-            if (keyCode == WXK_ESCAPE)
-            {
-                if (commandsMenu_->IsShown()) FocusCurrentMenu();
-                else ShowSections();
-                return;
-            }
-            if ((keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN) &&
-                wxWindow::FindFocus() == createReportButton_)
-            {
-                reportStatusMenu_->GetSelectedControl()->SetFocus();
-                return;
-            }
-            event.Skip();
-        });
     editReportButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EditSelectedBugReport(); });
     changeReportStatusButton_->Bind(
         wxEVT_BUTTON, [this](wxCommandEvent&) { ConsultSelectedBugReport(); });

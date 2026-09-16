@@ -35,8 +35,8 @@ void AdminFrame::ChangeBugReportFilter()
 {
     if (loading_) return;
     const auto selection = reportStatusMenu_->GetSelectedIndex();
-    if (selection >= std::size(ReportStatuses) - 1) return;
-    bugReportListPayload_["status"] = ReportStatuses[selection + 1];
+    if (selection == 0 || selection >= std::size(ReportStatuses)) return;
+    bugReportListPayload_["status"] = ReportStatuses[selection];
     bugReportListPayload_["offset"] = 0;
     RefreshBugReports();
 }
@@ -66,8 +66,8 @@ void AdminFrame::RefreshBugReports(
     if (!bugReportListPayload_.is_object() || bugReportListPayload_.empty())
         bugReportListPayload_ = nlohmann::json::parse(command->payloadTemplate);
     const auto selection = reportStatusMenu_->GetSelectedIndex();
-    if (selection < std::size(ReportStatuses) - 1)
-        bugReportListPayload_["status"] = ReportStatuses[selection + 1];
+    if (selection > 0 && selection < std::size(ReportStatuses))
+        bugReportListPayload_["status"] = ReportStatuses[selection];
     keepFocusAfterCommand_ = keepCurrentFocus;
     ExecuteCommand(*command, bugReportListPayload_, announceLifecycle);
 }
