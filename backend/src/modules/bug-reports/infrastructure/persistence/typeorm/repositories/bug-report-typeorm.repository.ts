@@ -46,10 +46,6 @@ export class BugReportTypeormRepository implements BugReportRepository {
       query.andWhere('report.status IN (:...statuses)', {
         statuses: ['refused', 'rejected'],
       });
-    } else if (options.status === 'to_test') {
-      query.andWhere('report.status IN (:...statuses)', {
-        statuses: ['to_test', 'done'],
-      });
     } else if (options.status) {
       query.andWhere('report.status = :status', { status: options.status });
     }
@@ -66,18 +62,19 @@ export class BugReportTypeormRepository implements BugReportRepository {
     const rows = await this.repo
       .createQueryBuilder('report')
       .select(
-        "CASE WHEN report.status = 'done' THEN 'to_test' WHEN report.status = 'rejected' THEN 'refused' ELSE report.status END",
+        "CASE WHEN report.status = 'rejected' THEN 'refused' ELSE report.status END",
         'status',
       )
       .addSelect('COUNT(*)', 'count')
       .groupBy(
-        "CASE WHEN report.status = 'done' THEN 'to_test' WHEN report.status = 'rejected' THEN 'refused' ELSE report.status END",
+        "CASE WHEN report.status = 'rejected' THEN 'refused' ELSE report.status END",
       )
       .getRawMany<{ status: BugReportStatus; count: string }>();
     const counts: Record<BugReportStatus, number> = {
       pending: 0,
       in_progress: 0,
       to_test: 0,
+      done: 0,
       refused: 0,
       rejected: 0,
     };
@@ -108,7 +105,7 @@ export class BugReportTypeormRepository implements BugReportRepository {
       id: entity.id,
       subject: entity.subject,
       content: entity.content,
-      status: entity.status === 'done' ? 'to_test' : entity.status,
+      status: entity.status,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       createdByUserId: entity.createdByUserId,

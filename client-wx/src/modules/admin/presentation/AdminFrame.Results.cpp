@@ -72,9 +72,9 @@ void AdminFrame::ShowResult(
             presentation = BuildAdminResultPresentation(
                 nlohmann::json{{"reports", *reportItems}});
         const auto counts = result.value("statusCounts", nlohmann::json::object());
-        const std::array<std::pair<std::string_view, std::wstring_view>, 4> statuses{{
+        const std::array<std::pair<std::string_view, std::wstring_view>, 5> statuses{{
             {"pending", L"En attente"}, {"in_progress", L"En cours"},
-            {"to_test", L"Corrigés, à tester"}, {"refused", L"Refusés"},
+            {"to_test", L"À corriger"}, {"done", L"Terminés"}, {"refused", L"Refusés"},
         }};
         std::vector<lila::shared::ui::controls::VerticalMenuItem> statusItems;
         statusItems.reserve(statuses.size() + 1);
@@ -89,6 +89,20 @@ void AdminFrame::ShowResult(
         reportStatusMenu_->SetItems(statusItems);
         reportStatusMenu_->SetSelectedIndexSilently(
             std::min(selected, statusItems.size() - 1));
+        if (loadingReportCountsOnly_)
+        {
+            loadingReportCountsOnly_ = false;
+            resultItems_.clear();
+            resultDetails_.clear();
+            selectedResultIndex_.reset();
+            resultsMenu_->Hide();
+            reportActionsPanel_->Hide();
+            paginationPanel_->Hide();
+            resultText_->SetValue(wxString{});
+            Layout();
+            reportStatusMenu_->GetSelectedControl()->SetFocus();
+            return;
+        }
     }
     resultSummaryLabel_->SetLabel(
         wxString(command.label) + wxString(L" — ") +

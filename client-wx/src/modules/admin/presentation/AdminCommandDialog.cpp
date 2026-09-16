@@ -73,7 +73,9 @@ void AdminCommandDialog::BuildFields(
     wxFlexGridSizer& fieldsSizer)
 {
     auto* scroll = fieldsParent_;
-    const auto orderedPayload = nlohmann::ordered_json::parse(command_.payloadTemplate);
+    auto orderedPayload = nlohmann::ordered_json::parse(command_.payloadTemplate);
+    if (command_.id == "bugs.create")
+        orderedPayload = nlohmann::ordered_json{{"subject", ""}, {"content", ""}};
     for (const auto& item : orderedPayload.items())
     {
         if (domain::IsAdminPaginationField(command_.id, item.key())) continue;

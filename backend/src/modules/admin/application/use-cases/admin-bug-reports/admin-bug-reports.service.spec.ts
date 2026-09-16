@@ -36,6 +36,7 @@ describe('AdminBugReportsService', () => {
       pending: 2,
       in_progress: 1,
       to_test: 4,
+      done: 5,
       refused: 0,
       rejected: 0,
     });
@@ -73,6 +74,7 @@ describe('AdminBugReportsService', () => {
         pending: 2,
         in_progress: 1,
         to_test: 4,
+        done: 5,
         refused: 0,
         rejected: 0,
       },

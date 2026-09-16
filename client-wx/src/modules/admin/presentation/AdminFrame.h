@@ -139,6 +139,7 @@ private:
     const domain::AdminCommand* paginationCommand_ = nullptr;
     nlohmann::json paginationPayload_ = nlohmann::json::object();
     nlohmann::json bugReportListPayload_ = nlohmann::json::object();
+    bool loadingReportCountsOnly_ = false;
     std::vector<int> pageSizeChoices_;
     std::optional<std::size_t> selectedResultIndex_;
     std::optional<std::string> reportIdToRestore_;

@@ -9,7 +9,6 @@ export class BugReportStatusNormalizerService {
     if (status === 'rejected') {
       return 'refused';
     }
-    if (status === 'done') return 'to_test';
     return status;
   }
 

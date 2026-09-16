@@ -20,15 +20,15 @@ void ApplyBugReportFieldMetadata(
     }
     else if (fieldName == "status" && commandId == "bugs.list")
     {
-        metadata.choices = {"all", "pending", "in_progress", "to_test", "refused"};
+        metadata.choices = {"all", "pending", "in_progress", "to_test", "done", "refused"};
         metadata.choiceLabels = {L"Tous", L"En attente", L"En cours",
-            L"Corrigés, à tester", L"Refusés"};
+            L"À corriger", L"Terminés", L"Refusés"};
     }
     else if (fieldName == "status")
     {
-        metadata.choices = {"pending", "in_progress", "to_test", "refused"};
+        metadata.choices = {"pending", "in_progress", "to_test", "done", "refused"};
         metadata.choiceLabels = {
-            L"En attente", L"En cours", L"Corrigé, à tester", L"Refusé"};
+            L"En attente", L"En cours", L"À corriger", L"Terminé", L"Refusé"};
     }
 }
 }

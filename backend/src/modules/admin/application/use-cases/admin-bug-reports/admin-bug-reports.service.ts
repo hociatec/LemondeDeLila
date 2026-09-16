@@ -20,7 +20,8 @@ export interface UpdateAdminBugReportCommand {
 
 export interface UpdateAdminBugReportStatusCommand {
   id: string;
-  status: 'pending' | 'in_progress' | 'to_test' | 'refused' | 'rejected';
+  status:
+    'pending' | 'in_progress' | 'to_test' | 'done' | 'refused' | 'rejected';
 }
 
 @Injectable()
@@ -109,9 +110,14 @@ export class AdminBugReportsService {
   async updateStatus(command: UpdateAdminBugReportStatusCommand) {
     assertReportId(command.id);
     if (
-      !['pending', 'in_progress', 'to_test', 'refused', 'rejected'].includes(
-        command.status,
-      )
+      ![
+        'pending',
+        'in_progress',
+        'to_test',
+        'done',
+        'refused',
+        'rejected',
+      ].includes(command.status)
     ) {
       throw new BadRequestException('Statut de rapport invalide');
     }
