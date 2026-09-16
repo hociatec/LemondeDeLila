@@ -139,10 +139,6 @@ MessagingFrame::MessagingFrame(
             },
             [this]()
             {
-                if (navigationState_.currentBox != domain::MessagingBox::Outbox)
-                {
-                    navigationState_.currentBox = domain::MessagingBox::Outbox;
-                }
                 CloseCompose(true);
             },
             [this]()

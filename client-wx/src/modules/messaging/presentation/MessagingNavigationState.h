@@ -40,6 +40,17 @@ public:
         currentBox = box;
     }
 
+    void PrepareSentBox()
+    {
+        // Sending opens a different mailbox: its parent is the messaging menu,
+        // not the consumed compose return or an old message's detail page.
+        navigationHistory_.Clear();
+        currentScreen = Screen::Menu;
+        currentBox = domain::MessagingBox::Outbox;
+        lastMenuIndex = 2;
+        PushCurrent();
+    }
+
     [[nodiscard]] bool CanGoBack() const noexcept
     {
         return !navigationHistory_.Empty();

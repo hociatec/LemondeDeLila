@@ -95,6 +95,27 @@ int main()
     assert(messaging.currentBox == MessagingBox::Deleted);
     assert(!messaging.GoBack());
 
+    for (const bool reply : {false, true})
+    {
+        MessagingNavigationState sent;
+        sent.PushCurrent();
+        if (reply)
+        {
+            sent.Enter(MessagingNavigationState::Screen::List);
+            sent.PushCurrent();
+            sent.Enter(MessagingNavigationState::Screen::Detail);
+            sent.PushCurrent();
+        }
+        sent.Enter(MessagingNavigationState::Screen::Compose);
+        sent.PrepareSentBox();
+        sent.Enter(MessagingNavigationState::Screen::List);
+        assert(sent.currentBox == MessagingBox::Outbox);
+        assert(sent.GoBack());
+        assert(sent.currentScreen == MessagingNavigationState::Screen::Menu);
+        assert(sent.lastMenuIndex == 2);
+        assert(!sent.GoBack());
+    }
+
     using lila::modules::options::presentation::OptionsEditSession;
     lila::modules::options::domain::OptionsState base;
     OptionsEditSession edit;
