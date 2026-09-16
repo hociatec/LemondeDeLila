@@ -154,6 +154,7 @@ void AdminFrame::CompleteCommand(
     loading_ = false;
     if (error.has_value() || !result.has_value())
     {
+        loadingReportCountsOnly_ = false;
         keepFocusAfterCommand_ = false;
         refreshBugReportsAfterCommand_ = false;
         refreshAreaAfterCommand_ = false;
@@ -213,7 +214,9 @@ void AdminFrame::CompleteCommand(
         passwordDialog.ShowModal();
         *temporaryPassword = "<affiché une seule fois>";
     }
+    const bool countsOnly = command.id == "bugs.list" && loadingReportCountsOnly_;
     ShowResult(command, *result);
+    if (countsOnly || command.id == "bugs.get") return;
     if (announceLifecycle)
         SetStatus(wxString(L"Opération terminée : ") + wxString(command.label));
     if (keepFocusAfterCommand_)

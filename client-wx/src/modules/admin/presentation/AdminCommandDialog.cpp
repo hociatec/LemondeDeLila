@@ -85,6 +85,13 @@ void AdminCommandDialog::BuildFields(
         field.initialValue = initial == initialPayload.end()
             ? nlohmann::json(item.value()) : *initial;
         field.metadata = domain::GetAdminFieldMetadata(command_.id, item.key());
+        // Windows associates an edit control with the preceding native label.
+        if (field.initialValue.is_boolean()) fieldsSizer.AddSpacer(1);
+        else
+        {
+            auto* rowLabel = new wxStaticText(scroll, wxID_ANY, field.metadata.label);
+            fieldsSizer.Add(rowLabel, 0, wxALIGN_CENTER_VERTICAL | wxTOP, 5);
+        }
         if (field.metadata.kind == domain::AdminFieldKind::Choice)
         {
             auto* choice = new wxChoice(scroll, wxID_ANY);
@@ -118,13 +125,7 @@ void AdminCommandDialog::BuildFields(
                 multiline ? wxTE_MULTILINE : 0);
             field.editor = text;
         }
-        if (dynamic_cast<wxCheckBox*>(field.editor) != nullptr)
-            fieldsSizer.AddSpacer(1);
-        else
-        {
-            auto* rowLabel = new wxStaticText(scroll, wxID_ANY, field.metadata.label);
-            fieldsSizer.Add(rowLabel, 0, wxALIGN_CENTER_VERTICAL | wxTOP, 5);
-        }
+        field.editor->SetName(field.metadata.label);
         auto* valueSizer = new wxBoxSizer(wxVERTICAL);
         if (field.metadata.optional)
         {

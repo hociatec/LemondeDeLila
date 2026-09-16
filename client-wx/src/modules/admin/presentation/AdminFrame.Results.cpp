@@ -57,6 +57,7 @@ void AdminFrame::ShowResult(
     auto presentation = BuildAdminResultPresentation(displayResult);
     if (command.id == "bugs.get")
     {
+        resultText_->Show();
         resultSummaryLabel_->SetLabel(wxString(L"Rapport consulté"));
         resultSummaryLabel_->Show();
         resultText_->SetValue(lila::shared::text::FromUtf8(presentation.details));
@@ -98,12 +99,14 @@ void AdminFrame::ShowResult(
             resultsMenu_->Hide();
             reportActionsPanel_->Hide();
             paginationPanel_->Hide();
+            resultText_->Hide();
             resultText_->SetValue(wxString{});
             Layout();
             reportStatusMenu_->GetSelectedControl()->SetFocus();
             return;
         }
     }
+    resultText_->Show();
     resultSummaryLabel_->SetLabel(
         wxString(command.label) + wxString(L" — ") +
         lila::shared::text::FromUtf8(presentation.summary));
