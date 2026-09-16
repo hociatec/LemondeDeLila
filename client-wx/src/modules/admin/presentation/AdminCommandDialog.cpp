@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <wx/checkbox.h>
+#include <wx/button.h>
 #include <wx/choice.h>
 #include <wx/msgdlg.h>
 #include <wx/scrolwin.h>
@@ -47,8 +48,7 @@ AdminCommandDialog::AdminCommandDialog(
     auto* introduction = new wxStaticText(this, wxID_ANY, wxString(command.description));
     introduction->Wrap(660);
     root->Add(introduction, 0, wxEXPAND | wxALL, 16);
-    auto* scroll = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-        wxVSCROLL | wxTAB_TRAVERSAL);
+    auto* scroll = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
     fieldsParent_ = scroll;
     scroll->SetScrollRate(0, 16);
     auto* fieldsSizer = new wxFlexGridSizer(2, 10, 12);
@@ -56,7 +56,10 @@ AdminCommandDialog::AdminCommandDialog(
     scroll->SetSizer(fieldsSizer);
     root->Add(scroll, 1, wxEXPAND | wxLEFT | wxRIGHT, 16);
     BuildFields(initialPayload, *fieldsSizer);
-    root->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 16);
+    auto* buttons = CreateSeparatedButtonSizer(wxOK | wxCANCEL);
+    if (auto* validate = wxDynamicCast(FindWindow(wxID_OK), wxButton)) validate->SetLabel(wxString(L"Valider"));
+    if (auto* cancel = wxDynamicCast(FindWindow(wxID_CANCEL), wxButton)) cancel->SetLabel(wxString(L"Annuler"));
+    root->Add(buttons, 0, wxEXPAND | wxALL, 16);
     SetSizer(root);
     SetAffirmativeId(wxID_OK);
     SetEscapeId(wxID_CANCEL);
@@ -141,7 +144,6 @@ void AdminCommandDialog::BuildFields(
                 editor->Enable(event.IsChecked());
             });
             valueSizer->Add(field.include, 0, wxBOTTOM, 3);
-            field.editor->MoveAfterInTabOrder(field.include);
         }
         valueSizer->Add(field.editor, field.metadata.kind == domain::AdminFieldKind::Multiline ||
             field.metadata.kind == domain::AdminFieldKind::StringList ? 1 : 0, wxEXPAND);
@@ -149,10 +151,7 @@ void AdminCommandDialog::BuildFields(
         fields_.push_back(std::move(field));
     }
 }
-void AdminCommandDialog::FocusFirstField()
-{
-    if (!fields_.empty()) FocusField(fields_.front());
-}
+void AdminCommandDialog::FocusFirstField() { if (!fields_.empty()) FocusField(fields_.front()); }
 void AdminCommandDialog::FocusField(const FieldControl& field)
 {
     auto* target = field.include != nullptr && !field.include->GetValue()
@@ -200,6 +199,8 @@ nlohmann::json AdminCommandDialog::ReadValue(const FieldControl& field) const
 void AdminCommandDialog::HandleKey(wxKeyEvent& event)
 {
     const auto keyCode = event.GetKeyCode();
+    if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB) return;
+    if (keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP || keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN) { if (MoveFocusByArrow(keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN)) return; event.Skip(); return; }
     if (keyCode == WXK_SPACE && command_.id == "sounds.upload" && onSoundPreview_)
     {
         auto* focused = wxWindow::FindFocus();

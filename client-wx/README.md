@@ -83,12 +83,11 @@ de fiches et de listes lisibles. Les opérations sensibles demandent le mot
 uniquement en mémoire et effacé en quittant la console. Les réponses ne sont
 pas envoyées dans `client.log`.
 
-La navigation suit le contrat clavier du client : `Entrée` ouvre une section,
-une opération ou valide un formulaire ; `Échap` revient au niveau précédent,
-puis ferme la console depuis sa racine. Après une opération, le focus rejoint
-le résultat en lecture seule ; `Échap` ou `Tab` revient à l'opération, et `Tab`
-depuis une opération permet aussi de consulter le résultat courant. Dans un
-texte multiligne, `Entrée` insère naturellement une nouvelle ligne.
+La navigation de la console d’administration utilise exclusivement les flèches
+haut et bas : elles parcourent les listes, les contrôles et les champs d’un
+formulaire. `Entrée` ouvre une section, une opération ou valide un formulaire ;
+`Échap` revient au niveau précédent, puis ferme la console depuis sa racine.
+Dans un texte multiligne, `Entrée` insère naturellement une nouvelle ligne.
 
 Le test `VerifyAdminClientCoverage.mjs` compare directement le catalogue aux
 contrôleurs et registres du backend. Il échoue lorsqu'une route HTTP admin, une

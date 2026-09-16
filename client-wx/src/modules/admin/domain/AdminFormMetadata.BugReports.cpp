@@ -12,12 +12,12 @@ void ApplyBugReportFieldMetadata(
     if (!commandId.starts_with("bugs.")) return;
     if (fieldName == "subject")
     {
-        metadata.label = L"Sujet du rapport";
+        metadata.label = L"Sujet";
         metadata.help = L"Intitulé court du rapport. Entrée passe au contenu sans enregistrer.";
     }
     else if (fieldName == "content")
     {
-        metadata.label = L"Contenu du rapport";
+        metadata.label = L"Contenu";
         metadata.help = L"Description détaillée du rapport. Entrée ajoute une nouvelle ligne.";
     }
     else if (fieldName == "status" && commandId == "bugs.list")

@@ -1,5 +1,8 @@
 #include "modules/admin/presentation/AdminFrame.h"
 
+#include <algorithm>
+#include <array>
+
 #include <wx/button.h>
 #include <wx/choice.h>
 #include <wx/event.h>
@@ -13,6 +16,11 @@ namespace lila::modules::admin::presentation
 {
 void AdminFrame::BindEvents()
 {
+    Bind(wxEVT_CHAR_HOOK, [](wxKeyEvent& event)
+    {
+        if (event.GetKeyCode() == WXK_TAB || event.GetKeyCode() == WXK_NUMPAD_TAB) return;
+        event.Skip();
+    });
     lila::shared::ui::navigation::BindMenuHandlers(
         *sectionsMenu_,
         [this](std::size_t index)
@@ -47,17 +55,18 @@ void AdminFrame::BindEvents()
     {
         if (keyCode == WXK_ESCAPE)
         {
-            FocusCurrentMenu();
+            if (commandsMenu_->IsShown()) FocusCurrentMenu();
+            else ShowSections();
             return true;
         }
-        if (keyCode == WXK_TAB)
+        if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB)
         {
-            if (reportActionsPanel_ != nullptr && reportActionsPanel_->IsShown())
-                FocusResultDetails();
-            else if (paginationPanel_ != nullptr && paginationPanel_->IsShown())
-                FocusPagination();
-            else
-                FocusResultDetails();
+            return true;
+        }
+        if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) &&
+            resultsMenu_->GetSelectedIndex() == 0 && reportSearchPanel_->IsShown())
+        {
+            reportStatusFilter_->SetFocus();
             return true;
         }
         return false;
@@ -68,9 +77,31 @@ void AdminFrame::BindEvents()
                           static_cast<wxWindow*>(reportStatusFilter_)})
         control->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
         {
-            if (event.GetKeyCode() == WXK_ESCAPE)
+            const auto keyCode = event.GetKeyCode();
+            if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB)
+                return;
+            if (keyCode == WXK_ESCAPE)
             {
-                FocusCurrentMenu();
+                if (commandsMenu_->IsShown()) FocusCurrentMenu();
+                else ShowSections();
+                return;
+            }
+            if ((keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN) &&
+                wxWindow::FindFocus() == createReportButton_)
+            {
+                reportStatusFilter_->SetFocus();
+                return;
+            }
+            if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) &&
+                wxWindow::FindFocus() == reportStatusFilter_)
+            {
+                createReportButton_->SetFocus();
+                return;
+            }
+            if ((keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN) &&
+                wxWindow::FindFocus() == reportStatusFilter_)
+            {
+                FocusResult();
                 return;
             }
             event.Skip();
@@ -82,30 +113,77 @@ void AdminFrame::BindEvents()
     for (auto* button : {editReportButton_, changeReportStatusButton_, deleteReportButton_})
         button->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
         {
-            if (event.GetKeyCode() == WXK_ESCAPE)
+            const auto keyCode = event.GetKeyCode();
+            if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB)
+                return;
+            if (keyCode == WXK_ESCAPE)
             {
                 FocusResult();
                 return;
+            }
+            if (keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP ||
+                keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN)
+            {
+                const auto buttons = std::array<wxButton*, 3>{
+                    editReportButton_, changeReportStatusButton_, deleteReportButton_};
+                const auto found = std::find(buttons.begin(), buttons.end(), wxWindow::FindFocus());
+                if (found != buttons.end())
+                {
+                    const auto index = static_cast<std::size_t>(std::distance(buttons.begin(), found));
+                    if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) && index > 0)
+                        buttons[index - 1]->SetFocus();
+                    if ((keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN) && index + 1 < buttons.size())
+                        buttons[index + 1]->SetFocus();
+                    if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) && index == 0)
+                        FocusResult();
+                    return;
+                }
             }
             event.Skip();
         });
     previousPageButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { ChangePage(-1); });
     nextPageButton_->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { ChangePage(1); });
     pageSizeChoice_->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) { ChangePageSize(); });
+    for (auto* control : {static_cast<wxWindow*>(previousPageButton_),
+                          static_cast<wxWindow*>(nextPageButton_),
+                          static_cast<wxWindow*>(pageSizeChoice_)})
+        control->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
+        {
+            const auto keyCode = event.GetKeyCode();
+            if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB)
+                return;
+            if (keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP ||
+                keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN)
+            {
+                const auto controls = std::array<wxWindow*, 3>{
+                    previousPageButton_, nextPageButton_, pageSizeChoice_};
+                const auto found = std::find(controls.begin(), controls.end(), wxWindow::FindFocus());
+                if (found != controls.end())
+                {
+                    const auto index = static_cast<std::size_t>(std::distance(controls.begin(), found));
+                    const bool forward = keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN;
+                    if (forward && index + 1 < controls.size() && controls[index + 1]->IsEnabled())
+                        controls[index + 1]->SetFocus();
+                    else if (!forward && index > 0 && controls[index - 1]->IsEnabled())
+                        controls[index - 1]->SetFocus();
+                    else if (forward) FocusResult();
+                    return;
+                }
+            }
+            event.Skip();
+        });
     resultText_->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
     {
         const auto keyCode = event.GetKeyCode();
-        if (keyCode == WXK_TAB && reportActionsPanel_->IsShown() && !event.ShiftDown())
-        {
-            editReportButton_->SetFocus();
+        if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB)
             return;
-        }
-        if (keyCode == WXK_ESCAPE || keyCode == WXK_TAB)
+        if (keyCode == WXK_ESCAPE)
         {
             if (resultsMenu_->IsShown() && resultsMenu_->GetSelectedControl() != nullptr)
                 resultsMenu_->GetSelectedControl()->SetFocus();
-            else
+            else if (commandsMenu_->IsShown())
                 FocusCurrentMenu();
+            else ShowSections();
             return;
         }
         event.Skip();
