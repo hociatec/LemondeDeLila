@@ -92,6 +92,7 @@ void AdminFrame::OpenResultActions(std::size_t index)
         add("bugs.get", L"Consulter", {}, true);
         add("bugs.delete", L"Supprimer", {}, true);
         add("bugs.update", L"Modifier");
+        add("bugs.status", L"Changer le statut");
     }
     else if (kind == domain::AdminItemKind::Room)
     {

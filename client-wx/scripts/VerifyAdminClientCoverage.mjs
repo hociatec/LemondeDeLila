@@ -78,7 +78,19 @@ backendStaffNotify.add('reply');
 const clientStaffNotify = matches(catalog, /ws::notify::inbox::([A-Za-z0-9_]+)/g,
   (match) => match[1].toLowerCase());
 
+// A catalog command alone is not enough: report actions must be reachable.
+const itemActions = fs.readFileSync(path.join(
+  client, 'src/modules/admin/presentation/AdminFrame.ItemActions.cpp',
+), 'utf8');
+const reportActions = itemActions.match(
+  /kind == domain::AdminItemKind::BugReport\)[\s\S]*?(?=else if)/,
+)?.[0] ?? '';
+const reportCommands = matches(reportActions, /add\("([^"]+)"/g,
+  (match) => match[1]);
+
 const failures = [
+  ['actions accessibles des rapports', difference(
+    new Set(['bugs.get', 'bugs.delete', 'bugs.update', 'bugs.status']), reportCommands)],
   ['routes HTTP admin', difference(backendHttp, clientHttp)],
   ['événements WebSocket admin', difference(backendWs, clientWs)],
   ['workflow de contacts staff', difference(backendStaffNotify, clientStaffNotify)],
