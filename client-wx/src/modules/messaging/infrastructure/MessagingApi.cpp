@@ -1,5 +1,7 @@
 #include "modules/messaging/infrastructure/MessagingApi.h"
 #include "modules/messaging/infrastructure/MessagingPayloadCodec.h"
+#include "modules/messaging/infrastructure/MessagingResponseType.h"
+#include "shared/logging/application/Logger.h"
 
 #include <optional>
 #include <utility>
@@ -113,12 +115,17 @@ lila::shared::network::realtime::RealtimeApiResponse MessagingApi::SendRequest(
     nlohmann::json payload,
     const std::string& fallbackMessage) const
 {
-    return lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
+    lila::shared::logging::LogInfo("Messaging", "TX " + type);
+    auto response = lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_,
         sessionStore_,
         lila::shared::errors::NoActiveMessagingSession,
         type,
         std::move(payload),
-        fallbackMessage);
+        fallbackMessage,
+        {},
+        MessagingResponseType(type));
+    lila::shared::logging::LogInfo("Messaging", "RX " + response.type);
+    return response;
 }
 }

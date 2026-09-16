@@ -23,7 +23,7 @@ void MessagingFrame::OpenDetail()
         return;
     }
 
-    SetScreen(Screen::Detail);
+    screenCoordinator_->OpenDetail();
     if (!message->isSent)
     {
         MarkSelectedMessageRead();

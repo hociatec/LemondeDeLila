@@ -37,6 +37,14 @@ sed \
   "$ROOT/src/shared/config/generated/AppBuildInfo.h.in" \
   > "$BUILD_DIR/generated/AppBuildInfo.h"
 
+c++ "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
+  "$ROOT/tests/MessagingProtocolTests.cpp" \
+  "$ROOT/src/modules/messaging/infrastructure/MessagingPayloadCodec.cpp" \
+  "$ROOT/src/shared/network/application/realtime/RealtimeProtocol.cpp" \
+  "$ROOT/src/shared/config/domain/AppConfig.cpp" \
+  -o "$BUILD_DIR/messaging-protocol-tests"
+"$BUILD_DIR/messaging-protocol-tests"
+
 c++ "${COMMON_FLAGS[@]}" \
   "$ROOT/tests/UrlUtilsTests.cpp" \
   -o "$BUILD_DIR/url-utils-tests"
