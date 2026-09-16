@@ -11,6 +11,7 @@
 
 #include "modules/admin/presentation/AdminCommandDialog.h"
 #include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::admin::presentation
 {
