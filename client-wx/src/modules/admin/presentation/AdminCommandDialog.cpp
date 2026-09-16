@@ -11,7 +11,6 @@
 #include <wx/textctrl.h>
 #include <wx/tokenzr.h>
 #include "shared/text/presentation/encoding/Encoding.h"
-#include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "modules/admin/domain/AdminPagination.h"
 namespace lila::modules::admin::presentation
 {
@@ -117,9 +116,6 @@ void AdminCommandDialog::BuildFields(
                 multiline ? wxTE_MULTILINE : 0);
             field.editor = text;
         }
-        lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-            *field.editor, field.metadata.label, field.metadata.help);
-        if (!field.metadata.help.empty()) field.editor->SetToolTip(field.metadata.help);
         if (dynamic_cast<wxCheckBox*>(field.editor) != nullptr)
             fieldsSizer.AddSpacer(1);
         else
@@ -136,8 +132,6 @@ void AdminCommandDialog::BuildFields(
             const auto includeLabel = wxString(L"Inclure le champ « ") +
                 field.metadata.label + wxString(L" »");
             field.include = new wxCheckBox(scroll, wxID_ANY, includeLabel);
-            lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-                *field.include, includeLabel);
             field.include->SetValue(included);
             field.editor->Enable(included);
             auto* editor = field.editor;

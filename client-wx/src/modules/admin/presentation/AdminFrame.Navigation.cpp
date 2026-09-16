@@ -9,7 +9,6 @@
 #include <wx/choice.h>
 #include <wx/panel.h>
 
-#include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/security/infrastructure/SecurityUtils.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
@@ -83,14 +82,14 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         ? wxString(L"Chargement de la liste des rapports…")
         : wxString(area.description.data()) +
             wxString(L"\n\nChoisissez une opération dans la liste. Son formulaire métier s’ouvrira avec les champs adaptés."));
-    resultSummaryLabel_->SetLabel(wxString(L"Aide de la rubrique"));
+    resultSummaryLabel_->SetLabel(wxString(L"Résultat"));
     resultSummaryLabel_->Show(!bugReports);
     resultsMenu_->Hide();
     reportSearchPanel_->Show(bugReports);
     if (bugReports)
     {
-        const std::array<std::wstring_view, 5> labels{
-            L"En attente", L"En cours", L"Corrigés, à tester", L"Terminés", L"Refusés"};
+        const std::array<std::wstring_view, 4> labels{
+            L"En attente", L"En cours", L"Corrigés, à tester", L"Refusés"};
         std::vector<lila::shared::ui::controls::VerticalMenuItem> statuses;
         statuses.reserve(labels.size() + 1);
         statuses.push_back({"new", wxString(L"Nouveau rapport")});
@@ -182,7 +181,6 @@ void AdminFrame::FocusResultDetails()
     if (resultText_ == nullptr) return;
     resultText_->SetInsertionPoint(0);
     resultText_->SetFocus();
-    lila::shared::accessibility::AccessibilityUtils::NotifyFocus(*resultText_);
 }
 
 void AdminFrame::FocusPagination()
@@ -198,8 +196,6 @@ void AdminFrame::SetStatus(const wxString& message, bool isError)
 {
     (void)isError;
     statusLabel_->SetLabel(message);
-    lila::shared::accessibility::AccessibilityUtils::AnnounceStatus(
-        *statusLabel_, message);
     Layout();
 }
 }

@@ -16,6 +16,7 @@ import { CountBugReportCommentsService } from '../application/use-cases/bug-repo
 import { ListBugReportCommentsService } from '../application/use-cases/bug-report-comments/list-bug-report-comments.service';
 import { BugReportStatusNormalizerService } from '../application/use-cases/bug-reports/bug-report-status-normalizer.service';
 import { CreateBugReportService } from '../application/use-cases/bug-reports/create-bug-report.service';
+import { CountBugReportsByStatusService } from '../application/use-cases/bug-reports/count-bug-reports-by-status.service';
 import { DeleteBugReportService } from '../application/use-cases/bug-reports/delete-bug-report.service';
 import { GetBugReportService } from '../application/use-cases/bug-reports/get-bug-report.service';
 import { ListBugReportsService } from '../application/use-cases/bug-reports/list-bug-reports.service';
@@ -96,6 +97,12 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
       inject: [BUG_REPORT_REPOSITORY],
     },
     {
+      provide: CountBugReportsByStatusService,
+      useFactory: (repo: BugReportRepository) =>
+        new CountBugReportsByStatusService(repo),
+      inject: [BUG_REPORT_REPOSITORY],
+    },
+    {
       provide: CountBugReportCommentsService,
       useFactory: (repo: BugReportCommentRepository) =>
         new CountBugReportCommentsService(repo),
@@ -128,6 +135,7 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
     UpdateBugReportService,
     UpdateBugReportStatusService,
     DeleteBugReportService,
+    CountBugReportsByStatusService,
     CountBugReportCommentsService,
     ListBugReportCommentsService,
     AddBugReportCommentService,

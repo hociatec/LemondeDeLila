@@ -20,8 +20,7 @@ export interface UpdateAdminBugReportCommand {
 
 export interface UpdateAdminBugReportStatusCommand {
   id: string;
-  status:
-    'pending' | 'in_progress' | 'to_test' | 'done' | 'refused' | 'rejected';
+  status: 'pending' | 'in_progress' | 'to_test' | 'refused' | 'rejected';
 }
 
 @Injectable()
@@ -63,13 +62,17 @@ export class AdminBugReportsService {
       ...(search ? { search } : {}),
       ...(options.status ? { status: options.status } : {}),
     });
-    const counts = await this.bugReports.countComments(
-      items.map((item) => item.id),
-    );
-    return items.map((item) => ({
-      ...serializeReport(item),
-      commentsCount: counts[item.id] ?? 0,
-    }));
+    const [commentCounts, statusCounts] = await Promise.all([
+      this.bugReports.countComments(items.map((item) => item.id)),
+      this.bugReports.countByStatus(),
+    ]);
+    return {
+      items: items.map((item) => ({
+        ...serializeReport(item),
+        commentsCount: commentCounts[item.id] ?? 0,
+      })),
+      statusCounts,
+    };
   }
 
   async get(id: string) {
@@ -106,14 +109,9 @@ export class AdminBugReportsService {
   async updateStatus(command: UpdateAdminBugReportStatusCommand) {
     assertReportId(command.id);
     if (
-      ![
-        'pending',
-        'in_progress',
-        'to_test',
-        'done',
-        'refused',
-        'rejected',
-      ].includes(command.status)
+      !['pending', 'in_progress', 'to_test', 'refused', 'rejected'].includes(
+        command.status,
+      )
     ) {
       throw new BadRequestException('Statut de rapport invalide');
     }

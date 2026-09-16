@@ -2,6 +2,7 @@ export { AddBugReportCommentService } from './application/use-cases/bug-report-c
 export { CountBugReportCommentsService } from './application/use-cases/bug-report-comments/count-bug-report-comments.service';
 export { ListBugReportCommentsService } from './application/use-cases/bug-report-comments/list-bug-report-comments.service';
 export { CreateBugReportService } from './application/use-cases/bug-reports/create-bug-report.service';
+export { CountBugReportsByStatusService } from './application/use-cases/bug-reports/count-bug-reports-by-status.service';
 export { DeleteBugReportService } from './application/use-cases/bug-reports/delete-bug-report.service';
 export { GetBugReportService } from './application/use-cases/bug-reports/get-bug-report.service';
 export { ListBugReportsService } from './application/use-cases/bug-reports/list-bug-reports.service';

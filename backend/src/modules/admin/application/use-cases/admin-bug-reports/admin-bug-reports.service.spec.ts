@@ -11,6 +11,7 @@ describe('AdminBugReportsService', () => {
       updateStatus: jest.fn(),
       delete: jest.fn(),
       countComments: jest.fn(),
+      countByStatus: jest.fn(),
     };
   }
 
@@ -31,6 +32,13 @@ describe('AdminBugReportsService', () => {
       },
     ]);
     deps.countComments.mockResolvedValue({ r1: 3 });
+    deps.countByStatus.mockResolvedValue({
+      pending: 2,
+      in_progress: 1,
+      to_test: 4,
+      refused: 0,
+      rejected: 0,
+    });
     const service = new AdminBugReportsService(deps as any);
 
     const result = await service.list({
@@ -44,22 +52,31 @@ describe('AdminBugReportsService', () => {
       search: 'audio',
       status: 'pending',
     });
-    expect(result).toEqual([
-      {
-        id: 'r1',
-        subject: 'A',
-        commentsCount: 3,
-        createdAt: '2026-08-20T10:00:00.000Z',
-        updatedAt: '2026-08-21T10:00:00.000Z',
+    expect(result).toEqual({
+      items: [
+        {
+          id: 'r1',
+          subject: 'A',
+          commentsCount: 3,
+          createdAt: '2026-08-20T10:00:00.000Z',
+          updatedAt: '2026-08-21T10:00:00.000Z',
+        },
+        {
+          id: 'r2',
+          subject: 'B',
+          commentsCount: 0,
+          createdAt: '2026-08-22T10:00:00.000Z',
+          updatedAt: '2026-08-23T10:00:00.000Z',
+        },
+      ],
+      statusCounts: {
+        pending: 2,
+        in_progress: 1,
+        to_test: 4,
+        refused: 0,
+        rejected: 0,
       },
-      {
-        id: 'r2',
-        subject: 'B',
-        commentsCount: 0,
-        createdAt: '2026-08-22T10:00:00.000Z',
-        updatedAt: '2026-08-23T10:00:00.000Z',
-      },
-    ]);
+    });
   });
 
   it('fails on get when the report does not exist', async () => {

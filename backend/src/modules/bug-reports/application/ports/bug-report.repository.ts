@@ -31,6 +31,7 @@ export interface BugReportRepository {
     search?: string;
     status?: BugReportStatus;
   }): Promise<BugReportRecord[]>;
+  countByStatus(): Promise<Record<BugReportStatus, number>>;
   findById(id: string): Promise<BugReportRecord | null>;
   save(
     report: CreateBugReportRecordInput | BugReportRecord,

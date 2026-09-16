@@ -13,23 +13,22 @@ void ApplyBugReportFieldMetadata(
     if (fieldName == "subject")
     {
         metadata.label = L"Sujet";
-        metadata.help = L"Intitulé court du rapport. Entrée passe au contenu sans enregistrer.";
     }
     else if (fieldName == "content")
     {
         metadata.label = L"Contenu";
-        metadata.help = L"Description détaillée du rapport. Entrée ajoute une nouvelle ligne.";
     }
     else if (fieldName == "status" && commandId == "bugs.list")
     {
-        metadata.choices = {"all", "pending", "in_progress", "to_test", "done", "refused"};
+        metadata.choices = {"all", "pending", "in_progress", "to_test", "refused"};
         metadata.choiceLabels = {L"Tous", L"En attente", L"En cours",
-            L"Corrigés, à tester", L"Terminés", L"Refusés"};
+            L"Corrigés, à tester", L"Refusés"};
     }
     else if (fieldName == "status")
     {
+        metadata.choices = {"pending", "in_progress", "to_test", "refused"};
         metadata.choiceLabels = {
-            L"En attente", L"En cours", L"Corrigé, à tester", L"Terminé", L"Refusé"};
+            L"En attente", L"En cours", L"Corrigé, à tester", L"Refusé"};
     }
 }
 }

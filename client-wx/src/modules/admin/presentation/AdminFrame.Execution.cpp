@@ -41,11 +41,6 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
         if (commandIndex < contextActionPayloads_.size())
             for (const auto& item : contextActionPayloads_[commandIndex].items())
                 payload[item.key()] = item.value();
-        if (command.id == "bugs.get")
-        {
-            FocusResultDetails();
-            return;
-        }
     }
     const bool direct = showingItemActions_ &&
         commandIndex < contextActionDirect_.size() && contextActionDirect_[commandIndex];

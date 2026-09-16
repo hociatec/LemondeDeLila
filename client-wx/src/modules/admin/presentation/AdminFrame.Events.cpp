@@ -16,11 +16,6 @@ namespace lila::modules::admin::presentation
 {
 void AdminFrame::BindEvents()
 {
-    Bind(wxEVT_CHAR_HOOK, [](wxKeyEvent& event)
-    {
-        if (event.GetKeyCode() == WXK_TAB || event.GetKeyCode() == WXK_NUMPAD_TAB) return;
-        event.Skip();
-    });
     lila::shared::ui::navigation::BindMenuHandlers(
         *sectionsMenu_,
         [this](std::size_t index)

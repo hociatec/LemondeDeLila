@@ -50,22 +50,6 @@ const std::unordered_map<std::string_view, std::wstring_view> Labels{
     {"editWindowSeconds", L"Délai d’édition en secondes"},
     {"windowSeconds", L"Fenêtre de mesure en secondes"},
 };
-const std::unordered_map<std::string_view, std::wstring_view> Help{
-    {"id", L"Identifiant affiché dans la liste de résultats."},
-    {"userId", L"Identifiant numérique de l’utilisateur."},
-    {"roomId", L"Identifiant numérique de la salle."},
-    {"roles", L"Un rôle par ligne, par exemple ROLE_USER."},
-    {"permissions", L"Une permission par ligne."},
-    {"answers", L"Exactement quatre réponses, une par ligne."},
-    {"correctIndex", L"Index de la bonne réponse : 0 pour la première, jusqu’à 3."},
-    {"createdAfter", L"Date ISO 8601, par exemple 2026-09-14T12:00:00Z."},
-    {"createdBefore", L"Date ISO 8601, par exemple 2026-09-14T12:00:00Z."},
-    {"bannedUntil", L"Date ISO 8601. Laisser ce champ non inclus pour utiliser la durée."},
-    {"durationDays", L"Durée entière comprise entre 1 et 36500 jours."},
-    {"parentId", L"Laisser vide pour une catégorie racine."},
-    {"categoryId", L"Laisser le filtre non inclus pour afficher toutes les catégories."},
-    {"filePath", L"Le sélecteur de fichier s’ouvrira si ce champ est vide."}, {"soundId", L"Dans le remplacement d’un son, appuyez sur Espace pour écouter le son actuel."},
-};
 void SetSoundChoices(AdminFieldMetadata& result)
 {
     struct Choice final { const char* id; const wchar_t* label; };
@@ -144,8 +128,6 @@ AdminFieldMetadata GetAdminFieldMetadata(
     AdminFieldMetadata result;
     if (const auto found = Labels.find(fieldName); found != Labels.end()) result.label = found->second;
     else result.label.assign(fieldName.begin(), fieldName.end());
-    if (const auto found = Help.find(fieldName); found != Help.end()) result.help = found->second;
-
     if (fieldName == "content" || fieldName == "description" || fieldName == "rules" ||
         fieldName == "message" || fieldName == "question")
         result.kind = AdminFieldKind::Multiline;
@@ -178,8 +160,8 @@ AdminFieldMetadata GetAdminFieldMetadata(
         }
         else
         {
-            result.choices = {"pending", "in_progress", "to_test", "done", "refused"};
-            result.choiceLabels = {L"En attente", L"En cours", L"Corrigé, à tester", L"Terminé", L"Refusé"};
+            result.choices = {"pending", "in_progress", "to_test", "refused"};
+            result.choiceLabels = {L"En attente", L"En cours", L"Corrigé, à tester", L"Refusé"};
         }
     }
     ApplyBugReportFieldMetadata(commandId, fieldName, result);

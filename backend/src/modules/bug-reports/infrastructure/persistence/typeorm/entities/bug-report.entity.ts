@@ -6,7 +6,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import type { BugReportStatus } from '../../../../application/read-models/bug-report.record';
+import type { LegacyBugReportStatus } from '../../../../application/read-models/bug-report.record';
 
 @Entity({ name: 'bug_reports' })
 @Index('idx_bug_reports_status', ['status'])
@@ -22,7 +22,7 @@ export class BugReportEntity {
   content!: string;
 
   @Column({ type: 'varchar', length: 20, default: 'pending' })
-  status!: BugReportStatus;
+  status!: LegacyBugReportStatus;
 
   @CreateDateColumn({ name: 'created_at', type: 'datetime' })
   createdAt!: Date;
