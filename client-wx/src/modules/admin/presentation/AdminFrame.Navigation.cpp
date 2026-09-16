@@ -121,7 +121,8 @@ void AdminFrame::LoadAutomaticAreaContent()
     if (area.automaticCommandId.empty()) return;
     if (area.id == "reports")
     {
-        RefreshBugReports(false, false);
+        resultText_->SetValue(
+            wxString(L"Choisissez « Créer un nouveau rapport » ou un statut, puis appuyez sur Entrée."));
         return;
     }
     const auto* command = domain::FindAdminCommand(area.automaticCommandId);
