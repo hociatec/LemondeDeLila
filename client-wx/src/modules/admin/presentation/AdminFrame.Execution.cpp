@@ -22,8 +22,7 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
     const auto& command = *visibleCommands_[commandIndex];
     if (command.id == "bugs.list")
     {
-        reportSearchCtrl_->SetFocus();
-        SetStatus(wxString(L"Saisissez votre recherche puis appuyez sur Entrée. Laissez vide pour tout afficher."));
+        RefreshBugReports(false);
         return;
     }
     nlohmann::json payload;

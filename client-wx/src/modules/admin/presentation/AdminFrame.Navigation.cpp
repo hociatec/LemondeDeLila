@@ -72,14 +72,17 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         commandsMenu_->SetSelectedIndexSilently(
             std::min(commandSelections_[sectionIndex], items.size() - 1));
     sectionsMenu_->Hide();
-    commandsMenu_->Show();
+    // Les rapports s'ouvrent directement sur leur liste : il n'y a pas
+    // d'étape intermédiaire « opérations » à traverser au clavier.
+    commandsMenu_->Show(!bugReports);
     showingCommands_ = true;
     titleLabel_->SetLabel(
         wxString(L"Administration — ") +
         wxString(area.label.data()));
-    resultText_->SetValue(
-        wxString(area.description.data()) +
-        wxString(L"\n\nChoisissez une opération dans la liste. Son formulaire métier s’ouvrira avec les champs adaptés."));
+    resultText_->SetValue(bugReports
+        ? wxString(L"Chargement de la liste des rapports…")
+        : wxString(area.description.data()) +
+            wxString(L"\n\nChoisissez une opération dans la liste. Son formulaire métier s’ouvrira avec les champs adaptés."));
     resultSummaryLabel_->SetLabel(wxString(L"Aide de la rubrique"));
     resultsMenu_->Hide();
     reportSearchPanel_->Show(bugReports);
@@ -94,8 +97,8 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
     SetStatus(items.empty() ? wxString(L"Aucune action disponible.") :
         wxString(visibleCommands_[commandsMenu_->GetSelectedIndex()]->description));
     Layout();
-    FocusCurrentMenu();
     LoadAutomaticAreaContent();
+    if (!bugReports) FocusCurrentMenu();
 }
 
 void AdminFrame::LoadAutomaticAreaContent()
@@ -104,7 +107,7 @@ void AdminFrame::LoadAutomaticAreaContent()
     if (area.automaticCommandId.empty()) return;
     if (area.id == "reports")
     {
-        RefreshBugReports(true, false);
+        RefreshBugReports(false, false);
         return;
     }
     const auto* command = domain::FindAdminCommand(area.automaticCommandId);
@@ -118,9 +121,10 @@ void AdminFrame::LoadAutomaticAreaContent()
 
 bool AdminFrame::HandleKey(int keyCode)
 {
-    if (keyCode == WXK_TAB)
+    if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB)
     {
-        FocusResult();
+        // La console est conçue pour une navigation par flèches ; Tabulation
+        // et Maj+Tabulation ne changent donc jamais le focus.
         return true;
     }
     if (keyCode != WXK_ESCAPE) return false;

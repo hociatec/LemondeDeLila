@@ -119,8 +119,8 @@ void AdminFrame::ShowResultDetails(std::size_t index)
         "Élément " + std::to_string(index + 1) + " sur " +
         std::to_string(resultDetails_.size()) +
         (currentResultItemKind_ == domain::AdminItemKind::None
-            ? ". Entrée ou Tabulation pour lire le détail."
-            : ". Entrée ouvre les actions, Tabulation lit le détail.")));
+            ? ". Utilisez les flèches haut et bas pour parcourir la liste."
+            : ". Entrée ouvre les actions ; les flèches haut et bas parcourent la liste.")));
     UpdateBugReportActions();
 }
 }
