@@ -9,7 +9,6 @@
 #include <wx/choice.h>
 #include <wx/panel.h>
 
-#include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
@@ -32,22 +31,16 @@ void AdminFrame::BuildLayout()
     sectionsMenu_->SetMinSize(wxSize(360, -1));
     commandsMenu_->SetMinSize(wxSize(420, -1));
 
-    sectionsMenu_->SetAccessibleName(wxString(L"Rubriques d’administration"));
-    commandsMenu_->SetAccessibleName(wxString(L"Opérations de la rubrique"));
-
     auto* resultPanel = new lila::shared::accessibility::NonFocusablePanel(content);
     auto* resultSizer = new wxBoxSizer(wxVERTICAL);
     resultSummaryLabel_ = new wxStaticText(
-        resultPanel, wxID_ANY, wxString(L"Aide de la rubrique"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *resultSummaryLabel_, wxString(L"Résumé du résultat"));
+        resultPanel, wxID_ANY, wxString(L"Résultat"));
     resultSizer->Add(resultSummaryLabel_, 0, wxEXPAND | wxBOTTOM, 8);
 
     reportSearchPanel_ = new wxPanel(resultPanel, wxID_ANY);
     auto* reportSearchSizer = new wxBoxSizer(wxVERTICAL);
     reportStatusMenu_ = new lila::shared::ui::controls::VerticalMenu(
         reportSearchPanel_, empty, lila::shared::ui::controls::VerticalMenuRole::Menu);
-    reportStatusMenu_->SetAccessibleName(wxString(L"Rapports : création et statuts"));
     reportSearchSizer->Add(reportStatusMenu_, 0, wxEXPAND);
     reportSearchPanel_->SetSizer(reportSearchSizer);
     reportSearchPanel_->Hide();
@@ -68,19 +61,10 @@ void AdminFrame::BuildLayout()
     paginationSizer->Add(pageSizeChoice_, 0, wxALIGN_CENTER_VERTICAL);
     paginationPanel_->SetSizer(paginationSizer);
     paginationPanel_->Hide();
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *paginationLabel_, wxString(L"État de la pagination"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *previousPageButton_, wxString(L"Afficher la page précédente"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *nextPageButton_, wxString(L"Afficher la page suivante"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *pageSizeChoice_, wxString(L"Nombre d’éléments affichés par page"));
     resultSizer->Add(paginationPanel_, 0, wxEXPAND | wxBOTTOM, 8);
 
     resultsMenu_ = new lila::shared::ui::controls::VerticalMenu(
         resultPanel, empty, lila::shared::ui::controls::VerticalMenuRole::List);
-    resultsMenu_->SetAccessibleName(wxString(L"Éléments du résultat"));
     resultsMenu_->SetMinSize(wxSize(-1, 180));
     resultsMenu_->Hide();
     resultSizer->Add(resultsMenu_, 0, wxEXPAND | wxBOTTOM, 8);
@@ -88,9 +72,6 @@ void AdminFrame::BuildLayout()
     resultText_ = new wxTextCtrl(
         resultPanel, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
         wxTE_MULTILINE | wxTE_READONLY | wxTE_DONTWRAP);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *resultText_, wxString(L"Résultat de l’opération administrateur"),
-        wxString(L"Zone de résultat en lecture seule. Utilisez les flèches pour lire le contenu et Échap pour revenir aux opérations."));
     contentSizer->Add(sectionsMenu_, 0, wxEXPAND | wxRIGHT, 16);
     contentSizer->Add(commandsMenu_, 0, wxEXPAND | wxRIGHT, 16);
     resultSizer->Add(resultText_, 1, wxEXPAND);
@@ -108,12 +89,6 @@ void AdminFrame::BuildLayout()
     reportActionsSizer->Add(editReportButton_, 0, wxLEFT, 8);
     reportActionsPanel_->SetSizer(reportActionsSizer);
     reportActionsPanel_->Hide();
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *editReportButton_, wxString(L"Modifier le rapport affiché"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *changeReportStatusButton_, wxString(L"Consulter le rapport affiché"));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *deleteReportButton_, wxString(L"Supprimer le rapport affiché"));
     resultSizer->Add(reportActionsPanel_, 0, wxEXPAND | wxTOP, 8);
     resultPanel->SetSizer(resultSizer);
     contentSizer->Add(resultPanel, 1, wxEXPAND);
@@ -122,10 +97,8 @@ void AdminFrame::BuildLayout()
 
     statusLabel_ = new wxStaticText(
         this, wxID_ANY,
-        wxString(L"Flèches : naviguer. Entrée : ouvrir ou valider. Échap : revenir à l’écran précédent."));
+        wxString{});
     rootSizer->Add(statusLabel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 24);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(
-        *statusLabel_, wxString(L"État de la console d’administration"));
     SetSizer(rootSizer);
 }
 }

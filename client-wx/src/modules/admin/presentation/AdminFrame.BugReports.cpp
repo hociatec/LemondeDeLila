@@ -18,7 +18,7 @@ namespace lila::modules::admin::presentation
 namespace
 {
 constexpr std::string_view ReportStatuses[]{
-    "all", "pending", "in_progress", "to_test", "done", "refused"};
+    "all", "pending", "in_progress", "to_test", "refused"};
 }
 
 void AdminFrame::SearchBugReports()

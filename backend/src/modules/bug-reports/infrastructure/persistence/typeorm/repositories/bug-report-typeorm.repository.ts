@@ -46,6 +46,10 @@ export class BugReportTypeormRepository implements BugReportRepository {
       query.andWhere('report.status IN (:...statuses)', {
         statuses: ['refused', 'rejected'],
       });
+    } else if (options.status === 'to_test') {
+      query.andWhere('report.status IN (:...statuses)', {
+        statuses: ['to_test', 'done'],
+      });
     } else if (options.status) {
       query.andWhere('report.status = :status', { status: options.status });
     }
@@ -56,6 +60,30 @@ export class BugReportTypeormRepository implements BugReportRepository {
   async findById(id: string): Promise<BugReportRecord | null> {
     const item = await this.repo.findOne({ where: { id } });
     return item ? this.toRecord(item) : null;
+  }
+
+  async countByStatus(): Promise<Record<BugReportStatus, number>> {
+    const rows = await this.repo
+      .createQueryBuilder('report')
+      .select(
+        "CASE WHEN report.status = 'done' THEN 'to_test' WHEN report.status = 'rejected' THEN 'refused' ELSE report.status END",
+        'status',
+      )
+      .addSelect('COUNT(*)', 'count')
+      .groupBy(
+        "CASE WHEN report.status = 'done' THEN 'to_test' WHEN report.status = 'rejected' THEN 'refused' ELSE report.status END",
+      )
+      .getRawMany<{ status: BugReportStatus; count: string }>();
+    const counts: Record<BugReportStatus, number> = {
+      pending: 0,
+      in_progress: 0,
+      to_test: 0,
+      refused: 0,
+      rejected: 0,
+    };
+    for (const row of rows)
+      if (row.status in counts) counts[row.status] = Number(row.count) || 0;
+    return counts;
   }
 
   async save(
@@ -80,7 +108,7 @@ export class BugReportTypeormRepository implements BugReportRepository {
       id: entity.id,
       subject: entity.subject,
       content: entity.content,
-      status: entity.status,
+      status: entity.status === 'done' ? 'to_test' : entity.status,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       createdByUserId: entity.createdByUserId,

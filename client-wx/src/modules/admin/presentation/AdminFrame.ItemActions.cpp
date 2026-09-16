@@ -89,17 +89,9 @@ void AdminFrame::OpenResultActions(std::size_t index)
     }
     else if (kind == domain::AdminItemKind::BugReport)
     {
-        add("bugs.get", L"Consulter", {}, true); add("bugs.comment", L"Ajouter un commentaire");
-        add("bugs.comments", L"Voir les commentaires", {}, true);
-        add("bugs.update", L"Modifier"); add("bugs.delete", L"Supprimer", {}, true);
-        const auto current = contextItem_.value("status", std::string{});
-        const std::pair<std::string_view, std::wstring_view> statuses[]{
-            {"pending", L"En attente"}, {"in_progress", L"En cours"},
-            {"to_test", L"Corrigé, à tester"}, {"done", L"Terminé"}, {"refused", L"Refusé"}};
-        for (const auto& [status, label] : statuses)
-            if (status != current)
-                add("bugs.status", wxString(L"Passer en : ") + label.data(),
-                    {{"status", status}}, true);
+        add("bugs.get", L"Consulter", {}, true);
+        add("bugs.delete", L"Supprimer", {}, true);
+        add("bugs.update", L"Modifier");
     }
     else if (kind == domain::AdminItemKind::Room)
     {

@@ -1,5 +1,7 @@
 #include "modules/admin/presentation/AdminFrame.h"
 
+#include <algorithm>
+#include <array>
 #include <wx/panel.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
@@ -53,12 +55,40 @@ void AdminFrame::ShowResult(
     const auto displayResult = command.id == "sounds.catalog"
         ? FlattenSoundCatalog(result) : result;
     auto presentation = BuildAdminResultPresentation(displayResult);
+    if (command.id == "bugs.get")
+    {
+        resultSummaryLabel_->SetLabel(wxString(L"Rapport consulté"));
+        resultSummaryLabel_->Show();
+        resultText_->SetValue(lila::shared::text::FromUtf8(presentation.details));
+        resultText_->SetInsertionPoint(0);
+        Layout();
+        FocusResultDetails();
+        return;
+    }
     if (command.id == "bugs.list" && result.is_object())
     {
         const auto reportItems = result.find("items");
         if (reportItems != result.end() && reportItems->is_array())
             presentation = BuildAdminResultPresentation(
                 nlohmann::json{{"reports", *reportItems}});
+        const auto counts = result.value("statusCounts", nlohmann::json::object());
+        const std::array<std::pair<std::string_view, std::wstring_view>, 4> statuses{{
+            {"pending", L"En attente"}, {"in_progress", L"En cours"},
+            {"to_test", L"Corrigés, à tester"}, {"refused", L"Refusés"},
+        }};
+        std::vector<lila::shared::ui::controls::VerticalMenuItem> statusItems;
+        statusItems.reserve(statuses.size() + 1);
+        statusItems.push_back({"new", wxString(L"Nouveau rapport")});
+        for (std::size_t index = 0; index < statuses.size(); ++index)
+        {
+            const auto count = counts.value(std::string(statuses[index].first), 0);
+            statusItems.push_back({std::to_string(index), wxString(statuses[index].second) +
+                wxString::Format(L" (%d)", count)});
+        }
+        const auto selected = reportStatusMenu_->GetSelectedIndex();
+        reportStatusMenu_->SetItems(statusItems);
+        reportStatusMenu_->SetSelectedIndexSilently(
+            std::min(selected, statusItems.size() - 1));
     }
     resultSummaryLabel_->SetLabel(
         wxString(command.label) + wxString(L" — ") +

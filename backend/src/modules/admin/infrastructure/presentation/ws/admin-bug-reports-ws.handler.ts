@@ -39,8 +39,8 @@ export class AdminBugReportsWsHandler {
       AdminBugReportsListWsDto,
       payload ?? {},
     );
-    const items = await this.bugReports.list(dto);
-    return { type: WS_EVENTS.admin.bugReports.list, payload: { items } };
+    const result = await this.bugReports.list(dto);
+    return { type: WS_EVENTS.admin.bugReports.list, payload: result };
   }
 
   async get(session: WsSession, payload: unknown) {

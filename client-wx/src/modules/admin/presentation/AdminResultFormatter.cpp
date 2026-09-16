@@ -109,7 +109,7 @@ std::string ScalarForKey(std::string_view key, const nlohmann::json& value)
             {"active", "Actif"}, {"banned", "Banni"}, {"open", "Ouvert"},
             {"in_progress", "En cours"}, {"handled", "Traité"},
             {"pending", "En attente"}, {"to_test", "Corrigé, à tester"},
-            {"done", "Terminé"}, {"refused", "Refusé"},
+            {"refused", "Refusé"},
             {"validated", "Validé"}, {"to_edit", "À modifier"},
             {"trash", "Corbeille"}, {"construction", "En construction"},
             {"finished", "Terminé"}, {"beta", "Bêta"}, {"setup", "Préparation"},

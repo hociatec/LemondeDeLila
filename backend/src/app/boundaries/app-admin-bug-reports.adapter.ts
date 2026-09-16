@@ -3,6 +3,7 @@ import {
   AddBugReportCommentService,
   CountBugReportCommentsService,
   CreateBugReportService,
+  CountBugReportsByStatusService,
   DeleteBugReportService,
   GetBugReportService,
   ListBugReportCommentsService,
@@ -21,6 +22,7 @@ import type {
 export class AppAdminBugReportsAdapter implements AdminBugReportsPort {
   constructor(
     private readonly createReport: CreateBugReportService,
+    private readonly countReportsByStatus: CountBugReportsByStatusService,
     private readonly listReports: ListBugReportsService,
     private readonly getReport: GetBugReportService,
     private readonly updateReport: UpdateBugReportService,
@@ -38,6 +40,10 @@ export class AppAdminBugReportsAdapter implements AdminBugReportsPort {
     createdByUsername: string;
   }): Promise<BugReportRecord> {
     return this.createReport.execute(input);
+  }
+
+  countByStatus(): Promise<Record<BugReportStatus, number>> {
+    return this.countReportsByStatus.execute();
   }
 
   list(options: {
