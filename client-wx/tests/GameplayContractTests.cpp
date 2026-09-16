@@ -26,6 +26,7 @@
 #include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
+#include "modules/gameplay/grid/application/GridPlayerCellText.h"
 #include "modules/gameplay/state/infrastructure/GameBoardCapabilitiesDecoder.h"
 #include "modules/gameplay/shortcuts/application/GameGenericShortcutPolicy.h"
 
@@ -94,6 +95,28 @@ int main()
 {
     try
     {
+        const auto morpion = lila::modules::gameplay::infrastructure::GameBoardCapabilitiesDecoder::Grid(
+            {{"boards", {{"morpion", {{"width", 3}, {"height", 3},
+                {"cells", {{"0,0", 1}, {"1,1", -2}, {"2,2", nullptr}}}}}}}});
+        const std::vector<lila::modules::gameplay::domain::GamePlayer> players{
+            {1, "hacene"}, {-2, "Marcelino", true}};
+        const auto& cells = morpion->boards[0].cells;
+        using lila::modules::gameplay::application::grid::GridPlayerCellText;
+        Expect(cells[0].ownerId == 1 && cells[4].ownerId == -2,
+            "Morpion must preserve human and bot cell ownership");
+        Expect(GridPlayerCellText(cells[0], players) == "A1, hacene",
+            "Occupied Morpion cells must announce the player's name");
+        Expect(GridPlayerCellText(cells[4], players) == "B2, Marcelino",
+            "Occupied Morpion cells must announce the bot's name");
+        Expect(GridPlayerCellText(cells[1], players) == "B1" &&
+            GridPlayerCellText(cells[8], players) == "C3",
+            "Empty Morpion cells must announce only their coordinate");
+        const auto corridor = lila::modules::gameplay::infrastructure::GameBoardCapabilitiesDecoder::Grid(
+            {{"boards", {{"pathWalls", {{"width", 9}, {"height", 9},
+                {"cells", {{"4,0", 1}, {"4,8", -2}}}}}}}});
+        Expect(GridPlayerCellText(corridor->boards[0].cells[4], players) == "E1, hacene" &&
+            GridPlayerCellText(corridor->boards[0].cells[76], players) == "E9, Marcelino",
+            "Corridor cells must identify human and bot occupants");
         for (const auto orientation : {"h", "v"})
         {
             const auto grid = lila::modules::gameplay::infrastructure::GameBoardCapabilitiesDecoder::Grid(

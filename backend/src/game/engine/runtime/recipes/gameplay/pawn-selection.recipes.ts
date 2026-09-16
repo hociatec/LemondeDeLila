@@ -12,6 +12,7 @@ type SequentialPawnSelectionOptions<TState extends object> = {
   setId: string;
   choiceId: string;
   automatic?: boolean;
+  announceRequest?: boolean;
   groups?: readonly PawnSelectionGroup[];
   label?: (pawn: PawnDefinition) => string;
   assigned?: (input: {
@@ -154,7 +155,8 @@ function requestPawnSelection<TState extends object>(
     });
     return;
   }
-  ctx.events.message('game.pawn.selection-requested', { playerId });
+  if (options.announceRequest !== false)
+    ctx.events.message('game.pawn.selection-requested', { playerId });
   ctx.choice.pawn({
     id: options.choiceId,
     player: playerId,
