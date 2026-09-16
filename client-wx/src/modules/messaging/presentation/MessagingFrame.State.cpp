@@ -11,6 +11,7 @@
 #include "shared/ui/application/BackgroundTask.h"
 #include "shared/ui/presentation/theme/Theme.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "shared/logging/application/Logger.h"
 
 #include <wx/button.h>
 #include <wx/listbox.h>
@@ -27,6 +28,11 @@ void MessagingFrame::UpdateStatus(const wxString& message, bool isError)
     shell.statusLabel->SetForegroundColour(
         isError ? lila::shared::ui::Theme::Error() : lila::shared::ui::Theme::Accent());
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*shell.statusLabel, message);
+    if (isError)
+    {
+        lila::shared::logging::LogError("Messaging", lila::shared::text::ToUtf8(message));
+        lila::shared::accessibility::AccessibilityUtils::AnnounceStatus(*shell.statusLabel, message);
+    }
     Layout();
 }
 
