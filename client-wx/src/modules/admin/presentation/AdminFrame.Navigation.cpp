@@ -88,8 +88,8 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
     reportSearchPanel_->Show(bugReports);
     if (bugReports)
     {
-        const std::array<std::wstring_view, 4> labels{
-            L"En attente", L"En cours", L"Corrigés, à tester", L"Refusés"};
+        const std::array<std::wstring_view, 5> labels{
+            L"En attente", L"En cours", L"À corriger", L"Terminés", L"Refusés"};
         std::vector<lila::shared::ui::controls::VerticalMenuItem> statuses;
         statuses.reserve(labels.size() + 1);
         statuses.push_back({"new", wxString(L"Nouveau rapport")});
@@ -122,6 +122,12 @@ void AdminFrame::LoadAutomaticAreaContent()
     {
         resultText_->SetValue(
             wxString(L"Choisissez « Créer un nouveau rapport » ou un statut, puis appuyez sur Entrée."));
+        const auto* command = domain::FindAdminCommand("bugs.list");
+        if (command != nullptr)
+        {
+            loadingReportCountsOnly_ = true;
+            ExecuteCommand(*command, {{"offset", 0}, {"limit", 1}}, false);
+        }
         return;
     }
     const auto* command = domain::FindAdminCommand(area.automaticCommandId);

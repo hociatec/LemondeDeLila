@@ -42,8 +42,8 @@ export class AdminBugReportsListWsDto {
 
   @IsOptional()
   @IsString()
-  @IsIn(['pending', 'in_progress', 'to_test', 'refused'])
-  status?: 'pending' | 'in_progress' | 'to_test' | 'refused';
+  @IsIn(['pending', 'in_progress', 'to_test', 'done', 'refused'])
+  status?: 'pending' | 'in_progress' | 'to_test' | 'done' | 'refused';
 
   @IsOptional()
   @StrictIntegerInput()
@@ -78,6 +78,7 @@ export class AdminBugReportUpdateWsDto extends AdminBugReportIdWsDto {
 
 export class AdminBugReportUpdateStatusWsDto extends AdminBugReportIdWsDto {
   @IsString()
-  @IsIn(['pending', 'in_progress', 'to_test', 'refused', 'rejected'])
-  status!: 'pending' | 'in_progress' | 'to_test' | 'refused' | 'rejected';
+  @IsIn(['pending', 'in_progress', 'to_test', 'done', 'refused', 'rejected'])
+  status!:
+    'pending' | 'in_progress' | 'to_test' | 'done' | 'refused' | 'rejected';
 }

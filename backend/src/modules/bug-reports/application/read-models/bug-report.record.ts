@@ -1,8 +1,8 @@
 export type BugReportStatus =
-  'pending' | 'in_progress' | 'to_test' | 'refused' | 'rejected';
+  'pending' | 'in_progress' | 'to_test' | 'done' | 'refused' | 'rejected';
 
 /** Values retained only while old rows are migrated. They are never exposed. */
-export type LegacyBugReportStatus = BugReportStatus | 'done';
+export type LegacyBugReportStatus = BugReportStatus;
 
 export type BugReportRecord = {
   id: string;
