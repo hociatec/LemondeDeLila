@@ -59,12 +59,6 @@ void AdminFrame::BindEvents()
         {
             return true;
         }
-        if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) &&
-            resultsMenu_->GetSelectedIndex() == 0 && reportSearchPanel_->IsShown())
-        {
-            reportStatusMenu_->GetSelectedControl()->SetFocus();
-            return true;
-        }
         return false;
     });
     lila::shared::ui::navigation::BindMenuHandlers(

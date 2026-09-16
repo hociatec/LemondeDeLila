@@ -102,7 +102,8 @@ void AdminFrame::ExecuteCommand(
     nlohmann::json payload,
     bool announceLifecycle)
 {
-    if (command.id == "bugs.list") bugReportListPayload_ = payload;
+    if (command.id == "bugs.list" && !loadingReportCountsOnly_)
+        bugReportListPayload_ = payload;
     ResetPagination(command, payload);
     requestSlot_.Cancel();
     const auto generation = requestSlot_.CurrentToken();
