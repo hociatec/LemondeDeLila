@@ -15,6 +15,20 @@ namespace lila::modules::rooms::presentation
 {
 void RoomPanel::BindEvents()
 {
+    // Modal returns and native focus restoration can still land on the anchor.
+    // Forward focus, never activate a cell or require an extra Enter.
+    gameZoneAnchor_->Bind(wxEVT_SET_FOCUS, [this](wxFocusEvent& event)
+    {
+        event.Skip();
+        CallAfter([weakThis = wxWeakRef<RoomPanel>(this)]()
+        {
+            if (!weakThis || !weakThis->gameZoneAnchor_->HasFocus()) return;
+            auto* top = dynamic_cast<wxTopLevelWindow*>(wxGetTopLevelParent(weakThis.get()));
+            if (top != nullptr && !top->IsActive()) return;
+            if (auto* target = weakThis->gamePlayPanel_->RequiredInteractionTarget())
+                static_cast<void>(lila::shared::accessibility::NavigationController::Focus(target));
+        });
+    });
     gameZoneAnchor_->SetActivatedHandler(
         [this]()
         {
