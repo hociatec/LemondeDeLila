@@ -7,7 +7,6 @@
 #include <wx/listbox.h>
 #include <wx/sizer.h>
 
-#include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 
@@ -46,7 +45,6 @@ std::string OverlayText(const domain::GameGridOverlayView& overlay,
 
 std::string Describe(const domain::GameGridCellView& cell,
     const domain::GameGridBoardView& board,
-    const std::vector<domain::GameAction>& actions,
     const std::vector<domain::GamePlayer>& players,
     const domain::GamePawnsView* pawns)
 {
@@ -76,15 +74,6 @@ std::string Describe(const domain::GameGridCellView& cell,
     if (cell.ownerId) out << " de " << PlayerName(players, *cell.ownerId);
     for (const auto& overlay : board.overlays)
         if (Touches(overlay, cell.id)) out << ", " << OverlayText(overlay, players);
-    bool first = true;
-    for (const auto& action : actions)
-        if (application::grid::GameGridActionResolver::Targets(action,
-            {cell.boardId, cell.id, cell.x, cell.y}))
-        {
-            out << (first ? ", actions disponibles : " : ", ")
-                << (action.label.empty() ? action.type : action.label);
-            first = false;
-        }
     return out.str();
 }
 }
@@ -102,7 +91,7 @@ GameGridPanel::GameGridPanel(wxWindow* parent) : wxPanel(parent)
 }
 
 void GameGridPanel::Apply(const domain::GameGridView* grid,
-    const std::vector<domain::GameAction>& actions,
+    const std::vector<domain::GameAction>&,
     const std::vector<domain::GamePlayer>& players,
     const domain::GamePawnsView* pawns)
 {
@@ -113,8 +102,22 @@ void GameGridPanel::Apply(const domain::GameGridView* grid,
         for (const auto& board : grid->boards)
             for (const auto& cell : board.cells)
                 nextModel.push_back({board.id, cell.id,
-                Describe(cell, board, actions, players, pawns), cell.x, cell.y});
+                Describe(cell, board, players, pawns), cell.x, cell.y});
     if (nextModel == model_) return;
+    // Updating a move must not destroy the focused list or its selected cell.
+    const bool sameCells = nextModel.size() == model_.size() &&
+        std::equal(nextModel.begin(), nextModel.end(), model_.begin(),
+            [](const Cell& a, const Cell& b) { return a.boardId == b.boardId && a.id == b.id; });
+    if (sameCells)
+    {
+        const int selected = cells_->GetSelection();
+        for (std::size_t i = 0; i < nextModel.size(); ++i)
+            if (nextModel[i].description != model_[i].description)
+                cells_->SetString(static_cast<unsigned int>(i), FromUtf8(nextModel[i].description));
+        model_ = std::move(nextModel);
+        if (selected != wxNOT_FOUND) cells_->SetSelection(selected);
+        return;
+    }
     cells_->Clear();
     model_ = std::move(nextModel);
     for (const auto& cell : model_) cells_->Append(FromUtf8(cell.description));

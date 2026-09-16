@@ -77,8 +77,20 @@ function boardAndPlayerMessage(
     const name = player(data.playerId);
     const x = numberValue(data.x);
     const y = numberValue(data.y);
-    if (!name || x == null || y == null) return '';
-    return `${name} ${name === 'Vous' ? 'placez votre' : 'place son'} pion, ligne ${y + 1}, colonne ${x + 1}.`;
+    if (
+      !name ||
+      x == null ||
+      y == null ||
+      !Number.isSafeInteger(x) ||
+      !Number.isSafeInteger(y) ||
+      x < 0 ||
+      y < 0
+    )
+      return '';
+    let column = '';
+    for (let n = x + 1; n > 0; n = Math.floor((n - 1) / 26))
+      column = String.fromCharCode(65 + ((n - 1) % 26)) + column;
+    return `${name} ${name === 'Vous' ? 'placez votre' : 'place son'} pion en ${column}${y + 1}.`;
   }
   if (type === 'resource.changed') {
     // Corridor publishes its initial wall stock to the resources panel. It is
