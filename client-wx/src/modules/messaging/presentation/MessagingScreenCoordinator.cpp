@@ -93,6 +93,12 @@ void MessagingScreenCoordinator::CloseCompose(bool preserveCurrentBox)
     compose.recipientCtrl->SetValue(wxEmptyString);
     compose.subjectCtrl->SetValue(wxEmptyString);
     compose.bodyCtrl->SetValue(wxEmptyString);
+    if (preserveCurrentBox)
+    {
+        navigationState_.PrepareSentBox();
+        callbacks_.setScreen(Screen::Menu);
+        return;
+    }
     if (navigationState_.GoBack(preserveCurrentBox))
     {
         callbacks_.setScreen(navigationState_.currentScreen);
