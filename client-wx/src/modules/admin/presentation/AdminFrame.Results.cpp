@@ -76,7 +76,7 @@ void AdminFrame::ShowResult(
         const auto counts = result.value("statusCounts", nlohmann::json::object());
         const std::array<std::pair<std::string_view, std::wstring_view>, 5> statuses{{
             {"pending", L"En attente"}, {"in_progress", L"En cours"},
-            {"to_test", L"À corriger"}, {"done", L"Terminés"}, {"refused", L"Refusés"},
+            {"to_test", L"À tester"}, {"done", L"Terminés"}, {"refused", L"Refusés"},
         }};
         std::vector<lila::shared::ui::controls::VerticalMenuItem> statusItems;
         statusItems.reserve(statuses.size() + 1);

@@ -28,6 +28,7 @@ export function pathWallsRules(source: PathWallsProgram) {
   const pawnSelection = sequentialPawnSelection<State>({
     setId: program.pawnSetId,
     choiceId: program.pawnChoiceId,
+    automatic: true,
     complete: ({ ctx }) => {
       phases.transition(ctx, 'playing');
       const first = ctx.players.all()[0];
@@ -259,7 +260,7 @@ export function pathWallsRules(source: PathWallsProgram) {
       permission: 'owner',
       ui: {
         title: 'Configuration de Corridor',
-        submitLabel: 'Choisir les pions',
+        submitLabel: 'Jouer',
       },
       onConfigured: ({ config, ctx }) => start(config.wallsPerPlayer, ctx),
     }),

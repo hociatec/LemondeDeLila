@@ -93,7 +93,7 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
     if (bugReports)
     {
         const std::array<std::wstring_view, 5> labels{
-            L"En attente", L"En cours", L"À corriger", L"Terminés", L"Refusés"};
+            L"En attente", L"En cours", L"À tester", L"Terminés", L"Refusés"};
         std::vector<lila::shared::ui::controls::VerticalMenuItem> statuses;
         statuses.reserve(labels.size() + 1);
         statuses.push_back({"new", wxString(L"Nouveau rapport")});

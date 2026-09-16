@@ -90,7 +90,7 @@ int main()
     assert(bugStatus.choices ==
         std::vector<std::string>({"pending", "in_progress", "to_test", "done", "refused"}));
     assert(bugStatus.choiceLabels == std::vector<std::wstring>(
-        {L"En attente", L"En cours", L"À corriger", L"Terminé", L"Refusé"}));
+        {L"En attente", L"En cours", L"À tester", L"Terminé", L"Refusé"}));
     const auto newBugReport = nlohmann::ordered_json::parse(findCommand("bugs.create").payloadTemplate);
     assert(newBugReport.begin().key() == "subject" && std::next(newBugReport.begin()).key() == "content");
     const auto mnemoStatus = lila::modules::admin::domain::GetAdminFieldMetadata(
