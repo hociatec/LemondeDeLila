@@ -47,6 +47,8 @@ RoomPanel::~RoomPanel()
 lila::shared::accessibility::FocusManager::Plan RoomPanel::BuildFocusPlan()
 {
     lila::shared::accessibility::FocusManager::Plan plan;
+    if (auto* target = gamePlayPanel_->RequiredInteractionTarget())
+        plan.AddWindow(target);
     plan.AddWindow(gameZoneAnchor_);
     return plan;
 }
