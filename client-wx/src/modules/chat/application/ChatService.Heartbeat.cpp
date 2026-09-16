@@ -34,7 +34,7 @@ void ChatService::HeartbeatLoop(std::stop_token stopToken, std::uint64_t lifecyc
 {
     while (!stopToken.stop_requested() && IsLifecycleCurrent(lifecycleGeneration))
     {
-        for (auto remaining = HeartbeatInterval; remaining.count() > 0 && !stopToken.stop_requested();
+        for (auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(HeartbeatInterval); remaining.count() > 0 && !stopToken.stop_requested();
              remaining -= std::min(remaining, std::chrono::milliseconds(100)))
             std::this_thread::sleep_for(std::min(remaining, std::chrono::milliseconds(100)));
         if (stopToken.stop_requested() || !IsLifecycleCurrent(lifecycleGeneration)) return;
