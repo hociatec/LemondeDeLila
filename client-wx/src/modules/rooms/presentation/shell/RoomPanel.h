@@ -103,6 +103,7 @@ private:
     void HandleRoomEvent(domain::RoomEvent event);
     void CloseSession();
     void ApplyInitialFocusIfNeeded();
+    void ScheduleGameZoneFocus();
 
     application::RoomSessionService& roomService_;
     application::RoomLobbyService& roomLobbyService_;
