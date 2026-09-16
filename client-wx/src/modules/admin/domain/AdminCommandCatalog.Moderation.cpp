@@ -37,7 +37,7 @@ void AppendModerationCommands(std::vector<AdminCommand>& c)
         {"bugs.get", L"Consulter un rapport", L"Détail et nombre de commentaires.", T::ApiWebSocket, std::string(ws::admin::bugReports::Get), {}, R"({"id":""})"},
         {"bugs.create", L"Nouveau rapport", L"Le nouveau rapport sera automatiquement classé en attente.", T::ApiWebSocket, std::string(ws::admin::bugReports::Create), {}, R"({"subject":"","content":""})"},
         {"bugs.update", L"Modifier un rapport", L"Sujet et contenu.", T::ApiWebSocket, std::string(ws::admin::bugReports::Update), {}, R"({"id":"","subject":"","content":""})"},
-        {"bugs.status", L"Changer le statut", L"Utiliser refused plutôt que rejected.", T::ApiWebSocket, std::string(ws::admin::bugReports::UpdateStatus), {}, R"({"id":"","status":"in_progress"})"},
+        {"bugs.status", L"Changer le statut", L"Choisissez le nouveau statut du rapport.", T::ApiWebSocket, std::string(ws::admin::bugReports::UpdateStatus), {}, R"({"id":"","status":"in_progress"})"},
         {"bugs.comments", L"Lister les commentaires", L"Commentaires paginés.", T::ApiWebSocket, std::string(ws::admin::bugReports::CommentsList), {}, R"({"reportId":"","offset":0,"limit":50})"},
         {"bugs.comment", L"Ajouter un commentaire", L"Commentaire de suivi.", T::ApiWebSocket, std::string(ws::admin::bugReports::CommentsAdd), {}, R"({"reportId":"","content":""})"},
         {"bugs.delete", L"Supprimer un rapport", L"Suppression définitive.", T::ApiWebSocket, std::string(ws::admin::bugReports::Delete), {}, R"({"id":""})", true},
