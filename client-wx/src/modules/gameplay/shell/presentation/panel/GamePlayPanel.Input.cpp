@@ -46,6 +46,18 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     // while the room is still in setup. Until the room confirms its start,
     // Enter belongs exclusively to the stable room game-zone activation.
     if (!roomStarted_) return false;
+    if (awaitingStartedState_)
+    {
+        // Consume all gameplay keys while the room has started but the game
+        // socket still holds the preceding setup projection. F5 remains an
+        // explicit recovery path if a state notification was lost.
+        if (keyCode == WXK_F5)
+        {
+            RequestRefresh();
+            return true;
+        }
+        return true;
+    }
     if (pawnSelectionPanel_->IsActive())
     {
         return pawnSelectionPanel_->HandleKey(event);

@@ -21,6 +21,7 @@ const domain::GamePrompt* GamePlayPanel::ActivePrompt() const noexcept
 
 void GamePlayPanel::PrepareAndExecuteAction(domain::GameAction action)
 {
+    if (awaitingStartedState_) return;
     if (action.confirm)
     {
         promptPanel_->HidePrompt();

@@ -78,7 +78,7 @@ public:
     void SetRoomStartRequestedHandler(RoomStartRequestedHandler handler);
     bool BeginRoomStart();
     void ShowRules();
-    void SetRoomStarted(bool started);
+    void SetRoomStarted(bool started, int runId = 0);
     void ResetRoomSetup();
     void NotifyRoomStartFailed(const wxString& message);
     bool HandleZoneActivation();
@@ -173,6 +173,12 @@ private:
     std::string submittedPromptActionType_;
     std::string rulesText_;
     bool roomStarted_ = true;
+    // A room-start notification reaches the room channel before the game
+    // channel has supplied the new run's authoritative projection. Keep
+    // gameplay input disabled in that interval so actions cannot carry the
+    // preceding run's knownVersion.
+    bool awaitingStartedState_ = false;
+    int awaitingStartedRunId_ = 0;
     bool roomStartFlowRequested_ = false;
     bool roomStartPending_ = false;
     application::GameStartConfigurationFlow startConfigurationFlow_;

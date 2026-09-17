@@ -73,7 +73,7 @@ void RoomPanel::SyncGamePlayPanel()
     {
         gamePlayPanel_->Open(room_.id, room_.gameType, room_.gameName, isStarted);
     }
-    gamePlayPanel_->SetRoomStarted(isStarted);
+    gamePlayPanel_->SetRoomStarted(isStarted, room_.runId);
     ScheduleGameZoneFocus();
 }
 

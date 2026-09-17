@@ -44,13 +44,27 @@ bool GamePlayPanel::BeginRoomStart()
     return true;
 }
 
-void GamePlayPanel::SetRoomStarted(bool started)
+void GamePlayPanel::SetRoomStarted(bool started, int runId)
 {
     const bool becameStarted = started && !roomStarted_;
     const bool becameSetup = !started && roomStarted_;
     roomStarted_ = started;
     if (started)
     {
+        if (becameStarted)
+        {
+            // The room stream has confirmed the transition, but state_ still
+            // describes the setup run. Request the authoritative started run
+            // before allowing keyboard or control actions.
+            awaitingStartedState_ = true;
+            awaitingStartedRunId_ = runId;
+            inputRequestSlot_.Cancel();
+            inputSubmissionGuard_.Reset();
+            retryableActionCommand_.reset();
+            ClearView();
+            UpdateStatus(wxString(L"Synchronisation de la partie..."));
+            RequestRefresh();
+        }
         roomStartFlowRequested_ = false;
         roomStartPending_ = false;
         startConfigurationFlow_.Reset();
@@ -63,6 +77,8 @@ void GamePlayPanel::SetRoomStarted(bool started)
     }
     else if (becameSetup)
     {
+        awaitingStartedState_ = false;
+        awaitingStartedRunId_ = 0;
         inputSubmissionGuard_.Reset();
         retryableActionCommand_.reset();
         roomStartFlowRequested_ = false;
@@ -83,6 +99,8 @@ void GamePlayPanel::SetRoomStarted(bool started)
 void GamePlayPanel::ResetRoomSetup()
 {
     roomStarted_ = false;
+    awaitingStartedState_ = false;
+    awaitingStartedRunId_ = 0;
     inputRequestSlot_.Cancel();
     inputSubmissionGuard_.Reset();
     retryableActionCommand_.reset();

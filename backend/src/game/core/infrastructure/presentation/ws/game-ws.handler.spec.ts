@@ -1,5 +1,6 @@
 import type { GameRuntime } from '../../../application/ports/game-runtime.port';
 import type { GameState } from '../../../application/models/game-state.model';
+import { GameStateConflictError } from '../../../domain/errors/game-domain.errors';
 import { GameWsHandler } from './game-ws.handler';
 
 describe('GameWsHandler internal state refresh version', () => {
@@ -39,6 +40,7 @@ describe('GameWsHandler internal state refresh version', () => {
       resolve: jest.fn().mockResolvedValue(resolved),
       bind: jest.fn(),
       commit: jest.fn().mockResolvedValue(undefined),
+      present: jest.fn(),
     };
     const handler = new GameWsHandler(
       {} as never,
@@ -55,7 +57,7 @@ describe('GameWsHandler internal state refresh version', () => {
         run: jest.fn((_roomId, operation) => operation()),
       } as never,
     );
-    return { handler, executor, realtime };
+    return { handler, executor, realtime, resolved };
   };
 
   it('accepts a pawn choice based on the state immediately before an internal roster refresh', async () => {
@@ -123,5 +125,31 @@ describe('GameWsHandler internal state refresh version', () => {
         ],
       }),
     );
+  });
+
+  it('resynchronizes instead of rejecting an action whose state became stale', async () => {
+    const test = setup(2);
+    const refreshed = {
+      gameType: 'lama',
+      state: state(3),
+      handler: {} as GameRuntime,
+    };
+    test.realtime.resolve = jest
+      .fn()
+      .mockResolvedValueOnce(test.resolved)
+      .mockResolvedValueOnce(refreshed);
+    test.realtime.present = jest.fn().mockReturnValue({ version: 3 });
+    test.executor.execute.mockImplementation(() => {
+      throw new GameStateConflictError();
+    });
+
+    await expect(
+      test.handler.action({ user: { id: 7 } } as never, {}),
+    ).resolves.toEqual({
+      type: 'game.state',
+      payload: { version: 3 },
+    });
+    expect(test.realtime.commit).not.toHaveBeenCalled();
+    expect(test.realtime.present).toHaveBeenCalledWith(refreshed, 4, 7);
   });
 });
