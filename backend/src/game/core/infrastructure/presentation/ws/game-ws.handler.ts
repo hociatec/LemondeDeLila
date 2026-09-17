@@ -21,6 +21,7 @@ import { GameCommandExecutorService } from '../../../application/services/game-c
 import { GameRoomCommandQueueService } from '../../../application/services/game-room-command-queue.service';
 import { gameNowMs } from '../../../application/services/game-execution-scope.service';
 import { GameWsCatalogPresenter } from './game-ws-catalog.presenter';
+import { GameStateConflictError } from '../../../domain/errors/game-domain.errors';
 
 @Injectable()
 export class GameWsHandler {
@@ -145,7 +146,20 @@ export class GameWsHandler {
         };
       }
 
-      await this.commitActions(roomId, resolved, actions, user.id);
+      try {
+        await this.commitActions(roomId, resolved, actions, user.id);
+      } catch (error) {
+        if (!(error instanceof GameStateConflictError)) throw error;
+        // A client can still hold the setup projection while the room has
+        // already entered its next run. Never apply that stale command; send
+        // the current projection so every client generation can recover.
+        const current = await this.realtime.resolve(roomId);
+        this.realtime.bind(session, roomId, current.gameType);
+        return {
+          type: 'game.state',
+          payload: this.realtime.present(current, roomId, user.id),
+        };
+      }
       return {
         type: 'game.ack',
         payload: {

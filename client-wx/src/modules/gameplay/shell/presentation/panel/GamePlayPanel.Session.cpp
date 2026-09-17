@@ -72,7 +72,7 @@ void GamePlayPanel::StartJoin()
 
 void GamePlayPanel::ExecuteAction(domain::GameAction action)
 {
-    if (action.type.empty() || action.disabled) return;
+    if (awaitingStartedState_ || action.type.empty() || action.disabled) return;
     auto* service = &service_;
     const auto actionType = action.type;
     const bool retryingSameIntent = retryableActionCommand_ &&
@@ -101,7 +101,7 @@ void GamePlayPanel::ExecuteAction(domain::GameAction action)
 
 void GamePlayPanel::SendKey(std::string key)
 {
-    if (key.empty()) return;
+    if (awaitingStartedState_ || key.empty()) return;
     auto* service = &service_;
     const auto loggedKey = key;
     SubmitInputCommand(

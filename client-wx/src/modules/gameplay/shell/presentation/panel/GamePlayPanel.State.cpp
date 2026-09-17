@@ -90,10 +90,18 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     }
     retryableActionCommand_.reset();
     inputSubmissionGuard_.ObserveState(state.version, state.runId);
+    const bool receivedStartedState = awaitingStartedState_ &&
+        (awaitingStartedRunId_ <= 0 || state.runId == awaitingStartedRunId_) &&
+        (state.system.match.status == "started" || state.system.match.status == "playing");
     auto nextLines = application::GameActionPresentationPolicy::GenericLines(state);
     auto nextPawnSelection = infrastructure::PawnSelectionDecoder::Decode(state.pending);
     auto nextLogMessages = EventMessages(state);
     state_ = std::move(state);
+    if (receivedStartedState)
+    {
+        awaitingStartedState_ = false;
+        awaitingStartedRunId_ = 0;
+    }
     lines_ = std::move(nextLines);
     pawnSelection_ = std::move(nextPawnSelection);
     RebuildInfoPanelChoices();
