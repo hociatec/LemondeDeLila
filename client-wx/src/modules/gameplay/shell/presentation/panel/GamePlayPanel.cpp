@@ -11,7 +11,6 @@
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
-#include "modules/gameplay/resources/presentation/GameResourcesPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
@@ -182,8 +181,6 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     }
     if (movementPanel_ != nullptr)
         if (auto* target = movementPanel_->NavigationTarget()) return target;
-    if (resourcesPanel_ != nullptr)
-        if (auto* target = resourcesPanel_->NavigationTarget()) return target;
     if (workflowPanel_ != nullptr)
         if (auto* target = workflowPanel_->NavigationTarget()) return target;
     if (linesList_ != nullptr && linesList_->IsShown() && linesList_->GetCount() > 0)

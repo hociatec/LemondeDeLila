@@ -14,7 +14,6 @@
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
-#include "modules/gameplay/resources/presentation/GameResourcesPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/information/presentation/GameInfoTextBuilder.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
@@ -143,7 +142,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         state_.actions, state_.system.players,
         state_.kits.pawns ? &*state_.kits.pawns : nullptr);
     movementPanel_->Apply(state_.kits, state_.system.players);
-    resourcesPanel_->Apply(state_);
     workflowPanel_->Apply(state_);
     actionsLabel_->Hide();
     linesList_->Hide();

@@ -13,7 +13,6 @@
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
-#include "modules/gameplay/resources/presentation/GameResourcesPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
@@ -75,7 +74,6 @@ void GamePlayPanel::ClearView()
     handPanel_->ClearHand();
     gridPanel_->Clear();
     movementPanel_->Clear();
-    resourcesPanel_->Clear();
     workflowPanel_->Clear();
     renderedLineIds_.clear();
     infoText_->Clear();
