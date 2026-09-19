@@ -339,9 +339,17 @@ export function discardPenaltyCardsRules(source: DiscardPenaltyCardsProgram) {
         title: 'Configuration des cartes de pénalité',
         submitLabel: 'Démarrer la partie',
       },
-      validate: ({ config: values, ctx }) =>
-        ctx.players.count() * values.startingHandSize + 1 <=
-        values.copiesPerCardValue * program.orderedValues.length,
+      validate: ({ config: values, ctx }) => {
+        const requiredCards = ctx.players.count() * values.startingHandSize + 1;
+        const availableCards =
+          values.copiesPerCardValue * program.orderedValues.length;
+        if (requiredCards > availableCards) {
+          rejectRule(
+            `Paquet insuffisant : ${requiredCards} cartes sont nécessaires pour distribuer ${values.startingHandSize} carte(s) à ${ctx.players.count()} joueur(s) et retourner la première carte, mais la configuration n'en fournit que ${availableCards}.`,
+          );
+        }
+        return true;
+      },
       onConfigured: ({ ctx }) => {
         phases.transition(ctx, 'turn');
         ctx.round.start(ctx.players.active()[0]?.id);
