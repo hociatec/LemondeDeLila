@@ -87,6 +87,44 @@ describe('LAMA declarative game', () => {
     expect(await game.replay()).toEqual(game.state());
   });
 
+  it('starts with a valid customized configuration', async () => {
+    const game = testGame(gameDefinition)
+      .players(['Lila', 'Mina', 'Nora', 'Sacha'])
+      .seed(137);
+    await game.start();
+
+    await game.as(1).do('game.configure', {
+      loseAtScore: 75,
+      roundPauseSeconds: 5,
+      allowPlayAfterDraw: true,
+      startingHandSize: 7,
+      copiesPerCardValue: 8,
+      returnTokenFromRound: 3,
+    });
+
+    expect(game.state().engine.configuration.values).toMatchObject({
+      loseAtScore: 75,
+      roundPauseSeconds: 5,
+      allowPlayAfterDraw: true,
+      startingHandSize: 7,
+      copiesPerCardValue: 8,
+      returnTokenFromRound: 3,
+    });
+    expect(game.state().turn?.currentPlayerId).toBeDefined();
+  });
+
+  it('explains when a customized deck cannot supply the initial deal', async () => {
+    const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(137);
+    await game.start();
+
+    await expect(
+      game.as(1).do('game.configure', {
+        startingHandSize: 20,
+        copiesPerCardValue: 1,
+      }),
+    ).rejects.toThrow('Paquet insuffisant');
+  });
+
   it('allows exactly one card action per player turn', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(137);
     await game.start();
