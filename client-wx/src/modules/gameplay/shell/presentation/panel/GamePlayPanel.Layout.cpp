@@ -12,7 +12,6 @@
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
-#include "modules/gameplay/resources/presentation/GameResourcesPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
@@ -74,9 +73,6 @@ void GamePlayPanel::BuildLayout()
 
     movementPanel_ = new movement::GameMovementPanel(contentPanel_);
     content->Add(movementPanel_, 1, wxEXPAND | wxBOTTOM, 8);
-
-    resourcesPanel_ = new resources::GameResourcesPanel(contentPanel_);
-    content->Add(resourcesPanel_, 1, wxEXPAND | wxBOTTOM, 8);
 
     workflowPanel_ = new workflows::GameWorkflowPanel(contentPanel_);
     content->Add(workflowPanel_, 1, wxEXPAND | wxBOTTOM, 8);

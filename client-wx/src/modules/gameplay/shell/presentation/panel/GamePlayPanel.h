@@ -44,7 +44,6 @@ namespace lila::modules::gameplay::presentation::confirmation { class GameAction
 namespace lila::modules::gameplay::presentation::hand { class GameHandPanel; }
 namespace lila::modules::gameplay::presentation::grid { class GameGridPanel; }
 namespace lila::modules::gameplay::presentation::movement { class GameMovementPanel; }
-namespace lila::modules::gameplay::presentation::resources { class GameResourcesPanel; }
 namespace lila::modules::gameplay::presentation::workflows { class GameWorkflowPanel; }
 namespace lila::modules::gameplay::presentation::prompt { class GamePromptPanel; }
 namespace lila::modules::gameplay::presentation::pawn_selection { class PawnSelectionPanel; }
@@ -145,7 +144,6 @@ private:
     hand::GameHandPanel* handPanel_ = nullptr;
     grid::GameGridPanel* gridPanel_ = nullptr;
     movement::GameMovementPanel* movementPanel_ = nullptr;
-    resources::GameResourcesPanel* resourcesPanel_ = nullptr;
     workflows::GameWorkflowPanel* workflowPanel_ = nullptr;
     wxStaticText* actionsLabel_ = nullptr;
     wxListBox* linesList_ = nullptr;
