@@ -1,4 +1,5 @@
 import { compileJsonGame } from '../../../engine/json/public-api';
+import type { DeclarativeState } from '../../../engine/runtime/state/declarative-state';
 import { testGame } from '../../../engine/testing/public-api';
 
 import document from './game.json';
@@ -102,9 +103,10 @@ describe('LAMA declarative game', () => {
 
     await game.as(1).do('game.configure', values);
 
-    expect(game.state().engine.configuration.values).toMatchObject(values);
-    expect(game.state().engine.configuration.complete).toBe(true);
-    expect(game.state().engine.match.status).toBe('playing');
+    const state = game.state() as DeclarativeState<Record<string, never>>;
+    expect(state.engine.configuration.values).toMatchObject(values);
+    expect(state.engine.configuration.complete).toBe(true);
+    expect(state.engine.match.status).toBe('playing');
     expect(game.state().turn?.currentPlayerId).toBeDefined();
   });
 
@@ -119,8 +121,9 @@ describe('LAMA declarative game', () => {
       }),
     ).rejects.toThrow('Paquet insuffisant');
 
-    expect(game.state().engine.configuration.complete).toBe(false);
-    expect(game.state().engine.match.status).toBe('setup');
+    const state = game.state() as DeclarativeState<Record<string, never>>;
+    expect(state.engine.configuration.complete).toBe(false);
+    expect(state.engine.match.status).toBe('setup');
   });
 
   it('allows exactly one card action per player turn', async () => {
@@ -155,6 +158,28 @@ describe('LAMA declarative game', () => {
       ]),
     );
     await expect(game.as(actor).do('draw', {})).rejects.toThrow();
+  });
+
+  it('ends the turn when an optional post-draw play has no legal card', async () => {
+    let exercised = false;
+    for (let seed = 1; seed <= 200; seed += 1) {
+      const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(seed);
+      await game.start();
+      await game.as(1).do('game.configure', { allowPlayAfterDraw: true });
+
+      const actor = game.state().turn?.currentPlayerId;
+      if (actor == null || game.availableActions(actor).includes('cards-discard-penalty-play'))
+        continue;
+
+      await game.as(actor).do('draw', {});
+      if (game.availableActions(actor).includes('cards-discard-penalty-play')) continue;
+
+      expect(game.state().turn?.currentPlayerId).not.toBe(actor);
+      exercised = true;
+      break;
+    }
+
+    expect(exercised).toBe(true);
   });
 
   it('forbids drawing for the rest of the round after a player leaves', async () => {

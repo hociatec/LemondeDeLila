@@ -43,6 +43,11 @@ domain::GameInputDescriptor Input(const nlohmann::json& raw, std::string key = {
         const auto value = raw.find("value");
         if (value != raw.end()) result.choices.push_back(DecodeGameValue(*value));
     }
+    const auto choiceLabels = raw.find("choiceLabels");
+    if (choiceLabels != raw.end() && choiceLabels->is_object())
+        for (const auto& item : choiceLabels->items())
+            if (item.value().is_string())
+                result.choiceLabels.emplace(item.key(), item.value().get<std::string>());
     const auto items = raw.find("items");
     if (items != raw.end() && items->is_object())
     {

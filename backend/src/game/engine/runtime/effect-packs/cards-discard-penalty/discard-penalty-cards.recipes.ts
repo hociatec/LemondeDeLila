@@ -109,7 +109,7 @@ export function discardPenaltyCardsRules(source: DiscardPenaltyCardsProgram) {
           playerId: actor.id,
           deckId: program.deckId,
         });
-        if (config(ctx).allowPlayAfterDraw)
+        if (config(ctx).allowPlayAfterDraw && playable(actor.id, ctx).length > 0)
           ctx.turn.flags.set(program.drawnTurnFlag);
         else ctx.turn.end();
       },

@@ -61,6 +61,14 @@ export type GameStateMetadata = {
   rng?: { seed: number; counter: number };
 };
 
+/** Internal context used to select the appropriate delay before an automated move. */
+export type GameAutomationContext = {
+  lastAction?: {
+    type: string;
+    actorId: number | null;
+  };
+};
+
 export type GameState<TGame extends object = object> = {
   /** Version monotone possédée par le moteur pour les commits CAS. */
   version?: number;
@@ -71,6 +79,7 @@ export type GameState<TGame extends object = object> = {
   turn?: TurnState;
   metadata?: GameStateMetadata;
   pending?: PendingState | null;
+  automation?: GameAutomationContext;
   game?: TGame;
   extras?: Record<string, unknown>;
   board?: unknown;

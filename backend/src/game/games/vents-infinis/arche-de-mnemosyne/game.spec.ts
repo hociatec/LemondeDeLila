@@ -1,4 +1,5 @@
 import { compileJsonGame } from '../../../engine/json/public-api';
+import { describeGameDefinition } from '../../../engine/runtime/definitions/runtime-descriptor';
 import { testGame } from '../../../engine/testing/public-api';
 import document from './game.json';
 import manifest from './manifest.json';
@@ -10,6 +11,48 @@ const gameDefinition = compileJsonGame(manifest, document, {
 const MNEMO_SESSION = 'choice-simultaneous-quiz.current';
 
 describe('Arche de Mnémosyne declarative game', () => {
+  it('presents every playable category alphabetically with its human name', () => {
+    const descriptor = describeGameDefinition(gameDefinition).actions.find(
+      (action) => action.type === 'game.configure',
+    );
+    const input = descriptor?.input as
+      | { properties?: Record<string, unknown> }
+      | undefined;
+    const category = input?.properties?.categoryId as {
+      label?: string;
+      values?: string[];
+      choiceLabels?: Record<string, string>;
+    };
+
+    expect(category).toMatchObject({
+      label: 'Catégorie de questions',
+      values: [
+        'all',
+        'a-la-croisee-des-mondes',
+        'accelere',
+        'globe-trotter-gourmand',
+        'harmonie-quiz',
+        'l-esprit-nomade',
+        'la-tete-de-sanglier',
+        'le-tournoi-des-plumes',
+        'seve-et-savoir',
+      ],
+      choiceLabels: {
+        all: 'Toutes les catégories',
+        accelere: 'Accélère',
+        'la-tete-de-sanglier': 'La Tête de sanglier',
+      },
+    });
+    expect(input?.properties).toMatchObject({
+      targetPoints: { label: 'Score à atteindre', initialText: '20' },
+      useTimer: { label: 'Utiliser un chronomètre', initialText: 'true' },
+      timerSeconds: { label: 'Durée d’une question (secondes)' },
+      interQuestionSeconds: {
+        label: 'Pause entre deux questions (secondes)',
+      },
+    });
+  });
+
   it('keeps correctness private and resolves simultaneous answers deterministically', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(127);
     await game.start();

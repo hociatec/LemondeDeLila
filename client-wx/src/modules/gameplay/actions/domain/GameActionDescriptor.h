@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -21,6 +22,7 @@ struct GameInputDescriptor final
     std::optional<double> minimum;
     std::optional<double> maximum;
     std::vector<GameValue> choices;
+    std::map<std::string, std::string> choiceLabels;
     std::vector<GameInputDescriptor> properties;
 };
 
