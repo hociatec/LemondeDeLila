@@ -45,7 +45,12 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     // A projected game state can already contain the next run's pawn choice
     // while the room is still in setup. Until the room confirms its start,
     // Enter belongs exclusively to the stable room game-zone activation.
-    if (!roomStarted_) return false;
+    if (!roomStarted_)
+    {
+        if (keyCode == WXK_SPACE || keyCode == WXK_NUMPAD_SPACE)
+            return BeginRoomStart();
+        return false;
+    }
     if (awaitingStartedState_)
     {
         // Consume all gameplay keys while the room has started but the game
@@ -102,6 +107,8 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             return ActivateSelectedHandCard();
         if (choicesList_->IsShown() && focused == choicesList_)
             return ActivateSelectedPendingChoice();
+        if (focused == workflowPanel_->NavigationTarget())
+            return ActivateSelectedQuizAnswer();
         if (focused == gridPanel_->NavigationTarget())
             return ActivateSelectedGridCell();
         if (focused == linesList_ && linesList_->IsShown())

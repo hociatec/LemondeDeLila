@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 #include <vector>
 
 #include <wx/panel.h>
@@ -18,6 +19,7 @@ public:
     void Apply(const domain::GameState& state);
     void Clear();
     [[nodiscard]] wxWindow* NavigationTarget() const;
+    [[nodiscard]] std::optional<int> SelectedQuizAnswerIndex() const;
 private:
     [[nodiscard]] std::string SelectedKey() const;
     wxListBox* rows_ = nullptr;
