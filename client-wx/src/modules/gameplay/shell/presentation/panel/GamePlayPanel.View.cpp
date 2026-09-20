@@ -1,15 +1,12 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
-#include <wx/choice.h>
 #include <wx/listbox.h>
 #include <wx/rearrangectrl.h>
 #include <wx/stattext.h>
-#include <wx/textctrl.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
-#include "modules/gameplay/information/presentation/GameInfoTextBuilder.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
@@ -21,11 +18,6 @@
 
 namespace lila::modules::gameplay::presentation
 {
-void GamePlayPanel::UpdateInfoPanel()
-{
-    infoText_->SetValue(BuildInfoText(activeInfoPanel_));
-}
-
 void GamePlayPanel::UpdateStatus(const wxString& message, bool isError, bool announce)
 {
     statusLabel_->SetLabel(message);
@@ -49,7 +41,6 @@ void GamePlayPanel::PublishLogMessages(const std::vector<std::string>& messages)
 
 void GamePlayPanel::ClearView()
 {
-    activeInfoPanel_ = "details";
     dismissedPromptActionType_.clear();
     submittedPromptActionType_.clear();
     rulesText_.clear();
@@ -76,9 +67,6 @@ void GamePlayPanel::ClearView()
     movementPanel_->Clear();
     workflowPanel_->Clear();
     renderedLineIds_.clear();
-    infoText_->Clear();
-    infoPanelChoice_->Clear();
-    infoPanelIds_.clear();
     logCursor_.Reset();
     observedEventIdentities_.clear();
     announcedTimers_.clear();
@@ -125,22 +113,4 @@ wxString GamePlayPanel::BuildShortcutText() const
     return shortcuts::GameShortcutResolver::BuildHelpText(state_);
 }
 
-wxString GamePlayPanel::BuildLineDetail() const
-{
-    const int selection = linesList_->GetSelection();
-    if (selection == wxNOT_FOUND || selection < 0 ||
-        static_cast<std::size_t>(selection) >= lines_.size())
-        return wxString(L"Aucune ligne sélectionnée.");
-    const auto& line = lines_[static_cast<std::size_t>(selection)];
-    wxString text = FromUtf8(line.label);
-    if (!line.detail.empty()) text += wxString(L"\n") + FromUtf8(line.detail);
-    return text;
-}
-
-wxString GamePlayPanel::BuildInfoText(const std::string& panelId) const
-{
-    if (panelId == "rules") return rulesText_.empty()
-        ? wxString(L"Chargement des règles...") : FromUtf8(rulesText_);
-    return info::GameInfoTextBuilder::Build(state_, panelId, BuildLineDetail());
-}
 }

@@ -15,7 +15,6 @@
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
-#include "modules/gameplay/information/presentation/GameInfoTextBuilder.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
@@ -102,7 +101,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     }
     lines_ = std::move(nextLines);
     pawnSelection_ = std::move(nextPawnSelection);
-    RebuildInfoPanelChoices();
     UpdateTimerAnnouncements();
     if (initialState)
         for (const auto& event : state_.system.events)
@@ -193,8 +191,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     orderingChoices_->Show(hasActionableChoices && state_.pending->ordering);
     shortcutsLabel_->SetLabel(BuildShortcutText());
     shortcutsLabel_->Show(!shortcutsLabel_->GetLabel().empty());
-    UpdateInfoPanel();
-    infoText_->Show(!infoText_->GetValue().empty());
     SyncInlinePrompt();
     const bool inlinePromptBecameActive =
         !hadInlinePrompt && IsInlinePromptVisible();

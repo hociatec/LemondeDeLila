@@ -23,12 +23,10 @@
 #include "shared/concurrency/application/AsyncRequestSlot.h"
 
 class wxKeyEvent;
-class wxChoice;
 class wxListBox;
 class wxRearrangeCtrl;
 class wxScrolledWindow;
 class wxStaticText;
-class wxTextCtrl;
 
 namespace lila::modules::gameplay::application
 {
@@ -121,9 +119,6 @@ private:
     bool HandleShortcut(const std::string& normalizedKey);
     bool HandleInterfaceShortcut(const std::string& id);
     std::optional<domain::GameAction> ResolveShortcutAction(const std::string& actionType) const;
-    void UpdateInfoPanel();
-    void RebuildInfoPanelChoices();
-    void SelectInfoPanel(const std::string& id, bool announce);
     void UpdateStatus(const wxString& message, bool isError = false, bool announce = false);
     void PublishLogMessages(const std::vector<std::string>& messages);
     void UpdateTimerAnnouncements();
@@ -134,8 +129,6 @@ private:
     [[nodiscard]] wxString BuildHeaderText() const;
     [[nodiscard]] wxString BuildStateSummaryText() const;
     [[nodiscard]] wxString BuildPendingText() const;
-    [[nodiscard]] wxString BuildLineDetail() const;
-    [[nodiscard]] wxString BuildInfoText(const std::string& panelId) const;
 
     application::GameSessionService& service_;
     wxStaticText* headerLabel_ = nullptr;
@@ -151,9 +144,6 @@ private:
     wxStaticText* choicesLabel_ = nullptr;
     wxListBox* choicesList_ = nullptr;
     wxRearrangeCtrl* orderingChoices_ = nullptr;
-    wxTextCtrl* infoText_ = nullptr;
-    wxChoice* infoPanelChoice_ = nullptr;
-    std::vector<std::string> infoPanelIds_;
     wxStaticText* shortcutsLabel_ = nullptr;
     wxStaticText* statusLabel_ = nullptr;
     confirmation::GameActionConfirmationPanel* confirmationPanel_ = nullptr;
@@ -167,7 +157,6 @@ private:
     int roomId_ = 0;
     std::string gameType_;
     std::string gameName_;
-    std::string activeInfoPanel_ = "details";
     std::string dismissedPromptActionType_;
     std::string submittedPromptActionType_;
     std::string rulesText_;

@@ -2,7 +2,6 @@
 
 #include <wx/listbox.h>
 #include <wx/rearrangectrl.h>
-#include <wx/choice.h>
 #include <wx/scrolwin.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -53,17 +52,6 @@ void GamePlayPanel::BuildLayout()
     contentPanel_->SetScrollRate(0, 12);
     contentPanel_->SetBackgroundColour(lila::shared::ui::Theme::PanelBackground());
     auto* content = new wxBoxSizer(wxVERTICAL);
-
-    infoPanelChoice_ = new wxChoice(contentPanel_, wxID_ANY);
-    infoPanelChoice_->SetName(wxString(L"Section d’informations de jeu"));
-    content->Add(infoPanelChoice_, 0, wxEXPAND | wxBOTTOM, 6);
-
-    infoText_ = new wxTextCtrl(
-        contentPanel_, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
-        wxTE_MULTILINE | wxTE_READONLY | wxTE_DONTWRAP | wxWANTS_CHARS);
-    infoText_->SetName(wxString(L"Informations de jeu"));
-    infoText_->SetMinSize(wxSize(260, 70));
-    content->Add(infoText_, 1, wxEXPAND | wxBOTTOM, 8);
 
     handPanel_ = new hand::GameHandPanel(contentPanel_);
     content->Add(handPanel_, 1, wxEXPAND | wxBOTTOM, 8);
