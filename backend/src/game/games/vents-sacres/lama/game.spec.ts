@@ -87,29 +87,24 @@ describe('LAMA declarative game', () => {
     expect(await game.replay()).toEqual(game.state());
   });
 
-  it('starts with a valid customized configuration', async () => {
+  it.each([
+    ['the elimination score', { loseAtScore: 75 }],
+    ['the pause duration', { roundPauseSeconds: 5 }],
+    ['the draw-and-play option', { allowPlayAfterDraw: true }],
+    ['the initial hand size', { startingHandSize: 7 }],
+    ['the copies per card value', { copiesPerCardValue: 9 }],
+    ['the token return round', { returnTokenFromRound: 3 }],
+  ])('starts with a valid customized configuration: %s', async (_, values) => {
     const game = testGame(gameDefinition)
       .players(['Lila', 'Mina', 'Nora', 'Sacha'])
       .seed(137);
     await game.start();
 
-    await game.as(1).do('game.configure', {
-      loseAtScore: 75,
-      roundPauseSeconds: 5,
-      allowPlayAfterDraw: true,
-      startingHandSize: 7,
-      copiesPerCardValue: 8,
-      returnTokenFromRound: 3,
-    });
+    await game.as(1).do('game.configure', values);
 
-    expect(game.state().engine.configuration.values).toMatchObject({
-      loseAtScore: 75,
-      roundPauseSeconds: 5,
-      allowPlayAfterDraw: true,
-      startingHandSize: 7,
-      copiesPerCardValue: 8,
-      returnTokenFromRound: 3,
-    });
+    expect(game.state().engine.configuration.values).toMatchObject(values);
+    expect(game.state().engine.configuration.complete).toBe(true);
+    expect(game.state().engine.match.status).toBe('playing');
     expect(game.state().turn?.currentPlayerId).toBeDefined();
   });
 

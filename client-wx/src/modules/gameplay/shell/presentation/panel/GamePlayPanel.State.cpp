@@ -90,7 +90,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     retryableActionCommand_.reset();
     inputSubmissionGuard_.ObserveState(state.version, state.runId);
     const bool receivedStartedState = awaitingStartedState_ &&
-        (awaitingStartedRunId_ <= 0 || state.runId == awaitingStartedRunId_);
+        (awaitingStartedRunId_ <= 0 || state.runId == awaitingStartedRunId_) &&
+        (state.system.match.status == "started" || state.system.match.status == "playing");
     auto nextLines = application::GameActionPresentationPolicy::GenericLines(state);
     auto nextPawnSelection = infrastructure::PawnSelectionDecoder::Decode(state.pending);
     auto nextLogMessages = EventMessages(state);
