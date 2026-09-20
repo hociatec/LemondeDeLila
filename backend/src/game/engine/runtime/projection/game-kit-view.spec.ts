@@ -43,6 +43,19 @@ describe('projectGameKits', () => {
     });
     expect(question.explanation).toBe('Secret answer B');
   });
+  it('starts a new question pass when a repeatable bank is exhausted', () => {
+    const state = createQuizKitState();
+    const quiz = new GameQuizController(state, {} as never);
+    quiz.create({
+      component: 'quiz.bank',
+      id: 'repeatable',
+      repeat: true,
+      questions: [{ id: 'q', prompt: 'Question', choices: ['A', 'B'], answerIndex: 0 }],
+    });
+
+    expect(quiz.next('repeatable')?.id).toBe('q');
+    expect(quiz.next('repeatable')?.id).toBe('q');
+  });
   it('publishes only declared quiz question fields before and after revelation', () => {
     const kits = createKits();
     const question = {

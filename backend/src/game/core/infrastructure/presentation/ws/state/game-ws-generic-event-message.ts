@@ -170,8 +170,12 @@ function activityMessage(
 ): string {
   const { type, data } = input;
   if (type === 'match.started') return 'La partie démarre, bon jeu !';
-  if (type === 'round.started' && value('number'))
-    return `La manche ${value('number')} commence.`;
+  if (type === 'round.started' && value('number')) {
+    const starter = player(data.starterPlayerId);
+    return starter
+      ? `La manche ${value('number')} commence. C'est au tour de ${starter}.`
+      : `La manche ${value('number')} commence.`;
+  }
   if (type === 'round.ended') return 'La manche est terminée.';
   if (type === 'game.finished') return 'La partie est terminée.';
   if (type === 'quiz.asked') return 'Une nouvelle question est posée.';
