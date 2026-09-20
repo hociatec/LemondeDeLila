@@ -10,6 +10,7 @@
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
 #include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
+#include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 
 namespace lila::modules::gameplay::presentation
 {
