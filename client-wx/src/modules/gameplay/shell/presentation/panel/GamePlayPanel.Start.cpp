@@ -2,6 +2,7 @@
 
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
+#include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -120,12 +121,16 @@ void GamePlayPanel::NotifyRoomStartFailed(const wxString& message)
 {
     if (roomStarted_) return;
     roomStartPending_ = false;
-    roomStartFlowRequested_ = true;
+    roomStartFlowRequested_ = false;
     startConfigurationFlow_.Reset();
     submittedPromptActionType_.clear();
+    dismissedPromptActionType_.clear();
+    promptPanel_->HidePrompt(true);
     UpdateStatus(message, true, true);
-    SyncInlinePrompt();
-    Show();
+    // A rejected room start belongs to the table view. Do not reveal the
+    // gameplay panel again: pressing Enter must keep the user on the table
+    // and its error message, instead of opening an unrelated game panel.
+    Hide();
     if (GetParent()) GetParent()->Layout();
 }
 }

@@ -123,6 +123,9 @@ describe('LAMA declarative game', () => {
         copiesPerCardValue: 1,
       }),
     ).rejects.toThrow('Paquet insuffisant');
+
+    expect(game.state().engine.configuration.complete).toBe(false);
+    expect(game.state().engine.match.status).toBe('setup');
   });
 
   it('allows exactly one card action per player turn', async () => {
