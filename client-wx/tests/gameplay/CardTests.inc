@@ -31,6 +31,13 @@ void TestGenericCardsContract()
         "S doit annoncer les scores quand ils sont disponibles.");
     Expect(GameGenericShortcutPolicy::ResolveInterface(state, "E") == "hand",
         "E doit annoncer le nombre de cartes en main.");
+    lila::modules::gameplay::domain::GameCardsView cards;
+    cards.discards.push_back({"discardPenaltyCards", 1,
+        {{"lama", "LAMA", {}, {}, {}, false, std::nullopt}}});
+    state.kits.cards = std::move(cards);
+    Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
+            state, "discard") == "Carte au-dessus : LAMA.",
+        "Un raccourci d'interface tel que C doit pouvoir annoncer la carte visible.");
     state.system.players.push_back({7, "Lila", false, true});
     state.system.turn.currentPlayerId = 7;
     Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
