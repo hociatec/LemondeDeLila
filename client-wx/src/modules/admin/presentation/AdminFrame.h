@@ -139,6 +139,8 @@ private:
     const domain::AdminCommand* paginationCommand_ = nullptr;
     nlohmann::json paginationPayload_ = nlohmann::json::object();
     nlohmann::json bugReportListPayload_ = nlohmann::json::object();
+    nlohmann::json botTimingPayload_ = nlohmann::json::object();
+    bool openBotTimingEditorAfterRead_ = false;
     bool loadingReportCountsOnly_ = false;
     std::vector<int> pageSizeChoices_;
     std::optional<std::size_t> selectedResultIndex_;

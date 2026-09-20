@@ -32,8 +32,8 @@ void AppendContentCommands(std::vector<AdminCommand>& c)
         {"bots.create", L"Créer un bot", L"Nom du bot, 150 caractères maximum.", T::ApiWebSocket, std::string(ws::admin::bots::NameCreate), std::string(ws::admin::bots::NamesList), R"({"name":"","enabled":true})"},
         {"bots.update", L"Modifier un nom", L"Nom et activation.", T::ApiWebSocket, std::string(ws::admin::bots::NameUpdate), std::string(ws::admin::bots::NamesList), R"({"id":1,"name":"","enabled":true})"},
         {"bots.delete", L"Supprimer un nom", L"Retirer un nom de bot.", T::ApiWebSocket, std::string(ws::admin::bots::NameDelete), std::string(ws::admin::bots::NamesList), R"({"id":1})", true},
-        {"bots.settings.get", L"Lire les temporisations des bots", L"Délais actuels avant les actions automatiques.", T::ApiWebSocket, std::string(ws::admin::bots::SettingsGet)},
-        {"bots.settings.update", L"Régler les attentes des bots", L"Durées en millisecondes, de 0 à 600000.", T::ApiWebSocket, std::string(ws::admin::bots::SettingsUpdate), {}, R"({"botTurnDelayMs":500,"botStartDelayMs":500,"botDrawDelayMs":500})"},
+        {"bots.settings.get", L"Voir les attentes actuelles des bots", L"Affiche les délais actuellement enregistrés.", T::ApiWebSocket, std::string(ws::admin::bots::SettingsGet)},
+        {"bots.settings.update", L"Enregistrer les attentes des bots", L"Durées en millisecondes, de 0 à 600000. Les dernières valeurs lues ou enregistrées sont préremplies.", T::ApiWebSocket, std::string(ws::admin::bots::SettingsUpdate), {}, R"({"botTurnDelayMs":500,"botStartDelayMs":500,"botDrawDelayMs":500})"},
 
         {"mnemo.categories", L"Lister les catégories", L"Catégories du quiz Mnemo.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::Categories)},
         {"mnemo.category.create", L"Créer une catégorie", L"Nom de la catégorie.", T::ApiWebSocket, std::string(ws::admin::quiz::mnemo::CategoryCreate), std::string(ws::admin::quiz::mnemo::Categories), R"({"name":""})"},
