@@ -110,7 +110,7 @@ describe('Arche de Mnémosyne declarative game', () => {
     ).toEqual([expect.objectContaining({ type: 'answer' })]);
   });
 
-  it('rotates the question drawer only after the configured questions per round', async () => {
+  it('alternates the question drawer while preserving configured rounds', async () => {
     const game = testGame(gameDefinition)
       .players(['Lila', { username: 'Bot', isBot: true }])
       .seed(127);
@@ -128,17 +128,24 @@ describe('Arche de Mnémosyne declarative game', () => {
       timeoutPoints: -1,
     });
     for (let question = 0; question < 5; question += 1) {
-      await game.as(1).do('draw', {});
+      const drawerId = question % 2 === 0 ? 1 : -2;
+      expect(game.availableActions(drawerId)).toContain('draw');
+      await game.as(drawerId).do('draw', {});
       await game.as(1).do('answer', { answerIndex: 0 });
       await game.as(-2).do('answer', { answerIndex: 1 });
       game.advanceTime(1_000);
-      if (question < 4) expect(game.availableActions(1)).toContain('draw');
+      if (question < 4)
+        expect(game.availableActions(question % 2 === 0 ? -2 : 1)).toContain(
+          'draw',
+        );
     }
 
     const state = game.state() as unknown as {
       engine: { round: { number: number; starterPlayerId: number } };
+      turn: { currentPlayerId: number };
     };
     expect(state.engine.round).toMatchObject({ number: 2, starterPlayerId: -2 });
+    expect(state.turn.currentPlayerId).toBe(-2);
     expect(
       new DeclarativeGameRuntime(gameDefinition).getBotActions(
         game.state(),
