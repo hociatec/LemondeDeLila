@@ -194,12 +194,39 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
     for (const id of correctIds) ctx.score.add(id, correctPoints);
     for (const id of wrongIds) ctx.score.add(id, values.wrongPoints);
     for (const id of timedOutIds) ctx.score.add(id, values.timeoutPoints);
+    const correctAnswer =
+      session.correctAnswerIndex == null
+        ? ''
+        : (session.question.choices[session.correctAnswerIndex] ?? '');
     ctx.events.message('game.quiz.resolved', {
       sessionId: SESSION,
       questionId: session.question.id,
       correctPlayerIds: correctIds,
       wrongPlayerIds: wrongIds,
       timedOutPlayerIds: timedOutIds,
+      correctAnswer,
+      results: session.participantPlayerIds.map((playerId) => {
+        const answerIndex = session.answers[String(playerId)];
+        if (answerIndex === session.correctAnswerIndex)
+          return {
+            playerId,
+            outcome: 'correct',
+            answer: session.question.choices[answerIndex],
+            points: correctPoints,
+          };
+        if (answerIndex != null)
+          return {
+            playerId,
+            outcome: 'wrong',
+            answer: session.question.choices[answerIndex],
+            points: values.wrongPoints,
+          };
+        return {
+          playerId,
+          outcome: 'timeout',
+          points: values.timeoutPoints,
+        };
+      }),
     });
     const outcome = thresholdVictory<State>({
       kind: 'score-at-least',

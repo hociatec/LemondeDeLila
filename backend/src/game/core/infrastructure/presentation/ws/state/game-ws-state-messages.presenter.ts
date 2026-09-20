@@ -190,6 +190,8 @@ export class GameWsStateMessagesPresenter {
     const namedPlayer = player(params.playerId);
     const gridMessage = gridPawnMessage(messageKey, params, namedPlayer);
     if (gridMessage) return gridMessage;
+    if (messageKey === 'game.quiz.resolved')
+      return this.quizResolvedMessage(params, player);
     const card =
       scalarMessageText(params.cardLabel) || scalarMessageText(params.cardId);
     if (messageKey === 'game.card.played' && namedPlayer)
@@ -232,6 +234,47 @@ export class GameWsStateMessagesPresenter {
       );
     if (messageKey !== 'game.round.started') return '';
     return this.roundStartedMessage(params, players);
+  }
+
+  private quizResolvedMessage(
+    params: Record<string, unknown>,
+    player: (value: unknown) => string,
+  ): string {
+    const correctAnswer = this.stringValue(params.correctAnswer);
+    const results = Array.isArray(params.results) ? params.results : [];
+    return results
+      .slice(0, 128)
+      .map((rawResult) => {
+        const result = this.asRecord(rawResult);
+        const name = player(result.playerId);
+        if (!name) return '';
+        const answer = this.stringValue(result.answer);
+        const outcome = this.stringValue(result.outcome);
+        const points = this.numberValue(result.points) ?? 0;
+        const score = this.quizScoreMessage(name, points);
+        if (outcome === 'correct')
+          return `${name === 'Vous' ? 'Vous avez' : `${name} a`} donné la bonne réponse${answer ? ` « ${answer} »` : ''}.${score}`;
+        if (outcome === 'wrong')
+          return `${name === 'Vous' ? 'Vous avez' : `${name} a`} donné une mauvaise réponse${answer ? ` (« ${answer} »)` : ''}. La bonne réponse était${correctAnswer ? ` « ${correctAnswer} »` : ''}.${score}`;
+        if (outcome === 'timeout')
+          return `${name === 'Vous' ? 'Vous n’avez' : `${name} n’a`} pas répondu. La bonne réponse était${correctAnswer ? ` « ${correctAnswer} »` : ''}.${score}`;
+        return '';
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  private quizScoreMessage(name: string, points: number): string {
+    const unit = Math.abs(points) === 1 ? 'point' : 'points';
+    if (points > 0)
+      return name === 'Vous'
+        ? ` Vous gagnez ${points} ${unit}.`
+        : ` ${name} gagne ${points} ${unit}.`;
+    if (points < 0)
+      return name === 'Vous'
+        ? ` Vous perdez ${Math.abs(points)} ${unit}.`
+        : ` ${name} perd ${Math.abs(points)} ${unit}.`;
+    return ' Aucun point n’est attribué.';
   }
 
   private pawnBonusMessage(
