@@ -28,8 +28,8 @@ void AppendContentCommands(std::vector<AdminCommand>& c)
         {"categories.assign", L"Affecter une catégorie", L"Associer un jeu, null pour retirer.", T::ApiWebSocket, std::string(ws::admin::games::CategoryAssign), {}, R"({"gameType":"","categoryId":null})"},
         {"categories.delete", L"Supprimer une catégorie", L"Suppression et réconciliation.", T::ApiWebSocket, std::string(ws::admin::games::CategoryDelete), std::string(ws::admin::games::Categories), R"({"id":""})", true},
 
-        {"bots.names", L"Lister les noms", L"Noms disponibles et activation.", T::ApiWebSocket, std::string(ws::admin::bots::NamesList)},
-        {"bots.create", L"Créer un nom", L"Nom de bot, 150 caractères maximum.", T::ApiWebSocket, std::string(ws::admin::bots::NameCreate), std::string(ws::admin::bots::NamesList), R"({"name":"","enabled":true})"},
+        {"bots.names", L"Bots existants", L"Bots disponibles et activation.", T::ApiWebSocket, std::string(ws::admin::bots::NamesList)},
+        {"bots.create", L"Créer un bot", L"Nom du bot, 150 caractères maximum.", T::ApiWebSocket, std::string(ws::admin::bots::NameCreate), std::string(ws::admin::bots::NamesList), R"({"name":"","enabled":true})"},
         {"bots.update", L"Modifier un nom", L"Nom et activation.", T::ApiWebSocket, std::string(ws::admin::bots::NameUpdate), std::string(ws::admin::bots::NamesList), R"({"id":1,"name":"","enabled":true})"},
         {"bots.delete", L"Supprimer un nom", L"Retirer un nom de bot.", T::ApiWebSocket, std::string(ws::admin::bots::NameDelete), std::string(ws::admin::bots::NamesList), R"({"id":1})", true},
         {"bots.settings.get", L"Lire les temporisations des bots", L"Délais actuels avant les actions automatiques.", T::ApiWebSocket, std::string(ws::admin::bots::SettingsGet)},
