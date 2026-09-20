@@ -1,5 +1,6 @@
 #include "modules/admin/presentation/AdminFrame.h"
 
+#include <array>
 #include <utility>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -25,10 +26,27 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
         RefreshBugReports(false);
         return;
     }
+    // The editor must start from the values stored by the server, not from the
+    // catalog's fallback values.  Fetch them once when this console is opened.
+    if (command.id == "bots.settings.update" && botTimingPayload_.empty())
+    {
+        const auto* settingsCommand = domain::FindAdminCommand("bots.settings.get");
+        if (!settingsCommand)
+        {
+            SetStatus(wxString(L"Lecture des attentes des bots indisponible."), true);
+            return;
+        }
+        openBotTimingEditorAfterRead_ = true;
+        ExecuteCommand(*settingsCommand, nlohmann::json::object());
+        return;
+    }
     nlohmann::json payload;
     try
     {
         payload = nlohmann::json::parse(command.payloadTemplate);
+        if (command.id == "bots.settings.update" && botTimingPayload_.is_object())
+            for (const auto& item : botTimingPayload_.items())
+                payload[item.key()] = item.value();
     }
     catch (...)
     {
@@ -155,6 +173,8 @@ void AdminFrame::CompleteCommand(
     loading_ = false;
     if (error.has_value() || !result.has_value())
     {
+        if (command.id == "bots.settings.get")
+            openBotTimingEditorAfterRead_ = false;
         loadingReportCountsOnly_ = false;
         keepFocusAfterCommand_ = false;
         refreshBugReportsAfterCommand_ = false;
@@ -216,6 +236,27 @@ void AdminFrame::CompleteCommand(
         *temporaryPassword = "<affiché une seule fois>";
     }
     const bool countsOnly = command.id == "bugs.list" && loadingReportCountsOnly_;
+    if ((command.id == "bots.settings.get" ||
+         command.id == "bots.settings.update") &&
+        result->is_object())
+    {
+        constexpr std::array<const char*, 3> botTimingFields{
+            "botTurnDelayMs", "botStartDelayMs", "botDrawDelayMs"};
+        for (const auto* field : botTimingFields)
+            if (const auto value = result->find(field);
+                value != result->end() && value->is_number_integer())
+                botTimingPayload_[field] = *value;
+    }
+    if (command.id == "bots.settings.get" && openBotTimingEditorAfterRead_)
+    {
+        openBotTimingEditorAfterRead_ = false;
+        for (std::size_t index = 0; index < visibleCommands_.size(); ++index)
+            if (visibleCommands_[index]->id == "bots.settings.update")
+            {
+                ActivateCommand(index);
+                return;
+            }
+    }
     ShowResult(command, *result);
     if (countsOnly || command.id == "bugs.get") return;
     if (announceLifecycle)
