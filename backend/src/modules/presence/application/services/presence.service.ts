@@ -191,19 +191,19 @@ export class PresenceService implements OnModuleDestroy {
   }
 
   /**
-   * Best-effort check: true if the user has at least one active presence connection in "tavern" context.
-   * Used by features that require all players to be available before starting/restoring a table.
+   * Best-effort check: true if the user is connected and not currently at a table.
+   * A player can restore a saved table from any tavern screen, including Vault.
    */
   isUserInTavern(userId: number): boolean {
     if (!Number.isSafeInteger(userId) || userId <= 0) return false;
     for (const client of this.clients.values()) {
       if (client?.user?.id !== userId) continue;
-      if (client.context === 'tavern') return true;
+      if (client.context !== 'table') return true;
     }
     for (const origin of this.origins.snapshot().values()) {
       if (
         origin.players.some(
-          (player) => player.id === userId && player.activity === 'tavern',
+          (player) => player.id === userId && player.activity !== 'table',
         )
       )
         return true;

@@ -60,7 +60,7 @@ describe('PresenceService', () => {
       roomHint: null,
     });
     expect(service.isUserInTavern(1)).toBe(true);
-    expect(service.isUserInTavern(2)).toBe(false);
+    expect(service.isUserInTavern(2)).toBe(true);
     expect(service.isUserInTavern(0)).toBe(false);
     expect(service.isUserInTavern(Number.NaN)).toBe(false);
 
