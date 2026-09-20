@@ -14,7 +14,8 @@ bool GamePlayPanel::HandleInterfaceShortcut(const std::string& id)
     // otherwise keys such as C in Lama are received but appear to do nothing.
     const auto message = application::info::GameCapabilityTextBuilder::Build(state_, id);
     UpdateStatus(
-        message.empty() ? wxString(L"Information indisponible.") : FromUtf8(message),
+        message.empty() ? wxString(L"Information indisponible.")
+                        : lila::shared::text::FromUtf8(message),
         false,
         true);
     return true;
