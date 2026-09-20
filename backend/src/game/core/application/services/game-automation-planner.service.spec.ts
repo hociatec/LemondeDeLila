@@ -56,6 +56,24 @@ describe('GameAutomationPlannerService', () => {
       expect.objectContaining({ type: 'answer', meta: { actorId: 2 } }),
     ]);
   });
+
+  it('does not let a future automatic timer prevent a bot from answering', () => {
+    const plan = planner.resolve(
+      {
+        getAutomaticActions: () => ({
+          key: 'question-deadline',
+          executeAtMs: Date.now() + 60_000,
+          actions: [{ type: 'timeout', payload: {} }],
+        }),
+      } as unknown as GameRuntime,
+      state({ type: 'draw', actorId: 1 }),
+    );
+
+    expect(plan?.signature).toMatch(/^bot:2:/);
+    expect(plan?.actions).toEqual([
+      expect.objectContaining({ type: 'play', meta: { actorId: 2 } }),
+    ]);
+  });
 });
 
 function state(

@@ -30,17 +30,22 @@ export class GameAutomationPlannerService {
         : 0;
     const automatic = handler.getAutomaticActions(state);
     if (automatic?.actions && automatic.actions.length > 128) return null;
+    let automaticPlan: AutomationPlan | null = null;
     if (automatic?.actions?.length) {
       const dueCandidate = Number(automatic.executeAtMs ?? gameNowMs());
       const dueAtMs =
         Number.isSafeInteger(dueCandidate) && dueCandidate >= 0
           ? dueCandidate
           : gameNowMs();
-      return {
+      automaticPlan = {
         signature: `automatic:${String(automatic.key).slice(0, 128)}:round:${roundNumber}:turn:${this.safeTurnNumber(state)}`,
         dueAtMs,
         actions: automatic.actions,
       };
+      // A timer which is already due must run before a new bot action. A
+      // future timer (such as the answer deadline) must not prevent bots from
+      // playing in the meantime.
+      if (automaticPlan.dueAtMs <= gameNowMs()) return automaticPlan;
     }
     const pendingBotPlayerId = this.pendingBotPlayerId(state);
     if (pendingBotPlayerId != null) {
@@ -58,7 +63,7 @@ export class GameAutomationPlannerService {
     );
     if (currentPlayer?.isBot && currentPlayerId != null)
       return this.botPlan(handler, state, currentPlayerId, roundNumber, false);
-    return this.availableBotPlan(handler, state, roundNumber);
+    return this.availableBotPlan(handler, state, roundNumber) ?? automaticPlan;
   }
 
   private pendingBotPlayerId(state: GameState): number | null {

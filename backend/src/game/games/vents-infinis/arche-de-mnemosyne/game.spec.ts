@@ -1,4 +1,5 @@
 import { compileJsonGame } from '../../../engine/json/public-api';
+import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
 import { describeGameDefinition } from '../../../engine/runtime/definitions/runtime-descriptor';
 import { testGame } from '../../../engine/testing/public-api';
 import document from './game.json';
@@ -78,5 +79,22 @@ describe('Arche de Mnémosyne declarative game', () => {
     expect('currentQuestion' in game.view(1)).toBe(false);
     expect(view.kits.quiz.sessions[MNEMO_SESSION]?.phase).toBe('closed');
     expect(await game.replay()).toEqual(game.state());
+  });
+
+  it('offers an answer to a bot during a simultaneous question', async () => {
+    const game = testGame(gameDefinition)
+      .players(['Lila', { username: 'Bot', isBot: true }])
+      .seed(127);
+    await game.start();
+    await game.as(1).do('game.configure', {
+      categoryId: 'all', targetPoints: 20, useTimer: false, timerSeconds: 30,
+      interQuestionSeconds: 0, correctSoloPoints: 2, correctMultiPoints: 1,
+      wrongPoints: 0, timeoutPoints: -1,
+    });
+    await game.as(1).do('draw', {});
+
+    expect(new DeclarativeGameRuntime(gameDefinition).getBotActions(game.state(), -2)).toEqual([
+      expect.objectContaining({ type: 'answer' }),
+    ]);
   });
 });
