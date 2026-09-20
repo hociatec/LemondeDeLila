@@ -29,6 +29,33 @@ describe('GameAutomationPlannerService', () => {
     expect(plan?.dueAtMs).toBeGreaterThanOrEqual(before + delay);
     expect(plan?.dueAtMs).toBeLessThanOrEqual(Date.now() + delay + 10);
   });
+
+  it('schedules a bot answer while a human remains the round starter', () => {
+    const planner = new GameAutomationPlannerService(
+      {
+        suggestForHandler: jest.fn((_handler, _state, playerId) =>
+          playerId === 2 ? [{ type: 'answer', payload: { answerIndex: 1 } }] : [],
+        ),
+      } as never,
+      {
+        getBotStartDelayMs: () => 0,
+        getBotTurnDelayMs: () => 0,
+        getBotDrawDelayMs: () => 0,
+      } as never,
+    );
+
+    const plan = planner.resolve(
+      { getAutomaticActions: () => null } as unknown as GameRuntime,
+      {
+        ...state({ type: 'draw', actorId: 1 }),
+        turn: { currentPlayerId: 1, direction: 1, turnNumber: 4 },
+      },
+    );
+
+    expect(plan?.actions).toEqual([
+      expect.objectContaining({ type: 'answer', meta: { actorId: 2 } }),
+    ]);
+  });
 });
 
 function state(

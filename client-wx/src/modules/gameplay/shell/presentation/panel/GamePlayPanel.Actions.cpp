@@ -45,6 +45,17 @@ void GamePlayPanel::PrepareAndExecuteAction(domain::GameAction action)
     ExecuteAction(std::move(action));
 }
 
+bool GamePlayPanel::ActivateSelectedQuizAnswer()
+{
+    const auto answerIndex = workflowPanel_->SelectedQuizAnswerIndex();
+    if (!answerIndex) return false;
+    auto action = ResolveShortcutAction("answer");
+    if (!action) return false;
+    action->payload["answerIndex"] = *answerIndex;
+    PrepareAndExecuteAction(std::move(*action));
+    return true;
+}
+
 bool GamePlayPanel::IsInlinePromptVisible() const
 {
     return promptPanel_ != nullptr && promptPanel_->IsActive();

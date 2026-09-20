@@ -56,8 +56,9 @@ export class GameAutomationPlannerService {
     const currentPlayer = (state.players ?? []).find(
       (player) => player.id === currentPlayerId,
     );
-    if (!currentPlayer?.isBot || currentPlayerId == null) return null;
-    return this.botPlan(handler, state, currentPlayerId, roundNumber, false);
+    if (currentPlayer?.isBot && currentPlayerId != null)
+      return this.botPlan(handler, state, currentPlayerId, roundNumber, false);
+    return this.availableBotPlan(handler, state, roundNumber);
   }
 
   private pendingBotPlayerId(state: GameState): number | null {
@@ -84,9 +85,8 @@ export class GameAutomationPlannerService {
     playerId: number,
     roundNumber: number,
     pendingChoice: boolean,
+    suggested = this.botRunner.suggestForHandler(handler, state, playerId) ?? [],
   ): AutomationPlan | null {
-    const suggested =
-      this.botRunner.suggestForHandler(handler, state, playerId) ?? [];
     if (suggested.length === 0 || suggested.length > 128) return null;
     const rawChoiceId = state.pending?.data?.choiceId;
     const choiceId =
@@ -102,6 +102,20 @@ export class GameAutomationPlannerService {
         meta: { ...(action.meta ?? {}), actorId: playerId },
       })),
     };
+  }
+
+  private availableBotPlan(
+    handler: GameRuntime,
+    state: GameState,
+    roundNumber: number,
+  ): AutomationPlan | null {
+    for (const player of state.players ?? []) {
+      if (!player.isBot) continue;
+      const suggested = this.botRunner.suggestForHandler(handler, state, player.id) ?? [];
+      if (suggested.length === 0) continue;
+      return this.botPlan(handler, state, player.id, roundNumber, true, suggested);
+    }
+    return null;
   }
 
   private safeTurnNumber(state: GameState): number {

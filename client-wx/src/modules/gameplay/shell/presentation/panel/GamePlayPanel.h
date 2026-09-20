@@ -107,6 +107,7 @@ private:
     void ApplyState(domain::GameState state);
     void HandleEvent(domain::GameEvent event);
     void ActivateSelectedLine();
+    bool ActivateSelectedQuizAnswer();
     bool ActivateSelectedPendingChoice();
     bool ActivateSelectedHandCard();
     bool ActivateDiceRoll();

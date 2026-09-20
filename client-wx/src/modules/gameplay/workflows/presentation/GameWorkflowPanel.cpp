@@ -1,6 +1,7 @@
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 
 #include <algorithm>
+#include <charconv>
 
 #include <wx/listbox.h>
 #include <wx/sizer.h>
@@ -154,5 +155,17 @@ std::string GameWorkflowPanel::SelectedKey() const
 wxWindow* GameWorkflowPanel::NavigationTarget() const
 {
     return IsShown() && rows_->GetCount() > 0 ? rows_ : nullptr;
+}
+
+std::optional<int> GameWorkflowPanel::SelectedQuizAnswerIndex() const
+{
+    const auto key = SelectedKey();
+    const auto marker = key.rfind(":choice:");
+    if (!key.starts_with("quiz:") || marker == std::string::npos) return std::nullopt;
+    int index = 0;
+    const auto value = key.substr(marker + std::string(":choice:").size());
+    const auto [end, error] = std::from_chars(value.data(), value.data() + value.size(), index);
+    return error == std::errc{} && end == value.data() + value.size() && index >= 0
+        ? std::optional<int>(index) : std::nullopt;
 }
 }
