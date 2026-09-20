@@ -16,6 +16,7 @@
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
+#include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/shortcuts/application/GameGenericShortcutPolicy.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/logging/application/Logger.h"
