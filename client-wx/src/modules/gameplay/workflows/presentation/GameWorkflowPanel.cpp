@@ -61,11 +61,13 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
     };
     if (state.kits.quiz && !state.kits.quiz->sessions.empty())
     {
-        appendSection("quiz", "Quiz");
         for (const auto& session : state.kits.quiz->sessions)
         {
-            append("quiz:" + session.id + ":prompt", "Quiz : " + session.prompt + " — " +
-                application::info::HumanLabel(session.phase));
+            // Closed and revealed questions belong to the game history, not to
+            // the answer list. Only the question currently being answered is
+            // shown to players.
+            if (session.phase != "answering") continue;
+            append("quiz:" + session.id + ":prompt", session.prompt);
             for (std::size_t index = 0; index < session.choices.size(); ++index)
             {
                 append("quiz:" + session.id + ":choice:" + std::to_string(index),
