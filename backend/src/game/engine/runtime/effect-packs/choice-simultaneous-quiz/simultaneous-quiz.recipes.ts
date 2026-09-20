@@ -19,6 +19,8 @@ type Context = GameContext<State>;
 const SESSION = 'choice-simultaneous-quiz.current';
 const QUESTION_TIMER = 'choice-simultaneous-quiz.question';
 const NEXT_QUESTION_TIMER = 'choice-simultaneous-quiz.next-question';
+const QUESTIONS_IN_ROUND_COUNTER =
+  'choice-simultaneous-quiz.questions-in-round';
 
 export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
   const program = structuredClone(source);
@@ -59,6 +61,10 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
         'Catégorie de questions',
         gameInput.enum(categoryIds, { labels: categoryLabels }),
       ),
+      questionsPerRound: gameInput.label(
+        'Questions par manche',
+        gameInput.number({ integer: true, min: 1, max: 50 }),
+      ),
       targetPoints: gameInput.label(
         'Score à atteindre',
         gameInput.number({ integer: true, min: 1, max: 200 }),
@@ -95,6 +101,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
     ui: { title: 'Configuration du quiz', submitLabel: 'Démarrer le quiz' },
     onConfigured: ({ config: values, ctx }) => {
       phases.transition(ctx, 'playing');
+      ctx.counters.set(QUESTIONS_IN_ROUND_COUNTER, 0);
       ctx.round.start(ctx.players.all()[0]?.id);
       quizStarted.emit(ctx, { categoryId: values.categoryId });
     },
@@ -110,6 +117,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
         ctx.scheduler.isDue(NEXT_QUESTION_TIMER)),
     execute: ({ ctx }) => {
       const values = mnemoConfig(ctx);
+      ctx.counters.add(QUESTIONS_IN_ROUND_COUNTER, 1);
       const session = ctx.quiz.ask(
         values.categoryId,
         ctx.players.all().map((player) => player.id),
@@ -240,15 +248,18 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
     ctx.quiz.close(SESSION);
     ctx.scheduler.cancel(QUESTION_TIMER);
     const winnerId = outcome?.winnerPlayerIds[0];
-    ctx.round.end(correctIds);
     if (winnerId != null) {
       ctx.match.finish({ winners: [winnerId], reason: 'target-score' });
       return;
     }
+    if (ctx.counters.get(QUESTIONS_IN_ROUND_COUNTER) >= questionsPerRound(values)) {
+      ctx.counters.set(QUESTIONS_IN_ROUND_COUNTER, 0);
+      ctx.round.end();
+      ctx.round.next();
+    }
     ctx.scheduler.schedule(NEXT_QUESTION_TIMER, {
       afterMs: values.interQuestionSeconds * 1_000,
     });
-    ctx.round.next();
   }
 
   return {
@@ -283,6 +294,11 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
 }
 function mnemoConfig(ctx: Context): SimultaneousQuizConfig {
   return ctx.config.values<SimultaneousQuizConfig>();
+}
+
+function questionsPerRound(config: SimultaneousQuizConfig): number {
+  const value = Number(config.questionsPerRound);
+  return Number.isSafeInteger(value) && value >= 1 && value <= 50 ? value : 5;
 }
 
 function currentSession(ctx: Context) {

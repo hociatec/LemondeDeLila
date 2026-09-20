@@ -13,6 +13,7 @@ export type SimultaneousQuizSourceQuestion = {
 };
 export type SimultaneousQuizConfig = {
   categoryId: string;
+  questionsPerRound: number;
   targetPoints: number;
   useTimer: boolean;
   timerSeconds: number;

@@ -18,6 +18,7 @@ it('resolves answers in participant order even when bots answer in reverse order
     .start();
   await game.as(-1).do('game.configure', {
     categoryId: 'all',
+    questionsPerRound: 5,
     targetPoints: 20,
     useTimer: false,
     timerSeconds: 30,

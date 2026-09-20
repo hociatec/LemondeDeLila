@@ -47,6 +47,7 @@ export const jsonSimultaneousQuizSchema: AuthorSchema = object(
     defaults: object(
       {
         categoryId: id,
+        questionsPerRound: { type: 'integer', minimum: 1, maximum: 50 },
         targetPoints: { type: 'integer', minimum: 1, maximum: 200 },
         useTimer: boolean,
         timerSeconds: { type: 'integer', minimum: 5, maximum: 300 },
@@ -58,6 +59,7 @@ export const jsonSimultaneousQuizSchema: AuthorSchema = object(
       },
       [
         'categoryId',
+        'questionsPerRound',
         'targetPoints',
         'useTimer',
         'timerSeconds',
