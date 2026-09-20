@@ -21,6 +21,7 @@ domain::GamePromptField Field(const domain::GameInputDescriptor& input)
     field.minimumSelections = input.minimum ? std::max(0, static_cast<int>(*input.minimum)) : 0;
     field.maximumSelections = input.maximum ? std::max(0, static_cast<int>(*input.maximum)) : 0;
     field.choices = input.choices;
+    field.choiceLabels = input.choiceLabels;
     return field;
 }
 }

@@ -49,6 +49,10 @@ describe('GameCommandExecutorService', () => {
 
     expect(validatedCounters).toEqual([0, 1]);
     expect(counterOf(next)).toBe(2);
+    expect(next.automation?.lastAction).toEqual({
+      type: 'increment',
+      actorId: 7,
+    });
   });
 
   it('does not mutate the input when a later action is rejected', () => {

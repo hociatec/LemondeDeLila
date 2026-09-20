@@ -22,7 +22,9 @@ const NEXT_QUESTION_TIMER = 'choice-simultaneous-quiz.next-question';
 
 export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
   const program = structuredClone(source);
-  const categories = program.categories.map((category) => ({ ...category }));
+  const categories = program.categories
+    .map((category) => ({ ...category }))
+    .sort((left, right) => left.name.localeCompare(right.name, 'fr'));
   const questions = program.questions
     .filter((question) => question.status === 'validated')
     .map(toQuizQuestion);
@@ -39,33 +41,53 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
   ].filter((bank) => bank.questions.length > 0);
   const phases = setupPlayingPhases<State>();
   const categoryIds = banks.map((bank) => bank.id);
+  const categoryLabels = Object.fromEntries([
+    ['all', 'Toutes les catégories'],
+    ...categories
+      .filter((category) => categoryIds.includes(category.id))
+      .map((category) => [category.id, category.name]),
+  ]) as Record<(typeof categoryIds)[number], string>;
   const quizStarted = defineEvent({
     type: 'quiz.started',
-    data: gameInput.object({ categoryId: gameInput.enum(categoryIds) }),
+    data: gameInput.object({
+      categoryId: gameInput.enum(categoryIds, { labels: categoryLabels }),
+    }),
   });
   const config = defineConfiguration<State, SimultaneousQuizConfig>({
     input: gameInput.object({
-      categoryId: gameInput.enum(categoryIds),
-      targetPoints: gameInput.number({ integer: true, min: 1, max: 200 }),
-      useTimer: gameInput.boolean(),
-      timerSeconds: gameInput.number({ integer: true, min: 5, max: 300 }),
-      interQuestionSeconds: gameInput.number({
-        integer: true,
-        min: 0,
-        max: 60,
-      }),
-      correctSoloPoints: gameInput.number({
-        integer: true,
-        min: -50,
-        max: 50,
-      }),
-      correctMultiPoints: gameInput.number({
-        integer: true,
-        min: -50,
-        max: 50,
-      }),
-      wrongPoints: gameInput.number({ integer: true, min: -50, max: 50 }),
-      timeoutPoints: gameInput.number({ integer: true, min: -50, max: 50 }),
+      categoryId: gameInput.label(
+        'Catégorie de questions',
+        gameInput.enum(categoryIds, { labels: categoryLabels }),
+      ),
+      targetPoints: gameInput.label(
+        'Score à atteindre',
+        gameInput.number({ integer: true, min: 1, max: 200 }),
+      ),
+      useTimer: gameInput.label('Utiliser un chronomètre', gameInput.boolean()),
+      timerSeconds: gameInput.label(
+        'Durée d’une question (secondes)',
+        gameInput.number({ integer: true, min: 5, max: 300 }),
+      ),
+      interQuestionSeconds: gameInput.label(
+        'Pause entre deux questions (secondes)',
+        gameInput.number({ integer: true, min: 0, max: 60 }),
+      ),
+      correctSoloPoints: gameInput.label(
+        'Points si une seule bonne réponse',
+        gameInput.number({ integer: true, min: -50, max: 50 }),
+      ),
+      correctMultiPoints: gameInput.label(
+        'Points si plusieurs bonnes réponses',
+        gameInput.number({ integer: true, min: -50, max: 50 }),
+      ),
+      wrongPoints: gameInput.label(
+        'Points en cas de mauvaise réponse',
+        gameInput.number({ integer: true, min: -50, max: 50 }),
+      ),
+      timeoutPoints: gameInput.label(
+        'Points en cas de temps écoulé',
+        gameInput.number({ integer: true, min: -50, max: 50 }),
+      ),
     }),
     defaults: program.defaults,
     phase: phases.initialPhase,

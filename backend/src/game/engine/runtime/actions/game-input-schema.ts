@@ -153,8 +153,12 @@ export const gameInput = {
     );
   },
 
-  enum<const TValue extends string>(values: readonly TValue[]) {
+  enum<const TValue extends string>(
+    values: readonly TValue[],
+    options: { labels?: Readonly<Record<TValue, string>> } = {},
+  ) {
     values = [...values];
+    const labels = options.labels ? { ...options.labels } : undefined;
     return schema<TValue>(
       (candidate, path) => {
         const matched =
@@ -166,7 +170,11 @@ export const gameInput = {
         }
         return matched;
       },
-      { type: 'enum', values },
+      {
+        type: 'enum',
+        values,
+        ...(labels ? { choiceLabels: labels } : {}),
+      },
     );
   },
 

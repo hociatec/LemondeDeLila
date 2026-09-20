@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,7 @@ struct GamePromptField final
     int minimumSelections = 0;
     int maximumSelections = 0;
     std::vector<GameValue> choices;
+    std::map<std::string, std::string> choiceLabels;
 };
 
 struct GamePrompt final

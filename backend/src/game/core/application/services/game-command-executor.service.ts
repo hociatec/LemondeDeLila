@@ -84,6 +84,13 @@ export class GameCommandExecutorService {
       const next = this.execution.run(context, () =>
         input.handler.applyActions(current, [action], context),
       );
+      next.automation = {
+        ...(next.automation ?? {}),
+        lastAction: {
+          type: action.type,
+          actorId,
+        },
+      };
       if (commandId) {
         recordCommandReceipt(next, {
           commandId,

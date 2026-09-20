@@ -81,8 +81,11 @@ void GamePromptPanel::RebuildFields(const domain::GamePrompt& prompt)
             for (const auto& choice : field.choices)
             {
                 const auto encoded = infrastructure::EncodeGameValue(choice);
-                labels.Add(FromUtf8(encoded.is_string()
-                    ? encoded.get<std::string>() : encoded.dump()));
+                const auto value = encoded.is_string()
+                    ? encoded.get<std::string>() : encoded.dump();
+                const auto label = field.choiceLabels.find(value);
+                labels.Add(FromUtf8(label == field.choiceLabels.end()
+                    ? value : label->second));
             }
             if (field.ordering)
             {
