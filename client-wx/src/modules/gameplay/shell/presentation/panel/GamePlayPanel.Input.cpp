@@ -43,6 +43,18 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     {
         return promptPanel_->HandleKey(event);
     }
+    const auto key = NormalizeKey(event);
+    if (key.empty()) return false;
+
+    // These read-only shortcuts must stay available even while the table is
+    // waiting for its first started game state.
+    const auto genericPanel =
+        application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(state_, key);
+    if (!genericPanel.empty())
+    {
+        SelectInfoPanel(genericPanel, true);
+        return true;
+    }
     // A projected game state can already contain the next run's pawn choice
     // while the room is still in setup. Until the room confirms its start,
     // Enter belongs exclusively to the stable room game-zone activation.
@@ -80,12 +92,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         keyCode == 'R' || keyCode == 'r' ||
         keyCode == 'Q' || keyCode == 'q' || keyCode == 'X' || keyCode == 'x';
     if (tableShortcutHasPriority && onTableShortcut_ && onTableShortcut_(event)) return true;
-
-    const auto key = NormalizeKey(event);
-    if (key.empty())
-    {
-        return false;
-    }
 
     if (event.IsAutoRepeat() && key != "F5") return true;
 

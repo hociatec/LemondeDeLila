@@ -328,6 +328,16 @@ describe('PresenceService', () => {
     expect(service.listPlayers()).toEqual([]);
   });
 
+  it('recognizes a player in the tavern from another server instance', () => {
+    externalHandler({
+      origin: 'remote',
+      at: now,
+      players: [publicPlayer(2, 'Remote', 'tavern')],
+    });
+
+    expect(service.isUserInTavern(2)).toBe(true);
+  });
+
   it('disconnects its transport during shutdown', async () => {
     await service.onModuleDestroy();
     expect(transport.disconnect).toHaveBeenCalled();
@@ -368,7 +378,7 @@ function socket() {
 function publicPlayer(
   id: number,
   username: string,
-  activity: 'home' | 'table',
+  activity: 'home' | 'table' | 'tavern',
 ) {
   return {
     id,

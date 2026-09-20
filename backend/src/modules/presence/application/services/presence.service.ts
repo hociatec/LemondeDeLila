@@ -200,6 +200,14 @@ export class PresenceService implements OnModuleDestroy {
       if (client?.user?.id !== userId) continue;
       if (client.context === 'tavern') return true;
     }
+    for (const origin of this.origins.snapshot().values()) {
+      if (
+        origin.players.some(
+          (player) => player.id === userId && player.activity === 'tavern',
+        )
+      )
+        return true;
+    }
     return false;
   }
 

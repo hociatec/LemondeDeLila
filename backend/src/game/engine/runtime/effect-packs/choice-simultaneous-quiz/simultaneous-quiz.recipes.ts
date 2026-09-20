@@ -103,6 +103,8 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       phases.transition(ctx, 'playing');
       ctx.counters.set(QUESTIONS_IN_ROUND_COUNTER, 0);
       ctx.round.start(ctx.players.all()[0]?.id);
+      const starterId = ctx.round.starter();
+      if (starterId != null) ctx.turn.to(starterId, { announce: false });
       quizStarted.emit(ctx, { categoryId: values.categoryId });
     },
   });
@@ -111,7 +113,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
     documentation: 'Pioche la question suivante de la catégorie sélectionnée.',
     available: ({ actor, ctx }) =>
       phases.is(ctx, 'playing') &&
-      actor.id === ctx.round.starter() &&
+      ctx.turn.is(actor.id) &&
       currentSession(ctx) == null &&
       (!ctx.scheduler.has(NEXT_QUESTION_TIMER) ||
         ctx.scheduler.isDue(NEXT_QUESTION_TIMER)),
@@ -131,14 +133,14 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
           action: {
             type: 'timeout',
             payload: {},
-            meta: { actorId: ctx.round.starter() },
+            meta: { actorId: ctx.players.current()?.id },
           },
         });
       ctx.events.message('game.quiz.started', {
         sessionId: SESSION,
         questionId: session.question.id,
         round: ctx.round.number,
-        playerId: ctx.round.starter(),
+        playerId: ctx.players.current()?.id,
       });
     },
   });
@@ -256,6 +258,11 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       ctx.counters.set(QUESTIONS_IN_ROUND_COUNTER, 0);
       ctx.round.end();
       ctx.round.next();
+      const starterId = ctx.round.starter();
+      if (starterId != null) ctx.turn.to(starterId);
+    } else {
+      const nextPlayerId = nextDrawerId(ctx);
+      if (nextPlayerId != null) ctx.turn.to(nextPlayerId);
     }
     ctx.scheduler.schedule(NEXT_QUESTION_TIMER, {
       afterMs: values.interQuestionSeconds * 1_000,
@@ -299,6 +306,14 @@ function mnemoConfig(ctx: Context): SimultaneousQuizConfig {
 function questionsPerRound(config: SimultaneousQuizConfig): number {
   const value = Number(config.questionsPerRound);
   return Number.isSafeInteger(value) && value >= 1 && value <= 50 ? value : 5;
+}
+
+function nextDrawerId(ctx: Context): number | null {
+  const players = ctx.players.active();
+  if (players.length === 0) return null;
+  const currentId = ctx.players.current()?.id;
+  const currentIndex = players.findIndex((player) => player.id === currentId);
+  return players[(Math.max(0, currentIndex) + 1) % players.length]?.id ?? null;
 }
 
 function currentSession(ctx: Context) {
