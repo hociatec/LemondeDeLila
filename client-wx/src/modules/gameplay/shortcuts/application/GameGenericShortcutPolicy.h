@@ -1,6 +1,5 @@
 #pragma once
 
-#include <algorithm>
 #include <string>
 
 #include "modules/gameplay/state/domain/GameState.h"
@@ -23,16 +22,7 @@ public:
             if (normalizedKey == "SHIFT+P") return "positions";
         }
         if (normalizedKey == "S" && state.kits.score)
-        {
-            const auto declared = std::find_if(
-                state.system.shortcuts.begin(), state.system.shortcuts.end(),
-                [](const domain::GameShortcut& shortcut)
-                {
-                    return shortcut.normalizedKey == "S" &&
-                        shortcut.kind == domain::GameShortcutKind::Interface;
-                });
-            if (declared == state.system.shortcuts.end()) return "score";
-        }
+            return "score";
         if (normalizedKey == "E" && state.kits.cards) return "hand";
         return {};
     }

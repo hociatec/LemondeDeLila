@@ -9,6 +9,7 @@
 #include <wx/choicdlg.h>
 #include <wx/button.h>
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
+#include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
@@ -52,7 +53,9 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(state_, key);
     if (!genericPanel.empty())
     {
-        SelectInfoPanel(genericPanel, true);
+        const auto message = application::info::GameCapabilityTextBuilder::Build(
+            state_, genericPanel);
+        if (!message.empty()) UpdateStatus(FromUtf8(message), false, true);
         return true;
     }
     // A projected game state can already contain the next run's pawn choice
