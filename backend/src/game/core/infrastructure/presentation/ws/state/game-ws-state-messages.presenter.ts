@@ -190,6 +190,14 @@ export class GameWsStateMessagesPresenter {
     const namedPlayer = player(params.playerId);
     const gridMessage = gridPawnMessage(messageKey, params, namedPlayer);
     if (gridMessage) return gridMessage;
+    if (messageKey === 'game.quiz.started' && namedPlayer)
+      return namedPlayer === 'Vous'
+        ? 'Vous piochez une question.'
+        : `${namedPlayer} pioche une question.`;
+    if (messageKey === 'game.quiz.answer-recorded' && namedPlayer)
+      return namedPlayer === 'Vous'
+        ? 'Votre réponse est enregistrée.'
+        : `${namedPlayer} a répondu.`;
     if (messageKey === 'game.quiz.resolved')
       return this.quizResolvedMessage(params, player);
     const card =

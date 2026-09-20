@@ -130,6 +130,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
         sessionId: SESSION,
         questionId: session.question.id,
         round: ctx.round.number,
+        playerId: ctx.round.starter(),
       });
     },
   });
@@ -156,6 +157,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       })) ?? [],
     execute: ({ actor, input, ctx }) => {
       const result = ctx.quiz.answer(SESSION, actor.id, input.answerIndex);
+      ctx.events.message('game.quiz.answer-recorded', { playerId: actor.id });
       if (result.allAnswered) resolveQuestion([], ctx);
     },
   });
