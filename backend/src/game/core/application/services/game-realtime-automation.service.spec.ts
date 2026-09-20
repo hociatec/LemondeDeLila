@@ -184,7 +184,11 @@ describe('GameRealtimeAutomationService', () => {
         {
           suggestForHandler: jest.fn().mockReturnValue(suggestedActions),
         } as never,
-        { getBotTurnDelayMs: () => 25 } as never,
+        {
+          getBotTurnDelayMs: () => 25,
+          getBotStartDelayMs: () => 25,
+          getBotDrawDelayMs: () => 25,
+        } as never,
       ),
       new GameTaskDispatchService(scheduler),
       executor as never,
