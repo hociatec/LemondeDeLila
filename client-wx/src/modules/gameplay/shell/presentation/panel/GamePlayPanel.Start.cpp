@@ -45,7 +45,7 @@ bool GamePlayPanel::BeginRoomStart()
     return true;
 }
 
-void GamePlayPanel::SetRoomStarted(bool started, int runId)
+void GamePlayPanel::SetRoomStarted(bool started, int)
 {
     const bool becameStarted = started && !roomStarted_;
     const bool becameSetup = !started && roomStarted_;
@@ -54,11 +54,11 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
     {
         if (becameStarted)
         {
-            // The room stream has confirmed the transition, but state_ still
-            // describes the setup run. Request the authoritative started run
-            // before allowing keyboard or control actions.
-            awaitingStartedState_ = true;
-            awaitingStartedRunId_ = runId;
+            // Refresh the authoritative started run. The server rejects a
+            // stale command safely, whereas blocking every key here can leave
+            // the player permanently unable to play if a notification is lost.
+            awaitingStartedState_ = false;
+            awaitingStartedRunId_ = 0;
             inputRequestSlot_.Cancel();
             inputSubmissionGuard_.Reset();
             retryableActionCommand_.reset();
