@@ -136,8 +136,18 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
     if (rows_->GetCount() > 0)
     {
         const auto found = std::find(rowKeys_.begin(), rowKeys_.end(), previousKey);
-        rows_->SetSelection(found == rowKeys_.end() ? 0
-            : static_cast<int>(std::distance(rowKeys_.begin(), found)));
+        if (found != rowKeys_.end())
+            rows_->SetSelection(static_cast<int>(std::distance(rowKeys_.begin(), found)));
+        else
+        {
+            const auto firstQuizAnswer = std::find_if(
+                rowKeys_.begin(), rowKeys_.end(), [](const std::string& key)
+                {
+                    return key.starts_with("quiz:") && key.contains(":choice:");
+                });
+            rows_->SetSelection(firstQuizAnswer == rowKeys_.end() ? 0
+                : static_cast<int>(std::distance(rowKeys_.begin(), firstQuizAnswer)));
+        }
     }
     Show(rows_->GetCount() > 0);
 }
