@@ -143,7 +143,8 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
             const auto firstQuizAnswer = std::find_if(
                 rowKeys_.begin(), rowKeys_.end(), [](const std::string& key)
                 {
-                    return key.starts_with("quiz:") && key.contains(":choice:");
+                    return key.starts_with("quiz:") &&
+                        key.find(":choice:") != std::string::npos;
                 });
             rows_->SetSelection(firstQuizAnswer == rowKeys_.end() ? 0
                 : static_cast<int>(std::distance(rowKeys_.begin(), firstQuizAnswer)));
