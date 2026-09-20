@@ -62,6 +62,10 @@ private:
         const domain::AdminCommand& command,
         nlohmann::json payload,
         bool announceLifecycle = true);
+    [[nodiscard]] bool LoadBotTimingSettingsBeforeEditing(
+        const domain::AdminCommand& command);
+    void CacheBotTimingSettings(const nlohmann::json& result);
+    [[nodiscard]] bool ResumeBotTimingEditorIfNeeded(const domain::AdminCommand& command);
     [[nodiscard]] bool ConfirmDangerous(const domain::AdminCommand& command);
     [[nodiscard]] bool PreparePayload(const domain::AdminCommand& command, nlohmann::json& payload);
     [[nodiscard]] bool EnsureMaintenanceToken();
