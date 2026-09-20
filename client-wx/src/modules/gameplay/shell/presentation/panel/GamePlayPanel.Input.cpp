@@ -226,8 +226,17 @@ bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
 
 bool GamePlayPanel::HandleInterfaceShortcut(const std::string& id)
 {
-    static_cast<void>(id);
-    return false;
+    if (id.empty()) return false;
+
+    // The detailed-action panel was deliberately removed. Interface shortcuts
+    // declared by games must therefore announce their information directly;
+    // otherwise keys such as C in Lama are received but appear to do nothing.
+    const auto message = application::info::GameCapabilityTextBuilder::Build(state_, id);
+    UpdateStatus(
+        message.empty() ? wxString(L"Information indisponible.") : FromUtf8(message),
+        false,
+        true);
+    return true;
 }
 
 std::optional<domain::GameAction> GamePlayPanel::ResolveShortcutAction(const std::string& actionType) const
