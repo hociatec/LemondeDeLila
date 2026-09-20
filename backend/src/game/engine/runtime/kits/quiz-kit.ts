@@ -15,6 +15,8 @@ export type QuizDefinition = {
   readonly id: string;
   readonly questions: readonly QuizQuestion[];
   readonly shuffle?: boolean;
+  /** Start a new shuffled pass when every question has been used. */
+  readonly repeat?: boolean;
   readonly autoReveal?: 'all-answered' | 'manual';
   readonly scoring?: { correct: number; incorrect?: number };
 };
@@ -164,8 +166,15 @@ export class GameQuizController {
 
   next(bankId: string): Omit<QuizQuestion, 'answerIndex'> | null {
     const definition = this.definition(bankId);
-    const order = this.state.orders[bankId] ?? [];
-    const cursor = this.state.cursors[bankId] ?? 0;
+    let order = this.state.orders[bankId] ?? [];
+    let cursor = this.state.cursors[bankId] ?? 0;
+    if (cursor >= order.length && definition.repeat && order.length > 0) {
+      const questionIds = definition.questions.map((question) => question.id);
+      order = definition.shuffle ? this.random.shuffle(questionIds) : questionIds;
+      cursor = 0;
+      this.state.orders[bankId] = order;
+      this.state.cursors[bankId] = cursor;
+    }
     const questionId = order[cursor];
     const question = definition.questions.find(
       (candidate) => candidate.id === questionId,

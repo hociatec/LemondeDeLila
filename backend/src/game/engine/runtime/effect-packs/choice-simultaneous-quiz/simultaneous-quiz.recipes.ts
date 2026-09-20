@@ -277,7 +277,12 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
     events: [quizStarted],
     patterns: [simultaneousAnswers<State>()],
     components: banks.map((bank) =>
-      quiz.bank({ id: bank.id, questions: bank.questions, shuffle: true }),
+      quiz.bank({
+        id: bank.id,
+        questions: bank.questions,
+        shuffle: true,
+        repeat: true,
+      }),
     ),
     chooseBot: (availableActions: readonly string[], ctx: Context) => {
       if (availableActions.includes('answer'))
