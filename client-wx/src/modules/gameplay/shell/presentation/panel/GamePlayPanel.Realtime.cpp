@@ -88,9 +88,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         return;
     case domain::GameEventType::Rules:
         rulesText_ = std::move(event.rules);
-        activeInfoPanel_ = "rules";
-        UpdateInfoPanel();
-        if (onHistoryMessage_) onHistoryMessage_(BuildInfoText("rules"), false);
+        if (onHistoryMessage_) onHistoryMessage_(FromUtf8(rulesText_), false);
         return;
     case domain::GameEventType::ConnectionStatus:
         UpdateStatus(FromUtf8(event.message), event.isError, true);

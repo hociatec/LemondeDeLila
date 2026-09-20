@@ -89,16 +89,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
 
     if (event.IsAutoRepeat() && key != "F5") return true;
 
-    // Read-only information remains available while the room and the first
-    // projected game state finish their startup handshake.
-    const auto genericPanel =
-        application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(state_, key);
-    if (!genericPanel.empty())
-    {
-        SelectInfoPanel(genericPanel, true);
-        return true;
-    }
-
     if (key == "ENTER")
     {
         // Enter activates only the control that actually owns focus. It must
@@ -151,8 +141,6 @@ void GamePlayPanel::ActivateSelectedLine()
     if (!line.enabled || line.actionIndex == domain::GameLine::NoAction ||
         line.actionIndex >= state_.actions.size())
     {
-        activeInfoPanel_ = "details";
-        UpdateInfoPanel();
         UpdateStatus(wxString(L"Ligne informative."), false, true);
         return;
     }
@@ -229,9 +217,8 @@ bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
 
 bool GamePlayPanel::HandleInterfaceShortcut(const std::string& id)
 {
-    if (id.empty()) return false;
-    SelectInfoPanel(id, true);
-    return true;
+    static_cast<void>(id);
+    return false;
 }
 
 std::optional<domain::GameAction> GamePlayPanel::ResolveShortcutAction(const std::string& actionType) const

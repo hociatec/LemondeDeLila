@@ -4,10 +4,8 @@
 #include <utility>
 
 #include <wx/event.h>
-#include <wx/choice.h>
 #include <wx/listbox.h>
 #include <wx/scrolwin.h>
-#include <wx/textctrl.h>
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
@@ -32,13 +30,6 @@ void GamePlayPanel::BindEvents()
         {
             if (!HandleKey(event)) event.Skip();
         });
-    linesList_->Bind(wxEVT_LISTBOX, [this](wxCommandEvent&) { UpdateInfoPanel(); });
-    infoPanelChoice_->Bind(wxEVT_CHOICE, [this](wxCommandEvent&)
-    {
-        const int selected = infoPanelChoice_->GetSelection();
-        if (selected >= 0 && static_cast<std::size_t>(selected) < infoPanelIds_.size())
-            SelectInfoPanel(infoPanelIds_[static_cast<std::size_t>(selected)], true);
-    });
     linesList_->Bind(wxEVT_LISTBOX_DCLICK, [this](wxCommandEvent&) { ActivateSelectedLine(); });
     handPanel_->Bind(
         wxEVT_LISTBOX_DCLICK,

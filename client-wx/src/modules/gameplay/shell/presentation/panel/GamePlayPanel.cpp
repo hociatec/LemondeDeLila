@@ -185,8 +185,6 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
         if (auto* target = workflowPanel_->NavigationTarget()) return target;
     if (linesList_ != nullptr && linesList_->IsShown() && linesList_->GetCount() > 0)
         return linesList_;
-    if (infoPanelChoice_ != nullptr && infoPanelChoice_->IsShown() &&
-        infoPanelChoice_->GetCount() > 0) return infoPanelChoice_;
     return nullptr;
 }
 

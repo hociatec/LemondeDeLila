@@ -178,8 +178,6 @@ void GamePlayPanel::RequestRefresh()
 
 void GamePlayPanel::ShowRules()
 {
-    activeInfoPanel_ = "rules";
-    UpdateInfoPanel();
     auto* service = &service_;
     RunCommand([service](std::stop_token stopToken) { service->RequestRules(stopToken); },
         "Chargement des règles impossible.");
