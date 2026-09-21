@@ -72,17 +72,9 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
             append("quiz:" + session.id + ":prompt", session.prompt);
             if (session.phase == "answering")
             {
-                // Keep quiz activity next to its question instead of mixing
-                // it into the table history. The drawer remains the current
-                // turn owner while answers are collected.
-                if (state.system.turn.currentPlayerId)
-                {
-                    const auto drawer = QuizPlayer(
-                        state, *state.system.turn.currentPlayerId);
-                    append("quiz:" + session.id + ":drawer",
-                        drawer == "Vous" ? "Vous piochez une question."
-                                         : drawer + " pioche une question.");
-                }
+                // Keep received answers next to their question instead of
+                // mixing them into the table history. The turn announcement
+                // already identifies who drew the question.
                 for (const int playerId : session.answeredPlayerIds)
                 {
                     const auto player = QuizPlayer(state, playerId);
