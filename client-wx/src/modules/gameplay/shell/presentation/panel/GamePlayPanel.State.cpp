@@ -94,6 +94,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     auto nextPawnSelection = infrastructure::PawnSelectionDecoder::Decode(state.pending);
     auto nextLogMessages = EventMessages(state);
     state_ = std::move(state);
+    hasAuthoritativeState_ = true;
     if (receivedStartedState)
     {
         awaitingStartedState_ = false;

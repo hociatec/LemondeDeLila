@@ -161,6 +161,7 @@ private:
     std::string submittedPromptActionType_;
     std::string rulesText_;
     bool roomStarted_ = true;
+    bool hasAuthoritativeState_ = false;
     // A room-start notification reaches the room channel before the game
     // channel has supplied the new run's authoritative projection. Keep
     // gameplay input disabled in that interval so actions cannot carry the
