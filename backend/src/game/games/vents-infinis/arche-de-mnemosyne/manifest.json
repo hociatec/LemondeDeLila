@@ -1,7 +1,7 @@
 {
   "code": "arche-de-mnemosyne",
   "name": "L'Arche de Mnémosyne",
-  "minPlayers": 1,
+  "minPlayers": 2,
   "maxPlayers": 8,
   "engine": "arche-de-mnemosyne",
   "summary": "Quiz à catégories (questions aléatoires, réponses mélangées)."
