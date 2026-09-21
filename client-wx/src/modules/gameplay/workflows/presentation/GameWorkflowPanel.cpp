@@ -142,14 +142,17 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
             rows_->SetSelection(static_cast<int>(std::distance(rowKeys_.begin(), found)));
         else
         {
-            const auto firstQuizAnswer = std::find_if(
+            // A newly displayed quiz must first announce its question. The
+            // answers remain the following rows, reachable with Down, but
+            // selecting one by default makes a screen reader skip the prompt.
+            const auto firstQuizPrompt = std::find_if(
                 rowKeys_.begin(), rowKeys_.end(), [](const std::string& key)
                 {
                     return key.starts_with("quiz:") &&
-                        key.find(":choice:") != std::string::npos;
+                        key.ends_with(":prompt");
                 });
-            rows_->SetSelection(firstQuizAnswer == rowKeys_.end() ? 0
-                : static_cast<int>(std::distance(rowKeys_.begin(), firstQuizAnswer)));
+            rows_->SetSelection(firstQuizPrompt == rowKeys_.end() ? 0
+                : static_cast<int>(std::distance(rowKeys_.begin(), firstQuizPrompt)));
         }
     }
     Show(rows_->GetCount() > 0);
