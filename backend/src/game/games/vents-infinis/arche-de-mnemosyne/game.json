@@ -19,14 +19,15 @@
   "phases": {
     "setup": { "actions": [], "transitions": ["playing"] },
     "playing": {
-      "actions": ["draw", "answer", "timeout"],
+      "actions": ["draw", "answer", "timeout", "ready"],
       "terminal": true
     }
   },
   "actions": {
     "draw": { "recipe": "choice-simultaneous-quiz-draw" },
     "answer": { "recipe": "choice-simultaneous-quiz-answer" },
-    "timeout": { "recipe": "choice-simultaneous-quiz-timeout" }
+    "timeout": { "recipe": "choice-simultaneous-quiz-timeout" },
+    "ready": { "recipe": "choice-simultaneous-quiz-ready" }
   },
   "victory": { "kind": "by-simultaneous-quiz" },
   "simultaneousQuiz": {

@@ -125,6 +125,18 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       resolveQuestion(timedOut, ctx);
     },
   });
+  const ready = defineAction<State, Record<string, never>>({
+    input: gameInput.object({}),
+    documentation: 'Signale que la pause entre deux questions est terminée.',
+    available: ({ ctx }) =>
+      phases.is(ctx, 'playing') &&
+      currentSession(ctx) == null &&
+      ctx.scheduler.has(NEXT_QUESTION_TIMER) &&
+      ctx.scheduler.isDue(NEXT_QUESTION_TIMER),
+    execute: ({ ctx }) => {
+      ctx.scheduler.cancel(NEXT_QUESTION_TIMER);
+    },
+  });
 
   function resolveQuestion(timedOutIds: number[], ctx: Context): void {
     const session = ctx.quiz.reveal(SESSION);
@@ -206,17 +218,16 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       if (nextPlayerId != null) ctx.turn.to(nextPlayerId);
     }
     const nextDrawer = ctx.players.current();
+    // The ready action refreshes every client when the pause ends. A bot is
+    // made ready immediately; its actual draw is then paced centrally by
+    // GameAutomationPlannerService with the configured bot draw delay.
     ctx.scheduler.schedule(NEXT_QUESTION_TIMER, {
-      afterMs: values.interQuestionSeconds * 1_000,
-      ...(nextDrawer?.isBot
-        ? {
-            action: {
-              type: 'draw',
-              payload: {},
-              meta: { actorId: nextDrawer.id },
-            },
-          }
-        : {}),
+      afterMs: nextDrawer?.isBot ? 0 : values.interQuestionSeconds * 1_000,
+      action: {
+        type: 'ready',
+        payload: {},
+        meta: { actorId: nextDrawer?.id ?? null },
+      },
     });
   }
 
@@ -224,6 +235,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
     draw,
     answer,
     timeout,
+    ready,
     config,
     events: [quizStarted],
     patterns: [simultaneousAnswers<State>()],

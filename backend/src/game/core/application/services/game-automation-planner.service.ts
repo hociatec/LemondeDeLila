@@ -114,7 +114,7 @@ export class GameAutomationPlannerService {
     const context = pendingChoice ? `choice:${choiceId}` : 'play';
     return {
       signature: `bot:${playerId}:${context.slice(0, 128)}:round:${roundNumber}:turn:${this.safeTurnNumber(state)}`,
-      dueAtMs: gameNowMs() + this.botDelay(state, playerId),
+      dueAtMs: gameNowMs() + this.botDelay(state, playerId, suggested),
       actions: suggested.map((action) => ({
         ...action,
         meta: { ...(action.meta ?? {}), actorId: playerId },
@@ -149,8 +149,17 @@ export class GameAutomationPlannerService {
     return Number.isSafeInteger(value) && value >= 0 ? value : 0;
   }
 
-  private botDelay(state: GameState, botPlayerId: number): number {
+  private botDelay(
+    state: GameState,
+    botPlayerId: number,
+    suggested: readonly GameSingleActionDto[],
+  ): number {
     const lastAction = state.automation?.lastAction;
+    // Drawing is deliberately paced with the dedicated setting, including
+    // when a bot is about to open the next Mnemosyne question.
+    if (suggested.some((action) => isDrawAction(action.type))) {
+      return this.botSettings.getBotDrawDelayMs();
+    }
     // A bot opening a new game waits for the dedicated start delay. Once play
     // has begun, the standard delay applies after a human or another bot.
     if (!lastAction) return this.botSettings.getBotStartDelayMs();

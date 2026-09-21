@@ -35,7 +35,7 @@ function automation() {
   ) as BotSettingsService;
   jest.spyOn(settings, 'getBotStartDelayMs').mockReturnValue(1000);
   jest.spyOn(settings, 'getBotTurnDelayMs').mockReturnValue(1000);
-  jest.spyOn(settings, 'getBotDrawDelayMs').mockReturnValue(1000);
+  jest.spyOn(settings, 'getBotDrawDelayMs').mockReturnValue(250);
   const planner = new GameAutomationPlannerService(runner, settings);
   return {
     clock,
@@ -47,7 +47,7 @@ function automation() {
   };
 }
 
-it('schedules the next bot draw at the end of the default pause', async () => {
+it('schedules the next bot draw using the configured bot draw delay', async () => {
   const game = await testGame(definition)
     .players(['Human', { username: 'Bot', isBot: true }])
     .start();
@@ -57,20 +57,31 @@ it('schedules the next bot draw at the end of the default pause', async () => {
   await game.as(-2).do('answer', { answerIndex: 0 });
   const { resolve, clock, scope } = automation();
   const state = game.state();
-  const plan = resolve(state);
-  expect(plan).toMatchObject({
-    dueAtMs: clock.nowMs() + 15000,
-    actions: [{ type: 'draw', meta: { actorId: -2 } }],
+  const ready = resolve(state);
+  expect(ready).toMatchObject({
+    dueAtMs: clock.nowMs(),
+    actions: [{ type: 'ready', meta: { actorId: -2 } }],
   });
-  if (!plan) throw new Error('Missing next draw');
-  clock.advanceBy(15000);
+  if (!ready) throw new Error('Missing ready action');
   const next = runtime.applyActions(
     state,
-    plan.actions,
+    ready.actions,
     scope.create(state, -2, clock),
   );
+  const draw = resolve(next);
+  expect(draw).toMatchObject({
+    dueAtMs: clock.nowMs() + 250,
+    actions: [{ type: 'draw', meta: { actorId: -2 } }],
+  });
+  if (!draw) throw new Error('Missing next draw');
+  clock.advanceBy(250);
+  const drawn = runtime.applyActions(
+    next,
+    draw.actions,
+    scope.create(next, -2, clock),
+  );
   expect(
-    runtime.exposeStateForUser(next, 1, scope.create(next, 1, clock)),
+    runtime.exposeStateForUser(drawn, 1, scope.create(drawn, 1, clock)),
   ).toMatchObject({
     kits: { quiz: { sessions: { [sessionId]: { phase: 'answering' } } } },
   });
