@@ -1,7 +1,7 @@
 import { GameWsStateMessagesPresenter } from './game-ws-state-messages.presenter';
 
 describe('GameWsStateMessagesPresenter', () => {
-  it('announces drawing a question and recording an answer', () => {
+  it('leaves quiz activity to the question workflow', () => {
     const messages = [
       {
         id: 'quiz:0',
@@ -34,10 +34,10 @@ describe('GameWsStateMessagesPresenter', () => {
 
     expect(
       (state.events as any).recent.map((event: any) => event.data.message),
-    ).toEqual(['Vous piochez une question.', 'Milou a répondu.']);
+    ).toEqual([undefined, undefined]);
   });
 
-  it('reveals the correct Mnémosyne quiz answer once before individual results', () => {
+  it('leaves the quiz result to the question workflow', () => {
     const event = {
       id: 'quiz-result:0',
       type: 'game.message',
@@ -67,10 +67,6 @@ describe('GameWsStateMessagesPresenter', () => {
       {} as never,
     );
 
-    expect((state.events as any).recent[0].data.message).toBe(
-      'La bonne réponse était « Paris ».\n' +
-        'Vous avez donné la bonne réponse. Vous gagnez 2 points.\n' +
-        'Milou a donné une mauvaise réponse (« Lyon »). Milou perd 1 point.',
-    );
+    expect((state.events as any).recent[0].data.message).toBeUndefined();
   });
 });
