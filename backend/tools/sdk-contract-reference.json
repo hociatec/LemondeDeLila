@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "apiVersion": "6.17.0",
+  "apiVersion": "6.18.0",
   "typescript": "5.9.3",
   "entry": "src/game/engine/sdk/public-api.ts",
   "external": [],
@@ -19,7 +19,7 @@
     },
     {
       "file": "src/game/core/application/models/game-state.model.ts",
-      "sha256": "c499357be0772736bf2a60996102218b8cd3dc771544c278989bc4a01b26724b"
+      "sha256": "0dffdb5d59de910c06efefe8d1450d6e66c6fd544d127e370621060493b7120c"
     },
     {
       "file": "src/game/core/domain/errors/game-domain.errors.ts",
@@ -35,7 +35,7 @@
     },
     {
       "file": "src/game/engine/runtime/actions/game-input-schema.ts",
-      "sha256": "38f807dda3e7ee03943ce8aa92f3fb9da8862c39e451de4303d54b1b7a09d19c"
+      "sha256": "56adb3a24151ec8bafa2c0552d4cd1af653af02b1d7fe839586ec579228338e8"
     },
     {
       "file": "src/game/engine/runtime/automation/automatic-kit.ts",
@@ -99,7 +99,7 @@
     },
     {
       "file": "src/game/engine/runtime/content/game-content.ts",
-      "sha256": "349e323ab75182e5b3ef1ea74fcf15b96d9fcc3f87c805209292adc2cd5ac1ec"
+      "sha256": "65865ce7e05e2f02d3bdfe61c1507a0618bbb4b78f7902a4b40bed9b5f73331e"
     },
     {
       "file": "src/game/engine/runtime/content/quiz-content-contract.ts",
@@ -307,7 +307,7 @@
     },
     {
       "file": "src/game/engine/runtime/kits/quiz-kit.ts",
-      "sha256": "08d3327de7d7a29ce16580ebac2142db529f3398bc8caa57141daf585e43a1c6"
+      "sha256": "a6f05a895474dd2d3b6e89f5702bc3fc8e39cf47b0f3fb2b4a15d1d90347c35f"
     },
     {
       "file": "src/game/engine/runtime/kits/ranking-kit.ts",
@@ -395,7 +395,7 @@
     },
     {
       "file": "src/game/engine/runtime/recipes/gameplay/pawn-selection.recipes.ts",
-      "sha256": "bf4bcbe259e96a53b08208dc9aa5718ddc0c6b33a4e44de827f7827b0a032d2b"
+      "sha256": "425f9eac7980280014197180945ee85a6115c9d1c55f9982e84c8964e5be216a"
     },
     {
       "file": "src/game/engine/runtime/recipes/gameplay/scoring-submission.recipes.ts",

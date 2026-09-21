@@ -30,6 +30,7 @@ export function compileJsonGame(
   manifest: JsonGameManifest,
   source: unknown,
   assets?: JsonContentAssets,
+  options: { externalContent?: boolean } = {},
 ) {
   assertGameManifestMatches(manifest, manifest);
   if (!manifest.code.trim())
@@ -37,6 +38,7 @@ export function compileJsonGame(
   const resolvedSource = resolveJsonContent(source, assets);
   const metadata = parseJsonGame(resolvedSource);
   const content = defineGameContent(manifest.code, resolvedSource, {
+    externalContent: options.externalContent,
     version: metadata.contentVersion,
     formatVersion: 1,
     snapshotMigrations: metadata.snapshotMigrations,

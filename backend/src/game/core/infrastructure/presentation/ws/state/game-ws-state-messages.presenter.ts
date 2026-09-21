@@ -1,3 +1,8 @@
+import {
+  presentationRelations,
+  withoutDuplicateTurnIdentities,
+  type PresentationRelations,
+} from './game-ws-event-relations';
 import type { GameRuntimeDescriptor } from '../../../../application/ports/game-runtime.port';
 import { genericGameEventMessage } from './game-ws-generic-event-message';
 import { gridPawnMessage } from './game-ws-grid-pawn-message';
@@ -10,12 +15,6 @@ type GamePresentationDescriptor = NonNullable<
 type ScorePresentationDescriptor = NonNullable<
   GamePresentationDescriptor['score']
 >;
-type PairedTurn = { eventId: string; data: Record<string, unknown> };
-type PresentationRelations = {
-  suppressedEventIds: ReadonlySet<string>;
-  turnByMessageId: ReadonlyMap<string, PairedTurn>;
-};
-
 export class GameWsStateMessagesPresenter {
   withServerMessages(
     system: Record<string, unknown>,
@@ -29,7 +28,7 @@ export class GameWsStateMessagesPresenter {
       this.asRecord(latestByType['card.received']).data,
     );
     const recentEvents = Array.isArray(events.recent) ? events.recent : [];
-    const relations = this.presentationRelations(recentEvents, latestByType);
+    const relations = presentationRelations(recentEvents, latestByType);
     const started = isActiveMatchStatus(this.asRecord(system.match).status);
     const presentEvent = (rawEvent: unknown): Record<string, unknown> =>
       this.presentEvent({
@@ -43,7 +42,7 @@ export class GameWsStateMessagesPresenter {
       });
     const presented = this.presentLatestByType(latestByType, presentEvent);
     const recent = withoutRepeatedTurnAnnouncements(
-      this.withoutDuplicateTurnIdentities(
+      withoutDuplicateTurnIdentities(
         recentEvents.map((event) => presentEvent(event)),
       ),
     );
@@ -103,30 +102,6 @@ export class GameWsStateMessagesPresenter {
       input.presentation,
     );
     return message ? { ...event, data: { ...data, message } } : event;
-  }
-
-  private withoutDuplicateTurnIdentities(
-    events: Record<string, unknown>[],
-  ): Record<string, unknown>[] {
-    const seen = new Set<string>();
-    return [...events]
-      .reverse()
-      .map((event) => {
-        if (this.stringValue(event.type) !== 'turn.started') return event;
-        const data = this.asRecord(event.data);
-        const playerId = this.numberValue(data.playerId);
-        const turnNumber = this.numberValue(data.turnNumber);
-        if (playerId == null || turnNumber == null) return event;
-        const identity = `${playerId}:${turnNumber}`;
-        if (!seen.has(identity)) {
-          seen.add(identity);
-          return event;
-        }
-        const remainingData = { ...data };
-        delete remainingData.message;
-        return { ...event, data: remainingData };
-      })
-      .reverse();
   }
 
   private eventMessage(
@@ -306,10 +281,10 @@ export class GameWsStateMessagesPresenter {
   }): string {
     const card = this.displayedCard(input);
     const effectDescription = scalarMessageText(input.params.effectDescription);
-    const effectAnnouncement = effectDescription
-      && !card.includes(effectDescription)
-      ? ` Effet : ${effectDescription.replace(/[.!?]+$/u, '')}.`
-      : '';
+    const effectAnnouncement =
+      effectDescription && !card.includes(effectDescription)
+        ? ` Effet : ${effectDescription.replace(/[.!?]+$/u, '')}.`
+        : '';
     const automatic =
       input.params.automatic === true
         ? ' Son effet est appliqué automatiquement.'
@@ -358,136 +333,6 @@ export class GameWsStateMessagesPresenter {
     ];
     if (starter) messages.push(`C'est au tour de ${starter}.`);
     return messages.join('\n');
-  }
-
-  private presentationRelations(
-    recentEvents: unknown[],
-    latestByType: Record<string, unknown>,
-  ): PresentationRelations {
-    const orderedRecent = this.orderedUniqueEvents(recentEvents);
-    const ordered = this.orderedUniqueEvents([
-      ...recentEvents,
-      ...Object.values(latestByType),
-    ]);
-    const suppressedEventIds = new Set<string>();
-    const turnByMessageId = new Map<string, PairedTurn>();
-    for (let index = 0; index < ordered.length; index += 1) {
-      const semantic = this.asRecord(ordered[index]);
-      if (this.stringValue(semantic.type) !== 'game.message') continue;
-      const semanticId = this.stringValue(semantic.id);
-      const key = this.stringValue(this.asRecord(semantic.data).key);
-      const commandId = this.eventCommandId(semanticId);
-      const supersededTypes = this.supersededTypes(key);
-      if (supersededTypes.length > 0) {
-        for (const rawEvent of ordered) {
-          const event = this.asRecord(rawEvent);
-          const eventId = this.stringValue(event.id);
-          if (
-            this.eventCommandId(eventId) === commandId &&
-            supersededTypes.includes(this.stringValue(event.type))
-          )
-            suppressedEventIds.add(eventId);
-        }
-      }
-    }
-    for (let index = 0; index < orderedRecent.length; index += 1) {
-      const semantic = this.asRecord(orderedRecent[index]);
-      if (this.stringValue(semantic.type) !== 'game.message') continue;
-      const semanticId = this.stringValue(semantic.id);
-      const key = this.stringValue(this.asRecord(semantic.data).key);
-      if (key !== 'game.card.drawn' && key !== 'game.player.passed') continue;
-      for (const rawEvent of orderedRecent.slice(index + 1)) {
-        const event = this.asRecord(rawEvent);
-        const type = this.stringValue(event.type);
-        if (type === 'game.message') break;
-        if (type !== 'turn.started') {
-          if (suppressedEventIds.has(this.stringValue(event.id))) continue;
-          break;
-        }
-        const eventId = this.stringValue(event.id);
-        turnByMessageId.set(semanticId, {
-          eventId,
-          data: this.asRecord(event.data),
-        });
-        suppressedEventIds.add(eventId);
-        break;
-      }
-    }
-    this.suppressDuplicateLandings(ordered, suppressedEventIds);
-    return { suppressedEventIds, turnByMessageId };
-  }
-
-  private suppressDuplicateLandings(
-    events: Record<string, unknown>[],
-    suppressedEventIds: Set<string>,
-  ): void {
-    const bestByLanding = new Map<
-      string,
-      { eventId: string; narrationScore: number }
-    >();
-    for (const event of events) {
-      if (this.stringValue(event.type) !== 'pawn.landed') continue;
-      const eventId = this.stringValue(event.id);
-      const data = this.asRecord(event.data);
-      const playerId = this.numberValue(data.playerId);
-      const position = this.numberValue(data.position);
-      if (!eventId || playerId == null || position == null) continue;
-      const identity = `${this.eventCommandId(eventId)}:${playerId}:${position}`;
-      const narrationScore =
-        Number(Boolean(this.stringValue(data.tileLabel))) +
-        Number(Boolean(this.stringValue(data.tileDescription)));
-      const previous = bestByLanding.get(identity);
-      if (!previous) {
-        bestByLanding.set(identity, { eventId, narrationScore });
-        continue;
-      }
-      if (narrationScore >= previous.narrationScore) {
-        suppressedEventIds.add(previous.eventId);
-        bestByLanding.set(identity, { eventId, narrationScore });
-      } else {
-        suppressedEventIds.add(eventId);
-      }
-    }
-  }
-
-  private orderedUniqueEvents(events: unknown[]): Record<string, unknown>[] {
-    const unique = new Map<string, Record<string, unknown>>();
-    for (const rawEvent of events) {
-      const event = this.asRecord(rawEvent);
-      const id = this.stringValue(event.id);
-      if (id && !unique.has(id)) unique.set(id, event);
-    }
-    return [...unique.values()].sort((left, right) => {
-      const leftSequence = this.numberValue(left.sequence);
-      const rightSequence = this.numberValue(right.sequence);
-      if (leftSequence != null && rightSequence != null)
-        return leftSequence - rightSequence;
-      return (
-        (this.numberValue(left.occurredAtMs) ?? 0) -
-        (this.numberValue(right.occurredAtMs) ?? 0)
-      );
-    });
-  }
-
-  private supersededTypes(messageKey: string): string[] {
-    if (messageKey === 'game.card.drawn')
-      return ['card.drawn', 'card.received'];
-    if (messageKey === 'game.card.played') return ['card.played'];
-    if (messageKey === 'game.round.started')
-      return [
-        'match.started',
-        'round.started',
-        'turn.started',
-        'card.drawn',
-        'card.received',
-        'card.discarded',
-      ];
-    return [];
-  }
-
-  private eventCommandId(eventId: string): string {
-    const separator = eventId.lastIndexOf(':');
-    return separator < 0 ? eventId : eventId.slice(0, separator);
   }
 
   private withNextTurn(

@@ -1,3 +1,4 @@
+import { includesInput } from './paw-scoring-input';
 import { defineAction } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
 import { cards } from '../../cards/cards-kit';
@@ -441,11 +442,4 @@ export function pawScoringRules(source: PawScoringProgram) {
     };
   };
   return buildRules();
-}
-function includesInput(inputs: readonly CardInput[], input: CardInput) {
-  return inputs.some(
-    (candidate) =>
-      candidate.cardId === input.cardId &&
-      candidate.targetPlayerId === input.targetPlayerId,
-  );
 }

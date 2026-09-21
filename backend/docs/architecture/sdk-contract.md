@@ -1,7 +1,24 @@
 # Évolution du contrat auteur
 
-La version courante de l'API auteur est 6.16.0. Elle est indépendante de la
+La version courante de l'API auteur est 6.18.0. Elle est indépendante de la
 version du backend, des règles des jeux et des schémas de snapshots.
+
+La version 6.18 ajoute l'option `shuffleChoices` aux banques de quiz. L'ordre
+tiré avec le générateur déterministe est sauvegardé dans chaque session et
+n'est jamais publié. Une session ancienne sans cet ordre conserve les positions
+du catalogue, y compris pour sa correction. Les autres banques ne changent pas
+de comportement. `defineGameContent` accepte aussi `externalContent: false`
+pour compiler un contenu déjà figé sans le remplacer par une release externe.
+
+La référence 6.18 intègre également trois ajouts optionnels déjà présents dans
+le moteur : `GameState.automation.lastAction`, le paramètre `labels` de
+`gameInput.enum`, et les options `automatic` / `announceRequest` de
+`sequentialPawnSelection`. Leur revue compare les déclarations actuelles aux
+sources du commit `83c5ef12a`, qui avait établi la référence précédente.
+Les anciens appels restent valides ; sans ces options, la sélection des pions
+reste manuelle et ses demandes sont annoncées. Le champ d'automatisation est
+facultatif pour les sauvegardes existantes. Cette synchronisation de référence
+ne change ni les règles exécutées ni les données persistées.
 
 La version 6.16 expose les distributions initiales et placements de grille
 déclaratifs dans `GameInitialization`, ainsi que

@@ -51,6 +51,7 @@ export type GameContentSchema<TData extends object> = {
 };
 
 type GameContentOptions = {
+  externalContent?: boolean;
   version?: string;
   formatVersion?: number;
   snapshotMigrations?: readonly ContentSnapshotMigration[];
@@ -72,7 +73,8 @@ export function defineGameContent<TData extends object>(
   source: unknown,
   options: GameContentOptions & { schema?: GameContentSchema<TData> } = {},
 ): GameContent<TData> {
-  const external = loadExternalGameContent(gameId);
+  const external =
+    options.externalContent === false ? null : loadExternalGameContent(gameId);
   let candidate = external?.source ?? source;
   if (typeof candidate === 'string') {
     candidate = parseContentJson(candidate, gameId);

@@ -4,3 +4,5 @@ export { EngineServicesModule } from './core/infrastructure/module/engine-servic
 export { BotModule } from './core/infrastructure/module/bot.module';
 export { GameRegistryModule } from './engine/infrastructure/module/game-registry.module';
 export { GameLoggerModule } from './core/infrastructure/logging/game-logger.module';
+export { mnemoQuizCatalogPath } from './engine/infrastructure/content/mnemo-quiz-catalog';
+export { mnemoQuizSeed } from './composition/mnemo-content-runtime';

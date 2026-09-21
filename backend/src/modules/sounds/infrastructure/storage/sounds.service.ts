@@ -1,20 +1,21 @@
-﻿import {
+import { removeUnusedFilesForSoundId } from './sounds-storage-maintenance';
+import { readEnvironment } from '../../../../platform/config/public-api';
+import {
+  assertStorageCapacity,
+  StorageCapacityError,
+} from '../../../../platform/filesystem/public-api';
+import {
+  HttpException,
   BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
-  HttpException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  assertStorageCapacity,
-  StorageCapacityError,
-  writeFileAtomic,
-} from '../../../../platform/filesystem/public-api';
-import { readEnvironment } from '../../../../platform/config/public-api';
+import { writeFileAtomic } from '../../../../platform/filesystem/public-api';
 import {
   SOUND_KEYS,
   SoundKey,
@@ -72,7 +73,12 @@ export class SoundsService {
         ),
       detectSilence: (filePath) => detectSoundSilence(filePath),
       removeUnusedFilesForSoundId: (soundId, keepSha256) =>
-        this.removeUnusedFilesForSoundId(soundId, keepSha256),
+        removeUnusedFilesForSoundId(
+          this.storageRoot,
+          (message) => this.logger.warn(message),
+          soundId,
+          keepSha256,
+        ),
       notifySoundsUpdated: (updatedAt) =>
         this.notifications.notifyAll('sounds.updated', {
           soundId: null,
@@ -92,7 +98,7 @@ export class SoundsService {
           updatedAt,
         }),
       clearSound: (soundId) => this.clearSound(soundId),
-      storageIoError: (action, err) => this.storageIoError(action, err),
+      storageIoError: (action, err) => storageIoError(this.logger, action, err),
       now: () => new Date().toISOString(),
     });
     this.uploads = new SoundsUploadManager({
@@ -101,7 +107,12 @@ export class SoundsService {
       readManifest: () => this.readManifest(),
       writeManifest: (manifest) => this.writeManifest(manifest),
       removeUnusedFiles: (soundId, keepSha256) =>
-        this.removeUnusedFilesForSoundId(soundId, keepSha256),
+        removeUnusedFilesForSoundId(
+          this.storageRoot,
+          (message) => this.logger.warn(message),
+          soundId,
+          keepSha256,
+        ),
       notifyUpdated: (entry, updatedAt) =>
         this.notifications.notifyAll('sounds.updated', {
           soundId: entry.soundId,
@@ -109,20 +120,12 @@ export class SoundsService {
           url: entry.url,
           updatedAt,
         }),
-      storageError: (action, error) => this.storageIoError(action, error),
+      storageError: (action, error) =>
+        storageIoError(this.logger, action, error),
       ensureStorageCapacity: (incomingBytes) =>
         this.ensureStorageCapacity(incomingBytes),
       warn: (message) => this.logger.warn(message),
     });
-  }
-
-  private storageIoError(
-    action: string,
-    err: unknown,
-  ): InternalServerErrorException {
-    return buildStorageIoError(action, err, (message, stack) =>
-      this.logger.error(message, stack),
-    );
   }
 
   private async ensureStorageCapacity(incomingBytes: number): Promise<void> {
@@ -147,35 +150,6 @@ export class SoundsService {
       }
       throw error;
     }
-  }
-
-  private async removeUnusedFilesForSoundId(
-    soundId: SoundKey,
-    keepSha256: string,
-  ): Promise<number> {
-    const soundDir = path.join(this.storageRoot, soundId);
-    let deleted = 0;
-    try {
-      const files = await fs.promises.readdir(soundDir);
-      for (const file of files) {
-        const lower = file.toLowerCase();
-        if (!(lower.endsWith('.wav') || lower.endsWith('.mp3'))) continue;
-        if (file === `${keepSha256}.wav`) continue;
-        try {
-          await fs.promises.rm(path.join(soundDir, file), { force: true });
-          deleted++;
-        } catch (error) {
-          this.logger.warn(
-            `Nettoyage audio ignoré pour ${soundId}/${file}: ${errorMessage(error)}`,
-          );
-        }
-      }
-    } catch (error) {
-      this.logger.warn(
-        `Répertoire audio illisible pour ${soundId}: ${errorMessage(error)}`,
-      );
-    }
-    return deleted;
   }
 
   private async readManifest(): Promise<SoundManifest> {
@@ -210,7 +184,7 @@ export class SoundsService {
         JSON.stringify(next, null, 2),
       );
     } catch (err) {
-      throw this.storageIoError('écriture manifest.json', err);
+      throw storageIoError(this.logger, 'écriture manifest.json', err);
     }
   }
 
@@ -416,16 +390,6 @@ export class SoundsService {
   }
 }
 
-function environmentBytes(
-  key: 'SOUNDS_STORAGE_QUOTA_BYTES' | 'STORAGE_MIN_FREE_BYTES',
-  fallback: number,
-): number {
-  const raw = readEnvironment(key).trim();
-  if (!raw) return fallback;
-  const parsed = Number(raw);
-  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : fallback;
-}
-
 function normalizeSoundKey(input: string): SoundKey {
   const raw = (input || '').trim();
   const found = SOUND_KEYS.find(
@@ -437,4 +401,24 @@ function normalizeSoundKey(input: string): SoundKey {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function storageIoError(
+  logger: Logger,
+  action: string,
+  err: unknown,
+): InternalServerErrorException {
+  return buildStorageIoError(action, err, (message, stack) =>
+    logger.error(message, stack),
+  );
+}
+
+function environmentBytes(
+  key: 'SOUNDS_STORAGE_QUOTA_BYTES' | 'STORAGE_MIN_FREE_BYTES',
+  fallback: number,
+): number {
+  const raw = readEnvironment(key).trim();
+  if (!raw) return fallback;
+  const parsed = Number(raw);
+  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : fallback;
 }

@@ -111,25 +111,7 @@ function boardAndPlayerMessage(
       : '';
   }
   if (type === 'pawn.moved') return '';
-  if (type === 'pawn.landed') {
-    const name = player(data.playerId);
-    const internalPosition = numberValue(data.position);
-    if (!name || internalPosition == null) return '';
-    const verb = name === 'Vous' ? 'arrivez' : 'arrive';
-    const label = tileLabel(value('tileLabel'));
-    const description = value('tileDescription');
-    const descriptionText = /^(?:Description|Effet)\s*:/iu.test(description)
-      ? description
-      : description
-        ? `Description : ${description}`
-        : '';
-    return [
-      `${name} ${verb} sur la case ${internalPosition + 1}${label ? ` : ${label}` : ''}.`,
-      descriptionText,
-    ]
-      .filter(Boolean)
-      .join(' ');
-  }
+  if (type === 'pawn.landed') return pawnLandedMessage(data, player, value);
   if (type === 'pawn.assigned') {
     const name = player(data.playerId);
     const pawn = value('pawnLabel') || humanLabel(value('pawnId'));
@@ -268,4 +250,28 @@ function humanLabel(value: string): string {
   return normalized
     ? normalized.charAt(0).toUpperCase() + normalized.slice(1)
     : '';
+}
+
+function pawnLandedMessage(
+  data: Record<string, unknown>,
+  player: (value: unknown) => string,
+  value: (key: string) => string,
+): string {
+  const name = player(data.playerId);
+  const internalPosition = numberValue(data.position);
+  if (!name || internalPosition == null) return '';
+  const verb = name === 'Vous' ? 'arrivez' : 'arrive';
+  const label = tileLabel(value('tileLabel'));
+  const description = value('tileDescription');
+  const descriptionText = /^(?:Description|Effet)\s*:/iu.test(description)
+    ? description
+    : description
+      ? `Description : ${description}`
+      : '';
+  return [
+    `${name} ${verb} sur la case ${internalPosition + 1}${label ? ` : ${label}` : ''}.`,
+    descriptionText,
+  ]
+    .filter(Boolean)
+    .join(' ');
 }

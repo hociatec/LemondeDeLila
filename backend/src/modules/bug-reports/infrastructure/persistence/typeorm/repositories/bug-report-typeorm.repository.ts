@@ -59,17 +59,6 @@ export class BugReportTypeormRepository implements BugReportRepository {
   }
 
   async countByStatus(): Promise<Record<BugReportStatus, number>> {
-    const rows = await this.repo
-      .createQueryBuilder('report')
-      .select(
-        "CASE WHEN report.status = 'rejected' THEN 'refused' ELSE report.status END",
-        'status',
-      )
-      .addSelect('COUNT(*)', 'count')
-      .groupBy(
-        "CASE WHEN report.status = 'rejected' THEN 'refused' ELSE report.status END",
-      )
-      .getRawMany<{ status: BugReportStatus; count: string }>();
     const counts: Record<BugReportStatus, number> = {
       pending: 0,
       in_progress: 0,
@@ -78,6 +67,21 @@ export class BugReportTypeormRepository implements BugReportRepository {
       refused: 0,
       rejected: 0,
     };
+    const statuses = Object.keys(counts);
+    const rows = await this.repo
+      .createQueryBuilder('report')
+      .select(
+        "CASE WHEN report.status = 'rejected' THEN 'refused' ELSE report.status END",
+        'status',
+      )
+      .addSelect('COUNT(*)', 'count')
+      .where('report.status IN (:...statuses)', { statuses })
+      .groupBy(
+        "CASE WHEN report.status = 'rejected' THEN 'refused' ELSE report.status END",
+      )
+      // Bound the grouped result, never the reports included in COUNT(*).
+      .limit(statuses.length)
+      .getRawMany<{ status: BugReportStatus; count: string }>();
     for (const row of rows)
       if (row.status in counts) counts[row.status] = Number(row.count) || 0;
     return counts;

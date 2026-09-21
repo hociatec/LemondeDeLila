@@ -2,9 +2,9 @@ import { compileJsonGame } from '../../../engine/json/public-api';
 import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
 import { describeGameDefinition } from '../../../engine/runtime/definitions/runtime-descriptor';
 import { testGame } from '../../../engine/testing/public-api';
-import document from './game.json';
-import manifest from './manifest.json';
-import quiz from './quiz.json';
+import document from '../../../games/vents-infinis/arche-de-mnemosyne/game.json';
+import manifest from '../../../games/vents-infinis/arche-de-mnemosyne/manifest.json';
+import quiz from '../../../games/vents-infinis/arche-de-mnemosyne/quiz.json';
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/quiz.json': quiz,
@@ -17,8 +17,7 @@ describe('Arche de Mnémosyne declarative game', () => {
       (action) => action.type === 'game.configure',
     );
     const input = descriptor?.input as
-      | { properties?: Record<string, unknown> }
-      | undefined;
+      { properties?: Record<string, unknown> } | undefined;
     const category = input?.properties?.categoryId as {
       label?: string;
       values?: string[];
@@ -144,7 +143,10 @@ describe('Arche de Mnémosyne declarative game', () => {
       engine: { round: { number: number; starterPlayerId: number } };
       turn: { currentPlayerId: number };
     };
-    expect(state.engine.round).toMatchObject({ number: 2, starterPlayerId: -2 });
+    expect(state.engine.round).toMatchObject({
+      number: 2,
+      starterPlayerId: -2,
+    });
     expect(state.turn.currentPlayerId).toBe(-2);
     expect(
       new DeclarativeGameRuntime(gameDefinition).getBotActions(

@@ -1,6 +1,6 @@
+import { withCatalogWriteLock } from './mnemo-catalog-lock';
 import { randomUUID } from 'crypto';
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
 import {
@@ -8,7 +8,10 @@ import {
   type BusinessClock,
 } from '../../../../shared/interfaces/public-api';
 import { businessMsToIso } from '@shared/utils/public-api';
-import { readEnvironment } from '../../../../platform/config/public-api';
+import {
+  MNEMO_QUIZ_STORAGE,
+  type MnemoQuizStorageConfig,
+} from '../config/mnemo-quiz-storage.config';
 import { writeFileAtomicSync } from '../../../../platform/filesystem/public-api';
 import type {
   MnemoQuestionStatus,
@@ -31,16 +34,24 @@ const MAX_MNEMO_CATEGORY_NAME_LENGTH = 255;
 export class MnemoQuizStoreService
   implements OnModuleInit, AdminMnemoQuizStorePort
 {
-  constructor(@Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock) {}
+  constructor(
+    @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
+    @Inject(MNEMO_QUIZ_STORAGE)
+    private readonly storage: MnemoQuizStorageConfig,
+  ) {}
 
-  private readonly filePath = resolveStoragePath();
+  private get filePath(): string {
+    return this.storage.filePath;
+  }
   private data: MnemoQuizStoreData = { categories: [], questions: [] };
 
   onModuleInit(): void {
-    this.load();
+    if (fs.existsSync(this.filePath)) this.load();
+    else this.mutate(() => undefined);
   }
 
   getSnapshot(): MnemoQuizStoreData {
+    this.load();
     return structuredClone(this.data);
   }
 
@@ -66,105 +77,126 @@ export class MnemoQuizStoreService
   }
 
   createCategory(name: string): MnemoQuizCategory {
-    const normalized = requireText(
-      name,
-      'Nom de categorie requis',
-      MAX_MNEMO_CATEGORY_NAME_LENGTH,
-    );
-    const category = {
-      id: this.uniqueCategoryId(slugify(normalized)),
-      name: normalized,
-    };
-    assertCapacity(this.data, 1, 0);
-    this.data.categories.push(category);
-    this.persist();
-    return structuredClone(category);
+    return this.mutate(() => {
+      const normalized = requireText(
+        name,
+        'Nom de categorie requis',
+        MAX_MNEMO_CATEGORY_NAME_LENGTH,
+      );
+      const category = {
+        id: this.uniqueCategoryId(slugify(normalized)),
+        name: normalized,
+      };
+      assertCapacity(this.data, 1, 0);
+      this.data.categories.push(category);
+      return structuredClone(category);
+    });
   }
 
   renameCategory(categoryId: string, name: string): MnemoQuizCategory {
-    const category = this.requireCategory(categoryId);
-    category.name = requireText(
-      name,
-      'Nom de categorie requis',
-      MAX_MNEMO_CATEGORY_NAME_LENGTH,
-    );
-    this.persist();
-    return structuredClone(category);
+    return this.mutate(() => {
+      const category = this.requireCategory(categoryId);
+      category.name = requireText(
+        name,
+        'Nom de categorie requis',
+        MAX_MNEMO_CATEGORY_NAME_LENGTH,
+      );
+      return structuredClone(category);
+    });
   }
 
   deleteCategory(categoryId: string): void {
-    const category = this.requireCategory(categoryId);
-    this.data.categories = this.data.categories.filter(
-      (candidate) => candidate.id !== category.id,
-    );
-    const now = this.nowIso();
-    for (const question of this.data.questions) {
-      if (question.categoryId === category.id) {
-        question.status = 'trash';
-        question.updatedAt = now;
+    return this.mutate(() => {
+      const category = this.requireCategory(categoryId);
+      this.data.categories = this.data.categories.filter(
+        (candidate) => candidate.id !== category.id,
+      );
+      const now = this.nowIso();
+      for (const question of this.data.questions) {
+        if (question.categoryId === category.id) {
+          question.status = 'trash';
+          question.updatedAt = now;
+        }
       }
-    }
-    this.persist();
+    });
   }
 
   createQuestion(input: MnemoQuestionInput): MnemoQuizQuestion {
-    this.requireCategory(input.categoryId);
-    const now = this.nowIso();
-    const question: MnemoQuizQuestion = {
-      id: randomUUID(),
-      categoryId: input.categoryId,
-      question: requireText(input.question, 'Question requise'),
-      correct: requireText(input.correct, 'Bonne réponse requise'),
-      wrong1: requireText(input.wrong1, 'Trois mauvaises réponses requises'),
-      wrong2: requireText(input.wrong2, 'Trois mauvaises réponses requises'),
-      wrong3: requireText(input.wrong3, 'Trois mauvaises réponses requises'),
-      status: input.status,
-      createdAt: now,
-      updatedAt: now,
-    };
-    assertCapacity(this.data, 0, 1);
-    this.data.questions.push(question);
-    this.persist();
-    return structuredClone(question);
+    return this.mutate(() => {
+      this.requireCategory(input.categoryId);
+      const now = this.nowIso();
+      const question: MnemoQuizQuestion = {
+        id: randomUUID(),
+        categoryId: input.categoryId,
+        question: requireText(input.question, 'Question requise'),
+        correct: requireText(input.correct, 'Bonne réponse requise'),
+        wrong1: requireText(input.wrong1, 'Trois mauvaises réponses requises'),
+        wrong2: requireText(input.wrong2, 'Trois mauvaises réponses requises'),
+        wrong3: requireText(input.wrong3, 'Trois mauvaises réponses requises'),
+        status: input.status,
+        createdAt: now,
+        updatedAt: now,
+      };
+      assertCapacity(this.data, 0, 1);
+      this.data.questions.push(question);
+      return structuredClone(question);
+    });
   }
 
   updateQuestion(
     questionId: string,
     patch: MnemoQuestionPatch,
   ): MnemoQuizQuestion {
-    const question = this.requireQuestion(questionId);
-    if (patch.categoryId !== undefined) {
-      this.requireCategory(patch.categoryId);
-      question.categoryId = patch.categoryId;
-    }
-    if (patch.question !== undefined)
-      question.question = requireText(patch.question, 'Question requise');
-    if (patch.correct !== undefined)
-      question.correct = requireText(patch.correct, 'Bonne réponse requise');
-    if (patch.wrong1 !== undefined)
-      question.wrong1 = requireText(patch.wrong1, 'Mauvaise réponse requise');
-    if (patch.wrong2 !== undefined)
-      question.wrong2 = requireText(patch.wrong2, 'Mauvaise réponse requise');
-    if (patch.wrong3 !== undefined)
-      question.wrong3 = requireText(patch.wrong3, 'Mauvaise réponse requise');
-    if (patch.status !== undefined) question.status = patch.status;
-    question.updatedAt = this.nowIso();
-    this.persist();
-    return structuredClone(question);
+    return this.mutate(() => {
+      const question = this.requireQuestion(questionId);
+      if (patch.categoryId !== undefined) {
+        this.requireCategory(patch.categoryId);
+        question.categoryId = patch.categoryId;
+      }
+      if (patch.question !== undefined)
+        question.question = requireText(patch.question, 'Question requise');
+      if (patch.correct !== undefined)
+        question.correct = requireText(patch.correct, 'Bonne réponse requise');
+      if (patch.wrong1 !== undefined)
+        question.wrong1 = requireText(patch.wrong1, 'Mauvaise réponse requise');
+      if (patch.wrong2 !== undefined)
+        question.wrong2 = requireText(patch.wrong2, 'Mauvaise réponse requise');
+      if (patch.wrong3 !== undefined)
+        question.wrong3 = requireText(patch.wrong3, 'Mauvaise réponse requise');
+      if (patch.status !== undefined) question.status = patch.status;
+      question.updatedAt = this.nowIso();
+      return structuredClone(question);
+    });
   }
 
   deleteQuestion(questionId: string): void {
-    const question = this.requireQuestion(questionId);
-    this.data.questions = this.data.questions.filter(
-      (candidate) => candidate.id !== question.id,
-    );
-    this.persist();
+    return this.mutate(() => {
+      const question = this.requireQuestion(questionId);
+      this.data.questions = this.data.questions.filter(
+        (candidate) => candidate.id !== question.id,
+      );
+    });
+  }
+
+  private mutate<T>(work: () => T): T {
+    return withCatalogWriteLock(this.filePath, () => {
+      this.load();
+      const previous = structuredClone(this.data);
+      try {
+        const result = work();
+        this.persist();
+        return result;
+      } catch (error) {
+        this.data = previous;
+        throw error;
+      }
+    });
   }
 
   private load(): void {
     fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
     if (!fs.existsSync(this.filePath)) {
-      this.persist();
+      this.data = parseStoreData(JSON.stringify(this.storage.seed));
       return;
     }
     if (fs.statSync(this.filePath).size > 4 * 1024 * 1024) {
@@ -216,30 +248,6 @@ export class MnemoQuizStoreService
   private nowIso(): string {
     return businessMsToIso(this.clock.now());
   }
-}
-
-function resolveStoragePath(): string {
-  const configured = readEnvironment('MNEMO_QUIZ_PATH').trim();
-  if (configured) return path.resolve(configured);
-  const projectData = path.resolve(
-    process.cwd(),
-    'src/game/games/vents-infinis/arche-de-mnemosyne/quiz.json',
-  );
-  if (readEnvironment('NODE_ENV').toLowerCase() !== 'production')
-    return projectData;
-  const persistent = path.join(
-    os.homedir(),
-    '.local',
-    'share',
-    'lemonde-de-lila',
-    'arche-de-mnemosyne',
-    'quiz.json',
-  );
-  if (!fs.existsSync(persistent) && fs.existsSync(projectData)) {
-    fs.mkdirSync(path.dirname(persistent), { recursive: true });
-    fs.copyFileSync(projectData, persistent);
-  }
-  return persistent;
 }
 
 function parseStoreData(source: string): MnemoQuizStoreData {

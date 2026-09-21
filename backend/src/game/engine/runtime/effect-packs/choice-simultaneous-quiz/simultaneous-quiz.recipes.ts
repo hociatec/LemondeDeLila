@@ -1,16 +1,16 @@
+import { quizCatalog } from './simultaneous-quiz.catalog';
 import { gameInput } from '../../actions/game-input-schema';
 import { thresholdVictory } from '../../automation/threshold-victory';
 import { defineConfiguration } from '../../configuration/configuration-kit';
 import type {
   SimultaneousQuizConfig,
   SimultaneousQuizProgram,
-  SimultaneousQuizSourceQuestion,
 } from './program';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction } from '../../definitions/game-definition-builders';
 import { defineEvent } from '../../events/game-event-definition';
 import { setupPlayingPhases } from '../../kits/phase-kit';
-import { quiz, type QuizQuestion } from '../../kits/quiz-kit';
+import { quiz } from '../../kits/quiz-kit';
 import { simultaneousAnswers } from '../../patterns/gameplay-pattern-round-economy';
 import { rejectRule } from '../../../../core/domain/errors/game-domain.errors';
 
@@ -24,31 +24,8 @@ const QUESTIONS_IN_ROUND_COUNTER =
 
 export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
   const program = structuredClone(source);
-  const categories = program.categories
-    .map((category) => ({ ...category }))
-    .sort((left, right) => left.name.localeCompare(right.name, 'fr'));
-  const questions = program.questions
-    .filter((question) => question.status === 'validated')
-    .map(toQuizQuestion);
-  const banks = [
-    { id: 'all', questions },
-    ...categories.map((category) => ({
-      id: category.id,
-      questions: questions.filter(
-        (_question, index) =>
-          program.questions.filter((item) => item.status === 'validated')[index]
-            ?.categoryId === category.id,
-      ),
-    })),
-  ].filter((bank) => bank.questions.length > 0);
+  const { banks, categoryIds, categoryLabels } = quizCatalog(program);
   const phases = setupPlayingPhases<State>();
-  const categoryIds = banks.map((bank) => bank.id);
-  const categoryLabels = Object.fromEntries([
-    ['all', 'Toutes les catégories'],
-    ...categories
-      .filter((category) => categoryIds.includes(category.id))
-      .map((category) => [category.id, category.name]),
-  ]) as Record<(typeof categoryIds)[number], string>;
   const quizStarted = defineEvent({
     type: 'quiz.started',
     data: gameInput.object({
@@ -56,45 +33,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
     }),
   });
   const config = defineConfiguration<State, SimultaneousQuizConfig>({
-    input: gameInput.object({
-      categoryId: gameInput.label(
-        'Catégorie de questions',
-        gameInput.enum(categoryIds, { labels: categoryLabels }),
-      ),
-      questionsPerRound: gameInput.label(
-        'Questions par manche',
-        gameInput.number({ integer: true, min: 1, max: 50 }),
-      ),
-      targetPoints: gameInput.label(
-        'Score à atteindre',
-        gameInput.number({ integer: true, min: 1, max: 200 }),
-      ),
-      useTimer: gameInput.label('Utiliser un chronomètre', gameInput.boolean()),
-      timerSeconds: gameInput.label(
-        'Durée d’une question (secondes)',
-        gameInput.number({ integer: true, min: 5, max: 300 }),
-      ),
-      interQuestionSeconds: gameInput.label(
-        'Pause entre deux questions (secondes)',
-        gameInput.number({ integer: true, min: 0, max: 60 }),
-      ),
-      correctSoloPoints: gameInput.label(
-        'Points si une seule bonne réponse',
-        gameInput.number({ integer: true, min: -50, max: 50 }),
-      ),
-      correctMultiPoints: gameInput.label(
-        'Points si plusieurs bonnes réponses',
-        gameInput.number({ integer: true, min: -50, max: 50 }),
-      ),
-      wrongPoints: gameInput.label(
-        'Points en cas de mauvaise réponse',
-        gameInput.number({ integer: true, min: -50, max: 50 }),
-      ),
-      timeoutPoints: gameInput.label(
-        'Points en cas de temps écoulé',
-        gameInput.number({ integer: true, min: -50, max: 50 }),
-      ),
-    }),
+    input: quizConfigurationInput(categoryIds, categoryLabels),
     defaults: program.defaults,
     phase: phases.initialPhase,
     permission: 'owner',
@@ -254,7 +193,9 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       ctx.match.finish({ winners: [winnerId], reason: 'target-score' });
       return;
     }
-    if (ctx.counters.get(QUESTIONS_IN_ROUND_COUNTER) >= questionsPerRound(values)) {
+    if (
+      ctx.counters.get(QUESTIONS_IN_ROUND_COUNTER) >= questionsPerRound(values)
+    ) {
       ctx.counters.set(QUESTIONS_IN_ROUND_COUNTER, 0);
       ctx.round.end();
       ctx.round.next();
@@ -264,8 +205,18 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       const nextPlayerId = nextDrawerId(ctx);
       if (nextPlayerId != null) ctx.turn.to(nextPlayerId);
     }
+    const nextDrawer = ctx.players.current();
     ctx.scheduler.schedule(NEXT_QUESTION_TIMER, {
       afterMs: values.interQuestionSeconds * 1_000,
+      ...(nextDrawer?.isBot
+        ? {
+            action: {
+              type: 'draw',
+              payload: {},
+              meta: { actorId: nextDrawer.id },
+            },
+          }
+        : {}),
     });
   }
 
@@ -276,14 +227,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
     config,
     events: [quizStarted],
     patterns: [simultaneousAnswers<State>()],
-    components: banks.map((bank) =>
-      quiz.bank({
-        id: bank.id,
-        questions: bank.questions,
-        shuffle: true,
-        repeat: true,
-      }),
-    ),
+    components: quizComponents(banks),
     chooseBot: (availableActions: readonly string[], ctx: Context) => {
       if (availableActions.includes('answer'))
         return {
@@ -326,27 +270,59 @@ function currentSession(ctx: Context) {
   return session?.phase === 'closed' ? null : session;
 }
 
-function toQuizQuestion(
-  question: SimultaneousQuizSourceQuestion,
-): QuizQuestion {
-  const choices = [
-    question.correct,
-    question.wrong1,
-    question.wrong2,
-    question.wrong3,
-  ];
-  const offset = stableOffset(question.id, choices.length);
-  return {
-    id: question.id,
-    prompt: question.question,
-    choices: [...choices.slice(offset), ...choices.slice(0, offset)],
-    answerIndex: (choices.length - offset) % choices.length,
-  };
+function quizComponents(banks: ReturnType<typeof quizCatalog>['banks']) {
+  return banks.map((bank) =>
+    quiz.bank({
+      id: bank.id,
+      questions: bank.questions,
+      shuffle: true,
+      repeat: true,
+      shuffleChoices: true,
+    }),
+  );
 }
 
-function stableOffset(value: string, modulo: number): number {
-  let hash = 0;
-  for (const character of value)
-    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  return hash % modulo;
+function quizConfigurationInput(
+  categoryIds: string[],
+  categoryLabels: Record<string, string>,
+) {
+  return gameInput.object({
+    categoryId: gameInput.label(
+      'Catégorie de questions',
+      gameInput.enum(categoryIds, { labels: categoryLabels }),
+    ),
+    questionsPerRound: gameInput.label(
+      'Questions par manche',
+      gameInput.number({ integer: true, min: 1, max: 50 }),
+    ),
+    targetPoints: gameInput.label(
+      'Score à atteindre',
+      gameInput.number({ integer: true, min: 1, max: 200 }),
+    ),
+    useTimer: gameInput.label('Utiliser un chronomètre', gameInput.boolean()),
+    timerSeconds: gameInput.label(
+      'Durée d’une question (secondes)',
+      gameInput.number({ integer: true, min: 5, max: 300 }),
+    ),
+    interQuestionSeconds: gameInput.label(
+      'Pause entre deux questions (secondes)',
+      gameInput.number({ integer: true, min: 0, max: 60 }),
+    ),
+    correctSoloPoints: gameInput.label(
+      'Points si une seule bonne réponse',
+      gameInput.number({ integer: true, min: -50, max: 50 }),
+    ),
+    correctMultiPoints: gameInput.label(
+      'Points si plusieurs bonnes réponses',
+      gameInput.number({ integer: true, min: -50, max: 50 }),
+    ),
+    wrongPoints: gameInput.label(
+      'Points en cas de mauvaise réponse',
+      gameInput.number({ integer: true, min: -50, max: 50 }),
+    ),
+    timeoutPoints: gameInput.label(
+      'Points en cas de temps écoulé',
+      gameInput.number({ integer: true, min: -50, max: 50 }),
+    ),
+  });
 }

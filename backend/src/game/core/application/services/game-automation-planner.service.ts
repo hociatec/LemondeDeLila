@@ -48,8 +48,9 @@ export class GameAutomationPlannerService {
       if (automaticPlan.dueAtMs <= gameNowMs()) return automaticPlan;
     }
     const pendingBotPlayerId = this.pendingBotPlayerId(state);
+    let botPlan: AutomationPlan | null = null;
     if (pendingBotPlayerId != null) {
-      return this.botPlan(
+      botPlan = this.botPlan(
         handler,
         state,
         pendingBotPlayerId,
@@ -61,9 +62,20 @@ export class GameAutomationPlannerService {
     const currentPlayer = (state.players ?? []).find(
       (player) => player.id === currentPlayerId,
     );
-    if (currentPlayer?.isBot && currentPlayerId != null)
-      return this.botPlan(handler, state, currentPlayerId, roundNumber, false);
-    return this.availableBotPlan(handler, state, roundNumber) ?? automaticPlan;
+    if (!botPlan && currentPlayer?.isBot && currentPlayerId != null)
+      botPlan = this.botPlan(
+        handler,
+        state,
+        currentPlayerId,
+        roundNumber,
+        false,
+      );
+    botPlan ??= this.availableBotPlan(handler, state, roundNumber);
+    if (!botPlan) return automaticPlan;
+    // Never postpone an existing deadline behind a bot's thinking delay.
+    return automaticPlan && automaticPlan.dueAtMs <= botPlan.dueAtMs
+      ? automaticPlan
+      : botPlan;
   }
 
   private pendingBotPlayerId(state: GameState): number | null {
@@ -90,7 +102,8 @@ export class GameAutomationPlannerService {
     playerId: number,
     roundNumber: number,
     pendingChoice: boolean,
-    suggested = this.botRunner.suggestForHandler(handler, state, playerId) ?? [],
+    suggested = this.botRunner.suggestForHandler(handler, state, playerId) ??
+      [],
   ): AutomationPlan | null {
     if (suggested.length === 0 || suggested.length > 128) return null;
     const rawChoiceId = state.pending?.data?.choiceId;
@@ -116,9 +129,17 @@ export class GameAutomationPlannerService {
   ): AutomationPlan | null {
     for (const player of state.players ?? []) {
       if (!player.isBot) continue;
-      const suggested = this.botRunner.suggestForHandler(handler, state, player.id) ?? [];
+      const suggested =
+        this.botRunner.suggestForHandler(handler, state, player.id) ?? [];
       if (suggested.length === 0) continue;
-      return this.botPlan(handler, state, player.id, roundNumber, true, suggested);
+      return this.botPlan(
+        handler,
+        state,
+        player.id,
+        roundNumber,
+        true,
+        suggested,
+      );
     }
     return null;
   }
@@ -133,10 +154,7 @@ export class GameAutomationPlannerService {
     // A bot opening a new game waits for the dedicated start delay. Once play
     // has begun, the standard delay applies after a human or another bot.
     if (!lastAction) return this.botSettings.getBotStartDelayMs();
-    if (
-      lastAction.actorId === botPlayerId &&
-      isDrawAction(lastAction.type)
-    ) {
+    if (lastAction.actorId === botPlayerId && isDrawAction(lastAction.type)) {
       return this.botSettings.getBotDrawDelayMs();
     }
     return this.botSettings.getBotTurnDelayMs();

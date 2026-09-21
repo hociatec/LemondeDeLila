@@ -19,7 +19,11 @@ import {
   projectOwnershipKitState,
   type OwnershipDefinition,
 } from '../kits/ownership-kit';
-import type { QuizDefinition } from '../kits/quiz-kit';
+import {
+  quizSessionChoices,
+  type QuizDefinition,
+  type QuizSessionState,
+} from '../kits/quiz-kit';
 import type { TrackDefinition } from '../kits/movement-kit';
 import type { DiceDefinition } from '../kits/dice-kit';
 import type { GridDefinition } from '../kits/grid-kit';
@@ -320,7 +324,7 @@ function projectQuizKit(
             bankId: session.bankId,
             question: publicQuizQuestion(
               quizDefinitions.get(session.bankId),
-              session.questionId,
+              session,
             ),
             participantPlayerIds: [...session.participantPlayerIds],
             answeredPlayerIds: Object.keys(session.answers).map(Number),
@@ -382,15 +386,15 @@ function projectDiceSet(
 
 function publicQuizQuestion(
   definition: QuizDefinition | undefined,
-  questionId: string,
+  session: QuizSessionState,
 ): { id: string; prompt: string; choices: readonly string[] } {
   const question = definition?.questions.find(
-    (candidate) => candidate.id === questionId,
+    (candidate) => candidate.id === session.questionId,
   );
-  if (!question) return { id: questionId, prompt: '', choices: [] };
+  if (!question) return { id: session.questionId, prompt: '', choices: [] };
   return {
     id: question.id,
     prompt: question.prompt,
-    choices: [...question.choices],
+    choices: quizSessionChoices(question, session),
   };
 }
