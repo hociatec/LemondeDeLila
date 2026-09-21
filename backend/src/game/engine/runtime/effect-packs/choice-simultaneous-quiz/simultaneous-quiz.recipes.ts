@@ -229,6 +229,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
           payload: {},
           meta: { actorId: nextDrawer.id },
         },
+        visibility: { kind: 'internal' },
       });
   }
 

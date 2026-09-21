@@ -59,12 +59,10 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         return true;
     }
     // A projected game state can already contain the next run's pawn choice
-    // while the room is still in setup. Until the room confirms its start,
-    // Enter belongs exclusively to the stable room game-zone activation.
+    // while the room is still in setup. Never let gameplay shortcuts start
+    // or alter that pending run: they need an authoritative started state.
     if (!roomStarted_)
     {
-        if (keyCode == WXK_SPACE || keyCode == WXK_NUMPAD_SPACE)
-            return BeginRoomStart();
         return false;
     }
     if (awaitingStartedState_)
