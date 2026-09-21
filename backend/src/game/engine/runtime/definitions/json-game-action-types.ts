@@ -72,6 +72,7 @@ export type JsonGameRecipe =
   | 'choice-simultaneous-quiz-draw'
   | 'choice-simultaneous-quiz-answer'
   | 'choice-simultaneous-quiz-timeout'
+  | 'choice-simultaneous-quiz-ready'
   | 'board-path-walls-move'
   | 'board-path-walls-place-wall'
   | 'choice-story-challenge-roll'

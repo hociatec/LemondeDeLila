@@ -31,6 +31,7 @@ export const effectPack = defineJsonEffectPack({
     'choice-simultaneous-quiz-draw': compiled.draw,
     'choice-simultaneous-quiz-answer': compiled.answer,
     'choice-simultaneous-quiz-timeout': compiled.timeout,
+    'choice-simultaneous-quiz-ready': compiled.ready,
   }),
   patterns: (compiled) => compiled.patterns,
 });
