@@ -54,10 +54,13 @@ void GamePlayPanel::SetRoomStarted(bool started, int)
     {
         if (becameStarted)
         {
-            // Refresh the authoritative started run. The server rejects a
-            // stale command safely, whereas blocking every key here can leave
-            // the player permanently unable to play if a notification is lost.
-            awaitingStartedState_ = false;
+            // The room notification reaches the client before the game-state
+            // projection for the new run. Do not let a rapid Enter (or any
+            // game shortcut) execute against the preceding setup projection:
+            // it has an obsolete version and can have no active turn yet.
+            // ApplyState releases this lock when the authoritative started
+            // projection arrives; F5 remains a recovery path if it is lost.
+            awaitingStartedState_ = true;
             awaitingStartedRunId_ = 0;
             inputRequestSlot_.Cancel();
             inputSubmissionGuard_.Reset();
