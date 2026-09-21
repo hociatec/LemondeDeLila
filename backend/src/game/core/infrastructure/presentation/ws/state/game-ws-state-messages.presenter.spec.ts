@@ -37,7 +37,7 @@ describe('GameWsStateMessagesPresenter', () => {
     ).toEqual([undefined, undefined]);
   });
 
-  it('leaves the quiz result to the question workflow', () => {
+  it('announces the revealed correct answer once in the history', () => {
     const event = {
       id: 'quiz-result:0',
       type: 'game.message',
@@ -67,6 +67,8 @@ describe('GameWsStateMessagesPresenter', () => {
       {} as never,
     );
 
-    expect((state.events as any).recent[0].data.message).toBeUndefined();
+    expect((state.events as any).recent[0].data.message).toBe(
+      'La bonne réponse était « Paris ».',
+    );
   });
 });
