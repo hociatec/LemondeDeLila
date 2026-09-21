@@ -39,7 +39,7 @@
       "targetPoints": 20,
       "useTimer": true,
       "timerSeconds": 30,
-      "interQuestionSeconds": 15,
+      "interQuestionSeconds": 0,
       "correctSoloPoints": 2,
       "correctMultiPoints": 1,
       "wrongPoints": 0,

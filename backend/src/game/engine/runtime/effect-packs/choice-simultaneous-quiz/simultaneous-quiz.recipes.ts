@@ -218,17 +218,18 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       if (nextPlayerId != null) ctx.turn.to(nextPlayerId);
     }
     const nextDrawer = ctx.players.current();
-    // The ready action refreshes every client when the pause ends. A bot is
-    // made ready immediately; its actual draw is then paced centrally by
-    // GameAutomationPlannerService with the configured bot draw delay.
-    ctx.scheduler.schedule(NEXT_QUESTION_TIMER, {
-      afterMs: nextDrawer?.isBot ? 0 : values.interQuestionSeconds * 1_000,
-      action: {
-        type: 'ready',
-        payload: {},
-        meta: { actorId: nextDrawer?.id ?? null },
-      },
-    });
+    // A human can draw immediately after the answer is revealed. A bot is
+    // made ready by a zero-delay task, then its actual draw is paced centrally
+    // by GameAutomationPlannerService with the configured bot draw delay.
+    if (nextDrawer?.isBot)
+      ctx.scheduler.schedule(NEXT_QUESTION_TIMER, {
+        afterMs: 0,
+        action: {
+          type: 'ready',
+          payload: {},
+          meta: { actorId: nextDrawer.id },
+        },
+      });
   }
 
   return {
