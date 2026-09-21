@@ -16,15 +16,13 @@ import type {
 import type {
   GameEvent,
   GameSnapshot,
-  GameTimeline,
 } from '../../../../application/models/game-event.model';
 import type { GameState } from '../../../../application/models/game-state.model';
 import {
-  appendGameTimelineCommit,
   assertGameStateSize,
   createGameTimeline,
-  replayTimeline,
 } from '../../../../application/services/game-timeline';
+import { appendSqlTimeline, replaySqlTimeline } from './game-session-timeline';
 import { GameSessionEntity } from '../entities/game-session.entity';
 import { GameSessionEventEntity } from '../entities/game-session-event.entity';
 import { GameSessionSnapshotEntity } from '../entities/game-session-snapshot.entity';
@@ -61,8 +59,6 @@ function nextSessionState(
  */
 @Injectable()
 export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
-  private static readonly maxTimelineEvents = 10_000;
-  private static readonly maxTimelineSnapshots = 1_000;
   private readonly snapshotPolicy: Readonly<GameSnapshotPolicy>;
 
   constructor(
@@ -138,29 +134,16 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
       }
 
       const next = nextSessionState(row, commit);
-      const previousTimeline = await this.timeline(
+      await appendSqlTimeline(
         manager,
-        commit.roomId,
-        commit.gameType,
+        commit,
         row.state,
-      );
-      const timeline = appendGameTimelineCommit({
-        timeline: previousTimeline,
-        previous: row.state,
         next,
-        pendingEvents: commit.pendingEvents,
-        occurredAtMs: commit.occurredAtMs,
-        snapshotPolicy: this.snapshotPolicy,
-      });
+        this.snapshotPolicy,
+      );
       row.version = next.version;
       row.state = next;
       await repository.save(row);
-      await this.persistTimelineAppend(
-        manager,
-        commit,
-        previousTimeline,
-        timeline,
-      );
       return {
         committed: true,
         version: next.version,
@@ -276,92 +259,15 @@ export class GameSessionTypeormStore implements GameStateStore, GameEventStore {
     ) {
       throw new RangeError('Invalid replay sequence');
     }
-    const row = await this.repository.findOne({ where: { roomId, gameType } });
-    return row
-      ? replayTimeline(
-          await this.timeline(
-            this.repository.manager,
-            roomId,
-            gameType,
-            row.state,
-          ),
-          untilSequence,
-        )
-      : null;
-  }
-
-  private async persistTimelineAppend(
-    manager: EntityManager,
-    commit: GameStateCommit,
-    previousTimeline: GameTimeline,
-    timeline: GameTimeline,
-  ): Promise<void> {
-    const previousSequence = previousTimeline.events.at(-1)?.seq ?? 0;
-    const addedEvents = timeline.events.filter(
-      (event) => event.seq > previousSequence,
-    );
-    if (addedEvents.length > 0) {
-      await manager.getRepository(GameSessionEventEntity).save(
-        addedEvents.map((event) =>
-          Object.assign(new GameSessionEventEntity(), {
-            roomId: commit.roomId,
-            gameType: commit.gameType,
-            seq: event.seq,
-            version: event.version,
-            event,
-          }),
-        ),
-      );
-    }
-    const previousSnapshotSequence =
-      previousTimeline.snapshots.at(-1)?.seq ?? -1;
-    const addedSnapshots = timeline.snapshots.filter(
-      (snapshot) => snapshot.seq > previousSnapshotSequence,
-    );
-    if (addedSnapshots.length > 0) {
-      await manager.getRepository(GameSessionSnapshotEntity).save(
-        addedSnapshots.map((snapshot) =>
-          Object.assign(new GameSessionSnapshotEntity(), {
-            roomId: commit.roomId,
-            gameType: commit.gameType,
-            seq: snapshot.seq,
-            version: snapshot.version,
-            state: snapshot.state,
-          }),
-        ),
-      );
-    }
-  }
-
-  private async timeline(
-    manager: EntityManager,
-    roomId: number,
-    gameType: string,
-    fallbackState: GameState,
-  ): Promise<GameTimeline> {
-    const [eventRows, snapshotRows] = await Promise.all([
-      manager.getRepository(GameSessionEventEntity).find({
+    return this.repository.manager.transaction(async (manager) => {
+      const row = await manager.getRepository(GameSessionEntity).findOne({
         where: { roomId, gameType },
-        order: { seq: 'ASC' },
-        take: GameSessionTypeormStore.maxTimelineEvents,
-      }),
-      manager.getRepository(GameSessionSnapshotEntity).find({
-        where: { roomId, gameType },
-        order: { seq: 'ASC' },
-        take: GameSessionTypeormStore.maxTimelineSnapshots,
-      }),
-    ]);
-    const snapshots = snapshotRows.map((row) => ({
-      seq: row.seq,
-      version: row.version,
-      state: structuredClone(row.state),
-    }));
-    const initial = snapshots[0] ?? createGameTimeline(fallbackState).initial;
-    return {
-      initial,
-      events: eventRows.map((row) => structuredClone(row.event)),
-      snapshots: snapshots.length > 0 ? snapshots : [initial],
-    };
+        lock: { mode: 'pessimistic_read' },
+      });
+      return row
+        ? replaySqlTimeline(manager, roomId, gameType, untilSequence)
+        : null;
+    });
   }
 
   private async clearTimeline(

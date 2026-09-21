@@ -2,8 +2,8 @@ import { compileJsonGame } from '../../../engine/json/public-api';
 import type { DeclarativeState } from '../../../engine/runtime/state/declarative-state';
 import { testGame } from '../../../engine/testing/public-api';
 
-import document from './game.json';
-import manifest from './manifest.json';
+import document from '../../../games/vents-sacres/lama/game.json';
+import manifest from '../../../games/vents-sacres/lama/manifest.json';
 
 const gameDefinition = compileJsonGame(manifest, document);
 type LamaCard = 1 | 2 | 3 | 4 | 5 | 6 | 'LAMA';
@@ -163,16 +163,22 @@ describe('LAMA declarative game', () => {
   it('ends the turn when an optional post-draw play has no legal card', async () => {
     let exercised = false;
     for (let seed = 1; seed <= 200; seed += 1) {
-      const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(seed);
+      const game = testGame(gameDefinition)
+        .players(['Lila', 'Mina'])
+        .seed(seed);
       await game.start();
       await game.as(1).do('game.configure', { allowPlayAfterDraw: true });
 
       const actor = game.state().turn?.currentPlayerId;
-      if (actor == null || game.availableActions(actor).includes('cards-discard-penalty-play'))
+      if (
+        actor == null ||
+        game.availableActions(actor).includes('cards-discard-penalty-play')
+      )
         continue;
 
       await game.as(actor).do('draw', {});
-      if (game.availableActions(actor).includes('cards-discard-penalty-play')) continue;
+      if (game.availableActions(actor).includes('cards-discard-penalty-play'))
+        continue;
 
       expect(game.state().turn?.currentPlayerId).not.toBe(actor);
       exercised = true;

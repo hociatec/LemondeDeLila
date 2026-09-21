@@ -15,6 +15,8 @@ export type QuizDefinition = {
   readonly id: string;
   readonly questions: readonly QuizQuestion[];
   readonly shuffle?: boolean;
+  /** Shuffle answer positions separately for every question session. */
+  readonly shuffleChoices?: boolean;
   /** Start a new shuffled pass when every question has been used. */
   readonly repeat?: boolean;
   readonly autoReveal?: 'all-answered' | 'manual';
@@ -30,9 +32,11 @@ export type QuizSessionState = {
   phase: 'answering' | 'revealed' | 'closed';
   correctAnswerIndex?: number;
   scored: boolean;
+  /** Private mapping from displayed positions to catalogue positions. */
+  choiceOrder?: number[];
 };
 
-export type QuizSession = QuizSessionState & {
+export type QuizSession = Omit<QuizSessionState, 'choiceOrder'> & {
   question: Omit<QuizQuestion, 'answerIndex'>;
 };
 
@@ -149,6 +153,15 @@ export class GameQuizController {
       );
       if (
         !question ||
+        (session.choiceOrder != null &&
+          (session.choiceOrder.length !== question.choices.length ||
+            new Set(session.choiceOrder).size !== question.choices.length ||
+            session.choiceOrder.some(
+              (index) =>
+                !Number.isInteger(index) ||
+                index < 0 ||
+                index >= question.choices.length,
+            ))) ||
         Object.values(session.answers).some(
           (answer) =>
             !Number.isInteger(answer) ||
@@ -170,7 +183,9 @@ export class GameQuizController {
     let cursor = this.state.cursors[bankId] ?? 0;
     if (cursor >= order.length && definition.repeat && order.length > 0) {
       const questionIds = definition.questions.map((question) => question.id);
-      order = definition.shuffle ? this.random.shuffle(questionIds) : questionIds;
+      order = definition.shuffle
+        ? this.random.shuffle(questionIds)
+        : questionIds;
       cursor = 0;
       this.state.orders[bankId] = order;
       this.state.cursors[bankId] = cursor;
@@ -214,6 +229,13 @@ export class GameQuizController {
       answers: {},
       phase: 'answering',
       scored: false,
+      ...(this.definition(bankId).shuffleChoices
+        ? {
+            choiceOrder: this.random.shuffle(
+              question.choices.map((_, index) => index),
+            ),
+          }
+        : {}),
     };
     this.state.sessions[session.id] = session;
     this.emit('quiz.asked', {
@@ -258,7 +280,7 @@ export class GameQuizController {
       });
     }
     session.answers[String(playerId)] = answerIndex;
-    const correct = question.answerIndex === answerIndex;
+    const correct = this.correctIndex(session) === answerIndex;
     this.emit(
       'quiz.answered',
       { sessionId, playerId },
@@ -288,12 +310,12 @@ export class GameQuizController {
     if (session.phase !== 'revealed') {
       const question = this.question(session.bankId, session.questionId);
       session.phase = 'revealed';
-      session.correctAnswerIndex = question.answerIndex;
+      session.correctAnswerIndex = this.correctIndex(session);
       this.score(session);
       this.emit('quiz.revealed', {
         sessionId,
         questionId: question.id,
-        correctAnswerIndex: question.answerIndex,
+        correctAnswerIndex: session.correctAnswerIndex,
         answers: structuredClone(session.answers),
       });
     }
@@ -344,11 +366,10 @@ export class GameQuizController {
   private score(session: QuizSessionState): void {
     const scoring = this.definition(session.bankId).scoring;
     if (!scoring || session.scored) return;
-    const question = this.question(session.bankId, session.questionId);
     const deltas: Record<string, number> = {};
     for (const playerId of session.participantPlayerIds) {
       const delta =
-        session.answers[String(playerId)] === question.answerIndex
+        session.answers[String(playerId)] === this.correctIndex(session)
           ? scoring.correct
           : (scoring.incorrect ?? 0);
       if (delta !== 0) this.addScore(playerId, delta);
@@ -360,15 +381,33 @@ export class GameQuizController {
 
   private publicSession(session: QuizSessionState): QuizSession {
     const question = this.question(session.bankId, session.questionId);
+    const publicState = structuredClone(session);
+    delete publicState.choiceOrder;
     return {
-      ...structuredClone(session),
+      ...publicState,
       question: {
         id: question.id,
         prompt: question.prompt,
-        choices: [...question.choices],
+        choices: quizSessionChoices(question, session),
       },
     };
   }
+
+  private correctIndex(session: QuizSessionState): number {
+    const question = this.question(session.bankId, session.questionId);
+    return (
+      session.choiceOrder?.indexOf(question.answerIndex) ?? question.answerIndex
+    );
+  }
+}
+
+export function quizSessionChoices(
+  question: QuizQuestion,
+  session: QuizSessionState,
+): string[] {
+  return session.choiceOrder
+    ? session.choiceOrder.map((index) => question.choices[index])
+    : [...question.choices];
 }
 
 function deepFreeze<TValue>(value: TValue): TValue {

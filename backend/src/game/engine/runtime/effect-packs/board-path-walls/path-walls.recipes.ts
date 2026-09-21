@@ -270,7 +270,7 @@ export function pathWallsRules(source: PathWallsProgram) {
       phase: phases.initialPhase,
       permission: 'owner',
       ui: {
-        title: 'Configuration de Corridor',
+        title: 'Configuration de la partie',
         submitLabel: 'Choisir les pions',
       },
       onConfigured: ({ config, ctx }) => start(config.wallsPerPlayer, ctx),

@@ -50,7 +50,9 @@ describe('projectGameKits', () => {
       component: 'quiz.bank',
       id: 'repeatable',
       repeat: true,
-      questions: [{ id: 'q', prompt: 'Question', choices: ['A', 'B'], answerIndex: 0 }],
+      questions: [
+        { id: 'q', prompt: 'Question', choices: ['A', 'B'], answerIndex: 0 },
+      ],
     });
 
     expect(quiz.next('repeatable')?.id).toBe('q');

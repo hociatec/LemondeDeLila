@@ -3,14 +3,17 @@ import { DeclarativeGameRuntime } from '../engine/runtime/declarative-game.runti
 import { GameRegistryService } from '../core/application/services/game-registry.service';
 import { GameRegistryModule } from '../engine/infrastructure/module/game-registry.module';
 import { discoverGameDefinitions } from './game-module-discovery';
+import { mnemoContentRuntime } from './mnemo-content-runtime';
 
 const GAME_RUNTIME_CATALOG = Symbol('GAME_RUNTIME_CATALOG');
 
 @Module({})
 export class GamePluginsModule {
   static forRoot(): DynamicModule {
-    const runtimes = discoverGameDefinitions().map(
-      (definition) => new DeclarativeGameRuntime(definition),
+    const runtimes = discoverGameDefinitions().map((definition) =>
+      definition.id === 'arche-de-mnemosyne'
+        ? mnemoContentRuntime(new DeclarativeGameRuntime(definition))
+        : new DeclarativeGameRuntime(definition),
     );
     const runtimeCatalogProvider: Provider = {
       provide: GAME_RUNTIME_CATALOG,

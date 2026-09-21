@@ -7,8 +7,8 @@ import { compileJsonGame } from '../../../engine/json/public-api';
 import { GameWsStateMessagesPresenter } from '../../../core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter';
 import { projectEventsForPlayer } from '../../../engine/runtime/projection/game-system-view';
 
-import document from './game.json';
-import manifest from './manifest.json';
+import document from '../../../games/vents-sacres/corridor/game.json';
+import manifest from '../../../games/vents-sacres/corridor/manifest.json';
 
 const gameDefinition = compileJsonGame(manifest, document);
 

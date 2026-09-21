@@ -28,6 +28,11 @@ import { AdminRolesService } from '../application/use-cases/admin-roles/admin-ro
 import { AdminRoomsService } from '../application/use-cases/admin-rooms/admin-rooms.service';
 import { AdminStatsService } from '../application/use-cases/admin-stats/admin-stats.service';
 import { MnemoQuizStoreService } from '../infrastructure/storage/mnemo-quiz-store.service';
+import { MNEMO_QUIZ_STORAGE } from '../infrastructure/config/mnemo-quiz-storage.config';
+import {
+  mnemoQuizCatalogPath,
+  mnemoQuizSeed,
+} from '../../../game/composition-api';
 import { ADMIN_MNEMO_QUIZ_STORE_PORT } from '../application/ports/admin-mnemo-quiz-store.port';
 import { AdminUserBanPolicyService } from '../application/use-cases/admin-users/admin-user-ban-policy.service';
 import { AdminUserPasswordService } from '../application/use-cases/admin-users/admin-user-password.service';
@@ -36,6 +41,13 @@ import { AdminUsersCommandService } from '../application/use-cases/admin-users/a
 import { AdminUsersQueryService } from '../application/use-cases/admin-users/admin-users-query.service';
 
 export const ADMIN_USE_CASE_PROVIDERS = [
+  {
+    provide: MNEMO_QUIZ_STORAGE,
+    useFactory: () => ({
+      filePath: mnemoQuizCatalogPath(),
+      seed: mnemoQuizSeed(),
+    }),
+  },
   MnemoQuizStoreService,
   {
     provide: ADMIN_MNEMO_QUIZ_STORE_PORT,

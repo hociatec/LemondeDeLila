@@ -5,7 +5,9 @@ import { GameAutomationPlannerService } from './game-automation-planner.service'
 describe('GameAutomationPlannerService', () => {
   const planner = new GameAutomationPlannerService(
     {
-      suggestForHandler: jest.fn().mockReturnValue([{ type: 'play', payload: {} }]),
+      suggestForHandler: jest
+        .fn()
+        .mockReturnValue([{ type: 'play', payload: {} }]),
     } as never,
     {
       getBotStartDelayMs: () => 101,
@@ -34,7 +36,9 @@ describe('GameAutomationPlannerService', () => {
     const planner = new GameAutomationPlannerService(
       {
         suggestForHandler: jest.fn((_handler, _state, playerId) =>
-          playerId === 2 ? [{ type: 'answer', payload: { answerIndex: 1 } }] : [],
+          playerId === 2
+            ? [{ type: 'answer', payload: { answerIndex: 1 } }]
+            : [],
         ),
       } as never,
       {
@@ -76,9 +80,7 @@ describe('GameAutomationPlannerService', () => {
   });
 });
 
-function state(
-  lastAction?: { type: string; actorId: number },
-): GameState {
+function state(lastAction?: { type: string; actorId: number }): GameState {
   return {
     status: 'playing',
     phase: 'turn',
@@ -88,8 +90,6 @@ function state(
       { id: 2, username: 'Bot', isBot: true },
     ],
     turn: { currentPlayerId: 2, direction: 1, turnNumber: 4 },
-    ...(lastAction
-      ? { automation: { lastAction } }
-      : {}),
+    ...(lastAction ? { automation: { lastAction } } : {}),
   };
 }
