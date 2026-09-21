@@ -12,6 +12,8 @@ type SequentialPawnSelectionOptions<TState extends object> = {
   setId: string;
   choiceId: string;
   automatic?: boolean;
+  /** Assign bot pawns during setup instead of waiting for realtime automation. */
+  automaticBots?: boolean;
   announceRequest?: boolean;
   groups?: readonly PawnSelectionGroup[];
   label?: (pawn: PawnDefinition) => string;
@@ -67,10 +69,15 @@ export function sequentialPawnSelection<TState extends object>(
     const participants = orderedPawnSelectionParticipants(playerIds, ctx);
     if (options.automatic) {
       for (const playerId of participants) {
-        const pawn = ctx.pawns.available(options.setId)[0];
-        if (!pawn) throw new GameRuleViolationError('PAWN_UNAVAILABLE');
-        assignPawnSelection(options.setId, pawn.id, playerId, ctx);
-        options.assigned?.({ playerId, pawnId: pawn.id, ctx });
+        const choice = automaticPawnSelectionChoice(options, ctx);
+        assignPawnSelection(
+          options.setId,
+          choice,
+          playerId,
+          ctx,
+          options.groups,
+        );
+        options.assigned?.({ playerId, pawnId: choice, ctx });
       }
       completePawnSelection(options, ctx);
       return;
@@ -79,11 +86,7 @@ export function sequentialPawnSelection<TState extends object>(
       completePawnSelection(options, ctx);
       return;
     }
-    const first = participants[0];
-    if (first != null) {
-      ctx.turn.to(first, { announce: false });
-      requestPawnSelection(options, first, participants, ctx);
-    }
+    startPawnSelection(options, participants, ctx);
   };
   const resolve = (
     playerId: number,
@@ -93,13 +96,7 @@ export function sequentialPawnSelection<TState extends object>(
     assignPawnSelection(options.setId, pawnId, playerId, ctx, options.groups);
     options.assigned?.({ playerId, pawnId, ctx });
     const participantIds = pawnSelectionContinuationPlayers(ctx);
-    const next = nextPawnSelectionPlayer(options.setId, participantIds, ctx);
-    if (next) {
-      ctx.turn.to(next.id, { announce: false });
-      requestPawnSelection(options, next.id, participantIds, ctx);
-      return;
-    }
-    completePawnSelection(options, ctx);
+    continuePawnSelection(options, participantIds, ctx);
   };
   const setup = (
     initialState: () => TState,
@@ -120,6 +117,69 @@ export function sequentialPawnSelection<TState extends object>(
     };
   };
   return Object.freeze({ request, requestAll, resolve, setup });
+}
+
+function continuePawnSelection<TState extends object>(
+  options: SequentialPawnSelectionOptions<TState>,
+  participantIds: readonly number[],
+  ctx: GameContext<TState>,
+): void {
+  for (;;) {
+    const next = nextPawnSelectionPlayer(options.setId, participantIds, ctx);
+    if (!next) {
+      completePawnSelection(options, ctx);
+      return;
+    }
+    if (!options.automaticBots || !next.isBot) {
+      ctx.turn.to(next.id, { announce: false });
+      requestPawnSelection(options, next.id, participantIds, ctx);
+      return;
+    }
+    const choice = automaticPawnSelectionChoice(options, ctx);
+    assignPawnSelection(options.setId, choice, next.id, ctx, options.groups);
+    options.assigned?.({ playerId: next.id, pawnId: choice, ctx });
+  }
+}
+
+function startPawnSelection<TState extends object>(
+  options: SequentialPawnSelectionOptions<TState>,
+  participantIds: readonly number[],
+  ctx: GameContext<TState>,
+): void {
+  const first = participantIds[0];
+  if (first == null) {
+    completePawnSelection(options, ctx);
+    return;
+  }
+  const player = ctx.players.all().find((candidate) => candidate.id === first);
+  if (options.automaticBots && player?.isBot) {
+    const choice = automaticPawnSelectionChoice(options, ctx);
+    assignPawnSelection(options.setId, choice, first, ctx, options.groups);
+    options.assigned?.({ playerId: first, pawnId: choice, ctx });
+    continuePawnSelection(options, participantIds, ctx);
+    return;
+  }
+  ctx.turn.to(first, { announce: false });
+  requestPawnSelection(options, first, participantIds, ctx);
+}
+
+function automaticPawnSelectionChoice<TState extends object>(
+  options: SequentialPawnSelectionOptions<TState>,
+  ctx: GameContext<TState>,
+): string {
+  if (options.groups) {
+    const available = new Set(
+      ctx.pawns.available(options.setId).map((pawn) => pawn.id),
+    );
+    const group = options.groups.find((candidate) =>
+      candidate.pawnIds.every((pawnId) => available.has(pawnId)),
+    );
+    if (!group) throw new GameRuleViolationError('PAWN_UNAVAILABLE');
+    return group.id;
+  }
+  const pawn = ctx.pawns.available(options.setId)[0];
+  if (!pawn) throw new GameRuleViolationError('PAWN_UNAVAILABLE');
+  return pawn.id;
 }
 
 function completePawnSelection<TState extends object>(

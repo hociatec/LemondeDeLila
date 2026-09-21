@@ -16,6 +16,7 @@ export function teamPawnRaceRules(source: TeamPawnRaceProgram) {
   const selection = sequentialPawnSelection<State>({
     setId: program.setId,
     choiceId: program.familyChoiceId,
+    automaticBots: true,
     groups: program.families.map((family) => ({
       id: family.id,
       label: `${family.family} (${family.habitat})`,

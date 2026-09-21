@@ -72,6 +72,31 @@ describe('Foulées Fantastiques declarative game', () => {
     expect(await game.replay()).toEqual(game.state());
   });
 
+  it('lets the human choose a family then assigns the bot an available family', async () => {
+    const game = testGame(gameDefinition)
+      .players(['Anne', { username: 'Bot', isBot: true }])
+      .seed(43);
+    await game.start();
+
+    expect(game.state().pending?.playerId).toBe(1);
+    await game.choose(1, 'oiseaux');
+
+    const kits = (game.view(1) as unknown as { kits: StableGameKitsView }).kits;
+    expect(kits.pawns?.sets.teamPawn.assignments['1']).toEqual([
+      'oiseaux:0',
+      'oiseaux:1',
+      'oiseaux:2',
+      'oiseaux:3',
+    ]);
+    expect(kits.pawns?.sets.teamPawn.assignments['-2']).toHaveLength(4);
+    expect(kits.pawns?.sets.teamPawn.assignments['-2']?.[0]).not.toMatch(
+      /^oiseaux:/,
+    );
+    expect(game.inspect.setupComplete()).toBe(true);
+    expect(game.state().pending).toBeNull();
+    expect(await game.replay()).toEqual(game.state());
+  });
+
   it('rolls deterministically without exposing move internals', async () => {
     const game = testGame(gameDefinition).players(['Anne', 'Bob']).seed(44);
     await game.start();
