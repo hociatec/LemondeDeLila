@@ -218,9 +218,12 @@ wxWindow* GamePlayPanel::RequiredInteractionTarget() const
     // Keep it directly navigable without an extra Enter to activate it.
     if (state_.kits.Dice() == nullptr && gridPanel_ != nullptr && gridPanel_->IsShown())
         if (auto* target = gridPanel_->NavigationTarget()) return target;
-    for (const auto& action : state_.actions)
-        if (action.type == "answer" && !action.disabled)
-            if (auto* target = workflowPanel_->NavigationTarget()) return target;
+    // A quiz question remains the stable navigation target while answers are
+    // collected and when the application regains focus. Do not fall back to
+    // the generic game-zone anchor merely because this viewer has already
+    // answered or a bot currently owns the turn.
+    if (state_.kits.quiz && !state_.kits.quiz->sessions.empty())
+        if (auto* target = workflowPanel_->NavigationTarget()) return target;
     return nullptr;
 }
 }
