@@ -126,6 +126,20 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
         }
     }
     if (nextKeys == rowKeys_ && nextLabels == rowLabels_) return;
+    const auto previousQuizPrompt = std::find_if(
+        rowKeys_.begin(), rowKeys_.end(), [](const std::string& key)
+        {
+            return key.starts_with("quiz:") && key.ends_with(":prompt");
+        });
+    const auto nextQuizPrompt = std::find_if(
+        nextKeys.begin(), nextKeys.end(), [](const std::string& key)
+        {
+            return key.starts_with("quiz:") && key.ends_with(":prompt");
+        });
+    const bool quizQuestionChanged = nextQuizPrompt != nextKeys.end() &&
+        (previousQuizPrompt == rowKeys_.end() ||
+         rowLabels_[static_cast<std::size_t>(std::distance(rowKeys_.begin(), previousQuizPrompt))] !=
+             nextLabels[static_cast<std::size_t>(std::distance(nextKeys.begin(), nextQuizPrompt))]);
     rows_->Clear();
     rowKeys_ = std::move(nextKeys);
     rowLabels_ = std::move(nextLabels);
@@ -133,7 +147,7 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
     if (rows_->GetCount() > 0)
     {
         const auto found = std::find(rowKeys_.begin(), rowKeys_.end(), previousKey);
-        if (found != rowKeys_.end())
+        if (!quizQuestionChanged && found != rowKeys_.end())
             rows_->SetSelection(static_cast<int>(std::distance(rowKeys_.begin(), found)));
         else
         {
