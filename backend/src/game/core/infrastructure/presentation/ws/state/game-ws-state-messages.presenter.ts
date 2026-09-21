@@ -225,7 +225,7 @@ export class GameWsStateMessagesPresenter {
   ): string {
     const correctAnswer = this.stringValue(params.correctAnswer);
     const results = Array.isArray(params.results) ? params.results : [];
-    return results
+    const outcomeMessages = results
       .slice(0, 128)
       .map((rawResult) => {
         const result = this.asRecord(rawResult);
@@ -236,13 +236,19 @@ export class GameWsStateMessagesPresenter {
         const points = this.numberValue(result.points) ?? 0;
         const score = this.quizScoreMessage(name, points);
         if (outcome === 'correct')
-          return `${name === 'Vous' ? 'Vous avez' : `${name} a`} donné la bonne réponse${answer ? ` « ${answer} »` : ''}.${score}`;
+          return `${name === 'Vous' ? 'Vous avez' : `${name} a`} donné la bonne réponse.${score}`;
         if (outcome === 'wrong')
-          return `${name === 'Vous' ? 'Vous avez' : `${name} a`} donné une mauvaise réponse${answer ? ` (« ${answer} »)` : ''}. La bonne réponse était${correctAnswer ? ` « ${correctAnswer} »` : ''}.${score}`;
+          return `${name === 'Vous' ? 'Vous avez' : `${name} a`} donné une mauvaise réponse${answer ? ` (« ${answer} »)` : ''}.${score}`;
         if (outcome === 'timeout')
-          return `${name === 'Vous' ? 'Vous n’avez' : `${name} n’a`} pas répondu. La bonne réponse était${correctAnswer ? ` « ${correctAnswer} »` : ''}.${score}`;
+          return `${name === 'Vous' ? 'Vous n’avez' : `${name} n’a`} pas répondu.${score}`;
         return '';
       })
+      .filter(Boolean)
+      .join('\n');
+    return [
+      correctAnswer ? `La bonne réponse était « ${correctAnswer} ».` : '',
+      outcomeMessages,
+    ]
       .filter(Boolean)
       .join('\n');
   }

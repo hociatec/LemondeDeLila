@@ -37,7 +37,7 @@ describe('GameWsStateMessagesPresenter', () => {
     ).toEqual(['Vous piochez une question.', 'Milou a répondu.']);
   });
 
-  it('explains each Mnémosyne quiz answer and reveals the correct answer', () => {
+  it('reveals the correct Mnémosyne quiz answer once before individual results', () => {
     const event = {
       id: 'quiz-result:0',
       type: 'game.message',
@@ -68,8 +68,9 @@ describe('GameWsStateMessagesPresenter', () => {
     );
 
     expect((state.events as any).recent[0].data.message).toBe(
-      'Vous avez donné la bonne réponse « Paris ». Vous gagnez 2 points.\n' +
-        'Milou a donné une mauvaise réponse (« Lyon »). La bonne réponse était « Paris ». Milou perd 1 point.',
+      'La bonne réponse était « Paris ».\n' +
+        'Vous avez donné la bonne réponse. Vous gagnez 2 points.\n' +
+        'Milou a donné une mauvaise réponse (« Lyon »). Milou perd 1 point.',
     );
   });
 });
