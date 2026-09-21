@@ -160,8 +160,9 @@ function activityMessage(
   }
   if (type === 'round.ended') return 'La manche est terminée.';
   if (type === 'game.finished') return 'La partie est terminée.';
-  if (type === 'quiz.asked') return 'Une nouvelle question est posée.';
-  if (type === 'quiz.revealed') return 'La réponse du quiz est révélée.';
+  // Quiz state is presented directly under the question by the gameplay UI.
+  // Do not duplicate that information in the common table history.
+  if (type === 'quiz.asked' || type === 'quiz.revealed') return '';
   if (type === 'submissions.revealed') return 'Les soumissions sont révélées.';
   if (type === 'submission.received') {
     const name = player(data.playerId);
