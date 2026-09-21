@@ -118,6 +118,7 @@ void GamePlayPanel::BindEvents()
 bool GamePlayPanel::HandleZoneActivation()
 {
     if (!IsOpen()) return false;
+    if (!hasAuthoritativeState_) return true;
     if (!roomStarted_)
         return roomStartFlowRequested_ || roomStartPending_;
     if (IsFinished()) return false;

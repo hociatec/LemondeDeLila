@@ -49,6 +49,7 @@ void GamePlayPanel::Open(
     gameType_ = std::move(gameType);
     gameName_ = std::move(gameName);
     roomStarted_ = roomStarted;
+    hasAuthoritativeState_ = false;
     awaitingStartedState_ = false;
     awaitingStartedRunId_ = 0;
     roomStartFlowRequested_ = false;
@@ -78,6 +79,7 @@ void GamePlayPanel::ResetSessionState()
     lines_.clear();
     pawnSelection_.reset();
     roomStarted_ = true;
+    hasAuthoritativeState_ = false;
     awaitingStartedState_ = false;
     awaitingStartedRunId_ = 0;
     roomStartFlowRequested_ = false;

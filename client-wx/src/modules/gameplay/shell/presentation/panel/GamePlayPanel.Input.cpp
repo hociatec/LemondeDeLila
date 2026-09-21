@@ -35,6 +35,9 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     if (event.AltDown() && keyCode == WXK_F4) return false;
     if (!IsOpen()) return false;
     if (IsFinished()) return false;
+    // The room becomes visible before its first game projection arrives.
+    // Ignore rapid game keys until there is an authoritative state to act on.
+    if (!hasAuthoritativeState_) return true;
 
     if (IsConfirmationVisible())
     {
