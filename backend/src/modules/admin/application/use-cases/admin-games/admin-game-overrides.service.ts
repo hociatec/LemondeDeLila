@@ -65,7 +65,7 @@ function normalizeGameType(value: unknown): string {
 }
 
 function normalizePlayerCount(value: number): number {
-  if (!Number.isSafeInteger(value) || value < 1 || value > 64) {
+  if (!Number.isSafeInteger(value) || value < 2 || value > 64) {
     throw new BadRequestException('Nombre de joueurs invalide.');
   }
   return value;

@@ -231,7 +231,7 @@ export class CatalogMapperService {
 
   private playerBound(value: number | undefined, fallback: number): number {
     if (!Number.isFinite(value)) return fallback;
-    return Math.max(1, Math.min(64, Math.trunc(value ?? fallback)));
+    return Math.max(2, Math.min(64, Math.trunc(value ?? fallback)));
   }
 
   private buildCategoryRefs(
