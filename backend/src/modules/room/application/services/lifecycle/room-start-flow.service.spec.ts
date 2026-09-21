@@ -147,7 +147,7 @@ describe('Room start flow', () => {
     expect(presence.broadcastPresence).toHaveBeenCalledTimes(1);
   });
 
-  it('supports games whose backend manifest explicitly permits solo play', async () => {
+  it('rejects a legacy manifest that explicitly permits solo play', async () => {
     const current = room();
     const rooms = { save: jest.fn(async (value: RoomRecord) => value) };
     const lifecycle = new RoomLifecycleService(
@@ -167,8 +167,10 @@ describe('Room start flow', () => {
       ensureOwner: jest.fn(),
     };
 
-    await expect(lifecycle.startRoom(context, 42, 1)).resolves.toBe(current);
-    expect(current.status).toBe('started');
+    await expect(lifecycle.startRoom(context, 42, 1)).rejects.toThrow(
+      'Au moins 2 participants sont requis',
+    );
+    expect(current.status).toBe('setup');
   });
 
   it('unlocks setup actions when a finished game prepares the next run', async () => {

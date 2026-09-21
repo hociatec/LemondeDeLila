@@ -3,7 +3,10 @@ import { parseStrictInteger } from '@shared/utils/public-api';
 const DEFAULT_MINIMUM_PARTICIPANTS = 2;
 
 export function resolveMinimumParticipants(value: unknown): number {
-  return parseStrictInteger(value, { min: 1 }) ?? DEFAULT_MINIMUM_PARTICIPANTS;
+  // Every table game is multiplayer. Clamp legacy catalog overrides as well
+  // as malformed manifests so a single participant can never start a match.
+  return parseStrictInteger(value, { min: DEFAULT_MINIMUM_PARTICIPANTS }) ??
+    DEFAULT_MINIMUM_PARTICIPANTS;
 }
 
 export function hasMinimumParticipants(
@@ -22,8 +25,6 @@ export function hasMinimumParticipants(
 
 export function buildMinimumParticipantsMessage(minimum: number): string {
   const required = resolveMinimumParticipants(minimum);
-  return required === 1
-    ? 'Au moins un participant est requis'
-    : `Au moins ${required} participants sont requis`;
+  return `Au moins ${required} participants sont requis`;
 }
 /** Room application capability boundary. */

@@ -138,7 +138,7 @@ describe('catalog services', () => {
     );
 
     await expect(service.execute()).resolves.toEqual([
-      expect.objectContaining({ id: 'lama', minPlayers: 1, maxPlayers: 64 }),
+      expect.objectContaining({ id: 'lama', minPlayers: 2, maxPlayers: 64 }),
     ]);
     await service.execute();
     expect(source.listGames).toHaveBeenCalledTimes(1);
