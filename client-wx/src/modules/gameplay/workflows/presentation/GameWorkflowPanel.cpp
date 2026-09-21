@@ -20,12 +20,6 @@ std::string Player(const domain::GameState& state, int id)
     return found == state.system.players.end() ? "Joueur " + std::to_string(id) : found->username;
 }
 
-std::string QuizPlayer(const domain::GameState& state, int id)
-{
-    if (state.viewerPlayerId && *state.viewerPlayerId == id) return "Vous";
-    return Player(state, id);
-}
-
 std::string SubmissionValue(
     const domain::GameState& state, const domain::GameSubmissionValue& value)
 {
@@ -70,33 +64,10 @@ void GameWorkflowPanel::Apply(const domain::GameState& state)
         for (const auto& session : state.kits.quiz->sessions)
         {
             append("quiz:" + session.id + ":prompt", session.prompt);
-            if (session.phase == "answering")
-            {
-                // Keep received answers next to their question instead of
-                // mixing them into the table history. The turn announcement
-                // already identifies who drew the question.
-                for (const int playerId : session.answeredPlayerIds)
-                {
-                    const auto player = QuizPlayer(state, playerId);
-                    append("quiz:" + session.id + ":answered:" + std::to_string(playerId),
-                        player == "Vous" ? "Votre réponse est enregistrée."
-                                           : player + " a répondu.");
-                }
-            }
             for (std::size_t index = 0; index < session.choices.size(); ++index)
             {
                 append("quiz:" + session.id + ":choice:" + std::to_string(index),
-                    std::to_string(index + 1) + ". " + session.choices[index] +
-                    (session.correctAnswerIndex == static_cast<int>(index) ? " — réponse correcte" : ""));
-            }
-            if (session.phase == "revealed" || session.phase == "closed")
-            {
-                const auto correct = session.correctAnswerIndex;
-                if (correct && *correct >= 0 &&
-                    static_cast<std::size_t>(*correct) < session.choices.size())
-                    append("quiz:" + session.id + ":result",
-                        "La bonne réponse était « " +
-                            session.choices[static_cast<std::size_t>(*correct)] + " ».");
+                    std::to_string(index + 1) + ". " + session.choices[index]);
             }
         }
     }
