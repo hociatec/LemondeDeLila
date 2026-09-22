@@ -78,14 +78,7 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             RequestRefresh();
             return true;
         }
-        // Keep the room reachable if its game-state notification is delayed.
-        // In particular, Tab must retain its normal two-zone navigation and
-        // room-level shortcuts (such as leaving) must not be trapped here.
-        if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB ||
-            key == "Q" || key == "B" || key == "W" || key == "I" ||
-            key == "R" || key == "X")
-            return false;
-        return true;
+        return ShouldCaptureWhileAwaitingStartedState(key);
     }
     if (pawnSelectionPanel_->IsActive())
     {

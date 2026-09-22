@@ -57,6 +57,18 @@ bool GamePlayPanel::ActivateSelectedQuizAnswer()
     return true;
 }
 
+bool GamePlayPanel::ShouldCaptureWhileAwaitingStartedState(
+    const std::string& normalizedKey) const
+{
+    // Keep the room reachable if its game-state notification is delayed.
+    // Tab retains its two-zone navigation and room-level shortcuts (including
+    // leaving) must not be trapped by the gameplay synchronization lock.
+    return normalizedKey != "TAB" && normalizedKey != "Q" &&
+        normalizedKey != "B" && normalizedKey != "W" &&
+        normalizedKey != "I" && normalizedKey != "R" &&
+        normalizedKey != "X";
+}
+
 bool GamePlayPanel::IsInlinePromptVisible() const
 {
     return promptPanel_ != nullptr && promptPanel_->IsActive();
