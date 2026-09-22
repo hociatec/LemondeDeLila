@@ -1,5 +1,7 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
+#include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
+
 namespace lila::modules::gameplay::presentation
 {
 wxString GamePlayPanel::BuildHeaderText() const
