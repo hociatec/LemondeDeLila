@@ -45,7 +45,7 @@ bool GamePlayPanel::BeginRoomStart()
     return true;
 }
 
-void GamePlayPanel::SetRoomStarted(bool started, int)
+void GamePlayPanel::SetRoomStarted(bool started, int runId)
 {
     const bool becameStarted = started && !roomStarted_;
     const bool becameSetup = !started && roomStarted_;
@@ -54,20 +54,36 @@ void GamePlayPanel::SetRoomStarted(bool started, int)
     {
         if (becameStarted)
         {
-            // The room notification reaches the client before the game-state
-            // projection for the new run. Do not let a rapid Enter (or any
-            // game shortcut) execute against the preceding setup projection:
-            // it has an obsolete version and can have no active turn yet.
-            // ApplyState releases this lock when the authoritative started
-            // projection arrives; F5 remains a recovery path if it is lost.
-            awaitingStartedState_ = true;
-            awaitingStartedRunId_ = 0;
-            inputRequestSlot_.Cancel();
-            inputSubmissionGuard_.Reset();
-            retryableActionCommand_.reset();
-            ClearView();
-            UpdateStatus(wxString(L"Synchronisation de la partie..."));
-            RequestRefresh();
+            const auto activeProjection = hasAuthoritativeState_ &&
+                (state_.system.match.status == "started" ||
+                 state_.system.match.status == "playing") &&
+                (runId <= 0 || state_.runId <= 0 || state_.runId == runId);
+            if (activeProjection)
+            {
+                // Game-state and room-state notifications are independent.
+                // The active projection may arrive first; keeping it avoids
+                // waiting forever for a second notification that will not
+                // necessarily be emitted.
+                awaitingStartedState_ = false;
+                awaitingStartedRunId_ = 0;
+            }
+            else
+            {
+                // The room notification reaches the client before the game-state
+                // projection for the new run. Do not let a rapid Enter (or any
+                // game shortcut) execute against the preceding setup projection:
+                // it has an obsolete version and can have no active turn yet.
+                // ApplyState releases this lock when the authoritative started
+                // projection arrives; F5 remains a recovery path if it is lost.
+                awaitingStartedState_ = true;
+                awaitingStartedRunId_ = runId;
+                inputRequestSlot_.Cancel();
+                inputSubmissionGuard_.Reset();
+                retryableActionCommand_.reset();
+                ClearView();
+                UpdateStatus(wxString(L"Synchronisation de la partie..."));
+                RequestRefresh();
+            }
         }
         roomStartFlowRequested_ = false;
         roomStartPending_ = false;
