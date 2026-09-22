@@ -199,6 +199,8 @@ export class GameWsStateMessagesPresenter {
         : `${namedPlayer} doit choisir son pion.`;
     if (messageKey === 'game.pawn.bonus-advance' && namedPlayer)
       return this.pawnBonusMessage(namedPlayer, params);
+    if (messageKey === 'game.team-pawn.moved' && namedPlayer)
+      return this.teamPawnMovedMessage(namedPlayer, params);
     if (messageKey === 'game.positions.swapped') {
       const actor = player(params.actorId);
       const target = player(params.targetId);
@@ -233,6 +235,24 @@ export class GameWsStateMessagesPresenter {
     const verb =
       namedPlayer === 'Vous' ? 'vous avancez' : `${namedPlayer} avance`;
     return `Bonus : ${verb} de ${distance}.`;
+  }
+
+  private teamPawnMovedMessage(
+    namedPlayer: string,
+    params: Record<string, unknown>,
+  ): string {
+    const pawn = scalarMessageText(params.pawnLabel) || 'le pion';
+    const position = this.numberValue(params.position);
+    if (position == null) return '';
+    if (params.enteredTrack === true)
+      return namedPlayer === 'Vous'
+        ? `Vous sortez ${pawn} et le placez en case ${position}.`
+        : `${namedPlayer} sort ${pawn} et le place en case ${position}.`;
+    const distance = this.numberValue(params.distance) ?? 0;
+    const spaces = `case${Math.abs(distance) === 1 ? '' : 's'}`;
+    return namedPlayer === 'Vous'
+      ? `Vous déplacez ${pawn} de ${distance} ${spaces} : il est en case ${position}.`
+      : `${namedPlayer} déplace ${pawn} de ${distance} ${spaces} : il est en case ${position}.`;
   }
 
   private drawnCardMessage(input: {

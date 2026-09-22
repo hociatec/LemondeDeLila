@@ -170,6 +170,13 @@ function move(
     onFinish: () =>
       ctx.match.finish({ winners: [playerId], reason: program.finishReason }),
   });
+  ctx.events.message('game.team-pawn.moved', {
+    playerId,
+    pawnLabel: pawnLabel(program, selected.pawnId),
+    distance: selected.distance,
+    position: selected.to + 1,
+    enteredTrack: selected.from < 0 && selected.to >= 0,
+  });
 }
 
 function capture(
@@ -249,9 +256,16 @@ function describe(
   const parts = value.split(':');
   const pawnIndex = Number(parts.at(-2));
   const progress = Number(parts.at(-1));
-  const familyId = ctx.pawns
-    .assigned(program.setId, playerId)[0]
-    ?.split(':')[0];
-  const family = program.families.find((item) => item.id === familyId);
-  return `${family?.pawns[pawnIndex] ?? `Pion ${pawnIndex + 1}`} vers ${progress}`;
+  const pawnId = ctx.pawns.assigned(program.setId, playerId)[pawnIndex];
+  return `${pawnLabel(program, pawnId) ?? `Pion ${pawnIndex + 1}`} vers la case ${progress + 1}`;
+}
+
+function pawnLabel(program: TeamPawnRaceProgram, pawnId: string | undefined) {
+  const [familyId, rawIndex] = pawnId?.split(':') ?? [];
+  const pawnIndex = Number(rawIndex);
+  return (
+    program.families.find((family) => family.id === familyId)?.pawns[pawnIndex] ??
+    pawnId ??
+    'Pion'
+  );
 }

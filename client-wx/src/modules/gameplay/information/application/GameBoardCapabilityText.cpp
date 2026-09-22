@@ -33,6 +33,31 @@ std::optional<std::string> BuildBoardCapabilityText(
     const domain::GameState& state, const std::string& capability)
 {
     std::ostringstream out;
+    if (capability == "position" && state.kits.pawns)
+    {
+        if (!state.viewerPlayerId) return "Vos pions sont indisponibles.";
+        for (const auto& pawn : state.kits.pawns->pawns)
+        {
+            if (pawn.ownerId != state.viewerPlayerId) continue;
+            out << pawn.label << " : ";
+            if (pawn.position < 0) out << "en réserve";
+            else out << "case " << pawn.position + 1;
+            out << ".\n";
+        }
+        return out.str().empty() ? "Vos pions sont indisponibles." : out.str();
+    }
+    if (capability == "positions" && state.kits.pawns)
+    {
+        for (const auto& pawn : state.kits.pawns->pawns)
+        {
+            if (!pawn.ownerId || pawn.ownerId == state.viewerPlayerId) continue;
+            out << Player(state, *pawn.ownerId) << " — " << pawn.label << " : ";
+            if (pawn.position < 0) out << "en réserve";
+            else out << "case " << pawn.position + 1;
+            out << ".\n";
+        }
+        return out.str().empty() ? "Les pions adverses sont indisponibles." : out.str();
+    }
     if (capability == "race-ranking" && state.kits.movement)
     {
         for (const auto& track : state.kits.movement->tracks)
