@@ -109,7 +109,14 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         if (choicesList_->IsShown() && focused == choicesList_)
             return ActivateSelectedPendingChoice();
         if (focused == workflowPanel_->NavigationTarget())
-            return ActivateSelectedQuizAnswer();
+        {
+            if (ActivateSelectedQuizAnswer()) return true;
+            // The question prompt is selected when a quiz appears. Consume
+            // Enter there so it cannot escape to RoomPanel and trigger an
+            // unrelated table action before the player chose an answer.
+            UpdateStatus(wxString(L"Sélectionnez une réponse avant de valider."), false, true);
+            return true;
+        }
         if (focused == gridPanel_->NavigationTarget())
             return ActivateSelectedGridCell();
         if (focused == linesList_ && linesList_->IsShown())
