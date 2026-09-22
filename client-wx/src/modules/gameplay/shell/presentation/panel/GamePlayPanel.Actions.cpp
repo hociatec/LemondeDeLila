@@ -155,7 +155,15 @@ bool GamePlayPanel::ActivateSelectedPendingChoice()
         PrepareAndExecuteAction(std::move(action));
         return true;
     }
-    const int selected = choicesList_->GetSelection();
+    // This control uses wxLB_EXTENDED for both single and multiple workflows.
+    // GetSelection() always returns wxNOT_FOUND for that style on Windows.
+    wxArrayInt selections;
+    if (choicesList_->GetSelections(selections) != 1)
+    {
+        UpdateStatus(wxString(L"S\u00e9lectionnez un seul choix."), true, true);
+        return true;
+    }
+    const int selected = selections[0];
     if (selected == wxNOT_FOUND || selected < 0 ||
         static_cast<std::size_t>(selected) >= state_.pending->choices.size())
         return false;
