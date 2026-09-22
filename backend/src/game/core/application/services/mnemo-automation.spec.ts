@@ -47,41 +47,29 @@ function automation() {
   };
 }
 
-it('schedules the next bot draw using the configured bot draw delay', async () => {
+it('schedules a bot answer for the question started automatically', async () => {
   const game = await testGame(definition)
     .players(['Human', { username: 'Bot', isBot: true }])
     .start();
   await game.as(1).do('game.configure', document.simultaneousQuiz.defaults);
-  await game.as(1).do('draw', {});
   await game.as(1).do('answer', { answerIndex: 0 });
   await game.as(-2).do('answer', { answerIndex: 0 });
   const { resolve, clock, scope } = automation();
   const state = game.state();
-  const ready = resolve(state);
-  expect(ready).toMatchObject({
-    dueAtMs: clock.nowMs(),
-    actions: [{ type: 'ready', meta: { actorId: -2 } }],
+  const answer = resolve(state);
+  expect(answer).toMatchObject({
+    dueAtMs: clock.nowMs() + 1000,
+    actions: [{ type: 'answer', meta: { actorId: -2 } }],
   });
-  if (!ready) throw new Error('Missing ready action');
+  if (!answer) throw new Error('Missing bot answer');
+  clock.advanceBy(1000);
   const next = runtime.applyActions(
     state,
-    ready.actions,
+    answer.actions,
     scope.create(state, -2, clock),
   );
-  const draw = resolve(next);
-  expect(draw).toMatchObject({
-    dueAtMs: clock.nowMs() + 250,
-    actions: [{ type: 'draw', meta: { actorId: -2 } }],
-  });
-  if (!draw) throw new Error('Missing next draw');
-  clock.advanceBy(250);
-  const drawn = runtime.applyActions(
-    next,
-    draw.actions,
-    scope.create(next, -2, clock),
-  );
   expect(
-    runtime.exposeStateForUser(drawn, 1, scope.create(drawn, 1, clock)),
+    runtime.exposeStateForUser(next, 1, scope.create(next, 1, clock)),
   ).toMatchObject({
     kits: { quiz: { sessions: { [sessionId]: { phase: 'answering' } } } },
   });
@@ -92,7 +80,6 @@ it('keeps the deadline after the current bot answers and resolves human timeouts
     .players([{ username: 'Bot', isBot: true }, 'Human'])
     .start();
   await game.as(2).do('game.configure', document.simultaneousQuiz.defaults);
-  await game.as(-1).do('draw', {});
   await game.as(-1).do('answer', { answerIndex: 0 });
   const { resolve, clock, scope } = automation();
   const state = game.state();
@@ -111,7 +98,7 @@ it('keeps the deadline after the current bot answers and resolves human timeouts
   expect(
     runtime.exposeStateForUser(next, 2, scope.create(next, 2, clock)),
   ).toMatchObject({
-    kits: { quiz: { sessions: { [sessionId]: { phase: 'closed' } } } },
+    kits: { quiz: { sessions: { [sessionId]: { phase: 'answering' } } } },
   });
 });
 
@@ -124,7 +111,6 @@ it('lets another bot answer after the current bot and prioritizes an earlier dea
     ])
     .start();
   await game.as(3).do('game.configure', document.simultaneousQuiz.defaults);
-  await game.as(-1).do('draw', {});
   await game.as(-1).do('answer', { answerIndex: 0 });
   const { resolve, clock } = automation();
   expect(resolve(game.state())).toMatchObject({

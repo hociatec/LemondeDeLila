@@ -50,6 +50,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       const starterId = ctx.round.starter();
       if (starterId != null) ctx.turn.to(starterId, { announce: false });
       quizStarted.emit(ctx, { categoryId: values.categoryId });
+      askQuestion(ctx);
     },
   });
   const draw = defineEmptyAction<State>({
@@ -60,32 +61,7 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       currentSession(ctx) == null &&
       (!ctx.scheduler.has(NEXT_QUESTION_TIMER) ||
         ctx.scheduler.isDue(NEXT_QUESTION_TIMER)),
-    execute: ({ ctx }) => {
-      const values = mnemoConfig(ctx);
-      ctx.counters.add(QUESTIONS_IN_ROUND_COUNTER, 1);
-      const session = ctx.quiz.ask(
-        values.categoryId,
-        ctx.players.all().map((player) => player.id),
-        { sessionId: SESSION },
-      );
-      if (!session) rejectRule('Le stock de questions Mnémosyne est épuisé');
-      ctx.scheduler.cancel(NEXT_QUESTION_TIMER);
-      if (values.useTimer)
-        ctx.scheduler.schedule(QUESTION_TIMER, {
-          afterMs: values.timerSeconds * 1_000,
-          action: {
-            type: 'timeout',
-            payload: {},
-            meta: { actorId: ctx.players.current()?.id },
-          },
-        });
-      ctx.events.message('game.quiz.started', {
-        sessionId: SESSION,
-        questionId: session.question.id,
-        round: ctx.round.number,
-        playerId: ctx.players.current()?.id,
-      });
-    },
+    execute: ({ ctx }) => askQuestion(ctx),
   });
   const answer = defineAction<State, { answerIndex: number }>({
     input: gameInput.object({
@@ -129,16 +105,41 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
     },
   });
   const ready = defineEmptyAction<State>({
-    documentation: 'Signale que la pause entre deux questions est terminée.',
+    documentation: 'Affiche automatiquement la question suivante après la pause.',
     available: ({ ctx }) =>
       phases.is(ctx, 'playing') &&
       currentSession(ctx) == null &&
       ctx.scheduler.has(NEXT_QUESTION_TIMER) &&
       ctx.scheduler.isDue(NEXT_QUESTION_TIMER),
-    execute: ({ ctx }) => {
-      ctx.scheduler.cancel(NEXT_QUESTION_TIMER);
-    },
+    execute: ({ ctx }) => askQuestion(ctx),
   });
+
+  function askQuestion(ctx: Context): void {
+    const values = mnemoConfig(ctx);
+    ctx.counters.add(QUESTIONS_IN_ROUND_COUNTER, 1);
+    const session = ctx.quiz.ask(
+      values.categoryId,
+      ctx.players.all().map((player) => player.id),
+      { sessionId: SESSION },
+    );
+    if (!session) rejectRule('Le stock de questions Mnémosyne est épuisé');
+    ctx.scheduler.cancel(NEXT_QUESTION_TIMER);
+    if (values.useTimer)
+      ctx.scheduler.schedule(QUESTION_TIMER, {
+        afterMs: values.timerSeconds * 1_000,
+        action: {
+          type: 'timeout',
+          payload: {},
+          meta: { actorId: ctx.players.current()?.id },
+        },
+      });
+    ctx.events.message('game.quiz.started', {
+      sessionId: SESSION,
+      questionId: session.question.id,
+      round: ctx.round.number,
+      playerId: ctx.players.current()?.id,
+    });
+  }
 
   function resolveQuestion(timedOutIds: number[], ctx: Context): void {
     const session = ctx.quiz.reveal(SESSION);
@@ -219,20 +220,17 @@ export function simultaneousQuizRules(source: SimultaneousQuizProgram) {
       const nextPlayerId = nextDrawerId(ctx);
       if (nextPlayerId != null) ctx.turn.to(nextPlayerId);
     }
-    const nextDrawer = ctx.players.current();
-    // A human can draw immediately after the answer is revealed. A bot is
-    // made ready by a zero-delay task, then its actual draw is paced centrally
-    // by GameAutomationPlannerService with the configured bot draw delay.
-    if (nextDrawer?.isBot)
+    if (values.interQuestionSeconds > 0)
       ctx.scheduler.schedule(NEXT_QUESTION_TIMER, {
-        afterMs: 0,
+        afterMs: values.interQuestionSeconds * 1_000,
         action: {
           type: 'ready',
           payload: {},
-          meta: { actorId: nextDrawer.id },
+          meta: { actorId: ctx.players.current()?.id },
         },
         visibility: { kind: 'internal' },
       });
+    else askQuestion(ctx);
   }
 
   return {

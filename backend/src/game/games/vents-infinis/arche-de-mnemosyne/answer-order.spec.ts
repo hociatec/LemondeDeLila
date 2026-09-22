@@ -28,7 +28,6 @@ it('resolves answers in participant order even when bots answer in reverse order
     wrongPoints: 0,
     timeoutPoints: -1,
   });
-  await game.as(-1).do('draw', {});
   for (const id of [-3, -2, -1])
     await game.as(id).do('answer', { answerIndex: 0 });
   const resolved = (await game.events()).find(
