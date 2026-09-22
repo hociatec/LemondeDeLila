@@ -1,11 +1,15 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "3",
   "snapshotMigrations": [
     {
       "fromVersion": "contes-et-cacahuetes@content:32cd4133",
       "toVersion": "1"
+    },
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
     }
   ],
   "category": "JeuxDePlateaux",
@@ -43,10 +47,14 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": ["playing"]
+      "transitions": [
+        "playing"
+      ]
     },
     "playing": {
-      "actions": ["roll"],
+      "actions": [
+        "roll"
+      ],
       "terminal": true
     }
   },
@@ -86,6 +94,144 @@
     },
     "decks": {
       "$content": "content/catalogue.json#/decks"
-    }
+    },
+    "finishReason": "story-road-finished",
+    "diceId": "main",
+    "deckRoles": {
+      "reward": "bonus",
+      "penalty": "malus",
+      "event": "surprise",
+      "story": "conte"
+    },
+    "tokens": [
+      {
+        "id": "parchemin",
+        "resource": "choice-story-challenge.reroll-token"
+      },
+      {
+        "id": "amulette",
+        "resource": "choice-story-challenge.malus-shield"
+      },
+      {
+        "id": "cape",
+        "status": "choice-story-challenge.cape"
+      },
+      {
+        "id": "cle-or",
+        "status": "choice-story-challenge.key-of-gold"
+      },
+      {
+        "id": "feuille",
+        "status": "choice-story-challenge.replace-one"
+      },
+      {
+        "id": "livre-envers",
+        "status": "choice-story-challenge.reverse-next-turn"
+      },
+      {
+        "id": "dragon-papier",
+        "status": "choice-story-challenge.protect-next-malus"
+      }
+    ],
+    "targetRules": {
+      "move-other-two": {
+        "kind": "move",
+        "delta": 2
+      },
+      "swap-next-turns": {
+        "kind": "swap-turns"
+      },
+      "give-bonus": {
+        "kind": "give-card",
+        "deck": "bonus"
+      },
+      "swap-positions": {
+        "kind": "swap-positions"
+      },
+      "wish-swap": {
+        "kind": "swap-positions"
+      },
+      "steal-token": {
+        "kind": "steal-token"
+      },
+      "song-steal": {
+        "kind": "steal-token"
+      },
+      "travelling-book": {
+        "kind": "follow",
+        "delta": 1
+      },
+      "gold-key": {
+        "kind": "option",
+        "optionId": "gold-key-type"
+      }
+    },
+    "optionRules": {
+      "song": [
+        {
+          "id": "move-three",
+          "kind": "move",
+          "delta": 3
+        },
+        {
+          "id": "steal-bonus",
+          "kind": "target",
+          "effect": "song-steal"
+        }
+      ],
+      "wish": [
+        {
+          "id": "move-two",
+          "kind": "move",
+          "delta": 2
+        },
+        {
+          "id": "swap",
+          "kind": "target",
+          "effect": "wish-swap"
+        },
+        {
+          "id": "draw-bonus",
+          "kind": "draw",
+          "deck": "bonus",
+          "target": "actor"
+        }
+      ],
+      "gold-key-type": [
+        {
+          "id": "bonus",
+          "kind": "draw",
+          "deck": "bonus",
+          "target": "selected",
+          "consumeStatus": "choice-story-challenge.key-of-gold"
+        },
+        {
+          "id": "malus",
+          "kind": "draw",
+          "deck": "malus",
+          "target": "selected",
+          "consumeStatus": "choice-story-challenge.key-of-gold"
+        }
+      ]
+    },
+    "giftTargetEffect": "give-bonus",
+    "conditionalTargetEffect": "gold-key",
+    "numberOptions": [
+      1,
+      2,
+      3
+    ],
+    "numberAdvance": 1,
+    "choiceDrawCount": 2,
+    "randomDrawDecks": [
+      "bonus",
+      "malus",
+      "surprise"
+    ],
+    "randomDrawCount": 2,
+    "forcedRoll": 1,
+    "replacementRoll": 4,
+    "lowRollThreshold": 4,
+    "protectionAdvance": 1
   }
 }

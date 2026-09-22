@@ -7,6 +7,7 @@ const ts = require('typescript');
 
 const BACKEND = path.resolve(__dirname, '..');
 const RUNTIME = path.join(BACKEND, 'src/game/engine/runtime');
+const RULES = path.join(BACKEND, 'src/game/rules');
 const ALLOWED_PROCESS_CACHES = new Set([
   'content/content-immutability.ts:immutableCollections:WeakSet',
   'definitions/compiled-game-definition-brand.ts:compiledDefinitions:WeakSet',
@@ -74,10 +75,14 @@ function auditFactory() {
 }
 
 function main() {
-  const violations = [...inspectTopLevelMutableState(), ...auditFactory()];
+  const violations = [
+    ...inspectTopLevelMutableState(),
+    ...inspectTopLevelMutableState(RULES, new Set()),
+    ...auditFactory(),
+  ];
   if (violations.length) throw new Error(violations.join('\n'));
   console.log(
-    `game-state-ownership-audit: OK (${productionFiles(RUNTIME).length} runtime production files, 4 reviewed immutable registries/caches)`,
+    `game-state-ownership-audit: OK (${productionFiles(RUNTIME).length} runtime + ${productionFiles(RULES).length} rule production files, 4 reviewed immutable registries/caches)`,
   );
 }
 

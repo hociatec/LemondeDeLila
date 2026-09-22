@@ -13,7 +13,7 @@ import { decodeWsEnvelope } from '../../../../../platform/ws/public-api';
 import { ClientUpdateQueryService } from '../../../../update/public-api';
 import { NotificationWsHandler } from './notification-ws.handler';
 import { NotificationWsSessionService } from './notification-ws-session.service';
-import { operationalSettings } from '../../../../../platform/config/public-api';
+import { notificationReconnectDelay } from './notification-reconnect-delay';
 import { isBoundedJsonInput } from '../../../../../platform/validation/public-api';
 
 @Injectable()
@@ -74,7 +74,7 @@ export class NotificationWsConnectionService {
             },
           });
           await new Promise((resolve) =>
-            setTimeout(resolve, operationalSettings.wsReconnectBackoffMs),
+            setTimeout(resolve, notificationReconnectDelay()),
           );
           client.close(4406, 'update required');
           return;

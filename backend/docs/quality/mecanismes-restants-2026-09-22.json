@@ -1,0 +1,82 @@
+{
+  "date": "2026-09-22",
+  "scope": "Remaining configurable mechanisms",
+  "engine": {
+    "productionFiles": 220,
+    "gameReferences": 0,
+    "dependencyViolations": 0
+  },
+  "packs": 38,
+  "reconfiguredProfiles": 16,
+  "unknownIdentityGames": 39,
+  "initialFullRun": {
+    "suites": 437,
+    "passedSuites": 436,
+    "tests": 2574,
+    "passedTests": 2573,
+    "exitCode": 1,
+    "log": "remaining-mechanisms-full-tests.log",
+    "failure": "pirates-en-vadrouille replay campaign loaded an intermediate implementation"
+  },
+  "correctiveReplay": {
+    "passed": true,
+    "seeds": [
+      0,
+      1,
+      17,
+      65535
+    ],
+    "log": "remaining-mechanisms-pirates-replay.log"
+  },
+  "newDistinctSuites": 3,
+  "newDistinctTests": 54,
+  "consolidated": {
+    "suites": 440,
+    "tests": 2628,
+    "observedFailuresRemaining": 0,
+    "singleFullGreenRun": false
+  },
+  "gameRegression": {
+    "suites": 58,
+    "tests": 256,
+    "passed": true
+  },
+  "finalResourceRegression": {
+    "suites": 3,
+    "tests": 14,
+    "passed": true
+  },
+  "typecheck": true,
+  "lint": true,
+  "build": true,
+  "appLoad": true,
+  "quality": true,
+  "sdkDeclarationFilesUnchanged": 111,
+  "json": {
+    "total": 122,
+    "unchanged": 106,
+    "changed": [
+      "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json",
+      "src/game/games/les-quatre-vents/ca-derape/game.json",
+      "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json",
+      "src/game/games/les-quatre-vents/frousse-party/game.json",
+      "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json",
+      "src/game/games/les-quatre-vents/primalis/game.json",
+      "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json",
+      "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json",
+      "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json",
+      "src/game/games/vents-dansants/cat-pattes/game.json",
+      "src/game/games/vents-dansants/entre-rites-et-lumieres/game.json",
+      "src/game/games/vents-dansants/gerard-president/game.json",
+      "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json",
+      "src/game/games/vents-dansants/olympia/game.json",
+      "src/game/games/vents-sacres/foulees-fantastiques/game.json",
+      "src/game/games/vents-sacres/jeu-oie/game.json"
+    ]
+  },
+  "limitations": [
+    "Tests cover specified cases and seeded sequences, not every data combination",
+    "One complete program per document",
+    "A novel mechanic may require a new generic operation"
+  ]
+}

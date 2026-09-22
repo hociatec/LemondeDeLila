@@ -1,4 +1,4 @@
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
 import { describeGameDefinition } from '../../../engine/runtime/definitions/runtime-descriptor';
 import { testGame } from '../../../engine/testing/public-api';

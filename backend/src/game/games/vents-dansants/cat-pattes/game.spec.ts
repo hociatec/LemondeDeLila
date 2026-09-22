@@ -1,4 +1,4 @@
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -35,28 +35,33 @@ describe('Cat Pattes declarative game', () => {
     expect(await game.replay()).toEqual(game.state());
   });
 
-  it('continues a snapshot created with the TypeScript content version', async () => {
-    const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(73);
-    await game.start();
-    await game.as(1).do('game.configure', { roundsToPlay: 2 });
-    const legacy = game.state() as ReturnType<typeof game.state> & {
-      engine: {
-        contentVersion: string;
-        kits?: {
-          cards?: { hands?: Record<string, Record<string, unknown[]>> };
+  it.each(['cat-pattes@content:b15666ae', '1', '2'])(
+    'continues a snapshot created with content version %s',
+    async (version) => {
+      const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(73);
+      await game.start();
+      await game.as(1).do('game.configure', { roundsToPlay: 2 });
+      const legacy = game.state() as ReturnType<typeof game.state> & {
+        engine: {
+          contentVersion: string;
+          contentDigest: string;
+          kits?: {
+            cards?: { hands?: Record<string, Record<string, unknown[]>> };
+          };
         };
       };
-    };
-    legacy.engine!.contentVersion = 'cat-pattes@content:b15666ae';
-    const actorId = legacy.turn!.currentPlayerId!;
+      legacy.engine!.contentVersion = version;
+      legacy.engine!.contentDigest = 'previous-content-digest';
+      const actorId = legacy.turn!.currentPlayerId!;
 
-    const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
-      legacy,
-      [{ type: 'draw', payload: {}, meta: { actorId } }],
-    ) as typeof legacy;
+      const restored = new DeclarativeGameRuntime(gameDefinition).applyActions(
+        legacy,
+        [{ type: 'draw', payload: {}, meta: { actorId } }],
+      ) as typeof legacy;
 
-    expect(restored.engine?.contentVersion).toBe('2');
-    const cards = restored.engine.kits?.cards;
-    expect(cards?.hands?.players?.[String(actorId)]).toHaveLength(7);
-  });
+      expect(restored.engine?.contentVersion).toBe('3');
+      const cards = restored.engine.kits?.cards;
+      expect(cards?.hands?.players?.[String(actorId)]).toHaveLength(7);
+    },
+  );
 });

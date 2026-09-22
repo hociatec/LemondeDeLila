@@ -7,9 +7,9 @@ import type {
   CompiledGameDefinition,
   GameActionMap,
 } from '../../../engine/runtime/definitions/game-definition';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import panierManifest from '../../../games/les-quatre-vents/panier-express/manifest.json';
-import { resolveJsonContent } from '../../../engine/json/public-api';
+import { resolveJsonContent } from '../../../rules/public-api';
 import composition from '../../../games/les-quatre-vents/panier-express/game.json';
 import board from '../../../games/les-quatre-vents/panier-express/content/board.json';
 import cards from '../../../games/les-quatre-vents/panier-express/content/cards.json';

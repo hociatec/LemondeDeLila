@@ -1,6 +1,36 @@
 import { GameRuleViolationError } from '../../../../core/domain/errors/game-domain.errors';
 import { sequentialPawnSelection } from './pawn-selection.recipes';
 
+it('validates the shared choice before assigning the pawn and completing selection', () => {
+  const complete = jest.fn();
+  const assigned = jest.fn();
+  const recipe = sequentialPawnSelection({
+    setId: 'pawns',
+    choiceId: 'choose-pawn',
+    assigned,
+    complete,
+  });
+  const ctx = {
+    pawns: { assign: jest.fn(), assigned: () => ['blue'], perPlayer: () => 1 },
+    players: { all: () => [{ id: 1 }] },
+    choice: { continuation: () => ({ pawnSelectionPlayerIds: [1] }) },
+    round: { starter: () => 1 },
+  };
+  const execution = { state: {}, actor: { id: 1 } as never, ctx: ctx as never };
+  for (const rawValue of [null, {}, '', 'x'.repeat(129)]) {
+    expect(() =>
+      recipe.choice.resolveRaw({ ...execution, rawValue }),
+    ).toThrow();
+  }
+  expect(ctx.pawns.assign).not.toHaveBeenCalled();
+  expect(complete).not.toHaveBeenCalled();
+  recipe.choice.resolveRaw({ ...execution, rawValue: 'blue' });
+  expect(ctx.pawns.assign).toHaveBeenCalledWith('pawns', 1, 'blue');
+  expect(assigned).toHaveBeenCalledWith({ playerId: 1, pawnId: 'blue', ctx });
+  expect(complete).toHaveBeenCalledWith({ ctx });
+  expect(Object.isFrozen(recipe.choice)).toBe(true);
+});
+
 it('uses the same shuffled order for round initialization and pawn selection', () => {
   const { recipe, ctx } = fixture();
   const round = { start: jest.fn() };

@@ -15,6 +15,18 @@ export class GameSessionEntity {
   @Column({ type: 'json' })
   state!: GameState;
 
+  @Column({
+    name: 'recovery_pending',
+    type: 'tinyint',
+    asExpression:
+      "COALESCE(JSON_UNQUOTE(JSON_EXTRACT(state, '$.status')) <> 'finished', 0)",
+    generatedType: 'STORED',
+    select: false,
+    insert: false,
+    update: false,
+  })
+  recoveryPending!: number;
+
   @UpdateDateColumn({ name: 'updated_at', type: 'datetime', precision: 3 })
   updatedAt!: Date;
 }

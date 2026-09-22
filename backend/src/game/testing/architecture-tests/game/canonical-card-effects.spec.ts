@@ -1,5 +1,5 @@
 import { GENERATED_GAME_PACKAGES } from '../../../composition/generated-game-registry';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 
 const catalogues = [
   ['contes-et-cacahuetes', ['storyChallenge', 'decks', 'bonus']],

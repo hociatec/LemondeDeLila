@@ -46,6 +46,12 @@ it.each([false, true])(
       { schedule: jest.fn() },
       new ApplicationShutdownService(),
       rooms,
+      {
+        acquire: async () => ({
+          isHeld: async () => true,
+          release: async () => {},
+        }),
+      },
     );
     await recovery.recover();
     expect(clear).toHaveBeenCalledWith(1, 'example', original);

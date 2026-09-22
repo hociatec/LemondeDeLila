@@ -8,14 +8,8 @@ import type { GamePattern } from './pattern-definition';
 
 type JsonState = Record<string, never>;
 type JsonActions = GameActionMap<JsonState>;
-export type JsonGameViewAugmentation = {
-  progress?: Readonly<Record<number, unknown>>;
-  currentChallengeId?: string;
-  lastRound?: unknown;
-  currentTheme?: string | null;
-  secondTheme?: string | null;
-  buildings?: Readonly<Record<number, unknown>>;
-};
+/** Extension-owned view data; reserved engine namespaces remain prohibited. */
+export type JsonGameViewAugmentation = Readonly<Record<string, unknown>>;
 
 export type JsonEffectPackHandlers = Partial<
   Pick<
@@ -35,9 +29,22 @@ export type JsonEffectPackHandlers = Partial<
   >
 >;
 
+export type JsonRecipeBotSelector = (
+  input: Parameters<
+    NonNullable<NonNullable<JsonEffectPackHandlers['bot']>['choose']>
+  >[0],
+) => { recipe: string; payload: Record<string, unknown> } | null;
+
 export type JsonEffectPackHandlerContext = Readonly<{
-  recipeBot: (recipe: string) => NonNullable<JsonEffectPackHandlers['bot']>;
-  boardBot: () => NonNullable<JsonEffectPackHandlers['bot']>;
+  selectedBot: (
+    select: JsonRecipeBotSelector,
+  ) => NonNullable<JsonEffectPackHandlers['bot']>;
+  recipeBot: (
+    recipe: string | readonly string[],
+  ) => NonNullable<JsonEffectPackHandlers['bot']>;
+  fallbackRecipeBot: (
+    preferred: string,
+  ) => NonNullable<JsonEffectPackHandlers['bot']>;
   publicStatuses: () => NonNullable<
     JsonEffectPackHandlers['playerValuesVisibility']
   >;

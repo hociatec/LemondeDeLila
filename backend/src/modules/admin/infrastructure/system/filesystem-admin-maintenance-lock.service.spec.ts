@@ -7,7 +7,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { tmpdir } from 'node:os';
+import { hostname, tmpdir } from 'node:os';
 import { FilesystemAdminMaintenanceLockService } from './filesystem-admin-maintenance-lock.service';
 
 describe('FilesystemAdminMaintenanceLockService', () => {
@@ -56,6 +56,7 @@ describe('FilesystemAdminMaintenanceLockService', () => {
         readFileSync(join(directory, 'maintenance.lock'), 'utf8'),
       );
       expect(metadata).toEqual({
+        host: hostname(),
         token: expect.any(String),
         operation: 'build',
         pid: process.pid,
@@ -90,11 +91,12 @@ describe('FilesystemAdminMaintenanceLockService', () => {
     expect(readdirSync(directory)).toEqual([]);
   });
 
-  it('recovers a lock left by a process that has already crashed', async () => {
+  it('preserves an orphan lock until coordinated operator recovery', async () => {
     writeFileSync(
       join(directory, 'maintenance.lock'),
       JSON.stringify({
         token: 'dead',
+        host: hostname(),
         operation: 'build',
         pid: 2_147_483_647,
         startedAt: Date.now(),
@@ -102,7 +104,28 @@ describe('FilesystemAdminMaintenanceLockService', () => {
     );
     await expect(
       service.runExclusive('restart', () => 'recovered'),
-    ).resolves.toBe('recovered');
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('does not infer that a remote owner is dead from a local PID lookup', async () => {
+    writeFileSync(
+      join(directory, 'maintenance.lock'),
+      JSON.stringify({
+        token: 'remote',
+        host: `${hostname()}-other`,
+        pid: 2_147_483_647,
+        startedAt: 0,
+      }),
+    );
+    const run = jest.fn();
+    await expect(service.runExclusive('build', run)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    expect(run).not.toHaveBeenCalled();
+    expect(
+      JSON.parse(readFileSync(join(directory, 'maintenance.lock'), 'utf8'))
+        .token,
+    ).toBe('remote');
   });
 
   it('refuses maintenance without Redis when distributed exclusion is required', async () => {

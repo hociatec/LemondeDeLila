@@ -8,6 +8,9 @@ const root = path.resolve(__dirname, '..', 'src');
 const DIRECT_SQL_ADAPTERS = new Set([
   'game/core/infrastructure/persistence/typeorm/mysql-game-room-lock.service.ts',
   'game/core/infrastructure/persistence/typeorm/mysql-game-active-sessions.reader.ts',
+  'modules/admin/infrastructure/persistence/typeorm/mysql-admin-maintenance-lock.service.ts',
+  // Standalone maintenance owner, intentionally outside the restarted backend.
+  'modules/admin/infrastructure/system/admin-maintenance-child.ts',
   'modules/messaging/infrastructure/persistence/typeorm/repositories/messaging-user-typeorm.repository.ts',
   'modules/presence/infrastructure/persistence/typeorm/repositories/presence-user-typeorm.repository.ts',
   'modules/room/infrastructure/persistence/typeorm/repositories/room-user-typeorm.repository.ts',
@@ -161,7 +164,9 @@ function auditFile(file) {
   visit(ast);
   if (
     /\b(GET_LOCK|RELEASE_LOCK|ON DUPLICATE KEY|JSON_EXTRACT)\b/i.test(source) &&
-    !DIRECT_SQL_ADAPTERS.has(name)
+    !DIRECT_SQL_ADAPTERS.has(name) &&
+    // Generated-column metadata mirrors the migration; it never executes SQL.
+    name !== 'game/core/infrastructure/persistence/typeorm/entities/game-session.entity.ts'
   ) {
     violations.push(`${name}: dialecte SQL spécifique hors adapter`);
   }
@@ -202,7 +207,7 @@ function containsPersistenceCall(node) {
 function audit() {
   const violations = files().flatMap(auditFile);
   const lockSource = fs.readFileSync(
-    path.join(root, [...DIRECT_SQL_ADAPTERS][0]),
+    path.join(root, 'game/core/infrastructure/persistence/typeorm/mysql-game-room-lock.service.ts'),
     'utf8',
   );
   if (!/GET_LOCK\(\?,\s*\?\)/.test(lockSource)) {

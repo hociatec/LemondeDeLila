@@ -1,83 +1,61 @@
-# Gouvernance des packs d'effets JSON du moteur
+# Gouvernance des extensions de règles JSON
 
-## Frontière
+## Frontière du moteur
 
-Le noyau générique vit dans `runtime/contracts`, `runtime/kits`,
-`runtime/effects`, `runtime/selectors`, `runtime/patterns` et dans les vingt
-fichiers revus de `runtime/recipes/gameplay`. Leur liste blanche interdit qu'une
-recette propre à un jeu soit présentée comme générique.
+Le noyau vit dans `src/game/engine`. Les 38 extensions de l'application, leurs
+schémas et leurs recettes spécialisées vivent dans `src/game/rules`.
+Le compilateur reçoit un catalogue privé par injection ; il n'importe ni ce
+catalogue, ni les jeux, ni leur composition. Le garde `engine:boundary:audit`
+vérifie les dépendances directes et transitives, y compris les types, réexports
+et alias. Il refuse aussi les codes et chemins de jeux dans les littéraux du
+moteur, y compris son infrastructure. Voir le
+[contrat de séparation](generic-engine-catalog-boundary.md).
 
-Chaque contribution runtime est un pack d'effets générique. `program.ts` ne
-contient que son contrat sérialisable ; `effect-pack.ts` possède sa clé JSON, son
-schéma, sa compilation, ses actions, ses handlers et sa validation. Les 38 packs
-enregistrés portent obligatoirement `scope: 'generic'` et un domaine parmi
-`board`, `cards`, `choice`, `collection`, `race` et `spatial`. Il n'existe plus
-de scope `game-specific` dans le contrat du moteur : cette valeur n'existe plus.
+Les primitives génériques restent dans les contrats, kits, effets, patterns et
+recettes du noyau. Les fichiers autorisés de `runtime/recipes/gameplay` sont
+explicitement recensés. La sélection générique de cartes conserve son contrat
+dans `runtime/contracts/card-selection-contract.ts`.
 
-## Composition et nouveau jeu
+## Catalogue et réutilisation
 
-Le registre est l'unique racine de composition. Il est explicite, ordonné,
-figé, sans découverte du système de fichiers, import dynamique ou I/O runtime.
-Les catalogues et compilateurs centraux sont dérivés de ses contributions et ne
-connaissent aucune clé spécifique à un jeu.
+Chaque extension possède son contrat sérialisable `program.ts`, sa clé JSON,
+son schéma, sa compilation, ses actions, ses handlers et sa validation.
+Le registre applicatif est explicite, ordonné et figé ; il ne découvre aucun
+fichier au runtime. `rules/public-api.ts` fournit le compilateur configuré au
+registre des jeux. Les documents de jeu portent les associations de leurs
+parametres aux operations disponibles.
 
-Un nouveau jeu standard compose les primitives existantes uniquement avec
-`game.json`, `manifest.json` et `rules.md`. Le test du quarantième jeu JSON-only
-et l'interdiction de TypeScript de production dans `game/games/**` protègent
-cette propriété.
+Les domaines sont `board`, `cards`, `choice`, `collection`, `race` et `spatial`.
+La valeur historique `scope: 'generic'` désigne une contribution au protocole
+commun ; elle ne prouve pas que sa mécanique convient à tout jeu. La bibliothèque
+regroupe des familles de mecanismes parametrables, exterieures au moteur.
+Le bilan de reconfiguration est decrit dans
+[les mecanismes parametrables](parameterized-game-mechanisms.md).
 
-## Généralisation fondée sur les usages
+Le rapport recalcule les consommateurs réels, les lignes de production et de
+comportement, les lignes par consommateur et la preuve de réutilisation.
+`designed` indique un seul jeu ; `demonstrated` indique plusieurs jeux.
+Ajouter un deuxième consommateur JSON ne nécessite aucune modification du
+moteur ou de la politique : un test réalise cette opération dans un catalogue
+temporaire. Une extension enregistrée sans consommateur reste refusée.
 
-Chaque pack appartient à un domaine. Le registre expose aussi une vue figée par
-domaine afin que les capacités cartes, plateau, course, collection, choix et
-spatial soient consultables séparément. Le rapport recalcule ses consommateurs
-réels, son scope, son domaine, sa raison, ses LOC, son nombre de consommateurs,
-ses LOC par consommateur et le niveau de preuve de réutilisation. `designed`
-signifie que la généricité est démontrée par le contrat mais pas encore par deux
-jeux ; `demonstrated` exige plusieurs jeux. Tout pack d'au moins 300 lignes et
-mono-consommateur exige une revue comparative détaillée (le seuil de 1 000
-lignes est donc couvert avec une marge stricte).
+Chaque programme d'au moins 300 lignes utilisé par un seul jeu exige une revue
+comparative. Une revue existante reste conservée lorsque plusieurs jeux
+réutilisent le programme. Les ressemblances structurelles entre extensions sont
+analysées par AST et doivent être extraites ou explicitement justifiées. Les
+imports d'implémentation entre extensions restent interdits : les éléments
+réutilisables remontent vers les primitives du noyau.
 
-L'analyse AST porte sur tous les fichiers de production des packs d'effets. Toute
-séquence commune à plusieurs profils doit être extraite ou recevoir une décision
-motivée dont l'empreinte est bloquante. La fin de sélection de pion commune à
-quatre variantes de course est désormais une recette partagée. Deux séquences
-restent composées à partir des kits existants : leurs cibles et leurs invariants
-post-action diffèrent, donc un wrapper n'apporterait pas de contrat commun réel.
+## Budgets et contrôles
 
-Le rapport agrège aussi les familles `race`, `collection`, `cards`, `choice`,
-`board` et `spatial`. Cette vue rend obligatoire la comparaison des variantes :
-une ressemblance structurelle nouvelle bloque tant qu'elle n'est pas extraite ou
-explicitement revue. On ne fusionne pas deux mécaniques uniquement parce qu'elles
-appartiennent au même domaine.
+Les 38 programmes representent 1 201 lignes de contrats. Leurs repertoires
+comptent 13 583 lignes de production, dont 76 de metadonnees, soit 13 507
+lignes de comportement. Les plafonds correspondent a ces mesures apres revue
+des nouveaux descripteurs configurables et de leurs interpreteurs. La limite
+par fichier reste 13 500 octets. Aucun programme supplementaire n'est ajoute.
+Les schemas et recettes exterieures aux repertoires des packs restent soumis
+aux controles structurels globaux.
 
-Son résumé publie trois preuves négatives explicites : zéro code de jeu exact,
-zéro alias de jeu interdit et zéro import d'implémentation entre packs. Toute
-valeur non nulle fait échouer l'audit avant la génération du rapport.
-
-## Vocabulaire et dépendances internes
-
-Les fichiers, schémas, types, clés de document, sorties compilées et motifs de
-victoire utilisent les responsabilités mécaniques. Le garde
-`forbiddenEngineVocabulary` balaie tout le TypeScript de production du runtime et
-interdit le retour des alias de jeux historiques. Les noms, textes, identifiants
-de contenu et codes de jeu restent dans `game/games/**`, où ils sont des données.
-
-Un pack ne peut pas importer l'implémentation d'un autre pack. Toute primitive
-partagée doit remonter dans les contrats, kits, patterns ou recettes génériques.
-Cette direction est contrôlée automatiquement dans `quality:check`.
-
-## Budgets et gardes
-
-Les packs comptent 13 308 lignes de production, dont 76 lignes de métadonnées
-`scope` et `domain`. Le comportement représente 13 232 lignes. La mécanique de
-défausse est désormais paramétrable (ordre des valeurs, valeur spéciale et score
-spécial) au lieu de coder une carte nommée dans le moteur. Les fichiers renommés
-ont aussi été normalisés par le formateur ; les LOC restent volontairement des
-comptages physiques. Ces valeurs sont des plafonds : une croissance ou une
-nouvelle ressemblance impose une revue visible de la politique.
-
-`quality:check` bloque également les cycles TypeScript sur tout `src`, la
-fermeture et les limites du DSL, les références, l'immutabilité, l'isolation et
-la sérialisation de l'état, les versions/migrations/snapshots, le déterminisme,
-le RNG, l'atomicité, la propriété de l'état et les frontières publiques.
+`quality:check` conserve les contrôles des cycles, limites du DSL, références,
+immutabilité, isolation, sérialisation, versions, migrations, snapshots,
+déterminisme, RNG, atomicité, propriété de l'état et frontières publiques.

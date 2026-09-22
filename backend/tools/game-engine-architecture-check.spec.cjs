@@ -88,6 +88,22 @@ test('accepts a minimal framework-free declarative game', () => {
   assert.deepEqual(fixture(), []);
 });
 
+test('external rule packs retain determinism and infrastructure guards after relocation', () => {
+  for (const source of [
+    'export const roll = () => Math.random();',
+    'export const timestamp = () => Date.now();',
+    "import { readFileSync } from 'node:fs'; export const load = readFileSync;",
+    'export const request = async () => fetch("/side-effect");',
+  ]) {
+    const violations = fixture(({ gameRoot }) => {
+      const directory = path.join(gameRoot, 'rules');
+      fs.mkdirSync(directory);
+      fs.writeFileSync(path.join(directory, 'example.ts'), source);
+    });
+    assert(violations.some(item => ['deterministic-rules', 'no-external-game-effects'].includes(item.rule)), source);
+  }
+});
+
 test('rejects external work and deferred callbacks from rule modules, including aliases', () => {
   for (const source of [
     "export const play = () => fetch('/write', { method: 'POST' });",
@@ -157,7 +173,7 @@ test('rejects all external imports, including side effects, require and dynamic 
     "import { x } from 'bullmq';",
     "import { x } from '../../../core/testing/game-test-kit';",
     "import { testGame } from '../../../engine/testing/public-api';",
-    "import { compileJsonGame } from '../../../engine/json/public-api';",
+    "import { compileJsonGame } from '../../../rules/public-api';",
     'process.cwd();',
     '__dirname;',
     'fetch(url);',
@@ -191,7 +207,7 @@ test('permits testing facade only in specs', () => {
     fixture(({ gamesRoot }) => {
       fs.writeFileSync(
         path.join(gamesRoot, 'game.spec.ts'),
-        "import { testGame } from '../../../engine/testing/public-api'; import { compileJsonGame } from '../../../engine/json/public-api'; testGame(game);",
+        "import { testGame } from '../../../engine/testing/public-api'; import { compileJsonGame } from '../../../rules/public-api'; testGame(game);",
       );
     }),
     [],

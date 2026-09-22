@@ -13,7 +13,7 @@ const allowedCalls = new Map([
   // Transport shutdown: bounded close handshake before forced termination.
   ['platform/ws/infrastructure/platform/lila-ws.adapter.ts', 1],
   [
-    'modules/admin/infrastructure/system/admin-maintenance-runtime.service.ts',
+    'modules/admin/infrastructure/system/admin-maintenance-child.ts',
     1,
   ],
   [

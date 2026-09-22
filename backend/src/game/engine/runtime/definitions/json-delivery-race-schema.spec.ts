@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../testing/public-api';
 import manifest from '../../../games/les-quatre-vents/taxi-express/manifest.json';
 import document from '../../../games/les-quatre-vents/taxi-express/game.json';

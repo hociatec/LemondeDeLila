@@ -1,5 +1,18 @@
 # Jeux JSON, schéma 1
 
+Le noyau ne charge aucun catalogue de jeux. L'application fournit ses extensions
+via `createJsonGameCompiler`. Les associations propres aux jeux sont déclarées
+dans leur JSON ; voir [la frontière moteur/catalogue](generic-engine-catalog-boundary.md),
+[les paramètres des mécanismes](parameterized-game-mechanisms.md) et
+[la revue des 38 modules](game-mechanism-review.md).
+
+Pour réutiliser un mécanisme, reprendre sa composition, changer le manifeste
+et ses données, puis renseigner ses paramètres explicites. Les clés du tableau
+de revue et les schémas de `rules/public-api.ts` font référence pour les noms
+actuels ; les sections historiques ci-dessous conservent certains anciens noms
+de programmes. Le moteur ne possède aucune correspondance entre identité d'un
+jeu et paramètres implicites. Les identifiants d'effets persistés sont conservés.
+
 Un `game.json` reste un document de composition lisible et ne dépasse pas 300
 lignes. Les catalogues, cartes, plateaux et questionnaires plus volumineux vont
 dans `content/*.json`, puis sont référencés avec `{ "$content":
@@ -12,7 +25,7 @@ fois par paquet. Le manifeste fournit l'identité et les limites de joueurs ;
 le document fournit les règles. Le même objet compilé alimente les définitions
 et les paquets du registre. `create:game --json-only` produit un paquet jouable.
 
-L'entrée `src/game/engine/json/public-api.ts` expose le compilateur et les
+L'entrée applicative `src/game/rules/public-api.ts` expose le compilateur et les
 descripteurs JSON Schema exportables `urn:lila:game:1` et `urn:lila:effects:1`.
 Les schémas sont immuables et tous les objets structurés sont fermés. Les champs
 inconnus, nombres encodés en texte, fonctions, accesseurs, prototypes spéciaux,

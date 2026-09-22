@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { sanitizeLogValue } from '../../application/log-sanitizer';
 
 export function playingLog(
   label: string,
@@ -13,16 +14,18 @@ export function playingLog(
       Object.keys(payload).length > 128
     )
       return;
-    const line = JSON.stringify({
-      ts: new Date().toISOString(),
-      label,
-      event: label,
-      roomId: null,
-      gameType: null,
-      userId: null,
-      type: null,
-      ...payload,
-    });
+    const line = JSON.stringify(
+      sanitizeLogValue({
+        ts: new Date().toISOString(),
+        label,
+        event: label,
+        roomId: null,
+        gameType: null,
+        userId: null,
+        type: null,
+        ...payload,
+      }),
+    );
     if (Buffer.byteLength(line, 'utf8') > 256 * 1024) return;
     fs.appendFileSync(resolveLogPath(), line + '\n', { encoding: 'utf-8' });
   } catch {

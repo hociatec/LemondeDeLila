@@ -1,11 +1,5 @@
-import { jsonEffectPacks } from './json-effect-pack-registry';
-
-/** Schemas are contributed by their extension and composed in stable order. */
-export const jsonEffectPackSchemas = Object.freeze(
-  Object.fromEntries(
-    jsonEffectPacks.map((extension) => [
-      extension.documentKey,
-      extension.schema,
-    ]),
-  ),
-);
+import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
+export const effectPackSchemas = (packs: JsonEffectPackCatalog) =>
+  Object.freeze(
+    Object.fromEntries(packs.map((pack) => [pack.documentKey, pack.schema])),
+  );

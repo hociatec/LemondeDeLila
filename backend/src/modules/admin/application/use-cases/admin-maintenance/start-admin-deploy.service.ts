@@ -1,8 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   ADMIN_MAINTENANCE_RUNTIME_PORT,
   type AdminMaintenanceRuntimePort,
@@ -22,20 +18,13 @@ export class StartAdminDeployService {
   ) {}
 
   execute() {
-    const res = this.runtime.runCommand([
+    this.runtime.spawnDetached([
       'sudo',
       '-n',
       'systemctl',
       'start',
-      '--no-block',
       this.config.deployUnit,
     ]);
-    if (res.status !== 0) {
-      throw new InternalServerErrorException({
-        message: 'Echec du declenchement du deploiement',
-        details: res,
-      });
-    }
     return { ok: true, unit: this.config.deployUnit };
   }
 }

@@ -1,8 +1,9 @@
 import { jsonCardSelectionSchema } from './json-card-selection-schema';
 import { jsonCardValueSchema } from './json-card-value-schema';
 import { jsonComponent as component } from './json-component-schema-helper';
-import { jsonVictorySchema } from './json-victory-schema';
-import { jsonEffectPackSchemas } from '../effect-packs/json-effect-pack-schemas';
+import { createJsonVictorySchema } from './json-victory-schema';
+import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
+import { effectPackSchemas } from '../effect-packs/json-effect-pack-schemas';
 import { jsonCollectionViewComponentSchema } from './json-collection-view-schema';
 import { jsonContentMigrationsSchema } from './json-content-migration-schema';
 import { effectJsonDefinitions } from '../contracts/effect-json-schema';
@@ -161,7 +162,6 @@ export const jsonGameSchema = freezeAuthorSchema({
         [],
       ),
       patterns: array(jsonGamePatternSchema),
-      ...jsonEffectPackSchemas,
       shortcuts: array({
         oneOf: [
           object(
@@ -263,95 +263,14 @@ export const jsonGameSchema = freezeAuthorSchema({
           ),
           object(
             {
-              recipe: {
-                enum: [
-                  'board-roll',
-                  'board-draw',
-                  'grid-place',
-                  'judged-submit-card',
-                  'judged-pick',
-                  'race-event-cards-roll',
-                  'race-event-cards-draw',
-                  'race-route-delivery-roll',
-                  'race-goose-track-roll',
-                  'collection-track-zones-roll',
-                  'race-resource-track-roll',
-                  'race-treasure-track-roll',
-                  'cards-ordered-parade-play',
-                  'cards-ordered-parade-pass',
-                  'collection-family-request-ask',
-                  'collection-family-request-pass',
-                  'cards-ordered-assembly-play',
-                  'cards-ordered-assembly-discard',
-                  'cards-ordered-assembly-pass',
-                  'paw-round-draw',
-                  'paw-round-play',
-                  'paw-round-discard',
-                  'collection-market-exchange-buy',
-                  'collection-market-exchange-sell',
-                  'collection-market-exchange-rumor',
-                  'collection-market-exchange-protect',
-                  'collection-market-exchange-steal',
-                  'collection-market-exchange-pass',
-                  'race-paired-pawns-roll',
-                  'collection-themed-circles-form',
-                  'collection-themed-circles-discard',
-                  'collection-themed-circles-pass',
-                  'cards-public-domain-play',
-                  'cards-public-domain-pass',
-                  'race-protected-haunted-track-roll',
-                  'race-bidirectional-collision-roll',
-                  'collection-family-effects-request',
-                  'race-team-pawn-capture-roll',
-                  'race-quiz-event-track-roll',
-                  'cards-theme-name-set-theme',
-                  'cards-theme-name-play-name',
-                  'cards-theme-name-play-special',
-                  'cards-theme-name-choose-winner',
-                  'cards-theme-name-pass',
-                  'cards-ritual-phases-ask-card',
-                  'cards-ritual-phases-pass',
-                  'board-property-economy-roll',
-                  'board-property-economy-build',
-                  'board-property-economy-sell-building',
-                  'board-property-economy-mortgage',
-                  'board-property-economy-unmortgage',
-                  'board-property-economy-pay-fine',
-                  'board-property-economy-use-jail-card',
-                  'race-bounce-quiz-roll',
-                  'collection-species-troops-play',
-                  'collection-species-troops-pass',
-                  'race-chained-tile-cards-roll',
-                  'race-chained-tile-cards-draw',
-                  'choice-chapter-encounter-roll',
-                  'race-hazard-roll',
-                  'choice-anonymous-vote-choose',
-                  'choice-anonymous-vote-vote',
-                  'cards-shared-prestige-draw',
-                  'cards-shared-prestige-play',
-                  'cards-shared-prestige-pass',
-                  'cards-battle-ties-draw',
-                  'choice-simultaneous-quiz-draw',
-                  'choice-simultaneous-quiz-answer',
-                  'choice-simultaneous-quiz-timeout',
-                  'choice-simultaneous-quiz-ready',
-                  'board-path-walls-move',
-                  'board-path-walls-place-wall',
-                  'choice-story-challenge-roll',
-                  'cards-discard-penalty-play',
-                  'cards-discard-penalty-draw',
-                  'cards-discard-penalty-pass',
-                  'cards-discard-penalty-quit',
-                  'race-multi-pawn-roll',
-                ],
-              },
+              recipe: id,
               documentation: { type: 'string', maxLength: 10000 },
             },
             ['recipe'],
           ),
         ],
       }),
-      victory: jsonVictorySchema,
+      victory: createJsonVictorySchema(),
     },
     [
       'schemaVersion',
@@ -370,3 +289,16 @@ export const jsonGameSchema = freezeAuthorSchema({
   ),
   $defs: effectJsonDefinitions,
 });
+
+export function createJsonGameSchema(packs: JsonEffectPackCatalog = []) {
+  return freezeAuthorSchema({
+    ...jsonGameSchema,
+    properties: {
+      ...jsonGameSchema.properties,
+      ...effectPackSchemas(packs),
+      victory: createJsonVictorySchema(
+        packs.flatMap((pack) => (pack.victoryKind ? [pack.victoryKind] : [])),
+      ),
+    },
+  });
+}

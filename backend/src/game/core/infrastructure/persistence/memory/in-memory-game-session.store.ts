@@ -1,3 +1,4 @@
+import { prometheusMetrics } from '../../../../../platform/observability/public-api';
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import {
@@ -44,6 +45,14 @@ export class InMemoryGameSessionStore
     };
   }
 
+  private reportCapacity(): void {
+    prometheusMetrics.memoryCapacity.usage(
+      'game-sessions',
+      this.states.size,
+      InMemoryGameSessionStore.MAX_SESSIONS,
+    );
+  }
+
   async load(roomId: number, gameType: string): Promise<GameState | null> {
     const state = this.states.get(this.key(roomId, gameType));
     return state ? structuredClone(state) : null;
@@ -63,10 +72,12 @@ export class InMemoryGameSessionStore
       !this.states.has(key) &&
       this.states.size >= InMemoryGameSessionStore.MAX_SESSIONS
     ) {
+      prometheusMetrics.memoryCapacity.refused('game-sessions');
       throw new Error('In-memory game session capacity exceeded');
     }
     this.states.set(key, restored);
     this.timelines.set(key, createGameTimeline(restored));
+    this.reportCapacity();
     return structuredClone(restored);
   }
 
@@ -116,6 +127,7 @@ export class InMemoryGameSessionStore
   async clear(roomId: number, gameType: string): Promise<void> {
     const key = this.key(roomId, gameType);
     this.states.delete(key);
+    this.reportCapacity();
     this.timelines.delete(key);
   }
 
@@ -133,6 +145,7 @@ export class InMemoryGameSessionStore
         (current.metadata?.restoreId ?? null) === expectedRestoreId)
     ) {
       this.states.delete(key);
+      this.reportCapacity();
       this.timelines.delete(key);
     }
   }
@@ -142,6 +155,7 @@ export class InMemoryGameSessionStore
     for (const key of this.states.keys()) {
       if (!key.startsWith(prefix)) continue;
       this.states.delete(key);
+      this.reportCapacity();
       this.timelines.delete(key);
     }
   }

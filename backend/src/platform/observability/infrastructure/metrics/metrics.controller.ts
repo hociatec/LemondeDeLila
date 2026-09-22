@@ -6,6 +6,7 @@ import { prometheusMetrics } from './prometheus-metrics';
 @UseGuards(HttpJwtGuard, AdminRoleGuard)
 export class MetricsController {
   @Get()
+  @Header('Content-Type', () => prometheusMetrics.registry.contentType)
   @Header('Cache-Control', 'no-store')
   async getMetrics(): Promise<string> {
     return prometheusMetrics.registry.metrics();

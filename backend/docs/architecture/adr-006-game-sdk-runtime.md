@@ -3,7 +3,7 @@
 Statut : accepté.
 
 Mise à jour du 21 septembre 2026 : le contrat de déclarations est en version
-6.18.0. Il couvre le mélange des réponses de quiz, la compilation de contenu
+6.20.0. Il couvre le mélange des réponses de quiz, la compilation de contenu
 figé et les ajouts optionnels déjà utilisés pour les bots, les libellés de
 choix et la sélection des pions. Les signatures ont été revues ; cette mise
 à jour de référence n'exige aucune migration supplémentaire des sauvegardes.

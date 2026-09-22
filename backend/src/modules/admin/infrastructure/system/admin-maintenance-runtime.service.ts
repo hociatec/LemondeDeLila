@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { spawn, spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { AdminMaintenanceOwnership } from './admin-maintenance-ownership';
 import * as http from 'node:http';
 import { getProcessEnvironment } from '../../../../platform/config/public-api';
 import { parseStrictInteger } from '../../../../shared/utils/public-api';
@@ -14,6 +17,10 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
   private static readonly MAX_HTTP_BODY_BYTES = 1 * 1024 * 1024;
   private static readonly MAX_SYSTEMCTL_OUTPUT_BYTES = 256 * 1024;
   private readonly logger = new Logger(AdminMaintenanceRuntimeService.name);
+
+  constructor(
+    private readonly ownership: AdminMaintenanceOwnership = new AdminMaintenanceOwnership(),
+  ) {}
 
   runCommand(
     argv: string[],
@@ -44,6 +51,13 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
       timeout: timeoutMs,
     });
 
+    // A timeout/signal can leave subprocesses running after the launcher dies.
+    // Keep durable ownership for coordinated recovery instead of unlocking.
+    if (result.error || result.signal || result.status === null) {
+      const owner = this.ownership.current();
+      if (owner) owner.detached = true;
+    }
+
     return {
       status: typeof result.status === 'number' ? result.status : 1,
       stdout: String(result.stdout || ''),
@@ -65,30 +79,39 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
       opts.delayMs <= 10 * 60 * 1000
         ? opts.delayMs
         : 0;
-    const timer = setTimeout(
-      () => {
-        try {
-          const child = spawn(cmd, args, {
-            cwd: opts?.cwd,
-            env: getProcessEnvironment(),
-            detached: true,
-            stdio: 'ignore',
-            windowsHide: true,
-          });
-          child.unref();
-        } catch (error) {
-          this.logger.error(
-            JSON.stringify({
-              event: 'admin.maintenance.spawn_failed',
-              command: argv[0] ?? '',
-              message: error instanceof Error ? error.message : String(error),
-            }),
-          );
-        }
+    const owner = this.ownership.current();
+    if (!owner) throw new Error('Durable maintenance ownership is required');
+    const compiled = join(__dirname, 'admin-maintenance-child.js');
+    const launch = existsSync(compiled)
+      ? [compiled]
+      : [
+          '-r',
+          require.resolve('ts-node/register'),
+          join(__dirname, 'admin-maintenance-child.ts'),
+        ];
+    const child = spawn(
+      process.execPath,
+      [
+        ...launch,
+        JSON.stringify({
+          token: owner.token,
+          argv: [cmd, ...args],
+          cwd: opts?.cwd,
+          delayMs,
+        }),
+      ],
+      {
+        env: getProcessEnvironment(),
+        detached: true,
+        stdio: 'ignore',
+        windowsHide: true,
       },
-      Math.max(0, delayMs),
     );
-    timer.unref();
+    owner.detached = true;
+    child.once('error', () =>
+      this.logger.error('admin.maintenance.spawn_failed'),
+    );
+    child.unref();
   }
 
   async httpGet(

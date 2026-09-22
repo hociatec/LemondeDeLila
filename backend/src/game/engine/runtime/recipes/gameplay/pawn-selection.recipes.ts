@@ -1,4 +1,7 @@
 import type { GameContext } from '../../definitions/game-author-context';
+import { defineChoice } from '../../actions/action-builders';
+import { gameInput } from '../../actions/game-input-schema';
+import type { DefinedChoiceResolver } from '../../contracts/author-rule-contracts';
 import type { PawnDefinition } from '../../kits/pawn-kit';
 import { shuffledPlayerIds } from './card-dice.recipes';
 import { GameRuleViolationError } from '../../../../core/domain/errors/game-domain.errors';
@@ -42,6 +45,7 @@ export function sequentialPawnSelection<TState extends object>(
   request: (playerId: number, ctx: GameContext<TState>) => void;
   requestAll: (playerIds: readonly number[], ctx: GameContext<TState>) => void;
   resolve: (playerId: number, pawnId: string, ctx: GameContext<TState>) => void;
+  choice: DefinedChoiceResolver<TState, string>;
   setup: (
     initialState: () => TState,
     options?: PawnSelectionSetupOptions,
@@ -116,7 +120,11 @@ export function sequentialPawnSelection<TState extends object>(
       return initialState();
     };
   };
-  return Object.freeze({ request, requestAll, resolve, setup });
+  const choice = defineChoice<TState, string>({
+    input: gameInput.string({ min: 1, max: 128 }),
+    resolve: ({ actor, value, ctx }) => resolve(actor.id, value, ctx),
+  });
+  return Object.freeze({ request, requestAll, resolve, setup, choice });
 }
 
 function continuePawnSelection<TState extends object>(

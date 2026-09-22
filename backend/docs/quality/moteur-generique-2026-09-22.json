@@ -1,0 +1,257 @@
+{
+  "date": "2026-09-22",
+  "status": "validated",
+  "architecture": {
+    "engineProductionFiles": 221,
+    "catalogPacks": 38,
+    "forbiddenDependencies": 0,
+    "gameReferences": 0,
+    "catalogInjection": "per-compiler immutable catalogue",
+    "specializedRulesLocation": "src/game/rules",
+    "arbitraryCompleteProgramComposition": false
+  },
+  "compatibility": {
+    "jsonFilesChecked": 122,
+    "changed": [],
+    "sha256": {
+      "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json": "937ac2169417531dea1c50df50f7f083e93a5c05824a1e6b6c9f2d1a1148b07a",
+      "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json": "ff2cc8df688a7ae982376a4e83b7d3d52ae4b46bb170954e84dbd60e4feb5b52",
+      "src/game/games/les-quatre-vents/a-fond-les-ballons/manifest.json": "116f2dfd702e244370f83d1d76b158198156092e845e80f204c721f1cb5569bf",
+      "src/game/games/les-quatre-vents/a-fond-les-ballons/model/content/pawns.json": "be93fbef47955a3842192ced779253a75091786630b778a1bf8390ea77c9edb1",
+      "src/game/games/les-quatre-vents/aventure-sauvage/content/board.json": "13d10b5db4c060242411cbf51426504ea0c1404920eab5d1fe3508efd9e2cdf9",
+      "src/game/games/les-quatre-vents/aventure-sauvage/content/cards.json": "eadd6674090e489942d17ae9de3290a5aeded32c3c3ae8f2aee44438c9cd10a3",
+      "src/game/games/les-quatre-vents/aventure-sauvage/content/pawns.json": "942dd002667d179e4ef8abfa0c37a072d5ac7f48132759caea3689d72fe3c55b",
+      "src/game/games/les-quatre-vents/aventure-sauvage/game.json": "56e183f261b6e97b9e518216ad5aaa4a801d54dc4541255a4adedebb64804ba0",
+      "src/game/games/les-quatre-vents/aventure-sauvage/manifest.json": "87b3227208efcfe41340c6019bdd9eb9bc7ffbf4556fe562d4b45439bfba711c",
+      "src/game/games/les-quatre-vents/ca-derape/catalogue.json": "8a23dfa66ad32aa84025e72ed8242856847096084970e4143087b12f72e2b8c3",
+      "src/game/games/les-quatre-vents/ca-derape/game.json": "812334dca6ae25626c5655bfe32d43caccb02fbee41ada9624c43412c5a00613",
+      "src/game/games/les-quatre-vents/ca-derape/manifest.json": "438ed39eae3a4cf9114985de417bec5b51e1c26c60af874464e37a5e2255b960",
+      "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json": "021e42fc08f1c2cb9e39775c7e6bfbb221440dc433c8670fa341114aeabb7b70",
+      "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json": "70b728d14108b66e69c5ef740acbce6109f38b0662364aac0478ce60caf2b022",
+      "src/game/games/les-quatre-vents/contes-et-cacahuetes/manifest.json": "8b10f27929b8ebf28a10b5b8c316e654798c8809385f23b150ff6d2437c6e70b",
+      "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json": "aeb165d5c44d654ab58e33ec308cf5e0fa3574b55c27adec36ab64c95b96dc85",
+      "src/game/games/les-quatre-vents/en-attendant-minuit/game.json": "609722b8bd7e7a4bd52a963f409f2df5bcd893f7c40197248e0c5fedbae4d89e",
+      "src/game/games/les-quatre-vents/en-attendant-minuit/manifest.json": "223ad5bd9953ae2c377777d21e2f7319b8d26c8cf8ba89e14574f70cbd91c3f3",
+      "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json": "f263f89c6f368f60160d99058657736e1dd6f34bf0b1858aba607862ae739d6e",
+      "src/game/games/les-quatre-vents/frousse-party/game.json": "402694a7f331ffebfff71565512afc0fa70d4e0f992cca77bc09d3f0cfa8f645",
+      "src/game/games/les-quatre-vents/frousse-party/manifest.json": "47dd2cb4b6fce044859524c61e10c3e83ce85b83f12402ab25bb8742965bf0f2",
+      "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json": "84b51d814bc7a04ae2fe1b694fbe48d633f023437afcab825804733244b445af",
+      "src/game/games/les-quatre-vents/galopons-ensemble/game.json": "7eba40c6074508966832dc6fc1b1a2a69c9388089ee1be100f2eb0cf71be4525",
+      "src/game/games/les-quatre-vents/galopons-ensemble/manifest.json": "ee32de403de354fd42f5ebd9803ef14fcee8d96bb21d329c51296fd157988d07",
+      "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json": "5f956a70c38a22b5ef8eabf74bdeb928170e08ac03075e4b1ed0900e476b8086",
+      "src/game/games/les-quatre-vents/mission-galaxie/game.json": "170a04d99e1344eb0365daf8c6b169d3254aa1eaa0eabc9388ea7a01e48699ca",
+      "src/game/games/les-quatre-vents/mission-galaxie/manifest.json": "17fc1742fa102bd91ca27307adbf38c2bb327136d77ce4764df17bddfa208607",
+      "src/game/games/les-quatre-vents/mon-village-mon-histoire/content/catalogue.json": "467acc2c185e942a288c8ec43fe5939de12d1c173c2f0c05dfd5578b9e5bfa03",
+      "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json": "a68e75304bb627e5c7a5384d29db7f5e3f426f2c76baca9ac21e6158f4bd2801",
+      "src/game/games/les-quatre-vents/mon-village-mon-histoire/manifest.json": "608750b0d1d8d18c040cd18d4eb523b76b67356553acf008f2edc508a851645b",
+      "src/game/games/les-quatre-vents/odyssee-quatre-cieux/game.json": "20f3c314fc8dd5573ad3d19aed58b49b9891a83138d51ce9fa65fd5ce937b5d5",
+      "src/game/games/les-quatre-vents/odyssee-quatre-cieux/manifest.json": "fbc5b7c16cfb864a282ea9d4b72894cab283294c0e1f60c8be9bbae9fb989abf",
+      "src/game/games/les-quatre-vents/panier-express/content/board.json": "420c59b4764a607bc2d7202ab68658eddfa4c654fd8a55679ccfa651b19b1fdf",
+      "src/game/games/les-quatre-vents/panier-express/content/cards.json": "bb48d5a0fb0169e182e608b284d714fc741e8a19d32102bb568f4d880e7e0d87",
+      "src/game/games/les-quatre-vents/panier-express/content/pawns.json": "77c5e990230fe37b20bfedd0885abd425cfa79617dbcebbdcc4ab4dc1423b2d5",
+      "src/game/games/les-quatre-vents/panier-express/content/products.json": "b68f159f63f5c0fab572a44cb2a1a84532f5e1f9f6776cacd7948d00ecdd61c8",
+      "src/game/games/les-quatre-vents/panier-express/content/quizzes.json": "cd1f5b3b1ba0bcae77714ba6410916e0b5780ca3afb164164b5d779f6be6268a",
+      "src/game/games/les-quatre-vents/panier-express/game.json": "3181d6771a1b7513025352e31e919202f306eb6fc40f0a79f381d90119d9bda5",
+      "src/game/games/les-quatre-vents/panier-express/manifest.json": "d091d35d8737946af1b258cf667329e3eaf0746f4374a49676e03b78539944c4",
+      "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json": "52f709c56b4d74d1ba7a82a7b1ac595920c3bd9701c3437eb01e5fa267f4fda2",
+      "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json": "4c0c6440b97da9c6c1ef1fcb6f39a3e62f28cb75f300cb5b073ae62b1cee211a",
+      "src/game/games/les-quatre-vents/pirates-en-vadrouille/manifest.json": "6a13cc479e182aaac6c6a970d4f76f00f1c9eeba2e568f15693ced3ebd825dbf",
+      "src/game/games/les-quatre-vents/primalis/content/catalogue.json": "d5e7fbd88826feefd05eb4e62a6d7344b73bc6a966f6bae35de1680a2e8a0d24",
+      "src/game/games/les-quatre-vents/primalis/game.json": "3c7e73eb8484dd4877c0ddb8ed5ada483d0c7ad2833329f1bde79c95b183786b",
+      "src/game/games/les-quatre-vents/primalis/manifest.json": "315f53a40802953ffe642a92354663f16f0c57d7e48483dc508e0197e84570cc",
+      "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json": "d941def8efea7411b3624431f4a4d54a7935ff1aa862628fae7c6544eb66c531",
+      "src/game/games/les-quatre-vents/sac-a-malices/game.json": "d9c79568ae8a1d3d2a0dcb1876a4e38347ab53457b1feb3019813dc40ca8dc77",
+      "src/game/games/les-quatre-vents/sac-a-malices/manifest.json": "6d4811d69b1ab86b36acbafa2408142f5437f2c00d158ec4de02ba91ee7644eb",
+      "src/game/games/les-quatre-vents/taxi-express/content/board.json": "c54391c776ec963e86dea51796872f7076429b1aca967ff162b7d5f15827fc99",
+      "src/game/games/les-quatre-vents/taxi-express/content/clients.json": "f19dab93e7618a72b4ed2d3672f8edde63f77764746e4705f79b107e724720cb",
+      "src/game/games/les-quatre-vents/taxi-express/content/events.json": "c7cf7f86e2d9fbb2253f50a29fa24ad7c330279f38a9aef319f2683a06878c4e",
+      "src/game/games/les-quatre-vents/taxi-express/game.json": "74f903b1fb627b7f192db21946bad90fb4172bb58872370714fda87fef3fc509",
+      "src/game/games/les-quatre-vents/taxi-express/manifest.json": "87f3c8929dda80d90d694595b4d598d5bdae769139057f21e0ce531bf2181734",
+      "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json": "d71ef192420ea277f1ff3120587415d68b9f62cf81bdc7003fa45d9cfe9811bf",
+      "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json": "d49400f921eb97192bcf5653cb84407e1c86b3805a99bfe9e883f29a4d677dbd",
+      "src/game/games/les-quatre-vents/tout-pres-de-maman/manifest.json": "ebec7ce375fafdcff78ca6b4210a1fec2f9491785690268b9552470cac2d7d4e",
+      "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/catalogue.json": "995a66c905e9d88d2b5a099a43f2da389cf79ec9f5cb401ee4be8cf62c4c4009",
+      "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json": "41b0d3921e2f12a823d471f87dbc0b409402b5500f22ec1b9579316bdf501903",
+      "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/manifest.json": "311207d965e86f538c0c458cf1447305976e35e447bb8b2c150406da2eb2e648",
+      "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json": "80bdb4a6fdbd6bff6db0445b37f496e6d66c79cec2a5ec9050a17c10fcabeb5d",
+      "src/game/games/vents-dansants/cat-pattes/game.json": "6b86c97e8bca069312fb8bb6a7d80647a5ae1db5f64872f4b11d2dc343c76420",
+      "src/game/games/vents-dansants/cat-pattes/manifest.json": "0c4ab2825bb039415c31fa0a1a0468e359be68b1fd5cd33369ead685b532245c",
+      "src/game/games/vents-dansants/cercles-sacres/content/catalogue.json": "de6d553713dc4bc0203f6c482c212ba862497e088394e1d7fafae50ca5a41375",
+      "src/game/games/vents-dansants/cercles-sacres/game.json": "cb7099bc61c4f2712924af2b4663d7fbc3f503bf619311187f87d38eebe42a51",
+      "src/game/games/vents-dansants/cercles-sacres/manifest.json": "8f7404e85bd84344ec62093c4be0f1e6f695aaa951abd2af2724dd729e21dae0",
+      "src/game/games/vents-dansants/dame-nature/content/catalogue.json": "30b3fc4f37074282b3a5fd4cb44141ba3d89bc2821f9a431d148582952e8a6e3",
+      "src/game/games/vents-dansants/dame-nature/game.json": "bf46f05fd95878f7de9ab7f17464dca55141f87e0e9b87679d707e0fcac7f5e4",
+      "src/game/games/vents-dansants/dame-nature/manifest.json": "a63662807f045e19b6e0760bf637129fd551ba731d560767259731751540ef17",
+      "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json": "295930462d3cb985ee1a1b8c0030ceeacd95ce414ad681d198125f8f555c3c71",
+      "src/game/games/vents-dansants/entre-rites-et-lumieres/game.json": "a108cf03bfde0b5122489dcdc7e45adbedce0ec741cc24c6d446b3c7c1a6a339",
+      "src/game/games/vents-dansants/entre-rites-et-lumieres/manifest.json": "eea0bc99bac1b86ec96e3b9bc5449f6e6b3ad64a235094f9da7c917e1735bb8f",
+      "src/game/games/vents-dansants/gerard-president/content/catalogue.json": "e03a15727eeeb1739a771e217b81e325cb5019f395ccb508d09f1cb886977395",
+      "src/game/games/vents-dansants/gerard-president/game.json": "6c59763b646298f45e0cc92fdd29d3401426837f0b9faae74d3453efd60f0f27",
+      "src/game/games/vents-dansants/gerard-president/manifest.json": "ad471021e5a75ad2222c1845f1032d0a620b79fbdee476c76701c2eb3867d1f9",
+      "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json": "21a8a0f4167fa611f72b2866d573942665b87a483121d547d1afb264f1453838",
+      "src/game/games/vents-dansants/la-bande-a-banane/game.json": "d5d62093cc12f4b1a217c694134cc9882615c46aec253d0f1972dd1793850953",
+      "src/game/games/vents-dansants/la-bande-a-banane/manifest.json": "6a9d9d93096fd8b8610af4a3d62e82d389b7e3a8e4a20279c3f9552f983c83f7",
+      "src/game/games/vents-dansants/la-grande-mine-de-barbak/content/catalogue.json": "0d58689c6e804d19fbbe975261c62a4b4083d2f8bf49f311e1b654a71fa96fd5",
+      "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json": "f5e85afc5b380f795526346b46c772c2815d7150b0074c7ae042e8fd9c476015",
+      "src/game/games/vents-dansants/la-grande-mine-de-barbak/manifest.json": "c1559dd9f05c900462fed38e30e6d640eed145214891895d3cb37244713627cc",
+      "src/game/games/vents-dansants/la-parade-sucree/content/catalogue.json": "a4ebd49a2ae3635e86fc28123457737dee8f8599dda1d6b4299c35fdd067c83b",
+      "src/game/games/vents-dansants/la-parade-sucree/game.json": "da876fd6eb0506b0c7d844c9d516828c904f42ac1c78672c3b1e889b1f706e78",
+      "src/game/games/vents-dansants/la-parade-sucree/manifest.json": "6aba021f43e17f0a77f222e9ae86292f9f0795ed9f97c27dc673614e3cb1c94e",
+      "src/game/games/vents-dansants/le-marche-des-merveilles/content/catalogue.json": "69edf50c5c88c837dcaf74219904daf6491ce31a7c8b4ba4cf9349c7fd862b5d",
+      "src/game/games/vents-dansants/le-marche-des-merveilles/game.json": "057d1829d80a71efca2b9cf3cb068b949edc9f656fa6f9453615b628d296c03c",
+      "src/game/games/vents-dansants/le-marche-des-merveilles/manifest.json": "d37d379e39118c52e1f80a8fbc98ec5af4783118cffa01bbf41f7af725f46632",
+      "src/game/games/vents-dansants/les-absurdissimes/content/cards.json": "cd260f0b52b863796c13ac7b70e1b0ab2e344c8b8c9cace062b1e82dcfe22205",
+      "src/game/games/vents-dansants/les-absurdissimes/game.json": "e836d2fca97edb2345a2d876a63185340dd5293851b6e73162a455428ba917e1",
+      "src/game/games/vents-dansants/les-absurdissimes/manifest.json": "b0eaa036c89c39e951da8ed398aa3d18595727124c78b495e35de558c5c84557",
+      "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json": "df97f0685fea74790a14c0023a5ce42d0562804f7da83bd8289cbb988081a0e1",
+      "src/game/games/vents-dansants/les-mains-de-la-terre/game.json": "ccb1b7a4a5efd58e27f6d741e656a01b3f6708825ce5a2729bb54e7f6d914255",
+      "src/game/games/vents-dansants/les-mains-de-la-terre/manifest.json": "1a7e16e771c8ca58fbb6785fb97ec220b3372f0a1467778cfe5f7db5a992542d",
+      "src/game/games/vents-dansants/nawak/catalogue.json": "7c917a09bc2830ed70c702cc45511da3e81f6c4569dd4dad645fd2d3a353a987",
+      "src/game/games/vents-dansants/nawak/game.json": "c5f666100d8ffe5c1c36e863ef84b3dd6bcb287c7386236313eba27560cffd3b",
+      "src/game/games/vents-dansants/nawak/manifest.json": "19fc33693daed809b248f4d42ba076a328bcd68710e999c93e4a0fd46eee6d57",
+      "src/game/games/vents-dansants/olympia/catalogue.json": "d6a5cdee4a86a0e675f9bf4d32d6ab233ab34d365af7536cef5d2125597cba97",
+      "src/game/games/vents-dansants/olympia/game.json": "4cc46071faf1d0bec259cb27e77dcc51ac2d431547b5bef78dda6f2597fa0ce9",
+      "src/game/games/vents-dansants/olympia/manifest.json": "79cbdf2239232385de456fb6367363f96ba962f65108e05025561ff7078ee610",
+      "src/game/games/vents-dansants/pimp-my-ride/content/catalogue.json": "f7dcab559c5ea66d4c8d5ae4c7d969dff39f1142f725a2bf7d6df9c346597108",
+      "src/game/games/vents-dansants/pimp-my-ride/game.json": "aea4ef0ce7235760b3ac96b7cb1cdb2b5114d817e8a1650c1d5990ca758c7c75",
+      "src/game/games/vents-dansants/pimp-my-ride/manifest.json": "dcffb4779adf3c9329f3a09d5415af155b40898ae2f342a06e69f070af5a54a3",
+      "src/game/games/vents-dansants/zig-et-zag/catalogue.json": "8d6cbc2b9059f6dec82119f9fb749d0dc781235423eae5ad5a025d54cf486ba6",
+      "src/game/games/vents-dansants/zig-et-zag/game.json": "001b1363ef759bddac735f0c4d26f4fa35be683c421ab482fa2a6ad587db53fa",
+      "src/game/games/vents-dansants/zig-et-zag/manifest.json": "727982cad98b6094e0151eafa56d31f006a503b62314ccd0fc7195a7a0b3311d",
+      "src/game/games/vents-infinis/arche-de-mnemosyne/game.json": "9654e29b0f3fcad175a139de3151d30c10d47f4ea5c991baed909c9407f32d34",
+      "src/game/games/vents-infinis/arche-de-mnemosyne/manifest.json": "42dd1515d2f081be73f4a3982411002e88a6b96530795accbf02ba10870b5894",
+      "src/game/games/vents-infinis/arche-de-mnemosyne/quiz.json": "6d6b5c9a901ddca6e9b8f706e353327f164ee7c28fbe762454233f83b7879435",
+      "src/game/games/vents-sacres/corridor/game.json": "d1280d7281f89ffce8eb130b19909c586914aeff18d694adb6b50a60b86fa7a7",
+      "src/game/games/vents-sacres/corridor/manifest.json": "90c68640b4edfbff3f42cab5e4d369ee22d7d3ff5c736bf7bccb9f3cc1523f2f",
+      "src/game/games/vents-sacres/course-des-etoiles/game.json": "0a20cb2e1d457172bc44d7250dde14a87001466a9017c00916b0264b70b8cdec",
+      "src/game/games/vents-sacres/course-des-etoiles/manifest.json": "aa31ea79b46012d0be1ce15c5177eaceabd42d04ecb0673b9cc5953576f170c2",
+      "src/game/games/vents-sacres/foulees-fantastiques/catalogue.json": "9d00e76a3907fda72dca2cb9d3fa77fb5340e85705f863cea47c8a001f10d483",
+      "src/game/games/vents-sacres/foulees-fantastiques/game.json": "f3d35c543ec368dbe7f2f0a16321e082da9e5fb7e4c7f207886f4965f424b79f",
+      "src/game/games/vents-sacres/foulees-fantastiques/manifest.json": "045644a99a3fcc4924af9fae4c04e4ea8aa7c68a80fa820b9b278969da2d8612",
+      "src/game/games/vents-sacres/jeu-oie/content/catalogue.json": "09dc3551c8080b5fd14ea08b684d6392c8acf880d59b7a2bda588bdcbd741c4b",
+      "src/game/games/vents-sacres/jeu-oie/game.json": "6a0dc60b24ba86c65560994dab5531270a705eafcafe6d27dee4e59c5b707b8b",
+      "src/game/games/vents-sacres/jeu-oie/manifest.json": "7377df804ac5865f1bf70c33c9dd4297cad8125cb3807017a86ac06cf30d8d19",
+      "src/game/games/vents-sacres/lama/game.json": "70837a15ff054cb6081eac85ab2f31af1bd68b2681b515dfb64161b459fd7a94",
+      "src/game/games/vents-sacres/lama/manifest.json": "03fcd77f2d7ff977c581f531d6738c83d28a003b89b4056019e4d8fd48549774",
+      "src/game/games/vents-sacres/morpion/content/pawns.json": "c4b6507daa5e887d43110dfbbda05d162abcb55b4ac2be0ad03f200b6539c50b",
+      "src/game/games/vents-sacres/morpion/game.json": "e0818cbd4a9d24d67e8a5ed41c108d85746ef8787c9c141db5c05282ca58c7a5",
+      "src/game/games/vents-sacres/morpion/manifest.json": "331528d0507511ccb4612ec633365db78f306c68c8cb9c55db7cf516e14b69ea"
+    },
+    "contentAndDefinitionVersionsUnchanged": true
+  },
+  "validation": {
+    "fullRegression": {
+      "suites": 436,
+      "tests": 2559,
+      "seconds": 1509.341,
+      "initialPassedSuites": 435,
+      "initialPassedTests": 2558,
+      "initialFailures": 1,
+      "failure": "Outdated test import boundary for rules/public-api",
+      "resolution": "Updated test-only import allowance; jest --onlyFailures --runInBand",
+      "retrySuitesPassed": 1,
+      "retryTestsPassed": 33
+    },
+    "finalTargeted": {
+      "suites": 2,
+      "tests": 13
+    },
+    "replays": {
+      "games": 39,
+      "seeds": [
+        0,
+        1,
+        17,
+        65535
+      ],
+      "scenarios": 156,
+      "finished": 72,
+      "atStepLimit": 84,
+      "maximumSteps": 64
+    },
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": {
+      "status": "passed",
+      "files": 1846,
+      "appModuleLoad": "passed"
+    },
+    "qualityCheck": "passed",
+    "diffCheck": "passed",
+    "sdkDeclarationFiles": 111,
+    "sdkVersion": "6.20.0"
+  },
+  "sources": {
+    "src/game/engine/runtime/contracts/json-effect-pack.ts": "cce5a46aa63216abb41c9434f4e547ba29e39c39f93fe3b6437d8a0be1e978ab",
+    "src/game/engine/runtime/contracts/json-effect-pack-catalog.ts": "483b89d7edd3ac08a913b4060899bd964f6ee3516136e95b59722c17b72ed8f8",
+    "src/game/engine/runtime/definitions/json-game-compiler.ts": "03473f19e09f26572790526aacf16e361b4e743a9f19e0d7d93006191340e6af",
+    "src/game/engine/runtime/definitions/json-game-compiler-factory.ts": "d28d0286ff67a48a560084040d1f75ed22e354a9a59d2b03951a106f2d35e530",
+    "src/game/engine/runtime/definitions/json-game-schema.ts": "8e34a613dcd7d34bc129201702170296dd918c169a9df486322d3b319429d4e9",
+    "src/game/rules/public-api.ts": "7ea055bb908af7422f276da513e0715dd14c207af1d1cf9fbd5869f8f39711b7",
+    "src/game/rules/effect-packs/json-effect-pack-registry.ts": "1c3478b1180f86e9b14ed5a7e91c540071d05785d24c3df9e4e9aaa265661cba",
+    "src/game/composition/mnemo-content-runtime.ts": "e3caefdfa223f180714daf62e2513c808de8f10e77332ffa72c42d805eddf6f4",
+    "src/game/composition/mnemo-quiz-catalog.ts": "571dbb9067c8f70c8639cce4a02c05b26999ef1571d61d9ed9140134933df219",
+    "src/game/engine/infrastructure/content/archived-content.ts": "bcb6b6b4037558d80ce71b7b77fb96e8d26866d16dab396d4143040067c92432",
+    "tools/engine-catalog-boundary.cjs": "87fbb6d5c31c74af392e104af5609dee0daebd5d975fa74caf01261e361bcc3d",
+    "tools/engine-effect-pack-governance.cjs": "49f7713bb4543aa9ee06c08d9eed96161dfc4e74e42f627f23407c145392a077",
+    "tools/game-state-ownership-audit.cjs": "bddc82de5c50ca073d8094a9f1647397817c17feec9858d6e18509925c6c3e0d",
+    "tools/game-engine-architecture-check.cjs": "252b49061f6cabec2b01cd5b5f1703d5034196c8432737548b7cef5853b7552a"
+  },
+  "logs": {
+    "logs/generic-engine-regression.log": {
+      "sha256": "3c33e7ef94ab38f8f1c5f727ff9a9a09f681037eba675fff18cfc076155549f2",
+      "summary": [
+        "Test Suites: 1 failed, 435 passed, 436 total",
+        "Tests:       1 failed, 2558 passed, 2559 total",
+        "Time:        1509.341 s, estimated 1769 s"
+      ]
+    },
+    "logs/generic-engine-regression-retry.log": {
+      "sha256": "9f49dd8407a7a8ad8ed5c7dc76e292ad1ae7b1c66b5b3c0745ffd3f435811153",
+      "summary": [
+        "Test Suites: 1 passed, 1 total",
+        "Tests:       33 passed, 33 total",
+        "Time:        10.398 s"
+      ]
+    },
+    "logs/generic-engine-targeted.log": {
+      "sha256": "3544d5927c69ce0424982b47da1ca69b83ae82f60e3f2b605e03fbb7a2ea9b22",
+      "summary": [
+        "Test Suites: 2 passed, 2 total",
+        "Tests:       13 passed, 13 total",
+        "Time:        10.024 s, estimated 14 s"
+      ]
+    },
+    "logs/generic-engine-quality.log": {
+      "sha256": "e83b69ae3be0debb93e1b15da28dac0d70cf539da4b3202be123439480d9a571",
+      "summary": [
+        "Test Suites: 5 passed, 5 total",
+        "Tests:       76 passed, 76 total",
+        "Time:        46.632 s",
+        "backlog-governance-check: 0 open debts with owner/reason/target/state"
+      ]
+    },
+    "logs/generic-engine-typecheck.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "logs/generic-engine-lint.log": {
+      "sha256": "6b441b952377cf169e58f0949675247e699d106bb9396e872667f73d42ba31d5",
+      "summary": []
+    },
+    "logs/generic-engine-build.log": {
+      "sha256": "0cb856b8f579b3246247a386d1865651ee0826bde47e1a1dabff90a5dddc4543",
+      "summary": [
+        "Successfully compiled: 1846 files with swc (658.54ms)"
+      ]
+    },
+    "logs/generic-engine-boundary.log": {
+      "sha256": "e3660bcc06e1b2525cb2b774d727c2854c423c3e7a6f21bbc03f4aaecc69a16a",
+      "summary": []
+    },
+    "logs/generic-engine-reuse.log": {
+      "sha256": "d7ea6ae58b5630e35897b87dbba8c4deafc3b29213d5679ad78a59710db79263",
+      "summary": []
+    }
+  }
+}

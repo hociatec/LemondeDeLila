@@ -4,6 +4,8 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const test = require('node:test');
+const fs = require('node:fs');
+const os = require('node:os');
 
 test('effect-pack governance reports every consumer, domain, LOC and reason', () => {
   const backend = path.resolve(__dirname, '..');
@@ -23,9 +25,12 @@ test('effect-pack governance reports every consumer, domain, LOC and reason', ()
     audit.effectPacks.reduce((total, pack) => total + pack.productionLines, 0),
   );
   assert(audit.summary.productionLines <= policy.maximumProductionLines);
+  assert.equal(policy.maximumProductionLines, 13583);
+  assert.equal(policy.maximumBehaviorLines, 13507);
+  assert.equal(policy.maximumFileBytes, 13500);
   assert(audit.summary.behaviorLines <= policy.maximumBehaviorLines);
   assert.equal(audit.summary.genericScopeEffectPacks, 38);
-  assert.equal(audit.summary.largeSingleConsumerReviews, 22);
+  assert.equal(audit.summary.largeSingleConsumerReviews, 20);
   assert.equal(audit.summary.structuralCandidates, 2);
   assert.equal(audit.summary.exactGameCodeMatches, 0);
   assert.equal(audit.summary.forbiddenVocabularyMatches, 0);
@@ -67,5 +72,34 @@ test('effect-pack governance reports every consumer, domain, LOC and reason', ()
     assert(domain.packs > 0);
     assert(domain.productionLines > 0);
     assert.equal(domain.reviewedPatterns.length, domain.packs);
+  }
+});
+
+test('a second JSON game can reuse a large rule without changing engine or governance policy', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-rule-reuse-'));
+  const backend = path.resolve(__dirname, '..');
+  try {
+    fs.cpSync(path.join(backend, 'src/game/games'), directory, { recursive: true });
+    const documents = root => fs.readdirSync(root, { withFileTypes: true }).flatMap(entry => {
+      const file = path.join(root, entry.name);
+      return entry.isDirectory() ? documents(file) : entry.name === 'game.json' ? [file] : [];
+    });
+    const original = documents(directory).find(file => JSON.parse(fs.readFileSync(file, 'utf8')).publicDomainCards);
+    assert(original);
+    const target = path.join(directory, 'test-world', 'reused-collection');
+    fs.mkdirSync(target, { recursive: true });
+    fs.copyFileSync(original, path.join(target, 'game.json'));
+    fs.writeFileSync(path.join(target, 'manifest.json'), JSON.stringify({ code: 'reused-collection' }));
+    const result = spawnSync(process.execPath, [
+      path.join(__dirname, 'engine-effect-pack-governance.cjs'), '--games-root', directory,
+    ], { cwd: backend, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    const pack = JSON.parse(result.stdout).effectPacks.find(pack => pack.name === 'cards-public-domain');
+    assert.equal(pack.consumerCount, 2);
+    assert.equal(pack.reuseEvidence, 'demonstrated');
+    assert.equal(pack.reviewRequired, false);
+  } finally {
+    assert(path.resolve(directory).startsWith(path.resolve(os.tmpdir()) + path.sep));
+    fs.rmSync(directory, { recursive: true, force: true });
   }
 });

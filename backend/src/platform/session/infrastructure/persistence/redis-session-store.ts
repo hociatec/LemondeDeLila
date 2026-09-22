@@ -4,6 +4,7 @@ import type {
 } from '../../application/ports/session-state-store.port';
 import { Logger } from '@nestjs/common';
 import Redis from 'ioredis';
+import { redisReconnectDelay } from '../../../redis/public-api';
 import { bestEffort } from '../../../observability/public-api';
 import { operationalSettings } from '../../../config/public-api';
 
@@ -18,6 +19,7 @@ export class RedisSessionStore implements SessionStateStore {
       lazyConnect: true,
       connectTimeout: 10_000,
       commandTimeout: 10_000,
+      retryStrategy: redisReconnectDelay,
       maxRetriesPerRequest: 1,
       autoResendUnfulfilledCommands: false,
     });

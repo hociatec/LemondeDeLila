@@ -35,10 +35,7 @@ export class MysqlGameActiveSessionsReader implements GameSessionRecoveryReader 
     const query = this.sessions
       .createQueryBuilder('session')
       .select(['session.roomId', 'session.gameType'])
-      .where(
-        "JSON_UNQUOTE(JSON_EXTRACT(session.state, '$.status')) <> :finished",
-        { finished: 'finished' },
-      );
+      .where('session.recoveryPending = :pending', { pending: 1 });
     if (cursor)
       query.andWhere(
         '(session.roomId > :roomId OR (session.roomId = :roomId AND session.gameType > :gameType))',

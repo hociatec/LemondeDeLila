@@ -28,7 +28,7 @@ for (const file of files(path.join(runtime, 'contracts'))) {
     path.basename(file) !== 'game-rule-program.ts'
   )
     violations.push(
-      `${file}: single-consumer author program belongs in runtime/effect-packs`,
+      `${file}: single-consumer author program belongs in game/rules/effect-packs`,
     );
   const source = fs.readFileSync(file, 'utf8');
   if (/\b(?:import|export)\s+(?!type\b)[\s\S]*?from\s+['"]\.\.\//m.test(source))
@@ -36,7 +36,7 @@ for (const file of files(path.join(runtime, 'contracts'))) {
       `${file}: runtime contract has a value dependency on a higher layer`,
     );
 }
-const effectPacksRoot = path.join(runtime, 'effect-packs');
+const effectPacksRoot = path.resolve('src/game/rules/effect-packs');
 const effectPackPolicy = JSON.parse(
   fs.readFileSync(
     path.resolve('tools/engine-effect-pack-governance.json'),
@@ -65,7 +65,7 @@ for (const effectPack of effectPacks) {
   }
   if (!entries.includes(program)) continue;
   const source = fs.readFileSync(program, 'utf8');
-  if (/from\s+['"]\.\.\/(?!\.\.\/contracts\/)/.test(source))
+  if ([...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].some(match => !path.resolve(directory, match[1]).startsWith(path.join(runtime, 'contracts') + path.sep)))
     violations.push(
       `${program}: effect-pack contract reaches outside low-level contracts`,
     );

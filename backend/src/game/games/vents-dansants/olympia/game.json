@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "1",
   "snapshotMigrations": [
     {
@@ -10,6 +10,10 @@
     {
       "fromVersion": "olympia@content:5429cc55",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
   "category": "JeuxDePlateaux",
@@ -18,46 +22,62 @@
     {
       "component": "cards.deck",
       "id": "divinite",
-      "cards": { "$content": "content/catalogue.json#/decks/divinite" },
+      "cards": {
+        "$content": "content/catalogue.json#/decks/divinite"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
     {
       "component": "cards.deck",
       "id": "heros",
-      "cards": { "$content": "content/catalogue.json#/decks/heros" },
-      "catalog": { "$content": "content/catalogue.json#/cardIds" },
+      "cards": {
+        "$content": "content/catalogue.json#/decks/heros"
+      },
+      "catalog": {
+        "$content": "content/catalogue.json#/cardIds"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
     {
       "component": "cards.deck",
       "id": "creatures",
-      "cards": { "$content": "content/catalogue.json#/decks/creatures" },
+      "cards": {
+        "$content": "content/catalogue.json#/decks/creatures"
+      },
       "shuffle": true
     },
     {
       "component": "cards.deck",
       "id": "exploits",
-      "cards": { "$content": "content/catalogue.json#/decks/exploits" },
+      "cards": {
+        "$content": "content/catalogue.json#/decks/exploits"
+      },
       "shuffle": true
     },
     {
       "component": "cards.deck",
       "id": "actions",
-      "cards": { "$content": "content/catalogue.json#/decks/actions" },
+      "cards": {
+        "$content": "content/catalogue.json#/decks/actions"
+      },
       "shuffle": true
     },
     {
       "component": "cards.deck",
       "id": "attaques",
-      "cards": { "$content": "content/catalogue.json#/decks/attaques" },
+      "cards": {
+        "$content": "content/catalogue.json#/decks/attaques"
+      },
       "shuffle": true
     },
     {
       "component": "cards.deck",
       "id": "evenements",
-      "cards": { "$content": "content/catalogue.json#/decks/evenements" },
+      "cards": {
+        "$content": "content/catalogue.json#/decks/evenements"
+      },
       "shuffle": true
     },
     {
@@ -84,8 +104,16 @@
   ],
   "setup": {
     "deals": [
-      { "deckId": "divinite", "handId": "divinities", "count": 1 },
-      { "deckId": "creatures", "handId": "players", "count": 2 },
+      {
+        "deckId": "divinite",
+        "handId": "divinities",
+        "count": 1
+      },
+      {
+        "deckId": "creatures",
+        "handId": "players",
+        "count": 2
+      },
       {
         "deckId": "actions",
         "fallbackDeckId": "attaques",
@@ -96,22 +124,42 @@
   },
   "resourceIds": [],
   "shortcuts": [
-    { "key": "C", "type": "action", "actionType": "play_card" },
-    { "key": "P", "type": "action", "actionType": "pass" }
+    {
+      "key": "C",
+      "type": "action",
+      "actionType": "play_card"
+    },
+    {
+      "key": "P",
+      "type": "action",
+      "actionType": "pass"
+    }
   ],
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": ["draw_card", "play_card", "pass"],
+      "actions": [
+        "draw_card",
+        "play_card",
+        "pass"
+      ],
       "terminal": true
     }
   },
   "actions": {
-    "draw_card": { "recipe": "cards-shared-prestige-draw" },
-    "play_card": { "recipe": "cards-shared-prestige-play" },
-    "pass": { "recipe": "cards-shared-prestige-pass" }
+    "draw_card": {
+      "recipe": "cards-shared-prestige-draw"
+    },
+    "play_card": {
+      "recipe": "cards-shared-prestige-play"
+    },
+    "pass": {
+      "recipe": "cards-shared-prestige-pass"
+    }
   },
-  "victory": { "kind": "by-shared-prestige-cards" },
+  "victory": {
+    "kind": "by-shared-prestige-cards"
+  },
   "sharedPrestigeCards": {
     "handId": "players",
     "deckIds": [
@@ -124,6 +172,40 @@
     ],
     "targetScore": 30,
     "winnerReason": "prestige-30",
-    "cards": { "$content": "content/catalogue.json#/cards" }
+    "cards": {
+      "$content": "content/catalogue.json#/cards"
+    },
+    "mechanics": {
+      "blockDrawStatus": "block_actions",
+      "blockPlayStatus": "block_play",
+      "reducedGainStatus": "halved_gains",
+      "lossProtectionStatus": "shield",
+      "gainDivisor": 2,
+      "categories": [
+        {
+          "category": "heros",
+          "blockedBy": [
+            "block_hero",
+            "block_hero_exploit"
+          ],
+          "globallyBlockedBy": [
+            "global_block_hero"
+          ]
+        },
+        {
+          "category": "exploit",
+          "blockedBy": [
+            "block_exploit",
+            "block_hero_exploit"
+          ],
+          "globallyBlockedBy": [
+            "global_block_exploit"
+          ],
+          "multiplierStatus": "double_exploit",
+          "bonusStatus": "exploit_bonus",
+          "penaltyStatus": "exploit_penalty"
+        }
+      ]
+    }
   }
 }

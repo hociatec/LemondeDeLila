@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "3",
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
@@ -16,27 +16,56 @@
     {
       "component": "pawn.set",
       "id": "protectedHaunted",
-      "pawns": { "$content": "content/catalogue.json#/pawns" },
+      "pawns": {
+        "$content": "content/catalogue.json#/pawns"
+      },
       "perPlayer": 1
     },
     {
       "component": "cards.deck",
       "id": "frights",
-      "cards": { "$content": "content/catalogue.json#/cards" },
+      "cards": {
+        "$content": "content/catalogue.json#/cards"
+      },
       "shuffle": true,
       "empty": "recycle"
     }
   ],
-  "setup": { "firstPlayer": "random", "startRound": true },
+  "setup": {
+    "firstPlayer": "random",
+    "startRound": true
+  },
   "resourceIds": [],
-  "shortcuts": [{ "key": "D", "type": "action", "actionType": "roll" }],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    }
+  ],
   "initialPhase": "setup",
   "phases": {
-    "setup": { "actions": [], "transitions": ["playing"] },
-    "playing": { "actions": ["roll"], "terminal": true }
+    "setup": {
+      "actions": [],
+      "transitions": [
+        "playing"
+      ]
+    },
+    "playing": {
+      "actions": [
+        "roll"
+      ],
+      "terminal": true
+    }
   },
-  "actions": { "roll": { "recipe": "race-protected-haunted-track-roll" } },
-  "victory": { "kind": "by-protected-haunted-race" },
+  "actions": {
+    "roll": {
+      "recipe": "race-protected-haunted-track-roll"
+    }
+  },
+  "victory": {
+    "kind": "by-protected-haunted-race"
+  },
   "protectedHauntedRace": {
     "trackId": "manor",
     "diceId": "main",
@@ -59,7 +88,43 @@
       "nextRollIfThreeBackTwo": "protectedHaunted.next-roll-if-three-back-two",
       "blocked": "protectedHaunted.blocked"
     },
-    "tiles": { "$content": "content/catalogue.json#/tiles" },
-    "cards": { "$content": "content/catalogue.json#/cards" }
-  }
+    "tiles": {
+      "$content": "content/catalogue.json#/tiles"
+    },
+    "cards": {
+      "$content": "content/catalogue.json#/cards"
+    },
+    "conditionalMove": {
+      "equals": 3,
+      "delta": -2
+    },
+    "protections": [
+      {
+        "category": "trap",
+        "status": "protectedHaunted.ignore-trap-until-next-draw",
+        "consume": "draw"
+      },
+      {
+        "category": "trap",
+        "status": "protectedHaunted.ignore-next-trap",
+        "consume": "matching-card"
+      },
+      {
+        "category": "prank",
+        "status": "protectedHaunted.ignore-next-prank",
+        "consume": "matching-card"
+      },
+      {
+        "category": "ghost",
+        "status": "protectedHaunted.ignore-next-ghost",
+        "consume": "matching-card"
+      }
+    ]
+  },
+  "snapshotMigrations": [
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
+    }
+  ]
 }

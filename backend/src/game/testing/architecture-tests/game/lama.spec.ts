@@ -1,4 +1,4 @@
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import type { DeclarativeState } from '../../../engine/runtime/state/declarative-state';
 import { testGame } from '../../../engine/testing/public-api';
 

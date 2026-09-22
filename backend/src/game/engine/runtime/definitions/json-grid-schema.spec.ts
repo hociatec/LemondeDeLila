@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../testing/public-api';
 import manifest from '../../../games/vents-sacres/morpion/manifest.json';
 import composition from '../../../games/vents-sacres/morpion/game.json';

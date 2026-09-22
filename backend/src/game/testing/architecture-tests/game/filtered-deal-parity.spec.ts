@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { testGame } from '../../../engine/testing/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import ritesManifest from '../../../games/vents-dansants/entre-rites-et-lumieres/manifest.json';
 import ritesDocument from '../../../games/vents-dansants/entre-rites-et-lumieres/game.json';
 import ritesCatalogue from '../../../games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json';

@@ -1,0 +1,158 @@
+{
+  "date": "2026-09-22",
+  "scope": "local repository; no production deployment",
+  "status": "local-verification-passed",
+  "productionLines": 13320,
+  "productionLimit": 13344,
+  "behaviorLines": 13244,
+  "behaviorLimit": 13268,
+  "maximumFileBytes": 13500,
+  "largestFile": {
+    "file": "src/game/engine/runtime/effect-packs/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+    "bytes": 13335
+  },
+  "largeSingleConsumerReviews": 19,
+  "sdkVersion": "6.20.0",
+  "targetedSuites": 4,
+  "targetedTests": 29,
+  "typecheck": "passed",
+  "lint": "passed",
+  "build": "passed",
+  "compiledFiles": 1840,
+  "appModuleLoad": "passed",
+  "quality": "passed",
+  "regression": "passed",
+  "previousEvidence": "docs/quality/dette-suite-2026-09-22.json",
+  "observabilitySourcesUnchanged": true,
+  "productionDeployed": false,
+  "remainingExternalVerification": [
+    "Complete original text of item 63",
+    "Apply migrations and validate notification delivery in the target environment"
+  ],
+  "files": [
+    {
+      "file": "tools/engine-effect-pack-governance.json",
+      "sha256": "6c76f6fa4540426382bf4e4d04f9138f59b7cfd2316f87da7380ead3c10f4d50"
+    },
+    {
+      "file": "tools/engine-effect-pack-governance.spec.cjs",
+      "sha256": "add7907f6c417830732a74cdc3728c3036d184f8ec6bf8339a9c71ebc566b5be"
+    },
+    {
+      "file": "tools/sdk-contract-check.cjs",
+      "sha256": "0e3626e6ad67e175d56e25cc0b18edf6f4e420f650994ac0f9fe4c6a1f69fa48"
+    },
+    {
+      "file": "tools/sdk-contract-reference.json",
+      "sha256": "8bd36d4e15cddf78c603734d84460c77c60f2bbc50191a5e701b375995d5c24e"
+    },
+    {
+      "file": "src/game/engine/runtime/effects/effects-core.ts",
+      "sha256": "16ab544e193ea71090ab4fb940374395ffad6ac723d289cf50e459fd56b90004"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-program-bots.ts",
+      "sha256": "9df3f172893f4f5f92071c44a96f3047c75de1b7a37ab3a0b5d0e1e64ad1ac51"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-program-bots.spec.ts",
+      "sha256": "4f1aa66816be34917a028a3f6988e1d330ff6a3ef3593b6aa32ebe5895819385"
+    },
+    {
+      "file": "src/game/engine/runtime/actions/empty-definitions.spec.ts",
+      "sha256": "a9c23f67c527bb16edf95363997b6f41f621d4b2817fcb1b5af56312b0c3cd7a"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay/pawn-selection.recipes.ts",
+      "sha256": "afb836c48ec18d435b49d2a47a2e8b2b374d1eff73d9e8c485ca3d74b9db8b1f"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay/pawn-selection.spec.ts",
+      "sha256": "7a110452c2a55c39af85b60a2095d9248665b16848eab87cf225ebf4215bf01a"
+    },
+    {
+      "file": "src/game/engine/runtime/effect-packs/cards-public-domain/public-domain-isolation.spec.ts",
+      "sha256": "68ce01ef8ce5bb33bdd0714115857687c46cb47359845acd5cf21b45a0d2d3c8"
+    },
+    {
+      "file": "src/game/engine/runtime/effect-packs/race-bounce-quiz/bounce-quiz-race.recipes.ts",
+      "sha256": "4fd8b07ca75a7281e52dd4148a84ec338a38ff87545388746ce75bd6135b3df9"
+    },
+    {
+      "file": "src/game/engine/runtime/effect-packs/race-paired-pawns/paired-pawn-race.recipes.ts",
+      "sha256": "d7ba136d029f5981571dbaa4e259401b6ae0555f6b51824fb2f69dcc65ea5966"
+    },
+    {
+      "file": "src/game/engine/runtime/effect-packs/cards-public-domain/public-domain-cards.recipes.ts",
+      "sha256": "80e427a09adb80b5dc971d0a1d3e7a84a1a55f71ccc80946e62075be91000f44"
+    },
+    {
+      "file": "src/game/engine/runtime/effect-packs/race-quiz-event-track/quiz-event-race.recipes.ts",
+      "sha256": "62a6c3dbc8bab1ed3854b3e70e12b574d8cd6bad07a385b7790d21aa13173da6"
+    },
+    {
+      "file": "src/game/engine/runtime/effect-packs/collection-family-effects/family-effects.recipes.ts",
+      "sha256": "e0ecc612da0ba8cf7f5d1bfde06ea5f736109846db9917307e02faddc91e908c"
+    },
+    {
+      "file": "src/game/engine/runtime/effect-packs/race-treasure-track/treasure-track-race.recipes.ts",
+      "sha256": "bf7b60105149b9c606b93fbb73bea0c57e0013abf3408cc2a6154a51499df668"
+    },
+    {
+      "file": "src/game/engine/runtime/effect-packs/cards-ordered-assembly/car-assembly.recipes.ts",
+      "sha256": "8d3b1401220d8408816535313298e1c5ce5cfb15b659b6b45973ed1ae0b78f64"
+    },
+    {
+      "file": "src/game/engine/runtime/effect-packs/choice-chapter-encounter/chapter-encounter.recipes.ts",
+      "sha256": "3f3889adae4d686632f7f1a01463c37912cab2d91536130a2918fec4568ea1db"
+    }
+  ],
+  "regressionSuites": 433,
+  "regressionTests": 2532,
+  "regressionSeconds": 785.488,
+  "replayScenarios": 156,
+  "replayGames": 39,
+  "replaySeeds": [
+    0,
+    1,
+    17,
+    65535
+  ],
+  "maximumReplaySteps": 64,
+  "replaysFinished": 72,
+  "replaysAtStepLimit": 84,
+  "logs": [
+    {
+      "file": "logs/dette-finalisation-regression.log",
+      "sha256": "a26701f4a2a604b3040dcf1133f1d308a1cb6cb422eee3c5177f05f02a74b8fa"
+    },
+    {
+      "file": "logs/dette-finalisation-targeted.log",
+      "sha256": "33b82b98791523f799a2df93312bc00937bc012f5bd4d4e41d69aa580e64bb96"
+    },
+    {
+      "file": "logs/dette-finalisation-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/dette-finalisation-lint.log",
+      "sha256": "6b441b952377cf169e58f0949675247e699d106bb9396e872667f73d42ba31d5"
+    },
+    {
+      "file": "logs/dette-finalisation-build.log",
+      "sha256": "455c1cad11c79a305f9ec872f629d2fd5210ce8b09db923cf25af44eba4af891"
+    },
+    {
+      "file": "logs/dette-finalisation-quality.log",
+      "sha256": "cfc43458ac13228f458c390be5a522bd405c9916f4cab4f266923905929987c8"
+    },
+    {
+      "file": "logs/dette-finalisation-size.log",
+      "sha256": "abe309fd708c9504039106748d81997282da81ca15f4834bac46a80a12f1e226"
+    },
+    {
+      "file": "logs/game-replay-campaign-results.json",
+      "sha256": "8976963e0801e903198930f8fa07121cedfed57706b8fad8301ddca2d6653461"
+    }
+  ]
+}

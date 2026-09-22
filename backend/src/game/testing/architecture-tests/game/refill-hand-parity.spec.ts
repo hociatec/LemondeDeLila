@@ -4,7 +4,7 @@ import {
   GameSimulator,
   DeclarativeGameRuntime,
 } from '../../../engine/testing/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import cerclesManifest from '../../../games/vents-dansants/cercles-sacres/manifest.json';
 import cerclesDocument from '../../../games/vents-dansants/cercles-sacres/game.json';
 import cerclesCatalogue from '../../../games/vents-dansants/cercles-sacres/content/catalogue.json';

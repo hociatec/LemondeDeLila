@@ -1,4 +1,4 @@
-import { parseJsonGame } from './json-game-parser';
+import { parseJsonGame } from '../../../rules/public-api';
 
 describe('JSON treasureTrack race schema', () => {
   it('rejects an invalid treasureTrack collection limit', () => {

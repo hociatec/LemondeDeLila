@@ -1,0 +1,463 @@
+{
+  "date": "2026-09-22",
+  "scope": "Les points retires sont verifies dans le perimetre indique. Les observations positives sont cloturees par audit sans changement inutile du comportement. Aucune garantie sur tous les futurs deploiements.",
+  "reports": [
+    "logs/dette-regression-tests.json",
+    "logs/dette-focused-tests.json",
+    "logs/dette-additional-tests.json",
+    "logs/dette-migration-tests.json",
+    "logs/dette-capacity-tests.json",
+    "logs/dette-buffer-tests.json",
+    "logs/dette-capacity-final-tests.json",
+    "logs/dette-recovery-final-tests.json"
+  ],
+  "completed": [
+    {
+      "id": 1,
+      "original": "1. **Point : perte de lease Redis pas immédiatement propagée.**\r\n   Dans `redis-distributed-lease.service.ts`, si le renouvellement Redis lève une exception, le code journalise un warning mais ne passe pas immédiatement `lost = true`. Pendant cette période, le processus peut encore se considérer détenteur du lease jusqu'à un `isHeld()` ou un renouvellement ultérieur. **Risque : moyen à élevé** selon l'utilisation du verrou ; potentiel chevauchement de deux instances lors d'une panne/récupération Redis.",
+      "evidence": [
+        "redis-distributed-lease-lifecycle.spec.ts"
+      ]
+    },
+    {
+      "id": 4,
+      "original": "4. **Point : recovery des automatisations exécuté par chaque instance.**\r\n   `GameAutomationRecoveryService` empêche deux `recover()` simultanés **dans le même processus**, mais pas deux instances applicatives différentes d'examiner simultanément les mêmes sessions. **Risque : moyen** ; la sécurité finale dépend de l'idempotence du scheduler et de ses identifiants de jobs.",
+      "evidence": [
+        "game-automation-recovery.service.spec.ts"
+      ]
+    },
+    {
+      "id": 5,
+      "original": "5. **Point : le recovery est basé sur un polling toutes les 5 secondes.**\r\n   C'est robuste et simple, mais introduit une latence de récupération pouvant approcher plusieurs secondes après une perte Redis/redémarrage. Ce n'est pas nécessairement un bug, mais c'est une **dette/contrainte opérationnelle faible** à documenter.",
+      "evidence": [
+        "docs/operations/automation-recovery.md"
+      ]
+    },
+    {
+      "id": 6,
+      "original": "6. **Point : erreurs individuelles du recovery absorbées puis réessayées ultérieurement.**\r\n   C'est volontaire et empêche une ligne corrompue de bloquer les autres. En revanche, une session systématiquement invalide peut générer indéfiniment des erreurs toutes les passes. **Risque : faible à moyen** : bruit de logs et absence éventuelle de dead-letter/quarantaine.",
+      "evidence": [
+        "game-recovery-backoff.spec.ts",
+        "game-automation-recovery.service.spec.ts"
+      ]
+    },
+    {
+      "id": 7,
+      "original": "7. **Point : `Promise.race()` du health check ne cancelle pas l'opération sous-jacente.**\r\n   `withHealthCheckTimeout()` renvoie une erreur après 2 s, mais la Promise originale continue son exécution. **Risque : faible à moyen** ; en cas de backend Redis très lent, des opérations peuvent continuer à s'accumuler en arrière-plan.",
+      "evidence": [
+        "redis.health.spec.ts",
+        "bullmq.health.spec.ts"
+      ]
+    },
+    {
+      "id": 8,
+      "original": "8. **Point : timers et tâches asynchrones dispersés dans plusieurs modules.**\r\n   Le projet utilise plusieurs `setInterval`/`setTimeout` pour recovery, heartbeat, cleanup, WebSocket, maintenance, stockage audio, etc. La plupart semblent gérés correctement, mais cela augmente la surface de bugs de lifecycle/shutdown. **Dette : faible**, nécessitant surtout une discipline continue.",
+      "evidence": [
+        "tools/local-timer-audit.cjs"
+      ]
+    },
+    {
+      "id": 9,
+      "original": "9. **Point : heartbeat WebSocket relativement propre mais sensible aux paramètres extrêmes.**\r\n   Les valeurs sont bornées, les timers sont nettoyés et les listeners retirés. C'est positif. Autoriser néanmoins un intervalle minimum de `1 ms` permettrait une configuration accidentelle extrêmement agressive. **Risque : faible** ; une borne opérationnelle plus réaliste serait préférable.",
+      "evidence": [
+        "presence-heartbeat.spec.ts"
+      ]
+    },
+    {
+      "id": 10,
+      "original": "10. **Point : récupération WebSocket/presence dépend de structures mémoire locales.**\r\n    `PresenceHeartbeat` conserve notamment `pendingPings` en mémoire. Le nettoyage est correctement prévu, mais l'état est naturellement spécifique au processus. **Risque : faible** tant que la distinction entre présence locale et présence distribuée reste respectée.",
+      "evidence": [
+        "presence-heartbeat.spec.ts",
+        "presence.service.spec.ts"
+      ]
+    },
+    {
+      "id": 11,
+      "original": "11. **Point : plusieurs usages directs de `Date.now()` hors abstraction Clock.**\r\n    J'ai trouvé des appels directs notamment dans observabilité, notification, room WebSocket, admin et update, alors que le projet possède `SystemBusinessClock`/`SystemGameClock`. Certains sont parfaitement légitimes pour de l'infrastructure, mais l'incohérence peut rendre certains comportements temporels moins testables. **Dette : faible**.",
+      "evidence": [
+        "notification-dispatch.service.spec.ts",
+        "room-heartbeat-clock.spec.ts",
+        "wx-update-upload.service.spec.ts",
+        "docs/quality/dette-2026-09-22.md"
+      ]
+    },
+    {
+      "id": 14,
+      "original": "14. **Point : `presence.service.ts` ressort comme composant à surveiller.**\r\n    C'est l'un des plus gros services applicatifs du projet. Les services de présence ont généralement beaucoup de responsabilités concurrentes : connexions, refresh, état, diffusion, déconnexion. **Dette potentielle : moyenne** ; mérite une revue de responsabilité dédiée.",
+      "evidence": [
+        "presence.service.spec.ts",
+        "tools/structural-quality-check.cjs"
+      ]
+    },
+    {
+      "id": 15,
+      "original": "15. **Point : configuration environnementale centralisée mais volumineuse.**\r\n    `environment-validation.ts` est conséquent. La centralisation est positive, mais un schéma très large devient difficile à maintenir et augmente le risque de divergence entre validation, options runtime et documentation. **Dette : faible**.",
+      "evidence": [
+        "environment-validation.spec.ts",
+        "environment-inventory.spec.ts",
+        "validate-environment.spec.ts"
+      ]
+    },
+    {
+      "id": 16,
+      "original": "16. **Point : dépendance importante à l'idempotence.**\r\n    L'architecture distribuée repose beaucoup sur des opérations rejouables : commandes, scheduler, recovery, WebSocket receipts, etc. C'est une bonne stratégie, mais une seule opération non idempotente placée dans un chemin rejouable peut créer un bug difficile à reproduire. **Risque architectural : moyen**.",
+      "evidence": [
+        "game-command-idempotency.spec.ts",
+        "realtime-request-replay.service.spec.ts",
+        "game-realtime-automation.service.spec.ts"
+      ]
+    },
+    {
+      "id": 17,
+      "original": "17. **Point : nécessité de vérifier les effets externes autour des transactions.**\r\n    La persistance de l'état de jeu semble sérieusement protégée par transactions/CAS. Il faut cependant maintenir la règle selon laquelle un effet externe non transactionnel ne doit pas être déclenché avant que le commit correspondant soit définitivement acquis. **Risque potentiel : élevé si cette règle est violée quelque part**.",
+      "evidence": [
+        "game-engine.service.spec.ts",
+        "game-realtime-automation.service.spec.ts",
+        "docs/quality/dette-2026-09-22.md"
+      ]
+    },
+    {
+      "id": 18,
+      "original": "18. **Point : CAS + verrou pessimiste constituent une très bonne protection.**\r\n    Dans la persistance des sessions inspectée, l'état et sa timeline sont protégés transactionnellement avec contrôle de version/verrouillage. **Pas un problème** : c'est au contraire une responsabilité correctement placée qui diminue fortement les lost updates.",
+      "evidence": [
+        "game-session-typeorm.store.spec.ts",
+        "game-session-timeline.spec.ts"
+      ]
+    },
+    {
+      "id": 19,
+      "original": "19. **Point : verrou MySQL traité avec prudence.**\r\n    Le service de lock MySQL vérifie la libération et traite explicitement les connexions dont l'état peut devenir douteux. **Pas de dette évidente** dans ce mécanisme ; conception défensive correcte.",
+      "evidence": [
+        "mysql-game-room-lock.service.spec.ts"
+      ]
+    },
+    {
+      "id": 20,
+      "original": "20. **Point : combinaison verrou local + verrou distribué + CAS.**\r\n    Cette défense en profondeur réduit les race conditions, mais augmente la complexité conceptuelle. Il faut garder un ordre d'acquisition constant entre les différents verrous pour éviter les deadlocks. **Dette : moyenne en complexité**, même si la stratégie est techniquement solide.",
+      "evidence": [
+        "game-room-command-queue.service.spec.ts"
+      ]
+    },
+    {
+      "id": 21,
+      "original": "21. **Point : risque de deadlock à contrôler systématiquement.**\r\n    Dès qu'un système utilise plusieurs mécanismes de verrouillage, deux chemins prenant A→B et B→A suffisent à provoquer un blocage. Je n'ai pas identifié à ce stade un deadlock concret, mais **c'est une zone de risque à maintenir sous test**.",
+      "evidence": [
+        "game-room-command-queue.service.spec.ts",
+        "mysql-game-room-lock.service.spec.ts"
+      ]
+    },
+    {
+      "id": 22,
+      "original": "22. **Point : état interne et état persistant semblent clairement séparés.**\r\n    Les ports et stores donnent une frontière architecturale relativement nette. **Pas de problème majeur détecté** ; c'est un bon indicateur concernant les responsabilités.",
+      "evidence": [
+        "tools/game-state-ownership-audit.cjs",
+        "tools/persistence-audit.cjs"
+      ]
+    },
+    {
+      "id": 23,
+      "original": "23. **Point : architecture fortement découpée en ports/adapters.**\r\n    Les `boundaries`, ports applicatifs, infrastructure et APIs publiques réduisent le couplage. **Dette architecturale globale plutôt faible** sur ce point.",
+      "evidence": [
+        "tools/architecture-check.cjs"
+      ]
+    },
+    {
+      "id": 24,
+      "original": "24. **Point : présence de tests explicites de frontières architecturales.**\r\n    Le projet teste certaines règles d'import, ownership et dépendances interdites. **Très bon point** : cela empêche une partie de la dette architecturale de revenir silencieusement.",
+      "evidence": [
+        "tools/architecture-check.cjs",
+        "tools/runtime-separation-audit.cjs"
+      ]
+    },
+    {
+      "id": 25,
+      "original": "25. **Point : règles contre le non-déterminisme dans le moteur de jeu.**\r\n    Le projet semble contrôler les usages de temps et de hasard dans les zones déterministes. **Très bon point** pour replay, tests et reproductibilité.",
+      "evidence": [
+        "serialized-key-order.spec.ts",
+        "runtime-clock-contract.spec.ts"
+      ]
+    },
+    {
+      "id": 26,
+      "original": "26. **Point : RNG seedé.**\r\n    La présence d'un générateur pseudo-aléatoire contrôlé permet la reproductibilité des parties/tests. **Responsabilité correctement conçue**.",
+      "evidence": [
+        "seeded-rng.spec.ts"
+      ]
+    },
+    {
+      "id": 27,
+      "original": "27. **Point : gestion explicite des événements en attente.**\r\n    Le buffer impose notamment une limite au nombre d'événements. **Bon point de robustesse** : cela évite qu'un état défectueux grossisse sans limite.",
+      "evidence": [
+        "game-event-buffer.spec.ts"
+      ]
+    },
+    {
+      "id": 28,
+      "original": "28. **Point : stores mémoire bornés.**\r\n    `InMemoryGameSessionStore` refuse explicitement de dépasser sa capacité plutôt que de croître indéfiniment. **Bon point contre les memory leaks**.",
+      "evidence": [
+        "in-memory-game-session.store.spec.ts"
+      ]
+    },
+    {
+      "id": 29,
+      "original": "29. **Point : certaines caches/structures préfèrent échouer plutôt qu'évincer arbitrairement des données importantes.**\r\n    Pour les mécanismes d'idempotence/replay, c'est généralement le bon compromis. **Pas de bug identifié**, mais cela implique que les limites doivent être dimensionnées et monitorées.",
+      "evidence": [
+        "realtime-request-replay.service.spec.ts",
+        "memory-capacity-metrics.spec.ts",
+        "docs/quality/dette-2026-09-22.md"
+      ]
+    },
+    {
+      "id": 30,
+      "original": "30. **Point : gestion des logs de secrets explicitement testée.**\r\n    J'ai trouvé `log-sanitizer-credentials.spec.ts` et d'autres tests du sanitizer. **Très bon point sécurité/responsabilité**.",
+      "evidence": [
+        "log-sanitizer-credentials.spec.ts"
+      ]
+    },
+    {
+      "id": 31,
+      "original": "31. **Point : les messages d'erreur restent malgré tout une surface de fuite potentielle.**\r\n    Plusieurs composants loguent `error.message`. Si une dépendance inclut URL avec credentials, token, SQL sensible ou données utilisateur dans son message, un sanitizer doit obligatoirement être appliqué au bon niveau. **Risque : moyen**, à vérifier de bout en bout.",
+      "evidence": [
+        "log-sinks-secrets.spec.ts",
+        "best-effort.utils.spec.ts",
+        "log-sanitizer-credentials.spec.ts"
+      ]
+    },
+    {
+      "id": 32,
+      "original": "32. **Point : observabilité riche mais attention à la cardinalité.**\r\n    Les métriques possèdent un mécanisme de labels bornés, ce qui est positif. Les identifiants dynamiques (room, user, command, etc.) ne doivent jamais devenir des labels Prometheus non bornés. **Risque : faible**, car le projet semble déjà conscient du problème.",
+      "evidence": [
+        "prometheus-metrics.spec.ts",
+        "automation-recovery-metrics.spec.ts",
+        "tools/observability-contract-check.cjs"
+      ]
+    },
+    {
+      "id": 33,
+      "original": "33. **Point : filesystem possède des protections de chemin.**\r\n    `atomic-file.utils.ts` vérifie notamment les chemins hors répertoire autorisé et les tailles. **Très bon point sécurité** contre traversal et écritures incontrôlées.",
+      "evidence": [
+        "atomic-file.utils.spec.ts"
+      ]
+    },
+    {
+      "id": 34,
+      "original": "34. **Point : opérations filesystem atomiques défensives.**\r\n    Le projet vérifie les tailles et les copies et utilise des mécanismes atomiques. **Pas de dette majeure détectée** dans cette partie.",
+      "evidence": [
+        "atomic-file.utils.spec.ts"
+      ]
+    },
+    {
+      "id": 35,
+      "original": "35. **Point : retry filesystem basé sur temporisation.**\r\n    Certains retries utilisent `setTimeout` avec petit backoff. Correct pour des conflits transitoires, mais les limites et causes réessayables doivent rester strictes afin de ne pas masquer une panne permanente. **Risque : faible**.",
+      "evidence": [
+        "atomic-file.utils.spec.ts",
+        "tools/infrastructure-retry-audit.cjs"
+      ]
+    },
+    {
+      "id": 36,
+      "original": "36. **Point : Pub/Sub Redis explicitement best-effort.**\r\n    Le transport indique que le Pub/Sub n'est pas la source de vérité durable. C'est **une bonne décision architecturale**, à condition que toutes les informations indispensables soient effectivement reconstructibles depuis SQL.",
+      "evidence": [
+        "game-session-reconciliation.spec.ts",
+        "notification-inbox-typeorm.repository.spec.ts",
+        "docs/architecture/realtime-resilience-test-matrix.md"
+      ]
+    },
+    {
+      "id": 37,
+      "original": "37. **Point : SQL utilisé comme intention durable pour les automatisations.**\r\n    Le commentaire et le recovery indiquent que Redis peut être reconstruit depuis SQL. **Très bon point de résilience**.",
+      "evidence": [
+        "game-session-reconciliation.spec.ts",
+        "game-automation-recovery.service.spec.ts"
+      ]
+    },
+    {
+      "id": 38,
+      "original": "38. **Point : indisponibilité Redis en production traitée explicitement pour les leases.**\r\n    Le service refuse silencieusement le fallback local en production et lève une erreur. **Très bon choix** : il évite de prétendre avoir un verrou distribué lorsqu'il n'existe pas.",
+      "evidence": [
+        "redis-distributed-lease-lifecycle.spec.ts"
+      ]
+    },
+    {
+      "id": 39,
+      "original": "39. **Point : fallback Redis différent hors production.**\r\n    `acquire()` peut retourner `null` lorsqu'il n'y a pas Redis hors production. Les appelants doivent correctement distinguer « environnement sans verrou distribué » de « verrou actuellement détenu par quelqu'un d'autre ». **Risque : faible à moyen pour les tests**, car un mauvais traitement peut masquer un bug uniquement visible en production.",
+      "evidence": [
+        "redis-distributed-lease-lifecycle.spec.ts"
+      ]
+    },
+    {
+      "id": 40,
+      "original": "40. **Point : lifecycle/shutdown semble sérieusement pris en compte.**\r\n    Il existe un `ApplicationShutdownService`, des interceptors/middlewares et des tests de graceful shutdown. **Bon point**, particulièrement important pour éviter des commits interrompus ou jobs abandonnés.",
+      "evidence": [
+        "application-shutdown.service.spec.ts",
+        "install-graceful-shutdown.spec.ts"
+      ]
+    },
+    {
+      "id": 42,
+      "original": "42. **Point : WebSocket dispose de mécanismes de terminaison forcée.**\r\n    Les sockets qui ne répondent plus peuvent être terminées après timeout. **Bon point contre les connexions zombies**.",
+      "evidence": [
+        "presence-heartbeat.spec.ts"
+      ]
+    },
+    {
+      "id": 43,
+      "original": "43. **Point : reconnexion WebSocket utilise du backoff.**\r\n    J'ai trouvé des temporisations explicites dans notification. **Bon point**, mais il faut conserver jitter/backoff raisonnable pour éviter un thundering herd lors d'un redémarrage massif.",
+      "evidence": [
+        "notification-reconnect-delay.spec.ts",
+        "notification-ws-services.spec.ts"
+      ]
+    },
+    {
+      "id": 44,
+      "original": "44. **Point : risque de thundering herd lors d'une reprise globale.**\r\n    Plusieurs instances/clients peuvent simultanément reconnecter, récupérer des sessions ou reprogrammer des tâches après une panne Redis/serveur. **Risque : moyen opérationnel**, même avec idempotence correcte.",
+      "evidence": [
+        "redis-reconnect-delay.spec.ts",
+        "notification-reconnect-delay.spec.ts",
+        "game-automation-recovery.service.spec.ts"
+      ]
+    },
+    {
+      "id": 45,
+      "original": "45. **Point : limites de capacité explicites plutôt que croissance infinie.**\r\n    Plusieurs composants refusent ou bornent leur stockage. **Très bon point concernant la stabilité mémoire**.",
+      "evidence": [
+        "game-event-buffer.spec.ts",
+        "in-memory-game-session.store.spec.ts",
+        "realtime-request-replay.service.spec.ts"
+      ]
+    },
+    {
+      "id": 46,
+      "original": "46. **Point : beaucoup de tests accompagnent les infrastructures critiques.**\r\n    Redis, Pub/Sub, filesystem, lifecycle, persistance, architecture, jeux, WebSocket et validation possèdent des tests dédiés. **Dette de tests visiblement contenue**.",
+      "evidence": [
+        "logs/dette-regression-tests.json",
+        "logs/dette-additional-tests.json",
+        "logs/dette-migration-tests.json"
+      ]
+    },
+    {
+      "id": 47,
+      "original": "47. **Point : usages de `any` surtout concentrés dans les tests.**\r\n    La recherche n'a pas montré de prolifération inquiétante de `any` dans le code de production. **Bon niveau de discipline TypeScript**.",
+      "evidence": [
+        "logs/dette-production-types-audit.json"
+      ]
+    },
+    {
+      "id": 48,
+      "original": "48. **Point : quasiment pas de `@ts-ignore`/contournement du compilateur dans la production inspectée.**\r\n    C'est **un bon signe de qualité**, car la sûreté TypeScript n'est pas régulièrement neutralisée.",
+      "evidence": [
+        "logs/dette-production-types-audit.json"
+      ]
+    },
+    {
+      "id": 49,
+      "original": "49. **Point : très peu de TODO/FIXME/HACK significatifs détectés.**\r\n    Je ne vois pas un projet rempli de marqueurs de dette abandonnée. **Bon indicateur**, même si l'absence de TODO ne garantit évidemment pas l'absence de dette.",
+      "evidence": [
+        "logs/dette-production-types-audit.json"
+      ]
+    },
+    {
+      "id": 50,
+      "original": "50. **Point : code généré présent dans le repository.**\r\n    `generated-game-registry.ts` est relativement gros. Ce n'est pas un problème s'il est réellement généré automatiquement et vérifié contre la source ; sinon il existe un risque de divergence. **Dette : faible**.",
+      "evidence": [
+        "logs/dette-generation-cycles.log"
+      ]
+    },
+    {
+      "id": 51,
+      "original": "51. **Point : responsabilité des jeux relativement isolée du framework.**\r\n    Le moteur/domain paraît largement découplé de Nest/TypeORM/Redis. **Très bon point**, permettant tests et évolution sans dépendance infrastructure omniprésente.",
+      "evidence": [
+        "tools/runtime-separation-audit.cjs",
+        "tools/architecture-check.cjs"
+      ]
+    },
+    {
+      "id": 52,
+      "original": "52. **Point : validation des actions de jeu bornée.**\r\n    Le code refuse notamment « Too many actions ». **Bon mécanisme défensif** contre payload pathologique/abusif.",
+      "evidence": [
+        "validated-game-action.model.spec.ts"
+      ]
+    },
+    {
+      "id": 53,
+      "original": "53. **Point : validation des identités de tâches planifiées.**\r\n    Les contrats vérifient les indexes, identités et scheduled tasks. **Bon point** pour éviter l'injection d'une tâche incohérente dans le scheduler.",
+      "evidence": [
+        "scheduler-contracts.spec.ts",
+        "game-task-job-id.spec.ts"
+      ]
+    },
+    {
+      "id": 54,
+      "original": "54. **Point : détection de runtime de jeu inconnu.**\r\n    Le recovery ne continue pas silencieusement lorsqu'un runtime manque. **Bon comportement**, mais une ancienne session dont le runtime a été supprimé peut alors rester éternellement en erreur. **Risque de migration : moyen**.",
+      "evidence": [
+        "game-automation-recovery.service.spec.ts",
+        "docs/operations/automation-recovery.md"
+      ]
+    },
+    {
+      "id": 55,
+      "original": "55. **Point : compatibilité des sessions persistées avec les déploiements futurs.**\r\n    Puisque des états de jeu durables sont restaurés, chaque évolution du schéma/runtime doit gérer les anciennes versions. **Dette structurelle importante à surveiller : moyenne à élevée** si le produit permet des parties longues traversant des déploiements.",
+      "evidence": [
+        "engine-snapshot-migrations.spec.ts",
+        "json-restored-session.spec.ts",
+        "json-version-policy.spec.ts",
+        "content-snapshot-migrations.spec.ts",
+        "docs/architecture/engine-snapshot-migrations.md"
+      ]
+    },
+    {
+      "id": 56,
+      "original": "56. **Point : versionnement de contenu présent.**\r\n    Les éléments Mnémosyne montrent une notion de `contentVersion`/archive. **Très bon signe** concernant précisément la compatibilité temporelle.",
+      "evidence": [
+        "content-version.spec.ts",
+        "content-snapshot-migrations.spec.ts"
+      ]
+    },
+    {
+      "id": 57,
+      "original": "57. **Point : suppression conditionnelle d'ancien état.**\r\n    Le recovery utilise version + identité de restauration avant de supprimer un état obsolète. **Très bon mécanisme** contre le scénario où un vieux worker efface une nouvelle session.",
+      "evidence": [
+        "game-automation-recovery.service.spec.ts",
+        "game-session-typeorm.store.spec.ts"
+      ]
+    },
+    {
+      "id": 58,
+      "original": "58. **Point : contrôle de `roomRunId`.**\r\n    Le recovery vérifie que la session appartient toujours au run courant de la room. **Très bon point** contre les tâches retardées appliquées à une nouvelle partie.",
+      "evidence": [
+        "game-automation-recovery.service.spec.ts"
+      ]
+    },
+    {
+      "id": 59,
+      "original": "59. **Point : traitement d'une session défaillante n'affame pas les suivantes.**\r\n    Chaque session est entourée d'un `try/catch`. **Bon comportement de résilience**.",
+      "evidence": [
+        "game-automation-recovery.service.spec.ts"
+      ]
+    },
+    {
+      "id": 60,
+      "original": "60. **Point : curseur du recovery revient à `null` après la fin d'un sweep.**\r\n    Cela permet de rescanner périodiquement toutes les sessions et donc de récupérer les erreurs précédentes. **Correct fonctionnellement**, mais le coût devient proportionnel au nombre total de sessions actives.",
+      "evidence": [
+        "game-automation-recovery.service.spec.ts"
+      ]
+    },
+    {
+      "id": 62,
+      "original": "62. **Point : une page pleine entraîne la poursuite via curseur au prochain cycle plutôt qu'une boucle complète immédiate.**\r\n    Selon le volume, atteindre toutes les sessions peut prendre plusieurs intervalles de 5 secondes. Avec 10 000 sessions, par exemple, la récupération intégrale pourrait devenir lente. **Risque de scalabilité : moyen**.",
+      "evidence": [
+        "game-automation-recovery.service.spec.ts",
+        "docs/operations/automation-recovery.md"
+      ]
+    }
+  ],
+  "pending": [
+    2,
+    3,
+    12,
+    13,
+    41,
+    61,
+    63
+  ]
+}

@@ -168,8 +168,11 @@ export class GameWsStateMessagesPresenter {
     // Question and answer choices are rendered in the gameplay workflow.
     // Keep per-player activity out of the shared history, but announce the
     // revealed correct answer there once the quiz resolves.
-    if (messageKey === 'game.quiz.started' ||
-        messageKey === 'game.quiz.answer-recorded') return '';
+    if (
+      messageKey === 'game.quiz.started' ||
+      messageKey === 'game.quiz.answer-recorded'
+    )
+      return '';
     if (messageKey === 'game.quiz.resolved')
       return this.quizResolvedMessage(params);
     const card =

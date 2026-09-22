@@ -1,0 +1,135 @@
+{
+  "date": "2026-09-22",
+  "scope": "local authenticated Nest metrics endpoint, real Prometheus scrape and loopback alert delivery",
+  "status": "passed",
+  "fixed": [
+    "Incorrect metrics HTTP media type",
+    "Shared BullMQ queue counted multiple times across replicas"
+  ],
+  "beforeFixReproductions": 2,
+  "targetedSuites": 21,
+  "targetedTests": 77,
+  "newHttpTests": 5,
+  "promtool": {
+    "alertScenarios": 28,
+    "dashboardScenarios": 1,
+    "sloScenarios": 5,
+    "status": "passed"
+  },
+  "authenticatedScrape": {
+    "authenticatedScrape": true,
+    "actualRegistrySample": 3,
+    "invalidTokenRejected": true,
+    "nonAdminRejected": true,
+    "credentialRenewalRecovered": true,
+    "loopbackOnly": true
+  },
+  "alertDelivery": {
+    "alerts": 12,
+    "firingWebhooks": 12,
+    "resolvedWebhooks": 12,
+    "loopbackOnly": true
+  },
+  "typecheck": "passed",
+  "lint": "passed",
+  "build": "passed",
+  "compiledFiles": 1841,
+  "appModuleLoad": "passed",
+  "quality": "passed",
+  "previousFullRegression": "docs/quality/dette-finalisation-2026-09-22.json",
+  "engineSourcesUnchanged": true,
+  "fullRegressionRerun": false,
+  "productionDeployed": false,
+  "remaining": [
+    "Complete scope of original item 63",
+    "Deployment validation in the target environment"
+  ],
+  "files": [
+    {
+      "file": "src/platform/observability/infrastructure/metrics/metrics.controller.ts",
+      "sha256": "14b98f9e5b4c43cbb669d064084c50e2f8e95c0924ed816357f65c3f34f9c1bf"
+    },
+    {
+      "file": "src/platform/observability/infrastructure/metrics/metrics.controller.spec.ts",
+      "sha256": "9df3a165fb8d2c503927f936355d2239c631749ab2081413bd920569f4308a64"
+    },
+    {
+      "file": "tools/metrics-scrape-integration.cjs",
+      "sha256": "36bc1f861d51c268e7bd7f18e397f859b1c5b7d471bd238871f0d9e237884164"
+    },
+    {
+      "file": "tools/observability-contract-check.cjs",
+      "sha256": "596f9aab20e94fb44eea0caa44cb11a79877cff365932c1c325474d0c15b2542"
+    },
+    {
+      "file": "observability/prometheus/lila-alerts.yml",
+      "sha256": "9fa463d4b4362ee9206fe9647c24f17f5c949795b80b47385884532f204a457a"
+    },
+    {
+      "file": "observability/prometheus/lila-alerts.test.yml",
+      "sha256": "310ca284565b76b55c9b5d017a716cbbf5cd774d5bb066eb2b40043c11094213"
+    },
+    {
+      "file": "observability/prometheus/lila-slo-rules.yml",
+      "sha256": "3b48c62b50441989d039f5256e205bc62532f2b4562ee21b945aceab6bfc6c04"
+    },
+    {
+      "file": "observability/prometheus/lila-slo.test.yml",
+      "sha256": "feedd45c40e3a3bf93dd878d762ff35efed5dcbcd34d964f10f7c39e3b6b43ca"
+    },
+    {
+      "file": "observability/grafana/dashboards/backend-slo.json",
+      "sha256": "a5abd4ad648151be70b0a7f7e542de05dea57d15e21f54c5bdae56c5fbe95f46"
+    },
+    {
+      "file": "../.github/workflows/backend-architecture.yml",
+      "sha256": "be735d31a6ec4891520bc9b1968e48507d96b2eb04d4b641d356599a41a59e17"
+    },
+    {
+      "file": "package.json",
+      "sha256": "69a9c83ff595bb0208b1b56cf075602bd6011621d6b19c9b201c29a4945b1254"
+    }
+  ],
+  "logs": [
+    {
+      "file": "logs/dette-metrics-before.log",
+      "sha256": "62c371f4d8c769b56748417409b74967d17103aa7d3c4ea0c94a97197a09c972"
+    },
+    {
+      "file": "logs/dette-monitoring-promtool-before.log",
+      "sha256": "5e2bba0c16971fa599faf819a1ce90d98e16434f13e99886fe384a25933b263d"
+    },
+    {
+      "file": "logs/dette-monitoring-tests.log",
+      "sha256": "bafe43c6739ce64b30c1f00fc4cdf4b9dc56ee3bf73a8550148ed57be76ec2f2"
+    },
+    {
+      "file": "logs/dette-metrics-scrape.log",
+      "sha256": "6e3018157071c290310f6daf5cf766eac4790053e8f2da49d7dadfa539019546"
+    },
+    {
+      "file": "logs/dette-monitoring-promtool.log",
+      "sha256": "d542e78465ecafbaf749faf02df6fa7673c117bcce8bfb1636b1b2f39ab232b2"
+    },
+    {
+      "file": "logs/dette-monitoring-delivery.log",
+      "sha256": "c29cbc8d0812ef086ca2dd7b9915308ed15b85d99587dfa5a2d6b29f6bf53305"
+    },
+    {
+      "file": "logs/dette-monitoring-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/dette-monitoring-lint.log",
+      "sha256": "6b441b952377cf169e58f0949675247e699d106bb9396e872667f73d42ba31d5"
+    },
+    {
+      "file": "logs/dette-monitoring-build.log",
+      "sha256": "01c611d015d72577b16dafc3bb047948cd9d9528c3f716480740fe3337a069a4"
+    },
+    {
+      "file": "logs/dette-monitoring-quality.log",
+      "sha256": "9777b3bc9f127f3ee47133ea9cdca3dc842418a9f8bd3d48c59a074dd82abe8f"
+    }
+  ]
+}

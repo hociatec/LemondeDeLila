@@ -49,6 +49,8 @@ import { RoleDefinitionTypeormRepository } from '../infrastructure/persistence/t
 import { AdminNotificationAdapter } from '../infrastructure/system/admin-notification.adapter';
 import { AdminMaintenanceRuntimeService } from '../infrastructure/system/admin-maintenance-runtime.service';
 import { FilesystemAdminMaintenanceLockService } from '../infrastructure/system/filesystem-admin-maintenance-lock.service';
+import { MysqlAdminMaintenanceLockService } from '../infrastructure/persistence/typeorm/mysql-admin-maintenance-lock.service';
+import { AdminMaintenanceOwnership } from '../infrastructure/system/admin-maintenance-ownership';
 
 export const ADMIN_CORE_PROVIDERS = [
   RoleDefinitionTypeormRepository,
@@ -65,9 +67,11 @@ export const ADMIN_CORE_PROVIDERS = [
     useExisting: AdminMaintenanceRuntimeService,
   },
   FilesystemAdminMaintenanceLockService,
+  MysqlAdminMaintenanceLockService,
+  AdminMaintenanceOwnership,
   {
     provide: ADMIN_MAINTENANCE_LOCK,
-    useExisting: FilesystemAdminMaintenanceLockService,
+    useExisting: MysqlAdminMaintenanceLockService,
   },
   {
     provide: ADMIN_NOTIFICATION_PORT,

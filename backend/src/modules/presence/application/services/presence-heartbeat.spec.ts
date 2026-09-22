@@ -27,8 +27,8 @@ describe('PresenceHeartbeat', () => {
         unregister,
         refreshPresence: jest.fn(),
       },
-      50,
-      10,
+      5_000,
+      1_000,
     );
     heartbeat.ensureStarted();
     return { socket, ping, terminate, unregister, heartbeat };
@@ -36,13 +36,13 @@ describe('PresenceHeartbeat', () => {
 
   it('cancels pending deadlines and listeners on shutdown', () => {
     const { socket, terminate, unregister, heartbeat } = trackedSocket();
-    jest.advanceTimersByTime(50);
+    jest.advanceTimersByTime(5_000);
     expect(socket.listenerCount('pong')).toBe(1);
     heartbeat.stop();
     expect(socket.listenerCount('pong')).toBe(0);
     expect(socket.listenerCount('close')).toBe(0);
     expect(jest.getTimerCount()).toBe(0);
-    jest.advanceTimersByTime(100);
+    jest.advanceTimersByTime(10_000);
     expect(terminate).not.toHaveBeenCalled();
     expect(unregister).not.toHaveBeenCalled();
   });
@@ -52,7 +52,7 @@ describe('PresenceHeartbeat', () => {
     ping.mockImplementation(() => {
       socket.emit('pong', Buffer.alloc(0));
     });
-    jest.advanceTimersByTime(60);
+    jest.advanceTimersByTime(6_000);
     expect(terminate).not.toHaveBeenCalled();
     expect(socket.listenerCount('pong')).toBe(0);
     expect(socket.listenerCount('close')).toBe(0);
@@ -61,10 +61,10 @@ describe('PresenceHeartbeat', () => {
 
   it.each(['cancel', 'close'])('removes pending work on socket %s', (event) => {
     const { socket, terminate, unregister, heartbeat } = trackedSocket();
-    jest.advanceTimersByTime(50);
+    jest.advanceTimersByTime(5_000);
     if (event === 'cancel') heartbeat.cancel(socket);
     else socket.emit('close');
-    jest.advanceTimersByTime(10);
+    jest.advanceTimersByTime(1_000);
     expect(terminate).not.toHaveBeenCalled();
     expect(unregister).not.toHaveBeenCalled();
     expect(socket.listenerCount('pong')).toBe(0);
@@ -85,12 +85,12 @@ describe('PresenceHeartbeat', () => {
         unregister: jest.fn(),
         refreshPresence,
       },
-      50,
-      10,
+      5_000,
+      1_000,
     );
 
     heartbeat.ensureStarted();
-    jest.advanceTimersByTime(50);
+    jest.advanceTimersByTime(5_000);
 
     expect(socket.ping).toHaveBeenCalledTimes(1);
     expect(refreshPresence).toHaveBeenCalledTimes(1);
@@ -112,15 +112,30 @@ describe('PresenceHeartbeat', () => {
         unregister,
         refreshPresence: jest.fn(),
       },
-      50,
-      10,
+      5_000,
+      1_000,
     );
 
     heartbeat.ensureStarted();
-    jest.advanceTimersByTime(60);
+    jest.advanceTimersByTime(6_000);
 
     expect(unregister).toHaveBeenCalledWith(socket);
     expect(socket.terminate).toHaveBeenCalledTimes(1);
     heartbeat.stop();
+  });
+
+  it('clamps sub-second configuration and keeps the timeout within the interval', () => {
+    const listSockets = jest.fn(() => []);
+    const heartbeat = new PresenceHeartbeat(
+      { listSockets, unregister: jest.fn(), refreshPresence: jest.fn() },
+      1,
+      1,
+    );
+    heartbeat.ensureStarted();
+    jest.advanceTimersByTime(999);
+    expect(listSockets).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1);
+    expect(listSockets).toHaveBeenCalledTimes(1);
+    expect(jest.getTimerCount()).toBe(0);
   });
 });

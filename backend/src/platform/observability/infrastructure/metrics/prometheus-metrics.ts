@@ -1,5 +1,8 @@
+import { MemoryCapacityMetrics } from './memory-capacity-metrics';
 import type { NextFunction, Request, Response } from 'express';
 import { GameOperationMetrics } from './game-operation-metrics';
+import { AutomationRecoveryMetrics } from './automation-recovery-metrics';
+import { DistributedLeaseMetrics } from './distributed-lease-metrics';
 import { BoundedMetricLabel } from './bounded-metric-label';
 import {
   collectDefaultMetrics,
@@ -12,6 +15,9 @@ import {
 export class PrometheusMetrics {
   readonly registry = new Registry();
   readonly game = new GameOperationMetrics(this.registry);
+  readonly memoryCapacity = new MemoryCapacityMetrics(this.registry);
+  readonly recovery = new AutomationRecoveryMetrics(this.registry);
+  readonly leases = new DistributedLeaseMetrics(this.registry);
   private readonly routes = new BoundedMetricLabel(
     256,
     /^\/[\w/.:*{}?-]{0,255}$/,
@@ -70,6 +76,12 @@ export class PrometheusMetrics {
     name: 'lila_bullmq_jobs',
     help: 'Nombre de jobs BullMQ par état.',
     labelNames: ['queue', 'state'] as const,
+    registers: [this.registry],
+  });
+  private readonly bullmqFailures = new Counter({
+    name: 'lila_bullmq_failures_total',
+    help: 'Nombre cumulatif de tentatives BullMQ en échec.',
+    labelNames: ['queue'] as const,
     registers: [this.registry],
   });
   private readonly activeRooms = new Gauge({
@@ -162,6 +174,7 @@ export class PrometheusMetrics {
     counts: Record<'waiting' | 'active' | 'delayed' | 'failed', number>,
   ): void {
     queue = this.queues.resolve(queue);
+    this.bullmqFailures.inc({ queue }, 0);
     for (const state of ['waiting', 'active', 'delayed', 'failed'] as const) {
       const count = counts[state];
       this.bullmqJobs.set(
@@ -173,6 +186,10 @@ export class PrometheusMetrics {
 
   setActiveRooms(count: number): void {
     this.activeRooms.set(Number.isSafeInteger(count) && count >= 0 ? count : 0);
+  }
+
+  recordBullmqFailure(queue: string): void {
+    this.bullmqFailures.inc({ queue: this.queues.resolve(queue) });
   }
 }
 

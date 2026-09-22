@@ -10,7 +10,6 @@ import {
 import { parseJsonGame } from './json-game-parser';
 import { compileJsonPattern } from './json-game-patterns';
 import { compileJsonPrograms } from './json-game-program-compiler';
-import { assertBoardPawnCapacity } from './json-board-pawn-capacity';
 import { jsonProgramInitialization } from './json-program-initialization';
 import {
   standardVictory,
@@ -22,7 +21,9 @@ import { GameConfigurationError } from '../../../core/domain/errors/game-domain.
 import { assertGameManifestMatches } from '../../../core/application/helpers/game-manifest-validation';
 import type { JsonGameManifest } from './json-game-manifest';
 import type { JsonGameViewAugmentation } from '../contracts/json-effect-pack';
-import { jsonEffectPacks } from '../effect-packs/json-effect-pack-registry';
+import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
+
+import { createJsonGameSchema } from './json-game-schema';
 
 export type { JsonGameManifest } from './json-game-manifest';
 
@@ -31,30 +32,33 @@ export function compileJsonGame(
   source: unknown,
   assets?: JsonContentAssets,
   options: { externalContent?: boolean } = {},
+  jsonEffectPacks: JsonEffectPackCatalog = [],
 ) {
   assertGameManifestMatches(manifest, manifest);
   if (!manifest.code.trim())
     throw new GameConfigurationError('Empty JSON game identifier');
   const resolvedSource = resolveJsonContent(source, assets);
-  const metadata = parseJsonGame(resolvedSource);
+  const schema = createJsonGameSchema(jsonEffectPacks);
+  const parse = (value: unknown) => parseJsonGame(value, 'game.json', schema);
+  const metadata = parse(resolvedSource);
   const content = defineGameContent(manifest.code, resolvedSource, {
     externalContent: options.externalContent,
     version: metadata.contentVersion,
     formatVersion: 1,
     snapshotMigrations: metadata.snapshotMigrations,
-    schema: { parse: parseJsonGame },
+    schema: { parse },
   });
   const document = content.data;
   const fail = (path: string, reason: string): never => {
     throw new GameConfigurationError(`${manifest.code}.${path}: ${reason}`);
   };
-  const programs = compileJsonPrograms(document);
+  const programs = compileJsonPrograms(document, jsonEffectPacks);
   const { patterns } = programs;
-  assertDocumentReferences(document, patterns, manifest, fail);
+  assertDocumentReferences(document, patterns, manifest, fail, jsonEffectPacks);
   const actions = compileJsonActions(document, programs, fail);
   const events = programs.events;
   const components = [...document.components, ...programs.components];
-  const handlers = programHandlers(document, programs);
+  const handlers = programHandlers(document, programs, jsonEffectPacks);
   const buildDefinition = () =>
     defineGame<Record<string, never>>()<
       typeof actions,
@@ -78,7 +82,7 @@ export function compileJsonGame(
       patterns,
       shortcuts: document.shortcuts,
       components,
-      initialization: jsonProgramInitialization(document),
+      initialization: jsonProgramInitialization(document, jsonEffectPacks),
       resourceIds: document.resourceIds,
       initialPhase: document.initialPhase,
       phases: document.phases,
@@ -126,6 +130,7 @@ function assertDocumentReferences(
   patterns: ReturnType<typeof compileJsonPattern>[] | undefined,
   manifest: JsonGameManifest,
   fail: JsonFailure,
+  jsonEffectPacks: JsonEffectPackCatalog,
 ): void {
   const resources = new Set(document.resourceIds);
   assertStandardVictoryReferences(
@@ -137,9 +142,8 @@ function assertDocumentReferences(
     resources,
     fail,
   );
-  assertProgramReferences(document, patterns, manifest, fail);
-  assertBoardPawnCapacity(document, manifest.maxPlayers, fail);
-  assertSelections(document, patterns, fail);
+  assertProgramReferences(document, patterns, manifest, fail, jsonEffectPacks);
+  assertSelections(document, patterns, fail, jsonEffectPacks);
   for (const shortcut of document.shortcuts ?? []) {
     if (
       shortcut.type === 'action' &&
@@ -164,6 +168,7 @@ function assertSelections(
   document: JsonDocument,
   patterns: ReturnType<typeof compileJsonPattern>[] | undefined,
   fail: JsonFailure,
+  jsonEffectPacks: JsonEffectPackCatalog,
 ): void {
   const sources = new Map<string, unknown>(Object.entries(document));
   const choices = new Set<string>();

@@ -174,7 +174,8 @@ export class NotificationDispatchService
       return;
     }
     // Infrastructure-only TTL for the best-effort delivery deduplication cache.
-    const now = Date.now();
+    // Deduplication is process-local elapsed time, unaffected by wall-clock jumps.
+    const now = performance.now();
     for (const [eventId, seenAt] of this.processedEventIds) {
       if (now - seenAt >= operationalSettings.notificationDeduplicationTtlMs)
         this.processedEventIds.delete(eventId);

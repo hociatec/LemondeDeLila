@@ -1,11 +1,15 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "1",
   "snapshotMigrations": [
     {
       "fromVersion": "entre-rites-et-lumieres@content:6b100bc2",
       "toVersion": "1"
+    },
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
     }
   ],
   "category": "JeuxDePlateaux",
@@ -29,7 +33,10 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": ["ask_card", "pass"],
+      "actions": [
+        "ask_card",
+        "pass"
+      ],
       "terminal": true
     }
   },
@@ -47,6 +54,9 @@
   "ritualPhases": {
     "cards": {
       "$content": "content/catalogue.json#/cards"
-    }
+    },
+    "initialHandSize": 5,
+    "exchangeFamilyCount": 3,
+    "finishReason": "five-families"
   }
 }

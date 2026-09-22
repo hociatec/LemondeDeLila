@@ -92,6 +92,24 @@ describe('WxUpdateReleaseService', () => {
     ).rejects.toThrow('Installateur WX invalide');
   });
 
+  it('never steals an old publication resource lock from a suspended writer', async () => {
+    await fs.promises.mkdir(releases.getTargetDir(), { recursive: true });
+    const lockPath = path.join(releases.getTargetDir(), '.publish.lock');
+    await fs.promises.writeFile(lockPath, 'suspended-owner');
+    await fs.promises.utimes(lockPath, new Date(0), new Date(0));
+    await expect(
+      publishRelease({
+        releaseId: 'blocked',
+        version: '1.2.3',
+        sequence: 1,
+        content: validZipPayload('blocked'),
+      }),
+    ).rejects.toThrow('publication');
+    expect(await fs.promises.readFile(lockPath, 'utf8')).toBe(
+      'suspended-owner',
+    );
+  });
+
   const publishRelease = async (input: {
     releaseId: string;
     version: string;

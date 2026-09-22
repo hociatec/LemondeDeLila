@@ -1,0 +1,19 @@
+{
+    "date":  "2026-09-22",
+    "original":  "2. **Point : dépendance à `isHeld()` pour garantir réellement l\u0027exclusion distribuée.**\r\n   Le lease fournit bien `isHeld()`, mais sa sûreté dépend des appelants : une opération longue qui acquiert le lease puis travaille sans revérification peut continuer après expiration/perte du verrou. **Risque : moyen**, à auditer sur chaque consommateur du service.\n\n3. **Point : absence apparente de fencing token sur le lease Redis.**\r\n   Le UUID protège correctement `release()`/`renew()` contre la suppression du verrou d\u0027un autre propriétaire, mais ce n\u0027est pas un fencing token monotone transmis à la ressource protégée. Un ancien détenteur ayant été suspendu suffisamment longtemps peut théoriquement reprendre son travail après qu\u0027un autre détenteur a acquis le lease. **Risque : moyen**, surtout pour les opérations longues ou destructrices.\n\n12. **Point : complexité importante du domaine jeu.**\r\n    Le projet possède énormément de contrôleurs, effect packs, recettes, kits, projections et états. Même avec une architecture propre, cette quantité de logique crée naturellement un risque de combinaisons d\u0027états insuffisamment couvertes. **Dette intrinsèque : moyenne**, davantage liée à la complexité métier qu\u0027à une mauvaise conception.\n\n13. **Point : certains fichiers de production sont relativement volumineux.**\r\n    Plusieurs composants dépassent ~13–16 KB : présence, validation d\u0027environnement, contrôleurs de cartes, règles, projections, kits, etc. Ce n\u0027est pas énorme individuellement, mais certains peuvent commencer à cumuler trop de responsabilités. **Dette : faible à moyenne**.\n\n41. **Point : opérations en cours pendant le shutdown.**\r\n    `shutdown.run()` semble utilisé pour certaines opérations critiques. Il faut que tous les workers et mutations importantes passent par cette convention. **Risque potentiel : moyen** si un nouveau worker est ajouté sans l\u0027utiliser.\n\n61. **Point : scalabilité du recovery par scan périodique.**\r\n    Avec beaucoup de sessions actives, scanner par pages de 100 toutes les 5 secondes peut générer une charge SQL/runtime significative. **Dette de scalabilité : moyenne** si le volume devient élevé.\n\n63. **Point : monitoring nécessaire\n",
+    "report":  "docs/quality/dette-restante-2026-09-22.md",
+    "corrected":  [
+                      2,
+                      3,
+                      13,
+                      41,
+                      61
+                  ],
+    "intrinsicRisk":  [
+                          12
+                      ],
+    "incompleteScope":  [
+                            63
+                        ],
+    "productionDeployed":  false
+}

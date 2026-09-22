@@ -67,7 +67,7 @@ function generateGameRegistry(options = {}) {
       `const game${index} = compileJsonGame(manifest${index}, document${index}, {\n${entries}\n});`,
     ];
   });
-  if (jsonGames.length) imports.unshift("import { compileJsonGame } from '../engine/json/public-api';");
+  if (jsonGames.length) imports.unshift("import { compileJsonGame } from '../rules/public-api';");
   const entries = games.map((file, index) => `  game${index},`);
   const packages = games.map((file, index) => `  Object.freeze({ definition: game${index}, manifest: manifest${index} }),`);
   const source = `${[...imports, ...jsonGames].join('\n')}

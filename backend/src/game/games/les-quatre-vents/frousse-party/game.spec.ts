@@ -2,7 +2,7 @@ import {
   DeclarativeGameRuntime,
   testGame,
 } from '../../../engine/testing/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
 import document from './game.json';
 import catalogue from './content/catalogue.json';

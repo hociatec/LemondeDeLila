@@ -1,0 +1,108 @@
+rule_files:
+  - lila-slo-rules.yml
+  - lila-alerts.yml
+evaluation_interval: 1m
+tests:
+  - name: low traffic errors are ratios, not rates
+    interval: 1m
+    input_series:
+      - series: lila_http_requests_total{status="200"}
+        values: 0+1x20
+      - series: lila_http_requests_total{status="500"}
+        values: 0+1x20
+      - series: lila_ws_messages_total{outcome="success"}
+        values: 0+1x20
+      - series: lila_ws_messages_total{outcome="error"}
+        values: 0+1x20
+    promql_expr_test:
+      - expr: lila:slo:http_availability:ratio_rate5m
+        eval_time: 5m
+        exp_samples:
+          - labels: lila:slo:http_availability:ratio_rate5m{}
+            value: 0.5
+      - expr: lila:slo:ws_error:ratio_rate5m
+        eval_time: 5m
+        exp_samples:
+          - labels: lila:slo:ws_error:ratio_rate5m{}
+            value: 0.5
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaHttpAvailabilityBudgetBurn
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Disponibilité HTTP sous le SLO de 99,5 %
+      - eval_time: 20m
+        alertname: LilaWebSocketErrorsHigh
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Plus de 1 % des commandes WebSocket échouent
+  - name: success without an error series still produces healthy ratios
+    interval: 1m
+    input_series:
+      - series: lila_http_requests_total{status="200"}
+        values: 0+1x10
+      - series: lila_ws_messages_total{outcome="success"}
+        values: 0+1x10
+    promql_expr_test:
+      - expr: lila:slo:http_availability:ratio_rate5m
+        eval_time: 5m
+        exp_samples:
+          - labels: lila:slo:http_availability:ratio_rate5m{}
+            value: 1
+      - expr: lila:slo:ws_error:ratio_rate5m
+        eval_time: 5m
+        exp_samples:
+          - labels: lila:slo:ws_error:ratio_rate5m{}
+            value: 0
+  - name: zero traffic does not divide by zero
+    interval: 1m
+    input_series:
+      - series: lila_http_requests_total{status="200"}
+        values: 0+0x10
+      - series: lila_ws_messages_total{outcome="success"}
+        values: 0+0x10
+    promql_expr_test:
+      - expr: lila:slo:http_availability:ratio_rate5m
+        eval_time: 5m
+        exp_samples:
+          - labels: lila:slo:http_availability:ratio_rate5m{}
+            value: 1
+      - expr: lila:slo:ws_error:ratio_rate5m
+        eval_time: 5m
+        exp_samples:
+          - labels: lila:slo:ws_error:ratio_rate5m{}
+            value: 0
+  - name: p95 is computed from cumulative histogram buckets
+    interval: 1m
+    input_series:
+      - series: lila_http_request_duration_seconds_bucket{le="0.5"}
+        values: 0+90x10
+      - series: lila_http_request_duration_seconds_bucket{le="1"}
+        values: 0+100x10
+      - series: lila_http_request_duration_seconds_bucket{le="+Inf"}
+        values: 0+100x10
+    promql_expr_test:
+      - expr: abs(lila:slo:http_latency_p95_seconds:rate5m - 0.75) < bool 0.000001
+        eval_time: 5m
+        exp_samples:
+          - labels: "{}"
+            value: 1
+  - name: failed job cleanup is not a counter reset
+    interval: 1m
+    input_series:
+      - series: lila_bullmq_failures_total{queue="game-engine-tasks"}
+        values: 0+1x20
+      - series: lila_bullmq_jobs{state="failed"}
+        values: 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0
+    promql_expr_test:
+      - expr: lila:slo:bullmq_failed:increase15m
+        eval_time: 20m
+        exp_samples:
+          - labels: lila:slo:bullmq_failed:increase15m{}
+            value: 15

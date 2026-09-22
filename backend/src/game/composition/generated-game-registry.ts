@@ -1,4 +1,4 @@
-import { compileJsonGame } from '../engine/json/public-api';
+import { compileJsonGame } from '../rules/public-api';
 import manifest0 from '../games/les-quatre-vents/a-fond-les-ballons/manifest.json';
 import document0 from '../games/les-quatre-vents/a-fond-les-ballons/game.json';
 import asset0_0 from '../games/les-quatre-vents/a-fond-les-ballons/catalogue.json';

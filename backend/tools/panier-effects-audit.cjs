@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 require('ts-node').register({ transpileOnly: true });
-const { compileJsonGame } = require('../src/game/engine/runtime/definitions/json-game-compiler');
+const { compileJsonGame } = require('../src/game/rules/public-api');
 const manifest = require('../src/game/games/les-quatre-vents/panier-express/manifest.json');
 const document = require('../src/game/games/les-quatre-vents/panier-express/game.json');
 const { jsonContentAssets } = require('../commands/json-content-assets.cjs');

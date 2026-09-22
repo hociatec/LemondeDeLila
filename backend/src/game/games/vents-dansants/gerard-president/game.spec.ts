@@ -3,7 +3,7 @@ import {
   DeclarativeGameRuntime,
 } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
 import document from './game.json';
 import catalogue from './content/catalogue.json';
@@ -95,6 +95,6 @@ describe('Gérard président declarative game', () => {
       source,
       [],
     ) as typeof source;
-    expect(restored.engine.contentVersion).toBe('1');
+    expect(restored.engine.contentVersion).toBe(document.contentVersion);
   });
 });

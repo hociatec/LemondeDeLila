@@ -39,6 +39,22 @@ jobs:
           node -e "require('node:fs').mkdirSync('logs', { recursive: true })"
       - name: Check quality and test regression guards
         run: npm run quality:check
+      - name: Check alert behavior with Prometheus
+        run: >-
+          docker run --rm
+          -v "${{ github.workspace }}/backend/observability/prometheus:/rules:ro"
+          --entrypoint=/bin/promtool prom/prometheus:v3.5.0
+          test rules /rules/lila-alerts.test.yml /rules/lila-slo.test.yml
+      - name: Verify alert delivery and resolution on loopback
+        run: |
+          prometheus_container=$(docker create prom/prometheus:v3.5.0)
+          alertmanager_container=$(docker create prom/alertmanager:v0.28.1)
+          trap 'docker rm "$prometheus_container" "$alertmanager_container" >/dev/null' EXIT
+          docker cp "$prometheus_container:/bin/prometheus" "$RUNNER_TEMP/prometheus"
+          docker cp "$alertmanager_container:/bin/alertmanager" "$RUNNER_TEMP/alertmanager"
+          chmod +x "$RUNNER_TEMP/prometheus" "$RUNNER_TEMP/alertmanager"
+          PROMETHEUS_BINARY="$RUNNER_TEMP/prometheus" ALERTMANAGER_BINARY="$RUNNER_TEMP/alertmanager" npm run test:observability:integration
+          PROMETHEUS_BINARY="$RUNNER_TEMP/prometheus" npm run test:metrics:integration
       - name: Enforce zero TypeScript source cycles
         run: npm run cycles:audit
       - name: Check lint rules
@@ -74,6 +90,8 @@ jobs:
         run: npm ci --ignore-scripts --include=dev
       - name: Exercise MySQL, Redis, BullMQ and two backend instances
         run: npm run test:integration:real
+      - name: Exercise every application and game regression suite
+        run: npm test -- --maxWorkers=2
 
   release-artifact:
     needs: [architecture, real-integration]

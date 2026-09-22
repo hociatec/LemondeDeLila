@@ -1,5 +1,4 @@
-import type { JsonEffectPackDocumentFields } from '../effect-packs/json-effect-pack-document-fields';
 import type { JsonGameCoreDocument } from './json-game-core-document';
-
+/** Extension fields are validated against the supplied catalogue. */
 export type JsonGameDocument = JsonGameCoreDocument &
-  JsonEffectPackDocumentFields;
+  Readonly<Record<string, unknown>>;

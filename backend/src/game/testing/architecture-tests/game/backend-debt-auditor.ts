@@ -171,7 +171,7 @@ export function auditGameImportBoundaries(input: {
             !GAME_SDK_PUBLIC_IMPORT.test(specifier) &&
             !(
               input.file.endsWith('.spec.ts') &&
-              /^(?:\.\.\/)+engine\/(?:testing|json)\/public-api$/.test(
+              /^(?:\.\.\/)+(?:engine\/(?:testing|json)|rules)\/public-api$/.test(
                 specifier,
               )
             )),

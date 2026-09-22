@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "3",
   "category": "JeuxDePlateaux",
   "world": "VentsSacres",
@@ -18,12 +18,30 @@
       "component": "pawn.set",
       "perPlayer": 1,
       "pawns": [
-        { "id": "coq-rockeur", "label": "Coq rockeur" },
-        { "id": "vache-artistique", "label": "Vache artistique" },
-        { "id": "cochon-gourmand", "label": "Cochon gourmand" },
-        { "id": "poule-scientifique", "label": "Poule scientifique" },
-        { "id": "chevre-acrobate", "label": "Chèvre acrobate" },
-        { "id": "marmotte-reveuse", "label": "Marmotte rêveuse" }
+        {
+          "id": "coq-rockeur",
+          "label": "Coq rockeur"
+        },
+        {
+          "id": "vache-artistique",
+          "label": "Vache artistique"
+        },
+        {
+          "id": "cochon-gourmand",
+          "label": "Cochon gourmand"
+        },
+        {
+          "id": "poule-scientifique",
+          "label": "Poule scientifique"
+        },
+        {
+          "id": "chevre-acrobate",
+          "label": "Chèvre acrobate"
+        },
+        {
+          "id": "marmotte-reveuse",
+          "label": "Marmotte rêveuse"
+        }
       ]
     }
   ],
@@ -34,17 +52,29 @@
   },
   "resourceIds": [],
   "shortcuts": [
-    { "key": "D", "type": "action", "actionType": "roll" },
-    { "key": "P", "type": "interface", "id": "position" }
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    },
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position"
+    }
   ],
   "initialPhase": "setup",
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": ["playing"]
+      "transitions": [
+        "playing"
+      ]
     },
     "playing": {
-      "actions": ["roll"],
+      "actions": [
+        "roll"
+      ],
       "terminal": true
     }
   },
@@ -71,6 +101,31 @@
     "pawnSelection": {
       "setId": "goose",
       "choiceId": "goose.pawn"
+    },
+    "escapeRolls": [
+      1
+    ],
+    "forwardRollMaximum": 3,
+    "defaultReturn": 1,
+    "defaultSkip": 1,
+    "tileRules": {
+      "start": "none",
+      "normal": "none",
+      "finish": "finish",
+      "bridge": "move-to",
+      "death": "return",
+      "labyrinth": "return",
+      "inn": "skip",
+      "prison": "skip",
+      "magic-die": "roll-directed",
+      "well": "block",
+      "goose": "repeat-roll"
     }
-  }
+  },
+  "snapshotMigrations": [
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
+    }
+  ]
 }

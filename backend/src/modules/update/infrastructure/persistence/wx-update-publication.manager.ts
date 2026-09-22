@@ -1,7 +1,6 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import { operationalSettings } from '../../../../platform/config/public-api';
 import { bestEffort } from '../../../../platform/observability/public-api';
 import { writeFileAtomic } from '../../../../platform/filesystem/public-api';
 import {
@@ -241,21 +240,8 @@ export class WxUpdatePublicationManager {
     try {
       return await fs.promises.open(this.publicationLockPath(), 'wx');
     } catch {
-      const stat = await fs.promises
-        .stat(this.publicationLockPath())
-        .catch(() => null);
-      if (
-        stat &&
-        stat.mtimeMs <
-          Date.now() - operationalSettings.clientWxPublicationLockStaleMs
-      ) {
-        await fs.promises.rm(this.publicationLockPath(), { force: true });
-        try {
-          return await fs.promises.open(this.publicationLockPath(), 'wx');
-        } catch {
-          // Another instance recovered the stale lock first.
-        }
-      }
+      // Age cannot prove that an owner has stopped. A suspended writer must
+      // retain the resource lock even after its Redis lease expires.
       throw new ConflictException('Une publication WX est déjà en cours.');
     }
   }

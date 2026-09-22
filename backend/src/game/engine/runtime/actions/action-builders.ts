@@ -1,6 +1,7 @@
 import type { PlayerState } from '../../../core/application/models/game-state.model';
 import type { GameContext } from '../definitions/game-author-context';
 import { typedRuntimeHandler } from './typed-runtime-handler';
+import { gameInput } from './game-input-schema';
 import {
   type ChoiceResolver,
   type DefinedChoiceResolver,
@@ -9,6 +10,12 @@ import {
   type GameActionExecution,
   type RawChoiceResolution,
 } from '../contracts/author-rule-contracts';
+
+export function defineEmptyAction<TState extends object>(
+  action: Omit<GameActionDefinition<TState, Record<string, never>>, 'input'>,
+): DefinedGameAction<TState, Record<string, never>> {
+  return defineAction({ ...action, input: gameInput.object({}) });
+}
 
 export function defineAction<TState extends object, TInput extends object>(
   action: GameActionDefinition<TState, TInput>,

@@ -29,7 +29,7 @@ test('imports content modules in stable order, including a content file named ga
     assert.equal(generateGameRegistry({ sourceRoot: root }), 1);
     const generated = fs.readFileSync(path.join(root, 'composition/generated-game-registry.ts'), 'utf8');
     assert.match(generated, /import asset0_0 from '.*content\/game.json'/);
-    assert.match(generated, /"content\/game.json": asset0_0/);
+    assert.match(generated, /(['"])content\/game.json\1: asset0_0/);
     assert.match(generated, /compileJsonGame\(manifest0, document0, \{/);
   });
 });
@@ -47,7 +47,7 @@ test('maps a legacy root catalogue to its content reference', async () => {
       'utf8',
     );
     assert.match(generated, /import asset0_0 from '.*sample\/catalogue.json'/);
-    assert.match(generated, /"content\/catalogue.json": asset0_0/);
+    assert.match(generated, /(['"])content\/catalogue.json\1: asset0_0/);
   });
 });
 

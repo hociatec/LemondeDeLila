@@ -9,11 +9,13 @@ import { ConfigService } from '@nestjs/config';
 import { Job, Queue, Worker, UnrecoverableError, DelayedError } from 'bullmq';
 import { decodeGameScheduledTask } from '../../application/helpers/game-task-contract';
 import Redis from 'ioredis';
+import { redisReconnectDelay } from '../../../../platform/redis/public-api';
 import { gameTaskJobId, isSupersededGameTask } from './game-task-job-id';
 import {
   currentCorrelationId,
   inSpan,
   normalizeCorrelationId,
+  prometheusMetrics,
   runWithCorrelationId,
 } from '../../../../platform/observability/public-api';
 import type {
@@ -56,6 +58,7 @@ export class BullmqGameTaskSchedulerService
           lazyConnect: true,
           connectTimeout: 10_000,
           commandTimeout: 10_000,
+          retryStrategy: redisReconnectDelay,
         })
       : null;
     this.connection?.on('error', (error: Error) => {
@@ -71,7 +74,7 @@ export class BullmqGameTaskSchedulerService
           connection: this.connection,
           defaultJobOptions: {
             attempts: IDEMPOTENT_TASK_ATTEMPTS,
-            backoff: { type: 'exponential', delay: 500 },
+            backoff: { type: 'exponential', delay: 500, jitter: 0.5 },
             removeOnComplete: true,
             removeOnFail: false,
           },
@@ -86,40 +89,42 @@ export class BullmqGameTaskSchedulerService
     if (!this.connection || this.worker || this.shutdown.isDraining) return;
     this.worker = new Worker<GameScheduledTask>(
       QUEUE_NAME,
-      async (job, token) => {
-        let task: GameScheduledTask;
-        try {
-          task = decodeGameScheduledTask(job.data);
-        } catch {
-          throw new UnrecoverableError('Invalid game scheduled task');
-        }
-        const startedAtMs = this.clock.now();
-        if (task.dueAtMs > startedAtMs) {
-          await job.moveToDelayed(task.dueAtMs, token);
-          throw new DelayedError();
-        }
-        this.metrics.recordTimerExecution(
-          task.gameType,
-          Math.max(0, startedAtMs - task.dueAtMs),
-        );
-        await inSpan(
-          'bullmq game-engine-tasks execute',
-          {
-            'messaging.system': 'bullmq',
-            'messaging.destination.name': QUEUE_NAME,
-            'messaging.operation.name': 'execute',
-            'lila.game.type': task.gameType,
-          },
-          () =>
-            runWithCorrelationId(
-              normalizeCorrelationId(task.correlationId),
-              () => processor(task),
-            ),
-        );
-      },
+      (job, token) =>
+        this.shutdown.run(async () => {
+          let task: GameScheduledTask;
+          try {
+            task = decodeGameScheduledTask(job.data);
+          } catch {
+            throw new UnrecoverableError('Invalid game scheduled task');
+          }
+          const startedAtMs = this.clock.now();
+          if (task.dueAtMs > startedAtMs) {
+            await job.moveToDelayed(task.dueAtMs, token);
+            throw new DelayedError();
+          }
+          this.metrics.recordTimerExecution(
+            task.gameType,
+            Math.max(0, startedAtMs - task.dueAtMs),
+          );
+          await inSpan(
+            'bullmq game-engine-tasks execute',
+            {
+              'messaging.system': 'bullmq',
+              'messaging.destination.name': QUEUE_NAME,
+              'messaging.operation.name': 'execute',
+              'lila.game.type': task.gameType,
+            },
+            () =>
+              runWithCorrelationId(
+                normalizeCorrelationId(task.correlationId),
+                () => processor(task),
+              ),
+          );
+        }),
       { connection: this.connection, concurrency: 16 },
     );
     this.worker.on('failed', (job, error) => {
+      prometheusMetrics.recordBullmqFailure(QUEUE_NAME);
       if (!job) return;
       let task: GameScheduledTask;
       try {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "3",
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
@@ -8,7 +8,9 @@
     {
       "component": "cards.deck",
       "id": "mine",
-      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "cards": {
+        "$content": "content/catalogue.json#/cardIds"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
@@ -22,25 +24,49 @@
     {
       "component": "inventory.set",
       "id": "mine-domains",
-      "items": { "$content": "content/catalogue.json#/cardIds" },
+      "items": {
+        "$content": "content/catalogue.json#/cardIds"
+      },
       "visibility": "public"
     }
   ],
-  "setup": { "scores": 0 },
+  "setup": {
+    "scores": 0
+  },
   "resourceIds": [],
   "shortcuts": [
-    { "key": "C", "type": "action", "actionType": "play_card" },
-    { "key": "S", "type": "action", "actionType": "pass" }
+    {
+      "key": "C",
+      "type": "action",
+      "actionType": "play_card"
+    },
+    {
+      "key": "S",
+      "type": "action",
+      "actionType": "pass"
+    }
   ],
   "initialPhase": "playing",
   "phases": {
-    "playing": { "actions": ["play_card", "pass"], "terminal": true }
+    "playing": {
+      "actions": [
+        "play_card",
+        "pass"
+      ],
+      "terminal": true
+    }
   },
   "actions": {
-    "play_card": { "recipe": "cards-public-domain-play" },
-    "pass": { "recipe": "cards-public-domain-pass" }
+    "play_card": {
+      "recipe": "cards-public-domain-play"
+    },
+    "pass": {
+      "recipe": "cards-public-domain-pass"
+    }
   },
-  "victory": { "kind": "by-public-domain-cards" },
+  "victory": {
+    "kind": "by-public-domain-cards"
+  },
   "publicDomainCards": {
     "deckId": "mine",
     "handId": "players",
@@ -49,6 +75,19 @@
     "handLimit": 5,
     "finishReason": "mine-collapsed",
     "eventNamespace": "grande-mine",
-    "cards": { "$content": "content/catalogue.json#/cards" }
-  }
+    "cards": {
+      "$content": "content/catalogue.json#/cards"
+    },
+    "collectibleCategories": [
+      "tresor",
+      "objet"
+    ],
+    "lossCategory": "tresor"
+  },
+  "snapshotMigrations": [
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
+    }
+  ]
 }

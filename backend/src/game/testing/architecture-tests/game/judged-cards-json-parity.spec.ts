@@ -4,7 +4,7 @@ import {
   GameSimulator,
   DeclarativeGameRuntime,
 } from '../../../engine/testing/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/vents-dansants/les-absurdissimes/manifest.json';
 import document from '../../../games/vents-dansants/les-absurdissimes/game.json';
 import cards from '../../../games/vents-dansants/les-absurdissimes/content/cards.json';

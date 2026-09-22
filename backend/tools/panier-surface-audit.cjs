@@ -7,7 +7,7 @@ function walk(directory) { return fs.readdirSync(directory, {withFileTypes:true}
 const code = walk(root).filter(file => file.endsWith('.ts') && !file.endsWith('.spec.ts'));
 assert.deepEqual(code, [], 'Panier must not contain executable TypeScript rules');
 require('ts-node').register({ transpileOnly: true });
-const { resolveJsonContent } = require('../src/game/engine/json/public-api');
+const { resolveJsonContent } = require('../src/game/rules/public-api');
 const { jsonContentAssets } = require('../commands/json-content-assets.cjs');
 const assets = Object.fromEntries(jsonContentAssets(root).map(asset => [asset.relative, JSON.parse(fs.readFileSync(asset.file, 'utf8'))]));
 const document = resolveJsonContent(JSON.parse(fs.readFileSync(path.join(root, 'game.json'), 'utf8')), assets);
