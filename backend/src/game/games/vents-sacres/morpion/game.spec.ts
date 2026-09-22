@@ -4,7 +4,7 @@ import {
 } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import MORPION_PAWNS from './content/pawns.json';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
 import document from './game.json';
 const gameDefinition = compileJsonGame(manifest, document, {

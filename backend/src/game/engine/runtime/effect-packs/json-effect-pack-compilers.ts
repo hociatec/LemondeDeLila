@@ -2,28 +2,11 @@ import { compileJsonPattern } from '../definitions/json-game-patterns';
 import type { JsonGameDocument } from '../definitions/json-game-schema';
 import type { GameComponentDefinition } from '../definitions/component-kit';
 import type { GameEventDefinition } from '../events/game-event-definition';
-import {
-  jsonEffectPacks,
-  type RegisteredJsonEffectPack,
-} from './json-effect-pack-registry';
-
-type UnionToIntersection<Union> = (
-  Union extends unknown ? (value: Union) => void : never
-) extends (value: infer Intersection) => void
-  ? Intersection
-  : never;
-
-type CompiledEffectPackEntry<Pack> = Pack extends RegisteredJsonEffectPack
-  ? {
-      readonly [Key in Pack['outputKey']]: ReturnType<Pack['compile']> | null;
-    }
-  : never;
+import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
 
 type CompiledPattern = ReturnType<typeof compileJsonPattern>;
 
-export type CompiledJsonPrograms = UnionToIntersection<
-  CompiledEffectPackEntry<RegisteredJsonEffectPack>
-> & {
+export type CompiledJsonPrograms = Readonly<Record<string, unknown>> & {
   readonly actions: Readonly<Record<string, unknown>>;
   readonly events: GameEventDefinition<string, object>[];
   readonly components: GameComponentDefinition[];
@@ -32,6 +15,7 @@ export type CompiledJsonPrograms = UnionToIntersection<
 
 export function compileJsonPrograms(
   document: JsonGameDocument,
+  jsonEffectPacks: JsonEffectPackCatalog = [],
 ): CompiledJsonPrograms {
   const sources = new Map<string, unknown>(Object.entries(document));
   const compiledPrograms: Record<string, unknown> = {};
@@ -67,5 +51,5 @@ export function compileJsonPrograms(
     events,
     components,
     patterns,
-  } as CompiledJsonPrograms;
+  };
 }

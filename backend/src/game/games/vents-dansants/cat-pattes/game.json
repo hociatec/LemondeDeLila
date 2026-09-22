@@ -1,8 +1,12 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "1",
   "snapshotMigrations": [
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
+    },
     {
       "fromVersion": "1",
       "toVersion": "2"

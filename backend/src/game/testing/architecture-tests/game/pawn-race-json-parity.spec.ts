@@ -4,7 +4,7 @@ import {
   GameSimulator,
   DeclarativeGameRuntime,
 } from '../../../engine/testing/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/les-quatre-vents/odyssee-quatre-cieux/manifest.json';
 import document from '../../../games/les-quatre-vents/odyssee-quatre-cieux/game.json';
 import reference from '../../fixtures/odyssee-before-json-parity.json';

@@ -3,7 +3,7 @@ import {
   testGame,
 } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import catalogue from './catalogue.json';
 import document from './game.json';
 import manifest from './manifest.json';
@@ -196,7 +196,7 @@ describe('À fond les ballons declarative game', () => {
     ) as typeof legacy;
 
     expect(Reflect.get(restored.game, 'awaitingCardDraw')).toBe(false);
-    expect(restored.engine.contentVersion).toBe('1');
+    expect(restored.engine.contentVersion).toBe(document.contentVersion);
   });
 
   it('completes a tornado turn only once when its target is automatic', async () => {

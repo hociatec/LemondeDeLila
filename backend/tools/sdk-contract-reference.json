@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "apiVersion": "6.18.0",
+  "apiVersion": "6.20.0",
   "typescript": "5.9.3",
   "entry": "src/game/engine/sdk/public-api.ts",
   "external": [],
@@ -27,7 +27,7 @@
     },
     {
       "file": "src/game/engine/runtime/actions/action-builders.ts",
-      "sha256": "78ed877e69d3d3769de93c11eb6c8b3e3585c48ea9a8765db67dab6066d960c6"
+      "sha256": "7155d73fccb18237efe2ecfd3caf5a7c6c06685d4f7d32038f4b489a63e2bc92"
     },
     {
       "file": "src/game/engine/runtime/actions/game-command-journal.ts",
@@ -203,7 +203,7 @@
     },
     {
       "file": "src/game/engine/runtime/definitions/game-definition-builders.ts",
-      "sha256": "c38098571182fd0675cf7bf3107516e951b7799f19466a06b52eb6230f5311a2"
+      "sha256": "21819c82dab7b7bfb4285d037371e3507564e67d5be379aa045393870631847f"
     },
     {
       "file": "src/game/engine/runtime/definitions/game-definition-compiler.ts",
@@ -227,7 +227,7 @@
     },
     {
       "file": "src/game/engine/runtime/effects/effects-core.ts",
-      "sha256": "6b1706bc2430fcdb80e9a19f14ecafae4452713ffd7a6b5a826eb496f387bf24"
+      "sha256": "68f912dda8f638258146c4db41718e3806deb7d2430300707a842e54fd51e66c"
     },
     {
       "file": "src/game/engine/runtime/effects/effects-dsl.ts",
@@ -395,7 +395,7 @@
     },
     {
       "file": "src/game/engine/runtime/recipes/gameplay/pawn-selection.recipes.ts",
-      "sha256": "425f9eac7980280014197180945ee85a6115c9d1c55f9982e84c8964e5be216a"
+      "sha256": "e2c67a5351b7fe71932f7ae946c1dac279065a60f31df7b2df94b81829bc9711"
     },
     {
       "file": "src/game/engine/runtime/recipes/gameplay/scoring-submission.recipes.ts",

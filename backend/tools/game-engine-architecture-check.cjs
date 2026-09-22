@@ -466,6 +466,17 @@ function auditEngine(gameRoot, runtimeRoot, violations) {
     const source = fs.readFileSync(file, 'utf8');
     inspectUnsafeTypes(source, relative, violations, false);
     const gameRelative = normalize(path.relative(gameRoot, file));
+    if (gameRelative.startsWith('rules/')) {
+      if (/\b(?:Math\.random|Date\.now)\s*\(|\bnew\s+Date\s*\(/.test(source))
+        add(violations, 'deterministic-rules', relative, 'Use the supplied RNG and clock.');
+      for (const message of inspectGameExternalEffects(file, source))
+        add(violations, 'no-external-game-effects', relative, message);
+      for (const specifier of importSpecifiers(source))
+        if (/^(?:node:|@nestjs\/)|(?:^|\/)platform\//.test(specifier))
+          add(violations, 'no-external-game-effects', relative, `Infrastructure import: ${specifier}`);
+      if (lineCount(source) > 500)
+        add(violations, 'runtime-file-size', relative, 'Rule files must remain within 500 lines.');
+    }
     if (!gameRelative.startsWith('composition/') && /\b(?:readdirSync|readdir|opendirSync|opendir|globSync|glob)\s*\(/.test(source)) {
       add(violations, 'composition-game-discovery', relative, 'La découverte des dossiers de jeux appartient à la composition du build.');
     }

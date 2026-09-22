@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Redis, { RedisOptions } from 'ioredis';
+import { redisReconnectDelay } from './redis-reconnect-delay';
 
 @Injectable()
 export class RedisClientFactory {
@@ -9,6 +10,7 @@ export class RedisClientFactory {
     const client = new Redis(url, {
       connectTimeout: 10_000,
       commandTimeout: 10_000,
+      retryStrategy: redisReconnectDelay,
       ...(options ?? {}),
       // An unacknowledged write may already have executed on Redis.
       maxRetriesPerRequest: 1,

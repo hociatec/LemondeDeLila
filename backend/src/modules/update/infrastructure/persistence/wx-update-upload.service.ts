@@ -3,8 +3,14 @@ import {
   ConflictException,
   HttpException,
   Injectable,
+  Inject,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import {
+  BUSINESS_CLOCK,
+  type BusinessClock,
+} from '../../../../shared/interfaces/public-api';
+import { SystemBusinessClock } from '../../../../platform/time/public-api';
 import { operationalSettings } from '../../../../platform/config/public-api';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -32,8 +38,13 @@ export class WxUpdateUploadService {
   constructor(
     private readonly updates: WxUpdateReleaseService,
     private readonly distributedLeases: RedisDistributedLeaseService,
+    @Inject(BUSINESS_CLOCK)
+    private readonly clock: BusinessClock = new SystemBusinessClock(),
   ) {
-    this.storage = new WxUpdateUploadStorage(this.updates.getTargetDir());
+    this.storage = new WxUpdateUploadStorage(
+      this.updates.getTargetDir(),
+      this.clock,
+    );
   }
 
   status() {
@@ -145,14 +156,13 @@ export class WxUpdateUploadService {
     }
     await this.storage.ensureCapacity(fileStat.size);
     try {
-      await fs.promises.copyFile(
+      const created = await this.storage.publishPart(
         filePath,
         destination,
-        fs.constants.COPYFILE_EXCL,
+        fileStat.size,
       );
+      if (!created) return { ok: true, duplicate: true };
     } catch (error) {
-      const code = (error as NodeJS.ErrnoException).code;
-      if (code === 'EEXIST') return { ok: true, duplicate: true };
       if (
         error instanceof StorageCapacityError ||
         (error as NodeJS.ErrnoException).code === 'ENOSPC'
@@ -231,38 +241,18 @@ export class WxUpdateUploadService {
     let lock: fs.promises.FileHandle;
     try {
       lock = await fs.promises.open(lockPath, 'wx');
+    } catch {
+      // Age cannot prove that an owner has stopped using the resource.
+      throw new ConflictException('Finalisation WX d\u00e9j\u00e0 en cours.');
+    }
+    try {
       await lock.writeFile(
         JSON.stringify({
           owner: randomUUID(),
-          startedAt: new Date().toISOString(),
+          startedAt: new Date(this.clock.now()).toISOString(),
         }),
         'utf8',
       );
-    } catch {
-      const stat = await fs.promises.stat(lockPath).catch(() => null);
-      if (
-        !stat ||
-        Date.now() - stat.mtimeMs <=
-          operationalSettings.clientWxCompletionLeaseMs
-      ) {
-        throw new ConflictException('Finalisation WX déjà en cours.');
-      }
-      await fs.promises.rm(lockPath, { force: true });
-      try {
-        lock = await fs.promises.open(lockPath, 'wx');
-        await lock.writeFile(
-          JSON.stringify({
-            owner: randomUUID(),
-            startedAt: new Date().toISOString(),
-          }),
-          'utf8',
-        );
-      } catch {
-        throw new ConflictException('Finalisation WX déjà en cours.');
-      }
-    }
-
-    try {
       return await this.publishCompletedUpload(
         uploadId,
         dir,
@@ -331,7 +321,7 @@ export class WxUpdateUploadService {
     if (distributedLease && !(await distributedLease.isHeld())) {
       throw new ConflictException('Bail de finalisation WX perdu.');
     }
-    meta.completedAt = new Date().toISOString();
+    meta.completedAt = new Date(this.clock.now()).toISOString();
     await this.storage.writeMeta(metaPath, meta);
     await bestEffort(
       this.storage.removeParts(dir),

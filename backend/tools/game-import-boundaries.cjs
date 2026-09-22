@@ -11,7 +11,7 @@ function inspectGameImports(file, source, gameDirectory) {
   function check(specifier) {
     const sdk = /^(?:\.\.\/)+engine\/sdk\/public-api$/.test(specifier);
     const testApi =
-      testing && /^(?:\.\.\/)+engine\/(?:testing|json)\/public-api$/.test(specifier);
+      testing && /^(?:\.\.\/)+(?:engine\/(?:testing|json)|rules)\/public-api$/.test(specifier);
     const target = path.resolve(path.dirname(file), specifier);
     const inside = path.relative(gameDirectory, target);
     const local =

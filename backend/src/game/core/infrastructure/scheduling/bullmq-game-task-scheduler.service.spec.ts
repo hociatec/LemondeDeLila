@@ -4,6 +4,7 @@ import Redis from 'ioredis';
 import { ApplicationShutdownService } from '../../../../platform/lifecycle/public-api';
 import { BullmqGameTaskSchedulerService } from './bullmq-game-task-scheduler.service';
 import type { GameEngineMetricsService } from '../../application/services/game-engine-metrics.service';
+import { prometheusMetrics } from '../../../../platform/observability/public-api';
 
 jest.mock('ioredis', () => ({
   __esModule: true,
@@ -15,7 +16,7 @@ jest.mock('bullmq', () => ({
   Worker: jest.fn(() => ({ on: jest.fn(), close: jest.fn() })),
 }));
 
-function harness(nowMs = 1000) {
+function harness(nowMs = 1000, shutdown = new ApplicationShutdownService()) {
   jest.clearAllMocks();
   const metrics = {
     recordTimerExecution: jest.fn(),
@@ -25,6 +26,7 @@ function harness(nowMs = 1000) {
     new ConfigService({ GAME_TASK_REDIS_URL: 'redis://test' }),
     metrics as unknown as GameEngineMetricsService,
     { now: () => nowMs },
+    shutdown,
   );
   const processor = jest.fn().mockResolvedValue(undefined);
   service.registerProcessor(processor);
@@ -43,6 +45,49 @@ const task = {
   generation: 4,
   dueAtMs: 1,
 };
+
+it('records failed worker attempts even when the stored task is malformed', () => {
+  const test = harness();
+  const metric = jest
+    .spyOn(prometheusMetrics, 'recordBullmqFailure')
+    .mockImplementation(() => {});
+  const worker = jest.mocked(Worker).mock.results[0].value as { on: jest.Mock };
+  const failed = worker.on.mock.calls.find(
+    ([event]) => event === 'failed',
+  )?.[1] as (job: unknown, error: Error) => void;
+  try {
+    failed({ data: null, id: 'invalid' }, new Error('invalid task'));
+    expect(metric).toHaveBeenCalledWith('game-engine-tasks');
+    expect(test.metrics.recordTimerFailure).not.toHaveBeenCalled();
+  } finally {
+    metric.mockRestore();
+  }
+});
+
+it('tracks accepted work in the drain and refuses a new delivery after shutdown', async () => {
+  const shutdown = new ApplicationShutdownService();
+  const test = harness(1000, shutdown);
+  let finish!: () => void;
+  test.processor.mockImplementation(
+    () =>
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const active = test.process({ data: task });
+  shutdown.stopAccepting();
+  await expect(test.process({ data: task })).rejects.toThrow('shutting down');
+  expect(test.processor).toHaveBeenCalledTimes(1);
+  let drained = false;
+  const drain = shutdown.drain().then(() => {
+    drained = true;
+  });
+  await Promise.resolve();
+  expect(drained).toBe(false);
+  finish();
+  await Promise.all([active, drain]);
+  expect(drained).toBe(true);
+});
 
 it('waits for the BullMQ worker before closing its queue and Redis connection', async () => {
   jest.clearAllMocks();

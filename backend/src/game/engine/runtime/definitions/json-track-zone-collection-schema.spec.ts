@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/les-quatre-vents/mon-village-mon-histoire/manifest.json';
 import document from '../../../games/les-quatre-vents/mon-village-mon-histoire/game.json';
 import catalogue from '../../../games/les-quatre-vents/mon-village-mon-histoire/content/catalogue.json';

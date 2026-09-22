@@ -1,7 +1,7 @@
 import type {
   CardSelectionOwner,
   CardSelectionProgram,
-} from '../../effect-packs/choice-card-occurrences/program';
+} from '../../contracts/card-selection-contract';
 import type { CardValue } from '../../cards/cards-contracts';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction, defineChoice } from '../../actions/action-builders';

@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../core/testing/game-test-kit';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import type { JsonStandardVictory } from './json-standard-victory';

@@ -6,6 +6,103 @@
   "initialHandSize": 6,
   "defaultRounds": 3,
   "statusPrefix": "paw-round.",
+  "mechanics": {
+    "statuses": {
+      "obstacle": "obstacle",
+      "power": "power.",
+      "activated": "has-sun",
+      "activationUsed": "sun-not-ready",
+      "obstacleLock": "obstacle-lock"
+    },
+    "activationCounter": "rayon",
+    "counters": [
+      "croquettes",
+      "rayon",
+      "dodo",
+      "coussin",
+      "saut"
+    ],
+    "obstacles": [
+      {
+        "id": "gamelle",
+        "counter": "croquettes",
+        "blocks": true
+      },
+      {
+        "id": "pluie",
+        "counter": "rayon",
+        "blocks": true
+      },
+      {
+        "id": "chien",
+        "counter": "dodo",
+        "blocks": true
+      },
+      {
+        "id": "coussin",
+        "counter": "coussin",
+        "blocks": true
+      },
+      {
+        "id": "sol",
+        "counter": "saut",
+        "blocks": false,
+        "maximumMove": 50
+      }
+    ],
+    "powers": [
+      {
+        "id": "reserve",
+        "ignores": [
+          "gamelle"
+        ],
+        "disablesCounters": [
+          "croquettes"
+        ],
+        "bypassesActivation": false
+      },
+      {
+        "id": "chat-ninja",
+        "ignores": [
+          "chien"
+        ],
+        "disablesCounters": [
+          "dodo"
+        ],
+        "bypassesActivation": false
+      },
+      {
+        "id": "patte-blindee",
+        "ignores": [
+          "coussin"
+        ],
+        "disablesCounters": [
+          "coussin"
+        ],
+        "bypassesActivation": false
+      },
+      {
+        "id": "passage-star",
+        "ignores": [
+          "pluie",
+          "sol"
+        ],
+        "disablesCounters": [
+          "rayon",
+          "saut"
+        ],
+        "bypassesActivation": true
+      }
+    ],
+    "moveLimits": [
+      {
+        "value": 150,
+        "uses": 2,
+        "resource": "turbo-played"
+      }
+    ],
+    "finishReason": "most-pattes"
+  },
   "cards": [
     {
       "id": "pattes-10-1",

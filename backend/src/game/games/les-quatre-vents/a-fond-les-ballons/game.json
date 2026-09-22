@@ -1,11 +1,15 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "2",
   "snapshotMigrations": [
     {
       "fromVersion": "a-fond-les-ballons@content:c5adb978",
       "toVersion": "1"
+    },
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
     }
   ],
   "category": "JeuxDePlateaux",
@@ -22,21 +26,32 @@
     {
       "component": "pawn.set",
       "id": "balloons-pawns",
-      "pawns": { "$content": "content/catalogue.json#/pawns" },
+      "pawns": {
+        "$content": "content/catalogue.json#/pawns"
+      },
       "perPlayer": 1
     },
     {
       "component": "cards.deck",
       "id": "loufoque",
-      "cards": { "$content": "content/catalogue.json#/cards" },
+      "cards": {
+        "$content": "content/catalogue.json#/cards"
+      },
       "shuffle": true,
       "empty": "recycle"
     }
   ],
-  "setup": { "firstPlayer": "random", "startRound": true },
+  "setup": {
+    "firstPlayer": "random",
+    "startRound": true
+  },
   "resourceIds": [],
   "shortcuts": [
-    { "key": "D", "type": "action", "actionType": "roll" },
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    },
     {
       "key": "Space",
       "type": "action",
@@ -46,12 +61,27 @@
   ],
   "initialPhase": "setup",
   "phases": {
-    "setup": { "actions": [], "transitions": ["playing"] },
-    "playing": { "actions": ["roll", "draw_card"], "terminal": true }
+    "setup": {
+      "actions": [],
+      "transitions": [
+        "playing"
+      ]
+    },
+    "playing": {
+      "actions": [
+        "roll",
+        "draw_card"
+      ],
+      "terminal": true
+    }
   },
   "actions": {
-    "roll": { "recipe": "race-chained-tile-cards-roll" },
-    "draw_card": { "recipe": "race-chained-tile-cards-draw" }
+    "roll": {
+      "recipe": "race-chained-tile-cards-roll"
+    },
+    "draw_card": {
+      "recipe": "race-chained-tile-cards-draw"
+    }
   },
   "victory": {
     "kind": "track-finish",
@@ -67,9 +97,59 @@
     "diceId": "main",
     "trapImmunityStatusId": "race-chained-tile-cards.trap-immunity",
     "awaitingCardStatusId": "race-chained-tile-cards.awaiting-card",
-    "cards": { "$content": "content/catalogue.json#/cards" },
-    "pawns": { "$content": "content/catalogue.json#/pawns" },
-    "tiles": { "$content": "content/catalogue.json#/tiles" },
-    "maxResolutionDepth": 12
+    "cards": {
+      "$content": "content/catalogue.json#/cards"
+    },
+    "pawns": {
+      "$content": "content/catalogue.json#/pawns"
+    },
+    "tiles": {
+      "$content": "content/catalogue.json#/tiles"
+    },
+    "maxResolutionDepth": 12,
+    "finishReason": "golden-nut",
+    "selectionDrawCount": 2,
+    "tileRules": {
+      "start": {
+        "kind": "none",
+        "description": "Case de départ."
+      },
+      "neutral": {
+        "kind": "none",
+        "description": "Aucun effet."
+      },
+      "bonus": {
+        "kind": "move",
+        "delta": 2,
+        "description": "Effet : avancez immédiatement de 2 cases."
+      },
+      "piege": {
+        "kind": "protected-move",
+        "delta": -2,
+        "description": "Effet : reculez immédiatement de 2 cases."
+      },
+      "glissade": {
+        "kind": "random-move",
+        "maximum": 3,
+        "description": "Effet : avancez ou reculez aléatoirement de 1 à 3 cases."
+      },
+      "tornade": {
+        "kind": "choose-swap",
+        "description": "Effet : échangez votre place avec un autre joueur."
+      },
+      "chaton": {
+        "kind": "move-to",
+        "position": 0,
+        "description": "Effet : retournez à la case de départ."
+      },
+      "folie": {
+        "kind": "await-draw",
+        "description": "Effet : piochez une carte Loufoque."
+      },
+      "finish": {
+        "kind": "finish",
+        "description": "Effet : vous remportez la partie."
+      }
+    }
   }
 }

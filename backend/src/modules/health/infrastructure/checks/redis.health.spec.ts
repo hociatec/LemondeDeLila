@@ -36,6 +36,7 @@ it('deduplicates shared Redis while checking every required capability', async (
       status: 'up',
       capabilities: {
         sessions: 'up',
+        leases: 'up',
         rateLimit: 'up',
         presence: 'up',
         notifications: 'up',
@@ -97,6 +98,38 @@ it('fails closed for missing required configuration', async () => {
   const { health, create } = fixture({});
   await expect(health.check('redis')).rejects.toBeInstanceOf(HealthCheckError);
   expect(create).not.toHaveBeenCalled();
+});
+
+it.each(['UPDATE_REDIS_URL', 'REDIS_URL'])(
+  'fails readiness when the Redis used by distributed leases fails: %s',
+  async (leaseKey) => {
+    const { health } = fixture(
+      {
+        SESSION_STORE_REDIS_URL: 'redis://shared',
+        [leaseKey]: 'redis://leases',
+      },
+      'redis://leases',
+    );
+    await expect(health.check('redis')).rejects.toBeInstanceOf(
+      HealthCheckError,
+    );
+  },
+);
+
+it('uses the same lease URL precedence as the lease service and deduplicates it', async () => {
+  const { health, create } = fixture(
+    {
+      SESSION_STORE_REDIS_URL: 'redis://shared',
+      UPDATE_REDIS_URL: 'redis://shared',
+      REDIS_URL: 'redis://unused',
+    },
+    'redis://unused',
+  );
+  await expect(health.check('redis')).resolves.toHaveProperty(
+    'redis.capabilities.leases',
+    'up',
+  );
+  expect(create).toHaveBeenCalledTimes(1);
 });
 
 it('does not expose connection secrets in a health response', async () => {

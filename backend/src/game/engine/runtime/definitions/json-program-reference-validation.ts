@@ -1,5 +1,5 @@
 import type { GamePattern } from '../contracts/pattern-definition';
-import { jsonEffectPacks } from '../effect-packs/json-effect-pack-registry';
+import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
 import type { JsonGameManifest } from './json-game-manifest';
 import type { JsonGameDocument } from './json-game-schema';
 
@@ -11,6 +11,7 @@ export function assertProgramReferences(
   patterns: Patterns,
   manifest: JsonGameManifest,
   fail: JsonFailure,
+  jsonEffectPacks: JsonEffectPackCatalog = [],
 ): void {
   const sources = new Map<string, unknown>(Object.entries(document));
   const active = jsonEffectPacks.filter((extension) =>

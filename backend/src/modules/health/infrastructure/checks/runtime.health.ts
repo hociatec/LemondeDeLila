@@ -6,6 +6,7 @@ import {
   HealthIndicatorResult,
 } from '@nestjs/terminus';
 import { promises as fs } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 import path from 'node:path';
 
@@ -68,11 +69,22 @@ export class RuntimeHealthIndicator
       Number.isSafeInteger(configuredMinimum) && configuredMinimum >= 0
         ? configuredMinimum
         : 104_857_600;
-    const probe = path.join(root, `.health-write-${process.pid}`);
+    const probe = path.join(
+      root,
+      `.health-write-${process.pid}-${randomUUID()}`,
+    );
+    let probeCreated = false;
     try {
       await fs.mkdir(root, { recursive: true });
-      await fs.writeFile(probe, 'ok', { flag: 'wx' });
+      const handle = await fs.open(probe, 'wx');
+      probeCreated = true;
+      try {
+        await handle.writeFile('ok');
+      } finally {
+        await handle.close();
+      }
       await fs.unlink(probe);
+      probeCreated = false;
       const stats = await fs.statfs(root);
       const freeBytes =
         Number.isSafeInteger(stats.bavail) && Number.isSafeInteger(stats.bsize)
@@ -89,7 +101,7 @@ export class RuntimeHealthIndicator
       return status;
     } catch (error) {
       try {
-        await fs.rm(probe, { force: true });
+        if (probeCreated) await fs.rm(probe, { force: true });
       } catch (cleanupError) {
         this.logger.warn(
           `storage_probe_cleanup_failed path=${probe} error=${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`,

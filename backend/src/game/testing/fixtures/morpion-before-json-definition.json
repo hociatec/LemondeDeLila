@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "2",
+  "category": "JeuxDePlateaux",
+  "world": "VentsSacres",
+  "components": [
+    {
+      "component": "pawn.set",
+      "id": "morpion",
+      "pawns": {
+        "$content": "content/pawns.json"
+      },
+      "perPlayer": 1
+    }
+  ],
+  "resourceIds": [],
+  "setup": {
+    "firstPlayer": "first",
+    "startRound": true
+  },
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": [
+        "morpion_play"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "morpion_play": {
+      "recipe": "grid-place",
+      "documentation": "Place le pion du joueur sur une case vide de la grille 3×3."
+    }
+  },
+  "victory": {
+    "kind": "by-grid"
+  },
+  "shortcuts": [
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position"
+    },
+    {
+      "key": "A",
+      "type": "interface",
+      "id": "play"
+    }
+  ],
+  "grid": {
+    "boardId": "morpion",
+    "width": 3,
+    "height": 3,
+    "winLength": 3,
+    "drawWhenFull": true,
+    "winnerReason": "line-3",
+    "drawReason": "draw",
+    "markEvent": "morpion.mark.placed",
+    "preferredCells": [
+      {
+        "x": 1,
+        "y": 1
+      },
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 2,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 2
+      },
+      {
+        "x": 2,
+        "y": 2
+      }
+    ],
+    "pawnSelection": {
+      "setId": "morpion",
+      "choiceId": "morpion.pawn",
+      "order": "shuffled"
+    }
+  }
+}

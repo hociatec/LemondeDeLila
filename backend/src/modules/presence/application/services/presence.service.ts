@@ -1,5 +1,6 @@
 import { MAX_PRESENCE_PLAYERS_PER_ORIGIN } from '../models/presence.models';
 import { PresenceOrigins } from './presence-origins';
+import { collectPresencePlayers } from './presence-player-collector';
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { randomUUID } from 'crypto';
@@ -35,10 +36,7 @@ import {
   type PresencePublicPlayer,
   enrichPresencePlayers,
   mergePresencePlayersFromOrigins,
-  scorePresenceActivity,
 } from './presence-state.utils';
-
-type PresenceActivity = PresenceConnectionContext;
 
 @Injectable()
 export class PresenceService implements OnModuleDestroy {
@@ -212,62 +210,9 @@ export class PresenceService implements OnModuleDestroy {
   }
 
   private collectPlayers(): Map<number, PresenceBroadcastPlayer> {
-    const playersByUser = new Map<number, PresenceBroadcastPlayer>();
-    for (const client of this.clients.values()) {
-      const { user, context, roomHint, contextLocked } = client;
-      const activity: PresenceActivity = context ?? 'home';
-      const candidate: PresenceBroadcastPlayer = {
-        id: user.id,
-        username: user.username,
-        currentRoom: roomHint
-          ? { id: roomHint.id, name: roomHint.name ?? `Table #${roomHint.id}` }
-          : null,
-        activity,
-        contextLocked,
-        lastInteractionAt: client.lastInteractionAt ?? this.clock.now(),
-        roomStarted: null,
-      };
-      const existing = playersByUser.get(user.id);
-      if (!existing) {
-        playersByUser.set(user.id, candidate);
-        continue;
-      }
-      // An idle transport (notably the persistent chat subscription) must not
-      // override the screen explicitly reported by the foreground client.
-      if (existing.contextLocked && !candidate.contextLocked) continue;
-      if (candidate.contextLocked && !existing.contextLocked) {
-        playersByUser.set(user.id, candidate);
-        continue;
-      }
-      const currentScore = scorePresenceActivity(existing.activity);
-      const candidateScore = scorePresenceActivity(candidate.activity);
-      if (
-        (candidate.lastInteractionAt ?? 0) >
-          (existing.lastInteractionAt ?? 0) ||
-        (candidate.lastInteractionAt === existing.lastInteractionAt &&
-          candidateScore < currentScore)
-      ) {
-        playersByUser.set(user.id, candidate);
-        continue;
-      }
-      if (
-        candidateScore === currentScore &&
-        candidate.lastInteractionAt === existing.lastInteractionAt
-      ) {
-        existing.contextLocked =
-          existing.contextLocked || candidate.contextLocked;
-        if (!existing.currentRoom && candidate.currentRoom) {
-          existing.currentRoom = candidate.currentRoom;
-        }
-        if (
-          typeof candidate.lastInteractionAt === 'number' &&
-          candidate.lastInteractionAt > (existing.lastInteractionAt ?? 0)
-        ) {
-          existing.lastInteractionAt = candidate.lastInteractionAt;
-        }
-      }
-    }
-    return playersByUser;
+    return collectPresencePlayers(this.clients.values(), () =>
+      this.clock.now(),
+    );
   }
 
   private async attachRooms(

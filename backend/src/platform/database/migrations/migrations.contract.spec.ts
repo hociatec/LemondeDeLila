@@ -23,7 +23,7 @@ describe('database migrations contract', () => {
 
   it('places the newest migrations after the game-session baseline', () => {
     expect(basename(files.at(-1) ?? '')).toBe(
-      '1771100000000-PersistRoomInvites.ts',
+      '1790035300000-IndexRecoverableGameSessions.ts',
     );
   });
 

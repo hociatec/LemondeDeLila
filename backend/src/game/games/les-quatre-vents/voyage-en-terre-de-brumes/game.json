@@ -1,11 +1,15 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "4",
   "snapshotMigrations": [
     {
       "fromVersion": "voyage-en-terre-de-brumes@content:f37084a0@format:2",
       "toVersion": "1"
+    },
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
     }
   ],
   "category": "JeuxDePlateaux",
@@ -22,28 +26,36 @@
     {
       "component": "cards.deck",
       "id": "legend",
-      "cards": { "$content": "content/catalogue.json#/legend" },
+      "cards": {
+        "$content": "content/catalogue.json#/legend"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
     {
       "component": "cards.deck",
       "id": "farce",
-      "cards": { "$content": "content/catalogue.json#/farce" },
+      "cards": {
+        "$content": "content/catalogue.json#/farce"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
     {
       "component": "cards.deck",
       "id": "treasure",
-      "cards": { "$content": "content/catalogue.json#/treasure" },
+      "cards": {
+        "$content": "content/catalogue.json#/treasure"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
     {
       "component": "cards.deck",
       "id": "landscape",
-      "cards": { "$content": "content/catalogue.json#/landscape" },
+      "cards": {
+        "$content": "content/catalogue.json#/landscape"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
@@ -84,14 +96,39 @@
     "choice-chapter-encounter.collection.landscape"
   ],
   "shortcuts": [
-    { "key": "D", "type": "action", "actionType": "roll" },
-    { "key": "P", "type": "interface", "id": "position" },
-    { "key": "C", "type": "interface", "id": "cards" }
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    },
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position"
+    },
+    {
+      "key": "C",
+      "type": "interface",
+      "id": "cards"
+    }
   ],
   "initialPhase": "playing",
-  "phases": { "playing": { "actions": ["roll"], "terminal": true } },
-  "actions": { "roll": { "recipe": "choice-chapter-encounter-roll" } },
-  "victory": { "kind": "by-chapter-encounter" },
+  "phases": {
+    "playing": {
+      "actions": [
+        "roll"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "choice-chapter-encounter-roll"
+    }
+  },
+  "victory": {
+    "kind": "by-chapter-encounter"
+  },
   "chapterEncounter": {
     "trackId": "ireland",
     "diceId": "main",
@@ -100,13 +137,31 @@
     "finishStartedCounterId": "choice-chapter-encounter.finish-started",
     "finishCountdownCounterId": "choice-chapter-encounter.finish-countdown",
     "collectionResourcePrefix": "choice-chapter-encounter.collection.",
-    "collectionKinds": ["legend", "farce", "treasure", "landscape"],
-    "tiles": { "$content": "content/catalogue.json#/tiles" },
+    "collectionKinds": [
+      "legend",
+      "farce",
+      "treasure",
+      "landscape"
+    ],
+    "tiles": {
+      "$content": "content/catalogue.json#/tiles"
+    },
     "decks": {
-      "legend": { "$content": "content/catalogue.json#/legend" },
-      "farce": { "$content": "content/catalogue.json#/farce" },
-      "treasure": { "$content": "content/catalogue.json#/treasure" },
-      "landscape": { "$content": "content/catalogue.json#/landscape" }
-    }
+      "legend": {
+        "$content": "content/catalogue.json#/legend"
+      },
+      "farce": {
+        "$content": "content/catalogue.json#/farce"
+      },
+      "treasure": {
+        "$content": "content/catalogue.json#/treasure"
+      },
+      "landscape": {
+        "$content": "content/catalogue.json#/landscape"
+      }
+    },
+    "legacyQuizDeckId": "legend",
+    "tieBreakCollection": "legend",
+    "finishReason": "irish-collection"
   }
 }

@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../core/testing/game-test-kit';
 import manifest from '../../../games/les-quatre-vents/odyssee-quatre-cieux/manifest.json';
 import document from '../../../games/les-quatre-vents/odyssee-quatre-cieux/game.json';

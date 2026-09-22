@@ -1,4 +1,4 @@
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import {
   GENERATED_GAME_DEFINITIONS,
   GENERATED_GAME_PACKAGES,

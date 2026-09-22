@@ -1,0 +1,59 @@
+{
+  "date": "2026-09-22",
+  "scope": "WX upload concurrency and filesystem failures",
+  "status": "passed",
+  "bugsReproduced": 2,
+  "targetedSuites": 9,
+  "targetedTests": 44,
+  "newTests": 7,
+  "targetedSeconds": 37.467,
+  "typecheck": "passed",
+  "lint": "passed",
+  "build": "passed",
+  "compiledFiles": 1842,
+  "appModuleLoad": "passed",
+  "quality": "passed",
+  "fullRegressionRerun": false,
+  "productionDeployed": false,
+  "storageRequirement": "Same-directory hard links; tested on the local filesystem, target volume not verified",
+  "files": [
+    {
+      "file": "src/modules/update/infrastructure/persistence/wx-update-upload-storage.ts",
+      "sha256": "29c1ac014b30f9be71a07ee9f632c1372dd447afc8fafd3db0b0125804799c5e"
+    },
+    {
+      "file": "src/modules/update/infrastructure/persistence/wx-update-upload.service.ts",
+      "sha256": "b4392090d19692f89478f2d778f55b89a4040971bbf126f996a70b5561d390b9"
+    },
+    {
+      "file": "src/modules/update/infrastructure/persistence/wx-upload-atomicity.spec.ts",
+      "sha256": "40a471ef208e501fa422dbaed3946881ebcbadc6958c9795734708572eace253"
+    }
+  ],
+  "logs": [
+    {
+      "file": "logs/audit-upload-before.log",
+      "sha256": "53096adaf634d4b81ab90ff8071b8cf1d3b7d75e3d7eff7668df437704e15f47"
+    },
+    {
+      "file": "logs/audit-upload-tests-final.log",
+      "sha256": "f8aae7b0ef98770d48aea2e0c0c72b532f08b5636b086ccb69637a88b699c70c"
+    },
+    {
+      "file": "logs/audit-upload-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/audit-upload-lint.log",
+      "sha256": "6b441b952377cf169e58f0949675247e699d106bb9396e872667f73d42ba31d5"
+    },
+    {
+      "file": "logs/audit-upload-build.log",
+      "sha256": "6922bf453e2fddad907fb5c24d90b21f92f433f340b74666fc2a8ee04f8558f8"
+    },
+    {
+      "file": "logs/audit-upload-quality.log",
+      "sha256": "296f649b300a8da3bd77991365c199851790cd44faed02f851f06813bfecac6f"
+    }
+  ]
+}

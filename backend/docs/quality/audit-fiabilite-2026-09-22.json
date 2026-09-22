@@ -1,0 +1,83 @@
+{
+  "date": "2026-09-22",
+  "scope": "Backend health probes, distributed lease readiness and recovery quarantine",
+  "status": "passed",
+  "bugsFixed": 3,
+  "failingCasesBeforeFix": 4,
+  "targetedSuites": 19,
+  "targetedTests": 107,
+  "newTests": 9,
+  "targetedSeconds": 11.731,
+  "typecheck": "passed",
+  "lint": "passed",
+  "build": "passed",
+  "compiledFiles": 1841,
+  "appModuleLoad": "passed",
+  "quality": "passed",
+  "fullRegressionRerun": false,
+  "productionDeployed": false,
+  "files": [
+    {
+      "file": "src/modules/health/infrastructure/checks/runtime.health.ts",
+      "sha256": "08f8830ba9d0162bb37cd06dcdfa375f947311546e44afb5850716a4d4b16514"
+    },
+    {
+      "file": "src/modules/health/infrastructure/checks/runtime.health.spec.ts",
+      "sha256": "9c2533caf7ba313f28233d4146656287fedf2d8a2631f0e4cb03dd1a4d4cf750"
+    },
+    {
+      "file": "src/modules/health/infrastructure/checks/redis-readiness-targets.ts",
+      "sha256": "8b51dc4bf758689b9eec49aab2a35d0b62915aedf615ba68f39f16d0c60d1f46"
+    },
+    {
+      "file": "src/modules/health/infrastructure/checks/redis.health.spec.ts",
+      "sha256": "0af616166922b78fc79208a96501260f2386d89ba2ebe4df7f848444625ccb37"
+    },
+    {
+      "file": "src/game/core/infrastructure/scheduling/game-recovery-backoff.ts",
+      "sha256": "6eed817518af41e3cdeb9135028802147adc9f012d849c64c1679d2bb0e945d8"
+    },
+    {
+      "file": "src/game/core/infrastructure/scheduling/game-recovery-backoff.spec.ts",
+      "sha256": "9cf85b3adbb6bf4913bbf00a5af100aa674435c49b20f21f0c27042c232f1cfc"
+    },
+    {
+      "file": "src/game/core/infrastructure/scheduling/game-automation-recovery.service.ts",
+      "sha256": "dd9e367faa59944e11390a0abd1ee786dd43414078afa4a1da936c34ec59dd48"
+    },
+    {
+      "file": "src/game/core/infrastructure/scheduling/game-automation-recovery.service.spec.ts",
+      "sha256": "834d0f8c18a805a5b945e9c429aeadc83f7b768f8a21cb2a8adf546aaea04164"
+    }
+  ],
+  "logs": [
+    {
+      "file": "logs/audit-reliability-before.log",
+      "sha256": "c723c172c4576c72bd0d3b3a0ddc7b0f3db33eb4c8e20d12b17998e39fc9ad56"
+    },
+    {
+      "file": "logs/audit-readiness-before.log",
+      "sha256": "99e044faf8c9cbe5fc6f968c11426af293f863e4cb1323c2ca5f99b63ab50cd4"
+    },
+    {
+      "file": "logs/audit-reliability-tests.log",
+      "sha256": "9edd84757abb35b0bd3ca5b6ef994611b592fb96bfd96a756eefe095a610208c"
+    },
+    {
+      "file": "logs/audit-reliability-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/audit-reliability-lint.log",
+      "sha256": "6b441b952377cf169e58f0949675247e699d106bb9396e872667f73d42ba31d5"
+    },
+    {
+      "file": "logs/audit-reliability-build.log",
+      "sha256": "ee75988f621c18816b978800b1cde0f2a45320f3f4fb318262cb52240925c465"
+    },
+    {
+      "file": "logs/audit-reliability-quality.log",
+      "sha256": "2200d523ba6cc9ac54e694b297f7161136c6ed3b029bf0585e56c73a9b07cbba"
+    }
+  ]
+}

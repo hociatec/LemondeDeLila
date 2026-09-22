@@ -319,8 +319,7 @@ describe('backend debt contracts', () => {
     expect(
       auditGameImportBoundaries({
         file: 'sample/game.spec.ts',
-        source:
-          "import { compileJsonGame } from '../../../engine/json/public-api';",
+        source: "import { compileJsonGame } from '../../../rules/public-api';",
       }),
     ).toEqual([]);
     expect(
@@ -355,7 +354,7 @@ describe('backend debt contracts', () => {
     "import {x} from 'bullmq';",
     "import {x} from '@nestjs/common';",
     "import {x} from '../../../engine/runtime/private';",
-    "import { compileJsonGame } from '../../../engine/json/public-api';",
+    "import { compileJsonGame } from '../../../rules/public-api';",
     'process.cwd();',
     'Date.now();',
     'new Date();',

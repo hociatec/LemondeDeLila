@@ -24,6 +24,10 @@ it('paginates by the complete key and returns only session identifiers', async (
     { roomId: 1, gameType: 'game' },
   );
   expect(query.orderBy).toHaveBeenCalledWith('session.roomId', 'ASC');
+  expect(query.where).toHaveBeenCalledWith(
+    'session.recoveryPending = :pending',
+    { pending: 1 },
+  );
   expect(query.addOrderBy).toHaveBeenCalledWith('session.gameType', 'ASC');
   expect(query.take).toHaveBeenCalledWith(100);
   expect(query.maxExecutionTime).toHaveBeenCalledWith(1000);

@@ -1,19 +1,166 @@
 {
-  "annotations": { "list": [] },
+  "annotations": {
+    "list": []
+  },
   "editable": false,
   "panels": [
-    { "id": 1, "title": "Disponibilité HTTP", "type": "timeseries", "targets": [{ "expr": "lila:slo:http_availability:ratio_rate5m", "legendFormat": "availability" }] },
-    { "id": 2, "title": "Latence HTTP p95", "type": "timeseries", "targets": [{ "expr": "lila:slo:http_latency_p95_seconds:rate5m", "legendFormat": "p95" }] },
-    { "id": 3, "title": "Erreurs WebSocket", "type": "timeseries", "targets": [{ "expr": "lila:slo:ws_error:ratio_rate5m", "legendFormat": "error ratio" }] },
-    { "id": 4, "title": "BullMQ", "type": "timeseries", "targets": [{ "expr": "sum by (state) (lila_bullmq_jobs)", "legendFormat": "{{state}}" }] },
-    { "id": 5, "title": "Dépendances", "type": "timeseries", "targets": [{ "expr": "lila_dependency_up", "legendFormat": "{{dependency}}" }] },
-    { "id": 6, "title": "Saturation", "type": "timeseries", "targets": [{ "expr": "lila_dependency_saturation_ratio", "legendFormat": "{{dependency}} / {{resource}}" }] }
+    {
+      "id": 1,
+      "title": "Disponibilité HTTP",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "lila:slo:http_availability:ratio_rate5m",
+          "legendFormat": "availability"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Latence HTTP p95",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "lila:slo:http_latency_p95_seconds:rate5m",
+          "legendFormat": "p95"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Erreurs WebSocket",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "lila:slo:ws_error:ratio_rate5m",
+          "legendFormat": "error ratio"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "BullMQ",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (state) (max by (queue, state) (lila_bullmq_jobs))",
+          "legendFormat": "{{state}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Dépendances",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "lila_dependency_up",
+          "legendFormat": "{{dependency}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Saturation",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "lila_dependency_saturation_ratio",
+          "legendFormat": "{{dependency}} / {{resource}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Résultats de récupération",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (outcome) (rate(lila_game_recovery_sessions_total[5m]))",
+          "legendFormat": "{{outcome}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Balayages de récupération",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(increase(lila_game_recovery_sweeps_total[5m]))",
+          "legendFormat": "balayages"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Durée de récupération p95",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(lila_game_recovery_pass_seconds_bucket[5m])))",
+          "legendFormat": "secondes"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Sessions en quarantaine",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "max(lila_game_recovery_deferred_sessions)",
+          "legendFormat": "sessions"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Pertes de bail",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum(increase(lila_distributed_lease_losses_total[5m]))",
+          "legendFormat": "pertes"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Capacité mémoire",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "max by (resource) (lila_memory_capacity_ratio)",
+          "legendFormat": "{{resource}}"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Refus de capacité",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (resource) (increase(lila_memory_capacity_refusals_total[5m]))",
+          "legendFormat": "{{resource}}"
+        }
+      ]
+    }
   ],
   "schemaVersion": 39,
-  "tags": ["lila", "slo"],
-  "templating": { "list": [] },
-  "time": { "from": "now-6h", "to": "now" },
+  "tags": [
+    "lila",
+    "slo"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
   "title": "Le Monde de Lila — SLO backend",
   "uid": "lila-backend-slo",
-  "version": 1
+  "version": 2
 }

@@ -11,8 +11,7 @@ const effectPacksRoot = path.resolve(
   '..',
   'src',
   'game',
-  'engine',
-  'runtime',
+  'rules',
   'effect-packs',
 );
 const minimumTokens = 160;

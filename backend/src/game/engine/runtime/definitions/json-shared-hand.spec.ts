@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../testing/fixtures/json-course/manifest.json';
 import document from '../../../testing/fixtures/json-course/game.json';
 

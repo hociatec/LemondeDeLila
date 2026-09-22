@@ -31,6 +31,7 @@ export type RuntimeExecution = GameExecutionContext;
 
 export {
   defineAction,
+  defineEmptyAction,
   defineChoice,
   overrideAction,
 } from '../actions/action-builders';

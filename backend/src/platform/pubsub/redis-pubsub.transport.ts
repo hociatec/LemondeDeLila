@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import Redis from 'ioredis';
+import { redisReconnectDelay } from '../redis/public-api';
 import { isBoundedJsonInput } from '../validation/public-api';
 import { stringifyExternalJson } from '../serialization/public-api';
 import {
@@ -92,6 +93,7 @@ export class RedisPubSubTransport<TEvent> {
         lazyConnect: true,
         connectTimeout: 10_000,
         commandTimeout: 10_000,
+        retryStrategy: redisReconnectDelay,
         connectionName: name,
         // Pub/sub is best-effort. Fail fast when Redis is down instead of retrying many times
         // and blocking API requests (default ioredis maxRetriesPerRequest is 20).

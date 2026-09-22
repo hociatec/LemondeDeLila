@@ -2,7 +2,7 @@ import {
   DeclarativeGameRuntime,
   testGame,
 } from '../../../engine/testing/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 
 import manifest from './manifest.json';
 import document from './game.json';
@@ -12,6 +12,26 @@ const assets = { 'content/catalogue.json': catalogue };
 const gameDefinition = compileJsonGame(manifest, document, assets);
 
 describe('Sac structured cards', () => {
+  it('runs an unknown variant without any built-in variant name', async () => {
+    const variant = structuredClone(catalogue.variants[0]);
+    variant.id = 'orbital-market';
+    variant.rules.startMoney = 731;
+    const source = { defaultVariantId: variant.id, variants: [variant] };
+    const definition = compileJsonGame(manifest, document, {
+      'content/catalogue.json': source,
+    });
+    const game = testGame(definition).players(2).seed(131);
+    await game.start();
+    await game.as(1).do('game.configure', { variantId: variant.id });
+    expect(game.resource(1, 'money')).toBe(731);
+    await game.as(1).do('roll', {});
+    expect(await game.replay()).toEqual(game.state());
+    expect(() =>
+      compileJsonGame(manifest, document, {
+        'content/catalogue.json': { ...source, defaultVariantId: 'absent' },
+      }),
+    ).toThrow();
+  });
   it.each(catalogue.variants.map((variant) => [variant.id, variant] as const))(
     'validates every deck and tax in %s independently of narrative text',
     (_id, variant) => {

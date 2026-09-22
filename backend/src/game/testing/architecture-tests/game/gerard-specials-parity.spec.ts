@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { testGame } from '../../../engine/testing/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/vents-dansants/gerard-president/manifest.json';
 import document from '../../../games/vents-dansants/gerard-president/game.json';
 import catalogue from '../../../games/vents-dansants/gerard-president/content/catalogue.json';

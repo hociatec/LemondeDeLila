@@ -1,0 +1,431 @@
+rule_files:
+  - lila-alerts.yml
+evaluation_interval: 1m
+tests:
+  - name: LilaHttpAvailabilityBudgetBurn fires, recovers and remains quiet while
+      healthy
+    interval: 1m
+    input_series:
+      - series: lila:slo:http_availability:ratio_rate5m
+        values: 0.99+0x30 1+0x30
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: LilaHttpAvailabilityBudgetBurn
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LilaHttpAvailabilityBudgetBurn
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Disponibilité HTTP sous le SLO de 99,5 %
+      - eval_time: 50m
+        alertname: LilaHttpAvailabilityBudgetBurn
+        exp_alerts: []
+  - name: LilaHttpAvailabilityBudgetBurn never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila:slo:http_availability:ratio_rate5m
+        values: 1+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaHttpAvailabilityBudgetBurn
+        exp_alerts: []
+  - name: LilaHttpLatencyHigh fires, recovers and remains quiet while healthy
+    interval: 1m
+    input_series:
+      - series: lila:slo:http_latency_p95_seconds:rate5m
+        values: 0.6+0x30 0.1+0x30
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: LilaHttpLatencyHigh
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LilaHttpLatencyHigh
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Latence HTTP p95 supérieure à 500 ms
+      - eval_time: 50m
+        alertname: LilaHttpLatencyHigh
+        exp_alerts: []
+  - name: LilaHttpLatencyHigh never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila:slo:http_latency_p95_seconds:rate5m
+        values: 0.1+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaHttpLatencyHigh
+        exp_alerts: []
+  - name: LilaWebSocketErrorsHigh fires, recovers and remains quiet while healthy
+    interval: 1m
+    input_series:
+      - series: lila:slo:ws_error:ratio_rate5m
+        values: 0.02+0x30 0+0x30
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: LilaWebSocketErrorsHigh
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LilaWebSocketErrorsHigh
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Plus de 1 % des commandes WebSocket échouent
+      - eval_time: 50m
+        alertname: LilaWebSocketErrorsHigh
+        exp_alerts: []
+  - name: LilaWebSocketErrorsHigh never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila:slo:ws_error:ratio_rate5m
+        values: 0+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaWebSocketErrorsHigh
+        exp_alerts: []
+  - name: LilaBullmqBacklog fires, recovers and remains quiet while healthy
+    interval: 1m
+    input_series:
+      - series: lila_bullmq_jobs{state="waiting"}
+        values: 101+0x30 0+0x30
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: LilaBullmqBacklog
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LilaBullmqBacklog
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: File BullMQ durablement saturée
+      - eval_time: 50m
+        alertname: LilaBullmqBacklog
+        exp_alerts: []
+  - name: LilaBullmqBacklog never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila_bullmq_jobs{state="waiting"}
+        values: 0+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaBullmqBacklog
+        exp_alerts: []
+  - name: LilaDependencyUnavailable fires, recovers and remains quiet while healthy
+    interval: 1m
+    input_series:
+      - series: lila_dependency_up{dependency="redis"}
+        values: 0+0x30 1+0x30
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: LilaDependencyUnavailable
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LilaDependencyUnavailable
+        exp_alerts:
+          - exp_labels:
+              dependency: redis
+              severity: critical
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Dépendance backend indisponible
+      - eval_time: 50m
+        alertname: LilaDependencyUnavailable
+        exp_alerts: []
+  - name: LilaDependencyUnavailable never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila_dependency_up{dependency="redis"}
+        values: 1+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaDependencyUnavailable
+        exp_alerts: []
+  - name: LilaDependencySaturated fires, recovers and remains quiet while healthy
+    interval: 1m
+    input_series:
+      - series: lila_dependency_saturation_ratio{dependency="mysql",resource="pool"}
+        values: 0.9+0x30 0.1+0x30
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: LilaDependencySaturated
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LilaDependencySaturated
+        exp_alerts:
+          - exp_labels:
+              dependency: mysql
+              resource: pool
+              severity: warning
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Ressource DB, Redis ou BullMQ saturée
+      - eval_time: 50m
+        alertname: LilaDependencySaturated
+        exp_alerts: []
+  - name: LilaDependencySaturated never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila_dependency_saturation_ratio{dependency="mysql",resource="pool"}
+        values: 0.1+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaDependencySaturated
+        exp_alerts: []
+  - name: LilaRecoverySessionsDeferred fires, recovers and remains quiet while
+      healthy
+    interval: 1m
+    input_series:
+      - series: lila_game_recovery_deferred_sessions
+        values: 1+0x30 0+0x30
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: LilaRecoverySessionsDeferred
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LilaRecoverySessionsDeferred
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Sessions de jeu durablement en attente de reprise
+      - eval_time: 50m
+        alertname: LilaRecoverySessionsDeferred
+        exp_alerts: []
+  - name: LilaRecoverySessionsDeferred never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila_game_recovery_deferred_sessions
+        values: 0+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaRecoverySessionsDeferred
+        exp_alerts: []
+  - name: LilaMemoryCapacitySaturated fires, recovers and remains quiet while healthy
+    interval: 1m
+    input_series:
+      - series: lila_memory_capacity_ratio{resource="game-sessions"}
+        values: 0.9+0x30 0.1+0x30
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: LilaMemoryCapacitySaturated
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LilaMemoryCapacitySaturated
+        exp_alerts:
+          - exp_labels:
+              resource: game-sessions
+              severity: warning
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Stockage mémoire borné proche de sa capacité
+      - eval_time: 50m
+        alertname: LilaMemoryCapacitySaturated
+        exp_alerts: []
+  - name: LilaMemoryCapacitySaturated never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila_memory_capacity_ratio{resource="game-sessions"}
+        values: 0.1+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaMemoryCapacitySaturated
+        exp_alerts: []
+  - name: LilaMemoryCapacityRefusals fires, recovers and remains quiet while healthy
+    interval: 1m
+    input_series:
+      - series: lila_memory_capacity_refusals_total{resource="game-sessions"}
+        values: 0+1x30 0+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaMemoryCapacityRefusals
+        exp_alerts:
+          - exp_labels:
+              resource: game-sessions
+              severity: warning
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Nouvelles entrées refusées pour préserver les données existantes
+      - eval_time: 50m
+        alertname: LilaMemoryCapacityRefusals
+        exp_alerts: []
+  - name: LilaMemoryCapacityRefusals never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila_memory_capacity_refusals_total{resource="game-sessions"}
+        values: 0+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaMemoryCapacityRefusals
+        exp_alerts: []
+  - name: LilaRecoveryStalled fires, recovers and remains quiet while healthy
+    interval: 1m
+    input_series:
+      - series: lila_game_recovery_sweeps_total
+        values: 0+0x30 0+1x30
+      - &a1
+        series: lila_active_rooms
+        values: 1+0x70
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: LilaRecoveryStalled
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LilaRecoveryStalled
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Aucun balayage de récupération terminé malgré des salles actives
+      - eval_time: 50m
+        alertname: LilaRecoveryStalled
+        exp_alerts: []
+  - name: LilaRecoveryStalled never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila_game_recovery_sweeps_total
+        values: 0+1x30
+      - *a1
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaRecoveryStalled
+        exp_alerts: []
+  - name: LilaDistributedLeaseLost fires, recovers and remains quiet while healthy
+    interval: 1m
+    input_series:
+      - series: lila_distributed_lease_losses_total
+        values: 0+1x30 0+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaDistributedLeaseLost
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Un bail distribué a été perdu ; vérifier Redis et les opérations
+                concernées
+      - eval_time: 50m
+        alertname: LilaDistributedLeaseLost
+        exp_alerts: []
+  - name: LilaDistributedLeaseLost never fires with healthy samples
+    interval: 1m
+    input_series:
+      - series: lila_distributed_lease_losses_total
+        values: 0+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaDistributedLeaseLost
+        exp_alerts: []
+  - name: metrics endpoint failure fires and resolves
+    interval: 1m
+    input_series:
+      - series: up{job="lila-backend",instance="backend:3000"}
+        values: 0+0x20 1+0x20
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: LilaBackendMetricsUnavailable
+        exp_alerts: []
+      - &a2
+        eval_time: 10m
+        alertname: LilaBackendMetricsUnavailable
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: Collecte des métriques backend indisponible ou non configurée
+      - eval_time: 30m
+        alertname: LilaBackendMetricsUnavailable
+        exp_alerts: []
+  - name: missing scrape configuration is detected
+    interval: 1m
+    input_series: []
+    alert_rule_test:
+      - *a2
+  - name: healthy metrics endpoint stays quiet
+    interval: 1m
+    input_series:
+      - series: up{job="lila-backend",instance="backend:3000"}
+        values: 1+0x20
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: LilaBackendMetricsUnavailable
+        exp_alerts: []
+  - name: Shared BullMQ queue is not counted twice across backend replicas
+    interval: 1m
+    input_series:
+      - series: lila_bullmq_jobs{queue="game-engine-tasks",state="waiting",instance="a"}
+        values: 60+0x30
+      - series: lila_bullmq_jobs{queue="game-engine-tasks",state="waiting",instance="b"}
+        values: 60+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaBullmqBacklog
+        exp_alerts: []
+  - name: Shared BullMQ waiting and delayed states still trigger and respect the
+      hold time
+    interval: 1m
+    input_series:
+      - series: lila_bullmq_jobs{queue="game-engine-tasks",state="waiting",instance="a"}
+        values: 60+0x30
+      - series: lila_bullmq_jobs{queue="game-engine-tasks",state="waiting",instance="b"}
+        values: 60+0x30
+      - series: lila_bullmq_jobs{queue="game-engine-tasks",state="delayed",instance="a"}
+        values: 50+0x30
+      - series: lila_bullmq_jobs{queue="game-engine-tasks",state="delayed",instance="b"}
+        values: 50+0x30
+    alert_rule_test:
+      - eval_time: 14m
+        alertname: LilaBullmqBacklog
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: LilaBullmqBacklog
+        exp_alerts: &a1
+          - exp_labels:
+              severity: warning
+              service: le-monde-de-lila
+            exp_annotations:
+              summary: File BullMQ durablement saturée
+  - name: Different BullMQ queues remain additive
+    interval: 1m
+    input_series:
+      - series: lila_bullmq_jobs{queue="first",state="waiting",instance="a"}
+        values: 60+0x30
+      - series: lila_bullmq_jobs{queue="second",state="waiting",instance="b"}
+        values: 60+0x30
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: LilaBullmqBacklog
+        exp_alerts: *a1
+  - name: Grafana BullMQ gauge deduplicates shared queues and preserves states
+    interval: 1m
+    input_series:
+      - series: lila_bullmq_jobs{queue="shared",state="waiting",instance="a"}
+        values: 60+0x20
+      - series: lila_bullmq_jobs{queue="shared",state="waiting",instance="b"}
+        values: 60+0x20
+      - series: lila_bullmq_jobs{queue="other",state="waiting",instance="a"}
+        values: 7+0x20
+      - series: lila_bullmq_jobs{queue="shared",state="delayed",instance="a"}
+        values: 2+0x20
+      - series: lila_bullmq_jobs{queue="shared",state="delayed",instance="b"}
+        values: 2+0x20
+    promql_expr_test:
+      - expr: sum by (state) (max by (queue, state) (lila_bullmq_jobs))
+        eval_time: 20m
+        exp_samples:
+          - labels: '{state="waiting"}'
+            value: 67
+          - labels: '{state="delayed"}'
+            value: 2

@@ -21,12 +21,11 @@ describe('Admin maintenance use-cases', () => {
       ok: true,
       unit: config.deployUnit,
     });
-    expect(runtime.runCommand).toHaveBeenCalledWith([
+    expect(runtime.spawnDetached).toHaveBeenCalledWith([
       'sudo',
       '-n',
       'systemctl',
       'start',
-      '--no-block',
       config.deployUnit,
     ]);
   });

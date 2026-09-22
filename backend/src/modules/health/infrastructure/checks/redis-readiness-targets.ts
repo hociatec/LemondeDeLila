@@ -5,6 +5,10 @@ export function redisReadinessTargets(config: ConfigService) {
   const session = config.get<string>('SESSION_STORE_REDIS_URL');
   return {
     sessions: session || config.get<string>('REDIS_URL'),
+    leases:
+      config.get<string>('UPDATE_REDIS_URL') ||
+      config.get<string>('REDIS_URL') ||
+      session,
     rateLimit: config.get<string>('RATE_LIMIT_REDIS_URL') ?? session,
     presence: config.get<string>('PRESENCE_REDIS_URL') || session,
     notifications: config.get<string>('NOTIFICATION_REDIS_URL') || session,

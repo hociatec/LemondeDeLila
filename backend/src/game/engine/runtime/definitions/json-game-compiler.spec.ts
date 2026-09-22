@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import { DeclarativeGameRuntime } from '../declarative-game.runtime';
 import {
   FixedGameClock,

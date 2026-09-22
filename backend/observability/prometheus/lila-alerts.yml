@@ -1,6 +1,12 @@
 groups:
   - name: lila-production-alerts
     rules:
+      - alert: LilaBackendMetricsUnavailable
+        expr: min(up{job="lila-backend"}) == 0 or absent(sum(up{job="lila-backend"}))
+        for: 5m
+        labels: { severity: critical, service: le-monde-de-lila }
+        annotations:
+          summary: Collecte des métriques backend indisponible ou non configurée
       - alert: LilaHttpAvailabilityBudgetBurn
         expr: lila:slo:http_availability:ratio_rate5m < 0.995
         for: 10m
@@ -20,7 +26,7 @@ groups:
         annotations:
           summary: Plus de 1 % des commandes WebSocket échouent
       - alert: LilaBullmqBacklog
-        expr: sum(lila_bullmq_jobs{state=~"waiting|delayed"}) > 100
+        expr: sum(max by (queue, state) (lila_bullmq_jobs{state=~"waiting|delayed"})) > 100
         for: 15m
         labels: { severity: warning, service: le-monde-de-lila }
         annotations:
@@ -37,3 +43,31 @@ groups:
         labels: { severity: warning, service: le-monde-de-lila }
         annotations:
           summary: Ressource DB, Redis ou BullMQ saturée
+      - alert: LilaRecoverySessionsDeferred
+        expr: max(lila_game_recovery_deferred_sessions) > 0
+        for: 10m
+        labels: { severity: warning, service: le-monde-de-lila }
+        annotations:
+          summary: Sessions de jeu durablement en attente de reprise
+      - alert: LilaMemoryCapacitySaturated
+        expr: max by (resource) (lila_memory_capacity_ratio) > 0.85
+        for: 5m
+        labels: { severity: warning, service: le-monde-de-lila }
+        annotations:
+          summary: Stockage mémoire borné proche de sa capacité
+      - alert: LilaMemoryCapacityRefusals
+        expr: sum by (resource) (increase(lila_memory_capacity_refusals_total[5m])) > 0
+        labels: { severity: warning, service: le-monde-de-lila }
+        annotations:
+          summary: Nouvelles entrées refusées pour préserver les données existantes
+      - alert: LilaRecoveryStalled
+        expr: sum(increase(lila_game_recovery_sweeps_total[10m])) == 0 and sum(lila_active_rooms) > 0
+        for: 5m
+        labels: { severity: critical, service: le-monde-de-lila }
+        annotations:
+          summary: Aucun balayage de récupération terminé malgré des salles actives
+      - alert: LilaDistributedLeaseLost
+        expr: sum(increase(lila_distributed_lease_losses_total[5m])) > 0
+        labels: { severity: warning, service: le-monde-de-lila }
+        annotations:
+          summary: Un bail distribué a été perdu ; vérifier Redis et les opérations concernées

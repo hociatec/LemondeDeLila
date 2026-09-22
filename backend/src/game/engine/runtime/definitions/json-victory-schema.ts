@@ -13,49 +13,11 @@ const options = {
   reason: { type: 'string', minLength: 1, maxLength: 128 },
 } satisfies Record<string, AuthorSchema>;
 
-const programKinds = [
-  'board',
-  'grid',
-  'judged-cards',
-  'event-race',
-  'delivery-race',
-  'goose-race',
-  'track-zone-collection',
-  'resource-track-race',
-  'treasure-track-race',
-  'parade',
-  'family-request',
-  'car-assembly',
-  'paw-scoring',
-  'market-exchange',
-  'paired-pawn-race',
-  'card-circles',
-  'public-domain-cards',
-  'protected-haunted-race',
-  'bidirectional-collision-race',
-  'family-effects',
-  'team-pawn-race',
-  'quiz-event-race',
-  'theme-name-cards',
-  'ritual-phases',
-  'property-economy',
-  'bounce-quiz-race',
-  'species-troops',
-  'directional-hazard-race',
-  'anonymous-vote',
-  'shared-prestige-cards',
-  'simultaneous-quiz',
-  'path-walls',
-  'story-challenge',
-  'discard-penalty-cards',
-  'chapter-encounter',
-  'battle-ties',
-  'pawn-race',
-] as const;
-
-export const jsonVictorySchema: AuthorSchema = {
+export const createJsonVictorySchema = (
+  programKinds: readonly string[] = [],
+): AuthorSchema => ({
   oneOf: [
-    ...programKinds.map((kind) => object({ kind: { const: `by-${kind}` } })),
+    ...programKinds.map((kind) => object({ kind: { const: kind } })),
     ...standardVictorySchemas,
     object(
       {
@@ -75,4 +37,5 @@ export const jsonVictorySchema: AuthorSchema = {
       ['kind', 'amount'],
     ),
   ],
-};
+});
+export const jsonVictorySchema = createJsonVictorySchema();

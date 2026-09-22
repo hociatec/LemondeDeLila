@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import { DeclarativeGameRuntime } from '../declarative-game.runtime';
 import type { EffectTarget } from '../contracts/effect-ir';
 import { assertTargetJson } from '../contracts/effect-json-schema';

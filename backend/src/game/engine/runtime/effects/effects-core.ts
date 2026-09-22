@@ -19,6 +19,29 @@ export type {
   EffectSource,
 } from '../contracts/effect-ir';
 import { typedRuntimeHandler } from '../actions/typed-runtime-handler';
+import { gameInput } from '../actions/game-input-schema';
+
+export function defineEmptyEffect<TState extends object>(
+  apply: GameEffectResolver<TState, Record<string, never>>['apply'],
+): DefinedGameEffectResolver<TState, Record<string, never>> {
+  return defineEffect({ input: gameInput.object({}), apply });
+}
+
+/** Empty-input effect that runs only when the queued effect has an actor. */
+export function defineActorEffect<TState extends object>(
+  apply: (
+    input: Omit<
+      Parameters<GameEffectResolver<TState, Record<string, never>>['apply']>[0],
+      'actorPlayerId'
+    > & { actorPlayerId: number },
+  ) => void,
+): DefinedGameEffectResolver<TState, Record<string, never>> {
+  return defineEmptyEffect<TState>((input) => {
+    if (input.actorPlayerId != null)
+      apply({ ...input, actorPlayerId: input.actorPlayerId });
+  });
+}
+
 export function defineEffect<TState extends object, TData>(
   resolver: GameEffectResolver<TState, TData>,
 ): DefinedGameEffectResolver<TState, TData> {

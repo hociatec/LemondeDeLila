@@ -6,7 +6,7 @@ import {
   type NoGameState,
 } from '../../../engine/sdk/public-api';
 import { testGame } from '../../../engine/testing/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import catalogue from './catalogue.json';
 import document from './game.json';
 import manifest from './manifest.json';

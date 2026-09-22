@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "3",
   "snapshotMigrations": [
     {
@@ -10,79 +10,170 @@
     {
       "fromVersion": "pirates-en-vadrouille@content:3609939f",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
-  "patterns": [{ "kind": "race", "trackId": "island", "spaces": 50 }],
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "island",
+      "spaces": 50
+    }
+  ],
   "components": [
     {
       "component": "cards.deck",
       "id": "treasure",
-      "cards": { "$content": "content/catalogue.json#/treasure" },
+      "cards": {
+        "$content": "content/catalogue.json#/treasure"
+      },
       "shuffle": true
     },
     {
       "component": "cards.deck",
       "id": "obstacle",
-      "cards": { "$content": "content/catalogue.json#/obstacle" },
+      "cards": {
+        "$content": "content/catalogue.json#/obstacle"
+      },
       "shuffle": true
     },
     {
       "component": "cards.deck",
       "id": "bonus",
-      "cards": { "$content": "content/catalogue.json#/bonus" },
+      "cards": {
+        "$content": "content/catalogue.json#/bonus"
+      },
       "shuffle": true
     },
     {
       "component": "inventory.set",
       "id": "pirates-treasure",
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+      "items": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
       "visibility": "public"
     },
     {
       "component": "inventory.set",
       "id": "pirates-obstacle",
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+      "items": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
       "visibility": "public"
     },
     {
       "component": "inventory.set",
       "id": "pirates-bonus",
-      "items": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+      "items": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
       "visibility": "public"
     },
     {
       "component": "collection.view",
       "id": "treasureTrack-loot",
       "groups": {
-        "treasures": { "kind": "inventory", "id": "pirates-treasure" },
-        "obstacles": { "kind": "inventory", "id": "pirates-obstacle" },
-        "bonus": { "kind": "inventory", "id": "pirates-bonus" },
-        "gold": { "kind": "resource", "id": "treasureTrack-gold" }
+        "treasures": {
+          "kind": "inventory",
+          "id": "pirates-treasure"
+        },
+        "obstacles": {
+          "kind": "inventory",
+          "id": "pirates-obstacle"
+        },
+        "bonus": {
+          "kind": "inventory",
+          "id": "pirates-bonus"
+        },
+        "gold": {
+          "kind": "resource",
+          "id": "treasureTrack-gold"
+        }
       }
     }
   ],
-  "setup": { "resources": { "treasureTrack-gold": 0 }, "startRound": false },
-  "resourceIds": ["treasureTrack-gold"],
+  "setup": {
+    "resources": {
+      "treasureTrack-gold": 0
+    },
+    "startRound": false
+  },
+  "resourceIds": [
+    "treasureTrack-gold"
+  ],
   "shortcuts": [
-    { "key": "D", "type": "action", "actionType": "roll" },
-    { "key": "P", "type": "interface", "id": "position" },
-    { "key": "S", "type": "interface", "id": "score" }
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    },
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position"
+    },
+    {
+      "key": "S",
+      "type": "interface",
+      "id": "score"
+    }
   ],
   "initialPhase": "playing",
-  "phases": { "playing": { "actions": ["roll"], "terminal": true } },
+  "phases": {
+    "playing": {
+      "actions": [
+        "roll"
+      ],
+      "terminal": true
+    }
+  },
   "actions": {
     "roll": {
       "recipe": "race-treasure-track-roll",
       "documentation": "Lance le dÃ©, avance et rÃ©sout la case atteinte."
     }
   },
-  "victory": { "kind": "by-treasure-track-race" },
+  "victory": {
+    "kind": "by-treasure-track-race"
+  },
   "treasureTrackRace": {
     "trackId": "island",
     "diceId": "main",
-    "tiles": { "$content": "content/catalogue.json#/tiles" },
+    "tiles": {
+      "$content": "content/catalogue.json#/tiles"
+    },
     "decks": {
       "treasure": "treasure",
       "obstacle": "obstacle",
@@ -101,6 +192,48 @@
     "retreatSpaces": 2,
     "finishReason": "legendary-chest",
     "stealEffectId": "pirates.steal-treasure",
-    "eventNamespace": "pirates"
+    "eventNamespace": "pirates",
+    "tileRules": {
+      "start": {
+        "kind": "none"
+      },
+      "neutral": {
+        "kind": "none"
+      },
+      "gold": {
+        "kind": "gain",
+        "amount": 1
+      },
+      "finish": {
+        "kind": "finish"
+      },
+      "treasure": {
+        "kind": "draw",
+        "deck": "treasure"
+      },
+      "obstacle": {
+        "kind": "draw",
+        "deck": "obstacle"
+      },
+      "bonus": {
+        "kind": "draw",
+        "deck": "bonus"
+      }
+    },
+    "deckRules": {
+      "treasure": {
+        "resolveEffects": false,
+        "protected": false
+      },
+      "bonus": {
+        "resolveEffects": true,
+        "protected": false
+      },
+      "obstacle": {
+        "resolveEffects": true,
+        "protected": true
+      }
+    },
+    "victoryCollection": "treasure"
   }
 }

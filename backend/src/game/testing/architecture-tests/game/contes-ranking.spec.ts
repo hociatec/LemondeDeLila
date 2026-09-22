@@ -1,5 +1,5 @@
 import { GameRankingController } from '../../../engine/runtime/kits/ranking-kit';
-import { createStoryChallengeResolution } from '../../../engine/runtime/effect-packs/choice-story-challenge/story-challenge-resolution';
+import { createStoryChallengeResolution } from '../../../rules/effect-packs/choice-story-challenge/story-challenge-resolution';
 
 const resolution = createStoryChallengeResolution({
   trackId: 'story-road',

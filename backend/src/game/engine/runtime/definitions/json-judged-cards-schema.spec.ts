@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import { testGame, DeclarativeGameRuntime } from '../../testing/public-api';
 import type { DeclarativeState } from '../state/declarative-state';
 import manifest from '../../../games/vents-dansants/les-absurdissimes/manifest.json';

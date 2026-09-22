@@ -2,12 +2,9 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { writeFileAtomicSync } from '../../../../platform/filesystem/public-api';
-import { mnemoQuizCatalogPath } from './mnemo-quiz-catalog';
 
 /** Archives belong to the catalog's durable storage and must be backed up with it. */
-export function archivedContent(
-  directory = `${mnemoQuizCatalogPath()}.versions`,
-) {
+export function archivedContent(directory: string) {
   return {
     save(source: object): string {
       const serialized = JSON.stringify(source);

@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/vents-sacres/jeu-oie/manifest.json';
 import document from '../../../games/vents-sacres/jeu-oie/game.json';
 import catalogue from '../../../games/vents-sacres/jeu-oie/content/catalogue.json';

@@ -2,6 +2,21 @@ import type { NextFunction, Request, Response } from 'express';
 import { prometheusMetrics, PrometheusMetrics } from './prometheus-metrics';
 
 describe('PrometheusMetrics', () => {
+  it('counts failed attempts independently of the retained failed-job gauge', async () => {
+    const metrics = new PrometheusMetrics();
+    const counts = { waiting: 0, active: 0, delayed: 0, failed: 2 };
+    metrics.setBullmqJobs('game-engine-tasks', counts);
+    metrics.recordBullmqFailure('game-engine-tasks');
+    metrics.recordBullmqFailure('game-engine-tasks');
+    metrics.setBullmqJobs('game-engine-tasks', { ...counts, failed: 0 });
+    const output = await metrics.registry.metrics();
+    expect(output).toContain(
+      'lila_bullmq_failures_total{queue="game-engine-tasks"} 2',
+    );
+    expect(output).toContain(
+      'lila_bullmq_jobs{queue="game-engine-tasks",state="failed"} 0',
+    );
+  });
   it('bounds distinct labels across repeated calls, rather than just their length', async () => {
     const metrics = new PrometheusMetrics();
     for (let index = 0; index < 300; index++) {

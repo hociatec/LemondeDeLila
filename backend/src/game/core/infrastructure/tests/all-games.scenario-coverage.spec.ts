@@ -68,6 +68,7 @@ describe('replay campaigns for every installed game', () => {
         );
         expect(result.steps).toBeGreaterThan(0);
         expect(result.actionTypes.length).toBeGreaterThan(0);
+        expect(result.finished || result.steps === 64).toBe(true);
       }
     },
     120_000,

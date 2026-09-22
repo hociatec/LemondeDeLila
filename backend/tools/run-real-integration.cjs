@@ -24,6 +24,8 @@ const integrationEnv = {
   DB_USER: 'root',
   DB_PASSWORD: 'integration',
   DB_NAME: 'lmdl_integration',
+  DEBT_TEST_MYSQL_PORT: process.env.INTEGRATION_MYSQL_PORT ?? '33306',
+  DEBT_TEST_MYSQL_PASSWORD: 'integration',
   SESSION_STORE_REDIS_URL: `redis://127.0.0.1:${process.env.INTEGRATION_REDIS_PORT ?? '36379'}`,
   GAME_ENGINE_STATE_REDIS_URL: `redis://127.0.0.1:${process.env.INTEGRATION_REDIS_PORT ?? '36379'}`,
   GAME_TASK_REDIS_URL: `redis://127.0.0.1:${process.env.INTEGRATION_REDIS_PORT ?? '36379'}`,
@@ -103,6 +105,7 @@ try {
   startDependencies();
   run('npm', ['run', 'migration:run:dev'], integrationEnv);
   run('npm', ['run', 'test:db:migrations'], integrationEnv);
+  run(process.execPath, ['tools/debt-mysql-integration.cjs'], integrationEnv);
   run(process.execPath, ['tools/game-room-locks-integration.cjs'], integrationEnv);
   run('npm', ['run', 'test:redis:bullmq'], integrationEnv);
   run('npm', ['run', 'test:disaster-recovery'], integrationEnv);

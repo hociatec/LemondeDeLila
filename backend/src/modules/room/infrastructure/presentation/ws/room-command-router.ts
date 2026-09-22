@@ -58,8 +58,7 @@ export async function routeRoomCommand(
         type: 'room.pong',
         roomId: meta.roomId,
         payload: {
-          // Protocol observation only; gameplay decisions receive BusinessClock.
-          serverTimeMs: Date.now(),
+          serverTimeMs: receivedAtMs,
           clientSentAtMs:
             finiteNumberOrNull(record.clientSentAtMs) ??
             finiteNumberOrNull(trace.sentAtMs),

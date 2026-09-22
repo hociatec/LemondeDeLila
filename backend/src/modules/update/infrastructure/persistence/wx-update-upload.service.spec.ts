@@ -40,6 +40,26 @@ async function cleanupFixture() {
 }
 
 describe('WxUpdateUploadService cleanup', () => {
+  it('does not steal or prune an old completion workspace while its owner may still run', async () => {
+    const { root, service, publish } = await cleanupFixture();
+    try {
+      const { uploadId } = await service.init(uploadInput);
+      const dir = path.join(root, '.uploads', uploadId);
+      const lockPath = path.join(dir, '.complete.lock');
+      await fs.promises.writeFile(lockPath, 'suspended-owner');
+      await fs.promises.utimes(lockPath, new Date(0), new Date(0));
+      await fs.promises.utimes(dir, new Date(0), new Date(0));
+      await new WxUpdateUploadStorage(root).pruneExpired();
+      await expect(service.complete(uploadId)).rejects.toThrow('en cours');
+      expect(await fs.promises.readFile(lockPath, 'utf8')).toBe(
+        'suspended-owner',
+      );
+      expect(publish).not.toHaveBeenCalled();
+    } finally {
+      await fs.promises.rm(root, { recursive: true, force: true });
+    }
+  });
+
   it('releases the distributed lease when the local completion lock is already held', async () => {
     const { root, service, publish } = await cleanupFixture();
     const lease = await testLeases.acquire('fixture', 900000);

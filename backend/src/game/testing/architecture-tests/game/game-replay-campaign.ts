@@ -41,7 +41,10 @@ export function runGameReplayCampaign(
       selectCandidate(runtime, state, clock, seed + steps, context),
     );
     assertSameJson(state, before, 'Action enumeration mutated state');
-    if (!candidate) break;
+    ok(
+      candidate,
+      `${definition.id} seed=${seed} step=${steps}: active game has no playable or automatic command after all timers`,
+    );
     const action = campaignCommand(candidate, seed, steps);
     try {
       const next = executor.execute({

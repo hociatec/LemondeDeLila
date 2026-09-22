@@ -1,8 +1,10 @@
 {
-  "maximumProgramFiles": 39,
-  "maximumProgramLines": 1110,
-  "maximumProductionLines": 13344,
-  "maximumBehaviorLines": 13268,
+  "maximumProgramFiles": 38,
+  "maximumProgramLines": 1201,
+  "maximumProductionLines": 13583,
+  "maximumBehaviorLines": 13507,
+  "maximumFileBytes": 13500,
+  "sizeReview": "2026-09-22: reviewed explicit configurable descriptors for remaining mechanisms (categories, tile rules, special operations, movement amounts and dice policies). 1201 contract lines / 13583 production / 13507 behavior. No extra pack; per-file 13500-byte ceiling unchanged. Directional effect protocol moved from kernel to its owning pack. Reuse exercised by parameterized-catalog.spec.ts and numeric mechanic tests.",
   "maximumRegisteredEffectPacks": 38,
   "forbiddenEngineVocabulary": [
     "balloon",
@@ -53,16 +55,14 @@
     "race-bidirectional-collision": "Compared with pawn-race and track-round; bidirectional movement and collisions remain unique.",
     "cards-theme-name": "Compared with judged-cards and card-actions; name/theme composition and special cards remain unique.",
     "cards-discard-penalty": "Compared with card-actions; discard legality, quitting and unique-value penalties remain unique.",
-    "race-paired-pawns": "Compared with pawn-race and track-round; paired parent/child movement and reunion victory remain unique.",
     "race-bounce-quiz": "Compared with movement-quiz and track-round; bouncing movement, quiz and protection remain unique.",
-    "cards-public-domain": "Compared with card-actions and collection primitives; public-domain resolution remains unique.",
     "choice-simultaneous-quiz": "Compared with movement-quiz and scoring-submission; configurable simultaneous quiz remains unique.",
     "cards-shared-prestige": "Compared with card-actions and shared hands; prestige statuses and exploit rules remain unique.",
-    "collection-family-effects": "Compared with family-request and collection primitives; profession requests and triggered effects remain a distinct configurable pattern.",
     "cards-ritual-phases": "Compared with collection and card primitives; ritual phases and light scoring remain unique.",
     "board-property-economy": "Compared with board-turn, board-landings and economy-kit; mortgages, jail, ownership and city economy remain unique.",
     "choice-chapter-encounter": "Compared with track-round and collection primitives; chapters, encounters and final countdown remain unique.",
-    "cards-battle-ties": "Compared with card-actions; successive ties and battle resolution remain unique."
+    "cards-battle-ties": "Compared with card-actions; successive ties and battle resolution remain unique.",
+    "cards-public-domain": "Compared with generic card selection and collection primitives: public-domain card classification and collection completion remain a catalogue rule, isolated from the engine by the injected extension contract."
   },
   "structuralReviews": [
     {
@@ -84,7 +84,10 @@
         "/if.then:cards.give",
         "/if.else:cards.discard"
       ],
-      "profiles": ["cards-public-domain", "collection-family-request"],
+      "profiles": [
+        "cards-public-domain",
+        "collection-family-request"
+      ],
       "decision": "Keep composed primitives: classification and post-draw behavior differ; the shared draw/give/discard operations are already provided by the Cards kit."
     }
   ],
@@ -106,7 +109,6 @@
       "cards-battle-ties"
     ],
     "choice": [
-      "choice-card-occurrences",
       "choice-simultaneous-paw-scoring",
       "choice-story-challenge",
       "choice-simultaneous-quiz",
@@ -137,23 +139,18 @@
       "race-multi-pawn",
       "race-treasure-track"
     ],
-    "spatial": ["spatial-grid-placement"]
+    "spatial": [
+      "spatial-grid-placement"
+    ]
   },
   "genericGameplayFiles": [
-    "board-choices.ts",
-    "board-effect-bindings.ts",
-    "board-landings.ts",
-    "board-turn.recipes.ts",
     "card-actions.recipes.ts",
     "card-dice.recipes.ts",
+    "card-event-presentation.spec.ts",
+    "card-event-presentation.ts",
     "card-recipe.helpers.ts",
     "card-selection.recipes.ts",
-    "event-race.recipes.ts",
-    "goose-race.recipes.ts",
-    "grid-placement.recipes.ts",
-    "judged-cards.recipes.ts",
     "movement-quiz.recipes.ts",
-    "pawn-race.recipes.ts",
     "pawn-selection-groups.spec.ts",
     "pawn-selection-groups.ts",
     "pawn-selection.spec.ts",
@@ -186,11 +183,6 @@
       "property": "cardCircles",
       "mechanic": "themed card circle completion",
       "domain": "collection"
-    },
-    "choice-card-occurrences": {
-      "property": null,
-      "mechanic": "bounded card occurrence selection",
-      "domain": "choice"
     },
     "choice-simultaneous-paw-scoring": {
       "property": "pawScoring",

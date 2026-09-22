@@ -1,8 +1,11 @@
 import { allCompleted } from '../../../../shared/utils/public-api';
+import type { BusinessClock } from '../../../../shared/interfaces/public-api';
+import { SystemBusinessClock } from '../../../../platform/time/public-api';
 import { bestEffort } from '../../../../platform/observability/public-api';
 import { BadRequestException, HttpException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { randomUUID } from 'node:crypto';
 import {
   assertStorageCapacity,
   StorageCapacityError,
@@ -39,7 +42,10 @@ export type WxUploadPartKind = 'artifact' | 'installer';
 export class WxUpdateUploadStorage {
   readonly uploadsRoot: string;
 
-  constructor(private readonly targetDir: string) {
+  constructor(
+    private readonly targetDir: string,
+    private readonly clock: BusinessClock = new SystemBusinessClock(),
+  ) {
     this.uploadsRoot = path.join(targetDir, '.uploads');
   }
 
@@ -104,6 +110,56 @@ export class WxUpdateUploadStorage {
     await writeFileAtomic(filePath, JSON.stringify(value, null, 2));
   }
 
+  /** Publish a complete immutable part without replacing a concurrent winner. */
+  async publishPart(
+    source: string,
+    destination: string,
+    expectedBytes: number,
+  ): Promise<boolean> {
+    const temporary = path.join(
+      path.dirname(destination),
+      `.${path.basename(destination)}.${randomUUID()}.tmp`,
+    );
+    let cleanupTemporary = true;
+    try {
+      try {
+        await fs.promises.copyFile(
+          source,
+          temporary,
+          fs.constants.COPYFILE_EXCL,
+        );
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'EEXIST')
+          cleanupTemporary = false;
+        throw error;
+      }
+      if ((await fs.promises.stat(temporary)).size !== expectedBytes)
+        throw new BadRequestException(
+          'Taille du chunk WX modifiée pendant la copie.',
+        );
+      const handle = await fs.promises.open(temporary, 'r+');
+      try {
+        await handle.sync();
+      } finally {
+        await handle.close();
+      }
+      try {
+        // Same-directory hard link: atomic visibility, with EEXIST instead of overwrite.
+        await fs.promises.link(temporary, destination);
+        return true;
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'EEXIST') return false;
+        throw error;
+      }
+    } finally {
+      if (cleanupTemporary)
+        await bestEffort(
+          fs.promises.rm(temporary, { force: true }),
+          'suppression du chunk WX temporaire',
+        );
+    }
+  }
+
   async initialize(meta: WxUploadMeta): Promise<void> {
     const uploadId = this.requireUploadId(meta.uploadId);
     const dir = this.uploadDir(uploadId);
@@ -121,12 +177,17 @@ export class WxUpdateUploadStorage {
 
   async cleanupCompletion(dir: string): Promise<void> {
     await Promise.all(
-      ['.complete.lock', 'combined.zip', 'installer.zip'].map((name) =>
+      ['combined.zip', 'installer.zip'].map((name) =>
         bestEffort(
           fs.promises.rm(path.join(dir, name), { force: true }),
           `suppression du temporaire WX ${name} upload=${path.basename(dir)}`,
         ),
       ),
+    );
+    // Release last: a successor must not lose its own temporary files.
+    await bestEffort(
+      fs.promises.rm(path.join(dir, '.complete.lock'), { force: true }),
+      `suppression du verrou WX upload=${path.basename(dir)}`,
     );
   }
 
@@ -187,7 +248,7 @@ export class WxUpdateUploadStorage {
 
   async pruneExpired(): Promise<void> {
     const expiration =
-      Date.now() - operationalSettings.clientWxUploadRetentionMs;
+      this.clock.now() - operationalSettings.clientWxUploadRetentionMs;
     const entries = (
       await fs.promises
         .readdir(this.uploadsRoot, { withFileTypes: true })
@@ -203,7 +264,20 @@ export class WxUpdateUploadStorage {
             path.join(target, 'meta.json'),
           ).catch(() => null);
           if (meta?.completedAt || (stat && stat.mtimeMs < expiration)) {
-            await fs.promises.rm(target, { recursive: true, force: true });
+            // Cleanup contends for the same non-expiring resource lock as
+            // completion, including when a writer's Redis lease has expired.
+            const guard = await fs.promises
+              .open(path.join(target, '.complete.lock'), 'wx')
+              .catch(() => null);
+            if (!guard) return;
+            await guard.close();
+            try {
+              await fs.promises.rm(target, { recursive: true, force: true });
+            } finally {
+              await fs.promises.rm(path.join(target, '.complete.lock'), {
+                force: true,
+              });
+            }
           }
         }),
     );
@@ -229,7 +303,21 @@ export class WxUpdateUploadStorage {
           combinedBytes += (bytes as Buffer).length;
           if (combinedBytes > input.expectedBytes)
             throw new BadRequestException(input.overflowMessage);
-          await output.write(bytes as Buffer);
+          const buffer = bytes as Buffer;
+          for (let offset = 0; offset < buffer.length;) {
+            const { bytesWritten } = await output.write(
+              buffer.subarray(offset),
+            );
+            if (
+              !Number.isSafeInteger(bytesWritten) ||
+              bytesWritten <= 0 ||
+              bytesWritten > buffer.length - offset
+            )
+              throw new Error(
+                'Écriture du fichier WX sans progression valide.',
+              );
+            offset += bytesWritten;
+          }
         }
       }
       await output.sync();

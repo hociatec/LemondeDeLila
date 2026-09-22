@@ -102,7 +102,10 @@ export class ServLoggerService implements LoggerService {
 
   private meta(context?: string): { context?: string; correlationId?: string } {
     return {
-      context: typeof context === 'string' ? context.slice(0, 256) : undefined,
+      context:
+        typeof context === 'string'
+          ? sanitizeLogText(context).slice(0, 256)
+          : undefined,
       correlationId: currentCorrelationId()?.slice(0, 128),
     };
   }

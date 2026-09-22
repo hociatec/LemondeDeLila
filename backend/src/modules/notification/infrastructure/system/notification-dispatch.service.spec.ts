@@ -28,18 +28,18 @@ it('deduplicates received notifications without extending their retention on dup
     payload: { id: 'one' },
     origin: 'another-instance',
   };
-  const now = jest.spyOn(Date, 'now');
+  jest.useFakeTimers();
   try {
-    now.mockReturnValue(1000);
     receive(event, { eventId: 'event-one' } as never);
-    now.mockReturnValue(300999);
+    jest.advanceTimersByTime(299999);
+    jest.setSystemTime(new Date('2000-01-01'));
     receive(event, { eventId: 'event-one' } as never);
     expect(socket.send).toHaveBeenCalledTimes(1);
-    now.mockReturnValue(301000);
+    jest.advanceTimersByTime(1);
     receive(event, { eventId: 'event-one' } as never);
     expect(socket.send).toHaveBeenCalledTimes(2);
   } finally {
-    now.mockRestore();
+    jest.useRealTimers();
     await service.onModuleDestroy();
   }
 });

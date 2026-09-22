@@ -1,34 +1,61 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "3",
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
   "patterns": [
-    { "kind": "race", "trackId": "directionalHazard", "spaces": 30 }
+    {
+      "kind": "race",
+      "trackId": "directionalHazard",
+      "spaces": 30
+    }
   ],
   "components": [
     {
       "component": "cards.deck",
       "id": "situations",
-      "cards": { "$content": "content/catalogue.json#/cards" },
+      "cards": {
+        "$content": "content/catalogue.json#/cards"
+      },
       "shuffle": true
     }
   ],
   "setup": {
     "startRound": false,
-    "counters": { "race-hazard.next-player-delta": 0 }
+    "counters": {
+      "race-hazard.next-player-delta": 0
+    }
   },
   "resourceIds": [
     "race-hazard.last-roll",
     "race-hazard.last-move",
     "race-hazard.idle-turns"
   ],
-  "shortcuts": [{ "key": "D", "type": "action", "actionType": "roll" }],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    }
+  ],
   "initialPhase": "playing",
-  "phases": { "playing": { "actions": ["roll"], "terminal": true } },
-  "actions": { "roll": { "recipe": "race-hazard-roll" } },
-  "victory": { "kind": "by-directional-hazard-race" },
+  "phases": {
+    "playing": {
+      "actions": [
+        "roll"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "race-hazard-roll"
+    }
+  },
+  "victory": {
+    "kind": "by-directional-hazard-race"
+  },
   "directionalHazardRace": {
     "trackId": "directionalHazard",
     "diceId": "main",
@@ -43,7 +70,35 @@
     },
     "counterId": "race-hazard.next-player-delta",
     "mirrorStatusId": "race-hazard.mirror-roll",
-    "tiles": { "$content": "content/catalogue.json#/tiles" },
-    "cards": { "$content": "content/catalogue.json#/cards" }
-  }
+    "tiles": {
+      "$content": "content/catalogue.json#/tiles"
+    },
+    "cards": {
+      "$content": "content/catalogue.json#/cards"
+    },
+    "parameters": {
+      "checkpointSpan": 5,
+      "shieldAdvance": 4,
+      "replayAdvance": 3,
+      "swapAdvance": 2,
+      "leaderRetreat": -2,
+      "othersAdvance": 2,
+      "lastAdvance": 3,
+      "retreatRecovery": 3,
+      "checkpointSuccess": 4,
+      "checkpointFailure": -1,
+      "idleThreshold": 2,
+      "idleAdvance": 5,
+      "sharedAdvance": 2,
+      "randomSides": 6,
+      "globalRetreat": -2,
+      "globalAdvance": 1
+    }
+  },
+  "snapshotMigrations": [
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
+    }
+  ]
 }

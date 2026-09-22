@@ -1,7 +1,22 @@
 # Évolution du contrat auteur
 
-La version courante de l'API auteur est 6.18.0. Elle est indépendante de la
+La version courante de l'API auteur est 6.20.0. Elle est indépendante de la
 version du backend, des règles des jeux et des schémas de snapshots.
+
+La version 6.20 ajoute `sequentialPawnSelection(...).choice`, un résolveur
+réutilisable qui valide les identifiants de pion avant leur attribution.
+Les déclarations internes accessibles incluent aussi `defineActorEffect`.
+La sélection prioritaire des recettes des bots reste interne au moteur JSON.
+Les appels existants restent valides ;
+aucune migration de snapshot n'est nécessaire. Les tests vérifient notamment
+les effets sans acteur, la priorité des actions et l'isolation des configurations.
+
+La version 6.19 ajoute les constructeurs compatibles `defineEmptyAction` et
+`defineEmptyEffect` : ils réutilisent les validateurs des constructeurs existants
+avec un objet d'entrée vide. Les anciens appels restent valides. La référence
+intègre aussi l'option déjà présente `automaticBots` de `sequentialPawnSelection`.
+Aucune migration de snapshot n'est nécessaire ; les tests de contrats et les
+replays déterministes vérifient la compatibilité des jeux existants.
 
 La version 6.18 ajoute l'option `shuffleChoices` aux banques de quiz. L'ordre
 tiré avec le générateur déterministe est sauvegardé dans chaque session et

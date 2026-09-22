@@ -5,8 +5,10 @@ const DEFAULT_MINIMUM_PARTICIPANTS = 2;
 export function resolveMinimumParticipants(value: unknown): number {
   // Every table game is multiplayer. Clamp legacy catalog overrides as well
   // as malformed manifests so a single participant can never start a match.
-  return parseStrictInteger(value, { min: DEFAULT_MINIMUM_PARTICIPANTS }) ??
-    DEFAULT_MINIMUM_PARTICIPANTS;
+  return (
+    parseStrictInteger(value, { min: DEFAULT_MINIMUM_PARTICIPANTS }) ??
+    DEFAULT_MINIMUM_PARTICIPANTS
+  );
 }
 
 export function hasMinimumParticipants(

@@ -1,4 +1,4 @@
-import { compileJsonGame } from './json-game-compiler';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/les-quatre-vents/aventure-sauvage/manifest.json';
 import document from '../../../games/les-quatre-vents/aventure-sauvage/game.json';
 import board from '../../../games/les-quatre-vents/aventure-sauvage/content/board.json';

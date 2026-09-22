@@ -2,7 +2,7 @@ import { testGame } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import { DeclarativeGameRuntime } from '../../../engine/testing/public-api';
 import { GameSimulator } from '../../../engine/testing/public-api';
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
 import document from './game.json';
 

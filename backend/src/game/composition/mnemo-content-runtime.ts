@@ -1,8 +1,11 @@
 import type { GameRuntime } from '../core/application/ports/game-runtime.port';
 import { DeclarativeGameRuntime } from '../engine/runtime/declarative-game.runtime';
 import { contentBackedRuntime } from '../engine/runtime/content/content-backed-runtime';
-import { readMnemoQuizCatalog } from '../engine/infrastructure/content/mnemo-quiz-catalog';
-import { compileJsonGame } from '../engine/json/public-api';
+import {
+  readMnemoQuizCatalog,
+  mnemoQuizCatalogPath,
+} from './mnemo-quiz-catalog';
+import { compileJsonGame } from '../rules/public-api';
 import { discoverGameDefinitions } from './game-module-discovery';
 import { archivedContent } from '../engine/infrastructure/content/archived-content';
 
@@ -71,6 +74,6 @@ export function mnemoContentRuntime(fallback: GameRuntime) {
           externalContent: false,
         }),
       ),
-    archivedContent(),
+    archivedContent(`${mnemoQuizCatalogPath()}.versions`),
   );
 }

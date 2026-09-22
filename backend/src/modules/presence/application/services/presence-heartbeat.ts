@@ -16,11 +16,11 @@ export class PresenceHeartbeat {
     pingTimeoutMs = 10_000,
   ) {
     this.pingIntervalMs = Number.isSafeInteger(pingIntervalMs)
-      ? Math.min(Math.max(pingIntervalMs, 1), 300_000)
+      ? Math.min(Math.max(pingIntervalMs, 1_000), 300_000)
       : 30_000;
     this.pingTimeoutMs = Number.isSafeInteger(pingTimeoutMs)
-      ? Math.min(Math.max(pingTimeoutMs, 1), this.pingIntervalMs)
-      : 10_000;
+      ? Math.min(Math.max(pingTimeoutMs, 1_000), this.pingIntervalMs)
+      : Math.min(10_000, this.pingIntervalMs);
   }
 
   private pingIntervalMs: number;

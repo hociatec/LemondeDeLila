@@ -1,3 +1,4 @@
+import { prometheusMetrics } from '../../../../observability/public-api';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   BUSINESS_CLOCK,
@@ -68,7 +69,10 @@ export class RealtimeRequestReplayService {
     }
     // Completed receipts remain authoritative until their advertised TTL.
     // Eviction under load would allow the same mutation to execute again.
-    if (this.entries.size >= this.maxEntries) return { kind: 'busy' };
+    if (this.entries.size >= this.maxEntries) {
+      prometheusMetrics.memoryCapacity.refused('replay-receipts');
+      return { kind: 'busy' };
+    }
 
     const deferred = createDeferred<readonly RealtimeResponseFrame[]>();
     const entry: ReplayEntry = {
@@ -78,6 +82,7 @@ export class RealtimeRequestReplayService {
       result: deferred.promise,
     };
     this.entries.set(key, entry);
+    this.reportCapacity();
     return {
       kind: 'execute',
       complete: (frames) => {
@@ -108,6 +113,7 @@ export class RealtimeRequestReplayService {
         if (entry.expiresAtMs !== Infinity) return;
         entry.expiresAtMs = 0;
         if (this.entries.get(key) === entry) this.entries.delete(key);
+        this.reportCapacity();
         deferred.resolve([]);
       },
     };
@@ -120,6 +126,7 @@ export class RealtimeRequestReplayService {
 
   clear(): void {
     this.entries.clear();
+    this.reportCapacity();
   }
 
   private executionWithoutReplay(): ReplayResolution {
@@ -148,6 +155,15 @@ export class RealtimeRequestReplayService {
     for (const [key, entry] of this.entries) {
       if (entry.expiresAtMs <= now) this.entries.delete(key);
     }
+    this.reportCapacity();
+  }
+
+  private reportCapacity(): void {
+    prometheusMetrics.memoryCapacity.usage(
+      'replay-receipts',
+      this.entries.size,
+      this.maxEntries,
+    );
   }
 
   private now(): number {

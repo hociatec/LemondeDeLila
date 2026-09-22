@@ -1,4 +1,4 @@
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 import catalogue from './catalogue.json';
 import document from './game.json';

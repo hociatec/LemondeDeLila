@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { mnemoContentRuntime } from './mnemo-content-runtime';
-import { compileJsonGame } from '../engine/json/public-api';
+import { compileJsonGame } from '../rules/public-api';
 import { DeclarativeGameRuntime } from '../engine/runtime/declarative-game.runtime';
 import { createTestGameState } from '../core/testing/game-test-state';
 import { GameExecutionScopeService } from '../core/application/services/game-execution-scope.service';
@@ -219,7 +219,9 @@ it('reads legacy embedded content and migrates it on the next action', () => {
     contentSnapshot?: object;
   } = start(runtime);
   if (!legacy.contentVersion) throw new Error('Missing archive version');
-  legacy.contentSnapshot = archivedContent().load(legacy.contentVersion);
+  legacy.contentSnapshot = archivedContent(
+    `${join(directory, 'quiz.json')}.versions`,
+  ).load(legacy.contentVersion);
   delete legacy.contentVersion;
   store.updateQuestion('q', { question: 'Changed after legacy save' });
   const restored = mnemoContentRuntime(fallback);

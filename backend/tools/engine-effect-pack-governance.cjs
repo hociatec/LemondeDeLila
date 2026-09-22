@@ -5,8 +5,11 @@ const path = require('node:path');
 const { inspectSources } = require('./game-structural-sequences.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
-const EFFECT_PACKS = path.join(ROOT, 'src/game/engine/runtime/effect-packs');
-const GAMES = path.join(ROOT, 'src/game/games');
+const EFFECT_PACKS = path.join(ROOT, 'src/game/rules/effect-packs');
+const gamesRootIndex = process.argv.indexOf('--games-root');
+const GAMES = gamesRootIndex < 0
+  ? path.join(ROOT, 'src/game/games')
+  : path.resolve(process.argv[gamesRootIndex + 1]);
 const GAMEPLAY = path.join(ROOT, 'src/game/engine/runtime/recipes/gameplay');
 const ENGINE_RUNTIME = path.join(ROOT, 'src/game/engine/runtime');
 const policy = JSON.parse(
@@ -110,6 +113,11 @@ for (const name of declared) {
     file.endsWith('.ts'),
   )) {
     const source = fs.readFileSync(sourceFile, 'utf8');
+    if (
+      !sourceFile.endsWith('.spec.ts') &&
+      Buffer.byteLength(source.replaceAll('\r\n', '\n'), 'utf8') > policy.maximumFileBytes
+    )
+      throw new Error(`${path.relative(EFFECT_PACKS, sourceFile)} exceeds the reviewed per-file size limit`);
     for (const match of source.matchAll(
       /\b(?:from\s+|import\s*\()(['"])([^'"]+)\1/g,
     )) {
@@ -141,9 +149,9 @@ for (const name of declared) {
       )
     : [];
   const scope = 'generic';
-  if (profile.property && consumers.length !== 1)
+  if (profile.property && consumers.length === 0)
     throw new Error(
-      `${name} must have its actual consumer count reviewed (found ${consumers.length})`,
+      `${name} must have at least one actual consumer`,
     );
 
   if (profile.property) {
@@ -231,7 +239,7 @@ const requiredLargeReviews = report
   .sort();
 const declaredLargeReviews = Object.keys(
   policy.largeSingleConsumerReviews,
-).sort();
+).filter(name => !report.some(item => item.name === name && item.consumerCount > 1)).sort();
 if (
   JSON.stringify(requiredLargeReviews) !== JSON.stringify(declaredLargeReviews)
 )
@@ -316,7 +324,7 @@ const effectPackProperties = Object.values(policy.profiles)
   .filter(({ property }) => property)
   .map(({ property }) => property);
 for (const relative of centralFiles) {
-  const source = fs.readFileSync(path.resolve(EFFECT_PACKS, relative), 'utf8');
+  const source = fs.readFileSync(path.resolve(relative === 'json-effect-pack-document-fields.ts' ? EFFECT_PACKS : path.join(ENGINE_RUNTIME, 'effect-packs'), relative), 'utf8');
   for (const property of effectPackProperties)
     if (new RegExp(`\\b${property}\\b`).test(source))
       throw new Error(

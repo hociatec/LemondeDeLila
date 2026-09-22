@@ -1,4 +1,4 @@
-import { compileJsonGame } from '../../../engine/json/public-api';
+import { compileJsonGame } from '../../../rules/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -54,7 +54,7 @@ describe('Contes et Cacahuètes declarative game', () => {
       [{ type: 'roll', payload: {}, meta: { actorId } }],
     ) as typeof legacy;
 
-    expect(restored.engine.contentVersion).toBe('1');
+    expect(restored.engine.contentVersion).toBe(document.contentVersion);
     expect(restored.engine.kits?.dice).toBeDefined();
   });
 });

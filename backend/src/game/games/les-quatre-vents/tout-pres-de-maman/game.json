@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "3",
   "snapshotMigrations": [
     {
@@ -10,33 +10,76 @@
     {
       "fromVersion": "tout-pres-de-pairedPawn@content:6c60e669",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
   "patterns": [
-    { "kind": "race", "trackId": "forest", "spaces": 40, "overshoot": "bounce" }
+    {
+      "kind": "race",
+      "trackId": "forest",
+      "spaces": 40,
+      "overshoot": "bounce"
+    }
   ],
   "components": [
     {
       "component": "cards.deck",
       "id": "events",
-      "cards": { "$content": "content/catalogue.json#/cards" },
+      "cards": {
+        "$content": "content/catalogue.json#/cards"
+      },
       "shuffle": true,
       "empty": "recycle"
     }
   ],
-  "setup": { "resources": { "eucalyptus": 2 }, "startRound": false },
-  "resourceIds": ["eucalyptus"],
+  "setup": {
+    "resources": {
+      "eucalyptus": 2
+    },
+    "startRound": false
+  },
+  "resourceIds": [
+    "eucalyptus"
+  ],
   "shortcuts": [
-    { "key": "D", "type": "action", "actionType": "roll" },
-    { "key": "P", "type": "interface", "id": "position" },
-    { "key": "S", "type": "interface", "id": "score" }
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    },
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position"
+    },
+    {
+      "key": "S",
+      "type": "interface",
+      "id": "score"
+    }
   ],
   "initialPhase": "playing",
-  "phases": { "playing": { "actions": ["roll"], "terminal": true } },
-  "actions": { "roll": { "recipe": "race-paired-pawns-roll" } },
-  "victory": { "kind": "by-paired-pawn-race" },
+  "phases": {
+    "playing": {
+      "actions": [
+        "roll"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "race-paired-pawns-roll"
+    }
+  },
+  "victory": {
+    "kind": "by-paired-pawn-race"
+  },
   "pairedPawnRace": {
     "trackId": "forest",
     "diceId": "main",
@@ -47,7 +90,58 @@
     "maxDepth": 12,
     "finishReason": "pairedPawn-found",
     "eventNamespace": "pairedPawn",
-    "tiles": { "$content": "content/catalogue.json#/tiles" },
-    "cards": { "$content": "content/catalogue.json#/cards" }
+    "tiles": {
+      "$content": "content/catalogue.json#/tiles"
+    },
+    "cards": {
+      "$content": "content/catalogue.json#/cards"
+    },
+    "transferAmount": 1,
+    "sharedAdvance": 1,
+    "meetingAdvance": 1,
+    "rollMinimum": 4,
+    "rollAdvance": 1,
+    "tileRules": {
+      "start": {
+        "kind": "gain",
+        "amount": 2
+      },
+      "neutral": {
+        "kind": "none",
+        "amount": 0
+      },
+      "token": {
+        "kind": "gain",
+        "amount": 1
+      },
+      "card": {
+        "kind": "draw",
+        "amount": 0
+      },
+      "bonds": {
+        "kind": "move",
+        "amount": 2
+      },
+      "slide": {
+        "kind": "move",
+        "amount": -2
+      },
+      "storm": {
+        "kind": "skip",
+        "amount": 1
+      },
+      "nest": {
+        "kind": "skip",
+        "amount": 1
+      },
+      "meeting": {
+        "kind": "meeting",
+        "amount": 0
+      },
+      "finish": {
+        "kind": "finish",
+        "amount": 0
+      }
+    }
   }
 }

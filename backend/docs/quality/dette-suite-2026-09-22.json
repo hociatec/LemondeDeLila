@@ -1,0 +1,53 @@
+{
+  "date": "2026-09-22",
+  "scope": "local code and loopback integration; production not deployed",
+  "alerts": 12,
+  "alertScenarios": 25,
+  "sloScenarios": 5,
+  "firingNotifications": 12,
+  "resolvedNotifications": 12,
+  "targetedSuites": 4,
+  "targetedTests": 15,
+  "versions": {
+    "prometheus": "3.5.0",
+    "alertmanager": "0.28.1"
+  },
+  "productionLines": 13581,
+  "historicalProductionLimit": 13344,
+  "files": [
+    {
+      "file": "observability/prometheus/lila-alerts.yml",
+      "sha256": "3bfc6d1889bac9283ffb5382054b18f1a034a5ef2c88d6ae25a492ea14e6467a"
+    },
+    {
+      "file": "observability/prometheus/lila-slo-rules.yml",
+      "sha256": "3b48c62b50441989d039f5256e205bc62532f2b4562ee21b945aceab6bfc6c04"
+    },
+    {
+      "file": "observability/prometheus/lila-alerts.test.yml",
+      "sha256": "5e32ebb3bfbfd44ce166101e3b9366b3a97b3ac7f690fa8f35f62b54a0f28b72"
+    },
+    {
+      "file": "observability/prometheus/lila-slo.test.yml",
+      "sha256": "feedd45c40e3a3bf93dd878d762ff35efed5dcbcd34d964f10f7c39e3b6b43ca"
+    },
+    {
+      "file": "tools/observability-integration.cjs",
+      "sha256": "0291eeeab825495948d6271e121f46c675e0f6f328d3dcc75fbd634c5d75996f"
+    }
+  ],
+  "regressionSuites": 432,
+  "regressionTests": 2519,
+  "regressionSeconds": 774.971,
+  "replayScenarios": 156,
+  "replayGames": 39,
+  "replaySeeds": [
+    0,
+    1,
+    17,
+    65535
+  ],
+  "lint": "passed",
+  "build": "passed",
+  "quality": "passed"
+}

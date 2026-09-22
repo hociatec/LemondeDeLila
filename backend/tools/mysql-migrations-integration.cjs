@@ -410,11 +410,16 @@ async function verifyRecentMigrationsWithExistingData(source) {
   const before = await source.query(
     'SELECT COUNT(*) AS count FROM game_sessions WHERE room_id IN (99, 101)',
   );
-  // verifyLegacyMigrationName appended the historical no-op to the ledger.
-  await source.undoLastMigration({ transaction: 'each' });
-  // The newest invite table is reversible and must be removed before reaching
-  // the historical rollback boundary immediately below.
-  await source.undoLastMigration({ transaction: 'each' });
+  // Follow the actual ledger, including newly added migrations, until the
+  // explicit historical rollback boundary. Never assume a fixed tail length.
+  const rolledBack = [];
+  for (;;) {
+    const [latest] = await source.query('SELECT name FROM migrations ORDER BY id DESC LIMIT 1');
+    assert.ok(latest, 'Historical rollback boundary disappeared');
+    if (latest.name === 'DecoupleUserForeignKeys1771000000000') break;
+    await source.undoLastMigration({ transaction: 'each' });
+    rolledBack.push(latest.name);
+  }
   const inviteTable = await source.query("SHOW TABLES LIKE 'room_invites'");
   assert.equal(inviteTable.length, 0);
   // The immutable DecoupleUserForeignKeys down() is invalid for the historical
@@ -431,10 +436,7 @@ async function verifyRecentMigrationsWithExistingData(source) {
     schemaBeforeBoundary,
   );
   const reapplied = await source.runMigrations({ transaction: 'each' });
-  assert.deepEqual(reapplied.map((migration) => migration.name).sort(), [
-    'ImportLegacySettingsJson1735900000000',
-    'PersistRoomInvites1771100000000',
-  ]);
+  assert.deepEqual(reapplied.map((migration) => migration.name).sort(), rolledBack.sort());
 
   // Independently exercise the reversible index/constraint migrations on
   // existing data. This does not pretend the complete history is reversible.
