@@ -69,7 +69,6 @@ describe('Arche de Mnémosyne declarative game', () => {
       wrongPoints: 0,
       timeoutPoints: -1,
     });
-    await game.as(1).do('draw', {});
     await game.as(1).do('answer', { answerIndex: 0 });
     await game.as(2).do('answer', { answerIndex: 1 });
     expect('correctnessByPlayerId' in game.view(1)).toBe(false);
@@ -78,7 +77,7 @@ describe('Arche de Mnémosyne declarative game', () => {
       kits: { quiz: { sessions: Record<string, { phase: string }> } };
     };
     expect('currentQuestion' in game.view(1)).toBe(false);
-    expect(view.kits.quiz.sessions[MNEMO_SESSION]?.phase).toBe('closed');
+    expect(view.kits.quiz.sessions[MNEMO_SESSION]?.phase).toBe('answering');
     expect(await game.replay()).toEqual(game.state());
   });
 
@@ -99,7 +98,6 @@ describe('Arche de Mnémosyne declarative game', () => {
       wrongPoints: 0,
       timeoutPoints: -1,
     });
-    await game.as(1).do('draw', {});
 
     expect(
       new DeclarativeGameRuntime(gameDefinition).getBotActions(
@@ -127,16 +125,8 @@ describe('Arche de Mnémosyne declarative game', () => {
       timeoutPoints: -1,
     });
     for (let question = 0; question < 5; question += 1) {
-      const drawerId = question % 2 === 0 ? 1 : -2;
-      expect(game.availableActions(drawerId)).toContain('draw');
-      await game.as(drawerId).do('draw', {});
       await game.as(1).do('answer', { answerIndex: 0 });
       await game.as(-2).do('answer', { answerIndex: 1 });
-      game.advanceTime(1_000);
-      if (question < 4)
-        expect(game.availableActions(question % 2 === 0 ? -2 : 1)).toContain(
-          'draw',
-        );
     }
 
     const state = game.state() as unknown as {
@@ -153,6 +143,6 @@ describe('Arche de Mnémosyne declarative game', () => {
         game.state(),
         -2,
       ),
-    ).toEqual([expect.objectContaining({ type: 'draw' })]);
+    ).toEqual([expect.objectContaining({ type: 'answer' })]);
   });
 });
