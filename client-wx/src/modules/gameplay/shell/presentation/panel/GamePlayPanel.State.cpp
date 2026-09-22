@@ -59,9 +59,10 @@ void GamePlayPanel::ApplyState(domain::GameState state)
             focusedBefore.get(), this);
     std::optional<domain::GameValue> previousPendingChoice;
     std::vector<domain::GameValue> previousPendingOrder;
-    if (state_.pending && choicesList_->GetSelection() != wxNOT_FOUND)
+    wxArrayInt previousSelections;
+    if (state_.pending && choicesList_->GetSelections(previousSelections) == 1)
     {
-        const int selected = choicesList_->GetSelection();
+        const int selected = previousSelections[0];
         if (selected >= 0 && static_cast<std::size_t>(selected) < state_.pending->choices.size())
             previousPendingChoice = state_.pending->choices[static_cast<std::size_t>(selected)].value;
     }
