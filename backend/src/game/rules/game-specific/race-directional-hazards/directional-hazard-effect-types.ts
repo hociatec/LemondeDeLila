@@ -1,13 +1,7 @@
-/** Shared by the author schema and the compiled card contract. */
-export const directionalHazardCardKinds = [
-  'move',
-  'skip',
-  'special',
-  'global',
-  'conditional',
-  'rule',
-  'neutral',
-] as const;
+import type { DirectionalHazardCardKinds } from './program';
+
+export const directionalHazardCardKinds: Readonly<DirectionalHazardCardKinds> =
+  ['move', 'skip', 'special', 'global', 'conditional', 'rule', 'neutral'];
 
 export const directionalHazardSpecialEffects = [
   'take-lead',

@@ -1,6 +1,16 @@
 import type { GameEffectInstruction } from '../../../engine/runtime/contracts/effect-ir';
 import type { TrackRaceProgram } from '../../../engine/runtime/contracts/track-race-contract';
-import type { directionalHazardCardKinds } from './directional-hazard-effect-types';
+
+/** Shared by the author schema and the compiled card contract. */
+export type DirectionalHazardCardKinds = [
+  'move',
+  'skip',
+  'special',
+  'global',
+  'conditional',
+  'rule',
+  'neutral',
+];
 
 export type DirectionalHazardRaceProgram = TrackRaceProgram & {
   /** Omitted in historical games, which retain finish-line victory. */
@@ -34,7 +44,7 @@ export type DirectionalHazardRaceProgram = TrackRaceProgram & {
     id: number;
     title: string;
     text: string;
-    kind: (typeof directionalHazardCardKinds)[number];
+    kind: DirectionalHazardCardKinds[number];
     moveDelta?: number;
     effects: readonly GameEffectInstruction[];
   }[];
