@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Fixture repositories have their own commits, independent of the CI checkout.
+unset GITHUB_SHA
+
 TEST_ROOT="$(mktemp -d)"
 trap 'rm -rf -- "$TEST_ROOT"' EXIT
 BUILD_USER="$(id -un)"
@@ -31,6 +34,13 @@ git_init() {
 
 git_init
 assert_immutable_git_source "$TEST_ROOT/deploy"
+
+GITHUB_SHA="$(git -C "$TEST_ROOT/deploy" rev-parse HEAD)" \
+  assert_immutable_git_source "$TEST_ROOT/deploy"
+if (GITHUB_SHA=0000000000000000000000000000000000000000 \
+    assert_immutable_git_source "$TEST_ROOT/deploy" >/dev/null 2>&1); then
+  die "An incorrect GitHub Actions source SHA was accepted."
+fi
 
 printf 'remote\n' >>"$TEST_ROOT/seed/version.txt"
 git -C "$TEST_ROOT/seed" commit --quiet -am remote

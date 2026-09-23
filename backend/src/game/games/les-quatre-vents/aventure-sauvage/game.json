@@ -3,8 +3,14 @@
   "contentVersion": "1",
   "definitionVersion": "4",
   "snapshotMigrations": [
-    { "fromVersion": "aventure-sauvage@content:c48df7e1", "toVersion": "1" },
-    { "fromVersion": "aventure-sauvage@content:f577dff1", "toVersion": "1" }
+    {
+      "fromVersion": "aventure-sauvage@content:c48df7e1",
+      "toVersion": "1"
+    },
+    {
+      "fromVersion": "aventure-sauvage@content:f577dff1",
+      "toVersion": "1"
+    }
   ],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
@@ -65,10 +71,15 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": ["playing"]
+      "transitions": [
+        "playing"
+      ]
     },
     "playing": {
-      "actions": ["roll", "draw_card"],
+      "actions": [
+        "roll",
+        "draw_card"
+      ],
       "terminal": true
     }
   },
@@ -85,17 +96,22 @@
   "victory": {
     "kind": "by-event-race"
   },
-  "eventRace": {
-    "trackId": "jungle",
-    "diceId": "main",
-    "playingPhase": "playing",
-    "landingEffectId": "aventure.resolve-landing",
-    "tiles": {
-      "$content": "content/board.json"
-    },
-    "pawnSelection": {
-      "setId": "avatars",
-      "choiceId": "aventure.pawn"
+  "extensions": [
+    {
+      "type": "eventRace",
+      "config": {
+        "trackId": "jungle",
+        "diceId": "main",
+        "playingPhase": "playing",
+        "landingEffectId": "aventure.resolve-landing",
+        "tiles": {
+          "$content": "content/board.json"
+        },
+        "pawnSelection": {
+          "setId": "avatars",
+          "choiceId": "aventure.pawn"
+        }
+      }
     }
-  }
+  ]
 }

@@ -32,6 +32,8 @@ struct BackendState final
     std::thread::id workerThread;
     int interruptCount = 0;
     int shutdownCount = 0;
+    int previewCount = 0;
+    bool previewStopped = false;
 };
 
 class CallGuard final
@@ -77,6 +79,15 @@ public:
     }
 
     void Play(SoundCue, float) override {}
+    void Preview(std::optional<SoundCue> cue) override
+    {
+        CallGuard call(*state_);
+        std::scoped_lock lock(state_->mutex);
+        ++state_->previewCount;
+        state_->previewStopped = !cue.has_value();
+        state_->ready.notify_all();
+        if (cue) throw std::runtime_error("Simulated preview failure");
+    }
     void SetLoop(std::optional<SoundCue>, float) override {}
     void StopAll() override {}
 
@@ -136,6 +147,24 @@ void TestShutdownKeepsBackendOnWorkerThread()
     Expect(state->interruptCount == 1, "The concrete backend should be interrupted once.");
     Expect(state->shutdownCount == 1, "The concrete backend should be shut down once.");
 }
+
+void TestPreviewFailureKeepsWorkerAlive()
+{
+    auto state = std::make_shared<BackendState>();
+    AsyncAudioBackend backend(std::make_unique<BlockingBackend>(state));
+    backend.Preview(SoundCue::MainMenuMusic);
+    backend.Preview(std::nullopt);
+    {
+        std::unique_lock lock(state->mutex);
+        Expect(state->ready.wait_for(lock, std::chrono::seconds(2),
+            [&state]() { return state->previewCount == 2; }),
+            "Preview failure must not prevent the following stop command.");
+        Expect(state->previewStopped, "The preview must stop independently of background audio.");
+        Expect(!state->concurrentCall && state->workerThread != std::this_thread::get_id(),
+            "Previews must execute on the audio worker.");
+    }
+    backend.Shutdown();
+}
 }
 
 int main()
@@ -143,6 +172,7 @@ int main()
     try
     {
         TestShutdownKeepsBackendOnWorkerThread();
+        TestPreviewFailureKeepsWorkerAlive();
         std::cout << "Async audio backend tests passed.\n";
         return 0;
     }

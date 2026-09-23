@@ -5,8 +5,36 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { ThrottlerModule, type ThrottlerStorage } from '@nestjs/throttler';
 import request from 'supertest';
+import { generateKeyPairSync } from 'node:crypto';
 import { createRateLimitOptions } from '../../platform/config/rate-limit-options.factory';
-import { AppPlatformModule } from './app-platform.module';
+
+const originalEnvironment = process.env;
+let AppPlatformModule: typeof import('./app-platform.module').AppPlatformModule;
+
+beforeAll(() => {
+  const { privateKey, publicKey } = generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+  });
+  process.env = {
+    ...originalEnvironment,
+    NODE_ENV: 'test',
+    IGNORE_ENV_FILE: 'true',
+    WS_TICKET_SECRET: 'http-upload-quota-test-secret-at-least-32-characters',
+    JWT_PRIVATE_KEY_PEM: privateKey
+      .export({ type: 'pkcs8', format: 'pem' })
+      .toString(),
+    JWT_PUBLIC_KEY_PEM: publicKey
+      .export({ type: 'spki', format: 'pem' })
+      .toString(),
+  };
+  ({ AppPlatformModule } = jest.requireActual<
+    typeof import('./app-platform.module')
+  >('./app-platform.module'));
+});
+
+afterAll(() => {
+  process.env = originalEnvironment;
+});
 
 const receiveFile = jest.fn();
 

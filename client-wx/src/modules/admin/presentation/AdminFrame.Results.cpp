@@ -84,7 +84,8 @@ void AdminFrame::ShowResult(
         for (std::size_t index = 0; index < statuses.size(); ++index)
         {
             const auto count = counts.value(std::string(statuses[index].first), 0);
-            statusItems.push_back({std::to_string(index), wxString(statuses[index].second) +
+            statusItems.push_back({std::to_string(index),
+                wxString(statuses[index].second.data(), statuses[index].second.size()) +
                 wxString::Format(L" (%d)", count)});
         }
         const auto selected = reportStatusMenu_->GetSelectedIndex();
@@ -149,10 +150,18 @@ void AdminFrame::ShowResult(
                     selectedIndex = index;
                     break;
                 }
+        if (soundIdToRestore_)
+            for (std::size_t index = 0; index < resultItems_.size(); ++index)
+                if (resultItems_[index].value("soundId", std::string{}) == *soundIdToRestore_)
+                {
+                    selectedIndex = index;
+                    break;
+                }
         resultsMenu_->SetSelectedIndexSilently(selectedIndex);
         ShowResultDetails(selectedIndex);
     }
     reportIdToRestore_.reset();
+    soundIdToRestore_.reset();
     UpdatePagination(result, presentation.entries.size());
     Layout();
 }

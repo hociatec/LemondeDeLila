@@ -1,6 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { analyzeRuntime } = require('./runtime-dependency-graph.cjs');
+const { effectPackDirectory } = require('./effect-pack-layout.cjs');
+const { hasHigherLayerValueImport } = require('./runtime-contract-imports.cjs');
 
 const violations = [];
 function files(directory) {
@@ -31,23 +33,27 @@ for (const file of files(path.join(runtime, 'contracts'))) {
       `${file}: single-consumer author program belongs in game/rules/effect-packs`,
     );
   const source = fs.readFileSync(file, 'utf8');
-  if (/\b(?:import|export)\s+(?!type\b)[\s\S]*?from\s+['"]\.\.\//m.test(source))
+  if (hasHigherLayerValueImport(source))
     violations.push(
       `${file}: runtime contract has a value dependency on a higher layer`,
     );
 }
-const effectPacksRoot = path.resolve('src/game/rules/effect-packs');
+const effectPacksRoot = path.resolve('src/game/rules');
 const effectPackPolicy = JSON.parse(
   fs.readFileSync(
     path.resolve('tools/engine-effect-pack-governance.json'),
     'utf8',
   ),
 );
-const effectPacks = fs
-  .readdirSync(effectPacksRoot, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory());
+const effectPacks = Object.keys(effectPackPolicy.profiles).map((name) => ({
+  name,
+}));
 for (const effectPack of effectPacks) {
-  const directory = path.join(effectPacksRoot, effectPack.name);
+  const directory = effectPackDirectory(
+    effectPacksRoot,
+    effectPack.name,
+    effectPackPolicy.profiles[effectPack.name],
+  );
   const entries = files(directory);
   const program = path.join(directory, 'program.ts');
   if (!entries.includes(program))
@@ -58,14 +64,28 @@ for (const effectPack of effectPacks) {
     violations.push(`${directory}: effect-pack.ts is missing`);
   if (profile?.property && entries.includes(implementation)) {
     const implementationSource = fs.readFileSync(implementation, 'utf8');
-    if (!implementationSource.includes("scope: 'generic'"))
-      violations.push(`${implementation}: effect pack must be generic`);
+    if (
+      !['game-specific', 'reusable', 'engine-primitive'].includes(
+        profile.scope,
+      ) ||
+      !implementationSource.includes(`scope: '${profile.scope}'`)
+    )
+      violations.push(
+        `${implementation}: effect-pack scope must match its reviewed classification`,
+      );
     if (!implementationSource.includes(`domain: '${profile.domain}'`))
       violations.push(`${implementation}: effect-pack domain is incorrect`);
   }
   if (!entries.includes(program)) continue;
   const source = fs.readFileSync(program, 'utf8');
-  if ([...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].some(match => !path.resolve(directory, match[1]).startsWith(path.join(runtime, 'contracts') + path.sep)))
+  if (
+    [...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].some(
+      (match) =>
+        !path
+          .resolve(directory, match[1])
+          .startsWith(path.join(runtime, 'contracts') + path.sep),
+    )
+  )
     violations.push(
       `${program}: effect-pack contract reaches outside low-level contracts`,
     );

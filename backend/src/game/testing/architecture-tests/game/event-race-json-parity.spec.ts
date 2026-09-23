@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { createHash } from 'node:crypto';
 import {
   testGame,
@@ -6,11 +7,12 @@ import {
 } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/les-quatre-vents/aventure-sauvage/manifest.json';
-import document from '../../../games/les-quatre-vents/aventure-sauvage/game.json';
+import documentExtensionSource from '../../../games/les-quatre-vents/aventure-sauvage/game.json';
 import cards from '../../../games/les-quatre-vents/aventure-sauvage/content/cards.json';
 import board from '../../../games/les-quatre-vents/aventure-sauvage/content/board.json';
 import pawns from '../../../games/les-quatre-vents/aventure-sauvage/content/pawns.json';
 import reference from '../../fixtures/aventure-sauvage-before-json-parity.json';
+const document = legacyExtensionFixture(documentExtensionSource, 'eventRace');
 
 it.each(reference)(
   'keeps the interactive event-card race deterministic for seed $seed',

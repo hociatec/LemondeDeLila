@@ -74,10 +74,15 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": ["playing"]
+      "transitions": [
+        "playing"
+      ]
     },
     "playing": {
-      "actions": ["roll", "draw_card"],
+      "actions": [
+        "roll",
+        "draw_card"
+      ],
       "terminal": true
     }
   },
@@ -123,74 +128,79 @@
       "label": "Inventaire"
     }
   ],
-  "board": {
-    "namespace": "panier",
-    "trackId": "market",
-    "diceId": "main",
-    "playingPhase": "playing",
-    "maxDepth": 24,
-    "scorePerForwardLap": 1,
-    "pawnSelection": {
-      "setId": "panier",
-      "choiceId": "panier.pawn",
-      "announceInventory": {
-        "inventoryId": "shopping-lists",
-        "eventType": "panier.shopping-list.announced"
+  "extensions": [
+    {
+      "type": "board",
+      "config": {
+        "namespace": "panier",
+        "trackId": "market",
+        "diceId": "main",
+        "playingPhase": "playing",
+        "maxDepth": 24,
+        "scorePerForwardLap": 1,
+        "pawnSelection": {
+          "setId": "panier",
+          "choiceId": "panier.pawn",
+          "announceInventory": {
+            "inventoryId": "shopping-lists",
+            "eventType": "panier.shopping-list.announced"
+          }
+        },
+        "distribution": {
+          "inventoryId": "shopping-lists",
+          "groups": {
+            "$content": "content/products.json#/groups"
+          }
+        },
+        "collection": {
+          "requiredInventoryId": "shopping-lists",
+          "collectedInventoryId": "shopping-baskets",
+          "overflowInventoryId": "market-items",
+          "sources": {
+            "$content": "content/products.json#/sources"
+          },
+          "defaultSourceId": "bonus",
+          "collectedMessage": "panier.item.added-to-basket",
+          "overflowMessage": "panier.item.added-to-inventory"
+        },
+        "quiz": {
+          "bankId": "market-quiz",
+          "choiceId": "panier.quiz",
+          "correctMove": 2
+        },
+        "exchange": {
+          "inventoryId": "market-items",
+          "takeChoiceId": "panier.take",
+          "giveChoiceId": "panier.give"
+        },
+        "directionChoiceId": "panier.direction",
+        "bindings": {
+          "panier.move-and-resolve": {
+            "kind": "move"
+          },
+          "panier.draw-course": {
+            "kind": "collect"
+          },
+          "panier.quiz": {
+            "kind": "quiz"
+          },
+          "panier.nearest-stand": {
+            "kind": "nearest",
+            "tag": "stand"
+          },
+          "panier.strategic-swap": {
+            "kind": "exchange"
+          }
+        },
+        "tiles": {
+          "$content": "content/board.json"
+        },
+        "restoreDirection": {
+          "status": "panier.reversed-until-owner-turn",
+          "ruleId": "restore-market-direction"
+        },
+        "startingPlayer": "random"
       }
-    },
-    "distribution": {
-      "inventoryId": "shopping-lists",
-      "groups": {
-        "$content": "content/products.json#/groups"
-      }
-    },
-    "collection": {
-      "requiredInventoryId": "shopping-lists",
-      "collectedInventoryId": "shopping-baskets",
-      "overflowInventoryId": "market-items",
-      "sources": {
-        "$content": "content/products.json#/sources"
-      },
-      "defaultSourceId": "bonus",
-      "collectedMessage": "panier.item.added-to-basket",
-      "overflowMessage": "panier.item.added-to-inventory"
-    },
-    "quiz": {
-      "bankId": "market-quiz",
-      "choiceId": "panier.quiz",
-      "correctMove": 2
-    },
-    "exchange": {
-      "inventoryId": "market-items",
-      "takeChoiceId": "panier.take",
-      "giveChoiceId": "panier.give"
-    },
-    "directionChoiceId": "panier.direction",
-    "bindings": {
-      "panier.move-and-resolve": {
-        "kind": "move"
-      },
-      "panier.draw-course": {
-        "kind": "collect"
-      },
-      "panier.quiz": {
-        "kind": "quiz"
-      },
-      "panier.nearest-stand": {
-        "kind": "nearest",
-        "tag": "stand"
-      },
-      "panier.strategic-swap": {
-        "kind": "exchange"
-      }
-    },
-    "tiles": {
-      "$content": "content/board.json"
-    },
-    "restoreDirection": {
-      "status": "panier.reversed-until-owner-turn",
-      "ruleId": "restore-market-direction"
-    },
-    "startingPlayer": "random"
-  }
+    }
+  ]
 }

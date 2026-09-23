@@ -1,42 +1,34 @@
 #include "modules/admin/presentation/AdminFrame.h"
 
-#include <memory>
-
-#include <wx/timer.h>
+#include <wx/msgdlg.h>
 
 #include "modules/audio/application/IAudioService.h"
 #include "modules/audio/domain/SoundCatalog.h"
 
 namespace lila::modules::admin::presentation
 {
+bool AdminFrame::ConfirmSoundChange(const domain::AdminCommand& command)
+{
+    if (command.id != "sounds.upload" && command.id != "sounds.enable" &&
+        command.id != "sounds.clear" && !command.id.starts_with("sounds.ambience."))
+        return false;
+    wxMessageBox(command.id == "sounds.upload"
+            ? wxString(L"Le fichier audio a été enregistré.")
+            : wxString(L"La modification du son a été enregistrée."),
+        L"Gestion des sons", wxOK | wxICON_INFORMATION, this);
+    return true;
+}
+
 void AdminFrame::PreviewSound(std::string_view soundId)
 {
     const auto* sound =
         lila::modules::audio::domain::FindSoundDescriptorByServerId(soundId);
-    if (sound == nullptr) return;
-
-    if (!previewTimer_)
+    if (sound == nullptr)
     {
-        previewTimer_ = std::make_unique<wxTimer>(this);
-        Bind(wxEVT_TIMER, [this](wxTimerEvent&)
-        {
-            audioService_.StopLoop();
-        }, previewTimer_->GetId());
+        wxMessageBox(L"Ce son est inconnu du client.", L"Aperçu du son",
+            wxOK | wxICON_ERROR, this);
+        return;
     }
-    if (previewTimer_->IsRunning())
-    {
-        previewTimer_->Stop();
-        audioService_.StopLoop();
-    }
-
-    if (sound->loop)
-    {
-        audioService_.StartLoop(sound->cue);
-        previewTimer_->StartOnce(5000);
-    }
-    else
-    {
-        audioService_.Play(sound->cue);
-    }
+    audioService_.Preview(sound->cue);
 }
 }

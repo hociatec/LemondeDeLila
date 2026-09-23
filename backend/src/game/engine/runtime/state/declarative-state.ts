@@ -1,3 +1,4 @@
+import type { ReadonlyState } from '../contracts/state-copy';
 import type { GameState } from '../../../core/application/models/game-state.model';
 import type { CardsKitState } from '../cards/cards-kit';
 import type { InventoryKitState } from '../kits/inventory-kit';
@@ -26,7 +27,7 @@ export type DeclarativeState<TState extends object> = GameState & {
     contentVersion: string;
     contentDigest?: string;
     rulesVersion: string;
-    kits: EngineKitsState;
+    readonly kits: EngineKitsState;
     pendingEvents?: GamePendingEvent[];
     match: MatchKitState;
     round: RoundKitState;
@@ -41,7 +42,13 @@ export type DeclarativeState<TState extends object> = GameState & {
 
 export type GameSession<TState extends object> = DeclarativeState<TState>;
 
-export type EngineKitsState = {
+/** Read projections cannot mutate nested containers or arrays. */
+export type ReadonlyKitState<Value> = ReadonlyState<Value>;
+
+export type EngineKitsState = ReadonlyKitState<MutableEngineKitsState>;
+
+/** Only the component-controller composition boundary grants mutable storage. */
+export type MutableEngineKitsState = {
   cards?: CardsKitState;
   inventory?: InventoryKitState;
   economy?: EconomyKitState;

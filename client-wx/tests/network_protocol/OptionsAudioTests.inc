@@ -90,6 +90,13 @@ void TestAudioSettingsAndServiceRouting()
     application::AudioService service(backend, settings);
     Expect(backend.preloaded.size() == 8, "Prechauffage des sons courants attendu");
 
+    settings.settings.muteAll = true;
+    service.Preview(domain::SoundCue::MainMenuMusic);
+    Expect(backend.played.size() == 1 && backend.played.back().second == 1.0F,
+        "L'apercu explicite doit rester audible avec les sons automatiques coupes");
+    backend.played.clear();
+    settings.settings.muteAll = false;
+
     service.Play(domain::SoundCue::Navigation);
     Expect(backend.played.size() == 1 && backend.played.front().first == domain::SoundCue::Navigation,
         "Routage du son de navigation attendu");

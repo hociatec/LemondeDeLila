@@ -1,9 +1,12 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
-import document from './game.json';
+import documentExtensionSource from './game.json';
 import cards from './content/cards.json';
+const document = legacyExtensionFixture(documentExtensionSource, 'judgedCards');
+
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/cards.json': cards,
 });

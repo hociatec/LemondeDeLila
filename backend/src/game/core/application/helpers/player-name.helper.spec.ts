@@ -32,7 +32,7 @@ describe('player-name.helper', () => {
 
   it('resolves from state wrapper', () => {
     const out = resolvePlayerNameFromState(
-      { players: [{ id: 2, username: 'Nina' }] as any },
+      { players: [{ id: 2, username: 'Nina' }] },
       2,
     );
     expect(out).toBe('Nina');

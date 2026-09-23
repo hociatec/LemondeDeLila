@@ -1,3 +1,4 @@
+import { withAuthoringPath } from '../contracts/authoring-origin';
 import {
   GameConfigurationError,
   GameNotFoundError,
@@ -22,14 +23,12 @@ export type GridKitState<TCellState = unknown, TOverlayState = unknown> = {
 
 export const grid = {
   board(options: Omit<GridDefinition, 'component'>): GridDefinition {
-    if (
-      !Number.isInteger(options.width) ||
-      !Number.isInteger(options.height) ||
-      options.width < 1 ||
-      options.height < 1
-    ) {
-      throw new GameConfigurationError('Dimensions de grille invalides');
-    }
+    for (const field of ['width', 'height'] as const)
+      if (!Number.isInteger(options[field]) || options[field] < 1)
+        throw withAuthoringPath(
+          new GameConfigurationError('Dimensions de grille invalides'),
+          field,
+        );
     return Object.freeze({ ...options, component: 'grid.board' });
   },
 };

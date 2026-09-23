@@ -50,42 +50,47 @@
   "victory": {
     "kind": "by-team-pawn-race"
   },
-  "teamPawnRace": {
-    "setId": "teamPawn",
-    "diceId": "main",
-    "familyChoiceId": "teamPawn.family",
-    "moveChoiceId": "teamPawn.move",
-    "families": {
-      "$content": "content/catalogue.json#/families"
-    },
-    "trackLength": 52,
-    "homeLength": 4,
-    "safeTiles": {
-      "$content": "content/catalogue.json#/board/safeTiles"
-    },
-    "finishReason": "four-pawns-home",
-    "entryRolls": [
-      6
-    ],
-    "extraTurnRolls": [
-      6
-    ],
-    "startPositions": [
-      0,
-      26,
-      13,
-      39
-    ],
-    "homeRolls": [
-      2,
-      3,
-      4
-    ]
-  },
   "snapshotMigrations": [
     {
       "fromVersion": "1",
       "toVersion": "2"
+    }
+  ],
+  "extensions": [
+    {
+      "type": "teamPawnRace",
+      "config": {
+        "setId": "teamPawn",
+        "diceId": "main",
+        "familyChoiceId": "teamPawn.family",
+        "moveChoiceId": "teamPawn.move",
+        "families": {
+          "$content": "content/catalogue.json#/families"
+        },
+        "trackLength": 52,
+        "homeLength": 4,
+        "safeTiles": {
+          "$content": "content/catalogue.json#/board/safeTiles"
+        },
+        "finishReason": "four-pawns-home",
+        "entryRolls": [
+          6
+        ],
+        "extraTurnRolls": [
+          6
+        ],
+        "startPositions": [
+          0,
+          26,
+          13,
+          39
+        ],
+        "homeRolls": [
+          2,
+          3,
+          4
+        ]
+      }
     }
   ]
 }

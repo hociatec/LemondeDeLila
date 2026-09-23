@@ -1,3 +1,4 @@
+import { authoringProperty } from '../contracts/authoring-diagnostics';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import {
   requireFinite,
@@ -35,7 +36,7 @@ export function assertEffectInstructions(
   if (!Array.isArray(instructions)) fail(path, 'séquence d’effets invalide');
   const values: readonly unknown[] = instructions;
   for (const [index, value] of values.entries()) {
-    const effectPath = `${path}.${index}`;
+    const effectPath = `${path}[${index}]`;
     if (!value || typeof value !== 'object')
       fail(effectPath, 'instruction invalide');
     validateInstruction(
@@ -126,7 +127,7 @@ function validateReactionInstruction({
           references,
           instruction.availability.handId,
           cardId,
-          `${path}.options.${index}`,
+          `${path}.options[${index}]`,
           fail,
         );
       }
@@ -141,7 +142,7 @@ function validateReactionInstruction({
         requireResourceReference(
           references,
           resource,
-          `${path}.options.${index}`,
+          `${path}.options[${index}]`,
           fail,
         );
       }
@@ -155,10 +156,13 @@ function validateReactionInstruction({
     fail(`${path}.options`, 'options de réaction invalides');
   for (const [option, reaction] of Object.entries(instruction.reactions)) {
     if (!instruction.options.includes(option))
-      fail(`${path}.reactions.${option}`, 'option non déclarée');
+      fail(
+        authoringProperty(`${path}.reactions`, option),
+        'option non déclarée',
+      );
     assertEffectInstructions(
       reaction,
-      `${path}.reactions.${option}`,
+      authoringProperty(`${path}.reactions`, option),
       references,
       fail,
     );

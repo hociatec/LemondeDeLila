@@ -385,7 +385,7 @@ describe('backend debt contracts', () => {
         stateSource:
           'export interface OwnershipSampleState {\n  positions: Record<string, number>;\n}\n',
         components,
-        exceptions: gameSpecificState('\\bpositions?\\b'),
+        exceptions: gameSpecificState('kits.movement.positions'),
       }),
     ).toEqual([]);
   });

@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { createHash } from 'node:crypto';
 import {
   testGame,
@@ -6,9 +7,10 @@ import {
 } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/vents-dansants/les-absurdissimes/manifest.json';
-import document from '../../../games/vents-dansants/les-absurdissimes/game.json';
+import documentExtensionSource from '../../../games/vents-dansants/les-absurdissimes/game.json';
 import cards from '../../../games/vents-dansants/les-absurdissimes/content/cards.json';
 import reference from '../../fixtures/les-absurdissimes-before-json-parity.json';
+const document = legacyExtensionFixture(documentExtensionSource, 'judgedCards');
 
 it.each(reference)(
   'preserves the complete judged-card game for seed $seed',

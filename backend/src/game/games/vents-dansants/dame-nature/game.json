@@ -3,8 +3,14 @@
   "contentVersion": "2",
   "definitionVersion": "3",
   "snapshotMigrations": [
-    { "fromVersion": "dame-nature@content:593ce53d", "toVersion": "2" },
-    { "fromVersion": "dame-nature@content:5fc7c131", "toVersion": "2" }
+    {
+      "fromVersion": "dame-nature@content:593ce53d",
+      "toVersion": "2"
+    },
+    {
+      "fromVersion": "dame-nature@content:5fc7c131",
+      "toVersion": "2"
+    }
   ],
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
@@ -12,7 +18,9 @@
     {
       "component": "cards.deck",
       "id": "nature",
-      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "cards": {
+        "$content": "content/catalogue.json#/cardIds"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
@@ -32,37 +40,68 @@
       "hand": "players",
       "deck": "nature",
       "visibility": "public",
-      "sets": { "$content": "content/catalogue.json#/sets" }
+      "sets": {
+        "$content": "content/catalogue.json#/sets"
+      }
     }
   ],
   "setup": {
-    "counters": { "dame-nature.pollution": 0 },
+    "counters": {
+      "dame-nature.pollution": 0
+    },
     "startRound": false
   },
   "resourceIds": [],
   "shortcuts": [
-    { "key": "C", "type": "action", "actionType": "ask_card" },
-    { "key": "S", "type": "action", "actionType": "pass" }
+    {
+      "key": "C",
+      "type": "action",
+      "actionType": "ask_card"
+    },
+    {
+      "key": "S",
+      "type": "action",
+      "actionType": "pass"
+    }
   ],
   "initialPhase": "playing",
   "phases": {
-    "playing": { "actions": ["ask_card", "pass"], "terminal": true }
+    "playing": {
+      "actions": [
+        "ask_card",
+        "pass"
+      ],
+      "terminal": true
+    }
   },
   "actions": {
-    "ask_card": { "recipe": "collection-family-request-ask" },
-    "pass": { "recipe": "collection-family-request-pass" }
+    "ask_card": {
+      "recipe": "collection-family-request-ask"
+    },
+    "pass": {
+      "recipe": "collection-family-request-pass"
+    }
   },
-  "victory": { "kind": "by-family-request" },
-  "familyRequest": {
-    "deckId": "nature",
-    "handId": "players",
-    "setsId": "nature-families",
-    "cards": { "$content": "content/catalogue.json#/cards" },
-    "pollutionCounter": "dame-nature.pollution",
-    "pollutionLimit": 12,
-    "familiesToWin": 4,
-    "pollutionFinishReason": "pollution-limit",
-    "familyFinishReason": "nature-completed",
-    "eventNamespace": "dame-nature"
-  }
+  "victory": {
+    "kind": "by-family-request"
+  },
+  "extensions": [
+    {
+      "type": "familyRequest",
+      "config": {
+        "deckId": "nature",
+        "handId": "players",
+        "setsId": "nature-families",
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "pollutionCounter": "dame-nature.pollution",
+        "pollutionLimit": 12,
+        "familiesToWin": 4,
+        "pollutionFinishReason": "pollution-limit",
+        "familyFinishReason": "nature-completed",
+        "eventNamespace": "dame-nature"
+      }
+    }
+  ]
 }

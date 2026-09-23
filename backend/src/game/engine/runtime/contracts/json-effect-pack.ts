@@ -1,4 +1,6 @@
-/** Generic, domain-owned contribution to the closed JSON engine. */
+import type { GameEventDefinition } from '../events/game-event-definition';
+import { createAuthorCodec } from './json-author-codec';
+/** Domain-owned contribution; reusability must be demonstrated, not assumed. */
 import type { AuthorSchema } from './json-author-schema';
 import type { GameRuleProgram } from './game-rule-program';
 import type { GameActionMap } from './author-rule-contracts';
@@ -7,13 +9,14 @@ import type { JsonGameCoreDocument } from '../definitions/json-game-core-documen
 import type { GamePattern } from './pattern-definition';
 
 type JsonState = Record<string, never>;
+export type JsonEffectPackScope =
+  'game-specific' | 'reusable' | 'engine-primitive';
+export type JsonEffectPackDomain =
+  'board' | 'cards' | 'choice' | 'collection' | 'race' | 'spatial';
 type JsonActions = GameActionMap<JsonState>;
-/** Extension-owned view data; reserved engine namespaces remain prohibited. */
-export type JsonGameViewAugmentation = Readonly<Record<string, unknown>>;
-
-export type JsonEffectPackHandlers = Partial<
+export type JsonEffectPackHandlers<View extends object = object> = Partial<
   Pick<
-    GameRuleProgram<JsonState, JsonActions, JsonGameViewAugmentation>,
+    GameRuleProgram<JsonState, JsonActions, View>,
     | 'setup'
     | 'choices'
     | 'effects'
@@ -67,36 +70,47 @@ export type JsonEffectPackValidationContext = Readonly<{
   hasRaceTrack: (trackId: string, winOnFinish?: boolean) => boolean;
 }>;
 
+/** Compiled values stay inside their pack; the runtime sees only typed contributions. */
+export type JsonEffectPackContribution<View extends object = object> =
+  Readonly<{
+    actions: JsonActions;
+    events: readonly GameEventDefinition<string, object>[];
+    components: readonly GameComponentDefinition[];
+    patterns: readonly GamePattern<JsonState>[];
+    handlers: (
+      context: JsonEffectPackHandlerContext,
+    ) => JsonEffectPackHandlers<View>;
+  }>;
+
 export type JsonEffectPackDefinition<
   DocumentKey extends string,
   Program,
   OutputKey extends string,
   Compiled,
+  View extends object = object,
 > = Readonly<{
-  scope: 'generic';
-  domain: 'board' | 'cards' | 'choice' | 'collection' | 'race' | 'spatial';
+  scope: JsonEffectPackScope;
+  domain: JsonEffectPackDomain;
   documentKey: DocumentKey;
   outputKey: OutputKey;
   schema: AuthorSchema;
   compile: (program: Program) => Compiled;
-  compileUnknown: (program: unknown) => Compiled;
-  actions?: (compiled: Compiled) => Readonly<Record<string, unknown>>;
-  collectActions: (compiled: unknown) => Readonly<Record<string, unknown>>;
-  events?: (compiled: Compiled) => readonly unknown[];
-  collectEvents: (compiled: unknown) => readonly unknown[];
-  components?: (compiled: Compiled) => readonly unknown[];
-  collectComponents: (compiled: unknown) => readonly unknown[];
+  /** Validate internal references before factories construct components. */
+  validateProgram?: (program: Program) => void;
+  compileContribution: (program: unknown) => JsonEffectPackContribution<View>;
+  actions?: (compiled: Compiled) => JsonActions;
+  events?: (
+    compiled: Compiled,
+  ) => readonly GameEventDefinition<string, object>[];
+  components?: (compiled: Compiled) => readonly GameComponentDefinition[];
   handlers?: (
     context: JsonEffectPackHandlerContext,
     compiled: Compiled,
     program: Program,
-  ) => JsonEffectPackHandlers;
-  collectHandlers: (
-    context: JsonEffectPackHandlerContext,
-    compiled: unknown,
-    program: unknown,
-  ) => JsonEffectPackHandlers;
+  ) => JsonEffectPackHandlers<View>;
   victoryKind?: string;
+  /** Defaults to true; opt-out packs must validate their alternative victory modes. */
+  victoryRequired?: boolean;
   victoryLabel?: string;
   ownsSetup?: boolean;
   validate?: (
@@ -109,8 +123,7 @@ export type JsonEffectPackDefinition<
   ) => void;
   choiceIds?: (program: Program) => readonly (string | undefined)[];
   collectChoiceIds: (program: unknown) => readonly (string | undefined)[];
-  patterns?: (compiled: Compiled) => readonly unknown[];
-  collectPatterns: (compiled: unknown) => readonly unknown[];
+  patterns?: (compiled: Compiled) => readonly GamePattern<JsonState>[];
 }>;
 
 export function defineJsonEffectPack<
@@ -118,46 +131,42 @@ export function defineJsonEffectPack<
   Program,
   const OutputKey extends string,
   Compiled,
+  View extends object = object,
 >(
   definition: Omit<
-    JsonEffectPackDefinition<DocumentKey, Program, OutputKey, Compiled>,
-    | 'compileUnknown'
-    | 'collectActions'
-    | 'collectEvents'
-    | 'collectComponents'
-    | 'collectHandlers'
-    | 'validateUnknown'
-    | 'collectChoiceIds'
-    | 'collectPatterns'
+    JsonEffectPackDefinition<DocumentKey, Program, OutputKey, Compiled, View>,
+    'compileContribution' | 'validateUnknown' | 'collectChoiceIds'
   >,
-): JsonEffectPackDefinition<DocumentKey, Program, OutputKey, Compiled> {
+): JsonEffectPackDefinition<DocumentKey, Program, OutputKey, Compiled, View> {
+  const codec = createAuthorCodec<Program>(definition.schema);
   return Object.freeze({
     ...definition,
-    compileUnknown: (program: unknown) =>
-      definition.compile(program as Program),
-    collectActions: (compiled: unknown) =>
-      definition.actions?.(compiled as Compiled) ?? {},
-    collectEvents: (compiled: unknown) =>
-      definition.events?.(compiled as Compiled) ?? [],
-    collectComponents: (compiled: unknown) =>
-      definition.components?.(compiled as Compiled) ?? [],
-    collectHandlers: (
-      context: JsonEffectPackHandlerContext,
-      compiled: unknown,
-      program: unknown,
-    ) =>
-      definition.handlers?.(
-        context,
-        compiled as Compiled,
-        program as Program,
-      ) ?? {},
+    schema: codec.schema,
+    compileContribution: (
+      source: unknown,
+    ): JsonEffectPackContribution<View> => {
+      const program = codec.parse(source, definition.documentKey);
+      definition.validateProgram?.(program);
+      const compiled = definition.compile(program);
+      return Object.freeze({
+        actions: definition.actions?.(compiled) ?? {},
+        events: definition.events?.(compiled) ?? [],
+        components: definition.components?.(compiled) ?? [],
+        patterns: definition.patterns?.(compiled) ?? [],
+        handlers: (context: JsonEffectPackHandlerContext) =>
+          definition.handlers?.(context, compiled, program) ?? {},
+      });
+    },
     validateUnknown: (
       context: JsonEffectPackValidationContext,
       program: unknown,
-    ) => definition.validate?.(context, program as Program),
+    ) =>
+      definition.validate?.(
+        context,
+        codec.parse(program, definition.documentKey),
+      ),
     collectChoiceIds: (program: unknown) =>
-      definition.choiceIds?.(program as Program) ?? [],
-    collectPatterns: (compiled: unknown) =>
-      definition.patterns?.(compiled as Compiled) ?? [],
+      definition.choiceIds?.(codec.parse(program, definition.documentKey)) ??
+      [],
   });
 }

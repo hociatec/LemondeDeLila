@@ -160,52 +160,57 @@
   "victory": {
     "kind": "by-shared-prestige-cards"
   },
-  "sharedPrestigeCards": {
-    "handId": "players",
-    "deckIds": [
-      "heros",
-      "creatures",
-      "exploits",
-      "actions",
-      "attaques",
-      "evenements"
-    ],
-    "targetScore": 30,
-    "winnerReason": "prestige-30",
-    "cards": {
-      "$content": "content/catalogue.json#/cards"
-    },
-    "mechanics": {
-      "blockDrawStatus": "block_actions",
-      "blockPlayStatus": "block_play",
-      "reducedGainStatus": "halved_gains",
-      "lossProtectionStatus": "shield",
-      "gainDivisor": 2,
-      "categories": [
-        {
-          "category": "heros",
-          "blockedBy": [
-            "block_hero",
-            "block_hero_exploit"
-          ],
-          "globallyBlockedBy": [
-            "global_block_hero"
-          ]
+  "extensions": [
+    {
+      "type": "sharedPrestigeCards",
+      "config": {
+        "handId": "players",
+        "deckIds": [
+          "heros",
+          "creatures",
+          "exploits",
+          "actions",
+          "attaques",
+          "evenements"
+        ],
+        "targetScore": 30,
+        "winnerReason": "prestige-30",
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
         },
-        {
-          "category": "exploit",
-          "blockedBy": [
-            "block_exploit",
-            "block_hero_exploit"
-          ],
-          "globallyBlockedBy": [
-            "global_block_exploit"
-          ],
-          "multiplierStatus": "double_exploit",
-          "bonusStatus": "exploit_bonus",
-          "penaltyStatus": "exploit_penalty"
+        "mechanics": {
+          "blockDrawStatus": "block_actions",
+          "blockPlayStatus": "block_play",
+          "reducedGainStatus": "halved_gains",
+          "lossProtectionStatus": "shield",
+          "gainDivisor": 2,
+          "categories": [
+            {
+              "category": "heros",
+              "blockedBy": [
+                "block_hero",
+                "block_hero_exploit"
+              ],
+              "globallyBlockedBy": [
+                "global_block_hero"
+              ]
+            },
+            {
+              "category": "exploit",
+              "blockedBy": [
+                "block_exploit",
+                "block_hero_exploit"
+              ],
+              "globallyBlockedBy": [
+                "global_block_exploit"
+              ],
+              "multiplierStatus": "double_exploit",
+              "bonusStatus": "exploit_bonus",
+              "penaltyStatus": "exploit_penalty"
+            }
+          ]
         }
-      ]
+      }
     }
-  }
+  ]
 }

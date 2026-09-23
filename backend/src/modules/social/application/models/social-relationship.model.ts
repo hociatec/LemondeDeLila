@@ -1,4 +1,4 @@
-import type { SocialUserSummary } from '../models/social-user.model';
+import type { SocialUserSummary } from './social-user.model';
 
 export type SocialRelationshipStatus = 'pending' | 'accepted' | 'blocked';
 

@@ -1,0 +1,31 @@
+{
+  "checkedOn": "2026-09-23",
+  "repository": "hociatec/LemondeDeLila",
+  "rulesetId": 22038117,
+  "url": "https://github.com/hociatec/LemondeDeLila/rules/22038117",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": [
+        "~DEFAULT_BRANCH"
+      ]
+    }
+  },
+  "ruleTypes": [
+    "deletion",
+    "non_fast_forward",
+    "pull_request"
+  ],
+  "requiredStatusChecksPresent": false,
+  "localGitCredentialHasRepositoryAdminPermission": true,
+  "publishedWorkflow": {
+    "ref": "main",
+    "path": ".github/workflows/backend-architecture.yml",
+    "blobSha": "59ab998ace622575a3642424679d237c82ea8bec",
+    "hasQualityJob": false,
+    "hasPushAndPullRequestPathFilters": true
+  },
+  "remoteWritesPerformed": false,
+  "conclusion": "Point 33 remains open: repository admin access is available through the local Git credential, but main has no quality job yet and the active ruleset has no required status checks. Publish the reviewed workflow before requiring its quality check; preserve the existing remote review settings."
+}

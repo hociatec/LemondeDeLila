@@ -2,22 +2,28 @@ name: Backend architecture
 
 on:
   push:
-    paths:
-      - "backend/**"
-      - ".github/workflows/backend-architecture.yml"
   pull_request:
-    paths:
-      - "backend/**"
-      - ".github/workflows/backend-architecture.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  quality:
+    if: ${{ always() }}
+    needs: [architecture, real-integration, release-artifact]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require all certification jobs to succeed
+        env:
+          JOB_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e "const jobs = JSON.parse(process.env.JOB_RESULTS); if (Object.values(jobs).some(job => job.result !== 'success')) process.exit(1)"
+
   architecture:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: backend
@@ -39,6 +45,10 @@ jobs:
           node -e "require('node:fs').mkdirSync('logs', { recursive: true })"
       - name: Check quality and test regression guards
         run: npm run quality:check
+      - name: Compile every game and exercise deterministic replays
+        run: npm run typecheck && npm run engine:merge-contracts
+      - name: Verify authoring diagnostics and source paths
+        run: npm run engine:authoring-contracts
       - name: Check alert behavior with Prometheus
         run: >-
           docker run --rm
@@ -90,6 +100,8 @@ jobs:
         run: npm ci --ignore-scripts --include=dev
       - name: Exercise MySQL, Redis, BullMQ and two backend instances
         run: npm run test:integration:real
+      - name: Install the locked FFmpeg binary for audio integration tests
+        run: npm rebuild ffmpeg-static
       - name: Exercise every application and game regression suite
         run: npm test -- --maxWorkers=2
 
@@ -117,8 +129,12 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
       - name: Typecheck and build production code
         run: npm run typecheck:prod && npm run build && npm run verify:dist
+      - name: Record game and engine growth independently
+        run: |
+          mkdir -p logs
+          node tools/engine-evolution-report.cjs > logs/engine-evolution.json
       - name: Build the production-only deployment artifact
-        run: npm prune --omit=dev && npm run artifact:create -- logs/backend-deployment.tar.gz
+        run: npm prune --omit=dev && npm rebuild ffmpeg-static && npm run artifact:create -- logs/backend-deployment.tar.gz
         env:
           BACKEND_ARTIFACT_NODE_MAJOR: "24"
       - name: Upload the certified Node 24 deployment artifact
@@ -128,6 +144,7 @@ jobs:
           path: |
             backend/logs/backend-deployment.tar.gz
             backend/logs/backend-deployment.tar.gz.sha256
+            backend/logs/engine-evolution.json
           if-no-files-found: error
           compression-level: 0
           retention-days: 30

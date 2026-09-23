@@ -1,6 +1,6 @@
-import type { RoomBotRecord } from '../models/room-bot.model';
-import type { RoomParticipantRecord } from '../models/room-participant.model';
-import type { RoomUserRecord } from '../models/room-user.model';
+import type { RoomBotRecord } from './room-bot.model';
+import type { RoomParticipantRecord } from './room-participant.model';
+import type { RoomUserRecord } from './room-user.model';
 
 export type RoomRecord = {
   id: number;

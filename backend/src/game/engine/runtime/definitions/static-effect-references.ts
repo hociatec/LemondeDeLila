@@ -1,3 +1,4 @@
+import { authoringProperty } from '../contracts/authoring-diagnostics';
 import {
   assertEffectInstructions,
   type GameEffectValidationReferences,
@@ -41,7 +42,7 @@ export function assertStaticEffectReferences(
     } else {
       assertStaticEffectReferences(
         entry,
-        `${path}.${key}`,
+        Array.isArray(value) ? `${path}[${key}]` : authoringProperty(path, key),
         references,
         fail,
         visited,

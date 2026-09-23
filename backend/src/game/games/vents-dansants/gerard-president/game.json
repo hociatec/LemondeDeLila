@@ -81,143 +81,148 @@
   "victory": {
     "kind": "by-theme-name-cards"
   },
-  "themeNameCards": {
-    "targetScore": 7,
-    "names": {
-      "$content": "content/catalogue.json#/names"
-    },
-    "themes": {
-      "$content": "content/catalogue.json#/themes"
-    },
-    "specialCards": {
-      "$content": "content/catalogue.json#/specialCards"
-    },
-    "finishReason": "president-7-points",
-    "handSize": 10,
-    "specialHandSize": 2,
-    "maximumSubmission": 3,
-    "redrawCount": 3,
-    "specialRules": [
-      {
-        "id": "sabotage",
-        "effectId": "cards-theme-name.sabotage",
-        "operation": "discard-target",
-        "targeting": "opponent"
-      },
-      {
-        "id": "double-prenom",
-        "effectId": "cards-theme-name.double-prenom",
-        "operation": "add-one-submission",
-        "targeting": "none"
-      },
-      {
-        "id": "double-theme",
-        "effectId": "cards-theme-name.double-theme",
-        "operation": "draw-second-prompt",
-        "targeting": "none"
-      },
-      {
-        "id": "interdiction",
-        "effectId": "cards-theme-name.interdiction",
-        "operation": "lock-card",
-        "targeting": "held-card"
-      },
-      {
-        "id": "main-fantome",
-        "effectId": "cards-theme-name.main-fantome",
-        "operation": "random-submit",
-        "targeting": "pending-opponent"
-      },
-      {
-        "id": "defense-totale",
-        "effectId": "cards-theme-name.defense-totale",
-        "operation": "protect",
-        "targeting": "none"
-      },
-      {
-        "id": "echange-force",
-        "effectId": "cards-theme-name.echange-force",
-        "operation": "exchange-with-target",
-        "targeting": "opponent"
-      },
-      {
-        "id": "panique-generale",
-        "effectId": "cards-theme-name.panique-generale",
-        "operation": "redraw-all",
-        "targeting": "none"
-      },
-      {
-        "id": "retour-envoyeur",
-        "effectId": "cards-theme-name.retour-envoyeur",
-        "operation": "discard-attacker",
-        "targeting": "none"
-      },
-      {
-        "id": "theme-secret",
-        "effectId": "cards-theme-name.theme-secret",
-        "operation": "hide-prompt",
-        "targeting": "none"
-      },
-      {
-        "id": "chuchotement-confus",
-        "effectId": "cards-theme-name.chuchotement-confus",
-        "operation": "exchange-with-neighbor",
-        "targeting": "opponent"
-      },
-      {
-        "id": "mega-combo",
-        "effectId": "cards-theme-name.mega-combo",
-        "operation": "add-two-submissions",
-        "targeting": "none"
-      },
-      {
-        "id": "inversion",
-        "effectId": "cards-theme-name.inversion",
-        "operation": "reverse-pending",
-        "targeting": "none"
-      },
-      {
-        "id": "jury-mystere",
-        "effectId": "cards-theme-name.jury-mystere",
-        "operation": "select-judge",
-        "targeting": "opponent"
-      },
-      {
-        "id": "effet-domino",
-        "effectId": "cards-theme-name.effet-domino",
-        "operation": "increment-pending-submissions",
-        "targeting": "none"
-      },
-      {
-        "id": "prenom-fantome",
-        "effectId": "cards-theme-name.prenom-fantome",
-        "operation": "add-neutral-submission",
-        "targeting": "none"
-      },
-      {
-        "id": "inversion-role",
-        "effectId": "cards-theme-name.inversion-role",
-        "operation": "become-judge",
-        "targeting": "none"
-      },
-      {
-        "id": "chaos-temporel",
-        "effectId": "cards-theme-name.chaos-temporel",
-        "operation": "reopen-submissions",
-        "targeting": "none"
-      },
-      {
-        "id": "ultra-sabotage",
-        "effectId": "cards-theme-name.ultra-sabotage",
-        "operation": "discard-two-targets",
-        "targeting": "two-opponents"
-      },
-      {
-        "id": "prenom-volant",
-        "effectId": "cards-theme-name.prenom-volant",
-        "operation": "steal-from-target",
-        "targeting": "opponent"
+  "extensions": [
+    {
+      "type": "themeNameCards",
+      "config": {
+        "targetScore": 7,
+        "names": {
+          "$content": "content/catalogue.json#/names"
+        },
+        "themes": {
+          "$content": "content/catalogue.json#/themes"
+        },
+        "specialCards": {
+          "$content": "content/catalogue.json#/specialCards"
+        },
+        "finishReason": "president-7-points",
+        "handSize": 10,
+        "specialHandSize": 2,
+        "maximumSubmission": 3,
+        "redrawCount": 3,
+        "specialRules": [
+          {
+            "id": "sabotage",
+            "effectId": "cards-theme-name.sabotage",
+            "operation": "discard-target",
+            "targeting": "opponent"
+          },
+          {
+            "id": "double-prenom",
+            "effectId": "cards-theme-name.double-prenom",
+            "operation": "add-one-submission",
+            "targeting": "none"
+          },
+          {
+            "id": "double-theme",
+            "effectId": "cards-theme-name.double-theme",
+            "operation": "draw-second-prompt",
+            "targeting": "none"
+          },
+          {
+            "id": "interdiction",
+            "effectId": "cards-theme-name.interdiction",
+            "operation": "lock-card",
+            "targeting": "held-card"
+          },
+          {
+            "id": "main-fantome",
+            "effectId": "cards-theme-name.main-fantome",
+            "operation": "random-submit",
+            "targeting": "pending-opponent"
+          },
+          {
+            "id": "defense-totale",
+            "effectId": "cards-theme-name.defense-totale",
+            "operation": "protect",
+            "targeting": "none"
+          },
+          {
+            "id": "echange-force",
+            "effectId": "cards-theme-name.echange-force",
+            "operation": "exchange-with-target",
+            "targeting": "opponent"
+          },
+          {
+            "id": "panique-generale",
+            "effectId": "cards-theme-name.panique-generale",
+            "operation": "redraw-all",
+            "targeting": "none"
+          },
+          {
+            "id": "retour-envoyeur",
+            "effectId": "cards-theme-name.retour-envoyeur",
+            "operation": "discard-attacker",
+            "targeting": "none"
+          },
+          {
+            "id": "theme-secret",
+            "effectId": "cards-theme-name.theme-secret",
+            "operation": "hide-prompt",
+            "targeting": "none"
+          },
+          {
+            "id": "chuchotement-confus",
+            "effectId": "cards-theme-name.chuchotement-confus",
+            "operation": "exchange-with-neighbor",
+            "targeting": "opponent"
+          },
+          {
+            "id": "mega-combo",
+            "effectId": "cards-theme-name.mega-combo",
+            "operation": "add-two-submissions",
+            "targeting": "none"
+          },
+          {
+            "id": "inversion",
+            "effectId": "cards-theme-name.inversion",
+            "operation": "reverse-pending",
+            "targeting": "none"
+          },
+          {
+            "id": "jury-mystere",
+            "effectId": "cards-theme-name.jury-mystere",
+            "operation": "select-judge",
+            "targeting": "opponent"
+          },
+          {
+            "id": "effet-domino",
+            "effectId": "cards-theme-name.effet-domino",
+            "operation": "increment-pending-submissions",
+            "targeting": "none"
+          },
+          {
+            "id": "prenom-fantome",
+            "effectId": "cards-theme-name.prenom-fantome",
+            "operation": "add-neutral-submission",
+            "targeting": "none"
+          },
+          {
+            "id": "inversion-role",
+            "effectId": "cards-theme-name.inversion-role",
+            "operation": "become-judge",
+            "targeting": "none"
+          },
+          {
+            "id": "chaos-temporel",
+            "effectId": "cards-theme-name.chaos-temporel",
+            "operation": "reopen-submissions",
+            "targeting": "none"
+          },
+          {
+            "id": "ultra-sabotage",
+            "effectId": "cards-theme-name.ultra-sabotage",
+            "operation": "discard-two-targets",
+            "targeting": "two-opponents"
+          },
+          {
+            "id": "prenom-volant",
+            "effectId": "cards-theme-name.prenom-volant",
+            "operation": "steal-from-target",
+            "targeting": "opponent"
+          }
+        ]
       }
-    ]
-  }
+    }
+  ]
 }

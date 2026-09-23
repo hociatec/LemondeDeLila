@@ -66,65 +66,70 @@
   "victory": {
     "kind": "by-protected-haunted-race"
   },
-  "protectedHauntedRace": {
-    "trackId": "manor",
-    "diceId": "main",
-    "deckId": "frights",
-    "pawnSetId": "protectedHaunted",
-    "pawnChoiceId": "protectedHaunted.pawn",
-    "swapChoiceId": "protectedHaunted.swap",
-    "maxChainDepth": 24,
-    "finishReason": "escaped-manor",
-    "eventNamespace": "protectedHaunted",
-    "statuses": {
-      "ignoreNextTrap": "protectedHaunted.ignore-next-trap",
-      "ignoreTrapUntilNextDraw": "protectedHaunted.ignore-trap-until-next-draw",
-      "ignoreNextPrank": "protectedHaunted.ignore-next-prank",
-      "ignoreNextGhost": "protectedHaunted.ignore-next-ghost",
-      "nextMoveCap": "protectedHaunted.next-move-cap",
-      "nextRollMalus": "protectedHaunted.next-roll-malus",
-      "nextRollKeepLowest": "protectedHaunted.next-roll-keep-lowest",
-      "nextRollDouble": "protectedHaunted.next-roll-double",
-      "nextRollIfThreeBackTwo": "protectedHaunted.next-roll-if-three-back-two",
-      "blocked": "protectedHaunted.blocked"
-    },
-    "tiles": {
-      "$content": "content/catalogue.json#/tiles"
-    },
-    "cards": {
-      "$content": "content/catalogue.json#/cards"
-    },
-    "conditionalMove": {
-      "equals": 3,
-      "delta": -2
-    },
-    "protections": [
-      {
-        "category": "trap",
-        "status": "protectedHaunted.ignore-trap-until-next-draw",
-        "consume": "draw"
-      },
-      {
-        "category": "trap",
-        "status": "protectedHaunted.ignore-next-trap",
-        "consume": "matching-card"
-      },
-      {
-        "category": "prank",
-        "status": "protectedHaunted.ignore-next-prank",
-        "consume": "matching-card"
-      },
-      {
-        "category": "ghost",
-        "status": "protectedHaunted.ignore-next-ghost",
-        "consume": "matching-card"
-      }
-    ]
-  },
   "snapshotMigrations": [
     {
       "fromVersion": "1",
       "toVersion": "2"
+    }
+  ],
+  "extensions": [
+    {
+      "type": "protectedHauntedRace",
+      "config": {
+        "trackId": "manor",
+        "diceId": "main",
+        "deckId": "frights",
+        "pawnSetId": "protectedHaunted",
+        "pawnChoiceId": "protectedHaunted.pawn",
+        "swapChoiceId": "protectedHaunted.swap",
+        "maxChainDepth": 24,
+        "finishReason": "escaped-manor",
+        "eventNamespace": "protectedHaunted",
+        "statuses": {
+          "ignoreNextTrap": "protectedHaunted.ignore-next-trap",
+          "ignoreTrapUntilNextDraw": "protectedHaunted.ignore-trap-until-next-draw",
+          "ignoreNextPrank": "protectedHaunted.ignore-next-prank",
+          "ignoreNextGhost": "protectedHaunted.ignore-next-ghost",
+          "nextMoveCap": "protectedHaunted.next-move-cap",
+          "nextRollMalus": "protectedHaunted.next-roll-malus",
+          "nextRollKeepLowest": "protectedHaunted.next-roll-keep-lowest",
+          "nextRollDouble": "protectedHaunted.next-roll-double",
+          "nextRollIfThreeBackTwo": "protectedHaunted.next-roll-if-three-back-two",
+          "blocked": "protectedHaunted.blocked"
+        },
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "conditionalMove": {
+          "equals": 3,
+          "delta": -2
+        },
+        "protections": [
+          {
+            "category": "trap",
+            "status": "protectedHaunted.ignore-trap-until-next-draw",
+            "consume": "draw"
+          },
+          {
+            "category": "trap",
+            "status": "protectedHaunted.ignore-next-trap",
+            "consume": "matching-card"
+          },
+          {
+            "category": "prank",
+            "status": "protectedHaunted.ignore-next-prank",
+            "consume": "matching-card"
+          },
+          {
+            "category": "ghost",
+            "status": "protectedHaunted.ignore-next-ghost",
+            "consume": "matching-card"
+          }
+        ]
+      }
     }
   ]
 }

@@ -9,9 +9,13 @@
       "kind": "market",
       "marketId": "wonders",
       "inventoryId": "wonder-goods",
-      "items": { "$content": "content/catalogue.json#/goods" },
+      "items": {
+        "$content": "content/catalogue.json#/goods"
+      },
       "currency": "coins",
-      "prices": { "$content": "content/catalogue.json#/initialPrices" },
+      "prices": {
+        "$content": "content/catalogue.json#/initialPrices"
+      },
       "startingCurrency": 12,
       "minPrice": 1,
       "maxPrice": 10,
@@ -24,38 +28,90 @@
   "setup": {},
   "resourceIds": [],
   "shortcuts": [
-    { "key": "A", "type": "action", "actionType": "buy" },
-    { "key": "Q", "type": "action", "actionType": "sell" },
-    { "key": "R", "type": "action", "actionType": "rumor" },
-    { "key": "P", "type": "action", "actionType": "protect" },
-    { "key": "V", "type": "action", "actionType": "steal_deal" },
-    { "key": "O", "type": "action", "actionType": "pass" }
+    {
+      "key": "A",
+      "type": "action",
+      "actionType": "buy"
+    },
+    {
+      "key": "Q",
+      "type": "action",
+      "actionType": "sell"
+    },
+    {
+      "key": "R",
+      "type": "action",
+      "actionType": "rumor"
+    },
+    {
+      "key": "P",
+      "type": "action",
+      "actionType": "protect"
+    },
+    {
+      "key": "V",
+      "type": "action",
+      "actionType": "steal_deal"
+    },
+    {
+      "key": "O",
+      "type": "action",
+      "actionType": "pass"
+    }
   ],
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": ["buy", "sell", "rumor", "protect", "steal_deal", "pass"],
+      "actions": [
+        "buy",
+        "sell",
+        "rumor",
+        "protect",
+        "steal_deal",
+        "pass"
+      ],
       "terminal": true
     }
   },
   "actions": {
-    "buy": { "recipe": "collection-market-exchange-buy" },
-    "sell": { "recipe": "collection-market-exchange-sell" },
-    "rumor": { "recipe": "collection-market-exchange-rumor" },
-    "protect": { "recipe": "collection-market-exchange-protect" },
-    "steal_deal": { "recipe": "collection-market-exchange-steal" },
-    "pass": { "recipe": "collection-market-exchange-pass" }
+    "buy": {
+      "recipe": "collection-market-exchange-buy"
+    },
+    "sell": {
+      "recipe": "collection-market-exchange-sell"
+    },
+    "rumor": {
+      "recipe": "collection-market-exchange-rumor"
+    },
+    "protect": {
+      "recipe": "collection-market-exchange-protect"
+    },
+    "steal_deal": {
+      "recipe": "collection-market-exchange-steal"
+    },
+    "pass": {
+      "recipe": "collection-market-exchange-pass"
+    }
   },
-  "victory": { "kind": "by-market-exchange" },
-  "marketExchange": {
-    "marketId": "wonders",
-    "inventoryId": "wonder-goods",
-    "currency": "coins",
-    "goods": { "$content": "content/catalogue.json#/goods" },
-    "turnsCounterId": "collection-market-exchange.turns-taken",
-    "maxRounds": 6,
-    "rumorCost": 1,
-    "protectCost": 2,
-    "eventNamespace": "wonder-market"
-  }
+  "victory": {
+    "kind": "by-market-exchange"
+  },
+  "extensions": [
+    {
+      "type": "marketExchange",
+      "config": {
+        "marketId": "wonders",
+        "inventoryId": "wonder-goods",
+        "currency": "coins",
+        "goods": {
+          "$content": "content/catalogue.json#/goods"
+        },
+        "turnsCounterId": "collection-market-exchange.turns-taken",
+        "maxRounds": 6,
+        "rumorCost": 1,
+        "protectCost": 2,
+        "eventNamespace": "wonder-market"
+      }
+    }
+  ]
 }

@@ -1,7 +1,9 @@
+import { legacyExtensionFixture } from '../../testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../core/testing/game-test-kit';
 import manifest from '../../../games/les-quatre-vents/odyssee-quatre-cieux/manifest.json';
-import document from '../../../games/les-quatre-vents/odyssee-quatre-cieux/game.json';
+import documentExtensionSource from '../../../games/les-quatre-vents/odyssee-quatre-cieux/game.json';
+const document = legacyExtensionFixture(documentExtensionSource, 'pawnRace');
 
 it.each<{ name: string; change: (value: typeof document) => void }>([
   {

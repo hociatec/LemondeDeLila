@@ -51,12 +51,17 @@
   "victory": {
     "kind": "by-ritual-phases"
   },
-  "ritualPhases": {
-    "cards": {
-      "$content": "content/catalogue.json#/cards"
-    },
-    "initialHandSize": 5,
-    "exchangeFamilyCount": 3,
-    "finishReason": "five-families"
-  }
+  "extensions": [
+    {
+      "type": "ritualPhases",
+      "config": {
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "initialHandSize": 5,
+        "exchangeFamilyCount": 3,
+        "finishReason": "five-families"
+      }
+    }
+  ]
 }

@@ -1,12 +1,15 @@
+import {
+  presentedSystem,
+  presentedPending,
+  testRecord,
+} from '../../../../../testing/helpers/presented-state-assertions';
 import type { GameRuntime } from '../../../../application/ports/game-runtime.port';
 import type { GameState } from '../../../../application/models/game-state.model';
 import { GameWsStatePresenter } from './game-ws-state.presenter';
 import { GameVisibilityService } from '../../../../application/services/game-visibility.service';
-
 describe('GameWsStatePresenter', () => {
   const createPresenter = () =>
     new GameWsStatePresenter(new GameVisibilityService());
-
   it('publishes only shortcuts whose actions are visible to the viewer', () => {
     const state = {
       status: 'started',
@@ -33,7 +36,6 @@ describe('GameWsStatePresenter', () => {
         { key: 'S', type: 'interface', id: 'score', label: 'Scores' },
       ],
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -43,7 +45,10 @@ describe('GameWsStatePresenter', () => {
       viewerPlayerId: 1,
     });
     const system = payload.system as {
-      shortcuts: Array<{ key: string; label?: string }>;
+      shortcuts: Array<{
+        key: string;
+        label?: string;
+      }>;
     };
     expect(system.shortcuts.map((shortcut) => shortcut.key)).toEqual([
       'P',
@@ -62,7 +67,6 @@ describe('GameWsStatePresenter', () => {
     expect(payload.viewerPlayerId).toBe(1);
     expect(payload.state).toBeUndefined();
   });
-
   it('lets the game hide its score panel once the match is finished', () => {
     const state = {
       status: 'finished',
@@ -93,7 +97,6 @@ describe('GameWsStatePresenter', () => {
         },
       }),
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -102,11 +105,9 @@ describe('GameWsStatePresenter', () => {
       version: 9,
       viewerPlayerId: 1,
     });
-
-    expect((payload.kits as any).score).toBeNull();
-    expect((payload.system as any).shortcuts).toEqual([]);
+    expect(testRecord(payload.kits).score).toBeNull();
+    expect(presentedSystem(payload.system).shortcuts).toEqual([]);
   });
-
   it('reserves S for the generic score panel in every scored game', () => {
     const state = {
       status: 'playing',
@@ -133,7 +134,6 @@ describe('GameWsStatePresenter', () => {
         },
       }),
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -142,12 +142,10 @@ describe('GameWsStatePresenter', () => {
       version: 1,
       viewerPlayerId: 1,
     });
-
-    expect((payload.system as any).shortcuts).toEqual([
+    expect(presentedSystem(payload.system).shortcuts).toEqual([
       { key: 'S', type: 'interface', id: 'score', label: 'Scores' },
     ]);
   });
-
   it('lets a scored game reserve S for a declared interface panel', () => {
     const state = {
       status: 'playing',
@@ -175,7 +173,6 @@ describe('GameWsStatePresenter', () => {
       ],
       getDescriptor: () => ({ presentation: {} }),
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -184,8 +181,7 @@ describe('GameWsStatePresenter', () => {
       version: 1,
       viewerPlayerId: 1,
     });
-
-    expect((payload.system as any).shortcuts).toEqual([
+    expect(presentedSystem(payload.system).shortcuts).toEqual([
       {
         key: 'S',
         type: 'interface',
@@ -194,7 +190,6 @@ describe('GameWsStatePresenter', () => {
       },
     ]);
   });
-
   it('publishes ready-to-render event messages for LAMA', () => {
     const state = {
       status: 'playing',
@@ -265,7 +260,6 @@ describe('GameWsStatePresenter', () => {
         },
       }),
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -276,7 +270,14 @@ describe('GameWsStatePresenter', () => {
     });
     const system = payload.system as {
       events: {
-        latestByType: Record<string, { data: { message?: string } }>;
+        latestByType: Record<
+          string,
+          {
+            data: {
+              message?: string;
+            };
+          }
+        >;
       };
     };
     expect(system.events.latestByType['game.message']?.data.message).toBe(
@@ -285,15 +286,14 @@ describe('GameWsStatePresenter', () => {
     expect(system.events.latestByType['score.changed']?.data.message).toBe(
       'Vous avez maintenant 12 jetons.',
     );
-    expect((payload.kits as any).score).toMatchObject({
+    expect(testRecord(payload.kits).score).toMatchObject({
       label: 'Jetons',
       unit: { singular: 'jeton', plural: 'jetons' },
     });
-    expect((payload.system as any).events.recent[0].data.message).toBe(
+    expect(presentedSystem(payload.system).events.recent[0].data.message).toBe(
       'Vous rendez 10 jetons et en avez maintenant 2.',
     );
   });
-
   it('announces a pawn choice to its author and to every other player', () => {
     const state = {
       status: 'playing',
@@ -331,7 +331,7 @@ describe('GameWsStatePresenter', () => {
       getShortcuts: () => [],
     } as unknown as GameRuntime;
     const presentFor = (viewerPlayerId: number) =>
-      (
+      presentedSystem(
         createPresenter().present({
           state,
           handler,
@@ -339,13 +339,11 @@ describe('GameWsStatePresenter', () => {
           gameType: 'a-fond-les-ballons',
           version: 4,
           viewerPlayerId,
-        }).system as any
+        }).system,
       ).events.recent[0].data.message;
-
     expect(presentFor(1)).toBe('Vous avez choisi « Capitaine Cacahuète ».');
     expect(presentFor(2)).toBe('Hacene a choisi « Capitaine Cacahuète ».');
   });
-
   it('announces who must choose a pawn without calling it a turn', () => {
     const players = [
       { id: 1, username: 'Hacene' },
@@ -372,7 +370,7 @@ describe('GameWsStatePresenter', () => {
       getShortcuts: () => [],
     } as unknown as GameRuntime;
     const presentFor = (viewerPlayerId: number) =>
-      (
+      presentedSystem(
         createPresenter().present({
           state: {
             status: 'playing',
@@ -384,13 +382,11 @@ describe('GameWsStatePresenter', () => {
           gameType: 'a-fond-les-ballons',
           version: 4,
           viewerPlayerId,
-        }).system as any
+        }).system,
       ).events.recent[0].data.message;
-
     expect(presentFor(1)).toBe('Vous devez choisir votre pion.');
     expect(presentFor(2)).toBe('Hacene doit choisir son pion.');
   });
-
   it('announces the drawn card value only to the player who drew it', () => {
     const state = {
       status: 'started',
@@ -445,18 +441,17 @@ describe('GameWsStatePresenter', () => {
       viewerPlayerId: 1,
     });
     expect(
-      ((payload.system as any).events.latestByType['game.message'] as any).data
+      presentedSystem(payload.system).events.latestByType['game.message'].data
         .message,
     ).toBe('Vous piochez LAMA.');
     expect(
-      ((payload.system as any).events.latestByType['card.received'] as any).data
+      presentedSystem(payload.system).events.latestByType['card.received'].data
         .message,
     ).toBeUndefined();
     expect(
-      ((payload.system as any).events.latestByType['turn.started'] as any).data
+      presentedSystem(payload.system).events.latestByType['turn.started'].data
         .message,
     ).toBe("C'est au tour de Mina.");
-
     const opponentPayload = createPresenter().present({
       state,
       handler: {
@@ -503,14 +498,11 @@ describe('GameWsStatePresenter', () => {
       viewerPlayerId: 2,
     });
     expect(
-      (
-        (opponentPayload.system as any).events.latestByType[
-          'game.message'
-        ] as any
-      ).data.message,
+      presentedSystem(opponentPayload.system).events.latestByType[
+        'game.message'
+      ].data.message,
     ).toBe('Lila pioche une carte.');
   });
-
   it('announces a revealed card and its effect', () => {
     const state = {
       status: 'started',
@@ -546,7 +538,6 @@ describe('GameWsStatePresenter', () => {
       }),
       getShortcuts: () => [],
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -555,13 +546,11 @@ describe('GameWsStatePresenter', () => {
       version: 4,
       viewerPlayerId: 1,
     });
-
     expect(
-      ((payload.system as any).events.latestByType['game.message'] as any).data
+      presentedSystem(payload.system).events.latestByType['game.message'].data
         .message,
     ).toBe('Vous piochez « Coup de chance ». Effet : Avancez de 2 cases.');
   });
-
   it('does not repeat an effect already written on a revealed card', () => {
     const state = {
       status: 'started',
@@ -596,7 +585,6 @@ describe('GameWsStatePresenter', () => {
       }),
       getShortcuts: () => [],
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -605,15 +593,13 @@ describe('GameWsStatePresenter', () => {
       version: 5,
       viewerPlayerId: 1,
     });
-
     expect(
-      ((payload.system as any).events.latestByType['game.message'] as any).data
+      presentedSystem(payload.system).events.latestByType['game.message'].data
         .message,
     ).toBe(
       "Vous piochez « Le sol colle à vos chaussures. Au prochain tour, vous n'avancerez que d'une seule case. ».",
     );
   });
-
   it('narrates chained landings and draws once each', () => {
     const events = [
       {
@@ -687,7 +673,6 @@ describe('GameWsStatePresenter', () => {
       }),
       getShortcuts: () => [],
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state: { status: 'started', players } as unknown as GameState,
       handler,
@@ -696,10 +681,9 @@ describe('GameWsStatePresenter', () => {
       version: 12,
       viewerPlayerId: 1,
     });
-    const messages = (payload.system as any).events.recent
-      .map((event: any) => event.data.message)
+    const messages = presentedSystem(payload.system)
+      .events.recent.map((event) => event.data.message)
       .filter(Boolean);
-
     expect(messages).toEqual([
       'Vous arrivez sur la case 6 : Animal rigolo.',
       'Vous piochez « Rencontre animale 1 ». Effet : Avancez de 2 cases.',
@@ -707,7 +691,6 @@ describe('GameWsStatePresenter', () => {
       "C'est au tour de Mina.",
     ]);
   });
-
   it('announces a player leaving a round through the standard event', () => {
     const state = {
       status: 'started',
@@ -740,7 +723,6 @@ describe('GameWsStatePresenter', () => {
       }),
       getShortcuts: () => [],
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -749,16 +731,15 @@ describe('GameWsStatePresenter', () => {
       version: 9,
       viewerPlayerId: 1,
     });
-
     expect(
-      (payload.system as any).events.latestByType['round.player-left'].data
-        .message,
+      presentedSystem(payload.system).events.latestByType['round.player-left']
+        .data.message,
     ).toBe('Mina sort de la manche.');
     expect(
-      (payload.system as any).events.latestByType['match.started'].data.message,
+      presentedSystem(payload.system).events.latestByType['match.started'].data
+        .message,
     ).toBe('La partie démarre, bon jeu !');
   });
-
   it.each([
     ['game.player.passed', 'Vous passez votre tour.', false],
     [
@@ -806,7 +787,6 @@ describe('GameWsStatePresenter', () => {
         }),
         getShortcuts: () => [],
       } as unknown as GameRuntime;
-
       const payload = createPresenter().present({
         state: {
           status: 'started',
@@ -821,14 +801,12 @@ describe('GameWsStatePresenter', () => {
         version: 10,
         viewerPlayerId: 1,
       });
-      const messages = (payload.system as any).events.recent
-        .map((event: any) => event.data.message)
+      const messages = presentedSystem(payload.system)
+        .events.recent.map((event) => event.data.message)
         .filter(Boolean);
-
       expect(messages).toEqual([`${actionMessage}\nC'est au tour de Mina.`]);
     },
   );
-
   it('does not repeat two consecutive announcements for the same turn', () => {
     const events = [
       {
@@ -865,7 +843,6 @@ describe('GameWsStatePresenter', () => {
       }),
       getShortcuts: () => [],
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state: {
         status: 'started',
@@ -877,16 +854,14 @@ describe('GameWsStatePresenter', () => {
       version: 10,
       viewerPlayerId: 1,
     });
-    const messages = (payload.system as any).events.recent
-      .map((event: any) => event.data.message)
+    const messages = presentedSystem(payload.system)
+      .events.recent.map((event) => event.data.message)
       .filter(Boolean);
-
     expect(messages).toEqual([
       'Vous avez choisi « Capitaine Cacahuète ».',
       "C'est au tour de Hacene.",
     ]);
   });
-
   it('explains manual draws and movement bonuses to players and spectators', () => {
     const events = [
       {
@@ -949,7 +924,6 @@ describe('GameWsStatePresenter', () => {
       }),
       getShortcuts: () => [],
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state: {
         status: 'started',
@@ -964,10 +938,9 @@ describe('GameWsStatePresenter', () => {
       version: 11,
       viewerPlayerId: 1,
     });
-    const messages = (payload.system as any).events.recent.map(
-      (event: any) => event.data.message,
+    const messages = presentedSystem(payload.system).events.recent.map(
+      (event) => event.data.message,
     );
-
     expect(messages).toEqual([
       'Vous devez piocher une carte. Appuyez sur Espace.',
       'Bonus : vous avancez de 2 cases.',
@@ -976,7 +949,6 @@ describe('GameWsStatePresenter', () => {
       'Mina échange sa place avec vous.',
     ]);
   });
-
   it('presents a LAMA round start as one player-facing narrative', () => {
     const state = {
       status: 'started',
@@ -1063,18 +1035,17 @@ describe('GameWsStatePresenter', () => {
       version: 4,
       viewerPlayerId: 1,
     });
-    const events = (payload.system as any).events.latestByType;
+    const events = presentedSystem(payload.system).events.latestByType;
     expect(events['game.message'].data.message).toBe(
       "La partie démarre.\nTout le monde reçoit son paquet de cartes.\nC'est au tour de hacene.",
     );
-    expect((payload.system as any).events.recent[0].data.message).toBe(
+    expect(presentedSystem(payload.system).events.recent[0].data.message).toBe(
       events['game.message'].data.message,
     );
     expect(events['card.drawn']?.data.message).toBeUndefined();
     expect(events['turn.started'].data.message).toBeUndefined();
     expect(events['round.started'].data.message).toBeUndefined();
   });
-
   it('presents a LAMA round transition in its emission order', () => {
     const recent = [
       {
@@ -1174,8 +1145,8 @@ describe('GameWsStatePresenter', () => {
       version: 8,
       viewerPlayerId: 1,
     });
-    const messages = (payload.system as any).events.recent
-      .map((event: any) => event.data.message)
+    const messages = presentedSystem(payload.system)
+      .events.recent.map((event) => event.data.message)
       .filter(Boolean);
     expect(messages).toEqual([
       'La manche est terminée.',
@@ -1184,7 +1155,6 @@ describe('GameWsStatePresenter', () => {
       "La manche 2 commence.\nTout le monde reçoit son paquet de cartes.\nC'est au tour de Mina.",
     ]);
   });
-
   it('publishes a server-driven configuration prompt without rewriting', () => {
     const prompt = {
       type: 'config_prompt',
@@ -1208,7 +1178,6 @@ describe('GameWsStatePresenter', () => {
       exposeStateForUser: () => state,
       getShortcuts: () => [],
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -1218,7 +1187,6 @@ describe('GameWsStatePresenter', () => {
     });
     expect(payload.pending).toEqual(prompt);
   });
-
   it('preserves an explicit server mapping between pending choices and actions', () => {
     const mappedAction = { type: 'pick_beta', payload: { value: 2 } };
     const state = {
@@ -1240,7 +1208,6 @@ describe('GameWsStatePresenter', () => {
       exposeStateForUser: () => state,
       getShortcuts: () => [],
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -1249,11 +1216,10 @@ describe('GameWsStatePresenter', () => {
       version: 2,
       viewerPlayerId: 1,
     });
-    expect((payload.pending as any).data.choiceActionsByIndex).toEqual([
-      mappedAction,
-    ]);
+    expect(presentedPending(payload.pending).data.choiceActionsByIndex).toEqual(
+      [mappedAction],
+    );
   });
-
   it('publishes the generic dice contract', () => {
     const state = {
       status: 'started',
@@ -1268,7 +1234,6 @@ describe('GameWsStatePresenter', () => {
       exposeStateForUser: () => state,
       getShortcuts: () => [],
     } as unknown as GameRuntime;
-
     const payload = createPresenter().present({
       state,
       handler,
@@ -1276,7 +1241,7 @@ describe('GameWsStatePresenter', () => {
       gameType: 'dice-game',
       version: 8,
     });
-    expect((payload.kits as any).dice).toEqual(
+    expect(testRecord(payload.kits).dice).toEqual(
       expect.objectContaining({ total: 5, rollActionIndex: 0 }),
     );
     expect(payload.state).toBeUndefined();

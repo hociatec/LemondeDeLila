@@ -15,57 +15,83 @@
   "setup": {},
   "resourceIds": [],
   "shortcuts": [
-    { "key": "M", "type": "action", "actionType": "pathWalls_place_wall" }
+    {
+      "key": "M",
+      "type": "action",
+      "actionType": "pathWalls_place_wall"
+    }
   ],
   "initialPhase": "setup",
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": ["playing"]
+      "transitions": [
+        "playing"
+      ]
     },
     "playing": {
-      "actions": ["pathWalls_move", "pathWalls_place_wall"],
+      "actions": [
+        "pathWalls_move",
+        "pathWalls_place_wall"
+      ],
       "terminal": true
     }
   },
   "actions": {
-    "pathWalls_move": { "recipe": "board-path-walls-move" },
-    "pathWalls_place_wall": { "recipe": "board-path-walls-place-wall" }
+    "pathWalls_move": {
+      "recipe": "board-path-walls-move"
+    },
+    "pathWalls_place_wall": {
+      "recipe": "board-path-walls-place-wall"
+    }
   },
-  "victory": { "kind": "by-path-walls" },
-  "pathWalls": {
-    "boardId": "pathWalls",
-    "pawnSetId": "pathWalls",
-    "pawnChoiceId": "board-path-walls.pawn",
-    "wallsResourceId": "board-path-walls.walls",
-    "wallsOverlayId": "walls",
-    "size": 9,
-    "defaultWallsPerPlayer": 10,
-    "startPositions": [
-      { "x": 4, "y": 0 },
-      { "x": 4, "y": 8 }
-    ],
-    "pawns": [
-      {
-        "id": "vent",
-        "label": "Le vent",
-        "description": "Rapide et changeant, il traverse le pathWalls sans hésiter."
-      },
-      {
-        "id": "eau",
-        "label": "L’eau",
-        "description": "Souple et patiente, elle contourne les obstacles avec précision."
-      },
-      {
-        "id": "terre",
-        "label": "La terre",
-        "description": "Stable et solide, elle avance avec régularité."
-      },
-      {
-        "id": "feu",
-        "label": "Le feu",
-        "description": "Direct et audacieux, il cherche la ligne d’arrivée."
+  "victory": {
+    "kind": "by-path-walls"
+  },
+  "extensions": [
+    {
+      "type": "pathWalls",
+      "config": {
+        "boardId": "pathWalls",
+        "pawnSetId": "pathWalls",
+        "pawnChoiceId": "board-path-walls.pawn",
+        "wallsResourceId": "board-path-walls.walls",
+        "wallsOverlayId": "walls",
+        "size": 9,
+        "defaultWallsPerPlayer": 10,
+        "startPositions": [
+          {
+            "x": 4,
+            "y": 0
+          },
+          {
+            "x": 4,
+            "y": 8
+          }
+        ],
+        "pawns": [
+          {
+            "id": "vent",
+            "label": "Le vent",
+            "description": "Rapide et changeant, il traverse le pathWalls sans hésiter."
+          },
+          {
+            "id": "eau",
+            "label": "L’eau",
+            "description": "Souple et patiente, elle contourne les obstacles avec précision."
+          },
+          {
+            "id": "terre",
+            "label": "La terre",
+            "description": "Stable et solide, elle avance avec régularité."
+          },
+          {
+            "id": "feu",
+            "label": "Le feu",
+            "description": "Direct et audacieux, il cherche la ligne d’arrivée."
+          }
+        ]
       }
-    ]
-  }
+    }
+  ]
 }

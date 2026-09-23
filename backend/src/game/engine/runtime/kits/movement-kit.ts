@@ -1,3 +1,5 @@
+import { withAuthoringPath } from '../contracts/authoring-origin';
+import { authoringProperty } from '../contracts/authoring-diagnostics';
 import {
   GameConfigurationError,
   GameNotFoundError,
@@ -56,21 +58,20 @@ export const movement = {
       definition.spaces < 1 ||
       definition.spaces > 1_000_000
     ) {
-      throw new GameConfigurationError(
-        'Une piste doit contenir au moins une case',
+      throw withAuthoringPath(
+        new GameConfigurationError('Une piste doit contenir au moins une case'),
+        'spaces',
       );
     }
-    if (
-      Object.keys(definition.landingEffects ?? {}).some((position) => {
-        const value = Number(position);
-        return (
-          !Number.isInteger(value) || value < 0 || value >= definition.spaces
+    for (const position of Object.keys(definition.landingEffects ?? {})) {
+      const value = Number(position);
+      if (!Number.isInteger(value) || value < 0 || value >= definition.spaces)
+        throw withAuthoringPath(
+          new GameConfigurationError(
+            `Effet associé à une case inexistante: ${definition.id}`,
+          ),
+          authoringProperty('landingEffects', position),
         );
-      })
-    ) {
-      throw new GameConfigurationError(
-        `Effet associé à une case inexistante: ${definition.id}`,
-      );
     }
     return deepFreeze({ ...definition, component: 'movement.track' });
   },

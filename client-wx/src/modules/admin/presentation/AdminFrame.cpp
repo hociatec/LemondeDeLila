@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <utility>
 
-#include <wx/timer.h>
 
 #include "modules/admin/application/AdminService.h"
 #include "modules/audio/application/IAudioService.h"
@@ -34,7 +33,7 @@ AdminFrame::AdminFrame(
 
 AdminFrame::~AdminFrame()
 {
-    if (previewTimer_ && previewTimer_->IsRunning()) audioService_.StopLoop();
+    audioService_.Preview(std::nullopt);
     requestSlot_.Cancel();
     lila::shared::security::SecureWipeString(maintenanceToken_);
 }

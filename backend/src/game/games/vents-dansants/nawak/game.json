@@ -15,29 +15,56 @@
     }
   ],
   "components": [],
-  "setup": { "firstPlayer": "first", "startRound": true },
+  "setup": {
+    "firstPlayer": "first",
+    "startRound": true
+  },
   "resourceIds": [],
   "shortcuts": [
-    { "key": "C", "type": "action", "actionType": "choose_answer" },
-    { "key": "V", "type": "action", "actionType": "vote_answer" }
+    {
+      "key": "C",
+      "type": "action",
+      "actionType": "choose_answer"
+    },
+    {
+      "key": "V",
+      "type": "action",
+      "actionType": "vote_answer"
+    }
   ],
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": ["choose_answer", "vote_answer"],
+      "actions": [
+        "choose_answer",
+        "vote_answer"
+      ],
       "terminal": true
     }
   },
   "actions": {
-    "choose_answer": { "recipe": "choice-anonymous-vote-choose" },
-    "vote_answer": { "recipe": "choice-anonymous-vote-vote" }
+    "choose_answer": {
+      "recipe": "choice-anonymous-vote-choose"
+    },
+    "vote_answer": {
+      "recipe": "choice-anonymous-vote-vote"
+    }
   },
-  "victory": { "kind": "by-anonymous-vote" },
-  "anonymousVote": {
-    "answerSubmissionId": "choice-anonymous-vote.answers",
-    "voteSubmissionId": "choice-anonymous-vote.votes",
-    "targetScore": 5,
-    "winnerReason": "target-score",
-    "challenges": { "$content": "content/catalogue.json#/challenges" }
-  }
+  "victory": {
+    "kind": "by-anonymous-vote"
+  },
+  "extensions": [
+    {
+      "type": "anonymousVote",
+      "config": {
+        "answerSubmissionId": "choice-anonymous-vote.answers",
+        "voteSubmissionId": "choice-anonymous-vote.votes",
+        "targetScore": 5,
+        "winnerReason": "target-score",
+        "challenges": {
+          "$content": "content/catalogue.json#/challenges"
+        }
+      }
+    }
+  ]
 }

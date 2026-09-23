@@ -35,12 +35,20 @@
   "initialPhase": "play",
   "phases": {
     "play": {
-      "actions": ["play_card"],
-      "transitions": ["judge"]
+      "actions": [
+        "play_card"
+      ],
+      "transitions": [
+        "judge"
+      ]
     },
     "judge": {
-      "actions": ["judge_pick"],
-      "transitions": ["play"]
+      "actions": [
+        "judge_pick"
+      ],
+      "transitions": [
+        "play"
+      ]
     }
   },
   "actions": {
@@ -66,18 +74,23 @@
       "actionType": "judge_pick"
     }
   ],
-  "judgedCards": {
-    "judgeId": "absurdissimes.judge",
-    "submissionId": "absurdissimes.answers",
-    "promptDeckId": "white",
-    "answerDeckId": "black",
-    "answerHandId": "answers",
-    "collectingPhase": "play",
-    "judgingPhase": "judge",
-    "scoreToWin": 10,
-    "winningReason": "target-score",
-    "submittedMessage": "absurdissimes.answer.submitted",
-    "revealedEvent": "absurdissimes.submissions.revealed",
-    "botSelection": "random"
-  }
+  "extensions": [
+    {
+      "type": "judgedCards",
+      "config": {
+        "judgeId": "absurdissimes.judge",
+        "submissionId": "absurdissimes.answers",
+        "promptDeckId": "white",
+        "answerDeckId": "black",
+        "answerHandId": "answers",
+        "collectingPhase": "play",
+        "judgingPhase": "judge",
+        "scoreToWin": 10,
+        "winningReason": "target-score",
+        "submittedMessage": "absurdissimes.answer.submitted",
+        "revealedEvent": "absurdissimes.submissions.revealed",
+        "botSelection": "random"
+      }
+    }
+  ]
 }

@@ -54,6 +54,8 @@ void AdminFrame::ApplyContextToPayload(
 
 bool AdminFrame::ContextCommandMutates(const domain::AdminCommand& command) const
 {
+    if (command.transport == domain::AdminTransport::LocalAction ||
+        command.operation.starts_with("GET ")) return false;
     constexpr std::array<std::string_view, 5> readOnly{
         "bugs.get", "bugs.comments", "rooms.join", "mnemo.categories", "mnemo.questions"};
     for (const auto id : readOnly)

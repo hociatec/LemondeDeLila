@@ -22,7 +22,9 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": ["morpion_play"],
+      "actions": [
+        "morpion_play"
+      ],
       "terminal": true
     }
   },
@@ -47,42 +49,47 @@
       "id": "play"
     }
   ],
-  "grid": {
-    "boardId": "morpion",
-    "width": 3,
-    "height": 3,
-    "winLength": 3,
-    "drawWhenFull": true,
-    "winnerReason": "line-3",
-    "drawReason": "draw",
-    "markEvent": "morpion.mark.placed",
-    "preferredCells": [
-      {
-        "x": 1,
-        "y": 1
-      },
-      {
-        "x": 0,
-        "y": 0
-      },
-      {
-        "x": 2,
-        "y": 0
-      },
-      {
-        "x": 0,
-        "y": 2
-      },
-      {
-        "x": 2,
-        "y": 2
+  "extensions": [
+    {
+      "type": "grid",
+      "config": {
+        "boardId": "morpion",
+        "width": 3,
+        "height": 3,
+        "winLength": 3,
+        "drawWhenFull": true,
+        "winnerReason": "line-3",
+        "drawReason": "draw",
+        "markEvent": "morpion.mark.placed",
+        "preferredCells": [
+          {
+            "x": 1,
+            "y": 1
+          },
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 2,
+            "y": 0
+          },
+          {
+            "x": 0,
+            "y": 2
+          },
+          {
+            "x": 2,
+            "y": 2
+          }
+        ],
+        "pawnSelection": {
+          "setId": "morpion",
+          "choiceId": "morpion.pawn",
+          "order": "players",
+          "automatic": false
+        }
       }
-    ],
-    "pawnSelection": {
-      "setId": "morpion",
-      "choiceId": "morpion.pawn",
-      "order": "players",
-      "automatic": false
     }
-  }
+  ]
 }

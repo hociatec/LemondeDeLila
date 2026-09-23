@@ -85,6 +85,8 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
         refreshAreaAfterCommand_ = false;
         return;
     }
+    if (command.id.starts_with("sounds.") && ContextCommandMutates(command))
+        soundIdToRestore_ = payload.value("soundId", std::string{});
     ExecuteCommand(command, std::move(payload));
 }
 
@@ -168,9 +170,17 @@ void AdminFrame::CompleteCommand(
         reportIdToRestore_.reset();
         SetStatus(lila::shared::text::FromUtf8(
             error ? error->UserMessage() : "Réponse administrateur absente."), true);
+        if (command.id.starts_with("sounds."))
+        {
+            soundIdToRestore_.reset();
+            wxMessageBox(lila::shared::text::FromUtf8(
+                error ? error->UserMessage() : "Réponse administrateur absente."),
+                L"Gestion des sons", wxOK | wxICON_ERROR, this);
+        }
         FocusCurrentMenu();
         return;
     }
+    if (ConfirmSoundChange(command)) refreshAreaAfterCommand_ = true;
     if (refreshAreaAfterCommand_)
     {
         refreshAreaAfterCommand_ = false;

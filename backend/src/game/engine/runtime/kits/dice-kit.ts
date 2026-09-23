@@ -1,3 +1,4 @@
+import { withAuthoringPath } from '../contracts/authoring-origin';
 import type { GameRng } from '../../../core/application/models/game-execution-context.model';
 import { assertGameCount, assertGameValue } from './numeric-invariants';
 import { assertDiceRoll } from './dice-roll-contract';
@@ -30,15 +31,19 @@ export function diceKit(options: {
 }): DiceDefinition {
   const count = Math.floor(options.count);
   const sides = Math.floor(options.sides);
-  if (
-    !Number.isSafeInteger(options.count) ||
-    !Number.isSafeInteger(options.sides) ||
-    count < 1 ||
-    count > 100 ||
-    sides < 2 ||
-    sides > 1_000_000
-  ) {
-    throw new GameConfigurationError('Configuration de dés invalide');
+  for (const [field, minimum, maximum] of [
+    ['count', 1, 100],
+    ['sides', 2, 1_000_000],
+  ] as const) {
+    if (
+      !Number.isSafeInteger(options[field]) ||
+      options[field] < minimum ||
+      options[field] > maximum
+    )
+      throw withAuthoringPath(
+        new GameConfigurationError('Configuration de dés invalide'),
+        field,
+      );
   }
   return Object.freeze({
     component: 'dice.set',

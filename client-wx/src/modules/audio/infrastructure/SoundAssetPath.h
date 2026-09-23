@@ -14,6 +14,7 @@ class SoundAssetPathResolver final
 public:
     SoundAssetPathResolver();
     [[nodiscard]] std::filesystem::path Resolve(domain::SoundCue cue);
+    [[nodiscard]] std::filesystem::path ResolvePreview(domain::SoundCue cue);
 
 private:
     struct RemoteSound final

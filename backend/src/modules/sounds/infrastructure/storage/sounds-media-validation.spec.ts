@@ -6,6 +6,7 @@ import {
   readProbedSoundDuration,
 } from './sounds-media-validation';
 import { ffmpegPath, runAudioProcess } from './sounds-audio-process';
+import { SoundsUploadManager } from './sounds-upload.manager';
 import {
   detectSoundSilence,
   probeSoundDurationSeconds,
@@ -16,6 +17,9 @@ it.each([
   ['.mp3', 'audio/mpeg'],
   ['.wav', 'audio/wav'],
   ['.wave', 'audio/x-wav'],
+  ['.ogg', 'audio/ogg'],
+  ['.ogg', 'application/ogg'],
+  ['.ogg', 'application/octet-stream'],
   ['.mp3', 'application/octet-stream'],
   ['.wav', undefined],
 ])(
@@ -29,6 +33,7 @@ it.each([
   ['.wav', 'audio/mpeg'],
   ['.mp3', 'text/html'],
   ['.mp3', 'audio/wav'],
+  ['.ogg', 'audio/wav'],
 ])('rejects an incompatible MIME type: %s %s', (extension, mime) => {
   expect(() => assertSoundMime(extension, mime)).toThrow('MIME');
 });
@@ -76,13 +81,14 @@ function audibleWav(): Buffer {
   return bytes;
 }
 
-it('validates real WAV/MP3 content and refuses renamed media and playlists', async () => {
+it('validates real WAV/MP3/OGG content and refuses renamed media and playlists', async () => {
   const directory = await fs.mkdtemp(
     path.join(os.tmpdir(), 'lila-media-contract-'),
   );
   let encodedDirectory: string | undefined;
   const wav = path.join(directory, 'source.wav');
   const mp3 = path.join(directory, 'source.mp3');
+  const ogg = path.join(directory, 'source.ogg');
   const renamed = path.join(directory, 'renamed.wav');
   const playlist = path.join(directory, 'playlist.wav');
   try {
@@ -96,6 +102,17 @@ it('validates real WAV/MP3 content and refuses renamed media and playlists', asy
     ]);
     expect(converted.code).toBe(0);
     expect(await probeSoundDurationSeconds(mp3, () => {})).toBeGreaterThan(0.4);
+    const convertedOgg = await runAudioProcess(ffmpegPath(), [
+      '-y',
+      '-i',
+      wav,
+      ogg,
+    ]);
+    expect(convertedOgg.code).toBe(0);
+    expect(await probeSoundDurationSeconds(ogg, () => {})).toBeCloseTo(0.5);
+    await expect(
+      probeSoundDurationSeconds(ogg, () => {}, '.wav'),
+    ).rejects.toThrow('format audio annoncé');
     await fs.copyFile(mp3, renamed);
     await expect(probeSoundDurationSeconds(renamed, () => {})).rejects.toThrow(
       'format audio annoncé',
@@ -107,12 +124,52 @@ it('validates real WAV/MP3 content and refuses renamed media and playlists', asy
     await expect(
       probeSoundDurationSeconds(playlist, () => {}),
     ).rejects.toThrow();
-    const encoded = await transcodeSoundToStableWav(mp3, () => {});
+    const encoded = await transcodeSoundToStableWav(ogg, () => {});
     encodedDirectory = encoded.tempDir;
     expect(
       await probeSoundDurationSeconds(encoded.outputPath, () => {}),
     ).toBeGreaterThan(0.4);
     expect(await detectSoundSilence(encoded.outputPath)).toBe(false);
+    const writeManifest = jest.fn().mockResolvedValue(undefined);
+    const upload = new SoundsUploadManager({
+      dataRoot: path.join(directory, 'stored'),
+      normalizeSoundKey: () => 'ClientOpened',
+      readManifest: async () => ({ updatedAt: '', sounds: {}, disabled: [] }),
+      writeManifest,
+      removeUnusedFiles: async () => 0,
+      notifyUpdated: async () => {},
+      storageError: () => new Error('Storage failure'),
+      ensureStorageCapacity: async () => {},
+      warn: () => {},
+    });
+    for (const [source, mime] of [
+      [wav, 'audio/wav'],
+      [ogg, 'audio/ogg'],
+    ]) {
+      const temporary = path.join(directory, `upload${path.extname(source)}`);
+      await fs.copyFile(source, temporary);
+      const entry = await upload.setSound(
+        'ClientOpened',
+        temporary,
+        path.basename(source),
+        mime,
+      );
+      const stored = path.join(
+        directory,
+        'stored',
+        'ClientOpened',
+        `${entry.sha256}.wav`,
+      );
+      expect((await fs.stat(stored)).size).toBe(entry.bytes);
+      expect(await probeSoundDurationSeconds(stored, () => {})).toBeGreaterThan(
+        0.4,
+      );
+      expect(writeManifest).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          sounds: { ClientOpened: entry },
+        }),
+      );
+    }
   } finally {
     if (encodedDirectory)
       await fs.rm(encodedDirectory, { recursive: true, force: true });

@@ -1,0 +1,103 @@
+import { authoringFailure } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import type { TrackZoneCollectionProgram } from './program';
+import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import {
+  authorArray as array,
+  authorId as id,
+  authorObject as object,
+} from '../../../engine/runtime/contracts/json-author-schema';
+
+const positive = { type: 'integer', minimum: 1, maximum: 10000 } as const;
+export const jsonTrackZoneCollectionSchema = object({
+  trackId: id,
+  diceId: id,
+  finishReason: id,
+  eventNamespace: id,
+  collectedEvent: id,
+  tiles: array(
+    object({
+      n: positive,
+      title: { type: 'string', minLength: 1, maxLength: 2000 },
+      description: { type: 'string', maxLength: 10000 },
+      type: { enum: ['card', 'finish'] },
+    }),
+    2,
+  ),
+  zones: array(
+    object({
+      id: positive,
+      minimumTile: positive,
+      maximumTile: positive,
+      deckId: id,
+      resourceId: id,
+    }),
+    1,
+  ),
+});
+
+export function assertTrackZoneCollectionReferences(
+  program: TrackZoneCollectionProgram,
+  components: readonly GameComponentDefinition[],
+  resources: ReadonlySet<string>,
+): void {
+  const fail = authoringFailure(
+    'game.json.trackZoneCollection',
+    program,
+    'Track-zone collection: ',
+  );
+  const track = components.find(
+    (component) =>
+      component.component === 'movement.track' &&
+      component.id === program.trackId,
+  );
+  if (
+    track?.component !== 'movement.track' ||
+    track.spaces !== program.tiles.length
+  )
+    fail('trackId', 'one tile per track position required');
+  if (
+    !components.some(
+      (component) =>
+        component.component === 'dice.set' && component.id === program.diceId,
+    )
+  )
+    fail('diceId', 'unknown dice');
+  if (program.tiles.at(-1)?.type !== 'finish')
+    fail(
+      `tiles[${program.tiles.length - 1}].type`,
+      'last tile must finish the race',
+    );
+  const zoneIds = new Set<number>();
+  for (const [i, zone] of program.zones.entries()) {
+    if (zoneIds.has(zone.id)) fail(`zones[${i}].id`, 'duplicate zone');
+    zoneIds.add(zone.id);
+    if (zone.minimumTile > zone.maximumTile)
+      fail(`zones[${i}].maximumTile`, 'inverted zone range');
+    if (!resources.has(zone.resourceId))
+      fail(`zones[${i}].resourceId`, 'unknown zone resource');
+    const deck = components.find(
+      (component) =>
+        component.component === 'cards.deck' && component.id === zone.deckId,
+    );
+    if (deck?.component !== 'cards.deck') {
+      fail(`zones[${i}].deckId`, 'unknown zone deck');
+      continue;
+    }
+    if (
+      deck.cards.some(
+        (card) =>
+          card === null ||
+          typeof card !== 'object' ||
+          !('id' in card) ||
+          !('attributes' in card) ||
+          card.attributes === null ||
+          typeof card.attributes !== 'object' ||
+          Reflect.get(card.attributes, 'zoneId') !== zone.id,
+      )
+    )
+      fail(
+        `zones[${i}].deckId`,
+        'zone cards require matching zoneId attributes',
+      );
+  }
+}

@@ -1,3 +1,8 @@
+import {
+  atAuthoringPath,
+  withAuthoringPath,
+} from '../contracts/authoring-origin';
+import type { ReadonlyState } from '../contracts/state-copy';
 import type { GameRng } from '../../../core/application/models/game-execution-context.model';
 import {
   GameNotFoundError,
@@ -49,7 +54,9 @@ export type QuizKitState = {
 
 export const quiz = {
   bank(definition: Omit<QuizDefinition, 'component'>): QuizDefinition {
-    const questions = validateQuizQuestions(definition.questions);
+    const questions = atAuthoringPath('questions', () =>
+      validateQuizQuestions(definition.questions),
+    );
     return deepFreeze({
       ...definition,
       component: 'quiz.bank',
@@ -65,11 +72,14 @@ function validateQuizQuestions<TQuestion extends QuizQuestion>(
     throw new GameContentValidationError('Trop de questions dans le contenu');
   }
   const ids = new Set<string>();
-  for (const question of questions) {
+  for (const [index, question] of questions.entries()) {
     if (ids.has(question.id)) {
-      throw new GameContentValidationError(
-        `Identifiant de question dupliqué: ${question.id}`,
-        { questionId: question.id },
+      throw withAuthoringPath(
+        new GameContentValidationError(
+          `Identifiant de question dupliqué: ${question.id}`,
+          { questionId: question.id },
+        ),
+        `[${index}].id`,
       );
     }
     ids.add(question.id);
@@ -79,9 +89,12 @@ function validateQuizQuestions<TQuestion extends QuizQuestion>(
       question.answerIndex < 0 ||
       question.answerIndex >= question.choices.length
     ) {
-      throw new GameContentValidationError(
-        `Réponse invalide pour la question ${question.id}`,
-        { questionId: question.id },
+      throw withAuthoringPath(
+        new GameContentValidationError(
+          `Réponse invalide pour la question ${question.id}`,
+          { questionId: question.id },
+        ),
+        `[${index}].${question.choices.length < 2 ? 'choices' : 'answerIndex'}`,
       );
     }
   }
@@ -403,7 +416,7 @@ export class GameQuizController {
 
 export function quizSessionChoices(
   question: QuizQuestion,
-  session: QuizSessionState,
+  session: ReadonlyState<QuizSessionState>,
 ): string[] {
   return session.choiceOrder
     ? session.choiceOrder.map((index) => question.choices[index])

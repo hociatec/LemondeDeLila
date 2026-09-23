@@ -1,4 +1,9 @@
 import {
+  atAuthoringPath,
+  withAuthoringPath,
+} from '../contracts/authoring-origin';
+import type { ReadonlyState } from '../contracts/state-copy';
+import {
   GameConfigurationError,
   GameNotFoundError,
   GameRuleViolationError,
@@ -30,14 +35,18 @@ export function createInventoryKitState(): InventoryKitState {
 
 export const inventory = {
   set(definition: Omit<InventoryDefinition, 'component'>): InventoryDefinition {
-    for (const itemId of definition.items ?? []) assertPlayerValueId(itemId);
-    if (
-      definition.items?.some((itemId) => !itemId.trim()) ||
-      new Set(definition.items ?? []).size !== (definition.items?.length ?? 0)
-    ) {
-      throw new GameConfigurationError(
-        `Catalogue d’inventaire invalide: ${definition.id}`,
-      );
+    const seen = new Set<string>();
+    for (const [index, itemId] of (definition.items ?? []).entries()) {
+      const path = `items[${index}]`;
+      atAuthoringPath(path, () => assertPlayerValueId(itemId));
+      if (!itemId.trim() || seen.has(itemId))
+        throw withAuthoringPath(
+          new GameConfigurationError(
+            `Catalogue d’inventaire invalide: ${definition.id}`,
+          ),
+          path,
+        );
+      seen.add(itemId);
     }
     return Object.freeze({
       ...definition,
@@ -365,7 +374,7 @@ function inventoryEventVisibility(
 }
 
 export function projectInventoryKitState(
-  state: InventoryKitState,
+  state: ReadonlyState<InventoryKitState>,
   viewerPlayerId: number | null,
   definitions: readonly InventoryDefinition[] = [],
 ): Record<

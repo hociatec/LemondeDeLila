@@ -1,9 +1,14 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import type { DeclarativeState } from '../../../engine/runtime/state/declarative-state';
 import { testGame } from '../../../engine/testing/public-api';
 
-import document from '../../../games/vents-sacres/lama/game.json';
+import documentExtensionSource from '../../../games/vents-sacres/lama/game.json';
 import manifest from '../../../games/vents-sacres/lama/manifest.json';
+const document = legacyExtensionFixture(
+  documentExtensionSource,
+  'discardPenaltyCards',
+);
 
 const gameDefinition = compileJsonGame(manifest, document);
 type LamaCard = 1 | 2 | 3 | 4 | 5 | 6 | 'LAMA';
@@ -38,10 +43,17 @@ describe('LAMA declarative game', () => {
       'cards-discard-penalty-quit',
     );
     await game.as(actor).do('cards-discard-penalty-quit', {});
-    const hiddenHand = (game.view(actor) as any).kits.cards.hands[
-      'cards-discard-penalty-hands'
-    ].byPlayer[String(actor)];
-    expect(hiddenHand).toEqual({ count: game.inspect.hand(actor).length });
+    expect(game.view(actor)).toHaveProperty(
+      [
+        'kits',
+        'cards',
+        'hands',
+        'cards-discard-penalty-hands',
+        'byPlayer',
+        String(actor),
+      ],
+      { count: game.inspect.hand(actor).length },
+    );
   });
 
   it('keeps hands private and replays a configured round', async () => {
@@ -69,8 +81,10 @@ describe('LAMA declarative game', () => {
       },
     });
     await game.as(1).do('game.configure', {});
-    const scores = (game.view(1) as any).kits?.score?.byPlayer;
-    expect(scores).toEqual({ '1': 0, '2': 0 });
+    expect(game.view(1)).toHaveProperty('kits.score.byPlayer', {
+      '1': 0,
+      '2': 0,
+    });
     const actor = game.state().turn?.currentPlayerId ?? 1;
     const actions = game.availableActions(actor);
     if (actions.includes('cards-discard-penalty-play')) {

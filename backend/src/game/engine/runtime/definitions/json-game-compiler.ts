@@ -17,28 +17,111 @@ import {
 } from './json-standard-victory';
 import { compileJsonActions } from './json-game-action-compiler';
 import { assertProgramReferences } from './json-program-reference-validation';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { AuthoringError, authoringValueAt } from '../contracts/authoring-error';
+import {
+  DefinitionValidationError,
+  jsonDefinitionFailure,
+  jsonCompilationOrigin,
+} from './definition-validation-error';
+import {
+  authoringProperty,
+  assertUniqueAuthorValues,
+} from '../contracts/authoring-diagnostics';
 import { assertGameManifestMatches } from '../../../core/application/helpers/game-manifest-validation';
 import type { JsonGameManifest } from './json-game-manifest';
-import type { JsonGameViewAugmentation } from '../contracts/json-effect-pack';
-import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
+import type {
+  JsonEffectPackCatalog,
+  JsonGameViewAugmentation,
+} from '../contracts/json-effect-pack-catalog';
 
 import { createJsonGameSchema } from './json-game-schema';
 
 export type { JsonGameManifest } from './json-game-manifest';
 
-export function compileJsonGame(
+export function compileJsonGame<
+  Catalog extends JsonEffectPackCatalog = readonly [],
+>(
   manifest: JsonGameManifest,
   source: unknown,
   assets?: JsonContentAssets,
   options: { externalContent?: boolean } = {},
-  jsonEffectPacks: JsonEffectPackCatalog = [],
+  jsonEffectPacks?: Catalog,
 ) {
-  assertGameManifestMatches(manifest, manifest);
-  if (!manifest.code.trim())
-    throw new GameConfigurationError('Empty JSON game identifier');
   const resolvedSource = resolveJsonContent(source, assets);
-  const schema = createJsonGameSchema(jsonEffectPacks);
+  try {
+    return compileResolvedJsonGame(
+      manifest,
+      resolvedSource,
+      options,
+      jsonEffectPacks ?? [],
+    );
+  } catch (caught) {
+    let error: unknown = caught;
+    const field = jsonCompilationOrigin(error, manifest.code, resolvedSource);
+    if (error instanceof Error && field !== undefined) {
+      error = new AuthoringError(
+        `game.json.${field}`,
+        error.message,
+        authoringValueAt(resolvedSource, field),
+      );
+    }
+    if (error instanceof DefinitionValidationError) {
+      const field = jsonDefinitionFailure(error, resolvedSource);
+      if (field !== undefined)
+        error = new AuthoringError(
+          `game.json.${field}`,
+          error.reason,
+          authoringValueAt(resolvedSource, field),
+        );
+    }
+    if (!(error instanceof AuthoringError)) throw error;
+    const extensions = authoringValueAt(resolvedSource, 'extensions');
+    if (Array.isArray(extensions)) {
+      for (const [index, extension] of extensions.entries()) {
+        const type = authoringValueAt(extension, 'type');
+        if (typeof type !== 'string') continue;
+        const prefix = `game.json.${type}`;
+        if (
+          error.path !== prefix &&
+          !error.path.startsWith(`${prefix}.`) &&
+          !error.path.startsWith(`${prefix}[`)
+        )
+          continue;
+        const path = `game.json.extensions[${index}].config${error.path.slice(prefix.length)}`;
+        throw new AuthoringError(
+          path,
+          error.expected,
+          authoringValueAt(resolvedSource, path.slice('game.json.'.length)),
+          error.message.slice(error.path.length + 2),
+          error.hint,
+        );
+      }
+    }
+    throw error;
+  }
+}
+
+function compileResolvedJsonGame<Catalog extends JsonEffectPackCatalog>(
+  manifest: JsonGameManifest,
+  resolvedSource: unknown,
+  options: { externalContent?: boolean },
+  jsonEffectPacks: Catalog,
+) {
+  assertGameManifestMatches(manifest, manifest, (field, received) => {
+    throw new AuthoringError(
+      field ? `manifest.${field}` : 'manifest',
+      'valid game manifest metadata',
+      received,
+    );
+  });
+  if (!manifest.code.trim())
+    throw new AuthoringError(
+      'manifest.code',
+      'nonempty identifier',
+      manifest.code,
+      'Empty JSON game identifier',
+    );
+  const schema = createJsonGameSchema(jsonEffectPacks, true);
   const parse = (value: unknown) => parseJsonGame(value, 'game.json', schema);
   const metadata = parse(resolvedSource);
   const content = defineGameContent(manifest.code, resolvedSource, {
@@ -50,7 +133,11 @@ export function compileJsonGame(
   });
   const document = content.data;
   const fail = (path: string, reason: string): never => {
-    throw new GameConfigurationError(`${manifest.code}.${path}: ${reason}`);
+    throw new AuthoringError(
+      `game.json.${path}`,
+      reason,
+      authoringValueAt(document, path),
+    );
   };
   const programs = compileJsonPrograms(document, jsonEffectPacks);
   const { patterns } = programs;
@@ -62,7 +149,7 @@ export function compileJsonGame(
   const buildDefinition = () =>
     defineGame<Record<string, never>>()<
       typeof actions,
-      JsonGameViewAugmentation,
+      JsonGameViewAugmentation<Catalog>,
       typeof document.setup,
       typeof events,
       NonNullable<typeof patterns>,
@@ -144,18 +231,24 @@ function assertDocumentReferences(
   );
   assertProgramReferences(document, patterns, manifest, fail, jsonEffectPacks);
   assertSelections(document, patterns, fail, jsonEffectPacks);
-  for (const shortcut of document.shortcuts ?? []) {
+  for (const [index, shortcut] of (document.shortcuts ?? []).entries()) {
     if (
       shortcut.type === 'action' &&
       !Object.hasOwn(document.actions, shortcut.actionType)
     )
-      fail('shortcuts', 'unknown action');
+      fail(`shortcuts[${index}].actionType`, 'unknown action');
   }
-  if (resources.size !== document.resourceIds.length)
-    fail('resourceIds', 'duplicate resource');
+  assertUniqueAuthorValues(
+    document.resourceIds,
+    (i) => `resourceIds[${i}]`,
+    fail,
+  );
   for (const resource of Object.keys(document.setup.resources ?? {})) {
     if (!resources.has(resource))
-      fail('setup.resources', `unknown resource ${resource}`);
+      fail(
+        authoringProperty('setup.resources', resource),
+        `unknown resource ${resource}`,
+      );
   }
   if (
     document.victory.kind === 'resource-at-least' &&
@@ -178,15 +271,22 @@ function assertSelections(
     for (const choiceId of extension.collectChoiceIds(source))
       if (choiceId !== undefined) choices.add(choiceId);
   }
-  for (const action of Object.values(document.actions)) {
+  for (const [actionId, action] of Object.entries(document.actions)) {
     if (!('selectCards' in action)) continue;
     const program = action.selectCards;
     if (choices.has(program.choiceId) || program.choiceId.startsWith('engine.'))
-      fail('actions.selectCards.choiceId', 'duplicate or reserved choice');
+      fail(
+        `${authoringProperty('actions', actionId)}.selectCards.choiceId`,
+        'duplicate or reserved choice',
+      );
     choices.add(program.choiceId);
-    assertCardSelectionReferences(program, [
-      ...document.components,
-      ...(patterns ?? []).flatMap((pattern) => pattern.components ?? []),
-    ]);
+    assertCardSelectionReferences(
+      program,
+      [
+        ...document.components,
+        ...(patterns ?? []).flatMap((pattern) => pattern.components ?? []),
+      ],
+      `${authoringProperty('game.json.actions', actionId)}.selectCards`,
+    );
   }
 }

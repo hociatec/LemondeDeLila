@@ -1,8 +1,13 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
-import document from './game.json';
+import documentExtensionSource from './game.json';
 import catalogue from './content/catalogue.json';
+const document = legacyExtensionFixture(
+  documentExtensionSource,
+  'bidirectionalCollisionRace',
+);
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/catalogue.json': catalogue,

@@ -1,3 +1,5 @@
+import { authoringProperty } from './authoring-diagnostics';
+import { AuthoringError } from './authoring-error';
 /** Small, closed JSON Schema vocabulary shared by authoring grammars. */
 export type AuthorSchema = {
   type?:
@@ -76,12 +78,22 @@ export function assertAuthorJson(
   const accountText = (text: string, location: string): void => {
     textBytes += Buffer.byteLength(text, 'utf8');
     if (text.length > 65536 || textBytes > 8 * 1024 * 1024)
-      throw new Error(`${location}: JSON text limit exceeded`);
+      throw new AuthoringError(
+        location,
+        'bounded JSON text',
+        text,
+        'JSON text limit exceeded',
+      );
   };
   const ancestors = new Set<object>();
   function visit(current: unknown, location: string, depth: number): void {
     if (++nodes > 100000 || depth > 64)
-      throw new Error(`${location}: JSON limit exceeded`);
+      throw new AuthoringError(
+        location,
+        'bounded JSON tree',
+        current,
+        'JSON limit exceeded',
+      );
     if (
       current === null ||
       typeof current === 'boolean' ||
@@ -97,38 +109,33 @@ export function assertAuthorJson(
     )
       return;
     if (typeof current !== 'object' || !current)
-      throw new Error(`${location}: JSON value expected`);
-    if (ancestors.has(current)) throw new Error(`${location}: cyclic JSON`);
-    const prototype = Object.getPrototypeOf(current) as object | null;
-    const constructor: unknown =
-      prototype &&
-      Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value;
-    const plainPrototype =
-      prototype === null ||
-      prototype === Object.prototype ||
-      (Object.getPrototypeOf(prototype) === null &&
-        typeof constructor === 'function' &&
-        constructor.name === 'Object');
-    if (!Array.isArray(current) && !plainPrototype) {
-      throw new Error(`${location}: plain JSON object expected`);
-    }
+      throw new AuthoringError(
+        location,
+        'JSON value',
+        current,
+        'JSON value expected',
+      );
+    if (ancestors.has(current))
+      throw new AuthoringError(
+        location,
+        'acyclic JSON',
+        current,
+        'cyclic JSON',
+      );
+    assertPlainJsonObject(current, location);
     ancestors.add(current);
     for (const key of Reflect.ownKeys(current)) {
       if (Array.isArray(current) && key === 'length') continue;
-      if (
-        typeof key !== 'string' ||
-        ['__proto__', 'prototype', 'constructor'].includes(key)
-      )
-        throw new Error(`${location}: forbidden key`);
+      assertAuthorKey(current, key, location);
       accountText(key, location);
-      if (
-        Array.isArray(current) &&
-        (!/^(0|[1-9][0-9]*)$/.test(key) || Number(key) >= current.length)
-      )
-        throw new Error(`${location}: array index expected`);
       const descriptor = Object.getOwnPropertyDescriptor(current, key);
       if (!descriptor || !('value' in descriptor) || !descriptor.enumerable)
-        throw new Error(`${location}.${key}: JSON data expected`);
+        throw new AuthoringError(
+          `${location}.${key}`,
+          'enumerable data property',
+          undefined,
+          'JSON data expected',
+        );
       if (
         allowUndefinedOptionalFields &&
         !Array.isArray(current) &&
@@ -141,10 +148,58 @@ export function assertAuthorJson(
       Array.isArray(current) &&
       Object.keys(current).length !== current.length
     )
-      throw new Error(`${location}: dense JSON array expected`);
+      throw new AuthoringError(
+        location,
+        'dense JSON array',
+        current,
+        'dense JSON array expected',
+      );
     ancestors.delete(current);
   }
   visit(value, path, 0);
+}
+
+function assertAuthorKey(
+  current: object,
+  key: string | symbol,
+  location: string,
+): asserts key is string {
+  if (
+    typeof key !== 'string' ||
+    ['__proto__', 'prototype', 'constructor'].includes(key)
+  )
+    throw new AuthoringError(location, 'safe JSON key', key, 'forbidden key');
+  if (
+    Array.isArray(current) &&
+    (!/^(0|[1-9][0-9]*)$/.test(key) || Number(key) >= current.length)
+  )
+    throw new AuthoringError(
+      location,
+      'array index',
+      key,
+      'array index expected',
+    );
+}
+
+function assertPlainJsonObject(current: object, location: string): void {
+  const prototype = Object.getPrototypeOf(current) as object | null;
+  const constructor: unknown =
+    prototype &&
+    Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value;
+  const plainPrototype =
+    prototype === null ||
+    prototype === Object.prototype ||
+    (Object.getPrototypeOf(prototype) === null &&
+      typeof constructor === 'function' &&
+      constructor.name === 'Object');
+  if (!Array.isArray(current) && !plainPrototype) {
+    throw new AuthoringError(
+      location,
+      'plain JSON object',
+      current,
+      'plain JSON object expected',
+    );
+  }
 }
 
 export function validateAuthorSchema(
@@ -155,7 +210,7 @@ export function validateAuthorSchema(
   allowUndefinedOptionalFields = false,
 ): void {
   function invalid(reason: string): never {
-    throw new Error(`${path}: ${reason}`);
+    throw new AuthoringError(path, reason, value);
   }
   if (schema.$ref) {
     const target = resolveSchemaReference(schema.$ref, definitions, path);
@@ -182,31 +237,13 @@ export function validateAuthorSchema(
   if (schema.type === 'object') {
     if (value === null || typeof value !== 'object' || Array.isArray(value))
       invalid('object expected');
-    const record = value as Record<string, unknown>;
-    for (const key of schema.required ?? [])
-      if (!Object.hasOwn(record, key)) invalid(`missing ${key}`);
-    for (const [key, entry] of Object.entries(record)) {
-      const property =
-        schema.properties && Object.hasOwn(schema.properties, key)
-          ? schema.properties[key]
-          : schema.additionalProperties;
-      if (!property) invalid(`unknown field ${key}`);
-      if (
-        entry === undefined &&
-        allowUndefinedOptionalFields &&
-        schema.properties &&
-        Object.hasOwn(schema.properties, key) &&
-        !schema.required?.includes(key)
-      )
-        continue;
-      validateAuthorSchema(
-        entry,
-        property,
-        definitions,
-        `${path}.${key}`,
-        allowUndefinedOptionalFields,
-      );
-    }
+    validateObjectSchema(
+      value as Record<string, unknown>,
+      schema,
+      definitions,
+      path,
+      allowUndefinedOptionalFields,
+    );
   } else if (schema.type === 'array') {
     if (!Array.isArray(value)) invalid('array expected');
     const array: unknown[] = value;
@@ -227,6 +264,52 @@ export function validateAuthorSchema(
   } else validateScalarSchema(value, schema, path);
 }
 
+function validateObjectSchema(
+  value: Record<string, unknown>,
+  schema: AuthorSchema,
+  definitions: Readonly<Record<string, AuthorSchema>>,
+  path: string,
+  allowUndefinedOptionalFields: boolean,
+): void {
+  const record = value;
+  for (const key of schema.required ?? [])
+    if (!Object.hasOwn(record, key))
+      throw new AuthoringError(
+        authoringProperty(path, key),
+        'required property',
+        undefined,
+        `missing ${key}`,
+      );
+  for (const [key, entry] of Object.entries(record)) {
+    const property =
+      schema.properties && Object.hasOwn(schema.properties, key)
+        ? schema.properties[key]
+        : schema.additionalProperties;
+    if (!property)
+      throw new AuthoringError(
+        authoringProperty(path, key),
+        'declared property',
+        entry,
+        `unknown field ${key}`,
+      );
+    if (
+      entry === undefined &&
+      allowUndefinedOptionalFields &&
+      schema.properties &&
+      Object.hasOwn(schema.properties, key) &&
+      !schema.required?.includes(key)
+    )
+      continue;
+    validateAuthorSchema(
+      entry,
+      property,
+      definitions,
+      authoringProperty(path, key),
+      allowUndefinedOptionalFields,
+    );
+  }
+}
+
 function validateSchemaUnion(
   value: unknown,
   schema: AuthorSchema & { oneOf: readonly AuthorSchema[] },
@@ -235,12 +318,12 @@ function validateSchemaUnion(
   allowUndefinedOptionalFields: boolean,
 ): void {
   function invalid(reason: string): never {
-    throw new Error(`${path}: ${reason}`);
+    throw new AuthoringError(path, reason, value);
   }
   // Discriminated unions have exactly one candidate; avoid exponential work
   // and enormous errors for deeply nested effect and condition trees.
   if (value && typeof value === 'object' && !Array.isArray(value)) {
-    for (const discriminator of ['kind', 'component']) {
+    for (const discriminator of ['kind', 'component', 'type']) {
       if (
         schema.oneOf.every(
           (alternative) =>
@@ -255,7 +338,13 @@ function validateSchemaUnion(
           (alternative) =>
             alternative.properties?.[discriminator]?.const === actual,
         );
-        if (!candidate) invalid(`unsupported ${discriminator}`);
+        if (!candidate)
+          throw new AuthoringError(
+            authoringProperty(path, discriminator),
+            'supported discriminator',
+            actual,
+            `unsupported ${discriminator}`,
+          );
         return validateAuthorSchema(
           value,
           candidate,
@@ -267,6 +356,7 @@ function validateSchemaUnion(
     }
   }
   const failures: string[] = [];
+  const structuralFailures: AuthoringError[] = [];
   let matches = 0;
   for (const alternative of schema.oneOf) {
     try {
@@ -280,8 +370,24 @@ function validateSchemaUnion(
       matches++;
     } catch (error) {
       failures.push(error instanceof Error ? error.message : String(error));
+      if (
+        error instanceof AuthoringError &&
+        alternative.type === 'object' &&
+        value !== null &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        alternative.required?.every((key) => Object.hasOwn(value, key)) &&
+        Object.keys(value).every(
+          (key) =>
+            Object.hasOwn(alternative.properties ?? {}, key) ||
+            !!alternative.additionalProperties,
+        )
+      )
+        structuralFailures.push(error);
     }
   }
+  if (matches === 0 && structuralFailures.length === 1)
+    throw structuralFailures[0];
   if (matches !== 1)
     invalid(`expected one valid variant (${failures.join('; ')})`);
   return;
@@ -293,7 +399,7 @@ function validateScalarSchema(
   path: string,
 ): void {
   function invalid(reason: string): never {
-    throw new Error(`${path}: ${reason}`);
+    throw new AuthoringError(path, reason, value);
   }
   if (schema.type === 'string') {
     if (typeof value !== 'string') invalid('string expected');
@@ -330,6 +436,12 @@ function resolveSchemaReference(
   const target = Object.hasOwn(definitions, name)
     ? definitions[name]
     : undefined;
-  if (!target) throw new Error(`${path}: unknown schema ${name}`);
+  if (!target)
+    throw new AuthoringError(
+      path,
+      'known schema reference',
+      reference,
+      `unknown schema ${name}`,
+    );
   return target;
 }

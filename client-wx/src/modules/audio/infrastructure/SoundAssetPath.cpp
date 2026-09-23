@@ -118,6 +118,22 @@ std::filesystem::path SoundAssetPathResolver::Resolve(domain::SoundCue cue)
         : soundDirectory_ / file;
 }
 
+std::filesystem::path SoundAssetPathResolver::ResolvePreview(domain::SoundCue cue)
+{
+    manifestLoaded_ = false;
+    remoteSounds_.clear();
+    disabledSounds_.clear();
+    LoadRemoteManifest();
+    const auto* descriptor = domain::FindSoundDescriptor(cue);
+    if (descriptor == nullptr) return {};
+    std::string soundId(descriptor->key);
+    if (!soundId.empty()) soundId.front() = static_cast<char>(std::toupper(soundId.front()));
+    if (const auto found = remoteSounds_.find(soundId); found != remoteSounds_.end())
+        return ResolveRemote(soundId, found->second);
+    const auto file = GetLocalSoundFile(cue);
+    return file.empty() ? std::filesystem::path{} : soundDirectory_ / file;
+}
+
 void SoundAssetPathResolver::LoadRemoteManifest()
 {
     if (manifestLoaded_) return;
@@ -174,7 +190,8 @@ std::filesystem::path SoundAssetPathResolver::ResolveRemote(
             url, {}, sound.bytes);
         if (content.size() != sound.bytes || Sha256(content) != sound.sha256) return {};
         std::filesystem::create_directories(directory);
-        const auto temporary = target.string() + ".tmp";
+        auto temporary = target;
+        temporary += L".tmp";
         std::filesystem::remove(temporary);
         std::ofstream output(temporary, std::ios::binary | std::ios::trunc);
         output.write(content.data(), static_cast<std::streamsize>(content.size()));

@@ -4,6 +4,7 @@
 #include <array>
 #include <charconv>
 #include <optional>
+#include <string>
 
 #include "modules/audio/application/IAudioBackend.h"
 #include "modules/audio/application/IAudioSettingsProvider.h"
@@ -21,6 +22,11 @@ AudioService::AudioService(IAudioBackend& backend, const IAudioSettingsProvider&
 AudioService::~AudioService()
 {
     ShutdownImmediately();
+}
+
+void AudioService::Preview(std::optional<domain::SoundCue> cue)
+{
+    if (!shuttingDown_.load(std::memory_order_acquire)) backend_.Preview(cue);
 }
 
 void AudioService::Play(domain::SoundCue cue)

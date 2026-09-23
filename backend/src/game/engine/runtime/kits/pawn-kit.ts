@@ -1,3 +1,4 @@
+import { withAuthoringPath } from '../contracts/authoring-origin';
 import {
   GameConfigurationError,
   GameNotFoundError,
@@ -53,17 +54,25 @@ export const pawns = {
     assertPawnTrack(definition);
     const perPlayer = definition.perPlayer ?? 1;
     const ids = definition.pawns.map((pawn) => pawn.id);
+    const fail = (path: string): never => {
+      throw withAuthoringPath(
+        new GameConfigurationError('Catalogue de pions invalide'),
+        path,
+      );
+    };
+    if (ids.length === 0 || ids.length > 10_000) fail('pawns');
+    const seen = new Set<string>();
+    for (const [index, id] of ids.entries()) {
+      if (!id.trim() || id.length > 128 || seen.has(id))
+        fail(`pawns[${index}].id`);
+      seen.add(id);
+    }
     if (
-      ids.length === 0 ||
-      ids.length > 10_000 ||
-      ids.some((id) => !id.trim() || id.length > 128) ||
-      new Set(ids).size !== ids.length ||
       !Number.isSafeInteger(perPlayer) ||
       perPlayer < 1 ||
       perPlayer > ids.length
-    ) {
-      throw new GameConfigurationError('Catalogue de pions invalide');
-    }
+    )
+      fail('perPlayer');
     return Object.freeze({
       ...definition,
       component: 'pawn.set',
@@ -82,7 +91,10 @@ function assertPawnTrack(
     definition.spaces !== undefined &&
     (!Number.isSafeInteger(definition.spaces) || definition.spaces < 1)
   )
-    throw new GameConfigurationError('Invalid pawn track size');
+    throw withAuthoringPath(
+      new GameConfigurationError('Invalid pawn track size'),
+      'spaces',
+    );
   for (const [field, value] of Object.entries({
     initialPosition: definition.initialPosition,
     entryPosition: definition.entryPosition,
@@ -94,13 +106,19 @@ function assertPawnTrack(
       value < (field === 'initialPosition' ? -1 : 0) ||
       (definition.spaces !== undefined && value >= definition.spaces)
     )
-      throw new GameConfigurationError(`Invalid pawn track ${field}`);
+      throw withAuthoringPath(
+        new GameConfigurationError(`Invalid pawn track ${field}`),
+        field,
+      );
   }
   if (
     definition.entryRoll !== undefined &&
     (!Number.isSafeInteger(definition.entryRoll) || definition.entryRoll < 1)
   )
-    throw new GameConfigurationError('Invalid pawn entry roll');
+    throw withAuthoringPath(
+      new GameConfigurationError('Invalid pawn entry roll'),
+      'entryRoll',
+    );
 }
 
 export class GamePawnController {

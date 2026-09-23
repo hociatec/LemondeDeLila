@@ -1,9 +1,20 @@
+import {
+  assertStaticObject,
+  validateStaticQuestion,
+} from './static-content-object-validation';
+import {
+  atAuthoringPath,
+  authoringPathOf,
+  withAuthoringPath,
+} from '../contracts/authoring-origin';
+import { authoringProperty } from '../contracts/authoring-diagnostics';
 import { stableContentVersion } from './content-version';
 import { deepFreeze, cloneStaticContent } from './content-immutability';
 import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
 import type { QuizQuestion } from './quiz-content-contract';
 import { loadExternalGameContent } from './external-content-release';
 import { parseContentJson } from './content-parser';
+import { AuthoringError } from '../contracts/authoring-error';
 
 export const GAME_CONTENT_KIND = 'lila.game-content' as const;
 
@@ -93,6 +104,7 @@ export function defineGameContent<TData extends object>(
         : {}),
     });
   } catch (error) {
+    if (error instanceof AuthoringError) throw error;
     if (error instanceof GameContentValidationError) throw error;
     throw new GameContentValidationError(`Contenu invalide pour ${gameId}`, {
       gameId,
@@ -239,23 +251,25 @@ export function assertUniqueContentIds(
     );
   }
   const ids = new Set<string>();
-  for (const entry of entries) {
-    const id = typeof entry.id === 'string' ? entry.id.trim() : entry.id;
-    if (
-      id === '' ||
-      (typeof id === 'string' && id.length > 128) ||
-      (typeof id === 'number' && !Number.isSafeInteger(id))
-    ) {
-      throw new GameContentValidationError(`Identifiant de ${kind} vide`);
-    }
-    const key = contentIdKey(id);
-    if (ids.has(key)) {
-      throw new GameContentValidationError(
-        `Identifiant de ${kind} dupliqué: ${id}`,
-        { id, kind },
-      );
-    }
-    ids.add(key);
+  for (const [index, entry] of entries.entries()) {
+    atAuthoringPath(`[${index}].id`, () => {
+      const id = typeof entry.id === 'string' ? entry.id.trim() : entry.id;
+      if (
+        id === '' ||
+        (typeof id === 'string' && id.length > 128) ||
+        (typeof id === 'number' && !Number.isSafeInteger(id))
+      ) {
+        throw new GameContentValidationError(`Identifiant de ${kind} vide`);
+      }
+      const key = contentIdKey(id);
+      if (ids.has(key)) {
+        throw new GameContentValidationError(
+          `Identifiant de ${kind} dupliqué: ${id}`,
+          { id, kind },
+        );
+      }
+      ids.add(key);
+    });
   }
 }
 
@@ -267,6 +281,20 @@ export function validateStaticContent(
   value: unknown,
   path: string,
   visited = new Set<object>(),
+): void {
+  try {
+    validateStaticContentValue(value, path, visited);
+  } catch (error) {
+    if (error instanceof Error && authoringPathOf(error) === undefined)
+      withAuthoringPath(error, path);
+    throw error;
+  }
+}
+
+function validateStaticContentValue(
+  value: unknown,
+  path: string,
+  visited: Set<object>,
 ): void {
   if (value == null || typeof value !== 'object') {
     if (['function', 'symbol', 'bigint'].includes(typeof value)) {
@@ -308,37 +336,17 @@ export function validateStaticContent(
     visited.delete(value);
     return;
   }
-  const prototype: object | null = Reflect.getPrototypeOf(value);
-  if (
-    prototype !== null &&
-    prototype !== Object.prototype &&
-    !(
-      Object.getPrototypeOf(prototype) === null &&
-      prototype.constructor?.name === 'Object'
-    )
-  ) {
-    throw new GameContentValidationError(`Objet non statique dans ${path}`);
-  }
-  for (const key of Reflect.ownKeys(value)) {
-    const descriptor = Object.getOwnPropertyDescriptor(value, key);
-    if (
-      !descriptor ||
-      typeof key === 'symbol' ||
-      descriptor.get ||
-      descriptor.set
-    ) {
-      throw new GameContentValidationError(
-        `Propriete non statique dans ${path}`,
-      );
-    }
-  }
+  assertStaticObject(value, path);
   const record = value as Record<string, unknown>;
   if ('id' in record && !isContentId(record.id)) {
-    throw new GameContentValidationError(`Identifiant invalide dans ${path}`);
+    throw withAuthoringPath(
+      new GameContentValidationError(`Identifiant invalide dans ${path}`),
+      `${path}.id`,
+    );
   }
-  if ('answerIndex' in record) validateQuestion(record, path);
+  if ('answerIndex' in record) validateStaticQuestion(record, path);
   for (const [key, nested] of Object.entries(record)) {
-    validateStaticContent(nested, `${path}.${key}`, visited);
+    validateStaticContent(nested, authoringProperty(path, key), visited);
   }
   visited.delete(value);
 }
@@ -347,17 +355,19 @@ function validateIdentifiedCollection(
   entries: readonly unknown[],
   path: string,
 ): void {
-  const identified = entries.filter(
-    (entry): entry is Record<string, unknown> =>
-      isRecord(entry) && 'id' in entry,
+  const identified = entries.flatMap((entry, index) =>
+    isRecord(entry) && 'id' in entry ? [{ entry, index }] : [],
   );
   if (identified.length === 0) return;
-  const hasLinks = identified.some((entry) => Array.isArray(entry.links));
+  const hasLinks = identified.some(({ entry }) => Array.isArray(entry.links));
   const ids = new Set<string>();
-  for (const [index, entry] of identified.entries()) {
+  for (const { index, entry } of identified) {
     if (!isContentId(entry.id)) {
-      throw new GameContentValidationError(
-        `Identifiant invalide dans ${path}[${index}]`,
+      throw withAuthoringPath(
+        new GameContentValidationError(
+          `Identifiant invalide dans ${path}[${index}]`,
+        ),
+        `${path}[${index}].id`,
       );
     }
     if (!hasLinks) continue;
@@ -366,42 +376,27 @@ function validateIdentifiedCollection(
         ? `${entry.component}:${contentIdKey(entry.id)}`
         : contentIdKey(entry.id);
     if (ids.has(key)) {
-      throw new GameContentValidationError(
-        `Identifiant dupliqué dans ${path}: ${String(entry.id)}`,
+      throw withAuthoringPath(
+        new GameContentValidationError(
+          `Identifiant dupliqué dans ${path}: ${String(entry.id)}`,
+        ),
+        `${path}[${index}].id`,
       );
     }
     ids.add(key);
   }
-  for (const entry of identified) {
+  for (const { index, entry } of identified) {
     if (!Array.isArray(entry.links)) continue;
-    for (const targetId of entry.links) {
+    for (const [linkIndex, targetId] of entry.links.entries()) {
       if (!isContentId(targetId) || !ids.has(contentIdKey(targetId))) {
-        throw new GameContentValidationError(
-          `Référence inconnue dans ${path}: ${String(entry.id)} → ${String(targetId)}`,
+        throw withAuthoringPath(
+          new GameContentValidationError(
+            `Référence inconnue dans ${path}: ${String(entry.id)} → ${String(targetId)}`,
+          ),
+          `${path}[${index}].links[${linkIndex}]`,
         );
       }
     }
-  }
-}
-
-function validateQuestion(
-  question: Record<string, unknown>,
-  path: string,
-): void {
-  if (
-    !Array.isArray(question.choices) ||
-    question.choices.length < 2 ||
-    !question.choices.every(
-      (choice) => typeof choice === 'string' && choice.trim().length > 0,
-    ) ||
-    question.choices.some(
-      (choice: unknown) => typeof choice === 'string' && choice.length > 2_000,
-    ) ||
-    !Number.isSafeInteger(question.answerIndex) ||
-    Number(question.answerIndex) < 0 ||
-    Number(question.answerIndex) >= question.choices.length
-  ) {
-    throw new GameContentValidationError(`Question invalide dans ${path}`);
   }
 }
 

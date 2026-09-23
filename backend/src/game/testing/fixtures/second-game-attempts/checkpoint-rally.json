@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "1",
+  "definitionVersion": "1",
+  "category": "test",
+  "world": "reuse-attempts",
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "directionalHazard",
+      "spaces": 6,
+      "overshoot": "wrap"
+    }
+  ],
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "situations",
+      "cards": [
+        {
+          "id": 1,
+          "title": "Clear road",
+          "text": "No incident",
+          "kind": "neutral",
+          "effects": []
+        }
+      ],
+      "shuffle": false
+    }
+  ],
+  "setup": {
+    "startRound": false,
+    "counters": {
+      "race-hazard.next-player-delta": 0
+    },
+    "firstPlayer": "first",
+    "resources": {
+      "checkpoints": 0
+    },
+    "tracks": {
+      "directionalHazard": {
+        "1": 4,
+        "2": 0,
+        "3": 1
+      }
+    }
+  },
+  "resourceIds": [
+    "race-hazard.last-roll",
+    "race-hazard.last-move",
+    "race-hazard.idle-turns",
+    "checkpoints"
+  ],
+  "shortcuts": [],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": [
+        "advance"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "advance": {
+      "effects": [
+        {
+          "kind": "custom",
+          "effectId": "race-hazard.move",
+          "data": {
+            "delta": 1
+          }
+        },
+        {
+          "kind": "conditional",
+          "condition": {
+            "kind": "track-position",
+            "trackId": "directionalHazard",
+            "position": 0
+          },
+          "then": [
+            {
+              "kind": "gain-resource",
+              "resource": "checkpoints",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "victory": {
+    "kind": "resource-at-least",
+    "resource": "checkpoints",
+    "amount": 3
+  },
+  "extensions": [
+    {
+      "type": "directionalHazardRace",
+      "config": {
+        "trackId": "directionalHazard",
+        "diceId": "main",
+        "deckId": "situations",
+        "nextDeltaChoiceId": "race-hazard.next-delta",
+        "maxDepth": 16,
+        "finishReason": "finish-line",
+        "resources": {
+          "lastRoll": "race-hazard.last-roll",
+          "lastMove": "race-hazard.last-move",
+          "idleTurns": "race-hazard.idle-turns"
+        },
+        "counterId": "race-hazard.next-player-delta",
+        "mirrorStatusId": "race-hazard.mirror-roll",
+        "tiles": [
+          {
+            "label": "Checkpoint 0",
+            "description": "Circuit segment",
+            "isNeutral": true
+          },
+          {
+            "label": "Checkpoint 1",
+            "description": "Circuit segment",
+            "isNeutral": true
+          },
+          {
+            "label": "Checkpoint 2",
+            "description": "Circuit segment",
+            "isNeutral": true
+          },
+          {
+            "label": "Checkpoint 3",
+            "description": "Circuit segment",
+            "isNeutral": true
+          },
+          {
+            "label": "Checkpoint 4",
+            "description": "Circuit segment",
+            "isNeutral": true
+          },
+          {
+            "label": "Checkpoint 5",
+            "description": "Circuit segment",
+            "isNeutral": true
+          }
+        ],
+        "cards": [
+          {
+            "id": 1,
+            "title": "Clear road",
+            "text": "No incident",
+            "kind": "neutral",
+            "effects": []
+          }
+        ],
+        "parameters": {
+          "checkpointSpan": 5,
+          "shieldAdvance": 4,
+          "replayAdvance": 3,
+          "swapAdvance": 2,
+          "leaderRetreat": -2,
+          "othersAdvance": 2,
+          "lastAdvance": 3,
+          "retreatRecovery": 3,
+          "checkpointSuccess": 4,
+          "checkpointFailure": -1,
+          "idleThreshold": 2,
+          "idleAdvance": 5,
+          "sharedAdvance": 2,
+          "randomSides": 1,
+          "globalRetreat": -2,
+          "globalAdvance": 2
+        },
+        "victoryMode": "external"
+      }
+    }
+  ]
+}

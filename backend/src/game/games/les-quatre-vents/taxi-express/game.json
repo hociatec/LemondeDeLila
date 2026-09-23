@@ -50,7 +50,9 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": ["roll"],
+      "actions": [
+        "roll"
+      ],
       "terminal": true
     }
   },
@@ -63,20 +65,25 @@
   "victory": {
     "kind": "by-delivery-race"
   },
-  "deliveryRace": {
-    "trackId": "city",
-    "diceId": "main",
-    "clientDeckId": "clients",
-    "clientHandId": "taxi-clients",
-    "eventDeckId": "events",
-    "destinationAttribute": "destinationId",
-    "blockedPositionAttribute": "blockedTileId",
-    "positionOffset": 1,
-    "targetScore": 5,
-    "finishReason": "five-trips",
-    "eventNamespace": "taxi",
-    "tiles": {
-      "$content": "content/board.json#/tiles"
+  "extensions": [
+    {
+      "type": "deliveryRace",
+      "config": {
+        "trackId": "city",
+        "diceId": "main",
+        "clientDeckId": "clients",
+        "clientHandId": "taxi-clients",
+        "eventDeckId": "events",
+        "destinationAttribute": "destinationId",
+        "blockedPositionAttribute": "blockedTileId",
+        "positionOffset": 1,
+        "targetScore": 5,
+        "finishReason": "five-trips",
+        "eventNamespace": "taxi",
+        "tiles": {
+          "$content": "content/board.json#/tiles"
+        }
+      }
     }
-  }
+  ]
 }

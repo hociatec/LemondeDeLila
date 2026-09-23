@@ -20,7 +20,7 @@
     "unrs-resolver@1.12.2": true
   },
   "scripts": {
-    "build": "node commands/generate-game-registry.cjs && nest build && npm run verify:app-load",
+    "build": "npm run effects:registry && node commands/generate-game-registry.cjs && nest build && npm run verify:app-load",
     "game:registry": "node commands/generate-game-registry.cjs",
     "create:game": "node commands/create-game.cjs",
     "game:create": "node commands/create-game.cjs",
@@ -66,7 +66,7 @@
     "content:publish": "node tools/content-release.cjs publish",
     "content:rollback": "node tools/content-release.cjs rollback",
     "quality:report": "node tools/quality-report.cjs",
-    "architecture:test": "node --test tools/architecture-check.spec.cjs tools/double-cast-lint.spec.cjs tools/business-clock-lint.spec.cjs tools/non-null-assertion-lint.spec.cjs tools/runtime-dependency-graph.spec.cjs tools/content-release-policy.spec.cjs tools/engine-effect-pack-governance.spec.cjs tools/game-state-ownership-audit.spec.cjs",
+    "architecture:test": "node --test tools/architecture-check.spec.cjs tools/double-cast-lint.spec.cjs tools/business-clock-lint.spec.cjs tools/non-null-assertion-lint.spec.cjs tools/runtime-dependency-graph.spec.cjs tools/content-release-policy.spec.cjs tools/engine-effect-pack-governance.spec.cjs tools/game-state-ownership-audit.spec.cjs tools/effect-pack-classification.spec.cjs commands/generate-effect-pack-registry.spec.cjs tools/engine-evolution-report.spec.cjs tools/engine-ci-contract.spec.cjs tools/runtime-contract-imports.spec.cjs tools/author-schema-types.spec.cjs",
     "architecture:check": "node tools/architecture-check.cjs",
     "architecture:baseline:update": "node tools/architecture-check.cjs --update-baseline",
     "structure:test": "node --test tools/structural-quality-check.spec.cjs",
@@ -112,7 +112,12 @@
     "backlog:governance": "node tools/backlog-governance-check.cjs",
     "architecture:debt-final": "node --test tools/architecture-debt-final-check.spec.cjs && node tools/architecture-debt-final-check.cjs",
     "sdk:contract": "node --test tools/sdk-contract-check.spec.cjs && node tools/sdk-contract-check.cjs",
-    "engine:boundary:audit": "node --test tools/engine-catalog-boundary.spec.cjs && node tools/engine-catalog-boundary.cjs"
+    "engine:boundary:audit": "node --test tools/engine-catalog-boundary.spec.cjs && node tools/engine-catalog-boundary.cjs",
+    "effects:registry": "node commands/generate-effect-pack-registry.cjs",
+    "engine:evolution": "node tools/engine-evolution-report.cjs",
+    "engine:merge-contracts": "jest --runInBand game/testing/architecture-tests/game/all-declarative-games.contract.spec.ts game/testing/architecture-tests/game/replay-progress.spec.ts game/testing/architecture-tests/game/replay-idle-timer.spec.ts game/testing/architecture-tests/game/hand-limit-replay.spec.ts game/testing/architecture-tests/game/generated-actions.property.spec.ts game/testing/architecture-tests/game/directional-hazard-primitives-parity.spec.ts game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts game/testing/architecture-tests/game/directional-hazard-reuse.spec.ts game/testing/architecture-tests/game/second-game-catalogue.spec.ts game/testing/architecture-tests/game/independent-capabilities.spec.ts",
+    "engine:codecs": "node tools/effect-pack-codec-contract.cjs",
+    "engine:authoring-contracts": "jest --runInBand --testPathPattern=\"(diagnostics|authoring|origin).*spec\""
   },
   "overrides": {
     "multer": "$multer"

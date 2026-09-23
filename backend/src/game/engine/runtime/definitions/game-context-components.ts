@@ -9,7 +9,10 @@ import {
   type HandsDefinition,
 } from '../cards/cards-kit';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
-import type { DeclarativeState } from '../state/declarative-state';
+import type {
+  DeclarativeState,
+  MutableEngineKitsState,
+} from '../state/declarative-state';
 import type {
   GameComponentDefinition,
   GameComponentScope,
@@ -90,9 +93,18 @@ export class GameContextComponents<TState extends object> {
     private readonly currentActorId: () => number | null,
   ) {}
 
+  private ownState<Key extends keyof MutableEngineKitsState>(
+    key: Key,
+    initialize: () => NonNullable<MutableEngineKitsState[Key]>,
+  ): NonNullable<MutableEngineKitsState[Key]> {
+    // One explicit write capability, passed only to the owning controller.
+    const storage = this.runtime.engine.kits as MutableEngineKitsState;
+    return (storage[key] ??= initialize());
+  }
+
   get cards(): GameCardsController {
     return (this.cardsController ??= new GameCardsController(
-      (this.runtime.engine.kits.cards ??= createCardsKitState()),
+      this.ownState('cards', createCardsKitState),
       this.execution.rng,
       this.emit,
       this.ofType<
@@ -103,7 +115,7 @@ export class GameContextComponents<TState extends object> {
 
   get inventory(): GameInventoryController {
     return (this.inventoryController ??= new GameInventoryController(
-      (this.runtime.engine.kits.inventory ??= createInventoryKitState()),
+      this.ownState('inventory', createInventoryKitState),
       this.execution.rng,
       this.emit,
       this.ofType<InventoryDefinition>(
@@ -114,7 +126,7 @@ export class GameContextComponents<TState extends object> {
 
   get economy(): GameEconomyController {
     return (this.economyController ??= new GameEconomyController(
-      (this.runtime.engine.kits.economy ??= createEconomyKitState()),
+      this.ownState('economy', createEconomyKitState),
       this.resources(),
       this.inventory,
       this.emit,
@@ -126,7 +138,7 @@ export class GameContextComponents<TState extends object> {
 
   get ownership(): GameOwnershipController {
     return (this.ownershipController ??= new GameOwnershipController(
-      (this.runtime.engine.kits.ownership ??= createOwnershipKitState()),
+      this.ownState('ownership', createOwnershipKitState),
       this.emit,
       this.ofType<OwnershipDefinition>(
         (component) => component.component === 'ownership.registry',
@@ -136,7 +148,7 @@ export class GameContextComponents<TState extends object> {
 
   get movement(): GameMovementController {
     return (this.movementController ??= new GameMovementController(
-      (this.runtime.engine.kits.movement ??= createMovementKitState()),
+      this.ownState('movement', createMovementKitState),
       this.emit,
       this.ofType<TrackDefinition>(
         (component) => component.component === 'movement.track',
@@ -147,7 +159,7 @@ export class GameContextComponents<TState extends object> {
 
   get pawns(): GamePawnController {
     return (this.pawnController ??= new GamePawnController(
-      (this.runtime.engine.kits.pawns ??= createPawnKitState()),
+      this.ownState('pawns', createPawnKitState),
       this.runtime.players ?? [],
       this.emit,
       this.ofType<PawnSetDefinition>(
@@ -158,7 +170,7 @@ export class GameContextComponents<TState extends object> {
 
   get dice(): GameDiceController {
     return (this.diceController ??= new GameDiceController(
-      (this.runtime.engine.kits.dice ??= createDiceKitState()),
+      this.ownState('dice', createDiceKitState),
       this.execution.rng,
       this.emit,
       this.ofType<DiceDefinition>(
@@ -170,7 +182,7 @@ export class GameContextComponents<TState extends object> {
 
   get grid(): GameGridController {
     return (this.gridController ??= new GameGridController(
-      (this.runtime.engine.kits.grid ??= createGridKitState()),
+      this.ownState('grid', createGridKitState),
       this.ofType<GridDefinition>(
         (component) => component.component === 'grid.board',
       ),
@@ -179,7 +191,7 @@ export class GameContextComponents<TState extends object> {
 
   get quiz(): GameQuizController {
     return (this.quizController ??= new GameQuizController(
-      (this.runtime.engine.kits.quiz ??= createQuizKitState()),
+      this.ownState('quiz', createQuizKitState),
       this.execution.rng,
       this.ofType<QuizDefinition>(
         (component) => component.component === 'quiz.bank',

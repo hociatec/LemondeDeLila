@@ -1,3 +1,8 @@
+import {
+  componentStateOwnership,
+  coreStateOwnership,
+  type StateOwnershipId,
+} from '../../../engine/runtime/state/component-state-ownership';
 import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import ts from 'typescript';
@@ -21,56 +26,43 @@ export type BackendDebtGameMetrics = {
   customRulesLoc: number;
 };
 
-const STATE_OWNERSHIP_FIELDS: Readonly<
-  Record<GameComponentDefinition['component'], readonly RegExp[]>
-> = {
-  'movement.track': [/\bpositions?\b/i, /\bcurrentPosition\b/i],
-  'cards.deck': [/\bdecks?\b/i, /\bdiscard\b/i, /\bhand\b/i],
-  'cards.hands': [/\bhand\b/i, /\bhands\b/i],
-  'cards.zone': [/\bzones?\b/i],
-  'cards.sets': [/\bcardSets\b/i],
-  'inventory.set': [/\binventories\b/i, /\binventory\b/i],
-  'economy.market': [/\bmarketStock\b/i],
-  'ownership.registry': [/\bowners\b/i, /\bownership\b/i],
-  'pawn.set': [/\bpawnPositions\b/i, /\bpawnAssignments\b/i],
-  'grid.board': [/\bgridCells\b/i],
-  'quiz.bank': [/\bquizSessions\b/i],
-  'collection.view': [],
-  'dice.set': [/\blastRoll\b/i, /\bdice\b/i],
-};
-const CORE_OWNERSHIP_FIELDS = [
-  /\bscores?\b/i,
-  /\bskipTurns?\b/i,
-  /\bextraTurns?\b/i,
-];
-
 const GAME_SDK_PUBLIC_IMPORT = /^(?:\.\.\/){1,3}engine\/sdk\/public-api$/;
 
 export function auditGameStateOwnership(input: {
   gameId: string;
   stateSource: string;
   components: readonly GameComponentDefinition[];
-  exceptions?: readonly string[];
+  exceptions?: readonly StateOwnershipId[];
 }): BackendDebtAuditViolation[] {
   const violations: BackendDebtAuditViolation[] = [];
-  const stateSource = extractStateDeclarations(input.stateSource);
+  const stateFields = extractStateDeclarations(input.stateSource);
   const exceptions = new Set(input.exceptions ?? []);
-  for (const pattern of CORE_OWNERSHIP_FIELDS) {
-    if (!exceptions.has(pattern.source) && pattern.test(stateSource))
+  for (const pattern of coreStateOwnership) {
+    if (
+      !exceptions.has(pattern.id) &&
+      pattern.authorAliases.some((alias) =>
+        stateFields.has(alias.toLowerCase()),
+      )
+    )
       violations.push({
         gameId: input.gameId,
         criterion: 'state-ownership',
-        message: `Le runtime possède déjà ${pattern.source}`,
+        message: `Le runtime possède déjà ${pattern.id}`,
       });
   }
   for (const component of input.components) {
-    for (const pattern of STATE_OWNERSHIP_FIELDS[component.component] ?? []) {
-      if (exceptions.has(pattern.source)) continue;
-      if (!pattern.test(stateSource)) continue;
+    for (const pattern of componentStateOwnership[component.component] ?? []) {
+      if (exceptions.has(pattern.id)) continue;
+      if (
+        !pattern.authorAliases.some((alias) =>
+          stateFields.has(alias.toLowerCase()),
+        )
+      )
+        continue;
       violations.push({
         gameId: input.gameId,
         criterion: 'state-ownership',
-        message: `${component.component}:${component.id} possède déjà ${pattern.source}`,
+        message: `${component.component}:${component.id} possède déjà ${pattern.id}`,
       });
     }
   }
@@ -78,8 +70,8 @@ export function auditGameStateOwnership(input: {
 }
 
 export function gameSpecificState(
-  ...fields: readonly string[]
-): readonly string[] {
+  ...fields: readonly StateOwnershipId[]
+): readonly StateOwnershipId[] {
   return Object.freeze([...fields]);
 }
 
@@ -292,7 +284,7 @@ function countLoc(files: readonly string[]): number {
   }, 0);
 }
 
-function extractStateDeclarations(source: string): string {
+function extractStateDeclarations(source: string): ReadonlySet<string> {
   const ast = ts.createSourceFile(
     'state.ts',
     source,
@@ -302,7 +294,11 @@ function extractStateDeclarations(source: string): string {
   const fields: string[] = [];
   const collect = (node: ts.Node): void => {
     if (ts.isPropertySignature(node) && node.name)
-      fields.push(node.name.getText(ast));
+      fields.push(
+        ts.isIdentifier(node.name) || ts.isStringLiteral(node.name)
+          ? node.name.text
+          : node.name.getText(ast),
+      );
     ts.forEachChild(node, collect);
   };
   for (const statement of ast.statements) {
@@ -313,5 +309,5 @@ function extractStateDeclarations(source: string): string {
     )
       collect(statement);
   }
-  return fields.join('\n');
+  return new Set(fields.map((field) => field.toLowerCase()));
 }

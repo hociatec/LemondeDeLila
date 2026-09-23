@@ -71,10 +71,10 @@ contains(
   'tools/engine-effect-pack-governance.cjs',
   /Effect-pack production LOC grew/,
 );
-contains('tools/engine-effect-pack-governance.cjs', /genericScopeEffectPacks/);
+contains('tools/engine-effect-pack-governance.cjs', /classifyEffectPack/);
 contains('tools/engine-effect-pack-governance.cjs', /structuralReviews/);
 contains('tools/engine-effect-pack-governance.cjs', /linesPerConsumer/);
-contains('tools/engine-effect-pack-governance.cjs', /reuseEvidence/);
+contains('tools/effect-pack-classification.cjs', /reuseEvidence/);
 contains(
   'tools/engine-effect-pack-governance.cjs',
   /imports another effect-pack implementation/,
@@ -89,7 +89,7 @@ contains(
 );
 contains(
   'src/game/engine/runtime/contracts/json-effect-pack.ts',
-  /scope: 'generic'/,
+  /scope: JsonEffectPackScope/,
 );
 contains('tools/game-state-ownership-audit.cjs', /top-level let\/var/);
 contains(

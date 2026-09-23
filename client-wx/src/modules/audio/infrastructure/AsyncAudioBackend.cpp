@@ -12,7 +12,7 @@ namespace lila::modules::audio::infrastructure
 {
 namespace
 {
-enum class CommandType { Preload, Play, SetLoop, StopAll };
+enum class CommandType { Preload, Play, Preview, SetLoop, StopAll };
 
 struct Command final
 {
@@ -142,12 +142,13 @@ private:
         backend_->Shutdown();
     }
 
-    void Execute(const Command& command) noexcept
+    void Execute(const Command& command)
     {
         switch (command.type)
         {
         case CommandType::Preload: backend_->Preload(*command.cue); break;
         case CommandType::Play: backend_->Play(*command.cue, command.volume); break;
+        case CommandType::Preview: backend_->Preview(command.cue); break;
         case CommandType::SetLoop: backend_->SetLoop(command.cue, command.volume); break;
         case CommandType::StopAll: backend_->StopAll(); break;
         }
@@ -184,6 +185,11 @@ void AsyncAudioBackend::Play(domain::SoundCue cue, float volume)
 void AsyncAudioBackend::SetLoop(std::optional<domain::SoundCue> cue, float volume)
 {
     impl_->EnqueueForeground({CommandType::SetLoop, cue, volume});
+}
+
+void AsyncAudioBackend::Preview(std::optional<domain::SoundCue> cue)
+{
+    impl_->EnqueueForeground({CommandType::Preview, cue});
 }
 
 void AsyncAudioBackend::StopAll()

@@ -6,19 +6,21 @@ import {
   recipeBot,
   selectedRecipeBot,
 } from './json-program-bots';
-import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
+import type {
+  JsonEffectPackCatalog,
+  JsonGameViewAugmentation,
+} from '../contracts/json-effect-pack-catalog';
 import type {
   JsonEffectPackHandlerContext,
   JsonEffectPackHandlers,
 } from '../contracts/json-effect-pack';
 
-export function programHandlers(
+export function programHandlers<Catalog extends JsonEffectPackCatalog>(
   document: JsonDocument,
   programs: Programs,
-  jsonEffectPacks: JsonEffectPackCatalog = [],
-): JsonEffectPackHandlers {
+  jsonEffectPacks: Catalog,
+): JsonEffectPackHandlers<JsonGameViewAugmentation<Catalog>> {
   const sources = new Map<string, unknown>(Object.entries(document));
-  const compiledPrograms = new Map<string, unknown>(Object.entries(programs));
   const context: JsonEffectPackHandlerContext = {
     selectedBot: (select) => selectedRecipeBot(document, select),
     recipeBot: (recipe) => recipeBot(document, recipe),
@@ -38,12 +40,12 @@ export function programHandlers(
   };
   for (const extension of jsonEffectPacks) {
     const source = sources.get(extension.documentKey);
-    const compiled = compiledPrograms.get(extension.outputKey);
-    if (source === undefined || compiled === null || compiled === undefined)
-      continue;
+    const contribution = programs.contributions.get(extension.outputKey);
+    if (source === undefined || contribution === undefined) continue;
+    // The key comes from this catalogue, whose optional view fields cover each pack.
     return {
       choices: undefined,
-      ...extension.collectHandlers(context, compiled, source),
+      ...contribution.handlers(context),
     };
   }
   return { choices: undefined };

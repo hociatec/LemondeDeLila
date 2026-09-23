@@ -8,7 +8,9 @@
     {
       "component": "cards.deck",
       "id": "species",
-      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "cards": {
+        "$content": "content/catalogue.json#/cardIds"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
@@ -28,26 +30,59 @@
   "setup": {},
   "resourceIds": [],
   "shortcuts": [
-    { "key": "C", "type": "action", "actionType": "play_card" },
-    { "key": "S", "type": "action", "actionType": "pass" }
+    {
+      "key": "C",
+      "type": "action",
+      "actionType": "play_card"
+    },
+    {
+      "key": "S",
+      "type": "action",
+      "actionType": "pass"
+    }
   ],
   "initialPhase": "playing",
   "phases": {
-    "playing": { "actions": ["play_card", "pass"], "terminal": true }
+    "playing": {
+      "actions": [
+        "play_card",
+        "pass"
+      ],
+      "terminal": true
+    }
   },
   "actions": {
-    "play_card": { "recipe": "collection-species-troops-play" },
-    "pass": { "recipe": "collection-species-troops-pass" }
+    "play_card": {
+      "recipe": "collection-species-troops-play"
+    },
+    "pass": {
+      "recipe": "collection-species-troops-pass"
+    }
   },
-  "victory": { "kind": "by-species-troops" },
-  "speciesTroops": {
-    "deckId": "species",
-    "handId": "players",
-    "inventoryId": "species-troops",
-    "exchangeChoiceId": "species.exchange-card",
-    "handLimit": 7,
-    "victoryReason": "five-species",
-    "species": ["capucin", "mandrill", "gibbon", "babouin", "macaque"],
-    "cards": { "$content": "content/catalogue.json#/cards" }
-  }
+  "victory": {
+    "kind": "by-species-troops"
+  },
+  "extensions": [
+    {
+      "type": "speciesTroops",
+      "config": {
+        "deckId": "species",
+        "handId": "players",
+        "inventoryId": "species-troops",
+        "exchangeChoiceId": "species.exchange-card",
+        "handLimit": 7,
+        "victoryReason": "five-species",
+        "species": [
+          "capucin",
+          "mandrill",
+          "gibbon",
+          "babouin",
+          "macaque"
+        ],
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        }
+      }
+    }
+  ]
 }

@@ -63,10 +63,12 @@ export type GameContextFor<TDefinition> = Omit<
   'resources' | 'counters' | UnusedCapabilities<TDefinition>
 > & {
   readonly resources: PublicController<
-    GameResourcesController<GameResourceIdOf<TDefinition>>
+    GameResourcesController<GameResourceIdOf<TDefinition>>,
+    'exchange' | 'transfer' | 'add' | 'remove' | 'has' | 'get' | 'set'
   >;
   readonly counters: PublicController<
-    GameCountersController<GameCounterIdOf<TDefinition>>
+    GameCountersController<GameCounterIdOf<TDefinition>>,
+    'add' | 'get' | 'set' | 'subtract' | 'drain'
   >;
 };
 

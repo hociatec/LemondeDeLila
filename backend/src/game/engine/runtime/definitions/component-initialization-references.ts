@@ -1,3 +1,4 @@
+import { authoringProperty } from '../contracts/authoring-diagnostics';
 import type {
   GameComponentDefinition,
   GameInitialization,
@@ -56,20 +57,30 @@ function assertTrackReferences(
   fail: ValidationFailure,
 ): void {
   for (const [id, positions] of Object.entries(initialization?.tracks ?? {})) {
-    if (!tracks.has(id)) fail(`initialization.tracks.${id}`, 'piste inconnue');
+    if (!tracks.has(id))
+      fail(authoringProperty('initialization.tracks', id), 'piste inconnue');
     const track = components.find(
       (value) => value.component === 'movement.track' && value.id === id,
     );
     if (track?.component !== 'movement.track') continue;
-    for (const position of typeof positions === 'number'
-      ? [positions]
-      : Object.values(positions)) {
+    for (const [path, position] of typeof positions === 'number'
+      ? [[authoringProperty('initialization.tracks', id), positions] as const]
+      : Object.entries(positions).map(
+          ([playerId, value]) =>
+            [
+              authoringProperty(
+                authoringProperty('initialization.tracks', id),
+                playerId,
+              ),
+              value,
+            ] as const,
+        )) {
       if (
         !Number.isSafeInteger(position) ||
         position < 0 ||
         position >= track.spaces
       )
-        fail(`initialization.tracks.${id}`, 'case inexistante');
+        fail(path, 'case inexistante');
     }
   }
 }
@@ -80,17 +91,17 @@ function assertPawnReferences(
   fail: ValidationFailure,
 ): void {
   const initialized = new Set<string>();
-  for (const pawn of initialization?.pawns ?? []) {
+  for (const [index, pawn] of (initialization?.pawns ?? []).entries()) {
     if (!pawns.has(pawn.setId))
-      fail(`initialization.pawns.${pawn.setId}`, 'ensemble de pions inconnu');
+      fail(`initialization.pawns[${index}].setId`, 'ensemble de pions inconnu');
     if (initialized.has(pawn.setId))
-      fail(`initialization.pawns.${pawn.setId}`, 'attribution répétée');
+      fail(`initialization.pawns[${index}].setId`, 'attribution répétée');
     initialized.add(pawn.setId);
     if (
       pawn.assignment !== undefined &&
       !['round-robin', 'grouped', 'random'].includes(pawn.assignment)
     )
-      fail(`initialization.pawns.${pawn.setId}`, 'mode inconnu');
+      fail(`initialization.pawns[${index}].assignment`, 'mode inconnu');
   }
 }
 
@@ -100,7 +111,7 @@ function assertDealReferences(
   fail: ValidationFailure,
 ): void {
   for (const [index, deal] of (initialization?.deals ?? []).entries()) {
-    const path = `initialization.deals.${index}`;
+    const path = `initialization.deals[${index}]`;
     const hand = references.hands.get(deal.handId);
     if (!references.decks.has(deal.deckId))
       fail(`${path}.deckId`, 'pioche inconnue');
@@ -113,9 +124,9 @@ function assertDealReferences(
         : [],
     );
     if (!accepted.has(deal.deckId))
-      fail(path, 'la main refuse la pioche source');
+      fail(`${path}.deckId`, 'la main refuse la pioche source');
     if (deal.fallbackDeckId && !accepted.has(deal.fallbackDeckId))
-      fail(path, 'la main refuse la pioche de repli');
+      fail(`${path}.fallbackDeckId`, 'la main refuse la pioche de repli');
   }
 }
 
@@ -125,21 +136,26 @@ function assertGridReferences(
   fail: ValidationFailure,
 ): void {
   const initialized = new Set<string>();
-  for (const placement of initialization?.gridPlacements ?? []) {
-    const path = `initialization.gridPlacements.${placement.boardId}`;
+  for (const [index, placement] of (
+    initialization?.gridPlacements ?? []
+  ).entries()) {
+    const path = `initialization.gridPlacements[${index}]`;
     const board = grids.get(placement.boardId);
     if (!board || board.component !== 'grid.board')
-      fail(path, 'grille inconnue');
+      fail(`${path}.boardId`, 'grille inconnue');
     if (initialized.has(placement.boardId))
-      fail(path, 'placement de grille répété');
+      fail(`${path}.boardId`, 'placement de grille répété');
     initialized.add(placement.boardId);
-    if (
-      board?.component === 'grid.board' &&
-      placement.positions.some(
-        ({ x, y }) => x < 0 || y < 0 || x >= board.width || y >= board.height,
-      )
-    )
-      fail(path, 'position hors grille');
+    if (board?.component !== 'grid.board') continue;
+    for (const [index, position] of placement.positions.entries()) {
+      for (const [axis, limit] of [
+        ['x', board.width],
+        ['y', board.height],
+      ] as const) {
+        if (position[axis] < 0 || position[axis] >= limit)
+          fail(`${path}.positions[${index}].${axis}`, 'position hors grille');
+      }
+    }
   }
 }
 

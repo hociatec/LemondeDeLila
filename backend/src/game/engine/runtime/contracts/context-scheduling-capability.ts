@@ -2,5 +2,14 @@ import type { GameSchedulerController } from '../automation/scheduler-kit';
 import type { PublicController } from './public-controller';
 
 export interface ContextSchedulingCapability {
-  readonly scheduler: PublicController<GameSchedulerController>;
+  readonly scheduler: PublicController<
+    GameSchedulerController,
+    | 'has'
+    | 'cancel'
+    | 'schedule'
+    | 'deadline'
+    | 'remaining'
+    | 'isDue'
+    | 'consume'
+  >;
 }

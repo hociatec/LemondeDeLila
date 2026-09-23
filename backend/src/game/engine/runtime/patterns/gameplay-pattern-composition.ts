@@ -8,6 +8,8 @@ import type {
 import type { VictoryRule } from '../contracts/author-rule-contracts';
 import type { TurnPolicy } from './pattern-capabilities';
 import type { GamePattern } from '../contracts/pattern-definition';
+import { withAuthoringPath } from '../contracts/authoring-origin';
+import { authoringProperty } from '../contracts/authoring-diagnostics';
 
 export function assertComposablePatterns<TState extends object>(
   patterns: readonly GamePattern<TState>[],
@@ -20,53 +22,42 @@ export function assertComposablePatterns<TState extends object>(
   const initializedTracks = new Map<string, string>();
   const initializedPawns = new Map<string, string>();
   let selectedTurn: { id: string; policy: TurnPolicy } | null = null;
-  for (const pattern of patterns) {
+  for (const [patternIndex, pattern] of patterns.entries()) {
+    const path = `patterns[${patternIndex}]`;
     if (seenPatternIds.has(pattern.id)) {
-      throw new GameConfigurationError(
-        `Composition de patterns invalide: pattern dupliqué « ${pattern.id} »`,
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Composition de patterns invalide: pattern dupliqué « ${pattern.id} »`,
+        ),
+        `${path}.id`,
       );
     }
     seenPatternIds.add(pattern.id);
 
-    for (const component of pattern.components ?? []) {
-      const id = 'id' in component ? component.id : undefined;
-      const key = `${component.component}:${String(id)}`;
-      if (seenComponentKeys.has(key)) {
-        throw new GameConfigurationError(
-          `Composition de patterns invalide: composant dupliqué « ${key} »`,
-        );
-      }
-      seenComponentKeys.add(key);
-    }
-
-    for (const actionId of Object.keys(pattern.actions ?? {})) {
-      if (seenActionKeys.has(actionId)) {
-        throw new GameConfigurationError(
-          `Composition de patterns invalide: action dupliquée « ${actionId} »`,
-        );
-      }
-      seenActionKeys.add(actionId);
-    }
+    assertPatternMembers(pattern, path, seenComponentKeys, seenActionKeys);
 
     assertInitializationKeys(
       pattern.initialization?.resources,
       initializedResources,
       pattern.id,
       'resource',
+      `${path}.initialization.resources`,
     );
     assertInitializationKeys(
       pattern.initialization?.counters,
       initializedCounters,
       pattern.id,
       'counter',
+      `${path}.initialization.counters`,
     );
     assertInitializationKeys(
       pattern.initialization?.tracks,
       initializedTracks,
       pattern.id,
       'track',
+      `${path}.initialization.tracks`,
     );
-    assertPawnInitialization(pattern, initializedPawns);
+    assertPawnInitialization(pattern, initializedPawns, path);
 
     if (!pattern.turn) continue;
     if (!selectedTurn) {
@@ -74,22 +65,62 @@ export function assertComposablePatterns<TState extends object>(
       continue;
     }
     if (sameTurnPolicy(selectedTurn.policy, pattern.turn)) continue;
-    throw new GameConfigurationError(
-      `Composition de patterns invalide: politiques de tour incompatibles « ${selectedTurn.id} » et « ${pattern.id} »`,
+    throw withAuthoringPath(
+      new GameConfigurationError(
+        `Composition de patterns invalide: politiques de tour incompatibles « ${selectedTurn.id} » et « ${pattern.id} »`,
+      ),
+      `${path}.turn`,
     );
+  }
+}
+
+function assertPatternMembers<TState extends object>(
+  pattern: GamePattern<TState>,
+  path: string,
+  seenComponentKeys: Set<string>,
+  seenActionKeys: Set<string>,
+): void {
+  for (const [index, component] of (pattern.components ?? []).entries()) {
+    const id = 'id' in component ? component.id : undefined;
+    const key = `${component.component}:${String(id)}`;
+    if (seenComponentKeys.has(key)) {
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Composition de patterns invalide: composant dupliqué « ${key} »`,
+        ),
+        `${path}.components[${index}].id`,
+      );
+    }
+    seenComponentKeys.add(key);
+  }
+
+  for (const actionId of Object.keys(pattern.actions ?? {})) {
+    if (seenActionKeys.has(actionId)) {
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Composition de patterns invalide: action dupliquée « ${actionId} »`,
+        ),
+        authoringProperty(`${path}.actions`, actionId),
+      );
+    }
+    seenActionKeys.add(actionId);
   }
 }
 
 function assertPawnInitialization<TState extends object>(
   pattern: GamePattern<TState>,
   initializedPawns: Map<string, string>,
+  path: string,
 ): void {
   for (const [index, pawn] of (pattern.initialization?.pawns ?? []).entries()) {
     const key = `${pawn.setId}:${index}`;
     const previous = initializedPawns.get(key);
     if (previous) {
-      throw new GameConfigurationError(
-        `Composition de patterns invalide: initialisation de pion dupliquée « ${key} » par « ${previous} » et « ${pattern.id} »`,
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Composition de patterns invalide: initialisation de pion dupliquée « ${key} » par « ${previous} » et « ${pattern.id} »`,
+        ),
+        `${path}.initialization.pawns[${index}].setId`,
       );
     }
     initializedPawns.set(key, pattern.id);
@@ -101,12 +132,16 @@ function assertInitializationKeys<TValue>(
   seen: Map<string, string>,
   patternId: string,
   kind: string,
+  path: string,
 ): void {
   for (const key of Object.keys(values ?? {})) {
     const previous = seen.get(key);
     if (previous) {
-      throw new GameConfigurationError(
-        `Composition de patterns invalide: initialisation ${kind} dupliquée « ${key} » par « ${previous} » et « ${patternId} »`,
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Composition de patterns invalide: initialisation ${kind} dupliquée « ${key} » par « ${previous} » et « ${patternId} »`,
+        ),
+        authoringProperty(path, key),
       );
     }
     seen.set(key, patternId);

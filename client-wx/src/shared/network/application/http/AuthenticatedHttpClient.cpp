@@ -125,7 +125,7 @@ HttpResponse AuthenticatedHttpClient::Send(
     AddHeader(nativeRequest.Get(), "Accept", "application/json");
     if (!request.contentType.empty()) AddHeader(nativeRequest.Get(), "Content-Type", request.contentType);
     for (const auto& [name, value] : request.headers) AddHeader(nativeRequest.Get(), name, value);
-    if (request.body.size() > static_cast<std::size_t>(std::numeric_limits<DWORD>::max()))
+    if (request.body.size() > static_cast<std::size_t>((std::numeric_limits<DWORD>::max)()))
         throw std::runtime_error("Corps HTTP trop volumineux.");
     const auto size = static_cast<DWORD>(request.body.size());
     auto* data = request.body.empty()

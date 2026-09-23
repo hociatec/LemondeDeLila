@@ -145,32 +145,58 @@
     }
   ],
   "setup": {},
-  "resourceIds": ["collection-family-effects.extra-draws"],
-  "shortcuts": [{ "key": "D", "type": "action", "actionType": "request_card" }],
+  "resourceIds": [
+    "collection-family-effects.extra-draws"
+  ],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "request_card"
+    }
+  ],
   "initialPhase": "playing",
-  "phases": { "playing": { "actions": ["request_card"], "terminal": true } },
-  "actions": {
-    "request_card": { "recipe": "collection-family-effects-request" }
+  "phases": {
+    "playing": {
+      "actions": [
+        "request_card"
+      ],
+      "terminal": true
+    }
   },
-  "victory": { "kind": "by-family-effects" },
-  "familyEffects": {
-    "deckId": "professions",
-    "handId": "players",
-    "setsId": "profession-families",
-    "cards": { "$content": "content/catalogue.json#/cards" },
-    "familyIds": [
-      "tradition",
-      "nature",
-      "mer",
-      "art",
-      "insolites",
-      "innovation",
-      "sante"
-    ],
-    "extraDrawResource": "collection-family-effects.extra-draws",
-    "freeRequestStatus": "collection-family-effects.free-family-request",
-    "vanishedStatus": "collection-family-effects.vanished-used",
-    "finishReason": "families-complete",
-    "eventNamespace": "les-mains"
-  }
+  "actions": {
+    "request_card": {
+      "recipe": "collection-family-effects-request"
+    }
+  },
+  "victory": {
+    "kind": "by-family-effects"
+  },
+  "extensions": [
+    {
+      "type": "familyEffects",
+      "config": {
+        "deckId": "professions",
+        "handId": "players",
+        "setsId": "profession-families",
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "familyIds": [
+          "tradition",
+          "nature",
+          "mer",
+          "art",
+          "insolites",
+          "innovation",
+          "sante"
+        ],
+        "extraDrawResource": "collection-family-effects.extra-draws",
+        "freeRequestStatus": "collection-family-effects.free-family-request",
+        "vanishedStatus": "collection-family-effects.vanished-used",
+        "finishReason": "families-complete",
+        "eventNamespace": "les-mains"
+      }
+    }
+  ]
 }

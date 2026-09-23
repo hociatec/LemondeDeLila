@@ -1,3 +1,4 @@
+import type { ReadonlyState } from '../contracts/state-copy';
 import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
 import type { DiceDefinition, PersistedDiceRoll } from './dice-contracts';
 import { assertGameCount, assertGameValue } from './numeric-invariants';
@@ -8,7 +9,7 @@ import { assertGameCount, assertGameValue } from './numeric-invariants';
  */
 export function assertDiceRoll(
   id: string,
-  roll: PersistedDiceRoll,
+  roll: ReadonlyState<PersistedDiceRoll>,
   definition: Pick<DiceDefinition, 'count' | 'sides'>,
 ): void {
   assertGameCount(definition.count, 100);
@@ -35,7 +36,9 @@ export function assertDiceRoll(
         !Number.isSafeInteger(value) || value < 1 || value > definition.sides,
     ) ||
     roll.total !==
-      roll.values.reduce((sum, value) => sum + value, 0) * multiplier + modifier
+      roll.values.reduce((sum: number, value: number) => sum + value, 0) *
+        multiplier +
+        modifier
   )
     throw new GameStateViolationError('Résultat de dés invalide', { id });
 }

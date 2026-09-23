@@ -270,6 +270,7 @@ export const jsonGameSchema = freezeAuthorSchema({
           ),
         ],
       }),
+      extensions: { type: 'array', maxItems: 0 },
       victory: createJsonVictorySchema(),
     },
     [
@@ -290,12 +291,27 @@ export const jsonGameSchema = freezeAuthorSchema({
   $defs: effectJsonDefinitions,
 });
 
-export function createJsonGameSchema(packs: JsonEffectPackCatalog = []) {
+export function createJsonGameSchema(
+  packs: JsonEffectPackCatalog = [],
+  legacyRoots = false,
+) {
   return freezeAuthorSchema({
     ...jsonGameSchema,
     properties: {
       ...jsonGameSchema.properties,
-      ...effectPackSchemas(packs),
+      ...(legacyRoots ? effectPackSchemas(packs) : {}),
+      extensions: {
+        type: 'array' as const,
+        maxItems: packs.length,
+        items: {
+          oneOf: packs.map((pack) =>
+            object({
+              type: { const: pack.documentKey },
+              config: pack.schema,
+            }),
+          ),
+        },
+      },
       victory: createJsonVictorySchema(
         packs.flatMap((pack) => (pack.victoryKind ? [pack.victoryKind] : [])),
       ),

@@ -6,6 +6,10 @@ const { WebSocket } = require('ws');
 
 const ports = [33101, 33102];
 const processes = [];
+const clientHeaders = {
+  'x-lila-client-product': 'client-wx',
+  'x-lila-client-version': '9.9.9.9',
+};
 
 function isRunning(child) {
   return child.exitCode == null && child.signalCode == null;
@@ -57,12 +61,12 @@ async function stopBackendsGracefully(timeoutMs = 8_000) {
 
 class ApiClient {
   constructor(port) {
-    this.url = `ws://127.0.0.1:${port}/ws/api?v=9.9.9.9`;
+    this.url = `ws://127.0.0.1:${port}/ws/api`;
     this.messages = [];
   }
 
   async connect() {
-    this.socket = new WebSocket(this.url);
+    this.socket = new WebSocket(this.url, { headers: clientHeaders });
     this.socket.on('message', (raw) => {
       try {
         this.messages.push(JSON.parse(raw.toString('utf8')));
@@ -101,13 +105,18 @@ class ApiClient {
 
 class RoomClient {
   constructor(port, token, ticket, roomId) {
-    const room = roomId ? `&room=${roomId}` : '';
-    this.url = `ws://127.0.0.1:${port}/ws?v=9.9.9.9&token=${encodeURIComponent(token)}&ticket=${encodeURIComponent(ticket)}${room}`;
+    this.url = `ws://127.0.0.1:${port}/ws`;
+    this.roomId = roomId;
+    this.headers = {
+      ...clientHeaders,
+      Authorization: `Bearer ${token}`,
+      'x-lila-ws-ticket': ticket,
+    };
     this.messages = [];
   }
 
   async connect() {
-    this.socket = new WebSocket(this.url);
+    this.socket = new WebSocket(this.url, { headers: this.headers });
     this.socket.on('message', (raw) => {
       try {
         this.messages.push(JSON.parse(raw.toString('utf8')));
@@ -117,15 +126,31 @@ class RoomClient {
       this.socket.once('open', resolve);
       this.socket.once('error', reject);
     });
+    // The HTTP upgrade precedes asynchronous room authentication. Probe the
+    // non-mutating ping intent before sending the first room command.
+    const deadline = Date.now() + 15_000;
+    while (!this.messages.some((message) => message.type === 'room.pong')) {
+      if (this.socket.readyState !== WebSocket.OPEN || Date.now() >= deadline) {
+        throw new Error(`Room connection not ready: ${this.url}`);
+      }
+      this.send('room.ping');
+      await sleep(50);
+    }
+    if (this.roomId > 0) this.send('room.join', { roomId: this.roomId });
   }
 
   send(type, payload = {}) {
-    this.socket.send(JSON.stringify({ type, payload }));
+    this.socket.send(JSON.stringify({
+      type: 'room.intent.execute',
+      payload: { intentId: type, data: payload },
+    }));
   }
 
   async waitFor(predicate, timeoutMs = 15_000) {
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
+      const error = this.messages.find((message) => message.type === 'error');
+      if (error) throw new Error(`Room WS rejected: ${JSON.stringify(error.payload)}`);
       const index = this.messages.findIndex(predicate);
       if (index >= 0) return this.messages.splice(index, 1)[0];
       await sleep(20);
