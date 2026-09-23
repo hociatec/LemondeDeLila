@@ -2,6 +2,14 @@
 
 Statut : accepté.
 
+Mise à jour du 23 septembre 2026 : SDK 8.0.0, 78 symboles publics.
+`isRecord`, `isArrayOf` et `optionalNumber` sont retirés de l'API auteur.
+Les consommateurs internes utilisent `runtime/content/content-guards` ; les jeux
+JSON utilisent la validation de leur document et les auteurs TypeScript les
+schémas du SDK. Cette rupture d'import est versionnée explicitement ; elle ne
+modifie ni les données sauvegardées ni leur version. Le snapshot des signatures
+et le hash de surface ont été revus après migration du consommateur interne.
+
 Mise à jour du 21 septembre 2026 : le contrat de déclarations est en version
 6.20.0. Il couvre le mélange des réponses de quiz, la compilation de contenu
 figé et les ajouts optionnels déjà utilisés pour les bots, les libellés de
@@ -36,7 +44,7 @@ Les signatures et leurs dépendances sont verrouillées par `npm run sdk:contrac
 la procédure d'évolution est décrite dans [sdk-contract.md](sdk-contract.md).
 Les catalogues embarqués sont des données statiques importées ; les schémas
 validant ces données sont aussi utilisés pour les releases externes.
-`isRecord`, `isArrayOf`, `optionalNumber` fournissent les gardes communes.
+Les gardes de contenu communes sont des détails internes depuis la version 7.
 `game/composition` ne fait que découverte, registre généré
 et wiring Nest. Les jeux concrets ne connaissent ni core, ni runtime, ni Nest.
 

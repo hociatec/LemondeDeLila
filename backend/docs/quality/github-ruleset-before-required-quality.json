@@ -1,0 +1,53 @@
+{
+  "id": 22038117,
+  "name": "Protect main",
+  "target": "branch",
+  "source_type": "Repository",
+  "source": "hociatec/LemondeDeLila",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": [
+        "~DEFAULT_BRANCH"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": true,
+        "required_reviewers": [],
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": true,
+        "require_extra_approval_for_unattributed_changes": false,
+        "allowed_merge_methods": [
+          "squash",
+          "rebase"
+        ]
+      }
+    }
+  ],
+  "node_id": "RRS_lACqUmVwb3NpdG9yec5A6YOizgFQRmU",
+  "created_at": "2026-09-01T20:55:16.182+02:00",
+  "updated_at": "2026-09-02T20:24:30.598+02:00",
+  "bypass_actors": [],
+  "current_user_can_bypass": "never",
+  "_links": {
+    "self": {
+      "href": "https://api.github.com/repos/hociatec/LemondeDeLila/rulesets/22038117"
+    },
+    "html": {
+      "href": "https://github.com/hociatec/LemondeDeLila/rules/22038117"
+    }
+  }
+}

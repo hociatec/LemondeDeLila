@@ -17,32 +17,58 @@
   "shortcuts": [],
   "initialPhase": "setup",
   "phases": {
-    "setup": { "actions": [], "transitions": ["playing"] },
+    "setup": {
+      "actions": [],
+      "transitions": [
+        "playing"
+      ]
+    },
     "playing": {
-      "actions": ["answer", "timeout", "ready"],
+      "actions": [
+        "answer",
+        "timeout",
+        "ready"
+      ],
       "terminal": true
     }
   },
   "actions": {
-    "answer": { "recipe": "choice-simultaneous-quiz-answer" },
-    "timeout": { "recipe": "choice-simultaneous-quiz-timeout" },
-    "ready": { "recipe": "choice-simultaneous-quiz-ready" }
-  },
-  "victory": { "kind": "by-simultaneous-quiz" },
-  "simultaneousQuiz": {
-    "categories": { "$content": "content/quiz.json#/categories" },
-    "questions": { "$content": "content/quiz.json#/questions" },
-    "defaults": {
-      "categoryId": "all",
-      "questionsPerRound": 5,
-      "targetPoints": 20,
-      "useTimer": true,
-      "timerSeconds": 30,
-      "interQuestionSeconds": 0,
-      "correctSoloPoints": 2,
-      "correctMultiPoints": 1,
-      "wrongPoints": 0,
-      "timeoutPoints": -1
+    "answer": {
+      "recipe": "choice-simultaneous-quiz-answer"
+    },
+    "timeout": {
+      "recipe": "choice-simultaneous-quiz-timeout"
+    },
+    "ready": {
+      "recipe": "choice-simultaneous-quiz-ready"
     }
-  }
+  },
+  "victory": {
+    "kind": "by-simultaneous-quiz"
+  },
+  "extensions": [
+    {
+      "type": "simultaneousQuiz",
+      "config": {
+        "categories": {
+          "$content": "content/quiz.json#/categories"
+        },
+        "questions": {
+          "$content": "content/quiz.json#/questions"
+        },
+        "defaults": {
+          "categoryId": "all",
+          "questionsPerRound": 5,
+          "targetPoints": 20,
+          "useTimer": true,
+          "timerSeconds": 30,
+          "interQuestionSeconds": 0,
+          "correctSoloPoints": 2,
+          "correctMultiPoints": 1,
+          "wrongPoints": 0,
+          "timeoutPoints": -1
+        }
+      }
+    }
+  ]
 }

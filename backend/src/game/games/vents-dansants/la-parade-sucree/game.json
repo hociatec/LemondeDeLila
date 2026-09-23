@@ -8,7 +8,9 @@
     {
       "component": "cards.deck",
       "id": "parade",
-      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "cards": {
+        "$content": "content/catalogue.json#/cardIds"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
@@ -33,26 +35,59 @@
     "cards-ordered-parade.candy.Balisto"
   ],
   "shortcuts": [
-    { "key": "C", "type": "action", "actionType": "play_card" },
-    { "key": "S", "type": "action", "actionType": "pass" }
+    {
+      "key": "C",
+      "type": "action",
+      "actionType": "play_card"
+    },
+    {
+      "key": "S",
+      "type": "action",
+      "actionType": "pass"
+    }
   ],
   "initialPhase": "playing",
   "phases": {
-    "playing": { "actions": ["play_card", "pass"], "terminal": true }
+    "playing": {
+      "actions": [
+        "play_card",
+        "pass"
+      ],
+      "terminal": true
+    }
   },
   "actions": {
-    "play_card": { "recipe": "cards-ordered-parade-play" },
-    "pass": { "recipe": "cards-ordered-parade-pass" }
+    "play_card": {
+      "recipe": "cards-ordered-parade-play"
+    },
+    "pass": {
+      "recipe": "cards-ordered-parade-pass"
+    }
   },
-  "victory": { "kind": "by-parade" },
-  "parade": {
-    "deckId": "parade",
-    "handId": "players",
-    "cards": { "$content": "content/catalogue.json#/cards" },
-    "sequence": { "$content": "content/catalogue.json#/sequence" },
-    "rewards": { "$content": "content/catalogue.json#/rewards" },
-    "resourceValues": { "$content": "content/catalogue.json#/resourceValues" },
-    "finishReason": "cards-ordered-parade-complete",
-    "eventNamespace": "parade"
-  }
+  "victory": {
+    "kind": "by-parade"
+  },
+  "extensions": [
+    {
+      "type": "parade",
+      "config": {
+        "deckId": "parade",
+        "handId": "players",
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "sequence": {
+          "$content": "content/catalogue.json#/sequence"
+        },
+        "rewards": {
+          "$content": "content/catalogue.json#/rewards"
+        },
+        "resourceValues": {
+          "$content": "content/catalogue.json#/resourceValues"
+        },
+        "finishReason": "cards-ordered-parade-complete",
+        "eventNamespace": "parade"
+      }
+    }
+  ]
 }

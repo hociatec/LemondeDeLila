@@ -1,4 +1,4 @@
-import type { RoomUserRecord } from '../models/room-user.model';
+import type { RoomUserRecord } from './room-user.model';
 
 export type RoomParticipantRoomRef = {
   id: number;

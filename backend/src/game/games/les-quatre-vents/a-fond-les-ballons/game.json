@@ -89,67 +89,72 @@
     "ties": "lowest-id",
     "reason": "golden-nut"
   },
-  "chainedTileRace": {
-    "trackId": "balloons",
-    "pawnSetId": "balloons-pawns",
-    "pawnChoiceId": "race-chained-tile-cards.pawn",
-    "deckId": "loufoque",
-    "diceId": "main",
-    "trapImmunityStatusId": "race-chained-tile-cards.trap-immunity",
-    "awaitingCardStatusId": "race-chained-tile-cards.awaiting-card",
-    "cards": {
-      "$content": "content/catalogue.json#/cards"
-    },
-    "pawns": {
-      "$content": "content/catalogue.json#/pawns"
-    },
-    "tiles": {
-      "$content": "content/catalogue.json#/tiles"
-    },
-    "maxResolutionDepth": 12,
-    "finishReason": "golden-nut",
-    "selectionDrawCount": 2,
-    "tileRules": {
-      "start": {
-        "kind": "none",
-        "description": "Case de départ."
-      },
-      "neutral": {
-        "kind": "none",
-        "description": "Aucun effet."
-      },
-      "bonus": {
-        "kind": "move",
-        "delta": 2,
-        "description": "Effet : avancez immédiatement de 2 cases."
-      },
-      "piege": {
-        "kind": "protected-move",
-        "delta": -2,
-        "description": "Effet : reculez immédiatement de 2 cases."
-      },
-      "glissade": {
-        "kind": "random-move",
-        "maximum": 3,
-        "description": "Effet : avancez ou reculez aléatoirement de 1 à 3 cases."
-      },
-      "tornade": {
-        "kind": "choose-swap",
-        "description": "Effet : échangez votre place avec un autre joueur."
-      },
-      "chaton": {
-        "kind": "move-to",
-        "position": 0,
-        "description": "Effet : retournez à la case de départ."
-      },
-      "folie": {
-        "kind": "await-draw",
-        "description": "Effet : piochez une carte Loufoque."
-      },
-      "finish": {
-        "kind": "finish",
-        "description": "Effet : vous remportez la partie."
+  "extensions": [
+    {
+      "type": "chainedTileRace",
+      "config": {
+        "trackId": "balloons",
+        "pawnSetId": "balloons-pawns",
+        "pawnChoiceId": "race-chained-tile-cards.pawn",
+        "deckId": "loufoque",
+        "diceId": "main",
+        "trapImmunityStatusId": "race-chained-tile-cards.trap-immunity",
+        "awaitingCardStatusId": "race-chained-tile-cards.awaiting-card",
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "pawns": {
+          "$content": "content/catalogue.json#/pawns"
+        },
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "maxResolutionDepth": 12,
+        "finishReason": "golden-nut",
+        "selectionDrawCount": 2,
+        "tileRules": {
+          "start": {
+            "kind": "none",
+            "description": "Case de départ."
+          },
+          "neutral": {
+            "kind": "none",
+            "description": "Aucun effet."
+          },
+          "bonus": {
+            "kind": "move",
+            "delta": 2,
+            "description": "Effet : avancez immédiatement de 2 cases."
+          },
+          "piege": {
+            "kind": "protected-move",
+            "delta": -2,
+            "description": "Effet : reculez immédiatement de 2 cases."
+          },
+          "glissade": {
+            "kind": "random-move",
+            "maximum": 3,
+            "description": "Effet : avancez ou reculez aléatoirement de 1 à 3 cases."
+          },
+          "tornade": {
+            "kind": "choose-swap",
+            "description": "Effet : échangez votre place avec un autre joueur."
+          },
+          "chaton": {
+            "kind": "move-to",
+            "position": 0,
+            "description": "Effet : retournez à la case de départ."
+          },
+          "folie": {
+            "kind": "await-draw",
+            "description": "Effet : piochez une carte Loufoque."
+          },
+          "finish": {
+            "kind": "finish",
+            "description": "Effet : vous remportez la partie."
+          }
+        }
       }
     }
-  }
+  ]
 }

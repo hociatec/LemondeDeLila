@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import {
   DeclarativeGameRuntime,
@@ -10,8 +11,12 @@ import { GameExecutionScopeService } from './game-execution-scope.service';
 import { FixedGameClock } from '../models/game-execution-context.model';
 import type { GameState } from '../models/game-state.model';
 import manifest from '../../../games/vents-infinis/arche-de-mnemosyne/manifest.json';
-import document from '../../../games/vents-infinis/arche-de-mnemosyne/game.json';
+import documentExtensionSource from '../../../games/vents-infinis/arche-de-mnemosyne/game.json';
 import quiz from '../../../games/vents-infinis/arche-de-mnemosyne/quiz.json';
+const document = legacyExtensionFixture(
+  documentExtensionSource,
+  'simultaneousQuiz',
+);
 
 const definition = compileJsonGame(manifest, document, {
   'content/quiz.json': quiz,

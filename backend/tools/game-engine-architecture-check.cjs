@@ -7,7 +7,10 @@ const crypto = require('node:crypto');
 const ts = require('typescript');
 const { inspectManifestAuthoring } = require('./game-manifest-authoring.cjs');
 const { inspectGameExternalEffects } = require('./game-external-effects.cjs');
-const { inspectGameComposition, inspectRuleContracts } = require('./game-composition-boundary.cjs');
+const {
+  inspectGameComposition,
+  inspectRuleContracts,
+} = require('./game-composition-boundary.cjs');
 const {
   inspectGameImports,
   inspectGameCycles,
@@ -26,8 +29,8 @@ const defaultRuntimeRoot = path.join(
 );
 const standardFiles = ['game.ts', 'rules.ts', 'content.ts', 'game.spec.ts'];
 const SDK_PUBLIC_SURFACE = Object.freeze({
-  exportCount: 81,
-  sha256: '98b6979e61b1b463862c7cca60c205b45f935fee9c3bfd6690d5d46f05fb45b2',
+  exportCount: 78,
+  sha256: '2ad94a059368ff30a5aa990ce2b45674f2ce13d58870bc9007440a9866e034b3',
 });
 const forbiddenGameLayers = new Set([
   'actions',
@@ -134,8 +137,19 @@ function inspectUnsafeTypes(
 }
 
 function auditGamePackages(gamesRoot, violations) {
-  for (const chain of inspectGameLayers(walk(gamesRoot).filter(file => file.endsWith('.ts') && !file.endsWith('.spec.ts')))) {
-    add(violations, 'game-dependency-direction', chain[0], chain.map(file => normalize(path.relative(gamesRoot, file))).join(' -> '));
+  for (const chain of inspectGameLayers(
+    walk(gamesRoot).filter(
+      (file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'),
+    ),
+  )) {
+    add(
+      violations,
+      'game-dependency-direction',
+      chain[0],
+      chain
+        .map((file) => normalize(path.relative(gamesRoot, file)))
+        .join(' -> '),
+    );
   }
   for (const cycle of inspectGameCycles(
     walk(gamesRoot).filter(
@@ -174,9 +188,18 @@ function auditGamePackages(gamesRoot, violations) {
     ids.set(id, relativeDirectory);
 
     const jsonOnly = fs.existsSync(path.join(gameDirectory, 'game.json'));
-    if (jsonOnly && walk(gameDirectory).some(file => file.endsWith('.ts') && !file.endsWith('.spec.ts'))) {
-      add(violations, 'json-game-no-executable-source', relativeDirectory,
-        'Un jeu JSON ne doit pas contenir de logique TypeScript parallèle.');
+    if (
+      jsonOnly &&
+      walk(gameDirectory).some(
+        (file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'),
+      )
+    ) {
+      add(
+        violations,
+        'json-game-no-executable-source',
+        relativeDirectory,
+        'Un jeu JSON ne doit pas contenir de logique TypeScript parallèle.',
+      );
     }
     for (const file of jsonOnly ? ['game.json', 'rules.md'] : standardFiles) {
       if (!fs.existsSync(path.join(gameDirectory, file))) {
@@ -202,7 +225,12 @@ function auditGamePackages(gamesRoot, violations) {
       }
       const { declaredId, canonical } = inspectManifestAuthoring(source, id);
       if (!canonical) {
-        add(violations, 'canonical-manifest-metadata', normalize(path.relative(repoRoot, gameFile)), 'Identité, nom, description et limites de joueurs doivent dériver du manifeste importé.');
+        add(
+          violations,
+          'canonical-manifest-metadata',
+          normalize(path.relative(repoRoot, gameFile)),
+          'Identité, nom, description et limites de joueurs doivent dériver du manifeste importé.',
+        );
       }
       if (declaredId !== id) {
         add(
@@ -227,8 +255,8 @@ function auditGamePackages(gamesRoot, violations) {
     }
   }
 
-  const gameEntries = walk(gamesRoot).filter(
-    (file) => ['game.ts', 'game.json'].includes(path.basename(file)),
+  const gameEntries = walk(gamesRoot).filter((file) =>
+    ['game.ts', 'game.json'].includes(path.basename(file)),
   );
   if (gameEntries.length !== manifests.length) {
     add(
@@ -468,17 +496,42 @@ function auditEngine(gameRoot, runtimeRoot, violations) {
     const gameRelative = normalize(path.relative(gameRoot, file));
     if (gameRelative.startsWith('rules/')) {
       if (/\b(?:Math\.random|Date\.now)\s*\(|\bnew\s+Date\s*\(/.test(source))
-        add(violations, 'deterministic-rules', relative, 'Use the supplied RNG and clock.');
+        add(
+          violations,
+          'deterministic-rules',
+          relative,
+          'Use the supplied RNG and clock.',
+        );
       for (const message of inspectGameExternalEffects(file, source))
         add(violations, 'no-external-game-effects', relative, message);
       for (const specifier of importSpecifiers(source))
         if (/^(?:node:|@nestjs\/)|(?:^|\/)platform\//.test(specifier))
-          add(violations, 'no-external-game-effects', relative, `Infrastructure import: ${specifier}`);
+          add(
+            violations,
+            'no-external-game-effects',
+            relative,
+            `Infrastructure import: ${specifier}`,
+          );
       if (lineCount(source) > 500)
-        add(violations, 'runtime-file-size', relative, 'Rule files must remain within 500 lines.');
+        add(
+          violations,
+          'runtime-file-size',
+          relative,
+          'Rule files must remain within 500 lines.',
+        );
     }
-    if (!gameRelative.startsWith('composition/') && /\b(?:readdirSync|readdir|opendirSync|opendir|globSync|glob)\s*\(/.test(source)) {
-      add(violations, 'composition-game-discovery', relative, 'La découverte des dossiers de jeux appartient à la composition du build.');
+    if (
+      !gameRelative.startsWith('composition/') &&
+      /\b(?:readdirSync|readdir|opendirSync|opendir|globSync|glob)\s*\(/.test(
+        source,
+      )
+    ) {
+      add(
+        violations,
+        'composition-game-discovery',
+        relative,
+        'La découverte des dossiers de jeux appartient à la composition du build.',
+      );
     }
     const isCompositionRoot =
       relative === 'src/game/composition/generated-game-registry.ts';
@@ -531,13 +584,7 @@ function auditEngine(gameRoot, runtimeRoot, violations) {
   }
 
   const runtimeContract = fs.readFileSync(
-    path.join(
-      gameRoot,
-      'core',
-      'application',
-      'ports',
-      'game-runtime.port.ts',
-    ),
+    path.join(gameRoot, 'core', 'application', 'ports', 'game-runtime.port.ts'),
     'utf8',
   );
   for (const method of [
@@ -569,7 +616,10 @@ function gamesRootForFile(gameRoot) {
 
 function auditCli(violations) {
   const cli = require(path.join(repoRoot, 'commands', 'create-game.cjs'));
-  if (JSON.stringify(cli.GENERATED_FILES) !== JSON.stringify([...standardFiles, 'manifest.json', 'rules.md'])) {
+  if (
+    JSON.stringify(cli.GENERATED_FILES) !==
+    JSON.stringify([...standardFiles, 'manifest.json', 'rules.md'])
+  ) {
     add(
       violations,
       'complete-game-package-cli',

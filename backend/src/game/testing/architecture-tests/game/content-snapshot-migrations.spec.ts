@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   testGame,
   DeclarativeGameRuntime,
@@ -10,35 +11,64 @@ import type {
 import { compileJsonGame } from '../../../rules/public-api';
 import panierManifest from '../../../games/les-quatre-vents/panier-express/manifest.json';
 import { resolveJsonContent } from '../../../rules/public-api';
-import composition from '../../../games/les-quatre-vents/panier-express/game.json';
+import compositionExtensionSource from '../../../games/les-quatre-vents/panier-express/game.json';
 import board from '../../../games/les-quatre-vents/panier-express/content/board.json';
 import cards from '../../../games/les-quatre-vents/panier-express/content/cards.json';
 import pawns from '../../../games/les-quatre-vents/panier-express/content/pawns.json';
 import products from '../../../games/les-quatre-vents/panier-express/content/products.json';
 import quizzes from '../../../games/les-quatre-vents/panier-express/content/quizzes.json';
 import olympiaManifest from '../../../games/vents-dansants/olympia/manifest.json';
-import olympiaDocument from '../../../games/vents-dansants/olympia/game.json';
+import olympiaDocumentExtensionSource from '../../../games/vents-dansants/olympia/game.json';
 import olympiaCatalogue from '../../../games/vents-dansants/olympia/catalogue.json';
 import aventureManifest from '../../../games/les-quatre-vents/aventure-sauvage/manifest.json';
-import aventureDocument from '../../../games/les-quatre-vents/aventure-sauvage/game.json';
+import aventureDocumentExtensionSource from '../../../games/les-quatre-vents/aventure-sauvage/game.json';
 import aventureBoard from '../../../games/les-quatre-vents/aventure-sauvage/content/board.json';
 import aventureCards from '../../../games/les-quatre-vents/aventure-sauvage/content/cards.json';
 import aventurePawns from '../../../games/les-quatre-vents/aventure-sauvage/content/pawns.json';
 import missionManifest from '../../../games/les-quatre-vents/mission-galaxie/manifest.json';
-import missionDocument from '../../../games/les-quatre-vents/mission-galaxie/game.json';
+import missionDocumentExtensionSource from '../../../games/les-quatre-vents/mission-galaxie/game.json';
 import missionCatalogue from '../../../games/les-quatre-vents/mission-galaxie/catalogue.json';
 import piratesManifest from '../../../games/les-quatre-vents/pirates-en-vadrouille/manifest.json';
-import piratesDocument from '../../../games/les-quatre-vents/pirates-en-vadrouille/game.json';
+import piratesDocumentExtensionSource from '../../../games/les-quatre-vents/pirates-en-vadrouille/game.json';
 import piratesCatalogue from '../../../games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json';
 import mamanManifest from '../../../games/les-quatre-vents/tout-pres-de-maman/manifest.json';
-import mamanDocument from '../../../games/les-quatre-vents/tout-pres-de-maman/game.json';
+import mamanDocumentExtensionSource from '../../../games/les-quatre-vents/tout-pres-de-maman/game.json';
 import mamanCatalogue from '../../../games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json';
 import sacManifest from '../../../games/les-quatre-vents/sac-a-malices/manifest.json';
-import sacDocument from '../../../games/les-quatre-vents/sac-a-malices/game.json';
+import sacDocumentExtensionSource from '../../../games/les-quatre-vents/sac-a-malices/game.json';
 import sacCatalogue from '../../../games/les-quatre-vents/sac-a-malices/catalogue.json';
 import natureManifest from '../../../games/vents-dansants/dame-nature/manifest.json';
-import natureDocument from '../../../games/vents-dansants/dame-nature/game.json';
+import natureDocumentExtensionSource from '../../../games/vents-dansants/dame-nature/game.json';
 import natureCatalogue from '../../../games/vents-dansants/dame-nature/content/catalogue.json';
+const composition = legacyExtensionFixture(compositionExtensionSource, 'board');
+const olympiaDocument = legacyExtensionFixture(
+  olympiaDocumentExtensionSource,
+  'sharedPrestigeCards',
+);
+const aventureDocument = legacyExtensionFixture(
+  aventureDocumentExtensionSource,
+  'eventRace',
+);
+const missionDocument = legacyExtensionFixture(
+  missionDocumentExtensionSource,
+  'quizEventRace',
+);
+const piratesDocument = legacyExtensionFixture(
+  piratesDocumentExtensionSource,
+  'treasureTrackRace',
+);
+const mamanDocument = legacyExtensionFixture(
+  mamanDocumentExtensionSource,
+  'pairedPawnRace',
+);
+const sacDocument = legacyExtensionFixture(
+  sacDocumentExtensionSource,
+  'propertyEconomy',
+);
+const natureDocument = legacyExtensionFixture(
+  natureDocumentExtensionSource,
+  'familyRequest',
+);
 
 const panierDocument = resolveJsonContent(composition, {
   'content/board.json': board,

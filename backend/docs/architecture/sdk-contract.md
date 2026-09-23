@@ -1,6 +1,6 @@
 # Évolution du contrat auteur
 
-La version courante de l'API auteur est 6.20.0. Elle est indépendante de la
+La version courante de l'API auteur est 8.0.0. Elle est indépendante de la
 version du backend, des règles des jeux et des schémas de snapshots.
 
 La version 6.20 ajoute `sequentialPawnSelection(...).choice`, un résolveur
@@ -136,7 +136,7 @@ Pour faire évoluer l'API :
    `node tools/sdk-contract-check.cjs --write`, examiner son diff et exécuter
    `npm run sdk:contract` et `npm run quality:check`.
 
-La CI vérifie cette référence sans la régénérer. Le contrôle des 81 noms exportés
+La CI vérifie cette référence sans la régénérer. Le contrôle des 78 noms exportés
 et l'interdiction des imports profonds restent également actifs.
 
 Lors de la revue initiale du 11 septembre 2026, les contrats ont été
@@ -178,3 +178,18 @@ SubmissionSession.valueOrder conserve les identifiants dans leur ordre de soumis
 ### Version 6.15 — distribution initiale filtrée
 
 `cards.hands.initialDeferredCardIds` et le cinquième argument optionnel de `cards.deal` déclarent les cartes à écarter pendant la distribution. Chaque joueur reçoit les cartes admissibles à tour de rôle ; les cartes écartées sont remises au-dessus de la pioche dans leur ordre de tirage. La distribution est bornée par la pile disponible, sans recyclage automatique des cartes écartées. Sans cette option, le comportement est inchangé. Les références initiales sont vérifiées avant le démarrage et le JSON expose le même champ. Aucun champ de snapshot ni algorithme de replay ne change. Entre Rites et Lumières et Les Mains de la Terre remplacent leurs boucles de setup par cette déclaration, avec traces initiales identiques sur trois graines chacun.
+
+Migration 8.0.0 : EngineKitsState est profondement readonly. Une regle de jeu
+modifie les composants via ctx.cards, ctx.movement, ctx.inventory, etc. Les
+projections et validateurs ne recoivent plus de stockage modifiable. Les tests
+qui fabriquent volontairement un snapshot invalide peuvent utiliser une copie
+MutableStateCopy explicite; cette copie ne constitue pas une API de mutation
+pour les regles. Le format des snapshots et des vues reseau ne change pas.
+
+Les 22 facades de controleurs enumerent maintenant leurs methodes publiques.
+PublicController exige une liste litterale explicite, controlee par sdk:contract.
+Une methode ajoutee au runtime ne devient plus automatiquement une API auteur.
+assertValid reste interne. Le runtime satisfait les contrats structurellement;
+les regles conservent leurs imports uniques depuis engine/sdk/public-api.
+Les signatures, types transitifs et 78 exports restent certifies par la reference
+de declarations, avec migration/version explicite pour toute rupture.

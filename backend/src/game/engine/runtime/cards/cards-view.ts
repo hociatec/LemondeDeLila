@@ -1,3 +1,5 @@
+import { copyState } from '../contracts/state-copy';
+import type { ReadonlyState } from '../contracts/state-copy';
 import type {
   CardSetsDefinition,
   CardZoneDefinition,
@@ -18,7 +20,7 @@ export function createCardsKitState(): CardsKitState {
 }
 
 export function projectCardsKitState(
-  state: CardsKitState,
+  state: ReadonlyState<CardsKitState>,
   viewerPlayerId: number | null,
   definitions: readonly (
     HandsDefinition | CardSetsDefinition | CardZoneDefinition
@@ -39,7 +41,7 @@ export function projectCardsKitState(
     discards: Object.fromEntries(
       Object.entries(state.discards).map(([id, cards]) => [
         id,
-        { count: cards.length, cards: structuredClone(cards) },
+        { count: cards.length, cards: copyState(cards) },
       ]),
     ),
     hands: Object.fromEntries(
@@ -57,7 +59,7 @@ export function projectCardsKitState(
                 (Number(playerId) === viewerPlayerId &&
                   (definition?.ownerVisibility !== 'active-round' ||
                     !inactiveRoundPlayers.has(Number(playerId))))
-                  ? structuredClone(cards)
+                  ? copyState(cards)
                   : { count: cards.length },
               ]),
             ),
@@ -134,7 +136,7 @@ function indexCardZones(
 }
 
 function projectCardZones(
-  zones: CardsKitState['zones'],
+  zones: ReadonlyState<CardsKitState['zones']>,
   definitions: ReadonlyMap<string, CardZoneDefinition>,
 ): CardsPlayerView['zones'] {
   return Object.fromEntries(
@@ -146,7 +148,7 @@ function projectCardZones(
           visibility,
           cards:
             visibility === 'public'
-              ? structuredClone(cards)
+              ? copyState(cards)
               : { count: cards.length },
         },
       ];

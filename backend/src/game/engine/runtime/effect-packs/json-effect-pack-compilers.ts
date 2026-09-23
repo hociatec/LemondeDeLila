@@ -1,13 +1,19 @@
 import { compileJsonPattern } from '../definitions/json-game-patterns';
+import { compileWithPatternDiagnostic } from '../definitions/json-pattern-diagnostics';
 import type { JsonGameDocument } from '../definitions/json-game-schema';
 import type { GameComponentDefinition } from '../definitions/component-kit';
 import type { GameEventDefinition } from '../events/game-event-definition';
 import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
+import type { JsonEffectPackContribution } from '../contracts/json-effect-pack';
+import type { GameActionShape } from '../contracts/author-rule-contracts';
 
 type CompiledPattern = ReturnType<typeof compileJsonPattern>;
 
-export type CompiledJsonPrograms = Readonly<Record<string, unknown>> & {
-  readonly actions: Readonly<Record<string, unknown>>;
+export type CompiledJsonPrograms = {
+  readonly contributions: ReadonlyMap<string, JsonEffectPackContribution>;
+  readonly actions: Readonly<
+    Record<string, GameActionShape<Record<string, never>>>
+  >;
   readonly events: GameEventDefinition<string, object>[];
   readonly components: GameComponentDefinition[];
   readonly patterns: CompiledPattern[];
@@ -18,35 +24,30 @@ export function compileJsonPrograms(
   jsonEffectPacks: JsonEffectPackCatalog = [],
 ): CompiledJsonPrograms {
   const sources = new Map<string, unknown>(Object.entries(document));
-  const compiledPrograms: Record<string, unknown> = {};
-  const actions: Record<string, unknown> = {};
+  const contributions = new Map<string, JsonEffectPackContribution>();
+  const actions: Record<string, GameActionShape<Record<string, never>>> = {};
   const events: GameEventDefinition<string, object>[] = [];
   const components: GameComponentDefinition[] = [];
-  const patterns = document.patterns?.map(compileJsonPattern) ?? [];
+  const patterns =
+    document.patterns?.map((pattern, index) =>
+      compileWithPatternDiagnostic(pattern, index, () =>
+        compileJsonPattern(pattern),
+      ),
+    ) ?? [];
   for (const extension of jsonEffectPacks) {
     const source = sources.get(extension.documentKey);
     if (source === undefined) {
-      compiledPrograms[extension.outputKey] = null;
       continue;
     }
-    const compiled = extension.compileUnknown(source);
-    compiledPrograms[extension.outputKey] = compiled;
-    Object.assign(actions, extension.collectActions(compiled));
-    events.push(
-      ...(extension.collectEvents(compiled) as GameEventDefinition<
-        string,
-        object
-      >[]),
-    );
-    components.push(
-      ...(extension.collectComponents(compiled) as GameComponentDefinition[]),
-    );
-    patterns.push(
-      ...(extension.collectPatterns(compiled) as CompiledPattern[]),
-    );
+    const contribution = extension.compileContribution(source);
+    contributions.set(extension.outputKey, contribution);
+    Object.assign(actions, contribution.actions);
+    events.push(...contribution.events);
+    components.push(...contribution.components);
+    patterns.push(...contribution.patterns);
   }
   return {
-    ...compiledPrograms,
+    contributions,
     actions,
     events,
     components,

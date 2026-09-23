@@ -17,6 +17,7 @@ public:
 
     void Preload(domain::SoundCue cue) override;
     void Play(domain::SoundCue cue, float volume) override;
+    void Preview(std::optional<domain::SoundCue> cue) override;
     void SetLoop(std::optional<domain::SoundCue> cue, float volume) override;
     void StopAll() override;
     void InterruptPlayback() noexcept override;
@@ -28,6 +29,7 @@ private:
     BassSampleCache samples_;
     BassStreamCache streams_;
     SoundAssetPathResolver assetPaths_;
+    HSTREAM previewStream_ = 0;
     std::atomic_bool initialized_ = false;
     std::atomic_bool shuttingDown_ = false;
     std::atomic_bool shutdownComplete_ = false;

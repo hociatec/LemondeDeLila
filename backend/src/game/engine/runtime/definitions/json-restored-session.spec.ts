@@ -1,3 +1,4 @@
+import type { MutableStateCopy } from '../contracts/state-copy';
 import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../core/testing/game-test-kit';
 import { DeclarativeGameRuntime } from '../declarative-game.runtime';
@@ -5,7 +6,7 @@ import type { DeclarativeState } from '../state/declarative-state';
 import manifest from '../../../testing/fixtures/json-course/manifest.json';
 import document from '../../../testing/fixtures/json-course/game.json';
 
-type State = DeclarativeState<Record<string, never>>;
+type State = MutableStateCopy<DeclarativeState<Record<string, never>>>;
 
 it('restores an effect targeting a bot with a signed player identity', async () => {
   const definition = compileJsonGame(manifest, document);

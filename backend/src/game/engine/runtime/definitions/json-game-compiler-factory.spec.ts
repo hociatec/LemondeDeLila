@@ -14,7 +14,7 @@ import document from '../../../testing/fixtures/json-course/game.json';
 // A new rule unknown to the shipped catalogue. No production registration needed.
 const extension = (documentKey: string) =>
   defineJsonEffectPack({
-    scope: 'generic',
+    scope: 'game-specific',
     domain: 'choice',
     documentKey,
     outputKey: documentKey,
@@ -44,6 +44,65 @@ it('runs primitive JSON without loading any application catalogue', () => {
   expect(() =>
     createJsonGameCompiler().compileJsonGame(manifest, source('newRule', 7)),
   ).toThrow();
+});
+
+describe('optional extension victory', () => {
+  const pack = { ...extension('newRule'), victoryKind: 'by-example' };
+  it('keeps coupled victory mandatory unless explicitly opted out', () => {
+    expect(() =>
+      createJsonGameCompiler([pack]).compileJsonGame(
+        manifest,
+        source('newRule', 7),
+      ),
+    ).toThrow('program and victory required together');
+  });
+  it('allows an opted-out extension with an independent objective', () => {
+    expect(() =>
+      createJsonGameCompiler([
+        { ...pack, victoryRequired: false },
+      ]).compileJsonGame(manifest, source('newRule', 7)),
+    ).not.toThrow();
+  });
+  it.each([undefined, false])(
+    'never accepts extension victory without its program (%s)',
+    (victoryRequired) => {
+      expect(() =>
+        createJsonGameCompiler([{ ...pack, victoryRequired }]).compileJsonGame(
+          manifest,
+          { ...document, victory: { kind: 'by-example' } },
+        ),
+      ).toThrow('program and victory required together');
+    },
+  );
+});
+
+it('normalizes validated extension entries to the same immutable content as legacy documents', () => {
+  const compiler = createJsonGameCompiler([extension('newRule')]);
+  const legacy = source('newRule', 7);
+  const config = { points: 7 };
+  const core: Record<string, unknown> = { ...legacy };
+  delete core.newRule;
+  const generic = { ...core, extensions: [{ type: 'newRule', config }] };
+  expect(compiler.parseJsonGame(generic)).toEqual(
+    compiler.parseJsonGame(legacy),
+  );
+  expect(() => compiler.compileJsonGame(manifest, generic)).not.toThrow();
+  expect(generic.extensions).toHaveLength(1);
+  for (const extensions of [
+    [{ type: 'unknown', config }],
+    [{ type: 'newRule', config: { points: 'seven' } }],
+    [{ type: 'newRule', config, extra: true }],
+    [{ type: 'newRule' }],
+  ])
+    expect(() => compiler.parseJsonGame({ ...core, extensions })).toThrow(
+      /extensions/,
+    );
+  expect(() =>
+    compiler.parseJsonGame({ ...legacy, extensions: generic.extensions }),
+  ).toThrow(/duplicate extension/);
+  expect(() => createJsonGameCompiler([extension('extensions')])).toThrow(
+    /reserved/,
+  );
 });
 
 it.each([

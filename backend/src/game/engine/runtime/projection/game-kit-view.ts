@@ -1,3 +1,5 @@
+import { copyState } from '../contracts/state-copy';
+import type { ReadonlyState } from '../contracts/state-copy';
 import {
   projectCardsKitState,
   type CardsPlayerView,
@@ -185,7 +187,7 @@ function projectDiceKit(
       ...active,
       activeSetId,
       sets,
-      byPlayer: structuredClone(dice.rollsByPlayer ?? {}),
+      byPlayer: copyState(dice.rollsByPlayer ?? {}),
     };
   }
 }
@@ -212,7 +214,7 @@ function projectMovementKit(
             {
               spaces: track?.spaces ?? 0,
               overshoot: track?.overshoot ?? 'clamp',
-              positions: structuredClone(positions),
+              positions: copyState(positions),
             },
           ];
         }),
@@ -244,10 +246,10 @@ function projectPawnKit(
           return [
             setId,
             {
-              definitions: structuredClone(definition?.pawns ?? []),
-              owners: structuredClone(pawns.owners[setId] ?? {}),
-              assignments: structuredClone(pawns.assignments[setId] ?? {}),
-              byPlayer: structuredClone(pawns.assignments[setId] ?? {}),
+              definitions: copyState(definition?.pawns ?? []),
+              owners: copyState(pawns.owners[setId] ?? {}),
+              assignments: copyState(pawns.assignments[setId] ?? {}),
+              byPlayer: copyState(pawns.assignments[setId] ?? {}),
               ...(Object.keys(projectedPositions).length > 0
                 ? { positions: projectedPositions }
                 : {}),
@@ -274,11 +276,11 @@ function projectGridKit(
         Object.entries(kits.grid.cells).map(([boardId, cells]) => [
           boardId,
           {
-            ...structuredClone(
+            ...copyState(
               gridDefinitions.find((definition) => definition.id === boardId),
             ),
-            cells: structuredClone(cells),
-            overlays: structuredClone(kits.grid?.overlays?.[boardId] ?? {}),
+            cells: copyState(cells),
+            overlays: copyState(kits.grid?.overlays?.[boardId] ?? {}),
           },
         ]),
       ),
@@ -332,7 +334,7 @@ function projectQuizKit(
             scored: session.scored,
             ...(session.phase === 'revealed' || session.phase === 'closed'
               ? {
-                  answers: structuredClone(session.answers),
+                  answers: copyState(session.answers),
                   correctAnswerIndex: session.correctAnswerIndex,
                 }
               : viewerPlayerId != null &&
@@ -361,7 +363,7 @@ function cardProjectionDefinitions(
 
 function projectDiceSet(
   definition: DiceDefinition,
-  roll: { values: number[]; total: number } | undefined,
+  roll: { values: readonly number[]; total: number } | undefined,
   turnNumber: number,
   sequence: number,
 ): DiceSetPlayerView {
@@ -386,7 +388,7 @@ function projectDiceSet(
 
 function publicQuizQuestion(
   definition: QuizDefinition | undefined,
-  session: QuizSessionState,
+  session: ReadonlyState<QuizSessionState>,
 ): { id: string; prompt: string; choices: readonly string[] } {
   const question = definition?.questions.find(
     (candidate) => candidate.id === session.questionId,

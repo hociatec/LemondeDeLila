@@ -1,4 +1,5 @@
 import { GameWsStateMessagesPresenter } from './game-ws-state-messages.presenter';
+import { presentedEvents } from '../../../../../testing/helpers/presented-state-assertions';
 
 describe('GameWsStateMessagesPresenter', () => {
   it('leaves quiz activity to the question workflow', () => {
@@ -33,7 +34,7 @@ describe('GameWsStateMessagesPresenter', () => {
     );
 
     expect(
-      (state.events as any).recent.map((event: any) => event.data.message),
+      presentedEvents(state.events).recent.map((event) => event.data.message),
     ).toEqual([undefined, undefined]);
   });
 
@@ -67,7 +68,7 @@ describe('GameWsStateMessagesPresenter', () => {
       {} as never,
     );
 
-    expect((state.events as any).recent[0].data.message).toBe(
+    expect(presentedEvents(state.events).recent[0].data.message).toBe(
       'La bonne réponse était « Paris ».',
     );
   });

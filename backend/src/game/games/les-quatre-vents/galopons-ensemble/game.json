@@ -5,46 +5,90 @@
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
   "patterns": [
-    { "kind": "race", "trackId": "bidirectionalCollision", "spaces": 40 }
+    {
+      "kind": "race",
+      "trackId": "bidirectionalCollision",
+      "spaces": 40
+    }
   ],
   "components": [
     {
       "component": "pawn.set",
       "id": "bidirectionalCollision",
-      "pawns": { "$content": "content/catalogue.json#/pawns" },
+      "pawns": {
+        "$content": "content/catalogue.json#/pawns"
+      },
       "perPlayer": 1
     },
     {
       "component": "cards.deck",
       "id": "adventure",
-      "cards": { "$content": "content/catalogue.json#/cards" },
+      "cards": {
+        "$content": "content/catalogue.json#/cards"
+      },
       "shuffle": true,
       "empty": "recycle"
     }
   ],
-  "setup": { "firstPlayer": "first", "startRound": true },
-  "resourceIds": ["apple"],
-  "shortcuts": [{ "key": "D", "type": "action", "actionType": "roll" }],
+  "setup": {
+    "firstPlayer": "first",
+    "startRound": true
+  },
+  "resourceIds": [
+    "apple"
+  ],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    }
+  ],
   "initialPhase": "setup",
   "phases": {
-    "setup": { "actions": [], "transitions": ["playing"] },
-    "playing": { "actions": ["roll"], "terminal": true }
+    "setup": {
+      "actions": [],
+      "transitions": [
+        "playing"
+      ]
+    },
+    "playing": {
+      "actions": [
+        "roll"
+      ],
+      "terminal": true
+    }
   },
-  "actions": { "roll": { "recipe": "race-bidirectional-collision-roll" } },
-  "victory": { "kind": "by-bidirectional-collision-race" },
-  "bidirectionalCollisionRace": {
-    "trackId": "bidirectionalCollision",
-    "diceId": "main",
-    "deckId": "adventure",
-    "pawnSetId": "bidirectionalCollision",
-    "pawnChoiceId": "bidirectionalCollision.pawn",
-    "appleResource": "apple",
-    "iouPrefix": "bidirectionalCollision.iou",
-    "returningStatus": "bidirectionalCollision.returning",
-    "applesToWin": 3,
-    "maxDepth": 12,
-    "finishReason": "three-apples-at-finish",
-    "tiles": { "$content": "content/catalogue.json#/tiles" },
-    "cards": { "$content": "content/catalogue.json#/cards" }
-  }
+  "actions": {
+    "roll": {
+      "recipe": "race-bidirectional-collision-roll"
+    }
+  },
+  "victory": {
+    "kind": "by-bidirectional-collision-race"
+  },
+  "extensions": [
+    {
+      "type": "bidirectionalCollisionRace",
+      "config": {
+        "trackId": "bidirectionalCollision",
+        "diceId": "main",
+        "deckId": "adventure",
+        "pawnSetId": "bidirectionalCollision",
+        "pawnChoiceId": "bidirectionalCollision.pawn",
+        "appleResource": "apple",
+        "iouPrefix": "bidirectionalCollision.iou",
+        "returningStatus": "bidirectionalCollision.returning",
+        "applesToWin": 3,
+        "maxDepth": 12,
+        "finishReason": "three-apples-at-finish",
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        }
+      }
+    }
+  ]
 }

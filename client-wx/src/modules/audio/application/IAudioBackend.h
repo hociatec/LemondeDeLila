@@ -13,6 +13,10 @@ public:
 
     virtual void Preload(domain::SoundCue cue) = 0;
     virtual void Play(domain::SoundCue cue, float volume) = 0;
+    virtual void Preview(std::optional<domain::SoundCue> cue)
+    {
+        if (cue) Play(*cue, 1.0F);
+    }
     virtual void SetLoop(std::optional<domain::SoundCue> cue, float volume) = 0;
     virtual void StopAll() = 0;
     virtual void InterruptPlayback() noexcept = 0;

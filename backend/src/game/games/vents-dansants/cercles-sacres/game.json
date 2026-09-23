@@ -8,7 +8,9 @@
     {
       "component": "cards.deck",
       "id": "sacred-circles",
-      "cards": { "$content": "content/catalogue.json#/cardIds" },
+      "cards": {
+        "$content": "content/catalogue.json#/cardIds"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
@@ -22,41 +24,76 @@
     {
       "component": "inventory.set",
       "id": "sacred-circles-completed",
-      "items": { "$content": "content/catalogue.json#/cardIds" },
+      "items": {
+        "$content": "content/catalogue.json#/cardIds"
+      },
       "visibility": "public"
     }
   ],
   "setup": {},
   "resourceIds": [],
   "shortcuts": [
-    { "key": "F", "type": "action", "actionType": "form_circle" },
-    { "key": "D", "type": "action", "actionType": "discard_card" },
-    { "key": "S", "type": "action", "actionType": "pass" }
+    {
+      "key": "F",
+      "type": "action",
+      "actionType": "form_circle"
+    },
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "discard_card"
+    },
+    {
+      "key": "S",
+      "type": "action",
+      "actionType": "pass"
+    }
   ],
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": ["form_circle", "discard_card", "pass"],
+      "actions": [
+        "form_circle",
+        "discard_card",
+        "pass"
+      ],
       "terminal": true
     }
   },
   "actions": {
-    "form_circle": { "recipe": "collection-themed-circles-form" },
-    "discard_card": { "recipe": "collection-themed-circles-discard" },
-    "pass": { "recipe": "collection-themed-circles-pass" }
+    "form_circle": {
+      "recipe": "collection-themed-circles-form"
+    },
+    "discard_card": {
+      "recipe": "collection-themed-circles-discard"
+    },
+    "pass": {
+      "recipe": "collection-themed-circles-pass"
+    }
   },
-  "victory": { "kind": "by-card-circles" },
-  "cardCircles": {
-    "deckId": "sacred-circles",
-    "handId": "players",
-    "inventoryId": "sacred-circles-completed",
-    "cards": { "$content": "content/catalogue.json#/cards" },
-    "themes": { "$content": "content/catalogue.json#/themes" },
-    "cardsPerCircle": 6,
-    "circlesToWin": 3,
-    "handMinimum": 6,
-    "handLimit": 8,
-    "finishReason": "three-circles",
-    "eventNamespace": "cercles"
-  }
+  "victory": {
+    "kind": "by-card-circles"
+  },
+  "extensions": [
+    {
+      "type": "cardCircles",
+      "config": {
+        "deckId": "sacred-circles",
+        "handId": "players",
+        "inventoryId": "sacred-circles-completed",
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "themes": {
+          "$content": "content/catalogue.json#/themes"
+        },
+        "cardsPerCircle": 6,
+        "circlesToWin": 3,
+        "handMinimum": 6,
+        "handLimit": 8,
+        "finishReason": "three-circles",
+        "eventNamespace": "cercles"
+      }
+    }
+  ]
 }

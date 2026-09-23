@@ -38,10 +38,16 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": ["playing"]
+      "transitions": [
+        "playing"
+      ]
     },
     "playing": {
-      "actions": ["draw", "play_card", "discard_card"],
+      "actions": [
+        "draw",
+        "play_card",
+        "discard_card"
+      ],
       "terminal": true
     }
   },
@@ -59,7 +65,12 @@
   "victory": {
     "kind": "by-paw-scoring"
   },
-  "pawScoring": {
-    "$content": "content/cat-pattes.json"
-  }
+  "extensions": [
+    {
+      "type": "pawScoring",
+      "config": {
+        "$content": "content/cat-pattes.json"
+      }
+    }
+  ]
 }

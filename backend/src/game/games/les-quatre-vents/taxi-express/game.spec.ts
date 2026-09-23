@@ -1,11 +1,16 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
-import document from './game.json';
+import documentExtensionSource from './game.json';
 import manifest from './manifest.json';
 import board from './content/board.json';
 import clients from './content/clients.json';
 import events from './content/events.json';
+const document = legacyExtensionFixture(
+  documentExtensionSource,
+  'deliveryRace',
+);
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/board.json': board,

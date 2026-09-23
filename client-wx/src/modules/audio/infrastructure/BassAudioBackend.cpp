@@ -103,6 +103,25 @@ void BassAudioBackend::SetLoop(std::optional<domain::SoundCue> cue, float volume
     streams_.StartOrUpdate(*cue, assetPaths_.Resolve(*cue), volume, shuttingDown_);
 }
 
+void BassAudioBackend::Preview(std::optional<domain::SoundCue> cue)
+{
+    if (previewStream_ != 0)
+    {
+        BASS_StreamFree(previewStream_);
+        previewStream_ = 0;
+    }
+    if (!cue || !EnsureInitialized()) return;
+    // Audition the latest asset, including disabled sounds, without old samples.
+    const auto path = assetPaths_.ResolvePreview(*cue);
+    if (path.empty() || shuttingDown_.load(std::memory_order_acquire)) return;
+    previewStream_ = BASS_StreamCreateFile(FALSE, path.c_str(), 0, 0, BASS_UNICODE);
+    if (previewStream_ != 0)
+    {
+        BASS_ChannelSetAttribute(previewStream_, BASS_ATTRIB_VOL, 1.0F);
+        BASS_ChannelPlay(previewStream_, FALSE);
+    }
+}
+
 void BassAudioBackend::StopAll()
 {
     if (!initialized_.load(std::memory_order_acquire))
@@ -111,6 +130,7 @@ void BassAudioBackend::StopAll()
     }
     streams_.Stop();
     samples_.StopAll();
+    Preview(std::nullopt);
 }
 
 void BassAudioBackend::InterruptPlayback() noexcept
@@ -129,6 +149,7 @@ void BassAudioBackend::Shutdown() noexcept
         return;
     }
     shuttingDown_.store(true, std::memory_order_release);
+    Preview(std::nullopt);
     streams_.Clear();
     samples_.Clear();
     if (initialized_.exchange(false, std::memory_order_acq_rel))

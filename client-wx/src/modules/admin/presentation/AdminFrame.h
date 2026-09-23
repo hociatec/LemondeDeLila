@@ -24,7 +24,6 @@ class wxString;
 class wxButton;
 class wxChoice;
 class wxPanel;
-class wxTimer;
 namespace lila::shared::ui::controls { class VerticalMenu; }
 namespace lila::modules::admin::application { class AdminService; }
 namespace lila::modules::audio::application { class IAudioService; }
@@ -102,6 +101,7 @@ private:
     void ChangePage(int direction);
     void ChangePageSize();
     void PreviewSound(std::string_view soundId);
+    bool ConfirmSoundChange(const domain::AdminCommand& command);
     bool HandleKey(int keyCode);
 
     application::AdminService& service_;
@@ -149,6 +149,7 @@ private:
     std::vector<int> pageSizeChoices_;
     std::optional<std::size_t> selectedResultIndex_;
     std::optional<std::string> reportIdToRestore_;
+    std::optional<std::string> soundIdToRestore_;
     bool refreshBugReportsAfterCommand_ = false;
     bool refreshAreaAfterCommand_ = false;
     bool keepFocusAfterCommand_ = false;
@@ -156,6 +157,5 @@ private:
     domain::AdminItemKind currentResultItemKind_ = domain::AdminItemKind::None;
     nlohmann::json contextItem_ = nlohmann::json::object();
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
-    std::unique_ptr<wxTimer> previewTimer_;
 };
 }

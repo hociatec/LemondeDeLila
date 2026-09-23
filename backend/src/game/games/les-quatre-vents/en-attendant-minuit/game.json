@@ -16,42 +16,80 @@
     {
       "component": "pawn.set",
       "id": "minuit",
-      "pawns": { "$content": "content/catalogue.json#/pawns" },
+      "pawns": {
+        "$content": "content/catalogue.json#/pawns"
+      },
       "perPlayer": 1
     },
     {
       "component": "cards.deck",
       "id": "noel",
-      "cards": { "$content": "content/catalogue.json#/cards" },
+      "cards": {
+        "$content": "content/catalogue.json#/cards"
+      },
       "shuffle": true,
       "empty": "recycle"
     }
   ],
-  "setup": { "firstPlayer": "first", "startRound": true },
+  "setup": {
+    "firstPlayer": "first",
+    "startRound": true
+  },
   "resourceIds": [],
-  "shortcuts": [{ "key": "D", "type": "action", "actionType": "roll" }],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    }
+  ],
   "initialPhase": "setup",
   "phases": {
-    "setup": { "actions": [], "transitions": ["playing"] },
-    "playing": { "actions": ["roll"], "terminal": true }
-  },
-  "actions": { "roll": { "recipe": "race-bounce-quiz-roll" } },
-  "victory": { "kind": "by-bounce-quiz-race" },
-  "bounceQuizRace": {
-    "trackId": "minuit",
-    "diceId": "main",
-    "deckId": "noel",
-    "pawnSetId": "minuit",
-    "pawnChoiceId": "race-bounce-quiz.pawn",
-    "answerChoiceId": "race-bounce-quiz.resolve",
-    "maxDepth": 24,
-    "finishReason": "bounceQuiz",
-    "statuses": {
-      "ignoreNextMalus": "race-bounce-quiz.ignore-next-malus",
-      "ignoreNextSkip": "race-bounce-quiz.ignore-next-skip",
-      "forceDrawNextTurn": "race-bounce-quiz.force-draw-next-turn"
+    "setup": {
+      "actions": [],
+      "transitions": [
+        "playing"
+      ]
     },
-    "tiles": { "$content": "content/catalogue.json#/tiles" },
-    "cards": { "$content": "content/catalogue.json#/cards" }
-  }
+    "playing": {
+      "actions": [
+        "roll"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "race-bounce-quiz-roll"
+    }
+  },
+  "victory": {
+    "kind": "by-bounce-quiz-race"
+  },
+  "extensions": [
+    {
+      "type": "bounceQuizRace",
+      "config": {
+        "trackId": "minuit",
+        "diceId": "main",
+        "deckId": "noel",
+        "pawnSetId": "minuit",
+        "pawnChoiceId": "race-bounce-quiz.pawn",
+        "answerChoiceId": "race-bounce-quiz.resolve",
+        "maxDepth": 24,
+        "finishReason": "bounceQuiz",
+        "statuses": {
+          "ignoreNextMalus": "race-bounce-quiz.ignore-next-malus",
+          "ignoreNextSkip": "race-bounce-quiz.ignore-next-skip",
+          "forceDrawNextTurn": "race-bounce-quiz.force-draw-next-turn"
+        },
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        }
+      }
+    }
+  ]
 }

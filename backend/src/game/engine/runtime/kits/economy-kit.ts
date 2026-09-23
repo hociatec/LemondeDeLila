@@ -1,3 +1,5 @@
+import { withAuthoringPath } from '../contracts/authoring-origin';
+import { authoringProperty } from '../contracts/authoring-diagnostics';
 import {
   GameConfigurationError,
   GameNotFoundError,
@@ -30,24 +32,25 @@ export const economy = {
   market(definition: Omit<MarketDefinition, 'component'>): MarketDefinition {
     const minimum = definition.minPrice ?? 0;
     const maximum = definition.maxPrice ?? Number.MAX_SAFE_INTEGER;
-    if (
-      !Number.isSafeInteger(minimum) ||
-      minimum < 0 ||
-      !Number.isSafeInteger(maximum) ||
-      maximum < minimum ||
-      Object.keys(definition.prices).length === 0 ||
-      Object.entries(definition.prices).some(
-        ([itemId, price]) =>
-          !itemId.trim() ||
-          !Number.isFinite(price) ||
-          price < (definition.minPrice ?? 0) ||
-          price > (definition.maxPrice ?? Number.MAX_SAFE_INTEGER),
-      )
-    ) {
-      throw new GameConfigurationError(
-        `Catalogue de prix invalide: ${definition.id}`,
+    const fail = (path: string): never => {
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Catalogue de prix invalide: ${definition.id}`,
+        ),
+        path,
       );
-    }
+    };
+    if (!Number.isSafeInteger(minimum) || minimum < 0) fail('minPrice');
+    if (!Number.isSafeInteger(maximum) || maximum < minimum) fail('maxPrice');
+    if (Object.keys(definition.prices).length === 0) fail('prices');
+    for (const [itemId, price] of Object.entries(definition.prices))
+      if (
+        !itemId.trim() ||
+        !Number.isFinite(price) ||
+        price < minimum ||
+        price > maximum
+      )
+        fail(authoringProperty('prices', itemId));
     return Object.freeze({
       ...definition,
       component: 'economy.market',

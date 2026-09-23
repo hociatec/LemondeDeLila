@@ -67,27 +67,32 @@
   "victory": {
     "kind": "by-public-domain-cards"
   },
-  "publicDomainCards": {
-    "deckId": "mine",
-    "handId": "players",
-    "inventoryId": "mine-domains",
-    "discardNextDrawStatus": "cards-public-domain.discard-next-draw",
-    "handLimit": 5,
-    "finishReason": "mine-collapsed",
-    "eventNamespace": "grande-mine",
-    "cards": {
-      "$content": "content/catalogue.json#/cards"
-    },
-    "collectibleCategories": [
-      "tresor",
-      "objet"
-    ],
-    "lossCategory": "tresor"
-  },
   "snapshotMigrations": [
     {
       "fromVersion": "1",
       "toVersion": "2"
+    }
+  ],
+  "extensions": [
+    {
+      "type": "publicDomainCards",
+      "config": {
+        "deckId": "mine",
+        "handId": "players",
+        "inventoryId": "mine-domains",
+        "discardNextDrawStatus": "cards-public-domain.discard-next-draw",
+        "handLimit": 5,
+        "finishReason": "mine-collapsed",
+        "eventNamespace": "grande-mine",
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "collectibleCategories": [
+          "tresor",
+          "objet"
+        ],
+        "lossCategory": "tresor"
+      }
     }
   ]
 }

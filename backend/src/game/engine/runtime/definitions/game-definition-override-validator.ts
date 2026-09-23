@@ -5,6 +5,8 @@ import type {
   GameInitialization,
 } from './component-kit';
 import type { GameActionMap } from '../contracts/author-rule-contracts';
+import { withAuthoringPath } from '../contracts/authoring-origin';
+import { authoringProperty } from '../contracts/authoring-diagnostics';
 
 export function assertNoImplicitActionOverrides<TState extends object>(
   patternActions: GameActionMap<TState>,
@@ -17,13 +19,19 @@ export function assertNoImplicitActionOverrides<TState extends object>(
       action.overrides != null &&
       (!inherited || action.overrides !== actionId)
     ) {
-      throw new GameConfigurationError(
-        `Action "${actionId}" de "${gameId}": cible de remplacement inconnue ou incohérente`,
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Action "${actionId}" de "${gameId}": cible de remplacement inconnue ou incohérente`,
+        ),
+        `${authoringProperty('actions', actionId)}.overrides`,
       );
     }
     if (!inherited || action.overrides === actionId) continue;
-    throw new GameConfigurationError(
-      `Action "${actionId}" fournie par un pattern et redéfinie par "${gameId}" sans overrideAction() explicite`,
+    throw withAuthoringPath(
+      new GameConfigurationError(
+        `Action "${actionId}" fournie par un pattern et redéfinie par "${gameId}" sans overrideAction() explicite`,
+      ),
+      authoringProperty('actions', actionId),
     );
   }
 }
@@ -38,19 +46,25 @@ export function assertNoImplicitComponentOverrides(
       (component) => `${component.component}:${component.id}`,
     ),
   );
-  for (const component of gameComponents) {
+  for (const [index, component] of gameComponents.entries()) {
     const key = `${component.component}:${component.id}`;
     if (
       component.overrides != null &&
       (component.overrides !== key || !patternKeys.has(key))
     ) {
-      throw new GameConfigurationError(
-        `Composant "${key}" de "${gameId}": cible de remplacement inconnue ou incohérente`,
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Composant "${key}" de "${gameId}": cible de remplacement inconnue ou incohérente`,
+        ),
+        `components[${index}].overrides`,
       );
     }
     if (patternKeys.has(key) && component.overrides !== key) {
-      throw new GameConfigurationError(
-        `Composant "${key}" fourni par un pattern et redéfini par "${gameId}" sans overrideComponent() explicite`,
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Composant "${key}" fourni par un pattern et redéfini par "${gameId}" sans overrideComponent() explicite`,
+        ),
+        `components[${index}].id`,
       );
     }
   }
@@ -63,8 +77,11 @@ export function assertNoImplicitTurnOverride(
 ): void {
   if (!pattern || !game || sameTurnPolicy(pattern, game) || game.overrides)
     return;
-  throw new GameConfigurationError(
-    `Politique de tour fournie par un pattern et redéfinie par "${gameId}" sans overrideTurn() explicite`,
+  throw withAuthoringPath(
+    new GameConfigurationError(
+      `Politique de tour fournie par un pattern et redéfinie par "${gameId}" sans overrideTurn() explicite`,
+    ),
+    'turn',
   );
 }
 
@@ -82,8 +99,11 @@ export function assertNoImplicitInitializationOverrides(
       if (!(key in (inherited ?? {}))) continue;
       const overrideKey = `${kind}.${key}`;
       if (!overrides.has(overrideKey)) {
-        throw new GameConfigurationError(
-          `Initialisation ${overrideKey} fournie par un pattern et redéfinie sans overrideInitialization(["${overrideKey}"], ...) explicite`,
+        throw withAuthoringPath(
+          new GameConfigurationError(
+            `Initialisation ${overrideKey} fournie par un pattern et redéfinie sans overrideInitialization(["${overrideKey}"], ...) explicite`,
+          ),
+          authoringProperty(`initialization.${kind}`, key),
         );
       }
     }
@@ -96,16 +116,22 @@ export function assertNoImplicitInitializationOverrides(
     pattern.scores != null &&
     !overrides.has('scores')
   ) {
-    throw new GameConfigurationError(
-      'Initialisation scores fournie par un pattern et redéfinie sans overrideInitialization(["scores"], ...) explicite',
+    throw withAuthoringPath(
+      new GameConfigurationError(
+        'Initialisation scores fournie par un pattern et redéfinie sans overrideInitialization(["scores"], ...) explicite',
+      ),
+      'initialization.scores',
     );
   }
   const patternPawns = new Set((pattern.pawns ?? []).map((pawn) => pawn.setId));
-  for (const pawn of game.pawns ?? []) {
+  for (const [index, pawn] of (game.pawns ?? []).entries()) {
     const overrideKey = `pawns.${pawn.setId}`;
     if (patternPawns.has(pawn.setId) && !overrides.has(overrideKey)) {
-      throw new GameConfigurationError(
-        `Initialisation ${overrideKey} fournie par un pattern et redéfinie sans overrideInitialization(["${overrideKey}"], ...) explicite`,
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Initialisation ${overrideKey} fournie par un pattern et redéfinie sans overrideInitialization(["${overrideKey}"], ...) explicite`,
+        ),
+        `initialization.pawns[${index}].setId`,
       );
     }
   }

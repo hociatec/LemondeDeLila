@@ -47,6 +47,12 @@ bool AdminFrame::PreparePayload(
         }
         dialogCommand.payloadTemplate = form.dump();
     }
+    if (command.transport == domain::AdminTransport::HttpMultipart)
+    {
+        auto form = nlohmann::ordered_json::parse(dialogCommand.payloadTemplate);
+        form.erase("filePath");
+        dialogCommand.payloadTemplate = form.dump();
+    }
     bool needsInput = false;
     const auto formPayload = nlohmann::json::parse(dialogCommand.payloadTemplate);
     for (const auto& item : formPayload.items())
@@ -81,7 +87,7 @@ bool AdminFrame::PreparePayload(
     if (needsFile)
     {
         wxFileDialog picker(this, wxString(L"Choisir un fichier audio"), wxString{}, wxString{},
-            wxString(L"Fichiers audio (*.wav;*.mp3)|*.wav;*.mp3|Tous les fichiers|*.*"),
+            wxString(L"Fichiers audio (*.wav;*.wave;*.ogg;*.mp3)|*.wav;*.wave;*.ogg;*.mp3|Tous les fichiers|*.*"),
             wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (picker.ShowModal() != wxID_OK) return false;
         payload["filePath"] = lila::shared::text::ToUtf8(picker.GetPath());

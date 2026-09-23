@@ -57,6 +57,49 @@ function baseState(): GameState {
   };
 }
 
+it.each([1, 2, 4])(
+  'executes a new JSON composition with stride %i without adding engine mechanisms',
+  (stride) => {
+    const definition = compileJsonGame(
+      {
+        ...manifest,
+        code: `composition-${stride}`,
+        engine: `composition-${stride}`,
+      },
+      {
+        ...document,
+        components: [{ component: 'movement.track', id: 'board', spaces: 20 }],
+        actions: {
+          advance: {
+            effects: [
+              { kind: 'move', trackId: 'board', spaces: stride },
+              { kind: 'gain-resource', resource: 'stars', amount: 3 },
+              { kind: 'complete-turn' },
+            ],
+          },
+        },
+      },
+    );
+    const runtime = new DeclarativeGameRuntime(definition);
+    const initial = runtime.hydrateInitialState(baseState());
+    const action = runtime.validateAction(
+      initial,
+      { type: 'advance', payload: {} },
+      1,
+    );
+    const finished = runtime.applyActions(initial, [action], {
+      actorId: 1,
+      clock: new FixedGameClock(1000),
+      rng: new StateGameRng(initial),
+    });
+    expect(finished.status).toBe('finished');
+    expect(finished).toHaveProperty(
+      'engine.kits.movement.positions.board.1',
+      stride,
+    );
+  },
+);
+
 it('runs a minimal board without collection, cards, quiz, exchange or pawns', () => {
   const definition = compileJsonGame(manifest, {
     ...document,
@@ -218,7 +261,7 @@ it.each([
     ),
   };
   expect(() => compileJsonGame(manifest, source)).toThrow(
-    /components\..*\.cards\.0\.effects/,
+    /components\[0\]\.cards\[0\]\.effects/,
   );
 });
 
@@ -265,7 +308,7 @@ it.each([
       },
     },
   };
-  expect(() => compileJsonGame(manifest, source)).toThrow(/options\.0/);
+  expect(() => compileJsonGame(manifest, source)).toThrow(/options\[0\]/);
 });
 
 it('executes an entire JSON-authored game with dealing, placement, resources, turns and victory', () => {

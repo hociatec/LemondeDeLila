@@ -65,177 +65,182 @@
   "victory": {
     "kind": "by-resource-track-race"
   },
-  "resourceTrackRace": {
-    "trackId": "comet",
-    "diceId": "main",
-    "tiles": {
-      "$content": "content/catalogue.json#/tiles"
-    },
-    "faces": [
-      "herbivore",
-      "carnivore",
-      "egg",
-      "leaf",
-      "danger",
-      "herbivore"
-    ],
-    "resources": {
-      "herbivores": "herbivores",
-      "carnivores": "carnivores",
-      "eggs": "eggs",
-      "leaves": "leaves"
-    },
-    "dangerCounter": "primalis.danger-amplified",
-    "finishReason": "comet-impact",
-    "resolvedEvent": "primalis.roll.resolved",
-    "eventNamespace": "primalis",
-    "mechanics": {
-      "rerollValues": [
-        6
-      ],
-      "rerollLimit": 1,
-      "advance": 1,
-      "faceGains": {
-        "herbivore": [
-          {
-            "resources": [
-              "herbivores"
-            ],
-            "amount": 1,
-            "select": "first"
-          }
-        ],
-        "carnivore": [
-          {
-            "resources": [
-              "carnivores"
-            ],
-            "amount": 1,
-            "select": "first"
-          }
-        ],
-        "egg": [
-          {
-            "resources": [
-              "herbivores",
-              "carnivores"
-            ],
-            "amount": 1,
-            "select": "largest"
-          }
-        ],
-        "leaf": [
-          {
-            "resources": [
-              "leaves"
-            ],
-            "amount": 1,
-            "select": "first"
-          }
-        ],
-        "danger": []
-      },
-      "tileRules": [
-        {
-          "position": 1,
-          "faces": [
-            "egg"
-          ],
-          "gains": {
-            "eggs": 1
-          },
-          "event": "primalis.harvest.doubled"
-        },
-        {
-          "position": 1,
-          "faces": [
-            "leaf"
-          ],
-          "gains": {
-            "leaves": 1
-          },
-          "event": "primalis.harvest.doubled"
-        },
-        {
-          "position": 2,
-          "greaterResource": {
-            "left": "carnivores",
-            "right": "herbivores"
-          },
-          "gains": {
-            "herbivores": -1
-          }
-        },
-        {
-          "position": 3,
-          "faces": [
-            "leaf"
-          ],
-          "gains": {
-            "leaves": 1
-          }
-        },
-        {
-          "position": 4,
-          "faces": [
-            "carnivore"
-          ],
-          "gains": {
-            "eggs": 1
-          }
-        },
-        {
-          "position": 6,
-          "gains": {},
-          "setCounter": {
-            "id": "primalis.danger-amplified",
-            "value": 1
-          }
-        },
-        {
-          "position": 7,
-          "gains": {
-            "leaves": 1
-          }
-        },
-        {
-          "position": 8,
-          "faces": [
-            "herbivore",
-            "carnivore"
-          ],
-          "gains": {
-            "leaves": 1
-          }
-        }
-      ],
-      "dangerFaces": [
-        "danger"
-      ],
-      "dangerDistance": 1,
-      "amplifiedDistance": 1,
-      "extraDistance": {
-        "9": 1
-      },
-      "ranking": [
-        [
-          "herbivores",
-          "carnivores",
-          "leaves"
-        ],
-        [
-          "leaves"
-        ],
-        [
-          "eggs"
-        ]
-      ]
-    }
-  },
   "snapshotMigrations": [
     {
       "fromVersion": "1",
       "toVersion": "2"
+    }
+  ],
+  "extensions": [
+    {
+      "type": "resourceTrackRace",
+      "config": {
+        "trackId": "comet",
+        "diceId": "main",
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "faces": [
+          "herbivore",
+          "carnivore",
+          "egg",
+          "leaf",
+          "danger",
+          "herbivore"
+        ],
+        "resources": {
+          "herbivores": "herbivores",
+          "carnivores": "carnivores",
+          "eggs": "eggs",
+          "leaves": "leaves"
+        },
+        "dangerCounter": "primalis.danger-amplified",
+        "finishReason": "comet-impact",
+        "resolvedEvent": "primalis.roll.resolved",
+        "eventNamespace": "primalis",
+        "mechanics": {
+          "rerollValues": [
+            6
+          ],
+          "rerollLimit": 1,
+          "advance": 1,
+          "faceGains": {
+            "herbivore": [
+              {
+                "resources": [
+                  "herbivores"
+                ],
+                "amount": 1,
+                "select": "first"
+              }
+            ],
+            "carnivore": [
+              {
+                "resources": [
+                  "carnivores"
+                ],
+                "amount": 1,
+                "select": "first"
+              }
+            ],
+            "egg": [
+              {
+                "resources": [
+                  "herbivores",
+                  "carnivores"
+                ],
+                "amount": 1,
+                "select": "largest"
+              }
+            ],
+            "leaf": [
+              {
+                "resources": [
+                  "leaves"
+                ],
+                "amount": 1,
+                "select": "first"
+              }
+            ],
+            "danger": []
+          },
+          "tileRules": [
+            {
+              "position": 1,
+              "faces": [
+                "egg"
+              ],
+              "gains": {
+                "eggs": 1
+              },
+              "event": "primalis.harvest.doubled"
+            },
+            {
+              "position": 1,
+              "faces": [
+                "leaf"
+              ],
+              "gains": {
+                "leaves": 1
+              },
+              "event": "primalis.harvest.doubled"
+            },
+            {
+              "position": 2,
+              "greaterResource": {
+                "left": "carnivores",
+                "right": "herbivores"
+              },
+              "gains": {
+                "herbivores": -1
+              }
+            },
+            {
+              "position": 3,
+              "faces": [
+                "leaf"
+              ],
+              "gains": {
+                "leaves": 1
+              }
+            },
+            {
+              "position": 4,
+              "faces": [
+                "carnivore"
+              ],
+              "gains": {
+                "eggs": 1
+              }
+            },
+            {
+              "position": 6,
+              "gains": {},
+              "setCounter": {
+                "id": "primalis.danger-amplified",
+                "value": 1
+              }
+            },
+            {
+              "position": 7,
+              "gains": {
+                "leaves": 1
+              }
+            },
+            {
+              "position": 8,
+              "faces": [
+                "herbivore",
+                "carnivore"
+              ],
+              "gains": {
+                "leaves": 1
+              }
+            }
+          ],
+          "dangerFaces": [
+            "danger"
+          ],
+          "dangerDistance": 1,
+          "amplifiedDistance": 1,
+          "extraDistance": {
+            "9": 1
+          },
+          "ranking": [
+            [
+              "herbivores",
+              "carnivores",
+              "leaves"
+            ],
+            [
+              "leaves"
+            ],
+            [
+              "eggs"
+            ]
+          ]
+        }
+      }
     }
   ]
 }

@@ -47,7 +47,12 @@ export function validateEffectCondition(
   if (condition.kind === 'all' || condition.kind === 'any') {
     if (condition.conditions.length === 0) fail(path, 'condition vide');
     condition.conditions.forEach((nested, index) =>
-      validateEffectCondition(nested, `${path}.${index}`, references, fail),
+      validateEffectCondition(
+        nested,
+        `${path}.conditions[${index}]`,
+        references,
+        fail,
+      ),
     );
     return;
   }

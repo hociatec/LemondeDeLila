@@ -4,6 +4,7 @@ import { gameInput } from '../actions/game-input-schema';
 import { cardSelectionRules } from '../recipes/gameplay/card-selection.recipes';
 import type { CompiledJsonPrograms } from './json-game-program-compiler';
 import type { JsonGameDocument } from './json-game-schema';
+import { authoringProperty } from '../contracts/authoring-diagnostics';
 
 type JsonFailure = (path: string, reason: string) => never;
 
@@ -21,9 +22,11 @@ export function compileJsonActions(
         'selectCards' in action
           ? cardSelectionRules(action.selectCards).action
           : 'recipe' in action
-            ? ((programs.actions[action.recipe] as
-                GameActionShape<Record<string, never>> | undefined) ??
-              fail(`actions.${id}`, 'recipe program required'))
+            ? (programs.actions[action.recipe] ??
+              fail(
+                `${authoringProperty('actions', id)}.recipe`,
+                'recipe program required',
+              ))
             : defineAction<Record<string, never>, Record<string, never>>({
                 input: gameInput.object({}),
                 execute: ({ ctx }) => ctx.effects.run(...action.effects),

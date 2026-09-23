@@ -97,9 +97,9 @@ export class SoundsUploadManager {
     const stat = await fs.promises.lstat(tempFilePath).catch(() => null);
     if (!stat?.isFile()) throw new BadRequestException('Fichier manquant.');
     const extension = path.extname(originalName || tempFilePath).toLowerCase();
-    if (!['.mp3', '.wav', '.wave'].includes(extension)) {
+    if (!['.mp3', '.wav', '.wave', '.ogg'].includes(extension)) {
       throw new BadRequestException(
-        'Seuls les fichiers .mp3, .wav ou .wave sont acceptés.',
+        'Seuls les fichiers .mp3, .wav, .wave ou .ogg sont acceptés.',
       );
     }
     await this.assertValidSize(tempFilePath, '');

@@ -17,7 +17,8 @@ export function assertProgramReferences(
   const active = jsonEffectPacks.filter((extension) =>
     sources.has(extension.documentKey),
   );
-  if (active.length > 1) fail('programs', 'one game program per definition');
+  if (active.length > 1)
+    fail(active[1].documentKey, 'one game program per definition');
 
   const allPatterns = patterns ?? [];
   const components = [
@@ -57,10 +58,12 @@ export function assertProgramReferences(
     const enabled = source !== undefined;
     if (
       extension.victoryKind &&
-      (document.victory.kind === extension.victoryKind) !== enabled
+      (document.victory.kind === extension.victoryKind
+        ? !enabled
+        : enabled && extension.victoryRequired !== false)
     )
       fail(
-        'victory',
+        'victory.kind',
         `${extension.victoryLabel ?? extension.documentKey} program and victory required together`,
       );
     if (enabled) extension.validateUnknown(context, source);

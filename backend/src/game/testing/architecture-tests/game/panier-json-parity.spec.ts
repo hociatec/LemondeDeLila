@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { createHash } from 'node:crypto';
 import {
   testGame,
@@ -7,13 +8,14 @@ import {
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/les-quatre-vents/panier-express/manifest.json';
 import { resolveJsonContent } from '../../../rules/public-api';
-import composition from '../../../games/les-quatre-vents/panier-express/game.json';
+import compositionExtensionSource from '../../../games/les-quatre-vents/panier-express/game.json';
 import board from '../../../games/les-quatre-vents/panier-express/content/board.json';
 import cards from '../../../games/les-quatre-vents/panier-express/content/cards.json';
 import pawns from '../../../games/les-quatre-vents/panier-express/content/pawns.json';
 import products from '../../../games/les-quatre-vents/panier-express/content/products.json';
 import quizzes from '../../../games/les-quatre-vents/panier-express/content/quizzes.json';
 import reference from '../../fixtures/panier-before-json-parity.json';
+const composition = legacyExtensionFixture(compositionExtensionSource, 'board');
 
 const document = resolveJsonContent(composition, {
   'content/board.json': board,

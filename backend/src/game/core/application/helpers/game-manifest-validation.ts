@@ -13,24 +13,30 @@ export type GameManifestMetadata = {
 export function assertGameManifestMatches(
   value: unknown,
   expected: Omit<GameManifestMetadata, 'engine'>,
+  diagnostic?: (field: string, received: unknown) => never,
 ): asserts value is GameManifestMetadata {
   const fail = (field: string): never => {
+    if (diagnostic) {
+      const descriptor =
+        value && typeof value === 'object'
+          ? Object.getOwnPropertyDescriptor(value, field)
+          : undefined;
+      diagnostic(
+        field,
+        descriptor && 'value' in descriptor ? descriptor.value : undefined,
+      );
+    }
     throw new GameConfigurationError(
       `Manifeste ${expected.code} incompatible : ${field}`,
     );
   };
-  if (!value || typeof value !== 'object' || Array.isArray(value))
-    fail('objet requis');
+  if (!value || typeof value !== 'object' || Array.isArray(value)) fail('');
   const manifest = value as Record<string, unknown>;
   if (manifest.code !== expected.code) fail('code');
   if (manifest.engine !== expected.code) fail('engine');
-  if (
-    typeof manifest.code !== 'string' ||
-    manifest.code.length > 128 ||
-    typeof manifest.engine !== 'string' ||
-    manifest.engine.length > 128
-  )
-    fail('identifiants');
+  for (const field of ['code', 'engine'] as const)
+    if (typeof manifest[field] !== 'string' || manifest[field].length > 128)
+      fail(field);
   if (
     typeof manifest.name !== 'string' ||
     !manifest.name.trim() ||
@@ -44,12 +50,12 @@ export function assertGameManifestMatches(
     )
       fail(field);
   }
+  if (Number(manifest.minPlayers) < 1) fail('minPlayers');
   if (
-    Number(manifest.minPlayers) < 1 ||
     Number(manifest.maxPlayers) < Number(manifest.minPlayers) ||
     Number(manifest.maxPlayers) > 64
   )
-    fail('limites de joueurs');
+    fail('maxPlayers');
   if (
     manifest.summary !== undefined &&
     (typeof manifest.summary !== 'string' || manifest.summary.length > 2000)

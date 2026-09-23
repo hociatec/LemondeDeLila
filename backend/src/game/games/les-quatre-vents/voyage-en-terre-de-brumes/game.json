@@ -129,39 +129,44 @@
   "victory": {
     "kind": "by-chapter-encounter"
   },
-  "chapterEncounter": {
-    "trackId": "ireland",
-    "diceId": "main",
-    "choiceId": "choice-chapter-encounter.choice",
-    "lastTargetStatusId": "choice-chapter-encounter.last-target",
-    "finishStartedCounterId": "choice-chapter-encounter.finish-started",
-    "finishCountdownCounterId": "choice-chapter-encounter.finish-countdown",
-    "collectionResourcePrefix": "choice-chapter-encounter.collection.",
-    "collectionKinds": [
-      "legend",
-      "farce",
-      "treasure",
-      "landscape"
-    ],
-    "tiles": {
-      "$content": "content/catalogue.json#/tiles"
-    },
-    "decks": {
-      "legend": {
-        "$content": "content/catalogue.json#/legend"
-      },
-      "farce": {
-        "$content": "content/catalogue.json#/farce"
-      },
-      "treasure": {
-        "$content": "content/catalogue.json#/treasure"
-      },
-      "landscape": {
-        "$content": "content/catalogue.json#/landscape"
+  "extensions": [
+    {
+      "type": "chapterEncounter",
+      "config": {
+        "trackId": "ireland",
+        "diceId": "main",
+        "choiceId": "choice-chapter-encounter.choice",
+        "lastTargetStatusId": "choice-chapter-encounter.last-target",
+        "finishStartedCounterId": "choice-chapter-encounter.finish-started",
+        "finishCountdownCounterId": "choice-chapter-encounter.finish-countdown",
+        "collectionResourcePrefix": "choice-chapter-encounter.collection.",
+        "collectionKinds": [
+          "legend",
+          "farce",
+          "treasure",
+          "landscape"
+        ],
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "decks": {
+          "legend": {
+            "$content": "content/catalogue.json#/legend"
+          },
+          "farce": {
+            "$content": "content/catalogue.json#/farce"
+          },
+          "treasure": {
+            "$content": "content/catalogue.json#/treasure"
+          },
+          "landscape": {
+            "$content": "content/catalogue.json#/landscape"
+          }
+        },
+        "legacyQuizDeckId": "legend",
+        "tieBreakCollection": "legend",
+        "finishReason": "irish-collection"
       }
-    },
-    "legacyQuizDeckId": "legend",
-    "tieBreakCollection": "legend",
-    "finishReason": "irish-collection"
-  }
+    }
+  ]
 }

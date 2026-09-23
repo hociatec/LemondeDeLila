@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -6,7 +7,9 @@ import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import MORPION_PAWNS from './content/pawns.json';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
-import document from './game.json';
+import documentExtensionSource from './game.json';
+const document = legacyExtensionFixture(documentExtensionSource, 'grid');
+
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/pawns.json': MORPION_PAWNS,
 });

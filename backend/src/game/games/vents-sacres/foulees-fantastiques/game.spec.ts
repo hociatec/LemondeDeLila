@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -8,8 +9,12 @@ import type {
 } from '../../../engine/sdk/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
-import document from './game.json';
+import documentExtensionSource from './game.json';
 import catalogue from './catalogue.json';
+const document = legacyExtensionFixture(
+  documentExtensionSource,
+  'teamPawnRace',
+);
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/catalogue.json': catalogue,

@@ -8,9 +8,24 @@ import type {
 import type { PublicController } from './public-controller';
 
 export interface ContextValuesCapability {
-  readonly ranking: PublicController<GameRankingController>;
-  readonly score: PublicController<GameScoreController>;
-  readonly resources: PublicController<GameResourcesController>;
-  readonly counters: PublicController<GameCountersController>;
-  readonly status: PublicController<GameStatusController>;
+  readonly ranking: PublicController<
+    GameRankingController,
+    'rank' | 'tiers' | 'leaders'
+  >;
+  readonly score: PublicController<
+    GameScoreController,
+    'add' | 'get' | 'set' | 'leaders' | 'subtract' | 'ranking'
+  >;
+  readonly resources: PublicController<
+    GameResourcesController,
+    'exchange' | 'transfer' | 'add' | 'remove' | 'has' | 'get' | 'set'
+  >;
+  readonly counters: PublicController<
+    GameCountersController,
+    'add' | 'get' | 'set' | 'subtract' | 'drain'
+  >;
+  readonly status: PublicController<
+    GameStatusController,
+    'add' | 'remove' | 'has' | 'get' | 'consume' | 'list' | 'tick'
+  >;
 }

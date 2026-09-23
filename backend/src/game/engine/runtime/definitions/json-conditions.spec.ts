@@ -1,3 +1,4 @@
+import type { MutableStateCopy } from '../contracts/state-copy';
 import { compileJsonGame } from '../../../rules/public-api';
 import { DeclarativeGameRuntime } from '../declarative-game.runtime';
 import type { EffectCondition } from '../contracts/effect-ir';
@@ -131,7 +132,7 @@ it.each<[EffectCondition, boolean]>([
         { id: 2, username: 'Two' },
       ],
       metadata: { rng: { seed: 42, counter: 0 } },
-    }) as DeclarativeState<Record<string, never>>;
+    }) as MutableStateCopy<DeclarativeState<Record<string, never>>>;
     state.engine.kits.inventory!.byPlayer.bag['1'] = ['apple', 'apple', 'pear'];
     state.engine.kits.ownership!.owners.land.house = [1];
     const restored: typeof state = JSON.parse(JSON.stringify(state));

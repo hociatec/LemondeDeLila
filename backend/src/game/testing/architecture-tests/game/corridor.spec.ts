@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -7,8 +8,9 @@ import { compileJsonGame } from '../../../rules/public-api';
 import { GameWsStateMessagesPresenter } from '../../../core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter';
 import { projectEventsForPlayer } from '../../../engine/runtime/projection/game-system-view';
 
-import document from '../../../games/vents-sacres/corridor/game.json';
+import documentExtensionSource from '../../../games/vents-sacres/corridor/game.json';
 import manifest from '../../../games/vents-sacres/corridor/manifest.json';
+const document = legacyExtensionFixture(documentExtensionSource, 'pathWalls');
 
 const gameDefinition = compileJsonGame(manifest, document);
 

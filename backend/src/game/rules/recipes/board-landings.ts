@@ -3,7 +3,7 @@ import type { GameContext } from '../../engine/sdk/public-api';
 import type {
   BoardGameProgram,
   BoardLanding,
-} from '../effect-packs/board-movement-landings/program';
+} from '../game-specific/board-movement-landings/program';
 import { GameStateViolationError } from '../../core/domain/errors/game-domain.errors';
 
 export type BoardContinuation =

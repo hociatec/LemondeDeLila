@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -5,7 +6,8 @@ import {
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
-import document from './game.json';
+import documentExtensionSource from './game.json';
+const document = legacyExtensionFixture(documentExtensionSource, 'pawnRace');
 
 const gameDefinition = compileJsonGame(manifest, document);
 

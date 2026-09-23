@@ -1,3 +1,4 @@
+import { atAuthoringPath } from '../contracts/authoring-origin';
 import {
   mergeInitialization,
   mergeComponents,
@@ -261,9 +262,8 @@ function compileGameDefinition<
       ...(patterns.actions ?? {}),
       ...definition.actions,
     },
-    initialization: mergeInitialization(
-      patterns.initialization,
-      definition.initialization,
+    initialization: atAuthoringPath('definition', () =>
+      mergeInitialization(patterns.initialization, definition.initialization),
     ),
     turn: resolveTurnPolicy(patterns.turn, definition.turn),
     lifecycle: mergeLifecycleHooks(patterns.lifecycle, definition.lifecycle),
@@ -308,20 +308,26 @@ function prepareDefinitionComposition<
   >,
 ) {
   const patterns = composePatterns(...(definition.patterns ?? []));
-  assertNoImplicitComponentOverrides(
-    patterns.components ?? [],
-    definition.components ?? [],
-    definition.id,
+  atAuthoringPath('definition', () =>
+    assertNoImplicitComponentOverrides(
+      patterns.components ?? [],
+      definition.components ?? [],
+      definition.id,
+    ),
   );
-  assertNoImplicitTurnOverride(patterns.turn, definition.turn, definition.id);
+  atAuthoringPath('definition', () =>
+    assertNoImplicitTurnOverride(patterns.turn, definition.turn, definition.id),
+  );
   const components = mergeComponents(
     patterns.components ?? [],
     definition.components ?? [],
   );
-  assertNoImplicitActionOverrides(
-    patterns.actions ?? {},
-    definition.actions,
-    definition.id,
+  atAuthoringPath('definition', () =>
+    assertNoImplicitActionOverrides(
+      patterns.actions ?? {},
+      definition.actions,
+      definition.id,
+    ),
   );
   const content =
     definition.content ?? defineGameContent(definition.id, { components });

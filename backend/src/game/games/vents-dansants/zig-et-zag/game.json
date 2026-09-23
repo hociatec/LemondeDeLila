@@ -9,8 +9,12 @@
     {
       "component": "cards.deck",
       "id": "battle",
-      "cards": { "$content": "content/catalogue.json#/cardIds" },
-      "catalog": { "$content": "content/catalogue.json#/cardIds" },
+      "cards": {
+        "$content": "content/catalogue.json#/cardIds"
+      },
+      "catalog": {
+        "$content": "content/catalogue.json#/cardIds"
+      },
       "shuffle": true,
       "empty": "recycle"
     },
@@ -22,34 +26,66 @@
       "visibility": "owner"
     }
   ],
-  "setup": { "firstPlayer": "first", "startRound": true },
+  "setup": {
+    "firstPlayer": "first",
+    "startRound": true
+  },
   "resourceIds": [],
   "shortcuts": [
-    { "key": "Space", "type": "action", "actionType": "draw_card" }
+    {
+      "key": "Space",
+      "type": "action",
+      "actionType": "draw_card"
+    }
   ],
   "initialPhase": "selection",
   "phases": {
     "selection": {
-      "actions": ["draw_card"],
-      "transitions": ["battle-face-down"]
+      "actions": [
+        "draw_card"
+      ],
+      "transitions": [
+        "battle-face-down"
+      ]
     },
     "battle-face-down": {
-      "actions": ["draw_card"],
-      "transitions": ["battle-face-up", "selection"]
+      "actions": [
+        "draw_card"
+      ],
+      "transitions": [
+        "battle-face-up",
+        "selection"
+      ]
     },
     "battle-face-up": {
-      "actions": ["draw_card"],
-      "transitions": ["battle-face-down", "selection"]
+      "actions": [
+        "draw_card"
+      ],
+      "transitions": [
+        "battle-face-down",
+        "selection"
+      ]
     }
   },
   "actions": {
-    "draw_card": { "recipe": "cards-battle-ties-draw" }
+    "draw_card": {
+      "recipe": "cards-battle-ties-draw"
+    }
   },
-  "victory": { "kind": "by-battle-ties" },
-  "battleTies": {
-    "deckId": "battle",
-    "handId": "players",
-    "totalCards": 54,
-    "cards": { "$content": "content/catalogue.json#/cards" }
-  }
+  "victory": {
+    "kind": "by-battle-ties"
+  },
+  "extensions": [
+    {
+      "type": "battleTies",
+      "config": {
+        "deckId": "battle",
+        "handId": "players",
+        "totalCards": 54,
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        }
+      }
+    }
+  ]
 }

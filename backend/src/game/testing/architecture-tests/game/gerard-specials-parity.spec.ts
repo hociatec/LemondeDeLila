@@ -1,10 +1,15 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { createHash } from 'node:crypto';
 import { testGame } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/vents-dansants/gerard-president/manifest.json';
-import document from '../../../games/vents-dansants/gerard-president/game.json';
+import documentExtensionSource from '../../../games/vents-dansants/gerard-president/game.json';
 import catalogue from '../../../games/vents-dansants/gerard-president/content/catalogue.json';
 import reference from '../../fixtures/gerard-specials-before-json-parity.json';
+const document = legacyExtensionFixture(
+  documentExtensionSource,
+  'themeNameCards',
+);
 
 const definition = compileJsonGame(manifest, document, {
   'content/catalogue.json': catalogue,

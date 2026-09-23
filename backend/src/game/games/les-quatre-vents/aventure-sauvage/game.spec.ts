@@ -1,11 +1,13 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
-import document from './game.json';
+import documentExtensionSource from './game.json';
 import board from './content/board.json';
 import cards from './content/cards.json';
 import pawns from './content/pawns.json';
+const document = legacyExtensionFixture(documentExtensionSource, 'eventRace');
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/board.json': board,

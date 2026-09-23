@@ -46,15 +46,12 @@ type PreviousAuthorContract<TState extends object> = {
     keyof ContextEffectCapability
   >;
 };
-type Equivalent<A, B> = [A] extends [B]
-  ? [B] extends [A]
-    ? true
-    : false
-  : false;
-const contractMatches: Equivalent<
-  GameContext<{ score: number }>,
-  PreviousAuthorContract<{ score: number }>
-> = true;
+// Runtime may grow internal members without enlarging the author contract.
+const contractMatches: PreviousAuthorContract<{
+  score: number;
+}> extends GameContext<{ score: number }>
+  ? true
+  : false = true;
 
 function implementsAuthorContract(
   context: RuntimeContext<{ score: number }>,

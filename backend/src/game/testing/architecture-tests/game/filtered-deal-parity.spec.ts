@@ -1,13 +1,22 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { createHash } from 'node:crypto';
 import { testGame } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import ritesManifest from '../../../games/vents-dansants/entre-rites-et-lumieres/manifest.json';
-import ritesDocument from '../../../games/vents-dansants/entre-rites-et-lumieres/game.json';
+import ritesDocumentExtensionSource from '../../../games/vents-dansants/entre-rites-et-lumieres/game.json';
 import ritesCatalogue from '../../../games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json';
 import professionsManifest from '../../../games/vents-dansants/les-mains-de-la-terre/manifest.json';
-import professionsDocument from '../../../games/vents-dansants/les-mains-de-la-terre/game.json';
+import professionsDocumentExtensionSource from '../../../games/vents-dansants/les-mains-de-la-terre/game.json';
 import professionsCatalogue from '../../../games/vents-dansants/les-mains-de-la-terre/catalogue.json';
 import reference from '../../fixtures/filtered-deal-before-parity.json';
+const ritesDocument = legacyExtensionFixture(
+  ritesDocumentExtensionSource,
+  'ritualPhases',
+);
+const professionsDocument = legacyExtensionFixture(
+  professionsDocumentExtensionSource,
+  'familyEffects',
+);
 
 const rites = compileJsonGame(ritesManifest, ritesDocument, {
   'content/catalogue.json': ritesCatalogue,

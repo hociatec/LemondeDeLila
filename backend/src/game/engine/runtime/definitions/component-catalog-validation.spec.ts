@@ -93,7 +93,11 @@ it.each(['groups', 'total'] as const)(
           ...(field === 'total' ? { total: source } : {}),
         },
       ]),
-    ).toThrow('components.collection.inventories');
+    ).toThrow(
+      field === 'groups'
+        ? 'components[0].groups.items.id'
+        : 'components[0].total.id',
+    );
   },
 );
 

@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -5,8 +6,12 @@ import {
 import { compileJsonGame } from '../../../rules/public-api';
 
 import manifest from './manifest.json';
-import document from './game.json';
+import documentExtensionSource from './game.json';
 import catalogue from './catalogue.json';
+const document = legacyExtensionFixture(
+  documentExtensionSource,
+  'propertyEconomy',
+);
 
 const assets = { 'content/catalogue.json': catalogue };
 const gameDefinition = compileJsonGame(manifest, document, assets);

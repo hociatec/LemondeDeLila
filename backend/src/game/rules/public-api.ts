@@ -3,6 +3,13 @@ import { createJsonGameCompiler } from '../engine/runtime/definitions/json-game-
 import type { JsonGameCoreDocument } from '../engine/runtime/definitions/json-game-core-document';
 import type { JsonEffectPackDocumentFields } from './effect-packs/json-effect-pack-document-fields';
 import { jsonEffectPacks } from './effect-packs/json-effect-pack-registry';
+import type {
+  JsonEffectPackViews,
+  JsonGameViewAugmentation,
+} from '../engine/runtime/contracts/json-effect-pack-catalog';
+
+export type JsonGameViews = JsonEffectPackViews<typeof jsonEffectPacks>;
+export type JsonGameView = JsonGameViewAugmentation<typeof jsonEffectPacks>;
 
 const compiler = createJsonGameCompiler(jsonEffectPacks);
 export type JsonGameDocument = JsonGameCoreDocument &

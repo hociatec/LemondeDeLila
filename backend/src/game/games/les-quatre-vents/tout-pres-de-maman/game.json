@@ -80,68 +80,73 @@
   "victory": {
     "kind": "by-paired-pawn-race"
   },
-  "pairedPawnRace": {
-    "trackId": "forest",
-    "diceId": "main",
-    "deckId": "events",
-    "tokenResource": "eucalyptus",
-    "bonusRerollStatus": "pairedPawn.bonus-reroll",
-    "tokensToWin": 3,
-    "maxDepth": 12,
-    "finishReason": "pairedPawn-found",
-    "eventNamespace": "pairedPawn",
-    "tiles": {
-      "$content": "content/catalogue.json#/tiles"
-    },
-    "cards": {
-      "$content": "content/catalogue.json#/cards"
-    },
-    "transferAmount": 1,
-    "sharedAdvance": 1,
-    "meetingAdvance": 1,
-    "rollMinimum": 4,
-    "rollAdvance": 1,
-    "tileRules": {
-      "start": {
-        "kind": "gain",
-        "amount": 2
-      },
-      "neutral": {
-        "kind": "none",
-        "amount": 0
-      },
-      "token": {
-        "kind": "gain",
-        "amount": 1
-      },
-      "card": {
-        "kind": "draw",
-        "amount": 0
-      },
-      "bonds": {
-        "kind": "move",
-        "amount": 2
-      },
-      "slide": {
-        "kind": "move",
-        "amount": -2
-      },
-      "storm": {
-        "kind": "skip",
-        "amount": 1
-      },
-      "nest": {
-        "kind": "skip",
-        "amount": 1
-      },
-      "meeting": {
-        "kind": "meeting",
-        "amount": 0
-      },
-      "finish": {
-        "kind": "finish",
-        "amount": 0
+  "extensions": [
+    {
+      "type": "pairedPawnRace",
+      "config": {
+        "trackId": "forest",
+        "diceId": "main",
+        "deckId": "events",
+        "tokenResource": "eucalyptus",
+        "bonusRerollStatus": "pairedPawn.bonus-reroll",
+        "tokensToWin": 3,
+        "maxDepth": 12,
+        "finishReason": "pairedPawn-found",
+        "eventNamespace": "pairedPawn",
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "transferAmount": 1,
+        "sharedAdvance": 1,
+        "meetingAdvance": 1,
+        "rollMinimum": 4,
+        "rollAdvance": 1,
+        "tileRules": {
+          "start": {
+            "kind": "gain",
+            "amount": 2
+          },
+          "neutral": {
+            "kind": "none",
+            "amount": 0
+          },
+          "token": {
+            "kind": "gain",
+            "amount": 1
+          },
+          "card": {
+            "kind": "draw",
+            "amount": 0
+          },
+          "bonds": {
+            "kind": "move",
+            "amount": 2
+          },
+          "slide": {
+            "kind": "move",
+            "amount": -2
+          },
+          "storm": {
+            "kind": "skip",
+            "amount": 1
+          },
+          "nest": {
+            "kind": "skip",
+            "amount": 1
+          },
+          "meeting": {
+            "kind": "meeting",
+            "amount": 0
+          },
+          "finish": {
+            "kind": "finish",
+            "amount": 0
+          }
+        }
       }
     }
-  }
+  ]
 }

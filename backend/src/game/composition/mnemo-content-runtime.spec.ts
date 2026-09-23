@@ -1,3 +1,4 @@
+import { legacyExtensionFixture } from '../engine/testing/public-api';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -11,12 +12,16 @@ import { MnemoQuizStoreService } from '../../modules/admin/infrastructure/storag
 import type { GameRuntime } from '../core/application/ports/game-runtime.port';
 import type { GameState } from '../core/application/models/game-state.model';
 import manifest from '../games/vents-infinis/arche-de-mnemosyne/manifest.json';
-import document from '../games/vents-infinis/arche-de-mnemosyne/game.json';
+import documentExtensionSource from '../games/vents-infinis/arche-de-mnemosyne/game.json';
 import seed from '../games/vents-infinis/arche-de-mnemosyne/quiz.json';
 import { assertGameStateSize } from '../core/application/services/game-timeline';
 import { GameRegistryService } from '../core/application/services/game-registry.service';
 import { withCatalogWriteLock } from '../../modules/admin/infrastructure/storage/mnemo-catalog-lock';
 import { archivedContent } from '../engine/infrastructure/content/archived-content';
+const document = legacyExtensionFixture(
+  documentExtensionSource,
+  'simultaneousQuiz',
+);
 
 const definition = compileJsonGame(manifest, document, {
   'content/quiz.json': seed,
@@ -75,7 +80,8 @@ function start(runtime: GameRuntime) {
     ...document.simultaneousQuiz.defaults,
     useTimer: false,
   });
-  return act(runtime, state, 'draw');
+  // Configuration enters the quiz phase and starts its first question automatically.
+  return state;
 }
 function act(
   runtime: GameRuntime,

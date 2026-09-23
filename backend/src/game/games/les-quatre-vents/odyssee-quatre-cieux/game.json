@@ -83,14 +83,6 @@
       "homeStretchFrom": 56
     }
   ],
-  "pawnRace": {
-    "setId": "odyssee",
-    "diceId": "main",
-    "choiceId": "odyssee.move",
-    "finishAt": 61,
-    "finishReason": "all-pawns-arrived",
-    "extraTurnRolls": [6]
-  },
   "components": [],
   "setup": {
     "pawns": [
@@ -105,7 +97,9 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": ["roll"],
+      "actions": [
+        "roll"
+      ],
       "terminal": true
     }
   },
@@ -133,6 +127,21 @@
       "key": "S",
       "type": "interface",
       "id": "score"
+    }
+  ],
+  "extensions": [
+    {
+      "type": "pawnRace",
+      "config": {
+        "setId": "odyssee",
+        "diceId": "main",
+        "choiceId": "odyssee.move",
+        "finishAt": 61,
+        "finishReason": "all-pawns-arrived",
+        "extraTurnRolls": [
+          6
+        ]
+      }
     }
   ]
 }

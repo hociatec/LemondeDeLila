@@ -6,6 +6,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 const MIME_TYPES: Readonly<Record<string, readonly string[]>> = {
+  '.ogg': ['audio/ogg', 'application/ogg', 'audio/vorbis'],
   '.mp3': ['audio/mpeg', 'audio/mp3', 'audio/x-mp3', 'audio/x-mpeg'],
   '.wav': ['audio/wav', 'audio/wave', 'audio/x-wav', 'audio/vnd.wave'],
   '.wave': ['audio/wav', 'audio/wave', 'audio/x-wav', 'audio/vnd.wave'],
@@ -44,7 +45,8 @@ export function readProbedSoundDuration(
   ) {
     throw new BadRequestException('Contenu audio illisible.');
   }
-  const expected = extension === '.mp3' ? 'mp3' : 'wav';
+  const expected =
+    extension === '.mp3' ? 'mp3' : extension === '.ogg' ? 'ogg' : 'wav';
   if (
     probe.format.format_name !== expected ||
     !probe.streams.some(
@@ -67,5 +69,5 @@ export const SOUND_INPUT_OPTIONS = Object.freeze([
   '-protocol_whitelist',
   'file',
   '-format_whitelist',
-  'wav,mp3',
+  'wav,mp3,ogg',
 ]);

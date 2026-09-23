@@ -9,6 +9,7 @@ import { ownership } from '../kits/ownership-kit';
 import { pawns } from '../kits/pawn-kit';
 import { quiz } from '../kits/quiz-kit';
 import type { GameComponentDefinition } from './component-kit';
+import { authoringPathOf } from '../contracts/authoring-origin';
 
 /** Direct component literals must satisfy the same contracts as author factories. */
 export function assertComponentCatalog(
@@ -46,8 +47,9 @@ export function assertComponentCatalog(
         break;
     }
   } catch (error) {
+    const field = authoringPathOf(error);
     fail(
-      `components.${component.id}`,
+      `components.${component.id}${field === undefined ? '' : `.${field}`}`,
       error instanceof Error ? error.message : 'Invalid component catalog',
     );
   }

@@ -1,4 +1,9 @@
 import {
+  atAuthoringPath,
+  withAuthoringPath,
+} from '../contracts/authoring-origin';
+import type { ReadonlyState } from '../contracts/state-copy';
+import {
   GameConfigurationError,
   GameNotFoundError,
   GameRuleViolationError,
@@ -27,16 +32,19 @@ export const ownership = {
   registry(
     definition: Omit<OwnershipDefinition, 'component'>,
   ): OwnershipDefinition {
-    assertPlayerValueId(definition.id);
-    for (const assetId of definition.assets) assertPlayerValueId(assetId);
-    if (
-      definition.id.trim().length === 0 ||
-      definition.assets.some((assetId) => assetId.trim().length === 0) ||
-      new Set(definition.assets).size !== definition.assets.length
-    ) {
-      throw new GameConfigurationError(
-        `Catalogue de propriété invalide: ${definition.id}`,
-      );
+    atAuthoringPath('id', () => assertPlayerValueId(definition.id));
+    const seen = new Set<string>();
+    for (const [index, assetId] of definition.assets.entries()) {
+      const path = `assets[${index}]`;
+      atAuthoringPath(path, () => assertPlayerValueId(assetId));
+      if (!assetId.trim() || seen.has(assetId))
+        throw withAuthoringPath(
+          new GameConfigurationError(
+            `Catalogue de propriété invalide: ${definition.id}`,
+          ),
+          path,
+        );
+      seen.add(assetId);
     }
     return Object.freeze({
       ...definition,
@@ -236,7 +244,7 @@ export class GameOwnershipController {
 }
 
 export function projectOwnershipKitState(
-  state: OwnershipKitState,
+  state: ReadonlyState<OwnershipKitState>,
   viewerPlayerId: number | null,
   definitions: readonly OwnershipDefinition[] = [],
 ): Record<string, { owners: Record<string, number[]> }> {

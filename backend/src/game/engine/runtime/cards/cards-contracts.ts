@@ -1,3 +1,7 @@
+import {
+  atAuthoringPath,
+  withAuthoringPath,
+} from '../contracts/authoring-origin';
 import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
 import { cardContent } from '../content/game-content';
 
@@ -122,13 +126,16 @@ export const cards = {
       identifiedCards.length > 0 &&
       identifiedCards.length !== definition.cards.length
     ) {
-      throw new GameConfigurationError(
-        `La pioche ${definition.id} mélange références de contenu et valeurs libres`,
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `La pioche ${definition.id} mélange références de contenu et valeurs libres`,
+        ),
+        `cards[${definition.cards.findIndex((card) => isIdentifiedCard(card) !== isIdentifiedCard(definition.cards[0]))}]`,
       );
     }
     const catalog =
       identifiedCards.length === definition.cards.length
-        ? cardContent(identifiedCards)
+        ? atAuthoringPath('cards', () => cardContent(identifiedCards))
         : deepFreeze(structuredClone(definition.cards));
     return deepFreeze({
       ...definition,
@@ -196,10 +203,14 @@ function assertDeckCatalog(
   if (!definition.catalog) return;
   const identified = definition.catalog.filter(isIdentifiedCard);
   if (identified.length > 0 && identified.length !== definition.catalog.length)
-    throw new GameConfigurationError(
-      'A card catalog cannot mix objects and free identifiers',
+    throw withAuthoringPath(
+      new GameConfigurationError(
+        'A card catalog cannot mix objects and free identifiers',
+      ),
+      `catalog[${definition.catalog.findIndex((card) => isIdentifiedCard(card) !== isIdentifiedCard(definition.catalog?.[0]))}]`,
     );
-  if (identified.length > 0) cardContent(identified);
+  if (identified.length > 0)
+    atAuthoringPath('catalog', () => cardContent(identified));
   const identity = (card: CardValue): string => {
     if (isIdentifiedCard(card)) return contentIdKey(card.id);
     if (typeof card === 'string' || typeof card === 'number')
@@ -208,11 +219,21 @@ function assertDeckCatalog(
       'An explicit card catalog requires persistent identifiers',
     );
   };
-  const accepted = new Set(definition.catalog.map(identity));
-  if (definition.cards.some((card) => !accepted.has(identity(card))))
-    throw new GameConfigurationError(
-      `Initial card absent from catalog: ${definition.id}`,
-    );
+  const accepted = new Set(
+    definition.catalog.map((card, index) =>
+      atAuthoringPath(`catalog[${index}]`, () => identity(card)),
+    ),
+  );
+  for (const [index, card] of definition.cards.entries()) {
+    const path = `cards[${index}]`;
+    if (!accepted.has(atAuthoringPath(path, () => identity(card))))
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Initial card absent from catalog: ${definition.id}`,
+        ),
+        path,
+      );
+  }
 }
 
 function deepFreeze<TValue>(value: TValue): TValue {

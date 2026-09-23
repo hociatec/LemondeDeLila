@@ -3,55 +3,107 @@
   "contentVersion": "1",
   "definitionVersion": "2",
   "snapshotMigrations": [
-    { "fromVersion": "mission-galaxie@content:6a876766", "toVersion": "1" },
-    { "fromVersion": "mission-galaxie@content:1b17e6f9", "toVersion": "1" }
+    {
+      "fromVersion": "mission-galaxie@content:6a876766",
+      "toVersion": "1"
+    },
+    {
+      "fromVersion": "mission-galaxie@content:1b17e6f9",
+      "toVersion": "1"
+    }
   ],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
-  "patterns": [{ "kind": "race", "trackId": "quizEvent", "spaces": 50 }],
+  "patterns": [
+    {
+      "kind": "race",
+      "trackId": "quizEvent",
+      "spaces": 50
+    }
+  ],
   "components": [
     {
       "component": "cards.deck",
       "id": "questions",
-      "cards": { "$content": "content/catalogue.json#/questions" },
+      "cards": {
+        "$content": "content/catalogue.json#/questions"
+      },
       "shuffle": true
     },
     {
       "component": "cards.deck",
       "id": "challenges",
-      "cards": { "$content": "content/catalogue.json#/challenges" },
+      "cards": {
+        "$content": "content/catalogue.json#/challenges"
+      },
       "shuffle": true
     },
     {
       "component": "cards.deck",
       "id": "events",
-      "cards": { "$content": "content/catalogue.json#/events" },
+      "cards": {
+        "$content": "content/catalogue.json#/events"
+      },
       "shuffle": true
     }
   ],
   "setup": {},
   "resourceIds": [],
   "shortcuts": [
-    { "key": "D", "type": "action", "actionType": "roll" },
-    { "key": "P", "type": "interface", "id": "position" }
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    },
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position"
+    }
   ],
   "initialPhase": "playing",
-  "phases": { "playing": { "actions": ["roll"], "terminal": true } },
-  "actions": { "roll": { "recipe": "race-quiz-event-track-roll" } },
-  "victory": { "kind": "by-quiz-event-race" },
-  "quizEventRace": {
-    "trackId": "quizEvent",
-    "diceId": "main",
-    "questionDeckId": "questions",
-    "challengeDeckId": "challenges",
-    "eventDeckId": "events",
-    "answerChoiceId": "race-quiz-event-track.answer",
-    "eventMoveChoiceId": "race-quiz-event-track.event-move",
-    "tiles": { "$content": "content/catalogue.json#/tiles" },
-    "questions": { "$content": "content/catalogue.json#/questions" },
-    "challenges": { "$content": "content/catalogue.json#/challenges" },
-    "events": { "$content": "content/catalogue.json#/events" },
-    "maxDepth": 20,
-    "finishReason": "legendary-planet"
-  }
+  "phases": {
+    "playing": {
+      "actions": [
+        "roll"
+      ],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "race-quiz-event-track-roll"
+    }
+  },
+  "victory": {
+    "kind": "by-quiz-event-race"
+  },
+  "extensions": [
+    {
+      "type": "quizEventRace",
+      "config": {
+        "trackId": "quizEvent",
+        "diceId": "main",
+        "questionDeckId": "questions",
+        "challengeDeckId": "challenges",
+        "eventDeckId": "events",
+        "answerChoiceId": "race-quiz-event-track.answer",
+        "eventMoveChoiceId": "race-quiz-event-track.event-move",
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "questions": {
+          "$content": "content/catalogue.json#/questions"
+        },
+        "challenges": {
+          "$content": "content/catalogue.json#/challenges"
+        },
+        "events": {
+          "$content": "content/catalogue.json#/events"
+        },
+        "maxDepth": 20,
+        "finishReason": "legendary-planet"
+      }
+    }
+  ]
 }

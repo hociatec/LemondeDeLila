@@ -1,3 +1,5 @@
+import { authoringProperty } from '../contracts/authoring-diagnostics';
+import { authoringPathOf } from '../contracts/authoring-origin';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import {
   assertEffectInstructions,
@@ -52,15 +54,21 @@ export function assertComponentDefinitions(
   fail: ValidationFailure,
 ): void {
   const references = indexComponents(definition, fail);
-  for (const component of definition.components ?? []) {
-    assertComponent(component, references, fail);
-  }
+  // Validate authored effects before their copies inside generated components.
+  // The content retains the exact extension/deck/card origin.
   assertStaticEffectReferences(
     definition.content?.data,
     'content',
     references,
     fail,
   );
+  for (const [index, component] of (definition.components ?? []).entries()) {
+    assertComponent(
+      component,
+      references,
+      componentFailure(component, index, fail),
+    );
+  }
 }
 
 export function indexComponents(
@@ -88,9 +96,9 @@ export function indexComponents(
   if ((definition.components?.length ?? 0) > 512) {
     fail('components', 'trop de composants');
   }
-  assertResourceIds(references.resources, fail);
+  assertResourceIds(definition, references.resources, fail);
   const keys = new Set<string>();
-  for (const component of definition.components ?? []) {
+  for (const [index, component] of (definition.components ?? []).entries()) {
     const id = 'id' in component ? component.id : undefined;
     if (
       typeof id !== 'string' ||
@@ -99,14 +107,15 @@ export function indexComponents(
       ['constructor', 'prototype', '__proto__'].includes(id)
     ) {
       fail(
-        'components',
+        `components[${index}].id`,
         `identifiant manquant pour « ${component.component} »`,
       );
     }
     const key = `${component.component}:${id}`;
-    if (keys.has(key)) fail('components', `composant dupliqué « ${key} »`);
+    if (keys.has(key))
+      fail(`components[${index}].id`, `composant dupliqué « ${key} »`);
     keys.add(key);
-    assertComponentCatalog(component, fail);
+    assertComponentCatalog(component, componentFailure(component, index, fail));
     if (component.component === 'cards.deck') {
       references.decks.set(component.id, component);
       references.cardIdsByDeck.set(component.id, indexDeckCardIds(component));
@@ -163,15 +172,22 @@ function assertComponent(
   }
   if (component.component === 'cards.sets')
     assertCardSets(component, references, fail);
-  if (component.component === 'cards.hands')
-    assertHandDeckDefinitions(component, references.decks);
+  if (component.component === 'cards.hands') {
+    try {
+      assertHandDeckDefinitions(component, references.decks);
+    } catch (error) {
+      const path = authoringPathOf(error);
+      if (path === undefined || !(error instanceof Error)) throw error;
+      fail(`components.${component.id}.${path}`, error.message);
+    }
+  }
   if (component.component === 'economy.market')
     assertMarket(component, references, fail);
   if (component.component === 'movement.track') {
     for (const [field, value] of Object.entries({
       finish: component.finish,
-      homeFrom: component.homeStretch?.from,
-      homeTo: component.homeStretch?.to,
+      'homeStretch.from': component.homeStretch?.from,
+      'homeStretch.to': component.homeStretch?.to,
     })) {
       if (value != null)
         requireTrackPosition(
@@ -203,22 +219,21 @@ function assertComponent(
   if (component.component === 'collection.view')
     assertCollectionResources(component, references, fail);
   if (component.component !== 'cards.deck') return;
-  for (const [index, card] of [
-    ...component.cards,
-    ...(component.catalog ?? []),
-  ].entries()) {
-    if (
-      card != null &&
-      typeof card === 'object' &&
-      'effects' in card &&
-      Array.isArray(card.effects)
-    ) {
-      assertEffectInstructions(
-        card.effects as readonly GameEffectInstruction[],
-        `components.${component.id}.cards.${index}.effects`,
-        references,
-        fail,
-      );
+  for (const field of ['cards', 'catalog'] as const) {
+    for (const [index, card] of (component[field] ?? []).entries()) {
+      if (
+        card != null &&
+        typeof card === 'object' &&
+        'effects' in card &&
+        Array.isArray(card.effects)
+      ) {
+        assertEffectInstructions(
+          card.effects as readonly GameEffectInstruction[],
+          `components.${component.id}.${field}[${index}].effects`,
+          references,
+          fail,
+        );
+      }
     }
   }
 }
@@ -229,24 +244,22 @@ function assertCollectionResources(
   fail: ValidationFailure,
 ): void {
   const sources = [
-    ...Object.values(component.groups),
-    ...(component.total && component.total !== 'sum' ? [component.total] : []),
+    ...Object.entries(component.groups).map(
+      ([key, source]) =>
+        [
+          authoringProperty(`components.${component.id}.groups`, key),
+          source,
+        ] as const,
+    ),
+    ...(component.total && component.total !== 'sum'
+      ? [[`components.${component.id}.total`, component.total] as const]
+      : []),
   ];
-  for (const source of sources) {
+  for (const [path, source] of sources) {
     if (source.kind === 'resource')
-      requireReference(
-        references.resources,
-        source.id,
-        `components.${component.id}.resources`,
-        fail,
-      );
+      requireReference(references.resources, source.id, `${path}.id`, fail);
     if (source.kind === 'inventory')
-      requireReference(
-        references.inventories,
-        source.id,
-        `components.${component.id}.inventories`,
-        fail,
-      );
+      requireReference(references.inventories, source.id, `${path}.id`, fail);
   }
 }
 
@@ -269,21 +282,18 @@ function assertCardSets(
     );
   if (hand && hand.deck !== component.deck) {
     fail(
-      `components.${component.id}`,
+      `components.${component.id}.hand`,
       `la main « ${component.hand} » dépend de la pioche « ${hand.deck} »`,
     );
   }
   const cardIds =
     references.cardIdsByDeck.get(component.deck) ?? new Set<string>();
   for (const [setId, setCardIds] of Object.entries(component.sets)) {
-    if (setCardIds.length === 0)
-      fail(`components.${component.id}.sets.${setId}`, 'famille vide');
-    if (setCardIds.some((cardId) => !cardIds.has(cardId))) {
-      fail(
-        `components.${component.id}.sets.${setId}`,
-        'référence une carte absente de la pioche',
-      );
-    }
+    const path = authoringProperty(`components.${component.id}.sets`, setId);
+    if (setCardIds.length === 0) fail(path, 'famille vide');
+    for (const [index, cardId] of setCardIds.entries())
+      if (!cardIds.has(cardId))
+        fail(`${path}[${index}]`, 'référence une carte absente de la pioche');
   }
 }
 
@@ -304,15 +314,12 @@ function assertMarket(
       `components.${component.id}.inventory`,
       `inventaire inconnu « ${component.inventory} »`,
     );
-  if (
-    inventory?.items &&
-    Object.keys(component.prices).some((id) => !inventory.items?.includes(id))
-  ) {
-    fail(
-      `components.${component.id}.prices`,
-      'référence un objet absent de l’inventaire',
-    );
-  }
+  for (const id of Object.keys(component.prices))
+    if (inventory?.items && !inventory.items.includes(id))
+      fail(
+        authoringProperty(`components.${component.id}.prices`, id),
+        'référence un objet absent de l’inventaire',
+      );
 }
 
 function isCardContainer(
@@ -328,22 +335,48 @@ function isCardContainer(
 }
 
 function assertResourceIds(
+  definition: DefinitionToValidate,
   resources: ReadonlySet<string>,
   fail: ValidationFailure,
 ): void {
   if (resources.size > 512) {
     fail('resourceIds', 'trop de ressources');
   }
-  for (const id of resources) {
+  const entries = [
+    ...Object.keys(definition.initialization?.resources ?? {}).map(
+      (id) => [authoringProperty('initialization.resources', id), id] as const,
+    ),
+    ...(definition.resourceIds ?? []).map(
+      (id, index) => [`resourceIds[${index}]`, id] as const,
+    ),
+  ];
+  for (const [path, id] of entries) {
     try {
       assertPlayerValueId(id);
     } catch {
-      fail('resourceIds', `identifiant de ressource invalide « ${id} »`);
+      fail(path, `identifiant de ressource invalide « ${id} »`);
     }
     if (
       !/^[a-zA-Z0-9][a-zA-Z0-9._:-]*$/.test(id) ||
       ['constructor', 'prototype', '__proto__'].includes(id)
     )
-      fail('resourceIds', `identifiant de ressource invalide « ${id} »`);
+      fail(path, `identifiant de ressource invalide « ${id} »`);
   }
+}
+
+function componentFailure(
+  component: GameComponentDefinition,
+  index: number,
+  fail: ValidationFailure,
+): ValidationFailure {
+  const prefix = `components.${component.id}`;
+  return (path, reason) =>
+    fail(
+      path === prefix ||
+        path.startsWith(`${prefix}.`) ||
+        path.startsWith(`${prefix}[`)
+        ? `components[${index}]${path.slice(prefix.length)}`
+        : path,
+      reason,
+    );
 }

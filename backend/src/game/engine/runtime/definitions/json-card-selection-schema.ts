@@ -9,7 +9,7 @@ import {
   authorRecord as record,
   type AuthorSchema,
 } from '../contracts/json-author-schema';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { AuthoringError, authoringValueAt } from '../contracts/authoring-error';
 
 const owner: AuthorSchema = { enum: ['actor', 'next', 'previous'] };
 const count: AuthorSchema = { type: 'integer', minimum: 0, maximum: 1000 };
@@ -70,19 +70,23 @@ export const jsonCardSelectionSchema = object(
 export function assertCardSelectionReferences(
   program: CardSelectionProgram,
   components: readonly GameComponentDefinition[],
+  path = 'game.json.actions.selectCards',
 ): void {
-  const fail = (reason: string): never => {
-    throw new GameConfigurationError(
-      `card selection ${program.choiceId}: ${reason}`,
+  const fail = (field: string, reason: string): never => {
+    throw new AuthoringError(
+      `${path}.${field}`,
+      reason,
+      authoringValueAt(program, field),
     );
   };
-  if (program.min > program.max) fail('inverted cardinality');
+  if (program.min > program.max) fail('min', 'inverted cardinality');
   const deck = components.find(
     (component) =>
       component.component === 'cards.deck' &&
       component.id === program.source.deckId,
   );
-  if (deck?.component !== 'cards.deck') return fail('unknown deck');
+  if (deck?.component !== 'cards.deck')
+    return fail('source.deckId', 'unknown deck');
   const cards = deck.catalog ?? deck.cards;
   const ids = new Set(
     cards.map((card) =>
@@ -96,18 +100,17 @@ export function assertCardSelectionReferences(
       (value) => typeof value !== 'string' && typeof value !== 'number',
     )
   )
-    fail('identified cards required');
-  for (const value of [
-    ...(program.filter?.includeIds ?? []),
-    ...(program.filter?.excludeIds ?? []),
-  ])
-    if (!ids.has(value)) fail('unknown filter card');
+    fail('source.deckId', 'identified cards required');
+  for (const field of ['includeIds', 'excludeIds'] as const)
+    for (const [index, value] of (program.filter?.[field] ?? []).entries())
+      if (!ids.has(value))
+        fail(`filter.${field}[${index}]`, 'unknown filter card');
   for (const property of Object.keys(program.filter?.attributes ?? {})) {
     if (
       !/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/.test(property) ||
       ['__proto__', 'prototype', 'constructor'].includes(property)
     )
-      fail('unsafe filter property');
+      fail(`filter.attributes.${property}`, 'unsafe filter property');
     if (
       !cards.some(
         (card) =>
@@ -119,13 +122,15 @@ export function assertCardSelectionReferences(
           Object.hasOwn(card.attributes, property),
       )
     )
-      fail(`unknown filter property: ${property}`);
+      fail(
+        `filter.attributes.${property}`,
+        `unknown filter property: ${property}`,
+      );
   }
-  for (const handId of [
-    program.source.kind === 'hand' ? program.source.handId : null,
-    program.destination.kind === 'hand' ? program.destination.handId : null,
-  ]) {
-    if (handId === null) continue;
+  for (const field of ['source', 'destination'] as const) {
+    const selection = program[field];
+    if (selection.kind !== 'hand') continue;
+    const handId = selection.handId;
     const hand = components.find(
       (component) =>
         component.component === 'cards.hands' && component.id === handId,
@@ -134,6 +139,6 @@ export function assertCardSelectionReferences(
       hand?.component !== 'cards.hands' ||
       hand.deck !== program.source.deckId
     )
-      fail('unknown or mismatched hand');
+      fail(`${field}.handId`, 'unknown or mismatched hand');
   }
 }

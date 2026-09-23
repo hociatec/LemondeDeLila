@@ -1,3 +1,7 @@
+import {
+  atAuthoringPath,
+  withAuthoringPath,
+} from '../contracts/authoring-origin';
 import type {
   CardValue,
   DeckDefinition,
@@ -15,11 +19,20 @@ export function assertHandDeckDefinitions(
   if (hand.initialDeferredCardIds) {
     const deck = decks.get(hand.deck);
     const ids = hand.initialDeferredCardIds.map(contentIdKey);
-    const known = new Set((deck?.catalog ?? deck?.cards ?? []).map(key));
-    if (new Set(ids).size !== ids.length || ids.some((id) => !known.has(id))) {
-      throw new GameConfigurationError(
-        `Invalid deferred cards for hand ${hand.id}`,
-      );
+    const known = atAuthoringPath(
+      'deck',
+      () => new Set((deck?.catalog ?? deck?.cards ?? []).map(key)),
+    );
+    const seen = new Set<string>();
+    for (const [index, id] of ids.entries()) {
+      if (seen.has(id) || !known.has(id))
+        throw withAuthoringPath(
+          new GameConfigurationError(
+            `Invalid deferred cards for hand ${hand.id}`,
+          ),
+          `initialDeferredCardIds[${index}]`,
+        );
+      seen.add(id);
     }
   }
   if (!hand.acceptedDecks) return;
@@ -27,26 +40,45 @@ export function assertHandDeckDefinitions(
   if (
     !primary ||
     !Array.isArray(hand.acceptedDecks) ||
-    hand.acceptedDecks.length > 512 ||
-    new Set(hand.acceptedDecks).size !== hand.acceptedDecks.length
+    hand.acceptedDecks.length > 512
   )
-    throw new GameConfigurationError(
-      `Invalid accepted decks for hand ${hand.id}`,
+    throw withAuthoringPath(
+      new GameConfigurationError(`Invalid accepted decks for hand ${hand.id}`),
+      !primary ? 'deck' : 'acceptedDecks',
     );
-  const catalog = new Map(
-    (primary.catalog ?? primary.cards).map((card) => [key(card), card]),
+  const catalog = atAuthoringPath(
+    'deck',
+    () =>
+      new Map(
+        (primary.catalog ?? primary.cards).map((card) => [key(card), card]),
+      ),
   );
+  const seen = new Set<string>();
   const accepted: readonly string[] = hand.acceptedDecks;
-  for (const id of accepted) {
+  for (const [index, id] of accepted.entries()) {
+    const path = `acceptedDecks[${index}]`;
+    if (seen.has(id))
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Invalid accepted decks for hand ${hand.id}`,
+        ),
+        path,
+      );
+    seen.add(id);
     const source = decks.get(id);
     if (
       !source ||
-      (source.catalog ?? source.cards).some(
-        (card) => !sameSerializableValue(catalog.get(key(card)), card),
+      atAuthoringPath(path, () =>
+        (source.catalog ?? source.cards).some(
+          (card) => !sameSerializableValue(catalog.get(key(card)), card),
+        ),
       )
     )
-      throw new GameConfigurationError(
-        `Incompatible deck ${id} for hand ${hand.id}`,
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Incompatible deck ${id} for hand ${hand.id}`,
+        ),
+        path,
       );
   }
 }

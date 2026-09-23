@@ -9,6 +9,9 @@ const BACKEND = path.resolve(__dirname, '..');
 const RUNTIME = path.join(BACKEND, 'src/game/engine/runtime');
 const RULES = path.join(BACKEND, 'src/game/rules');
 const ALLOWED_PROCESS_CACHES = new Set([
+  // Compilation diagnostics only: weak error keys and string paths, no game state.
+  // Errors can be frozen; metadata must not mutate their public SDK contract.
+  'contracts/authoring-origin.ts:origins:WeakMap',
   'content/content-immutability.ts:immutableCollections:WeakSet',
   'definitions/compiled-game-definition-brand.ts:compiledDefinitions:WeakSet',
   'definitions/game-definition-compiler.ts:compiledDefinitions:WeakMap',
@@ -25,28 +28,43 @@ function productionFiles(directory) {
   });
 }
 
-function inspectTopLevelMutableState(runtime = RUNTIME, allow = ALLOWED_PROCESS_CACHES) {
+function inspectTopLevelMutableState(
+  runtime = RUNTIME,
+  allow = ALLOWED_PROCESS_CACHES,
+) {
   const violations = [];
   for (const file of productionFiles(runtime)) {
     const source = fs.readFileSync(file, 'utf8');
-    const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
+    const tree = ts.createSourceFile(
+      file,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+    );
     for (const statement of tree.statements) {
       if (!ts.isVariableStatement(statement)) continue;
-      const isConst = Boolean(statement.declarationList.flags & ts.NodeFlags.Const);
+      const isConst = Boolean(
+        statement.declarationList.flags & ts.NodeFlags.Const,
+      );
       for (const declaration of statement.declarationList.declarations) {
         const name = declaration.name.getText(tree);
         if (!isConst) {
-          violations.push(`${path.relative(runtime, file)}:${name}: top-level let/var`);
+          violations.push(
+            `${path.relative(runtime, file)}:${name}: top-level let/var`,
+          );
           continue;
         }
         const initializer = declaration.initializer;
         if (!initializer || !ts.isNewExpression(initializer)) continue;
         const collection = initializer.expression.getText(tree);
-        if (!['Map', 'Set', 'WeakMap', 'WeakSet'].includes(collection)) continue;
+        if (!['Map', 'Set', 'WeakMap', 'WeakSet'].includes(collection))
+          continue;
         const relative = path.relative(runtime, file).replaceAll(path.sep, '/');
         const key = `${relative}:${name}:${collection}`;
         if (!allow.has(key))
-          violations.push(`${relative}:${name}: unreviewed process collection ${collection}`);
+          violations.push(
+            `${relative}:${name}: unreviewed process collection ${collection}`,
+          );
       }
     }
   }
@@ -71,7 +89,40 @@ function auditFactory() {
   ];
   return required
     .filter((proof) => !source.includes(proof))
-    .map((proof) => `declarative-state.factory.ts: missing fresh-state proof ${proof}`);
+    .map(
+      (proof) =>
+        `declarative-state.factory.ts: missing fresh-state proof ${proof}`,
+    );
+}
+
+function inspectWriteCapabilities(directory = path.join(BACKEND, 'src/game')) {
+  const allowed = new Set([
+    'engine/runtime/state/declarative-state.ts',
+    'engine/runtime/definitions/game-context-components.ts',
+  ]);
+  const violations = [];
+  for (const file of productionFiles(directory)) {
+    const relative = path.relative(directory, file).replaceAll(path.sep, '/');
+    if (allowed.has(relative)) continue;
+    const tree = ts.createSourceFile(
+      file,
+      fs.readFileSync(file, 'utf8'),
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    let found = false;
+    const visit = (node) => {
+      if (ts.isIdentifier(node) && node.text === 'MutableEngineKitsState')
+        found = true;
+      ts.forEachChild(node, visit);
+    };
+    visit(tree);
+    if (found)
+      violations.push(
+        `${relative}: component storage write capability belongs to controller composition`,
+      );
+  }
+  return violations;
 }
 
 function main() {
@@ -79,13 +130,14 @@ function main() {
     ...inspectTopLevelMutableState(),
     ...inspectTopLevelMutableState(RULES, new Set()),
     ...auditFactory(),
+    ...inspectWriteCapabilities(),
   ];
   if (violations.length) throw new Error(violations.join('\n'));
   console.log(
-    `game-state-ownership-audit: OK (${productionFiles(RUNTIME).length} runtime + ${productionFiles(RULES).length} rule production files, 4 reviewed immutable registries/caches)`,
+    `game-state-ownership-audit: OK (${productionFiles(RUNTIME).length} runtime + ${productionFiles(RULES).length} rule production files, ${ALLOWED_PROCESS_CACHES.size} reviewed process registries/metadata caches)`,
   );
 }
 
 if (require.main === module) main();
 
-module.exports = { inspectTopLevelMutableState };
+module.exports = { inspectTopLevelMutableState, inspectWriteCapabilities };

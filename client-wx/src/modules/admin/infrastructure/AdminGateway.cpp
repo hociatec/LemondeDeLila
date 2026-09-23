@@ -68,7 +68,8 @@ void AppendQuery(std::string& path, const nlohmann::json& values)
 
 std::string ReadFile(const std::string& filePath)
 {
-    std::ifstream input(filePath, std::ios::binary | std::ios::ate);
+    std::ifstream input(std::filesystem::path(std::u8string(filePath.begin(), filePath.end())),
+        std::ios::binary | std::ios::ate);
     if (!input) throw std::runtime_error("Fichier audio introuvable.");
     const auto size = input.tellg();
     constexpr std::streamoff Maximum = 250LL * 1024LL * 1024LL;
@@ -87,7 +88,9 @@ void MakeMultipart(
 {
     const auto filePath = payload.value("filePath", std::string{});
     if (filePath.empty()) throw std::runtime_error("Chemin du fichier audio requis.");
-    auto filename = std::filesystem::path(filePath).filename().string();
+    const auto utf8Filename = std::filesystem::path(
+        std::u8string(filePath.begin(), filePath.end())).filename().u8string();
+    std::string filename(utf8Filename.begin(), utf8Filename.end());
     for (auto& character : filename)
         if (character == '"' || character == '\r' || character == '\n') character = '_';
     const std::string boundary = "----LilaAdminBoundary7MA4YWxkTrZu0gW";

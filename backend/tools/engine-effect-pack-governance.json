@@ -1,10 +1,10 @@
 {
   "maximumProgramFiles": 38,
   "maximumProgramLines": 1201,
-  "maximumProductionLines": 13583,
-  "maximumBehaviorLines": 13507,
+  "maximumProductionLines": 18770,
+  "maximumBehaviorLines": 18694,
   "maximumFileBytes": 13500,
-  "sizeReview": "2026-09-22: reviewed explicit configurable descriptors for remaining mechanisms (categories, tile rules, special operations, movement amounts and dice policies). 1201 contract lines / 13583 production / 13507 behavior. No extra pack; per-file 13500-byte ceiling unchanged. Directional effect protocol moved from kernel to its owning pack. Reuse exercised by parameterized-catalog.spec.ts and numeric mechanic tests.",
+  "sizeReview": "2026-09-22: reviewed explicit configurable descriptors for remaining mechanisms (categories, tile rules, special operations, movement amounts and dice policies). 1201 contract lines / 13583 production / 13507 behavior. No extra pack; per-file 13500-byte ceiling unchanged. Directional effect protocol moved from kernel to its owning pack. Reuse exercised by parameterized-catalog.spec.ts and numeric mechanic tests. 2026-09-23: pre-change audit already measured 13595/13519 lines (12 lines above the stale ceiling); scope reclassification changes no behavior or line count. 2026-09-23: colocation moves 4801 existing schema/recipe lines into their owning packs; no gameplay code added. 2026-09-23: canonical authoring diagnostics add 368 lines after formatting, including structured code/path/expected/received and precise reference fields; measured totals 18763/18687. No new pack or gameplay rule; program and per-file limits unchanged. Reference paths for narrative branches/decks refined: final measured total 18770/18694.",
   "maximumRegisteredEffectPacks": 38,
   "forbiddenEngineVocabulary": [
     "balloon",
@@ -62,7 +62,17 @@
     "board-property-economy": "Compared with board-turn, board-landings and economy-kit; mortgages, jail, ownership and city economy remain unique.",
     "choice-chapter-encounter": "Compared with track-round and collection primitives; chapters, encounters and final countdown remain unique.",
     "cards-battle-ties": "Compared with card-actions; successive ties and battle resolution remain unique.",
-    "cards-public-domain": "Compared with generic card selection and collection primitives: public-domain card classification and collection completion remain a catalogue rule, isolated from the engine by the injected extension contract."
+    "cards-public-domain": "Compared with generic card selection and collection primitives: public-domain card classification and collection completion remain a catalogue rule, isolated from the engine by the injected extension contract.",
+    "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
+    "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible.",
+    "race-goose-track": "Compared with movement and skip-status primitives: well escape rolls, repeated rolls and recursive tile resolution still form a single-consumer composition; no new generic abstraction is claimed.",
+    "cards-judged-submission": "Compared with submissions, rotating judges and cards: collecting, revealing, judging and redealing are assembled into one flow; the relocated recipe and schema do not prove a second independent game.",
+    "race-paired-pawns": "Compared with movement and resource transfer primitives: paired meetings, shared advance, rerolls and token victory remain coupled in this pack and require a distinct second-game test before promotion.",
+    "choice-anonymous-vote": "Compared with submissions and scoring: anonymous answers and subsequent voting constitute a two-stage composition; its relocated schema increases the measured size, not its reuse evidence.",
+    "race-treasure-track": "Compared with inventory, card resolution and movement: protected decks, collection limits, gold requirements and theft remain a single catalogue composition with one demonstrated consumer.",
+    "collection-family-effects": "Compared with card requests, sets and status primitives: extra draws, free requests and vanished targets are specific additions to family collection; colocation does not establish generic behavior.",
+    "collection-market-exchange": "Compared with market, inventory and resource primitives: rumor, protection and bounded round costs remain one economic composition; explicit reuse proof is required before moving it to reusable.",
+    "cards-ordered-assembly": "Compared with card selection, inventory and resource primitives: ordered categories, per-player completion slots and automatic part drawing still form one game-specific assembly protocol. Structured diagnostics alone move the pack above the 300-line review threshold; no reuse claim is made."
   },
   "structuralReviews": [
     {
@@ -89,6 +99,18 @@
         "collection-family-request"
       ],
       "decision": "Keep composed primitives: classification and post-draw behavior differ; the shared draw/give/discard operations are already provided by the Cards kit."
+    },
+    {
+      "operations": [
+        "/straight:phase.transitionTo",
+        "/straight:round.starter",
+        "/if.then:turn.to"
+      ],
+      "profiles": [
+        "board-movement-landings",
+        "race-goose-track"
+      ],
+      "decision": "Keep explicit composition of the already reusable phase and turn APIs: selecting the round starter after a phase transition is a three-call initialization sequence, not a new stateful mechanic. Colocation made the board recipe visible to this audit."
     }
   ],
   "effectDomains": {
@@ -162,192 +184,352 @@
     "race-chained-tile-cards": {
       "property": "chainedTileRace",
       "mechanic": "chained track landings and card movement",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-chained-tile-cards implements chained track landings and card movement. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "collection-species-troops": {
       "property": "speciesTroops",
       "mechanic": "species troop collection with traps",
-      "domain": "collection"
+      "domain": "collection",
+      "scope": "game-specific",
+      "classificationReason": "collection-species-troops implements species troop collection with traps. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "board-movement-landings": {
       "property": "board",
       "mechanic": "parameterized board movement and landing effects",
-      "domain": "board"
+      "domain": "board",
+      "scope": "game-specific",
+      "classificationReason": "board-movement-landings implements parameterized board movement and landing effects. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "cards-ordered-assembly": {
       "property": "carAssembly",
       "mechanic": "ordered vehicle-part assembly",
-      "domain": "cards"
+      "domain": "cards",
+      "scope": "game-specific",
+      "classificationReason": "cards-ordered-assembly implements ordered vehicle-part assembly. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "collection-themed-circles": {
       "property": "cardCircles",
       "mechanic": "themed card circle completion",
-      "domain": "collection"
+      "domain": "collection",
+      "scope": "game-specific",
+      "classificationReason": "collection-themed-circles implements themed card circle completion. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "choice-simultaneous-paw-scoring": {
       "property": "pawScoring",
       "mechanic": "simultaneous paw scoring rounds",
-      "domain": "choice"
+      "domain": "choice",
+      "scope": "game-specific",
+      "classificationReason": "choice-simultaneous-paw-scoring implements simultaneous paw scoring rounds. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "collection-track-zones": {
       "property": "trackZoneCollection",
       "mechanic": "track race with zone collection",
-      "domain": "collection"
+      "domain": "collection",
+      "scope": "game-specific",
+      "classificationReason": "collection-track-zones implements track race with zone collection. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "choice-story-challenge": {
       "property": "storyChallenge",
       "mechanic": "story response, challenge and laughter rounds",
-      "domain": "choice"
+      "domain": "choice",
+      "scope": "game-specific",
+      "classificationReason": "choice-story-challenge implements story response, challenge and laughter rounds. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "board-path-walls": {
       "property": "pathWalls",
       "mechanic": "pawn grid paths and wall placement",
-      "domain": "board"
+      "domain": "board",
+      "scope": "game-specific",
+      "classificationReason": "board-path-walls implements pawn grid paths and wall placement. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-route-delivery": {
       "property": "deliveryRace",
       "mechanic": "route delivery race",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-route-delivery implements route delivery race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-directional-hazards": {
       "property": "directionalHazardRace",
       "mechanic": "directional racing with chained hazards",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-directional-hazards implements directional racing with chained hazards. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-resource-track": {
       "property": "resourceTrackRace",
       "mechanic": "resource collection track race",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-resource-track implements resource collection track race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-event-cards": {
       "property": "eventRace",
       "mechanic": "track race with event cards",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-event-cards implements track race with event cards. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-team-pawn-capture": {
       "property": "teamPawnRace",
       "mechanic": "multi-pawn family race and capture",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-team-pawn-capture implements multi-pawn family race and capture. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-protected-haunted-track": {
       "property": "protectedHauntedRace",
       "mechanic": "protected haunted track movement",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-protected-haunted-track implements protected haunted track movement. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-quiz-event-track": {
       "property": "quizEventRace",
       "mechanic": "quiz, challenge and event track race",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-quiz-event-track implements quiz, challenge and event track race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-bidirectional-collision": {
       "property": "bidirectionalCollisionRace",
       "mechanic": "bidirectional horse race and collisions",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-bidirectional-collision implements bidirectional horse race and collisions. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "cards-theme-name": {
       "property": "themeNameCards",
       "mechanic": "name and theme card combinations",
-      "domain": "cards"
+      "domain": "cards",
+      "scope": "game-specific",
+      "classificationReason": "cards-theme-name implements name and theme card combinations. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-goose-track": {
       "property": "gooseRace",
       "mechanic": "parameterized goose-style race",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-goose-track implements parameterized goose-style race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "spatial-grid-placement": {
       "property": "grid",
       "mechanic": "grid token placement",
-      "domain": "spatial"
+      "domain": "spatial",
+      "scope": "game-specific",
+      "classificationReason": "spatial-grid-placement implements grid token placement. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "cards-judged-submission": {
       "property": "judgedCards",
       "mechanic": "private submissions with a rotating judge",
-      "domain": "cards"
+      "domain": "cards",
+      "scope": "game-specific",
+      "classificationReason": "cards-judged-submission implements private submissions with a rotating judge. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "cards-discard-penalty": {
       "property": "discardPenaltyCards",
       "mechanic": "discard rounds and unique-value penalties",
-      "domain": "cards"
+      "domain": "cards",
+      "scope": "game-specific",
+      "classificationReason": "cards-discard-penalty implements discard rounds and unique-value penalties. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-paired-pawns": {
       "property": "pairedPawnRace",
       "mechanic": "parent-and-child reunion race",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-paired-pawns implements parent-and-child reunion race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-bounce-quiz": {
       "property": "bounceQuizRace",
       "mechanic": "bouncing race with quiz and protection",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-bounce-quiz implements bouncing race with quiz and protection. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "cards-public-domain": {
       "property": "publicDomainCards",
       "mechanic": "private cards resolved into a public domain",
-      "domain": "cards"
+      "domain": "cards",
+      "scope": "game-specific",
+      "classificationReason": "cards-public-domain implements private cards resolved into a public domain. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "choice-simultaneous-quiz": {
       "property": "simultaneousQuiz",
       "mechanic": "configurable simultaneous quiz",
-      "domain": "choice"
+      "domain": "choice",
+      "scope": "game-specific",
+      "classificationReason": "choice-simultaneous-quiz implements configurable simultaneous quiz. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "collection-family-request": {
       "property": "familyRequest",
       "mechanic": "family requests and completed sets",
-      "domain": "collection"
+      "domain": "collection",
+      "scope": "game-specific",
+      "classificationReason": "collection-family-request implements family requests and completed sets. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "choice-anonymous-vote": {
       "property": "anonymousVote",
       "mechanic": "anonymous answers and voting",
-      "domain": "choice"
+      "domain": "choice",
+      "scope": "game-specific",
+      "classificationReason": "choice-anonymous-vote implements anonymous answers and voting. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "cards-shared-prestige": {
       "property": "sharedPrestigeCards",
       "mechanic": "shared prestige-card hand",
-      "domain": "cards"
+      "domain": "cards",
+      "scope": "game-specific",
+      "classificationReason": "cards-shared-prestige implements shared prestige-card hand. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "cards-ordered-parade": {
       "property": "parade",
       "mechanic": "ordered parade collection",
-      "domain": "cards"
+      "domain": "cards",
+      "scope": "game-specific",
+      "classificationReason": "cards-ordered-parade implements ordered parade collection. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-multi-pawn": {
       "property": "pawnRace",
       "mechanic": "parameterized multi-pawn race",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-multi-pawn implements parameterized multi-pawn race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "race-treasure-track": {
       "property": "treasureTrackRace",
       "mechanic": "treasure collection track race",
-      "domain": "race"
+      "domain": "race",
+      "scope": "game-specific",
+      "classificationReason": "race-treasure-track implements treasure collection track race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "collection-family-effects": {
       "property": "familyEffects",
       "mechanic": "profession-family requests and effects",
-      "domain": "collection"
+      "domain": "collection",
+      "scope": "game-specific",
+      "classificationReason": "collection-family-effects implements profession-family requests and effects. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "cards-ritual-phases": {
       "property": "ritualPhases",
       "mechanic": "ritual card phases and light scoring",
-      "domain": "cards"
+      "domain": "cards",
+      "scope": "game-specific",
+      "classificationReason": "cards-ritual-phases implements ritual card phases and light scoring. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "board-property-economy": {
       "property": "propertyEconomy",
       "mechanic": "large city board economy",
-      "domain": "board"
+      "domain": "board",
+      "scope": "game-specific",
+      "classificationReason": "board-property-economy implements large city board economy. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "choice-chapter-encounter": {
       "property": "chapterEncounter",
       "mechanic": "journey chapters and encounters",
-      "domain": "choice"
+      "domain": "choice",
+      "scope": "game-specific",
+      "classificationReason": "choice-chapter-encounter implements journey chapters and encounters. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "collection-market-exchange": {
       "property": "marketExchange",
       "mechanic": "market collection and exchange",
-      "domain": "collection"
+      "domain": "collection",
+      "scope": "game-specific",
+      "classificationReason": "collection-market-exchange implements market collection and exchange. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
     },
     "cards-battle-ties": {
       "property": "battleTies",
       "mechanic": "successive-tie card battle",
-      "domain": "cards"
+      "domain": "cards",
+      "scope": "game-specific",
+      "classificationReason": "cards-battle-ties implements successive-tie card battle. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
+      "maturity": "experimental"
+    }
+  },
+  "registrationOrder": [
+    "race-multi-pawn",
+    "race-event-cards",
+    "race-route-delivery",
+    "race-goose-track",
+    "collection-track-zones",
+    "race-resource-track",
+    "race-treasure-track",
+    "cards-ordered-parade",
+    "collection-family-request",
+    "cards-ordered-assembly",
+    "collection-market-exchange",
+    "race-paired-pawns",
+    "collection-themed-circles",
+    "cards-public-domain",
+    "race-protected-haunted-track",
+    "race-bidirectional-collision",
+    "collection-family-effects",
+    "race-team-pawn-capture",
+    "race-quiz-event-track",
+    "race-bounce-quiz",
+    "collection-species-troops",
+    "race-directional-hazards",
+    "race-chained-tile-cards",
+    "choice-chapter-encounter",
+    "choice-simultaneous-paw-scoring",
+    "cards-theme-name",
+    "cards-ritual-phases",
+    "board-property-economy",
+    "choice-anonymous-vote",
+    "cards-shared-prestige",
+    "cards-battle-ties",
+    "choice-simultaneous-quiz",
+    "board-path-walls",
+    "choice-story-challenge",
+    "cards-discard-penalty",
+    "cards-judged-submission",
+    "spatial-grid-placement",
+    "board-movement-landings"
+  ],
+  "coreRootFieldReviews": {
+    "extensions": {
+      "adr": "docs/architecture/adr-009-generic-json-extensions.md",
+      "insufficiency": "Existing components, actions, effects, conditions and phases remain preferred, but cannot transport legacy extension configurations without a new business root property per contract. One validated discriminated extension array replaces that structural growth while retaining normalized content compatibility."
     }
   }
 }

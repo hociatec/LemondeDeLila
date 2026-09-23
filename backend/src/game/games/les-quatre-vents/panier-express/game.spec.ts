@@ -1,16 +1,18 @@
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import { DeclarativeGameRuntime } from '../../../engine/testing/public-api';
 import { GameSimulator } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
-import document from './game.json';
+import documentExtensionSource from './game.json';
 
 import PANIER_TILES from './content/board.json';
 import PANIER_PAWNS from './content/pawns.json';
 import PANIER_QUIZZES from './content/quizzes.json';
 import cards from './content/cards.json';
 import products from './content/products.json';
+const document = legacyExtensionFixture(documentExtensionSource, 'board');
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/board.json': PANIER_TILES,

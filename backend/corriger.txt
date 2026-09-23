@@ -1,0 +1,8 @@
+J’ai repris l’archive et vérifié directement la structure, les **39 `game.json`**, les effect-packs, le runtime, le SDK, les schemas et les tests d’architecture. Voici l’audit sous la forme demandée : **un numéro = une correction vérifiable**.
+
+## A. Généricité et architecture
+
+Aucun point restant : les 36 corrections sont clôturées.
+
+Registre : docs/quality/engine-audit-register-2026-09-23.json
+Preuves et validations : docs/quality/corriger-2026-09-23.md

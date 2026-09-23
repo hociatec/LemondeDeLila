@@ -174,6 +174,8 @@ target_link_libraries(
 if(WIN32)
     target_sources(lemonde_de_lila_wx_admin_contract_tests PRIVATE
         src/shared/text/presentation/encoding/Encoding.cpp
+        src/shared/text/presentation/catalog/UiTextCatalog.cpp
+        src/shared/logging/infrastructure/Logger.cpp
     )
     target_link_libraries(lemonde_de_lila_wx_admin_contract_tests PRIVATE winhttp wx::base)
 endif()

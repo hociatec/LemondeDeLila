@@ -1,8 +1,9 @@
+import { authoringProperty } from '../contracts/authoring-diagnostics';
 import type {
   DefinitionToValidate,
   ValidationFailure,
 } from '../contracts/definition-validation';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { DefinitionValidationError } from './definition-validation-error';
 import { isGameDelay } from '../automation/game-deadline';
 
 import { assertInitializationReferences } from './component-initialization-references';
@@ -17,9 +18,7 @@ import {
 
 export function assertGameDefinition(definition: DefinitionToValidate): void {
   const fail: ValidationFailure = (path, reason) => {
-    throw new GameConfigurationError(
-      `Définition ${definition.id || '<sans identifiant>'}.${path}: ${reason}`,
-    );
+    throw new DefinitionValidationError(definition, path, reason);
   };
   assertMetadata(definition, fail);
   const actionNames = assertActionsAndEvents(definition, fail);
@@ -105,7 +104,7 @@ function assertActionsAndEvents(
       typeof action.validateInput !== 'function'
     ) {
       fail(
-        `actions.${name}.validate`,
+        `${authoringProperty('actions', name)}.validate`,
         'une action énumérée doit déclarer une validation serveur',
       );
     }
@@ -127,26 +126,38 @@ function assertPhases(
     fail('initialPhase', `phase inconnue « ${definition.initialPhase} »`);
   }
   for (const [name, phase] of Object.entries(definition.phases ?? {})) {
-    for (const action of phase.actions ?? []) {
+    for (const [index, action] of (phase.actions ?? []).entries()) {
       if (!actionNames.has(action))
-        fail(`phases.${name}.actions`, `action inconnue « ${action} »`);
+        fail(
+          `${authoringProperty('phases', name)}.actions[${index}]`,
+          `action inconnue « ${action} »`,
+        );
     }
     if (phase.next && !names.has(phase.next))
-      fail(`phases.${name}.next`, `phase inconnue « ${phase.next} »`);
+      fail(
+        `${authoringProperty('phases', name)}.next`,
+        `phase inconnue « ${phase.next} »`,
+      );
     if (
       phase.visibility != null &&
       !['public', 'hidden'].includes(phase.visibility)
     ) {
-      fail(`phases.${name}.visibility`, 'visibilité inconnue');
+      fail(
+        `${authoringProperty('phases', name)}.visibility`,
+        'visibilité inconnue',
+      );
     }
     if (!phase.timeout) continue;
     if (!isGameDelay(phase.timeout.afterMs)) {
-      fail(`phases.${name}.timeout`, 'durée invalide');
+      fail(
+        `${authoringProperty('phases', name)}.timeout.afterMs`,
+        'durée invalide',
+      );
     }
     const action = phase.timeout.action?.type;
     if (!action || !actionNames.has(action)) {
       fail(
-        `phases.${name}.timeout.action`,
+        `${authoringProperty('phases', name)}.timeout.action.type`,
         `action inconnue « ${String(action)} »`,
       );
     }

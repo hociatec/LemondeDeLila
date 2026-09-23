@@ -98,7 +98,8 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         statuses.reserve(labels.size() + 1);
         statuses.push_back({"new", wxString(L"Nouveau rapport")});
         for (std::size_t index = 0; index < labels.size(); ++index)
-            statuses.push_back({std::to_string(index), wxString(labels[index])});
+            statuses.push_back({std::to_string(index),
+                wxString(labels[index].data(), labels[index].size())});
         reportStatusMenu_->SetItems(statuses);
         reportStatusMenu_->SetSelectedIndexSilently(0);
     }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "3",
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
@@ -56,49 +56,54 @@
   "victory": {
     "kind": "by-directional-hazard-race"
   },
-  "directionalHazardRace": {
-    "trackId": "directionalHazard",
-    "diceId": "main",
-    "deckId": "situations",
-    "nextDeltaChoiceId": "race-hazard.next-delta",
-    "maxDepth": 16,
-    "finishReason": "finish-line",
-    "resources": {
-      "lastRoll": "race-hazard.last-roll",
-      "lastMove": "race-hazard.last-move",
-      "idleTurns": "race-hazard.idle-turns"
-    },
-    "counterId": "race-hazard.next-player-delta",
-    "mirrorStatusId": "race-hazard.mirror-roll",
-    "tiles": {
-      "$content": "content/catalogue.json#/tiles"
-    },
-    "cards": {
-      "$content": "content/catalogue.json#/cards"
-    },
-    "parameters": {
-      "checkpointSpan": 5,
-      "shieldAdvance": 4,
-      "replayAdvance": 3,
-      "swapAdvance": 2,
-      "leaderRetreat": -2,
-      "othersAdvance": 2,
-      "lastAdvance": 3,
-      "retreatRecovery": 3,
-      "checkpointSuccess": 4,
-      "checkpointFailure": -1,
-      "idleThreshold": 2,
-      "idleAdvance": 5,
-      "sharedAdvance": 2,
-      "randomSides": 6,
-      "globalRetreat": -2,
-      "globalAdvance": 1
-    }
-  },
   "snapshotMigrations": [
     {
       "fromVersion": "1",
       "toVersion": "2"
+    }
+  ],
+  "extensions": [
+    {
+      "type": "directionalHazardRace",
+      "config": {
+        "trackId": "directionalHazard",
+        "diceId": "main",
+        "deckId": "situations",
+        "nextDeltaChoiceId": "race-hazard.next-delta",
+        "maxDepth": 16,
+        "finishReason": "finish-line",
+        "resources": {
+          "lastRoll": "race-hazard.last-roll",
+          "lastMove": "race-hazard.last-move",
+          "idleTurns": "race-hazard.idle-turns"
+        },
+        "counterId": "race-hazard.next-player-delta",
+        "mirrorStatusId": "race-hazard.mirror-roll",
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "parameters": {
+          "checkpointSpan": 5,
+          "shieldAdvance": 4,
+          "replayAdvance": 3,
+          "swapAdvance": 2,
+          "leaderRetreat": -2,
+          "othersAdvance": 2,
+          "lastAdvance": 3,
+          "retreatRecovery": 3,
+          "checkpointSuccess": 4,
+          "checkpointFailure": -1,
+          "idleThreshold": 2,
+          "idleAdvance": 5,
+          "sharedAdvance": 2,
+          "randomSides": 6,
+          "globalRetreat": -2,
+          "globalAdvance": 1
+        }
+      }
     }
   ]
 }

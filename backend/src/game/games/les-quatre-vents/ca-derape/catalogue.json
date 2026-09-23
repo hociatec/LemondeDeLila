@@ -427,9 +427,23 @@
       "kind": "skip",
       "effects": [
         {
-          "kind": "custom",
-          "effectId": "race-hazard.skip-penalty",
-          "data": {}
+          "kind": "conditional",
+          "condition": {
+            "kind": "has-status",
+            "status": "shield"
+          },
+          "then": [
+            {
+              "kind": "remove-status",
+              "status": "shield"
+            }
+          ],
+          "else": [
+            {
+              "kind": "skip-turn",
+              "count": 1
+            }
+          ]
         },
         {
           "kind": "custom",
@@ -466,9 +480,23 @@
       "kind": "skip",
       "effects": [
         {
-          "kind": "custom",
-          "effectId": "race-hazard.skip-penalty",
-          "data": {}
+          "kind": "conditional",
+          "condition": {
+            "kind": "has-status",
+            "status": "shield"
+          },
+          "then": [
+            {
+              "kind": "remove-status",
+              "status": "shield"
+            }
+          ],
+          "else": [
+            {
+              "kind": "skip-turn",
+              "count": 1
+            }
+          ]
         },
         {
           "kind": "custom",
@@ -505,9 +533,23 @@
       "kind": "skip",
       "effects": [
         {
-          "kind": "custom",
-          "effectId": "race-hazard.skip-penalty",
-          "data": {}
+          "kind": "conditional",
+          "condition": {
+            "kind": "has-status",
+            "status": "shield"
+          },
+          "then": [
+            {
+              "kind": "remove-status",
+              "status": "shield"
+            }
+          ],
+          "else": [
+            {
+              "kind": "skip-turn",
+              "count": 1
+            }
+          ]
         },
         {
           "kind": "custom",
@@ -628,9 +670,23 @@
       "kind": "skip",
       "effects": [
         {
-          "kind": "custom",
-          "effectId": "race-hazard.skip-penalty",
-          "data": {}
+          "kind": "conditional",
+          "condition": {
+            "kind": "has-status",
+            "status": "shield"
+          },
+          "then": [
+            {
+              "kind": "remove-status",
+              "status": "shield"
+            }
+          ],
+          "else": [
+            {
+              "kind": "skip-turn",
+              "count": 1
+            }
+          ]
         },
         {
           "kind": "custom",
@@ -1171,11 +1227,8 @@
       "kind": "conditional",
       "effects": [
         {
-          "kind": "custom",
-          "effectId": "race-hazard.conditional",
-          "data": {
-            "effect": "replay"
-          }
+          "kind": "extra-turn",
+          "count": 1
         },
         {
           "kind": "custom",
@@ -1271,11 +1324,9 @@
       "kind": "rule",
       "effects": [
         {
-          "kind": "custom",
-          "effectId": "race-hazard.rule",
-          "data": {
-            "effect": "double-move"
-          }
+          "kind": "add-status",
+          "status": "double-move",
+          "scope": "until-used"
         },
         {
           "kind": "custom",
@@ -1311,11 +1362,9 @@
       "kind": "rule",
       "effects": [
         {
-          "kind": "custom",
-          "effectId": "race-hazard.rule",
-          "data": {
-            "effect": "shield"
-          }
+          "kind": "add-status",
+          "status": "shield",
+          "scope": "until-used"
         },
         {
           "kind": "custom",

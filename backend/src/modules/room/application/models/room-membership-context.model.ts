@@ -1,5 +1,5 @@
-import type { RoomRecord } from '../models/room-record.model';
-import type { RoomUserRecord } from '../models/room-user.model';
+import type { RoomRecord } from './room-record.model';
+import type { RoomUserRecord } from './room-user.model';
 
 export type RoomLeaveOptions = {
   preserveRoom?: boolean;

@@ -1,5 +1,5 @@
 import { gameInput, defineEffect } from '../../engine/sdk/public-api';
-import type { BoardGameProgram } from '../effect-packs/board-movement-landings/program';
+import type { BoardGameProgram } from '../game-specific/board-movement-landings/program';
 
 type State = Record<string, never>;
 

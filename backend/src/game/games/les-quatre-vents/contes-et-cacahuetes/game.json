@@ -66,172 +66,177 @@
   "victory": {
     "kind": "by-story-challenge"
   },
-  "storyChallenge": {
-    "trackId": "story-road",
-    "pawnSetId": "storyChallenge",
-    "pawnChoiceId": "choice-story-challenge.pawn",
-    "resolutionFlag": "choice-story-challenge.resolution",
-    "maxChainDepth": 32,
-    "resources": {
-      "reroll": "choice-story-challenge.reroll-token",
-      "shield": "choice-story-challenge.malus-shield"
-    },
-    "statuses": {
-      "protectNextMalus": "choice-story-challenge.protect-next-malus",
-      "cape": "choice-story-challenge.cape",
-      "replaceOne": "choice-story-challenge.replace-one",
-      "noBonus": "choice-story-challenge.no-bonus",
-      "forcedOne": "choice-story-challenge.forced-one",
-      "reverseNextTurn": "choice-story-challenge.reverse-next-turn",
-      "blocked": "choice-story-challenge.blocked",
-      "keyOfGold": "choice-story-challenge.key-of-gold"
-    },
-    "tiles": {
-      "$content": "content/catalogue.json#/tiles"
-    },
-    "pawns": {
-      "$content": "content/catalogue.json#/pawns"
-    },
-    "decks": {
-      "$content": "content/catalogue.json#/decks"
-    },
-    "finishReason": "story-road-finished",
-    "diceId": "main",
-    "deckRoles": {
-      "reward": "bonus",
-      "penalty": "malus",
-      "event": "surprise",
-      "story": "conte"
-    },
-    "tokens": [
-      {
-        "id": "parchemin",
-        "resource": "choice-story-challenge.reroll-token"
-      },
-      {
-        "id": "amulette",
-        "resource": "choice-story-challenge.malus-shield"
-      },
-      {
-        "id": "cape",
-        "status": "choice-story-challenge.cape"
-      },
-      {
-        "id": "cle-or",
-        "status": "choice-story-challenge.key-of-gold"
-      },
-      {
-        "id": "feuille",
-        "status": "choice-story-challenge.replace-one"
-      },
-      {
-        "id": "livre-envers",
-        "status": "choice-story-challenge.reverse-next-turn"
-      },
-      {
-        "id": "dragon-papier",
-        "status": "choice-story-challenge.protect-next-malus"
+  "extensions": [
+    {
+      "type": "storyChallenge",
+      "config": {
+        "trackId": "story-road",
+        "pawnSetId": "storyChallenge",
+        "pawnChoiceId": "choice-story-challenge.pawn",
+        "resolutionFlag": "choice-story-challenge.resolution",
+        "maxChainDepth": 32,
+        "resources": {
+          "reroll": "choice-story-challenge.reroll-token",
+          "shield": "choice-story-challenge.malus-shield"
+        },
+        "statuses": {
+          "protectNextMalus": "choice-story-challenge.protect-next-malus",
+          "cape": "choice-story-challenge.cape",
+          "replaceOne": "choice-story-challenge.replace-one",
+          "noBonus": "choice-story-challenge.no-bonus",
+          "forcedOne": "choice-story-challenge.forced-one",
+          "reverseNextTurn": "choice-story-challenge.reverse-next-turn",
+          "blocked": "choice-story-challenge.blocked",
+          "keyOfGold": "choice-story-challenge.key-of-gold"
+        },
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "pawns": {
+          "$content": "content/catalogue.json#/pawns"
+        },
+        "decks": {
+          "$content": "content/catalogue.json#/decks"
+        },
+        "finishReason": "story-road-finished",
+        "diceId": "main",
+        "deckRoles": {
+          "reward": "bonus",
+          "penalty": "malus",
+          "event": "surprise",
+          "story": "conte"
+        },
+        "tokens": [
+          {
+            "id": "parchemin",
+            "resource": "choice-story-challenge.reroll-token"
+          },
+          {
+            "id": "amulette",
+            "resource": "choice-story-challenge.malus-shield"
+          },
+          {
+            "id": "cape",
+            "status": "choice-story-challenge.cape"
+          },
+          {
+            "id": "cle-or",
+            "status": "choice-story-challenge.key-of-gold"
+          },
+          {
+            "id": "feuille",
+            "status": "choice-story-challenge.replace-one"
+          },
+          {
+            "id": "livre-envers",
+            "status": "choice-story-challenge.reverse-next-turn"
+          },
+          {
+            "id": "dragon-papier",
+            "status": "choice-story-challenge.protect-next-malus"
+          }
+        ],
+        "targetRules": {
+          "move-other-two": {
+            "kind": "move",
+            "delta": 2
+          },
+          "swap-next-turns": {
+            "kind": "swap-turns"
+          },
+          "give-bonus": {
+            "kind": "give-card",
+            "deck": "bonus"
+          },
+          "swap-positions": {
+            "kind": "swap-positions"
+          },
+          "wish-swap": {
+            "kind": "swap-positions"
+          },
+          "steal-token": {
+            "kind": "steal-token"
+          },
+          "song-steal": {
+            "kind": "steal-token"
+          },
+          "travelling-book": {
+            "kind": "follow",
+            "delta": 1
+          },
+          "gold-key": {
+            "kind": "option",
+            "optionId": "gold-key-type"
+          }
+        },
+        "optionRules": {
+          "song": [
+            {
+              "id": "move-three",
+              "kind": "move",
+              "delta": 3
+            },
+            {
+              "id": "steal-bonus",
+              "kind": "target",
+              "effect": "song-steal"
+            }
+          ],
+          "wish": [
+            {
+              "id": "move-two",
+              "kind": "move",
+              "delta": 2
+            },
+            {
+              "id": "swap",
+              "kind": "target",
+              "effect": "wish-swap"
+            },
+            {
+              "id": "draw-bonus",
+              "kind": "draw",
+              "deck": "bonus",
+              "target": "actor"
+            }
+          ],
+          "gold-key-type": [
+            {
+              "id": "bonus",
+              "kind": "draw",
+              "deck": "bonus",
+              "target": "selected",
+              "consumeStatus": "choice-story-challenge.key-of-gold"
+            },
+            {
+              "id": "malus",
+              "kind": "draw",
+              "deck": "malus",
+              "target": "selected",
+              "consumeStatus": "choice-story-challenge.key-of-gold"
+            }
+          ]
+        },
+        "giftTargetEffect": "give-bonus",
+        "conditionalTargetEffect": "gold-key",
+        "numberOptions": [
+          1,
+          2,
+          3
+        ],
+        "numberAdvance": 1,
+        "choiceDrawCount": 2,
+        "randomDrawDecks": [
+          "bonus",
+          "malus",
+          "surprise"
+        ],
+        "randomDrawCount": 2,
+        "forcedRoll": 1,
+        "replacementRoll": 4,
+        "lowRollThreshold": 4,
+        "protectionAdvance": 1
       }
-    ],
-    "targetRules": {
-      "move-other-two": {
-        "kind": "move",
-        "delta": 2
-      },
-      "swap-next-turns": {
-        "kind": "swap-turns"
-      },
-      "give-bonus": {
-        "kind": "give-card",
-        "deck": "bonus"
-      },
-      "swap-positions": {
-        "kind": "swap-positions"
-      },
-      "wish-swap": {
-        "kind": "swap-positions"
-      },
-      "steal-token": {
-        "kind": "steal-token"
-      },
-      "song-steal": {
-        "kind": "steal-token"
-      },
-      "travelling-book": {
-        "kind": "follow",
-        "delta": 1
-      },
-      "gold-key": {
-        "kind": "option",
-        "optionId": "gold-key-type"
-      }
-    },
-    "optionRules": {
-      "song": [
-        {
-          "id": "move-three",
-          "kind": "move",
-          "delta": 3
-        },
-        {
-          "id": "steal-bonus",
-          "kind": "target",
-          "effect": "song-steal"
-        }
-      ],
-      "wish": [
-        {
-          "id": "move-two",
-          "kind": "move",
-          "delta": 2
-        },
-        {
-          "id": "swap",
-          "kind": "target",
-          "effect": "wish-swap"
-        },
-        {
-          "id": "draw-bonus",
-          "kind": "draw",
-          "deck": "bonus",
-          "target": "actor"
-        }
-      ],
-      "gold-key-type": [
-        {
-          "id": "bonus",
-          "kind": "draw",
-          "deck": "bonus",
-          "target": "selected",
-          "consumeStatus": "choice-story-challenge.key-of-gold"
-        },
-        {
-          "id": "malus",
-          "kind": "draw",
-          "deck": "malus",
-          "target": "selected",
-          "consumeStatus": "choice-story-challenge.key-of-gold"
-        }
-      ]
-    },
-    "giftTargetEffect": "give-bonus",
-    "conditionalTargetEffect": "gold-key",
-    "numberOptions": [
-      1,
-      2,
-      3
-    ],
-    "numberAdvance": 1,
-    "choiceDrawCount": 2,
-    "randomDrawDecks": [
-      "bonus",
-      "malus",
-      "surprise"
-    ],
-    "randomDrawCount": 2,
-    "forcedRoll": 1,
-    "replacementRoll": 4,
-    "lowRollThreshold": 4,
-    "protectionAdvance": 1
-  }
+    }
+  ]
 }

@@ -1,10 +1,15 @@
+import { legacyExtensionFixture } from '../../engine/testing/public-api';
 import {
   jsonEffectPacksByDomain,
   jsonEffectPacks,
 } from './json-effect-pack-registry';
 import { compileJsonGame } from '../public-api';
 import pathWallsManifest from '../../games/vents-sacres/corridor/manifest.json';
-import pathWallsDocument from '../../games/vents-sacres/corridor/game.json';
+import pathWallsDocumentExtensionSource from '../../games/vents-sacres/corridor/game.json';
+const pathWallsDocument = legacyExtensionFixture(
+  pathWallsDocumentExtensionSource,
+  'pathWalls',
+);
 
 describe('JSON effect-pack registry', () => {
   it('is frozen, deterministic and has unique document and output keys', () => {
@@ -62,7 +67,7 @@ describe('JSON effect-pack registry', () => {
 
   it('exposes the complete generic contribution contract for every profile', () => {
     for (const extension of jsonEffectPacks) {
-      expect(extension.scope).toBe('generic');
+      expect(extension.scope).toBe('game-specific');
       expect([
         'board',
         'cards',
@@ -72,14 +77,12 @@ describe('JSON effect-pack registry', () => {
         'spatial',
       ]).toContain(extension.domain);
       expect(extension.schema).toBeDefined();
-      expect(extension.compileUnknown).toEqual(expect.any(Function));
-      expect(extension.collectActions).toEqual(expect.any(Function));
-      expect(extension.collectHandlers).toEqual(expect.any(Function));
+      expect(extension.compileContribution).toEqual(expect.any(Function));
       expect(extension.validateUnknown).toEqual(expect.any(Function));
       expect(Object.isFrozen(extension)).toBe(true);
     }
     expect(
-      jsonEffectPacks.every((extension) => extension.scope === 'generic'),
+      jsonEffectPacks.every((extension) => extension.scope === 'game-specific'),
     ).toBe(true);
     expect(
       Object.fromEntries(
