@@ -130,7 +130,9 @@ jobs:
       - name: Typecheck and build production code
         run: npm run typecheck:prod && npm run build && npm run verify:dist
       - name: Record game and engine growth independently
-        run: node tools/engine-evolution-report.cjs > logs/engine-evolution.json
+        run: |
+          mkdir -p logs
+          node tools/engine-evolution-report.cjs > logs/engine-evolution.json
       - name: Build the production-only deployment artifact
         run: npm prune --omit=dev && npm rebuild ffmpeg-static && npm run artifact:create -- logs/backend-deployment.tar.gz
         env:
