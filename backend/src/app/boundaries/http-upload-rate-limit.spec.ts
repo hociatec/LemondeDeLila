@@ -11,7 +11,7 @@ import { createRateLimitOptions } from '../../platform/config/rate-limit-options
 const originalEnvironment = process.env;
 let AppPlatformModule: typeof import('./app-platform.module').AppPlatformModule;
 
-beforeAll(async () => {
+beforeAll(() => {
   const { privateKey, publicKey } = generateKeyPairSync('rsa', {
     modulusLength: 2048,
   });
@@ -27,7 +27,9 @@ beforeAll(async () => {
       .export({ type: 'spki', format: 'pem' })
       .toString(),
   };
-  ({ AppPlatformModule } = await import('./app-platform.module'));
+  ({ AppPlatformModule } = jest.requireActual<
+    typeof import('./app-platform.module')
+  >('./app-platform.module'));
 });
 
 afterAll(() => {
