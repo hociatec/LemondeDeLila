@@ -100,6 +100,8 @@ jobs:
         run: npm ci --ignore-scripts --include=dev
       - name: Exercise MySQL, Redis, BullMQ and two backend instances
         run: npm run test:integration:real
+      - name: Install the locked FFmpeg binary for audio integration tests
+        run: npm rebuild ffmpeg-static
       - name: Exercise every application and game regression suite
         run: npm test -- --maxWorkers=2
 
@@ -130,7 +132,7 @@ jobs:
       - name: Record game and engine growth independently
         run: node tools/engine-evolution-report.cjs > logs/engine-evolution.json
       - name: Build the production-only deployment artifact
-        run: npm prune --omit=dev && npm run artifact:create -- logs/backend-deployment.tar.gz
+        run: npm prune --omit=dev && npm rebuild ffmpeg-static && npm run artifact:create -- logs/backend-deployment.tar.gz
         env:
           BACKEND_ARTIFACT_NODE_MAJOR: "24"
       - name: Upload the certified Node 24 deployment artifact
