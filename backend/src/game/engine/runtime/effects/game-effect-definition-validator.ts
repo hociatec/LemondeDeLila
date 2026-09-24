@@ -1,5 +1,6 @@
 import { validatePlayerValueInstruction } from './effect-value-validator';
 import { assertEffectJson } from '../contracts/effect-json-schema';
+import { AuthoringError } from '../contracts/authoring-error';
 import { validateCardMove } from './card-location-validator';
 import { authoringProperty } from '../contracts/authoring-diagnostics';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
@@ -37,7 +38,13 @@ export function assertEffectInstructions(
   fail: ValidationFailure,
 ): asserts instructions is readonly GameEffectInstruction[] {
   if (!Array.isArray(instructions)) fail(path, 'séquence d’effets invalide');
-  assertEffectJson(instructions, path, true);
+  try {
+    assertEffectJson(instructions, path, true);
+  } catch (error) {
+    // Preserve the caller's definition identity and diagnostic contract.
+    if (error instanceof AuthoringError) fail(error.path, error.expected);
+    throw error;
+  }
   const values: readonly GameEffectInstruction[] = instructions;
   for (const [index, value] of values.entries()) {
     const effectPath = `${path}[${index}]`;

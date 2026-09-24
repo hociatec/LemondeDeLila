@@ -484,7 +484,9 @@
       ],
       "validation": [
         "src/game/testing/architecture-tests/json/authoring-semantic-paths.spec.ts",
-        "src/game/testing/architecture-tests/json/json-pattern-diagnostics.spec.ts"
+        "src/game/testing/architecture-tests/json/json-pattern-diagnostics.spec.ts",
+        "src/game/engine/runtime/definitions/component-reference-validation.spec.ts",
+        "src/game/engine/runtime/definitions/static-effect-references.spec.ts"
       ]
     },
     {
@@ -646,6 +648,7 @@
       "636 targeted JSON/API/diagnostic tests",
       "28 targeted final regression tests"
     ],
-    "mergeGate": "Full integration and release-artifact certification must succeed on the final PR head before merging."
+    "mergeGate": "Full integration and release-artifact certification must succeed on the final PR head before merging.",
+    "followup": "Full local campaign: 275 suites passed, two diagnostic regressions found and corrected; all 120 snapshots passed. Rerun of both failed suites and four related suites: 389 tests passed. Both regressions are now part of engine:merge-contracts."
   }
 }
