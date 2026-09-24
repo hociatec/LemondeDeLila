@@ -1,5 +1,5 @@
 import { gameInput } from './game-input-schema';
-import { GamePayloadValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GamePayloadValidationError } from '../contracts/game-domain.errors';
 
 it('preserves presentation whitespace when requested without changing input defaults', () => {
   expect(gameInput.string().parse(' texte ')).toBe('texte');

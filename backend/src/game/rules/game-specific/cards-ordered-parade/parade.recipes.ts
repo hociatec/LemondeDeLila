@@ -1,7 +1,7 @@
 import { victoryWhen, playCard } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { ParadeProgram } from './program';
-import { defineEmptyAction } from '../../../engine/runtime/actions/action-builders';
+import { defineEmptyAction } from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

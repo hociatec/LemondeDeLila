@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonChapterEncounterSchema,
   assertChapterEncounterReferences,
@@ -6,6 +6,7 @@ import {
 import { chapterEncounterRules } from './chapter-encounter.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'choices', 'effects', 'lifecycle'],
   scope: 'game-specific',
   domain: 'choice',
   documentKey: 'chapterEncounter',

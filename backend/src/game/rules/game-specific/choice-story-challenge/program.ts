@@ -1,4 +1,4 @@
-import type { GameEffectInstruction } from '../../../engine/runtime/contracts/effect-ir';
+import type { GameEffectInstruction } from '../../../engine/sdk/extension-contracts';
 
 export type StoryChallengeCardType = string;
 export type StoryChallengeTileType = string;

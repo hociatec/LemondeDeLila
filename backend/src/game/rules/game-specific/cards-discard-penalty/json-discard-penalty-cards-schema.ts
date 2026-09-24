@@ -1,4 +1,4 @@
-import { AuthoringError } from '../../../engine/runtime/contracts/authoring-error';
+import { AuthoringError } from '../../../engine/sdk/extension-api';
 import type { DiscardPenaltyCardsProgram } from './program';
 import {
   type AuthorSchema,
@@ -6,7 +6,7 @@ import {
   authorBoolean as boolean,
   authorId as id,
   authorObject as object,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 const card: AuthorSchema = {
   oneOf: [

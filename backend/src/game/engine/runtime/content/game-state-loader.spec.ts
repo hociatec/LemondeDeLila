@@ -1,5 +1,5 @@
 import { loadDeclarativeState } from './game-state-loader';
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 import { assertSerializableState } from '../state/assert-serializable-state';
 import { GAME_ENGINE_ALGORITHM_VERSION } from './engine-algorithm-version';
 

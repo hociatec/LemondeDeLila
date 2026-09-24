@@ -1,5 +1,5 @@
-import type { GameEffectInstruction } from '../../../engine/runtime/contracts/effect-ir';
-import type { TrackRaceProgram } from '../../../engine/runtime/contracts/track-race-contract';
+import type { GameEffectInstruction } from '../../../engine/sdk/extension-contracts';
+import type { TrackRaceProgram } from '../../../engine/sdk/extension-contracts';
 
 export type QuizEventRaceTile = {
   n: number;

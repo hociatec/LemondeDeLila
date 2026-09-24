@@ -14,6 +14,7 @@ import document from '../../../testing/fixtures/json-course/game.json';
 // A new rule unknown to the shipped catalogue. No production registration needed.
 const extension = (documentKey: string) =>
   defineJsonEffectPack({
+    capabilities: ['actions', 'viewExtension'],
     scope: 'game-specific',
     domain: 'choice',
     documentKey,
@@ -35,6 +36,106 @@ const source = (key: string, points: number) => ({
   [key]: { points },
   actions: { advance: { recipe: 'award-configured-points' } },
   victory: { kind: 'score-at-least', amount: points },
+});
+
+describe('extension composition', () => {
+  const objective = (key: string) =>
+    defineJsonEffectPack({
+      capabilities: ['victory'],
+      scope: 'game-specific',
+      domain: 'choice',
+      documentKey: key,
+      outputKey: key,
+      schema: authorObject({ points: authorPositive }),
+      compile: (program: { points: number }) => program,
+      victoryKind: `by-${key}`,
+      victoryRequired: false,
+      handlers: () => ({
+        victory: { evaluate: () => ({ winnerPlayerIds: [1], reason: key }) },
+      }),
+    });
+  const hybrid = {
+    ...source('award', 7),
+    first: { points: 1 },
+    second: { points: 2 },
+    victory: { kind: 'by-second' },
+  };
+  it('combines independent capabilities and selects victory independently of catalogue order', () => {
+    for (const objectives of [
+      [objective('first'), objective('second')],
+      [objective('second'), objective('first')],
+    ]) {
+      const definition = createJsonGameCompiler([
+        extension('award'),
+        ...objectives,
+      ]).compileJsonGame(manifest, hybrid);
+      const runtime = new DeclarativeGameRuntime(definition);
+      const initial = runtime.hydrateInitialState({
+        version: 1,
+        status: 'started',
+        phase: 'setup',
+        log: [],
+        players: [
+          { id: 1, username: 'Alice' },
+          { id: 2, username: 'Bob' },
+        ],
+        metadata: { rng: { seed: 42, counter: 0 } },
+      });
+      const action = runtime.validateAction(
+        initial,
+        { type: 'advance', payload: {} },
+        1,
+      );
+      const result = runtime.applyActions(initial, [action], {
+        actorId: 1,
+        clock: new FixedGameClock(1000),
+        rng: new StateGameRng(initial),
+      });
+      expect(result.status).toBe('finished');
+      expect(result).toHaveProperty('engine.playerValues.scores.1', 7);
+      expect(runtime.exposeStateForUser(result, 1).game).toEqual({
+        extensionLabel: 'award',
+      });
+      expect(JSON.stringify(result)).toContain('second');
+    }
+  });
+  it('rejects setup, handler and action conflicts before play', () => {
+    expect(() =>
+      createJsonGameCompiler([
+        extension('award'),
+        { ...objective('first'), ownsSetup: true },
+        { ...objective('second'), ownsSetup: true },
+      ]).compileJsonGame(manifest, hybrid),
+    ).toThrow(/only one extension may own setup/);
+    expect(() =>
+      createJsonGameCompiler([
+        extension('award'),
+        extension('other'),
+      ]).compileJsonGame(manifest, {
+        ...source('award', 7),
+        other: { points: 1 },
+      }),
+    ).toThrow(/unique extension action recipe/);
+    const other = defineJsonEffectPack({
+      capabilities: ['viewExtension'],
+      scope: 'game-specific',
+      domain: 'choice',
+      documentKey: 'other',
+      outputKey: 'other',
+      schema: authorObject({ points: authorPositive }),
+      compile: (program: { points: number }) => program,
+      handlers: () => ({ viewExtension: () => ({ other: true }) }),
+    });
+    expect(() =>
+      createJsonGameCompiler([extension('award'), other]).compileJsonGame(
+        manifest,
+        {
+          ...source('award', 7),
+          other: { points: 1 },
+        },
+      ),
+    ).toThrow(/unique handler owner for viewExtension/);
+  });
 });
 
 it('runs primitive JSON without loading any application catalogue', () => {
@@ -193,6 +294,12 @@ it('rejects ambiguous or reserved catalogue keys', () => {
   expect(() => createJsonGameCompiler([pack, pack])).toThrow(/Duplicate/);
   for (const key of ['actions', 'schemaVersion', '__proto__', 'constructor'])
     expect(() => createJsonGameCompiler([extension(key)])).toThrow(/reserved/);
+  expect(() =>
+    createJsonGameCompiler([
+      pack,
+      { ...extension('secondRule'), outputKey: pack.outputKey },
+    ]),
+  ).toThrow(/outputKey/);
   expect(() =>
     createJsonGameCompiler([{ ...pack, outputKey: 'patterns' }]),
   ).toThrow(/reserved/);

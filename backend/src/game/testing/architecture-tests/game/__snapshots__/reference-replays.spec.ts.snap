@@ -1,0 +1,78 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`board reference replay: panier-express, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "draw_card",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "ecdc9fa5ea4ff4f7c045caa4468ca878567771cfda2f4a7ec5de90cc83793b78",
+}
+`;
+
+exports[`cards reference replay: pimp-my-ride, seed 23 1`] = `
+{
+  "actionTypes": [
+    "pass",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "f9b03d74658757c166cb37eb0cfca69d70604f855f1cd8417bf72eb021f5384e",
+}
+`;
+
+exports[`choice reference replay: cat-pattes, seed 37 1`] = `
+{
+  "actionTypes": [
+    "discard_card",
+    "draw",
+    "game.configure",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "9eb001e5c33e3663ecf1f0ce5e072e5a57e1daaf7f775507a84ab4785b492009",
+}
+`;
+
+exports[`collection reference replay: la-bande-a-banane, seed 41 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "pass",
+    "play_card",
+  ],
+  "finished": true,
+  "steps": 26,
+  "traceDigest": "7f96db355a4b610fd5eb804975987be32ce2083c05218a26b0a9fb2b8c573a12",
+}
+`;
+
+exports[`race reference replay: a-fond-les-ballons, seed 53 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "draw_card",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 50,
+  "traceDigest": "36b6f362f99b44f18ba3c2c6f4983e2828a03e34f8abcb86a6edc46c3aa2d434",
+}
+`;
+
+exports[`spatial reference replay: morpion, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "morpion_play",
+  ],
+  "finished": true,
+  "steps": 11,
+  "traceDigest": "528e7a05e18809cdd98408423e4e85c4a10658f66061d44409eb7aec48481b10",
+}
+`;

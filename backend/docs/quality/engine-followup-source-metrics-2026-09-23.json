@@ -1,0 +1,2673 @@
+{
+  "method": "AST branch count per function; nested functions counted separately; if/loops/case/catch/ternary/logical operators, base 1. Review aid, not a line-count target.",
+  "functions": [
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 156,
+      "name": "semanticMessage",
+      "complexity": 31
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 301,
+      "name": "<callback>",
+      "complexity": 22
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 162,
+      "name": "assertValid",
+      "complexity": 20
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 362,
+      "name": "projectPending",
+      "complexity": 18
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 146,
+      "name": "assertValid",
+      "complexity": 16
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 284,
+      "name": "getAutomaticActions",
+      "complexity": 16
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 333,
+      "name": "scoreMessage",
+      "complexity": 14
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 87,
+      "name": "assertPawnTrack",
+      "complexity": 14
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 194,
+      "name": "applyConditional",
+      "complexity": 13
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 216,
+      "name": "getBotActions",
+      "complexity": 12
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 145,
+      "name": "resolveQuestion",
+      "complexity": 12
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 109,
+      "name": "applySpecial",
+      "complexity": 12
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 310,
+      "name": "applyRule",
+      "complexity": 12
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 49,
+      "name": "set",
+      "complexity": 11
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 329,
+      "name": "completeSet",
+      "complexity": 10
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 263,
+      "name": "answer",
+      "complexity": 10
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 107,
+      "name": "eventMessage",
+      "complexity": 9
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 238,
+      "name": "assign",
+      "complexity": 9
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 68,
+      "name": "validateQuizQuestions",
+      "complexity": 9
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 170,
+      "name": "exposeStateForUser",
+      "complexity": 9
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 258,
+      "name": "applyRelativePosition",
+      "complexity": 9
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 240,
+      "name": "teamPawnMovedMessage",
+      "complexity": 8
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 396,
+      "name": "deal",
+      "complexity": 8
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 330,
+      "name": "transitionTo",
+      "complexity": 8
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 193,
+      "name": "next",
+      "complexity": 8
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 76,
+      "name": "getAvailableActions",
+      "complexity": 8
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 124,
+      "name": "getActionCandidates",
+      "complexity": 8
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 210,
+      "name": "invalidJoker",
+      "complexity": 8
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 181,
+      "name": "<callback>",
+      "complexity": 7
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 356,
+      "name": "applyRaceMove",
+      "complexity": 7
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 379,
+      "name": "score",
+      "complexity": 7
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 272,
+      "name": "advance",
+      "complexity": 7
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 356,
+      "name": "<callback>",
+      "complexity": 7
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 283,
+      "name": "displayedCard",
+      "complexity": 6
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 300,
+      "name": "roundStartedMessage",
+      "complexity": 6
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 226,
+      "name": "exchangeRandom",
+      "complexity": 6
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 66,
+      "name": "finishSelection",
+      "complexity": 6
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 103,
+      "name": "resolveBattle",
+      "complexity": 6
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 158,
+      "name": "<callback>",
+      "complexity": 6
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 246,
+      "name": "endRound",
+      "complexity": 6
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 318,
+      "name": "<callback>",
+      "complexity": 6
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 55,
+      "name": "playerNames",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 258,
+      "name": "drawnCardMessage",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 187,
+      "name": "shuffleHands",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 112,
+      "name": "<callback>",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 426,
+      "name": "deepFreeze",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 75,
+      "name": "<callback>",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 41,
+      "name": "<callback>",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 125,
+      "name": "complete",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 293,
+      "name": "isRuntimeState",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 102,
+      "name": "<callback>",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 58,
+      "name": "<callback>",
+      "complexity": 5
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 78,
+      "name": "presentEvent",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 146,
+      "name": "playerLabel",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 229,
+      "name": "pawnBonusMessage",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 43,
+      "name": "<callback>",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 151,
+      "name": "exchange",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 134,
+      "name": "<callback>",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 375,
+      "name": "enterPhase",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 229,
+      "name": "ask",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 100,
+      "name": "<callback>",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 337,
+      "name": "chooseBot",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 88,
+      "name": "promoteFaceUp",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 179,
+      "name": "captureBonus",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 224,
+      "name": "<callback>",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 253,
+      "name": "<callback>",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 328,
+      "name": "currentFaceUp",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 334,
+      "name": "currentFaceDown",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 108,
+      "name": "<callback>",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 129,
+      "name": "<callback>",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 213,
+      "name": "prepareRound",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 71,
+      "name": "<callback>",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 110,
+      "name": "<callback>",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 246,
+      "name": "<callback>",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 270,
+      "name": "questionsPerRound",
+      "complexity": 4
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 322,
+      "name": "withNextTurn",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 357,
+      "name": "asRecord",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 367,
+      "name": "numberValue",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 373,
+      "name": "scoreUnit",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 384,
+      "name": "isActiveMatchStatus",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 25,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 259,
+      "name": "swapHands",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 117,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 119,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 221,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 233,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 316,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 407,
+      "name": "move",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 137,
+      "name": "reset",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 173,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 179,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 318,
+      "name": "reveal",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 344,
+      "name": "close",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 55,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 123,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 60,
+      "name": "finalize",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 105,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 171,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 199,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 318,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 39,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 72,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 80,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 144,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 200,
+      "name": "scoreRound",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 346,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 80,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 118,
+      "name": "askQuestion",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 175,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 275,
+      "name": "nextDrawerId",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 48,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 98,
+      "name": "<callback>",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 371,
+      "name": "penaltyMove",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 381,
+      "name": "moveDirectionalHazardPlayer",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 395,
+      "name": "markWinner",
+      "complexity": 3
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 19,
+      "name": "withServerMessages",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 67,
+      "name": "presentLatestByType",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 224,
+      "name": "quizResolvedMessage",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 363,
+      "name": "stringValue",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 15,
+      "name": "requireHandDefinition",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 33,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 82,
+      "name": "play",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 117,
+      "name": "take",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 247,
+      "name": "stealRandom",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 275,
+      "name": "discardRandom",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 287,
+      "name": "handCounts",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 301,
+      "name": "missingFromSet",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 312,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 323,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 347,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 377,
+      "name": "playerCompletedSets",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 385,
+      "name": "completedSetCounts",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 95,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 96,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 105,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 110,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 123,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 124,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 125,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 148,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 189,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 225,
+      "name": "available",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 230,
+      "name": "assigned",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 234,
+      "name": "owner",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 343,
+      "name": "applyMove",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 394,
+      "name": "inHomeStretch",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 402,
+      "name": "position",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 435,
+      "name": "requireSet",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 443,
+      "name": "requirePawn",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 107,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 128,
+      "name": "create",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 219,
+      "name": "check",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 352,
+      "name": "session",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 357,
+      "name": "definition",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 363,
+      "name": "question",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 372,
+      "name": "requireSession",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 409,
+      "name": "correctIndex",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 417,
+      "name": "quizSessionChoices",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 223,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 294,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 412,
+      "name": "projectChoiceData",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 33,
+      "name": "propertyEconomyRules",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 115,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 147,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 200,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 216,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 228,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 70,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 196,
+      "name": "highestPlayers",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 198,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 244,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 285,
+      "name": "runtime",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 304,
+      "name": "waiting",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 76,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 148,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 185,
+      "name": "playable",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 218,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 265,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 332,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 46,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 83,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 87,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 95,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 98,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 283,
+      "name": "currentSession",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 42,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 66,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 77,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 84,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 93,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 349,
+      "name": "<callback>",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 356,
+      "name": "targetEffect",
+      "complexity": 2
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 33,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 46,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+      "line": 124,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 28,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 51,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 61,
+      "name": "give",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 91,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 111,
+      "name": "hand",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 114,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 125,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 139,
+      "name": "discardFromHand",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 163,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 169,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 193,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 196,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 210,
+      "name": "transfer",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 290,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 297,
+      "name": "setIds",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 320,
+      "name": "completableSets",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "line": 389,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 87,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 100,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 107,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 109,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 111,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 114,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 118,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 121,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 122,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 126,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 128,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 129,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 130,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 132,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 136,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 140,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 141,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 142,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 145,
+      "name": "cards",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 149,
+      "name": "inventory",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 153,
+      "name": "economy",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 157,
+      "name": "ownership",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 161,
+      "name": "movement",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 165,
+      "name": "pawns",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 169,
+      "name": "dice",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 173,
+      "name": "grid",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 177,
+      "name": "quiz",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 198,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 206,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 209,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 219,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 247,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 292,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 293,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 298,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 302,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 303,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 306,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 313,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 314,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 315,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 320,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 326,
+      "name": "state",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 359,
+      "name": "enterCurrentPhase",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 363,
+      "name": "consumeEvents",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 367,
+      "name": "assertValidKits",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 371,
+      "name": "runBeforeCurrentTurnHook",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/game-rule-context.ts",
+      "line": 390,
+      "name": "phaseTimerId",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 44,
+      "name": "createPawnKitState",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 56,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 57,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 81,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 131,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 141,
+      "name": "create",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 145,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 155,
+      "name": "reset",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 170,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 185,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 217,
+      "name": "definitions",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 221,
+      "name": "perPlayer",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 227,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 240,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 241,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 275,
+      "name": "selectionComplete",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 278,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 283,
+      "name": "legalMoves",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 386,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 431,
+      "name": "moveTo",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "line": 444,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 56,
+      "name": "bank",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 57,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 102,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 115,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 119,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 130,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 150,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 155,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 165,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 198,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 208,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 221,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 248,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 306,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 338,
+      "name": "advance",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 365,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 395,
+      "name": "publicSession",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 422,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "line": 434,
+      "name": "createQuizKitState",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 83,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 116,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 160,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 177,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 266,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 348,
+      "name": "getShortcuts",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 352,
+      "name": "getDescriptor",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 358,
+      "name": "toActionPayload",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 399,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 426,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/engine/runtime/projection/declarative-game-queries.ts",
+      "line": 427,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 38,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 57,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 70,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 73,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 103,
+      "name": "management",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 106,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 108,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 135,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 150,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 188,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 190,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 241,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 248,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 256,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 262,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 263,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 304,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 305,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 318,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 323,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts",
+      "line": 326,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 23,
+      "name": "battleTiesRules",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 26,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 39,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 50,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 77,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 90,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 113,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 130,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 148,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 152,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 167,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 184,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 187,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 204,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 206,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 207,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 223,
+      "name": "enrich",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 238,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 271,
+      "name": "createRound",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 275,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 278,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 280,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 316,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 317,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts",
+      "line": 320,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 27,
+      "name": "nextDiscardPenaltyCardsValue",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 33,
+      "name": "scoreDiscardPenaltyCardsHand",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 50,
+      "name": "discardPenaltyCardsRules",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 61,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 78,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 79,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 134,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 147,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 158,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 179,
+      "name": "config",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 182,
+      "name": "current",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 198,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 226,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 236,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 282,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 283,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 296,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 301,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 340,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 350,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts",
+      "line": 353,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 30,
+      "name": "simultaneousQuizRules",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 64,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 84,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 102,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 115,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 123,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 147,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 151,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 154,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 266,
+      "name": "mnemoConfig",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 279,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 288,
+      "name": "quizComponents",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 289,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts",
+      "line": 300,
+      "name": "quizConfigurationInput",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 36,
+      "name": "directionalHazardEffects",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 73,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 89,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 121,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 138,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 140,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 159,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 161,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 200,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 264,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 400,
+      "name": "<callback>",
+      "complexity": 1
+    },
+    {
+      "file": "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts",
+      "line": 402,
+      "name": "<callback>",
+      "complexity": 1
+    }
+  ],
+  "unknownAssertions": [
+    {
+      "file": "src/game/engine/runtime/actions/declarative-action-controller.ts",
+      "line": 281,
+      "expression": "payload as Record<string, unknown> | undefined"
+    },
+    {
+      "file": "src/game/engine/runtime/actions/game-input-schema.ts",
+      "line": 233,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/choices/declarative-choice-runtime.ts",
+      "line": 196,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/configuration/configuration-kit.ts",
+      "line": 164,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/configuration/configuration-kit.ts",
+      "line": 258,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/configuration/configuration-kit.ts",
+      "line": 263,
+      "expression": "structuredClone(value) as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-immutability.ts",
+      "line": 52,
+      "expression": "new Proxy(Object.create(Map.prototype), {}) as Map<\n    unknown,\n    unknown\n  >"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-immutability.ts",
+      "line": 89,
+      "expression": "new Proxy(Object.create(Set.prototype), {}) as Set<unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-parser.ts",
+      "line": 24,
+      "expression": "JSON.parse(decodeContentText(text)) as unknown"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-version.ts",
+      "line": 12,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/content/external-content-release.ts",
+      "line": 84,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/content/external-content-release.ts",
+      "line": 108,
+      "expression": "entry as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/content/game-content.ts",
+      "line": 340,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/json-author-schema.ts",
+      "line": 241,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/game-definition-builders.ts",
+      "line": 26,
+      "expression": "value as { kind?: unknown }"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-game-parser.ts",
+      "line": 26,
+      "expression": "extensions as readonly {\n      type: string;\n      config: unknown;\n    }[]"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/runtime-descriptor.ts",
+      "line": 103,
+      "expression": "definition.config.defaults as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/runtime-descriptor.ts",
+      "line": 266,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/effects/game-effect-definition-validator.ts",
+      "line": 70,
+      "expression": "instruction as { kind?: unknown }"
+    },
+    {
+      "file": "src/game/engine/runtime/effects/game-effect-definition-validator.ts",
+      "line": 420,
+      "expression": "schema.parse as (\n            value: unknown,\n            path: string,\n          ) => unknown"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/movement-kit.ts",
+      "line": 321,
+      "expression": "tile as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/visibility-kit.ts",
+      "line": 79,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/projection/dice-action-view.ts",
+      "line": 11,
+      "expression": "value as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay/card-recipe.helpers.ts",
+      "line": 3,
+      "expression": "card as { id?: unknown }"
+    }
+  ],
+  "unknownOrAnySourceAssertions": [
+    {
+      "file": "src/game/engine/runtime/actions/game-input-schema.ts",
+      "line": 284,
+      "from": "unknown",
+      "expression": "candidate.parse(value, path) as InferSchema<\n              TSchemas[number]\n            >"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-immutability.ts",
+      "line": 5,
+      "from": "unknown",
+      "expression": "freeze(value, new WeakMap()) as TValue"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-immutability.ts",
+      "line": 24,
+      "from": "any",
+      "expression": "Object.create(Object.getPrototypeOf(value) as object | null) as object"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-immutability.ts",
+      "line": 24,
+      "from": "any",
+      "expression": "Object.getPrototypeOf(value) as object | null"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-immutability.ts",
+      "line": 28,
+      "from": "any",
+      "expression": "Reflect.get(descriptors, key) as PropertyDescriptor"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-immutability.ts",
+      "line": 36,
+      "from": "any",
+      "expression": "Reflect.get(descriptors, key) as PropertyDescriptor"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-immutability.ts",
+      "line": 52,
+      "from": "any",
+      "expression": "new Proxy(Object.create(Map.prototype), {}) as Map<\n    unknown,\n    unknown\n  >"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-immutability.ts",
+      "line": 89,
+      "from": "any",
+      "expression": "new Proxy(Object.create(Set.prototype), {}) as Set<unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-immutability.ts",
+      "line": 120,
+      "from": "unknown",
+      "expression": "clone(value, new WeakMap()) as T"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-parser.ts",
+      "line": 24,
+      "from": "any",
+      "expression": "JSON.parse(decodeContentText(text)) as unknown"
+    },
+    {
+      "file": "src/game/engine/runtime/content/external-content-release.ts",
+      "line": 108,
+      "from": "any",
+      "expression": "entry as Record<string, unknown>"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/json-author-schema.ts",
+      "line": 185,
+      "from": "any",
+      "expression": "Object.getPrototypeOf(current) as object | null"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/game-definition-compiler.ts",
+      "line": 280,
+      "from": "unknown",
+      "expression": "finalizeCompiledDefinition(\n    normalizedBase,\n  ) as CompiledGameDefinition<\n    TState,\n    TActions,\n    TViewExtension,\n    TInitialization,\n    TEvents,\n    TPatterns\n  >"
+    },
+    {
+      "file": "src/game/engine/runtime/lifecycle/game-turn-controller.ts",
+      "line": 81,
+      "from": "unknown",
+      "expression": "this.runtime.engine.playerValues.turnFlags[key] as\n          TValue | undefined"
+    },
+    {
+      "file": "src/game/engine/runtime/actions/declarative-action-controller.ts",
+      "line": 281,
+      "from": "unknown",
+      "expression": "payload as Record<string, unknown> | undefined"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/json-author-codec.ts",
+      "line": 22,
+      "from": "unknown",
+      "expression": "structuredClone(value) as T"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-game-parser.ts",
+      "line": 19,
+      "from": "unknown",
+      "expression": "structuredClone(value) as JsonGameDocument"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-game-parser.ts",
+      "line": 26,
+      "from": "unknown",
+      "expression": "extensions as readonly {\n      type: string;\n      config: unknown;\n    }[]"
+    },
+    {
+      "file": "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.catalog.ts",
+      "line": 25,
+      "from": "any",
+      "expression": "Object.fromEntries([\n    ['all', 'Toutes les catégories'],\n    ...categories\n      .filter((category) => categoryIds.includes(category.id))\n      .map((category) => [category.id, c"
+    },
+    {
+      "file": "src/game/engine/infrastructure/content/archived-content.ts",
+      "line": 23,
+      "from": "any",
+      "expression": "JSON.parse(source) as object"
+    }
+  ]
+}

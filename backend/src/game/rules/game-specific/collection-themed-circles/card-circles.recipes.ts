@@ -7,7 +7,7 @@ import type { CardCirclesProgram } from './program';
 import {
   defineAction,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 

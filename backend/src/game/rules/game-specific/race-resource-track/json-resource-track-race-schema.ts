@@ -1,15 +1,15 @@
 import {
   authoringFailure,
   authoringProperty,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { ResourceTrackRaceProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorArray as array,
   authorId as id,
   authorRecord as record,
   authorObject as object,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 export const jsonResourceTrackRaceSchema = object({
   trackId: id,

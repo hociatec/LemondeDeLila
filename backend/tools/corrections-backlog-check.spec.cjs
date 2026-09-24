@@ -8,6 +8,9 @@ const { spawnSync } = require('node:child_process');
 const backend = path.resolve(__dirname, '..');
 const checker = path.join(__dirname, 'corrections-backlog-check.cjs');
 const reportNames = [
+  'engine-followup-2026-09-23.md',
+  'engine-followup-register-2026-09-23.json',
+  'engine-followup-source-2026-09-23.md',
   'engine-audit-register-2026-09-23.json',
   'corriger-2026-09-23.md',
   'open-debt-register-2026-09-10.md',
@@ -166,6 +169,7 @@ test('rejects an engine audit point removed without its closure record', () => {
 
 test('rejects a claimed engine audit closure without evidence', () => {
   const result = checkFixture((directory) => {
+    engineFixture(directory, []);
     const file = path.join(
       directory,
       'docs/quality/engine-audit-register-2026-09-23.json',

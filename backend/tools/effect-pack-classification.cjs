@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('node:crypto');
+const { validatePromotion } = require('./effect-pack-promotion.cjs');
 
 const scopes = Object.freeze(['game-specific', 'reusable', 'engine-primitive']);
 const descriptive = new Set([
@@ -119,6 +120,7 @@ function classifyEffectPack(name, profile, consumers, readEvidence) {
         `${name}: stable maturity requires versioned compatibility policy and distinct regression tests`,
       );
   }
+  validatePromotion(name, profile, readEvidence);
   return {
     scope: profile.scope,
     maturity: profile.maturity,

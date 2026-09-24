@@ -1,4 +1,4 @@
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from '../contracts/game-domain.errors';
 
 const MAX_CONTENT_JSON_BYTES = 8 * 1024 * 1024;
 

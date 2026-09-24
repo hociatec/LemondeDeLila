@@ -1,9 +1,9 @@
 import { gameInput, defineEffect } from '../../engine/sdk/public-api';
-import type { BoardGameProgram } from '../game-specific/board-movement-landings/program';
+import type { BoardGameProgram } from '../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 
-import type { GameEffectResolverShape } from '../../engine/runtime/contracts/effect-resolver';
+import type { GameEffectResolverShape } from '../../engine/sdk/extension-api';
 import { BoardLandingResolver } from './board-landings';
 
 export function boardEffectBindings(

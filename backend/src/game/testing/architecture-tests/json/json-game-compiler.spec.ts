@@ -1,13 +1,13 @@
 import { compileJsonGame } from '../../../rules/public-api';
-import { DeclarativeGameRuntime } from '../declarative-game.runtime';
+import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
 import {
   FixedGameClock,
   StateGameRng,
 } from '../../../core/application/models/game-execution-context.model';
 import type { GameState } from '../../../core/application/models/game-state.model';
 
-import manifest from '../../../testing/fixtures/json-course/manifest.json';
-import document from '../../../testing/fixtures/json-course/game.json';
+import manifest from '../../fixtures/json-course/manifest.json';
+import document from '../../fixtures/json-course/game.json';
 import standardManifest from '../../../games/vents-sacres/course-des-etoiles/manifest.json';
 import standardDocument from '../../../games/vents-sacres/course-des-etoiles/game.json';
 import { discoverGameDefinitions } from '../../../composition/game-module-discovery';

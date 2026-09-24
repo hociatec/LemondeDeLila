@@ -7,7 +7,7 @@ import {
 import {
   GameStateViolationError,
   GameRuleViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 
 function fixture<T extends CardValue>(values: readonly T[]) {
   const state = createCardsKitState();

@@ -1,6 +1,6 @@
-import { assertAuthorJson } from './json-author-schema';
+import { assertAuthorJson } from '../../../engine/runtime/contracts/json-author-schema';
 import { parseJsonGame } from '../../../rules/public-api';
-import document from '../../../testing/fixtures/json-course/game.json';
+import document from '../../fixtures/json-course/game.json';
 
 it('bounds cumulative UTF-8 text even when each individual string is allowed', () => {
   const text = '\u00e9'.repeat(32_768);

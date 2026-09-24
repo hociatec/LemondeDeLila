@@ -4,11 +4,11 @@ import {
   drawForPlayer,
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
 import {
   defineAction,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 import type {
   SharedPrestigeCardsCard,
   SharedPrestigeCardsProgram,
@@ -16,7 +16,7 @@ import type {
 import {
   defineEffect,
   defineEmptyEffect,
-} from '../../../engine/runtime/effects/effects-core';
+} from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

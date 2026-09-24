@@ -29,7 +29,8 @@ export interface ContextTurnCapability {
   waitingPlayers: (sessionId?: string) => number[];
   completeWaiting: (sessionId?: string) => boolean;
   flags: {
-    get: <TValue>(key: string) => TValue | null;
+    /** Persisted flags are untyped; consumers must validate before domain use. */
+    get: (key: string) => unknown;
     set: (key: string, value?: unknown) => void;
     consume: (key: string) => boolean;
     clear: () => void;

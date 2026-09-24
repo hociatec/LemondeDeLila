@@ -1,7 +1,7 @@
 import type { GameStatePatchOperation } from '../models/game-event.model';
 import type { GameState } from '../models/game-state.model';
 import { sameSerializableValue } from '../../../engine/runtime/state/serializable-value';
-import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../../../engine/runtime/contracts/game-domain.errors';
 import { assertGameStatePatch } from './game-state-patch-contract';
 const MAX_PATCH_OPERATIONS = 512;
 

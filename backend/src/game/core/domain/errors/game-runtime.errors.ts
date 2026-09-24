@@ -1,4 +1,4 @@
-import { GameDomainError } from './game-domain.errors';
+import { GameDomainError } from '../../../engine/runtime/contracts/game-domain.errors';
 
 export class GameCorruptedStateError extends GameDomainError {
   constructor(

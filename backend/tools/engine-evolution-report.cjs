@@ -8,6 +8,11 @@ function compareEvolution(current, previous) {
   const games = added('games'),
     effectPacks = added('effectPacks'),
     primitives = added('primitives');
+  const specificPacks = (
+    current.gameSpecificPacks ?? current.effectPacks
+  ).filter(
+    (id) => !(previous.gameSpecificPacks ?? previous.effectPacks).includes(id),
+  );
   return {
     games,
     effectPacks,
@@ -15,6 +20,10 @@ function compareEvolution(current, previous) {
     counts: {
       newGames: games.length,
       newEffectPacks: effectPacks.length,
+      newGameSpecificPacks: specificPacks.length,
+      gamesPerNewGameSpecificPack: specificPacks.length
+        ? games.length / specificPacks.length
+        : null,
       newPrimitives: primitives.length,
       gamesPerNewEffectPack: effectPacks.length
         ? games.length / effectPacks.length
@@ -24,6 +33,8 @@ function compareEvolution(current, previous) {
         : null,
     },
     requiresReview: effectPacks.length > 0 || primitives.length > 0,
+    specificGrowthWarning:
+      specificPacks.length > 0 && games.length <= specificPacks.length,
   };
 }
 
@@ -72,6 +83,10 @@ function captureEvolution(root = path.resolve(__dirname, '..')) {
   return {
     games,
     effectPacks: Object.keys(policy.profiles).sort(),
+    gameSpecificPacks: Object.entries(policy.profiles)
+      .filter(([, profile]) => profile.scope === 'game-specific')
+      .map(([name]) => name)
+      .sort(),
     primitives: [...new Set(primitives)].sort(),
     declarativity: {
       jsonGames: documents.length,
@@ -99,12 +114,11 @@ if (require.main === module) {
       ? path.join(root, 'tools/engine-evolution-reference.json')
       : path.resolve(process.argv[index + 1]);
   const previous = JSON.parse(fs.readFileSync(file, 'utf8'));
-  console.log(
-    JSON.stringify(
-      { ...current, evolution: compareEvolution(current, previous) },
-      null,
-      2,
-    ),
-  );
+  const evolution = compareEvolution(current, previous);
+  if (evolution.specificGrowthWarning)
+    console.error(
+      '::warning title=Game-specific pack growth::At least one new specific pack per new game. Review composition and reuse before extending the catalogue.',
+    );
+  console.log(JSON.stringify({ ...current, evolution }, null, 2));
 }
 module.exports = { compareEvolution, captureEvolution };

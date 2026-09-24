@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonBidirectionalCollisionRaceSchema,
   assertBidirectionalCollisionRaceReferences,
@@ -6,6 +6,7 @@ import {
 import { bidirectionalCollisionRaceRules } from './bidirectional-collision-race.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'choices', 'effects', 'setup'],
   scope: 'game-specific',
   domain: 'race',
   documentKey: 'bidirectionalCollisionRace',

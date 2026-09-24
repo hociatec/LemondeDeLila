@@ -17,7 +17,7 @@ import { includesInput } from './paw-scoring-input';
 import {
   defineAction,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 import type {
   PawScoringParade,
   PawScoringPower,
@@ -27,7 +27,7 @@ import {
   resetPawScoringRound,
   scorePawScoringRound,
 } from './paw-scoring-rounds';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 import { createPawScoringCardRules } from './paw-scoring-card-rules';
 
 type State = Record<string, never>;

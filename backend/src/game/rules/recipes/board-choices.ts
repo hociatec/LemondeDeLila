@@ -1,12 +1,12 @@
 import { gameInput, defineChoice } from '../../engine/sdk/public-api';
 import type { GameContext } from '../../engine/sdk/public-api';
-import type { BoardGameProgram } from '../game-specific/board-movement-landings/program';
+import type { BoardGameProgram } from '../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
 
-import type { ChoiceResolverShape } from '../../engine/runtime/contracts/author-rule-contracts';
-import { GameRuleViolationError } from '../../core/domain/errors/game-domain.errors';
+import type { ChoiceResolverShape } from '../../engine/sdk/extension-api';
+import { GameRuleViolationError } from '../../engine/sdk/extension-api';
 import { BoardLandingResolver, type BoardContinuation } from './board-landings';
 
 export function boardChoices(

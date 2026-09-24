@@ -4,7 +4,7 @@ import {
   GameActionRejectedError,
   GameActorRequiredError,
   GameUnknownActionError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 import type { DeclarativeChoiceRuntime } from '../choices/declarative-choice-runtime';
 import {
   canConfigureGame,
@@ -274,11 +274,14 @@ export class DeclarativeActionController<
   private withActor(
     action: GameSingleActionDto,
     actorId: number,
-    payload: unknown = action.payload,
+    payload: object | undefined = action.payload,
   ): GameSingleActionDto {
     return {
       ...action,
-      payload: payload as Record<string, unknown> | undefined,
+      payload:
+        payload === undefined
+          ? undefined
+          : Object.fromEntries(Object.entries(payload)),
       meta: { ...(action.meta ?? {}), actorId },
     };
   }

@@ -2,7 +2,7 @@ import type { GameConfigurationState } from '../contracts/configuration-state';
 import type { PlayerState } from '../../../core/application/models/game-state.model';
 import type { GameInputSchema } from '../actions/game-input-schema';
 import type { GameContext } from '../definitions/game-author-context';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 
 export const GAME_CONFIGURE_ACTION = 'game.configure' as const;
 

@@ -1,4 +1,4 @@
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 
 /** Reject values that cannot survive JSON persistence. Optional fields may be undefined. */
 export function assertSerializableState(

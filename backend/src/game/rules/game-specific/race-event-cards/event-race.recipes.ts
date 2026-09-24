@@ -15,6 +15,15 @@ import type { EventRaceProgram } from './program';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
+const drawSchema = gameInput.object({
+  playerId: gameInput.playerId(),
+  deckId: gameInput.string({ min: 1 }),
+});
+function readFlag(ctx: Context, key: string): PendingDraw | null {
+  const value = ctx.turn.flags.get(key);
+  return value == null ? null : drawSchema.parse(value, 'turn.flags.' + key);
+}
+
 type Card = {
   id: string | number;
   effects: readonly GameEffectInstruction[];
@@ -69,9 +78,9 @@ export function eventRaceRules(source: EventRaceProgram) {
       available: ({ actor, ctx }) =>
         ctx.phase.current() === program.playingPhase &&
         ctx.players.current()?.id === actor.id &&
-        ctx.turn.flags.get<PendingDraw>(pendingDrawFlag)?.playerId === actor.id,
+        readFlag(ctx, pendingDrawFlag)?.playerId === actor.id,
       execute: ({ actor, ctx }) => {
-        const pending = ctx.turn.flags.get<PendingDraw>(pendingDrawFlag);
+        const pending = readFlag(ctx, pendingDrawFlag);
         if (!pending || pending.playerId !== actor.id)
           return ctx.reject('EVENT_CARD_DRAW_NOT_PENDING');
         ctx.turn.flags.consume(pendingDrawFlag);

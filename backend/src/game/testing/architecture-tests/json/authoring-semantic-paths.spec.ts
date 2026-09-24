@@ -1,6 +1,9 @@
 import { compileJsonGame } from '../../../rules/public-api';
-import { resolveJsonContent } from '../content/json-content-bundle';
-import { AuthoringError, authoringValueAt } from './authoring-error';
+import { resolveJsonContent } from '../../../engine/runtime/content/json-content-bundle';
+import {
+  AuthoringError,
+  authoringValueAt,
+} from '../../../engine/runtime/contracts/authoring-error';
 import propertyManifest from '../../../games/les-quatre-vents/sac-a-malices/manifest.json';
 import propertyDocument from '../../../games/les-quatre-vents/sac-a-malices/game.json';
 import propertyContent from '../../../games/les-quatre-vents/sac-a-malices/catalogue.json';

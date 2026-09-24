@@ -1,11 +1,14 @@
 import { compileJsonGame } from '../../../rules/public-api';
-import manifest from '../../../testing/fixtures/json-course/manifest.json';
-import document from '../../../testing/fixtures/json-course/game.json';
-import { AuthoringError, authoringValueAt } from '../contracts/authoring-error';
-import { compileJsonGame as compileCore } from './json-game-compiler';
-import { defineJsonEffectPack } from '../contracts/json-effect-pack';
-import { authorObject } from '../contracts/json-author-schema';
-import type { GameEffectInstruction } from '../contracts/effect-ir';
+import manifest from '../../fixtures/json-course/manifest.json';
+import document from '../../fixtures/json-course/game.json';
+import {
+  AuthoringError,
+  authoringValueAt,
+} from '../../../engine/runtime/contracts/authoring-error';
+import { compileJsonGame as compileCore } from '../../../engine/runtime/definitions/json-game-compiler';
+import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { authorObject } from '../../../engine/runtime/contracts/json-author-schema';
+import type { GameEffectInstruction } from '../../../engine/runtime/contracts/effect-ir';
 
 function diagnostic(source: unknown, path: string, received: unknown) {
   try {
@@ -280,6 +283,7 @@ it('locates a missing initial deal destination', () => {
 
 it('keeps the original extension value when adapting a late diagnostic', () => {
   const pack = defineJsonEffectPack({
+    capabilities: [],
     scope: 'game-specific',
     domain: 'cards',
     documentKey: 'diagnostic',

@@ -4,12 +4,12 @@ import type { PublicDomainCardsProgram } from './program';
 import {
   defineAction,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 import {
   defineEffect,
   defineEmptyEffect,
   defineActorEffect,
-} from '../../../engine/runtime/effects/effects-core';
+} from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

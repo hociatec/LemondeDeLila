@@ -1,5 +1,5 @@
 import type { GameState } from '../../../core/application/models/game-state.model';
-import { GameActionRejectedError } from '../../../core/domain/errors/game-domain.errors';
+import { GameActionRejectedError } from '../contracts/game-domain.errors';
 
 const MAX_COMMAND_RECEIPTS = 256;
 

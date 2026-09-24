@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonPropertyEconomySchema,
   assertPropertyEconomyReferences,
@@ -6,6 +6,20 @@ import {
 import { propertyEconomyRules } from './property-economy.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: [
+    'actions',
+    'bot',
+    'choices',
+    'components',
+    'config',
+    'effects',
+    'events',
+    'initialization',
+    'patterns',
+    'resourceIds',
+    'setup',
+    'viewExtension',
+  ],
   scope: 'game-specific',
   domain: 'board',
   documentKey: 'propertyEconomy',

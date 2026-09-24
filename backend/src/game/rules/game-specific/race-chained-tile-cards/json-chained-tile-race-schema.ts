@@ -2,9 +2,9 @@ import {
   authoringFailure,
   authoringProperty,
   assertUniqueAuthorValues,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { ChainedTileRaceProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   type AuthorSchema,
   authorArray as array,
@@ -12,8 +12,8 @@ import {
   authorRecord as record,
   authorObject as object,
   authorPositive as positive,
-} from '../../../engine/runtime/contracts/json-author-schema';
-import { effectJsonSchema } from '../../../engine/runtime/contracts/effect-json-schema';
+} from '../../../engine/sdk/extension-api';
+import { effectJsonSchema } from '../../../engine/sdk/extension-api';
 
 export const jsonChainedTileRaceSchema: AuthorSchema = object({
   finishReason: id,

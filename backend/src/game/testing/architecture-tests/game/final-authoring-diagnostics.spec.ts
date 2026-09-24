@@ -111,7 +111,7 @@ it.each(['cards', 'initial', 'visibility', 'initialPhase', 'transitions'])(
   },
 );
 
-it('attributes incompatible programs to an existing source property', () => {
+it('attributes incompatible mandatory extension objectives to the selected victory', () => {
   const { source, manifest } = fixture('grid');
   const other = fixture('anonymousVote');
   source.extensions = [
@@ -126,6 +126,12 @@ it('attributes incompatible programs to an existing source property', () => {
     throw new Error('Expected failure');
   } catch (error) {
     expect(error).toBeInstanceOf(AuthoringError);
-    expect(error).toMatchObject({ path: 'game.json.extensions[0].config' });
+    expect(error).toMatchObject({
+      path: 'game.json.victory.kind',
+      received: object(source.victory).kind,
+      expected: expect.stringContaining(
+        'program and victory required together',
+      ),
+    });
   }
 });

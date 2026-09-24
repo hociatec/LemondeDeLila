@@ -4,8 +4,8 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { BattleTiesProgram } from './program';
-import { defineEmptyAction } from '../../../engine/runtime/definitions/game-definition-builders';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { defineEmptyAction } from '../../../engine/sdk/extension-api';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 import { GameCorruptedStateError } from '../../../core/domain/errors/game-runtime.errors';
 
 type PlayState = { playerId: number; playedCards: string[] };

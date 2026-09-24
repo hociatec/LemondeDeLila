@@ -1,14 +1,14 @@
 import {
   authoringFailure,
   assertUniqueAuthorValues,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { MarketExchangeProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorArray as array,
   authorId as id,
   authorObject as object,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 const count = { type: 'integer', minimum: 0, maximum: 1000000 } as const;
 export const jsonMarketExchangeSchema = object({

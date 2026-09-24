@@ -1,4 +1,4 @@
-import { GamePayloadValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GamePayloadValidationError } from '../contracts/game-domain.errors';
 import {
   parseStrictInteger,
   parseStrictNumber,

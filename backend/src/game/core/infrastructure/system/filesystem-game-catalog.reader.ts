@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { readEnvironment } from '../../../../platform/config/public-api';
-import { GameConfigurationError } from '../../domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../../../engine/runtime/contracts/game-domain.errors';
 import catalogIndex from './generated-game-catalog-index.json';
 import type { GameCatalogReader } from '../../application/ports/game-catalog.reader';
 import type {

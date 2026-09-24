@@ -7,7 +7,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { GooseRaceProgram, GooseTile } from './program';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

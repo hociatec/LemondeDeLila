@@ -1,12 +1,12 @@
 /** Application-owned catalogue; existing game JSON keeps its wire format. */
-import { createJsonGameCompiler } from '../engine/runtime/definitions/json-game-compiler-factory';
-import type { JsonGameCoreDocument } from '../engine/runtime/definitions/json-game-core-document';
+import { createJsonGameCompiler } from '../engine/sdk/extension-api';
+import type { JsonGameCoreDocument } from '../engine/sdk/extension-api';
 import type { JsonEffectPackDocumentFields } from './effect-packs/json-effect-pack-document-fields';
 import { jsonEffectPacks } from './effect-packs/json-effect-pack-registry';
 import type {
   JsonEffectPackViews,
   JsonGameViewAugmentation,
-} from '../engine/runtime/contracts/json-effect-pack-catalog';
+} from '../engine/sdk/extension-api';
 
 export type JsonGameViews = JsonEffectPackViews<typeof jsonEffectPacks>;
 export type JsonGameView = JsonGameViewAugmentation<typeof jsonEffectPacks>;
@@ -20,7 +20,7 @@ export const parseJsonGame = (
   value: unknown,
   path?: string,
 ): JsonGameDocument => compiler.parseJsonGame(value, path);
-export { resolveJsonContent } from '../engine/runtime/content/json-content-bundle';
-export type { JsonContentAssets } from '../engine/runtime/content/json-content-bundle';
-export type { JsonGameManifest } from '../engine/runtime/definitions/json-game-manifest';
-export { effectJsonSchema } from '../engine/runtime/contracts/effect-json-schema';
+export { resolveJsonContent } from '../engine/sdk/extension-api';
+export type { JsonContentAssets } from '../engine/sdk/extension-api';
+export type { JsonGameManifest } from '../engine/sdk/extension-api';
+export { effectJsonSchema } from '../engine/sdk/extension-api';

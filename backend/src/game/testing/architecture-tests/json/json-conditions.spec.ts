@@ -1,14 +1,14 @@
-import type { MutableStateCopy } from '../contracts/state-copy';
+import type { MutableStateCopy } from '../../../engine/runtime/contracts/state-copy';
 import { compileJsonGame } from '../../../rules/public-api';
-import { DeclarativeGameRuntime } from '../declarative-game.runtime';
-import type { EffectCondition } from '../contracts/effect-ir';
-import type { DeclarativeState } from '../state/declarative-state';
+import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
+import type { EffectCondition } from '../../../engine/runtime/contracts/effect-ir';
+import type { DeclarativeState } from '../../../engine/runtime/state/declarative-state';
 import {
   FixedGameClock,
   StateGameRng,
 } from '../../../core/application/models/game-execution-context.model';
-import manifest from '../../../testing/fixtures/json-course/manifest.json';
-import document from '../../../testing/fixtures/json-course/game.json';
+import manifest from '../../fixtures/json-course/manifest.json';
+import document from '../../fixtures/json-course/game.json';
 
 function definition(condition: unknown) {
   return compileJsonGame(manifest, {

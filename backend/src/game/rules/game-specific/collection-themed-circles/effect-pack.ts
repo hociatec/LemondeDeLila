@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonCardCirclesSchema,
   assertCardCirclesReferences,
@@ -6,6 +6,7 @@ import {
 import { cardCirclesRules } from './card-circles.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'lifecycle'],
   scope: 'game-specific',
   domain: 'collection',
   documentKey: 'cardCircles',

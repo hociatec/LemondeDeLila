@@ -1,4 +1,4 @@
-import { authoringFailure } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { authoringFailure } from '../../../engine/sdk/extension-api';
 import type { BidirectionalCollisionRaceProgram } from './program';
 import {
   authorArray as array,
@@ -6,8 +6,8 @@ import {
   authorObject as object,
   authorPositive as positive,
   authorRef as ref,
-} from '../../../engine/runtime/contracts/json-author-schema';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+} from '../../../engine/sdk/extension-api';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 
 export const jsonBidirectionalCollisionRaceSchema = object({
   trackId: id,

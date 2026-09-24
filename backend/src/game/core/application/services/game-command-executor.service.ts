@@ -7,10 +7,8 @@ import type {
   GameClock,
   GameExecutionContext,
 } from '../models/game-execution-context.model';
-import {
-  GameActionRejectedError,
-  GameStateConflictError,
-} from '../../domain/errors/game-domain.errors';
+import { GameActionRejectedError } from '../../../engine/runtime/contracts/game-domain.errors';
+import { GameStateConflictError } from '../../domain/errors/game-domain.errors';
 import { GameExecutionScopeService } from './game-execution-scope.service';
 import { appendPendingGameEvent } from './game-event-buffer';
 import {

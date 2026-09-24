@@ -1,5 +1,5 @@
 import type { DeclarativeState } from './declarative-state';
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 import type { GameComponentDefinition } from '../definitions/component-kit';
 import { componentCapabilities } from '../contracts/compiled-game-plan';
 

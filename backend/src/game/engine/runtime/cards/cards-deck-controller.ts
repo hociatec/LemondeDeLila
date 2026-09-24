@@ -1,4 +1,4 @@
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import { GameCardsStateController } from './cards-state-controller';
 import { assertCardHandDestination } from './card-hand-invariants';
 import { assertGameCount } from '../kits/numeric-invariants';

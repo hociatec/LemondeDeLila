@@ -1,6 +1,10 @@
 import { createAuthorCodec } from './json-author-codec';
 import { authorObject, authorPositive } from './json-author-schema';
 import { defineJsonEffectPack } from './json-effect-pack';
+import type {
+  JsonEffectPackCapability,
+  JsonEffectPackHandlerContext,
+} from './json-effect-pack';
 
 it('validates before narrowing, clones input, and captures an immutable grammar', () => {
   const schema = authorObject({ points: authorPositive });
@@ -25,6 +29,7 @@ it('never passes malformed input to compilation, reference validation, or choice
     String(program.points),
   ]);
   const pack = defineJsonEffectPack({
+    capabilities: [],
     scope: 'game-specific',
     domain: 'choice',
     documentKey: 'sample',
@@ -52,4 +57,54 @@ it('never passes malformed input to compilation, reference validation, or choice
     }),
   );
   expect(Object.isFrozen(contribution)).toBe(true);
+});
+
+it('checks declared capabilities at registration and after handler construction', () => {
+  const base = {
+    scope: 'game-specific' as const,
+    domain: 'choice' as const,
+    documentKey: 'sample',
+    outputKey: 'sample',
+    schema: authorObject({ points: authorPositive }),
+    compile: (program: { points: number }) => program.points,
+  };
+  expect(() =>
+    defineJsonEffectPack({ ...base, capabilities: [], actions: () => ({}) }),
+  ).toThrow(/sample.capabilities.actions/);
+  expect(() =>
+    defineJsonEffectPack({ ...base, capabilities: ['actions', 'actions'] }),
+  ).toThrow(/sample.capabilities/);
+  const context: JsonEffectPackHandlerContext = {
+    selectedBot: jest.fn(),
+    recipeBot: jest.fn(),
+    fallbackRecipeBot: jest.fn(),
+    publicStatuses: jest.fn(),
+    actionFor: jest.fn(),
+  };
+  const hidden = defineJsonEffectPack({
+    ...base,
+    capabilities: [],
+    handlers: () => ({ resourceIds: ['energy'] }),
+  });
+  expect(() =>
+    hidden.compileContribution({ points: 2 }).handlers(context),
+  ).toThrow(/sample.capabilities.resourceIds/);
+  const capabilities: JsonEffectPackCapability[] = ['resourceIds'];
+  const valid = defineJsonEffectPack({
+    ...base,
+    capabilities,
+    handlers: () => ({ resourceIds: ['energy'] }),
+  });
+  capabilities.length = 0;
+  expect(Object.isFrozen(valid.capabilities)).toBe(true);
+  expect(
+    valid.compileContribution({ points: 2 }).handlers(context).resourceIds,
+  ).toEqual(['energy']);
+  Object.defineProperty(capabilities, '0', {
+    value: 'invented',
+    enumerable: true,
+  });
+  expect(() => defineJsonEffectPack({ ...base, capabilities })).toThrow(
+    /supported capability name/,
+  );
 });

@@ -1,0 +1,185 @@
+{
+  "snapshot": "engine-followup-2026-09-23",
+  "source": "docs/quality/engine-followup-source-2026-09-23.md",
+  "points": [
+    {
+      "id": 1,
+      "title": "Séparation des règles spécifiques :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 2,
+      "title": "Promotion `game-specific → reusable` :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 3,
+      "title": "Promotion `reusable → engine-primitive` :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 4,
+      "title": "Dépendance des recipes génériques vers `game-specific` :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 5,
+      "title": "Contrats spécifiques importés directement depuis `engine/runtime` :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 6,
+      "title": "API d’extension distincte de l’API auteur :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 7,
+      "title": "Registre des effect-packs :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 8,
+      "title": "Catalogue des 38 règles spécifiques :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 9,
+      "title": "`extensions` est maintenant une bonne frontière :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 10,
+      "title": "Namespacing des extensions :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 11,
+      "title": "Version des extensions :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 12,
+      "title": "Taille du langage central :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 13,
+      "title": "`defineJsonEffectPack()` a été nettement amélioré :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 14,
+      "title": "`JsonState = Record<string, never>` :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 15,
+      "title": "Contrat `handlers` très large :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 16,
+      "title": "Ownership du setup :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 17,
+      "title": "Ownership de la victoire :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 18,
+      "title": "Gros fichiers du runtime :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 19,
+      "title": "Gros fichiers game-specific :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 20,
+      "title": "Nombre de casts TypeScript :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 21,
+      "title": "`throw new Error()` encore présent :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 22,
+      "title": "Volume de tests :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 23,
+      "title": "Tests de second jeu :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 24,
+      "title": "Tests de capacités orthogonales :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 25,
+      "title": "Property-based testing :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 26,
+      "title": "Replay déterministe :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 27,
+      "title": "SDK explicitement exporté :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 28,
+      "title": "SDK dépend du `core` pour les erreurs :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 29,
+      "title": "Tests du runtime dépendant de `rules/public-api` :",
+      "status": "closed",
+      "evidence": "docs/quality/engine-followup-2026-09-23.md"
+    },
+    {
+      "id": 30,
+      "title": "Indépendance réelle du moteur :",
+      "status": "open"
+    }
+  ]
+}

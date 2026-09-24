@@ -1,13 +1,13 @@
-import { authoringFailure } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { authoringFailure } from '../../../engine/sdk/extension-api';
 import type { GridPlacementProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorArray as array,
   authorObject as object,
   authorId as id,
   authorBoolean as boolean,
   type AuthorSchema,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 const size: AuthorSchema = { type: 'integer', minimum: 1, maximum: 32 };
 const coordinate: AuthorSchema = { type: 'integer', minimum: 0, maximum: 31 };

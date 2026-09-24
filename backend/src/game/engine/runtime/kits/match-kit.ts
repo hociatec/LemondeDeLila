@@ -1,5 +1,5 @@
 import type { PlayerState } from '../../../core/application/models/game-state.model';
-import { GameNotFoundError } from '../../../core/domain/errors/game-domain.errors';
+import { GameNotFoundError } from '../contracts/game-domain.errors';
 
 export type MatchLifecycleStatus =
   'waiting' | 'setup' | 'playing' | 'finished' | 'cancelled';

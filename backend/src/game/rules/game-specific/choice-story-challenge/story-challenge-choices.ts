@@ -5,7 +5,7 @@ import type {
   StoryChallengeOptionEffect,
 } from './program';
 import type { StoryChallengePendingResolution as Pending } from './story-challenge-resolution.types';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 type Context = GameContext<Record<string, never>>;
 export function createStoryChallengeChoices(program: StoryChallengeProgram) {
   function requestOption(

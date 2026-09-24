@@ -1,8 +1,9 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import { jsonParadeSchema, assertParadeReferences } from './json-parade-schema';
 import { paradeRules } from './parade.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'victory'],
   scope: 'game-specific',
   domain: 'cards',
   documentKey: 'parade',

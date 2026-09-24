@@ -1,12 +1,12 @@
-import { assertUniqueAuthorIds } from '../../../engine/runtime/contracts/authoring-diagnostics';
-import { authoringFailure } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { assertUniqueAuthorIds } from '../../../engine/sdk/extension-api';
+import { authoringFailure } from '../../../engine/sdk/extension-api';
 import type { AnonymousVoteProgram } from './program';
 import {
   type AuthorSchema,
   authorArray as array,
   authorId as id,
   authorObject as object,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 export const jsonAnonymousVoteSchema: AuthorSchema = object(
   {

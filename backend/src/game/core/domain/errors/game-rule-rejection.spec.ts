@@ -1,4 +1,7 @@
-import { GameRuleViolationError, rejectRule } from './game-domain.errors';
+import {
+  GameRuleViolationError,
+  rejectRule,
+} from '../../../engine/runtime/contracts/game-domain.errors';
 
 it('keeps the canonical rejection type and separates code, message and details', () => {
   const details = { tileId: 'start' };

@@ -6,6 +6,7 @@ import type { GameEventDefinition } from '../events/game-event-definition';
 import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
 import type { JsonEffectPackContribution } from '../contracts/json-effect-pack';
 import type { GameActionShape } from '../contracts/author-rule-contracts';
+import { AuthoringError } from '../contracts/authoring-error';
 
 type CompiledPattern = ReturnType<typeof compileJsonPattern>;
 
@@ -41,6 +42,13 @@ export function compileJsonPrograms(
     }
     const contribution = extension.compileContribution(source);
     contributions.set(extension.outputKey, contribution);
+    for (const key of Object.keys(contribution.actions))
+      if (Object.hasOwn(actions, key))
+        throw new AuthoringError(
+          `game.json.${extension.documentKey}`,
+          'unique extension action recipe',
+          key,
+        );
     Object.assign(actions, contribution.actions);
     events.push(...contribution.events);
     components.push(...contribution.components);

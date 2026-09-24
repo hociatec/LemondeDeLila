@@ -1,4 +1,4 @@
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 import { assertSerializableState } from '../state/assert-serializable-state';
 import type { ScheduledGameTask } from './scheduler-types';
 import { isGameTimestamp } from './game-deadline';

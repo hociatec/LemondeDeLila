@@ -8,11 +8,11 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { GridPlacementProgram } from './program';
-import type { ChoiceResolverShape } from '../../../engine/runtime/contracts/author-rule-contracts';
+import type { ChoiceResolverShape } from '../../../engine/sdk/extension-api';
 import {
   scanGridWinner,
   type GridPosition,
-} from '../../../engine/runtime/kits/grid-kit';
+} from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

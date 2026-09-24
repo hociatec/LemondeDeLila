@@ -2,7 +2,7 @@ import {
   GameActionRejectedError,
   GameConfigurationError,
   GameDomainError,
-} from './game-domain.errors';
+} from '../../../engine/runtime/contracts/game-domain.errors';
 import {
   GameCorruptedStateError,
   GameInvariantViolationError,

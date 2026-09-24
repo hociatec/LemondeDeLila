@@ -10,15 +10,24 @@ import type {
   GameContext,
   GameEffectInstruction,
 } from '../../../engine/sdk/public-api';
-import type { ChoiceResolverShape } from '../../../engine/runtime/contracts/author-rule-contracts';
+import type { ChoiceResolverShape } from '../../../engine/sdk/extension-api';
 import { boardChoices } from '../../recipes/board-choices';
 import { boardEffectBindings } from '../../recipes/board-effect-bindings';
 import type { BoardGameProgram } from './program';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
 import { BoardLandingResolver } from '../../recipes/board-landings';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
+const drawSchema = gameInput.object({
+  playerId: gameInput.playerId(),
+  deckId: gameInput.string({ min: 1 }),
+});
+function readFlag(ctx: Context, key: string): Draw | null {
+  const value = ctx.turn.flags.get(key);
+  return value == null ? null : drawSchema.parse(value, 'turn.flags.' + key);
+}
+
 type Draw = { playerId: number; deckId: string };
 type Card = {
   id: string;
@@ -69,11 +78,11 @@ export function boardTurnRules(source: BoardGameProgram) {
     input: gameInput.object({}),
     available: ({ actor, ctx }) =>
       playing(ctx) &&
-      ctx.turn.flags.get<Draw>(drawFlag)?.playerId === actor.id &&
+      readFlag(ctx, drawFlag)?.playerId === actor.id &&
       ctx.choice.current() == null &&
       !ctx.effects.isResolving(),
     execute: ({ actor, ctx }) => {
-      const pending = ctx.turn.flags.get<Draw>(drawFlag);
+      const pending = readFlag(ctx, drawFlag);
       if (!pending || pending.playerId !== actor.id)
         throw new GameRuleViolationError('BOARD_DRAW_NOT_PENDING');
       ctx.turn.flags.consume(drawFlag);

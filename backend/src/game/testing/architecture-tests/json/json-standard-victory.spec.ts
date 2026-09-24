@@ -1,9 +1,9 @@
 import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../core/testing/game-test-kit';
-import type { GameEffectInstruction } from '../contracts/effect-ir';
-import type { JsonStandardVictory } from './json-standard-victory';
-import manifest from '../../../testing/fixtures/json-course/manifest.json';
-import document from '../../../testing/fixtures/json-course/game.json';
+import type { GameEffectInstruction } from '../../../engine/runtime/contracts/effect-ir';
+import type { JsonStandardVictory } from '../../../engine/runtime/definitions/json-standard-victory';
+import manifest from '../../fixtures/json-course/manifest.json';
+import document from '../../fixtures/json-course/game.json';
 
 function definition(
   victory: JsonStandardVictory,

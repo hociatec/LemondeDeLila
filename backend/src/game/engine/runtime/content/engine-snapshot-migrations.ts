@@ -1,5 +1,5 @@
 import type { GameState } from '../../../core/application/models/game-state.model';
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 import { assertSerializableState } from '../state/assert-serializable-state';
 
 export type EngineSnapshot = GameState & {

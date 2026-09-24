@@ -3,8 +3,8 @@ import type { GameContext } from '../../engine/sdk/public-api';
 import type {
   BoardGameProgram,
   BoardLanding,
-} from '../game-specific/board-movement-landings/program';
-import { GameStateViolationError } from '../../core/domain/errors/game-domain.errors';
+} from '../../engine/sdk/extension-api';
+import { GameStateViolationError } from '../../engine/sdk/extension-api';
 
 export type BoardContinuation =
   | { kind: 'direction'; actorId: number; distance: number }

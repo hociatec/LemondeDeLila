@@ -8,10 +8,10 @@ import {
   GameNotFoundError,
   GameRuleViolationError,
   GameStateViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import type { QuizQuestion } from '../content/quiz-content-contract';
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from '../contracts/game-domain.errors';
 
 export type { QuizQuestion } from '../content/quiz-content-contract';
 

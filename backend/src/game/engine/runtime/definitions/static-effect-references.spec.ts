@@ -5,7 +5,7 @@ import { defineGameContent } from '../content/game-content';
 import { cards } from '../cards/cards-kit';
 import { grid } from '../kits/grid-kit';
 import { gameEffects } from '../effects/effects-kit';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import { assertStaticEffectReferences } from './static-effect-references';
 
 const base = {

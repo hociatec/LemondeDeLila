@@ -9,7 +9,7 @@ import type {
 } from './cards-contracts';
 import { contentIdKey, isIdentifiedCard } from './cards-contracts';
 import { sameSerializableValue } from '../state/serializable-value';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 
 /** A shared hand keeps one canonical representation for every accepted card. */
 export function assertHandDeckDefinitions(

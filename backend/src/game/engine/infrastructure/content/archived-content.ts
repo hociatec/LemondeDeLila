@@ -20,7 +20,10 @@ export function archivedContent(directory: string) {
       const source = readFileSync(join(directory, `${version}.json`), 'utf8');
       if (createHash('sha256').update(source).digest('hex') !== version)
         throw new Error('Corrupt content archive');
-      return JSON.parse(source) as object;
+      const parsed: unknown = JSON.parse(source);
+      if (parsed === null || typeof parsed !== 'object')
+        throw new Error('Content archive must contain an object');
+      return parsed;
     },
   };
 }

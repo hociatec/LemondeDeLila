@@ -1,8 +1,8 @@
-J’ai repris l’archive et vérifié directement la structure, les **39 `game.json`**, les effect-packs, le runtime, le SDK, les schemas et les tests d’architecture. Voici l’audit sous la forme demandée : **un numéro = une correction vérifiable**.
+J’ai réanalysé la version corrigée. Il y a **une amélioration architecturale importante** par rapport à la version précédente : les anciens packs spécialisés ont été déplacés vers `game/rules/game-specific/`, ils sont maintenant explicitement marqués `scope: 'game-specific'`, le registre est généré, et le contrat `JsonEffectPackScope` distingue désormais `game-specific`, `reusable` et `engine-primitive`. C’est exactement la direction qu’il fallait prendre.
 
-## A. Généricité et architecture
+Je ne considère cependant pas encore l’audit comme « 100 % fermé ». Voici les points restants, sous la forme demandée.
 
-Aucun point restant : les 36 corrections sont clôturées.
+### API et compatibilité
 
-Registre : docs/quality/engine-audit-register-2026-09-23.json
-Preuves et validations : docs/quality/corriger-2026-09-23.md
+**30. Indépendance réelle du moteur :**
+**Problème :** la structure indique maintenant beaucoup plus clairement que `engine/runtime` est le moteur et que `rules/game-specific`

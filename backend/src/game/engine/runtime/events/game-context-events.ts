@@ -1,5 +1,5 @@
 import { assertSerializableState } from '../state/assert-serializable-state';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import type { GameLogEntry } from '../../../core/application/models/game-state.model';
 import {

@@ -4,7 +4,7 @@ import {
   assertGameCount,
   assertPlayerValues,
 } from '../kits/numeric-invariants';
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 import type { DeclarativeState, EngineKitsState } from './declarative-state';
 import type { GameComponentDefinition } from '../definitions/component-kit';
 import type {

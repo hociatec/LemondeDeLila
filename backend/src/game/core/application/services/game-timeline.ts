@@ -7,7 +7,7 @@ import type {
 } from '../models/game-event.model';
 import type { GameState } from '../models/game-state.model';
 import type { GameSnapshotPolicy } from '../ports/game-event-store.port';
-import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../../../engine/runtime/contracts/game-domain.errors';
 import { assertSerializableState } from '../../../engine/runtime/state/assert-serializable-state';
 import { assertGameStatePatch } from './game-state-patch-contract';
 import { createStatePatch, applyStatePatch } from './game-state-patch';

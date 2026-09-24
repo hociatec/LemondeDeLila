@@ -6,8 +6,8 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { JudgedCardsProgram } from './program';
-import { clockwise } from '../../../engine/runtime/kits/turn-kit';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { clockwise } from '../../../engine/sdk/extension-api';
+import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

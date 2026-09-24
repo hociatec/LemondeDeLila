@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonTeamPawnRaceSchema,
   assertTeamPawnRaceReferences,
@@ -6,6 +6,7 @@ import {
 import { teamPawnRaceRules } from './team-pawn-race.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'choices', 'setup'],
   scope: 'game-specific',
   domain: 'race',
   documentKey: 'teamPawnRace',

@@ -1,10 +1,10 @@
-import type { MutableStateCopy } from '../contracts/state-copy';
+import type { MutableStateCopy } from '../../../engine/runtime/contracts/state-copy';
 import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../core/testing/game-test-kit';
-import { DeclarativeGameRuntime } from '../declarative-game.runtime';
-import type { DeclarativeState } from '../state/declarative-state';
-import manifest from '../../../testing/fixtures/json-course/manifest.json';
-import document from '../../../testing/fixtures/json-course/game.json';
+import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
+import type { DeclarativeState } from '../../../engine/runtime/state/declarative-state';
+import manifest from '../../fixtures/json-course/manifest.json';
+import document from '../../fixtures/json-course/game.json';
 
 type State = MutableStateCopy<DeclarativeState<Record<string, never>>>;
 

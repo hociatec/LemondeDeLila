@@ -1,7 +1,7 @@
 import {
   authoringFailure,
   assertUniqueAuthorValues,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { SimultaneousQuizProgram } from './program';
 import {
   type AuthorSchema,
@@ -9,7 +9,7 @@ import {
   authorBoolean as boolean,
   authorId as id,
   authorObject as object,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 const score = { type: 'integer', minimum: -50, maximum: 50 } as const;
 export const jsonSimultaneousQuizSchema: AuthorSchema = object(

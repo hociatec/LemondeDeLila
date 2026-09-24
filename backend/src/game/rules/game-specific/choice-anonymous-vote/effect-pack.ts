@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonAnonymousVoteSchema,
   assertAnonymousVoteReferences,
@@ -6,6 +6,7 @@ import {
 import { anonymousVoteRules } from './anonymous-vote.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'events', 'setup', 'viewExtension'],
   scope: 'game-specific',
   domain: 'choice',
   documentKey: 'anonymousVote',

@@ -5,7 +5,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext, PawnMove } from '../../../engine/sdk/public-api';
 import type { PawnRaceProgram } from './program';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

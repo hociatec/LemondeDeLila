@@ -1,4 +1,4 @@
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 
 /** Millisecond timestamps must fit JavaScript Date and retain integer precision. */
 export const MAX_GAME_TIMESTAMP_MS = 8_640_000_000_000_000;

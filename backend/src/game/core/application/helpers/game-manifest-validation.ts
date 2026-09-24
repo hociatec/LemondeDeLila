@@ -1,4 +1,4 @@
-import { GameConfigurationError } from '../../domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../../../engine/runtime/contracts/game-domain.errors';
 
 export type GameManifestMetadata = {
   code: string;

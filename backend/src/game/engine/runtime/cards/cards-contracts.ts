@@ -2,7 +2,7 @@ import {
   atAuthoringPath,
   withAuthoringPath,
 } from '../contracts/authoring-origin';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import { cardContent } from '../content/game-content';
 
 export type CardId = string | number;

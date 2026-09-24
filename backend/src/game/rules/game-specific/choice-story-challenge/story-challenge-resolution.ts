@@ -1,4 +1,5 @@
 import {
+  gameInput,
   gameEffects,
   drawAndResolve,
   drawEvent,
@@ -9,7 +10,7 @@ import type {
 } from '../../../engine/sdk/public-api';
 import { createStoryChallengeChoices } from './story-challenge-choices';
 import { consumeFirstProtection } from '../../recipes/protection-cost';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 import type {
   StoryChallengeCard,
   StoryChallengeCardType,
@@ -19,6 +20,17 @@ import type {
 import type { StoryChallengeDrawResolution as Resolution } from './story-challenge-resolution.types';
 type State = Record<string, never>;
 type Context = GameContext<State>;
+const resolutionSchema = gameInput.object({
+  playerId: gameInput.playerId(),
+  types: gameInput.array(gameInput.string({ min: 1 })),
+});
+function readFlag(ctx: Context, key: string): Resolution | null {
+  const value = ctx.turn.flags.get(key);
+  return value == null
+    ? null
+    : resolutionSchema.parse(value, 'turn.flags.' + key);
+}
+
 export function createStoryChallengeResolution(program: StoryChallengeProgram) {
   const { statuses, resources } = program;
   const {
@@ -199,7 +211,7 @@ export function createStoryChallengeResolution(program: StoryChallengeProgram) {
     types: StoryChallengeCardType[],
     ctx: Context,
   ) {
-    const resolution = ctx.turn.flags.get<Resolution>(program.resolutionFlag);
+    const resolution = readFlag(ctx, program.resolutionFlag);
     ctx.turn.flags.set(program.resolutionFlag, {
       playerId,
       types: [...(resolution?.types ?? []), ...types],
@@ -207,7 +219,7 @@ export function createStoryChallengeResolution(program: StoryChallengeProgram) {
   }
   function drainDraws(state: State, ctx: Context) {
     let depth = 0;
-    let resolution = ctx.turn.flags.get<Resolution>(program.resolutionFlag);
+    let resolution = readFlag(ctx, program.resolutionFlag);
     while (
       ctx.choice.current() == null &&
       resolution &&
@@ -221,7 +233,7 @@ export function createStoryChallengeResolution(program: StoryChallengeProgram) {
         types: remainingTypes,
       });
       drawCard(state, playerId, type, depth, ctx);
-      resolution = ctx.turn.flags.get<Resolution>(program.resolutionFlag);
+      resolution = readFlag(ctx, program.resolutionFlag);
       depth += 1;
     }
   }

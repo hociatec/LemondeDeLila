@@ -1,4 +1,4 @@
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import type { PlayerValuesKitState } from './player-values-contracts';
 
 export function assertPlayerValues(state: PlayerValuesKitState): void {

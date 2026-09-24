@@ -8,12 +8,12 @@ import type { SpeciesSpecies, SpeciesTroopsProgram } from './program';
 import {
   defineAction,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 import {
   defineEffect,
   defineEmptyEffect,
-} from '../../../engine/runtime/effects/effects-core';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+} from '../../../engine/sdk/extension-api';
+import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

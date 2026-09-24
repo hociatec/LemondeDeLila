@@ -30,7 +30,7 @@ import { assertRestoredSessionHeader } from './state/restored-session-header';
 import { assertRestoredEffects } from './state/restored-effects';
 import { indexComponents } from './definitions/game-definition-component-validator';
 import type { GameEffectValidationReferences } from './contracts/effect-validation';
-import { GameStateViolationError } from '../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from './contracts/game-domain.errors';
 import { assertSerializableState } from './state/assert-serializable-state';
 import { assertCompiledGameDefinition } from './definitions/compiled-game-definition-brand';
 import { DeclarativeGameQueries } from './projection/declarative-game-queries';

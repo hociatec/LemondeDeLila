@@ -1,11 +1,11 @@
-import { authoringFailure } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { authoringFailure } from '../../../engine/sdk/extension-api';
 import type { TrackZoneCollectionProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorArray as array,
   authorId as id,
   authorObject as object,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 const positive = { type: 'integer', minimum: 1, maximum: 10000 } as const;
 export const jsonTrackZoneCollectionSchema = object({

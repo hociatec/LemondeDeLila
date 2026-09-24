@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "apiVersion": "1.0.0",
+  "typescript": "5.9.3",
+  "entry": "src/game/engine/sdk/extension-contracts.ts",
+  "external": [],
+  "files": [
+    {
+      "file": "src/game/engine/runtime/contracts/board-landing-contract.ts",
+      "sha256": "ec12ba62ab34b3b9ae0660e55e9b372e12e45d0610fb546d3fb7e772dce692be"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/effect-card.ts",
+      "sha256": "46bc025af5f23ea2d53390b7bf5bf0524b00ba26d1b99e96683ae5dcd6667539"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/effect-ir.ts",
+      "sha256": "803736fc3b6011889f52ada396c49425b3d066293b74b342e544192641a9909c"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/track-race-contract.ts",
+      "sha256": "5672b9553170ff5e3d6f2d8d30cadc9272911e741cad812aa71746545cac6985"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/player-values-contracts.ts",
+      "sha256": "2bc861d3d504b19c426f3b34a13e7fa0f243482554a5605d177ab47a4b1d318f"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/visibility-kit.ts",
+      "sha256": "b02c73852432cbf5100873f4757b05cee9c1abec9895159676379174fc85d0ae"
+    },
+    {
+      "file": "src/game/engine/sdk/extension-contracts.ts",
+      "sha256": "50bb1b0dc216343ec3d3350f11f40eba9d89f41ec24f716d283b0a107746f1e9"
+    }
+  ]
+}

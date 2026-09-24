@@ -190,7 +190,7 @@
       "evidence": [
         "src/game/engine/runtime/definitions/json-game-schema.ts",
         "src/game/engine/runtime/definitions/json-game-compiler.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts"
       ],
       "validatedOn": "2026-09-11"
     },
@@ -203,7 +203,7 @@
       "evidence": [
         "src/game/engine/runtime/definitions/json-game-schema.ts",
         "src/game/engine/runtime/definitions/json-game-compiler.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts"
       ],
       "validatedOn": "2026-09-11"
     },
@@ -216,7 +216,7 @@
       "evidence": [
         "src/game/engine/runtime/definitions/json-game-schema.ts",
         "src/game/engine/runtime/definitions/json-game-compiler.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts"
       ],
       "validatedOn": "2026-09-11"
     },
@@ -229,7 +229,7 @@
       "evidence": [
         "src/game/engine/runtime/definitions/json-game-schema.ts",
         "src/game/engine/runtime/definitions/json-game-compiler.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts"
       ],
       "validatedOn": "2026-09-11"
     },
@@ -272,7 +272,7 @@
       "evidence": [
         "src/game/engine/runtime/definitions/json-game-schema.ts",
         "src/game/engine/runtime/definitions/json-game-compiler.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts",
         "src/game/testing/fixtures/json-course/game.json",
         "src/game/testing/fixtures/json-course/manifest.json",
         "src/game/testing/fixtures/json-course/rules.md",
@@ -290,7 +290,7 @@
       "evidence": [
         "src/game/engine/runtime/definitions/json-game-schema.ts",
         "src/game/engine/runtime/definitions/json-game-compiler.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts",
         "src/game/engine/runtime/definitions/component-kit.ts"
       ],
       "validatedOn": "2026-09-11"
@@ -304,7 +304,7 @@
       "evidence": [
         "src/game/engine/runtime/definitions/json-game-schema.ts",
         "src/game/engine/runtime/definitions/json-game-compiler.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts",
         "src/game/engine/runtime/definitions/component-kit.ts"
       ],
       "validatedOn": "2026-09-11"
@@ -318,7 +318,7 @@
       "evidence": [
         "src/game/engine/runtime/definitions/json-game-schema.ts",
         "src/game/engine/runtime/definitions/json-game-compiler.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts",
         "src/game/engine/runtime/definitions/component-kit.ts"
       ],
       "validatedOn": "2026-09-11"
@@ -332,7 +332,7 @@
       "evidence": [
         "src/game/engine/runtime/definitions/json-game-schema.ts",
         "src/game/engine/runtime/definitions/json-game-compiler.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts",
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts",
         "src/game/engine/runtime/contracts/effect-json-schema.ts",
         "src/game/engine/runtime/contracts/effect-json-schema.spec.ts",
         "src/game/engine/runtime/content/effect-content.spec.ts"
@@ -348,7 +348,7 @@
       "evidence": [
         "src/game/engine/runtime/definitions/game-phase-graph-validator.ts",
         "src/game/engine/runtime/definitions/game-phase-graph-validator.spec.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts"
       ],
       "validatedOn": "2026-09-11"
     }

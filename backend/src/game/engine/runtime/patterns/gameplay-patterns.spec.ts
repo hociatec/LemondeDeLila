@@ -1,4 +1,4 @@
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import { cards } from '../cards/cards-kit';
 import { defineCardsSchema } from '../cards/typed-cards';
 import {

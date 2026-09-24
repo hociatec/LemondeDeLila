@@ -9,13 +9,13 @@ import { themeNamePresentation } from './theme-name-presentation';
 import {
   defineAction,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 import type {
   ThemeNameCardsNameCard,
   ThemeNameCardsProgram,
   ThemeNameCardsThemeCard,
 } from './program';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 import { createThemeNameCardsEffects } from './theme-name-effects';
 import {
   combinations,

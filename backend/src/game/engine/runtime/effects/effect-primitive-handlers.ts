@@ -1,5 +1,5 @@
 import type { GameContext } from '../definitions/game-author-context';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import type { EffectEngineState } from '../contracts/effect-ir';
 import type { PrimitiveEffectHandlers } from './effect-primitive-executor';
 import type { EffectTargetResolver } from './effect-target-resolver';

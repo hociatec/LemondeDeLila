@@ -2,7 +2,7 @@ import type { CompiledGameDefinition } from '../contracts/compiled-game-definiti
 import type { DeclarativeState } from '../state/declarative-state';
 import type { GameActionMap } from '../contracts/author-rule-contracts';
 import type { GameContext } from '../game-rule-context';
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 
 export class DeclarativeLifecycle<
   TState extends object,

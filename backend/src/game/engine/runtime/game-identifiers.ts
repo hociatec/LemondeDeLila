@@ -1,5 +1,5 @@
 import type { PlayerState } from '../../core/application/models/game-state.model';
-import { GamePayloadValidationError } from '../../core/domain/errors/game-domain.errors';
+import { GamePayloadValidationError } from './contracts/game-domain.errors';
 
 declare const playerIdBrand: unique symbol;
 declare const cardIdBrand: unique symbol;

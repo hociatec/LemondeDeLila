@@ -1,6 +1,7 @@
 import type { JsonGameDocument as JsonDocument } from './json-game-schema';
 import type { CompiledJsonPrograms as Programs } from './json-game-program-compiler';
 import { publicField } from '../kits/visibility-kit';
+import { AuthoringError } from '../contracts/authoring-error';
 import {
   fallbackRecipeBot,
   recipeBot,
@@ -38,15 +39,31 @@ export function programHandlers<Catalog extends JsonEffectPackCatalog>(
         );
       }),
   };
+  const result: JsonEffectPackHandlers<JsonGameViewAugmentation<Catalog>> = {};
+  const owners = new Map<string, string>();
   for (const extension of jsonEffectPacks) {
     const source = sources.get(extension.documentKey);
     const contribution = programs.contributions.get(extension.outputKey);
     if (source === undefined || contribution === undefined) continue;
-    // The key comes from this catalogue, whose optional view fields cover each pack.
-    return {
-      choices: undefined,
-      ...contribution.handlers(context),
-    };
+    const handlers = { ...contribution.handlers(context) };
+    // JSON selects one victory explicitly. Other extensions cannot override it.
+    if (extension.victoryKind !== document.victory.kind)
+      delete handlers.victory;
+    for (const [key, value] of Object.entries(handlers)) {
+      if (value === undefined) {
+        Reflect.deleteProperty(handlers, key);
+        continue;
+      }
+      const owner = owners.get(key);
+      if (owner)
+        throw new AuthoringError(
+          `game.json.${extension.documentKey}`,
+          `unique handler owner for ${key}; already provided by ${owner}`,
+          key,
+        );
+      owners.set(key, extension.documentKey);
+    }
+    Object.assign(result, handlers);
   }
-  return { choices: undefined };
+  return result;
 }

@@ -77,9 +77,8 @@ export class GameTurnController<TState extends object> {
     waitingPlayers: (sessionId?: string) => this.waitingPlayers(sessionId),
     completeWaiting: (sessionId?: string) => this.completeWaiting(sessionId),
     flags: {
-      get: <TValue>(key: string): TValue | null =>
-        (this.runtime.engine.playerValues.turnFlags[key] as
-          TValue | undefined) ?? null,
+      get: (key: string): unknown =>
+        this.runtime.engine.playerValues.turnFlags[key] ?? null,
       set: (key: string, value: unknown = true) => {
         this.runtime.engine.playerValues.turnFlags[key] =
           structuredClone(value);

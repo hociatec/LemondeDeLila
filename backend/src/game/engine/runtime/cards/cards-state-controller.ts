@@ -14,7 +14,7 @@ import {
   GameNotFoundError,
   GameRuleViolationError,
   GameStateViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 import type { GameRng } from '../../../core/application/models/game-execution-context.model';
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import {

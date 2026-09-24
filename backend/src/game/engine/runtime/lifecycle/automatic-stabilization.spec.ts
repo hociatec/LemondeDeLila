@@ -3,7 +3,7 @@ import { defineGame } from '../definitions/game-definition';
 import { defineAction } from '../actions/action-builders';
 import { gameInput } from '../actions/game-input-schema';
 import { when } from '../automation/automatic-kit';
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 
 it('rejects a nonconvergent automatic rule with a bounded diagnostic trace', () => {
   const definition = defineGame<object>()({

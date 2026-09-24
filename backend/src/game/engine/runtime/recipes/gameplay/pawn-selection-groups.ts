@@ -2,7 +2,7 @@ import type { GameContext } from '../../definitions/game-author-context';
 import {
   GameConfigurationError,
   GameRuleViolationError,
-} from '../../../../core/domain/errors/game-domain.errors';
+} from '../../contracts/game-domain.errors';
 
 export type PawnSelectionGroup = {
   readonly id: string;

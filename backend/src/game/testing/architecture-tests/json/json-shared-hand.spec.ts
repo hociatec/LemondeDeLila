@@ -1,6 +1,6 @@
 import { compileJsonGame } from '../../../rules/public-api';
-import manifest from '../../../testing/fixtures/json-course/manifest.json';
-import document from '../../../testing/fixtures/json-course/game.json';
+import manifest from '../../fixtures/json-course/manifest.json';
+import document from '../../fixtures/json-course/game.json';
 
 function compile(acceptedDecks: string[], secondaryCard = 'b') {
   return compileJsonGame(manifest, {

@@ -1,6 +1,6 @@
 # Évolution du contrat auteur
 
-La version courante de l'API auteur est 8.0.0. Elle est indépendante de la
+La version courante de l'API auteur est 9.0.0. Elle est indépendante de la
 version du backend, des règles des jeux et des schémas de snapshots.
 
 La version 6.20 ajoute `sequentialPawnSelection(...).choice`, un résolveur
@@ -193,3 +193,5 @@ assertValid reste interne. Le runtime satisfait les contrats structurellement;
 les regles conservent leurs imports uniques depuis engine/sdk/public-api.
 Les signatures, types transitifs et 78 exports restent certifies par la reference
 de declarations, avec migration/version explicite pour toute rupture.
+
+Migration 9.0.0 (2026-09-23): turn.flags.get returns unknown instead of accepting an unchecked generic type. Parse structured flags with gameInput before domain use; see extension-compatibility.md. Public symbols are unchanged.

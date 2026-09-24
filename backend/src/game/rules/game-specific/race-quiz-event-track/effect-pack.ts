@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonQuizEventRaceSchema,
   assertQuizEventRaceReferences,
@@ -6,6 +6,7 @@ import {
 import { quizEventRaceRules } from './quiz-event-race.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'choices', 'effects'],
   scope: 'game-specific',
   domain: 'race',
   documentKey: 'quizEventRace',

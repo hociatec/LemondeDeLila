@@ -1,4 +1,4 @@
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from '../contracts/game-domain.errors';
 import { withAuthoringPath } from '../contracts/authoring-origin';
 
 export function assertStaticObject(value: object, path: string): void {

@@ -1,10 +1,10 @@
 import type { PawnRaceProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorId as id,
   authorArray as array,
   authorObject as object,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 export const jsonPawnRaceSchema = object(
   {

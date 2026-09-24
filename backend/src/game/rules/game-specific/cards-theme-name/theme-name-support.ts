@@ -1,7 +1,7 @@
 import { completeRound } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { ThemeNameCardsNameCard, ThemeNameCardsProgram } from './program';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 
 export type ThemeNameCardsState = Record<string, never>;
 export type ThemeNameCardsContext = GameContext<ThemeNameCardsState>;

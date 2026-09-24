@@ -1,16 +1,16 @@
 import {
   authoringFailure,
   authoringProperty,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
-import { AuthoringError } from '../../../engine/runtime/contracts/authoring-error';
+} from '../../../engine/sdk/extension-api';
+import { AuthoringError } from '../../../engine/sdk/extension-api';
 import type { JudgedCardsProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorObject as object,
   authorId as id,
   authorPositive as positive,
-} from '../../../engine/runtime/contracts/json-author-schema';
-import { isEngineEventType } from '../../../engine/runtime/events/engine-event-registry';
+} from '../../../engine/sdk/extension-api';
+import { isEngineEventType } from '../../../engine/sdk/extension-api';
 
 export const jsonJudgedCardsSchema = object({
   judgeId: id,

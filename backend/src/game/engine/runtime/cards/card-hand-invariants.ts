@@ -1,6 +1,6 @@
 import type { HandsDefinition } from './cards-contracts';
 import { assertGamePlayerId } from '../kits/numeric-invariants';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../contracts/game-domain.errors';
 
 /** Validate every destination before removing a card from its current container. */
 export function assertCardHandDestination(

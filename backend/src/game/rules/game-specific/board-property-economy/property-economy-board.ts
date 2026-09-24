@@ -5,7 +5,7 @@ import type {
   PropertyEconomyTile,
   PropertyEconomyVariant,
 } from './program';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 import {
   PROPERTY_ECONOMY,
   propertyEconomyBuildings,

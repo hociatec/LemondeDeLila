@@ -1,4 +1,4 @@
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import type { TurnPolicy } from '../kits/turn-kit';
 import type {
   GameComponentDefinition,

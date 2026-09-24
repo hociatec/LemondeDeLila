@@ -1,11 +1,11 @@
 import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../core/testing/game-test-kit';
-import { DeclarativeGameRuntime } from '../declarative-game.runtime';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
-import type { CardSelectionProgram } from '../contracts/card-selection-contract';
-import type { CardValue } from '../cards/cards-contracts';
-import manifest from '../../../testing/fixtures/json-course/manifest.json';
-import document from '../../../testing/fixtures/json-course/game.json';
+import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
+import { GameRuleViolationError } from '../../../engine/runtime/contracts/game-domain.errors';
+import type { CardSelectionProgram } from '../../../engine/runtime/contracts/card-selection-contract';
+import type { CardValue } from '../../../engine/runtime/cards/cards-contracts';
+import manifest from '../../fixtures/json-course/manifest.json';
+import document from '../../fixtures/json-course/game.json';
 
 function definition(
   kind: 'deck' | 'hand' | 'discard',

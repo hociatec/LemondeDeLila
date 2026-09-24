@@ -1,18 +1,18 @@
-import { assertUniqueAuthorIds } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { assertUniqueAuthorIds } from '../../../engine/sdk/extension-api';
 import {
   authoringFailure,
   authoringProperty,
   assertUniqueAuthorValues,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { StoryChallengeProgram } from './program';
-import { effectJsonSchema } from '../../../engine/runtime/contracts/effect-json-schema';
+import { effectJsonSchema } from '../../../engine/sdk/extension-api';
 import {
   type AuthorSchema,
   authorArray as array,
   authorId as id,
   authorRecord as record,
   authorObject as object,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 const text: AuthorSchema = { type: 'string', minLength: 1, maxLength: 10000 };
 const cardType = id;
