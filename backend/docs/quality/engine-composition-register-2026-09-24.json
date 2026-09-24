@@ -529,7 +529,8 @@
       ],
       "validation": [
         "src/game/engine/runtime/state/component-state-ownership.spec.ts",
-        "tools/game-state-ownership-audit.spec.cjs"
+        "tools/game-state-ownership-audit.spec.cjs",
+        "src/game/engine/runtime/kits/status-modifiers.spec.ts"
       ]
     },
     {
@@ -649,6 +650,6 @@
       "28 targeted final regression tests"
     ],
     "mergeGate": "Full integration and release-artifact certification must succeed on the final PR head before merging.",
-    "followup": "Full local campaign: 275 suites passed, two diagnostic regressions found and corrected; all 120 snapshots passed. Rerun of both failed suites and four related suites: 389 tests passed. Both regressions are now part of engine:merge-contracts."
+    "followup": "Full local campaign: 275 suites passed, two diagnostic regressions found and corrected; all 120 snapshots passed. Rerun of both failed suites and four related suites: 389 tests passed. Both regressions are now part of engine:merge-contracts. Restored status metadata shape guards: five malformed-save cases added; 232 status/invariant/parity tests passed."
   }
 }

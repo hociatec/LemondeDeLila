@@ -41,6 +41,15 @@ export function assertPlayerValues(state: PlayerValuesKitState): void {
 export function assertStatusMetadata(
   status: Pick<PlayerStatus, 'source' | 'stacks' | 'categories'>,
 ): void {
+  if (
+    status.source !== undefined &&
+    (status.source === null ||
+      typeof status.source !== 'object' ||
+      Array.isArray(status.source))
+  )
+    throw new GameRuleViolationError('STATUS_SOURCE_INVALID');
+  if (status.categories !== undefined && !Array.isArray(status.categories))
+    throw new GameRuleViolationError('STATUS_CATEGORIES_INVALID');
   if (status.source?.playerId !== undefined)
     assertGamePlayerId(status.source.playerId);
   if (status.source?.effectId !== undefined)
@@ -52,7 +61,8 @@ export function assertStatusMetadata(
   }
   if ((status.categories?.length ?? 0) > 64)
     throw new GameRuleViolationError('STATUS_CATEGORIES_INVALID');
-  for (const category of status.categories ?? []) assertPlayerValueId(category);
+  const categories: readonly string[] = status.categories ?? [];
+  for (const category of categories) assertPlayerValueId(category);
 }
 
 export function assertGamePlayerId(playerId: number): void {

@@ -2,6 +2,7 @@ import {
   createPlayerValuesKitState,
   GameStatusController,
 } from './player-values-kit';
+import { assertPlayerValues } from './numeric-invariants';
 
 it('keeps source and stacks isolated and consumes one matching protection at a time', () => {
   const state = createPlayerValuesKitState();
@@ -53,3 +54,16 @@ it.each([0, -1, 1.5, Infinity, NaN])(
     expect(state).toEqual(before);
   },
 );
+
+it.each([
+  ['categories', 'movement'],
+  ['categories', { movement: true }],
+  ['source', null],
+  ['source', 'effect'],
+  ['source', []],
+])('rejects malformed restored status metadata: %s = %j', (field, value) => {
+  const state = createPlayerValuesKitState();
+  new GameStatusController(state).add(1, 'ward');
+  Reflect.set(state.statuses['1'][0], field, value);
+  expect(() => assertPlayerValues(state)).toThrow();
+});
