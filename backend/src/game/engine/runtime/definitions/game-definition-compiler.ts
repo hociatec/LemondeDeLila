@@ -267,6 +267,7 @@ function compileGameDefinition<
     ),
     turn: resolveTurnPolicy(patterns.turn, definition.turn),
     lifecycle: mergeLifecycleHooks(patterns.lifecycle, definition.lifecycle),
+    triggers: [...(patterns.triggers ?? []), ...(definition.triggers ?? [])],
     victory: mergeVictoryRules(definition.victory, patterns.victory),
     config: composeGameConfigurations(patterns.config, definition.config),
     initialPhase:

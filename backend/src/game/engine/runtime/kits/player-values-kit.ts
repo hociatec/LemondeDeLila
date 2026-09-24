@@ -1,11 +1,10 @@
-import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import { GameRankingController } from './ranking-kit';
-import { prepareResourceExchange } from './resource-exchange';
 import {
   assertGameCount,
   assertGameValue,
   assertPlayerValueId,
   assertGamePlayerId,
+  assertStatusMetadata,
 } from './numeric-invariants';
 import type {
   PlayerStatus,
@@ -102,160 +101,7 @@ export class GameScoreController {
   }
 }
 
-export class GameResourcesController<TResourceId extends string = string> {
-  constructor(
-    private readonly state: PlayerValuesKitState<TResourceId>,
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-    ) => void,
-  ) {}
-
-  get(playerId: number, resource: TResourceId): number {
-    assertGamePlayerId(playerId);
-    assertPlayerValueId(resource);
-    return this.state.resources[resource]?.[String(playerId)] ?? 0;
-  }
-
-  set(playerId: number, resource: TResourceId, value: number): number {
-    const previous = this.get(playerId, resource);
-    assertGameValue(value);
-    assertGameValue(previous);
-    assertGameValue(value - previous);
-    const stateResources = this.state.resources as Record<
-      string,
-      Record<string, number>
-    >;
-    (stateResources[resource] ??= {})[String(playerId)] = value;
-    this.emit('resource.changed', {
-      playerId,
-      resource,
-      previous,
-      value,
-      delta: value - previous,
-    });
-    return value;
-  }
-
-  add(playerId: number, resource: TResourceId, amount: number): number {
-    return this.set(playerId, resource, this.get(playerId, resource) + amount);
-  }
-
-  has(playerId: number, resource: TResourceId, amount: number): boolean {
-    assertGameValue(amount);
-    if (amount < 0) throw new GameRuleViolationError('RESOURCE_AMOUNT_INVALID');
-    return this.get(playerId, resource) >= amount;
-  }
-
-  remove(playerId: number, resource: TResourceId, amount: number): number {
-    if (!this.has(playerId, resource, amount)) {
-      throw new GameRuleViolationError(
-        'RESOURCE_INSUFFICIENT',
-        { playerId, resource, amount, available: this.get(playerId, resource) },
-        `Ressource insuffisante: ${resource}`,
-      );
-    }
-    return this.add(playerId, resource, -amount);
-  }
-
-  transfer(
-    from: number,
-    to: number,
-    resource: TResourceId,
-    amount: number,
-  ): void {
-    const normalizedAmount = this.normalizePositiveAmount(amount);
-    assertGamePlayerId(from);
-    assertGamePlayerId(to);
-    assertPlayerValueId(resource);
-    if (from === to) return;
-    const fromKey = String(from);
-    const toKey = String(to);
-    const stateResources = this.state.resources as Record<
-      string,
-      Record<string, number>
-    >;
-    const resources = stateResources[resource] ?? {};
-    const sourceAmount = resources[fromKey] ?? 0;
-    if (sourceAmount < normalizedAmount) {
-      throw new GameRuleViolationError(
-        'RESOURCE_INSUFFICIENT',
-        { from, to, resource, amount, available: sourceAmount },
-        'Ressource insuffisante',
-      );
-    }
-    const destinationAmount = resources[toKey] ?? 0;
-    assertGameValue(sourceAmount);
-    assertGameValue(destinationAmount);
-    assertGameValue(destinationAmount + normalizedAmount);
-    stateResources[resource] = resources;
-    resources[fromKey] = sourceAmount - normalizedAmount;
-    resources[toKey] = destinationAmount + normalizedAmount;
-    this.emit('resource.changed', {
-      playerId: from,
-      resource,
-      previous: sourceAmount,
-      value: resources[fromKey],
-      delta: -normalizedAmount,
-    });
-    this.emit('resource.changed', {
-      playerId: to,
-      resource,
-      previous: destinationAmount,
-      value: resources[toKey],
-      delta: normalizedAmount,
-    });
-    this.emit('resource.transferred', {
-      from,
-      to,
-      resource,
-      amount: normalizedAmount,
-    });
-  }
-
-  exchange(
-    leftPlayerId: number,
-    rightPlayerId: number,
-    left: { resource: TResourceId; amount: number },
-    right: { resource: TResourceId; amount: number },
-  ): void {
-    const changes = prepareResourceExchange(
-      this.state.resources,
-      leftPlayerId,
-      rightPlayerId,
-      left,
-      right,
-    );
-    const resources: Record<string, Record<string, number>> = this.state
-      .resources;
-    for (const change of changes)
-      (resources[change.resource] ??= {})[String(change.playerId)] =
-        change.value;
-    for (const change of changes)
-      this.emit('resource.changed', {
-        ...change,
-        delta: change.value - change.previous,
-      });
-    if (changes.length > 0)
-      this.emit('resource.exchanged', {
-        leftPlayerId,
-        rightPlayerId,
-        left: { ...left },
-        right: { ...right },
-      });
-  }
-
-  private normalizePositiveAmount(amount: number): number {
-    if (!Number.isSafeInteger(amount) || amount < 1) {
-      throw new GameRuleViolationError(
-        'RESOURCE_TRANSFER_AMOUNT',
-        { amount },
-        "Quantité d'échange invalide",
-      );
-    }
-    return amount;
-  }
-}
+export { GameResourcesController } from './resource-controller';
 
 export class GameCountersController<TCounterId extends string = string> {
   constructor(
@@ -317,15 +163,32 @@ export class GameStatusController<
       turns?: number;
       scope?: StatusScope;
       data?: TStatusData;
+      source?: PlayerStatus['source'];
+      stacks?: number;
+      stacking?: 'replace' | 'add';
+      categories?: readonly string[];
     } = {},
   ): void {
     if (options.turns != null) assertGameCount(options.turns);
+    assertGamePlayerId(playerId);
+    assertPlayerValueId(id);
+    assertStatusMetadata(options);
     const statuses = (this.state.statuses[String(playerId)] ??= []);
+    const previous = statuses.find((status) => status.id === id);
+    const stacks =
+      (options.stacking === 'add' && previous ? (previous.stacks ?? 1) : 0) +
+      (options.stacks ?? 1);
+    assertStatusMetadata({ stacks });
     const status: PlayerStatus<TStatusData> = {
       id,
       remaining: options.turns == null ? null : Math.max(0, options.turns),
       scope: options.scope ?? 'turn',
       data: structuredClone(options.data ?? ({} as TStatusData)),
+      ...(options.source ? { source: structuredClone(options.source) } : {}),
+      ...(options.stacks !== undefined || options.stacking === 'add'
+        ? { stacks }
+        : {}),
+      ...(options.categories ? { categories: [...options.categories] } : {}),
     };
     const existing = statuses.findIndex((candidate) => candidate.id === id);
     if (existing < 0) statuses.push(status);
@@ -358,8 +221,20 @@ export class GameStatusController<
 
   consume(playerId: number, id: string): boolean {
     if (!this.has(playerId, id)) return false;
-    this.remove(playerId, id);
+    const status = this.state.statuses[String(playerId)].find(
+      (candidate) => candidate.id === id,
+    );
+    if (status && (status.stacks ?? 1) > 1)
+      status.stacks = (status.stacks ?? 1) - 1;
+    else this.remove(playerId, id);
     return true;
+  }
+
+  intercept(playerId: number, category: string): boolean {
+    const status = this.state.statuses[String(playerId)]?.find((candidate) =>
+      candidate.categories?.includes(category),
+    );
+    return status ? this.consume(playerId, status.id) : false;
   }
 
   tick(scope: StatusScope, playerId?: number): void {

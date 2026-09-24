@@ -260,6 +260,9 @@ export class GameContext<
     this.resources = new GameResourcesController(
       this.runtime.engine.playerValues,
       emit,
+      this.components.filter(
+        (component) => component.component === 'resource.pool',
+      ),
     );
     this.counters = new GameCountersController(
       this.runtime.engine.playerValues,

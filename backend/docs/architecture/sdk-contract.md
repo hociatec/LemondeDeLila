@@ -1,6 +1,6 @@
 # Évolution du contrat auteur
 
-La version courante de l'API auteur est 9.0.0. Elle est indépendante de la
+La version courante de l'API auteur est 10.0.0. Elle est indépendante de la
 version du backend, des règles des jeux et des schémas de snapshots.
 
 La version 6.20 ajoute `sequentialPawnSelection(...).choice`, un résolveur
@@ -195,3 +195,5 @@ Les signatures, types transitifs et 78 exports restent certifies par la referenc
 de declarations, avec migration/version explicite pour toute rupture.
 
 Migration 9.0.0 (2026-09-23): turn.flags.get returns unknown instead of accepting an unchecked generic type. Parse structured flags with gameInput before domain use; see extension-compatibility.md. Public symbols are unchanged.
+
+Migration 10.0.0 / extension 2.0.0 (2026-09-24): effect amounts accept bounded NumericExpression values; exhaustive consumers must handle the new target, condition and move-card variants. Trigger and condition-victory builders, resource pools, payment policies and status interception are available through the facades. Existing numeric literals and saved game states remain supported. See adr-014-bounded-rule-composition.md.

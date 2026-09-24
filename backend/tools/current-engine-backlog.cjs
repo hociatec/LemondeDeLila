@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 
 function isEngineAudit(backlog) {
   return (
+    backlog.startsWith('1. **Extraire les primitives communes restantes') ||
     (backlog.startsWith('J’ai repris l’archive') &&
       backlog.includes('## A. Généricité et architecture')) ||
     backlog.startsWith('J’ai réanalysé la version corrigée.')
@@ -12,6 +13,8 @@ function isEngineAudit(backlog) {
 }
 
 function reconcileEngineAudit(backlog, root = process.cwd()) {
+  if (backlog.startsWith('1. **Extraire les primitives communes restantes'))
+    return require('./composition-backlog.cjs').reconcile(backlog, root);
   const followup = backlog.startsWith('J’ai réanalysé la version corrigée.');
   const snapshot = followup
     ? 'engine-followup-2026-09-23'

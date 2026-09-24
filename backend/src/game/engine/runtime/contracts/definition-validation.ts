@@ -2,8 +2,10 @@ import type {
   GameComponentDefinition,
   GameInitialization,
 } from '../definitions/component-kit';
+import type { DeclarativeTrigger } from './declarative-trigger';
 
 export type DefinitionToValidate = {
+  triggers?: readonly DeclarativeTrigger[];
   id: string;
   players: { min: number; max: number };
   actions: Readonly<

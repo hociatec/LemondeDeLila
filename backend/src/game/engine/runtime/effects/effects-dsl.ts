@@ -4,7 +4,7 @@ import type {
   EffectTarget,
   GameEffectInstruction,
 } from '../contracts/effect-ir';
-import type { StatusScope } from '../kits/player-values-kit';
+import type { NumericExpression } from '../contracts/numeric-expression';
 
 const self = (): EffectTarget => ({ kind: 'self' });
 
@@ -16,8 +16,33 @@ export function defineEffectRecipe<TArgs extends readonly unknown[]>(
 }
 
 export const gameEffects = {
+  moveCard: (
+    options: Omit<
+      Extract<GameEffectInstruction, { kind: 'move-card' }>,
+      'kind'
+    >,
+  ): GameEffectInstruction => ({ kind: 'move-card', ...options }),
   target: {
     self,
+    current: (): EffectTarget => ({ kind: 'current-player' }),
+    matching: (
+      condition: EffectCondition,
+      participants: 'active' | 'all' = 'active',
+    ): EffectTarget => ({
+      kind: 'matching-players',
+      condition,
+      participants,
+    }),
+    owners: (registryId: string, assetId: string): EffectTarget => ({
+      kind: 'matching-players',
+      participants: 'all',
+      condition: { kind: 'owns-asset', registryId, assetId },
+    }),
+    occupants: (trackId: string, position: number): EffectTarget => ({
+      kind: 'matching-players',
+      participants: 'all',
+      condition: { kind: 'track-position', trackId, position },
+    }),
     player: (playerId: number): EffectTarget => ({ kind: 'player', playerId }),
     next: (order?: 'seating' | 'turn'): EffectTarget => ({
       kind: 'next',
@@ -79,6 +104,19 @@ export const gameEffects = {
     else: structuredClone(otherwise),
   }),
   condition: {
+    phaseIs: (phase: string): EffectCondition => ({ kind: 'phase-is', phase }),
+    compareValues: (
+      left: NumericExpression,
+      compare: Extract<EffectCondition, { kind: 'compare-values' }>['compare'],
+      right: NumericExpression,
+      target: EffectTarget = self(),
+    ): EffectCondition => ({
+      kind: 'compare-values',
+      left,
+      compare,
+      right,
+      target,
+    }),
     hasResource: (
       resource: string,
       amount: number,
@@ -209,7 +247,7 @@ export const gameEffects = {
   }),
   gainResource: (
     resource: string,
-    amount: number,
+    amount: NumericExpression,
     target: EffectTarget = self(),
   ): GameEffectInstruction => ({
     kind: 'gain-resource',
@@ -219,9 +257,12 @@ export const gameEffects = {
   }),
   loseResource: (
     resource: string,
-    amount: number,
+    amount: NumericExpression,
     target: EffectTarget = self(),
-    options: { allowPartial?: boolean } = {},
+    options: Pick<
+      Extract<GameEffectInstruction, { kind: 'lose-resource' }>,
+      'allowPartial' | 'insufficient'
+    > = {},
   ): GameEffectInstruction => ({
     kind: 'lose-resource',
     resource,
@@ -230,7 +271,7 @@ export const gameEffects = {
     ...options,
   }),
   gainScore: (
-    amount: number,
+    amount: NumericExpression,
     target: EffectTarget = self(),
   ): GameEffectInstruction => ({ kind: 'gain-score', amount, target }),
   skipTurn: (
@@ -241,14 +282,12 @@ export const gameEffects = {
     kind: 'extra-turn',
     count,
   }),
-  addStatus: (options: {
-    status: string;
-    turns?: number;
-    scope?: StatusScope;
-    stack?: boolean;
-    data?: Record<string, unknown>;
-    target?: EffectTarget;
-  }): GameEffectInstruction => ({ kind: 'add-status', ...options }),
+  addStatus: (
+    options: Omit<
+      Extract<GameEffectInstruction, { kind: 'add-status' }>,
+      'kind'
+    >,
+  ): GameEffectInstruction => ({ kind: 'add-status', ...options }),
   shield: (
     turns = 1,
     target: EffectTarget = self(),

@@ -17,6 +17,9 @@ type Ownership = ReturnType<typeof owned>;
 
 /** A component declares all storage it owns; collection.view owns no state. */
 export const componentStateOwnership = Object.freeze({
+  'resource.pool': Object.freeze([
+    owned('playerValues.resources', 'resources'),
+  ]),
   'movement.track': Object.freeze([
     owned(
       'kits.movement.positions',
@@ -69,6 +72,10 @@ export const componentStateOwnership = Object.freeze({
 } satisfies Record<GameComponentDefinition['component'], readonly Ownership[]>);
 
 export const coreStateOwnership = Object.freeze([
+  owned('playerValues.resources', 'resources'),
+  owned('playerValues.statuses', 'statuses'),
+  owned('playerValues.counters', 'counters'),
+  owned('playerValues.turnFlags', 'turnFlags'),
   owned('playerValues.scores', 'score', 'scores'),
   owned(
     'playerValues.scheduledSkips',

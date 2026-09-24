@@ -18,7 +18,16 @@ export interface ContextValuesCapability {
   >;
   readonly resources: PublicController<
     GameResourcesController,
-    'exchange' | 'transfer' | 'add' | 'remove' | 'has' | 'get' | 'set'
+    | 'exchange'
+    | 'transfer'
+    | 'add'
+    | 'remove'
+    | 'has'
+    | 'get'
+    | 'set'
+    | 'quote'
+    | 'settle'
+    | 'initialize'
   >;
   readonly counters: PublicController<
     GameCountersController,
@@ -26,6 +35,6 @@ export interface ContextValuesCapability {
   >;
   readonly status: PublicController<
     GameStatusController,
-    'add' | 'remove' | 'has' | 'get' | 'consume' | 'list' | 'tick'
+    'add' | 'remove' | 'has' | 'get' | 'consume' | 'list' | 'tick' | 'intercept'
   >;
 }

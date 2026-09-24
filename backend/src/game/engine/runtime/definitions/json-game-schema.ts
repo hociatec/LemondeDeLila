@@ -27,6 +27,16 @@ const nonnegative: AuthorSchema = { type: 'integer', minimum: 0 };
 const perPlayer: AuthorSchema = { oneOf: [number, record(number)] };
 const components: AuthorSchema = {
   oneOf: [
+    component(
+      'resource.pool',
+      { initial: number, min: number, max: number },
+      [],
+    ),
+    component(
+      'cards.zone',
+      { deck: id, visibility: { enum: ['public', 'hidden'] } },
+      ['deck', 'visibility'],
+    ),
     jsonCollectionViewComponentSchema,
     component(
       'cards.sets',

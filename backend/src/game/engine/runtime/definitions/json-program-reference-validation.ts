@@ -27,6 +27,9 @@ export function assertProgramReferences(
     ...allPatterns.flatMap((pattern) => pattern.components ?? []),
   ];
   const resources = new Set([
+    ...components
+      .filter((component) => component.component === 'resource.pool')
+      .map((component) => component.id),
     ...document.resourceIds,
     ...allPatterns.flatMap((pattern) => pattern.resourceIds ?? []),
   ]);

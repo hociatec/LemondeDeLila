@@ -22,6 +22,8 @@ export type JsonGameCoreDocument = {
     GameComponentDefinition,
     {
       component:
+        | 'resource.pool'
+        | 'cards.zone'
         | 'cards.deck'
         | 'cards.hands'
         | 'cards.sets'

@@ -29,7 +29,7 @@ than remove them. Keep this constraint until a concrete consumer demonstrates
 a sound composition with fewer casts. TypeScript and the real hybrid compiler
 test verify the existing state-neutral composition.
 
-The author facade is API 9.0.0 with the same explicit exported symbols.
+The author facade is API 10.0.0 with the same explicit exported symbols.
 `ctx.turn.flags.get<T>(key)` is replaced by `get(key): unknown`: the former
 signature asserted any caller-selected type over unvalidated persisted data.
 Consumers must narrow scalar flags or parse structured flags with `gameInput`
@@ -38,7 +38,7 @@ their respective player/deck and draw-queue shapes. Existing valid saves keep
 the same representation; malformed structured flags fail before use.
 Moving generic errors into runtime contracts preserves their single class
 identity and their public exports. The extension API and its type-only contract
-facade are new 1.0.0 surfaces, including declared capabilities. Exact declaration
+facade are 2.0.0 surfaces, including declared capabilities. Exact declaration
 snapshots cover all four entry points. Any removal, rename or incompatible
 signature change requires a major version and documented migration before
 refreshing those snapshots.
@@ -50,3 +50,5 @@ winning extension; other victory providers must opt out of coupled victory with
 `victoryRequired: false`. Implicit composition of lifecycle hooks or victory
 conditions is intentionally rejected; authors must express it in one reviewed
 composite provider. Optional view fields reflect the enabled subset of packs.
+
+Migration 10.0.0 / extension 2.0.0 (2026-09-24): effect amounts accept bounded NumericExpression values; exhaustive consumers must handle the new target, condition and move-card variants. Trigger and condition-victory builders, resource pools, payment policies and status interception are available through the facades. Existing numeric literals and saved game states remain supported. See adr-014-bounded-rule-composition.md.

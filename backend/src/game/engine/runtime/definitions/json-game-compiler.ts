@@ -219,7 +219,12 @@ function assertDocumentReferences(
   fail: JsonFailure,
   jsonEffectPacks: JsonEffectPackCatalog,
 ): void {
-  const resources = new Set(document.resourceIds);
+  const resources = new Set([
+    ...document.resourceIds,
+    ...document.components
+      .filter((component) => component.component === 'resource.pool')
+      .map((component) => component.id),
+  ]);
   assertStandardVictoryReferences(
     document.victory,
     [
@@ -228,6 +233,7 @@ function assertDocumentReferences(
     ],
     resources,
     fail,
+    new Set(Object.keys(document.phases ?? {})),
   );
   assertProgramReferences(document, patterns, manifest, fail, jsonEffectPacks);
   assertSelections(document, patterns, fail, jsonEffectPacks);

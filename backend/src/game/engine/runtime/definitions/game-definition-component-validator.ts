@@ -14,6 +14,9 @@ import {
 import { assertStaticEffectReferences } from './static-effect-references';
 import { assertComponentCatalog } from './component-catalog-validation';
 import { assertHandDeckDefinitions } from '../cards/hand-deck-definitions';
+import { assertTrigger } from '../automation/trigger-validation';
+import { isEngineEventType } from '../events/engine-event-registry';
+import { validateEffectCondition } from '../effects/game-effect-reference-validator';
 import type {
   DefinitionToValidate,
   ValidationFailure,
@@ -47,6 +50,7 @@ type ComponentReferences = Omit<
   resources: Set<string>;
   inventoryItems: Map<string, ReadonlySet<string> | null>;
   ownershipAssets: Map<string, ReadonlySet<string>>;
+  zoneDecks: Map<string, string>;
 };
 
 export function assertComponentDefinitions(
@@ -54,6 +58,42 @@ export function assertComponentDefinitions(
   fail: ValidationFailure,
 ): void {
   const references = indexComponents(definition, fail);
+  const triggerIds = new Set<string>();
+  if ((definition.triggers?.length ?? 0) > 128)
+    fail('triggers', 'too many triggers');
+  for (const [index, trigger] of (definition.triggers ?? []).entries()) {
+    const path = `triggers[${index}]`;
+    assertTrigger(trigger);
+    if (triggerIds.has(trigger.id)) fail(`${path}.id`, 'duplicate trigger');
+    triggerIds.add(trigger.id);
+    if (
+      trigger.on.kind === 'action' &&
+      !Object.hasOwn(definition.actions, trigger.on.type) &&
+      !['choice.resolve', 'choice.timeout', 'game.configure'].includes(
+        trigger.on.type,
+      )
+    )
+      fail(`${path}.on.type`, 'unknown action');
+    if (
+      trigger.on.kind === 'event' &&
+      !isEngineEventType(trigger.on.type) &&
+      !definition.events?.some((event) => event.type === trigger.on.type)
+    )
+      fail(`${path}.on.type`, 'unknown event');
+    if (trigger.condition)
+      validateEffectCondition(
+        trigger.condition,
+        `${path}.condition`,
+        references,
+        fail,
+      );
+    assertEffectInstructions(
+      trigger.effects,
+      `${path}.effects`,
+      references,
+      fail,
+    );
+  }
   // Validate authored effects before their copies inside generated components.
   // The content retains the exact extension/deck/card origin.
   assertStaticEffectReferences(
@@ -76,6 +116,10 @@ export function indexComponents(
   fail: ValidationFailure,
 ): ComponentReferences {
   const references: ComponentReferences = {
+    phases: definition.phases
+      ? new Set(Object.keys(definition.phases))
+      : undefined,
+    zoneDecks: new Map(),
     decks: new Map(),
     hands: new Map(),
     inventories: new Map(),
@@ -91,6 +135,7 @@ export function indexComponents(
     resources: new Set([
       ...Object.keys(definition.initialization?.resources ?? {}),
       ...(definition.resourceIds ?? []),
+      ...resourcePoolIds(definition),
     ]),
   };
   if ((definition.components?.length ?? 0) > 512) {
@@ -121,12 +166,7 @@ export function indexComponents(
       references.cardIdsByDeck.set(component.id, indexDeckCardIds(component));
     }
     if (component.component === 'cards.hands') {
-      references.hands.set(component.id, component);
-      references.handDecks.set(component.id, component.deck);
-      references.handAcceptedDecks.set(
-        component.id,
-        new Set([component.deck, ...(component.acceptedDecks ?? [])]),
-      );
+      indexHand(component, references);
     }
     if (component.component === 'inventory.set') {
       references.inventories.set(component.id, component);
@@ -137,6 +177,8 @@ export function indexComponents(
     }
     if (component.component === 'ownership.registry')
       references.ownershipAssets.set(component.id, new Set(component.assets));
+    if (component.component === 'cards.zone')
+      references.zoneDecks.set(component.id, component.deck);
     if (component.component === 'movement.track') {
       references.tracks.add(component.id);
       references.trackSpaces.set(component.id, component.spaces);
@@ -145,6 +187,24 @@ export function indexComponents(
       references.diceSets.add(component.id);
   }
   return references;
+}
+
+function resourcePoolIds(definition: DefinitionToValidate): string[] {
+  return (definition.components ?? [])
+    .filter((component) => component.component === 'resource.pool')
+    .map((component) => component.id);
+}
+
+function indexHand(
+  component: HandDefinition,
+  references: ComponentReferences,
+): void {
+  references.hands.set(component.id, component);
+  references.handDecks.set(component.id, component.deck);
+  references.handAcceptedDecks.set(
+    component.id,
+    new Set([component.deck, ...(component.acceptedDecks ?? [])]),
+  );
 }
 
 function indexDeckCardIds(deck: DeckDefinition): ReadonlySet<string> {

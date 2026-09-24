@@ -34,6 +34,14 @@ type InitializedResourceIdOf<TDefinition> =
     : never;
 export type GameResourceIdOf<TDefinition> =
   | InitializedResourceIdOf<TDefinition>
+  | (TDefinition extends { readonly components?: readonly (infer Component)[] }
+      ? Component extends {
+          readonly component: 'resource.pool';
+          readonly id: infer Id extends string;
+        }
+        ? Id
+        : never
+      : never)
   | (TDefinition extends { readonly resourceIds?: infer TIds }
       ? TIds extends readonly string[]
         ? TIds[number]

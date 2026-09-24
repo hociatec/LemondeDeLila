@@ -3,6 +3,7 @@ import type {
   GameInitialization,
 } from '../definitions/component-kit';
 import type { GameLifecycleHooks } from '../lifecycle/game-lifecycle-hooks';
+import type { DeclarativeTrigger } from './declarative-trigger';
 import type { TurnPolicy } from '../kits/turn-kit';
 import type { VictoryRule } from './author-rule-contracts';
 import type { GameActionMap } from './author-rule-contracts';
@@ -25,6 +26,7 @@ export type GamePattern<
   readonly mechanics: readonly TMechanic[];
   readonly components?: readonly PatternComponents[TKind][];
   readonly lifecycle?: GameLifecycleHooks<TState>;
+  readonly triggers?: readonly DeclarativeTrigger[];
   readonly initialization?: GameInitialization;
   readonly resourceIds?: readonly string[];
   readonly turn?: TurnPolicy;

@@ -1,5 +1,8 @@
 import { GameRuleViolationError } from '../contracts/game-domain.errors';
-import type { PlayerValuesKitState } from './player-values-contracts';
+import type {
+  PlayerValuesKitState,
+  PlayerStatus,
+} from './player-values-contracts';
 
 export function assertPlayerValues(state: PlayerValuesKitState): void {
   for (const values of [
@@ -25,12 +28,41 @@ export function assertPlayerValues(state: PlayerValuesKitState): void {
     assertGameValue(value);
   }
   for (const statuses of Object.values(state.statuses))
-    for (const status of statuses)
+    for (const status of statuses) {
+      assertStatusMetadata(status);
       if (status.remaining !== null) assertGameCount(status.remaining);
+    }
   for (const value of Object.values(state.scheduledSkips))
     assertGameCount(value);
   for (const value of Object.values(state.scheduledExtraTurns))
     assertGameCount(value);
+}
+
+export function assertStatusMetadata(
+  status: Pick<PlayerStatus, 'source' | 'stacks' | 'categories'>,
+): void {
+  if (
+    status.source !== undefined &&
+    (status.source === null ||
+      typeof status.source !== 'object' ||
+      Array.isArray(status.source))
+  )
+    throw new GameRuleViolationError('STATUS_SOURCE_INVALID');
+  if (status.categories !== undefined && !Array.isArray(status.categories))
+    throw new GameRuleViolationError('STATUS_CATEGORIES_INVALID');
+  if (status.source?.playerId !== undefined)
+    assertGamePlayerId(status.source.playerId);
+  if (status.source?.effectId !== undefined)
+    assertPlayerValueId(status.source.effectId);
+  if (status.stacks !== undefined) {
+    assertGameCount(status.stacks);
+    if (status.stacks === 0)
+      throw new GameRuleViolationError('STATUS_STACKS_INVALID');
+  }
+  if ((status.categories?.length ?? 0) > 64)
+    throw new GameRuleViolationError('STATUS_CATEGORIES_INVALID');
+  const categories: readonly string[] = status.categories ?? [];
+  for (const category of categories) assertPlayerValueId(category);
 }
 
 export function assertGamePlayerId(playerId: number): void {

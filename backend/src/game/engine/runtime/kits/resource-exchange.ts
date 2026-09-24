@@ -1,4 +1,5 @@
 import { GameRuleViolationError } from '../contracts/game-domain.errors';
+import { quoteResourcePayment } from './resource-payment';
 import {
   assertGamePlayerId,
   assertGameValue,
@@ -33,7 +34,7 @@ export function prepareResourceExchange(
   const transfer = (from: number, to: number, offer: Offer) => {
     const available = resources[offer.resource]?.[String(from)] ?? 0;
     assertGameValue(available);
-    if (available < offer.amount)
+    if (!quoteResourcePayment(available, offer.amount).accepted)
       throw new GameRuleViolationError('RESOURCE_INSUFFICIENT');
     for (const [playerId, delta] of [
       [from, -offer.amount],

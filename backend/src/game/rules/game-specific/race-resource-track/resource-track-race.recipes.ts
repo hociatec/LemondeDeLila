@@ -5,6 +5,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { ResourceTrackRaceProgram } from './program';
+import { resourceDeltaEffects } from '../../recipes/resource-deltas';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
@@ -65,15 +66,12 @@ export function resourceTrackRaceRules(source: ResourceTrackRaceProgram) {
               ctx.resources.get(playerId, comparison.right)
           )
             continue;
-          for (const [resource, delta] of Object.entries(rule.gains)) {
-            if (delta < 0 && ctx.resources.get(playerId, resource) > 0)
-              ctx.resources.remove(
-                playerId,
-                resource,
-                Math.min(-delta, ctx.resources.get(playerId, resource)),
-              );
-            else if (delta > 0) ctx.resources.add(playerId, resource, delta);
-          }
+          const gains = Object.fromEntries(
+            Object.entries(rule.gains).filter(([, delta]) => delta !== 0),
+          );
+          ctx.effects.run(
+            ...resourceDeltaEffects(gains, { kind: 'player', playerId }),
+          );
           if (rule.setCounter)
             ctx.counters.set(rule.setCounter.id, rule.setCounter.value);
           if (rule.event) ctx.events.message(rule.event, { playerId, face });

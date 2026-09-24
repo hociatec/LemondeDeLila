@@ -3,7 +3,7 @@ import {
   GameNotFoundError,
   GameRuleViolationError,
 } from '../contracts/game-domain.errors';
-import { GameCardsDeckController } from './cards-deck-controller';
+import { GameCardsLocationController } from './cards-location-controller';
 import type { CardId, CardValue, HandsDefinition } from './cards-contracts';
 import { sameSerializableValue } from '../state/serializable-value';
 import { assertCardHandDestination } from './card-hand-invariants';
@@ -21,7 +21,7 @@ function requireHandDefinition(
   return definition;
 }
 
-export class GameCardsController extends GameCardsDeckController {
+export class GameCardsController extends GameCardsLocationController {
   readonly zone = <TCard extends CardValue>(zoneId: string): TCard[] => {
     const definition = this.zoneDefinitions.get(zoneId);
     if (!definition) throw new GameNotFoundError(`Zone inconnue: ${zoneId}`);

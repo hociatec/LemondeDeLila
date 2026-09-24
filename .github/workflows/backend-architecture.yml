@@ -23,7 +23,8 @@ jobs:
 
   architecture:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # The deterministic corpus now covers 120 cases across all 39 games.
+    timeout-minutes: 35
     defaults:
       run:
         working-directory: backend
@@ -81,7 +82,7 @@ jobs:
   real-integration:
     needs: architecture
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     defaults:
       run:
         working-directory: backend

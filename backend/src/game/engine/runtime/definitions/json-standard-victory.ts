@@ -2,6 +2,12 @@ import type { GameContext } from './game-author-context';
 import type { GameComponentDefinition } from './component-kit';
 import type { VictoryRule } from '../contracts/author-rule-contracts';
 import {
+  conditionVictory,
+  type ConditionVictory,
+} from '../automation/condition-victory';
+import { validateEffectCondition } from '../effects/game-effect-reference-validator';
+import { indexComponents } from './game-definition-component-validator';
+import {
   thresholdVictory,
   type ThresholdVictory,
 } from '../automation/threshold-victory';
@@ -10,6 +16,7 @@ import {
   authorArray as array,
   authorId as id,
   authorPositive as positive,
+  authorRef as ref,
 } from '../contracts/json-author-schema';
 
 type RankingMetric = (
@@ -17,6 +24,7 @@ type RankingMetric = (
 ) & { direction: 'asc' | 'desc' };
 
 export type JsonStandardVictory =
+  | ConditionVictory
   | ThresholdVictory
   | ((
       | { kind: 'track-finish'; trackId: string; ties: 'all' | 'lowest-id' }
@@ -34,6 +42,16 @@ const reason = { type: 'string', minLength: 1, maxLength: 128 } as const;
 const ties = { enum: ['all', 'lowest-id'] } as const;
 const direction = { enum: ['asc', 'desc'] } as const;
 export const standardVictorySchemas = [
+  object(
+    {
+      kind: { const: 'condition' },
+      condition: ref('condition'),
+      participants: { enum: ['active', 'all'] },
+      ties,
+      reason,
+    },
+    ['kind', 'condition'],
+  ),
   object({ kind: { const: 'track-finish' }, trackId: id, ties, reason }, [
     'kind',
     'trackId',
@@ -64,6 +82,7 @@ export const standardVictorySchemas = [
 export function standardVictory<TState extends object>(
   condition: JsonStandardVictory,
 ): VictoryRule<TState> {
+  if (condition.kind === 'condition') return conditionVictory(condition);
   if (
     condition.kind === 'score-at-least' ||
     condition.kind === 'resource-at-least'
@@ -75,7 +94,7 @@ export function standardVictory<TState extends object>(
 
 function evaluate<TState extends object>(
   ctx: GameContext<TState>,
-  rule: Exclude<JsonStandardVictory, ThresholdVictory>,
+  rule: Exclude<JsonStandardVictory, ThresholdVictory | ConditionVictory>,
 ) {
   let ranking: number[][];
   if (rule.kind === 'last-player') {
@@ -120,7 +139,26 @@ export function assertStandardVictoryReferences(
   components: readonly GameComponentDefinition[],
   resources: ReadonlySet<string>,
   fail: (path: string, reason: string) => never,
+  phases?: ReadonlySet<string>,
 ): void {
+  if (rule.kind === 'condition' && 'condition' in rule) {
+    const references = indexComponents(
+      {
+        id: 'victory-validation',
+        players: { min: 1, max: 100 },
+        actions: {},
+        components,
+        resourceIds: [...resources],
+      },
+      fail,
+    );
+    validateEffectCondition(
+      rule.condition,
+      'victory.condition',
+      { ...references, phases },
+      fail,
+    );
+  }
   if (
     rule.kind === 'track-finish' &&
     'trackId' in rule &&

@@ -1,3 +1,7 @@
+import { validatePlayerValueInstruction } from './effect-value-validator';
+import { assertEffectJson } from '../contracts/effect-json-schema';
+import { AuthoringError } from '../contracts/authoring-error';
+import { validateCardMove } from './card-location-validator';
 import { authoringProperty } from '../contracts/authoring-diagnostics';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import {
@@ -34,17 +38,19 @@ export function assertEffectInstructions(
   fail: ValidationFailure,
 ): asserts instructions is readonly GameEffectInstruction[] {
   if (!Array.isArray(instructions)) fail(path, 'séquence d’effets invalide');
-  const values: readonly unknown[] = instructions;
+  try {
+    assertEffectJson(instructions, path, true);
+  } catch (error) {
+    // Preserve the caller's definition identity and diagnostic contract.
+    if (error instanceof AuthoringError) fail(error.path, error.expected);
+    throw error;
+  }
+  const values: readonly GameEffectInstruction[] = instructions;
   for (const [index, value] of values.entries()) {
     const effectPath = `${path}[${index}]`;
     if (!value || typeof value !== 'object')
       fail(effectPath, 'instruction invalide');
-    validateInstruction(
-      value as GameEffectInstruction,
-      effectPath,
-      references,
-      fail,
-    );
+    validateInstruction(value, effectPath, references, fail);
   }
 }
 
@@ -113,7 +119,7 @@ function validateReactionInstruction({
       instruction.availability.owner,
       `${path}.availability.owner`,
       fail,
-      references.playerIds,
+      references,
     );
     if (instruction.availability.kind === 'cards') {
       requireReference(
@@ -222,6 +228,7 @@ function validateCardInstruction({
   references,
   fail,
 }: ValidationInput): boolean {
+  if (validateCardMove(instruction, path, references, fail)) return true;
   if (
     instruction.kind === 'draw-cards' ||
     instruction.kind === 'discard-random'
@@ -329,59 +336,6 @@ function validateInventoryInstruction({
     `${path}.inventoryId`,
     fail,
   );
-  return true;
-}
-
-function validatePlayerValueInstruction({
-  instruction,
-  path,
-  references,
-  fail,
-}: ValidationInput): boolean {
-  if (instruction.kind === 'exchange-resources') {
-    for (const side of ['leftOffer', 'rightOffer'] as const) {
-      const offer = instruction[side];
-      requireResourceReference(
-        references,
-        offer.resource,
-        `${path}.${side}.resource`,
-        fail,
-      );
-      requirePositiveInteger(offer.amount, `${path}.${side}.amount`, fail);
-    }
-    return true;
-  }
-  if (
-    instruction.kind === 'gain-resource' ||
-    instruction.kind === 'lose-resource' ||
-    instruction.kind === 'transfer-resource'
-  ) {
-    requireResourceReference(
-      references,
-      instruction.resource,
-      `${path}.resource`,
-      fail,
-    );
-    requireFinite(instruction.amount, `${path}.amount`, fail);
-    return true;
-  }
-  if (instruction.kind === 'gain-score') {
-    requireFinite(instruction.amount, `${path}.amount`, fail);
-    return true;
-  }
-  if (instruction.kind === 'skip-turn' || instruction.kind === 'extra-turn') {
-    if (instruction.count != null)
-      requirePositiveInteger(instruction.count, `${path}.count`, fail);
-    return true;
-  }
-  if (instruction.kind === 'add-status') {
-    if (!instruction.status.trim()) fail(`${path}.status`, 'ID vide');
-    if (instruction.turns != null)
-      requirePositiveInteger(instruction.turns, `${path}.turns`, fail);
-    return true;
-  }
-  if (instruction.kind !== 'remove-status') return false;
-  if (!instruction.status.trim()) fail(`${path}.status`, 'ID vide');
   return true;
 }
 

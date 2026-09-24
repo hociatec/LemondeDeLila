@@ -159,7 +159,8 @@ export class DeclarativeGameRuntime<
     const actor = this.requireActor(runtime, actorId);
     const context = this.context(runtime, actor.id, execution);
     this.actions.execute(runtime, actor, action, context);
-    this.lifecycle.stabilize(runtime, context);
+    if (!this.definition.triggers?.length)
+      this.lifecycle.stabilize(runtime, context);
     this.recordContextEvents(runtime, actor.id, action.type, context);
     context.assertValidKits();
     assertValidGameSession(runtime, this.definition.components ?? []);
@@ -266,7 +267,21 @@ export class DeclarativeGameRuntime<
     actionType: string,
     context: GameContext<TState>,
   ): void {
-    const events = context.consumeEvents();
+    const events = this.definition.triggers?.length
+      ? resolveTriggers({
+          triggers: this.definition.triggers,
+          actionType,
+          actorId,
+          context,
+          state: () => runtime.game,
+          contextFor: (playerId) =>
+            this.context(runtime, playerId, {
+              clock: context.clock,
+              commandId: context.commandId,
+            }),
+          stabilize: () => this.lifecycle.stabilize(runtime, context),
+        })
+      : context.consumeEvents();
     for (const event of events) {
       appendPendingGameEvent(runtime, {
         ...event,
@@ -282,3 +297,4 @@ export class DeclarativeGameRuntime<
   }
 }
 import { SystemGameClock } from '@platform/time/public-api';
+import { resolveTriggers } from './automation/trigger-resolution';

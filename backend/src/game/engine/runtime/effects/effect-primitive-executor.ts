@@ -35,6 +35,8 @@ export function executeRegisteredPrimitive(
   instruction: PrimitiveEffectInstruction,
 ): boolean {
   switch (instruction.kind) {
+    case 'move-card':
+      return handlers['move-card'](instruction);
     case 'extra-turn':
       return handlers['extra-turn'](instruction);
     case 'roll-dice':

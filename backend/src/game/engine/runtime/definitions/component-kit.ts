@@ -17,8 +17,10 @@ import type { TrackDefinition } from '../kits/movement-kit';
 import type { QuizDefinition } from '../kits/quiz-kit';
 import type { PawnSetDefinition } from '../kits/pawn-kit';
 import type { CollectionViewDefinition } from '../projection/collection-view';
+import type { ResourceDefinition } from '../contracts/resource-definition';
 
 type GameComponent =
+  | ResourceDefinition
   | DeckDefinition<CardValue>
   | HandsDefinition
   | CardSetsDefinition
@@ -116,7 +118,12 @@ export function installGameComponents<TState extends object>(
   context: GameContext<TState>,
 ): void {
   for (const component of components) {
-    if (component.component === 'cards.deck')
+    if (component.component === 'resource.pool')
+      context.resources.initialize(
+        component,
+        players.map((player) => player.id),
+      );
+    else if (component.component === 'cards.deck')
       context.cards.createDeck(component);
     else if (component.component === 'cards.hands') {
       context.cards.createHands(

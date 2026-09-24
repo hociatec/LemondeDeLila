@@ -26,6 +26,12 @@ type Intrinsic =
 
 // A new component-dependent instruction must add a case here to compile.
 const effects = {
+  'move-card': {
+    kind: 'move-card',
+    cardId: 'a',
+    source: { kind: 'hand', handId: 'hand', playerId: 1 },
+    destination: { kind: 'discard', deckId: 'deck' },
+  },
   move: { kind: 'move', trackId: 'board', spaces: 1 },
   'move-to': { kind: 'move-to', trackId: 'board', position: 1 },
   'swap-positions': { kind: 'swap-positions', trackId: 'board', ...pair },
@@ -130,6 +136,12 @@ const wrappers: Record<
 };
 
 const conditions = {
+  'compare-values': {
+    kind: 'compare-values',
+    left: { kind: 'resource-value', resource: 'stars' },
+    compare: 'gte',
+    right: 2,
+  },
   resource: { kind: 'resource', resource: 'stars', compare: 'gte', amount: 1 },
   'has-resource': { kind: 'has-resource', resource: 'stars', amount: 1 },
   'has-card': { kind: 'has-card', handId: 'hand', cardId: 'a' },
@@ -148,7 +160,7 @@ const conditions = {
 } satisfies Record<
   Exclude<
     EffectCondition['kind'],
-    'score' | 'has-status' | 'not' | 'all' | 'any'
+    'score' | 'has-status' | 'not' | 'all' | 'any' | 'phase-is'
   >,
   EffectCondition
 >;

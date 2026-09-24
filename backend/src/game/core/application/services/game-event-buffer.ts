@@ -5,7 +5,9 @@ import { assertPendingGameEvent } from './game-event-contract';
 type StateWithEventBuffer = GameState & {
   engine?: { pendingEvents?: GamePendingEvent[] };
 };
-const MAX_PENDING_EVENTS = 128;
+// One bounded movement chain can emit movement, landing, collision and audio
+// events for each of its 24 steps. Keep those events in the same atomic commit.
+export const MAX_PENDING_EVENTS = 512;
 
 export function appendPendingGameEvent(
   state: GameState,

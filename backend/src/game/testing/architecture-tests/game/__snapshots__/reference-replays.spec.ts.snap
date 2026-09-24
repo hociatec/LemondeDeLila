@@ -25,6 +25,1406 @@ exports[`cards reference replay: pimp-my-ride, seed 23 1`] = `
 }
 `;
 
+exports[`catalogue reference replay: a-fond-les-ballons, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "draw_card",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 61,
+  "traceDigest": "ed8320b2b06f04fcd74c5622a0204634eb93640ce50ae794123e228039453232",
+}
+`;
+
+exports[`catalogue reference replay: a-fond-les-ballons, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "draw_card",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 34,
+  "traceDigest": "a202c4b8a7f77dc79c8515f6bf63c1a0a7ed848409d73bd75fa91987ceac92c8",
+}
+`;
+
+exports[`catalogue reference replay: a-fond-les-ballons, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "draw_card",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 28,
+  "traceDigest": "0ec3f6f246886d3c94e07e5c220931f1771f995b60cd107cfe22e4fcd6076815",
+}
+`;
+
+exports[`catalogue reference replay: arche-de-mnemosyne, seed 11 1`] = `
+{
+  "actionTypes": [
+    "answer",
+    "game.configure",
+    "timeout",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "efff3b8fc5ff06b9a3fa7ee9099de47976b0e0b3b0a422430925eed2511d36ad",
+}
+`;
+
+exports[`catalogue reference replay: arche-de-mnemosyne, seed 23 1`] = `
+{
+  "actionTypes": [
+    "answer",
+    "game.configure",
+    "timeout",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "9d74d725d3de313e87e60ffcce6e0ab7bcfab5aed20867cdf0cd8fc1416f345d",
+}
+`;
+
+exports[`catalogue reference replay: arche-de-mnemosyne, seed 67 1`] = `
+{
+  "actionTypes": [
+    "answer",
+    "game.configure",
+    "timeout",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "821d6c796fda7865302e35c1a6ff5f94246cde90a6e828fe8caa483a9d478567",
+}
+`;
+
+exports[`catalogue reference replay: aventure-sauvage, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "draw_card",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 27,
+  "traceDigest": "bb9b2d8d784c75da3eb79daf5e4890134269817fd9cf88bbf3a464cf8fc4ade5",
+}
+`;
+
+exports[`catalogue reference replay: aventure-sauvage, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "draw_card",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 28,
+  "traceDigest": "a9492f7b29814987a77d5138c0647a1b70de2468ca850ce51b345083f22d4908",
+}
+`;
+
+exports[`catalogue reference replay: aventure-sauvage, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "draw_card",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 33,
+  "traceDigest": "1c387a8a93fa280d490b91a53a1111f34b01fa823f6b71381f74d2d6d4cea093",
+}
+`;
+
+exports[`catalogue reference replay: ca-derape, seed 11 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 11,
+  "traceDigest": "6042e9d75ce93808080a5fc2c69faea2837602d61d1f4985535b7dbef67b8112",
+}
+`;
+
+exports[`catalogue reference replay: ca-derape, seed 23 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 11,
+  "traceDigest": "d00800cde38c4e02b87d1edb1aee3002f0bb6548a56ba329b43e8813df84e939",
+}
+`;
+
+exports[`catalogue reference replay: ca-derape, seed 67 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 17,
+  "traceDigest": "88254b8d9c69c1e3249d5042ca85230f9ed8d775472298606d04e681e7a0e41f",
+}
+`;
+
+exports[`catalogue reference replay: cat-pattes, seed 11 1`] = `
+{
+  "actionTypes": [
+    "discard_card",
+    "draw",
+    "game.configure",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "fdafc542b815ee6e7c9b8a2cd6eabcabee7c999b02b28a7298b02c79454bd7cb",
+}
+`;
+
+exports[`catalogue reference replay: cat-pattes, seed 23 1`] = `
+{
+  "actionTypes": [
+    "discard_card",
+    "draw",
+    "game.configure",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "ebbc5feea520213ab092071980a238d6b81f02509a5faede96ed8dbf49d31149",
+}
+`;
+
+exports[`catalogue reference replay: cat-pattes, seed 67 1`] = `
+{
+  "actionTypes": [
+    "discard_card",
+    "draw",
+    "game.configure",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "16d43d4c79c814329ec275b27efdd439452d61a3274a1839a7112a5148f18d37",
+}
+`;
+
+exports[`catalogue reference replay: cercles-sacres, seed 11 1`] = `
+{
+  "actionTypes": [
+    "discard_card",
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "52986d7c078648b9f41276c73e4e4df02eb3ad3d94af7cc5c5881e5865f40d50",
+}
+`;
+
+exports[`catalogue reference replay: cercles-sacres, seed 23 1`] = `
+{
+  "actionTypes": [
+    "discard_card",
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "98044ff41595c4acc1459a4af0fbbcc0201a91e0317eb0c89e9f05c55bd44719",
+}
+`;
+
+exports[`catalogue reference replay: cercles-sacres, seed 67 1`] = `
+{
+  "actionTypes": [
+    "discard_card",
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "4d4f811f761c38ab7a14ca1504aa0545e0e9039ae5e2d0a082dbe544e1b4782d",
+}
+`;
+
+exports[`catalogue reference replay: contes-et-cacahuetes, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 40,
+  "traceDigest": "cd56cf98f00ef8489ec9acd954b43d9f6113b9b5b8933ea85088e8b7b71cda89",
+}
+`;
+
+exports[`catalogue reference replay: contes-et-cacahuetes, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 37,
+  "traceDigest": "003441d1aeb4fcfe4933c273faea4a8020038fd2e32b295e74066df2e0ce29d6",
+}
+`;
+
+exports[`catalogue reference replay: contes-et-cacahuetes, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 62,
+  "traceDigest": "049b9840584535d8251ad688dbaff5eb8cba77ef863937da523950844fae5695",
+}
+`;
+
+exports[`catalogue reference replay: corridor, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "game.configure",
+    "pathWalls_move",
+    "pathWalls_place_wall",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "1ccea5d8f8e1c45613b973ecdca73d99f58ac46efc805d362441dd6868b6aa8b",
+}
+`;
+
+exports[`catalogue reference replay: corridor, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "game.configure",
+    "pathWalls_move",
+    "pathWalls_place_wall",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "805771bb7b051be37f118a78302f0b63eac89a3044fc799e9bb04c9e0cb7fa5f",
+}
+`;
+
+exports[`catalogue reference replay: corridor, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "game.configure",
+    "pathWalls_move",
+    "pathWalls_place_wall",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "1034d1163083d4da0014e5f3bd58f5d22945093221bc88ecd50a2284b3c6403f",
+}
+`;
+
+exports[`catalogue reference replay: course-des-etoiles, seed 11 1`] = `
+{
+  "actionTypes": [
+    "avancer",
+  ],
+  "finished": true,
+  "steps": 5,
+  "traceDigest": "ed76075460bc831af2cd32e76d21e8dc43483de0ba6b0a053a909bc725664526",
+}
+`;
+
+exports[`catalogue reference replay: course-des-etoiles, seed 23 1`] = `
+{
+  "actionTypes": [
+    "avancer",
+  ],
+  "finished": true,
+  "steps": 5,
+  "traceDigest": "41173a2383ce51f5644c4e71bfd8e835e01f1db8db4aacea92e090a680ac7ae6",
+}
+`;
+
+exports[`catalogue reference replay: course-des-etoiles, seed 67 1`] = `
+{
+  "actionTypes": [
+    "avancer",
+  ],
+  "finished": true,
+  "steps": 5,
+  "traceDigest": "2c1358e0028e31c8acb8f793e2d0ee9578cdbb8376f2bc72452b57527faa852a",
+}
+`;
+
+exports[`catalogue reference replay: dame-nature, seed 11 1`] = `
+{
+  "actionTypes": [
+    "ask_card",
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "8d9ee0755c228595fdb7e818d5431e4cb078dd7b695039df41b9bbdf5675b3e6",
+}
+`;
+
+exports[`catalogue reference replay: dame-nature, seed 23 1`] = `
+{
+  "actionTypes": [
+    "ask_card",
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "d8a504adeff0ce4990b6b3813c280646b148779828d365b2a2bc7a22f9e532b2",
+}
+`;
+
+exports[`catalogue reference replay: dame-nature, seed 67 1`] = `
+{
+  "actionTypes": [
+    "ask_card",
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "e3a9ff5e8506264080c696dacc14c149909b6ec3e47b5f51351c41ffc2d2c92f",
+}
+`;
+
+exports[`catalogue reference replay: en-attendant-minuit, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 45,
+  "traceDigest": "52ed72822b942709036c075cd765263b7bfaeaa7d5b1f2cc2a0ddb6769cc460d",
+}
+`;
+
+exports[`catalogue reference replay: en-attendant-minuit, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 61,
+  "traceDigest": "9ad73af7fca5f4a07e6e9e907c0043bc5c65c4bdb7d3fdd84c94cf2b83dd9c66",
+}
+`;
+
+exports[`catalogue reference replay: en-attendant-minuit, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 48,
+  "traceDigest": "01f178d99fc8a5e779803fb2b4c61ef94ce4ebc0da639d7c0862a83cf2a51d81",
+}
+`;
+
+exports[`catalogue reference replay: entre-rites-et-lumieres, seed 11 1`] = `
+{
+  "actionTypes": [
+    "ask_card",
+    "choice.resolve",
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "7ea185466e72a429436ddd15e6b644bcbf8ec57eedf93e1a69e32d0318706ae1",
+}
+`;
+
+exports[`catalogue reference replay: entre-rites-et-lumieres, seed 23 1`] = `
+{
+  "actionTypes": [
+    "ask_card",
+    "choice.resolve",
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "afbee66c15545451455b8922afe97ef30c130c18eaf952c9ddf65d364a708172",
+}
+`;
+
+exports[`catalogue reference replay: entre-rites-et-lumieres, seed 67 1`] = `
+{
+  "actionTypes": [
+    "ask_card",
+    "choice.resolve",
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "2491c4b18758736bd2160d091f37348db45ad95606ff91332df3f54361b7b2d4",
+}
+`;
+
+exports[`catalogue reference replay: foulees-fantastiques, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "c66e36c1368bd0358c24623c25d5ff2be3fe1e20d7edc3e3227f793852c7ab8b",
+}
+`;
+
+exports[`catalogue reference replay: foulees-fantastiques, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "6ab2759d7a6c5f236cba441bdc2ad96a7a53daa776e4715d6234be19df410b70",
+}
+`;
+
+exports[`catalogue reference replay: foulees-fantastiques, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "aceceeefb70d0b5261492e1ce142009d5bea6a8b0eafc9b32cf31803e8a63d65",
+}
+`;
+
+exports[`catalogue reference replay: frousse-party, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 43,
+  "traceDigest": "77589002f27e188c4c423456033772fd6d38187501084114c027ec60dd93d931",
+}
+`;
+
+exports[`catalogue reference replay: frousse-party, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 39,
+  "traceDigest": "e354d9048829492f3e576c33b7a245a481065c053ebf30348d4f380a531717c2",
+}
+`;
+
+exports[`catalogue reference replay: frousse-party, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 35,
+  "traceDigest": "9e4a006069b4e285d60bd821399ebf2a8d01aefb45b4693f89f0b57ffa12dc58",
+}
+`;
+
+exports[`catalogue reference replay: galopons-ensemble, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "399b2d5f83add9fa20f75d43f8cb9188c7b7f2bb3968a701c3103e3fc3453a27",
+}
+`;
+
+exports[`catalogue reference replay: galopons-ensemble, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "c68cd8a0c55d9c6bc5a79a3bb1544598fb05dcaa8090871be6985dada90def07",
+}
+`;
+
+exports[`catalogue reference replay: galopons-ensemble, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 20,
+  "traceDigest": "dde5f69a84fadc77dbefb752ce8b94966440cdd1a459803e8709ffd118ee9250",
+}
+`;
+
+exports[`catalogue reference replay: gerard-president, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choose_winner",
+    "pass",
+    "play_name",
+    "play_special",
+    "set_theme",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "13c82814f11a2a9dcfd125b073ca3b2dd3d20d539115af272ecb37f71458c233",
+}
+`;
+
+exports[`catalogue reference replay: gerard-president, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choose_winner",
+    "pass",
+    "play_name",
+    "play_special",
+    "set_theme",
+  ],
+  "finished": true,
+  "steps": 56,
+  "traceDigest": "be0ffa171455b10d8823b0aad318fe12ff2b4579773811ce8cddea4160e52c87",
+}
+`;
+
+exports[`catalogue reference replay: gerard-president, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choose_winner",
+    "pass",
+    "play_name",
+    "play_special",
+    "set_theme",
+  ],
+  "finished": true,
+  "steps": 64,
+  "traceDigest": "aeff75f7194e65870a77e6448755f7111242e760789e9987ad9a8bb668010c0d",
+}
+`;
+
+exports[`catalogue reference replay: jeu-oie, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 39,
+  "traceDigest": "09b180a4e24ea1c786c89b106293975cb3e02eee8134ebd852856bf5d8711fa8",
+}
+`;
+
+exports[`catalogue reference replay: jeu-oie, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 31,
+  "traceDigest": "c8b67354b09010a56dcfd37f50f394e353f471323e40905f4b91c3e08d56139b",
+}
+`;
+
+exports[`catalogue reference replay: jeu-oie, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 19,
+  "traceDigest": "3ddf7abe9ce2cd8fcc5b3bd0319ca520315e98624271f8c370dd2092bfd28fd8",
+}
+`;
+
+exports[`catalogue reference replay: la-bande-a-banane, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "pass",
+    "play_card",
+  ],
+  "finished": true,
+  "steps": 32,
+  "traceDigest": "10aaac04adc77b0c1aee5d10aa851fda9466d416c22ca573c131915cd22b1fd1",
+}
+`;
+
+exports[`catalogue reference replay: la-bande-a-banane, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "choice.timeout",
+    "pass",
+    "play_card",
+  ],
+  "finished": true,
+  "steps": 23,
+  "traceDigest": "bf2dd51387c903a9458042de31899ed9f695e3a1e7c59e9aa97bb2a2bb8450d1",
+}
+`;
+
+exports[`catalogue reference replay: la-bande-a-banane, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "pass",
+    "play_card",
+  ],
+  "finished": true,
+  "steps": 24,
+  "traceDigest": "1207c55b7e869ba2799ad864af77f1d8a43ba37f0c88166862d4a3375465db07",
+}
+`;
+
+exports[`catalogue reference replay: la-grande-mine-de-barbak, seed 11 1`] = `
+{
+  "actionTypes": [
+    "pass",
+    "play_card",
+  ],
+  "finished": true,
+  "steps": 48,
+  "traceDigest": "fae379f5f7b18d8b9a5da64ffd92fda8064a44dfb8a0e9d121e3c7020295f03e",
+}
+`;
+
+exports[`catalogue reference replay: la-grande-mine-de-barbak, seed 23 1`] = `
+{
+  "actionTypes": [
+    "pass",
+    "play_card",
+  ],
+  "finished": true,
+  "steps": 21,
+  "traceDigest": "df063dd30be7840ef8ca69f9887059935ec0db84f2714825eb72740c67047001",
+}
+`;
+
+exports[`catalogue reference replay: la-grande-mine-de-barbak, seed 67 1`] = `
+{
+  "actionTypes": [
+    "pass",
+    "play_card",
+  ],
+  "finished": true,
+  "steps": 52,
+  "traceDigest": "c33a513a96cf23f53caac7a1fc91a6bf1aa660c71d1f58f33163a68f0e58c4f1",
+}
+`;
+
+exports[`catalogue reference replay: la-parade-sucree, seed 11 1`] = `
+{
+  "actionTypes": [
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "1e22ea92b4365a04fec298d005fdf528a27f7f4885cb5884c011ce8c65fd786f",
+}
+`;
+
+exports[`catalogue reference replay: la-parade-sucree, seed 23 1`] = `
+{
+  "actionTypes": [
+    "pass",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "59fcd8ffbd9e2bbbf74c7953410680fe23b9c661273ab3210043db1b6b3424a0",
+}
+`;
+
+exports[`catalogue reference replay: la-parade-sucree, seed 67 1`] = `
+{
+  "actionTypes": [
+    "pass",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "ab8f152a8943ab2fa53b20cf140690bb7712c86ef409cf084cf68fd186b85fd5",
+}
+`;
+
+exports[`catalogue reference replay: lama, seed 11 1`] = `
+{
+  "actionTypes": [
+    "cards-discard-penalty-play",
+    "cards-discard-penalty-quit",
+    "draw",
+    "game.configure",
+  ],
+  "finished": true,
+  "steps": 17,
+  "traceDigest": "a99ec4f6f71792f2128a197ca27f8a0b77ef1261a50afe0a092c0f61eee9ceff",
+}
+`;
+
+exports[`catalogue reference replay: lama, seed 23 1`] = `
+{
+  "actionTypes": [
+    "cards-discard-penalty-play",
+    "cards-discard-penalty-quit",
+    "game.configure",
+  ],
+  "finished": true,
+  "steps": 12,
+  "traceDigest": "612b88029035bd66c2a48f0f75aec5150e1483d97d596f4d7ff2353ddd4c37c8",
+}
+`;
+
+exports[`catalogue reference replay: lama, seed 67 1`] = `
+{
+  "actionTypes": [
+    "cards-discard-penalty-play",
+    "cards-discard-penalty-quit",
+    "game.configure",
+  ],
+  "finished": true,
+  "steps": 9,
+  "traceDigest": "9c7360df29a92c105aa86741a37ae99630282cab8ad787ad45a5038f7e9aa2ce",
+}
+`;
+
+exports[`catalogue reference replay: le-marche-des-merveilles, seed 11 1`] = `
+{
+  "actionTypes": [
+    "buy",
+    "pass",
+    "protect",
+    "rumor",
+    "sell",
+  ],
+  "finished": true,
+  "steps": 12,
+  "traceDigest": "7161edba8fd06c2f50b6864f49b3fbbbe0eda266a1f680837b36cc79cfba039e",
+}
+`;
+
+exports[`catalogue reference replay: le-marche-des-merveilles, seed 23 1`] = `
+{
+  "actionTypes": [
+    "buy",
+    "pass",
+    "protect",
+    "rumor",
+  ],
+  "finished": true,
+  "steps": 12,
+  "traceDigest": "0fd7d49d966990cc6dd8bb765554ad13527ebc421f2d9602d868536cc2babb53",
+}
+`;
+
+exports[`catalogue reference replay: le-marche-des-merveilles, seed 67 1`] = `
+{
+  "actionTypes": [
+    "buy",
+    "pass",
+    "protect",
+    "rumor",
+  ],
+  "finished": true,
+  "steps": 12,
+  "traceDigest": "9ac8a1ef20f94e4a2a8b53738517792c39e9457dd9caed94d4b74df374f5cc90",
+}
+`;
+
+exports[`catalogue reference replay: les-absurdissimes, seed 11 1`] = `
+{
+  "actionTypes": [
+    "judge_pick",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "9d7824a2ae58b20928413617ace474257bb587fd53dfc33ad6c09d3b5676699f",
+}
+`;
+
+exports[`catalogue reference replay: les-absurdissimes, seed 23 1`] = `
+{
+  "actionTypes": [
+    "judge_pick",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "e89529d0062a82d674821bdc709da2a1514c2ec24e827317a20d64e6bd11ebcd",
+}
+`;
+
+exports[`catalogue reference replay: les-absurdissimes, seed 67 1`] = `
+{
+  "actionTypes": [
+    "judge_pick",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "7763c29c8bf90c9d564d98460a9588fdc862732bcebc4c8636ca1294c51b38fe",
+}
+`;
+
+exports[`catalogue reference replay: les-mains-de-la-terre, seed 11 1`] = `
+{
+  "actionTypes": [
+    "request_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "00344d362216b519ea84f18591294adc4d44493863e1bb4844ac8a8a2e071ef7",
+}
+`;
+
+exports[`catalogue reference replay: les-mains-de-la-terre, seed 23 1`] = `
+{
+  "actionTypes": [
+    "request_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "131c6f504963325b163e8c0858ac97844dbcb84d9372649c10f769ec0c0c05c1",
+}
+`;
+
+exports[`catalogue reference replay: les-mains-de-la-terre, seed 67 1`] = `
+{
+  "actionTypes": [
+    "request_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "ee065eeb7baa941157147208359388990833c40b8263aca7e3e34a56894e45c1",
+}
+`;
+
+exports[`catalogue reference replay: mission-galaxie, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 32,
+  "traceDigest": "072fa412361e00e4d8c5276c37af6c1c36e1405c039ee32290489cc237efcb4d",
+}
+`;
+
+exports[`catalogue reference replay: mission-galaxie, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 23,
+  "traceDigest": "d34be7df8e23a1473a0d99e3495d027122310fa886a1c260d5a932c0562adb09",
+}
+`;
+
+exports[`catalogue reference replay: mission-galaxie, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": true,
+  "steps": 29,
+  "traceDigest": "2f1a2b86000114989e8368e4e689bd6d01843a51d8d5028c200999f1dc4be16f",
+}
+`;
+
+exports[`catalogue reference replay: mon-village-mon-histoire, seed 11 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 22,
+  "traceDigest": "be7480ed6ee12ee3cc039857dbba623a15578d63bd17e44cfb2a0d9d6ec1b489",
+}
+`;
+
+exports[`catalogue reference replay: mon-village-mon-histoire, seed 23 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 22,
+  "traceDigest": "513d3346ff7c4b0246348f3583a84e37e181297c89de68ce8b3ac6d2814739ef",
+}
+`;
+
+exports[`catalogue reference replay: mon-village-mon-histoire, seed 67 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 28,
+  "traceDigest": "cd22615b9faeb6928977adddaa2ae3085ffc5567c117df0185fcee8bae422cee",
+}
+`;
+
+exports[`catalogue reference replay: morpion, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "morpion_play",
+  ],
+  "finished": true,
+  "steps": 11,
+  "traceDigest": "93c509a5f09f8776a30f961dfacaeaaa60a205d04420ef06c4edd27f939bbe01",
+}
+`;
+
+exports[`catalogue reference replay: morpion, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "morpion_play",
+  ],
+  "finished": true,
+  "steps": 7,
+  "traceDigest": "9fb1091bd2b22c60484f4eb02e963fc9e5c6493db4b860c09f808c6953dadad6",
+}
+`;
+
+exports[`catalogue reference replay: nawak, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choose_answer",
+    "vote_answer",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "afa3670f88c0105b95bf558f2134df8c3c86bbf615f7618ea8a03a2570f92fcf",
+}
+`;
+
+exports[`catalogue reference replay: nawak, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choose_answer",
+    "vote_answer",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "6b81caba8afcc50f9a1d28d14e003dea998e3dacd96469803a6c5b3d145bb0d9",
+}
+`;
+
+exports[`catalogue reference replay: nawak, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choose_answer",
+    "vote_answer",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "d900c4d1fe77a8e4d2ee9eac825bddca4ae9749d8179c31322279fe898518de2",
+}
+`;
+
+exports[`catalogue reference replay: odyssee-quatre-cieux, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "47f96d654083f7f8b15bf0141a1894be509ef45791a2fc739923ba2e259787ed",
+}
+`;
+
+exports[`catalogue reference replay: odyssee-quatre-cieux, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "1e6c2131767a48909ead05138aacf72e43e40644ed75c3071902f6794312c6c7",
+}
+`;
+
+exports[`catalogue reference replay: odyssee-quatre-cieux, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "86079c4bb815e85c318bb45a966fca7194510b199dac3dca740ceac36c12f139",
+}
+`;
+
+exports[`catalogue reference replay: olympia, seed 11 1`] = `
+{
+  "actionTypes": [
+    "draw_card",
+    "pass",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "80d59b8311a745d3297b0e37007eb152190b5e8b1957183d06888889547b1925",
+}
+`;
+
+exports[`catalogue reference replay: olympia, seed 23 1`] = `
+{
+  "actionTypes": [
+    "draw_card",
+    "pass",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "f96d46245166f52414c478fe85981be8e210fe254b7788546d731a93aadae597",
+}
+`;
+
+exports[`catalogue reference replay: olympia, seed 67 1`] = `
+{
+  "actionTypes": [
+    "draw_card",
+    "pass",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "374880fd0474c7c2c64591e95529c47f442fa5b3e61bfae5536ac4b376ed1bd8",
+}
+`;
+
+exports[`catalogue reference replay: panier-express, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "draw_card",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "ef69fefdf4654e47a6e2b861e2233ff9593e144ce4d75a1ce0578195336088bb",
+}
+`;
+
+exports[`catalogue reference replay: panier-express, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "draw_card",
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "83bab5076d31f0a3f5366a340a4bfb2c1678aa7e8b29cee712482f6be50eb68d",
+}
+`;
+
+exports[`catalogue reference replay: pimp-my-ride, seed 11 1`] = `
+{
+  "actionTypes": [
+    "pass",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "b4a6cbf5746f2c628d1db15c5980e29498c3d1132cfe1a87683ecd4d3b90190f",
+}
+`;
+
+exports[`catalogue reference replay: pimp-my-ride, seed 67 1`] = `
+{
+  "actionTypes": [
+    "pass",
+    "play_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "5d1ca37d60530519c8eafe611915402cc452be07e3da4908a0722ba988705230",
+}
+`;
+
+exports[`catalogue reference replay: pirates-en-vadrouille, seed 11 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 33,
+  "traceDigest": "2d307549d885e76c42713dde57562a82f9aed091805071c0b1fa77b6c117e774",
+}
+`;
+
+exports[`catalogue reference replay: pirates-en-vadrouille, seed 23 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "291d80755b9a478f3d29bcab5e40dcce0711a012407c327dc827ffa6328b7ae5",
+}
+`;
+
+exports[`catalogue reference replay: pirates-en-vadrouille, seed 67 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 27,
+  "traceDigest": "3eececf5a5df818af92aa561e4d0393b4c76a7216278a8acb54196b9ce37ee9f",
+}
+`;
+
+exports[`catalogue reference replay: primalis, seed 11 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 13,
+  "traceDigest": "c1b9b2caa388d6132a7d84eb5a0681a929c29400f84c8680dc8001002b78c776",
+}
+`;
+
+exports[`catalogue reference replay: primalis, seed 23 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 14,
+  "traceDigest": "3de3e11c7b579a1fc03c93209c64b8c45d3d2b0685d543d34e1daeb0bf3e5373",
+}
+`;
+
+exports[`catalogue reference replay: primalis, seed 67 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 9,
+  "traceDigest": "70cbbbed69986c5d7912e7d89a8fb9784cc7f7e6fde98058b91d974a0f34d19f",
+}
+`;
+
+exports[`catalogue reference replay: sac-a-malices, seed 11 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "game.configure",
+    "mortgage",
+    "pay_fine",
+    "roll",
+    "unmortgage",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "68b2fc90abf03521c78940c31b647bf0b126d0e8ee9ed06ec296555866525a8b",
+}
+`;
+
+exports[`catalogue reference replay: sac-a-malices, seed 23 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "game.configure",
+    "mortgage",
+    "roll",
+    "unmortgage",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "fa0bf3d4045ad8c1ded5c40b28afb446bfe4bf2fb2e2c8e15fc1c9d445643483",
+}
+`;
+
+exports[`catalogue reference replay: sac-a-malices, seed 67 1`] = `
+{
+  "actionTypes": [
+    "choice.resolve",
+    "game.configure",
+    "mortgage",
+    "pay_fine",
+    "roll",
+    "unmortgage",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "305b3097288c5d9fcb08ca88fc32fc70a2fa091d159e5736655efa5872d6f1f7",
+}
+`;
+
+exports[`catalogue reference replay: taxi-express, seed 11 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "a2bcf1c690c459dfa2001ec57a6dbcece908df115d10961d9c387a4ed15e2c54",
+}
+`;
+
+exports[`catalogue reference replay: taxi-express, seed 23 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "a240f40d4a93673b1e2fc1a26e9d02477ed13dc8736caccc016dd330c146cba2",
+}
+`;
+
+exports[`catalogue reference replay: taxi-express, seed 67 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "0d0b3d582d52d63dd7a99e571783fff9e53c8dce7f8025ed84530ae95db89d40",
+}
+`;
+
+exports[`catalogue reference replay: tout-pres-de-maman, seed 11 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 23,
+  "traceDigest": "1924cb8e73dad2166d8482ee565e99da5fbf5b96a891d59e93fd0eb45678990b",
+}
+`;
+
+exports[`catalogue reference replay: tout-pres-de-maman, seed 23 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 18,
+  "traceDigest": "d70554ccefedf4201a688468f5ce23a619d32b6c5463ad58b7361f99d4b4b460",
+}
+`;
+
+exports[`catalogue reference replay: tout-pres-de-maman, seed 67 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": true,
+  "steps": 21,
+  "traceDigest": "6f8338be4569ccbe080e058c9149bed5ce8d079eece6abf27b8b2b1591c5cf9f",
+}
+`;
+
+exports[`catalogue reference replay: voyage-en-terre-de-brumes, seed 11 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "2ea179d77585341d7d4913321077aa6b23c30baf0d4c370c978e0e8679229d33",
+}
+`;
+
+exports[`catalogue reference replay: voyage-en-terre-de-brumes, seed 23 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "b0ca4576130bffcca5d1169c388f21658b345f31ba43fb0bd9d2c7412f7e9e29",
+}
+`;
+
+exports[`catalogue reference replay: voyage-en-terre-de-brumes, seed 67 1`] = `
+{
+  "actionTypes": [
+    "roll",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "fda820a69cefd5ba536a0b36ec1592c0e31bb8dbcef388dfd438ef090b15bb4a",
+}
+`;
+
+exports[`catalogue reference replay: zig-et-zag, seed 11 1`] = `
+{
+  "actionTypes": [
+    "draw_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "533f24fec888447725d840939447806894c44d2fe0e390a8696c041ce24274ba",
+}
+`;
+
+exports[`catalogue reference replay: zig-et-zag, seed 23 1`] = `
+{
+  "actionTypes": [
+    "draw_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "954518c832b0e57a18cf26e653346fe5031fc84216c9276f33052acf9daee62c",
+}
+`;
+
+exports[`catalogue reference replay: zig-et-zag, seed 67 1`] = `
+{
+  "actionTypes": [
+    "draw_card",
+  ],
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "b5747a06ab57a561c397450f9f3cc91184bc8285f8e7aef095c70c4f1ead093c",
+}
+`;
+
 exports[`choice reference replay: cat-pattes, seed 37 1`] = `
 {
   "actionTypes": [

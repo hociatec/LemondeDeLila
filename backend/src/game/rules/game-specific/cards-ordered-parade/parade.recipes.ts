@@ -2,6 +2,7 @@ import { victoryWhen, playCard } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { ParadeProgram } from './program';
 import { defineEmptyAction } from '../../../engine/sdk/extension-api';
+import { resourceDeltaEffects } from '../../recipes/resource-deltas';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
@@ -36,8 +37,9 @@ export function paradeRules(source: ParadeProgram) {
         });
         const reward = program.rewards[card.value];
         if (!reward) return;
-        for (const [resource, amount] of Object.entries(reward))
-          ctx.resources.add(playerId, resource, amount);
+        ctx.effects.run(
+          ...resourceDeltaEffects(reward, { kind: 'player', playerId }, 'debt'),
+        );
         ctx.events.message(`${program.eventNamespace}.candies.won`, {
           playerId,
           score: rewardScore(program, reward),

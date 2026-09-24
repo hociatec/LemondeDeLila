@@ -12,6 +12,19 @@ const reward: GameEffectInstruction[] = [{ kind: 'gain-score', amount: 3 }];
 
 // Record exhaustiveness makes adding a primitive without a parity case a type error.
 export const primitiveCases = {
+  'move-card': {
+    json: {
+      kind: 'move-card',
+      source: { kind: 'hand', handId: 'hand', playerId: 1 },
+      destination: { kind: 'zone', zoneId: 'removed' },
+      cardId: 'a',
+    },
+    sdk: effects.moveCard({
+      source: { kind: 'hand', handId: 'hand', playerId: 1 },
+      destination: { kind: 'zone', zoneId: 'removed' },
+      cardId: 'a',
+    }),
+  },
   custom: {
     json: { kind: 'custom', effectId: 'parity.add', data: { amount: 4 } },
     sdk: effects.custom('parity.add', { amount: 4 }),
@@ -211,6 +224,24 @@ export const primitiveCases = {
 } satisfies Record<GameEffectInstruction['kind'], Pair<GameEffectInstruction>>;
 
 export const conditionCases = {
+  'phase-is': {
+    json: { kind: 'phase-is', phase: 'playing' },
+    sdk: { kind: 'phase-is', phase: 'playing' },
+  },
+  'compare-values': {
+    json: {
+      kind: 'compare-values',
+      left: { kind: 'resource-value', resource: 'stars' },
+      compare: 'gte',
+      right: 2,
+    },
+    sdk: {
+      kind: 'compare-values',
+      left: { kind: 'resource-value', resource: 'stars' },
+      compare: 'gte',
+      right: 2,
+    },
+  },
   score: {
     json: { kind: 'score', compare: 'gt', amount: 1 },
     sdk: { kind: 'score', compare: 'gt', amount: 1 },
@@ -288,6 +319,18 @@ export const conditionCases = {
 } satisfies Record<EffectCondition['kind'], Pair<EffectCondition>>;
 
 export const targetCases = {
+  'current-player': {
+    json: { kind: 'current-player' },
+    sdk: effects.target.current(),
+  },
+  'matching-players': {
+    json: {
+      kind: 'matching-players',
+      participants: 'all',
+      condition: { kind: 'owns-asset', registryId: 'land', assetId: 'house' },
+    },
+    sdk: effects.target.owners('land', 'house'),
+  },
   self: { json: { kind: 'self' }, sdk: effects.target.self() },
   player: {
     json: { kind: 'player', playerId: 2 },
