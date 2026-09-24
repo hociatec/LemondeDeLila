@@ -1,8 +1,17 @@
+import type { NumericExpression } from './numeric-expression';
+import type { CardLocation } from './card-location';
+import type { InsufficientResourcePolicy } from './resource-payment';
 /** Neutral effect instructions: no author callbacks, builders or executors. */
 import type { StatusScope } from '../kits/player-values-contracts';
 
 export type EffectTarget =
   | { kind: 'self' }
+  | { kind: 'current-player' }
+  | {
+      kind: 'matching-players';
+      condition: EffectCondition;
+      participants?: 'active' | 'all';
+    }
   | { kind: 'player'; playerId: number }
   | { kind: 'next'; order?: 'seating' | 'turn' }
   | { kind: 'previous'; order?: 'seating' | 'turn' }
@@ -29,6 +38,14 @@ export type EffectTarget =
 export type EffectComparison = 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte';
 
 export type EffectCondition =
+  | { kind: 'phase-is'; phase: string }
+  | {
+      kind: 'compare-values';
+      left: NumericExpression;
+      right: NumericExpression;
+      compare: EffectComparison;
+      target?: EffectTarget;
+    }
   | {
       kind: 'score';
       compare: EffectComparison;
@@ -90,6 +107,12 @@ export type EffectChoiceAvailability =
 
 export type GameEffectInstruction =
   | {
+      kind: 'move-card';
+      source: CardLocation;
+      destination: CardLocation;
+      cardId: string | number;
+    }
+  | {
       kind: 'conditional';
       condition: EffectCondition;
       then: readonly GameEffectInstruction[];
@@ -145,14 +168,15 @@ export type GameEffectInstruction =
   | {
       kind: 'gain-resource';
       resource: string;
-      amount: number;
+      amount: NumericExpression;
       target?: EffectTarget;
     }
   | {
       kind: 'lose-resource';
       resource: string;
-      amount: number;
+      amount: NumericExpression;
       allowPartial?: boolean;
+      insufficient?: InsufficientResourcePolicy;
       target?: EffectTarget;
     }
   | {
@@ -165,7 +189,7 @@ export type GameEffectInstruction =
   | {
       kind: 'transfer-resource';
       resource: string;
-      amount: number;
+      amount: NumericExpression;
       from: EffectTarget;
       to: EffectTarget;
     }
@@ -216,7 +240,7 @@ export type GameEffectInstruction =
     }
   | {
       kind: 'gain-score';
-      amount: number;
+      amount: NumericExpression;
       target?: EffectTarget;
     }
   | { kind: 'skip-turn'; count?: number; target?: EffectTarget }
@@ -227,6 +251,10 @@ export type GameEffectInstruction =
       turns?: number;
       scope?: StatusScope;
       stack?: boolean;
+      stacks?: number;
+      stacking?: 'replace' | 'add';
+      source?: { playerId?: number; effectId?: string };
+      categories?: readonly string[];
       data?: Record<string, unknown>;
       target?: EffectTarget;
     }

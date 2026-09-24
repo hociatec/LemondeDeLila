@@ -8,6 +8,9 @@ const { spawnSync } = require('node:child_process');
 const backend = path.resolve(__dirname, '..');
 const checker = path.join(__dirname, 'corrections-backlog-check.cjs');
 const reportNames = [
+  'engine-composition-source-2026-09-24.md',
+  'engine-composition-register-2026-09-24.json',
+  'engine-composition-2026-09-24.md',
   'engine-followup-2026-09-23.md',
   'engine-followup-register-2026-09-23.json',
   'engine-followup-source-2026-09-23.md',
@@ -39,6 +42,22 @@ function checkFixture(mutate = () => {}) {
         path.join(backend, 'docs/quality', name),
         path.join(directory, 'docs/quality', name),
       );
+    const composition = JSON.parse(
+      fs.readFileSync(
+        path.join(
+          directory,
+          'docs/quality/engine-composition-register-2026-09-24.json',
+        ),
+        'utf8',
+      ),
+    );
+    for (const point of composition.points) {
+      for (const file of [...point.implementation, ...point.validation]) {
+        const destination = path.join(directory, file);
+        fs.mkdirSync(path.dirname(destination), { recursive: true });
+        fs.copyFileSync(path.join(backend, file), destination);
+      }
+    }
     mutate(directory);
     return spawnSync(process.execPath, [checker], {
       cwd: directory,
@@ -84,7 +103,36 @@ test('accepts a partially completed engine audit', () => {
 test('current backlog reconciles with lot evidence', () => {
   const result = checkFixture();
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(JSON.parse(result.stdout).retainedClosed, []);
+  const resultData = JSON.parse(result.stdout);
+  assert.equal(resultData.snapshot, 'engine-composition-2026-09-24');
+  assert.equal(resultData.openCount + resultData.documentedClosed, 44);
+});
+
+test('rejects a composition point removed from the original request', () => {
+  const result = checkFixture((directory) => {
+    const file = path.join(directory, 'corriger.txt');
+    fs.writeFileSync(
+      file,
+      fs.readFileSync(file, 'utf8').replace(/^2\. .*$/m, ''),
+    );
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Original composition audit must remain intact/);
+});
+
+test('rejects a claimed composition closure without its implementation', () => {
+  const result = checkFixture((directory) => {
+    const file = path.join(
+      directory,
+      'docs/quality/engine-composition-register-2026-09-24.json',
+    );
+    const register = JSON.parse(fs.readFileSync(file, 'utf8'));
+    register.points[0].status = 'closed';
+    register.points[0].implementation = [];
+    fs.writeFileSync(file, JSON.stringify(register));
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Missing implementation: 1/);
 });
 test('accepts multiline JSON snapshot points with Windows line endings', () => {
   const result = checkFixture((directory) => {

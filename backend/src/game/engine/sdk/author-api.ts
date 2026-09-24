@@ -1,4 +1,4 @@
-/** V9 author API: compose games using the reviewed public SDK. */
+/** V10 author API: compose games using the reviewed public SDK. */
 export {
   boardContent,
   cardContent,
@@ -6,6 +6,9 @@ export {
   cards,
   collection,
   commonStatuses,
+  resources,
+  conditionVictory,
+  triggerPattern,
   completeRound,
   defineAction,
   defineCardsSchema,
@@ -60,6 +63,14 @@ export {
   when,
 } from './public-api';
 export type {
+  ConditionVictory,
+  DeclarativeTrigger,
+  TriggerSource,
+  NumericExpression,
+  CardLocation,
+  ResourceDefinition,
+  InsufficientResourcePolicy,
+  ResourcePayment,
   ContentSnapshotMigration,
   DefinedGameEffectResolver,
   EffectContentReferences,

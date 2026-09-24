@@ -6,11 +6,22 @@ import {
   ownership,
   pawns,
   quiz,
+  resources,
 } from '../../../engine/sdk/public-api';
 import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
 import type { Pair } from './primitive-parity-cases';
 
 export const componentCases: Pair<GameComponentDefinition>[] = [
+  {
+    json: {
+      component: 'resource.pool',
+      id: 'energy',
+      initial: 5,
+      min: 0,
+      max: 10,
+    },
+    sdk: resources.pool({ id: 'energy', initial: 5, min: 0, max: 10 }),
+  },
   {
     json: {
       component: 'cards.deck',
@@ -23,6 +34,15 @@ export const componentCases: Pair<GameComponentDefinition>[] = [
       cards: ['a', 'b', 'c', 'd', 'e', 'f'],
       shuffle: false,
     }),
+  },
+  {
+    json: {
+      component: 'cards.zone',
+      id: 'removed',
+      deck: 'deck',
+      visibility: 'hidden',
+    },
+    sdk: cards.zone({ id: 'removed', deck: 'deck', visibility: 'hidden' }),
   },
   {
     json: {

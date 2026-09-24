@@ -13,6 +13,7 @@ export interface ContextComponentsCapability {
   readonly cards: PublicController<
     GameCardsController,
     | 'zone'
+    | 'moveCard'
     | 'putInZone'
     | 'takeFromZone'
     | 'give'

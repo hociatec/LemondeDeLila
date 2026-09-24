@@ -79,11 +79,17 @@ function describeEffect(effect: GameEffectInstruction): string {
     case 'discard-random-inventory':
       return `Défaussez ${countLabel(effect.count, 'élément')} au hasard`;
     case 'gain-resource':
-      return `Gagnez ${effect.amount} ${humanize(effect.resource)}`;
+      return typeof effect.amount === 'number'
+        ? `Gagnez ${effect.amount} ${humanize(effect.resource)}`
+        : `Gagnez des ${humanize(effect.resource)} selon la situation`;
     case 'lose-resource':
-      return `Perdez ${effect.amount} ${humanize(effect.resource)}`;
+      return typeof effect.amount === 'number'
+        ? `Perdez ${effect.amount} ${humanize(effect.resource)}`
+        : `Perdez des ${humanize(effect.resource)} selon la situation`;
     case 'gain-score':
-      return `Gagnez ${countLabel(effect.amount, 'point')}`;
+      return typeof effect.amount === 'number'
+        ? `Gagnez ${countLabel(effect.amount, 'point')}`
+        : 'Modifiez votre score selon la situation';
     case 'skip-turn':
       return `Passez ${countLabel(effect.count ?? 1, 'tour')}`;
     case 'extra-turn':

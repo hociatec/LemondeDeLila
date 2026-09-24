@@ -5,6 +5,78 @@ import type { JsonStandardVictory } from '../../../engine/runtime/definitions/js
 import manifest from '../../fixtures/json-course/manifest.json';
 import document from '../../fixtures/json-course/game.json';
 
+it('composes phase, resource, score and negation into a declarative victory', async () => {
+  const game = await testGame(
+    definition(
+      {
+        kind: 'condition',
+        condition: {
+          kind: 'all',
+          conditions: [
+            { kind: 'phase-is', phase: 'playing' },
+            {
+              kind: 'compare-values',
+              left: { kind: 'score-value' },
+              compare: 'gte',
+              right: 8,
+            },
+            {
+              kind: 'any',
+              conditions: [
+                { kind: 'has-resource', resource: 'stars', amount: 2 },
+                { kind: 'has-status', status: 'objective' },
+              ],
+            },
+            {
+              kind: 'not',
+              condition: { kind: 'has-status', status: 'blocked' },
+            },
+          ],
+        },
+      },
+      [{ kind: 'gain-score', amount: { kind: 'add', left: 1, right: 2 } }],
+    ),
+  )
+    .players(2)
+    .start();
+  expect(game.state().status).not.toBe('finished');
+  await game.as(1).do('advance', {});
+  expect(game.state()).toHaveProperty(
+    'engine.match.result.winnerPlayerIds',
+    [1],
+  );
+  expect(await game.replay()).toEqual(game.state());
+});
+
+it('rejects choices and unknown resource references inside victory predicates', () => {
+  expect(() =>
+    definition(
+      {
+        kind: 'condition',
+        condition: {
+          kind: 'has-status',
+          status: 'objective',
+          target: { kind: 'chosen-opponent' },
+        },
+      },
+      [],
+    ),
+  ).toThrow(/candidate/);
+  expect(() =>
+    definition(
+      {
+        kind: 'condition',
+        condition: {
+          kind: 'has-resource',
+          resource: 'missing',
+          amount: 2,
+        },
+      },
+      [],
+    ),
+  ).toThrow(/missing/);
+});
+
 function definition(
   victory: JsonStandardVictory,
   effects: readonly GameEffectInstruction[],
@@ -163,6 +235,7 @@ it('rejects repeated round completion atomically', async () => {
 });
 
 it.each([
+  { kind: 'condition', condition: { kind: 'phase-is', phase: 'missing' } },
   { kind: 'track-finish', trackId: 'missing', ties: 'all' },
   { kind: 'track-finish', trackId: 'board' },
   {

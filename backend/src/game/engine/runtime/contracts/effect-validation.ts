@@ -1,4 +1,6 @@
 export type GameEffectValidationReferences = {
+  readonly phases?: ReadonlySet<string>;
+  readonly zoneDecks?: ReadonlyMap<string, string>;
   /** Available only when validating a persisted session, not static content. */
   readonly playerIds?: ReadonlySet<number>;
   readonly decks: ReadonlyMap<string, unknown>;

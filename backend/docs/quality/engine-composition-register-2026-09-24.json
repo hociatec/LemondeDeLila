@@ -1,0 +1,637 @@
+{
+  "snapshot": "engine-composition-2026-09-24",
+  "points": [
+    {
+      "id": 1,
+      "status": "open",
+      "title": "Real shared extraction",
+      "description": "The resource-delta recipe is used by two different production packs (ordered parade and resource-track race). Specific mechanics stay outside the runtime.",
+      "implementation": [
+        "src/game/rules/recipes/resource-deltas.ts",
+        "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts",
+        "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts"
+      ],
+      "validation": [
+        "tools/game-mechanics-matrix.spec.cjs",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "id": 2,
+      "status": "open",
+      "title": "Catalogue matrix",
+      "description": "All 39 games and 38 packs are mapped across 14 categories. Every positive cell links to source lines. Empty cells explicitly mean no direct static evidence, not absence of a capability.",
+      "implementation": [
+        "tools/game-mechanics-matrix.cjs",
+        "docs/quality/game-mechanics-matrix.json"
+      ],
+      "validation": [
+        "tools/game-mechanics-matrix.spec.cjs"
+      ]
+    },
+    {
+      "id": 3,
+      "status": "open",
+      "title": "Composable conditions",
+      "description": "Existing all/any/not, ownership, position, resources and statuses are extended with phase-is and bounded numeric comparison.",
+      "implementation": [
+        "src/game/engine/runtime/effects/effect-condition-evaluator.ts",
+        "src/game/engine/runtime/effects/game-effect-reference-validator.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-standard-victory.spec.ts"
+      ]
+    },
+    {
+      "id": 4,
+      "status": "open",
+      "title": "Common selectors",
+      "description": "Current player and predicate-selected participants join existing self/opponents/next/previous. Owners and occupants use predicates over canonical controllers.",
+      "implementation": [
+        "src/game/engine/runtime/effects/effect-target-resolver.ts",
+        "src/game/engine/runtime/effects/effects-dsl.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts"
+      ]
+    },
+    {
+      "id": 5,
+      "status": "open",
+      "title": "Bounded expressions",
+      "description": "Thirteen expression variants cover constants, canonical reads, arithmetic, min/max and clamp. Hand/inventory/player counts use their canonical controllers.",
+      "implementation": [
+        "src/game/engine/runtime/effects/numeric-expression-evaluator.ts",
+        "src/game/engine/runtime/contracts/numeric-expression.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/effects/numeric-expression.spec.ts",
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts"
+      ]
+    },
+    {
+      "id": 6,
+      "status": "open",
+      "title": "Closed deterministic DSL",
+      "description": "Schema validation rejects functions, arbitrary property access and unknown instructions. Expressions and triggers have depth/node/execution budgets; division by zero and unsafe results fail.",
+      "implementation": [
+        "src/game/engine/runtime/contracts/effect-json-schema.ts",
+        "src/game/engine/runtime/effects/numeric-expression-validator.ts",
+        "src/game/engine/runtime/automation/trigger-resolution.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/effects/numeric-expression.spec.ts",
+        "src/game/testing/architecture-tests/game/declarative-triggers.spec.ts"
+      ]
+    },
+    {
+      "id": 7,
+      "status": "open",
+      "title": "Configurable resources",
+      "description": "resource.pool declares initial/min/max independently of resource identity. Balances remain solely in playerValues.resources; declared bounds apply to mutation and restoration.",
+      "implementation": [
+        "src/game/engine/runtime/kits/resource-controller.ts",
+        "src/game/engine/runtime/kits/resource-definition.ts",
+        "src/game/engine/runtime/state/restored-session-header.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/kits/resource-bounds.spec.ts",
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts"
+      ]
+    },
+    {
+      "id": 8,
+      "status": "open",
+      "title": "Payment workflow",
+      "description": "quoteResourcePayment computes affordability and settlement before mutation. Controller operations share the same calculation; elimination remains a match decision.",
+      "implementation": [
+        "src/game/engine/runtime/kits/resource-payment.ts",
+        "src/game/engine/runtime/kits/resource-controller.ts",
+        "src/game/engine/runtime/kits/resource-exchange.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/kits/resource-payment.spec.ts",
+        "src/game/engine/runtime/kits/resource-bounds.spec.ts"
+      ]
+    },
+    {
+      "id": 9,
+      "status": "open",
+      "title": "Insufficient funds policies",
+      "description": "Explicit cancel, debt, partial and eliminate policies are supported. Existing allowPartial and default rejection retain their semantics. Explicit resource bounds cannot be bypassed by debt.",
+      "implementation": [
+        "src/game/engine/runtime/contracts/resource-payment.ts",
+        "src/game/engine/runtime/effects/effect-primitive-handlers.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/kits/resource-payment.spec.ts",
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts"
+      ]
+    },
+    {
+      "id": 10,
+      "status": "open",
+      "title": "Status lifecycle",
+      "description": "Status buckets identify targets canonically. Optional source, charges, categories and parameters join duration and expiry. Charge consumption is independent of turn expiry.",
+      "implementation": [
+        "src/game/engine/runtime/kits/player-values-kit.ts",
+        "src/game/engine/runtime/kits/player-values-contracts.ts",
+        "src/game/engine/runtime/kits/numeric-invariants.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/kits/status-modifiers.spec.ts",
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts"
+      ]
+    },
+    {
+      "id": 11,
+      "status": "open",
+      "title": "Generic protections",
+      "description": "Effect categories are intercepted before mutation. Exact effect kinds and movement/resource/card/inventory loss categories consume one matching protection charge.",
+      "implementation": [
+        "src/game/engine/runtime/effects/effect-target-resolver.ts",
+        "src/game/engine/runtime/kits/player-values-kit.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/kits/status-modifiers.spec.ts",
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts"
+      ]
+    },
+    {
+      "id": 12,
+      "status": "open",
+      "title": "Movement and consequences",
+      "description": "The existing movement controller owns displacement and emits events. Landing/pass recipes and the new event triggers compose consequences separately.",
+      "implementation": [
+        "src/game/engine/runtime/kits/movement-kit.ts",
+        "src/game/engine/runtime/automation/trigger-resolution.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/kits/movement-kit.spec.ts",
+        "src/game/testing/architecture-tests/game/declarative-triggers.spec.ts"
+      ]
+    },
+    {
+      "id": 13,
+      "status": "open",
+      "title": "Movement configuration",
+      "description": "Track overshoot supports clamp/wrap/bounce/exact; signed moves, teleport, blocked landing pipelines and pawn/grid capabilities preserve their specialized topology contracts.",
+      "implementation": [
+        "src/game/engine/runtime/kits/movement-kit.ts",
+        "src/game/engine/runtime/effects/effect-primitive-handlers.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/kits/movement-kit.spec.ts",
+        "src/game/testing/architecture-tests/game/generated-capability-models.property.spec.ts",
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts"
+      ]
+    },
+    {
+      "id": 14,
+      "status": "open",
+      "title": "Collision detection and resolution",
+      "description": "Detection uses canonical positions/occupants; effects resolve independently through selectors and displacement or ownership operations. No game-specific collision policy enters the core.",
+      "implementation": [
+        "src/game/engine/runtime/kits/movement-kit.ts",
+        "src/game/engine/runtime/effects/effect-target-resolver.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/directional-hazard-primitives-parity.spec.ts",
+        "src/game/testing/architecture-tests/game/generated-capability-models.property.spec.ts"
+      ]
+    },
+    {
+      "id": 15,
+      "status": "open",
+      "title": "Card locations",
+      "description": "Deck, hand, discard and named zones are canonical locations. Market/removed areas are ordinary public/private zones. moveCard validates both endpoints before mutating one occurrence.",
+      "implementation": [
+        "src/game/engine/runtime/cards/cards-location-controller.ts",
+        "src/game/engine/runtime/contracts/card-location.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/cards/cards-location.spec.ts",
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts"
+      ]
+    },
+    {
+      "id": 16,
+      "status": "open",
+      "title": "Card operations",
+      "description": "Existing draw, transfer, discard, zone visibility, shuffle and selection controllers remain common. move-card adds JSON/API movement between all location kinds without duplicating card storage.",
+      "implementation": [
+        "src/game/engine/runtime/cards/cards-deck-controller.ts",
+        "src/game/engine/runtime/cards/cards-hands-controller.ts",
+        "src/game/engine/runtime/cards/cards-location-controller.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/cards/cards-location.spec.ts",
+        "src/game/engine/runtime/cards/cards-exchange.spec.ts",
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts"
+      ]
+    },
+    {
+      "id": 17,
+      "status": "open",
+      "title": "Shared interactions",
+      "description": "Existing choice/submission/vote controllers define participants, options, private answers, validation and completion. Domain recipes compose these capabilities rather than storing alternate interaction state.",
+      "implementation": [
+        "src/game/engine/runtime/contracts/context-interactions-capability.ts",
+        "src/game/engine/runtime/submissions/submission-flow-controller.ts",
+        "src/game/engine/runtime/choices/game-choice-controller.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/submissions/submission-workflow-invariants.spec.ts",
+        "src/game/engine/runtime/submissions/submission-voting-controller.spec.ts"
+      ]
+    },
+    {
+      "id": 18,
+      "status": "open",
+      "title": "Collections",
+      "description": "Existing set completion and request-card recipes operate on canonical hands. Completion moves cards once and derived collection views read the resulting state.",
+      "implementation": [
+        "src/game/engine/runtime/cards/cards-hands-controller.ts",
+        "src/game/engine/runtime/recipes/gameplay/card-actions.recipes.ts",
+        "src/game/engine/runtime/projection/collection-view.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/cards/cards-exchange.spec.ts",
+        "src/game/testing/architecture-tests/game/generated-capability-models.property.spec.ts"
+      ]
+    },
+    {
+      "id": 19,
+      "status": "open",
+      "title": "Ownership semantics",
+      "description": "Registry assets use the shared ownership controller. Card possession is canonical in card locations and inventory possession in inventory buckets; no parallel ownership registry is introduced for either.",
+      "implementation": [
+        "src/game/engine/runtime/kits/ownership-kit.ts",
+        "src/game/engine/runtime/cards/cards-location-controller.ts",
+        "src/game/engine/runtime/state/component-state-ownership.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/kits/ownership-kit.spec.ts",
+        "src/game/testing/architecture-tests/game/generated-capability-models.property.spec.ts",
+        "tools/game-state-ownership-audit.spec.cjs"
+      ]
+    },
+    {
+      "id": 20,
+      "status": "open",
+      "title": "Declarative triggers",
+      "description": "Patterns declare action or event triggers with scalar event filters. Existing movement/turn/resource/card events feed the same bounded dispatcher. Trigger effects cannot suspend for an interactive choice.",
+      "implementation": [
+        "src/game/engine/runtime/automation/trigger-pattern.ts",
+        "src/game/engine/runtime/automation/trigger-resolution.ts",
+        "src/game/engine/runtime/automation/trigger-validation.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/declarative-triggers.spec.ts"
+      ]
+    },
+    {
+      "id": 21,
+      "status": "open",
+      "title": "Composition pipeline",
+      "description": "Triggers dispatch conditions, target selectors and numeric expressions into existing effect primitives. JSON and TypeScript builders share the same compiled trigger definitions.",
+      "implementation": [
+        "src/game/engine/runtime/automation/trigger-resolution.ts",
+        "src/game/engine/runtime/effects/effect-condition-evaluator.ts",
+        "src/game/engine/runtime/effects/effect-target-resolver.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/declarative-triggers.spec.ts",
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts"
+      ]
+    },
+    {
+      "id": 22,
+      "status": "open",
+      "title": "Composable victory",
+      "description": "conditionVictory evaluates local predicates per participant, with all/any/not composition and explicit tie policy. Existing score/resource/position/collection predicates need no custom callback.",
+      "implementation": [
+        "src/game/engine/runtime/automation/condition-victory.ts",
+        "src/game/engine/runtime/definitions/json-standard-victory.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/json/json-standard-victory.spec.ts"
+      ]
+    },
+    {
+      "id": 23,
+      "status": "open",
+      "title": "Recipes outside core",
+      "description": "resourceDeltaEffects lives above the runtime and composes public instructions. Two production packs consume it while keeping their reward/tile policies.",
+      "implementation": [
+        "src/game/rules/recipes/resource-deltas.ts"
+      ],
+      "validation": [
+        "tools/game-mechanics-matrix.spec.cjs",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "id": 24,
+      "status": "open",
+      "title": "Specific packs remain specific",
+      "description": "All 38 packs remain classified as specific. No promotion is claimed merely because a pack has configuration. Common recipe extraction does not reverse dependency direction.",
+      "implementation": [
+        "tools/engine-effect-pack-governance.cjs",
+        "tools/effect-pack-promotion.cjs"
+      ],
+      "validation": [
+        "tools/engine-effect-pack-governance.spec.cjs",
+        "tools/effect-pack-promotion.spec.cjs"
+      ]
+    },
+    {
+      "id": 25,
+      "status": "open",
+      "title": "Responsibility splitting",
+      "description": "Common resource-delta loops leave two packs; resource and card-location responsibilities have dedicated controllers. Existing pack size and production/behavior line budgets remain unchanged.",
+      "implementation": [
+        "src/game/rules/recipes/resource-deltas.ts",
+        "src/game/engine/runtime/kits/resource-controller.ts",
+        "src/game/engine/runtime/cards/cards-location-controller.ts"
+      ],
+      "validation": [
+        "tools/engine-effect-pack-governance.spec.cjs",
+        "tools/structural-quality-check.spec.cjs"
+      ]
+    },
+    {
+      "id": 26,
+      "status": "open",
+      "title": "Evidence-based reuse governance",
+      "description": "Promotion gates require independent consumers and an ADR. The new recipe has a test locating actual calls from two catalogue games.",
+      "implementation": [
+        "tools/effect-pack-promotion.cjs",
+        "tools/game-mechanics-matrix.cjs"
+      ],
+      "validation": [
+        "tools/effect-pack-promotion.spec.cjs",
+        "tools/game-mechanics-matrix.spec.cjs"
+      ]
+    },
+    {
+      "id": 27,
+      "status": "open",
+      "title": "Dependency direction",
+      "description": "Existing AST import and dependency-cycle checks protect runtime/rules/core direction. Trigger validation is separate from pattern construction to avoid a runtime cycle.",
+      "implementation": [
+        "tools/runtime-dependency-graph.cjs",
+        "src/game/engine/runtime/automation/trigger-validation.ts"
+      ],
+      "validation": [
+        "tools/runtime-dependency-graph.spec.cjs",
+        "tools/runtime-contract-imports.spec.cjs"
+      ]
+    },
+    {
+      "id": 28,
+      "status": "open",
+      "title": "Public facades",
+      "description": "Authors and extensions use their explicit facades. New contracts and builders are exported intentionally; pack imports remain checked against deep runtime access.",
+      "implementation": [
+        "src/game/engine/sdk/author-api.ts",
+        "src/game/engine/sdk/extension-api.ts"
+      ],
+      "validation": [
+        "tools/extension-api-boundary.spec.cjs"
+      ]
+    },
+    {
+      "id": 29,
+      "status": "open",
+      "title": "Versioned author API",
+      "description": "Author/public API is 10.0.0. Transitive declarations are snapshotted; amount unions and new exhaustive variants are documented as a major migration.",
+      "implementation": [
+        "tools/sdk-contract-check.cjs",
+        "tools/sdk-author-api-reference.json",
+        "docs/architecture/sdk-contract.md"
+      ],
+      "validation": [
+        "tools/sdk-contract-check.spec.cjs"
+      ]
+    },
+    {
+      "id": 30,
+      "status": "open",
+      "title": "Versioned extension API",
+      "description": "Extension API/contracts are 2.0.0, including the widened amount and component contracts. Four independently checked snapshots cover all facades.",
+      "implementation": [
+        "tools/sdk-extension-api-reference.json",
+        "tools/sdk-extension-contracts-reference.json",
+        "docs/architecture/extension-compatibility.md"
+      ],
+      "validation": [
+        "tools/sdk-contract-check.spec.cjs"
+      ]
+    },
+    {
+      "id": 31,
+      "status": "open",
+      "title": "JSON/API parity",
+      "description": "Exhaustive primitive cases include new expressions, selectors, payments, protections and card movement. Assertions compare engine state, events and deterministic replay; trigger parity uses three seeds.",
+      "implementation": [
+        "src/game/testing/architecture-tests/game/primitive-parity-cases.ts",
+        "src/game/testing/architecture-tests/game/numeric-expression-cases.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts",
+        "src/game/testing/architecture-tests/game/declarative-triggers.spec.ts"
+      ]
+    },
+    {
+      "id": 32,
+      "status": "open",
+      "title": "Closed core JSON",
+      "description": "New behavior enters closed component/pattern/condition/effect variants. No game-business root fields or arbitrary state-path expressions are added.",
+      "implementation": [
+        "src/game/engine/runtime/definitions/json-game-schema.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/json/json-author-limits.spec.ts",
+        "tools/engine-catalog-boundary.spec.cjs"
+      ]
+    },
+    {
+      "id": 33,
+      "status": "open",
+      "title": "Controlled vocabulary",
+      "description": "Existing semantic conditions compose owners/occupants and victory rules. New variants represent reusable capabilities; market and removed zones need no dedicated business keywords.",
+      "implementation": [
+        "src/game/engine/runtime/contracts/effect-ir.ts",
+        "src/game/engine/runtime/contracts/numeric-expression.ts",
+        "src/game/engine/runtime/contracts/card-location.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts",
+        "tools/engine-effect-pack-governance.spec.cjs"
+      ]
+    },
+    {
+      "id": 34,
+      "status": "open",
+      "title": "Structured diagnostics",
+      "description": "Author schemas and reference validators retain path/origin diagnostics. SDK effect sequences now pass closed schema validation before typed semantic validation.",
+      "implementation": [
+        "src/game/engine/runtime/contracts/authoring-diagnostics.ts",
+        "src/game/engine/runtime/effects/game-effect-definition-validator.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/json/authoring-semantic-paths.spec.ts",
+        "src/game/testing/architecture-tests/json/json-pattern-diagnostics.spec.ts"
+      ]
+    },
+    {
+      "id": 35,
+      "status": "open",
+      "title": "Validated type boundaries",
+      "description": "The effect validator no longer asserts an unknown object to GameEffectInstruction. It uses the asserting closed schema codec. Existing double-cast lint and facade rules remain enforced.",
+      "implementation": [
+        "src/game/engine/runtime/effects/game-effect-definition-validator.ts",
+        "src/game/engine/runtime/contracts/effect-json-schema.ts"
+      ],
+      "validation": [
+        "tools/double-cast-lint.spec.cjs",
+        "src/game/testing/architecture-tests/json/authoring-semantic-paths.spec.ts"
+      ]
+    },
+    {
+      "id": 36,
+      "status": "open",
+      "title": "Schema/type CI contracts",
+      "description": "New schemas satisfy AuthorSchema, and exhaustive cases cover new discriminated unions. Typecheck, schema tests and merge-contract tests remain in the required workflow.",
+      "implementation": [
+        "src/game/engine/runtime/contracts/numeric-expression-schema.ts",
+        "src/game/engine/runtime/contracts/declarative-trigger-schema.ts",
+        "package.json"
+      ],
+      "validation": [
+        "tools/author-schema-types.spec.cjs",
+        "tools/engine-ci-contract.spec.cjs"
+      ]
+    },
+    {
+      "id": 37,
+      "status": "open",
+      "title": "Formal state ownership",
+      "description": "Ownership declarations now include resource pools and canonical player values. Restoration validates resource bounds and status metadata rather than inferring fields.",
+      "implementation": [
+        "src/game/engine/runtime/state/component-state-ownership.ts",
+        "src/game/engine/runtime/state/restored-session-header.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/state/component-state-ownership.spec.ts",
+        "tools/game-state-ownership-audit.spec.cjs"
+      ]
+    },
+    {
+      "id": 38,
+      "status": "open",
+      "title": "Canonical storage",
+      "description": "Expressions, selectors and cards read/write controller-owned state. Resource pools retain only static bounds in definitions. No second score, hand, inventory or position map is introduced.",
+      "implementation": [
+        "src/game/engine/runtime/effects/numeric-expression-evaluator.ts",
+        "src/game/engine/runtime/cards/cards-location-controller.ts",
+        "src/game/engine/runtime/state/component-state-ownership.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/generated-capability-models.property.spec.ts",
+        "src/game/engine/runtime/cards/cards-location.spec.ts",
+        "tools/game-state-ownership-audit.spec.cjs"
+      ]
+    },
+    {
+      "id": 39,
+      "status": "open",
+      "title": "Static content isolation",
+      "description": "Existing immutable content and setup isolation contracts remain. New resource/trigger definitions are compiled as static definitions, while session state contains only mutable values.",
+      "implementation": [
+        "src/game/engine/runtime/content/content-immutability.ts",
+        "src/game/engine/runtime/definitions/game-definition-compiler.ts"
+      ],
+      "validation": [
+        "src/game/engine/runtime/state/setup-state-isolation.spec.ts",
+        "src/game/engine/runtime/content/game-content.spec.ts"
+      ]
+    },
+    {
+      "id": 40,
+      "status": "open",
+      "title": "Deterministic execution",
+      "description": "Expressions are pure canonical reads. Triggers use deterministic order and bounded dispatch. Replay corpus compares live, replayed and restored state for identical seeds/commands/version.",
+      "implementation": [
+        "src/game/engine/runtime/effects/numeric-expression-evaluator.ts",
+        "src/game/engine/runtime/automation/trigger-resolution.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts",
+        "tools/business-clock-lint.spec.cjs"
+      ]
+    },
+    {
+      "id": 41,
+      "status": "open",
+      "title": "Injected RNG",
+      "description": "Existing seeded RNG is the only randomness source for rules. Numeric expressions and selectors add no system randomness; generated actions and reference replays exercise seeded choices.",
+      "implementation": [
+        "src/game/core/application/random/seeded-rng.ts"
+      ],
+      "validation": [
+        "src/game/core/application/random/seeded-rng.spec.ts",
+        "src/game/testing/architecture-tests/game/generated-actions.property.spec.ts",
+        "tools/architecture-check.spec.cjs"
+      ]
+    },
+    {
+      "id": 42,
+      "status": "open",
+      "title": "All catalogue replays",
+      "description": "Every one of the 39 games runs a bounded command campaign. The six historical references are retained, and all additional references are checked without snapshot update.",
+      "implementation": [
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts",
+        "src/game/testing/architecture-tests/game/__snapshots__/reference-replays.spec.ts.snap"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "id": 43,
+      "status": "open",
+      "title": "Multiple seeds",
+      "description": "Each game runs seeds 11, 23 and 67, plus historical non-overlapping seed cases: 120 references. A legitimate event burst exposed the 128-event buffer limit; it is now bounded at 512 and overflow remains tested.",
+      "implementation": [
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts",
+        "src/game/core/application/services/game-event-buffer.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts",
+        "src/game/core/application/services/game-event-buffer.spec.ts"
+      ]
+    },
+    {
+      "id": 44,
+      "status": "open",
+      "title": "Generated invariant models",
+      "description": "Existing generated movement/resource/RNG and card/inventory/ownership campaigns are retained. Payment tests add exhaustive independent balance/cost/policy models, and expression/trigger tests cover invalid and cyclic effects.",
+      "implementation": [
+        "src/game/testing/architecture-tests/game/generated-capability-models.property.spec.ts",
+        "src/game/testing/architecture-tests/game/generated-actions.property.spec.ts",
+        "src/game/engine/runtime/kits/resource-payment.spec.ts"
+      ],
+      "validation": [
+        "src/game/testing/architecture-tests/game/generated-capability-models.property.spec.ts",
+        "src/game/testing/architecture-tests/game/generated-actions.property.spec.ts",
+        "src/game/engine/runtime/kits/resource-payment.spec.ts",
+        "src/game/engine/runtime/effects/numeric-expression.spec.ts",
+        "src/game/testing/architecture-tests/game/declarative-triggers.spec.ts"
+      ]
+    }
+  ]
+}

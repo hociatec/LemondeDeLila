@@ -1,3 +1,4 @@
+import { validateNumericExpression } from './numeric-expression-validator';
 import type {
   EffectCondition,
   EffectTarget,
@@ -24,7 +25,7 @@ export function validateInstructionTargets(
     reactor: 'reactor' in instruction ? instruction.reactor : undefined,
   };
   for (const [role, target] of Object.entries(targets))
-    validateEffectTarget(target, `${path}.${role}`, fail, references.playerIds);
+    validateEffectTarget(target, `${path}.${role}`, fail, references);
 }
 
 export function validateEffectCondition(
@@ -35,6 +36,12 @@ export function validateEffectCondition(
 ): void {
   if (!condition || typeof condition !== 'object')
     fail(path, 'condition invalide');
+  if (condition.kind === 'phase-is') {
+    if (!condition.phase.trim()) fail(`${path}.phase`, 'empty phase');
+    if (references.phases && !references.phases.has(condition.phase))
+      fail(`${path}.phase`, `unknown phase ${condition.phase}`);
+    return;
+  }
   if (condition.kind === 'not') {
     validateEffectCondition(
       condition.condition,
@@ -56,12 +63,7 @@ export function validateEffectCondition(
     );
     return;
   }
-  validateEffectTarget(
-    condition.target,
-    `${path}.target`,
-    fail,
-    references.playerIds,
-  );
+  validateEffectTarget(condition.target, `${path}.target`, fail, references);
   if (validateValueCondition(condition, path, references, fail)) return;
   if (condition.kind === 'has-resource') {
     requireResourceReference(
@@ -116,6 +118,18 @@ function validateValueCondition(
   references: GameEffectValidationReferences,
   fail: ValidationFailure,
 ): boolean {
+  if (condition.kind === 'compare-values') {
+    validateNumericExpression(condition.left, `${path}.left`, references, fail);
+    validateNumericExpression(
+      condition.right,
+      `${path}.right`,
+      references,
+      fail,
+    );
+    if (!['eq', 'ne', 'lt', 'lte', 'gt', 'gte'].includes(condition.compare))
+      fail(`${path}.compare`, 'unknown comparison');
+    return true;
+  }
   if (condition.kind === 'owns-asset') {
     const assets = references.ownershipAssets?.get(condition.registryId);
     if (!assets) fail(`${path}.registryId`, 'unknown ownership registry');
@@ -200,9 +214,20 @@ export function validateEffectTarget(
   target: EffectTarget | undefined,
   path: string,
   fail: ValidationFailure,
-  playerIds?: ReadonlySet<number>,
+  references: GameEffectValidationReferences,
 ): void {
   if (target == null) return;
+  if (target.kind === 'matching-players') {
+    validateLocalCondition(target.condition, `${path}.condition`, fail);
+    validateEffectCondition(
+      target.condition,
+      `${path}.condition`,
+      references,
+      fail,
+    );
+    return;
+  }
+  const playerIds = references.playerIds;
   if (playerIds) {
     const referenced = [
       ...(target.kind === 'player' ? [target.playerId] : []),
@@ -219,6 +244,7 @@ export function validateEffectTarget(
   if (
     ![
       'self',
+      'current-player',
       'player',
       'next',
       'previous',
@@ -264,6 +290,30 @@ export function validateEffectTarget(
       target.chooserPlayerId === 0)
   ) {
     fail(`${path}.chooserPlayerId`, 'joueur invalide');
+  }
+}
+
+/** A selector predicate is local to each candidate and cannot request choices. */
+export function validateLocalCondition(
+  condition: EffectCondition,
+  path: string,
+  fail: ValidationFailure,
+): void {
+  if (condition.kind === 'not') {
+    validateLocalCondition(condition.condition, `${path}.condition`, fail);
+  } else if (condition.kind === 'all' || condition.kind === 'any') {
+    condition.conditions.forEach((nested, index) =>
+      validateLocalCondition(nested, `${path}.conditions[${index}]`, fail),
+    );
+  } else if (
+    'target' in condition &&
+    condition.target &&
+    condition.target.kind !== 'self'
+  ) {
+    fail(
+      `${path}.target`,
+      'selector predicates must refer to the candidate (self)',
+    );
   }
 }
 

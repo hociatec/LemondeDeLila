@@ -1,3 +1,4 @@
+import { evaluateNumericExpression } from './numeric-expression-evaluator';
 import type {
   EffectComparison,
   EffectCondition,
@@ -10,6 +11,7 @@ export function evaluateEffectCondition<TState extends object>(
   targets: (target: EffectTarget | undefined) => number[] | null,
   context: GameContext<TState>,
 ): boolean | null {
+  if (condition.kind === 'phase-is') return context.phase.is(condition.phase);
   if (condition.kind === 'not') {
     const result = evaluateEffectCondition(
       condition.condition,
@@ -35,10 +37,19 @@ export function evaluateEffectCondition<TState extends object>(
 }
 
 function evaluatePlayerCondition<TState extends object>(
-  condition: Exclude<EffectCondition, { kind: 'all' | 'any' | 'not' }>,
+  condition: Exclude<
+    EffectCondition,
+    { kind: 'all' | 'any' | 'not' | 'phase-is' }
+  >,
   playerId: number,
   context: GameContext<TState>,
 ): boolean {
+  if (condition.kind === 'compare-values')
+    return compare(
+      evaluateNumericExpression(condition.left, context, playerId),
+      condition.compare,
+      evaluateNumericExpression(condition.right, context, playerId),
+    );
   if (condition.kind === 'score')
     return compare(
       context.score.get(playerId),

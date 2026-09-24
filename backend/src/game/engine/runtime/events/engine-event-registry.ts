@@ -27,6 +27,11 @@ export type EngineEventMap = {
   'timer.fired': { id: string };
   'card.drawn': { deckId: string };
   'card.received': { handId: string; playerId: number };
+  'card.moved': {
+    source: EventValue;
+    destination: EventValue;
+    card?: EventValue;
+  };
   'card.played': {
     handId: string;
     deckId: string;
@@ -247,6 +252,7 @@ export const ENGINE_EVENT_VISIBILITY = {
   'timer.fired': 'internal',
   'card.drawn': 'public',
   'card.received': 'dynamic',
+  'card.moved': 'dynamic',
   'card.played': 'public',
   'card.discarded': 'public',
   'card.transferred': 'public',

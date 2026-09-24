@@ -6,6 +6,9 @@ import {
   submissionJudgeGame,
 } from '../patterns/gameplay-pattern-round-economy';
 import type { GamePattern } from '../contracts/pattern-definition';
+import type { DeclarativeTrigger } from '../contracts/declarative-trigger';
+import { declarativeTriggerFields } from '../contracts/declarative-trigger-schema';
+import { triggerPattern } from '../automation/trigger-pattern';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import {
   type AuthorSchema,
@@ -18,6 +21,7 @@ import {
 } from '../contracts/json-author-schema';
 
 export type JsonGamePattern =
+  | ({ kind: 'trigger' } & DeclarativeTrigger)
   | ({ kind: 'pawn-race' } & Parameters<typeof pawnRace>[0])
   | {
       kind: 'race';
@@ -62,6 +66,12 @@ export type JsonGamePattern =
 const position: AuthorSchema = { type: 'integer', minimum: 0 };
 export const jsonGamePatternSchema: AuthorSchema = {
   oneOf: [
+    object({ kind: { const: 'trigger' }, ...declarativeTriggerFields }, [
+      'kind',
+      'id',
+      'on',
+      'effects',
+    ]),
     object(
       {
         kind: { const: 'pawn-race' },
@@ -152,6 +162,10 @@ export function compileJsonPattern(
   pattern: JsonGamePattern,
 ): GamePattern<Record<string, never>> {
   switch (pattern.kind) {
+    case 'trigger': {
+      const { kind: _kind, ...rule } = pattern;
+      return triggerPattern(rule);
+    }
     case 'pawn-race': {
       const { kind: _kind, ...options } = pattern;
       return pawnRace(options);

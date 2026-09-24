@@ -8,6 +8,7 @@ import { movement } from '../kits/movement-kit';
 import { ownership } from '../kits/ownership-kit';
 import { pawns } from '../kits/pawn-kit';
 import { quiz } from '../kits/quiz-kit';
+import { resources } from '../kits/resource-definition';
 import type { GameComponentDefinition } from './component-kit';
 import { authoringPathOf } from '../contracts/authoring-origin';
 
@@ -18,6 +19,9 @@ export function assertComponentCatalog(
 ): void {
   try {
     switch (component.component) {
+      case 'resource.pool':
+        resources.pool(component);
+        break;
       case 'cards.deck':
         cards.deck(component);
         break;

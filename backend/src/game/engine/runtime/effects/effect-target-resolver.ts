@@ -1,4 +1,5 @@
 import { GameStateViolationError } from '../contracts/game-domain.errors';
+import { evaluateEffectCondition } from './effect-condition-evaluator';
 import type {
   EffectEngineState,
   EffectTarget,
@@ -19,7 +20,8 @@ export class EffectTargetResolver<TState extends object> {
   ): boolean {
     const playerIds = this.targets(instruction.target, instruction);
     if (!playerIds) return false;
-    for (const playerId of playerIds) apply(playerId);
+    for (const playerId of playerIds)
+      if (!this.intercepted(playerId, instruction)) apply(playerId);
     return true;
   }
 
@@ -36,9 +38,50 @@ export class EffectTargetResolver<TState extends object> {
     const leftPlayerId = leftPlayerIds[0];
     const rightPlayerId = rightPlayerIds[0];
     if (leftPlayerId != null && rightPlayerId != null) {
+      const transfer =
+        instruction.kind === 'transfer-resource' ||
+        instruction.kind === 'give-card' ||
+        instruction.kind === 'steal-card' ||
+        instruction.kind === 'steal-random-inventory';
+      if (
+        this.intercepted(leftPlayerId, instruction) ||
+        (!transfer && this.intercepted(rightPlayerId, instruction))
+      )
+        return true;
       apply(leftPlayerId, rightPlayerId);
     }
     return true;
+  }
+
+  private intercepted(
+    playerId: number,
+    instruction: GameEffectInstruction,
+  ): boolean {
+    const categories = [`effect:${instruction.kind}`];
+    if (instruction.kind === 'move' || instruction.kind === 'move-to')
+      categories.push('movement');
+    if (instruction.kind === 'move' && instruction.spaces < 0)
+      categories.push('negative-movement');
+    if (
+      instruction.kind === 'lose-resource' ||
+      instruction.kind === 'transfer-resource'
+    )
+      categories.push('resource-loss');
+    if (
+      instruction.kind === 'discard-random' ||
+      instruction.kind === 'move-card' ||
+      instruction.kind === 'steal-card' ||
+      instruction.kind === 'give-card'
+    )
+      categories.push('card-loss');
+    if (
+      instruction.kind === 'discard-random-inventory' ||
+      instruction.kind === 'steal-random-inventory'
+    )
+      categories.push('inventory-loss');
+    return categories.some((category) =>
+      this.context.status.intercept(playerId, category),
+    );
   }
 
   targets(
@@ -49,6 +92,26 @@ export class EffectTargetResolver<TState extends object> {
     const actorId = this.state.actorPlayerId;
     if (selector.kind === 'player') return [selector.playerId];
     if (selector.kind === 'self') return actorId == null ? [] : [actorId];
+    if (selector.kind === 'current-player') {
+      const current = this.context.players.current();
+      return current ? [current.id] : [];
+    }
+    if (selector.kind === 'matching-players') {
+      const players =
+        selector.participants === 'all'
+          ? this.context.players.all()
+          : this.context.players.active();
+      return players
+        .filter(
+          (player) =>
+            evaluateEffectCondition(
+              selector.condition,
+              () => [player.id],
+              this.context,
+            ) === true,
+        )
+        .map((player) => player.id);
+    }
     if (
       (selector.kind === 'next' || selector.kind === 'previous') &&
       selector.order === 'turn'

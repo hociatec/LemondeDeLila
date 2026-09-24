@@ -10,6 +10,7 @@ import {
   sequenceEvents,
 } from './game-timeline';
 import {
+  MAX_PENDING_EVENTS,
   appendPendingGameEvent,
   drainPendingGameEvents,
 } from './game-event-buffer';
@@ -43,13 +44,13 @@ function timeline(): GameTimeline {
 
 it('rejects event buffer overflow without losing already queued events', () => {
   const source = state();
-  for (let index = 0; index < 128; index++) {
+  for (let index = 0; index < MAX_PENDING_EVENTS; index++) {
     appendPendingGameEvent(source, { ...pending(), data: { index } });
   }
   expect(() => appendPendingGameEvent(source, pending())).toThrow('Too many');
   expect(
     drainPendingGameEvents(source).map((event) => event.data.index),
-  ).toEqual(Array.from({ length: 128 }, (_, index) => index));
+  ).toEqual(Array.from({ length: MAX_PENDING_EVENTS }, (_, index) => index));
 });
 
 it('counts the whole commit against the timeline capacity before copying it', () => {

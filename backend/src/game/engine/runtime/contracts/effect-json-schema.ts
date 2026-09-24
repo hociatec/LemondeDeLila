@@ -1,3 +1,4 @@
+import { numericExpressionSchema } from './numeric-expression-schema';
 import type {
   EffectCondition,
   EffectTarget,
@@ -32,8 +33,26 @@ const targeted = (
   required = Object.keys(fields),
 ) => variant(kind, { ...fields, target }, required);
 
+const cardLocation: AuthorSchema = {
+  oneOf: [
+    variant('deck', { deckId: id }),
+    variant('discard', { deckId: id }),
+    variant('hand', { handId: id, playerId: integer }),
+    variant('zone', { zoneId: id }),
+  ],
+};
+
 const targets = {
   self: variant('self'),
+  'current-player': variant('current-player'),
+  'matching-players': variant(
+    'matching-players',
+    {
+      condition: ref('condition'),
+      participants: { enum: ['active', 'all'] },
+    },
+    ['condition'],
+  ),
   player: variant('player', { playerId: integer }),
   next: variant('next', { order: { enum: ['seating', 'turn'] } }, []),
   previous: variant('previous', { order: { enum: ['seating', 'turn'] } }, []),
@@ -61,6 +80,12 @@ const targets = {
 } satisfies Record<EffectTarget['kind'], AuthorSchema>;
 
 const conditions = {
+  'phase-is': variant('phase-is', { phase: id }),
+  'compare-values': targeted('compare-values', {
+    left: ref('numeric-expression'),
+    right: ref('numeric-expression'),
+    compare: { enum: ['eq', 'ne', 'lt', 'lte', 'gt', 'gte'] },
+  }),
   score: targeted('score', {
     compare: { enum: ['eq', 'ne', 'lt', 'lte', 'gt', 'gte'] },
     amount: number,
@@ -98,6 +123,11 @@ const conditions = {
 } satisfies Record<EffectCondition['kind'], AuthorSchema>;
 
 const instructions = {
+  'move-card': variant('move-card', {
+    source: cardLocation,
+    destination: cardLocation,
+    cardId: { oneOf: [id, integer] },
+  }),
   conditional: variant(
     'conditional',
     { condition: ref('condition'), then: effects, else: effects },
@@ -138,20 +168,36 @@ const instructions = {
   }),
   'gain-resource': targeted('gain-resource', {
     resource: id,
-    amount: { type: 'number', minimum: 0 },
+    amount: {
+      oneOf: [
+        { type: 'number', minimum: 0 },
+        ...numericExpressionSchema.oneOf.slice(1),
+      ],
+    },
   }),
   'lose-resource': targeted(
     'lose-resource',
     {
       resource: id,
-      amount: { type: 'number', minimum: 0 },
+      amount: {
+        oneOf: [
+          { type: 'number', minimum: 0 },
+          ...numericExpressionSchema.oneOf.slice(1),
+        ],
+      },
       allowPartial: boolean,
+      insufficient: { enum: ['cancel', 'debt', 'partial', 'eliminate'] },
     },
     ['resource', 'amount'],
   ),
   'transfer-resource': variant('transfer-resource', {
     resource: id,
-    amount: { type: 'number', minimum: 0 },
+    amount: {
+      oneOf: [
+        { type: 'number', minimum: 0 },
+        ...numericExpressionSchema.oneOf.slice(1),
+      ],
+    },
     from: target,
     to: target,
   }),
@@ -203,7 +249,7 @@ const instructions = {
     left: target,
     right: target,
   }),
-  'gain-score': targeted('gain-score', { amount: number }),
+  'gain-score': targeted('gain-score', { amount: ref('numeric-expression') }),
   'skip-turn': targeted('skip-turn', { count: positive }, []),
   'extra-turn': variant('extra-turn', { count: positive }, []),
   'add-status': targeted(
@@ -213,6 +259,10 @@ const instructions = {
       turns: positive,
       scope: { enum: ['turn', 'global-turn', 'round', 'match', 'until-used'] },
       stack: boolean,
+      stacks: positive,
+      stacking: { enum: ['replace', 'add'] },
+      source: object({ playerId: integer, effectId: id }, []),
+      categories: { ...array(id), maxItems: 64 },
       data: record(ref('json')),
     },
     ['status'],
@@ -234,6 +284,7 @@ const instructions = {
 
 export const EFFECT_JSON_SCHEMA_VERSION = 1;
 export const effectJsonDefinitions: Readonly<Record<string, AuthorSchema>> = {
+  'numeric-expression': numericExpressionSchema,
   target: { oneOf: Object.values(targets) },
   condition: { oneOf: Object.values(conditions) },
   effect: { oneOf: Object.values(instructions) },

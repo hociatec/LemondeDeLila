@@ -29,8 +29,9 @@ const defaultRuntimeRoot = path.join(
 );
 const standardFiles = ['game.ts', 'rules.ts', 'content.ts', 'game.spec.ts'];
 const SDK_PUBLIC_SURFACE = Object.freeze({
-  exportCount: 78,
-  sha256: '2ad94a059368ff30a5aa990ce2b45674f2ce13d58870bc9007440a9866e034b3',
+  // API 10: bounded composition contracts and builders (ADR 014).
+  exportCount: 89,
+  sha256: '67f1cc6d14845a7430ac85d6921ef5c58f01ab12c10c204dc05528b14484f88b',
 });
 const forbiddenGameLayers = new Set([
   'actions',

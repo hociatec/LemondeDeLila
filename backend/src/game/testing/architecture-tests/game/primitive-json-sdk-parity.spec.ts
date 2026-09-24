@@ -1,4 +1,5 @@
 import { componentCases } from './component-parity-cases';
+import { numericExpressionCases } from './numeric-expression-cases';
 import { jsonGameSchema } from '../../../engine/runtime/definitions/json-game-schema';
 import { effectJsonDefinitions } from '../../../engine/runtime/contracts/effect-json-schema';
 import {
@@ -6,6 +7,7 @@ import {
   defineGame,
   defineEffect,
   gameInput,
+  gameEffects,
 } from '../../../engine/sdk/public-api';
 import { compileJsonGame } from '../../../engine/runtime/definitions/json-game-compiler';
 import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
@@ -31,6 +33,57 @@ import manifest from '../../fixtures/json-course/manifest.json';
 import document from '../../fixtures/json-course/game.json';
 
 const cases: Record<string, Pair<readonly GameEffectInstruction[]>> = {};
+const expectedExpressionScores = new Map<string, number>();
+cases['protection-movement'] = {
+  json: [
+    {
+      kind: 'add-status',
+      status: 'ward',
+      scope: 'until-used',
+      stacks: 2,
+      categories: ['negative-movement'],
+      source: { playerId: 2, effectId: 'ward' },
+    },
+    ...Array.from({ length: 3 }, (): GameEffectInstruction => ({
+      kind: 'move',
+      trackId: 'board',
+      spaces: -1,
+    })),
+  ],
+  sdk: [
+    gameEffects.addStatus({
+      status: 'ward',
+      scope: 'until-used',
+      stacks: 2,
+      categories: ['negative-movement'],
+      source: { playerId: 2, effectId: 'ward' },
+    }),
+    ...Array.from({ length: 3 }, () => gameEffects.move('board', -1)),
+  ],
+};
+for (const insufficient of [
+  'cancel',
+  'debt',
+  'partial',
+  'eliminate',
+] as const) {
+  cases[`payment-${insufficient}`] = {
+    json: [
+      { kind: 'lose-resource', resource: 'stars', amount: 12, insufficient },
+    ],
+    sdk: [gameEffects.loseResource('stars', 12, undefined, { insufficient })],
+  };
+}
+for (const [kind, [expression, expected]] of Object.entries(
+  numericExpressionCases,
+)) {
+  const name = `expression-${kind}`;
+  cases[name] = {
+    json: [{ kind: 'gain-score', amount: expression }],
+    sdk: [gameEffects.gainScore(expression)],
+  };
+  expectedExpressionScores.set(name, 2 + expected);
+}
 for (const [name, pair] of Object.entries(primitiveCases)) {
   const before: GameEffectInstruction[] =
     name === 'end-round' ? [{ kind: 'start-round' }] : [];
@@ -197,6 +250,36 @@ describe.each([3, 91])('JSON/SDK primitive semantics, seed %i', (seed) => {
         return result;
       });
       expect(outputs[1]).toEqual(outputs[0]);
+      if (name === 'protection-movement') {
+        expect(outputs[0]).toHaveProperty(
+          'engine.kits.movement.positions.board.1',
+          1,
+        );
+        expect(
+          (outputs[0] as DeclarativeState<object>).engine.playerValues.statuses[
+            '1'
+          ].some((status) => status.id === 'ward'),
+        ).toBe(false);
+      }
+      if (name.startsWith('payment-')) {
+        expect(
+          (outputs[0] as DeclarativeState<object>).engine.playerValues.resources
+            .stars['1'],
+        ).toBe(
+          name === 'payment-cancel' ? 10 : name === 'payment-debt' ? -2 : 0,
+        );
+        if (name === 'payment-eliminate')
+          expect(outputs[0]).toHaveProperty(
+            'engine.match.playerStatuses.1',
+            'eliminated',
+          );
+      }
+      if (expectedExpressionScores.has(name))
+        expect(
+          (outputs[0] as DeclarativeState<object>).engine.playerValues.scores[
+            '1'
+          ],
+        ).toBe(expectedExpressionScores.get(name));
       if (name.startsWith('condition-'))
         expect(
           (outputs[0] as DeclarativeState<object>).engine.playerValues.scores[

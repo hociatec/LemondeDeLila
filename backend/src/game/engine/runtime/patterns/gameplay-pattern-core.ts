@@ -41,6 +41,7 @@ export function composePatterns<TState extends object>(
       ...new Set(patterns.flatMap((pattern) => pattern.resourceIds ?? [])),
     ],
     components: patterns.flatMap((pattern) => pattern.components ?? []),
+    triggers: patterns.flatMap((pattern) => pattern.triggers ?? []),
     actions: patterns.reduce<GameActionMap<TState>>(
       (merged, pattern) => ({
         ...merged,

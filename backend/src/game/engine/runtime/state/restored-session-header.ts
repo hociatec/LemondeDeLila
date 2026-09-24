@@ -2,6 +2,7 @@ import type { DeclarativeState } from './declarative-state';
 import { GameStateViolationError } from '../contracts/game-domain.errors';
 import type { GameComponentDefinition } from '../definitions/component-kit';
 import { componentCapabilities } from '../contracts/compiled-game-plan';
+import { assertResourceBounds } from '../kits/resource-definition';
 
 /** Checks persisted identity and control state before any action or projection. */
 export function assertRestoredSessionHeader<TState extends object>(
@@ -35,6 +36,18 @@ export function assertRestoredSessionHeader<TState extends object>(
   assertRound(state, ids);
   for (const component of components) {
     if (component.component === 'collection.view') continue;
+    if (component.component === 'resource.pool') {
+      for (const playerId of ids) {
+        const value =
+          state.engine.playerValues.resources[component.id]?.[String(playerId)];
+        check(
+          typeof value === 'number' && Number.isFinite(value),
+          'missing resource state',
+        );
+        if (value !== undefined) assertResourceBounds(component, value);
+      }
+      continue;
+    }
     check(
       state.engine.kits[componentCapabilities[component.component]] != null,
       'missing component state',

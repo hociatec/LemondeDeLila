@@ -1,3 +1,7 @@
+import {
+  evaluateNumericExpression,
+  evaluateResourceAmount,
+} from './numeric-expression-evaluator';
 import type { GameContext } from '../definitions/game-author-context';
 import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import type { EffectEngineState } from '../contracts/effect-ir';
@@ -53,7 +57,7 @@ function createControlHandlers<TState extends object>({
             fromPlayerId,
             toPlayerId,
             instruction.resource,
-            instruction.amount,
+            evaluateResourceAmount(instruction.amount, context, fromPlayerId),
           ),
       ),
     'exchange-resources': (instruction) =>
@@ -76,9 +80,34 @@ function createCardHandlers<TState extends object>({
   context,
   targets,
 }: HandlerInput<TState>): HandlerGroup<
-  'give-card' | 'steal-card' | 'swap-hands' | 'exchange-random-cards'
+  | 'give-card'
+  | 'steal-card'
+  | 'swap-hands'
+  | 'exchange-random-cards'
+  | 'move-card'
 > {
   return {
+    'move-card': (instruction) => {
+      if (instruction.source.kind === 'hand')
+        return targets.applyToTargets(
+          {
+            ...instruction,
+            target: { kind: 'player', playerId: instruction.source.playerId },
+          },
+          () =>
+            context.cards.moveCard(
+              instruction.source,
+              instruction.destination,
+              instruction.cardId,
+            ),
+        );
+      context.cards.moveCard(
+        instruction.source,
+        instruction.destination,
+        instruction.cardId,
+      );
+      return true;
+    },
     'give-card': (instruction) =>
       targets.applyToPair(
         instruction,
@@ -271,21 +300,37 @@ function createPlayerValueHandlers<TState extends object>({
         context.resources.add(
           playerId,
           instruction.resource,
-          instruction.amount,
+          evaluateResourceAmount(instruction.amount, context, playerId),
         ),
       ),
     'lose-resource': (instruction) =>
       targets.applyToTargets(instruction, (playerId) => {
-        const available = context.resources.get(playerId, instruction.resource);
-        const amount = instruction.allowPartial
-          ? Math.min(instruction.amount, available)
-          : instruction.amount;
-        if (amount > 0)
-          context.resources.remove(playerId, instruction.resource, amount);
+        const requested = evaluateResourceAmount(
+          instruction.amount,
+          context,
+          playerId,
+        );
+        if (requested === 0) return;
+        const policy =
+          instruction.insufficient ??
+          (instruction.allowPartial ? 'partial' : 'cancel');
+        const payment = context.resources.settle(
+          playerId,
+          instruction.resource,
+          requested,
+          policy,
+        );
+        if (!payment.accepted && instruction.insufficient === undefined)
+          throw new GameRuleViolationError('RESOURCE_INSUFFICIENT');
+        if (payment.eliminate)
+          context.match.eliminate(playerId, 'resource-insufficient');
       }),
     'gain-score': (instruction) =>
       targets.applyToTargets(instruction, (playerId) =>
-        context.score.add(playerId, instruction.amount),
+        context.score.add(
+          playerId,
+          evaluateNumericExpression(instruction.amount, context, playerId),
+        ),
       ),
     'skip-turn': (instruction) =>
       targets.applyToTargets(instruction, (playerId) =>
@@ -301,6 +346,10 @@ function createPlayerValueHandlers<TState extends object>({
           turns,
           scope: instruction.scope,
           data: instruction.data,
+          source: instruction.source,
+          stacks: instruction.stacks,
+          stacking: instruction.stacking,
+          categories: instruction.categories,
         });
       }),
     'remove-status': (instruction) =>

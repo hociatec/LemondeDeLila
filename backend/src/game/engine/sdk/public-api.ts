@@ -1,4 +1,4 @@
-/** V9 declaration contract for concrete games. Keep the exported names explicit. */
+/** V10 declaration contract for concrete games. Keep the exported names explicit. */
 export {
   defineAction,
   defineChoice,
@@ -45,6 +45,21 @@ export {
 export { when, victoryWhen } from '../runtime/automation/automatic-kit';
 export { thresholdVictory } from '../runtime/automation/threshold-victory';
 export type { ThresholdVictory } from '../runtime/automation/threshold-victory';
+export { conditionVictory } from '../runtime/automation/condition-victory';
+export { triggerPattern } from '../runtime/automation/trigger-pattern';
+export type {
+  DeclarativeTrigger,
+  TriggerSource,
+} from '../runtime/contracts/declarative-trigger';
+export type { ConditionVictory } from '../runtime/automation/condition-victory';
+export type { NumericExpression } from '../runtime/contracts/numeric-expression';
+export type { CardLocation } from '../runtime/contracts/card-location';
+export { resources } from '../runtime/kits/resource-definition';
+export type { ResourceDefinition } from '../runtime/contracts/resource-definition';
+export type {
+  InsufficientResourcePolicy,
+  ResourcePayment,
+} from '../runtime/contracts/resource-payment';
 export { cards } from '../runtime/cards/cards-kit';
 export { defineCardsSchema } from '../runtime/cards/typed-cards';
 export { inventory } from '../runtime/kits/inventory-kit';

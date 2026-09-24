@@ -1,4 +1,5 @@
 import type { OptionalGameCapability } from './compiled-game-plan';
+import type { DeclarativeTrigger } from './declarative-trigger';
 import type {
   GamePresentation,
   GameActionMap,
@@ -68,6 +69,7 @@ export interface GameRuleProgram<
   readonly initialPhase?: string;
   readonly automatic?: readonly AutomaticRule<TState>[];
   readonly lifecycle?: GameLifecycleHooks<TState>;
+  readonly triggers?: readonly DeclarativeTrigger[];
   readonly config?: GameConfigurationShape<TState>;
   readonly effects?: Readonly<Record<string, GameEffectResolverShape<TState>>>;
   readonly victory?: VictoryRule<TState>;

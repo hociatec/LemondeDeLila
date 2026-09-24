@@ -20,6 +20,9 @@ export type PlayerStatus<TData extends object = Record<string, unknown>> = {
   remaining: number | null;
   scope: StatusScope;
   data: TData;
+  source?: { playerId?: number; effectId?: string };
+  stacks?: number;
+  categories?: readonly string[];
 };
 export type PlayerValuesKitState<
   TResourceId extends string = string,
