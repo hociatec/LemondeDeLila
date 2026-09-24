@@ -3,7 +3,7 @@
   "points": [
     {
       "id": 1,
-      "status": "open",
+      "status": "closed",
       "title": "Real shared extraction",
       "description": "The resource-delta recipe is used by two different production packs (ordered parade and resource-track race). Specific mechanics stay outside the runtime.",
       "implementation": [
@@ -18,7 +18,7 @@
     },
     {
       "id": 2,
-      "status": "open",
+      "status": "closed",
       "title": "Catalogue matrix",
       "description": "All 39 games and 38 packs are mapped across 14 categories. Every positive cell links to source lines. Empty cells explicitly mean no direct static evidence, not absence of a capability.",
       "implementation": [
@@ -31,7 +31,7 @@
     },
     {
       "id": 3,
-      "status": "open",
+      "status": "closed",
       "title": "Composable conditions",
       "description": "Existing all/any/not, ownership, position, resources and statuses are extended with phase-is and bounded numeric comparison.",
       "implementation": [
@@ -45,7 +45,7 @@
     },
     {
       "id": 4,
-      "status": "open",
+      "status": "closed",
       "title": "Common selectors",
       "description": "Current player and predicate-selected participants join existing self/opponents/next/previous. Owners and occupants use predicates over canonical controllers.",
       "implementation": [
@@ -58,7 +58,7 @@
     },
     {
       "id": 5,
-      "status": "open",
+      "status": "closed",
       "title": "Bounded expressions",
       "description": "Thirteen expression variants cover constants, canonical reads, arithmetic, min/max and clamp. Hand/inventory/player counts use their canonical controllers.",
       "implementation": [
@@ -72,7 +72,7 @@
     },
     {
       "id": 6,
-      "status": "open",
+      "status": "closed",
       "title": "Closed deterministic DSL",
       "description": "Schema validation rejects functions, arbitrary property access and unknown instructions. Expressions and triggers have depth/node/execution budgets; division by zero and unsafe results fail.",
       "implementation": [
@@ -87,7 +87,7 @@
     },
     {
       "id": 7,
-      "status": "open",
+      "status": "closed",
       "title": "Configurable resources",
       "description": "resource.pool declares initial/min/max independently of resource identity. Balances remain solely in playerValues.resources; declared bounds apply to mutation and restoration.",
       "implementation": [
@@ -102,7 +102,7 @@
     },
     {
       "id": 8,
-      "status": "open",
+      "status": "closed",
       "title": "Payment workflow",
       "description": "quoteResourcePayment computes affordability and settlement before mutation. Controller operations share the same calculation; elimination remains a match decision.",
       "implementation": [
@@ -117,7 +117,7 @@
     },
     {
       "id": 9,
-      "status": "open",
+      "status": "closed",
       "title": "Insufficient funds policies",
       "description": "Explicit cancel, debt, partial and eliminate policies are supported. Existing allowPartial and default rejection retain their semantics. Explicit resource bounds cannot be bypassed by debt.",
       "implementation": [
@@ -131,7 +131,7 @@
     },
     {
       "id": 10,
-      "status": "open",
+      "status": "closed",
       "title": "Status lifecycle",
       "description": "Status buckets identify targets canonically. Optional source, charges, categories and parameters join duration and expiry. Charge consumption is independent of turn expiry.",
       "implementation": [
@@ -146,7 +146,7 @@
     },
     {
       "id": 11,
-      "status": "open",
+      "status": "closed",
       "title": "Generic protections",
       "description": "Effect categories are intercepted before mutation. Exact effect kinds and movement/resource/card/inventory loss categories consume one matching protection charge.",
       "implementation": [
@@ -160,7 +160,7 @@
     },
     {
       "id": 12,
-      "status": "open",
+      "status": "closed",
       "title": "Movement and consequences",
       "description": "The existing movement controller owns displacement and emits events. Landing/pass recipes and the new event triggers compose consequences separately.",
       "implementation": [
@@ -174,7 +174,7 @@
     },
     {
       "id": 13,
-      "status": "open",
+      "status": "closed",
       "title": "Movement configuration",
       "description": "Track overshoot supports clamp/wrap/bounce/exact; signed moves, teleport, blocked landing pipelines and pawn/grid capabilities preserve their specialized topology contracts.",
       "implementation": [
@@ -189,7 +189,7 @@
     },
     {
       "id": 14,
-      "status": "open",
+      "status": "closed",
       "title": "Collision detection and resolution",
       "description": "Detection uses canonical positions/occupants; effects resolve independently through selectors and displacement or ownership operations. No game-specific collision policy enters the core.",
       "implementation": [
@@ -203,7 +203,7 @@
     },
     {
       "id": 15,
-      "status": "open",
+      "status": "closed",
       "title": "Card locations",
       "description": "Deck, hand, discard and named zones are canonical locations. Market/removed areas are ordinary public/private zones. moveCard validates both endpoints before mutating one occurrence.",
       "implementation": [
@@ -217,7 +217,7 @@
     },
     {
       "id": 16,
-      "status": "open",
+      "status": "closed",
       "title": "Card operations",
       "description": "Existing draw, transfer, discard, zone visibility, shuffle and selection controllers remain common. move-card adds JSON/API movement between all location kinds without duplicating card storage.",
       "implementation": [
@@ -233,7 +233,7 @@
     },
     {
       "id": 17,
-      "status": "open",
+      "status": "closed",
       "title": "Shared interactions",
       "description": "Existing choice/submission/vote controllers define participants, options, private answers, validation and completion. Domain recipes compose these capabilities rather than storing alternate interaction state.",
       "implementation": [
@@ -248,7 +248,7 @@
     },
     {
       "id": 18,
-      "status": "open",
+      "status": "closed",
       "title": "Collections",
       "description": "Existing set completion and request-card recipes operate on canonical hands. Completion moves cards once and derived collection views read the resulting state.",
       "implementation": [
@@ -263,7 +263,7 @@
     },
     {
       "id": 19,
-      "status": "open",
+      "status": "closed",
       "title": "Ownership semantics",
       "description": "Registry assets use the shared ownership controller. Card possession is canonical in card locations and inventory possession in inventory buckets; no parallel ownership registry is introduced for either.",
       "implementation": [
@@ -279,7 +279,7 @@
     },
     {
       "id": 20,
-      "status": "open",
+      "status": "closed",
       "title": "Declarative triggers",
       "description": "Patterns declare action or event triggers with scalar event filters. Existing movement/turn/resource/card events feed the same bounded dispatcher. Trigger effects cannot suspend for an interactive choice.",
       "implementation": [
@@ -293,7 +293,7 @@
     },
     {
       "id": 21,
-      "status": "open",
+      "status": "closed",
       "title": "Composition pipeline",
       "description": "Triggers dispatch conditions, target selectors and numeric expressions into existing effect primitives. JSON and TypeScript builders share the same compiled trigger definitions.",
       "implementation": [
@@ -308,7 +308,7 @@
     },
     {
       "id": 22,
-      "status": "open",
+      "status": "closed",
       "title": "Composable victory",
       "description": "conditionVictory evaluates local predicates per participant, with all/any/not composition and explicit tie policy. Existing score/resource/position/collection predicates need no custom callback.",
       "implementation": [
@@ -321,7 +321,7 @@
     },
     {
       "id": 23,
-      "status": "open",
+      "status": "closed",
       "title": "Recipes outside core",
       "description": "resourceDeltaEffects lives above the runtime and composes public instructions. Two production packs consume it while keeping their reward/tile policies.",
       "implementation": [
@@ -334,7 +334,7 @@
     },
     {
       "id": 24,
-      "status": "open",
+      "status": "closed",
       "title": "Specific packs remain specific",
       "description": "All 38 packs remain classified as specific. No promotion is claimed merely because a pack has configuration. Common recipe extraction does not reverse dependency direction.",
       "implementation": [
@@ -348,7 +348,7 @@
     },
     {
       "id": 25,
-      "status": "open",
+      "status": "closed",
       "title": "Responsibility splitting",
       "description": "Common resource-delta loops leave two packs; resource and card-location responsibilities have dedicated controllers. Existing pack size and production/behavior line budgets remain unchanged.",
       "implementation": [
@@ -363,7 +363,7 @@
     },
     {
       "id": 26,
-      "status": "open",
+      "status": "closed",
       "title": "Evidence-based reuse governance",
       "description": "Promotion gates require independent consumers and an ADR. The new recipe has a test locating actual calls from two catalogue games.",
       "implementation": [
@@ -377,7 +377,7 @@
     },
     {
       "id": 27,
-      "status": "open",
+      "status": "closed",
       "title": "Dependency direction",
       "description": "Existing AST import and dependency-cycle checks protect runtime/rules/core direction. Trigger validation is separate from pattern construction to avoid a runtime cycle.",
       "implementation": [
@@ -391,7 +391,7 @@
     },
     {
       "id": 28,
-      "status": "open",
+      "status": "closed",
       "title": "Public facades",
       "description": "Authors and extensions use their explicit facades. New contracts and builders are exported intentionally; pack imports remain checked against deep runtime access.",
       "implementation": [
@@ -404,7 +404,7 @@
     },
     {
       "id": 29,
-      "status": "open",
+      "status": "closed",
       "title": "Versioned author API",
       "description": "Author/public API is 10.0.0. Transitive declarations are snapshotted; amount unions and new exhaustive variants are documented as a major migration.",
       "implementation": [
@@ -418,7 +418,7 @@
     },
     {
       "id": 30,
-      "status": "open",
+      "status": "closed",
       "title": "Versioned extension API",
       "description": "Extension API/contracts are 2.0.0, including the widened amount and component contracts. Four independently checked snapshots cover all facades.",
       "implementation": [
@@ -432,7 +432,7 @@
     },
     {
       "id": 31,
-      "status": "open",
+      "status": "closed",
       "title": "JSON/API parity",
       "description": "Exhaustive primitive cases include new expressions, selectors, payments, protections and card movement. Assertions compare engine state, events and deterministic replay; trigger parity uses three seeds.",
       "implementation": [
@@ -446,7 +446,7 @@
     },
     {
       "id": 32,
-      "status": "open",
+      "status": "closed",
       "title": "Closed core JSON",
       "description": "New behavior enters closed component/pattern/condition/effect variants. No game-business root fields or arbitrary state-path expressions are added.",
       "implementation": [
@@ -460,7 +460,7 @@
     },
     {
       "id": 33,
-      "status": "open",
+      "status": "closed",
       "title": "Controlled vocabulary",
       "description": "Existing semantic conditions compose owners/occupants and victory rules. New variants represent reusable capabilities; market and removed zones need no dedicated business keywords.",
       "implementation": [
@@ -475,7 +475,7 @@
     },
     {
       "id": 34,
-      "status": "open",
+      "status": "closed",
       "title": "Structured diagnostics",
       "description": "Author schemas and reference validators retain path/origin diagnostics. SDK effect sequences now pass closed schema validation before typed semantic validation.",
       "implementation": [
@@ -489,7 +489,7 @@
     },
     {
       "id": 35,
-      "status": "open",
+      "status": "closed",
       "title": "Validated type boundaries",
       "description": "The effect validator no longer asserts an unknown object to GameEffectInstruction. It uses the asserting closed schema codec. Existing double-cast lint and facade rules remain enforced.",
       "implementation": [
@@ -503,7 +503,7 @@
     },
     {
       "id": 36,
-      "status": "open",
+      "status": "closed",
       "title": "Schema/type CI contracts",
       "description": "New schemas satisfy AuthorSchema, and exhaustive cases cover new discriminated unions. Typecheck, schema tests and merge-contract tests remain in the required workflow.",
       "implementation": [
@@ -518,7 +518,7 @@
     },
     {
       "id": 37,
-      "status": "open",
+      "status": "closed",
       "title": "Formal state ownership",
       "description": "Ownership declarations now include resource pools and canonical player values. Restoration validates resource bounds and status metadata rather than inferring fields.",
       "implementation": [
@@ -532,7 +532,7 @@
     },
     {
       "id": 38,
-      "status": "open",
+      "status": "closed",
       "title": "Canonical storage",
       "description": "Expressions, selectors and cards read/write controller-owned state. Resource pools retain only static bounds in definitions. No second score, hand, inventory or position map is introduced.",
       "implementation": [
@@ -548,7 +548,7 @@
     },
     {
       "id": 39,
-      "status": "open",
+      "status": "closed",
       "title": "Static content isolation",
       "description": "Existing immutable content and setup isolation contracts remain. New resource/trigger definitions are compiled as static definitions, while session state contains only mutable values.",
       "implementation": [
@@ -562,7 +562,7 @@
     },
     {
       "id": 40,
-      "status": "open",
+      "status": "closed",
       "title": "Deterministic execution",
       "description": "Expressions are pure canonical reads. Triggers use deterministic order and bounded dispatch. Replay corpus compares live, replayed and restored state for identical seeds/commands/version.",
       "implementation": [
@@ -576,7 +576,7 @@
     },
     {
       "id": 41,
-      "status": "open",
+      "status": "closed",
       "title": "Injected RNG",
       "description": "Existing seeded RNG is the only randomness source for rules. Numeric expressions and selectors add no system randomness; generated actions and reference replays exercise seeded choices.",
       "implementation": [
@@ -590,7 +590,7 @@
     },
     {
       "id": 42,
-      "status": "open",
+      "status": "closed",
       "title": "All catalogue replays",
       "description": "Every one of the 39 games runs a bounded command campaign. The six historical references are retained, and all additional references are checked without snapshot update.",
       "implementation": [
@@ -603,7 +603,7 @@
     },
     {
       "id": 43,
-      "status": "open",
+      "status": "closed",
       "title": "Multiple seeds",
       "description": "Each game runs seeds 11, 23 and 67, plus historical non-overlapping seed cases: 120 references. A legitimate event burst exposed the 128-event buffer limit; it is now bounded at 512 and overflow remains tested.",
       "implementation": [
@@ -617,7 +617,7 @@
     },
     {
       "id": 44,
-      "status": "open",
+      "status": "closed",
       "title": "Generated invariant models",
       "description": "Existing generated movement/resource/RNG and card/inventory/ownership campaigns are retained. Payment tests add exhaustive independent balance/cost/policy models, and expression/trigger tests cover invalid and cyclic effects.",
       "implementation": [
@@ -633,5 +633,19 @@
         "src/game/testing/architecture-tests/game/declarative-triggers.spec.ts"
       ]
     }
-  ]
+  ],
+  "validation": {
+    "codeCommit": "edcbb09e511d5c258011172005ac2a177fc1a678",
+    "workflow": "https://github.com/hociatec/LemondeDeLila/actions/runs/35990513398",
+    "checks": [
+      "quality:check",
+      "typecheck",
+      "engine:merge-contracts (including 120 reference replays)",
+      "engine:authoring-contracts",
+      "changed TypeScript lint",
+      "636 targeted JSON/API/diagnostic tests",
+      "28 targeted final regression tests"
+    ],
+    "mergeGate": "Full integration and release-artifact certification must succeed on the final PR head before merging."
+  }
 }

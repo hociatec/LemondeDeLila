@@ -354,3 +354,10 @@ Implementation: `src/game/testing/architecture-tests/game/generated-capability-m
 
 Validation: `src/game/testing/architecture-tests/game/generated-capability-models.property.spec.ts`, `src/game/testing/architecture-tests/game/generated-actions.property.spec.ts`, `src/game/engine/runtime/kits/resource-payment.spec.ts`, `src/game/engine/runtime/effects/numeric-expression.spec.ts`, `src/game/testing/architecture-tests/game/declarative-triggers.spec.ts`.
 
+## Validation and closure
+
+All 44 available points are closed after the source-specific implementations and retained contracts above were checked. The original audit remains intact; closure is recorded separately.
+
+On code commit `edcbb09e511d5c258011172005ac2a177fc1a678`, local typecheck, changed TypeScript lint and the complete quality:check passed. Targeted campaigns passed 636 JSON/API/diagnostic tests and 28 final regression tests. GitHub run [35990513398](https://github.com/hociatec/LemondeDeLila/actions/runs/35990513398) passed quality, the full merge-contract campaign (including 120 reference replays without snapshot updates), and authoring diagnostics on Node 24/Linux.
+
+Full integration and release-artifact certification remain mandatory on the final PR head before merge. These gates are separate from this point-by-point implementation register; this report does not claim they finished before they ran.
