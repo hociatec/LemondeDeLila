@@ -2,6 +2,8 @@
 
 #include <sstream>
 #include <string>
+#include <thread>
+#include <chrono>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -90,6 +92,8 @@ void BassAudioBackend::Play(domain::SoundCue cue, float volume)
 
 void BassAudioBackend::SetLoop(std::optional<domain::SoundCue> cue, float volume)
 {
+    loopCue_ = cue;
+    loopVolume_ = volume;
     if (!cue.has_value())
     {
         streams_.Stop();
@@ -124,6 +128,7 @@ void BassAudioBackend::Preview(std::optional<domain::SoundCue> cue)
 
 void BassAudioBackend::StopAll()
 {
+    loopCue_.reset();
     if (!initialized_.load(std::memory_order_acquire))
     {
         return;
@@ -131,6 +136,23 @@ void BassAudioBackend::StopAll()
     streams_.Stop();
     samples_.StopAll();
     Preview(std::nullopt);
+}
+
+void BassAudioBackend::RefreshAssets()
+{
+    assetPaths_.Invalidate();
+    samples_.Clear();
+    streams_.Clear();
+    if (loopCue_) SetLoop(loopCue_, loopVolume_);
+}
+
+void BassAudioBackend::FinishPlayback()
+{
+    streams_.Stop();
+    Preview(std::nullopt);
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+    while (samples_.IsPlaying() && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 void BassAudioBackend::InterruptPlayback() noexcept

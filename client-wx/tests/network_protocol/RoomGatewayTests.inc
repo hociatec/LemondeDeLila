@@ -55,8 +55,8 @@ void TestRoomSessionGatewayUsesBackendHandshakeContract()
         "Version client attendue dans le handshake");
     Expect(socket.sentPayloads.size() == 1, "Une commande room.create attendue");
     const auto command = nlohmann::json::parse(socket.sentPayloads.front());
-    Expect(command.at("type") == "room.create", "Type room.create attendu");
-    Expect(command.at("payload").at("gameType") == "four-winds", "gameType cree attendu");
+    Expect(command.at("type") == "room.intent.execute" && command.at("payload").at("intentId") == "room.create", "Intention room.create attendue");
+    Expect(command.at("payload").at("data").at("gameType") == "four-winds", "gameType cree attendu");
 
     auto roomMessage = [](const char* type, int roomId)
     {
@@ -120,7 +120,7 @@ void TestRoomSessionGatewayUsesBackendHandshakeContract()
         std::launch::async,
         [&gateway]() { gateway.Execute({lila::modules::rooms::domain::RoomCommand::Start}, {}); });
     const auto startCommand = nlohmann::json::parse(socket.WaitForSentPayload(3));
-    Expect(startCommand.at("type") == "room.start", "Commande room.start attendue");
+    Expect(startCommand.at("type") == "room.intent.execute" && startCommand.at("payload").at("intentId") == "room.start", "Intention room.start attendue");
     const auto setup = gateway.ReceiveEvent({});
     Expect(
         setup.type == lila::modules::rooms::domain::RoomEventType::StateUpdated &&

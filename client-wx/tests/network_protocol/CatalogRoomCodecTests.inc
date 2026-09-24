@@ -134,6 +134,7 @@ void TestRoomPayloadCodecs()
         {"room", {
             {"id", 12}, {"name", "Table du soir"}, {"gameType", "four-winds"},
             {"status", "setup"}, {"startedAt", "2026-08-21T18:00:00.000Z"},
+            {"runId", "7"},
             {"isPrivate", false}, {"maxPlayers", 4},
             {"owner", {{"id", 1}, {"username", "alice"}}},
             {"players", nlohmann::json::array({{{"id", 1}, {"username", "alice"}}})},

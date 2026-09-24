@@ -68,6 +68,17 @@ domain::GameEngineEventData DecodeEventData(
     result.number = EventText(data, "number");
     result.count = EventText(data, "count");
     result.playerId = OptionalInt(data, "playerId");
+    result.semanticKey = EventText(data, "key");
+    result.quizSessionId = EventText(data, "sessionId");
+    result.correctAnswerIndex = OptionalInt(data, "correctAnswerIndex");
+    if (eventType == "game.message")
+    {
+        const auto params = detail::ObjectOrEmpty(data.value("params", nlohmann::json::object()));
+        result.playerId = OptionalInt(params, "playerId");
+        result.quizSessionId = EventText(params, "sessionId");
+        const auto correct = params.find("correct");
+        if (correct != params.end() && correct->is_boolean()) result.correct = correct->get<bool>();
+    }
     if (eventType == "resource.transferred")
     {
         result.sourcePlayerId = OptionalInt(data, "from");
@@ -206,6 +217,9 @@ domain::GameSystem GameSystemDecoder::Decode(const nlohmann::json& system)
         if (event.id.empty() || event.type.empty() || !occurredAtMs) return;
         event.details = DecodeEventData(event.type, detail::ObjectOrEmpty(
             raw.value("data", nlohmann::json::object())));
+        if (event.type == "quiz.revealed")
+            event.details.answers = IntMap(detail::ObjectOrEmpty(
+                raw.value("data", nlohmann::json::object())), "answers");
         event.actorId = OptionalInt(raw, "actorId");
         event.occurredAtMs = *occurredAtMs;
         event.sequence = OptionalInt64(raw, "sequence");

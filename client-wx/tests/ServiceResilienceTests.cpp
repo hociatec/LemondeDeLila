@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <atomic>
+#include "modules/rooms/application/RoomInvitationMonitor.h"
 #include <chrono>
 #include <condition_variable>
 #include <deque>
@@ -42,12 +44,14 @@
 #include "network_protocol/GameSessionReconnectTests.inc"
 #include "network_protocol/RoomSessionConcurrencyTests.inc"
 #include "network_protocol/PresenceMonitorTests.inc"
+#include "network_protocol/NotificationMonitorTests.inc"
 
 int main()
 {
     try
     {
         TestPresenceActivityAndReconnect();
+        TestNotificationMonitorReconnect();
         TestEnsureSuccessOrThrowClearsExpiredSession();
         TestChatServiceCloseInterruptsReceiveLoop();
         TestChatServiceReconnectsAfterTransientFailure();

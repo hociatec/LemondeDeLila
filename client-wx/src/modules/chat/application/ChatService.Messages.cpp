@@ -51,8 +51,9 @@ void ChatService::ProcessIncomingMessage(const std::string& rawJson, bool fatalE
         bool receivedMessage = false;
         for (const auto& message : event.messages)
         {
-            receivedMessage = receivedMessage || !message.isMine;
-            UpsertMessage(message);
+            const bool inserted = UpsertMessage(message);
+            receivedMessage = receivedMessage ||
+                (inserted && !message.isMine && !event.isEdit);
         }
         NotifyMessagesChanged();
         if (receivedMessage)
@@ -94,14 +95,14 @@ void ChatService::HandleIncomingError(
     SetStatus(statusMessage, true);
 }
 
-void ChatService::UpsertMessage(domain::ChatMessage message)
+bool ChatService::UpsertMessage(domain::ChatMessage message)
 {
     if (message.text.empty())
     {
-        return;
+        return false;
     }
 
-    messagesStore_.UpsertMessage(std::move(message));
+    return messagesStore_.UpsertMessage(std::move(message));
 }
 
 void ChatService::RemoveMessageById(const std::string& messageId)

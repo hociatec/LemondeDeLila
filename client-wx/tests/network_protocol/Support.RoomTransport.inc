@@ -46,8 +46,10 @@ public:
     }
     [[nodiscard]] std::string Receive() override
     {
-        std::scoped_lock lock(ioMutex);
-        if (responses.empty()) throw std::runtime_error("No fake room response.");
+        std::unique_lock lock(ioMutex);
+        if (!sentCondition.wait_for(lock, std::chrono::seconds(2),
+            [this] { return !responses.empty(); }))
+            throw std::runtime_error("Timed out waiting for fake room response.");
         auto response = std::move(responses.front());
         responses.pop_front();
         return response;
@@ -55,8 +57,8 @@ public:
 
     void QueueResponse(std::string response)
     {
-        std::scoped_lock lock(ioMutex);
-        responses.push_back(std::move(response));
+        { std::scoped_lock lock(ioMutex); responses.push_back(std::move(response)); }
+        sentCondition.notify_all();
     }
 
     [[nodiscard]] std::string WaitForSentPayload(std::size_t count)

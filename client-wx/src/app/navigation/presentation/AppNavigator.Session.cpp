@@ -155,7 +155,7 @@ void AppNavigator::FinishCloseApplication()
         return;
     }
     closeFinalized_ = true;
-    audioService_.ShutdownImmediately();
+    audioService_.ShutdownGracefully();
     if (closeRevocationTimeout_ != nullptr)
     {
         closeRevocationTimeout_->Stop();

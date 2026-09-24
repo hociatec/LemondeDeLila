@@ -63,6 +63,8 @@ void AppNavigator::PrewarmSessionData()
 
 void AppNavigator::OnLoginSucceeded(const modules::user::domain::AuthenticationResult& result)
 {
+    BindNotificationAudio();
+    audioService_.RefreshAssets();
     audioService_.Play(lila::modules::audio::domain::SoundCue::ClientConnected);
     modules::session::domain::Session session;
     session.userId = result.userId;

@@ -1,3 +1,22 @@
+class CountingPresenceAudio final : public lila::modules::audio::application::IAudioService
+{
+public:
+    using Cue = lila::modules::audio::domain::SoundCue;
+    std::atomic_int joined{0}, left{0};
+    void Play(Cue cue) override
+    {
+        if (cue == Cue::FriendConnected) ++joined;
+        if (cue == Cue::FriendDisconnected) ++left;
+    }
+    void StartLoop(Cue) override {}
+    void StopLoop() override {}
+    void StartTableAmbience(std::string_view) override {}
+    void SetTableAmbienceVolume(int) override {}
+    void SetBackground(lila::modules::audio::domain::AudioBackground) override {}
+    void StopAll() override {}
+    void ShutdownImmediately() override {}
+};
+
 class PresenceSocket final : public lila::shared::network::websocket::IWebSocketClient
 {
 public:
@@ -60,8 +79,9 @@ void TestPresenceActivityAndReconnect()
     sessions.Open(session, false);
     PresenceSocket socket;
     PresenceTickets tickets;
-    FakeAudioService audio;
-    lila::modules::presence::application::PresenceMonitor monitor("test", socket, tickets, sessions, audio, {});
+    CountingPresenceAudio audio;
+    lila::modules::presence::application::PresenceMonitor monitor("test", socket, tickets, sessions, audio,
+        [](int id) { return id == 2; });
     monitor.SetContext("messaging");
     monitor.Start();
     WaitUntil([&] { return socket.Sent("messaging"); }, "Presence must send the current screen");
@@ -80,6 +100,13 @@ void TestPresenceActivityAndReconnect()
     socket.Close();
     WaitUntil([&] { return socket.Connections() >= 2; }, "Presence must reconnect");
     WaitUntil([&] { return socket.Count() > sentBeforeReconnect; }, "Reconnect must restore context");
+    socket.Push(R"({"type":"presence-update","players":[{"id":1,"username":"Alice"}]})");
+    WaitUntil([&] { return monitor.HasSnapshot() && monitor.Players().size() == 1; }, "New baseline expected");
+    Expect(audio.joined.load() == 0 && audio.left.load() == 0, "Reconnection baseline must be silent");
+    socket.Push(snapshot);
+    WaitUntil([&] { return audio.joined.load() == 1; }, "Live friend arrival must sound");
+    socket.Push(R"({"type":"presence-update","players":[{"id":1,"username":"Alice"}]})");
+    WaitUntil([&] { return audio.left.load() == 1; }, "Live friend departure must sound");
     monitor.Stop();
     Expect(!monitor.HasSnapshot(), "Stopping must clear presence");
     std::cout << "[TEST PASSED] PresenceActivityAndReconnect\n";

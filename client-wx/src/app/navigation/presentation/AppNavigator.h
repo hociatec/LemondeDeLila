@@ -69,6 +69,7 @@ private:
     void ShowOptions(std::size_t selectedIndex);
     void ShowAdmin(std::size_t selectedIndex);
     void CloseApplication(bool forUpdate = false);
+    void BindNotificationAudio();
     void FinishCloseApplication();
     void OnSessionRevocationFinished();
     void ArmCloseRevocationTimeout();

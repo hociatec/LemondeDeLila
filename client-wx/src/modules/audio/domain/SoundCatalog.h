@@ -15,6 +15,7 @@ enum class SoundFamily
     Select,
     Messages,
     TableAmbience,
+    Gameplay,
 };
 
 struct SoundDescriptor final

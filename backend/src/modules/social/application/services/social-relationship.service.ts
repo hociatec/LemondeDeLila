@@ -150,6 +150,7 @@ export class SocialRelationshipService {
 
     await this.notifications.notifyFriendRequested(addresseeId, {
       requesterId,
+      requestId: saved.id,
     });
 
     return {

@@ -82,7 +82,7 @@ private:
         const std::string& message,
         const domain::ChatServerError* detailedError,
         bool fatalError);
-    void UpsertMessage(domain::ChatMessage message);
+    bool UpsertMessage(domain::ChatMessage message);
     void RemoveMessageById(const std::string& messageId);
     void SetState(domain::ChatState state);
     void SetStatus(std::string message, bool isError);

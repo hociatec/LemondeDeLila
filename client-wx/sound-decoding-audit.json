@@ -1,0 +1,520 @@
+﻿[
+    {
+        "file":  "AdminContactReceived.wav",
+        "samples":  391774,
+        "peak":  0.838775634765625,
+        "rms":  0.043998913876507222,
+        "error":  null
+    },
+    {
+        "file":  "AdminContactSent.wav",
+        "samples":  118784,
+        "peak":  0.90350341796875,
+        "rms":  0.20112496768664334,
+        "error":  null
+    },
+    {
+        "file":  "ChatMessageReceived.wav",
+        "samples":  230494,
+        "peak":  0.596282958984375,
+        "rms":  0.10208662753050225,
+        "error":  null
+    },
+    {
+        "file":  "ChatMessageSent.wav",
+        "samples":  147550,
+        "peak":  0.773651123046875,
+        "rms":  0.068372506483755521,
+        "error":  null
+    },
+    {
+        "file":  "ClientConnected.wav",
+        "samples":  106078,
+        "peak":  0.632537841796875,
+        "rms":  0.0822757846112214,
+        "error":  null
+    },
+    {
+        "file":  "ClientDisconnected.wav",
+        "samples":  18526,
+        "peak":  0.56878662109375,
+        "rms":  0.18186866239320992,
+        "error":  null
+    },
+    {
+        "file":  "ClientOpened.wav",
+        "samples":  292120,
+        "peak":  0.378173828125,
+        "rms":  0.039855374458621813,
+        "error":  null
+    },
+    {
+        "file":  "DiceRolled.wav",
+        "samples":  122776,
+        "peak":  0.72711181640625,
+        "rms":  0.041841291341584277,
+        "error":  null
+    },
+    {
+        "file":  "FriendConnected.wav",
+        "samples":  80640,
+        "peak":  0.659210205078125,
+        "rms":  0.16643603088082556,
+        "error":  null
+    },
+    {
+        "file":  "FriendDisconnected.wav",
+        "samples":  50782,
+        "peak":  0.674072265625,
+        "rms":  0.081727775880855363,
+        "error":  null
+    },
+    {
+        "file":  "FriendInvitationReceived.wav",
+        "samples":  154462,
+        "peak":  0.917572021484375,
+        "rms":  0.10944172930309196,
+        "error":  null
+    },
+    {
+        "file":  "FriendInvitationSent.wav",
+        "samples":  154462,
+        "peak":  0.917572021484375,
+        "rms":  0.10944172930309196,
+        "error":  null
+    },
+    {
+        "file":  "GameDefeat.wav",
+        "samples":  115200,
+        "peak":  0.83013916015625,
+        "rms":  0.18296951124186037,
+        "error":  null
+    },
+    {
+        "file":  "GameVictory.wav",
+        "samples":  953950,
+        "peak":  0.56597900390625,
+        "rms":  0.062497366564186946,
+        "error":  null
+    },
+    {
+        "file":  "InvitationSent.wav",
+        "samples":  62302,
+        "peak":  0.6796875,
+        "rms":  0.14859149605857452,
+        "error":  null
+    },
+    {
+        "file":  "MainMenuMusic.wav",
+        "samples":  7464960,
+        "peak":  0.738067626953125,
+        "rms":  0.13555809966290902,
+        "error":  null
+    },
+    {
+        "file":  "PrivateMessageReceived.wav",
+        "samples":  138334,
+        "peak":  0.82452392578125,
+        "rms":  0.085038960429484334,
+        "error":  null
+    },
+    {
+        "file":  "PrivateMessageSent.wav",
+        "samples":  96862,
+        "peak":  0.332366943359375,
+        "rms":  0.060838754623196288,
+        "error":  null
+    },
+    {
+        "file":  "RoomExit.wav",
+        "samples":  520798,
+        "peak":  0.234039306640625,
+        "rms":  0.020951792647399995,
+        "error":  null
+    },
+    {
+        "file":  "RoomJoined.wav",
+        "samples":  246622,
+        "peak":  0.741058349609375,
+        "rms":  0.024753064248316737,
+        "error":  null
+    },
+    {
+        "file":  "RoomOpened.wav",
+        "samples":  555358,
+        "peak":  0.2362060546875,
+        "rms":  0.02260279271314317,
+        "error":  null
+    },
+    {
+        "file":  "TavernAmbience.wav",
+        "samples":  3310676,
+        "peak":  0.779754638671875,
+        "rms":  0.068025138855583547,
+        "error":  null
+    },
+    {
+        "file":  "TavernOpened.wav",
+        "samples":  550656,
+        "peak":  0.469146728515625,
+        "rms":  0.033110452415972415,
+        "error":  null
+    },
+    {
+        "file":  "AdminContactReceived-f3a4cafdde224c9a5c7d616d61d2e0f0da49700a01b3f31b0302414563fbff6b.wav",
+        "samples":  2354688,
+        "peak":  1,
+        "rms":  0.11903764332126499,
+        "error":  null
+    },
+    {
+        "file":  "AdminContactSent-73ce034dfe12e536d042de52160dda9f27af9b821e14c8429fa660fea42ac862.wav",
+        "samples":  118784,
+        "peak":  0.87701416015625,
+        "rms":  0.19506045896311136,
+        "error":  null
+    },
+    {
+        "file":  "ChatMessageReceived-b1edf8e8b1a45b5f11ff58ebd3bc50cda7abf583e71285973c5034854140a157.wav",
+        "samples":  230494,
+        "peak":  0.578857421875,
+        "rms":  0.099014964824532078,
+        "error":  null
+    },
+    {
+        "file":  "ChatMessageSent-3ad516abfd0dd69a6e8d4bfaff451ea755941927d54ed4d0538dd36f0044de5a.wav",
+        "samples":  147550,
+        "peak":  0.750030517578125,
+        "rms":  0.066315687995030834,
+        "error":  null
+    },
+    {
+        "file":  "ClientClosing-a8b7d90aa2647e18691773e99b3a0d705e63d517fcba76ab476aca58a01a56bf.wav",
+        "samples":  213798,
+        "peak":  0.570587158203125,
+        "rms":  0.019564489511181244,
+        "error":  null
+    },
+    {
+        "file":  "ClientConnected-b36d012d6df353a913880fbf633e61e48f3b00d77552600755921fc52512988b.wav",
+        "samples":  106078,
+        "peak":  0.615081787109375,
+        "rms":  0.079792727265248067,
+        "error":  null
+    },
+    {
+        "file":  "ClientDisconnected-3dbe1bf919e5072e868f3f060e679860f1e16406e70890db1099654f9f5a8e86.wav",
+        "samples":  213798,
+        "peak":  0.647064208984375,
+        "rms":  0.020740493532888947,
+        "error":  null
+    },
+    {
+        "file":  "ClientOpened-1ec1c670d317d06490ab68f9d5d6b884091f017c84861b0d52a49d21af6749f4.wav",
+        "samples":  196864,
+        "peak":  0.4783935546875,
+        "rms":  0.048352157202111487,
+        "error":  null
+    },
+    {
+        "file":  "DiceRolled-a53e11b9b3e8f6c15a8db211703f0b60aaec55984f66f40d8531a30a38c16358.wav",
+        "samples":  88192,
+        "peak":  0.356689453125,
+        "rms":  0.025054904189991956,
+        "error":  null
+    },
+    {
+        "file":  "DrawCard-5332ddd04a4786729ff40256b7fffb83c2e585b00c798c81158883c8e1562120.wav",
+        "samples":  61828,
+        "peak":  0.8802490234375,
+        "rms":  0.051279017559573946,
+        "error":  null
+    },
+    {
+        "file":  "FriendConnected-16ea42c7067442dbca30c2558c0c37c2dc3d99e6e347f36b3624ec865b1fe362.wav",
+        "samples":  80640,
+        "peak":  0.639373779296875,
+        "rms":  0.1614435652014003,
+        "error":  null
+    },
+    {
+        "file":  "FriendDisconnected-db24f3cc6e7cd497a6fd867cf6e5d7c979ec53b9ab60cfc50ebc10f24b5c0fa9.wav",
+        "samples":  222264,
+        "peak":  0.999969482421875,
+        "rms":  0.20569101458370728,
+        "error":  null
+    },
+    {
+        "file":  "FriendInvitationReceived-0ad2e75f9626105965c1b0be6aea876503ef366a4efa37a3a0e115413337235b.wav",
+        "samples":  154462,
+        "peak":  0.892730712890625,
+        "rms":  0.10616703870902734,
+        "error":  null
+    },
+    {
+        "file":  "FriendInvitationSent-988dfa5eff660b02492f3a034cde3b4576cec3e9b62bfde43413cd5898ff507c.wav",
+        "samples":  46174,
+        "peak":  0.71044921875,
+        "rms":  0.15140774354142333,
+        "error":  null
+    },
+    {
+        "file":  "GameDefeat-ff6731a0a1b05cb6f39f5370e700f12debc05c43af0e106e7799d2655ce7095e.wav",
+        "samples":  115200,
+        "peak":  0.805694580078125,
+        "rms":  0.17750370283165,
+        "error":  null
+    },
+    {
+        "file":  "GameVictory-551ec7f647c405f7b7dfec8fb6630c9df3253feeee0573b5c5b96abfbe6b8a1c.wav",
+        "samples":  601258,
+        "peak":  0.982177734375,
+        "rms":  0.10183313529522824,
+        "error":  null
+    },
+    {
+        "file":  "InvitationReceived-b36aaa264ad45cc389f0c7197fb8ac973b7cd76ea5449d53f425663d320403f3.wav",
+        "samples":  85342,
+        "peak":  0.251251220703125,
+        "rms":  0.054891835111525539,
+        "error":  null
+    },
+    {
+        "file":  "InvitationSent-c82fbfd721aede042b4ec24ea9b567621b15f9c9ab8754d3e7a77d78feac6fd9.wav",
+        "samples":  543744,
+        "peak":  0.936614990234375,
+        "rms":  0.098331438556708492,
+        "error":  null
+    },
+    {
+        "file":  "MainMenuMusic-2d3291d6c7fb826e0c3cd74b10697cfa80d7fd88d3c07207a53b64e2f7e6eddd.wav",
+        "samples":  7464960,
+        "peak":  0.690765380859375,
+        "rms":  0.12761104203539556,
+        "error":  null
+    },
+    {
+        "file":  "PawnPicked-02578d3c734f08d9e13028c540c4057cd3a4c60069e92e49e245f08252cb1eee.wav",
+        "samples":  123834,
+        "peak":  0.4207763671875,
+        "rms":  0.043155654390674557,
+        "error":  null
+    },
+    {
+        "file":  "PawnPlacedOpponent-2015f05cc82bc2bdf18e4df500f00d743c2f4aa3b59b802b3697d15d5e943a9b.wav",
+        "samples":  55296,
+        "peak":  0.986236572265625,
+        "rms":  0.20192743974676508,
+        "error":  null
+    },
+    {
+        "file":  "PawnPlacedSelf-b55020acfc951fc13e37f59a5ee4868d75faf424acd6b2fa5f014bf8a1d1737f.wav",
+        "samples":  92082,
+        "peak":  0.347564697265625,
+        "rms":  0.035714082333956565,
+        "error":  null
+    },
+    {
+        "file":  "PrivateMessageReceived-560e85f46b95c79862cf750b41dad95e190519e4a2e6413e004dc93a8920a81d.wav",
+        "samples":  442462,
+        "peak":  0.832794189453125,
+        "rms":  0.12258429433516455,
+        "error":  null
+    },
+    {
+        "file":  "PrivateMessageSent-560e85f46b95c79862cf750b41dad95e190519e4a2e6413e004dc93a8920a81d.wav",
+        "samples":  442462,
+        "peak":  0.832794189453125,
+        "rms":  0.12258429433516455,
+        "error":  null
+    },
+    {
+        "file":  "QuizCorrect-672b3f79e9d3f588c970192040a8492cb82c3df0174c7a8589a320b10d844cd6.wav",
+        "samples":  292120,
+        "peak":  0.36517333984375,
+        "rms":  0.038660793984315531,
+        "error":  null
+    },
+    {
+        "file":  "QuizWrong-dbdd2d4ecf3086398b9a539cae151b41feeb61f99a0c8fd6462cc80ba7cf6622.wav",
+        "samples":  99072,
+        "peak":  0.657440185546875,
+        "rms":  0.22984799333148123,
+        "error":  null
+    },
+    {
+        "file":  "RoomExit-47a3a478f796cb21f30ceb2c73400212109d592293f23400447cef62dbecbce6.wav",
+        "samples":  520798,
+        "peak":  0.227935791015625,
+        "rms":  0.020329638858714694,
+        "error":  null
+    },
+    {
+        "file":  "RoomJoined-bd4d4635dc32c7d30ea27af9dfa8d1b1532be4a80f1338ec45a7782c88520b50.wav",
+        "samples":  246622,
+        "peak":  0.7222900390625,
+        "rms":  0.023998753348140309,
+        "error":  null
+    },
+    {
+        "file":  "RoomOpened-35561bbe7c6415d70a9ffe9513482cdcdc29e386b3fe690b742b2ad2433686d2.wav",
+        "samples":  555358,
+        "peak":  0.229583740234375,
+        "rms":  0.021922725563916109,
+        "error":  null
+    },
+    {
+        "file":  "RoundEnded-15d715cfc0c0c891341d793cc1fbfa8f392191f35686b2b5293753490020656b.wav",
+        "samples":  175198,
+        "peak":  0.080963134765625,
+        "rms":  0.0080168421665392977,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience1-311ca04cb75d06df9c5a9c8bd584efde5afdb0df4ad0068dc522317e88f84b39.wav",
+        "samples":  106078,
+        "peak":  0.632537841796875,
+        "rms":  0.0822757846112214,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience10-59948c071ef829a161d13a63129657b37299d48ca8cae514bf7211937846946a.wav",
+        "samples":  3764736,
+        "peak":  0.840301513671875,
+        "rms":  0.12398947112776858,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience11-153a1781a467bc0726aef21488061c13e80bd8edf93df861e70ce4515f9e0f0f.wav",
+        "samples":  25410816,
+        "peak":  0.849884033203125,
+        "rms":  0.094796913968187888,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience12-05c65f0151bf9bcf1891adc762d0a15fcf5e01c52c79275c0a0eb62078b493c5.wav",
+        "samples":  22475520,
+        "peak":  0.79180908203125,
+        "rms":  0.10366081374945008,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience13-c885bead2e518003a1316e011398c79b478943de9a9e6cb3eafee13725111b8c.wav",
+        "samples":  33700702,
+        "peak":  0.84716796875,
+        "rms":  0.049281757295693389,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience14-985173de5381005a7cd350bff27c7c9f637b725298263df0baa039e91daed93b.wav",
+        "samples":  32689272,
+        "peak":  0.802337646484375,
+        "rms":  0.067235912911649723,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience2-311ca04cb75d06df9c5a9c8bd584efde5afdb0df4ad0068dc522317e88f84b39.wav",
+        "samples":  106078,
+        "peak":  0.632537841796875,
+        "rms":  0.0822757846112214,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience3-f2af8a0b6c0b1eb7529eb7d331eb6215e10db77de98906ad1312d67b8c1f81ce.wav",
+        "samples":  13377024,
+        "peak":  0.98443603515625,
+        "rms":  0.11913450282993343,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience4-3256ce03b6575b049aae0e1ca46e9cc529fb450c54e36c513ff96c3e20bcca06.wav",
+        "samples":  14632704,
+        "peak":  0.33123779296875,
+        "rms":  0.050802475296240088,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience5-b10b5e301abaa75810952620b22cdc1ea73070320ba0fcd64971b52a409a2856.wav",
+        "samples":  15469056,
+        "peak":  0.912841796875,
+        "rms":  0.10055926014697186,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience6-715f559cbc24cbda0ca2e35968799fc16a2413129c2cc1b6d504e3265d8bbf00.wav",
+        "samples":  18061056,
+        "peak":  1,
+        "rms":  0.28461025727934114,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience7-54487a5abfb9829febbdcf6d21a801f1713c9d6a4d214308a773758ede42be19.wav",
+        "samples":  29069312,
+        "peak":  1,
+        "rms":  0.30027357012259209,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience8-00fa509746e6320f0bfebd65d0a83ade6ca03ecf28e5ea6b51f002fdfe3edd68.wav",
+        "samples":  13676638,
+        "peak":  0.792449951171875,
+        "rms":  0.08275817976559019,
+        "error":  null
+    },
+    {
+        "file":  "TableAmbience9-26c9000d2584d6a0d057f2cae02f3636fb9072fdc74be80638787c18477242b9.wav",
+        "samples":  11681280,
+        "peak":  0.838226318359375,
+        "rms":  0.097356799968865315,
+        "error":  null
+    },
+    {
+        "file":  "TableChatMessageReceived-f28b5f24a3ac6d8c1f93f6997d0878afbb1b8db384300f59998883b4c95e224e.wav",
+        "samples":  292702,
+        "peak":  0.93408203125,
+        "rms":  0.12596539522251662,
+        "error":  null
+    },
+    {
+        "file":  "TableChatMessageSent-dabdffe95875e033728c79fd1e079481c9d9c7bc4b4799eec2376ebc6c235e69.wav",
+        "samples":  99490,
+        "peak":  0.71282958984375,
+        "rms":  0.0817163652383864,
+        "error":  null
+    },
+    {
+        "file":  "TableStarted-1ec1c670d317d06490ab68f9d5d6b884091f017c84861b0d52a49d21af6749f4.wav",
+        "samples":  196864,
+        "peak":  0.4783935546875,
+        "rms":  0.048352157202111487,
+        "error":  null
+    },
+    {
+        "file":  "TavernAmbience-d9551b752b1e1e3fdda7b7ea54fdff484e8129c67e1f269e369c6a13d373c6cc.wav",
+        "samples":  3310676,
+        "peak":  0.75848388671875,
+        "rms":  0.065985217781106192,
+        "error":  null
+    },
+    {
+        "file":  "TavernOpened-3dbe1bf919e5072e868f3f060e679860f1e16406e70890db1099654f9f5a8e86.wav",
+        "samples":  213798,
+        "peak":  0.647064208984375,
+        "rms":  0.020740493532888947,
+        "error":  null
+    },
+    {
+        "file":  "WallPlacedOpponent-40ef4be4c07f32478dc6ce31e839d270f0737dee0dd22e96c3cb86ecd1e81d2e.wav",
+        "samples":  450880,
+        "peak":  1,
+        "rms":  0.12356053141976851,
+        "error":  null
+    },
+    {
+        "file":  "WallPlacedSelf-330829b62d245f2427351d32bfcaa1f1fab18fa52cf8ae91ef24f167140752c2.wav",
+        "samples":  101376,
+        "peak":  0.7392578125,
+        "rms":  0.10594072067524374,
+        "error":  null
+    }
+]

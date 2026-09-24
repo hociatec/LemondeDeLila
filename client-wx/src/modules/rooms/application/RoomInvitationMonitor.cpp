@@ -1,6 +1,8 @@
 #include "modules/rooms/application/RoomInvitationMonitor.h"
 
 #include <utility>
+#include <condition_variable>
+#include <chrono>
 
 #include "modules/rooms/infrastructure/RoomInvitationPayloadCodec.h"
 #include "modules/session/application/SessionConnectionRetry.h"
@@ -30,20 +32,21 @@ RoomInvitationMonitor::~RoomInvitationMonitor()
 
 void RoomInvitationMonitor::Start()
 {
-    if (receiveTask_ || !sessionStore_.HasActiveSession()) return;
-    receiveTask_ = lila::shared::concurrency::RunAsync(
-        [this](std::stop_token stopToken) { ReceiveLoop(stopToken); },
-        [this](std::optional<lila::shared::errors::AppError>) { receiveTask_.reset(); });
+    if (receiveThread_.joinable() || !sessionStore_.HasActiveSession()) return;
+    receiveThread_ = std::jthread([this](std::stop_token token) { ReceiveLoop(token); });
 }
 
 void RoomInvitationMonitor::Stop()
 {
-    if (receiveTask_)
-    {
-        receiveTask_->RequestCancel();
-        receiveTask_.reset();
-    }
+    receiveThread_.request_stop();
     try { webSocketClient_.Close(); } catch (...) {}
+    if (receiveThread_.joinable()) receiveThread_.join();
+}
+
+void RoomInvitationMonitor::SetMessageHandler(std::function<void(const std::string&)> handler)
+{
+    std::scoped_lock lock(mutex_);
+    onMessage_ = std::move(handler);
 }
 
 void RoomInvitationMonitor::SetInvitationHandler(InvitationHandler handler)
@@ -54,8 +57,23 @@ void RoomInvitationMonitor::SetInvitationHandler(InvitationHandler handler)
 
 void RoomInvitationMonitor::ReceiveLoop(std::stop_token stopToken)
 {
-    Connect(stopToken);
-    while (!stopToken.stop_requested()) ApplyMessage(webSocketClient_.Receive());
+    while (!stopToken.stop_requested())
+    {
+        try
+        {
+            Connect(stopToken);
+            while (!stopToken.stop_requested()) ApplyMessage(webSocketClient_.Receive());
+        }
+        catch (...)
+        {
+            if (stopToken.stop_requested()) break;
+            try { webSocketClient_.Close(); } catch (...) {}
+            std::mutex waitMutex;
+            std::condition_variable_any wake;
+            std::unique_lock lock(waitMutex);
+            wake.wait_for(lock, stopToken, std::chrono::seconds(1), [] { return false; });
+        }
+    }
 }
 
 void RoomInvitationMonitor::Connect(std::stop_token stopToken)
@@ -73,6 +91,9 @@ void RoomInvitationMonitor::Connect(std::stop_token stopToken)
 
 void RoomInvitationMonitor::ApplyMessage(const std::string& rawJson)
 {
+    std::function<void(const std::string&)> messageHandler;
+    { std::scoped_lock lock(mutex_); messageHandler = onMessage_; }
+    if (messageHandler) messageHandler(rawJson);
     auto invitation = lila::modules::rooms::infrastructure::ReadRoomInvitationMessage(rawJson);
     if (!invitation) return;
     InvitationHandler handler;

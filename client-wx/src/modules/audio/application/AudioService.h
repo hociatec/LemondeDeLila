@@ -24,6 +24,8 @@ public:
     void SetTableAmbienceVolume(int volume) override;
     void SetBackground(domain::AudioBackground background) override;
     void StopAll() override;
+    void RefreshAssets() override;
+    void ShutdownGracefully() override;
     void ShutdownImmediately() override;
 
 private:

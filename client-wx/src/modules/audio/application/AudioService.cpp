@@ -49,6 +49,7 @@ void AudioService::Play(domain::SoundCue cue)
 
 void AudioService::SetBackground(domain::AudioBackground background)
 {
+    tableAmbienceCue_.reset();
     if (shuttingDown_.load(std::memory_order_acquire))
     {
         return;
@@ -68,6 +69,7 @@ void AudioService::SetBackground(domain::AudioBackground background)
 
 void AudioService::StartLoop(domain::SoundCue cue)
 {
+    tableAmbienceCue_.reset();
     if (shuttingDown_.load(std::memory_order_acquire))
     {
         return;
@@ -83,6 +85,7 @@ void AudioService::StartLoop(domain::SoundCue cue)
 
 void AudioService::StopLoop()
 {
+    tableAmbienceCue_.reset();
     if (!shuttingDown_.load(std::memory_order_acquire))
     {
         backend_.SetLoop(std::nullopt, 0.0F);
@@ -91,6 +94,7 @@ void AudioService::StopLoop()
 
 void AudioService::StartTableAmbience(std::string_view soundId)
 {
+    if (shuttingDown_.load(std::memory_order_acquire)) return;
     constexpr std::string_view Prefix = "TableAmbience";
     if (!soundId.starts_with(Prefix))
     {
@@ -132,10 +136,22 @@ void AudioService::SetTableAmbienceVolume(int volume)
 
 void AudioService::StopAll()
 {
+    tableAmbienceCue_.reset();
     if (!shuttingDown_.load(std::memory_order_acquire))
     {
         backend_.StopAll();
     }
+}
+
+void AudioService::RefreshAssets()
+{
+    if (!shuttingDown_.load(std::memory_order_acquire)) backend_.RefreshAssets();
+}
+
+void AudioService::ShutdownGracefully()
+{
+    if (!shuttingDown_.exchange(true, std::memory_order_acq_rel))
+        backend_.ShutdownGracefully();
 }
 
 void AudioService::ShutdownImmediately()

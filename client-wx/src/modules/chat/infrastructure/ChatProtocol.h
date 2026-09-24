@@ -26,6 +26,7 @@ struct ChatEvent final
     std::string deletedMessageId;
     int editWindowSeconds = 0;
     std::optional<domain::ChatServerError> error;
+    bool isEdit = false;
 };
 
 class IChatProtocol

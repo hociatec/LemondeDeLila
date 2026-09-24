@@ -72,6 +72,11 @@ struct GameSetup final
 
 struct GameEngineEventData final
 {
+    std::string semanticKey;
+    std::string quizSessionId;
+    std::optional<bool> correct;
+    std::optional<int> correctAnswerIndex;
+    std::unordered_map<int, int> answers;
     bool announce = true;
     std::string message;
     std::string content;

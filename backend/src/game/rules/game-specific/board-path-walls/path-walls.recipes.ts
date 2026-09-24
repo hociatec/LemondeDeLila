@@ -88,6 +88,10 @@ export function pathWallsRules(source: PathWallsProgram) {
         rejectRule('Placement de mur PathWalls illégal');
       ctx.grid.appendOverlay(program.boardId, program.wallsOverlayId, input);
       ctx.resources.remove(actor.id, program.wallsResourceId, 1);
+      ctx.events.message('game.grid.wall.placed', {
+        playerId: actor.id,
+        ...input,
+      });
       ctx.turn.end();
     },
   });

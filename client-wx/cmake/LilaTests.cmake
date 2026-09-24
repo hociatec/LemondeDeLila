@@ -1,5 +1,34 @@
 include_guard(GLOBAL)
 
+if(WIN32)
+    lila_add_test_executable(lemonde_de_lila_wx_bass_cache_tests
+        tests/BassCacheTests.cpp
+        src/modules/audio/infrastructure/BassSampleCache.cpp
+        src/modules/audio/infrastructure/BassStreamCache.cpp
+    )
+    target_include_directories(lemonde_de_lila_wx_bass_cache_tests PRIVATE "${LILA_BASS_ROOT}/include")
+    target_link_libraries(lemonde_de_lila_wx_bass_cache_tests PRIVATE "${LILA_BASS_IMPORT_LIBRARY}")
+endif()
+
+lila_add_test_executable(lemonde_de_lila_wx_audio_regression_tests
+    tests/AudioRegressionTests.cpp
+    src/modules/audio/application/AudioService.cpp
+    src/modules/audio/application/SoundVolumeResolver.cpp
+    src/modules/audio/domain/SoundCatalog.cpp
+    src/modules/audio/infrastructure/NotificationAudioDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameSystemDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameValueDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp
+    src/modules/chat/application/ChatMessageStore.cpp
+)
+target_link_libraries(lemonde_de_lila_wx_audio_regression_tests PRIVATE nlohmann_json::nlohmann_json)
+
+lila_add_test_executable(lemonde_de_lila_wx_game_sound_tests
+    tests/GameSoundPolicyTests.cpp
+    src/modules/audio/domain/SoundCatalog.cpp
+    src/modules/audio/application/SoundVolumeResolver.cpp
+)
+
 add_executable(lemonde_de_lila_wx_tests
     tests/NetworkProtocolTests.cpp
     src/modules/catalog/infrastructure/CatalogApi.cpp
@@ -112,8 +141,14 @@ lila_add_test_executable(lemonde_de_lila_wx_background_executor_tests
 )
 lila_add_test_executable(lemonde_de_lila_wx_service_resilience_tests
     tests/ServiceResilienceTests.cpp
+    src/modules/presence/application/PresenceMonitor.cpp
+    src/modules/presence/application/PresenceMonitor.Activity.cpp
+    src/modules/presence/infrastructure/PresencePayloadCodec.cpp
+    src/modules/rooms/application/RoomInvitationMonitor.cpp
+    src/modules/rooms/infrastructure/RoomInvitationPayloadCodec.cpp
     src/modules/chat/application/ChatService.cpp
     src/modules/chat/application/ChatService.Connection.cpp
+    src/modules/chat/application/ChatService.Heartbeat.cpp
     src/modules/chat/application/ChatService.Messages.cpp
     src/modules/chat/application/ChatService.Reconnect.cpp
     src/modules/chat/application/ChatMessageStore.cpp
@@ -148,6 +183,7 @@ lila_add_test_executable(lemonde_de_lila_wx_messaging_selection_tests
 )
 lila_add_test_executable(lemonde_de_lila_wx_navigation_state_tests
     tests/NavigationStateTests.cpp
+    src/modules/admin/domain/AdminArea.cpp
     src/modules/main_menu/presentation/MainMenuContent.cpp
     src/modules/admin/domain/AdminCommandCatalog.cpp
     src/modules/admin/domain/AdminCommandCatalog.Moderation.cpp
@@ -155,6 +191,9 @@ lila_add_test_executable(lemonde_de_lila_wx_navigation_state_tests
     src/modules/admin/domain/AdminCommandCatalog.Operations.cpp
     src/shared/security/infrastructure/SecurityUtils.cpp
 )
+if(WIN32)
+    target_link_libraries(lemonde_de_lila_wx_navigation_state_tests PRIVATE crypt32)
+endif()
 lila_add_test_executable(lemonde_de_lila_wx_admin_contract_tests
     tests/AdminContractTests.cpp
     src/modules/admin/domain/AdminCommandCatalog.cpp

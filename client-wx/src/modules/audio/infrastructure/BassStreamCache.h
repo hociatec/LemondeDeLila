@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <filesystem>
+#include <chrono>
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
@@ -27,7 +28,8 @@ private:
     [[nodiscard]] HSTREAM GetOrLoad(domain::SoundCue cue, const std::filesystem::path& path);
 
     std::unordered_map<domain::SoundCue, HSTREAM> streams_;
-    std::unordered_set<domain::SoundCue> failed_;
+    std::unordered_map<domain::SoundCue, std::filesystem::path> paths_;
+    std::unordered_map<domain::SoundCue, std::chrono::steady_clock::time_point> failed_;
     std::optional<domain::SoundCue> current_;
 };
 }

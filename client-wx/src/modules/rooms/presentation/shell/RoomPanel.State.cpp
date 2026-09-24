@@ -5,6 +5,7 @@
 #include <wx/window.h>
 
 #include <unordered_set>
+#include <algorithm>
 
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/rooms/application/RoomStateUpdatePolicy.h"
@@ -51,9 +52,11 @@ void RoomPanel::ApplyRoom(domain::RoomState room)
     audioService_.StartTableAmbience(room_.tableAmbienceSoundId);
     if (isRealtimeUpdate && !wasStarted && willBeStarted)
         audioService_.Play(lila::modules::audio::domain::SoundCue::TableStarted);
-    if (isRealtimeUpdate && nextMembers.size() > previousMembers.size())
+    if (isRealtimeUpdate && std::ranges::any_of(nextMembers,
+        [&previousMembers](int id) { return !previousMembers.contains(id); }))
         audioService_.Play(lila::modules::audio::domain::SoundCue::RoomMemberJoined);
-    else if (isRealtimeUpdate && nextMembers.size() < previousMembers.size())
+    if (isRealtimeUpdate && std::ranges::any_of(previousMembers,
+        [&nextMembers](int id) { return !nextMembers.contains(id); }))
         audioService_.Play(lila::modules::audio::domain::SoundCue::RoomMemberLeft);
     state_ = State::Ready;
     ShowRoom();

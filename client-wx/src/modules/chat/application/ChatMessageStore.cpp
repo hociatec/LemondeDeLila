@@ -20,11 +20,11 @@ void ChatMessageStore::LoadHistory(Messages messages, int editWindowSeconds)
     }
 }
 
-void ChatMessageStore::UpsertMessage(domain::ChatMessage message)
+bool ChatMessageStore::UpsertMessage(domain::ChatMessage message)
 {
     if (message.text.empty())
     {
-        return;
+        return false;
     }
 
     std::scoped_lock lock(mutex_);
@@ -36,7 +36,8 @@ void ChatMessageStore::UpsertMessage(domain::ChatMessage message)
             return !message.id.empty() && existing.id == message.id;
         });
 
-    if (iterator == messages_.end())
+    const bool inserted = iterator == messages_.end();
+    if (inserted)
     {
         messages_.push_back(std::move(message));
     }
@@ -46,6 +47,7 @@ void ChatMessageStore::UpsertMessage(domain::ChatMessage message)
     }
 
     TrimToMaximum();
+    return inserted;
 }
 
 void ChatMessageStore::RemoveMessageById(const std::string& messageId)

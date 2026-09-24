@@ -24,6 +24,8 @@ public:
     virtual void SetTableAmbienceVolume(int volume) = 0;
     virtual void SetBackground(domain::AudioBackground background) = 0;
     virtual void StopAll() = 0;
+    virtual void RefreshAssets() {}
+    virtual void ShutdownGracefully() { ShutdownImmediately(); }
     virtual void ShutdownImmediately() = 0;
 };
 }

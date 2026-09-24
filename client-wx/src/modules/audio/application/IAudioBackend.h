@@ -19,6 +19,9 @@ public:
     }
     virtual void SetLoop(std::optional<domain::SoundCue> cue, float volume) = 0;
     virtual void StopAll() = 0;
+    virtual void RefreshAssets() {}
+    virtual void FinishPlayback() {}
+    virtual void ShutdownGracefully() noexcept { Shutdown(); }
     virtual void InterruptPlayback() noexcept = 0;
     virtual void Shutdown() noexcept = 0;
 };

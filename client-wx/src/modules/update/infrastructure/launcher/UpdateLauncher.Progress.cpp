@@ -64,7 +64,7 @@ void UpdateProgressDialog::SetDownloadProgress(
     std::uint64_t total) noexcept
 {
     if (!dialog_ || total == 0) return;
-    const auto bounded = std::min(completed, total);
+    const auto bounded = (std::min)(completed, total);
     const int downloadPercent = static_cast<int>((bounded * 100) / total);
     if (downloadPercent == lastDownloadPercent_) return;
     lastDownloadPercent_ = downloadPercent;
