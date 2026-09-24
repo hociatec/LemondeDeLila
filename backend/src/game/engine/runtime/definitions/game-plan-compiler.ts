@@ -9,7 +9,7 @@ import type {
 } from '../contracts/compiled-game-plan';
 import type { CompiledGameDiagnostics } from '../contracts/compiled-game-definition';
 import type { CompiledDescriptorInput } from './compiled-game-diagnostics';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 
 /** Lower author metadata once; execution consumes only the resulting data. */
 export function compileGamePlan<TState extends object>(

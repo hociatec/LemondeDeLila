@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonRitualPhasesSchema,
   assertRitualPhasesReferences,
@@ -6,6 +6,15 @@ import {
 import { ritualPhasesRules } from './ritual-phases.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: [
+    'actions',
+    'bot',
+    'choices',
+    'components',
+    'effects',
+    'lifecycle',
+    'patterns',
+  ],
   scope: 'game-specific',
   domain: 'cards',
   documentKey: 'ritualPhases',

@@ -4,7 +4,7 @@ import {
   GameNotFoundError,
   GameRuleViolationError,
   GameStateViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 
 export type GridDefinition = {
   readonly component: 'grid.board';

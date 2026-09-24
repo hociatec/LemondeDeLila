@@ -1,6 +1,6 @@
 import { defineGameContent } from './game-content';
 import { authoringPathOf } from '../contracts/authoring-origin';
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from '../contracts/game-domain.errors';
 import { compileJsonGame } from '../definitions/json-game-compiler';
 import { defineJsonEffectPack } from '../contracts/json-effect-pack';
 import { authorObject } from '../contracts/json-author-schema';
@@ -29,6 +29,7 @@ it.each([
 
 it('maps a linked catalogue error back into its extension configuration', () => {
   const pack = defineJsonEffectPack({
+    capabilities: [],
     scope: 'game-specific',
     domain: 'board',
     documentKey: 'links',

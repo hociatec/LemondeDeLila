@@ -3,10 +3,10 @@ import {
   authoringPathOf,
   withAuthoringPath,
 } from './authoring-origin';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from './game-domain.errors';
 import { cards } from '../cards/cards-contracts';
 import { quiz } from '../kits/quiz-kit';
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from './game-domain.errors';
 import { economy } from '../kits/economy-kit';
 import { grid } from '../kits/grid-kit';
 import { pawns } from '../kits/pawn-kit';

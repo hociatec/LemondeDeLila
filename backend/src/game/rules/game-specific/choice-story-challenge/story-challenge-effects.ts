@@ -8,7 +8,7 @@ import type {
 import {
   defineEffect,
   defineEmptyEffect,
-} from '../../../engine/runtime/effects/effects-core';
+} from '../../../engine/sdk/extension-api';
 import type { createStoryChallengeResolution } from './story-challenge-resolution';
 
 type State = Record<string, never>;

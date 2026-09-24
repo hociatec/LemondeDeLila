@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { inspectSources } = require('./game-structural-sequences.cjs');
 const { classifyEffectPack } = require('./effect-pack-classification.cjs');
+const { assertPrimitiveSource } = require('./effect-pack-promotion.cjs');
 const { effectPackDirectory: locatePack } = require('./effect-pack-layout.cjs');
 const {
   generateEffectPackRegistry,
@@ -129,6 +130,15 @@ for (const name of declared) {
   )) {
     const source = fs.readFileSync(sourceFile, 'utf8');
     if (
+      profile.scope === 'engine-primitive' &&
+      !sourceFile.endsWith('.spec.ts')
+    )
+      assertPrimitiveSource(sourceFile, source, [
+        ...gameCodes,
+        ...policy.forbiddenEngineVocabulary,
+        ...(profile.primitiveReview?.forbiddenVocabulary ?? []),
+      ]);
+    if (
       !sourceFile.endsWith('.spec.ts') &&
       Buffer.byteLength(source.replaceAll('\r\n', '\n'), 'utf8') >
         policy.maximumFileBytes
@@ -181,10 +191,7 @@ for (const name of declared) {
       const file = path.resolve(ROOT, relative);
       if (!file.startsWith(ROOT + path.sep) || !fs.existsSync(file))
         return false;
-      return (
-        fs.statSync(file).isFile() &&
-        fs.readFileSync(file, 'utf8').trim().length > 0
-      );
+      return fs.statSync(file).isFile() && fs.readFileSync(file, 'utf8');
     },
   );
   const { scope } = classification;

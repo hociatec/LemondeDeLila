@@ -6,7 +6,7 @@ import type { CardValue } from '../../cards/cards-contracts';
 import type { GameContext } from '../../definitions/game-author-context';
 import { defineAction, defineChoice } from '../../actions/action-builders';
 import { gameInput } from '../../actions/game-input-schema';
-import { GameRuleViolationError } from '../../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../../contracts/game-domain.errors';
 import { sameSerializableValue } from '../../state/serializable-value';
 import { isRecord } from '../../content/content-guards';
 

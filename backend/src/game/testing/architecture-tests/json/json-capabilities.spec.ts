@@ -2,9 +2,9 @@ import { compileJsonGame } from '../../../rules/public-api';
 import type {
   EffectCondition,
   GameEffectInstruction,
-} from '../contracts/effect-ir';
-import manifest from '../../../testing/fixtures/json-course/manifest.json';
-import document from '../../../testing/fixtures/json-course/game.json';
+} from '../../../engine/runtime/contracts/effect-ir';
+import manifest from '../../fixtures/json-course/manifest.json';
+import document from '../../fixtures/json-course/game.json';
 
 const pair = { left: { kind: 'self' }, right: { kind: 'next' } } as const;
 const transfer = { from: { kind: 'self' }, to: { kind: 'next' } } as const;

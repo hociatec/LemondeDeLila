@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonPawScoringSchema,
   assertPawScoringReferences,
@@ -6,6 +6,17 @@ import {
 import { pawScoringRules } from './paw-scoring.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: [
+    'actions',
+    'bot',
+    'choices',
+    'components',
+    'config',
+    'effects',
+    'lifecycle',
+    'patterns',
+    'playerValuesVisibility',
+  ],
   scope: 'game-specific',
   domain: 'choice',
   documentKey: 'pawScoring',

@@ -108,7 +108,7 @@
         "src/game/engine/runtime/definitions/game-definition-component-validator.ts",
         "src/game/engine/runtime/definitions/static-effect-references.ts",
         "src/game/engine/runtime/definitions/component-initialization-references.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts"
       ],
       "continuation": "JSON authoring now has an executable closed version-1 profile, but production games, all optional components, patterns and the complete Panier Express rules are not migrated. This broader point remains open.",
       "validatedOn": "2026-09-11"
@@ -123,7 +123,7 @@
         "src/game/engine/runtime/effects/game-effect-definition-validator.ts",
         "src/game/engine/runtime/effects/game-effect-reference-validator.ts",
         "src/game/engine/runtime/definitions/game-definition-component-validator.ts",
-        "src/game/engine/runtime/definitions/json-game-compiler.spec.ts"
+        "src/game/testing/architecture-tests/json/json-game-compiler.spec.ts"
       ],
       "continuation": "JSON authoring now has an executable closed version-1 profile, but production games, all optional components, patterns and the complete Panier Express rules are not migrated. This broader point remains open.",
       "validatedOn": "2026-09-11"

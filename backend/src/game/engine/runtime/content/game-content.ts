@@ -10,7 +10,7 @@ import {
 import { authoringProperty } from '../contracts/authoring-diagnostics';
 import { stableContentVersion } from './content-version';
 import { deepFreeze, cloneStaticContent } from './content-immutability';
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from '../contracts/game-domain.errors';
 import type { QuizQuestion } from './quiz-content-contract';
 import { loadExternalGameContent } from './external-content-release';
 import { parseContentJson } from './content-parser';

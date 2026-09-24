@@ -29,7 +29,7 @@ type UnionValue<Value, Key extends PropertyKey> = Value extends object
     : never
   : never;
 
-/** Optional fields reflect that a compiled document enables only one pack. */
+/** Optional fields reflect the subset of packs enabled by each document. */
 export type JsonGameViewAugmentation<Catalog extends JsonEffectPackCatalog> = {
   readonly [Key in UnionKeys<PackView<Catalog[number]>>]?: UnionValue<
     PackView<Catalog[number]>,

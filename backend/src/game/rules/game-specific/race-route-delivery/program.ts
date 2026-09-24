@@ -1,4 +1,4 @@
-import type { TrackRaceProgram } from '../../../engine/runtime/contracts/track-race-contract';
+import type { TrackRaceProgram } from '../../../engine/sdk/extension-contracts';
 
 /** A race that transports cards to numbered destinations while events block paths. */
 export type DeliveryRaceProgram = TrackRaceProgram & {

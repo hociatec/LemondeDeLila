@@ -1,4 +1,4 @@
-import type { EffectCard } from '../../../engine/runtime/contracts/effect-card';
+import type { EffectCard } from '../../../engine/sdk/extension-contracts';
 
 export type SharedPrestigeCardsCard = EffectCard<string> & {
   category: string;

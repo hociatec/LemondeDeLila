@@ -1,6 +1,6 @@
 import type { GameContext } from '../definitions/game-author-context';
 import type { VictoryRule } from '../contracts/author-rule-contracts';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 
 export type ThresholdVictory = (
   | { kind: 'score-at-least'; amount: number }

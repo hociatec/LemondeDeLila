@@ -1,16 +1,16 @@
-import { assertUniqueAuthorIds } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { assertUniqueAuthorIds } from '../../../engine/sdk/extension-api';
 import {
   authoringFailure,
   assertUniqueAuthorValues,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { TeamPawnRaceProgram } from './program';
 import {
   authorArray as array,
   authorId as id,
   authorObject as object,
   authorPositive as positive,
-} from '../../../engine/runtime/contracts/json-author-schema';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+} from '../../../engine/sdk/extension-api';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 
 const label = { type: 'string', minLength: 1, maxLength: 200 } as const;
 export const jsonTeamPawnRaceSchema = object({

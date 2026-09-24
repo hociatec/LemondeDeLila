@@ -105,3 +105,5 @@ n'est exécutée dans le chemin de chargement.
 La revue détaillée des fichiers runtime proches des seuils et des services Room
 est consignée dans `runtime-cohesion-review.md`. Elle conclut à leur cohésion
 actuelle et fixe les conditions qui imposeraient une extraction future.
+
+Migration 9.0.0 (2026-09-23): turn.flags.get returns unknown instead of accepting an unchecked generic type. Parse structured flags with gameInput before domain use; see extension-compatibility.md. Public symbols are unchanged.

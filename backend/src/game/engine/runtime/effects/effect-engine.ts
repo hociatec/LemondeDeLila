@@ -1,4 +1,4 @@
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 import type { GameEffectResolverShape } from '../contracts/effect-resolver';
 import type {
   EffectEngineState,

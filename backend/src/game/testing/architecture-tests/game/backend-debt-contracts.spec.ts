@@ -32,7 +32,7 @@ import {
 } from '../../../engine/runtime/kits/turn-kit';
 import type { CardInstance } from '../../../engine/runtime/cards/cards-kit';
 import type { GameViewExtension } from '../../../engine/runtime/definitions/game-definition';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../../../engine/runtime/contracts/game-domain.errors';
 import { GameTestKit } from '../../../core/testing/game-test-kit';
 import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
 import { GameSimulator } from '../../../core/testing/game-simulator';

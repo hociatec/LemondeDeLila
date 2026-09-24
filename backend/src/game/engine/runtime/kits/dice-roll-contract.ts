@@ -1,5 +1,5 @@
 import type { ReadonlyState } from '../contracts/state-copy';
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 import type { DiceDefinition, PersistedDiceRoll } from './dice-contracts';
 import { assertGameCount, assertGameValue } from './numeric-invariants';
 

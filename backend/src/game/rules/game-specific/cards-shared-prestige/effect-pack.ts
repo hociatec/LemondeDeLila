@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonSharedPrestigeCardsSchema,
   assertSharedPrestigeCardsReferences,
@@ -6,6 +6,7 @@ import {
 import { sharedPrestigeCardsRules } from './shared-prestige-cards.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'effects'],
   scope: 'game-specific',
   domain: 'cards',
   documentKey: 'sharedPrestigeCards',

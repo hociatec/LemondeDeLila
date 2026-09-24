@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonDiscardPenaltyCardsSchema,
   assertDiscardPenaltyCardsReferences,
@@ -6,6 +6,16 @@ import {
 import { discardPenaltyCardsRules } from './discard-penalty-cards.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: [
+    'actions',
+    'automatic',
+    'bot',
+    'choices',
+    'config',
+    'initialization',
+    'lifecycle',
+    'patterns',
+  ],
   scope: 'game-specific',
   domain: 'cards',
   documentKey: 'discardPenaltyCards',

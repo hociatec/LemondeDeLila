@@ -1,4 +1,4 @@
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 import type { CardsKitState } from './cards-contracts';
 
 function record(value: unknown): value is Record<string, unknown> {

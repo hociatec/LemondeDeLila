@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "apiVersion": "8.0.0",
+  "apiVersion": "9.0.0",
   "typescript": "5.9.3",
   "entry": "src/game/engine/sdk/public-api.ts",
   "external": [],
@@ -20,10 +20,6 @@
     {
       "file": "src/game/core/application/models/game-state.model.ts",
       "sha256": "0dffdb5d59de910c06efefe8d1450d6e66c6fd544d127e370621060493b7120c"
-    },
-    {
-      "file": "src/game/core/domain/errors/game-domain.errors.ts",
-      "sha256": "7662eff295fc4fd2b2fa7db4e6e8f728f66a95f8c645dbcfe8947237716886a3"
     },
     {
       "file": "src/game/engine/runtime/actions/action-builders.ts",
@@ -147,7 +143,7 @@
     },
     {
       "file": "src/game/engine/runtime/contracts/context-turn-capability.ts",
-      "sha256": "4d8e7fa5e6aed466d260710b08808fe14adc44d2d6c6902b9e2c8629a959e6eb"
+      "sha256": "b5051538b177d406b2785f2a4877a51a2f6782c981e7092aff472ac791e382be"
     },
     {
       "file": "src/game/engine/runtime/contracts/context-values-capability.ts",
@@ -160,6 +156,10 @@
     {
       "file": "src/game/engine/runtime/contracts/effect-resolver.ts",
       "sha256": "f1318919ad054cb338ff0c6a3d8d46108b06d7c77ad20d4f20777e84eadf7f4c"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/game-domain.errors.ts",
+      "sha256": "743d81cec65d8b5792478ba149efca205639977f23dbcce847c1bf7b5bdae23d"
     },
     {
       "file": "src/game/engine/runtime/contracts/game-rule-program.ts",
@@ -331,7 +331,7 @@
     },
     {
       "file": "src/game/engine/runtime/lifecycle/game-turn-controller.ts",
-      "sha256": "beb38a17a5595660b5b9e96fd7fd6f310c097921f1a89663ebaddc325a791951"
+      "sha256": "a5e808c3048a642972cb20462319dcff3f1eb02f88b2f3c6dd76510a9612acc7"
     },
     {
       "file": "src/game/engine/runtime/patterns/gameplay-pattern-core.ts",
@@ -431,7 +431,7 @@
     },
     {
       "file": "src/game/engine/sdk/public-api.ts",
-      "sha256": "0990ade28980a2456d4a290d4327b2cf0ad354bf67b59fb9acdbfefb90ca1d68"
+      "sha256": "df286967a3cbda4cff9b22538eee9c7ae30474afa4ff24a90709ce20918a4e50"
     },
     {
       "file": "src/game/shortcuts/application/shortcut-presets.ts",

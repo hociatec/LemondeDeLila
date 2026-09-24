@@ -1,0 +1,465 @@
+{
+  "schemaVersion": 1,
+  "apiVersion": "1.0.0",
+  "typescript": "5.9.3",
+  "entry": "src/game/engine/sdk/extension-api.ts",
+  "external": [],
+  "files": [
+    {
+      "file": "src/game/core/application/models/game-action.model.ts",
+      "sha256": "6c6032ea501a78ff5eab4a40e759ed4b58c12baeb0c74cb67bfffa09ae4f564f"
+    },
+    {
+      "file": "src/game/core/application/models/game-event.model.ts",
+      "sha256": "8bfefc3d98defa7bc9e63c1e2c390e070d2f081cc99fb534bdbdec7a327d6f6a"
+    },
+    {
+      "file": "src/game/core/application/models/game-execution-context.model.ts",
+      "sha256": "f315b2fafba0216a54b2c643d19c68510621f2eea248b04f578ae9a5fca7718f"
+    },
+    {
+      "file": "src/game/core/application/models/game-state.model.ts",
+      "sha256": "0dffdb5d59de910c06efefe8d1450d6e66c6fd544d127e370621060493b7120c"
+    },
+    {
+      "file": "src/game/engine/runtime/actions/action-builders.ts",
+      "sha256": "7155d73fccb18237efe2ecfd3caf5a7c6c06685d4f7d32038f4b489a63e2bc92"
+    },
+    {
+      "file": "src/game/engine/runtime/actions/game-command-journal.ts",
+      "sha256": "f8335220d0ea19b79dbc9df832deaf53ae1542170b616833c8129ed598d9186b"
+    },
+    {
+      "file": "src/game/engine/runtime/actions/game-input-schema.ts",
+      "sha256": "56adb3a24151ec8bafa2c0552d4cd1af653af02b1d7fe839586ec579228338e8"
+    },
+    {
+      "file": "src/game/engine/runtime/automation/scheduler-kit.ts",
+      "sha256": "ab3ff676ced7ad27f2940d23e84d3310e35df6a4066b087e6bfa5dc5ce2ee2ce"
+    },
+    {
+      "file": "src/game/engine/runtime/automation/scheduler-types.ts",
+      "sha256": "5b5ce3948b0449a13c9466adb8af8776064bded0977cbf6d4055c044c038813f"
+    },
+    {
+      "file": "src/game/engine/runtime/automation/threshold-victory.ts",
+      "sha256": "2c3baf57341e067c8266d855d989d767ce6f20d03d312b27fe70a336d76dfbf3"
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-contracts.ts",
+      "sha256": "7a759d36172f67fccdad4e1c9def7194b768072345212bffd4a33f86a694e186"
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-deck-controller.ts",
+      "sha256": "62cc93344d54bffafce3575f920968d285e97c899500d4a42530299ec2f9cb79"
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-hands-controller.ts",
+      "sha256": "996b5f11ab71c8c95e03185e5e3530ddb37a8eb9be06fa24e503eaba22f5889a"
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-kit.ts",
+      "sha256": "47230c470db7762d749d6e93095c51c34d7f61ffa0b184f87c35439b3fc6cdf2"
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-state-controller.ts",
+      "sha256": "6a5692420b12ce21ddc553bc8915cd86e40eb24cca399ada925bfbb90d6aae3c"
+    },
+    {
+      "file": "src/game/engine/runtime/cards/cards-view.ts",
+      "sha256": "a0806f474710c035226947753778020e3816da9c0d77044343e271bda39afd75"
+    },
+    {
+      "file": "src/game/engine/runtime/cards/typed-cards.ts",
+      "sha256": "1326c53a780b540dcb97ba296a998cd3022c0ab161e0097383b83a55e930f665"
+    },
+    {
+      "file": "src/game/engine/runtime/choices/game-choice-controller.ts",
+      "sha256": "2cc282a3e00517443a5ee3e842d4a47a651c3c8563e9ac40ba4b14d839fb3d24"
+    },
+    {
+      "file": "src/game/engine/runtime/configuration/configuration-kit.ts",
+      "sha256": "869ac94702b43f2c00969fc28d1c320a0a700538e072f985ced414c2ee14bc3b"
+    },
+    {
+      "file": "src/game/engine/runtime/content/content-guards.ts",
+      "sha256": "0eb6ed38433e7b18aebeaa770e1dc00e091da12b30ac4afa2511d8becd116a93"
+    },
+    {
+      "file": "src/game/engine/runtime/content/game-content.ts",
+      "sha256": "65865ce7e05e2f02d3bdfe61c1507a0618bbb4b78f7902a4b40bed9b5f73331e"
+    },
+    {
+      "file": "src/game/engine/runtime/content/json-content-bundle.ts",
+      "sha256": "9a41bbcf2d4de5ed33ad39b8b85ebf99380ccc86e06d3b58e73eb43218f850a0"
+    },
+    {
+      "file": "src/game/engine/runtime/content/quiz-content-contract.ts",
+      "sha256": "e1981614065ee1315469f5415a8ca91dc9c29c619d1fc7668fd59b709d50a236"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/author-rule-contracts.ts",
+      "sha256": "349142226932347c21d569bc9649332073f95fd8e1a3af04f46451b94e2960b7"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/authoring-diagnostics.ts",
+      "sha256": "e83f265f8f2dddbcb5af3d804090120f79295fea0ec2b46012ef22084ab40ff4"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/authoring-error.ts",
+      "sha256": "f9fd764f3b7bb653a6a330dff344965bdd387f04594612419ebeb56f92d9f9f7"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/board-landing-contract.ts",
+      "sha256": "ec12ba62ab34b3b9ae0660e55e9b372e12e45d0610fb546d3fb7e772dce692be"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/card-selection-contract.ts",
+      "sha256": "e46c5f29ee412a5e357c11007413c59190fcf613d6647bc8f32c5478f765160c"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/compiled-game-definition.ts",
+      "sha256": "8dc7ce240e3e3144e382f6ad884cc00345723188be92643a94b72fe673e71c2f"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/compiled-game-plan.ts",
+      "sha256": "958c4252e3b636df5e5976c88382be533cdaf0c85be914220e2b6f86452a8fdc"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/configuration-state.ts",
+      "sha256": "aeea9d78019dff70ad969096e5d8dc1d60527c56d0118501e38b6f523d3bd950"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/context-components-capability.ts",
+      "sha256": "2e1a5e57f3723175b715bbc89aec66690a9e67e8b0da3af451d6f73226b07c51"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/context-configuration-capability.ts",
+      "sha256": "2000e2d2a86302828ac08b13ea61be81d4a31e2f1e01b7751aa2150b6efc680c"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/context-effect-capability.ts",
+      "sha256": "d7c2c974d94e0c619738bacd719c30f0657ba7173bd6373e3e0b81d9c1ade8ff"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/context-interactions-capability.ts",
+      "sha256": "d70f574a2e664dfaee76d53ea621650c7c0b8a7649dbfa980b1c8488ca82a439"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/context-lifecycle-capability.ts",
+      "sha256": "5f410621382167058d522dbca9d5340e21be5309996f6e9078b2aa945d2ff0bf"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/context-players-capability.ts",
+      "sha256": "340973daba07957ebf078c1031f833bb39e26ef8d66da223d223828798b07198"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/context-scheduling-capability.ts",
+      "sha256": "7a7e46f8fa567a609bddbb9dd63f722b9408f9fd056ffae00fa7bc3273e8c819"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/context-turn-capability.ts",
+      "sha256": "b5051538b177d406b2785f2a4877a51a2f6782c981e7092aff472ac791e382be"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/context-values-capability.ts",
+      "sha256": "26fa6e8a3087232134df5a617a10e0686ebb3155dfac02d6263476fe89158a76"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/effect-ir.ts",
+      "sha256": "803736fc3b6011889f52ada396c49425b3d066293b74b342e544192641a9909c"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/effect-json-schema.ts",
+      "sha256": "7795dd5eff03e9ecd2113414332dcdca99630c156cf5963c250d4fb89750a3d4"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/effect-resolver.ts",
+      "sha256": "f1318919ad054cb338ff0c6a3d8d46108b06d7c77ad20d4f20777e84eadf7f4c"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/game-domain.errors.ts",
+      "sha256": "743d81cec65d8b5792478ba149efca205639977f23dbcce847c1bf7b5bdae23d"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/game-rule-program.ts",
+      "sha256": "0ed929aa7752c2719fccfc574b5acaaccc39f4c008f433b84e113cb6e0bba3b8"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/json-author-schema.ts",
+      "sha256": "218623c7fbe0e2f5bc9f910487164b502e9c4dd50b766e98cf00cf4a2e417bcc"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/json-effect-pack-catalog.ts",
+      "sha256": "ce1ec735cb1c4cfac0276237e8ff330b2d105e0fdcd034ec6fb02115c597ad78"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/json-effect-pack.ts",
+      "sha256": "c74ee0f7f108529dc7e7adecb9db812b527895c8a1117bba549bea359d3d751e"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/pattern-definition.ts",
+      "sha256": "3332733ae113bc2438827571fdaa03b27f4f31f1f669c5cb490849e479d7a5d5"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/public-controller.ts",
+      "sha256": "2310e341b93df1c8322c048fd5601b89f2a63f10b47dba125aa29677d9be5f91"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/state-copy.ts",
+      "sha256": "c71be1a91d163b94ded30600b3ac82d63df7a5fe70ebacf90c7b71a63c482a4a"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/component-kit.ts",
+      "sha256": "4b91463c6ddf26cf2a23457e92820aa20ff93ea84b632079a1cf1c634c4f3cc2"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/game-author-context.ts",
+      "sha256": "a4c21442c8a718e99cf0d08add75769182f27536e7c60594a65dbd8be1bd2e10"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/game-context-capabilities.ts",
+      "sha256": "e8e8fcc41a6030b1e91bbed7550b1a430d18d0e81194f77e096c38a08bb1870a"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/game-definition-builders.ts",
+      "sha256": "21819c82dab7b7bfb4285d037371e3507564e67d5be379aa045393870631847f"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/game-definition-compiler.ts",
+      "sha256": "a37a90f8178d04867131444cde84da84c3f9a7b7b9d55590301d89a8cdbe1fae"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/game-definition-contracts.ts",
+      "sha256": "d540da47f173c57441601d6b05f1159e08b3852176574b16a638499154f462f0"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/game-definition.ts",
+      "sha256": "b193072046e2b589376b5976fe22d5e8fafec8bfda37813f4a24a2ab7ec8de07"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-game-action-types.ts",
+      "sha256": "ec36e3450dae5a800e366c0910480d88cc0aafcdeea45393dd01bfbf78101191"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-game-compiler-factory.ts",
+      "sha256": "135d543093e608109ee148609cab4ba1abeea6fd90d36de2564da2d37b308755"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-game-compiler.ts",
+      "sha256": "c8fd6ec3f2cbadbcf32d325d58aafd59cec76bf62d7d52273bedd9d0b1049c9d"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-game-core-document.ts",
+      "sha256": "ceeec8f8fab4a5b1ca6f0424c92994c5cb0e8bffef42a6097deeab0d64684306"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-game-document.ts",
+      "sha256": "e367a290637221ea9c8a882df54741bde44bbdc958c27fe8a43e8c7bbbcf5c9c"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-game-manifest.ts",
+      "sha256": "5e56cce344dace6265bb25a48a00e81eafabcc78feb0c6b41c7cb154fad55a14"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-game-patterns.ts",
+      "sha256": "0d00c5e1e81049197c29f7d8f245d6d99223b931e5a09df6711c4756d10d22a8"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-standard-victory.ts",
+      "sha256": "13b97dd85462fc92e7262e9da301b990a69bf1912a9eebd40055f33dfb616d45"
+    },
+    {
+      "file": "src/game/engine/runtime/effects/effects-core.ts",
+      "sha256": "68f912dda8f638258146c4db41718e3806deb7d2430300707a842e54fd51e66c"
+    },
+    {
+      "file": "src/game/engine/runtime/effects/effects-dsl.ts",
+      "sha256": "95f29d3393255f3c83c3622d1e62b4be7404dd3551e2edd9dce8e764bfdf4b11"
+    },
+    {
+      "file": "src/game/engine/runtime/effects/effects-kit.ts",
+      "sha256": "9fdc0adecdf268c62a76d1341817d4dd739f69e6dbfa7fb5025c1ce9ff0fe6d7"
+    },
+    {
+      "file": "src/game/engine/runtime/events/engine-event-registry.ts",
+      "sha256": "03d8fb7f1e82f25f0fd9e979412cdab912e9f4ba430088caf322ea26718928a6"
+    },
+    {
+      "file": "src/game/engine/runtime/events/game-context-events.ts",
+      "sha256": "950395c22a301dbaf87724764ac4ef1eb0913c7659e572385413a1267c981af6"
+    },
+    {
+      "file": "src/game/engine/runtime/events/game-event-definition.ts",
+      "sha256": "3b7f97a5530bb6eff54b773f0653a47b647324af5b9e96418172873bfb8c1db3"
+    },
+    {
+      "file": "src/game/engine/runtime/game-identifiers.ts",
+      "sha256": "b7fba38edff808e59845f4aa400e3872f36c178e2db0ab6e7c70f89cf1d853ce"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/dice-contracts.ts",
+      "sha256": "0271035555bcf393c5bc1420d7823073239b77f23c35739bda29b56e96eda142"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/dice-kit.ts",
+      "sha256": "ed1e5927e4b9ab5326391d6916fa75f42ae835b98eab916b96851ffd4b005f1f"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/economy-kit.ts",
+      "sha256": "f93948143bb732471260f963f4a6129e96bbf8df0fd331e384501a073aefa292"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/grid-kit.ts",
+      "sha256": "38f28f207d11dbd7855c223049fc9333996e96fec6e3ac1023b194f2ba83a686"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/inventory-kit.ts",
+      "sha256": "e310e65fd185ec8c270cea2ec57a666941423378af166bfecf7ea5527eb55e66"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/match-kit.ts",
+      "sha256": "c456441720986b5fef25f684dc03e8c8aa915c299ca8d425cbb4daf737276c8b"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/movement-kit.ts",
+      "sha256": "c080ee1e6f38015498fbcd294a9675ce9841d5e7502ff8e8a3ebb9e595aac08d"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/ownership-kit.ts",
+      "sha256": "d47470cbb8a6ad957d3f1641d93275c5e902d8c27f6e1333f50f16724d81d10f"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/pawn-kit.ts",
+      "sha256": "e208d4d325b6c9077d90f3abf5e1c70d9798c571788d4b5311ca66f8b400fa47"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/phase-kit.ts",
+      "sha256": "56a9ec4e9073bc4bc6124696d953f058eb6c656d9c23478c7c49358b94690815"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/player-values-contracts.ts",
+      "sha256": "2bc861d3d504b19c426f3b34a13e7fa0f243482554a5605d177ab47a4b1d318f"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/player-values-kit.ts",
+      "sha256": "519cff31a98d1ef84b5eb7170a4c94becf41ba79281d2b7dd3f04fbc169f0fea"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/quiz-kit.ts",
+      "sha256": "b1db46b3cd7ba2b0bbdc7b11d986a3c22c01586d300241dd5859205e885230cd"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/ranking-kit.ts",
+      "sha256": "65abccf0ae2173b6ad91b8eb2c369e39ef9e87fd9f497b01f0c00908c5c5b382"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/round-kit.ts",
+      "sha256": "70347f478bbd3076b181012b7bfb733aa3fe8cf950ea5d9d59d1f5a633316e5b"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/turn-kit.ts",
+      "sha256": "8e48c0aae0a373013dc001787a4291f3e43dc648a3a098ccda606fb9b7995561"
+    },
+    {
+      "file": "src/game/engine/runtime/kits/visibility-kit.ts",
+      "sha256": "b02c73852432cbf5100873f4757b05cee9c1abec9895159676379174fc85d0ae"
+    },
+    {
+      "file": "src/game/engine/runtime/lifecycle/game-lifecycle-hooks.ts",
+      "sha256": "dc04e42a2ecc8a9a5589e7923acff92841068797f5a502999801f10f435f4f0a"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/gameplay-pattern-track-card.ts",
+      "sha256": "290beeea6bf91d664031883434fdd655051925d2d037c427e1eb0cfc2cd072dd"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/pattern-capabilities.ts",
+      "sha256": "031d70a23d8f6d4612ca5cb7b0dfc1e50f6482ddea004ed5670720de87372fc5"
+    },
+    {
+      "file": "src/game/engine/runtime/projection/collection-view.ts",
+      "sha256": "f16bb97785c889fe139d06425eb4430aa2dd08efa8cb8c7c2853a8ca805a353a"
+    },
+    {
+      "file": "src/game/engine/runtime/projection/submission-view.ts",
+      "sha256": "eb70c9453459762d73858ef8ca7be1d61066859570b20ed164efce110959158c"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay-recipes.ts",
+      "sha256": "70bf84e2c2674d4e23ae52496793fcaeafed1fd9ae040dc8b9d25c5b08737296"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay/card-actions.recipes.ts",
+      "sha256": "dc8d0550f261ef4dcfee8b3eb29ebdbd2c3b9b592ba2861be7d750e735540570"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay/card-dice.recipes.ts",
+      "sha256": "eebe7350f39f231a71398bc35a65a106cefcfe1af72681e20372c2414ce27618"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay/movement-quiz.recipes.ts",
+      "sha256": "eac4d626100ae07c9ef3bec56279faa900f36a7a47d913f8d7cfc0b7f878cc15"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay/pawn-selection-groups.ts",
+      "sha256": "7b4e1e00e91e1303a9d359f2ba2dfa9fb67e99cfb8048918cf691910a4af00da"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay/pawn-selection.recipes.ts",
+      "sha256": "e2c67a5351b7fe71932f7ae946c1dac279065a60f31df7b2df94b81829bc9711"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay/scoring-submission.recipes.ts",
+      "sha256": "08efd62501331239f5d41d9d0bd68b39ade650c125a6660b0fef8e210a61c2c2"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/gameplay/track-round.recipes.ts",
+      "sha256": "38fbc6d704408ec9ea150bb1bdfe966872bbf9ad9c8ef7eb30840ea2efbdf13f"
+    },
+    {
+      "file": "src/game/engine/runtime/state/declarative-state.ts",
+      "sha256": "1b973355ebea499f5314254ba301d5b1465023686a61c929ed8f2dd841043eac"
+    },
+    {
+      "file": "src/game/engine/runtime/submissions/submission-controller.ts",
+      "sha256": "5f6d5260640d9a2bbd6ed4cb74f93e8cd4e462e6bfcd49b1aff46103c1c758d0"
+    },
+    {
+      "file": "src/game/engine/runtime/submissions/submission-flow-controller.ts",
+      "sha256": "b99f480c784f450f703fcbe8d8d0cd17c9a36c3c18a45c1e40e1c34f002b059b"
+    },
+    {
+      "file": "src/game/engine/runtime/submissions/submission-judge-controller.ts",
+      "sha256": "7a01cd9c03aaaae55ee96b89fbedd7d49ac6f2f0c54fbbadc62fccff0160813c"
+    },
+    {
+      "file": "src/game/engine/runtime/submissions/submission-kit.ts",
+      "sha256": "40d971148c14e7607d6058be24604cc909d4d2708db7a125f94db04ff1b236d1"
+    },
+    {
+      "file": "src/game/engine/runtime/submissions/submission-voting-controller.ts",
+      "sha256": "aadc61639273ee6582982e096291b2f4ee722e553a27ff30af649cbbd6bae6c3"
+    },
+    {
+      "file": "src/game/engine/sdk/extension-api.ts",
+      "sha256": "2f84308890252f05841158e1a135994c86eea0e64a7bbd2f8af01759f127e09f"
+    },
+    {
+      "file": "src/game/shortcuts/application/shortcut-presets.ts",
+      "sha256": "26fddca6275323443adad99b71d5cec6addcf24371468015cc64e31e986e96f9"
+    },
+    {
+      "file": "src/game/shortcuts/application/shortcut-utils.ts",
+      "sha256": "e2103d4e7d5b8239baccc09c29abbd68d8d1690c46126173b049200919023533"
+    },
+    {
+      "file": "src/game/shortcuts/domain/game-shortcuts.model.ts",
+      "sha256": "e486aee56e5307095df5dbebcaa99a29b21a1e72d3ce97e97fc4aa01e95975bf"
+    },
+    {
+      "file": "src/game/shortcuts/public-api.ts",
+      "sha256": "bf2a1477674bbd989f8854cc29e7bfd752167eb9ab03a9b67a7eda68e3e656b8"
+    }
+  ]
+}

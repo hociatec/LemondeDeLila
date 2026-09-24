@@ -13,7 +13,7 @@ import type { DirectionalHazardRaceProgram } from './program';
 import {
   defineEffect,
   defineEmptyEffect,
-} from '../../../engine/runtime/effects/effects-core';
+} from '../../../engine/sdk/extension-api';
 import {
   directionalHazardPosition as position,
   rankedDirectionalHazardPlayerIds as rankedIds,

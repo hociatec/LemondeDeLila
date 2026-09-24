@@ -4,12 +4,12 @@ import type {
   GameEffectInstruction,
 } from '../../../engine/sdk/public-api';
 import type { PairedPawnRaceProgram, PairedPawnTileType } from './program';
-import { defineEmptyAction } from '../../../engine/runtime/actions/action-builders';
+import { defineEmptyAction } from '../../../engine/sdk/extension-api';
 import {
   defineEffect,
   defineEmptyEffect,
   defineActorEffect,
-} from '../../../engine/runtime/effects/effects-core';
+} from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

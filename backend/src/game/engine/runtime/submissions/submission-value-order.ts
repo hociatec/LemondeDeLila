@@ -1,4 +1,4 @@
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 
 type OrderedValues<T = unknown> = {
   id: string;

@@ -1,6 +1,6 @@
 import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
 import type { PlayerState } from '../../../core/application/models/game-state.model';
-import { GameActionRejectedError } from '../../../core/domain/errors/game-domain.errors';
+import { GameActionRejectedError } from '../contracts/game-domain.errors';
 import type { CompiledGameDefinition } from '../contracts/compiled-game-definition';
 import type { DeclarativeState } from '../state/declarative-state';
 import type { GameActionMap } from '../contracts/author-rule-contracts';

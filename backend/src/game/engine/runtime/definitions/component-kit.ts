@@ -1,5 +1,5 @@
 import type { PlayerState } from '../../../core/application/models/game-state.model';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import type { GameContext } from './game-author-context';
 import type {
   CardSetsDefinition,

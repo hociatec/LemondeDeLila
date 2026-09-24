@@ -1,6 +1,6 @@
 import { defineGameContent } from './game-content';
 import { loadExternalGameContent } from './external-content-release';
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from '../contracts/game-domain.errors';
 import { isRecord } from './content-guards';
 
 jest.mock('./external-content-release', () => ({

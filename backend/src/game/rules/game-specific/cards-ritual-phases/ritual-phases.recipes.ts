@@ -9,10 +9,10 @@ import {
   defineAction,
   defineChoice,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 import type { RitualPhasesProgram } from './program';
-import { defineEmptyEffect } from '../../../engine/runtime/effects/effects-core';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { defineEmptyEffect } from '../../../engine/sdk/extension-api';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 import {
   createRitualPhasesSupport,
   RITUAL_PHASES,

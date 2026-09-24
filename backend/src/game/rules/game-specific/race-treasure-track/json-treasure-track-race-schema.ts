@@ -1,16 +1,16 @@
 import {
   authoringFailure,
   authoringProperty,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { TreasureTrackRaceProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorArray as array,
   authorId as id,
   authorObject as object,
   authorPositive as positive,
   authorRecord as record,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 const deckKinds = record(id);
 

@@ -4,7 +4,7 @@ import {
   GameNotFoundError,
   GameRuleViolationError,
   GameStateViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 import type { PlayerState } from '../../../core/application/models/game-state.model';
 import { resolveTrackPosition } from './movement-kit';
 

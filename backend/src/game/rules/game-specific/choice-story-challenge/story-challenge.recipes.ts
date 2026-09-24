@@ -11,9 +11,9 @@ import {
 import {
   defineChoice,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 import type { StoryChallengeProgram } from './program';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 import { createStoryChallengeEffects } from './story-challenge-effects';
 import { storyChallengeLaughterWinners } from './story-challenge-laughter';
 import { createStoryChallengeResolution } from './story-challenge-resolution';

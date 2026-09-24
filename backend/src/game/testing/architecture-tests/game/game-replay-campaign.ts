@@ -1,4 +1,5 @@
 import { ok } from 'node:assert';
+import { createHash } from 'node:crypto';
 import type { GameRuntime } from '../../../core/application/ports/game-runtime.port';
 import type { DiscoveredGameDefinition } from '../../../composition/game-module-discovery';
 import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
@@ -17,12 +18,18 @@ import { assertContentReferences } from './game-content-storage-auditor';
 import type { DeclarativeState } from '../../../engine/runtime/definitions/game-definition';
 
 type Candidate = { actorId: number | null; action: GameSingleActionDto };
+type CampaignResult = {
+  steps: number;
+  actionTypes: string[];
+  finished: boolean;
+  traceDigest: string;
+};
 
 export function runGameReplayCampaign(
   definition: DiscoveredGameDefinition,
   seed: number,
   maximumSteps = 64,
-): { steps: number; actionTypes: string[]; finished: boolean } {
+): CampaignResult {
   const scope = new GameExecutionScopeService();
   const executor = new GameCommandExecutorService(scope);
   const clock = new FixedGameClock(1_700_000_000_000 + seed);
@@ -32,6 +39,7 @@ export function runGameReplayCampaign(
   let replay = initialState(definition, replayRuntime, seed, scope, clock);
   assertSameJson(state, replay, 'Initial state differs for the same seed');
   assertCampaignState(runtime, state, clock);
+  const trace = createReplayTrace(state);
   const types = new Set<string>();
   let steps = 0;
   for (; steps < maximumSteps && state.status !== 'finished'; steps++) {
@@ -54,6 +62,7 @@ export function runGameReplayCampaign(
         actorId: candidate.actorId,
         clock,
       });
+      trace.append(action, candidate.actorId, clock, next);
       const replayed = executor.execute({
         handler: replayRuntime,
         state: replay,
@@ -67,8 +76,7 @@ export function runGameReplayCampaign(
         'Replaying the same command produced a different state',
       );
       assertSameJson(state, before, 'Command mutated its input state');
-      // The campaign invokes the command executor directly, so it must model
-      // the persistence boundary that normally drains pending events.
+      // Drain the outbox to model the real persistence boundary.
       drainPendingGameEvents(next);
       drainPendingGameEvents(replayed);
       replay = roundTripSnapshot(replayed);
@@ -96,6 +104,25 @@ export function runGameReplayCampaign(
     steps,
     actionTypes: [...types].sort(),
     finished: state.status === 'finished',
+    traceDigest: trace.digest(),
+  };
+}
+
+/** Versioned corpus representation, independent of command execution. */
+function createReplayTrace(initial: GameState) {
+  const hash = createHash('sha256').update(JSON.stringify(initial));
+  return {
+    append(
+      command: GameSingleActionDto,
+      actorId: number | null,
+      clock: FixedGameClock,
+      state: GameState,
+    ) {
+      hash.update(
+        JSON.stringify({ command, actorId, at: clock.nowMs(), state }),
+      );
+    },
+    digest: () => hash.digest('hex'),
   };
 }
 

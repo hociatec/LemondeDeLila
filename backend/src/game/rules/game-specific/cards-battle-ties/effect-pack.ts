@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonBattleTiesSchema,
   assertBattleTiesReferences,
@@ -6,6 +6,7 @@ import {
 import { battleTiesRules } from './battle-ties.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'setup', 'viewExtension'],
   scope: 'game-specific',
   domain: 'cards',
   documentKey: 'battleTies',

@@ -1,10 +1,10 @@
 import { gameInput, commonStatuses } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
 import {
   defineChoice,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 import type { DirectionalHazardRaceProgram } from './program';
 import {
   directionalHazardEffects,

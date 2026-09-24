@@ -83,6 +83,7 @@ function customEffects() {
   };
 }
 const parityExtension = defineJsonEffectPack({
+  capabilities: ['effects'],
   scope: 'game-specific',
   domain: 'choice',
   documentKey: 'parity',

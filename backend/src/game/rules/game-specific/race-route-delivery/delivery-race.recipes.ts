@@ -2,7 +2,7 @@ import { drawEvent } from '../../../engine/sdk/public-api';
 import { GameInvariantViolationError } from '../../../core/domain/errors/game-runtime.errors';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { DeliveryRaceProgram } from './program';
-import { defineEmptyAction } from '../../../engine/runtime/actions/action-builders';
+import { defineEmptyAction } from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

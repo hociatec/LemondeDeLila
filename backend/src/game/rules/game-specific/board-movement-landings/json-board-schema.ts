@@ -1,12 +1,12 @@
-import { assertUniqueAuthorIds } from '../../../engine/runtime/contracts/authoring-diagnostics';
-import { authoringValueAt } from '../../../engine/runtime/contracts/authoring-error';
+import { assertUniqueAuthorIds } from '../../../engine/sdk/extension-api';
+import { authoringValueAt } from '../../../engine/sdk/extension-api';
 import {
   authoringFailure,
   authoringProperty,
   type AuthoringFailure,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { BoardGameProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   type AuthorSchema,
   authorId as id,
@@ -14,7 +14,7 @@ import {
   authorArray as array,
   authorObject as object,
   authorRecord as record,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 const positive: AuthorSchema = { type: 'integer', minimum: 1, maximum: 10000 };
 const text: AuthorSchema = { type: 'string', maxLength: 65536 };

@@ -1,8 +1,8 @@
-import { assertUniqueAuthorIds } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { assertUniqueAuthorIds } from '../../../engine/sdk/extension-api';
 import {
   authoringFailure,
   assertUniqueAuthorValues,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { SharedPrestigeCardsProgram } from './program';
 import {
   type AuthorSchema,
@@ -10,8 +10,8 @@ import {
   authorId as id,
   authorObject as object,
   authorRef as ref,
-} from '../../../engine/runtime/contracts/json-author-schema';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+} from '../../../engine/sdk/extension-api';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 
 export const jsonSharedPrestigeCardsSchema: AuthorSchema = object(
   {

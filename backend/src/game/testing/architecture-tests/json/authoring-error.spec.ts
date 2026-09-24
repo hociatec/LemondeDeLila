@@ -1,8 +1,11 @@
-import { legacyExtensionFixture } from '../../testing/public-api';
-import { AuthoringError, authoringValueAt } from './authoring-error';
-import { authoringProperty } from './authoring-diagnostics';
+import { legacyExtensionFixture } from '../../../engine/testing/public-api';
+import {
+  AuthoringError,
+  authoringValueAt,
+} from '../../../engine/runtime/contracts/authoring-error';
+import { authoringProperty } from '../../../engine/runtime/contracts/authoring-diagnostics';
 import { compileJsonGame } from '../../../rules/public-api';
-import { defineGameContent } from '../content/game-content';
+import { defineGameContent } from '../../../engine/runtime/content/game-content';
 import manifest from '../../../games/vents-sacres/lama/manifest.json';
 import documentExtensionSource from '../../../games/vents-sacres/lama/game.json';
 const document = legacyExtensionFixture(

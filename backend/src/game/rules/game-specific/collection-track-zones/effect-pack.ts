@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonTrackZoneCollectionSchema,
   assertTrackZoneCollectionReferences,
@@ -6,6 +6,7 @@ import {
 import { trackZoneCollectionRules } from './track-zone-collection.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'events'],
   scope: 'game-specific',
   domain: 'collection',
   documentKey: 'trackZoneCollection',

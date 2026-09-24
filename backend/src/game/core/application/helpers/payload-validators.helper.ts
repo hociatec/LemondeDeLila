@@ -1,4 +1,4 @@
-import { GamePayloadValidationError } from '../../domain/errors/game-domain.errors';
+import { GamePayloadValidationError } from '../../../engine/runtime/contracts/game-domain.errors';
 import { parseStrictInteger } from '../../../../shared/utils/public-api';
 
 type PayloadRecord = Record<string, unknown>;

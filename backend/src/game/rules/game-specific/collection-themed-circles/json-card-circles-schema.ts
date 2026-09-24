@@ -1,14 +1,14 @@
-import { assertUniqueAuthorIds } from '../../../engine/runtime/contracts/authoring-diagnostics';
-import { assertUniqueAuthorValues } from '../../../engine/runtime/contracts/authoring-diagnostics';
-import { authoringFailure } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { assertUniqueAuthorIds } from '../../../engine/sdk/extension-api';
+import { assertUniqueAuthorValues } from '../../../engine/sdk/extension-api';
+import { authoringFailure } from '../../../engine/sdk/extension-api';
 import type { CardCirclesProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorArray as array,
   authorId as id,
   authorObject as object,
   authorPositive as positive,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 export const jsonCardCirclesSchema = object({
   deckId: id,

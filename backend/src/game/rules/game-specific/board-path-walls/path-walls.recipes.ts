@@ -9,7 +9,7 @@ import {
 } from '../../../engine/sdk/public-api';
 import type { PlayerMap, GameContext } from '../../../engine/sdk/public-api';
 import type { PathWallsPosition, PathWallsProgram } from './program';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 import { choosePathWallsTurn } from './path-walls.bot';
 
 type State = Record<string, never>;

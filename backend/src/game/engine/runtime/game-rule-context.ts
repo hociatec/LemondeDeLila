@@ -24,7 +24,7 @@ import {
   GameScoreController,
   GameStatusController,
 } from './kits/player-values-kit';
-import { rejectRule } from '../../core/domain/errors/game-domain.errors';
+import { rejectRule } from './contracts/game-domain.errors';
 import type { GameLifecycleHooks } from './lifecycle/game-lifecycle-hooks';
 import { GameConfigurationController } from './configuration/configuration-kit';
 import {

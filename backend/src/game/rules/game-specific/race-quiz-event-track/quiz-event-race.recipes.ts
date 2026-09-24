@@ -12,7 +12,7 @@ import type {
   QuizEventEventCard,
   QuizEventRaceProgram,
 } from './program';
-import { GameRuleViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

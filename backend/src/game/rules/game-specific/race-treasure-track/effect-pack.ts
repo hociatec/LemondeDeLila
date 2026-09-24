@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonTreasureTrackRaceSchema,
   assertTreasureTrackRaceReferences,
@@ -6,6 +6,7 @@ import {
 import { treasureTrackRaceRules } from './treasure-track-race.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'effects'],
   scope: 'game-specific',
   domain: 'race',
   documentKey: 'treasureTrackRace',

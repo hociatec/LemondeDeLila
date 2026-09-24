@@ -1,5 +1,5 @@
 import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import { gameDeadline, isGameDelay, isGameTimestamp } from './game-deadline';
 import type {
   GameSchedulerState,

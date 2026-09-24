@@ -4,7 +4,7 @@ import {
   GameConfigurationError,
   GameNotFoundError,
   GameStateViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import { assertGameCount, assertGamePlayerId } from './numeric-invariants';
 

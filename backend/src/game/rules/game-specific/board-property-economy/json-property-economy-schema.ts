@@ -1,21 +1,21 @@
-import { assertUniqueAuthorIds } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { assertUniqueAuthorIds } from '../../../engine/sdk/extension-api';
 import {
   authoringFailure,
   assertUniqueAuthorValues,
   type AuthoringFailure,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
-import { isRecord } from '../../../engine/runtime/content/content-guards';
+} from '../../../engine/sdk/extension-api';
+import { isRecord } from '../../../engine/sdk/extension-api';
 import type {
   PropertyEconomyMovement,
   PropertyEconomyProgram,
   PropertyEconomyVariant,
 } from './program';
-import { effectJsonSchema } from '../../../engine/runtime/contracts/effect-json-schema';
+import { effectJsonSchema } from '../../../engine/sdk/extension-api';
 import {
   type AuthorSchema,
   authorId as id,
   authorObject as object,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 const money: AuthorSchema = {
   type: 'integer',

@@ -1,11 +1,11 @@
-import { authoringFailure } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { authoringFailure } from '../../../engine/sdk/extension-api';
 import type { EventRaceProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorArray as array,
   authorObject as object,
   authorId as id,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 export const jsonEventRaceSchema = object({
   trackId: id,

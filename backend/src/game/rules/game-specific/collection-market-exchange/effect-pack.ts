@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonMarketExchangeSchema,
   assertMarketExchangeReferences,
@@ -6,6 +6,7 @@ import {
 import { marketExchangeRules } from './market-exchange.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'playerValuesVisibility'],
   scope: 'game-specific',
   domain: 'collection',
   documentKey: 'marketExchange',

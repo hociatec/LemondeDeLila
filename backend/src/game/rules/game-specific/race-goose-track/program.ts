@@ -1,4 +1,4 @@
-import type { TrackRaceProgram } from '../../../engine/runtime/contracts/track-race-contract';
+import type { TrackRaceProgram } from '../../../engine/sdk/extension-contracts';
 
 export type GooseTile = {
   id: string;

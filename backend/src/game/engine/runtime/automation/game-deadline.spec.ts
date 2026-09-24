@@ -1,4 +1,4 @@
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import { gameDeadline, MAX_GAME_TIMESTAMP_MS } from './game-deadline';
 import {
   createGameSchedulerState,

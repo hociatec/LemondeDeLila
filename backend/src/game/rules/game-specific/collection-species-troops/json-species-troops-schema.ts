@@ -1,6 +1,6 @@
-import { assertUniqueAuthorIds } from '../../../engine/runtime/contracts/authoring-diagnostics';
-import { assertUniqueAuthorValues } from '../../../engine/runtime/contracts/authoring-diagnostics';
-import { authoringFailure } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { assertUniqueAuthorIds } from '../../../engine/sdk/extension-api';
+import { assertUniqueAuthorValues } from '../../../engine/sdk/extension-api';
+import { authoringFailure } from '../../../engine/sdk/extension-api';
 import type { SpeciesTroopsProgram } from './program';
 import {
   authorArray as array,
@@ -8,8 +8,8 @@ import {
   authorObject as object,
   authorPositive as positive,
   authorRef as ref,
-} from '../../../engine/runtime/contracts/json-author-schema';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+} from '../../../engine/sdk/extension-api';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 
 const species = id;
 

@@ -1,6 +1,6 @@
 import { effectContent } from './effect-content';
 import { gameEffects } from '../effects/effects-kit';
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from '../contracts/game-domain.errors';
 
 it('validates parsed effects and their references before exposing immutable instructions', () => {
   const input = [gameEffects.move('board', 2)];

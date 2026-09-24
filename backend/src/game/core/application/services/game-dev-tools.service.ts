@@ -3,7 +3,7 @@ import { readEnvironment } from '../../../../platform/config/public-api';
 import type { GameEvent, GameSnapshot } from '../models/game-event.model';
 import type { GameState } from '../models/game-state.model';
 import type { GameStateWithActions } from '../models/game-action.model';
-import { GameConfigurationError } from '../../domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../../../engine/runtime/contracts/game-domain.errors';
 import { GameEngineService } from './game-engine.service';
 import { GameRegistryService } from './game-registry.service';
 

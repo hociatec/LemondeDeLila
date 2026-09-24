@@ -1,5 +1,5 @@
 import type { BoardGameProgram } from './program';
-import type { JsonGameCoreDocument } from '../../../engine/runtime/definitions/json-game-core-document';
+import type { JsonGameCoreDocument } from '../../../engine/sdk/extension-api';
 
 type Failure = (path: string, reason: string) => never;
 

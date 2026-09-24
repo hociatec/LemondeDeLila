@@ -7,6 +7,7 @@ import type { GameActionMap } from './author-rule-contracts';
 import type { GameComponentDefinition } from '../definitions/component-kit';
 import type { JsonGameCoreDocument } from '../definitions/json-game-core-document';
 import type { GamePattern } from './pattern-definition';
+import { AuthoringError } from './authoring-error';
 
 type JsonState = Record<string, never>;
 export type JsonEffectPackScope =
@@ -31,6 +32,13 @@ export type JsonEffectPackHandlers<View extends object = object> = Partial<
     | 'bot'
   >
 >;
+
+export type JsonEffectPackCapability =
+  | keyof JsonEffectPackHandlers
+  | 'actions'
+  | 'events'
+  | 'components'
+  | 'patterns';
 
 export type JsonRecipeBotSelector = (
   input: Parameters<
@@ -90,6 +98,7 @@ export type JsonEffectPackDefinition<
   View extends object = object,
 > = Readonly<{
   scope: JsonEffectPackScope;
+  capabilities: readonly JsonEffectPackCapability[];
   domain: JsonEffectPackDomain;
   documentKey: DocumentKey;
   outputKey: OutputKey;
@@ -139,8 +148,61 @@ export function defineJsonEffectPack<
   >,
 ): JsonEffectPackDefinition<DocumentKey, Program, OutputKey, Compiled, View> {
   const codec = createAuthorCodec<Program>(definition.schema);
+  const capabilities = Object.freeze([...definition.capabilities]);
+  const announced = new Set(capabilities);
+  const supported: readonly JsonEffectPackCapability[] = [
+    'actions',
+    'events',
+    'components',
+    'patterns',
+    'setup',
+    'choices',
+    'effects',
+    'automatic',
+    'lifecycle',
+    'victory',
+    'viewExtension',
+    'config',
+    'initialization',
+    'resourceIds',
+    'playerValuesVisibility',
+    'bot',
+  ];
+  for (const capability of capabilities)
+    if (!supported.includes(capability))
+      throw new AuthoringError(
+        `${definition.documentKey}.capabilities`,
+        'supported capability name',
+        capability,
+      );
+  if (announced.size !== capabilities.length)
+    throw new AuthoringError(
+      `${definition.documentKey}.capabilities`,
+      'unique capability names',
+      capabilities,
+    );
+  const assertAnnounced = (contributions: object) => {
+    for (const [key, value] of Object.entries(contributions)) {
+      if (
+        value !== undefined &&
+        !capabilities.some((capability) => capability === key)
+      )
+        throw new AuthoringError(
+          `${definition.documentKey}.capabilities.${key}`,
+          'declared extension capability',
+          key,
+        );
+    }
+  };
+  assertAnnounced({
+    actions: definition.actions,
+    events: definition.events,
+    components: definition.components,
+    patterns: definition.patterns,
+  });
   return Object.freeze({
     ...definition,
+    capabilities,
     schema: codec.schema,
     compileContribution: (
       source: unknown,
@@ -153,8 +215,12 @@ export function defineJsonEffectPack<
         events: definition.events?.(compiled) ?? [],
         components: definition.components?.(compiled) ?? [],
         patterns: definition.patterns?.(compiled) ?? [],
-        handlers: (context: JsonEffectPackHandlerContext) =>
-          definition.handlers?.(context, compiled, program) ?? {},
+        handlers: (context: JsonEffectPackHandlerContext) => {
+          const handlers =
+            definition.handlers?.(context, compiled, program) ?? {};
+          assertAnnounced(handlers);
+          return handlers;
+        },
       });
     },
     validateUnknown: (

@@ -1,4 +1,4 @@
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 import { assertEffectJson } from '../contracts/effect-json-schema';
 import type { GameEffectValidationReferences } from '../contracts/effect-validation';
 import { assertEffectInstructions } from '../effects/game-effect-definition-validator';

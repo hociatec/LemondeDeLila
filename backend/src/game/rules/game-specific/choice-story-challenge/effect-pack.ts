@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonStoryChallengeSchema,
   assertStoryChallengeReferences,
@@ -6,6 +6,17 @@ import {
 import { storyChallengeRules } from './story-challenge.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: [
+    'actions',
+    'automatic',
+    'bot',
+    'choices',
+    'components',
+    'effects',
+    'patterns',
+    'playerValuesVisibility',
+    'setup',
+  ],
   scope: 'game-specific',
   domain: 'choice',
   documentKey: 'storyChallenge',

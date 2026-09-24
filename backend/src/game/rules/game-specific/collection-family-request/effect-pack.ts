@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonFamilyRequestSchema,
   assertFamilyRequestReferences,
@@ -6,6 +6,7 @@ import {
 import { familyRequestRules } from './family-request.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot'],
   scope: 'game-specific',
   domain: 'collection',
   documentKey: 'familyRequest',

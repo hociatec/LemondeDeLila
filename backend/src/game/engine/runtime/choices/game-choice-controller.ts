@@ -3,7 +3,7 @@ import { gameDeadline } from '../automation/game-deadline';
 import {
   GameConfigurationError,
   GameStateViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 
 export type ChoiceTimeout<TValue> = {
   afterMs: number;

@@ -25,8 +25,8 @@ test('effect-pack governance reports every consumer, domain, LOC and reason', ()
     audit.effectPacks.reduce((total, pack) => total + pack.productionLines, 0),
   );
   assert(audit.summary.productionLines <= policy.maximumProductionLines);
-  assert.equal(policy.maximumProductionLines, 18770);
-  assert.equal(policy.maximumBehaviorLines, 18694);
+  assert.equal(policy.maximumProductionLines, 18873);
+  assert.equal(policy.maximumBehaviorLines, 18797);
   assert.equal(policy.maximumFileBytes, 13500);
   assert(audit.summary.behaviorLines <= policy.maximumBehaviorLines);
   assert.deepEqual(audit.summary.scopes, {

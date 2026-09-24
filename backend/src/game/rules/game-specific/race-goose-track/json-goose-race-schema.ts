@@ -1,12 +1,12 @@
-import { authoringFailure } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { authoringFailure } from '../../../engine/sdk/extension-api';
 import type { GooseRaceProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorArray as array,
   authorId as id,
   authorRecord as record,
   authorObject as object,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 const position = { type: 'integer', minimum: 0, maximum: 10000 } as const;
 export const jsonGooseRaceSchema = object({

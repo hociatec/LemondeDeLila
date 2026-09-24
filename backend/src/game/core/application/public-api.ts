@@ -4,7 +4,7 @@ export {
   GameRuleViolationError,
   rejectContent,
   rejectRule,
-} from '../domain/errors/game-domain.errors';
+} from '../../engine/runtime/contracts/game-domain.errors';
 export { GameContentService } from './services/game-content.service';
 export { GameDevToolsService } from './services/game-dev-tools.service';
 export type { GameDevToolsInspection } from './services/game-dev-tools.service';

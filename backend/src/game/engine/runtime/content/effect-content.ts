@@ -1,4 +1,4 @@
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from '../contracts/game-domain.errors';
 import { assertEffectInstructions } from '../effects/game-effect-definition-validator';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import { freezeGameContent } from './game-content';

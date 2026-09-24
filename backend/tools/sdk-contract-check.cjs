@@ -7,7 +7,6 @@ const ts = require('typescript');
 const { assertSdkCapabilities } = require('./sdk-capability-contract.cjs');
 
 const root = path.resolve(__dirname, '..');
-const baselineFile = path.join(root, 'tools/sdk-contract-reference.json');
 const normalize = (value) => value.replaceAll('\\', '/');
 
 /** Follow declarations, including nested import types, rather than runtime imports. */
@@ -41,7 +40,7 @@ function declarationImports(source) {
   return [...imports].sort();
 }
 
-function captureContract({ directory, entry, options }) {
+function captureContract({ directory, entry, options, apiVersion = '9.0.0' }) {
   const compilerOptions = {
     ...options,
     noEmit: false,
@@ -132,7 +131,7 @@ function captureContract({ directory, entry, options }) {
   return {
     snapshot: {
       schemaVersion: 1,
-      apiVersion: '8.0.0',
+      apiVersion,
       typescript: ts.version,
       entry: normalize(path.relative(directory, entry)),
       external: [...external].sort(),
@@ -178,35 +177,49 @@ function main() {
       ts.flattenDiagnosticMessageText(configFile.error.messageText, '\n'),
     );
   const config = ts.parseJsonConfigFileContent(configFile.config, ts.sys, root);
-  const contract = captureContract({
-    directory: root,
-    entry: path.join(root, 'src/game/engine/sdk/public-api.ts'),
-    options: config.options,
-  });
-  if (process.argv.includes('--print')) {
-    for (const { file, body } of contract.declarations)
-      process.stdout.write(`// ${file}\n${body}\n`);
-    return;
-  }
-  if (process.argv.includes('--write')) {
-    fs.writeFileSync(
-      baselineFile,
-      JSON.stringify(contract.snapshot, null, 2) + '\n',
+  for (const entryName of [
+    'public-api',
+    'author-api',
+    'extension-api',
+    'extension-contracts',
+  ]) {
+    const baselineFile = path.join(
+      root,
+      entryName === 'public-api'
+        ? 'tools/sdk-contract-reference.json'
+        : 'tools/sdk-' + entryName + '-reference.json',
     );
+    const contract = captureContract({
+      directory: root,
+      entry: path.join(root, 'src/game/engine/sdk', entryName + '.ts'),
+      apiVersion: entryName.startsWith('extension-') ? '1.0.0' : '9.0.0',
+      options: config.options,
+    });
+    if (process.argv.includes('--print')) {
+      for (const { file, body } of contract.declarations)
+        process.stdout.write(`// ${file}\n${body}\n`);
+      continue;
+    }
+    if (process.argv.includes('--write')) {
+      fs.writeFileSync(
+        baselineFile,
+        JSON.stringify(contract.snapshot, null, 2) + '\n',
+      );
+      console.log(
+        `SDK reference written: ${contract.snapshot.files.length} declaration files`,
+      );
+      continue;
+    }
+    const expected = JSON.parse(fs.readFileSync(baselineFile, 'utf8'));
+    const changes = compareContracts(expected, contract.snapshot);
+    if (changes.length)
+      throw new Error(
+        `SDK declaration contract changed:\n${changes.join('\n')}\nReview the API change and its version/migration before updating the reference.`,
+      );
     console.log(
-      `SDK reference written: ${contract.snapshot.files.length} declaration files`,
+      `SDK ${entryName} contract unchanged: ${contract.snapshot.files.length} declaration files`,
     );
-    return;
   }
-  const expected = JSON.parse(fs.readFileSync(baselineFile, 'utf8'));
-  const changes = compareContracts(expected, contract.snapshot);
-  if (changes.length)
-    throw new Error(
-      `SDK declaration contract changed:\n${changes.join('\n')}\nReview the API change and its version/migration before updating the reference.`,
-    );
-  console.log(
-    `SDK contract unchanged: ${contract.snapshot.files.length} declaration files`,
-  );
 }
 
 module.exports = { captureContract, compareContracts, declarationImports };

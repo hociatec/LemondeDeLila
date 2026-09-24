@@ -17,8 +17,9 @@ export function assertProgramReferences(
   const active = jsonEffectPacks.filter((extension) =>
     sources.has(extension.documentKey),
   );
-  if (active.length > 1)
-    fail(active[1].documentKey, 'one game program per definition');
+  const setupOwners = active.filter((extension) => extension.ownsSetup);
+  if (setupOwners.length > 1)
+    fail(setupOwners[1].documentKey, 'only one extension may own setup');
 
   const allPatterns = patterns ?? [];
   const components = [

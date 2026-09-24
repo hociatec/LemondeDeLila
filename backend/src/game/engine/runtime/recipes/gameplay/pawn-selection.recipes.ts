@@ -4,7 +4,7 @@ import { gameInput } from '../../actions/game-input-schema';
 import type { DefinedChoiceResolver } from '../../contracts/author-rule-contracts';
 import type { PawnDefinition } from '../../kits/pawn-kit';
 import { shuffledPlayerIds } from './card-dice.recipes';
-import { GameRuleViolationError } from '../../../../core/domain/errors/game-domain.errors';
+import { GameRuleViolationError } from '../../contracts/game-domain.errors';
 import {
   assignPawnSelection,
   validatePawnSelectionGroups,

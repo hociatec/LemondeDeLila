@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import path from 'node:path';
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from '../contracts/game-domain.errors';
 import { getProcessEnvironment } from '../../../../platform/config/public-api';
 import { decodeContentText, parseContentJson } from './content-parser';
 import { readContainedContent } from '../../infrastructure/content/read-contained-content';

@@ -8,10 +8,8 @@ import type { GameEngineService } from './game-engine.service';
 import type { GameRealtimeAutomationService } from './game-realtime-automation.service';
 import type { GameRegistryService } from './game-registry.service';
 import type { GameExecutionScopeService } from './game-execution-scope.service';
-import {
-  GameNotFoundError,
-  GameStateConflictError,
-} from '../../domain/errors/game-domain.errors';
+import { GameNotFoundError } from '../../../engine/runtime/contracts/game-domain.errors';
+import { GameStateConflictError } from '../../domain/errors/game-domain.errors';
 
 type VersionedGameState = GameState & { version?: number };
 export type ResolvedGameState = {

@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonSimultaneousQuizSchema,
   assertSimultaneousQuizReferences,
@@ -6,6 +6,14 @@ import {
 import { simultaneousQuizRules } from './simultaneous-quiz.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: [
+    'actions',
+    'bot',
+    'components',
+    'config',
+    'events',
+    'patterns',
+  ],
   scope: 'game-specific',
   domain: 'choice',
   documentKey: 'simultaneousQuiz',

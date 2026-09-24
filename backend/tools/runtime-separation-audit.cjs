@@ -81,6 +81,8 @@ for (const effectPack of effectPacks) {
   if (
     [...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].some(
       (match) =>
+        path.resolve(directory, match[1]) !==
+          path.resolve('src/game/engine/sdk/extension-contracts') &&
         !path
           .resolve(directory, match[1])
           .startsWith(path.join(runtime, 'contracts') + path.sep),

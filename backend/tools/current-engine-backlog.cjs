@@ -5,19 +5,28 @@ const assert = require('node:assert/strict');
 
 function isEngineAudit(backlog) {
   return (
-    backlog.startsWith('J’ai repris l’archive') &&
-    backlog.includes('## A. Généricité et architecture')
+    (backlog.startsWith('J’ai repris l’archive') &&
+      backlog.includes('## A. Généricité et architecture')) ||
+    backlog.startsWith('J’ai réanalysé la version corrigée.')
   );
 }
 
 function reconcileEngineAudit(backlog, root = process.cwd()) {
+  const followup = backlog.startsWith('J’ai réanalysé la version corrigée.');
+  const snapshot = followup
+    ? 'engine-followup-2026-09-23'
+    : 'engine-audit-2026-09-23';
+  const count = followup ? 30 : 36;
   const register = JSON.parse(
     fs.readFileSync(
-      path.join(root, 'docs/quality/engine-audit-register-2026-09-23.json'),
+      path.join(
+        root,
+        `docs/quality/${followup ? 'engine-followup' : 'engine-audit'}-register-2026-09-23.json`,
+      ),
       'utf8',
     ),
   );
-  assert.equal(register.snapshot, 'engine-audit-2026-09-23');
+  assert.equal(register.snapshot, snapshot);
   const open = [...backlog.matchAll(/^\*\*(\d+)\. /gm)].map((match) =>
     Number(match[1]),
   );
@@ -25,13 +34,13 @@ function reconcileEngineAudit(backlog, root = process.cwd()) {
   assert(
     open.every(
       (id, index) =>
-        id >= 1 && id <= 36 && (index === 0 || id > open[index - 1]),
+        id >= 1 && id <= count && (index === 0 || id > open[index - 1]),
     ),
-    'Original backlog IDs must remain ordered and within 1-36',
+    `Original backlog IDs must remain ordered and within 1-${count}`,
   );
   assert.deepEqual(
     register.points.map((point) => point.id),
-    Array.from({ length: 36 }, (_, index) => index + 1),
+    Array.from({ length: count }, (_, index) => index + 1),
     'Register must preserve all original IDs',
   );
   assert.deepEqual(

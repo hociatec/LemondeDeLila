@@ -1,14 +1,14 @@
 import { compileJsonGame } from '../../../rules/public-api';
-import { DeclarativeGameRuntime } from '../declarative-game.runtime';
-import type { EffectTarget } from '../contracts/effect-ir';
-import { assertTargetJson } from '../contracts/effect-json-schema';
+import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
+import type { EffectTarget } from '../../../engine/runtime/contracts/effect-ir';
+import { assertTargetJson } from '../../../engine/runtime/contracts/effect-json-schema';
 import {
   FixedGameClock,
   StateGameRng,
 } from '../../../core/application/models/game-execution-context.model';
 import type { GameState } from '../../../core/application/models/game-state.model';
-import manifest from '../../../testing/fixtures/json-course/manifest.json';
-import document from '../../../testing/fixtures/json-course/game.json';
+import manifest from '../../fixtures/json-course/manifest.json';
+import document from '../../fixtures/json-course/game.json';
 
 function execute(target: EffectTarget, reverse = false) {
   const definition = compileJsonGame(

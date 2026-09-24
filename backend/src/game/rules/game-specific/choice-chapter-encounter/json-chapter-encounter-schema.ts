@@ -2,9 +2,9 @@ import {
   authoringFailure,
   authoringProperty,
   assertUniqueAuthorValues,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { ChapterEncounterProgram } from './program';
-import { effectJsonSchema } from '../../../engine/runtime/contracts/effect-json-schema';
+import { effectJsonSchema } from '../../../engine/sdk/extension-api';
 import {
   authorArray as array,
   authorBoolean as boolean,
@@ -12,8 +12,8 @@ import {
   authorObject as object,
   authorRecord as record,
   type AuthorSchema,
-} from '../../../engine/runtime/contracts/json-author-schema';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+} from '../../../engine/sdk/extension-api';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 
 const integer: AuthorSchema = {
   type: 'integer',

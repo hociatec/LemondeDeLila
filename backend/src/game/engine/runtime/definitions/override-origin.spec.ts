@@ -5,7 +5,7 @@
   assertNoImplicitTurnOverride,
 } from './game-definition-override-validator';
 import { authoringPathOf } from '../contracts/authoring-origin';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import { defineAction } from './game-definition-builders';
 import { gameInput } from '../actions/game-input-schema';
 import { overrideAction } from '../actions/action-builders';

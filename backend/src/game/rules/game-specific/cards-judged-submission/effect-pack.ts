@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonJudgedCardsSchema,
   assertJudgedCardsReferences,
@@ -6,6 +6,7 @@ import {
 import { judgedCardsRules } from './judged-cards.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'events', 'patterns', 'setup'],
   scope: 'game-specific',
   domain: 'cards',
   documentKey: 'judgedCards',

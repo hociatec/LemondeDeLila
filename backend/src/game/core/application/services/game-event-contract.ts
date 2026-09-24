@@ -1,5 +1,5 @@
 import type { GameEvent, GamePendingEvent } from '../models/game-event.model';
-import { GameStateViolationError } from '../../domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../../../engine/runtime/contracts/game-domain.errors';
 import { assertSerializableState } from '../../../engine/runtime/state/assert-serializable-state';
 
 export const GAME_EVENT_SCHEMA_VERSION = 1;

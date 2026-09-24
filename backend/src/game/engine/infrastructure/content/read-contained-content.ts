@@ -1,6 +1,6 @@
 import { readFileSync, realpathSync } from 'node:fs';
 import { isAbsolute, relative, resolve } from 'node:path';
-import { GameContentValidationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameContentValidationError } from '../../runtime/contracts/game-domain.errors';
 
 const MAX_CONTAINED_CONTENT_BYTES = 8 * 1024 * 1024;
 

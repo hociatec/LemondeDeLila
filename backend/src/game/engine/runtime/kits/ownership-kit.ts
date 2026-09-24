@@ -8,7 +8,7 @@ import {
   GameNotFoundError,
   GameRuleViolationError,
   GameStateViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import { assertGamePlayerId, assertPlayerValueId } from './numeric-invariants';
 

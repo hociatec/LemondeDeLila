@@ -1,4 +1,4 @@
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import { authoringValueAt } from '../contracts/authoring-error';
 import type { DefinitionToValidate } from '../contracts/definition-validation';
 import {

@@ -8,7 +8,7 @@ import type { FamilyEffectsProgram } from './program';
 import {
   defineEffect,
   defineActorEffect,
-} from '../../../engine/runtime/effects/effects-core';
+} from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

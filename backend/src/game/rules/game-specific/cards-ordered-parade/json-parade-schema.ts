@@ -2,9 +2,9 @@ import {
   authoringFailure,
   assertUniqueAuthorValues,
   authoringProperty,
-} from '../../../engine/runtime/contracts/authoring-diagnostics';
+} from '../../../engine/sdk/extension-api';
 import type { ParadeProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 import {
   authorArray as array,
   authorBoolean as boolean,
@@ -12,7 +12,7 @@ import {
   authorNumber as number,
   authorObject as object,
   authorRecord as record,
-} from '../../../engine/runtime/contracts/json-author-schema';
+} from '../../../engine/sdk/extension-api';
 
 export const jsonParadeSchema = object({
   deckId: id,

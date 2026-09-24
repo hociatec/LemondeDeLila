@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { GameSingleActionDto } from '../models/game-action.model';
-import { GameActionRejectedError } from '../../domain/errors/game-domain.errors';
+import { GameActionRejectedError } from '../../../engine/runtime/contracts/game-domain.errors';
 import { assertSerializableState } from '../../../engine/runtime/state/assert-serializable-state';
 
 /** Persist only a versioned digest, never a second copy of private command data. */

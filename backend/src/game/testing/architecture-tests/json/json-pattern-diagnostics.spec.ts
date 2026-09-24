@@ -1,8 +1,11 @@
 import { compileJsonGame } from '../../../rules/public-api';
-import { AuthoringError, authoringValueAt } from '../contracts/authoring-error';
-import { jsonPatternComponentPath } from './json-pattern-diagnostics';
-import manifest from '../../../testing/fixtures/json-course/manifest.json';
-import document from '../../../testing/fixtures/json-course/game.json';
+import {
+  AuthoringError,
+  authoringValueAt,
+} from '../../../engine/runtime/contracts/authoring-error';
+import { jsonPatternComponentPath } from '../../../engine/runtime/definitions/json-pattern-diagnostics';
+import manifest from '../../fixtures/json-course/manifest.json';
+import document from '../../fixtures/json-course/game.json';
 
 const race = { kind: 'race', trackId: 'generated', spaces: 5 };
 const pawnRace = {

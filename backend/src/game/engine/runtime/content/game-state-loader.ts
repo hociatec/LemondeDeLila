@@ -1,5 +1,5 @@
 import type { GameState } from '../../../core/application/models/game-state.model';
-import { GameStateViolationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameStateViolationError } from '../contracts/game-domain.errors';
 import type { DeclarativeState } from '../state/declarative-state';
 import type { ContentSnapshotMigration } from './game-content';
 import { canMigrateContentVersion } from './content-migration-registry';

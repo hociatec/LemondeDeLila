@@ -1,5 +1,5 @@
-import { assertUniqueAuthorIds } from '../../../engine/runtime/contracts/authoring-diagnostics';
-import { authoringFailure } from '../../../engine/runtime/contracts/authoring-diagnostics';
+import { assertUniqueAuthorIds } from '../../../engine/sdk/extension-api';
+import { authoringFailure } from '../../../engine/sdk/extension-api';
 import type { DirectionalHazardRaceProgram } from './program';
 import { directionalHazardCardKinds } from './directional-hazard-effect-types';
 import {
@@ -9,8 +9,8 @@ import {
   authorObject as object,
   authorPositive as positive,
   authorRef as ref,
-} from '../../../engine/runtime/contracts/json-author-schema';
-import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
+} from '../../../engine/sdk/extension-api';
+import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
 
 const text = { type: 'string', minLength: 1, maxLength: 10000 } as const;
 const integer = { type: 'integer', minimum: -10000, maximum: 10000 } as const;

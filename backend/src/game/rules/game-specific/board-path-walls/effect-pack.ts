@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonPathWallsSchema,
   assertPathWallsReferences,
@@ -6,6 +6,15 @@ import {
 import { pathWallsRules } from './path-walls.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: [
+    'actions',
+    'bot',
+    'choices',
+    'components',
+    'config',
+    'initialization',
+    'patterns',
+  ],
   scope: 'game-specific',
   domain: 'board',
   documentKey: 'pathWalls',

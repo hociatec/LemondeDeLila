@@ -72,6 +72,11 @@ test('required quality context cannot succeed when a certification job fails or 
     'primitive-json-sdk-parity',
     'second-game-catalogue',
     'independent-capabilities',
+    'reference-replays',
+    'generated-capability-models.property',
+    'json-game-compiler-factory',
+    'json-author-codec',
+    'json-language-budget',
   ])
     assert.ok(
       pkg.scripts['engine:merge-contracts'].includes(`${suite}.spec.ts`),

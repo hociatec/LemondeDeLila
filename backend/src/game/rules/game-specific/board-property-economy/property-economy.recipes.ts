@@ -11,7 +11,7 @@ import {
 import {
   defineChoice,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 import type {
   PropertyEconomyMovement,
   PropertyEconomyProgram,
@@ -20,7 +20,7 @@ import type {
 import {
   defineEffect,
   defineActorEffect,
-} from '../../../engine/runtime/effects/effects-core';
+} from '../../../engine/sdk/extension-api';
 import { createPropertyEconomyBoard } from './property-economy-board';
 import {
   createPropertyEconomySupport,

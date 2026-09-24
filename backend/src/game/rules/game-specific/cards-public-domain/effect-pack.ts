@@ -1,4 +1,4 @@
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import {
   jsonPublicDomainCardsSchema,
   assertPublicDomainCardsReferences,
@@ -6,6 +6,7 @@ import {
 import { publicDomainCardsRules } from './public-domain-cards.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'bot', 'effects', 'lifecycle'],
   scope: 'game-specific',
   domain: 'cards',
   documentKey: 'publicDomainCards',

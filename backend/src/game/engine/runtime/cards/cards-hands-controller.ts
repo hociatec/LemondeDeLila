@@ -2,7 +2,7 @@ import { dealDeferredCards } from './deferred-card-deal';
 import {
   GameNotFoundError,
   GameRuleViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 import { GameCardsDeckController } from './cards-deck-controller';
 import type { CardId, CardValue, HandsDefinition } from './cards-contracts';
 import { sameSerializableValue } from '../state/serializable-value';

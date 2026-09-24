@@ -1,4 +1,4 @@
-/** V8 declaration contract for concrete games. Keep the exported names explicit. */
+/** V9 declaration contract for concrete games. Keep the exported names explicit. */
 export {
   defineAction,
   defineChoice,
@@ -107,4 +107,4 @@ export type {
 export {
   rejectContent,
   rejectRule,
-} from '../../core/domain/errors/game-domain.errors';
+} from '../runtime/contracts/game-domain.errors';

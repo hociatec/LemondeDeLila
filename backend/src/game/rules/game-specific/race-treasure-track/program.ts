@@ -1,5 +1,5 @@
-import type { EffectCard } from '../../../engine/runtime/contracts/effect-card';
-import type { TrackRaceProgram } from '../../../engine/runtime/contracts/track-race-contract';
+import type { EffectCard } from '../../../engine/sdk/extension-contracts';
+import type { TrackRaceProgram } from '../../../engine/sdk/extension-contracts';
 
 export type TreasureTrackDeckKind = string;
 

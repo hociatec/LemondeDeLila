@@ -1,10 +1,10 @@
 import { defineConfiguration, gameInput } from '../../../engine/sdk/public-api';
-import type { GamePhaseSet } from '../../../engine/runtime/kits/phase-kit';
+import type { GamePhaseSet } from '../../../engine/sdk/extension-api';
 import type {
   DiscardPenaltyCardsConfig,
   DiscardPenaltyCardsProgram,
 } from './program';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 type State = Record<string, never>;
 export function discardPenaltyConfiguration(
   program: DiscardPenaltyCardsProgram,

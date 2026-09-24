@@ -4,7 +4,7 @@ import {
   GameConfigurationError,
   GameNotFoundError,
   GameStateViolationError,
-} from '../../../core/domain/errors/game-domain.errors';
+} from '../contracts/game-domain.errors';
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import type { GameInventoryController } from './inventory-kit';
 import type { GameResourcesController } from './player-values-kit';

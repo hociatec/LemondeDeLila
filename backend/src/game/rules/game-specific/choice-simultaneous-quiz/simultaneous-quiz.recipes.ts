@@ -16,8 +16,8 @@ import type {
 import {
   defineAction,
   defineEmptyAction,
-} from '../../../engine/runtime/definitions/game-definition-builders';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+} from '../../../engine/sdk/extension-api';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;

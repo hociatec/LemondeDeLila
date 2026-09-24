@@ -72,6 +72,7 @@ it.each([
 
 it('locates an action colliding with an extension-provided pattern', () => {
   const pack = defineJsonEffectPack({
+    capabilities: ['patterns'],
     scope: 'game-specific',
     domain: 'choice',
     documentKey: 'collision',

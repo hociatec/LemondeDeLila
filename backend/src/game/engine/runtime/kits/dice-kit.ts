@@ -2,7 +2,7 @@ import { withAuthoringPath } from '../contracts/authoring-origin';
 import type { GameRng } from '../../../core/application/models/game-execution-context.model';
 import { assertGameCount, assertGameValue } from './numeric-invariants';
 import { assertDiceRoll } from './dice-roll-contract';
-import { GameConfigurationError } from '../../../core/domain/errors/game-domain.errors';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
 import type {
   DiceDefinition,
   DiceRollPolicy,

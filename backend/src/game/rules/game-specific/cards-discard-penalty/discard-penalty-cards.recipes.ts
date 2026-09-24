@@ -13,14 +13,14 @@ import {
   defineAction,
   defineChoice,
   defineEmptyAction,
-} from '../../../engine/runtime/actions/action-builders';
+} from '../../../engine/sdk/extension-api';
 import { discardPenaltyConfiguration } from './discard-penalty-configuration';
 import type {
   DiscardPenaltyCardsCard,
   DiscardPenaltyCardsConfig,
   DiscardPenaltyCardsProgram,
 } from './program';
-import { rejectRule } from '../../../core/domain/errors/game-domain.errors';
+import { rejectRule } from '../../../engine/sdk/extension-api';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
@@ -49,6 +49,13 @@ export function scoreDiscardPenaltyCardsHand(
 
 export function discardPenaltyCardsRules(source: DiscardPenaltyCardsProgram) {
   const program = structuredClone(source);
+  const drawnSchema = gameInput.boolean();
+  const hasDrawn = (ctx: Context): boolean => {
+    const value = ctx.turn.flags.get(program.drawnTurnFlag);
+    return value == null
+      ? false
+      : drawnSchema.parse(value, 'turn.flags.' + program.drawnTurnFlag);
+  };
   const phases = defineGamePhases<State>()({
     initialPhase: 'setup',
     phases: {
@@ -103,7 +110,7 @@ export function discardPenaltyCardsRules(source: DiscardPenaltyCardsProgram) {
         current(actor.id, ctx) &&
         phases.is(ctx, 'turn') &&
         ctx.round.leftPlayers().length === 0 &&
-        !ctx.turn.flags.get<boolean>(program.drawnTurnFlag) &&
+        !hasDrawn(ctx) &&
         ctx.cards.deckCount(program.deckId) > 0,
       execute: ({ actor, ctx }) => {
         ctx.turn.requireCurrent(actor.id);
@@ -130,7 +137,7 @@ export function discardPenaltyCardsRules(source: DiscardPenaltyCardsProgram) {
         current(actor.id, ctx) &&
         phases.is(ctx, 'turn') &&
         config(ctx).allowPlayAfterDraw &&
-        ctx.turn.flags.get<boolean>(program.drawnTurnFlag) === true,
+        hasDrawn(ctx) === true,
       execute: ({ actor, ctx }) => {
         ctx.turn.requireCurrent(actor.id);
         ctx.events.message('game.player.passed', { playerId: actor.id });
@@ -365,10 +372,7 @@ export function discardPenaltyCardsRules(source: DiscardPenaltyCardsProgram) {
       }
       if (available.includes('draw'))
         return { recipe: 'cards-discard-penalty-draw', payload: {} };
-      if (
-        ctx.turn.flags.get<boolean>(program.drawnTurnFlag) &&
-        available.includes('cards-discard-penalty-pass')
-      )
+      if (hasDrawn(ctx) && available.includes('cards-discard-penalty-pass'))
         return { recipe: 'cards-discard-penalty-pass', payload: {} };
       return available.includes('cards-discard-penalty-quit')
         ? { recipe: 'cards-discard-penalty-quit', payload: {} }

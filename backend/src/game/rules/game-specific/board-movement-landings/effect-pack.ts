@@ -1,9 +1,10 @@
 import { assertBoardPawnCapacity } from './json-board-pawn-capacity';
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEffectPack } from '../../../engine/sdk/extension-api';
 import { jsonBoardSchema, assertBoardReferences } from './json-board-schema';
 import { boardTurnRules } from './board-turn.recipes';
 
 export const effectPack = defineJsonEffectPack({
+  capabilities: ['actions', 'automatic', 'bot', 'choices', 'effects', 'setup'],
   scope: 'game-specific',
   domain: 'board',
   documentKey: 'board',
