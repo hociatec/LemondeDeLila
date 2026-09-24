@@ -85,9 +85,12 @@ void TestRoomPresentationMatchesWpfWaitingTable()
     Expect(
         std::none_of(restrictedItems.begin(), restrictedItems.end(), [](const auto& item)
         {
-            return item.id == "room:players" || item.id == "room:leave";
+            return item.id == "room:leave";
         }),
         "Raccourcis limites aux actions autorisees attendus");
+    Expect(std::any_of(restrictedItems.begin(), restrictedItems.end(),
+        [](const auto& item) { return item.id == "room:players"; }),
+        "La liste locale des joueurs doit rester accessible sans commande serveur");
 
     room.status = "started";
     for (const std::string_view setupAction : {

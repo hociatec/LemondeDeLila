@@ -67,6 +67,10 @@ export function bounceQuizRaceRules(source: BounceQuizRaceProgram) {
     const quiz = program.cards.find((card) => card.id === pending.cardId)?.quiz;
     if (!quiz || value < 0 || value >= quiz.choices.length)
       throw new GameRuleViolationError('RACE_BOUNCE_QUIZ_ANSWER_INVALID');
+    ctx.events.message('game.quiz.answered', {
+      playerId: pending.actorId,
+      correct: Boolean(quiz.anyCorrect || value === quiz.correctIndex),
+    });
     moveAndResolve(
       pending.actorId,
       quiz.anyCorrect || value === quiz.correctIndex

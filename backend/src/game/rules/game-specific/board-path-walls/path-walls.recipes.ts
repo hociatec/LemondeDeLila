@@ -67,10 +67,7 @@ export function pathWallsRules(source: PathWallsProgram) {
       else ctx.turn.end();
     },
   });
-  const placeWall = defineAction<
-    State,
-    { x: number; y: number; orientation: Orientation }
-  >({
+  const placeWall = defineAction<State, Wall>({
     input: gameInput.object({
       x: gameInput.number({ integer: true, min: 0, max: program.size - 2 }),
       y: gameInput.number({ integer: true, min: 0, max: program.size - 2 }),
@@ -88,6 +85,10 @@ export function pathWallsRules(source: PathWallsProgram) {
         rejectRule('Placement de mur PathWalls illégal');
       ctx.grid.appendOverlay(program.boardId, program.wallsOverlayId, input);
       ctx.resources.remove(actor.id, program.wallsResourceId, 1);
+      ctx.events.message('game.grid.wall.placed', {
+        playerId: actor.id,
+        ...input,
+      });
       ctx.turn.end();
     },
   });
@@ -127,16 +128,9 @@ export function pathWallsRules(source: PathWallsProgram) {
         if (inside(jump) && !edgeBlocked(walls(ctx), step, jump))
           results.push(jump);
         else {
-          const sides =
-            direction.x === 0
-              ? [
-                  { x: -1, y: 0 },
-                  { x: 1, y: 0 },
-                ]
-              : [
-                  { x: 0, y: -1 },
-                  { x: 0, y: 1 },
-                ];
+          const sides = DIRECTIONS.filter((side) =>
+            direction.x === 0 ? side.y === 0 : side.x === 0,
+          ).reverse();
           for (const side of sides) {
             const diagonal = add(step, side);
             if (inside(diagonal) && !edgeBlocked(walls(ctx), step, diagonal))

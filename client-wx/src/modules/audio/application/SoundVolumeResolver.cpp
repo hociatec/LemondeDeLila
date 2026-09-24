@@ -53,6 +53,11 @@ ResolvedPlaybackSettings ResolvePlaybackSettings(
         familyEnabled = settings.tableAmbienceEnabled;
         familyVolume = settings.tableAmbienceVolume;
         break;
+    case domain::SoundFamily::Gameplay:
+        // Gameplay cues have individual controls. Muting UI selection or chat
+        // must not silence dice, cards, pawns or match results.
+        familyVolume = 50;
+        break;
     }
 
     bool cueEnabled = true;

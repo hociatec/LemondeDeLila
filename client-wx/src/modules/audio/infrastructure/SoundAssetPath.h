@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <chrono>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -15,6 +16,7 @@ public:
     SoundAssetPathResolver();
     [[nodiscard]] std::filesystem::path Resolve(domain::SoundCue cue);
     [[nodiscard]] std::filesystem::path ResolvePreview(domain::SoundCue cue);
+    void Invalidate();
 
 private:
     struct RemoteSound final
@@ -34,5 +36,7 @@ private:
     std::unordered_map<std::string, RemoteSound> remoteSounds_;
     std::unordered_set<std::string> disabledSounds_;
     bool manifestLoaded_ = false;
+    std::chrono::steady_clock::time_point nextManifestAttempt_{};
+    std::unordered_set<std::string> verifiedAssets_;
 };
 }

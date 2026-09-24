@@ -34,6 +34,9 @@ struct BackendState final
     int shutdownCount = 0;
     int previewCount = 0;
     bool previewStopped = false;
+    int playCount = 0;
+    int refreshCount = 0;
+    bool finishedAfterPlay = false;
 };
 
 class CallGuard final
@@ -78,7 +81,24 @@ public:
         state_->ready.wait(lock, [this]() { return state_->releasePreload; });
     }
 
-    void Play(SoundCue, float) override {}
+    void Play(SoundCue, float) override
+    {
+        CallGuard call(*state_);
+        std::scoped_lock lock(state_->mutex);
+        ++state_->playCount;
+    }
+    void RefreshAssets() override
+    {
+        CallGuard call(*state_);
+        std::scoped_lock lock(state_->mutex);
+        ++state_->refreshCount;
+    }
+    void FinishPlayback() override
+    {
+        CallGuard call(*state_);
+        std::scoped_lock lock(state_->mutex);
+        state_->finishedAfterPlay = state_->playCount == 1 && state_->interruptCount == 0;
+    }
     void Preview(std::optional<SoundCue> cue) override
     {
         CallGuard call(*state_);
@@ -165,6 +185,30 @@ void TestPreviewFailureKeepsWorkerAlive()
     }
     backend.Shutdown();
 }
+
+void TestGracefulShutdownDrainsPlayback()
+{
+    auto state = std::make_shared<BackendState>();
+    AsyncAudioBackend backend(std::make_unique<BlockingBackend>(state));
+    backend.Preload(SoundCue::ClientOpened);
+    {
+        std::unique_lock lock(state->mutex);
+        Expect(state->ready.wait_for(lock, std::chrono::seconds(2),
+            [&] { return state->preloadStarted; }), "Preload did not start");
+    }
+    backend.RefreshAssets();
+    backend.Play(SoundCue::ClientClosing, 0.5F);
+    auto closing = std::async(std::launch::async, [&] { backend.ShutdownGracefully(); });
+    {
+        std::scoped_lock lock(state->mutex);
+        state->releasePreload = true;
+    }
+    state->ready.notify_all();
+    closing.get();
+    Expect(state->playCount == 1 && state->refreshCount == 1 && state->finishedAfterPlay,
+        "Graceful shutdown must play the queued closing sound before interruption");
+    Expect(!state->concurrentCall && state->shutdownCount == 1, "Audio worker teardown must be serialized");
+}
 }
 
 int main()
@@ -173,6 +217,7 @@ int main()
     {
         TestShutdownKeepsBackendOnWorkerThread();
         TestPreviewFailureKeepsWorkerAlive();
+        TestGracefulShutdownDrainsPlayback();
         std::cout << "Async audio backend tests passed.\n";
         return 0;
     }

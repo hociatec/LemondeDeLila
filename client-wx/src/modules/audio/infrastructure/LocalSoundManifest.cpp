@@ -20,11 +20,11 @@ constexpr std::array Files{
     L"RoomJoined.wav", L"RoomExit.wav", L"RoomJoined.wav", L"RoomExit.wav",
     L"RoomOpened.wav", L"DiceRolled.wav",
     L"DiceRolled.wav", L"DiceRolled.wav", L"DiceRolled.wav", L"DiceRolled.wav",
-    L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav",
-    L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav",
-    L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav",
-    L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav",
-    L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav", L"RoomOpened.wav",
+    L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav",
+    L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav",
+    L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav",
+    L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav",
+    L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav",
     L"ClientDisconnected.wav", L"InvitationSent.wav",
 };
 

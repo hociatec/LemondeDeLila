@@ -1,4 +1,13 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
+import {
+  ADMIN_NOTIFICATION_PORT,
+  type AdminNotificationPort,
+} from '../../ports/admin-notification.port';
 import {
   ADMIN_BUG_REPORTS_PORT,
   type AdminBugReportsPort,
@@ -7,9 +16,12 @@ import { serializeDate } from '../../../../../shared/utils/public-api';
 
 @Injectable()
 export class AdminBugReportCommentsService {
+  private readonly logger = new Logger(AdminBugReportCommentsService.name);
   constructor(
     @Inject(ADMIN_BUG_REPORTS_PORT)
     private readonly bugReports: AdminBugReportsPort,
+    @Inject(ADMIN_NOTIFICATION_PORT)
+    private readonly notifications: AdminNotificationPort,
   ) {}
 
   async list(
@@ -47,6 +59,24 @@ export class AdminBugReportCommentsService {
     }
 
     const counts = await this.bugReports.countComments([reportId]);
+    // Persistence succeeded: notification failure must not turn a saved comment
+    // into a failed command that the user could submit a second time.
+    try {
+      const report = await this.bugReports.get(reportId);
+      if (report && report.createdByUserId !== input.createdByUserId) {
+        await this.notifications.notifyUser(
+          report.createdByUserId,
+          'bugReports.comment.added',
+          {
+            reportId,
+            commentId: comment.id,
+            createdByUserId: input.createdByUserId,
+          },
+        );
+      }
+    } catch {
+      this.logger.warn('Bug report comment notification unavailable');
+    }
     return {
       comment: serializeComment(comment),
       reportId,

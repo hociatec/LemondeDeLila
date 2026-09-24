@@ -64,16 +64,29 @@ void BassStreamCache::Clear() noexcept
         BASS_StreamFree(stream);
     }
     streams_.clear();
+    paths_.clear();
     failed_.clear();
 }
 
 HSTREAM BassStreamCache::GetOrLoad(domain::SoundCue cue, const std::filesystem::path& path)
 {
+    if (path.empty()) return 0;
+    if (paths_[cue] != path)
+    {
+        if (current_ == cue) Stop();
+        if (const auto old = streams_.find(cue); old != streams_.end())
+        {
+            BASS_StreamFree(old->second);
+            streams_.erase(old);
+        }
+        failed_.erase(cue);
+        paths_[cue] = path;
+    }
     if (const auto cached = streams_.find(cue); cached != streams_.end())
     {
         return cached->second;
     }
-    if (path.empty() || failed_.contains(cue))
+    if (failed_.contains(cue) && std::chrono::steady_clock::now() < failed_.at(cue))
     {
         return 0;
     }
@@ -81,7 +94,7 @@ HSTREAM BassStreamCache::GetOrLoad(domain::SoundCue cue, const std::filesystem::
         FALSE, path.c_str(), 0, 0, BASS_UNICODE | BASS_SAMPLE_LOOP | BASS_STREAM_PRESCAN);
     if (stream == 0)
     {
-        failed_.insert(cue);
+        failed_[cue] = std::chrono::steady_clock::now() + std::chrono::seconds(5);
         lila::shared::logging::LogWarning(
             "Audio", "BASS could not load " + path.string() +
                 " (error " + std::to_string(BASS_ErrorGetCode()) + ").");

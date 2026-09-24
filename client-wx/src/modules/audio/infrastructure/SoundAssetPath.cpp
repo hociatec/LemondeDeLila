@@ -6,6 +6,7 @@
 #include <cctype>
 #include <fstream>
 #include <iomanip>
+#include <iterator>
 #include <sstream>
 #include <vector>
 
@@ -120,9 +121,7 @@ std::filesystem::path SoundAssetPathResolver::Resolve(domain::SoundCue cue)
 
 std::filesystem::path SoundAssetPathResolver::ResolvePreview(domain::SoundCue cue)
 {
-    manifestLoaded_ = false;
-    remoteSounds_.clear();
-    disabledSounds_.clear();
+    Invalidate();
     LoadRemoteManifest();
     const auto* descriptor = domain::FindSoundDescriptor(cue);
     if (descriptor == nullptr) return {};
@@ -136,8 +135,8 @@ std::filesystem::path SoundAssetPathResolver::ResolvePreview(domain::SoundCue cu
 
 void SoundAssetPathResolver::LoadRemoteManifest()
 {
-    if (manifestLoaded_) return;
-    manifestLoaded_ = true;
+    if (manifestLoaded_ || std::chrono::steady_clock::now() < nextManifestAttempt_) return;
+    nextManifestAttempt_ = std::chrono::steady_clock::now() + std::chrono::seconds(10);
 #ifdef _WIN32
     try
     {
@@ -146,6 +145,10 @@ void SoundAssetPathResolver::LoadRemoteManifest()
         const auto raw = lila::shared::network::http::RequestWsTicketResponse(
             origin + "/api/sounds/manifest", {});
         const auto manifest = nlohmann::json::parse(raw);
+        if (!manifest.is_object() || !manifest.contains("sounds") || !manifest["sounds"].is_object())
+            return;
+        remoteSounds_.clear();
+        disabledSounds_.clear();
         if (const auto disabled = manifest.find("disabled");
             disabled != manifest.end() && disabled->is_array())
             for (const auto& id : *disabled)
@@ -161,6 +164,7 @@ void SoundAssetPathResolver::LoadRemoteManifest()
             if (!url.empty() && sha.size() == 64 && bytes <= 250U * 1024U * 1024U)
                 remoteSounds_[id] = {url, sha, bytes};
         }
+        manifestLoaded_ = true;
     }
     catch (const std::exception& error)
     {
@@ -168,6 +172,13 @@ void SoundAssetPathResolver::LoadRemoteManifest()
             "Audio", "Manifest audio distant indisponible: " + std::string(error.what()));
     }
 #endif
+}
+
+void SoundAssetPathResolver::Invalidate()
+{
+    manifestLoaded_ = false;
+    nextManifestAttempt_ = {};
+    verifiedAssets_.clear();
 }
 
 std::filesystem::path SoundAssetPathResolver::ResolveRemote(
@@ -181,7 +192,17 @@ std::filesystem::path SoundAssetPathResolver::ResolveRemote(
         const auto directory = cacheDirectory_ / soundId;
         const auto target = directory / (sound.sha256 + ".wav");
         if (std::filesystem::is_regular_file(target) &&
-            std::filesystem::file_size(target) == sound.bytes) return target;
+            std::filesystem::file_size(target) == sound.bytes)
+        {
+            if (verifiedAssets_.contains(soundId + sound.sha256)) return target;
+            std::ifstream input(target, std::ios::binary);
+            const std::string cached((std::istreambuf_iterator<char>(input)), {});
+            if (cached.size() == sound.bytes && Sha256(cached) == sound.sha256)
+            {
+                verifiedAssets_.insert(soundId + sound.sha256);
+                return target;
+            }
+        }
         auto url = sound.url;
         if (!url.starts_with("https://") && !url.starts_with("http://"))
             url = lila::shared::network::WebSocketOriginToHttp(
@@ -199,6 +220,7 @@ std::filesystem::path SoundAssetPathResolver::ResolveRemote(
         if (!output) { std::filesystem::remove(temporary); return {}; }
         std::filesystem::remove(target);
         std::filesystem::rename(temporary, target);
+        verifiedAssets_.insert(soundId + sound.sha256);
         return target;
     }
     catch (const std::exception& error)

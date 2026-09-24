@@ -2,6 +2,11 @@ import { BadRequestException } from '@nestjs/common';
 import { AdminBugReportCommentsService } from './admin-bug-report-comments.service';
 
 describe('AdminBugReportCommentsService', () => {
+  const notifications = {
+    notifyUser: jest.fn().mockResolvedValue(undefined),
+    disconnectAll: jest.fn(),
+  };
+  beforeEach(() => jest.clearAllMocks());
   it('lists comments for a report', async () => {
     const bugReports = {
       listComments: jest.fn().mockResolvedValue([
@@ -13,7 +18,10 @@ describe('AdminBugReportCommentsService', () => {
       addComment: jest.fn(),
       countComments: jest.fn(),
     };
-    const service = new AdminBugReportCommentsService(bugReports as any);
+    const service = new AdminBugReportCommentsService(
+      bugReports as any,
+      notifications,
+    );
 
     await expect(service.list('r1')).resolves.toEqual([
       {
@@ -34,11 +42,14 @@ describe('AdminBugReportCommentsService', () => {
   });
 
   it('throws when target report is missing', async () => {
-    const service = new AdminBugReportCommentsService({
-      listComments: jest.fn(),
-      addComment: jest.fn().mockResolvedValue(null),
-      countComments: jest.fn(),
-    } as any);
+    const service = new AdminBugReportCommentsService(
+      {
+        listComments: jest.fn(),
+        addComment: jest.fn().mockResolvedValue(null),
+        countComments: jest.fn(),
+      } as any,
+      notifications,
+    );
 
     await expect(
       service.add({
@@ -52,6 +63,7 @@ describe('AdminBugReportCommentsService', () => {
 
   it('returns the created comment with updated count', async () => {
     const bugReports = {
+      get: jest.fn().mockResolvedValue({ createdByUserId: 2 }),
       listComments: jest.fn(),
       addComment: jest.fn().mockResolvedValue({
         id: 'c1',
@@ -59,7 +71,10 @@ describe('AdminBugReportCommentsService', () => {
       }),
       countComments: jest.fn().mockResolvedValue({ r1: 4 }),
     };
-    const service = new AdminBugReportCommentsService(bugReports as any);
+    const service = new AdminBugReportCommentsService(
+      bugReports as any,
+      notifications,
+    );
 
     await expect(
       service.add({
@@ -81,5 +96,33 @@ describe('AdminBugReportCommentsService', () => {
       createdByUsername: 'admin',
     });
     expect(bugReports.countComments).toHaveBeenCalledWith(['r1']);
+    expect(notifications.notifyUser).toHaveBeenCalledWith(
+      2,
+      'bugReports.comment.added',
+      {
+        reportId: 'r1',
+        commentId: 'c1',
+        createdByUserId: 1,
+      },
+    );
+
+    notifications.notifyUser.mockRejectedValueOnce(new Error('offline'));
+    await expect(
+      service.add({
+        reportId: 'r1',
+        content: 'second',
+        createdByUserId: 1,
+        createdByUsername: 'admin',
+      }),
+    ).resolves.toHaveProperty('comment.id', 'c1');
+    notifications.notifyUser.mockClear();
+    bugReports.get.mockResolvedValue({ createdByUserId: 1 });
+    await service.add({
+      reportId: 'r1',
+      content: 'own',
+      createdByUserId: 1,
+      createdByUsername: 'admin',
+    });
+    expect(notifications.notifyUser).not.toHaveBeenCalled();
   });
 });

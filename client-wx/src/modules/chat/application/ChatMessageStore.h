@@ -16,7 +16,7 @@ public:
     void Clear();
 
     void LoadHistory(Messages messages, int editWindowSeconds);
-    void UpsertMessage(domain::ChatMessage message);
+    bool UpsertMessage(domain::ChatMessage message);
     void RemoveMessageById(const std::string& messageId);
 
     [[nodiscard]] Messages Snapshot() const;

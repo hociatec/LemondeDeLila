@@ -20,6 +20,8 @@ public:
     void Preview(std::optional<domain::SoundCue> cue) override;
     void SetLoop(std::optional<domain::SoundCue> cue, float volume) override;
     void StopAll() override;
+    void RefreshAssets() override;
+    void FinishPlayback() override;
     void InterruptPlayback() noexcept override;
     void Shutdown() noexcept override;
 
@@ -34,5 +36,7 @@ private:
     std::atomic_bool shuttingDown_ = false;
     std::atomic_bool shutdownComplete_ = false;
     bool modulePinned_ = false;
+    std::optional<domain::SoundCue> loopCue_;
+    float loopVolume_ = 0.0F;
 };
 }

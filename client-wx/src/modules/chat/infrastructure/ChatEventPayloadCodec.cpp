@@ -41,7 +41,9 @@ ChatEvent ParseEvent(const std::string& rawJson, int currentUserId, std::time_t 
         if (type == lila::shared::network::ws::types::chat::Message ||
             type == lila::shared::network::ws::types::chat::MessageUpdated)
         {
-            return detail::ParseMessageUpsertEvent(root, currentUserId, nowUtc);
+            auto event = detail::ParseMessageUpsertEvent(root, currentUserId, nowUtc);
+            event.isEdit = type == lila::shared::network::ws::types::chat::MessageUpdated;
+            return event;
         }
 
         if (type == lila::shared::network::ws::types::chat::MessageDeleted)

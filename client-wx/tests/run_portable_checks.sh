@@ -4,7 +4,10 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${TMPDIR:-/tmp}/lila-portable-tests"
 mkdir -p "$BUILD_DIR"
 COMMON_FLAGS=(-std=c++20 -Wall -Wextra -Wpedantic -Werror -I"$ROOT/src")
-c++ "${COMMON_FLAGS[@]}" "$ROOT/tests/GameSoundPolicyTests.cpp" -o "$BUILD_DIR/game-sound-policy-tests"
+c++ "${COMMON_FLAGS[@]}" "$ROOT/tests/GameSoundPolicyTests.cpp" \
+  "$ROOT/src/modules/audio/domain/SoundCatalog.cpp" \
+  "$ROOT/src/modules/audio/application/SoundVolumeResolver.cpp" \
+  -o "$BUILD_DIR/game-sound-policy-tests"
 "$BUILD_DIR/game-sound-policy-tests"
 JSON_INCLUDE="$BUILD_DIR/dependencies/nlohmann-json-3.12.0"
 mkdir -p "$JSON_INCLUDE/nlohmann" "$BUILD_DIR/generated"
@@ -28,6 +31,19 @@ fetch_json_header() {
 
 fetch_json_header json.hpp aaf127c04cb31c406e5b04a63f1ae89369fccde6d8fa7cdda1ed4f32dfc5de63
 fetch_json_header json_fwd.hpp fb6aa70cbece087f37ab4685c182b287c53be54f785f981b9db9d30d2d028b37
+
+c++ "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
+  "$ROOT/tests/AudioRegressionTests.cpp" \
+  "$ROOT/src/modules/audio/application/AudioService.cpp" \
+  "$ROOT/src/modules/audio/application/SoundVolumeResolver.cpp" \
+  "$ROOT/src/modules/audio/domain/SoundCatalog.cpp" \
+  "$ROOT/src/modules/audio/infrastructure/NotificationAudioDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GameSystemDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GameValueDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp" \
+  "$ROOT/src/modules/chat/application/ChatMessageStore.cpp" \
+  -o "$BUILD_DIR/audio-regression-tests"
+"$BUILD_DIR/audio-regression-tests"
 
 sed \
   -e 's/@PROJECT_VERSION@/portable-test/g' \
@@ -162,6 +178,8 @@ c++ "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
 
 c++ "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
   "$ROOT/tests/ServiceResilienceTests.cpp" \
+  "$ROOT/src/modules/rooms/application/RoomInvitationMonitor.cpp" \
+  "$ROOT/src/modules/rooms/infrastructure/RoomInvitationPayloadCodec.cpp" \
   "$ROOT/src/modules/presence/application/PresenceMonitor.cpp" \
   "$ROOT/src/modules/presence/application/PresenceMonitor.Activity.cpp" \
   "$ROOT/src/modules/presence/infrastructure/PresencePayloadCodec.cpp" \

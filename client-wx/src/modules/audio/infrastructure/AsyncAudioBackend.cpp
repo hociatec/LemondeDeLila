@@ -12,7 +12,7 @@ namespace lila::modules::audio::infrastructure
 {
 namespace
 {
-enum class CommandType { Preload, Play, Preview, SetLoop, StopAll };
+enum class CommandType { Preload, Play, Preview, SetLoop, StopAll, RefreshAssets };
 
 struct Command final
 {
@@ -87,7 +87,7 @@ public:
         Shutdown();
     }
 
-    void Shutdown() noexcept
+    void Shutdown(bool graceful = false) noexcept
     {
         {
             std::scoped_lock lock(mutex_);
@@ -96,7 +96,8 @@ public:
                 return;
             }
             stopping_ = true;
-            foreground_.clear();
+            graceful_ = graceful;
+            if (!graceful) foreground_.clear();
             background_.clear();
         }
         ready_.notify_all();
@@ -118,7 +119,7 @@ private:
                 {
                     return stopping_ || !foreground_.empty() || !background_.empty();
                 });
-                if (stopping_)
+                if (stopping_ && (!graceful_ || foreground_.empty()))
                 {
                     break;
                 }
@@ -138,6 +139,7 @@ private:
         // All calls into the concrete backend, including teardown, stay on a
         // single thread. This avoids racing BASS_Free/BASS_Stop with a call in
         // progress.
+        if (graceful_) { try { backend_->FinishPlayback(); } catch (...) {} }
         backend_->InterruptPlayback();
         backend_->Shutdown();
     }
@@ -151,6 +153,7 @@ private:
         case CommandType::Preview: backend_->Preview(command.cue); break;
         case CommandType::SetLoop: backend_->SetLoop(command.cue, command.volume); break;
         case CommandType::StopAll: backend_->StopAll(); break;
+        case CommandType::RefreshAssets: backend_->RefreshAssets(); break;
         }
     }
 
@@ -162,6 +165,7 @@ private:
     // This state must be constructed before worker_: a newly-created thread
     // is allowed to run immediately from worker_'s constructor.
     bool stopping_ = false;
+    bool graceful_ = false;
     std::thread worker_;
 };
 
@@ -195,6 +199,16 @@ void AsyncAudioBackend::Preview(std::optional<domain::SoundCue> cue)
 void AsyncAudioBackend::StopAll()
 {
     impl_->EnqueueForeground({CommandType::StopAll, std::nullopt});
+}
+
+void AsyncAudioBackend::RefreshAssets()
+{
+    impl_->EnqueueForeground({CommandType::RefreshAssets, std::nullopt});
+}
+
+void AsyncAudioBackend::ShutdownGracefully() noexcept
+{
+    impl_->Shutdown(true);
 }
 
 void AsyncAudioBackend::InterruptPlayback() noexcept

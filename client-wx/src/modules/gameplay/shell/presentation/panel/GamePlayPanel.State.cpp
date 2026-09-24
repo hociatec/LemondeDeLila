@@ -11,6 +11,7 @@
 #include "modules/gameplay/actions/application/GameActionPresentationPolicy.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/events/presentation/GameEventPresenter.h"
+#include "modules/gameplay/events/application/GameSoundEventPolicy.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
@@ -96,6 +97,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     auto nextLines = application::GameActionPresentationPolicy::GenericLines(state);
     auto nextPawnSelection = infrastructure::PawnSelectionDecoder::Decode(state.pending);
     auto nextLogMessages = EventMessages(state);
+    if (state_.runId != state.runId) observedEventIdentities_.clear();
     state_ = std::move(state);
     hasAuthoritativeState_ = true;
     if (receivedStartedState)
@@ -113,7 +115,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     {
         for (const auto& event : state_.system.events)
             if (observedEventIdentities_.insert(event.Identity()).second)
-                onGameSoundEvent_(event.type,
+                onGameSoundEvent_(application::GameSoundEventType(
+                    event, state_.system.events, state_.viewerPlayerId.value_or(0)),
                     event.details.playerId.value_or(event.actorId.value_or(0)),
                     state_.system.match.result
                         ? state_.system.match.result->winnerPlayerIds : std::vector<int>{});

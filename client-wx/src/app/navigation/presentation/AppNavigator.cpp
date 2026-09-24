@@ -52,6 +52,7 @@ AppNavigator::~AppNavigator()
     wxEvtHandler::RemoveFilter(this);
     sessionStore_.SetSessionExpiredHandler({});
     roomInvitationMonitor_.SetInvitationHandler({});
+    roomInvitationMonitor_.SetMessageHandler({});
     roomInvitationMonitor_.Stop();
     StopSessionChat();
     presenceMonitor_.Stop();
@@ -109,6 +110,7 @@ bool AppNavigator::Start()
                         if (weakFrame) HandleRoomInvitation(std::move(invitation));
                     });
             });
+        BindNotificationAudio();
         hostFrame_->SetCloseRequestedHandler(
             [this]()
             {

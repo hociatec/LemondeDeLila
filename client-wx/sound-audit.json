@@ -1,0 +1,1395 @@
+{
+    "checkedAt":  "2026-09-24T08:35:15.999Z",
+    "origin":  "https://ws.lilas.hociatec.fr",
+    "manifestUpdatedAt":  "2026-09-23T19:16:39.437Z",
+    "disabled":  [
+
+                 ],
+    "missingClientKeys":  [
+
+                          ],
+    "sounds":  [
+                   {
+                       "id":  "ClientOpened",
+                       "key":  "clientOpened",
+                       "family":  "AppLaunch",
+                       "loop":  false,
+                       "fallback":  "ClientOpened.wav",
+                       "triggers":  [
+                                        "src/app/navigation/presentation/AppNavigator.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  3.312018
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  2.232018
+                                       },
+                       "remoteBytes":  393806
+                   },
+                   {
+                       "id":  "ClientConnected",
+                       "key":  "clientConnected",
+                       "family":  "AppLaunch",
+                       "loop":  false,
+                       "fallback":  "ClientConnected.wav",
+                       "triggers":  [
+                                        "src/app/navigation/presentation/AppNavigator.Authentication.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.202698
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.202698
+                                       },
+                       "remoteBytes":  212234
+                   },
+                   {
+                       "id":  "ClientDisconnected",
+                       "key":  "clientDisconnected",
+                       "family":  "AppLaunch",
+                       "loop":  false,
+                       "fallback":  "ClientDisconnected.wav",
+                       "triggers":  [
+                                        "src/app/navigation/presentation/AppNavigator.Authentication.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  0.210045
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  2.424014
+                                       },
+                       "remoteBytes":  427674
+                   },
+                   {
+                       "id":  "ClientClosing",
+                       "key":  "clientClosing",
+                       "family":  "AppLaunch",
+                       "loop":  false,
+                       "fallback":  "ClientDisconnected.wav",
+                       "triggers":  [
+                                        "src/app/navigation/presentation/AppNavigator.Session.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  0.210045
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  2.424014
+                                       },
+                       "remoteBytes":  427674
+                   },
+                   {
+                       "id":  "ClientUpdateWarning",
+                       "key":  "clientUpdateWarning",
+                       "family":  "Navigate",
+                       "loop":  false,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      }
+                   },
+                   {
+                       "id":  "MainMenuMusic",
+                       "key":  "mainMenuMusic",
+                       "family":  "Ambience",
+                       "loop":  true,
+                       "fallback":  "MainMenuMusic.wav",
+                       "triggers":  [
+                                        "src/modules/audio/application/AudioService.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  84.636735
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  84.636735
+                                       },
+                       "remoteBytes":  14929998
+                   },
+                   {
+                       "id":  "TavernAmbience",
+                       "key":  "tavernAmbience",
+                       "family":  "Ambience",
+                       "loop":  true,
+                       "fallback":  "TavernAmbience.wav",
+                       "triggers":  [
+                                        "src/modules/audio/application/AudioService.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  37.536009
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  37.536009
+                                       },
+                       "remoteBytes":  6621430
+                   },
+                   {
+                       "id":  "TavernOpened",
+                       "key":  "tavernOpened",
+                       "family":  "Ambience",
+                       "loop":  false,
+                       "fallback":  "TavernOpened.wav",
+                       "triggers":  [
+                                        "src/app/navigation/presentation/AppNavigator.Transitions.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.243265
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  2.424014
+                                       },
+                       "remoteBytes":  427674
+                   },
+                   {
+                       "id":  "TavernClosed",
+                       "key":  "tavernClosed",
+                       "family":  "Ambience",
+                       "loop":  false,
+                       "fallback":  "RoomExit.wav",
+                       "triggers":  [
+                                        "src/app/navigation/presentation/AppNavigator.Transitions.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  5.904739
+                                      }
+                   },
+                   {
+                       "id":  "DiceRolled",
+                       "key":  "diceRolled",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "DiceRolled.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.392018
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  0.999909
+                                       },
+                       "remoteBytes":  176462
+                   },
+                   {
+                       "id":  "DrawCard",
+                       "key":  "drawCard",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "InvitationSent.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  0.706372
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  0.700998
+                                       },
+                       "remoteBytes":  123734
+                   },
+                   {
+                       "id":  "ChatMessageSent",
+                       "key":  "chatMessageSent",
+                       "family":  "Messages",
+                       "loop":  false,
+                       "fallback":  "ChatMessageSent.wav",
+                       "triggers":  [
+                                        "src/modules/chat/application/ChatService.Connection.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.672902
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.672902
+                                       },
+                       "remoteBytes":  295178
+                   },
+                   {
+                       "id":  "ChatMessageReceived",
+                       "key":  "chatMessageReceived",
+                       "family":  "Messages",
+                       "loop":  false,
+                       "fallback":  "ChatMessageReceived.wav",
+                       "triggers":  [
+                                        "src/modules/chat/application/ChatService.Messages.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  2.613311
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  2.613311
+                                       },
+                       "remoteBytes":  461066
+                   },
+                   {
+                       "id":  "TableChatMessageSent",
+                       "key":  "tableChatMessageSent",
+                       "family":  "Messages",
+                       "loop":  false,
+                       "fallback":  "ChatMessageSent.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/presentation/actions/RoomPanel.Commands.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.672902
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.128005
+                                       },
+                       "remoteBytes":  199058
+                   },
+                   {
+                       "id":  "TableChatMessageReceived",
+                       "key":  "tableChatMessageReceived",
+                       "family":  "Messages",
+                       "loop":  false,
+                       "fallback":  "ChatMessageReceived.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/presentation/session/RoomPanel.Realtime.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  2.613311
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  3.318617
+                                       },
+                       "remoteBytes":  585482
+                   },
+                   {
+                       "id":  "PrivateMessageSent",
+                       "key":  "privateMessageSent",
+                       "family":  "Messages",
+                       "loop":  false,
+                       "fallback":  "PrivateMessageSent.wav",
+                       "triggers":  [
+                                        "src/modules/messaging/application/MessagingService.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.098209
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  5.016576
+                                       },
+                       "remoteBytes":  885002
+                   },
+                   {
+                       "id":  "PrivateMessageReceived",
+                       "key":  "privateMessageReceived",
+                       "family":  "Messages",
+                       "loop":  false,
+                       "fallback":  "PrivateMessageReceived.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.568413
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  5.016576
+                                       },
+                       "remoteBytes":  885002
+                   },
+                   {
+                       "id":  "FriendConnected",
+                       "key":  "friendConnected",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "FriendConnected.wav",
+                       "triggers":  [
+                                        "src/modules/presence/application/PresenceMonitor.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  0.914286
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  0.914286
+                                       },
+                       "remoteBytes":  161358
+                   },
+                   {
+                       "id":  "FriendDisconnected",
+                       "key":  "friendDisconnected",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "FriendDisconnected.wav",
+                       "triggers":  [
+                                        "src/modules/presence/application/PresenceMonitor.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  0.57576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  2.52
+                                       },
+                       "remoteBytes":  444606
+                   },
+                   {
+                       "id":  "FriendInvitationSent",
+                       "key":  "friendInvitationSent",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "FriendInvitationSent.wav",
+                       "triggers":  [
+                                        "src/modules/social/application/SocialService.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.75127
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  0.523515
+                                       },
+                       "remoteBytes":  92426
+                   },
+                   {
+                       "id":  "FriendInvitationReceived",
+                       "key":  "friendInvitationReceived",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "FriendInvitationReceived.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.75127
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.75127
+                                       },
+                       "remoteBytes":  309002
+                   },
+                   {
+                       "id":  "GameVictory",
+                       "key":  "gameVictory",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "GameVictory.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  10.81576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  6.816984
+                                       },
+                       "remoteBytes":  1202594
+                   },
+                   {
+                       "id":  "GameDefeat",
+                       "key":  "gameDefeat",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "GameDefeat.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.306122
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.306122
+                                       },
+                       "remoteBytes":  230478
+                   },
+                   {
+                       "id":  "QuizCorrect",
+                       "key":  "quizCorrect",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  3.312018
+                                       },
+                       "remoteBytes":  584318
+                   },
+                   {
+                       "id":  "QuizWrong",
+                       "key":  "quizWrong",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "RoomExit.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  5.904739
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.123265
+                                       },
+                       "remoteBytes":  198222
+                   },
+                   {
+                       "id":  "RoundEnded",
+                       "key":  "roundEnded",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "DiceRolled.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.392018
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.986372
+                                       },
+                       "remoteBytes":  350474
+                   },
+                   {
+                       "id":  "InvitationSent",
+                       "key":  "invitationSent",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "InvitationSent.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/presentation/actions/RoomPanel.TableActions.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  0.706372
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  6.164898
+                                       },
+                       "remoteBytes":  1087566
+                   },
+                   {
+                       "id":  "InvitationReceived",
+                       "key":  "invitationReceived",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "FriendInvitationReceived.wav",
+                       "triggers":  [
+                                        "src/app/navigation/presentation/AppNavigator.Invitations.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.75127
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  0.967596
+                                       },
+                       "remoteBytes":  170762
+                   },
+                   {
+                       "id":  "AdminContactSent",
+                       "key":  "adminContactSent",
+                       "family":  "Messages",
+                       "loop":  false,
+                       "fallback":  "AdminContactSent.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.346757
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.346757
+                                       },
+                       "remoteBytes":  237646
+                   },
+                   {
+                       "id":  "AdminContactReceived",
+                       "key":  "adminContactReceived",
+                       "family":  "Messages",
+                       "loop":  false,
+                       "fallback":  "AdminContactReceived.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  4.441882
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  26.697143
+                                       },
+                       "remoteBytes":  4709454
+                   },
+                   {
+                       "id":  "BugReportCommentReceived",
+                       "key":  "bugReportCommentReceived",
+                       "family":  "Navigate",
+                       "loop":  false,
+                       "fallback":  "ChatMessageReceived.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  2.613311
+                                      }
+                   },
+                   {
+                       "id":  "RoomOpened",
+                       "key":  "roomOpened",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/presentation/session/RoomPanel.Loading.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  6.296576
+                                       },
+                       "remoteBytes":  1110794
+                   },
+                   {
+                       "id":  "RoomJoined",
+                       "key":  "roomJoined",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "RoomJoined.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/presentation/session/RoomPanel.Loading.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  2.796168
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  2.796168
+                                       },
+                       "remoteBytes":  493322
+                   },
+                   {
+                       "id":  "RoomExit",
+                       "key":  "roomExit",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "RoomExit.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/presentation/actions/RoomPanel.Actions.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  5.904739
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  5.904739
+                                       },
+                       "remoteBytes":  1041674
+                   },
+                   {
+                       "id":  "RoomMemberJoined",
+                       "key":  "roomMemberJoined",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "RoomJoined.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/presentation/shell/RoomPanel.State.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  2.796168
+                                      }
+                   },
+                   {
+                       "id":  "RoomMemberLeft",
+                       "key":  "roomMemberLeft",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "RoomExit.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/presentation/shell/RoomPanel.State.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  5.904739
+                                      }
+                   },
+                   {
+                       "id":  "TableStarted",
+                       "key":  "tableStarted",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/presentation/shell/RoomPanel.State.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  2.232018
+                                       },
+                       "remoteBytes":  393806
+                   },
+                   {
+                       "id":  "PawnPicked",
+                       "key":  "pawnPicked",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "DiceRolled.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.392018
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.404014
+                                       },
+                       "remoteBytes":  247746
+                   },
+                   {
+                       "id":  "PawnPlacedSelf",
+                       "key":  "pawnPlacedSelf",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "DiceRolled.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.392018
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.044014
+                                       },
+                       "remoteBytes":  184242
+                   },
+                   {
+                       "id":  "PawnPlacedOpponent",
+                       "key":  "pawnPlacedOpponent",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "DiceRolled.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.392018
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  0.626939
+                                       },
+                       "remoteBytes":  110670
+                   },
+                   {
+                       "id":  "WallPlacedSelf",
+                       "key":  "wallPlacedSelf",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "DiceRolled.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.392018
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.149388
+                                       },
+                       "remoteBytes":  202830
+                   },
+                   {
+                       "id":  "WallPlacedOpponent",
+                       "key":  "wallPlacedOpponent",
+                       "family":  "Gameplay",
+                       "loop":  false,
+                       "fallback":  "DiceRolled.wav",
+                       "triggers":  [
+                                        "src/modules/rooms/application/GameSoundPolicy.h"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  1.392018
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  5.112018
+                                       },
+                       "remoteBytes":  901838
+                   },
+                   {
+                       "id":  "TableAmbience1",
+                       "key":  "tableAmbience1",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.202698
+                                       },
+                       "remoteBytes":  212234
+                   },
+                   {
+                       "id":  "TableAmbience2",
+                       "key":  "tableAmbience2",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  1.202698
+                                       },
+                       "remoteBytes":  212234
+                   },
+                   {
+                       "id":  "TableAmbience3",
+                       "key":  "tableAmbience3",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  151.666939
+                                       },
+                       "remoteBytes":  26754126
+                   },
+                   {
+                       "id":  "TableAmbience4",
+                       "key":  "tableAmbience4",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  165.903673
+                                       },
+                       "remoteBytes":  29265486
+                   },
+                   {
+                       "id":  "TableAmbience5",
+                       "key":  "tableAmbience5",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  175.386122
+                                       },
+                       "remoteBytes":  30938190
+                   },
+                   {
+                       "id":  "TableAmbience6",
+                       "key":  "tableAmbience6",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  204.773878
+                                       },
+                       "remoteBytes":  36122190
+                   },
+                   {
+                       "id":  "TableAmbience7",
+                       "key":  "tableAmbience7",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  329.584036
+                                       },
+                       "remoteBytes":  58138702
+                   },
+                   {
+                       "id":  "TableAmbience8",
+                       "key":  "tableAmbience8",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  155.063923
+                                       },
+                       "remoteBytes":  27353354
+                   },
+                   {
+                       "id":  "TableAmbience9",
+                       "key":  "tableAmbience9",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  132.440816
+                                       },
+                       "remoteBytes":  23362638
+                   },
+                   {
+                       "id":  "TableAmbience10",
+                       "key":  "tableAmbience10",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  42.684082
+                                       },
+                       "remoteBytes":  7529550
+                   },
+                   {
+                       "id":  "TableAmbience11",
+                       "key":  "tableAmbience11",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  288.10449
+                                       },
+                       "remoteBytes":  50821710
+                   },
+                   {
+                       "id":  "TableAmbience12",
+                       "key":  "tableAmbience12",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  254.82449
+                                       },
+                       "remoteBytes":  44951118
+                   },
+                   {
+                       "id":  "TableAmbience13",
+                       "key":  "tableAmbience13",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  382.094127
+                                       },
+                       "remoteBytes":  67401482
+                   },
+                   {
+                       "id":  "TableAmbience14",
+                       "key":  "tableAmbience14",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      },
+                       "remoteAudio":  {
+                                           "codec":  "pcm_s16le",
+                                           "channels":  2,
+                                           "sampleRate":  "44100",
+                                           "seconds":  370.626667
+                                       },
+                       "remoteBytes":  65378622
+                   },
+                   {
+                       "id":  "TableAmbience15",
+                       "key":  "tableAmbience15",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      }
+                   },
+                   {
+                       "id":  "TableAmbience16",
+                       "key":  "tableAmbience16",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      }
+                   },
+                   {
+                       "id":  "TableAmbience17",
+                       "key":  "tableAmbience17",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      }
+                   },
+                   {
+                       "id":  "TableAmbience18",
+                       "key":  "tableAmbience18",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      }
+                   },
+                   {
+                       "id":  "TableAmbience19",
+                       "key":  "tableAmbience19",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      }
+                   },
+                   {
+                       "id":  "TableAmbience20",
+                       "key":  "tableAmbience20",
+                       "family":  "TableAmbience",
+                       "loop":  true,
+                       "fallback":  "RoomOpened.wav",
+                       "triggers":  [
+
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  6.296576
+                                      }
+                   },
+                   {
+                       "id":  "Navigation",
+                       "key":  "navigation",
+                       "family":  "Navigate",
+                       "loop":  false,
+                       "fallback":  "ClientDisconnected.wav",
+                       "triggers":  [
+                                        "src/app/navigation/presentation/AppNavigator.cpp",
+                                        "src/app/navigation/presentation/AppNavigator.Transitions.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  0.210045
+                                      }
+                   },
+                   {
+                       "id":  "Selection",
+                       "key":  "selection",
+                       "family":  "Select",
+                       "loop":  false,
+                       "fallback":  "InvitationSent.wav",
+                       "triggers":  [
+                                        "src/app/navigation/presentation/AppNavigator.cpp"
+                                    ],
+                       "localAudio":  {
+                                          "codec":  "pcm_s16le",
+                                          "channels":  2,
+                                          "sampleRate":  "44100",
+                                          "seconds":  0.706372
+                                      }
+                   }
+               ]
+}

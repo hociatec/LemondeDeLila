@@ -222,6 +222,6 @@ void TestCapabilityInformationIsInspectable()
         lila::modules::gameplay::domain::GameShortcutKind::Interface,
         "inventory:shopping-baskets", "", "Panier"});
     Expect(lila::modules::gameplay::application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(
-            state, "S").empty(),
-        "Un raccourci S explicite du jeu doit remplacer le raccourci générique des scores.");
+            state, "S") == "score",
+        "Le raccourci global S doit rester disponible pour annoncer les scores.");
 }

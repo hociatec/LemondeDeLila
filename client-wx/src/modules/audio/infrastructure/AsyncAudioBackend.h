@@ -17,6 +17,8 @@ public:
     void Preview(std::optional<domain::SoundCue> cue) override;
     void SetLoop(std::optional<domain::SoundCue> cue, float volume) override;
     void StopAll() override;
+    void RefreshAssets() override;
+    void ShutdownGracefully() noexcept override;
     void InterruptPlayback() noexcept override;
     void Shutdown() noexcept override;
 

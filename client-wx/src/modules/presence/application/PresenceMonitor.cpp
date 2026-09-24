@@ -129,6 +129,8 @@ void PresenceMonitor::Connect(std::stop_token stopToken)
     };
     lila::modules::session::application::ConnectWithSessionRefresh(
         sessionStore_, stopToken, [this] { webSocketClient_.Close(); }, connect);
+    // The first snapshot after every connection is a baseline, not live arrivals.
+    { std::scoped_lock lock(mutex_); hasSnapshot_ = false; }
     { std::scoped_lock lock(mutex_); contextDirty_ = true; }
     SetStatus("Présence connectée.");
 }

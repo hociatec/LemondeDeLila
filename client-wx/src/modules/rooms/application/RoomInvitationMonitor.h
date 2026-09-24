@@ -5,6 +5,7 @@
 #include <mutex>
 #include <stop_token>
 #include <string>
+#include <thread>
 
 #include "modules/rooms/domain/Room.h"
 
@@ -30,6 +31,7 @@ public:
     void Start();
     void Stop();
     void SetInvitationHandler(InvitationHandler handler);
+    void SetMessageHandler(std::function<void(const std::string&)> handler);
 
 private:
     void ReceiveLoop(std::stop_token stopToken);
@@ -42,6 +44,7 @@ private:
     lila::modules::session::application::SessionStore& sessionStore_;
     std::mutex mutex_;
     InvitationHandler onInvitation_;
-    std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> receiveTask_;
+    std::function<void(const std::string&)> onMessage_;
+    std::jthread receiveThread_;
 };
 }
