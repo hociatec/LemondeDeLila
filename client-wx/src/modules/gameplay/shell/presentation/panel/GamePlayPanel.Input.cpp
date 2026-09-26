@@ -1,8 +1,6 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
-
 #include <optional>
 #include <utility>
-
 #include <wx/event.h>
 #include <wx/listbox.h>
 #include <wx/choice.h>
@@ -22,7 +20,6 @@
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/encoding/Encoding.h"
-
 namespace lila::modules::gameplay::presentation
 {
 bool GamePlayPanel::HandleKey(wxKeyEvent& event)
