@@ -99,6 +99,7 @@ void MakeMultipart(
         filename + "\"\r\nContent-Type: application/octet-stream\r\n\r\n";
     request.body += ReadFile(filePath);
     request.body += "\r\n--" + boundary + "--\r\n";
+    request.headers.emplace("Content-Length", std::to_string(request.body.size()));
 }
 
 nlohmann::json ParseHttpPayload(const lila::shared::network::http::HttpResponse& response)
@@ -182,7 +183,26 @@ nlohmann::json AdminGateway::ExecuteHttp(
         request.body = body.dump();
     }
 
-    auto response = httpClient_.Send(request, sessionStore_.AccessToken(stopToken), stopToken);
+    lila::shared::network::http::HttpResponse response;
+    try
+    {
+        response = httpClient_.Send(request, sessionStore_.AccessToken(stopToken), stopToken);
+    }
+    catch (const std::exception& error)
+    {
+        if (command.transport != AdminTransport::HttpMultipart || stopToken.stop_requested()) throw;
+        try
+        {
+            response = httpClient_.Send(
+                request, sessionStore_.RefreshAccessToken(stopToken), stopToken);
+        }
+        catch (const std::exception& retryError)
+        {
+            throw lila::shared::errors::AppException(lila::shared::errors::ToAppError(
+                "Téléversement du son impossible. Vérifiez votre connexion et réessayez.",
+                std::string(error.what()) + " ; nouvelle tentative : " + retryError.what()));
+        }
+    }
     if (response.statusCode == 401 && !stopToken.stop_requested())
         response = httpClient_.Send(request, sessionStore_.RefreshAccessToken(stopToken), stopToken);
     return ValidateAndNormalizeAdminPayload(ParseHttpPayload(response));
