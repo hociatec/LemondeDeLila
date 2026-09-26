@@ -1,6 +1,7 @@
 #include "modules/audio/infrastructure/SoundAssetPath.h"
 
 #include "modules/audio/infrastructure/LocalSoundManifest.h"
+#include "modules/audio/infrastructure/SoundAssetCacheCleanup.h"
 
 #include <array>
 #include <cctype>
@@ -164,6 +165,9 @@ void SoundAssetPathResolver::LoadRemoteManifest()
             if (!url.empty() && sha.size() == 64 && bytes <= 250U * 1024U * 1024U)
                 remoteSounds_[id] = {url, sha, bytes};
         }
+        std::unordered_map<std::string, std::string> currentHashes;
+        for (const auto& [id, sound] : remoteSounds_) currentHashes[id] = sound.sha256;
+        CleanupRemoteSoundCache(cacheDirectory_, currentHashes);
         manifestLoaded_ = true;
     }
     catch (const std::exception& error)
