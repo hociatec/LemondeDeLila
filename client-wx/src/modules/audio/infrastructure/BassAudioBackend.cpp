@@ -141,6 +141,7 @@ void BassAudioBackend::StopAll()
     loopCue_.reset();
     deferredLoopCue_.reset();
     clientOpenedChannel_ = 0;
+    refreshPending_ = false;
     if (!initialized_.load(std::memory_order_acquire))
     {
         return;
@@ -152,9 +153,16 @@ void BassAudioBackend::StopAll()
 
 bool BassAudioBackend::PumpDeferredPlayback()
 {
+    if (refreshPending_ && !samples_.IsPlaying())
+    {
+        refreshPending_ = false;
+        samples_.Clear();
+        streams_.Clear();
+        if (loopCue_) SetLoop(loopCue_, loopVolume_);
+    }
     if (!deferredLoopCue_.has_value())
     {
-        return false;
+        return refreshPending_;
     }
     if (clientOpenedChannel_ != 0 &&
         BASS_ChannelIsActive(clientOpenedChannel_) == BASS_ACTIVE_PLAYING)
@@ -172,6 +180,13 @@ bool BassAudioBackend::PumpDeferredPlayback()
 void BassAudioBackend::RefreshAssets()
 {
     assetPaths_.Invalidate();
+    if (samples_.IsPlaying())
+    {
+        // A notify.connected message can arrive while ClientOpened is playing.
+        // Freeing its sample here would stop the cue mid-playback.
+        refreshPending_ = true;
+        return;
+    }
     samples_.Clear();
     streams_.Clear();
     if (loopCue_) SetLoop(loopCue_, loopVolume_);
