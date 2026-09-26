@@ -49,7 +49,7 @@ AppNavigator::AppNavigator(
 
 AppNavigator::~AppNavigator()
 {
-    CancelScheduledTavernAudio();
+    CancelScheduledBackgroundAudio();
     wxEvtHandler::RemoveFilter(this);
     sessionStore_.SetSessionExpiredHandler({});
     roomInvitationMonitor_.SetInvitationHandler({});
