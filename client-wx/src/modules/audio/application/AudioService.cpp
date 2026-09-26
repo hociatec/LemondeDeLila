@@ -29,6 +29,11 @@ void AudioService::Preview(std::optional<domain::SoundCue> cue)
     if (!shuttingDown_.load(std::memory_order_acquire)) backend_.Preview(cue);
 }
 
+void AudioService::TogglePreviewPause()
+{
+    if (!shuttingDown_.load(std::memory_order_acquire)) backend_.TogglePreviewPause();
+}
+
 void AudioService::Play(domain::SoundCue cue)
 {
     if (shuttingDown_.load(std::memory_order_acquire))

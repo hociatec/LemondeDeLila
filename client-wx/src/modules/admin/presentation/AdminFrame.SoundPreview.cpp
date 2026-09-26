@@ -24,5 +24,8 @@ void AdminFrame::PreviewSound(std::string_view soundId)
         return;
     }
     audioService_.Preview(sound->cue);
+    ambiencePreviewPlaying_ = true;
+    ambiencePreviewPaused_ = false;
+    SetStatus(L"Aperçu en lecture. Espace met en pause ; Échap arrête.");
 }
 }

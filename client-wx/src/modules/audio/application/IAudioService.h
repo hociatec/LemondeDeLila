@@ -18,6 +18,7 @@ public:
     {
         if (cue) Play(*cue);
     }
+    virtual void TogglePreviewPause() {}
     virtual void StartLoop(domain::SoundCue cue) = 0;
     virtual void StopLoop() = 0;
     virtual void StartTableAmbience(std::string_view soundId) = 0;

@@ -9,6 +9,7 @@
 #include <wx/choice.h>
 #include <wx/panel.h>
 
+#include "modules/audio/application/IAudioService.h"
 #include "shared/security/infrastructure/SecurityUtils.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
@@ -146,6 +147,15 @@ void AdminFrame::LoadAutomaticAreaContent()
 
 bool AdminFrame::HandleKey(int keyCode)
 {
+    if (keyCode == WXK_SPACE && ambiencePreviewPlaying_)
+    {
+        audioService_.TogglePreviewPause();
+        ambiencePreviewPaused_ = !ambiencePreviewPaused_;
+        SetStatus(ambiencePreviewPaused_
+            ? L"Aperçu mis en pause. Espace reprend la lecture."
+            : L"Aperçu repris. Espace met en pause.");
+        return true;
+    }
     if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB)
     {
         // La console est conçue pour une navigation par flèches ; Tabulation
@@ -153,6 +163,14 @@ bool AdminFrame::HandleKey(int keyCode)
         return true;
     }
     if (keyCode != WXK_ESCAPE) return false;
+    if (ambiencePreviewPlaying_)
+    {
+        audioService_.Preview(std::nullopt);
+        ambiencePreviewPlaying_ = false;
+        ambiencePreviewPaused_ = false;
+        SetStatus(L"Aperçu arrêté.");
+        return true;
+    }
     if (loading_) requestSlot_.Cancel();
     loading_ = false;
     if (showingItemActions_)
