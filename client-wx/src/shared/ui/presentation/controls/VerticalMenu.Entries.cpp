@@ -19,74 +19,9 @@ void VerticalMenu::SetItemsForNavigation(
     std::span<const VerticalMenuItem> items,
     std::size_t selectedIndex, bool quiet)
 {
-    if (role_ != VerticalMenuRole::Entries)
-    {
-        SetItems(items);
-        if (!items.empty()) SetSelectedIndexSilently(std::min(selectedIndex, items.size() - 1));
-        return;
-    }
-
-    VerticalMenuEntry* focusedEntry = nullptr;
-    for (auto* entry : entries_)
-    {
-        if (entry->HasFocus())
-        {
-            focusedEntry = entry;
-            break;
-        }
-    }
-
-    while (entries_.size() < items.size())
-    {
-        auto* entry = new VerticalMenuEntry(this, wxString{});
-        BindEntry(*entry);
-        sizer_->Add(entry, 0, wxEXPAND | wxBOTTOM, 6);
-        entries_.push_back(entry);
-    }
-
-    const auto target = items.empty() ? 0 : std::min(selectedIndex, items.size() - 1);
-    if (focusedEntry != nullptr && !items.empty())
-    {
-        const auto current = std::find(entries_.begin(), entries_.end(), focusedEntry);
-        if (current != entries_.end() && static_cast<std::size_t>(std::distance(entries_.begin(), current)) != target)
-        {
-            entries_.erase(current);
-            entries_.insert(entries_.begin() + static_cast<std::ptrdiff_t>(target), focusedEntry);
-            sizer_->Detach(focusedEntry);
-            sizer_->Insert(target, focusedEntry, 0, wxEXPAND | wxBOTTOM, 6);
-        }
-    }
-
-    while (entries_.size() > items.size())
-    {
-        auto* entry = entries_.back();
-        sizer_->Detach(entry);
-        entry->Destroy();
-        entries_.pop_back();
-    }
-
-    itemIds_.clear();
-    itemIds_.reserve(items.size());
-    for (std::size_t index = 0; index < items.size(); ++index)
-    {
-        if (quiet)
-        {
-            // Update accessible data without native name-change notifications.
-            entries_[index]->SetLiveLabel(items[index].label);
-            itemIds_.push_back(items[index].id);
-            continue;
-        }
-        entries_[index]->ClearLiveLabel();
-        if (entries_[index]->GetLabel() != items[index].label)
-            entries_[index]->SetLabel(items[index].label);
-        if (entries_[index]->GetName() != items[index].label)
-            entries_[index]->SetName(items[index].label);
-        itemIds_.push_back(items[index].id);
-    }
-    itemCount_ = items.size();
-    selectedIndex_ = target;
-    if (!quiet) ApplyTheme();
-    Layout();
+    (void)quiet;
+    SetItems(items);
+    if (!items.empty()) SetSelectedIndexSilently(std::min(selectedIndex, items.size() - 1));
 }
 
 void VerticalMenu::SetEntryItems(std::span<const VerticalMenuItem> items)

@@ -53,13 +53,6 @@ void VerticalMenu::SetSelectedIndexSilently(std::size_t index)
         throw std::out_of_range(lila::shared::text::ui::VerticalMenuIndexOutOfRange.str());
     }
 
-    if (role_ == VerticalMenuRole::Entries)
-    {
-        selectedIndex_ = index;
-        UpdateVisualSelection();
-        return;
-    }
-
     if (selectedIndex_ == index && listBox_->GetSelection() == static_cast<int>(index))
     {
         return;
@@ -72,12 +65,6 @@ void VerticalMenu::SetSelectedIndexSilently(std::size_t index)
 
 void VerticalMenu::SetItems(std::span<const VerticalMenuItem> items)
 {
-    if (role_ == VerticalMenuRole::Entries)
-    {
-        SetEntryItems(items);
-        return;
-    }
-
     if (listBox_ == nullptr)
     {
         return;
@@ -144,11 +131,6 @@ std::optional<std::string_view> VerticalMenu::GetSelectedItemId() const
 
 wxWindow* VerticalMenu::GetSelectedControl() const
 {
-    if (role_ == VerticalMenuRole::Entries)
-    {
-        return selectedIndex_ < entries_.size() ? entries_[selectedIndex_] : nullptr;
-    }
-
     return listBox_;
 }
 
