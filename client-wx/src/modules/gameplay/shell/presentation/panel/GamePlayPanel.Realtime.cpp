@@ -9,6 +9,16 @@
 
 namespace lila::modules::gameplay::presentation
 {
+namespace
+{
+bool RequiresStateRefreshAfterRejection(const std::string& errorCode)
+{
+    return errorCode == "GAME_STATE_CONFLICT" ||
+        errorCode == "GAME_ACTION_REJECTED" ||
+        errorCode == "GAME_TURN_VIOLATION";
+}
+}
+
 void GamePlayPanel::HandleEvent(domain::GameEvent event)
 {
     switch (event.type)
@@ -52,6 +62,13 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
             submittedPromptActionType_.clear();
             SyncInlinePrompt();
             startConfigurationFlow_.Reset();
+            // A negative acknowledgement can arrive after the server has
+            // advanced the game without emitting a state event to this
+            // client. Always recover its authoritative projection instead of
+            // leaving the rejected action visible and trapping the player.
+            if (acknowledgement.command == "game.action" ||
+                acknowledgement.command == "game.key")
+                RequestRefresh();
             return;
         }
         if (startConfigurationFlow_.Acknowledge(acknowledgement.command))
@@ -101,7 +118,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         UpdateStatus(FromUtf8(event.message), true, true);
         if (onHistoryMessage_ && !event.message.empty())
             onHistoryMessage_(FromUtf8(event.message), false);
-        if (event.errorCode == "GAME_STATE_CONFLICT")
+        if (RequiresStateRefreshAfterRejection(event.errorCode))
         {
             submittedPromptActionType_.clear();
             pawnSelectionPanel_->AllowRetry();
