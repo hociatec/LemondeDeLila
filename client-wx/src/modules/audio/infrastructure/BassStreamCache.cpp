@@ -68,6 +68,22 @@ void BassStreamCache::Clear() noexcept
     failed_.clear();
 }
 
+void BassStreamCache::ClearInactive() noexcept
+{
+    for (auto stream = streams_.begin(); stream != streams_.end();)
+    {
+        if (current_.has_value() && stream->first == *current_)
+        {
+            ++stream;
+            continue;
+        }
+        BASS_StreamFree(stream->second);
+        paths_.erase(stream->first);
+        stream = streams_.erase(stream);
+    }
+    failed_.clear();
+}
+
 HSTREAM BassStreamCache::GetOrLoad(domain::SoundCue cue, const std::filesystem::path& path)
 {
     if (path.empty()) return 0;

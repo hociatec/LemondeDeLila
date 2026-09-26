@@ -23,6 +23,9 @@ public:
         const std::atomic_bool& cancelled);
     void Stop() noexcept;
     void Clear() noexcept;
+    // Drop cached streams that are not currently audible.  Asset refreshes
+    // must not restart the ambience already playing for the user.
+    void ClearInactive() noexcept;
 
 private:
     [[nodiscard]] HSTREAM GetOrLoad(domain::SoundCue cue, const std::filesystem::path& path);
