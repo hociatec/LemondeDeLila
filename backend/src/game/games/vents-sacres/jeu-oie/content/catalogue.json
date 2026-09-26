@@ -7,8 +7,8 @@
     },
     {
       "id": "case-1",
-      "label": "DÃ©part",
-      "description": "Vous Ãªtes sur la ligne de dÃ©part, le coeur battant et les chaussures bien lacÃ©es. La course est lancÃ©e ! Un simple lancer de dÃ© peut faire de vous une lÃ©gendeâ€¦ ou un Ã©ternel retardataire.",
+      "label": "Départ",
+      "description": "Vous êtes sur la ligne de départ, le coeur battant et les chaussures bien lacées. La course est lancée ! Un simple lancer de dé peut faire de vous une légende… ou un éternel retardataire.",
       "type": "start"
     },
     {
@@ -20,13 +20,13 @@
     {
       "id": "case-3",
       "label": "Case neutre",
-      "description": "L'excitation monte. Chaque pas rÃ©sonne comme une promesse d'aventure.",
+      "description": "L'excitation monte. Chaque pas résonne comme une promesse d'aventure.",
       "type": "normal"
     },
     {
       "id": "case-4",
       "label": "Case neutre",
-      "description": "Le paysage est calme, presque trop calmeâ€¦ Vous avancez en gardant l'oeil ouvert.",
+      "description": "Le paysage est calme, presque trop calme… Vous avancez en gardant l'oeil ouvert.",
       "type": "normal"
     },
     {
@@ -38,7 +38,7 @@
     {
       "id": "case-6",
       "label": "Pont",
-      "description": "Le pont craque sous vos pasâ€¦ puis vous glissez Ã©lÃ©gamment (ou pas) jusqu'Ã  la case 12. Quel raccourci !",
+      "description": "Le pont craque sous vos pas… puis vous glissez élégamment (ou pas) jusqu'à la case 12. Quel raccourci !",
       "type": "bridge"
     },
     {
@@ -50,158 +50,158 @@
     {
       "id": "case-8",
       "label": "Case neutre",
-      "description": "Rien Ã  signaler. Vous avancez avec assurance, comme si tout Ã©tait sous contrÃ´le.",
+      "description": "Rien à signaler. Vous avancez avec assurance, comme si tout était sous contrôle.",
       "type": "normal"
     },
     {
       "id": "case-9",
       "label": "Oie",
-      "description": "Une oie apparaÃ®t ! Elle semble vous reconnaÃ®tre et vous offre un coup d'aile providentiel.",
+      "description": "Une oie apparaît ! Elle semble vous reconnaître et vous offre un coup d'aile providentiel.",
       "type": "goose"
     },
     {
       "id": "case-10",
       "label": "Case neutre",
-      "description": "Vous marchez prudemment, Ã©vitant les flaques imaginaires et les mauvais prÃ©sages.",
+      "description": "Vous marchez prudemment, évitant les flaques imaginaires et les mauvais présages.",
       "type": "normal"
     },
     {
       "id": "case-11",
       "label": "Case neutre",
-      "description": "Vous restez concentrÃ©, attentif Ã  chaque lancer.",
+      "description": "Vous restez concentré, attentif à chaque lancer.",
       "type": "normal"
     },
     {
       "id": "case-12",
       "label": "Case neutre",
-      "description": "Vous continuez, l'esprit alerte et le pas dÃ©terminÃ©.",
+      "description": "Vous continuez, l'esprit alerte et le pas déterminé.",
       "type": "normal"
     },
     {
       "id": "case-13",
       "label": "Case neutre",
-      "description": "Une tension flotte dans l'air. Le plateau vous observeâ€¦ oui, oui, il vous observe.",
+      "description": "Une tension flotte dans l'air. Le plateau vous observe… oui, oui, il vous observe.",
       "type": "normal"
     },
     {
       "id": "case-14",
       "label": "Oie",
-      "description": "L'oie vous accueille avec enthousiasme. Elle semble particuliÃ¨rement bien disposÃ©e Ã  votre Ã©gard.",
+      "description": "L'oie vous accueille avec enthousiasme. Elle semble particulièrement bien disposée à votre égard.",
       "type": "goose"
     },
     {
       "id": "case-15",
       "label": "Case neutre",
-      "description": "Vous avancez Ã  votre rythme. Pas de prÃ©cipitation, la victoire se mÃ©rite.",
+      "description": "Vous avancez à votre rythme. Pas de précipitation, la victoire se mérite.",
       "type": "normal"
     },
     {
       "id": "case-16",
       "label": "Case neutre",
-      "description": "Le chemin est dÃ©gagÃ©, mais l'inconnu n'est jamais loin.",
+      "description": "Le chemin est dégagé, mais l'inconnu n'est jamais loin.",
       "type": "normal"
     },
     {
       "id": "case-17",
       "label": "Case neutre",
-      "description": "Rien ne se passeâ€¦ ce qui est parfois plus inquiÃ©tant qu'un piÃ¨ge.",
+      "description": "Rien ne se passe… ce qui est parfois plus inquiétant qu'un piège.",
       "type": "normal"
     },
     {
       "id": "case-18",
       "label": "Oie",
-      "description": "L'oie apparaÃ®t avec entrain ! Sa prÃ©sence vous intrigue autant qu'elle vous amuse.",
+      "description": "L'oie apparaît avec entrain ! Sa présence vous intrigue autant qu'elle vous amuse.",
       "type": "goose"
     },
     {
       "id": "case-19",
       "label": "Auberge",
-      "description": "Une auberge accueillante se dresse sur votre chemin. Vous dÃ©cidez de faire une pause bien mÃ©ritÃ©e, de reprendre des forces et de savourer un moment de repos.",
+      "description": "Une auberge accueillante se dresse sur votre chemin. Vous décidez de faire une pause bien méritée, de reprendre des forces et de savourer un moment de repos.",
       "type": "inn",
       "turnsToSkip": 1
     },
     {
       "id": "case-20",
       "label": "Case neutre",
-      "description": "Un pas de plus vers l'inconnu. Le suspense est bien lÃ .",
+      "description": "Un pas de plus vers l'inconnu. Le suspense est bien là.",
       "type": "normal"
     },
     {
       "id": "case-21",
       "label": "Case neutre",
-      "description": "Vous avancez, concentrÃ©, prÃªt Ã  affronter ce que le dÃ© vous rÃ©serve.",
+      "description": "Vous avancez, concentré, prêt à affronter ce que le dé vous réserve.",
       "type": "normal"
     },
     {
       "id": "case-22",
       "label": "Case neutre",
-      "description": "Le chemin est clair. Trop clair, peut-Ãªtreâ€¦",
+      "description": "Le chemin est clair. Trop clair, peut-être…",
       "type": "normal"
     },
     {
       "id": "case-23",
       "label": "Oie",
-      "description": "Une oie surgit en battant des ailes avec enthousiasme ! Elle vous entraÃ®ne plus loin sur le plateau, comme portÃ©e par la chance.",
+      "description": "Une oie surgit en battant des ailes avec enthousiasme ! Elle vous entraîne plus loin sur le plateau, comme portée par la chance.",
       "type": "goose"
     },
     {
       "id": "case-24",
       "label": "Case neutre",
-      "description": "Vous avancez, concentrÃ©, dÃ©terminÃ© Ã  ne rien lÃ¢cher.",
+      "description": "Vous avancez, concentré, déterminé à ne rien lâcher.",
       "type": "normal"
     },
     {
       "id": "case-25",
       "label": "Case neutre",
-      "description": "Le plateau semble tranquilleâ€¦ mais il ne faut jamais lui faire totalement confiance.",
+      "description": "Le plateau semble tranquille… mais il ne faut jamais lui faire totalement confiance.",
       "type": "normal"
     },
     {
       "id": "case-26",
-      "label": "DÃ© magique",
-      "description": "Le dÃ© brille d'un Ã©clat Ã©trange. Lancez-le ! Il pourrait vous bÃ©nirâ€¦ ou rire de vous.",
+      "label": "Dé magique",
+      "description": "Le dé brille d'un éclat étrange. Lancez-le ! Il pourrait vous bénir… ou rire de vous.",
       "type": "magic-die"
     },
     {
       "id": "case-27",
       "label": "Oie",
-      "description": "Une oie malicieusement dÃ©terminÃ©e vous coupe la route ! D'un coup de bec plein d'entrain, elle vous pousse Ã  continuer votre chemin sans attendre.",
+      "description": "Une oie malicieusement déterminée vous coupe la route ! D'un coup de bec plein d'entrain, elle vous pousse à continuer votre chemin sans attendre.",
       "type": "goose"
     },
     {
       "id": "case-28",
       "label": "Case neutre",
-      "description": "Vous avancez avec espoir. Une case favorable serait la bienvenueâ€¦",
+      "description": "Vous avancez avec espoir. Une case favorable serait la bienvenue…",
       "type": "normal"
     },
     {
       "id": "case-29",
       "label": "Case neutre",
-      "description": "Vous avancez prudemment, comme si le sol pouvait se dÃ©rober sous vos pieds.",
+      "description": "Vous avancez prudemment, comme si le sol pouvait se dérober sous vos pieds.",
       "type": "normal"
     },
     {
       "id": "case-30",
       "label": "Case neutre",
-      "description": "Un calme tendu s'installe. L'atmosphÃ¨re est chargÃ©e de suspenseâ€¦",
+      "description": "Un calme tendu s'installe. L'atmosphère est chargée de suspense…",
       "type": "normal"
     },
     {
       "id": "case-31",
       "label": "Puits",
-      "description": "Oups ! Vous tombez dans un puits sombre et profond. Seul un 1 au dÃ© pourra vous en sortir. En attendant, le temps semble s'Ã©tirerâ€¦",
+      "description": "Oups ! Vous tombez dans un puits sombre et profond. Seul un 1 au dé pourra vous en sortir. En attendant, le temps semble s'étirer…",
       "type": "well"
     },
     {
       "id": "case-32",
       "label": "Oie",
-      "description": "Une oie tranquille mais dÃ©cidÃ©e traverse votre chemin. Elle vous adresse un regard complice avant de vous encourager Ã  repartir aussitÃ´t. La chance vous sourit encore.",
+      "description": "Une oie tranquille mais décidée traverse votre chemin. Elle vous adresse un regard complice avant de vous encourager à repartir aussitôt. La chance vous sourit encore.",
       "type": "goose"
     },
     {
       "id": "case-33",
       "label": "Case neutre",
-      "description": "Le chemin s'Ã©claircit. Vous continuez d'avancer avec confiance.",
+      "description": "Le chemin s'éclaircit. Vous continuez d'avancer avec confiance.",
       "type": "normal"
     },
     {
@@ -213,31 +213,31 @@
     {
       "id": "case-35",
       "label": "Case neutre",
-      "description": "Rien de spÃ©cialâ€¦ ce qui, dans ce jeu, est presque une bonne nouvelle.",
+      "description": "Rien de spécial… ce qui, dans ce jeu, est presque une bonne nouvelle.",
       "type": "normal"
     },
     {
       "id": "case-36",
       "label": "Oie",
-      "description": "Une oie surgit fiÃ¨rement sur le chemin et vous escorte quelques instants, comme pour vous porter chance. Impossible de rÃ©sister Ã  son Ã©lan communicatif.",
+      "description": "Une oie surgit fièrement sur le chemin et vous escorte quelques instants, comme pour vous porter chance. Impossible de résister à son élan communicatif.",
       "type": "goose"
     },
     {
       "id": "case-37",
       "label": "Case neutre",
-      "description": "Le dÃ© rouleâ€¦ le silence se faitâ€¦ tout peut arriver.",
+      "description": "Le dé roule… le silence se fait… tout peut arriver.",
       "type": "normal"
     },
     {
       "id": "case-38",
       "label": "Case neutre",
-      "description": "Le plateau paraÃ®t amical, mais il a encore quelques tours dans son sac.",
+      "description": "Le plateau paraît amical, mais il a encore quelques tours dans son sac.",
       "type": "normal"
     },
     {
       "id": "case-39",
       "label": "Case neutre",
-      "description": "Vous sentez votre coeur battre plus vite. L'intensitÃ© du jeu se fait sentir.",
+      "description": "Vous sentez votre coeur battre plus vite. L'intensité du jeu se fait sentir.",
       "type": "normal"
     },
     {
@@ -249,44 +249,44 @@
     {
       "id": "case-41",
       "label": "Oie",
-      "description": "Une oie surgit en plein milieu du chemin et vous encourage d'un joyeux cacardement. Son Ã©nergie vous donne aussitÃ´t l'envie d'avancer encore.",
+      "description": "Une oie surgit en plein milieu du chemin et vous encourage d'un joyeux cacardement. Son énergie vous donne aussitôt l'envie d'avancer encore.",
       "type": "goose"
     },
     {
       "id": "case-42",
       "label": "Labyrinthe",
-      "description": "Perdu ! Les murs tournent, les chemins se croisentâ€¦ et vous voilÃ  renvoyÃ© Ã  la case 30. Note mentale : ne plus jamais faire confiance Ã  un labyrinthe.",
+      "description": "Perdu ! Les murs tournent, les chemins se croisent… et vous voilà renvoyé à la case 30. Note mentale : ne plus jamais faire confiance à un labyrinthe.",
       "type": "labyrinth",
       "backTo": 30
     },
     {
       "id": "case-43",
       "label": "Case neutre",
-      "description": "Vous avancez d'un pas lÃ©ger. Rien ne vous dÃ©courage !",
+      "description": "Vous avancez d'un pas léger. Rien ne vous décourage !",
       "type": "normal"
     },
     {
       "id": "case-44",
       "label": "Case neutre",
-      "description": "Le chemin est calme. Le dÃ©, lui, est imprÃ©visible.",
+      "description": "Le chemin est calme. Le dé, lui, est imprévisible.",
       "type": "normal"
     },
     {
       "id": "case-45",
       "label": "Oie",
-      "description": "Une oie surgit en prenant son envol juste au-dessus de vous. En vous agrippant Ã  ses pattes (plus ou moins volontairement), vous Ãªtes portÃ© plus loin sur le plateau.",
+      "description": "Une oie surgit en prenant son envol juste au-dessus de vous. En vous agrippant à ses pattes (plus ou moins volontairement), vous êtes porté plus loin sur le plateau.",
       "type": "goose"
     },
     {
       "id": "case-46",
       "label": "Case neutre",
-      "description": "Tout va bien. MÃ©fiez-vous, câ€™est souvent lÃ  que Ã§a bascule.",
+      "description": "Tout va bien. Méfiez-vous, c’est souvent là que ça bascule.",
       "type": "normal"
     },
     {
       "id": "case-47",
       "label": "Case neutre",
-      "description": "Le suspense est Ã  son comble. Chaque lancer est un Ã©vÃ©nement.",
+      "description": "Le suspense est à son comble. Chaque lancer est un événement.",
       "type": "normal"
     },
     {
@@ -298,38 +298,38 @@
     {
       "id": "case-49",
       "label": "Case neutre",
-      "description": "Vous continuez, prÃªt Ã  tout affronter.",
+      "description": "Vous continuez, prêt à tout affronter.",
       "type": "normal"
     },
     {
       "id": "case-50",
       "label": "Oie",
-      "description": "Une oie se met Ã  tourner autour de vous en cacardant joyeusement, semant une joyeuse pagailleâ€¦ avant de vous pousser Ã  repartir.",
+      "description": "Une oie se met à tourner autour de vous en cacardant joyeusement, semant une joyeuse pagaille… avant de vous pousser à repartir.",
       "type": "goose"
     },
     {
       "id": "case-51",
       "label": "Case neutre",
-      "description": "Chaque lancer peut dÃ©cider du sort de la partie.",
+      "description": "Chaque lancer peut décider du sort de la partie.",
       "type": "normal"
     },
     {
       "id": "case-52",
       "label": "Prison",
-      "description": "Halte-lÃ  ! Vous Ãªtes retenu ici pour deux tours. Le temps de rÃ©flÃ©chir Ã  vos choixâ€¦ et de ruminer un peu.",
+      "description": "Halte-là ! Vous êtes retenu ici pour deux tours. Le temps de réfléchir à vos choix… et de ruminer un peu.",
       "type": "prison",
       "turnsToSkip": 2
     },
     {
       "id": "case-53",
       "label": "Case neutre",
-      "description": "Vous avancez avec dÃ©termination, prÃªt Ã  poursuivre la partie.",
+      "description": "Vous avancez avec détermination, prêt à poursuivre la partie.",
       "type": "normal"
     },
     {
       "id": "case-54",
       "label": "Oie",
-      "description": "Une oie apparaÃ®t en glissant sur une petite trottinette, casque vissÃ© sur la tÃªte et yeux pÃ©tillants. Dans un Ã©lan de folie, elle vous pousse Ã  la suivre sur la pisteâ€¦ impossible de rÃ©sister !",
+      "description": "Une oie apparaît en glissant sur une petite trottinette, casque vissé sur la tête et yeux pétillants. Dans un élan de folie, elle vous pousse à la suivre sur la piste… impossible de résister !",
       "type": "goose"
     },
     {
@@ -353,38 +353,38 @@
     {
       "id": "case-58",
       "label": "Mort",
-      "description": "Oh non ! Un mystÃ©rieux souffle glacial vous faucheâ€¦ et vous voilÃ  rÃ©duit Ã  nÃ©ant ! Il va falloir repartir de zÃ©ro.",
+      "description": "Oh non ! Un mystérieux souffle glacial vous fauche… et vous voilà réduit à néant ! Il va falloir repartir de zéro.",
       "type": "death",
       "backTo": 1
     },
     {
       "id": "case-59",
       "label": "Oie",
-      "description": "Une oie audacieuse effectue un petit saut pÃ©rilleux devant vous, puis vous donne un coup d'aile joyeux qui vous propulse en avant.",
+      "description": "Une oie audacieuse effectue un petit saut périlleux devant vous, puis vous donne un coup d'aile joyeux qui vous propulse en avant.",
       "type": "goose"
     },
     {
       "id": "case-60",
       "label": "Case neutre",
-      "description": "Vous observez les autres joueurs. Certains transpirent la victoireâ€¦ d'autres la dÃ©faite.",
+      "description": "Vous observez les autres joueurs. Certains transpirent la victoire… d'autres la défaite.",
       "type": "normal"
     },
     {
       "id": "case-61",
       "label": "Case neutre",
-      "description": "L'adrÃ©naline coule Ã  flots. Vous Ãªtes pleinement concentrÃ©.",
+      "description": "L'adrénaline coule à flots. Vous êtes pleinement concentré.",
       "type": "normal"
     },
     {
       "id": "case-62",
       "label": "Case neutre",
-      "description": "La tension est Ã  son comble. Tout peut encore arriver.",
+      "description": "La tension est à son comble. Tout peut encore arriver.",
       "type": "normal"
     },
     {
       "id": "case-63",
-      "label": "ArrivÃ©e",
-      "description": "Victoire ! Vous franchissez la ligne sous une ovation spectaculaire. Des dizaines dâ€™oies s'envolent en un ballet aÃ©rien chatoyant, tournoyant et virevoltant au rythme de leurs cacardements joyeux, comme une parade folklorique cÃ©leste. Des confettis imaginaires scintillent dans l'air, et chaque volÃ©e d'oies semble saluer votre audace et votre rÃ©ussite. Le spectacle est grandiose, joyeux et mÃ©morableâ€¦ un triomphe digne d'une lÃ©gende du plateau !",
+      "label": "Arrivée",
+      "description": "Victoire ! Vous franchissez la ligne sous une ovation spectaculaire. Des dizaines d’oies s'envolent en un ballet aérien chatoyant, tournoyant et virevoltant au rythme de leurs cacardements joyeux, comme une parade folklorique céleste. Des confettis imaginaires scintillent dans l'air, et chaque volée d'oies semble saluer votre audace et votre réussite. Le spectacle est grandiose, joyeux et mémorable… un triomphe digne d'une légende du plateau !",
       "type": "finish"
     }
   ],
@@ -411,12 +411,12 @@
     },
     {
       "id": "chevre-acrobate",
-      "label": "ChÃ¨vre acrobate",
+      "label": "Chèvre acrobate",
       "feminine": true
     },
     {
       "id": "marmotte-reveuse",
-      "label": "Marmotte rÃªveuse",
+      "label": "Marmotte rêveuse",
       "feminine": true
     }
   ]

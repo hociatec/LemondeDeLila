@@ -28,6 +28,7 @@ export const jsonDeliveryRaceSchema = object({
       {
         id: { oneOf: [id, { type: 'integer' }] },
         title: { type: 'string', minLength: 1, maxLength: 10000 },
+        description: { type: 'string', minLength: 1, maxLength: 10000 },
       },
       ['id', 'title'],
     ),

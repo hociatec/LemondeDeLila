@@ -23,6 +23,7 @@ export const jsonFamilyEffectsSchema = object({
       {
         id,
         name: text,
+        description: text,
         type: { enum: ['metier', 'special'] },
         family: id,
         effects: array(ref('effect')),

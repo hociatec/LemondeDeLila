@@ -3,7 +3,7 @@
     {
       "id": 1,
       "deck": "animal",
-      "text": "Rencontre animale 1",
+      "text": "Vous entendez soudain le rire strident d’une hyène tout près de vous. Surpris, vous trébuchez, tombez au sol et effectuez un roulé-boulé incontrôlé qui vous propulse plus loin sur le chemin. Avancez de deux cases.",
       "effects": [
         {
           "kind": "move",
@@ -23,7 +23,7 @@
     {
       "id": 2,
       "deck": "animal",
-      "text": "Rencontre animale 2",
+      "text": "Vous surprenez un hippopotame en train de bâiller largement dans l’eau. Effrayé par sa gueule immense, vous reculez d’une case avant de retrouver votre équilibre en riant.",
       "effects": [
         {
           "kind": "move",
@@ -43,7 +43,7 @@
     {
       "id": 3,
       "deck": "animal",
-      "text": "Rencontre animale 3",
+      "text": "Vous voyez un impala sauter agilement devant vous. Vous décidez de le suivre et avancez de 3 cases.",
       "effects": [
         {
           "kind": "move",
@@ -63,7 +63,7 @@
     {
       "id": 4,
       "deck": "animal",
-      "text": "Rencontre animale 4",
+      "text": "Vous apercevez un suricate se redresser curieusement. Relancez le dé.",
       "effects": [
         {
           "kind": "extra-turn",
@@ -74,7 +74,7 @@
     {
       "id": 5,
       "deck": "animal",
-      "text": "Rencontre animale 5",
+      "text": "Vous observez un flamant rose glisser avec grâce à la surface de l’eau. Fasciné par sa démarche élégante, vous restez un instant figé à le contempler. Passez votre tour.",
       "effects": [
         {
           "kind": "skip-turn",
@@ -88,7 +88,7 @@
     {
       "id": 6,
       "deck": "animal",
-      "text": "Rencontre animale 6",
+      "text": "Vous entendez le cri joyeux d’un guépard. Avancez de 1 case.",
       "effects": [
         {
           "kind": "move",
@@ -108,7 +108,7 @@
     {
       "id": 7,
       "deck": "animal",
-      "text": "Rencontre animale 7",
+      "text": "Vous surprenez un buffle en train de se secouer après s’être roulé dans la boue. Ce spectacle vous amuse et vous fait avancer d’une case.",
       "effects": [
         {
           "kind": "move",
@@ -128,7 +128,7 @@
     {
       "id": 8,
       "deck": "animal",
-      "text": "Rencontre animale 8",
+      "text": "Vous marchez silencieusement comme un serpent dans la savane. Avancez de 2 cases.",
       "effects": [
         {
           "kind": "move",
@@ -148,7 +148,7 @@
     {
       "id": 9,
       "deck": "animal",
-      "text": "Rencontre animale 9",
+      "text": "Vous apercevez un calao majestueux battre des ailes au-dessus de vous. Le souffle de son vol vous pousse légèrement : avancez d'une case.",
       "effects": [
         {
           "kind": "move",
@@ -168,7 +168,7 @@
     {
       "id": 10,
       "deck": "animal",
-      "text": "Rencontre animale 10",
+      "text": "Vous êtes surpris par un babouin facétieux faisant tomber un régime de bananes sur votre tête. Étourdi, vous passez votre tour.",
       "effects": [
         {
           "kind": "skip-turn",
@@ -182,7 +182,7 @@
     {
       "id": 11,
       "deck": "animal",
-      "text": "Rencontre animale 11",
+      "text": "Vous entendez le chant joyeux d’un tisserin aux couleurs vives perché dans un arbre. Son rythme farfelu vous fait battre des mains et taper des pieds : avancez de 2 cases.",
       "effects": [
         {
           "kind": "move",
@@ -202,7 +202,7 @@
     {
       "id": 12,
       "deck": "animal",
-      "text": "Rencontre animale 12",
+      "text": "Vous improvisez une mélodie avec des branches, des feuilles et des fruits tombés autour de vous. La musique de la jungle vous emporte, et sans vous en rendre compte, vous avancez de 3 cases.",
       "effects": [
         {
           "kind": "move",
@@ -222,7 +222,7 @@
     {
       "id": 13,
       "deck": "animal",
-      "text": "Rencontre animale 13",
+      "text": "Vous voyez un phacochère tournoyer sur lui-même dans un élan de folie. Vous rigolez tellement que vous avancez d’une case en suivant son rythme.",
       "effects": [
         {
           "kind": "move",
@@ -242,7 +242,7 @@
     {
       "id": 14,
       "deck": "animal",
-      "text": "Rencontre animale 14",
+      "text": "Vous surprenez un gecko en train de taper du pied sur une feuille. L’effet est si drôle que vous avancez d’une case.",
       "effects": [
         {
           "kind": "move",
@@ -262,7 +262,7 @@
     {
       "id": 15,
       "deck": "animal",
-      "text": "Rencontre animale 15",
+      "text": "Vous observez un petit pangolin qui se tortille en rythme sur le chemin. Cela vous amuse tellement que vous avancez d’une case.",
       "effects": [
         {
           "kind": "move",
@@ -282,7 +282,7 @@
     {
       "id": 16,
       "deck": "animal",
-      "text": "Rencontre animale 16",
+      "text": "Vous comptabilisez les pas d’un grand marabout. Avancez de 2 cases.",
       "effects": [
         {
           "kind": "move",
@@ -302,13 +302,13 @@
     {
       "id": 17,
       "deck": "animal",
-      "text": "Rencontre animale 17",
+      "text": "Vous poursuivez une grenouille géante de nénuphar en nénuphar. À chaque saut, vous glissez, tournez en rond et finissez par reculer d’une case… avant de rebondir aussitôt en avant d'une case, en éclatant de rire.",
       "effects": []
     },
     {
       "id": 18,
       "deck": "animal",
-      "text": "Rencontre animale 18",
+      "text": "Vous apercevez une petite mangouste curieuse sur votre chemin. En essayant de l’éviter, vous bondissez maladroitement et atterrissez avec un petit « plouf » sur une racine. Avancez de 1 case en riant de vous-même.",
       "effects": [
         {
           "kind": "move",
@@ -328,7 +328,7 @@
     {
       "id": 19,
       "deck": "animal",
-      "text": "Rencontre animale 19",
+      "text": "Un rhinocéros passe juste à côté de vous. Vous grimpez sur son dos et, émerveillé, vous avancez de trois cases.",
       "effects": [
         {
           "kind": "move",
@@ -348,7 +348,7 @@
     {
       "id": 20,
       "deck": "animal",
-      "text": "Rencontre animale 20",
+      "text": "Vous tentez de grimper à un arbre pour observer la savane, mais vous vous retrouvez coincé dans les branches, les pieds dans le vide ! Vous passez votre tour bêtement.",
       "effects": [
         {
           "kind": "skip-turn",
@@ -364,7 +364,7 @@
     {
       "id": 1,
       "deck": "patte",
-      "text": "Coup de patte 1",
+      "text": "Vous croisez une civette endormie en travers du chemin. Surpris, vous restez immobile pour ne pas la réveiller. Passez un tour.",
       "effects": [
         {
           "kind": "skip-turn",
@@ -378,7 +378,7 @@
     {
       "id": 2,
       "deck": "patte",
-      "text": "Coup de patte 2",
+      "text": "Une pluie tropicale tombe soudainement. Vous vous faites éclabousser et glissez un peu. Reculez d’une case.",
       "effects": [
         {
           "kind": "move",
@@ -398,7 +398,7 @@
     {
       "id": 3,
       "deck": "patte",
-      "text": "Coup de patte 3",
+      "text": "Le vent fait tomber un nid d’aigles serpentier juste devant vous. Vous restez bouche bée à observer les petits oisillons s’agiter dans le nid. Passez un tour.",
       "effects": [
         {
           "kind": "skip-turn",
@@ -412,7 +412,7 @@
     {
       "id": 4,
       "deck": "patte",
-      "text": "Coup de patte 4",
+      "text": "Un jeune scorpion forestier bloque votre chemin et s’amuse à faire des pirouettes, sa queue tourbillonnant dans les airs. Vous sursautez en riant et reculez d’une case.",
       "effects": [
         {
           "kind": "move",
@@ -432,7 +432,7 @@
     {
       "id": 5,
       "deck": "patte",
-      "text": "Coup de patte 5",
+      "text": "Un très jeune fourmilier curieux s’approche de vous et renifle vos bottes comme un petit enfant intrigué. Amusé, il se jette au sol et se roule à vos pieds. Éclatant de rire, vous restez bloqué un instant et ne bougez pas de votre case. Passez votre tour.",
       "effects": [
         {
           "kind": "skip-turn",
@@ -446,7 +446,7 @@
     {
       "id": 6,
       "deck": "patte",
-      "text": "Coup de patte 6",
+      "text": "Vous vous reposez sous un baobab pour reprendre des forces. Passez un tour.",
       "effects": [
         {
           "kind": "skip-turn",
@@ -460,7 +460,7 @@
     {
       "id": 7,
       "deck": "patte",
-      "text": "Coup de patte 7",
+      "text": "Vous vous arrêtez sous un manguier où un loriquet farceur vous pique votre casquette. Passez un tour pour la récupérer.",
       "effects": [
         {
           "kind": "skip-turn",
@@ -474,7 +474,7 @@
     {
       "id": 8,
       "deck": "patte",
-      "text": "Coup de patte 8",
+      "text": "Vous glissez sur des feuilles de bananier humides tombées au sol. Passez un tour.",
       "effects": [
         {
           "kind": "skip-turn",
@@ -488,7 +488,7 @@
     {
       "id": 9,
       "deck": "patte",
-      "text": "Coup de patte 9",
+      "text": "Votre parcours est interrompu par un caméléon changeant de couleur juste devant vous. Vous restez ébahi. Passez votre tour.",
       "effects": [
         {
           "kind": "skip-turn",
@@ -502,7 +502,7 @@
     {
       "id": 10,
       "deck": "patte",
-      "text": "Coup de patte 10",
+      "text": "Un perroquet gris du Gabon se met à grimper le long d’un tronc et tombe juste à côté de vous. Vous sursautez et reculez d’une case.",
       "effects": [
         {
           "kind": "move",

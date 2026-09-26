@@ -449,6 +449,7 @@
     {
       "n": 1,
       "title": "Départ",
+      "description": "Vous êtes à l'écurie de départ. Les chevaux sont prêts, l'excitation est palpable. L'aventure commence ici.",
       "type": "start",
       "region": "prairie",
       "apples": 0,
@@ -457,6 +458,7 @@
     {
       "n": 2,
       "title": "Sentier",
+      "description": "Vous avancez sur un sentier herbeux encore couvert de rosée. Le terrain est doux sous les sabots.",
       "type": "neutral",
       "region": "prairie",
       "apples": 0,
@@ -465,6 +467,7 @@
     {
       "n": 3,
       "title": "Fer à cheval",
+      "description": "Un fer à cheval est accroché à une vieille barrière. Un événement peut survenir : piochez une carte Aventure Équestre.",
       "type": "card",
       "region": "prairie",
       "apples": 0,
@@ -473,6 +476,7 @@
     {
       "n": 4,
       "title": "Sentier",
+      "description": "La prairie s'ouvre largement devant vous. Votre cheval avance avec assurance.",
       "type": "neutral",
       "region": "prairie",
       "apples": 0,
@@ -481,6 +485,7 @@
     {
       "n": 5,
       "title": "Pomme bonus",
+      "description": "Dans l'herbe, vous repérez un fruit bien mûre. Gagnez 1 jeton Pomme.",
       "type": "bonus",
       "region": "prairie",
       "apples": 1,
@@ -489,6 +494,7 @@
     {
       "n": 6,
       "title": "Sentier",
+      "description": "Des fleurs sauvages bordent le chemin. Vous progressez calmement.",
       "type": "neutral",
       "region": "prairie",
       "apples": 0,
@@ -497,6 +503,7 @@
     {
       "n": 7,
       "title": "Fer à cheval",
+      "description": "Un fer à cheval est cloué sur un poteau de clôture. Piochez une carte Aventure Équestre.",
       "type": "card",
       "region": "prairie",
       "apples": 0,
@@ -505,6 +512,7 @@
     {
       "n": 8,
       "title": "Sentier",
+      "description": "Le chemin devient plus régulier. Vous avancez d'un bon rythme.",
       "type": "neutral",
       "region": "prairie",
       "apples": 0,
@@ -513,6 +521,7 @@
     {
       "n": 9,
       "title": "Fer à cheval",
+      "description": "Un ancien fer à cheval est à moitié enfoui dans l'herbe. Piochez une carte Aventure Équestre.",
       "type": "card",
       "region": "prairie",
       "apples": 0,
@@ -521,6 +530,7 @@
     {
       "n": 10,
       "title": "Sentier",
+      "description": "Vous entendez le murmure de l'eau au loin. La prairie touche à sa fin.",
       "type": "neutral",
       "region": "prairie",
       "apples": 0,
@@ -529,6 +539,7 @@
     {
       "n": 11,
       "title": "Sentier",
+      "description": "Vous longez la rivière. Le clapotis de l'eau accompagne chacun de vos pas.",
       "type": "neutral",
       "region": "riviere",
       "apples": 0,
@@ -537,6 +548,7 @@
     {
       "n": 12,
       "title": "Fer à cheval",
+      "description": "Un fer à cheval brille près du rivage. Piochez une carte Aventure Équestre.",
       "type": "card",
       "region": "riviere",
       "apples": 0,
@@ -545,6 +557,7 @@
     {
       "n": 13,
       "title": "Sentier",
+      "description": "Vous traversez un petit pont solide. Votre cheval avance sans hésiter.",
       "type": "neutral",
       "region": "riviere",
       "apples": 0,
@@ -553,6 +566,7 @@
     {
       "n": 14,
       "title": "Obstacle",
+      "description": "Votre cheval ralentit pour observer les papillons. Passez un tour.",
       "type": "skip",
       "region": "riviere",
       "apples": 0,
@@ -561,6 +575,7 @@
     {
       "n": 15,
       "title": "Sentier",
+      "description": "De l'autre côté du pont, le chemin reprend doucement.",
       "type": "neutral",
       "region": "riviere",
       "apples": 0,
@@ -569,6 +584,7 @@
     {
       "n": 16,
       "title": "Pomme bonus",
+      "description": "Vous trouvez un fruit dissimulé entre les roseaux. Gagnez 1 jeton Pomme.",
       "type": "bonus",
       "region": "riviere",
       "apples": 1,
@@ -577,6 +593,7 @@
     {
       "n": 17,
       "title": "Sentier",
+      "description": "Vous continuez à longer la rivière, attentifs au sol humide.",
       "type": "neutral",
       "region": "riviere",
       "apples": 0,
@@ -585,6 +602,7 @@
     {
       "n": 18,
       "title": "Fer à cheval",
+      "description": "Un fer à cheval est suspendu à un vieux piquet. Piochez une carte Aventure Équestre.",
       "type": "card",
       "region": "riviere",
       "apples": 0,
@@ -593,6 +611,7 @@
     {
       "n": 19,
       "title": "Sentier",
+      "description": "La rivière s'éloigne peu à peu. Les arbres se rapprochent.",
       "type": "neutral",
       "region": "riviere",
       "apples": 0,
@@ -601,6 +620,7 @@
     {
       "n": 20,
       "title": "Sentier",
+      "description": "L'ombre devient plus dense. Vous entrez dans la forêt.",
       "type": "neutral",
       "region": "riviere",
       "apples": 0,
@@ -609,6 +629,7 @@
     {
       "n": 21,
       "title": "Sentier",
+      "description": "Vous avancez sous les arbres. Les sons sont étouffés, l'ambiance change.",
       "type": "neutral",
       "region": "foret",
       "apples": 0,
@@ -617,6 +638,7 @@
     {
       "n": 22,
       "title": "Fer à cheval",
+      "description": "Un fer à cheval est accroché à une branche basse. Piochez une carte Aventure Équestre.",
       "type": "card",
       "region": "foret",
       "apples": 0,
@@ -625,6 +647,7 @@
     {
       "n": 23,
       "title": "Sentier",
+      "description": "Vous contournez de grosses racines traversant le sentier.",
       "type": "neutral",
       "region": "foret",
       "apples": 0,
@@ -633,6 +656,7 @@
     {
       "n": 24,
       "title": "Obstacle",
+      "description": "Un arbre tombé bloque le passage. Passez un tour.",
       "type": "skip",
       "region": "foret",
       "apples": 0,
@@ -641,6 +665,7 @@
     {
       "n": 25,
       "title": "Pomme bonus",
+      "description": "Sous un arbre, vous découvrez un fruit oublié. Gagnez 1 jeton Pomme.",
       "type": "bonus",
       "region": "foret",
       "apples": 1,
@@ -649,6 +674,7 @@
     {
       "n": 26,
       "title": "Sentier",
+      "description": "Le chemin serpente entre les troncs épais.",
       "type": "neutral",
       "region": "foret",
       "apples": 0,
@@ -657,6 +683,7 @@
     {
       "n": 27,
       "title": "Fer à cheval",
+      "description": "Un fer à cheval est cloué sur un tronc ancien. Piochez une carte Aventure Équestre.",
       "type": "card",
       "region": "foret",
       "apples": 0,
@@ -665,6 +692,7 @@
     {
       "n": 28,
       "title": "Sentier",
+      "description": "La forêt commence à s'éclaircir. La lumière revient peu à peu.",
       "type": "neutral",
       "region": "foret",
       "apples": 0,
@@ -673,6 +701,7 @@
     {
       "n": 29,
       "title": "Sentier",
+      "description": "Le sol devient plus ferme et légèrement incliné.",
       "type": "neutral",
       "region": "foret",
       "apples": 0,
@@ -681,6 +710,7 @@
     {
       "n": 30,
       "title": "Sentier",
+      "description": "Les arbres se font rares. Les montagnes apparaissent devant vous.",
       "type": "neutral",
       "region": "foret",
       "apples": 0,
@@ -689,6 +719,7 @@
     {
       "n": 31,
       "title": "Sentier",
+      "description": "Vous entamez l'ascension. Le chemin est plus exigeant, mais praticable.",
       "type": "neutral",
       "region": "montagne",
       "apples": 0,
@@ -697,6 +728,7 @@
     {
       "n": 32,
       "title": "Fer à cheval",
+      "description": "Un fer à cheval est fixé à une balise de pierre. Piochez une carte Aventure Équestre.",
       "type": "card",
       "region": "montagne",
       "apples": 0,
@@ -705,6 +737,7 @@
     {
       "n": 33,
       "title": "Sentier",
+      "description": "Vous avancez sur un sentier rocheux, pas après pas.",
       "type": "neutral",
       "region": "montagne",
       "apples": 0,
@@ -713,6 +746,7 @@
     {
       "n": 34,
       "title": "Fer à cheval",
+      "description": "Un fer à cheval est gravé dans la roche du sentier. Piochez une carte Aventure Équestre.",
       "type": "card",
       "region": "montagne",
       "apples": 0,
@@ -721,6 +755,7 @@
     {
       "n": 35,
       "title": "Pomme bonus",
+      "description": "Dans un recoin abrité, vous trouvez un fruit intacte. Gagnez 1 jeton Pomme.",
       "type": "bonus",
       "region": "montagne",
       "apples": 1,
@@ -729,6 +764,7 @@
     {
       "n": 36,
       "title": "Sentier",
+      "description": "La montée se poursuit. Votre cheval reste concentré.",
       "type": "neutral",
       "region": "montagne",
       "apples": 0,
@@ -737,6 +773,7 @@
     {
       "n": 37,
       "title": "Fer à cheval",
+      "description": "Un dernier fer à cheval marque un virage du sentier. Piochez une carte Aventure Équestre.",
       "type": "card",
       "region": "montagne",
       "apples": 0,
@@ -745,6 +782,7 @@
     {
       "n": 38,
       "title": "Sentier",
+      "description": "Vous apercevez l'écurie finale au loin. L'objectif est proche.",
       "type": "neutral",
       "region": "montagne",
       "apples": 0,
@@ -753,6 +791,7 @@
     {
       "n": 39,
       "title": "Sentier",
+      "description": "Dernière ligne droite. Votre cheval sent l'arrivée.",
       "type": "neutral",
       "region": "montagne",
       "apples": 0,
@@ -761,6 +800,7 @@
     {
       "n": 40,
       "title": "Écurie finale",
+      "description": "Vous atteignez la grande écurie finale. La course s'achève ici ! Recevez un jeton pomme.",
       "type": "finish",
       "region": "montagne",
       "apples": 0,

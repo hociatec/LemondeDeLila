@@ -5,294 +5,336 @@
       "name": "isserande berbere",
       "type": "metier",
       "family": "tradition",
-      "effects": []
+      "effects": [],
+      "description": "isserande berbère – Maroc Elle tisse à la main des tapis aux motifs colorés transmis de mère en fille. Chaque motif symbolise un aspect de la vie : la fertilité, la protection ou l’harmonie."
     },
     {
       "id": "metier-forgeron-dogon",
       "name": "forgeron dogon",
       "type": "metier",
       "family": "tradition",
-      "effects": []
+      "effects": [],
+      "description": "Forgeron dogon – Mali Maître du feu et du métal, il façonne outils, armes et objets rituels. Chez les Dogons, le forgeron est aussi un médiateur entre les hommes et les esprits."
     },
     {
       "id": "metier-potier-zapoteque",
       "name": "potier zapoteque",
       "type": "metier",
       "family": "tradition",
-      "effects": []
+      "effects": [],
+      "description": "Potier zapotèque – Mexique Il travaille l’argile pour créer des céramiques décorées de symboles anciens. Les motifs sont souvent liés aux dieux, aux animaux ou aux cycles agricoles."
     },
     {
       "id": "metier-tanneur-de-fez",
       "name": "tanneur de fez",
       "type": "metier",
       "family": "tradition",
-      "effects": []
+      "effects": [],
+      "description": "Tanneur de Fez – Maroc Il traite les peaux dans des bassins de teinture à ciel ouvert. Ce métier ancestral remonte à l’époque médiévale et se transmet de génération en génération."
     },
     {
       "id": "metier-charpentier-japonais",
       "name": "charpentier japonais",
       "type": "metier",
       "family": "tradition",
-      "effects": []
+      "effects": [],
+      "description": "Charpentier japonais – Japon Il construit des temples et des maisons sans clous, en utilisant des assemblages complexes. L’art du bois japonais respecte le grain naturel du matériau et l’harmonie avec l’environnement."
     },
     {
       "id": "metier-sculptrice-de-calebasses",
       "name": "sculptrice de calebasses",
       "type": "metier",
       "family": "tradition",
-      "effects": []
+      "effects": [],
+      "description": "Sculpteuse de calebasses – Burkina Faso Elle grave et orne des calebasses utilisées pour conserver l’eau, cuisiner ou décorer les maisons. Chaque motif gravé à la main raconte une histoire : la maternité, les esprits protecteurs ou les cycles de la vie. Cet art féminin, transmis entre générations, valorise la créativité et la mémoire des peuples du Sahel. Famille Nature :"
     },
     {
       "id": "metier-cueilleur-de-the",
       "name": "cueilleur de the",
       "type": "metier",
       "family": "nature",
-      "effects": []
+      "effects": [],
+      "description": "Cueilleur de thé – Sri Lanka Il parcourt les collines verdoyantes pour récolter les jeunes feuilles de thé. La cueillette se fait à la main et demande un savoir-faire précis transmis dès l’enfance."
     },
     {
       "id": "metier-berger-nomade",
       "name": "berger nomade",
       "type": "metier",
       "family": "nature",
-      "effects": []
+      "effects": [],
+      "description": "Berger nomade – Mongolie Il guide ses troupeaux à travers les steppes, suivant les saisons. Les yourtes, habitats mobiles, permettent de vivre en harmonie avec les migrations animales."
     },
     {
       "id": "metier-apiculteur-traditionnel",
       "name": "apiculteur traditionnel",
       "type": "metier",
       "family": "nature",
-      "effects": []
+      "effects": [],
+      "description": "Apiculteur traditionnel – Turquie Il installe ses ruches dans les montagnes pour récolter un miel rare et sauvage. Certaines ruches suspendues aux falaises sont accessibles uniquement par escalade."
     },
     {
       "id": "metier-cueilleur-de-champignons",
       "name": "cueilleur de champignons",
       "type": "metier",
       "family": "nature",
-      "effects": []
+      "effects": [],
+      "description": "Cueilleur de champignons – Pologne Il connaît les bois comme sa poche et distingue les espèces comestibles des toxiques. La cueillette est une tradition familiale ancrée dans la culture rurale polonaise."
     },
     {
       "id": "metier-chasseur-cueilleur-pygmee",
       "name": "chasseur cueilleur pygmee",
       "type": "metier",
       "family": "nature",
-      "effects": []
+      "effects": [],
+      "description": "Chasseur-cueilleur pygmée – République du Congo Il vit au cœur de la forêt et tire sa subsistance de la chasse, de la pêche et de la cueillette. Les savoirs sont transmis oralement, et chaque plante ou trace a une signification."
     },
     {
       "id": "metier-eleveuse-de-yaks",
       "name": "eleveuse de yaks",
       "type": "metier",
       "family": "nature",
-      "effects": []
+      "effects": [],
+      "description": "Éleveuse de yaks – Tibet Elle s’occupe des yaks, animaux essentiels à la vie en altitude : lait, laine, viande. Les yaks sont aussi des symboles de force et d’endurance dans la culture tibétaine. Famille Mer :"
     },
     {
       "id": "metier-pecheur-sur-echasses",
       "name": "pecheur sur echasses",
       "type": "metier",
       "family": "mer",
-      "effects": []
+      "effects": [],
+      "description": "Pêcheur sur échasses – Sri Lanka Il pêche en équilibre sur un piquet planté dans l’eau, au lever du soleil. Ce savoir-faire unique est devenu emblématique des côtes sri-lankaises."
     },
     {
       "id": "metier-plongeuse-de-perles",
       "name": "plongeuse de perles",
       "type": "metier",
       "family": "mer",
-      "effects": []
+      "effects": [],
+      "description": "Plongeuse de perles – Japon Elle plonge en apnée pour récolter des coquillages contenant des perles. Appelées Ama, ces femmes suivent un rituel ancien et respectent la mer comme une divinité."
     },
     {
       "id": "metier-chasseur-inuit",
       "name": "chasseur inuit",
       "type": "metier",
       "family": "mer",
-      "effects": []
+      "effects": [],
+      "description": "Chasseur inuit – Groenland Il traque les phoques sur la banquise avec des techniques ancestrales. La chasse se fait dans le respect de la nature, pour nourrir la communauté."
     },
     {
       "id": "metier-constructeur-de-pirogues",
       "name": "constructeur de pirogues",
       "type": "metier",
       "family": "mer",
-      "effects": []
+      "effects": [],
+      "description": "Constructeur de pirogues – Madagascar Il taille des troncs pour fabriquer des embarcations légères et rapides. Chaque pirogue est décorée de motifs protecteurs contre les esprits marins."
     },
     {
       "id": "metier-ramasseur-dalgues",
       "name": "ramasseur dalgues",
       "type": "metier",
       "family": "mer",
-      "effects": []
+      "effects": [],
+      "description": "Ramasseur d’algues – Bretagne Il récolte les algues à marée basse pour les utiliser dans l’alimentation ou la cosmétique. Ce métier revient au goût du jour avec l’essor de la gastronomie marine."
     },
     {
       "id": "metier-capitaine-de-boutre",
       "name": "capitaine de boutre",
       "type": "metier",
       "family": "mer",
-      "effects": []
+      "effects": [],
+      "description": "Capitaine de boutre – Oman Il commande un bateau à voile traditionnel pour le transport de marchandises. Les boutres sillonnent encore aujourd’hui les eaux du golfe Persique. Famille Art :"
     },
     {
       "id": "metier-calligraphe-chinois",
       "name": "calligraphe chinois",
       "type": "metier",
       "family": "art",
-      "effects": []
+      "effects": [],
+      "description": "Calligraphe chinois – Chine Il compose des caractères à l’encre de Chine avec un pinceau et une gestuelle précise. La calligraphie est aussi un exercice de méditation et d’équilibre intérieur."
     },
     {
       "id": "metier-sculpteur-inuit",
       "name": "sculpteur inuit",
       "type": "metier",
       "family": "art",
-      "effects": []
+      "effects": [],
+      "description": "Sculpteur inuit – Canada Il taille la pierre, la corne ou l’os pour représenter des animaux ou des esprits. L’art inuit exprime la relation intime entre l’homme et le monde naturel."
     },
     {
       "id": "metier-masqueur-balinais",
       "name": "masqueur balinais",
       "type": "metier",
       "family": "art",
-      "effects": []
+      "effects": [],
+      "description": "Masqueur balinais – Indonésie Il sculpte et peint à la main des masques rituels utilisés dans les danses sacrées. Chaque masque est consacré selon un rituel spirituel avant d’être porté."
     },
     {
       "id": "metier-peintre-dicones",
       "name": "peintre dicones",
       "type": "metier",
       "family": "art",
-      "effects": []
+      "effects": [],
+      "description": "Peintre d’icônes – Russie Il réalise des images religieuses avec des pigments naturels et des feuilles d’or. Chaque icône suit un protocole strict et est considérée comme une prière en couleur."
     },
     {
       "id": "metier-fabricante-de-poupees-kokeshi",
       "name": "fabricante de poupees kokeshi",
       "type": "metier",
       "family": "art",
-      "effects": []
+      "effects": [],
+      "description": "Fabricante de poupées kokeshi – Japon Elle crée à la main des poupées en bois aux traits simples et élégants. Les kokeshi symbolisent l’amitié, la protection et l’âme des enfants."
     },
     {
       "id": "metier-brodeur-touareg",
       "name": "brodeur touareg",
       "type": "metier",
       "family": "art",
-      "effects": []
+      "effects": [],
+      "description": "Brodeur Touareg – Niger Il décore les vêtements et objets de cuir avec des motifs géométriques raffinés. La broderie est un langage symbolique transmis à travers les générations. Famille Insolites :"
     },
     {
       "id": "metier-fauconnier-kazakh",
       "name": "fauconnier kazakh",
       "type": "metier",
       "family": "insolites",
-      "effects": []
+      "effects": [],
+      "description": "Fauconnier kazakh – Kazakhstan Il dresse des aigles pour la chasse dans les montagnes de l’Altaï. L’aigle royal, compagnon majestueux, repère et capture les proies dans la neige. Cette tradition ancestrale, transmise de père en fils, est célébrée chaque année lors d’un grand festival où l’homme et l’oiseau forment un duo impressionnant."
     },
     {
       "id": "metier-gardien-de-temple",
       "name": "gardien de temple",
       "type": "metier",
       "family": "insolites",
-      "effects": []
+      "effects": [],
+      "description": "Gardien de temple – Inde Il veille sur un lieu sacré, entretient les autels et accueille les fidèles. Certains gardiens vivent dans le temple même, au service de la divinité."
     },
     {
       "id": "metier-dompteur-de-serpents",
       "name": "dompteur de serpents",
       "type": "metier",
       "family": "insolites",
-      "effects": []
+      "effects": [],
+      "description": "Dompteur de serpents – Maroc Il charme les cobras avec une flûte dans les places publiques. Ce métier, souvent héréditaire, mêle spectacle et tradition mystique."
     },
     {
       "id": "metier-maitre-de-the",
       "name": "maitre de the",
       "type": "metier",
       "family": "insolites",
-      "effects": []
+      "effects": [],
+      "description": "Maître de thé – Japon Il dirige la cérémonie du thé dans un cadre codifié et méditatif. Chaque geste est précis et chargé de symbolisme."
     },
     {
       "id": "metier-marionnettiste-wayang",
       "name": "marionnettiste wayang",
       "type": "metier",
       "family": "insolites",
-      "effects": []
+      "effects": [],
+      "description": "Marionnettiste wayang – Indonésie Il anime des marionnettes d’ombre lors de spectacles racontant des épopées anciennes. Le dalang est à la fois conteur, musicien et maître de sagesse."
     },
     {
       "id": "metier-ramasseur-de-truffes",
       "name": "ramasseur de truffes",
       "type": "metier",
       "family": "insolites",
-      "effects": []
+      "effects": [],
+      "description": "Ramasseur de truffes – France Il utilise un chien ou un cochon pour dénicher les truffes enfouies sous la terre. Ce métier nécessite discrétion, finesse et complicité avec l’animal. Famille Innovation :"
     },
     {
       "id": "metier-developpeur-de-jeux-video",
       "name": "developpeur de jeux video",
       "type": "metier",
       "family": "innovation",
-      "effects": []
+      "effects": [],
+      "description": "Développeur de jeux vidéo – Japon Il conçoit des univers interactifs mêlant technologie, narration et design. Le Japon est pionnier dans l’industrie vidéoludique mondiale depuis les années 80."
     },
     {
       "id": "metier-specialiste-en-drones",
       "name": "specialiste en drones",
       "type": "metier",
       "family": "innovation",
-      "effects": []
+      "effects": [],
+      "description": "Spécialiste en drones – Canada Il pilote des drones pour surveiller, cartographier ou livrer en zones difficiles. Les drones sont aussi utilisés pour la préservation de la faune sauvage."
     },
     {
       "id": "metier-concepteur-denergies-renouvelables",
       "name": "concepteur denergies renouvelables",
       "type": "metier",
       "family": "innovation",
-      "effects": []
+      "effects": [],
+      "description": "Concepteur d’énergies renouvelables – Danemark Il imagine des systèmes pour produire de l’énergie propre : éolienne, solaire, hydraulique. Le Danemark est l’un des leaders mondiaux dans l’éolien offshore."
     },
     {
       "id": "metier-bio-architecte",
       "name": "bio architecte",
       "type": "metier",
       "family": "innovation",
-      "effects": []
+      "effects": [],
+      "description": "Bio-architecte – Colombie Il construit des bâtiments à partir de matériaux naturels comme la terre ou le bambou. L’architecture verte s’inspire souvent des formes organiques et des traditions locales."
     },
     {
       "id": "metier-imprimeuse-3d-medicale",
       "name": "imprimeuse 3d medicale",
       "type": "metier",
       "family": "innovation",
-      "effects": []
+      "effects": [],
+      "description": "Imprimeuse 3D médicale – Allemagne Elle fabrique des prothèses sur mesure grâce à l’impression en trois dimensions. Cette technologie ouvre la voie à des soins personnalisés et plus accessibles."
     },
     {
       "id": "metier-concepteur-de-textiles-ecologiques",
       "name": "concepteur de textiles ecologiques",
       "type": "metier",
       "family": "innovation",
-      "effects": []
+      "effects": [],
+      "description": "Concepteur de textiles écologiques – Suède Il invente des tissus biodégradables à base d’algues, de champignons ou de fruits. La mode durable est en pleine expansion dans les pays nordiques. Famille Santé :"
     },
     {
       "id": "metier-medecin-ayurvedique",
       "name": "medecin ayurvedique",
       "type": "metier",
       "family": "sante",
-      "effects": []
+      "effects": [],
+      "description": "Médecin ayurvédique – Inde Il soigne par les plantes, le régime alimentaire et le rééquilibrage des énergies. L’Ayurveda est une médecine millénaire considérée comme holistique."
     },
     {
       "id": "metier-guerisseur-traditionnel",
       "name": "guerisseur traditionnel",
       "type": "metier",
       "family": "sante",
-      "effects": []
+      "effects": [],
+      "description": "Guérisseur traditionnel – Afrique du Sud Il utilise les herbes, les rituels et les ancêtres pour soigner le corps et l’esprit. Le sangoma est aussi un guide spirituel dans sa communauté."
     },
     {
       "id": "metier-rebouteux-andin",
       "name": "rebouteux andin",
       "type": "metier",
       "family": "sante",
-      "effects": []
+      "effects": [],
+      "description": "Rebouteux andin – Pérou Il remet les os et les muscles en place avec des massages traditionnels. Il s’appuie sur la connaissance des plantes locales pour soulager les douleurs."
     },
     {
       "id": "metier-chaman-siberien",
       "name": "chaman siberien",
       "type": "metier",
       "family": "sante",
-      "effects": []
+      "effects": [],
+      "description": "Chaman sibérien – Russie Il entre en transe pour dialoguer avec les esprits et soigner les maladies invisibles. Le tambour chamanique est un outil central dans ses rituels de guérison."
     },
     {
       "id": "metier-accoucheuse-bedouine",
       "name": "accoucheuse bedouine",
       "type": "metier",
       "family": "sante",
-      "effects": []
+      "effects": [],
+      "description": "Accoucheuse bédouine – Jordanie Elle accompagne les naissances dans le désert, souvent sans assistance médicale. Son savoir vient de l’expérience et des transmissions orales entre femmes."
     },
     {
       "id": "metier-herboriste-coreenne",
       "name": "herboriste coreenne",
       "type": "metier",
       "family": "sante",
-      "effects": []
+      "effects": [],
+      "description": "Herboriste coréenne – Corée du Sud Elle prépare des décoctions à base de plantes médicinales selon les principes de la médecine orientale. Les herbes sont sélectionnées avec soin en fonction du corps, de la saison et de l’énergie vitale."
     },
     {
       "id": "special-voyage-autour-du-monde",
@@ -311,7 +353,8 @@
             "cardId": "special-voyage-autour-du-monde"
           }
         }
-      ]
+      ],
+      "description": "oyage autour du monde. Échange une carte de ta main avec une carte au hasard dans la main d’un autre joueur. Ce voyage t’ouvre à d’autres horizons !"
     },
     {
       "id": "special-metier-disparu",
@@ -330,7 +373,8 @@
             "cardId": "special-metier-disparu"
           }
         }
-      ]
+      ],
+      "description": "Métier disparu. Cette carte te permet de compléter une famille en remplaçant temporairement une carte manquante. Elle ne peut être utilisée qu’une seule fois par partie."
     },
     {
       "id": "special-formation-express",
@@ -352,7 +396,8 @@
             "cardId": "special-formation-express"
           }
         }
-      ]
+      ],
+      "description": "Formation express. Lors de ton prochain tour, tu peux piocher deux cartes au lieu d’une. Une formation accélérée pour te rapprocher de ta collection !"
     },
     {
       "id": "special-greve-mondiale",
@@ -373,7 +418,8 @@
             "cardId": "special-greve-mondiale"
           }
         }
-      ]
+      ],
+      "description": "Grève mondiale. Tous les autres joueurs passent leur prochain tour. Tu es le seul ou la seule à jouer : profite de ce temps calme pour avancer."
     },
     {
       "id": "special-boussole-perdue",
@@ -392,7 +438,8 @@
             "cardId": "special-boussole-perdue"
           }
         }
-      ]
+      ],
+      "description": "Boussole perdue. Mélange ta main avec celle d’un autre joueur tiré au hasard. Un vrai moment de confusion… mais peut-être une belle découverte au bout !"
     },
     {
       "id": "special-passation-de-savoir",
@@ -411,7 +458,8 @@
             "cardId": "special-passation-de-savoir"
           }
         }
-      ]
+      ],
+      "description": "Passation de savoir. Choisis un joueur : il te donne une carte de ton choix s’il l’a. Un geste de transmission, précieux dans toutes les cultures."
     },
     {
       "id": "special-fete-du-metier",
@@ -430,7 +478,8 @@
             "cardId": "special-fete-du-metier"
           }
         }
-      ]
+      ],
+      "description": "Fête du métier. Tous les joueurs montrent une carte de leur main. Si tu repères une carte qui te manque pour compléter une famille, tu peux la demander."
     }
   ]
 }

@@ -3,272 +3,322 @@
     {
       "n": 1,
       "title": "Base de lancement",
+      "description": "Vous êtes au cœur de la base spatiale, entouré de technologies prêtes à s’éveiller. Tout est en place, la mission commence ici.",
       "type": "start"
     },
     {
       "n": 2,
       "title": "Orbits encombrées",
+      "description": "Vous traversez les premières couches de l’espace, encore marquées par l’activité humaine. Le passage est dense, mais votre trajectoire reste stable.",
       "type": "neutral"
     },
     {
       "n": 3,
       "title": "Question Galactique",
+      "description": "Un premier message de contrôle vous parvient depuis l’espace proche. Vous devez répondre à une Question Galactique pour poursuivre votre mission.",
       "type": "question"
     },
     {
       "n": 4,
       "title": "Panne de communication",
+      "description": "Les signaux se brouillent soudainement et vos systèmes se taisent. Vous passez immédiatement votre tour, le temps que les communications reviennent.",
       "type": "skip",
       "turnsToSkip": 1
     },
     {
       "n": 5,
       "title": "Défi Cosmique",
+      "description": "Un dysfonctionnement imprévu exige toute votre concentration. Vous appliquez immédiatement un Défi Cosmique.",
       "type": "challenge"
     },
     {
       "n": 6,
       "title": "Ravitaillement orbital",
+      "description": "Une station automatique répond à votre appel et renforce vos réserves. Rassuré, vous avancez de deux cases.",
       "type": "move",
       "delta": 2
     },
     {
       "n": 7,
       "title": "Pluie de météorites",
+      "description": "Des fragments traversent votre route à grande vitesse. Un Événement Spatial s’applique immédiatement.",
       "type": "event"
     },
     {
       "n": 8,
       "title": "Question Galactique",
+      "description": "Un nouveau signal vous met à l’épreuve des connaissances spatiales. Répondez à une Question Galactique.",
       "type": "question"
     },
     {
       "n": 9,
       "title": "Tempête solaire",
+      "description": "Une onde énergétique secoue vos systèmes et vous oblige à ralentir. Vous reculez d’une case.",
       "type": "move",
       "delta": -1
     },
     {
       "n": 10,
       "title": "Signal alien brouillé",
+      "description": "Une transmission inconnue perturbe vos repères habituels. Vous appliquez un Défi Cosmique.",
       "type": "challenge"
     },
     {
       "n": 11,
       "title": "Survol paisible",
+      "description": "Le calme revient tandis que vous glissez dans un espace silencieux. Rien ne se produit en ces lieux.",
       "type": "neutral"
     },
     {
       "n": 12,
       "title": "Satellite d'observation",
+      "description": "Un ancien satellite vous transmet des données précieuses sur la route à venir. Grâce à elles, vous avancez d’une case.",
       "type": "move",
       "delta": 1
     },
     {
       "n": 13,
       "title": "Question Galactique",
+      "description": "L’univers continue de vous tester avant de vous laisser progresser. Répondez à une Question Galactique.",
       "type": "question"
     },
     {
       "n": 14,
       "title": "Turbulences orbitales",
+      "description": "Des courants instables figent votre avancée sans avertissement. Vous passez immédiatement votre tour.",
       "type": "skip",
       "turnsToSkip": 1
     },
     {
       "n": 15,
       "title": "Sortie du système solaire",
+      "description": "Les dernières influences familières disparaissent derrière vous. Un Événement Spatial marque ce grand départ vers l’inconnu.",
       "type": "event"
     },
     {
       "n": 16,
       "title": "Entrée dans la galaxie",
+      "description": "Vous pénétrez un espace vaste et ancien, chargé d’étoiles innombrables. Votre voyage se poursuit sans obstacle immédiat.",
       "type": "neutral"
     },
     {
       "n": 17,
       "title": "Attraction gravitationnelle intense",
+      "description": "Une force invisible dévie votre trajectoire et vous attire en arrière. Vous reculez de deux cases.",
       "type": "move",
       "delta": -2
     },
     {
       "n": 18,
       "title": "Question Galactique",
+      "description": "Un signal lointain vous interroge sur les lois du cosmos. Répondez à une Question Galactique.",
       "type": "question"
     },
     {
       "n": 19,
       "title": "Message codé",
+      "description": "Une transmission cryptée exige réflexion et discernement. Vous appliquez un Défi Cosmique.",
       "type": "challenge"
     },
     {
       "n": 20,
       "title": "Raccourci interstellaire",
+      "description": "Vous identifiez une route plus rapide entre les étoiles. Avancez de trois cases.",
       "type": "move",
       "delta": 3
     },
     {
       "n": 21,
       "title": "Station spatiale abandonnée",
+      "description": "Des systèmes anciens s’activent brièvement à votre passage. Un Événement Spatial se déclenche alors.",
       "type": "event"
     },
     {
       "n": 22,
       "title": "Étoile filante",
+      "description": "Une énergie favorable semble accompagner votre trajectoire. Vous avancez d’une case.",
       "type": "move",
       "delta": 1
     },
     {
       "n": 23,
       "title": "Champ énergétique instable",
+      "description": "Votre progression est brutalement interrompue par des ondes erratiques. Vous passez votre tour.",
       "type": "skip",
       "turnsToSkip": 1
     },
     {
       "n": 24,
       "title": "Question Galactique",
+      "description": "Avant d’aller plus loin, une nouvelle épreuve de connaissances s’impose. Répondez à une Question Galactique.",
       "type": "question"
     },
     {
       "n": 25,
       "title": "Nébuleuse lumineuse",
+      "description": "Une matière cosmique rare enveloppe votre fusée et vous insuffle une énergie nouvelle. Rejouez.",
       "type": "neutral",
       "keepTurn": true
     },
     {
       "n": 26,
       "title": "Astre inconnu",
+      "description": "Un corps céleste mystérieux perturbe vos calculs. Appliquez un Défi Cosmique.",
       "type": "challenge"
     },
     {
       "n": 27,
       "title": "Système endommagé",
+      "description": "Une avarie mineure ralentit votre avancée. Vous reculez d’une case.",
       "type": "move",
       "delta": -1
     },
     {
       "n": 28,
       "title": "Transmission réussie",
+      "description": "Un contact clair avec votre base vous redonne confiance. Vous avancez immédiatement de deux cases.",
       "type": "move",
       "delta": 2
     },
     {
       "n": 29,
       "title": "Rencontre extraterrestre",
+      "description": "Un échange inattendu modifie subtilement votre trajectoire. Un Événement Spatial s’applique immédiatement.",
       "type": "event"
     },
     {
       "n": 30,
       "title": "Instabilité gravitationnelle",
+      "description": "Les lois de l’espace vacillent autour de vous. Lancez le dé une seconde fois et appliquez son effet.",
       "type": "neutral",
       "keepTurn": true
     },
     {
       "n": 31,
       "title": "Question Galactique",
+      "description": "Une réponse juste peut ouvrir la voie vers l’avant. Appliquez les règles de la Question Galactique.",
       "type": "question"
     },
     {
       "n": 32,
       "title": "Réseau spatial perturbé",
+      "description": "Vos systèmes se figent sans panne apparente. Aucun effet supplémentaire ne s’applique.",
       "type": "neutral"
     },
     {
       "n": 33,
       "title": "Zone de silence cosmique",
+      "description": "Tout semble suspendu, comme si l’univers retenait son souffle. Rien ne se produit sur cette case.",
       "type": "neutral"
     },
     {
       "n": 34,
       "title": "Collision évitée de justesse",
+      "description": "Un danger frôlé de très près laisse des traces sur votre trajectoire. Un Événement Spatial s’applique immédiatement.",
       "type": "event"
     },
     {
       "n": 35,
       "title": "Fin de la zone galactique",
+      "description": "Les repères connus s’effacent peu à peu. Vous poursuivez votre voyage vers le cosmos profond.",
       "type": "neutral"
     },
     {
       "n": 36,
       "title": "Comète massive",
+      "description": "Une immense comète traverse votre route et vous force à corriger votre trajectoire. Vous reculez d’une case.",
       "type": "move",
       "delta": -1
     },
     {
       "n": 37,
       "title": "Défi Cosmique",
+      "description": "Une situation complexe exige toute votre concentration mentale. Vous appliquez un Défi Cosmique.",
       "type": "challenge"
     },
     {
       "n": 38,
       "title": "Monde habité",
+      "description": "Vous découvrez une civilisation lointaine qui vous apporte un soutien précieux. Avancez de deux cases.",
       "type": "move",
       "delta": 2
     },
     {
       "n": 39,
       "title": "Rayonnement cosmique",
+      "description": "Une onde invisible sature vos systèmes et ralentit votre progression. Passez immédiatement votre tour.",
       "type": "skip",
       "turnsToSkip": 1
     },
     {
       "n": 40,
       "title": "Question Galactique",
+      "description": "Une question décisive se présente à vous avant la dernière ligne droite. Répondez à une Question Galactique.",
       "type": "question"
     },
     {
       "n": 41,
       "title": "Rencontre pacifique",
+      "description": "Une alliance sincère vous permet d’accélérer vers votre destination. Avancez de trois cases.",
       "type": "move",
       "delta": 3
     },
     {
       "n": 42,
       "title": "Anomalie temporelle",
+      "description": "Le temps se plie autour de vous et bouleverse l’ordre établi. Vous échangez immédiatement votre case avec celle du joueur le plus proche.",
       "type": "swapNearest"
     },
     {
       "n": 43,
       "title": "Champ de débris",
+      "description": "Des fragments errants modifient votre trajectoire. Un Événement Spatial s’applique immédiatement.",
       "type": "event"
     },
     {
       "n": 44,
       "title": "Réserves optimales",
+      "description": "Vos systèmes fonctionnent parfaitement et votre progression s’en trouve facilitée. Vous avancez immédiatement d’une case.",
       "type": "move",
       "delta": 1
     },
     {
       "n": 45,
       "title": "Vision de la destination",
+      "description": "La planète légendaire se rapproche clairement dans votre esprit. Vous avancez immédiatement jusqu’à la case 48.",
       "type": "goto",
       "target": 48
     },
     {
       "n": 46,
       "title": "Défi Cosmique",
+      "description": "Une dernière épreuve met votre esprit à contribution avant l’arrivée. Vous appliquez immédiatement un Défi Cosmique.",
       "type": "challenge"
     },
     {
       "n": 47,
       "title": "Singularité évitée",
+      "description": "Une distorsion de l’espace menace votre trajectoire, mais vous l’évitez de justesse. Vous reculez immédiatement d’une case.",
       "type": "move",
       "delta": -1
     },
     {
       "n": 48,
       "title": "Don d'une civilisation avancée",
+      "description": "Un soutien inattendu vous propulse vers l’ultime étape. Vous rejouez immédiatement.",
       "type": "neutral",
       "keepTurn": true
     },
     {
       "n": 49,
       "title": "Dernière épreuve",
+      "description": "L’univers vous pose une ultime question avant de vous laisser passer. Une bonne réponse vous permet d’atteindre la dernière case.",
       "type": "question"
     },
     {
       "n": 50,
       "title": "Planète légendaire",
+      "description": "Vous atteignez enfin la planète tant recherchée. La mission s’achève et votre voyage entre dans la légende.",
       "type": "finish"
     }
   ],

@@ -35,6 +35,7 @@ export const jsonQuizEventRaceSchema = object({
       {
         n: positive,
         title: text,
+        description: text,
         type: {
           enum: [
             'start',

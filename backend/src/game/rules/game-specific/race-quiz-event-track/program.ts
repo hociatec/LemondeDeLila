@@ -4,6 +4,7 @@ import type { TrackRaceProgram } from '../../../engine/sdk/extension-contracts';
 export type QuizEventRaceTile = {
   n: number;
   title: string;
+  description?: string;
   type:
     | 'start'
     | 'neutral'

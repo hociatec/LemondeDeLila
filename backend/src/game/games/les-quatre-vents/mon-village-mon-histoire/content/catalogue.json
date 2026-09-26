@@ -3,79 +3,79 @@
     {
       "n": 1,
       "title": "- Place Centrale",
-      "description": "Vous vous tenez sur la Place Centrale de votre village. De lÃ , toutes les avenues partent vers de nouvelles aventures et mÃ©tiers. Respirez lâ€™air du marchÃ© et prÃ©parez-vous Ã  dÃ©velopper votre village.",
+      "description": "Vous vous tenez sur la Place Centrale de votre village. De là, toutes les avenues partent vers de nouvelles aventures et métiers. Respirez l’air du marché et préparez-vous à développer votre village.",
       "type": "card"
     },
     {
       "n": 2,
       "title": "Champs et prairies",
-      "description": "Vous marchez entre champs et pÃ¢turages. Lâ€™Agriculteur cultive la terre et le Berger veille sur les troupeaux. Votre village commence Ã  nourrir ses habitants.",
+      "description": "Vous marchez entre champs et pâturages. L’Agriculteur cultive la terre et le Berger veille sur les troupeaux. Votre village commence à nourrir ses habitants.",
       "type": "card"
     },
     {
       "n": 3,
-      "title": "Ã‰levage et ruches",
-      "description": "Dans lâ€™Ã©table et le rucher, le Vacher, le Porcher et lâ€™Apiculteur travaillent avec soin. Votre village gagne en lait, viande et miel.",
+      "title": "Élevage et ruches",
+      "description": "Dans l’étable et le rucher, le Vacher, le Porcher et l’Apiculteur travaillent avec soin. Votre village gagne en lait, viande et miel.",
       "type": "card"
     },
     {
       "n": 4,
-      "title": "ForÃªt et bois",
-      "description": "Vous pÃ©nÃ©trez dans la forÃªt. Le BÃ»cheron abat les arbres avec prudence, le Charbonnier transforme le bois en charbon, et le Garde-forestier veille sur lâ€™Ã©quilibre naturel. Le village se fournit en matÃ©riaux.",
+      "title": "Forêt et bois",
+      "description": "Vous pénétrez dans la forêt. Le Bûcheron abat les arbres avec prudence, le Charbonnier transforme le bois en charbon, et le Garde-forestier veille sur l’équilibre naturel. Le village se fournit en matériaux.",
       "type": "card"
     },
     {
       "n": 5,
-      "title": "Chasse et pÃªche",
-      "description": "Au bord des bois et des riviÃ¨res, le Chasseur, le PÃªcheur et le Fauconnier assurent nourriture et peaux. Votre village prospÃ¨re et se protÃ¨ge des manques alimentaires.",
+      "title": "Chasse et pêche",
+      "description": "Au bord des bois et des rivières, le Chasseur, le Pêcheur et le Fauconnier assurent nourriture et peaux. Votre village prospère et se protège des manques alimentaires.",
       "type": "card"
     },
     {
       "n": 6,
       "title": "Vignes, oliveraies et ressources rares",
-      "description": "Vous dÃ©couvrez vignes et marais salants. Le Vigneron, lâ€™Oliviculteur, le Salinier, le Pisciculteur, lâ€™Ã‰leveur de vers Ã  soie et le Gardien de pigeonnier enrichissent le village de produits prÃ©cieux.",
+      "description": "Vous découvrez vignes et marais salants. Le Vigneron, l’Oliviculteur, le Salinier, le Pisciculteur, l’Éleveur de vers à soie et le Gardien de pigeonnier enrichissent le village de produits précieux.",
       "type": "card"
     },
     {
       "n": 7,
-      "title": "Forge et mÃ©tal",
-      "description": "Le Forgeron, le MarÃ©chal-ferrant et lâ€™Armurier travaillent le mÃ©tal. Vos habitants gagnent outils, armes et Ã©quipements robustes.",
+      "title": "Forge et métal",
+      "description": "Le Forgeron, le Maréchal-ferrant et l’Armurier travaillent le métal. Vos habitants gagnent outils, armes et équipements robustes.",
       "type": "card"
     },
     {
       "n": 8,
       "title": "Bois et pierre",
-      "description": "Charpentier, Menuisier, Tonnelier, Tailleur de pierre et MaÃ§on transforment bois et pierre. Les constructions du village se multiplient et sâ€™affermissent.",
+      "description": "Charpentier, Menuisier, Tonnelier, Tailleur de pierre et Maçon transforment bois et pierre. Les constructions du village se multiplient et s’affermissent.",
       "type": "card"
     },
     {
       "n": 9,
       "title": "Argile et verre",
-      "description": "Potier, Verrier, Sculpteur, Tourneur sur bois et Cloutier faÃ§onnent objets, dÃ©corations et ustensiles. Le village devient fonctionnel et esthÃ©tique.",
+      "description": "Potier, Verrier, Sculpteur, Tourneur sur bois et Cloutier façonnent objets, décorations et ustensiles. Le village devient fonctionnel et esthétique.",
       "type": "card"
     },
     {
       "n": 10,
       "title": "Textiles et cuir",
-      "description": "Tisserand, Fileuse, Teinturier, Cordonnier, Bourrelier, Sellier, Vannier et Sabotier enrichissent vÃªtements, chaussures et accessoires. Vos habitants sont habillÃ©s et protÃ©gÃ©s.",
+      "description": "Tisserand, Fileuse, Teinturier, Cordonnier, Bourrelier, Sellier, Vannier et Sabotier enrichissent vêtements, chaussures et accessoires. Vos habitants sont habillés et protégés.",
       "type": "card"
     },
     {
       "n": 11,
       "title": "Toits et ornements",
-      "description": "Couvreur, PlÃ¢trier, OrfÃ¨vre, Fondeur, Graveur, Ã‰bÃ©niste, Facteur dâ€™instruments et Papetier complÃ¨tent le village avec toits solides, bijoux et instruments.",
+      "description": "Couvreur, Plâtrier, Orfèvre, Fondeur, Graveur, Ébéniste, Facteur d’instruments et Papetier complètent le village avec toits solides, bijoux et instruments.",
       "type": "card"
     },
     {
       "n": 12,
       "title": "Couture et broderie",
-      "description": "Tailleur, Couturier et Brodeur confectionnent vÃªtements et dÃ©corations textiles. Les habitants se parent dâ€™Ã©lÃ©gance.",
+      "description": "Tailleur, Couturier et Brodeur confectionnent vêtements et décorations textiles. Les habitants se parent d’élégance.",
       "type": "card"
     },
     {
       "n": 13,
       "title": "Dentelle et chapeaux",
-      "description": "DentelliÃ¨re et Chapelier crÃ©ent beautÃ© et raffinement pour les habitants.",
+      "description": "Dentellière et Chapelier créent beauté et raffinement pour les habitants.",
       "type": "card"
     },
     {
@@ -87,25 +87,25 @@
     {
       "n": 15,
       "title": "Traitement et accessoires textiles",
-      "description": "Foulonnier, Passementier et Ravaudeur entretiennent et dÃ©corent tissus et vÃªtements.",
+      "description": "Foulonnier, Passementier et Ravaudeur entretiennent et décorent tissus et vêtements.",
       "type": "card"
     },
     {
       "n": 16,
       "title": "Laine et finitions",
-      "description": "Peigneur de laine complÃ¨te le travail en prÃ©parant la laine brute pour la fabrication des vÃªtements.",
+      "description": "Peigneur de laine complète le travail en préparant la laine brute pour la fabrication des vêtements.",
       "type": "card"
     },
     {
       "n": 17,
-      "title": "CÃ©rÃ©ales et pain",
+      "title": "Céréales et pain",
       "description": "Boulanger et Meunier travaillent pour nourrir le village.",
       "type": "card"
     },
     {
       "n": 18,
       "title": "Boissons et fromage",
-      "description": "Brasseur, Fromager et Vinaigrier crÃ©ent boissons et fromages pour les habitants et le commerce.",
+      "description": "Brasseur, Fromager et Vinaigrier créent boissons et fromages pour les habitants et le commerce.",
       "type": "card"
     },
     {
@@ -123,43 +123,43 @@
     {
       "n": 21,
       "title": "Sucreries et lait",
-      "description": "Cuisinier, Confiseur, Laitier, Glacier et PÃ¢tissier ancien enchantent les palais du village.",
+      "description": "Cuisinier, Confiseur, Laitier, Glacier et Pâtissier ancien enchantent les palais du village.",
       "type": "card"
     },
     {
       "n": 22,
       "title": "Commerce",
-      "description": "Marchand, Colporteur et Ã‰picier permettent Ã©changes et approvisionnement du village.",
+      "description": "Marchand, Colporteur et Épicier permettent échanges et approvisionnement du village.",
       "type": "card"
     },
     {
       "n": 23,
-      "title": "SantÃ© et remÃ¨des",
-      "description": "Herboriste, GuÃ©risseur et Rebouteux soignent les habitants.",
+      "title": "Santé et remèdes",
+      "description": "Herboriste, Guérisseur et Rebouteux soignent les habitants.",
       "type": "card"
     },
     {
       "n": 24,
-      "title": "Naissance et hygiÃ¨ne",
-      "description": "Sage-femme, Barbier, Baigneur et Laveuse sâ€™occupent de la naissance et du bien-Ãªtre des villageois.",
+      "title": "Naissance et hygiène",
+      "description": "Sage-femme, Barbier, Baigneur et Laveuse s’occupent de la naissance et du bien-être des villageois.",
       "type": "card"
     },
     {
       "n": 25,
       "title": "Eau et coiffure",
-      "description": "Porteur dâ€™eau et Perruquier assurent hydratation et apparence.",
+      "description": "Porteur d’eau et Perruquier assurent hydratation et apparence.",
       "type": "card"
     },
     {
       "n": 26,
-      "title": "Communication et sÃ©curitÃ©",
-      "description": "Crieur public, Allumeur de lampes, Veilleur de nuit, Vidangeur et Fossoyeur maintiennent ordre et propretÃ©.",
+      "title": "Communication et sécurité",
+      "description": "Crieur public, Allumeur de lampes, Veilleur de nuit, Vidangeur et Fossoyeur maintiennent ordre et propreté.",
       "type": "card"
     },
     {
       "n": 27,
-      "title": "Ã‰criture et copie",
-      "description": "Scribe, Copiste et Enlumineur consignent lâ€™histoire et les textes sacrÃ©s.",
+      "title": "Écriture et copie",
+      "description": "Scribe, Copiste et Enlumineur consignent l’histoire et les textes sacrés.",
       "type": "card"
     },
     {
@@ -170,68 +170,68 @@
     },
     {
       "n": 29,
-      "title": "Religion et spiritualitÃ©",
-      "description": "PrÃªtre, Moine et Chaman guident la spiritualitÃ© du village.",
+      "title": "Religion et spiritualité",
+      "description": "Prêtre, Moine et Chaman guident la spiritualité du village.",
       "type": "card"
     },
     {
       "n": 30,
       "title": "Divination et savoirs",
-      "description": "Devin, Astrologue, Calligraphe et Philosophe interprÃ¨tent signes et enseignent.",
+      "description": "Devin, Astrologue, Calligraphe et Philosophe interprètent signes et enseignent.",
       "type": "card"
     },
     {
       "n": 31,
-      "title": "Ã‰ducation et histoire",
-      "description": "MaÃ®tre dâ€™Ã©cole, Chroniqueur, Alchimiste, ExÃ©gÃ¨te et PoÃ¨te enrichissent connaissances et patrimoine.",
+      "title": "Éducation et histoire",
+      "description": "Maître d’école, Chroniqueur, Alchimiste, Exégète et Poète enrichissent connaissances et patrimoine.",
       "type": "card"
     },
     {
       "n": 32,
-      "title": "DÃ©fense et surveillance",
-      "description": "Soldat, Garde et Sentinelle protÃ¨gent le village.",
+      "title": "Défense et surveillance",
+      "description": "Soldat, Garde et Sentinelle protègent le village.",
       "type": "card"
     },
     {
       "n": 33,
       "title": "Messager et justice",
-      "description": "Messager, HÃ©raut, Juge, Notaire et Bailli assurent ordre et transmission des informations.",
+      "description": "Messager, Héraut, Juge, Notaire et Bailli assurent ordre et transmission des informations.",
       "type": "card"
     },
     {
       "n": 34,
       "title": "Commandement",
-      "description": "Capitaine, Ã‰cuyer et Chevalier dirigent et dÃ©fendent les habitants.",
+      "description": "Capitaine, Écuyer et Chevalier dirigent et défendent les habitants.",
       "type": "card"
     },
     {
       "n": 35,
       "title": "Prisons et sanctions",
-      "description": "GeÃ´lier, Bourreau, PrÃ©vÃ´t et Huissier appliquent lois et rÃ©gulent conflits.",
+      "description": "Geôlier, Bourreau, Prévôt et Huissier appliquent lois et régulent conflits.",
       "type": "card"
     },
     {
       "n": 36,
-      "title": "MaÃ®trise du combat",
-      "description": "MaÃ®tre dâ€™armes forme et entraÃ®ne les dÃ©fenseurs du village.",
+      "title": "Maîtrise du combat",
+      "description": "Maître d’armes forme et entraîne les défenseurs du village.",
       "type": "card"
     },
     {
       "n": 37,
       "title": "Construction et navigation",
-      "description": "BÃ¢tisseur, Passeur, Batelier et Marin explorent et dÃ©veloppent infrastructures et routes.",
+      "description": "Bâtisseur, Passeur, Batelier et Marin explorent et développent infrastructures et routes.",
       "type": "card"
     },
     {
       "n": 38,
-      "title": "BÃ¢timents et mer",
+      "title": "Bâtiments et mer",
       "description": "Charpentier naval et Navigateur assurent transport et commerce sur mer.",
       "type": "card"
     },
     {
       "n": 39,
       "title": "Exploration",
-      "description": "Explorateur, Caravanier et PÃ¨lerin parcourent terres et chemins lointains.",
+      "description": "Explorateur, Caravanier et Pèlerin parcourent terres et chemins lointains.",
       "type": "card"
     },
     {
@@ -242,26 +242,26 @@
     },
     {
       "n": 41,
-      "title": "Ã‰claireurs et nomades",
-      "description": "Ã‰claireur et Nomade explorent et vivent en harmonie avec le dÃ©placement et lâ€™Ã©levage.",
+      "title": "Éclaireurs et nomades",
+      "description": "Éclaireur et Nomade explorent et vivent en harmonie avec le déplacement et l’élevage.",
       "type": "card"
     },
     {
       "n": 42,
-      "title": "Salle des FÃªtes",
-      "description": "Vous arrivez Ã  la Salle des FÃªtes. Votre village est dÃ©sormais complet, animÃ© et prospÃ¨re. Vous pouvez contempler lâ€™ensemble des mÃ©tiers et activitÃ©s qui le font vivre et vibrer.",
+      "title": "Salle des Fêtes",
+      "description": "Vous arrivez à la Salle des Fêtes. Votre village est désormais complet, animé et prospère. Vous pouvez contempler l’ensemble des métiers et activités qui le font vivre et vibrer.",
       "type": "finish"
     }
   ],
   "zones": [
     {
       "id": 1,
-      "title": "MÃ©tiers de la Terre et de la Nature",
+      "title": "Métiers de la Terre et de la Nature",
       "cards": [
         {
           "id": 1,
           "name": "Agriculteur (chapeau de paille)",
-          "text": "Vous observez lâ€™Agriculteur travailler la terre avec soin. GrÃ¢ce Ã  lui, vos habitants sont nourris et votre village prospÃ¨re.",
+          "text": "Vous observez l’Agriculteur travailler la terre avec soin. Grâce à lui, vos habitants sont nourris et votre village prospère.",
           "attributes": {
             "zoneId": 1
           }
@@ -269,7 +269,7 @@
         {
           "id": 2,
           "name": "Berger (mouton en peluche)",
-          "text": "Le Berger conduit les moutons et chÃ¨vres dans les pÃ¢turages. Son savoir-faire assure la sÃ©curitÃ© et la productivitÃ© des troupeaux.",
+          "text": "Le Berger conduit les moutons et chèvres dans les pâturages. Son savoir-faire assure la sécurité et la productivité des troupeaux.",
           "attributes": {
             "zoneId": 1
           }
@@ -277,7 +277,7 @@
         {
           "id": 3,
           "name": "Vacher (biberon)",
-          "text": "Dans lâ€™Ã©table, le Vacher sâ€™occupe des vaches et de la traite. Le lait et le fromage enrichissent lâ€™alimentation de votre village.",
+          "text": "Dans l’étable, le Vacher s’occupe des vaches et de la traite. Le lait et le fromage enrichissent l’alimentation de votre village.",
           "attributes": {
             "zoneId": 1
           }
@@ -285,7 +285,7 @@
         {
           "id": 4,
           "name": "Porcher (tire-bouchons)",
-          "text": "Vous entrez dans la porcherie oÃ¹ le Porcher nourrit et soigne les cochons. Sa vigilance garantit la ressource en viande.",
+          "text": "Vous entrez dans la porcherie où le Porcher nourrit et soigne les cochons. Sa vigilance garantit la ressource en viande.",
           "attributes": {
             "zoneId": 1
           }
@@ -293,23 +293,23 @@
         {
           "id": 5,
           "name": "Apiculteur (pot de miel)",
-          "text": "Le parfum du miel flotte autour des ruches. Lâ€™Apiculteur rÃ©colte miel et cire pour le commerce et la gourmandise de vos habitants.",
+          "text": "Le parfum du miel flotte autour des ruches. L’Apiculteur récolte miel et cire pour le commerce et la gourmandise de vos habitants.",
           "attributes": {
             "zoneId": 1
           }
         },
         {
           "id": 6,
-          "name": "BÃ»cheron (tronÃ§onneuse)",
-          "text": "Le BÃ»cheron abat les arbres avec prudence. Le bois rÃ©coltÃ© sert Ã  la construction et au chauffage de votre village.",
+          "name": "Bûcheron (tronçonneuse)",
+          "text": "Le Bûcheron abat les arbres avec prudence. Le bois récolté sert à la construction et au chauffage de votre village.",
           "attributes": {
             "zoneId": 1
           }
         },
         {
           "id": 7,
-          "name": "Charbonnier (charbon qui fumeâ€¦)",
-          "text": "Dans son four, le Charbonnier transforme le bois en charbon. Ce combustible prÃ©cieux soutient les besoins du village.",
+          "name": "Charbonnier (charbon qui fume…)",
+          "text": "Dans son four, le Charbonnier transforme le bois en charbon. Ce combustible précieux soutient les besoins du village.",
           "attributes": {
             "zoneId": 1
           }
@@ -317,7 +317,7 @@
         {
           "id": 8,
           "name": "Garde-forestier (loupe)",
-          "text": "Le Garde-forestier veille sur la forÃªt et ses ressources. Son action garantit lâ€™Ã©quilibre naturel et la pÃ©rennitÃ© du village.",
+          "text": "Le Garde-forestier veille sur la forêt et ses ressources. Son action garantit l’équilibre naturel et la pérennité du village.",
           "attributes": {
             "zoneId": 1
           }
@@ -325,15 +325,15 @@
         {
           "id": 9,
           "name": "Chasseur (fusil)",
-          "text": "Le Chasseur traque le gibier dans la forÃªt. La viande et les peaux quâ€™il rapporte contribuent Ã  la nourriture et aux vÃªtements des habitants.",
+          "text": "Le Chasseur traque le gibier dans la forêt. La viande et les peaux qu’il rapporte contribuent à la nourriture et aux vêtements des habitants.",
           "attributes": {
             "zoneId": 1
           }
         },
         {
           "id": 10,
-          "name": "PÃªcheur (canne Ã  pÃªche)",
-          "text": "Au bord de la riviÃ¨re, le PÃªcheur tend ses filets. Les poissons capturÃ©s nourrissent le village et enrichissent son commerce.",
+          "name": "Pêcheur (canne à pêche)",
+          "text": "Au bord de la rivière, le Pêcheur tend ses filets. Les poissons capturés nourrissent le village et enrichissent son commerce.",
           "attributes": {
             "zoneId": 1
           }
@@ -341,7 +341,7 @@
         {
           "id": 11,
           "name": "Cueilleur (panier de pommes)",
-          "text": "Vous observez le Cueilleur rÃ©colter plantes, fruits et baies. Ces trÃ©sors de la nature apportent santÃ© et alimentation aux villageois.",
+          "text": "Vous observez le Cueilleur récolter plantes, fruits et baies. Ces trésors de la nature apportent santé et alimentation aux villageois.",
           "attributes": {
             "zoneId": 1
           }
@@ -349,7 +349,7 @@
         {
           "id": 12,
           "name": "Fauconnier (plume)",
-          "text": "Le Fauconnier dresse les oiseaux de proie pour la chasse. Ses rapaces aident Ã  protÃ©ger et nourrir le village.",
+          "text": "Le Fauconnier dresse les oiseaux de proie pour la chasse. Ses rapaces aident à protéger et nourrir le village.",
           "attributes": {
             "zoneId": 1
           }
@@ -357,7 +357,7 @@
         {
           "id": 13,
           "name": "Salinier (cristal de sel scintillant)",
-          "text": "Dans les marais salants, le Salinier rÃ©colte le sel. Cette ressource prÃ©cieuse renforce les rÃ©serves alimentaires et le commerce.",
+          "text": "Dans les marais salants, le Salinier récolte le sel. Cette ressource précieuse renforce les réserves alimentaires et le commerce.",
           "attributes": {
             "zoneId": 1
           }
@@ -365,15 +365,15 @@
         {
           "id": 14,
           "name": "Vigneron (grappe de raisin)",
-          "text": "Le Vigneron soigne ses vignes et produit du vin. Ses rÃ©coltes enrichissent fÃªtes et Ã©changes commerciaux du village.",
+          "text": "Le Vigneron soigne ses vignes et produit du vin. Ses récoltes enrichissent fêtes et échanges commerciaux du village.",
           "attributes": {
             "zoneId": 1
           }
         },
         {
           "id": 15,
-          "name": "Oliviculteur (bouteille dâ€™huile dâ€™olive)",
-          "text": "Sous les oliviers, lâ€™Oliviculteur presse les fruits pour lâ€™huile. Cette ressource nourrit, soigne et fait prospÃ©rer le village.",
+          "name": "Oliviculteur (bouteille d’huile d’olive)",
+          "text": "Sous les oliviers, l’Oliviculteur presse les fruits pour l’huile. Cette ressource nourrit, soigne et fait prospérer le village.",
           "attributes": {
             "zoneId": 1
           }
@@ -381,23 +381,23 @@
         {
           "id": 16,
           "name": "Pisciculteur (crabe qui danse)",
-          "text": "Dans ses bassins, le Pisciculteur Ã©lÃ¨ve poissons et crustacÃ©s. Ses soins garantissent nourriture et commerce.",
+          "text": "Dans ses bassins, le Pisciculteur élève poissons et crustacés. Ses soins garantissent nourriture et commerce.",
           "attributes": {
             "zoneId": 1
           }
         },
         {
           "id": 17,
-          "name": "Ã‰leveur de vers Ã  soie (cocon qui sourit)",
-          "text": "Les cocons brillent dans les mains de lâ€™Ã‰leveur. La soie prÃ©cieuse quâ€™il produit habille et orne le village.",
+          "name": "Éleveur de vers à soie (cocon qui sourit)",
+          "text": "Les cocons brillent dans les mains de l’Éleveur. La soie précieuse qu’il produit habille et orne le village.",
           "attributes": {
             "zoneId": 1
           }
         },
         {
           "id": 18,
-          "name": "Gardien de pigeonnier (cage Ã  oiseaux)",
-          "text": "Le Gardien surveille et soigne les pigeons. Ces messagers et sources de nourriture participent Ã  la vie du village.",
+          "name": "Gardien de pigeonnier (cage à oiseaux)",
+          "text": "Le Gardien surveille et soigne les pigeons. Ces messagers et sources de nourriture participent à la vie du village.",
           "attributes": {
             "zoneId": 1
           }
@@ -405,7 +405,7 @@
         {
           "id": 19,
           "name": "Ramasseur de tourbe (brique de tourbe)",
-          "text": "Dans les tourbiÃ¨res, le Ramasseur extrait la tourbe. Ce combustible soutient le chauffage et les besoins Ã©nergÃ©tiques du village.",
+          "text": "Dans les tourbières, le Ramasseur extrait la tourbe. Ce combustible soutient le chauffage et les besoins énergétiques du village.",
           "attributes": {
             "zoneId": 1
           }
@@ -414,20 +414,20 @@
     },
     {
       "id": 2,
-      "title": "MÃ©tiers de lâ€™Artisanat",
+      "title": "Métiers de l’Artisanat",
       "cards": [
         {
           "id": 1,
           "name": "Forgeron (marteau)",
-          "text": "Le Forgeron frappe le mÃ©tal rougeoyant avec prÃ©cision. Ses outils, armes et objets du quotidien renforcent et protÃ¨gent le village.",
+          "text": "Le Forgeron frappe le métal rougeoyant avec précision. Ses outils, armes et objets du quotidien renforcent et protègent le village.",
           "attributes": {
             "zoneId": 2
           }
         },
         {
           "id": 2,
-          "name": "MarÃ©chal-ferrant (fer Ã  cheval)",
-          "text": "Dans l'Ã©curie, le MarÃ©chal-ferrant ferrÐµ et soigne les sabots des chevaux et animaux de trait. Sa maÃ®trise assure des dÃ©placements sÃ»rs et efficaces.",
+          "name": "Maréchal-ferrant (fer à cheval)",
+          "text": "Dans l'écurie, le Maréchal-ferrant ferrе et soigne les sabots des chevaux et animaux de trait. Sa maîtrise assure des déplacements sûrs et efficaces.",
           "attributes": {
             "zoneId": 2
           }
@@ -443,7 +443,7 @@
         {
           "id": 4,
           "name": "Menuisier (petite porte)",
-          "text": "Le Menuisier faÃ§onne meubles, portes et objets raffinÃ©s. Chaque crÃ©ation embellit et rend le village plus confortable.",
+          "text": "Le Menuisier façonne meubles, portes et objets raffinés. Chaque création embellit et rend le village plus confortable.",
           "attributes": {
             "zoneId": 2
           }
@@ -451,7 +451,7 @@
         {
           "id": 5,
           "name": "Tonnelier (tonneau qui roule)",
-          "text": "Dans son atelier, le Tonnelier fabrique des tonneaux pour conserver aliments et boissons. Ses Å“uvres prÃ©servent richesses et provisions.",
+          "text": "Dans son atelier, le Tonnelier fabrique des tonneaux pour conserver aliments et boissons. Ses œuvres préservent richesses et provisions.",
           "attributes": {
             "zoneId": 2
           }
@@ -459,15 +459,15 @@
         {
           "id": 6,
           "name": "Tailleur de pierre (statuette)",
-          "text": "Le Tailleur de pierre sculpte et faÃ§onne pierres et monuments. Ses Å“uvres renforcent les bÃ¢timents et la beautÃ© du village.",
+          "text": "Le Tailleur de pierre sculpte et façonne pierres et monuments. Ses œuvres renforcent les bâtiments et la beauté du village.",
           "attributes": {
             "zoneId": 2
           }
         },
         {
           "id": 7,
-          "name": "MaÃ§on (brique)",
-          "text": "Le MaÃ§on assemble pierres et briques avec soin. Ses constructions solides protÃ¨gent habitants et ressources.",
+          "name": "Maçon (brique)",
+          "text": "Le Maçon assemble pierres et briques avec soin. Ses constructions solides protègent habitants et ressources.",
           "attributes": {
             "zoneId": 2
           }
@@ -475,15 +475,15 @@
         {
           "id": 8,
           "name": "Potier (petit pot de terre cuite)",
-          "text": "Le Potier faÃ§onne pots et vaisselles en argile. Ses crÃ©ations servent tous les besoins quotidiens et embellissent les foyers.",
+          "text": "Le Potier façonne pots et vaisselles en argile. Ses créations servent tous les besoins quotidiens et embellissent les foyers.",
           "attributes": {
             "zoneId": 2
           }
         },
         {
           "id": 9,
-          "name": "Tisserand (bobine de fil colorÃ©)",
-          "text": "Le Tisserand tisse fils et fibres pour crÃ©er tissus et Ã©toffes. Ses Å“uvres habillent et protÃ¨gent les villageois.",
+          "name": "Tisserand (bobine de fil coloré)",
+          "text": "Le Tisserand tisse fils et fibres pour créer tissus et étoffes. Ses œuvres habillent et protègent les villageois.",
           "attributes": {
             "zoneId": 2
           }
@@ -491,7 +491,7 @@
         {
           "id": 10,
           "name": "Fileuse (pelote de fil)",
-          "text": "La Fileuse transforme la laine et le lin en fil. Ses fils servent Ã  la confection de vÃªtements et accessoires.",
+          "text": "La Fileuse transforme la laine et le lin en fil. Ses fils servent à la confection de vêtements et accessoires.",
           "attributes": {
             "zoneId": 2
           }
@@ -499,7 +499,7 @@
         {
           "id": 11,
           "name": "Teinturier (pot de teinture multicolore)",
-          "text": "Le Teinturier colore les tissus avec des pigments naturels. Ses crÃ©ations apportent beautÃ© et Ã©clat aux habits du village.",
+          "text": "Le Teinturier colore les tissus avec des pigments naturels. Ses créations apportent beauté et éclat aux habits du village.",
           "attributes": {
             "zoneId": 2
           }
@@ -507,7 +507,7 @@
         {
           "id": 12,
           "name": "Cordonnier (chaussure miniature)",
-          "text": "Le Cordonnier fabrique et rÃ©pare chaussures et bottes. Ses mains assurent confort et protection pour tous les pieds du village.",
+          "text": "Le Cordonnier fabrique et répare chaussures et bottes. Ses mains assurent confort et protection pour tous les pieds du village.",
           "attributes": {
             "zoneId": 2
           }
@@ -515,15 +515,15 @@
         {
           "id": 13,
           "name": "Bourrelier (harnais miniature)",
-          "text": "Le Bourrelier faÃ§onne harnais, sangles et Ã©quipements de traction en cuir. Chaque piÃ¨ce aide les villageois dans leurs tÃ¢ches quotidiennes.",
+          "text": "Le Bourrelier façonne harnais, sangles et équipements de traction en cuir. Chaque pièce aide les villageois dans leurs tâches quotidiennes.",
           "attributes": {
             "zoneId": 2
           }
         },
         {
           "id": 14,
-          "name": "Sellier (Ã©trier)",
-          "text": "Le Sellier conÃ§oit et entretient selles et Ã©quipements dâ€™Ã©quitation. GrÃ¢ce Ã  lui, montures et cavaliers voyagent en sÃ©curitÃ©.",
+          "name": "Sellier (étrier)",
+          "text": "Le Sellier conçoit et entretient selles et équipements d’équitation. Grâce à lui, montures et cavaliers voyagent en sécurité.",
           "attributes": {
             "zoneId": 2
           }
@@ -531,7 +531,7 @@
         {
           "id": 15,
           "name": "Vannier (petit panier en osier)",
-          "text": "Le Vannier tresse paniers et objets en osier. Ses crÃ©ations servent au transport, au stockage et Ã  la vie quotidienne.",
+          "text": "Le Vannier tresse paniers et objets en osier. Ses créations servent au transport, au stockage et à la vie quotidienne.",
           "attributes": {
             "zoneId": 2
           }
@@ -539,7 +539,7 @@
         {
           "id": 16,
           "name": "Sabotier (mini sabot)",
-          "text": "Le Sabotier faÃ§onne des sabots en bois solides. Ses Å“uvres protÃ¨gent les pieds et aident au travail des animaux.",
+          "text": "Le Sabotier façonne des sabots en bois solides. Ses œuvres protègent les pieds et aident au travail des animaux.",
           "attributes": {
             "zoneId": 2
           }
@@ -547,31 +547,31 @@
         {
           "id": 17,
           "name": "Couvreur (tuile)",
-          "text": "Le Couvreur pose toits en chaume, tuiles ou ardoises. Ses constructions protÃ¨gent les maisons et le village des intempÃ©ries.",
+          "text": "Le Couvreur pose toits en chaume, tuiles ou ardoises. Ses constructions protègent les maisons et le village des intempéries.",
           "attributes": {
             "zoneId": 2
           }
         },
         {
           "id": 18,
-          "name": "PlÃ¢trier (masque de carnaval)",
-          "text": "Le PlÃ¢trier applique plÃ¢tre et enduits. Ses murs solides et dÃ©corÃ©s rendent le village Ã  la fois sÃ»r et agrÃ©able.",
+          "name": "Plâtrier (masque de carnaval)",
+          "text": "Le Plâtrier applique plâtre et enduits. Ses murs solides et décorés rendent le village à la fois sûr et agréable.",
           "attributes": {
             "zoneId": 2
           }
         },
         {
           "id": 19,
-          "name": "OrfÃ¨vre (pendantif scintillant)",
-          "text": "Lâ€™OrfÃ¨vre travaille lâ€™or et lâ€™argent pour crÃ©er bijoux et objets prÃ©cieux. Ses crÃ©ations illuminent fÃªtes et marchÃ©s.",
+          "name": "Orfèvre (pendantif scintillant)",
+          "text": "L’Orfèvre travaille l’or et l’argent pour créer bijoux et objets précieux. Ses créations illuminent fêtes et marchés.",
           "attributes": {
             "zoneId": 2
           }
         },
         {
           "id": 20,
-          "name": "Fondeur (mini lingot de mÃ©tal)",
-          "text": "Le Fondeur coule le mÃ©tal en moules pour fabriquer outils, ornements et objets divers. Son travail enrichit le village.",
+          "name": "Fondeur (mini lingot de métal)",
+          "text": "Le Fondeur coule le métal en moules pour fabriquer outils, ornements et objets divers. Son travail enrichit le village.",
           "attributes": {
             "zoneId": 2
           }
@@ -579,7 +579,7 @@
         {
           "id": 21,
           "name": "Graveur (burin)",
-          "text": "Le Graveur inscrit motifs et textes sur pierre, bois et mÃ©tal. Ses Å“uvres transmettent messages, histoires et dÃ©corations.",
+          "text": "Le Graveur inscrit motifs et textes sur pierre, bois et métal. Ses œuvres transmettent messages, histoires et décorations.",
           "attributes": {
             "zoneId": 2
           }
@@ -587,7 +587,7 @@
         {
           "id": 22,
           "name": "Tourneur sur bois (toupie)",
-          "text": "Le Tourneur faÃ§onne objets en bois Ã  lâ€™aide dâ€™un tour manuel. Ses crÃ©ations sont pratiques et esthÃ©tiques pour le village.",
+          "text": "Le Tourneur façonne objets en bois à l’aide d’un tour manuel. Ses créations sont pratiques et esthétiques pour le village.",
           "attributes": {
             "zoneId": 2
           }
@@ -595,7 +595,7 @@
         {
           "id": 23,
           "name": "Cloutier (clou)",
-          "text": "Le Cloutier fabrique clous Ã  la main. Chaque piÃ¨ce, minuscule mais essentielle, contribue aux constructions et rÃ©parations.",
+          "text": "Le Cloutier fabrique clous à la main. Chaque pièce, minuscule mais essentielle, contribue aux constructions et réparations.",
           "attributes": {
             "zoneId": 2
           }
@@ -603,23 +603,23 @@
         {
           "id": 24,
           "name": "Armurier (armure)",
-          "text": "Lâ€™Armurier forge armes blanches et Ã©quipements de combat. Ses armes protÃ¨gent le village et ses habitants.",
+          "text": "L’Armurier forge armes blanches et équipements de combat. Ses armes protègent le village et ses habitants.",
           "attributes": {
             "zoneId": 2
           }
         },
         {
           "id": 25,
-          "name": "Facteur dâ€™instruments (flÃ»te enchantÃ©e)",
-          "text": "Le Facteur fabrique instruments de musique. GrÃ¢ce Ã  lui, fÃªtes et cÃ©lÃ©brations rÃ©sonnent dans tout le village.",
+          "name": "Facteur d’instruments (flûte enchantée)",
+          "text": "Le Facteur fabrique instruments de musique. Grâce à lui, fêtes et célébrations résonnent dans tout le village.",
           "attributes": {
             "zoneId": 2
           }
         },
         {
           "id": 26,
-          "name": "Verrier (verre Ã  pied colorÃ©)",
-          "text": "Le Verrier faÃ§onne le verre en fusion. Ses Å“uvres apportent lumiÃ¨re, dÃ©coration et utilitÃ© aux habitants.",
+          "name": "Verrier (verre à pied coloré)",
+          "text": "Le Verrier façonne le verre en fusion. Ses œuvres apportent lumière, décoration et utilité aux habitants.",
           "attributes": {
             "zoneId": 2
           }
@@ -627,15 +627,15 @@
         {
           "id": 27,
           "name": "Sculpteur (sculpture traditionnelle)",
-          "text": "Le Sculpteur modÃ¨le pierre, bois ou os. Ses Å“uvres embellissent monuments et foyers du village.",
+          "text": "Le Sculpteur modèle pierre, bois ou os. Ses œuvres embellissent monuments et foyers du village.",
           "attributes": {
             "zoneId": 2
           }
         },
         {
           "id": 28,
-          "name": "Ã‰bÃ©niste (boÃ®te Ã  bijoux)",
-          "text": "Lâ€™Ã‰bÃ©niste fabrique meubles et objets raffinÃ©s en bois prÃ©cieux. Ses crÃ©ations dÃ©corent et enrichissent les maisons et institutions.",
+          "name": "Ébéniste (boîte à bijoux)",
+          "text": "L’Ébéniste fabrique meubles et objets raffinés en bois précieux. Ses créations décorent et enrichissent les maisons et institutions.",
           "attributes": {
             "zoneId": 2
           }
@@ -643,7 +643,7 @@
         {
           "id": 29,
           "name": "Papetier (avion de papier)",
-          "text": "Le Papetier prÃ©pare le papier Ã  partir de fibres naturelles. Ses feuilles servent Ã  Ã©crire, enseigner et consigner lâ€™histoire du village.",
+          "text": "Le Papetier prépare le papier à partir de fibres naturelles. Ses feuilles servent à écrire, enseigner et consigner l’histoire du village.",
           "attributes": {
             "zoneId": 2
           }
@@ -652,28 +652,28 @@
     },
     {
       "id": 3,
-      "title": "MÃ©tiers du Textile et de lâ€™Habillement",
+      "title": "Métiers du Textile et de l’Habillement",
       "cards": [
         {
           "id": 2,
           "name": "Couturier (aiguille et fil)",
-          "text": "Le Couturier assemble et rÃ©pare les habits Ã  la main. Ses mains expertes prolongent la vie des vÃªtements et embellissent le quotidien.",
+          "text": "Le Couturier assemble et répare les habits à la main. Ses mains expertes prolongent la vie des vêtements et embellissent le quotidien.",
           "attributes": {
             "zoneId": 3
           }
         },
         {
           "id": 3,
-          "name": "Brodeur (fil dorÃ©)",
-          "text": "Le Brodeur dÃ©core tissus et vÃªtements avec des motifs dÃ©licats. Ses Å“uvres apportent beautÃ© et fiertÃ© aux habitants.",
+          "name": "Brodeur (fil doré)",
+          "text": "Le Brodeur décore tissus et vêtements avec des motifs délicats. Ses œuvres apportent beauté et fierté aux habitants.",
           "attributes": {
             "zoneId": 3
           }
         },
         {
           "id": 4,
-          "name": "DentelliÃ¨re (fuseau)",
-          "text": "La DentelliÃ¨re fabrique de la dentelle fine. Ses crÃ©ations raffinÃ©es ornent habits et maisons, symboles dâ€™artisanat et de patience.",
+          "name": "Dentellière (fuseau)",
+          "text": "La Dentellière fabrique de la dentelle fine. Ses créations raffinées ornent habits et maisons, symboles d’artisanat et de patience.",
           "attributes": {
             "zoneId": 3
           }
@@ -681,7 +681,7 @@
         {
           "id": 5,
           "name": "Chapelier (chapeau melon)",
-          "text": "Le Chapelier rÃ©alise chapeaux et couvre-chefs pour tous. Ses crÃ©ations protÃ¨gent du soleil et ajoutent style et distinction au village.",
+          "text": "Le Chapelier réalise chapeaux et couvre-chefs pour tous. Ses créations protègent du soleil et ajoutent style et distinction au village.",
           "attributes": {
             "zoneId": 3
           }
@@ -689,7 +689,7 @@
         {
           "id": 6,
           "name": "Fourreur (morceau de fourrure)",
-          "text": "Le Fourreur travaille les peaux et fourrures animales. Ses vÃªtements chauds protÃ¨gent les villageois des froids rigoureux.",
+          "text": "Le Fourreur travaille les peaux et fourrures animales. Ses vêtements chauds protègent les villageois des froids rigoureux.",
           "attributes": {
             "zoneId": 3
           }
@@ -697,7 +697,7 @@
         {
           "id": 7,
           "name": "Blanchisseur (savon)",
-          "text": "Le Blanchisseur lave et blanchit le linge Ã  la main. Sa vigilance assure propretÃ© et hygiÃ¨ne dans le village.",
+          "text": "Le Blanchisseur lave et blanchit le linge à la main. Sa vigilance assure propreté et hygiène dans le village.",
           "attributes": {
             "zoneId": 3
           }
@@ -705,7 +705,7 @@
         {
           "id": 8,
           "name": "Lainier (pelote de laine)",
-          "text": "Le Lainier prÃ©pare et commercialise la laine brute. Ses produits servent de matiÃ¨re premiÃ¨re aux artisans du textile.",
+          "text": "Le Lainier prépare et commercialise la laine brute. Ses produits servent de matière première aux artisans du textile.",
           "attributes": {
             "zoneId": 3
           }
@@ -713,7 +713,7 @@
         {
           "id": 9,
           "name": "Tanneur (morceau de cuir)",
-          "text": "Le Tanneur transforme peaux et cuirs animaux. Ses crÃ©ations servent Ã  confectionner vÃªtements, accessoires et Ã©quipements durables.",
+          "text": "Le Tanneur transforme peaux et cuirs animaux. Ses créations servent à confectionner vêtements, accessoires et équipements durables.",
           "attributes": {
             "zoneId": 3
           }
@@ -721,23 +721,23 @@
         {
           "id": 10,
           "name": "Foulonnier (marteau textile)",
-          "text": "Le Foulonnier bat et assouplit les tissus. Son travail rend les Ã©toffes plus rÃ©sistantes et agrÃ©ables Ã  porter.",
+          "text": "Le Foulonnier bat et assouplit les tissus. Son travail rend les étoffes plus résistantes et agréables à porter.",
           "attributes": {
             "zoneId": 3
           }
         },
         {
           "id": 11,
-          "name": "Passementier (galon colorÃ©)",
-          "text": "Le Passementier fabrique galons et dÃ©corations textiles. Ses Å“uvres apportent raffinement et Ã©clat aux habits et intÃ©rieurs.",
+          "name": "Passementier (galon coloré)",
+          "text": "Le Passementier fabrique galons et décorations textiles. Ses œuvres apportent raffinement et éclat aux habits et intérieurs.",
           "attributes": {
             "zoneId": 3
           }
         },
         {
           "id": 12,
-          "name": "Ravaudeur (Ã©pingle Ã  nourrice)",
-          "text": "Le Ravaudeur rÃ©pare vÃªtements et tissus usÃ©s. GrÃ¢ce Ã  lui, les habits du village durent plus longtemps et restent fonctionnels.",
+          "name": "Ravaudeur (épingle à nourrice)",
+          "text": "Le Ravaudeur répare vêtements et tissus usés. Grâce à lui, les habits du village durent plus longtemps et restent fonctionnels.",
           "attributes": {
             "zoneId": 3
           }
@@ -745,7 +745,7 @@
         {
           "id": 13,
           "name": "Peigneur de laine (peigne)",
-          "text": "Le Peigneur dÃ©mÃªle et nettoie la laine brute. Son travail assure des fibres de qualitÃ© pour tissage et couture.",
+          "text": "Le Peigneur démêle et nettoie la laine brute. Son travail assure des fibres de qualité pour tissage et couture.",
           "attributes": {
             "zoneId": 3
           }
@@ -754,20 +754,20 @@
     },
     {
       "id": 4,
-      "title": "MÃ©tiers de Bouche",
+      "title": "Métiers de Bouche",
       "cards": [
         {
           "id": 1,
           "name": "Boulanger (petit pain)",
-          "text": "Le Boulanger pÃ©trit la pÃ¢te et fait cuire le pain. Lâ€™odeur allÃ©chante de ses fours rÃ©chauffe le village et nourrit ses habitants.",
+          "text": "Le Boulanger pétrit la pâte et fait cuire le pain. L’odeur alléchante de ses fours réchauffe le village et nourrit ses habitants.",
           "attributes": {
             "zoneId": 4
           }
         },
         {
           "id": 2,
-          "name": "Meunier (grain de blÃ©)",
-          "text": "Le Meunier moud les cÃ©rÃ©ales en farine. Sa production est essentielle pour que boulanger et pÃ¢tissier prÃ©parent pain et gÃ¢teaux.",
+          "name": "Meunier (grain de blé)",
+          "text": "Le Meunier moud les céréales en farine. Sa production est essentielle pour que boulanger et pâtissier préparent pain et gâteaux.",
           "attributes": {
             "zoneId": 4
           }
@@ -775,7 +775,7 @@
         {
           "id": 3,
           "name": "Brasseur (houblon)",
-          "text": "Le Brasseur prÃ©pare des boissons fermentÃ©es, comme la biÃ¨re. Ses breuvages accompagnent fÃªtes et repas du village.",
+          "text": "Le Brasseur prépare des boissons fermentées, comme la bière. Ses breuvages accompagnent fêtes et repas du village.",
           "attributes": {
             "zoneId": 4
           }
@@ -783,7 +783,7 @@
         {
           "id": 4,
           "name": "Fromager (part de camembert)",
-          "text": "Le Fromager transforme le lait en fromages variÃ©s. Ses crÃ©ations nourrissent le village et enrichissent le commerce.",
+          "text": "Le Fromager transforme le lait en fromages variés. Ses créations nourrissent le village et enrichissent le commerce.",
           "attributes": {
             "zoneId": 4
           }
@@ -791,7 +791,7 @@
         {
           "id": 5,
           "name": "Charcutier (saucisson)",
-          "text": "Le Charcutier prÃ©pare viandes salÃ©es, fumÃ©es ou sÃ©chÃ©es. Sa maÃ®trise garantit goÃ»t et conservation des produits carnÃ©s.",
+          "text": "Le Charcutier prépare viandes salées, fumées ou séchées. Sa maîtrise garantit goût et conservation des produits carnés.",
           "attributes": {
             "zoneId": 4
           }
@@ -799,7 +799,7 @@
         {
           "id": 6,
           "name": "Boucher (hachoire)",
-          "text": "Le Boucher dÃ©coupe et vend la viande. Son savoir-faire assure une alimentation saine et abondante pour tous.",
+          "text": "Le Boucher découpe et vend la viande. Son savoir-faire assure une alimentation saine et abondante pour tous.",
           "attributes": {
             "zoneId": 4
           }
@@ -807,7 +807,7 @@
         {
           "id": 7,
           "name": "Poissonnier (poisson)",
-          "text": "Le Poissonnier vend poissons et produits de la pÃªche. Ses Ã©tals apportent fraÃ®cheur et diversitÃ© Ã  la table du village.",
+          "text": "Le Poissonnier vend poissons et produits de la pêche. Ses étals apportent fraîcheur et diversité à la table du village.",
           "attributes": {
             "zoneId": 4
           }
@@ -815,15 +815,15 @@
         {
           "id": 8,
           "name": "Tavernier (chope)",
-          "text": "Le Tavernier tient un lieu oÃ¹ lâ€™on boit et mange. Sa taverne est un espace de rencontre et de convivialitÃ© pour habitants et voyageurs.",
+          "text": "Le Tavernier tient un lieu où l’on boit et mange. Sa taverne est un espace de rencontre et de convivialité pour habitants et voyageurs.",
           "attributes": {
             "zoneId": 4
           }
         },
         {
           "id": 9,
-          "name": "Aubergiste (clÃ© miniature)",
-          "text": "Lâ€™Aubergiste accueille les voyageurs et les habitants pour repas et repos. Son accueil assure confort et sÃ©curitÃ©.",
+          "name": "Aubergiste (clé miniature)",
+          "text": "L’Aubergiste accueille les voyageurs et les habitants pour repas et repos. Son accueil assure confort et sécurité.",
           "attributes": {
             "zoneId": 4
           }
@@ -831,15 +831,15 @@
         {
           "id": 10,
           "name": "Cuisinier (casserole)",
-          "text": "Le Cuisinier prÃ©pare repas et festins pour le village. Ses plats nourrissent et ravissent les palais des habitants.",
+          "text": "Le Cuisinier prépare repas et festins pour le village. Ses plats nourrissent et ravissent les palais des habitants.",
           "attributes": {
             "zoneId": 4
           }
         },
         {
           "id": 11,
-          "name": "Confiseur (bonbon colorÃ©)",
-          "text": "Le Confiseur prÃ©pare douceurs et sucreries. Ses crÃ©ations enchantent fÃªtes, enfants et gourmands du village.",
+          "name": "Confiseur (bonbon coloré)",
+          "text": "Le Confiseur prépare douceurs et sucreries. Ses créations enchantent fêtes, enfants et gourmands du village.",
           "attributes": {
             "zoneId": 4
           }
@@ -847,7 +847,7 @@
         {
           "id": 12,
           "name": "Vinaigrier (bouteille de vinaigre)",
-          "text": "Le Vinaigrier fabrique du vinaigre Ã  partir des boissons fermentÃ©es. Sa production est utile pour assaisonner et conserver les aliments.",
+          "text": "Le Vinaigrier fabrique du vinaigre à partir des boissons fermentées. Sa production est utile pour assaisonner et conserver les aliments.",
           "attributes": {
             "zoneId": 4
           }
@@ -855,7 +855,7 @@
         {
           "id": 13,
           "name": "Laitier (bouteille de lait)",
-          "text": "Le Laitier collecte et distribue le lait. Sa vigilance assure fraÃ®cheur et approvisionnement quotidien pour les habitants.",
+          "text": "Le Laitier collecte et distribue le lait. Sa vigilance assure fraîcheur et approvisionnement quotidien pour les habitants.",
           "attributes": {
             "zoneId": 4
           }
@@ -863,15 +863,15 @@
         {
           "id": 14,
           "name": "Glacier (cube de glace)",
-          "text": "Le Glacier conserve la glace naturelle pour rafraÃ®chir boissons et aliments. Ses rÃ©serves font le bonheur des villageois lors des chaleurs.",
+          "text": "Le Glacier conserve la glace naturelle pour rafraîchir boissons et aliments. Ses réserves font le bonheur des villageois lors des chaleurs.",
           "attributes": {
             "zoneId": 4
           }
         },
         {
           "id": 15,
-          "name": "PÃ¢tissier ancien (part de gÃ¢teau)",
-          "text": "Le PÃ¢tissier ancien prÃ©pare gÃ¢teaux et pains sucrÃ©s. Ses crÃ©ations apportent gourmandise et festivitÃ© Ã  la vie du village.",
+          "name": "Pâtissier ancien (part de gâteau)",
+          "text": "Le Pâtissier ancien prépare gâteaux et pains sucrés. Ses créations apportent gourmandise et festivité à la vie du village.",
           "attributes": {
             "zoneId": 4
           }
@@ -880,12 +880,12 @@
     },
     {
       "id": 5,
-      "title": "MÃ©tiers du Quotidien et des Services",
+      "title": "Métiers du Quotidien et des Services",
       "cards": [
         {
           "id": 1,
-          "name": "Marchand (sac de piÃ¨ces)",
-          "text": "Le Marchand Ã©change biens et marchandises. GrÃ¢ce Ã  lui, votre village reste reliÃ© aux autres et ne manque de rien.",
+          "name": "Marchand (sac de pièces)",
+          "text": "Le Marchand échange biens et marchandises. Grâce à lui, votre village reste relié aux autres et ne manque de rien.",
           "attributes": {
             "zoneId": 5
           }
@@ -893,31 +893,31 @@
         {
           "id": 2,
           "name": "Colporteur (rouleau de parchemin)",
-          "text": "De village en village, le Colporteur transporte nouvelles et objets rares. Son passage apporte diversitÃ© et curiositÃ© Ã  la vie locale.",
+          "text": "De village en village, le Colporteur transporte nouvelles et objets rares. Son passage apporte diversité et curiosité à la vie locale.",
           "attributes": {
             "zoneId": 5
           }
         },
         {
           "id": 3,
-          "name": "Ã‰picier (gingembre)",
-          "text": "Lâ€™Ã‰picier vend les denrÃ©es de base. Son Ã©choppe assure lâ€™approvisionnement quotidien des habitants.",
+          "name": "Épicier (gingembre)",
+          "text": "L’Épicier vend les denrées de base. Son échoppe assure l’approvisionnement quotidien des habitants.",
           "attributes": {
             "zoneId": 5
           }
         },
         {
           "id": 4,
-          "name": "Herboriste (plante mÃ©dicinale)",
-          "text": "Lâ€™Herboriste rÃ©colte et prÃ©pare plantes et remÃ¨des. Son savoir soigne les petits maux et protÃ¨ge la santÃ© du village.",
+          "name": "Herboriste (plante médicinale)",
+          "text": "L’Herboriste récolte et prépare plantes et remèdes. Son savoir soigne les petits maux et protège la santé du village.",
           "attributes": {
             "zoneId": 5
           }
         },
         {
           "id": 5,
-          "name": "GuÃ©risseur (potion)",
-          "text": "Le GuÃ©risseur soigne Ã  lâ€™aide de remÃ¨des traditionnels. Son expÃ©rience rassure les habitants en cas de maladie.",
+          "name": "Guérisseur (potion)",
+          "text": "Le Guérisseur soigne à l’aide de remèdes traditionnels. Son expérience rassure les habitants en cas de maladie.",
           "attributes": {
             "zoneId": 5
           }
@@ -932,8 +932,8 @@
         },
         {
           "id": 7,
-          "name": "Sage-femme (poupÃ©e)",
-          "text": "La Sage-femme accompagn? les naissances. Elle veille sur mÃ¨res et nouveau-nÃ©s, assurant lâ€™avenir du village.",
+          "name": "Sage-femme (poupée)",
+          "text": "La Sage-femme accompagn? les naissances. Elle veille sur mères et nouveau-nés, assurant l’avenir du village.",
           "attributes": {
             "zoneId": 5
           }
@@ -941,7 +941,7 @@
         {
           "id": 8,
           "name": "Barbier (moustache)",
-          "text": "Le Barbier coupe cheveux, rase et prodigue petits soins. Son Ã©choppe est un lieu de discussion et de dÃ©tente.",
+          "text": "Le Barbier coupe cheveux, rase et prodigue petits soins. Son échoppe est un lieu de discussion et de détente.",
           "attributes": {
             "zoneId": 5
           }
@@ -949,7 +949,7 @@
         {
           "id": 9,
           "name": "Baigneur (fontaine)",
-          "text": "Le Baigneur gÃ¨re les bains publics. Il permet aux habitants de se laver et de prÃ©server leur hygiÃ¨ne.",
+          "text": "Le Baigneur gère les bains publics. Il permet aux habitants de se laver et de préserver leur hygiène.",
           "attributes": {
             "zoneId": 5
           }
@@ -957,23 +957,23 @@
         {
           "id": 10,
           "name": "Laveuse (chaussette)",
-          "text": "Au lavoir ou Ã  la riviÃ¨re, la Laveuse nettoie le linge. Son travail garantit propretÃ© et confort au quotidien.",
+          "text": "Au lavoir ou à la rivière, la Laveuse nettoie le linge. Son travail garantit propreté et confort au quotidien.",
           "attributes": {
             "zoneId": 5
           }
         },
         {
           "id": 11,
-          "name": "Porteur dâ€™eau (seau dâ€™eau)",
-          "text": "Le Porteur dâ€™eau transporte lâ€™eau potable jusquâ€™aux habitations. Sans lui, la vie du village serait bien plus difficile.",
+          "name": "Porteur d’eau (seau d’eau)",
+          "text": "Le Porteur d’eau transporte l’eau potable jusqu’aux habitations. Sans lui, la vie du village serait bien plus difficile.",
           "attributes": {
             "zoneId": 5
           }
         },
         {
           "id": 12,
-          "name": "Perruquier (perruque colorÃ©e)",
-          "text": "Le Perruquier fabrique perruques et coiffures Ã©laborÃ©es. Son art participe Ã  lâ€™apparence et au prestige des habitants.",
+          "name": "Perruquier (perruque colorée)",
+          "text": "Le Perruquier fabrique perruques et coiffures élaborées. Son art participe à l’apparence et au prestige des habitants.",
           "attributes": {
             "zoneId": 5
           }
@@ -981,15 +981,15 @@
         {
           "id": 13,
           "name": "Crieur public (cloche miniature)",
-          "text": "Le Crieur public annonce les nouvelles Ã  voix haute. GrÃ¢ce Ã  lui, chacun est informÃ© des dÃ©cisions et Ã©vÃ©nements.",
+          "text": "Le Crieur public annonce les nouvelles à voix haute. Grâce à lui, chacun est informé des décisions et événements.",
           "attributes": {
             "zoneId": 5
           }
         },
         {
           "id": 14,
-          "name": "Allumeur de lampes (lampe Ã  huile)",
-          "text": "Ã€ la tombÃ©e de la nuit, lâ€™Allumeur de lampes Ã©claire rues et places. Il rend le village plus sÃ»r aprÃ¨s le coucher du soleil.",
+          "name": "Allumeur de lampes (lampe à huile)",
+          "text": "À la tombée de la nuit, l’Allumeur de lampes éclaire rues et places. Il rend le village plus sûr après le coucher du soleil.",
           "attributes": {
             "zoneId": 5
           }
@@ -997,15 +997,15 @@
         {
           "id": 15,
           "name": "Veilleur de nuit (lanterne)",
-          "text": "Le Veilleur de nuit patrouille pendant le sommeil des habitants. Sa vigilance protÃ¨ge le village des incendies et des vols.",
+          "text": "Le Veilleur de nuit patrouille pendant le sommeil des habitants. Sa vigilance protège le village des incendies et des vols.",
           "attributes": {
             "zoneId": 5
           }
         },
         {
           "id": 16,
-          "name": "Vidangeur (seau dâ€™ordures)",
-          "text": "Le Vidangeur nettoie fosses et latrines. Son travail, discret mais essentiel, maintient la salubritÃ© du village.",
+          "name": "Vidangeur (seau d’ordures)",
+          "text": "Le Vidangeur nettoie fosses et latrines. Son travail, discret mais essentiel, maintient la salubrité du village.",
           "attributes": {
             "zoneId": 5
           }
@@ -1013,7 +1013,7 @@
         {
           "id": 17,
           "name": "Fossoyeur (cercueil)",
-          "text": "Le Fossoyeur creuse les tombes et veille aux rites funÃ©raires. Il accompagn? les habitants dans les moments de deuil.",
+          "text": "Le Fossoyeur creuse les tombes et veille aux rites funéraires. Il accompagn? les habitants dans les moments de deuil.",
           "attributes": {
             "zoneId": 5
           }
@@ -1021,7 +1021,7 @@
         {
           "id": 18,
           "name": "Sonateur (trompette)",
-          "text": "Le Sonateur fait sonner cloches ou cornes dâ€™alerte. Ses signaux rythment la vie du village et prÃ©viennent des dangers.",
+          "text": "Le Sonateur fait sonner cloches ou cornes d’alerte. Ses signaux rythment la vie du village et préviennent des dangers.",
           "attributes": {
             "zoneId": 5
           }
@@ -1029,15 +1029,15 @@
         {
           "id": 19,
           "name": "Portefaix (sac de bois)",
-          "text": "Le Portefaix transporte charges lourdes Ã  dos dâ€™homme. Sa force facilite Ã©changes et travaux collectifs.",
+          "text": "Le Portefaix transporte charges lourdes à dos d’homme. Sa force facilite échanges et travaux collectifs.",
           "attributes": {
             "zoneId": 5
           }
         },
         {
           "id": 20,
-          "name": "Gouvernante / PrÃ©ceptrice (ardoise)",
-          "text": "La Gouvernante ou PrÃ©ceptrice Ã©duque les enfants. Elle transmet savoir, bonnes maniÃ¨res et parfois lecture et Ã©criture.",
+          "name": "Gouvernante / Préceptrice (ardoise)",
+          "text": "La Gouvernante ou Préceptrice éduque les enfants. Elle transmet savoir, bonnes manières et parfois lecture et écriture.",
           "attributes": {
             "zoneId": 5
           }
@@ -1045,7 +1045,7 @@
         {
           "id": 21,
           "name": "Balayeur / Nettoyeur urbain (balai)",
-          "text": "Le Balayeur entretient rues et places publiques. GrÃ¢ce Ã  lui, le village reste propre et agrÃ©able Ã  vivre.",
+          "text": "Le Balayeur entretient rues et places publiques. Grâce à lui, le village reste propre et agréable à vivre.",
           "attributes": {
             "zoneId": 5
           }
@@ -1054,12 +1054,12 @@
     },
     {
       "id": 6,
-      "title": "MÃ©tiers du Savoir, de la Culture et du Spirituel",
+      "title": "Métiers du Savoir, de la Culture et du Spirituel",
       "cards": [
         {
           "id": 1,
           "name": "Scribe (plume et encrier)",
-          "text": "Vous observez le Scribe consigner lois, contrats et rÃ©cits. GrÃ¢ce Ã  lui, la mÃ©moire Ã©crite du village est prÃ©servÃ©e.",
+          "text": "Vous observez le Scribe consigner lois, contrats et récits. Grâce à lui, la mémoire écrite du village est préservée.",
           "attributes": {
             "zoneId": 6
           }
@@ -1067,7 +1067,7 @@
         {
           "id": 2,
           "name": "Copiste (page blanche)",
-          "text": "Le Copiste recopie patiemment les manuscrits. Son travail transmet le savoir de gÃ©nÃ©ration en gÃ©nÃ©ration.",
+          "text": "Le Copiste recopie patiemment les manuscrits. Son travail transmet le savoir de génération en génération.",
           "attributes": {
             "zoneId": 6
           }
@@ -1075,15 +1075,15 @@
         {
           "id": 3,
           "name": "Enlumineur (palette de couleurs)",
-          "text": "Lâ€™Enlumineur orne les textes de couleurs et de symboles. Ses Å“uvres rendent les manuscrits prÃ©cieux et vivants.",
+          "text": "L’Enlumineur orne les textes de couleurs et de symboles. Ses œuvres rendent les manuscrits précieux et vivants.",
           "attributes": {
             "zoneId": 6
           }
         },
         {
           "id": 4,
-          "name": "Conteur (masque de thÃ©Ã¢tre)",
-          "text": "Le Conteur rassemble les habitants et partage histoires et lÃ©gendes. Ses rÃ©cits nourrissent lâ€™imaginaire du village.",
+          "name": "Conteur (masque de théâtre)",
+          "text": "Le Conteur rassemble les habitants et partage histoires et légendes. Ses récits nourrissent l’imaginaire du village.",
           "attributes": {
             "zoneId": 6
           }
@@ -1091,7 +1091,7 @@
         {
           "id": 5,
           "name": "Troubadour (luth)",
-          "text": "De passage ou rÃ©sident, le Troubadour chante poÃ¨mes et rÃ©cits. Sa musique anime fÃªtes et veillÃ©es.",
+          "text": "De passage ou résident, le Troubadour chante poèmes et récits. Sa musique anime fêtes et veillées.",
           "attributes": {
             "zoneId": 6
           }
@@ -1099,15 +1099,15 @@
         {
           "id": 6,
           "name": "Barde (harpe)",
-          "text": "Le Barde garde la mÃ©moire des anciens. Il transmet traditions, exploits et savoirs oubliÃ©s.",
+          "text": "Le Barde garde la mémoire des anciens. Il transmet traditions, exploits et savoirs oubliés.",
           "attributes": {
             "zoneId": 6
           }
         },
         {
           "id": 7,
-          "name": "Musicien (accordÃ©on)",
-          "text": "Le Musicien joue lors des cÃ©lÃ©brations et des rituels. Ses mÃ©lodies rythment la vie du village.",
+          "name": "Musicien (accordéon)",
+          "text": "Le Musicien joue lors des célébrations et des rituels. Ses mélodies rythment la vie du village.",
           "attributes": {
             "zoneId": 6
           }
@@ -1115,15 +1115,15 @@
         {
           "id": 8,
           "name": "Danseur (chausson de danse)",
-          "text": "Le Danseur exÃ©cute danses rituelles et festives. Ses mouvements cÃ©lÃ¨brent la joie et lâ€™unitÃ© des habitants.",
+          "text": "Le Danseur exécute danses rituelles et festives. Ses mouvements célèbrent la joie et l’unité des habitants.",
           "attributes": {
             "zoneId": 6
           }
         },
         {
           "id": 9,
-          "name": "PrÃªtre (Ã©glise)",
-          "text": "Le PrÃªtre officie les rites et accompagn? les croyants. Il guide le village dans les moments sacrÃ©s.",
+          "name": "Prêtre (église)",
+          "text": "Le Prêtre officie les rites et accompagn? les croyants. Il guide le village dans les moments sacrés.",
           "attributes": {
             "zoneId": 6
           }
@@ -1131,7 +1131,7 @@
         {
           "id": 10,
           "name": "Moine (abbaye)",
-          "text": "RetirÃ© dans le calme, le Moine prie et Ã©tudie. Il prÃ©serve savoirs et traditions spirituelles.",
+          "text": "Retiré dans le calme, le Moine prie et étudie. Il préserve savoirs et traditions spirituelles.",
           "attributes": {
             "zoneId": 6
           }
@@ -1139,7 +1139,7 @@
         {
           "id": 11,
           "name": "Chaman (totem)",
-          "text": "Le Chaman communique avec les esprits et la nature. Il soigne, conseille et protÃ¨ge le village.",
+          "text": "Le Chaman communique avec les esprits et la nature. Il soigne, conseille et protège le village.",
           "attributes": {
             "zoneId": 6
           }
@@ -1147,7 +1147,7 @@
         {
           "id": 12,
           "name": "Devin (boule de cristal)",
-          "text": "Le Devin interprÃ¨te signes et prÃ©sages. Ses visions orientent parfois les dÃ©cisions du village.",
+          "text": "Le Devin interprète signes et présages. Ses visions orientent parfois les décisions du village.",
           "attributes": {
             "zoneId": 6
           }
@@ -1155,7 +1155,7 @@
         {
           "id": 13,
           "name": "Astrologue (lune)",
-          "text": "Lâ€™Astrologue observe les astres. Il cherche Ã  comprendre le destin Ã  travers le mouvement du ciel.",
+          "text": "L’Astrologue observe les astres. Il cherche à comprendre le destin à travers le mouvement du ciel.",
           "attributes": {
             "zoneId": 6
           }
@@ -1163,7 +1163,7 @@
         {
           "id": 14,
           "name": "Calligraphe (pinceau)",
-          "text": "Le Calligraphe trace lettres et symboles avec prÃ©cision. Son art donne beautÃ© et clartÃ© aux Ã©crits.",
+          "text": "Le Calligraphe trace lettres et symboles avec précision. Son art donne beauté et clarté aux écrits.",
           "attributes": {
             "zoneId": 6
           }
@@ -1171,15 +1171,15 @@
         {
           "id": 15,
           "name": "Philosophe (livre)",
-          "text": "Le Philosophe questionne le monde et lâ€™homme. Ses rÃ©flexions nourrissent lâ€™esprit des habitants.",
+          "text": "Le Philosophe questionne le monde et l’homme. Ses réflexions nourrissent l’esprit des habitants.",
           "attributes": {
             "zoneId": 6
           }
         },
         {
           "id": 16,
-          "name": "MaÃ®tre dâ€™Ã©cole (morceau de craie)",
-          "text": "Le MaÃ®tre dâ€™Ã©cole instruit les enfants. Il transmet lecture, Ã©criture et savoirs essentiels Ã  lâ€™avenir du village.",
+          "name": "Maître d’école (morceau de craie)",
+          "text": "Le Maître d’école instruit les enfants. Il transmet lecture, écriture et savoirs essentiels à l’avenir du village.",
           "attributes": {
             "zoneId": 6
           }
@@ -1187,31 +1187,31 @@
         {
           "id": 17,
           "name": "Chroniqueur (plume d'oie)",
-          "text": "Le Chroniqueur relate les Ã©vÃ©nements marquants. GrÃ¢ce Ã  lui, lâ€™histoire du village est conservÃ©e.",
+          "text": "Le Chroniqueur relate les événements marquants. Grâce à lui, l’histoire du village est conservée.",
           "attributes": {
             "zoneId": 6
           }
         },
         {
           "id": 18,
-          "name": "Alchimiste (fioles colorÃ©es)",
-          "text": "Lâ€™Alchimiste expÃ©rimente matiÃ¨res et connaissances. Ses recherches mÃªlent science, mystÃ¨re et espoir.",
+          "name": "Alchimiste (fioles colorées)",
+          "text": "L’Alchimiste expérimente matières et connaissances. Ses recherches mêlent science, mystère et espoir.",
           "attributes": {
             "zoneId": 6
           }
         },
         {
           "id": 19,
-          "name": "ExÃ©gÃ¨te (livre sacrÃ©)",
-          "text": "Lâ€™ExÃ©gÃ¨te interprÃ¨te les textes sacrÃ©s. Il Ã©claire leur sens et guide la comprÃ©hension spirituelle.",
+          "name": "Exégète (livre sacré)",
+          "text": "L’Exégète interprète les textes sacrés. Il éclaire leur sens et guide la compréhension spirituelle.",
           "attributes": {
             "zoneId": 6
           }
         },
         {
           "id": 20,
-          "name": "PoÃ¨te (bougie)",
-          "text": "Le PoÃ¨te compose chants et rÃ©cits. Ses mots cÃ©lÃ¨brent la vie, lâ€™amour et la mÃ©moire du village.",
+          "name": "Poète (bougie)",
+          "text": "Le Poète compose chants et récits. Ses mots célèbrent la vie, l’amour et la mémoire du village.",
           "attributes": {
             "zoneId": 6
           }
@@ -1220,12 +1220,12 @@
     },
     {
       "id": 7,
-      "title": "MÃ©tiers liÃ©s Ã  la Protection et Ã  la SociÃ©tÃ©",
+      "title": "Métiers liés à la Protection et à la Société",
       "cards": [
         {
           "id": 1,
-          "name": "Soldat (Ã©pÃ©e)",
-          "text": "Vous voyez le Soldat sâ€™entraÃ®ner sans relÃ¢che. Il dÃ©fend le village contre les menaces extÃ©rieures et veille Ã  sa sÃ©curitÃ©.",
+          "name": "Soldat (épée)",
+          "text": "Vous voyez le Soldat s’entraîner sans relâche. Il défend le village contre les menaces extérieures et veille à sa sécurité.",
           "attributes": {
             "zoneId": 7
           }
@@ -1233,7 +1233,7 @@
         {
           "id": 2,
           "name": "Garde (bouclier)",
-          "text": "Le Garde surveille portes et lieux sensibles. Sa prÃ©sence rassure les habitants et maintient lâ€™ordre quotidien.",
+          "text": "Le Garde surveille portes et lieux sensibles. Sa présence rassure les habitants et maintient l’ordre quotidien.",
           "attributes": {
             "zoneId": 7
           }
@@ -1241,7 +1241,7 @@
         {
           "id": 3,
           "name": "Sentinelle (jumelles)",
-          "text": "PostÃ©e en hauteur, la Sentinelle observe lâ€™horizon. Elle donne lâ€™alerte au moindre danger.",
+          "text": "Postée en hauteur, la Sentinelle observe l’horizon. Elle donne l’alerte au moindre danger.",
           "attributes": {
             "zoneId": 7
           }
@@ -1249,15 +1249,15 @@
         {
           "id": 4,
           "name": "Messager (sacoche)",
-          "text": "Le Messager traverse routes et villages. Il transmet ordres et nouvelles essentielles Ã  la vie collective.",
+          "text": "Le Messager traverse routes et villages. Il transmet ordres et nouvelles essentielles à la vie collective.",
           "attributes": {
             "zoneId": 7
           }
         },
         {
           "id": 5,
-          "name": "HÃ©raut (cornet de proclamation)",
-          "text": "Le HÃ©raut proclame dÃ©cisions et annonces officielles. Sa voix porte la loi et les nouvelles du village.",
+          "name": "Héraut (cornet de proclamation)",
+          "text": "Le Héraut proclame décisions et annonces officielles. Sa voix porte la loi et les nouvelles du village.",
           "attributes": {
             "zoneId": 7
           }
@@ -1265,7 +1265,7 @@
         {
           "id": 6,
           "name": "Juge (maillet)",
-          "text": "Le Juge Ã©coute, tranche et rend la justice. Il garantit lâ€™Ã©quitÃ© et la paix entre les habitants.",
+          "text": "Le Juge écoute, tranche et rend la justice. Il garantit l’équité et la paix entre les habitants.",
           "attributes": {
             "zoneId": 7
           }
@@ -1273,7 +1273,7 @@
         {
           "id": 7,
           "name": "Notaire (enveloppe)",
-          "text": "Le Notaire rÃ©dige et conserve actes et contrats. Son travail sÃ©curise Ã©changes et engagements.",
+          "text": "Le Notaire rédige et conserve actes et contrats. Son travail sécurise échanges et engagements.",
           "attributes": {
             "zoneId": 7
           }
@@ -1281,7 +1281,7 @@
         {
           "id": 8,
           "name": "Bailli (sceau)",
-          "text": "Le Bailli reprÃ©sente lâ€™autoritÃ© locale. Il applique les lois et administre le territoire.",
+          "text": "Le Bailli représente l’autorité locale. Il applique les lois et administre le territoire.",
           "attributes": {
             "zoneId": 7
           }
@@ -1289,31 +1289,31 @@
         {
           "id": 9,
           "name": "Capitaine (casque)",
-          "text": "Le Capitaine commande les forces armÃ©es. Sa stratÃ©gie protÃ¨ge le village en temps de conflit.",
+          "text": "Le Capitaine commande les forces armées. Sa stratégie protège le village en temps de conflit.",
           "attributes": {
             "zoneId": 7
           }
         },
         {
           "id": 10,
-          "name": "Ã‰cuyer (gantelet)",
-          "text": "Lâ€™Ã‰cuyer assiste le chevalier et apprend lâ€™art du combat. Il se prÃ©pare Ã  devenir dÃ©fenseur du village.",
+          "name": "Écuyer (gantelet)",
+          "text": "L’Écuyer assiste le chevalier et apprend l’art du combat. Il se prépare à devenir défenseur du village.",
           "attributes": {
             "zoneId": 7
           }
         },
         {
           "id": 11,
-          "name": "Chevalier (Ã©cusson)",
-          "text": "MontÃ© et armÃ©, le Chevalier incarne honneur et bravoure. Il protÃ¨ge le village avec courage.",
+          "name": "Chevalier (écusson)",
+          "text": "Monté et armé, le Chevalier incarne honneur et bravoure. Il protège le village avec courage.",
           "attributes": {
             "zoneId": 7
           }
         },
         {
           "id": 12,
-          "name": "GeÃ´lier (trousseau de clÃ©s)",
-          "text": "Le GeÃ´lier garde les prisonniers. Il veille Ã  lâ€™application des peines dÃ©cidÃ©es par la justice.",
+          "name": "Geôlier (trousseau de clés)",
+          "text": "Le Geôlier garde les prisonniers. Il veille à l’application des peines décidées par la justice.",
           "attributes": {
             "zoneId": 7
           }
@@ -1321,15 +1321,15 @@
         {
           "id": 13,
           "name": "Bourreau (hache)",
-          "text": "ChargÃ© des sentences ultimes, le Bourreau applique la loi. Sa prÃ©sence rappelle lâ€™autoritÃ© et lâ€™ordre.",
+          "text": "Chargé des sentences ultimes, le Bourreau applique la loi. Sa présence rappelle l’autorité et l’ordre.",
           "attributes": {
             "zoneId": 7
           }
         },
         {
           "id": 14,
-          "name": "PrÃ©vÃ´t (collier de fonction)",
-          "text": "Le PrÃ©vÃ´t maintient lâ€™ordre local. Il coordonne gardes et patrouilles.",
+          "name": "Prévôt (collier de fonction)",
+          "text": "Le Prévôt maintient l’ordre local. Il coordonne gardes et patrouilles.",
           "attributes": {
             "zoneId": 7
           }
@@ -1337,15 +1337,15 @@
         {
           "id": 15,
           "name": "Huissier (pochette de convocations)",
-          "text": "Lâ€™Huissier applique dÃ©cisions de justice et convocations. Il assure le lien entre lois et citoyens.",
+          "text": "L’Huissier applique décisions de justice et convocations. Il assure le lien entre lois et citoyens.",
           "attributes": {
             "zoneId": 7
           }
         },
         {
           "id": 16,
-          "name": "MaÃ®tre dâ€™armes (lance)",
-          "text": "Le MaÃ®tre dâ€™armes entraÃ®ne soldats et chevaliers. Son enseignement renforce la dÃ©fense du village.",
+          "name": "Maître d’armes (lance)",
+          "text": "Le Maître d’armes entraîne soldats et chevaliers. Son enseignement renforce la défense du village.",
           "attributes": {
             "zoneId": 7
           }
@@ -1354,12 +1354,12 @@
     },
     {
       "id": 8,
-      "title": "MÃ©tiers trÃ¨s anciens ou universels",
+      "title": "Métiers très anciens ou universels",
       "cards": [
         {
           "id": 1,
-          "name": "BÃ¢tisseur (maisonnette)",
-          "text": "Vous observez le BÃ¢tisseur diriger de grands travaux. GrÃ¢ce Ã  lui, ponts, murailles et Ã©difices durables prennent forme.",
+          "name": "Bâtisseur (maisonnette)",
+          "text": "Vous observez le Bâtisseur diriger de grands travaux. Grâce à lui, ponts, murailles et édifices durables prennent forme.",
           "attributes": {
             "zoneId": 8
           }
@@ -1367,7 +1367,7 @@
         {
           "id": 2,
           "name": "Passeur (barque)",
-          "text": "Au bord de lâ€™eau, le Passeur aide hommes et marchandises Ã  traverser. Il relie les rives et les chemins du monde.",
+          "text": "Au bord de l’eau, le Passeur aide hommes et marchandises à traverser. Il relie les rives et les chemins du monde.",
           "attributes": {
             "zoneId": 8
           }
@@ -1375,7 +1375,7 @@
         {
           "id": 3,
           "name": "Batelier (rame)",
-          "text": "Le Batelier manie sa barque avec adresse. Il assure le transport fluvial et facilite les Ã©changes.",
+          "text": "Le Batelier manie sa barque avec adresse. Il assure le transport fluvial et facilite les échanges.",
           "attributes": {
             "zoneId": 8
           }
@@ -1383,7 +1383,7 @@
         {
           "id": 4,
           "name": "Marin (boussole)",
-          "text": "Le Marin prend la mer pour pÃªcher ou commercer. Son courage ouvre le village au large.",
+          "text": "Le Marin prend la mer pour pêcher ou commercer. Son courage ouvre le village au large.",
           "attributes": {
             "zoneId": 8
           }
@@ -1391,7 +1391,7 @@
         {
           "id": 5,
           "name": "Charpentier naval (coque de bateau)",
-          "text": "Dans le chantier, le Charpentier naval construit et rÃ©pare les bateaux. Son savoir maintient les routes maritimes.",
+          "text": "Dans le chantier, le Charpentier naval construit et répare les bateaux. Son savoir maintient les routes maritimes.",
           "attributes": {
             "zoneId": 8
           }
@@ -1399,15 +1399,15 @@
         {
           "id": 6,
           "name": "Navigateur (voilier)",
-          "text": "GuidÃ© par les Ã©toiles, le Navigateur trace la route. Il permet les longs voyages et les grandes dÃ©couvertes.",
+          "text": "Guidé par les étoiles, le Navigateur trace la route. Il permet les longs voyages et les grandes découvertes.",
           "attributes": {
             "zoneId": 8
           }
         },
         {
           "id": 7,
-          "name": "Explorateur (carte au trÃ©sor)",
-          "text": "Lâ€™Explorateur sâ€™aventure en terres inconnues. Il rapporte savoirs, richesses et rÃ©cits lointains.",
+          "name": "Explorateur (carte au trésor)",
+          "text": "L’Explorateur s’aventure en terres inconnues. Il rapporte savoirs, richesses et récits lointains.",
           "attributes": {
             "zoneId": 8
           }
@@ -1415,15 +1415,15 @@
         {
           "id": 8,
           "name": "Caravanier (chameau en peluche)",
-          "text": "Le Caravanier guide hommes et bÃªtes Ã  travers dÃ©serts et routes anciennes. Il sÃ©curise les Ã©changes lointains.",
+          "text": "Le Caravanier guide hommes et bêtes à travers déserts et routes anciennes. Il sécurise les échanges lointains.",
           "attributes": {
             "zoneId": 8
           }
         },
         {
           "id": 9,
-          "name": "PÃ¨lerin (bÃ¢ton de marche)",
-          "text": "Le PÃ¨lerin voyage par foi ou quÃªte intÃ©rieure. Son cheminement inspire respect et sagesse.",
+          "name": "Pèlerin (bâton de marche)",
+          "text": "Le Pèlerin voyage par foi ou quête intérieure. Son cheminement inspire respect et sagesse.",
           "attributes": {
             "zoneId": 8
           }
@@ -1431,7 +1431,7 @@
         {
           "id": 10,
           "name": "Cartographe (compas)",
-          "text": "Le Cartographe dessine le monde Ã  la main. Ses cartes guident voyageurs et explorateurs.",
+          "text": "Le Cartographe dessine le monde à la main. Ses cartes guident voyageurs et explorateurs.",
           "attributes": {
             "zoneId": 8
           }
@@ -1439,7 +1439,7 @@
         {
           "id": 11,
           "name": "Guide (sifflet)",
-          "text": "Le Guide connaÃ®t sentiers et dangers. Il accompagn? les voyageurs en toute sÃ©curitÃ©.",
+          "text": "Le Guide connaît sentiers et dangers. Il accompagn? les voyageurs en toute sécurité.",
           "attributes": {
             "zoneId": 8
           }
@@ -1447,15 +1447,15 @@
         {
           "id": 12,
           "name": "Pisteur (empreinte de pas)",
-          "text": "Le Pisteur suit traces humaines et animales. Son regard averti Ã©vite embuscades et pertes.",
+          "text": "Le Pisteur suit traces humaines et animales. Son regard averti évite embuscades et pertes.",
           "attributes": {
             "zoneId": 8
           }
         },
         {
           "id": 13,
-          "name": "Ã‰claireur (drapeau)",
-          "text": "En avant du groupe, lâ€™Ã‰claireur explore le terrain. Il prÃ©pare la route et anticipe les dangers.",
+          "name": "Éclaireur (drapeau)",
+          "text": "En avant du groupe, l’Éclaireur explore le terrain. Il prépare la route et anticipe les dangers.",
           "attributes": {
             "zoneId": 8
           }
@@ -1463,7 +1463,7 @@
         {
           "id": 14,
           "name": "Nomade (tente)",
-          "text": "Le Nomade vit du dÃ©placement et de lâ€™Ã©levage. Son mode de vie transmet libertÃ© et adaptation.",
+          "text": "Le Nomade vit du déplacement et de l’élevage. Son mode de vie transmet liberté et adaptation.",
           "attributes": {
             "zoneId": 8
           }

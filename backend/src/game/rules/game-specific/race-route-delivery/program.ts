@@ -10,5 +10,5 @@ export type DeliveryRaceProgram = TrackRaceProgram & {
   positionOffset: number;
   targetScore: number;
   eventNamespace: string;
-  tiles: readonly { id: string | number; title: string }[];
+  tiles: readonly { id: string | number; title: string; description?: string }[];
 };
