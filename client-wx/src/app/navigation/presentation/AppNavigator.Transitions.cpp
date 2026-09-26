@@ -15,6 +15,12 @@ namespace lila::app::navigation
 {
 using domain::ViewId;
 
+namespace
+{
+// Kept in sync with resources/sounds/ClientOpened.wav (3.312018 seconds).
+constexpr auto ClientOpenedDuration = std::chrono::milliseconds(3312);
+}
+
 void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
 {
     const auto transitionStartedAt = std::chrono::steady_clock::now();
@@ -60,10 +66,26 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
         : (nextViewId == ViewId::Catalog
             ? lila::modules::audio::domain::AudioBackground::Tavern
             : lila::modules::audio::domain::AudioBackground::None);
-    audioService_.SetBackground(background);
-    if (nextViewId == ViewId::Catalog && previousViewId != ViewId::Catalog)
+    const bool enteringTavern = nextViewId == ViewId::Catalog && previousViewId != ViewId::Catalog;
+    if (nextViewId != ViewId::Catalog)
     {
-        audioService_.Play(lila::modules::audio::domain::SoundCue::TavernOpened);
+        CancelScheduledTavernAudio();
+    }
+    if (enteringTavern && clientOpenedAt_.has_value() &&
+        std::chrono::steady_clock::now() - *clientOpenedAt_ < ClientOpenedDuration)
+    {
+        // Do not mask the client opening sound with the tavern ambience.
+        audioService_.SetBackground(lila::modules::audio::domain::AudioBackground::None);
+        ScheduleTavernAudioAfterClientOpening();
+    }
+    else
+    {
+        audioService_.SetBackground(background);
+    }
+    if (enteringTavern &&
+        (tavernAudioDelay_ == nullptr || !tavernAudioDelay_->IsRunning()))
+    {
+        StartTavernAudio();
     }
     else if (previousViewId == ViewId::Catalog && nextViewId != ViewId::Catalog)
     {
@@ -82,6 +104,57 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
         lila::shared::logging::LogWarning(
             "Navigator",
             "Slow view transition: " + std::to_string(transitionElapsed.count()) + " ms.");
+    }
+}
+
+void AppNavigator::StartTavernAudio()
+{
+    audioService_.SetBackground(lila::modules::audio::domain::AudioBackground::Tavern);
+    audioService_.Play(lila::modules::audio::domain::SoundCue::TavernOpened);
+}
+
+void AppNavigator::ScheduleTavernAudioAfterClientOpening()
+{
+    if (hostFrame_ == nullptr || !clientOpenedAt_.has_value())
+    {
+        StartTavernAudio();
+        return;
+    }
+
+    const auto elapsed = std::chrono::steady_clock::now() - *clientOpenedAt_;
+    const auto remaining = ClientOpenedDuration - std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
+    if (remaining <= std::chrono::milliseconds::zero())
+    {
+        StartTavernAudio();
+        return;
+    }
+
+    if (tavernAudioDelay_ == nullptr)
+    {
+        tavernAudioDelay_ = std::make_unique<wxTimer>(hostFrame_);
+        const int timerId = tavernAudioDelay_->GetId();
+        hostFrame_->Bind(wxEVT_TIMER, [this, timerId](wxTimerEvent& event)
+        {
+            if (tavernAudioDelay_ == nullptr || event.GetId() != timerId)
+            {
+                return;
+            }
+            tavernAudioDelay_->Stop();
+            if (!closing_ && currentViewId_ == ViewId::Catalog)
+            {
+                StartTavernAudio();
+            }
+        }, timerId);
+    }
+    tavernAudioDelay_->StartOnce(static_cast<int>(remaining.count()));
+}
+
+void AppNavigator::CancelScheduledTavernAudio()
+{
+    if (tavernAudioDelay_ != nullptr)
+    {
+        tavernAudioDelay_->Stop();
+        tavernAudioDelay_.reset();
     }
 }
 

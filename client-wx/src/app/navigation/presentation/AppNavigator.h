@@ -1,7 +1,9 @@
 #pragma once
 
+#include <chrono>
 #include <memory>
 #include <deque>
+#include <optional>
 #include <string>
 
 #include <wx/timer.h>
@@ -84,6 +86,9 @@ private:
     void ResetView(domain::ViewId viewId);
     void ResetSessionViews();
     void ApplyViewFocus(wxWindow* view);
+    void StartTavernAudio();
+    void ScheduleTavernAudioAfterClientOpening();
+    void CancelScheduledTavernAudio();
     void ReturnToCatalogAfterRoomClose(bool resetVaultFocus, bool resetCatalogFocus);
     [[nodiscard]] wxWindow* CreateView(domain::ViewId viewId);
     [[nodiscard]] wxWindow* CreateCoreView(domain::ViewId viewId);
@@ -128,6 +133,8 @@ private:
     std::deque<lila::modules::rooms::domain::RoomInvitation> pendingInvitations_;
     bool invitationDialogOpen_ = false;
     std::unique_ptr<wxTimer> closeRevocationTimeout_;
+    std::unique_ptr<wxTimer> tavernAudioDelay_;
+    std::optional<std::chrono::steady_clock::time_point> clientOpenedAt_;
     bool closing_ = false;
     bool closeFinalized_ = false;
     lila::shared::accessibility::FocusTransition focusTransition_;
