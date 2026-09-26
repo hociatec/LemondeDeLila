@@ -242,10 +242,16 @@ export class GameWsStateMessagesPresenter {
     params: Record<string, unknown>,
   ): string {
     const spaces = this.numberValue(params.spaces) ?? 0;
-    const distance = `${spaces} case${Math.abs(spaces) === 1 ? '' : 's'}`;
-    const verb =
-      namedPlayer === 'Vous' ? 'vous avancez' : `${namedPlayer} avance`;
-    return `Bonus : ${verb} de ${distance}.`;
+    const backward = spaces < 0;
+    const amount = `${Math.abs(spaces)} case${Math.abs(spaces) === 1 ? '' : 's'}`;
+    const verb = backward
+      ? namedPlayer === 'Vous'
+        ? 'vous reculez'
+        : `${namedPlayer} recule`
+      : namedPlayer === 'Vous'
+        ? 'vous avancez'
+        : `${namedPlayer} avance`;
+    return `Effet : ${verb} de ${amount}.`;
   }
 
   private teamPawnMovedMessage(
