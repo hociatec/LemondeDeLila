@@ -39,9 +39,6 @@ private:
     bool modulePinned_ = false;
     std::optional<domain::SoundCue> loopCue_;
     float loopVolume_ = 0.0F;
-    HCHANNEL clientOpenedChannel_ = 0;
-    std::optional<domain::SoundCue> deferredLoopCue_;
-    float deferredLoopVolume_ = 0.0F;
     bool refreshPending_ = false;
 };
 }

@@ -89,7 +89,6 @@ void BassAudioBackend::Play(domain::SoundCue cue, float volume)
                 std::to_string(BASS_ErrorGetCode()) + ").");
         return;
     }
-    if (cue == domain::SoundCue::ClientOpened) clientOpenedChannel_ = channel;
 }
 
 void BassAudioBackend::SetLoop(std::optional<domain::SoundCue> cue, float volume)
@@ -98,20 +97,12 @@ void BassAudioBackend::SetLoop(std::optional<domain::SoundCue> cue, float volume
     loopVolume_ = volume;
     if (!cue.has_value())
     {
-        deferredLoopCue_.reset();
         streams_.Stop();
         return;
     }
     const auto* sound = domain::FindSoundDescriptor(*cue);
     if (sound == nullptr || !sound->loop || !EnsureInitialized())
     {
-        return;
-    }
-    if (clientOpenedChannel_ != 0 &&
-        BASS_ChannelIsActive(clientOpenedChannel_) == BASS_ACTIVE_PLAYING)
-    {
-        deferredLoopCue_ = *cue;
-        deferredLoopVolume_ = volume;
         return;
     }
     streams_.StartOrUpdate(*cue, assetPaths_.Resolve(*cue), volume, shuttingDown_);
@@ -139,8 +130,6 @@ void BassAudioBackend::Preview(std::optional<domain::SoundCue> cue)
 void BassAudioBackend::StopAll()
 {
     loopCue_.reset();
-    deferredLoopCue_.reset();
-    clientOpenedChannel_ = 0;
     refreshPending_ = false;
     if (!initialized_.load(std::memory_order_acquire))
     {
