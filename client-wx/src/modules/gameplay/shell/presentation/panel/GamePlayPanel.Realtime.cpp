@@ -76,6 +76,10 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         if (startConfigurationFlow_.Acknowledge(acknowledgement.command))
         {
             submittedPromptActionType_.clear();
+            // Configuration acknowledgements may arrive without the following
+            // state notification. Fetch it explicitly so the first quiz
+            // question is displayed and the room-start flow can continue.
+            RequestRefresh();
             return;
         }
         const bool openedPanel = !acknowledgement.panelId.empty() &&

@@ -38,7 +38,7 @@ describe('GameWsStateMessagesPresenter', () => {
     ).toEqual([undefined, undefined]);
   });
 
-  it('announces the revealed correct answer once in the history', () => {
+  it('does not repeat the correct answer to a player who answered correctly', () => {
     const event = {
       id: 'quiz-result:0',
       type: 'game.message',
@@ -68,7 +68,14 @@ describe('GameWsStateMessagesPresenter', () => {
       {} as never,
     );
 
-    expect(presentedEvents(state.events).recent[0].data.message).toBe(
+    expect(presentedEvents(state.events).recent[0].data.message).toBeUndefined();
+
+    const wrongViewer = new GameWsStateMessagesPresenter().withServerMessages(
+      state,
+      -2,
+      {} as never,
+    );
+    expect(presentedEvents(wrongViewer.events).recent[0].data.message).toBe(
       'La bonne réponse était « Paris ».',
     );
   });

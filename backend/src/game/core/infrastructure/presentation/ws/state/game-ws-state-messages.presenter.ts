@@ -128,6 +128,7 @@ export class GameWsStateMessagesPresenter {
         data,
         player,
         players,
+        viewerPlayerId,
         receivedCardData,
         nextTurnData,
       );
@@ -157,6 +158,7 @@ export class GameWsStateMessagesPresenter {
     data: Record<string, unknown>,
     player: (value: unknown) => string,
     players: ReadonlyMap<number, string>,
+    viewerPlayerId: number | null,
     receivedCardData: Record<string, unknown>,
     nextTurnData: Record<string, unknown>,
   ): string {
@@ -174,7 +176,7 @@ export class GameWsStateMessagesPresenter {
     )
       return '';
     if (messageKey === 'game.quiz.resolved')
-      return this.quizResolvedMessage(params);
+      return this.quizResolvedMessage(params, viewerPlayerId);
     const card =
       scalarMessageText(params.cardLabel) || scalarMessageText(params.cardId);
     if (messageKey === 'game.card.played' && namedPlayer)
@@ -221,7 +223,16 @@ export class GameWsStateMessagesPresenter {
     return this.roundStartedMessage(params, players);
   }
 
-  private quizResolvedMessage(params: Record<string, unknown>): string {
+  private quizResolvedMessage(
+    params: Record<string, unknown>,
+    viewerPlayerId: number | null,
+  ): string {
+    if (viewerPlayerId != null) {
+      const ownResult = (Array.isArray(params.results) ? params.results : [])
+        .map((result) => this.asRecord(result))
+        .find((result) => this.numberValue(result.playerId) === viewerPlayerId);
+      if (this.stringValue(ownResult?.outcome) === 'correct') return '';
+    }
     const correctAnswer = this.stringValue(params.correctAnswer);
     return correctAnswer ? `La bonne réponse était « ${correctAnswer} ».` : '';
   }
