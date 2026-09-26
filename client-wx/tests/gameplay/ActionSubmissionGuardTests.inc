@@ -33,6 +33,17 @@ void TestCommandSubmissionGuardSerializesGameplayCommands()
         "Une action doit partir sur la nouvelle execution");
     Expect(!guard.TryBegin("game.key", 1, 4, start + std::chrono::seconds(6)),
         "Une action sans réponse ne doit jamais être rejouée aveuglément");
+
+    guard.Reset();
+    Expect(guard.TryBegin("game.action", 12, 3, start),
+        "Une nouvelle action doit être verrouillée");
+    Expect(guard.Acknowledge("game.action", false),
+        "Un accusé positif peut conserver le verrou jusqu'à l'état suivant");
+    Expect(!guard.TryBegin("game.action", 12, 3, start),
+        "Une seconde Entrée ne doit pas réemployer la version reconnue");
+    guard.ObserveState(13, 3);
+    Expect(guard.TryBegin("game.action", 13, 3, start),
+        "Le nouvel état serveur doit libérer l'action validée");
 }
 
 void TestStructuredGameAcknowledgements()

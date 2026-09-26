@@ -46,10 +46,12 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         }
         const auto& acknowledgement = *event.acknowledgement;
         retryableActionCommand_.reset();
+        const bool acknowledgedAction = acknowledgement.command == "game.action";
         lila::shared::logging::LogInfo(
             "GameInput", "Acknowledgement received: " + acknowledgement.command);
         static_cast<void>(inputSubmissionGuard_.Acknowledge(
-            acknowledgement.command));
+            acknowledgement.command,
+            !acknowledgement.ok || !acknowledgedAction));
         if (!acknowledgement.ok)
         {
             if (!acknowledgement.message.empty())
@@ -87,6 +89,11 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         if (acknowledgement.roomOperation == "start" ||
             acknowledgement.roomOperation == "reset")
             RequestRefresh();
+        // State notifications and acknowledgements travel independently. A
+        // refresh after every accepted gameplay command repairs a lost or
+        // reordered realtime notification before the player can act again.
+        if (acknowledgedAction || acknowledgement.command == "game.key")
+            RequestRefresh();
         return;
     }
     case domain::GameEventType::TurnUpdated:
@@ -96,6 +103,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
              state_.system.match.status == "playing") &&
             !event.message.empty() && onHistoryMessage_)
             onHistoryMessage_(FromUtf8(event.message), false);
+        if (roomStarted_ && hasAuthoritativeState_) RequestRefresh();
         return;
     }
     case domain::GameEventType::ActionCandidates:
