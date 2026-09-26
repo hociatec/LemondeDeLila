@@ -8,8 +8,7 @@ bool BassAudioBackend::PumpDeferredPlayback()
     {
         refreshPending_ = false;
         samples_.Clear();
-        streams_.Clear();
-        if (loopCue_) SetLoop(loopCue_, loopVolume_);
+        streams_.ClearInactive();
     }
     return refreshPending_;
 }
@@ -24,7 +23,11 @@ void BassAudioBackend::RefreshAssets()
         return;
     }
     samples_.Clear();
-    streams_.Clear();
-    if (loopCue_) SetLoop(loopCue_, loopVolume_);
+    // Keep the currently audible loop alive.  In particular, notify.connected
+    // arrives shortly after startup: recreating this stream made the menu
+    // music restart a few seconds after it had already begun.  Inactive
+    // streams are still evicted, and the active one is reloaded naturally on
+    // the next background change if its remote asset changed.
+    streams_.ClearInactive();
 }
 }
