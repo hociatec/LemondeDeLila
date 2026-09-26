@@ -145,7 +145,16 @@ std::string ItemTitle(const nlohmann::json& value, std::size_t index)
         {
             const auto found = value.find(key);
             if (found != value.end() && (found->is_string() || found->is_number()))
-                return Scalar(*found);
+            {
+                auto title = Scalar(*found);
+                const auto soundId = value.find("soundId");
+                const auto enabled = value.find("enabled");
+                if (soundId != value.end() && soundId->is_string() &&
+                    soundId->get<std::string>().starts_with("TableAmbience") &&
+                    enabled != value.end() && enabled->is_boolean())
+                    title += enabled->get<bool>() ? " (active)" : " (inactive)";
+                return title;
+            }
         }
     }
     if (value.is_primitive()) return Scalar(value);
