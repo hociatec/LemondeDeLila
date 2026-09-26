@@ -1,6 +1,7 @@
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/home/presentation/HomeFrame.h"
 
+#include <wx/access.h>
 #include <wx/checkbox.h>
 #include <wx/panel.h>
 #include <wx/simplebook.h>
@@ -15,6 +16,50 @@
 
 namespace lila::modules::home::presentation
 {
+#if wxUSE_ACCESSIBILITY
+namespace
+{
+class RememberMeAccessible final : public wxWindowAccessible
+{
+public:
+    explicit RememberMeAccessible(wxCheckBox& checkbox)
+        : wxWindowAccessible(&checkbox), checkbox_(&checkbox)
+    {
+    }
+
+    wxAccStatus GetRole(int childId, wxAccRole* role) override
+    {
+        if (childId != wxACC_SELF || role == nullptr) return wxACC_INVALID_ARG;
+        *role = wxROLE_SYSTEM_CHECKBUTTON;
+        return wxACC_OK;
+    }
+
+    wxAccStatus GetName(int childId, wxString* name) override
+    {
+        if (childId != wxACC_SELF || name == nullptr || checkbox_ == nullptr)
+            return wxACC_INVALID_ARG;
+        *name = checkbox_->GetLabel();
+        return name->empty() ? wxACC_NOT_SUPPORTED : wxACC_OK;
+    }
+
+    wxAccStatus GetState(int childId, long* state) override
+    {
+        if (childId != wxACC_SELF || state == nullptr || checkbox_ == nullptr)
+            return wxACC_INVALID_ARG;
+        *state = wxACC_STATE_SYSTEM_FOCUSABLE;
+        if (checkbox_->HasFocus()) *state |= wxACC_STATE_SYSTEM_FOCUSED;
+        if (!checkbox_->IsEnabled()) *state |= wxACC_STATE_SYSTEM_UNAVAILABLE;
+        if (!checkbox_->IsShownOnScreen()) *state |= wxACC_STATE_SYSTEM_INVISIBLE;
+        if (checkbox_->GetValue()) *state |= wxACC_STATE_SYSTEM_CHECKED;
+        return wxACC_OK;
+    }
+
+private:
+    wxCheckBox* checkbox_ = nullptr;
+};
+}
+#endif
+
 void HomeFrame::BuildLayout()
 {
     rootPanel_ = new wxPanel(this);
@@ -101,6 +146,12 @@ void HomeFrame::BuildLoginPage()
         wxDefaultSize,
         wxCHK_2STATE);
     loginRememberMeCheck_->SetValue(false);
+#if wxUSE_ACCESSIBILITY
+    // Some Windows screen-reader combinations expose the native two-state
+    // checkbox as a button. Declare its semantic role explicitly so its
+    // checked state and Space activation are announced correctly.
+    loginRememberMeCheck_->SetAccessible(new RememberMeAccessible(*loginRememberMeCheck_));
+#endif
     loginSubmitButton_ = new lila::shared::accessibility::ActionButton(loginPage_, wxID_ANY, "Connexion");
     loginRegisterButton_ = new lila::shared::accessibility::ActionButton(loginPage_, wxID_ANY, lila::shared::text::FromUtf8("Cr" "\xC3\xA9" "er un compte"));
     loginQuitButton_ = new lila::shared::accessibility::ActionButton(loginPage_, wxID_ANY, "Quitter");

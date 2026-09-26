@@ -28,7 +28,7 @@ void OptionsSectionCoordinator::LoadState()
     RefreshUnsavedState();
 }
 
-void OptionsSectionCoordinator::ApplyState(
+bool OptionsSectionCoordinator::ApplyState(
     const domain::OptionsState& state,
     bool persist,
     const wxString& successMessage)
@@ -50,21 +50,33 @@ void OptionsSectionCoordinator::ApplyState(
             callbacks_.updateStatus(
                 lila::shared::text::FromUtf8(lila::shared::errors::OptionsSaveFailed),
                 true);
+            return false;
         }
 
-        return;
+        return true;
     }
 
     if (!successMessage.empty())
     {
         callbacks_.updateStatus(successMessage, false);
     }
+    return true;
 }
 
 void OptionsSectionCoordinator::SaveState()
 {
-    ApplyState(view_.ReadState(editorController_.BaseState()), true, wxString(L"Options enregistrées."));
+    if (!ApplyState(
+            view_.ReadState(editorController_.BaseState()),
+            true,
+            wxString(L"Options enregistrées.")))
+    {
+        return;
+    }
     RefreshUnsavedState();
+    if (callbacks_.onCloseRequested)
+    {
+        callbacks_.onCloseRequested();
+    }
 }
 
 void OptionsSectionCoordinator::CancelChanges()
