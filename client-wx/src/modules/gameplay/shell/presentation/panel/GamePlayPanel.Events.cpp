@@ -134,7 +134,16 @@ bool GamePlayPanel::HandleZoneActivation()
         }
         return true;
     }
-    return false;
+    // A started game may temporarily have no actionable control: for example
+    // just after an answer has been sent, while another player is choosing,
+    // or while the next state is arriving.  The room's zone anchor used to
+    // treat an unhandled Enter in that interval as its default table action
+    // (Start).  That submitted a second start command to an already running
+    // game, produced "Cette action n'est pas disponible", and could strand
+    // keyboard users outside the game workflow.  Once this panel owns an
+    // open, started room, Enter belongs to the game zone even when it has
+    // nothing to activate yet.
+    return true;
 }
 
 bool GamePlayPanel::ActivateSelectedHandCard()
