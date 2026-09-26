@@ -147,6 +147,16 @@ void AdminFrame::OpenResultActions(std::size_t index)
             {{"enabled", !enabled}}, true);
         add("sounds.clear", L"Rétablir le son par défaut", {}, true);
     }
+    else if (kind == domain::AdminItemKind::Ambience)
+    {
+        const bool enabled = contextItem_.value("enabled", false);
+        add("sounds.preview", L"Aperçu", {}, true);
+        add("sounds.upload", L"Changer le son");
+        add("sounds.ambience.rename", L"Renommer");
+        add("sounds.ambience.enable", enabled ? L"Désactiver" : L"Activer",
+            {{"enabled", !enabled}}, true);
+        add("sounds.ambience.delete", L"Supprimer", {}, true);
+    }
     if (items.empty())
     {
         FocusResultDetails();
