@@ -26,7 +26,7 @@ public:
         Callbacks callbacks) noexcept;
 
     void LoadState();
-    void ApplyState(
+    bool ApplyState(
         const domain::OptionsState& state,
         bool persist,
         const wxString& successMessage = wxEmptyString);
