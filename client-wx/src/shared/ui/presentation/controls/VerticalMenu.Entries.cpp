@@ -163,6 +163,21 @@ void VerticalMenu::BindEntry(VerticalMenuEntry& entry)
             const auto index = static_cast<std::size_t>(std::distance(entries_.begin(), found));
             OnEntryKeyDown(index, event);
         });
+    // wxEVT_CHAR_HOOK is not raised consistently for Ctrl combinations by
+    // custom controls on Windows. Handle the direct event too.
+    entry.Bind(
+        wxEVT_KEY_DOWN,
+        [this, entryPtr = &entry](wxKeyEvent& event)
+        {
+            const auto found = std::find(entries_.begin(), entries_.end(), entryPtr);
+            if (found == entries_.end())
+            {
+                event.Skip();
+                return;
+            }
+            const auto index = static_cast<std::size_t>(std::distance(entries_.begin(), found));
+            OnEntryKeyDown(index, event);
+        });
 }
 
 void VerticalMenu::OnEntryKeyDown(std::size_t index, wxKeyEvent& event)

@@ -9,14 +9,14 @@ namespace lila::shared::ui::controls
 {
 bool VerticalMenu::FocusBoundaryFromKey(wxKeyEvent& event)
 {
-    if (!event.ControlDown() || itemCount_ == 0) return false;
+    if ((!event.ControlDown() && !event.CmdDown()) || itemCount_ == 0) return false;
     const int key = event.GetKeyCode();
-    if (key == WXK_HOME)
+    if (key == WXK_HOME || key == WXK_NUMPAD_HOME)
     {
         FocusIndex(0);
         return true;
     }
-    if (key == WXK_END)
+    if (key == WXK_END || key == WXK_NUMPAD_END)
     {
         FocusIndex(itemCount_ - 1);
         return true;
