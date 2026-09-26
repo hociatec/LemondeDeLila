@@ -47,6 +47,25 @@ private:
     std::optional<lila::modules::session::domain::Session> session_;
 };
 
+class FailingSessionRepository final : public lila::modules::session::domain::ISessionRepository
+{
+public:
+    [[nodiscard]] std::optional<lila::modules::session::domain::Session> Load() const override
+    {
+        return std::nullopt;
+    }
+
+    void Save(const lila::modules::session::domain::Session&) override
+    {
+        throw std::runtime_error("local session storage unavailable");
+    }
+
+    void Clear() override
+    {
+        throw std::runtime_error("local session cleanup unavailable");
+    }
+};
+
 class BlockingSessionRefresher final
     : public lila::modules::session::application::ISessionRefresher
 {

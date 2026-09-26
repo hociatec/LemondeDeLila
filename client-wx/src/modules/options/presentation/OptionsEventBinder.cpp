@@ -195,6 +195,26 @@ void OptionsEventBinder::Bind(
         }
     }
 
+    // Do not rely on the platform-specific default-button behaviour. Some
+    // Windows configurations do not send wxEVT_BUTTON when Enter is pressed
+    // on a focused Save button (or while focus remains on a section control).
+    // In options, Enter always means save; Escape remains the explicit cancel.
+    owner.Bind(
+        wxEVT_CHAR_HOOK,
+        [cancelButton = shell.cancelButton, saveState = handlers.saveState](wxKeyEvent& event)
+        {
+            const int key = event.GetKeyCode();
+            if ((key != WXK_RETURN && key != WXK_NUMPAD_ENTER) ||
+                event.ControlDown() || event.AltDown() || event.MetaDown() ||
+                wxWindow::FindFocus() == cancelButton)
+            {
+                event.Skip();
+                return;
+            }
+            if (saveState) saveState();
+            event.Skip(false);
+        });
+
     lila::shared::accessibility::NavigationController::BindEscapeNavigation(
         owner,
         [handlers]()

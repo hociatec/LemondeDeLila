@@ -76,6 +76,11 @@ private:
     void SetEntryItems(std::span<const VerticalMenuItem> items);
     void BindEntry(VerticalMenuEntry& entry);
     void OnEntryKeyDown(std::size_t index, wxKeyEvent& event);
+    [[nodiscard]] bool FocusBoundaryFromKey(wxKeyEvent& event);
+    [[nodiscard]] bool FocusByInitialFromKey(wxKeyEvent& event, std::size_t currentIndex);
+    [[nodiscard]] std::optional<std::size_t> FindNextItemByInitial(
+        wxUniChar initial,
+        std::size_t currentIndex) const;
     void FocusIndex(std::size_t index, bool notify = true);
     void NotifySelectionChanged();
     void NotifyNavigationFeedback();

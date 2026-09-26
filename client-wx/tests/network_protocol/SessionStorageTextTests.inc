@@ -55,6 +55,27 @@ void TestSessionStoreRestoreLoadsPersistedSession()
     std::cout << "[TEST PASSED] SessionStoreRestoreLoadsPersistedSession\n";
 }
 
+void TestSessionStoreKeepsLoginWhenPersistenceFails()
+{
+    lila::modules::session::application::SessionStore sessionStore(
+        std::make_unique<FailingSessionRepository>());
+    lila::modules::session::domain::Session session;
+    session.userId = lila::shared::domain::UserId{7};
+    session.username = "temporary-user";
+    session.token = "header.payload.signature";
+    session.refreshToken = "refresh-token";
+    session.expiresAt = 4102444800LL;
+
+    Expect(!sessionStore.Open(std::move(session), true),
+        "Une sauvegarde locale en echec ne doit pas etre annoncee comme persistante");
+    Expect(sessionStore.HasActiveSession(),
+        "Une connexion serveur reussie doit rester utilisable sans stockage local");
+    Expect(!sessionStore.IsPersistent(),
+        "La session doit rester temporaire si son ecriture locale echoue");
+
+    std::cout << "[TEST PASSED] SessionStoreKeepsLoginWhenPersistenceFails\n";
+}
+
 void TestSessionStoreRejectsSupersededConcurrentRefresh()
 {
     auto refresher = std::make_unique<BlockingSessionRefresher>();
