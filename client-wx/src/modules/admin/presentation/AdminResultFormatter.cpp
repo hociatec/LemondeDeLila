@@ -125,11 +125,9 @@ std::string ScalarForKey(std::string_view key, const nlohmann::json& value)
     return Scalar(value);
 }
 
-std::string ItemTitle(const nlohmann::json& value, std::size_t index)
-{
+std::string ItemTitle(const nlohmann::json& value, std::size_t index) {
     constexpr std::string_view Keys[]{"username", "name", "title", "subject", "id", "type"};
-    if (value.is_object())
-    {
+    if (value.is_object()) {
         const auto subject = value.find("subject");
         const auto status = value.find("status");
         if (subject != value.end() && subject->is_string() &&
@@ -147,12 +145,9 @@ std::string ItemTitle(const nlohmann::json& value, std::size_t index)
             if (found != value.end() && (found->is_string() || found->is_number()))
             {
                 auto title = Scalar(*found);
-                const auto soundId = value.find("soundId");
-                const auto enabled = value.find("enabled");
-                if (soundId != value.end() && soundId->is_string() &&
-                    soundId->get<std::string>().starts_with("TableAmbience") &&
-                    enabled != value.end() && enabled->is_boolean())
-                    title += enabled->get<bool>() ? " (active)" : " (inactive)";
+                const auto soundId = value.value("soundId", std::string{});
+                if (soundId.starts_with("TableAmbience") && value.contains("enabled"))
+                    title += value.value("enabled", false) ? " (active)" : " (inactive)";
                 return title;
             }
         }
@@ -160,7 +155,6 @@ std::string ItemTitle(const nlohmann::json& value, std::size_t index)
     if (value.is_primitive()) return Scalar(value);
     return "Élément " + std::to_string(index + 1);
 }
-
 std::pair<std::string_view, const nlohmann::json*> FindPrimaryList(
     const nlohmann::json& payload)
 {
