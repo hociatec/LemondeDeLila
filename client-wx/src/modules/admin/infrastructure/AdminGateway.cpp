@@ -176,7 +176,13 @@ nlohmann::json AdminGateway::ExecuteHttp(
     if (command.maintenanceToken && !maintenanceToken.empty())
         request.headers.emplace("x-admin-maintenance-token", maintenanceToken);
     if (command.transport == AdminTransport::HttpMultipart)
+    {
         MakeMultipart(request, body);
+        // Audio files are intentionally accepted up to 250 Mio. The default
+        // 15-second HTTP send timeout is too short for a normal WAV upload.
+        request.sendTimeoutMs = 180'000;
+        request.receiveTimeoutMs = 180'000;
+    }
     else if (method != "GET" && method != "DELETE")
     {
         request.contentType = "application/json";
