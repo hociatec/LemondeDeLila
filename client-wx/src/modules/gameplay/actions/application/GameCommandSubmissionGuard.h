@@ -37,10 +37,12 @@ public:
             Reset();
     }
 
-    [[nodiscard]] bool Acknowledge(std::string_view command) noexcept
+    [[nodiscard]] bool Acknowledge(
+        std::string_view command,
+        bool release = true) noexcept
     {
         if (!inFlight_ || command != command_) return false;
-        Reset();
+        if (release) Reset();
         return true;
     }
 

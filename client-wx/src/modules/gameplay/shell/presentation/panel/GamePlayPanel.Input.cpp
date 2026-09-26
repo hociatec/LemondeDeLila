@@ -80,11 +80,18 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         }
         return ShouldCaptureWhileAwaitingStartedState(key);
     }
+    if (inputSubmissionGuard_.IsInFlight())
+    {
+        if (keyCode == WXK_F5)
+        {
+            RequestRefresh();
+        }
+        return true;
+    }
     if (pawnSelectionPanel_->IsActive())
     {
         return pawnSelectionPanel_->HandleKey(event);
     }
-
     // Tab belongs to RoomPanel's two-zone navigation. Handling it here would
     // trap the keyboard inside the hand because this panel uses CHAR_HOOK.
     if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB) return false;
@@ -231,13 +238,11 @@ bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
     }
     return false;
 }
-
 std::optional<domain::GameAction> GamePlayPanel::ResolveShortcutAction(const std::string& actionType) const
 {
     return shortcuts::GameShortcutResolver::ResolveAction(
         state_, lines_, actionType, linesList_->GetSelection());
 }
-
 std::string GamePlayPanel::NormalizeKey(const wxKeyEvent& event) const
 {
     return shortcuts::GameShortcutResolver::NormalizeKey(event);
