@@ -150,6 +150,8 @@ private:
     std::optional<std::size_t> selectedResultIndex_;
     std::optional<std::string> reportIdToRestore_;
     std::optional<std::string> soundIdToRestore_;
+    std::optional<std::string> pendingAmbienceUploadPath_;
+    bool uploadingCreatedAmbience_ = false;
     bool refreshBugReportsAfterCommand_ = false;
     bool refreshAreaAfterCommand_ = false;
     bool keepFocusAfterCommand_ = false;

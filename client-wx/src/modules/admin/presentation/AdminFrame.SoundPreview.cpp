@@ -9,14 +9,8 @@ namespace lila::modules::admin::presentation
 {
 bool AdminFrame::ConfirmSoundChange(const domain::AdminCommand& command)
 {
-    if (command.id != "sounds.upload" && command.id != "sounds.enable" &&
-        command.id != "sounds.clear" && !command.id.starts_with("sounds.ambience."))
-        return false;
-    wxMessageBox(command.id == "sounds.upload"
-            ? wxString(L"Le fichier audio a été enregistré.")
-            : wxString(L"La modification du son a été enregistrée."),
-        L"Gestion des sons", wxOK | wxICON_INFORMATION, this);
-    return true;
+    return command.id == "sounds.upload" || command.id == "sounds.enable" ||
+        command.id == "sounds.clear" || command.id.starts_with("sounds.ambience.");
 }
 
 void AdminFrame::PreviewSound(std::string_view soundId)

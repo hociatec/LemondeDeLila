@@ -46,6 +46,8 @@ void AdminFrame::CompleteCommand(
     loading_ = false;
     if (error.has_value() || !result.has_value())
     {
+        pendingAmbienceUploadPath_.reset();
+        uploadingCreatedAmbience_ = false;
         if (command.id == "bots.settings.get")
             openBotTimingEditorAfterRead_ = false;
         loadingReportCountsOnly_ = false;
@@ -65,6 +67,21 @@ void AdminFrame::CompleteCommand(
         FocusCurrentMenu();
         return;
     }
+    if (command.id == "sounds.ambience.create" && pendingAmbienceUploadPath_)
+    {
+        const auto soundId = result->value("soundId", std::string{});
+        const auto* upload = domain::FindAdminCommand("sounds.upload");
+        if (!soundId.empty() && upload != nullptr)
+        {
+            uploadingCreatedAmbience_ = true;
+            auto payload = nlohmann::json{{"soundId", soundId},
+                {"filePath", std::move(*pendingAmbienceUploadPath_)}};
+            pendingAmbienceUploadPath_.reset();
+            ExecuteCommand(*upload, std::move(payload), false);
+            return;
+        }
+        pendingAmbienceUploadPath_.reset();
+    }
     if (command.id == "contacts.reply")
         audioService_.Play(lila::modules::audio::domain::SoundCue::AdminContactSent);
     if (ConfirmSoundChange(command))
@@ -75,7 +92,12 @@ void AdminFrame::CompleteCommand(
     if (refreshAreaAfterCommand_)
     {
         refreshAreaAfterCommand_ = false;
-        const auto successMessage = AmbienceSuccessMessage(command, *result);
+        auto successMessage = AmbienceSuccessMessage(command, *result);
+        if (uploadingCreatedAmbience_)
+        {
+            uploadingCreatedAmbience_ = false;
+            successMessage = wxString(L"Ambiance créée et son enregistré.");
+        }
         RestoreAreaFromItem();
         SetStatus(successMessage.value_or(
             wxString(L"Modification enregistrée. Actualisation de la liste…")));
