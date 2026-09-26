@@ -1,6 +1,7 @@
 #include "modules/audio/infrastructure/AsyncAudioBackend.h"
 
 #include <algorithm>
+#include <chrono>
 #include <condition_variable>
 #include <deque>
 #include <mutex>
@@ -110,26 +111,39 @@ public:
 private:
     void Run() noexcept
     {
+        bool pumpDeferredPlayback = false;
         while (true)
         {
             std::optional<Command> command;
             {
                 std::unique_lock lock(mutex_);
-                ready_.wait(lock, [this]()
+                const auto readyToProcess = [this]()
                 {
                     return stopping_ || !foreground_.empty() || !background_.empty();
-                });
+                };
+                if (pumpDeferredPlayback && foreground_.empty() && background_.empty())
+                {
+                    ready_.wait_for(lock, std::chrono::milliseconds(10), readyToProcess);
+                }
+                else
+                {
+                    ready_.wait(lock, readyToProcess);
+                }
                 if (stopping_ && (!graceful_ || foreground_.empty()))
                 {
                     break;
                 }
-                auto& queue = foreground_.empty() ? background_ : foreground_;
-                command = queue.front();
-                queue.pop_front();
+                if (!foreground_.empty() || !background_.empty())
+                {
+                    auto& queue = foreground_.empty() ? background_ : foreground_;
+                    command = queue.front();
+                    queue.pop_front();
+                }
             }
             try
             {
-                Execute(*command);
+                if (command.has_value()) Execute(*command);
+                pumpDeferredPlayback = backend_->PumpDeferredPlayback();
             }
             catch (...)
             {

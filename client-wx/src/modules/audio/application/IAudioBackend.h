@@ -19,6 +19,9 @@ public:
     }
     virtual void SetLoop(std::optional<domain::SoundCue> cue, float volume) = 0;
     virtual void StopAll() = 0;
+    // Returns true while the backend has an event-driven audio transition to
+    // finish. The asynchronous wrapper polls it on its audio worker only.
+    virtual bool PumpDeferredPlayback() { return false; }
     virtual void RefreshAssets() {}
     virtual void FinishPlayback() {}
     virtual void ShutdownGracefully() noexcept { Shutdown(); }
