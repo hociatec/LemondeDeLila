@@ -46,11 +46,8 @@ std::optional<std::size_t> VerticalMenu::FindNextItemByInitial(
     for (std::size_t offset = 1; offset <= itemCount_; ++offset)
     {
         const std::size_t index = (currentIndex + offset) % itemCount_;
-        const wxString label = role_ == VerticalMenuRole::Entries
-            ? (index < entries_.size() && entries_[index] != nullptr
-                ? entries_[index]->GetLabel() : wxString{})
-            : (listBox_ != nullptr && index < listBox_->GetCount()
-                ? listBox_->GetString(static_cast<unsigned int>(index)) : wxString{});
+        const wxString label = listBox_ != nullptr && index < listBox_->GetCount()
+            ? listBox_->GetString(static_cast<unsigned int>(index)) : wxString{};
         std::size_t first = 0;
         while (first < label.length() && wxIsspace(label[first])) ++first;
         if (first < label.length() && wxTolower(label[first]) == normalizedInitial)

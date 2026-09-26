@@ -30,13 +30,6 @@ void VerticalMenu::ApplyTheme()
 void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
 {
     sizer_ = new wxBoxSizer(wxVERTICAL);
-    if (role_ == VerticalMenuRole::Entries)
-    {
-        SetSizer(sizer_);
-        BuildEntryLayout(items);
-        return;
-    }
-
     listBox_ = new wxListBox(
         this,
         wxID_ANY,
@@ -64,6 +57,12 @@ void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
             onActivated);
         break;
     case VerticalMenuRole::Entries:
+        // Entries used to be individually painted custom controls. Keep the
+        // semantic menu role but use the native Windows list everywhere.
+        lila::shared::accessibility::ConfigureListBoxAsAccessibleMenu(
+            *listBox_,
+            wxEmptyString,
+            onActivated);
         break;
     }
     itemIds_.clear();

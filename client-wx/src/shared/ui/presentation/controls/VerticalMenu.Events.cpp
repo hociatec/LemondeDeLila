@@ -185,19 +185,8 @@ void VerticalMenu::FocusIndex(std::size_t index, bool notify)
 
     const bool changed = selectedIndex_ != index;
     selectedIndex_ = index;
-    if (role_ == VerticalMenuRole::Entries)
-    {
-        if (index >= entries_.size() || entries_[index] == nullptr)
-        {
-            return;
-        }
-        entries_[index]->SetFocus();
-    }
-    else
-    {
-        listBox_->SetSelection(static_cast<int>(index));
-        listBox_->SetFocus();
-    }
+    listBox_->SetSelection(static_cast<int>(index));
+    listBox_->SetFocus();
     UpdateVisualSelection();
     if (notify)
     {
@@ -233,15 +222,6 @@ void VerticalMenu::NotifyActivationFeedback()
 
 void VerticalMenu::UpdateVisualSelection()
 {
-    if (role_ == VerticalMenuRole::Entries)
-    {
-        for (auto* entry : entries_)
-        {
-            entry->Refresh();
-        }
-        return;
-    }
-
     listBox_->Refresh();
 }
 }
