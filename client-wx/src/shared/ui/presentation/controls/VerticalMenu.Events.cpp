@@ -70,6 +70,14 @@ void VerticalMenu::BindListEvents()
         {
             OnListKeyDown(event);
         });
+    // Some native Windows list controls don't emit wxEVT_CHAR_HOOK for
+    // Ctrl+Home/Ctrl+End. Keep the direct key event as a fallback.
+    listBox_->Bind(
+        wxEVT_KEY_DOWN,
+        [this](wxKeyEvent& event)
+        {
+            OnListKeyDown(event);
+        });
 }
 
 void VerticalMenu::OnListSelectionChanged(wxCommandEvent& event)
