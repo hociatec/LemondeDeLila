@@ -12,7 +12,17 @@ export const jsonEventRaceSchema = object({
   diceId: id,
   playingPhase: id,
   landingEffectId: id,
-  tiles: array(object({ label: { type: 'string' }, deckId: id }, ['label']), 2),
+  tiles: array(
+    object(
+      {
+        label: { type: 'string' },
+        description: { type: 'string', minLength: 1, maxLength: 10000 },
+        deckId: id,
+      },
+      ['label'],
+    ),
+    2,
+  ),
   pawnSelection: object({ setId: id, choiceId: id }),
 });
 

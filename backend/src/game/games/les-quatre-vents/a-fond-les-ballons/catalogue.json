@@ -701,162 +701,202 @@
     {
       "type": "start",
       "label": "Case 1 — La Tanière à Tartines"
+      ,"description": "Vous commencez votre aventure à la Tanière à Tartines. Prenez une grande inspiration et sentez l'air frais de la course."
     },
     {
       "type": "bonus",
       "label": "Case 2 — Tunnel bonus"
+      ,"description": "Un tunnel secret s'ouvre entre deux racines. Vous glissez à toute vitesse et avancez de 2 cases supplémentaires."
     },
     {
       "type": "folie",
       "label": "Case 3 — Folie loufoque"
+      ,"description": "Une noix farfelue rebondit devant vous ! La folie vous emporte : piochez une carte Loufoque."
     },
     {
       "type": "neutral",
       "label": "Case 4 — Sentier tranquille"
+      ,"description": "Des feuilles mortes crissent sous vos pattes, mais vous avancez calmement."
     },
     {
       "type": "piege",
       "label": "Case 5 — Piège gluant"
+      ,"description": "Une tartine gluante traîne sur le sol. Oh non ! Vous glissez et reculez de 2 cases."
     },
     {
       "type": "glissade",
       "label": "Case 6 — Glissade"
+      ,"description": "Une flaque de confiture vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement."
     },
     {
       "type": "neutral",
       "label": "Case 7 — Sentier tranquille"
+      ,"description": "Une douce brise caresse vos moustaches. Rien à signaler ici, continuez votre route."
     },
     {
       "type": "tornade",
       "label": "Case 8 — Tornade"
+      ,"description": "Un vent fou souffle dans la clairière ! Vous échangez votre place avec un joueur de votre choix."
     },
     {
       "type": "folie",
       "label": "Case 9 — Folie loufoque"
+      ,"description": "Une gerbille farceuse vous regarde intensément. La folie s'empare de vous : piochez une carte Loufoque."
     },
     {
       "type": "neutral",
       "label": "Case 10 — Sentier tranquille"
+      ,"description": "Une clairière tranquille s'étend devant vous, idéale pour souffler un peu."
     },
     {
       "type": "bonus",
       "label": "Case 11 — Tunnel bonus"
+      ,"description": "Vous découvrez un passage rapide entre les arbres. Avancez de 2 cases supplémentaires."
     },
     {
       "type": "piege",
       "label": "Case 12 — Piège gluant"
+      ,"description": "Vous glissez sur une racine humide ! Reculez de 2 cases."
     },
     {
       "type": "glissade",
       "label": "Case 13 — Glissade"
+      ,"description": "Un petit ruisseau vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement."
     },
     {
       "type": "neutral",
       "label": "Case 14 — Sentier tranquille"
+      ,"description": "Vous passez sous un vieux chêne majestueux. Rien ne vous retient ici."
     },
     {
       "type": "folie",
       "label": "Case 15 — Folie loufoque"
+      ,"description": "Une bulle de savon géante apparaît ! Piochez une carte Loufoque et appliquez son effet."
     },
     {
       "type": "bonus",
       "label": "Case 16 — Tunnel bonus"
+      ,"description": "Un tunnel sombre et secret s'ouvre. Vous avancez de 2 cases supplémentaires."
     },
     {
       "type": "piege",
       "label": "Case 17 — Piège gluant"
+      ,"description": "Une flaque de sirop gluant vous fait perdre l'équilibre. Reculez de 2 cases."
     },
     {
       "type": "glissade",
       "label": "Case 18 — Glissade"
+      ,"description": "Le sol est recouvert de mousse glissante. Tournez sur vous-même et avancez ou reculez de 1 à 3 cases, aléatoirement."
     },
     {
       "type": "neutral",
       "label": "Case 19 — Sentier tranquille"
+      ,"description": "Une odeur de noisette flotte dans l'air. Vous pouvez avancer tranquillement."
     },
     {
       "type": "folie",
       "label": "Case 20 — Folie loufoque"
+      ,"description": "Une noix chanteuse vous perturbe. Piochez une carte Loufoque."
     },
     {
       "type": "chaton",
       "label": "Case 21 — Grand Chaton Gourmand"
+      ,"description": "Catastrophe ! Le Grand Chaton Gourmand rôde ici. Il vous attrape et vous renvoie à la case départ."
     },
     {
       "type": "bonus",
       "label": "Case 22 — Tunnel bonus"
+      ,"description": "Un petit tunnel secret se révèle derrière un buisson. Avancez de 2 cases supplémentaires."
     },
     {
       "type": "piege",
       "label": "Case 23 — Piège gluant"
+      ,"description": "Une tartine tombée vous fait glisser. Reculez de 2 cases."
     },
     {
       "type": "glissade",
       "label": "Case 24 — Glissade"
+      ,"description": "Une flaque de lait renversé vous fait tourner. Avancez ou reculez de 1 à 3 cases, aléatoirement."
     },
     {
       "type": "neutral",
       "label": "Case 25 — Sentier tranquille"
+      ,"description": "Une branche basse frôle votre museau. Rien de bien méchant ici."
     },
     {
       "type": "folie",
       "label": "Case 26 — Folie loufoque"
+      ,"description": "Un minuscule campagnol farceur surgit. Piochez une carte Loufoque."
     },
     {
       "type": "bonus",
       "label": "Case 27 — Tunnel bonus"
+      ,"description": "Vous trouvez un passage rapide entre les rochers. Avancez de 2 cases supplémentaires."
     },
     {
       "type": "piege",
       "label": "Case 28 — Piège gluant"
+      ,"description": "Une tartine gluante apparaît au détour d'un chemin. Reculez de 2 cases."
     },
     {
       "type": "glissade",
       "label": "Case 29 — Glissade"
+      ,"description": "Une feuille glissante vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement."
     },
     {
       "type": "neutral",
       "label": "Case 30 — Sentier tranquille"
+      ,"description": "Vous traversez un sentier calme bordé de fleurs. Rien ne vous retient."
     },
     {
       "type": "tornade",
       "label": "Case 31 — Tornade"
+      ,"description": "Un vent tourbillonnant soulève des feuilles et petits cailloux. Échangez votre place avec un joueur de votre choix."
     },
     {
       "type": "folie",
       "label": "Case 32 — Folie loufoque"
+      ,"description": "Une noix magique tombe juste devant vous. Piochez une carte Loufoque."
     },
     {
       "type": "bonus",
       "label": "Case 33 — Tunnel bonus"
+      ,"description": "Vous trouvez un tunnel étroit caché sous les racines. Avancez de 2 cases supplémentaires."
     },
     {
       "type": "piege",
       "label": "Case 34 — Piège gluant"
+      ,"description": "Une flaque de confiture inattendue vous fait reculer de 2 cases."
     },
     {
       "type": "glissade",
       "label": "Case 35 — Glissade"
+      ,"description": "Un ruisseau bouillonnant vous fait tourner sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement."
     },
     {
       "type": "neutral",
       "label": "Case 36 — Sentier tranquille"
+      ,"description": "Une petite clairière ensoleillée vous permet de souffler un peu."
     },
     {
       "type": "folie",
       "label": "Case 37 — Folie loufoque"
+      ,"description": "Un étrange bruit derrière un buisson vous surprend. Piochez une carte Loufoque."
     },
     {
       "type": "piege",
       "label": "Case 38 — Piège gluant"
+      ,"description": "Une tartine glissante vous fait perdre l'équilibre. Reculez de 2 cases."
     },
     {
       "type": "glissade",
       "label": "Case 39 — Glissade"
+      ,"description": "Vous glissez sur une feuille humide et tournez sur vous-même. Avancez ou reculez de 1 à 3 cases, aléatoirement."
     },
     {
       "type": "finish",
       "label": "Case 40 — La Grosse Noix Dorée"
+      ,"description": "La Grosse Noix Dorée est juste là ! Vous l'atteignez enfin et remportez la partie. Félicitations, Rongeur Suprême !"
     }
   ]
 }

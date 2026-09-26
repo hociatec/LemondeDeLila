@@ -70,6 +70,7 @@ export const jsonChainedTileRaceSchema: AuthorSchema = object({
     object({
       type: id,
       label: { type: 'string', minLength: 1, maxLength: 4000 },
+      description: { type: 'string', minLength: 1, maxLength: 10000 },
     }),
     2,
   ),

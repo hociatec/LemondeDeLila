@@ -15,6 +15,7 @@ export type BounceQuizRaceProgram = TrackRaceProgram & {
   tiles: readonly {
     n: number;
     title: string;
+    description?: string;
     type: 'start' | 'neutral' | 'card' | 'move' | 'skip' | 'finish';
     delta: number;
     skipTurns: number;
@@ -22,6 +23,7 @@ export type BounceQuizRaceProgram = TrackRaceProgram & {
   cards: readonly {
     id: number;
     title: string;
+    description?: string;
     effects: readonly GameEffectInstruction[];
     quiz?: {
       prompt: string;

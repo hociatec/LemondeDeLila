@@ -252,7 +252,9 @@ describe('À fond les ballons declarative game', () => {
       resolvedEngine?.pendingEvents?.find(
         (event) => event.type === 'pawn.landed' && event.data.position === 7,
       )?.data.tileDescription,
-    ).toBe('Effet : échangez votre place avec un autre joueur.');
+    ).toBe(
+      'Un vent fou souffle dans la clairière ! Vous échangez votre place avec un joueur de votre choix.',
+    );
     const tornadoEvents = resolvedEngine?.pendingEvents ?? [];
     const swapAnnouncementIndex = tornadoEvents.findIndex(
       (event) =>

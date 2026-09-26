@@ -13,6 +13,7 @@ export type SpeciesTroopsProgram = {
   cards: readonly {
     id: string;
     name: string;
+    description?: string;
     type: 'monkey' | 'action' | 'trap' | 'joker';
     species?: SpeciesSpecies;
     action?: string;

@@ -5,210 +5,240 @@
       "name": "Capucin malicieux",
       "type": "monkey",
       "species": "capucin",
-      "effects": []
+      "effects": [],
+      "description": "Petit mais rusé, le capucin est un véritable bricoleur de la jungle. Vous l’observez utiliser des cailloux pour casser des noix et des bâtons afin d'attraper des insectes."
     },
     {
       "id": "monkey-capucin-2",
       "name": "Capucin malicieux",
       "type": "monkey",
       "species": "capucin",
-      "effects": []
+      "effects": [],
+      "description": "Quand il s’ennuie, il embête ses copains… en leur lançant des fruits !"
     },
     {
       "id": "monkey-capucin-3",
       "name": "Capucin malicieux",
       "type": "monkey",
       "species": "capucin",
-      "effects": []
+      "effects": [],
+      "description": "Vous découvrez qu’il peut résoudre des puzzles simples. Un vrai génie de la jungle !"
     },
     {
       "id": "monkey-capucin-4",
       "name": "Capucin malicieux",
       "type": "monkey",
       "species": "capucin",
-      "effects": []
+      "effects": [],
+      "description": "Il adore jouer avec tout ce qu’il trouve, surtout si cela fait du bruit !"
     },
     {
       "id": "monkey-capucin-5",
       "name": "Capucin malicieux",
       "type": "monkey",
       "species": "capucin",
-      "effects": []
+      "effects": [],
+      "description": "Agile et curieux, il observe tout et ne rate jamais une occasion de faire le clown."
     },
     {
       "id": "monkey-capucin-6",
       "name": "Capucin malicieux",
       "type": "monkey",
       "species": "capucin",
-      "effects": []
+      "effects": [],
+      "description": "Vous vous amusez à suivre ses astuces pour attraper sa nourriture ou échapper aux prédateurs."
     },
     {
       "id": "monkey-mandrill-1",
       "name": "Mandrill paradeur",
       "type": "monkey",
       "species": "mandrill",
-      "effects": []
+      "effects": [],
+      "description": "Impossible de le rater : son visage coloré rouge et bleu attire votre regard immédiatement."
     },
     {
       "id": "monkey-mandrill-2",
       "name": "Mandrill paradeur",
       "type": "monkey",
       "species": "mandrill",
-      "effects": []
+      "effects": [],
+      "description": "Le mandrill est le roi du style et adore parader dans la forêt."
     },
     {
       "id": "monkey-mandrill-3",
       "name": "Mandrill paradeur",
       "type": "monkey",
       "species": "mandrill",
-      "effects": []
+      "effects": [],
+      "description": "Attention, son regard fixe peut impressionner même un gorille !"
     },
     {
       "id": "monkey-mandrill-4",
       "name": "Mandrill paradeur",
       "type": "monkey",
       "species": "mandrill",
-      "effects": []
+      "effects": [],
+      "description": "Vous voyez qu’il est très sociable dans son groupe, tout en restant impressionnant."
     },
     {
       "id": "monkey-mandrill-5",
       "name": "Mandrill paradeur",
       "type": "monkey",
       "species": "mandrill",
-      "effects": []
+      "effects": [],
+      "description": "Ses couleurs servent à signaler son état d’humeur ou sa dominance."
     },
     {
       "id": "monkey-mandrill-6",
       "name": "Mandrill paradeur",
       "type": "monkey",
       "species": "mandrill",
-      "effects": []
+      "effects": [],
+      "description": "Il adore jouer des tours… ou simplement épater la galerie avec son look."
     },
     {
       "id": "monkey-gibbon-1",
       "name": "Gibbon bondissant",
       "type": "monkey",
       "species": "gibbon",
-      "effects": []
+      "effects": [],
+      "description": "Ce funambule des arbres peut faire des bonds de plusieurs mètres avec grâce."
     },
     {
       "id": "monkey-gibbon-2",
       "name": "Gibbon bondissant",
       "type": "monkey",
       "species": "gibbon",
-      "effects": []
+      "effects": [],
+      "description": "Son cri aigu et mélodique résonne dans toute la jungle au lever du soleil."
     },
     {
       "id": "monkey-gibbon-3",
       "name": "Gibbon bondissant",
       "type": "monkey",
       "species": "gibbon",
-      "effects": []
+      "effects": [],
+      "description": "Vous l’observez comme un vrai chanteur d’opéra… avec de longs bras."
     },
     {
       "id": "monkey-gibbon-4",
       "name": "Gibbon bondissant",
       "type": "monkey",
       "species": "gibbon",
-      "effects": []
+      "effects": [],
+      "description": "Il se déplace avec une agilité incroyable, de liane en liane."
     },
     {
       "id": "monkey-gibbon-5",
       "name": "Gibbon bondissant",
       "type": "monkey",
       "species": "gibbon",
-      "effects": []
+      "effects": [],
+      "description": "Ses chants rythment la vie de la forêt et avertissent ses voisins."
     },
     {
       "id": "monkey-gibbon-6",
       "name": "Gibbon bondissant",
       "type": "monkey",
       "species": "gibbon",
-      "effects": []
+      "effects": [],
+      "description": "Toujours en mouvement, il aime attirer l’attention par ses acrobaties."
     },
     {
       "id": "monkey-babouin-1",
       "name": "Babouin observateur",
       "type": "monkey",
       "species": "babouin",
-      "effects": []
+      "effects": [],
+      "description": "Plutôt massif, le babouin peut sembler grognon."
     },
     {
       "id": "monkey-babouin-2",
       "name": "Babouin observateur",
       "type": "monkey",
       "species": "babouin",
-      "effects": []
+      "effects": [],
+      "description": "Pourtant, il est très sociable et vit en grandes bandes."
     },
     {
       "id": "monkey-babouin-3",
       "name": "Babouin observateur",
       "type": "monkey",
       "species": "babouin",
-      "effects": []
+      "effects": [],
+      "description": "Son péché mignon ? Piquer des snacks aux touristes imprudents."
     },
     {
       "id": "monkey-babouin-4",
       "name": "Babouin observateur",
       "type": "monkey",
       "species": "babouin",
-      "effects": []
+      "effects": [],
+      "description": "Vous le voyez jouer avec les plus jeunes de la troupe et leur apprendre les codes sociaux."
     },
     {
       "id": "monkey-babouin-5",
       "name": "Babouin observateur",
       "type": "monkey",
       "species": "babouin",
-      "effects": []
+      "effects": [],
+      "description": "Méfiant mais malin, il sait détecter le danger et avertir les siens."
     },
     {
       "id": "monkey-babouin-6",
       "name": "Babouin observateur",
       "type": "monkey",
       "species": "babouin",
-      "effects": []
+      "effects": [],
+      "description": "Ses cris et mimiques sont un langage complexe qui guide le groupe."
     },
     {
       "id": "monkey-macaque-1",
       "name": "Macaque zen",
       "type": "monkey",
       "species": "macaque",
-      "effects": []
+      "effects": [],
+      "description": "Véritable amateur de bien-être, le macaque japonais adore se prélasser dans des sources chaudes."
     },
     {
       "id": "monkey-macaque-2",
       "name": "Macaque zen",
       "type": "monkey",
       "species": "macaque",
-      "effects": []
+      "effects": [],
+      "description": "Pendant que d’autres singes cherchent de la nourriture, il se détend façon spa."
     },
     {
       "id": "monkey-macaque-3",
       "name": "Macaque zen",
       "type": "monkey",
       "species": "macaque",
-      "effects": []
+      "effects": [],
+      "description": "Les yeux fermés, le poil humide, il incarne la zénitude."
     },
     {
       "id": "monkey-macaque-4",
       "name": "Macaque zen",
       "type": "monkey",
       "species": "macaque",
-      "effects": []
+      "effects": [],
+      "description": "Il profite de l’eau chaude pour nettoyer son pelage et se relaxer."
     },
     {
       "id": "monkey-macaque-5",
       "name": "Macaque zen",
       "type": "monkey",
       "species": "macaque",
-      "effects": []
+      "effects": [],
+      "description": "Curieux mais pacifique, il observe son environnement avec calme."
     },
     {
       "id": "monkey-macaque-6",
       "name": "Macaque zen",
       "type": "monkey",
       "species": "macaque",
-      "effects": []
+      "effects": [],
+      "description": "Il aime partager les bains chauds avec ses amis, tout en restant maître du lieu."
     },
     {
       "id": "action-vol-de-banane-1",
@@ -225,7 +255,8 @@
             "optional": false
           }
         }
-      ]
+      ],
+      "description": "“Ce n’est pas du vol si c’est pour manger !” Vous volez une carte au hasard à un autre joueur. Avec un sourire en coin, bien sûr."
     },
     {
       "id": "action-vol-de-banane-2",
@@ -242,7 +273,8 @@
             "optional": false
           }
         }
-      ]
+      ],
+      "description": "“Ce n’est pas du vol si c’est pour manger !” Vous volez une carte au hasard à un autre joueur. Avec un sourire en coin, bien sûr."
     },
     {
       "id": "action-vol-de-banane-3",
@@ -259,7 +291,8 @@
             "optional": false
           }
         }
-      ]
+      ],
+      "description": "“Ce n’est pas du vol si c’est pour manger !” Vous volez une carte au hasard à un autre joueur. Avec un sourire en coin, bien sûr."
     },
     {
       "id": "action-vol-de-banane-4",
@@ -276,7 +309,8 @@
             "optional": false
           }
         }
-      ]
+      ],
+      "description": "“Ce n’est pas du vol si c’est pour manger !” Vous volez une carte au hasard à un autre joueur. Avec un sourire en coin, bien sûr."
     },
     {
       "id": "action-vol-de-banane-5",
@@ -293,7 +327,8 @@
             "optional": false
           }
         }
-      ]
+      ],
+      "description": "“Ce n’est pas du vol si c’est pour manger !” Vous volez une carte au hasard à un autre joueur. Avec un sourire en coin, bien sûr."
     },
     {
       "id": "action-cris-de-la-jungle-1",
@@ -311,7 +346,8 @@
             "optional": false
           }
         }
-      ]
+      ],
+      "description": "“OUAAH OUAAH AHH AHH !” Vous regardez tout le monde… et échangez une carte avec le joueur de votre choix. C’est le chaos dans la canopée !"
     },
     {
       "id": "action-cris-de-la-jungle-2",
@@ -329,7 +365,8 @@
             "optional": false
           }
         }
-      ]
+      ],
+      "description": "“OUAAH OUAAH AHH AHH !” Vous regardez tout le monde… et échangez une carte avec le joueur de votre choix. C’est le chaos dans la canopée !"
     },
     {
       "id": "action-cris-de-la-jungle-3",
@@ -347,7 +384,8 @@
             "optional": false
           }
         }
-      ]
+      ],
+      "description": "“OUAAH OUAAH AHH AHH !” Vous regardez tout le monde… et échangez une carte avec le joueur de votre choix. C’est le chaos dans la canopée !"
     },
     {
       "id": "action-cris-de-la-jungle-4",
@@ -365,7 +403,8 @@
             "optional": false
           }
         }
-      ]
+      ],
+      "description": "“OUAAH OUAAH AHH AHH !” Vous regardez tout le monde… et échangez une carte avec le joueur de votre choix. C’est le chaos dans la canopée !"
     },
     {
       "id": "action-cris-de-la-jungle-5",
@@ -383,7 +422,8 @@
             "optional": false
           }
         }
-      ]
+      ],
+      "description": "“OUAAH OUAAH AHH AHH !” Vous regardez tout le monde… et échangez une carte avec le joueur de votre choix. C’est le chaos dans la canopée !"
     },
     {
       "id": "action-grimpeur-fou-1",
@@ -398,7 +438,8 @@
           "count": 2,
           "recycle": true
         }
-      ]
+      ],
+      "description": "“Vous avez grimpé trop haut, maintenant il faut redescendre…” Vous piochez deux cartes au lieu d’une. Vous risquez de tomber sur un piège, mais qui ne tente rien…"
     },
     {
       "id": "action-grimpeur-fou-2",
@@ -413,7 +454,8 @@
           "count": 2,
           "recycle": true
         }
-      ]
+      ],
+      "description": "“Vous avez grimpé trop haut, maintenant il faut redescendre…” Vous piochez deux cartes au lieu d’une. Vous risquez de tomber sur un piège, mais qui ne tente rien…"
     },
     {
       "id": "action-grimpeur-fou-3",
@@ -428,7 +470,8 @@
           "count": 2,
           "recycle": true
         }
-      ]
+      ],
+      "description": "“Vous avez grimpé trop haut, maintenant il faut redescendre…” Vous piochez deux cartes au lieu d’une. Vous risquez de tomber sur un piège, mais qui ne tente rien…"
     },
     {
       "id": "action-grimpeur-fou-4",
@@ -443,7 +486,8 @@
           "count": 2,
           "recycle": true
         }
-      ]
+      ],
+      "description": "“Vous avez grimpé trop haut, maintenant il faut redescendre…” Vous piochez deux cartes au lieu d’une. Vous risquez de tomber sur un piège, mais qui ne tente rien…"
     },
     {
       "id": "action-grimpeur-fou-5",
@@ -458,7 +502,8 @@
           "count": 2,
           "recycle": true
         }
-      ]
+      ],
+      "description": "“Vous avez grimpé trop haut, maintenant il faut redescendre…” Vous piochez deux cartes au lieu d’une. Vous risquez de tomber sur un piège, mais qui ne tente rien…"
     },
     {
       "id": "trap-piege-a-noix-de-coco-1",
@@ -473,7 +518,8 @@
             "kind": "self"
           }
         }
-      ]
+      ],
+      "description": "“CLONK !” Une noix de coco tombe pile sur votre tête. Vous perdez votre prochain tour, mais au moins, vous avez un bon prétexte pour râler."
     },
     {
       "id": "trap-piege-a-noix-de-coco-2",
@@ -488,7 +534,8 @@
             "kind": "self"
           }
         }
-      ]
+      ],
+      "description": "“CLONK !” Une noix de coco tombe pile sur votre tête. Vous perdez votre prochain tour, mais au moins, vous avez un bon prétexte pour râler."
     },
     {
       "id": "trap-piege-a-noix-de-coco-3",
@@ -503,7 +550,8 @@
             "kind": "self"
           }
         }
-      ]
+      ],
+      "description": "“CLONK !” Une noix de coco tombe pile sur votre tête. Vous perdez votre prochain tour, mais au moins, vous avez un bon prétexte pour râler."
     },
     {
       "id": "trap-piege-a-noix-de-coco-4",
@@ -518,7 +566,8 @@
             "kind": "self"
           }
         }
-      ]
+      ],
+      "description": "“CLONK !” Une noix de coco tombe pile sur votre tête. Vous perdez votre prochain tour, mais au moins, vous avez un bon prétexte pour râler."
     },
     {
       "id": "trap-piege-a-noix-de-coco-5",
@@ -533,7 +582,8 @@
             "kind": "self"
           }
         }
-      ]
+      ],
+      "description": "“CLONK !” Une noix de coco tombe pile sur votre tête. Vous perdez votre prochain tour, mais au moins, vous avez un bon prétexte pour râler."
     },
     {
       "id": "trap-tigre-rodeur-1",
@@ -547,7 +597,8 @@
           "handId": "players",
           "count": 1
         }
-      ]
+      ],
+      "description": "“Un rugissement retentit… et vous lâchez une carte !” Vous défaussez une carte au hasard de votre main. Le tigre ne vous a pas attrapé, mais il vous a bien stressé !"
     },
     {
       "id": "trap-tigre-rodeur-2",
@@ -561,7 +612,8 @@
           "handId": "players",
           "count": 1
         }
-      ]
+      ],
+      "description": "“Un rugissement retentit… et vous lâchez une carte !” Vous défaussez une carte au hasard de votre main. Le tigre ne vous a pas attrapé, mais il vous a bien stressé !"
     },
     {
       "id": "trap-tigre-rodeur-3",
@@ -575,7 +627,8 @@
           "handId": "players",
           "count": 1
         }
-      ]
+      ],
+      "description": "“Un rugissement retentit… et vous lâchez une carte !” Vous défaussez une carte au hasard de votre main. Le tigre ne vous a pas attrapé, mais il vous a bien stressé !"
     },
     {
       "id": "trap-tigre-rodeur-4",
@@ -589,7 +642,8 @@
           "handId": "players",
           "count": 1
         }
-      ]
+      ],
+      "description": "“Un rugissement retentit… et vous lâchez une carte !” Vous défaussez une carte au hasard de votre main. Le tigre ne vous a pas attrapé, mais il vous a bien stressé !"
     },
     {
       "id": "trap-tigre-rodeur-5",
@@ -603,37 +657,43 @@
           "handId": "players",
           "count": 1
         }
-      ]
+      ],
+      "description": "“Un rugissement retentit… et vous lâchez une carte !” Vous défaussez une carte au hasard de votre main. Le tigre ne vous a pas attrapé, mais il vous a bien stressé !"
     },
     {
       "id": "joker-singe-deguise-1",
       "name": "Singe déguisé",
       "type": "joker",
-      "effects": []
+      "effects": [],
+      "description": "“Avec ses lunettes de soleil, son foulard à pois et son air suspect, ce singe se fait passer pour… un gibbon ? Ou un mandrill ?” Vous pouvez l’utiliser comme n’importe quelle espèce pour compléter votre troupe. Mais méfiez-vous, il aime le déguisement plus que l’engagement."
     },
     {
       "id": "joker-singe-deguise-2",
       "name": "Singe déguisé",
       "type": "joker",
-      "effects": []
+      "effects": [],
+      "description": "“Avec ses lunettes de soleil, son foulard à pois et son air suspect, ce singe se fait passer pour… un gibbon ? Ou un mandrill ?” Vous pouvez l’utiliser comme n’importe quelle espèce pour compléter votre troupe. Mais méfiez-vous, il aime le déguisement plus que l’engagement."
     },
     {
       "id": "joker-singe-deguise-3",
       "name": "Singe déguisé",
       "type": "joker",
-      "effects": []
+      "effects": [],
+      "description": "“Avec ses lunettes de soleil, son foulard à pois et son air suspect, ce singe se fait passer pour… un gibbon ? Ou un mandrill ?” Vous pouvez l’utiliser comme n’importe quelle espèce pour compléter votre troupe. Mais méfiez-vous, il aime le déguisement plus que l’engagement."
     },
     {
       "id": "joker-singe-deguise-4",
       "name": "Singe déguisé",
       "type": "joker",
-      "effects": []
+      "effects": [],
+      "description": "“Avec ses lunettes de soleil, son foulard à pois et son air suspect, ce singe se fait passer pour… un gibbon ? Ou un mandrill ?” Vous pouvez l’utiliser comme n’importe quelle espèce pour compléter votre troupe. Mais méfiez-vous, il aime le déguisement plus que l’engagement."
     },
     {
       "id": "joker-singe-deguise-5",
       "name": "Singe déguisé",
       "type": "joker",
-      "effects": []
+      "effects": [],
+      "description": "“Avec ses lunettes de soleil, son foulard à pois et son air suspect, ce singe se fait passer pour… un gibbon ? Ou un mandrill ?” Vous pouvez l’utiliser comme n’importe quelle espèce pour compléter votre troupe. Mais méfiez-vous, il aime le déguisement plus que l’engagement."
     }
   ],
   "cardIds": [

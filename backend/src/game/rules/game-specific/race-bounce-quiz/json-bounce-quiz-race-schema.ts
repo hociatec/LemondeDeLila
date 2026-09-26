@@ -32,6 +32,7 @@ export const jsonBounceQuizRaceSchema = object({
     object({
       n: positive,
       title: text,
+      description: text,
       type: { enum: ['start', 'neutral', 'card', 'move', 'skip', 'finish'] },
       delta: integer,
       skipTurns: { type: 'integer', minimum: 0, maximum: 1000 },
@@ -43,6 +44,7 @@ export const jsonBounceQuizRaceSchema = object({
       {
         id: positive,
         title: text,
+        description: text,
         effects: array(ref('effect')),
         quiz: object(
           {

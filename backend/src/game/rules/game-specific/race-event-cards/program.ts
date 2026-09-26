@@ -4,6 +4,6 @@ export type EventRaceProgram = {
   diceId: string;
   playingPhase: string;
   landingEffectId: string;
-  tiles: readonly { label: string; deckId?: string }[];
+  tiles: readonly { label: string; description?: string; deckId?: string }[];
   pawnSelection: { setId: string; choiceId: string };
 };

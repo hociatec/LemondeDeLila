@@ -26,6 +26,7 @@ export const jsonSpeciesTroopsSchema = object({
       {
         id,
         name: { type: 'string', minLength: 1, maxLength: 1000 },
+        description: { type: 'string', minLength: 1, maxLength: 10000 },
         type: { enum: ['monkey', 'action', 'trap', 'joker'] },
         species,
         action: id,

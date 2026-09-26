@@ -2,6 +2,7 @@ import type { EffectCard } from '../../../engine/sdk/extension-contracts';
 
 export type ProfessionFamilyCard = EffectCard<string> & {
   name: string;
+  description?: string;
   type: 'metier' | 'special';
   family?: string;
 };

@@ -17,6 +17,7 @@
   "phases": { "playing": { "actions": ["avancer"], "terminal": true } },
   "actions": {
     "avancer": {
+      "documentation": "Avancez d’une case, gagnez une étoile, puis terminez votre tour.",
       "effects": [
         { "kind": "move", "trackId": "course", "spaces": 1 },
         { "kind": "gain-resource", "resource": "etoiles", "amount": 1 },
