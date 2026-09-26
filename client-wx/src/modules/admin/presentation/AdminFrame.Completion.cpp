@@ -17,6 +17,24 @@
 
 namespace lila::modules::admin::presentation
 {
+namespace
+{
+std::optional<wxString> AmbienceSuccessMessage(
+    const domain::AdminCommand& command, const nlohmann::json& result)
+{
+    const auto name = lila::shared::text::FromUtf8(result.value("name", std::string{}));
+    if (command.id == "sounds.ambience.create")
+        return name.empty() ? wxString(L"Ambiance créée.") : L"Ambiance « " + name + L" » créée.";
+    if (command.id == "sounds.ambience.rename")
+        return name.empty() ? wxString(L"Ambiance renommée.") : L"Ambiance renommée : « " + name + L" ».";
+    if (command.id == "sounds.ambience.enable")
+        return result.value("enabled", false) ? wxString(L"Ambiance activée.")
+                                             : wxString(L"Ambiance désactivée.");
+    if (command.id == "sounds.ambience.delete") return wxString(L"Ambiance supprimée.");
+    return std::nullopt;
+}
+}
+
 void AdminFrame::CompleteCommand(
     lila::shared::concurrency::AsyncRequestSlot::Token generation,
     const domain::AdminCommand& command,
@@ -57,8 +75,10 @@ void AdminFrame::CompleteCommand(
     if (refreshAreaAfterCommand_)
     {
         refreshAreaAfterCommand_ = false;
+        const auto successMessage = AmbienceSuccessMessage(command, *result);
         RestoreAreaFromItem();
-        SetStatus(wxString(L"Modification enregistrée. Actualisation de la liste…"));
+        SetStatus(successMessage.value_or(
+            wxString(L"Modification enregistrée. Actualisation de la liste…")));
         const auto& area = domain::GetAdminAreas()[selectedSection_];
         if (area.id == "reports")
         {
@@ -110,7 +130,8 @@ void AdminFrame::CompleteCommand(
     ShowResult(command, *result);
     if (countsOnly || command.id == "bugs.get") return;
     if (announceLifecycle)
-        SetStatus(wxString(L"Opération terminée : ") + wxString(command.label));
+        SetStatus(AmbienceSuccessMessage(command, *result).value_or(
+            wxString(L"Opération terminée : ") + wxString(command.label)));
     if (keepFocusAfterCommand_)
     {
         keepFocusAfterCommand_ = false;
