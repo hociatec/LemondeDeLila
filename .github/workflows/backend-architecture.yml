@@ -1,7 +1,6 @@
 name: Backend architecture
 
 on:
-  push:
   pull_request:
   workflow_dispatch:
 
