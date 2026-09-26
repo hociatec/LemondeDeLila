@@ -14,6 +14,8 @@ struct HttpRequest final
     std::string body;
     std::string contentType;
     std::map<std::string, std::string> headers;
+    int sendTimeoutMs = 0;
+    int receiveTimeoutMs = 0;
 };
 
 struct HttpResponse final

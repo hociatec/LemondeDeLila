@@ -107,8 +107,9 @@ HttpResponse AuthenticatedHttpClient::Send(
     if (!session) throw std::runtime_error(lila::shared::errors::HttpSessionCreationFailed);
     if (!WinHttpSetTimeouts(
             session.Get(), NetworkTimeouts::ResolveAndConnectMs,
-            NetworkTimeouts::ResolveAndConnectMs, NetworkTimeouts::SendMs,
-            NetworkTimeouts::ReceiveMs))
+            NetworkTimeouts::ResolveAndConnectMs,
+            request.sendTimeoutMs > 0 ? request.sendTimeoutMs : NetworkTimeouts::SendMs,
+            request.receiveTimeoutMs > 0 ? request.receiveTimeoutMs : NetworkTimeouts::ReceiveMs))
         throw std::runtime_error(lila::shared::errors::HttpTimeoutConfigurationFailed);
 
     lila::shared::network::winhttp::Handle connection(
