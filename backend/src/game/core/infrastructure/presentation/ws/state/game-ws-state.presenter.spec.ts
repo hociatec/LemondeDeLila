@@ -943,9 +943,9 @@ describe('GameWsStatePresenter', () => {
     );
     expect(messages).toEqual([
       'Vous devez piocher une carte. Appuyez sur Espace.',
-      'Bonus : vous avancez de 2 cases.',
+      'Effet : vous avancez de 2 cases.',
       'Mina doit piocher une carte.',
-      'Bonus : Mina avance de 2 cases.',
+      'Effet : Mina avance de 2 cases.',
       'Mina échange sa place avec vous.',
     ]);
   });

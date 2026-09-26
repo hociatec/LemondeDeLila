@@ -143,18 +143,18 @@ export class BoardLandingResolver<TState extends object> {
   ): void {
     switch (operation.kind) {
       case 'move':
+        this.announceMovement(playerId, operation.distance, ctx);
         this.move(playerId, operation.distance, depth, ctx);
         return;
-      case 'random-move':
-        this.move(
-          playerId,
+      case 'random-move': {
+        const distance =
           (operation.minimum +
             ctx.random.int(operation.maximum - operation.minimum + 1)) *
-            operation.direction,
-          depth,
-          ctx,
-        );
+          operation.direction;
+        this.announceMovement(playerId, distance, ctx);
+        this.move(playerId, distance, depth, ctx);
         return;
+      }
       case 'choose-direction':
         if (!this.program.directionChoiceId)
           throw new GameStateViolationError('Missing direction choice');
@@ -210,5 +210,13 @@ export class BoardLandingResolver<TState extends object> {
         }
       }
     }
+  }
+
+  private announceMovement(
+    playerId: number,
+    spaces: number,
+    ctx: GameContext<TState>,
+  ): void {
+    ctx.events.message('game.pawn.bonus-advance', { playerId, spaces });
   }
 }

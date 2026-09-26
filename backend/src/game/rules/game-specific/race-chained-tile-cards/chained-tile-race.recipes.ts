@@ -170,7 +170,12 @@ function land(
   } else if (rule.kind === 'random-move') {
     const magnitude = ctx.random.int(rule.maximum) + 1;
     const direction = ctx.random.int(2) === 0 ? 1 : -1;
-    moveBy(program, state, playerId, magnitude * direction, depth, ctx);
+    const distance = magnitude * direction;
+    ctx.events.message('game.pawn.bonus-advance', {
+      playerId,
+      spaces: distance,
+    });
+    moveBy(program, state, playerId, distance, depth, ctx);
   } else if (rule.kind === 'choose-swap') {
     ctx.effects.schedule(
       {
@@ -282,15 +287,14 @@ function effects(program: ChainedTileRaceProgram) {
     ),
     'race-chained-tile-cards.random-move': defineEmptyEffect<State>(
       ({ state, targetPlayerIds, ctx }) => {
-        for (const playerId of targetPlayerIds)
-          moveBy(
-            program,
-            state,
+        for (const playerId of targetPlayerIds) {
+          const distance = ctx.random.int(2) === 0 ? -1 : 1;
+          ctx.events.message('game.pawn.bonus-advance', {
             playerId,
-            ctx.random.int(2) === 0 ? -1 : 1,
-            0,
-            ctx,
-          );
+            spaces: distance,
+          });
+          moveBy(program, state, playerId, distance, 0, ctx);
+        }
       },
     ),
     'race-chained-tile-cards.finish-if-slide': defineEmptyEffect<State>(
