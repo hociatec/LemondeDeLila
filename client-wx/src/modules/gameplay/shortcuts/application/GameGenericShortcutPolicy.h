@@ -15,7 +15,6 @@ public:
     {
         // Reserved client-wide gameplay keys: their availability must not
         // depend on shortcuts declared by an individual game.
-        if (normalizedKey == "T") return "current-turn";
         if (state.kits.movement || state.kits.pawns)
         {
             if (normalizedKey == "P") return "position";
