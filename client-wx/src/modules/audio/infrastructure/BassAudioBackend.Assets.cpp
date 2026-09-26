@@ -11,18 +11,7 @@ bool BassAudioBackend::PumpDeferredPlayback()
         streams_.Clear();
         if (loopCue_) SetLoop(loopCue_, loopVolume_);
     }
-    if (!deferredLoopCue_.has_value()) return refreshPending_;
-    if (clientOpenedChannel_ != 0 &&
-        BASS_ChannelIsActive(clientOpenedChannel_) == BASS_ACTIVE_PLAYING)
-    {
-        return true;
-    }
-    clientOpenedChannel_ = 0;
-    const auto cue = *deferredLoopCue_;
-    const float volume = deferredLoopVolume_;
-    deferredLoopCue_.reset();
-    streams_.StartOrUpdate(cue, assetPaths_.Resolve(cue), volume, shuttingDown_);
-    return false;
+    return refreshPending_;
 }
 
 void BassAudioBackend::RefreshAssets()
