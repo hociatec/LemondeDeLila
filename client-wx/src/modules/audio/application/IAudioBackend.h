@@ -17,6 +17,7 @@ public:
     {
         if (cue) Play(*cue, 1.0F);
     }
+    virtual void TogglePreviewPause() {}
     virtual void SetLoop(std::optional<domain::SoundCue> cue, float volume) = 0;
     virtual void StopAll() = 0;
     // Returns true while the backend has deferred maintenance to finish.

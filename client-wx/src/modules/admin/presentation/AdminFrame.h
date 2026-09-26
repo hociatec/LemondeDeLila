@@ -151,6 +151,8 @@ private:
     std::optional<std::string> reportIdToRestore_;
     std::optional<std::string> soundIdToRestore_;
     std::optional<std::string> pendingAmbienceUploadPath_;
+    bool ambiencePreviewPlaying_ = false;
+    bool ambiencePreviewPaused_ = false;
     bool uploadingCreatedAmbience_ = false;
     bool refreshBugReportsAfterCommand_ = false;
     bool refreshAreaAfterCommand_ = false;

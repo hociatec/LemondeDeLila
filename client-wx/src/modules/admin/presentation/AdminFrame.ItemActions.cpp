@@ -149,9 +149,15 @@ void AdminFrame::OpenResultActions(std::size_t index)
     }
     else if (kind == domain::AdminItemKind::Ambience)
     {
+        const auto soundId = contextItem_.value("soundId", std::string{});
+        if (soundId.empty())
+        {
+            SetStatus(L"Identifiant de l’ambiance absent.", true);
+            return;
+        }
         const bool enabled = contextItem_.value("enabled", false);
         add("sounds.preview", L"Aperçu", {}, true);
-        add("sounds.upload", L"Changer le son");
+        add("sounds.upload", L"Changer le son", {{"soundId", soundId}});
         add("sounds.ambience.rename", L"Renommer");
         add("sounds.ambience.enable", enabled ? L"Désactiver" : L"Activer",
             {{"enabled", !enabled}}, true);

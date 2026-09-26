@@ -127,6 +127,15 @@ void BassAudioBackend::Preview(std::optional<domain::SoundCue> cue)
     }
 }
 
+void BassAudioBackend::TogglePreviewPause()
+{
+    if (previewStream_ == 0) return;
+    if (BASS_ChannelIsActive(previewStream_) == BASS_ACTIVE_PLAYING)
+        BASS_ChannelPause(previewStream_);
+    else if (BASS_ChannelIsActive(previewStream_) == BASS_ACTIVE_PAUSED)
+        BASS_ChannelPlay(previewStream_, FALSE);
+}
+
 void BassAudioBackend::StopAll()
 {
     loopCue_.reset();

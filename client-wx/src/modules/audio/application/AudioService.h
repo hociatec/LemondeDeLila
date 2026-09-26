@@ -18,6 +18,7 @@ public:
 
     void Play(domain::SoundCue cue) override;
     void Preview(std::optional<domain::SoundCue> cue) override;
+    void TogglePreviewPause() override;
     void StartLoop(domain::SoundCue cue) override;
     void StopLoop() override;
     void StartTableAmbience(std::string_view soundId) override;
