@@ -20,6 +20,7 @@ public:
     void Preview(std::optional<domain::SoundCue> cue) override;
     void SetLoop(std::optional<domain::SoundCue> cue, float volume) override;
     void StopAll() override;
+    bool PumpDeferredPlayback() override;
     void RefreshAssets() override;
     void FinishPlayback() override;
     void InterruptPlayback() noexcept override;
@@ -38,5 +39,8 @@ private:
     bool modulePinned_ = false;
     std::optional<domain::SoundCue> loopCue_;
     float loopVolume_ = 0.0F;
+    HCHANNEL clientOpenedChannel_ = 0;
+    std::optional<domain::SoundCue> deferredLoopCue_;
+    float deferredLoopVolume_ = 0.0F;
 };
 }
