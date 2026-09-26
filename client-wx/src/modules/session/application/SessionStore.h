@@ -26,7 +26,9 @@ public:
         std::unique_ptr<domain::ISessionRepository> repository,
         std::unique_ptr<ISessionRefresher> refresher = {});
 
-    void Open(domain::Session session, bool persist);
+    // Returns whether the session was persisted. A local persistence failure
+    // must never turn a successful server login into an application failure.
+    bool Open(domain::Session session, bool persist);
     void Clear();
     void SetSessionExpiredHandler(std::function<void()> handler);
     [[nodiscard]] std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle>

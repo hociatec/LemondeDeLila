@@ -73,9 +73,15 @@ void AppNavigator::OnLoginSucceeded(const modules::user::domain::AuthenticationR
     session.refreshToken = result.refreshToken;
     session.roles = result.roles;
     session.expiresAt = result.expiresAt;
-    sessionStore_.Open(
-        std::move(session),
-        result.rememberSession && optionsStore_.Current().general.restoreSessionOnStartup);
+    const bool rememberRequested = result.rememberSession &&
+        optionsStore_.Current().general.restoreSessionOnStartup;
+    const bool persisted = sessionStore_.Open(std::move(session), rememberRequested);
+    if (rememberRequested && !persisted)
+    {
+        lila::shared::logging::LogWarning(
+            "Authentication",
+            "Login succeeded but the session could not be retained on this Windows profile.");
+    }
     ShowSession(0, true);
 }
 

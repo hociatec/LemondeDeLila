@@ -123,6 +123,11 @@ void VerticalMenu::OnListKeyDown(wxKeyEvent& event)
         event.Skip();
         return;
     }
+    if (FocusBoundaryFromKey(event) || FocusByInitialFromKey(event, selectedIndex_))
+    {
+        event.Skip(false);
+        return;
+    }
 
     switch (key)
     {
@@ -148,6 +153,12 @@ void VerticalMenu::OnListKeyDown(wxKeyEvent& event)
         {
             OnListActivated(selectedIndex_);
         }
+        event.Skip(false);
+        return;
+    case WXK_SPACE:
+    case WXK_NUMPAD_SPACE:
+        // Espace sert uniquement à lire/naviguer. Il ne doit jamais ouvrir
+        // un élément de menu ou de liste.
         event.Skip(false);
         return;
     default:

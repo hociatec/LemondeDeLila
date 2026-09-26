@@ -117,6 +117,7 @@ int main()
         run("SessionClearWipesRefreshToken", TestSessionClearWipesRefreshToken);
         run("SessionMovePreservesSecrets", TestSessionMovePreservesSecrets);
         run("SessionStoreRestoreLoadsPersistedSession", TestSessionStoreRestoreLoadsPersistedSession);
+        run("SessionStoreKeepsLoginWhenPersistenceFails", TestSessionStoreKeepsLoginWhenPersistenceFails);
         run("SessionStoreRejectsSupersededConcurrentRefresh", TestSessionStoreRejectsSupersededConcurrentRefresh);
         run("SessionStoreNotifiesRejectedRefresh", TestSessionStoreNotifiesRejectedRefresh);
         run("AtomicFileWriterReplacesExistingContent", TestAtomicFileWriterReplacesExistingContent);

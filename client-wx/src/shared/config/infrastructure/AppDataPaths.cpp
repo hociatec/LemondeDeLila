@@ -5,6 +5,11 @@
 #include <stdexcept>
 #include <string>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <shlobj.h>
+#endif
+
 namespace lila::shared::config
 {
 namespace
@@ -27,6 +32,20 @@ std::string ReadEnvironmentVariable(const char* name)
 std::filesystem::path ResolveBaseDirectory()
 {
 #ifdef _WIN32
+    // Environment variables are ANSI in some MinGW/Windows configurations and
+    // can therefore corrupt a profile path containing accented or non-Latin
+    // characters. Ask Windows for the known folder in UTF-16 instead.
+    PWSTR knownFolderPath = nullptr;
+    if (SUCCEEDED(SHGetKnownFolderPath(
+            FOLDERID_LocalAppData, KF_FLAG_CREATE, nullptr, &knownFolderPath)) &&
+        knownFolderPath != nullptr)
+    {
+        const std::filesystem::path result(knownFolderPath);
+        CoTaskMemFree(knownFolderPath);
+        return result;
+    }
+    if (knownFolderPath != nullptr) CoTaskMemFree(knownFolderPath);
+
     const std::string localAppData = ReadEnvironmentVariable("LOCALAPPDATA");
     if (!localAppData.empty())
     {

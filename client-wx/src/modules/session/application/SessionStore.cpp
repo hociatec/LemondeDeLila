@@ -14,21 +14,55 @@ SessionStore::SessionStore(
       refresher_(std::move(refresher))
 {
 }
-void SessionStore::Open(domain::Session session, bool persist)
+bool SessionStore::Open(domain::Session session, bool persist)
 {
     std::scoped_lock lock(mutex_);
+    bool persisted = false;
     if (persist)
     {
-        repository_->Save(session);
+        try
+        {
+            repository_->Save(session);
+            persisted = true;
+        }
+        catch (const std::exception& error)
+        {
+            // A failed DPAPI operation or a protected profile directory must
+            // only disable "remember me". The authenticated session remains
+            // usable for this run instead of escaping into the UI event loop.
+            lila::shared::logging::LogWarning(
+                "SessionStore",
+                std::string("Persistent session unavailable: ") + error.what());
+            try
+            {
+                repository_->Clear();
+            }
+            catch (const std::exception& clearError)
+            {
+                lila::shared::logging::LogWarning(
+                    "SessionStore",
+                    std::string("Unable to clear transient session file: ") + clearError.what());
+            }
+        }
     }
     else
     {
-        repository_->Clear();
+        try
+        {
+            repository_->Clear();
+        }
+        catch (const std::exception& error)
+        {
+            lila::shared::logging::LogWarning(
+                "SessionStore",
+                std::string("Unable to clear transient session file: ") + error.what());
+        }
     }
 
     current_ = std::move(session);
-    persisted_ = persist;
+    persisted_ = persisted;
     ++generation_;
+    return persisted;
 }
 
 void SessionStore::Clear()

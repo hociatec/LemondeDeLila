@@ -179,6 +179,11 @@ void VerticalMenu::OnEntryKeyDown(std::size_t index, wxKeyEvent& event)
         event.Skip(false);
         return;
     }
+    if (FocusBoundaryFromKey(event) || FocusByInitialFromKey(event, index))
+    {
+        event.Skip(false);
+        return;
+    }
 
     switch (key)
     {
@@ -206,8 +211,6 @@ void VerticalMenu::OnEntryKeyDown(std::size_t index, wxKeyEvent& event)
         return;
     case WXK_RETURN:
     case WXK_NUMPAD_ENTER:
-    case WXK_SPACE:
-    case WXK_NUMPAD_SPACE:
         entries_[index]->Activate();
         event.Skip(false);
         return;
