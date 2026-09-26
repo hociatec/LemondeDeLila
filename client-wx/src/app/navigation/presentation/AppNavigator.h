@@ -1,7 +1,9 @@
 #pragma once
 
+#include <chrono>
 #include <memory>
 #include <deque>
+#include <optional>
 #include <string>
 
 #include <wx/timer.h>
@@ -10,6 +12,7 @@
 #include "app/navigation/domain/ViewId.h"
 #include "app/navigation/presentation/NavigationDependencies.h"
 #include "app/navigation/presentation/ViewRegistry.h"
+#include "modules/audio/domain/AudioBackground.h"
 #include "shared/accessibility/application/FocusTransition.h"
 #include "modules/rooms/domain/Room.h"
 
@@ -84,6 +87,11 @@ private:
     void ResetView(domain::ViewId viewId);
     void ResetSessionViews();
     void ApplyViewFocus(wxWindow* view);
+    void StartBackgroundAudio(lila::modules::audio::domain::AudioBackground background, bool playTavernOpened);
+    void ScheduleBackgroundAudioAfterClientOpening(
+        lila::modules::audio::domain::AudioBackground background,
+        bool playTavernOpened);
+    void CancelScheduledBackgroundAudio();
     void ReturnToCatalogAfterRoomClose(bool resetVaultFocus, bool resetCatalogFocus);
     [[nodiscard]] wxWindow* CreateView(domain::ViewId viewId);
     [[nodiscard]] wxWindow* CreateCoreView(domain::ViewId viewId);
@@ -128,6 +136,10 @@ private:
     std::deque<lila::modules::rooms::domain::RoomInvitation> pendingInvitations_;
     bool invitationDialogOpen_ = false;
     std::unique_ptr<wxTimer> closeRevocationTimeout_;
+    std::unique_ptr<wxTimer> startupBackgroundDelay_;
+    std::optional<std::chrono::steady_clock::time_point> clientOpenedAt_;
+    std::optional<lila::modules::audio::domain::AudioBackground> delayedBackground_;
+    bool delayedTavernOpened_ = false;
     bool closing_ = false;
     bool closeFinalized_ = false;
     lila::shared::accessibility::FocusTransition focusTransition_;

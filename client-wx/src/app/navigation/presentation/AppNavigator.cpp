@@ -49,6 +49,7 @@ AppNavigator::AppNavigator(
 
 AppNavigator::~AppNavigator()
 {
+    CancelScheduledBackgroundAudio();
     wxEvtHandler::RemoveFilter(this);
     sessionStore_.SetSessionExpiredHandler({});
     roomInvitationMonitor_.SetInvitationHandler({});
@@ -137,6 +138,8 @@ bool AppNavigator::Start()
         }
     }
 
+    clientOpenedAt_ = std::chrono::steady_clock::now();
+    audioService_.Play(lila::modules::audio::domain::SoundCue::ClientOpened);
     lila::shared::logging::LogInfo(
         "Navigator",
         std::string("restoreSessionOnStartup=") +
@@ -150,7 +153,6 @@ bool AppNavigator::Start()
             {
                 lila::shared::logging::LogInfo("Navigator", "Stored session restored. Opening main menu.");
                 ShowSession(0, true);
-                audioService_.Play(lila::modules::audio::domain::SoundCue::ClientOpened);
                 return true;
             }
         }
@@ -165,7 +167,6 @@ bool AppNavigator::Start()
 
     lila::shared::logging::LogInfo("Navigator", "No stored session restored. Opening home.");
     ShowHome();
-    audioService_.Play(lila::modules::audio::domain::SoundCue::ClientOpened);
     return true;
 }
 }
