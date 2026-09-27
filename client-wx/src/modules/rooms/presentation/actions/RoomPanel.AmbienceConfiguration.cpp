@@ -88,8 +88,10 @@ void RoomPanel::ConfigureAmbience()
                     weakThis->ToggleAmbiencePreview(choice <= 0 ? std::string{}
                         : (*result)[static_cast<std::size_t>(choice - 1)].soundId);
                 };
-                const auto bind = [&](auto&& self, wxWindow& window) -> void { window.Bind(wxEVT_KEY_DOWN, key); for (auto* child : window.GetChildren()) self(self, *child); };
-                dialog.Bind(wxEVT_CHAR_HOOK, key); bind(bind, dialog);
+                // CHAR_HOOK is delivered before the dialog's default button.
+                // Binding both CHAR_HOOK and KEY_DOWN toggled twice per Space,
+                // which made the preview appear not to react.
+                dialog.Bind(wxEVT_CHAR_HOOK, key);
                 const int accepted = dialog.ShowModal(); weakThis->ToggleAmbiencePreview({});
                 if (accepted != wxID_OK) return;
                 const int choice = dialog.GetSelection();
