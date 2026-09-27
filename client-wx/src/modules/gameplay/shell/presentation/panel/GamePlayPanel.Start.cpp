@@ -4,6 +4,7 @@
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/prompts/domain/GamePrompt.h"
+#include "shared/accessibility/application/NavigationController.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -49,6 +50,12 @@ bool GamePlayPanel::BeginRoomStart()
     action.type = prompt.actionType;
     static_cast<void>(promptPanel_->ShowPrompt(prompt, std::move(action)));
     if (GetParent()) GetParent()->Layout();
+    CallAfter([this]()
+    {
+        const auto targets = promptPanel_->TabTargets();
+        if (!targets.empty())
+            static_cast<void>(lila::shared::accessibility::NavigationController::Focus(targets.front()));
+    });
     return true;
 }
 

@@ -61,7 +61,6 @@ void RoomPanel::HandleAction(std::string_view itemId)
     case Action::ShowInfo: ExecuteCommand({Command::Info, false, {}}); return;
     case Action::ShowRules: ShowRules(); return;
     case Action::ConfigureAmbience: ConfigureAmbience(); return;
-    case Action::ConfigureAmbienceVolume: ConfigureAmbienceVolume(); return;
     case Action::Invite: InvitePlayer(); return;
     case Action::Kick: ModeratePlayer(false); return;
     case Action::Ban: ModeratePlayer(true); return;

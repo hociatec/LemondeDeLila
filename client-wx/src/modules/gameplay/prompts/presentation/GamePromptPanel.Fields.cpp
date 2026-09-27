@@ -7,6 +7,7 @@
 #include <wx/checkbox.h>
 #include <wx/checklst.h>
 #include <wx/choice.h>
+#include <wx/event.h>
 #include <wx/rearrangectrl.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
@@ -75,7 +76,24 @@ void GamePromptPanel::RebuildFields(const domain::GamePrompt& prompt)
         for (const auto& ambience : startAmbiences_) labels.Add(FromUtf8(ambience.second));
         startAmbienceChoice_ = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, labels);
         startAmbienceChoice_->SetSelection(0);
-        startAmbienceChoice_->SetName(wxString(L"Ambiance de table"));
+        startAmbienceChoice_->SetName(wxString(
+            L"Ambiance de table. Flèche gauche/droite : volume. Espace : lire ou mettre en pause l’aperçu."));
+        startAmbienceChoice_->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event)
+        {
+            const int key = event.GetKeyCode();
+            const int delta = key == WXK_LEFT || key == WXK_NUMPAD_LEFT ? -5
+                : key == WXK_RIGHT || key == WXK_NUMPAD_RIGHT ? 5 : 0;
+            if (delta == 0 && key != WXK_SPACE && key != WXK_NUMPAD_SPACE)
+            {
+                event.Skip();
+                return;
+            }
+            if (!onStartAmbienceInteraction_) return;
+            const int selection = startAmbienceChoice_->GetSelection();
+            const auto soundId = selection <= 0 ? std::string{}
+                : startAmbiences_[static_cast<std::size_t>(selection - 1)].first;
+            onStartAmbienceInteraction_(soundId, delta);
+        });
         fieldsSizer_->Add(startAmbienceChoice_, 0, wxEXPAND | wxBOTTOM, 8);
     }
     for (const auto& field : prompt.fields)

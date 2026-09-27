@@ -34,6 +34,7 @@ public:
     using ValidationErrorHandler = std::function<void(const wxString&, wxWindow*)>;
     using VisibilityChangedHandler = std::function<void(bool)>;
     using CandidatesRequestHandler = std::function<void(domain::GameActionCandidatesRequest)>;
+    using StartAmbienceInteractionHandler = std::function<void(std::string, int)>;
 
     explicit GamePromptPanel(wxWindow* parent);
 
@@ -42,6 +43,7 @@ public:
     void SetValidationErrorHandler(ValidationErrorHandler handler);
     void SetVisibilityChangedHandler(VisibilityChangedHandler handler);
     void SetCandidatesRequestHandler(CandidatesRequestHandler handler);
+    void SetStartAmbienceInteractionHandler(StartAmbienceInteractionHandler handler);
     void SetStartAmbiences(std::vector<std::pair<std::string, std::string>> ambiences);
     void ClearStartAmbiences();
 
@@ -99,5 +101,6 @@ private:
     ValidationErrorHandler onValidationError_;
     VisibilityChangedHandler onVisibilityChanged_;
     CandidatesRequestHandler onCandidatesRequest_;
+    StartAmbienceInteractionHandler onStartAmbienceInteraction_;
 };
 }

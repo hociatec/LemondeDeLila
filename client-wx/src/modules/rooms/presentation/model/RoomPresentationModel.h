@@ -24,7 +24,6 @@ public:
         ShowInfo,
         ShowRules,
         ConfigureAmbience,
-        ConfigureAmbienceVolume,
         Invite,
         Kick,
         Ban,

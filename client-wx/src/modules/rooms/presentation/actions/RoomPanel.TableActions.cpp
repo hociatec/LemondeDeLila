@@ -5,7 +5,6 @@
 
 #include <wx/choicdlg.h>
 #include <wx/event.h>
-#include <wx/numdlg.h>
 #include <wx/weakref.h>
 
 #include "modules/audio/application/IAudioService.h"
@@ -22,18 +21,6 @@ void RoomPanel::ShowRules()
 {
     gamePlayPanel_->ShowRules();
     UpdateStatus(wxString(L"Chargement des règles..."));
-}
-
-void RoomPanel::ConfigureAmbienceVolume()
-{
-    const long value = wxGetNumberFromUser(
-        wxString(L"Volume local de l’ambiance, de 0 à 100."),
-        wxString(L"Volume"), wxString(L"Ambiance de table"),
-        ambienceVolume_, 0, 100, this);
-    if (value < 0) return;
-    ambienceVolume_ = static_cast<int>(value);
-    audioService_.SetTableAmbienceVolume(ambienceVolume_);
-    UpdateStatus(wxString::Format(L"Volume de l’ambiance : %d %%.", ambienceVolume_), false, true);
 }
 
 void RoomPanel::ModeratePlayer(bool ban)
