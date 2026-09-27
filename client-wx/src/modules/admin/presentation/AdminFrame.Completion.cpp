@@ -20,7 +20,8 @@ namespace lila::modules::admin::presentation
 namespace
 {
 std::optional<wxString> AmbienceSuccessMessage(
-    const domain::AdminCommand& command, const nlohmann::json& result)
+    const domain::AdminCommand& command, const nlohmann::json& result,
+    bool isAmbienceUpload = false)
 {
     const auto name = lila::shared::text::FromUtf8(result.value("name", std::string{}));
     if (command.id == "sounds.ambience.create")
@@ -31,7 +32,15 @@ std::optional<wxString> AmbienceSuccessMessage(
         return result.value("enabled", false) ? wxString(L"Ambiance activée.")
                                              : wxString(L"Ambiance désactivée.");
     if (command.id == "sounds.ambience.delete") return wxString(L"Ambiance supprimée.");
+    if (command.id == "sounds.upload" && isAmbienceUpload)
+        return wxString(L"Son de l’ambiance enregistré.");
     return std::nullopt;
+}
+
+bool IsAmbienceCommand(const domain::AdminCommand& command, bool isAmbienceUpload)
+{
+    return command.id.starts_with("sounds.ambience.") ||
+        (command.id == "sounds.upload" && isAmbienceUpload);
 }
 }
 
@@ -46,6 +55,10 @@ void AdminFrame::CompleteCommand(
     loading_ = false;
     if (error.has_value() || !result.has_value())
     {
+        const bool isAmbienceUpload = uploadingCreatedAmbience_ ||
+            (command.id == "sounds.upload" &&
+             currentResultItemKind_ == domain::AdminItemKind::Ambience);
+        const bool isAmbienceCommand = IsAmbienceCommand(command, isAmbienceUpload);
         pendingAmbienceUploadPath_.reset();
         uploadingCreatedAmbience_ = false;
         if (command.id == "bots.settings.get")
@@ -62,7 +75,8 @@ void AdminFrame::CompleteCommand(
             soundIdToRestore_.reset();
             wxMessageBox(lila::shared::text::FromUtf8(
                 error ? error->UserMessage() : "Réponse administrateur absente."),
-                L"Gestion des sons", wxOK | wxICON_ERROR, this);
+                isAmbienceCommand ? L"Gestion des ambiances" : L"Gestion des sons",
+                wxOK | wxICON_ERROR, this);
         }
         FocusCurrentMenu();
         return;
@@ -92,7 +106,10 @@ void AdminFrame::CompleteCommand(
     if (refreshAreaAfterCommand_)
     {
         refreshAreaAfterCommand_ = false;
-        auto successMessage = AmbienceSuccessMessage(command, *result);
+        const bool isAmbienceUpload = uploadingCreatedAmbience_ ||
+            (command.id == "sounds.upload" &&
+             currentResultItemKind_ == domain::AdminItemKind::Ambience);
+        auto successMessage = AmbienceSuccessMessage(command, *result, isAmbienceUpload);
         if (uploadingCreatedAmbience_)
         {
             uploadingCreatedAmbience_ = false;
@@ -101,6 +118,9 @@ void AdminFrame::CompleteCommand(
         RestoreAreaFromItem();
         SetStatus(successMessage.value_or(
             wxString(L"Modification enregistrée. Actualisation de la liste…")));
+        if (successMessage.has_value())
+            wxMessageBox(*successMessage, L"Gestion des ambiances",
+                wxOK | wxICON_INFORMATION, this);
         const auto& area = domain::GetAdminAreas()[selectedSection_];
         if (area.id == "reports")
         {
