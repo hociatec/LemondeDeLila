@@ -50,13 +50,13 @@ std::optional<std::string> BuildBoardCapabilityText(
     {
         for (const auto& pawn : state.kits.pawns->pawns)
         {
-            if (!pawn.ownerId || pawn.ownerId == state.viewerPlayerId) continue;
+            if (!pawn.ownerId) continue;
             out << Player(state, *pawn.ownerId) << " — " << pawn.label << " : ";
             if (pawn.position < 0) out << "en réserve";
             else out << "case " << pawn.position + 1;
             out << ".\n";
         }
-        return out.str().empty() ? "Les pions adverses sont indisponibles." : out.str();
+        return out.str().empty() ? "Les pions sont indisponibles." : out.str();
     }
     if (capability == "race-ranking" && state.kits.movement)
     {

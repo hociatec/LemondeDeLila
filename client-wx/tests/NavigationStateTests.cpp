@@ -50,7 +50,7 @@ int main()
     }
     assert(hasHttp && hasApiWs && hasNotifyWs && hasMaintenanceProtection);
     const auto& adminAreas = lila::modules::admin::domain::GetAdminAreas();
-    assert(adminAreas.size() == 16);
+    assert(adminAreas.size() == 17);
     assert(adminAreas.front().group == L"JEUX");
     assert(adminAreas[4].group == L"UTILISATEURS");
     assert(adminAreas[7].group == L"COMMUNICATION");

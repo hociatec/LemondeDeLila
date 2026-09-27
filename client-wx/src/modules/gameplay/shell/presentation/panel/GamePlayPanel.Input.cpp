@@ -47,17 +47,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     const auto key = NormalizeKey(event);
     if (key.empty()) return false;
 
-    // These read-only shortcuts must stay available even while the table is
-    // waiting for its first started game state.
-    const auto genericPanel =
-        application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(state_, key);
-    if (!genericPanel.empty())
-    {
-        const auto message = application::info::GameCapabilityTextBuilder::Build(
-            state_, genericPanel);
-        if (!message.empty()) UpdateStatus(FromUtf8(message), false, true);
-        return true;
-    }
     // A projected game state can already contain the next run's pawn choice
     // while the room is still in setup. Never let gameplay shortcuts start
     // or alter that pending run: they need an authoritative started state.
@@ -76,6 +65,18 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             return true;
         }
         return ShouldCaptureWhileAwaitingStartedState(key);
+    }
+    // Generic gameplay information is meaningful only during an active run.
+    // In particular, the setup projection can already contain cards or pawns
+    // for the next game, but P/E must remain silent until it has started.
+    const auto genericPanel =
+        application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(state_, key);
+    if (!genericPanel.empty())
+    {
+        const auto message = application::info::GameCapabilityTextBuilder::Build(
+            state_, genericPanel);
+        if (!message.empty()) UpdateStatus(FromUtf8(message), false, true);
+        return true;
     }
     if (inputSubmissionGuard_.IsInFlight())
     {
