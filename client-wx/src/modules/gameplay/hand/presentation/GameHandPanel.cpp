@@ -1,6 +1,10 @@
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 
 #include <algorithm>
+#include <cctype>
+#include <numeric>
+#include <type_traits>
+#include <utility>
 
 #include <wx/listbox.h>
 #include <wx/sizer.h>
@@ -14,6 +18,51 @@
 
 namespace lila::modules::gameplay::presentation::hand
 {
+namespace
+{
+bool IsNumber(const std::string& value)
+{
+    return !value.empty() && std::all_of(value.begin(), value.end(),
+        [](unsigned char character) { return std::isdigit(character) != 0; });
+}
+
+bool IsBefore(const std::string& left, const std::string& right)
+{
+    if (left.size() != right.size()) return left.size() < right.size();
+    return left < right;
+}
+
+void SortCards(
+    std::vector<std::string>& keys,
+    std::vector<std::string>& labels,
+    std::vector<bool>& actionable,
+    bool ascending)
+{
+    std::vector<std::size_t> order(labels.size());
+    std::iota(order.begin(), order.end(), 0);
+    std::stable_sort(order.begin(), order.end(), [&labels, ascending](std::size_t left, std::size_t right)
+    {
+        const bool leftNumber = IsNumber(labels[left]);
+        const bool rightNumber = IsNumber(labels[right]);
+        if (leftNumber != rightNumber) return ascending ? leftNumber : !leftNumber;
+        const bool before = leftNumber ? IsBefore(labels[left], labels[right])
+                                       : labels[left] < labels[right];
+        const bool after = leftNumber ? IsBefore(labels[right], labels[left])
+                                      : labels[left] > labels[right];
+        return ascending ? before : after;
+    });
+    const auto reorder = [&order](auto& values)
+    {
+        using Value = typename std::decay_t<decltype(values)>::value_type;
+        std::vector<Value> sorted;
+        sorted.reserve(values.size());
+        for (const auto index : order) sorted.push_back(values[index]);
+        values = std::move(sorted);
+    };
+    reorder(keys); reorder(labels); reorder(actionable);
+}
+}
+
 GameHandPanel::GameHandPanel(wxWindow* parent)
     : wxPanel(parent, wxID_ANY)
 {
@@ -51,6 +100,7 @@ void GameHandPanel::ApplyCards(
             application::cards::GameCardActionResolver::Resolve(
                 cards, actions, index).has_value());
     }
+    if (sortAscending_) SortCards(nextKeys, nextLabels, nextActionable, *sortAscending_);
     if (nextKeys == cardKeys_ && nextLabels == cardLabels_)
     {
         // A turn change commonly changes only which cards are actionable.
@@ -149,8 +199,23 @@ void GameHandPanel::ClearHand()
     cardKeys_.clear();
     cardLabels_.clear();
     cardActionable_.clear();
+    sortAscending_.reset();
     list_->Clear();
     Hide();
+}
+
+bool GameHandPanel::Sort(bool ascending)
+{
+    if (cardLabels_.empty()) return false;
+    const auto selectedKey = SelectedCardKey();
+    sortAscending_ = ascending;
+    SortCards(cardKeys_, cardLabels_, cardActionable_, ascending);
+    list_->Clear();
+    for (const auto& label : cardLabels_) list_->Append(FromUtf8(label));
+    const auto selected = std::find(cardKeys_.begin(), cardKeys_.end(), selectedKey);
+    list_->SetSelection(selected == cardKeys_.end()
+        ? 0 : static_cast<int>(selected - cardKeys_.begin()));
+    return true;
 }
 
 bool GameHandPanel::MoveSelection(bool backwards)
@@ -159,6 +224,13 @@ bool GameHandPanel::MoveSelection(bool backwards)
 }
 
 int GameHandPanel::SelectedIndex() const noexcept { return list_->GetSelection(); }
+
+std::string GameHandPanel::SelectedCardKey() const
+{
+    const int selection = SelectedIndex();
+    return selection < 0 || static_cast<std::size_t>(selection) >= cardKeys_.size()
+        ? std::string{} : cardKeys_[static_cast<std::size_t>(selection)];
+}
 
 wxWindow* GameHandPanel::NavigationTarget() const noexcept
 {
