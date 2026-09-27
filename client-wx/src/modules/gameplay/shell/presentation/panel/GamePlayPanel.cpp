@@ -128,6 +128,16 @@ void GamePlayPanel::SetRoomStartRequestedHandler(RoomStartRequestedHandler handl
     onRoomStartRequested_ = std::move(handler);
 }
 
+void GamePlayPanel::SetStartAmbienceSelectedHandler(StartAmbienceSelectedHandler handler)
+{
+    onStartAmbienceSelected_ = std::move(handler);
+}
+
+void GamePlayPanel::SetStartAmbiences(std::vector<std::pair<std::string, std::string>> ambiences)
+{
+    promptPanel_->SetStartAmbiences(std::move(ambiences));
+}
+
 wxWindow* GamePlayPanel::PreferredNavigationTarget() const
 {
     if (IsFinished()) return nullptr;

@@ -35,6 +35,13 @@ void GamePromptPanel::Submit()
         if (onSubmit_) onSubmit_(std::move(action));
         return;
     }
+    if (startAmbienceChoice_ != nullptr)
+    {
+        const int selection = startAmbienceChoice_->GetSelection();
+        action.payload["__tableAmbienceSoundId"] = selection <= 0
+            ? nlohmann::json(nullptr)
+            : nlohmann::json(startAmbiences_[static_cast<std::size_t>(selection - 1)].first);
+    }
     for (const auto& control : fields_)
     {
         if (control.ordering != nullptr)

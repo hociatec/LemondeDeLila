@@ -57,6 +57,7 @@ public:
     using GameSoundEventHandler = std::function<void(
         const std::string&, int playerId, const std::vector<int>& winnerPlayerIds)>;
     using RoomStartRequestedHandler = std::function<void()>;
+    using StartAmbienceSelectedHandler = std::function<void(std::string)>;
 
     explicit GamePlayPanel(
         wxWindow* parent,
@@ -73,6 +74,8 @@ public:
     void SetTableShortcutHandler(TableShortcutHandler handler);
     void SetGameSoundEventHandler(GameSoundEventHandler handler);
     void SetRoomStartRequestedHandler(RoomStartRequestedHandler handler);
+    void SetStartAmbienceSelectedHandler(StartAmbienceSelectedHandler handler);
+    void SetStartAmbiences(std::vector<std::pair<std::string, std::string>> ambiences);
     bool BeginRoomStart();
     void ShowRules();
     void SetRoomStarted(bool started, int runId = 0);
@@ -179,6 +182,7 @@ private:
     TableShortcutHandler onTableShortcut_;
     GameSoundEventHandler onGameSoundEvent_;
     RoomStartRequestedHandler onRoomStartRequested_;
+    StartAmbienceSelectedHandler onStartAmbienceSelected_;
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
     lila::shared::concurrency::AsyncRequestSlot inputRequestSlot_;
     application::GameCommandSubmissionGuard inputSubmissionGuard_;

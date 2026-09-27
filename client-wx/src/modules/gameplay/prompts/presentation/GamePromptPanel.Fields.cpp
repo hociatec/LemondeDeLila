@@ -65,6 +65,19 @@ void GamePromptPanel::RebuildFields(const domain::GamePrompt& prompt)
     }
     fieldsSizer_->Clear(true);
     fields_.clear();
+    startAmbienceChoice_ = nullptr;
+    if (includeStartAmbience_)
+    {
+        auto* label = new wxStaticText(this, wxID_ANY, wxString(L"Ambiance de table"));
+        label->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
+        fieldsSizer_->Add(label, 0, wxEXPAND | wxBOTTOM, 3);
+        wxArrayString labels{wxString(L"Silence (aucune ambiance)")};
+        for (const auto& ambience : startAmbiences_) labels.Add(FromUtf8(ambience.second));
+        startAmbienceChoice_ = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, labels);
+        startAmbienceChoice_->SetSelection(0);
+        startAmbienceChoice_->SetName(wxString(L"Ambiance de table"));
+        fieldsSizer_->Add(startAmbienceChoice_, 0, wxEXPAND | wxBOTTOM, 8);
+    }
     for (const auto& field : prompt.fields)
     {
         FieldControl control;

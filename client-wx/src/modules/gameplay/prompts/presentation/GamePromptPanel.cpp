@@ -41,6 +41,20 @@ void GamePromptPanel::SetCandidatesRequestHandler(CandidatesRequestHandler handl
     onCandidatesRequest_ = std::move(handler);
 }
 
+void GamePromptPanel::SetStartAmbiences(std::vector<std::pair<std::string, std::string>> ambiences)
+{
+    startAmbiences_ = std::move(ambiences);
+    includeStartAmbience_ = true;
+    signature_.clear();
+}
+
+void GamePromptPanel::ClearStartAmbiences()
+{
+    startAmbiences_.clear();
+    includeStartAmbience_ = false;
+    signature_.clear();
+}
+
 void GamePromptPanel::BuildLayout()
 {
     SetBackgroundColour(lila::shared::ui::Theme::PanelBackground());
@@ -109,6 +123,7 @@ std::vector<wxWindow*> GamePromptPanel::TabTargets() const
 {
     std::vector<wxWindow*> controls;
     controls.reserve(fields_.size() + 2);
+    if (startAmbienceChoice_ != nullptr) controls.push_back(startAmbienceChoice_);
     if (paginatedCandidates_)
     {
         controls.push_back(candidatesQuery_);

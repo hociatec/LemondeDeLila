@@ -86,6 +86,7 @@ private:
     void RequestLeaveConfirmation();
     void RequestResetConfirmation();
     void ShowRules();
+    void ConfigureStart();
     void ConfigureAmbience();
     void ConfigureAmbienceVolume();
     void InvitePlayer();
@@ -127,6 +128,8 @@ private:
     State state_ = State::Connecting;
     bool saveInProgress_ = false;
     bool abandonInProgress_ = false;
+    bool startAfterAmbience_ = false;
+    std::optional<std::string> pendingStartAmbience_;
     bool chatHistoryReceived_ = false;
     std::optional<domain::RoomCommand> pendingRealtimeCommand_;
     int ambienceVolume_ = 15;
