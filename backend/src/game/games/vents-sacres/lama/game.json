@@ -43,6 +43,18 @@
       "type": "interface",
       "id": "discard",
       "label": "Carte au-dessus"
+    },
+    {
+      "key": "Shift+C",
+      "type": "interface",
+      "id": "hand-sort-ascending",
+      "label": "Trier ma main par ordre croissant"
+    },
+    {
+      "key": "Shift+D",
+      "type": "interface",
+      "id": "hand-sort-descending",
+      "label": "Trier ma main par ordre décroissant"
     }
   ],
   "initialPhase": "setup",

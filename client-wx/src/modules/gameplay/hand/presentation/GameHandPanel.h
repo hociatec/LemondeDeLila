@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -22,8 +23,10 @@ public:
         const std::vector<domain::GameCard>& cards,
         const std::vector<domain::GameAction>& actions);
     void ClearHand();
+    [[nodiscard]] bool Sort(bool ascending);
     bool MoveSelection(bool backwards);
     [[nodiscard]] int SelectedIndex() const noexcept;
+    [[nodiscard]] std::string SelectedCardKey() const;
     [[nodiscard]] wxWindow* NavigationTarget() const noexcept;
 
 private:
@@ -31,5 +34,6 @@ private:
     std::vector<std::string> cardKeys_;
     std::vector<std::string> cardLabels_;
     std::vector<bool> cardActionable_;
+    std::optional<bool> sortAscending_;
 };
 }

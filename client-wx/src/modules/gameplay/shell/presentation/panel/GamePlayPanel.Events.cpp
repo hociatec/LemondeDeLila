@@ -1,5 +1,6 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
+#include <algorithm>
 #include <optional>
 #include <utility>
 
@@ -165,14 +166,16 @@ bool GamePlayPanel::HandleZoneActivation()
 bool GamePlayPanel::ActivateSelectedHandCard()
 {
     const auto& hand = state_.kits.VisibleHand();
-    const int selected = handPanel_->SelectedIndex();
-    if (selected < 0)
+    const auto key = handPanel_->SelectedCardKey();
+    if (key.empty())
     {
         lila::shared::logging::LogWarning("GameInput", "Card activation has no selection.");
         return false;
     }
-    if (static_cast<std::size_t>(selected) >= hand.size()) return false;
-    if (hand[static_cast<std::size_t>(selected)].disabled)
+    const auto selected = std::find_if(hand.begin(), hand.end(), [&key](const auto& card)
+    { return card.id == key; });
+    if (selected == hand.end()) return false;
+    if (selected->disabled)
     {
         UpdateStatus(
             wxString(L"Cette carte ne peut pas être jouée maintenant."),
@@ -181,7 +184,7 @@ bool GamePlayPanel::ActivateSelectedHandCard()
         return true;
     }
     auto action = application::cards::GameCardActionResolver::Resolve(
-        hand, state_.actions, static_cast<std::size_t>(selected));
+        hand, state_.actions, static_cast<std::size_t>(selected - hand.begin()));
     if (!action)
     {
         lila::shared::logging::LogWarning(

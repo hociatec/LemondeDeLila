@@ -25,6 +25,14 @@ export type { JsonGameDocument } from './json-game-document';
 
 const nonnegative: AuthorSchema = { type: 'integer', minimum: 0 };
 const perPlayer: AuthorSchema = { oneOf: [number, record(number)] };
+// Game authors may reserve a plain key or a Shift-modified letter for a
+// client-only interface command. Other modifiers remain application-level.
+const shortcutKey: AuthorSchema = {
+  type: 'string',
+  minLength: 1,
+  maxLength: 16,
+  pattern: '^(?:[A-Za-z0-9]+|[Ss][Hh][Ii][Ff][Tt]\\+[A-Za-z])$',
+};
 const components: AuthorSchema = {
   oneOf: [
     component(
@@ -177,7 +185,7 @@ export const jsonGameSchema = freezeAuthorSchema({
           object(
             {
               type: { const: 'action' },
-              key: id,
+              key: shortcutKey,
               actionType: id,
               label: { type: 'string' },
             },
@@ -186,7 +194,7 @@ export const jsonGameSchema = freezeAuthorSchema({
           object(
             {
               type: { const: 'interface' },
-              key: id,
+              key: shortcutKey,
               id,
               label: { type: 'string' },
             },
