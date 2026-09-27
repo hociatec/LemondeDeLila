@@ -47,12 +47,8 @@ bool GamePlayPanel::BeginRoomStart()
     prompt.actionType = "__room-start__";
     domain::GameAction action;
     action.type = prompt.actionType;
-    promptPanel_->ShowPrompt(prompt, std::move(action));
+    static_cast<void>(promptPanel_->ShowPrompt(prompt, std::move(action)));
     if (GetParent()) GetParent()->Layout();
-    return true;
-    roomStartFlowRequested_ = false;
-    roomStartPending_ = true;
-    if (onRoomStartRequested_) onRoomStartRequested_();
     return true;
 }
 
