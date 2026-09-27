@@ -86,7 +86,7 @@ describe('genericGameEventMessage', () => {
         1,
       ),
     ).toBe(
-      'Vous arrivez sur la case 4 : Sentier tranquille. Description : Une étape sans effet particulier.',
+      'Vous arrivez sur la case 4 : Sentier tranquille. Une étape sans effet particulier.',
     );
     expect(
       message(

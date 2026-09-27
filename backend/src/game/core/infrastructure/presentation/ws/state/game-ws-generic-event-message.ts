@@ -264,14 +264,9 @@ function pawnLandedMessage(
   const verb = name === 'Vous' ? 'arrivez' : 'arrive';
   const label = tileLabel(value('tileLabel'));
   const description = value('tileDescription');
-  const descriptionText = /^(?:Description|Effet)\s*:/iu.test(description)
-    ? description
-    : description
-      ? `Description : ${description}`
-      : '';
   return [
     `${name} ${verb} sur la case ${internalPosition + 1}${label ? ` : ${label}` : ''}.`,
-    descriptionText,
+    description,
   ]
     .filter(Boolean)
     .join(' ');

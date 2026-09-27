@@ -15,14 +15,18 @@ public:
     {
         // Reserved client-wide gameplay keys: their availability must not
         // depend on shortcuts declared by an individual game.
-        if (state.kits.movement || state.kits.pawns)
+        const bool isBoardGame = state.kits.movement || state.kits.pawns || state.kits.grid;
+        if (isBoardGame)
         {
             if (normalizedKey == "P") return "position";
             if (normalizedKey == "SHIFT+P") return "positions";
         }
+        if (normalizedKey == "T") return "current-turn";
         if (normalizedKey == "S" && state.kits.score)
             return "score";
-        if (normalizedKey == "E" && state.kits.cards) return "hand";
+        // Card-hand information has no shortcut in board games: E must not
+        // compete with the board's own keyboard surface.
+        if (!isBoardGame && normalizedKey == "E" && state.kits.cards) return "hand";
         return {};
     }
 };
