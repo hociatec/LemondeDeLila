@@ -11,7 +11,6 @@ enum class RoomInterfaceAction
     Players,
     Information,
     Rules,
-    TableAmbienceVolume,
 };
 
 enum class RoomServerAction

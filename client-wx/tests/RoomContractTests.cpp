@@ -26,8 +26,8 @@ int main()
         "room.reset", "room.leave"};
     Expect(presentation::RoomShortcutPolicy::Resolve('A', true, false, false, false, room) ==
         "room:ambience", "Ctrl+A doit dépendre de room.set-ambience.");
-    Expect(presentation::RoomShortcutPolicy::Resolve('V', true, false, false, false, room) ==
-        "room:ambience-volume", "Ctrl+V doit rester une action d'interface locale.");
+    Expect(presentation::RoomShortcutPolicy::Resolve('V', true, false, false, false, room).empty(),
+        "Ctrl+V ne doit plus ouvrir une interface de volume.");
     Expect(presentation::RoomShortcutPolicy::Resolve('I', true, false, false, false, room) ==
         "room:invite", "Ctrl+I doit dépendre de room.invite.");
     Expect(presentation::RoomShortcutPolicy::Resolve('K', true, false, false, false, room) ==
@@ -61,8 +61,7 @@ int main()
         "room:leave", "Q doit continuer à quitter la table.");
     domain::RoomState forbiddenRoom;
     Expect(presentation::RoomShortcutPolicy::Resolve('V', true, false, false, false,
-        forbiddenRoom) == "room:ambience-volume",
-        "Le volume local ne doit pas dépendre des permissions serveur.");
+        forbiddenRoom).empty(), "Ctrl+V doit rester désactivé sans permission.");
     Expect(presentation::RoomShortcutPolicy::Resolve('W', false, false, false, false,
         forbiddenRoom) == "room:players" &&
         presentation::RoomShortcutPolicy::Resolve('I', false, false, false, false,

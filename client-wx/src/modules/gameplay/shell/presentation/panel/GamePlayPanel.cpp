@@ -133,6 +133,16 @@ void GamePlayPanel::SetStartAmbienceSelectedHandler(StartAmbienceSelectedHandler
     onStartAmbienceSelected_ = std::move(handler);
 }
 
+void GamePlayPanel::SetStartAmbiencePreviewHandler(StartAmbiencePreviewHandler handler)
+{
+    onStartAmbiencePreview_ = std::move(handler);
+}
+
+void GamePlayPanel::SetStartAmbienceVolumeHandler(StartAmbienceVolumeHandler handler)
+{
+    onStartAmbienceVolume_ = std::move(handler);
+}
+
 void GamePlayPanel::SetStartAmbiences(std::vector<std::pair<std::string, std::string>> ambiences)
 {
     promptPanel_->SetStartAmbiences(std::move(ambiences));

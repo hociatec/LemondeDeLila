@@ -45,8 +45,6 @@ std::vector<lila::shared::ui::controls::VerticalMenuItem> RoomPresentationModel:
         items.push_back({"room:rules", wxString(L"Règles du jeu")});
     if (RoomActionPolicy::AllowsServer(room, RoomServerAction::SetAmbience))
         items.push_back({"room:ambience", wxString(L"Choisir l’ambiance de table")});
-    if (RoomActionPolicy::AllowsInterface(RoomInterfaceAction::TableAmbienceVolume))
-        items.push_back({"room:ambience-volume", wxString(L"Volume de l’ambiance")});
     if (RoomActionPolicy::AllowsServer(room, RoomServerAction::Invite))
         items.push_back({"room:invite", wxString(L"Inviter un utilisateur")});
     if (RoomActionPolicy::AllowsServer(room, RoomServerAction::Kick))
@@ -139,7 +137,6 @@ RoomPresentationModel::Action RoomPresentationModel::ActionForId(std::string_vie
     if (id == "room:info") return Action::ShowInfo;
     if (id == "room:rules") return Action::ShowRules;
     if (id == "room:ambience") return Action::ConfigureAmbience;
-    if (id == "room:ambience-volume") return Action::ConfigureAmbienceVolume;
     if (id == "room:invite") return Action::Invite;
     if (id == "room:kick") return Action::Kick;
     if (id == "room:ban") return Action::Ban;

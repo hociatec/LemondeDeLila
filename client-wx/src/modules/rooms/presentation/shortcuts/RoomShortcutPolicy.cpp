@@ -21,8 +21,6 @@ std::string_view RoomShortcutPolicy::Resolve(
         if (key == 'M' && RoomActionPolicy::AllowsServer(room, RoomServerAction::SetRole)) return "room:role";
         if (key == 'S' && RoomActionPolicy::AllowsServer(room, RoomServerAction::Save)) return "room:save";
         if (key == 'A' && RoomActionPolicy::AllowsServer(room, RoomServerAction::SetAmbience)) return "room:ambience";
-        if (key == 'V' && RoomActionPolicy::AllowsInterface(
-                RoomInterfaceAction::TableAmbienceVolume)) return "room:ambience-volume";
         if (key == 'I' && RoomActionPolicy::AllowsServer(room, RoomServerAction::Invite)) return "room:invite";
         if (key == 'K' && RoomActionPolicy::AllowsServer(room, RoomServerAction::Kick)) return "room:kick";
         if (key == 'B' && RoomActionPolicy::AllowsServer(room, RoomServerAction::Ban)) return "room:ban";

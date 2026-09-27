@@ -40,6 +40,10 @@ void GamePromptPanel::SetCandidatesRequestHandler(CandidatesRequestHandler handl
 {
     onCandidatesRequest_ = std::move(handler);
 }
+void GamePromptPanel::SetStartAmbienceInteractionHandler(StartAmbienceInteractionHandler handler)
+{
+    onStartAmbienceInteraction_ = std::move(handler);
+}
 
 void GamePromptPanel::SetStartAmbiences(std::vector<std::pair<std::string, std::string>> ambiences)
 {

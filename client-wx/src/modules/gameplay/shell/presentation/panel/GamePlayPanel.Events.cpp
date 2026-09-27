@@ -89,6 +89,16 @@ void GamePlayPanel::BindEvents()
                     panel.promptPanel_->RejectCandidatesRequest();
                 });
         });
+    promptPanel_->SetStartAmbienceInteractionHandler(
+        [this](std::string soundId, int volumeDelta)
+        {
+            if (volumeDelta == 0)
+            {
+                if (onStartAmbiencePreview_) onStartAmbiencePreview_(std::move(soundId));
+                return;
+            }
+            if (onStartAmbienceVolume_) onStartAmbienceVolume_(volumeDelta);
+        });
     promptPanel_->SetSubmitHandler(
         [this](domain::GameAction action)
         {
@@ -99,6 +109,7 @@ void GamePlayPanel::BindEvents()
                 if (onStartAmbienceSelected_)
                     onStartAmbienceSelected_(value.is_string() ? value.get<std::string>() : std::string{});
                 action.payload.erase("__tableAmbienceSoundId");
+                if (onStartAmbiencePreview_) onStartAmbiencePreview_({});
                 promptPanel_->ClearStartAmbiences();
             }
             if (!roomStarted_ && action.type == "__room-start__")
@@ -122,6 +133,7 @@ void GamePlayPanel::BindEvents()
     promptPanel_->SetCancelHandler(
         [this](std::string)
         {
+            if (onStartAmbiencePreview_) onStartAmbiencePreview_({});
             if (const auto* prompt = ActivePrompt())
                 dismissedPromptActionType_ = prompt->actionType;
             roomStartFlowRequested_ = false;

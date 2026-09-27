@@ -81,6 +81,10 @@ void RoomPanel::BindEvents()
         });
     gamePlayPanel_->SetStartAmbienceSelectedHandler(
         [this](std::string soundId) { pendingStartAmbience_ = std::move(soundId); });
+    gamePlayPanel_->SetStartAmbiencePreviewHandler(
+        [this](std::string soundId) { ToggleAmbiencePreview(soundId); });
+    gamePlayPanel_->SetStartAmbienceVolumeHandler(
+        [this](int delta) { AdjustAmbienceVolume(delta); });
     chatInput_->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent&) { SendChat(); });
     lila::shared::accessibility::NavigationController::BindTabNavigation(
         *this,

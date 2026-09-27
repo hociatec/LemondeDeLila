@@ -88,7 +88,8 @@ private:
     void ShowRules();
     void ConfigureStart();
     void ConfigureAmbience();
-    void ConfigureAmbienceVolume();
+    void ToggleAmbiencePreview(const std::string& soundId);
+    void AdjustAmbienceVolume(int delta);
     void InvitePlayer();
     void SendInvite(int userId);
     void ModeratePlayer(bool ban);
@@ -133,6 +134,8 @@ private:
     bool chatHistoryReceived_ = false;
     std::optional<domain::RoomCommand> pendingRealtimeCommand_;
     int ambienceVolume_ = 15;
+    std::string previewedAmbienceSoundId_;
+    bool ambiencePreviewPlaying_ = false;
     std::vector<wxString> pendingRoomAnnouncements_;
     std::unique_ptr<history::HistoryAnnouncementQueue> historyAnnouncements_;
 };
