@@ -18,6 +18,8 @@ public:
 
     void Play(domain::SoundCue cue) override;
     void Preview(std::optional<domain::SoundCue> cue) override;
+    void Preview(std::optional<domain::SoundCue> cue, float volume) override;
+    void SetPreviewVolume(float volume) override;
     void TogglePreviewPause() override;
     void StartLoop(domain::SoundCue cue) override;
     void StopLoop() override;
