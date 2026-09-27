@@ -35,16 +35,20 @@ std::optional<std::string> BuildBoardCapabilityText(
     std::ostringstream out;
     if (capability == "position" && state.kits.pawns)
     {
-        if (!state.viewerPlayerId) return "Vos pions sont indisponibles.";
-        for (const auto& pawn : state.kits.pawns->pawns)
+        if (state.viewerPlayerId)
         {
-            if (pawn.ownerId != state.viewerPlayerId) continue;
-            out << pawn.label << " : ";
-            if (pawn.position < 0) out << "en réserve";
-            else out << "case " << pawn.position + 1;
-            out << ".\n";
+            for (const auto& pawn : state.kits.pawns->pawns)
+            {
+                if (pawn.ownerId != state.viewerPlayerId) continue;
+                out << pawn.label << " : ";
+                if (pawn.position < 0) out << "en réserve";
+                else out << "case " << pawn.position + 1;
+                out << ".\n";
+            }
         }
-        return out.str().empty() ? "Vos pions sont indisponibles." : out.str();
+        // Some race games expose an empty pawn kit alongside their movement
+        // track. Do not let that optional kit mask the authoritative track.
+        if (!out.str().empty()) return out.str();
     }
     if (capability == "positions" && state.kits.pawns)
     {
@@ -56,7 +60,9 @@ std::optional<std::string> BuildBoardCapabilityText(
             else out << "case " << pawn.position + 1;
             out << ".\n";
         }
-        return out.str().empty() ? "Les pions sont indisponibles." : out.str();
+        // As above, fall back to the movement track when pawn ownership has
+        // not been projected to this viewer.
+        if (!out.str().empty()) return out.str();
     }
     if (capability == "race-ranking" && state.kits.movement)
     {
@@ -118,6 +124,10 @@ std::optional<std::string> BuildBoardCapabilityText(
             }
         return out.str().empty() ? "Les positions sont indisponibles." : out.str();
     }
+    if (capability == "position" && state.kits.pawns)
+        return "Vos pions sont indisponibles.";
+    if (capability == "positions" && state.kits.pawns)
+        return "Les pions sont indisponibles.";
     if (capability == "movement" && state.kits.movement)
     {
         for (const auto& track : state.kits.movement->tracks)

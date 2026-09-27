@@ -36,6 +36,13 @@ void TestBoardPositionShortcuts()
             allPositions.find("Mina : case 9.") != std::string::npos,
         "Maj+P doit annoncer la position de tous les joueurs.");
 
+    auto stateWithEmptyPawns = state;
+    stateWithEmptyPawns.kits.pawns = lila::modules::gameplay::domain::GamePawnsView{};
+    Expect(GameCapabilityTextBuilder::Build(stateWithEmptyPawns, "position") ==
+            "Votre position : case 4.\n" &&
+            GameCapabilityTextBuilder::Build(stateWithEmptyPawns, "positions") == allPositions,
+        "Un kit de pions vide ne doit pas masquer les positions de piste pour P et Maj+P.");
+
     payload["kits"]["movement"]["tracks"]["main"]["positions"] =
         nlohmann::json::object();
     const auto initialState =
