@@ -54,8 +54,7 @@ void RoomPanel::HandleAction(std::string_view itemId)
             AppendRoomAnnouncement(message, true);
             return;
         }
-        if (gamePlayPanel_->BeginRoomStart()) return;
-        ExecuteCommand({Command::Start, false, {}});
+        ConfigureStart();
         return;
     case Action::AddBot: ExecuteCommand({Command::AddBot, false, {}}); return;
     case Action::RemoveBot: ExecuteCommand({Command::RemoveBot, false, {}}); return;
@@ -103,6 +102,8 @@ void RoomPanel::ExecuteCommand(domain::RoomCommandRequest request)
                     {
                         weakThis->state_ = State::Ready;
                         weakThis->pendingRealtimeCommand_.reset();
+                        if (command == domain::RoomCommand::SetAmbience)
+                            weakThis->startAfterAmbience_ = false;
                         if (command == domain::RoomCommand::Start)
                             weakThis->gamePlayPanel_->NotifyRoomStartFailed(
                                 lila::shared::text::FromUtf8(error->UserMessage()));
@@ -115,6 +116,12 @@ void RoomPanel::ExecuteCommand(domain::RoomCommandRequest request)
                     // proves that the mutation was actually applied.
                     if (CompletesFromRealtimeState(command)) return;
                     weakThis->state_ = State::Ready;
+                    if (command == domain::RoomCommand::SetAmbience &&
+                        std::exchange(weakThis->startAfterAmbience_, false))
+                    {
+                        weakThis->ExecuteCommand({domain::RoomCommand::Start, false, {}});
+                        return;
+                    }
                     if (command == domain::RoomCommand::SendChat)
                     {
                         weakThis->audioService_.Play(

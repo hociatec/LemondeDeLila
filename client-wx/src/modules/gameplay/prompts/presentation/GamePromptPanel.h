@@ -3,6 +3,7 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <wx/panel.h>
@@ -41,6 +42,8 @@ public:
     void SetValidationErrorHandler(ValidationErrorHandler handler);
     void SetVisibilityChangedHandler(VisibilityChangedHandler handler);
     void SetCandidatesRequestHandler(CandidatesRequestHandler handler);
+    void SetStartAmbiences(std::vector<std::pair<std::string, std::string>> ambiences);
+    void ClearStartAmbiences();
 
     [[nodiscard]] bool ShowPrompt(
         const domain::GamePrompt& prompt,
@@ -80,6 +83,9 @@ private:
     wxButton* candidatesMoreButton_ = nullptr;
     wxButton* cancelButton_ = nullptr;
     wxButton* submitButton_ = nullptr;
+    wxChoice* startAmbienceChoice_ = nullptr;
+    std::vector<std::pair<std::string, std::string>> startAmbiences_;
+    bool includeStartAmbience_ = false;
     std::vector<FieldControl> fields_;
     std::optional<domain::GameAction> action_;
     std::string cancelActionType_;

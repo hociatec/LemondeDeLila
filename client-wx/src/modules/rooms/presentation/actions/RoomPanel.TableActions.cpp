@@ -24,6 +24,40 @@ void RoomPanel::ShowRules()
     UpdateStatus(wxString(L"Chargement des règles..."));
 }
 
+void RoomPanel::ConfigureStart()
+{
+    CancelRequest();
+    state_ = State::Busy;
+    auto result = std::make_shared<std::vector<domain::TableAmbience>>();
+    auto* service = &roomLobbyService_;
+    const auto generation = requestSlot_.CurrentToken();
+    wxWeakRef<RoomPanel> weakThis(this);
+    requestSlot_.Track(lila::shared::concurrency::RunAsync(
+        [service, result](std::stop_token token)
+        { *result = service->ListTableAmbiences(token); },
+        [weakThis, generation, result](std::optional<lila::shared::errors::AppError> error)
+        {
+            if (!weakThis) return;
+            weakThis->CallAfter([weakThis, generation, result, error = std::move(error)]() mutable
+            {
+                if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
+                weakThis->state_ = State::Ready;
+                if (error)
+                {
+                    weakThis->UpdateStatus(lila::shared::text::FromUtf8(error->UserMessage()), true, true);
+                    return;
+                }
+                std::vector<std::pair<std::string, std::string>> ambiences;
+                ambiences.reserve(result->size());
+                for (const auto& ambience : *result)
+                    ambiences.emplace_back(ambience.soundId, ambience.name);
+                weakThis->gamePlayPanel_->SetStartAmbiences(std::move(ambiences));
+                if (weakThis->gamePlayPanel_->BeginRoomStart()) return;
+                weakThis->ExecuteCommand({domain::RoomCommand::Start, false, {}});
+            });
+        }));
+}
+
 void RoomPanel::ConfigureAmbience()
 {
     CancelRequest();
@@ -78,17 +112,28 @@ void RoomPanel::ConfigureAmbience()
                     weakThis->audioService_.Preview(sound->cue);
                     previewActive = true;
                 };
-                dialog.Bind(wxEVT_CHAR_HOOK,
+                const auto handlePreviewKey =
                     [&weakThis, &previewActive, &previewSelected](wxKeyEvent& event)
                     {
-                        if (event.GetKeyCode() != WXK_SPACE)
+                        if (event.GetKeyCode() != WXK_SPACE &&
+                            event.GetKeyCode() != WXK_NUMPAD_SPACE)
                         {
                             event.Skip();
                             return;
                         }
                         if (previewActive) weakThis->audioService_.TogglePreviewPause();
                         else previewSelected();
-                    });
+                    };
+                // Native Windows list boxes do not always propagate CHAR_HOOK
+                // to their dialog. Bind the selected list itself (and every
+                // nested control) so Space always starts or pauses the preview.
+                const auto bindPreviewKeys = [&handlePreviewKey](auto&& self, wxWindow& window) -> void
+                {
+                    window.Bind(wxEVT_KEY_DOWN, handlePreviewKey);
+                    for (auto* child : window.GetChildren()) self(self, *child);
+                };
+                dialog.Bind(wxEVT_CHAR_HOOK, handlePreviewKey);
+                bindPreviewKeys(bindPreviewKeys, dialog);
                 dialog.Bind(wxEVT_LISTBOX,
                     [&previewActive, &previewSelected](wxCommandEvent& event)
                     {

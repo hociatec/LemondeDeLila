@@ -91,6 +91,22 @@ void GamePlayPanel::BindEvents()
     promptPanel_->SetSubmitHandler(
         [this](domain::GameAction action)
         {
+            if (!roomStarted_ && roomStartFlowRequested_ &&
+                action.payload.contains("__tableAmbienceSoundId"))
+            {
+                const auto& value = action.payload["__tableAmbienceSoundId"];
+                if (onStartAmbienceSelected_)
+                    onStartAmbienceSelected_(value.is_string() ? value.get<std::string>() : std::string{});
+                action.payload.erase("__tableAmbienceSoundId");
+                promptPanel_->ClearStartAmbiences();
+            }
+            if (!roomStarted_ && action.type == "__room-start__")
+            {
+                roomStartFlowRequested_ = false;
+                roomStartPending_ = true;
+                if (onRoomStartRequested_) onRoomStartRequested_();
+                return;
+            }
             submittedPromptActionType_ = action.type;
             dismissedPromptActionType_.clear();
             const bool startsRoomAfterSubmission = !roomStarted_ && roomStartFlowRequested_ &&

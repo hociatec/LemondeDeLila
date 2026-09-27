@@ -3,6 +3,7 @@
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
+#include "modules/gameplay/prompts/domain/GamePrompt.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -39,6 +40,16 @@ bool GamePlayPanel::BeginRoomStart()
         if (GetParent()) GetParent()->Layout();
         return true;
     }
+    // Even games without server-side options use the same configuration
+    // panel so the table ambience is always chosen before Start.
+    domain::GamePrompt prompt;
+    prompt.title = "Configuration de démarrage";
+    prompt.actionType = "__room-start__";
+    domain::GameAction action;
+    action.type = prompt.actionType;
+    promptPanel_->ShowPrompt(prompt, std::move(action));
+    if (GetParent()) GetParent()->Layout();
+    return true;
     roomStartFlowRequested_ = false;
     roomStartPending_ = true;
     if (onRoomStartRequested_) onRoomStartRequested_();

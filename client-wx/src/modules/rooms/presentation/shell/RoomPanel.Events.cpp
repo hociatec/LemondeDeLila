@@ -1,5 +1,7 @@
 #include "modules/rooms/presentation/shell/RoomPanel.h"
 
+#include <utility>
+
 #include <wx/event.h>
 #include <wx/textctrl.h>
 #include <wx/toplevel.h>
@@ -68,8 +70,17 @@ void RoomPanel::BindEvents()
     gamePlayPanel_->SetRoomStartRequestedHandler(
         [this]()
         {
+            const auto ambience = std::exchange(pendingStartAmbience_, std::nullopt);
+            if (ambience && *ambience != room_.tableAmbienceSoundId)
+            {
+                startAfterAmbience_ = true;
+                ExecuteCommand({domain::RoomCommand::SetAmbience, false, *ambience});
+                return;
+            }
             ExecuteCommand({domain::RoomCommand::Start, false, {}});
         });
+    gamePlayPanel_->SetStartAmbienceSelectedHandler(
+        [this](std::string soundId) { pendingStartAmbience_ = std::move(soundId); });
     chatInput_->Bind(wxEVT_TEXT_ENTER, [this](wxCommandEvent&) { SendChat(); });
     lila::shared::accessibility::NavigationController::BindTabNavigation(
         *this,
