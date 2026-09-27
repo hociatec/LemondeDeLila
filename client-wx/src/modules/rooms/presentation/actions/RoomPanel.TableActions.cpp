@@ -4,10 +4,12 @@
 #include <algorithm>
 
 #include <wx/choicdlg.h>
+#include <wx/event.h>
 #include <wx/numdlg.h>
 #include <wx/weakref.h>
 
 #include "modules/audio/application/IAudioService.h"
+#include "modules/audio/domain/SoundCatalog.h"
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/rooms/application/RoomLobbyService.h"
 #include "modules/rooms/application/RoomSessionService.h"
@@ -56,10 +58,46 @@ void RoomPanel::ConfigureAmbience()
                         selected = static_cast<int>(index + 1);
                 }
                 wxSingleChoiceDialog dialog(weakThis,
-                    wxString(L"Choisissez une ambiance publiée par le serveur."),
+                    wxString(L"Choisissez une ambiance publiée par le serveur. Espace : lire ou mettre en pause l’aperçu."),
                     wxString(L"Ambiance de table"), labels);
                 dialog.SetSelection(selected);
-                if (dialog.ShowModal() != wxID_OK) return;
+                bool previewActive = false;
+                auto previewSelected = [&dialog, &previewActive, &weakThis, result]()
+                {
+                    const int choice = dialog.GetSelection();
+                    if (choice <= 0 || static_cast<std::size_t>(choice) > result->size())
+                    {
+                        weakThis->audioService_.Preview(std::nullopt);
+                        previewActive = false;
+                        return;
+                    }
+                    const auto& soundId = (*result)[static_cast<std::size_t>(choice - 1)].soundId;
+                    const auto* sound = lila::modules::audio::domain::FindSoundDescriptorByServerId(
+                        soundId);
+                    if (sound == nullptr) return;
+                    weakThis->audioService_.Preview(sound->cue);
+                    previewActive = true;
+                };
+                dialog.Bind(wxEVT_CHAR_HOOK,
+                    [&weakThis, &previewActive, &previewSelected](wxKeyEvent& event)
+                    {
+                        if (event.GetKeyCode() != WXK_SPACE)
+                        {
+                            event.Skip();
+                            return;
+                        }
+                        if (previewActive) weakThis->audioService_.TogglePreviewPause();
+                        else previewSelected();
+                    });
+                dialog.Bind(wxEVT_LISTBOX,
+                    [&previewActive, &previewSelected](wxCommandEvent& event)
+                    {
+                        if (previewActive) previewSelected();
+                        event.Skip();
+                    });
+                const int dialogResult = dialog.ShowModal();
+                weakThis->audioService_.Preview(std::nullopt);
+                if (dialogResult != wxID_OK) return;
                 const int choice = dialog.GetSelection();
                 const std::string soundId = choice <= 0 ? std::string{}
                     : (*result)[static_cast<std::size_t>(choice - 1)].soundId;
