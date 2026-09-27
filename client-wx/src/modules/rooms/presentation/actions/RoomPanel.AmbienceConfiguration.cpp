@@ -3,8 +3,12 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
-#include <wx/choicdlg.h>
+#include <wx/button.h>
+#include <wx/choice.h>
+#include <wx/dialog.h>
 #include <wx/event.h>
+#include <wx/sizer.h>
+#include <wx/stattext.h>
 #include <wx/weakref.h>
 
 #include "modules/audio/application/IAudioService.h"
@@ -32,7 +36,7 @@ void RoomPanel::ToggleAmbiencePreview(const std::string& soundId)
     }
     const auto* sound = lila::modules::audio::domain::FindSoundDescriptorByServerId(soundId);
     if (sound == nullptr) return;
-    audioService_.Preview(sound->cue);
+    audioService_.Preview(sound->cue, static_cast<float>(ambienceVolume_) / 100.0F);
     previewedAmbienceSoundId_ = soundId;
     ambiencePreviewPlaying_ = true;
 }
@@ -41,6 +45,8 @@ void RoomPanel::AdjustAmbienceVolume(int delta)
 {
     ambienceVolume_ = std::clamp(ambienceVolume_ + delta, 0, 100);
     audioService_.SetTableAmbienceVolume(ambienceVolume_);
+    if (!previewedAmbienceSoundId_.empty())
+        audioService_.SetPreviewVolume(static_cast<float>(ambienceVolume_) / 100.0F);
     UpdateStatus(wxString::Format(L"Volume de l’ambiance : %d %%.", ambienceVolume_), false, true);
 }
 
@@ -66,10 +72,22 @@ void RoomPanel::ConfigureAmbience()
                     labels.Add(lila::shared::text::FromUtf8((*result)[i].name));
                     if ((*result)[i].soundId == weakThis->room_.tableAmbienceSoundId) selected = static_cast<int>(i + 1);
                 }
-                wxSingleChoiceDialog dialog(weakThis,
-                    L"Flèche gauche/droite : volume. Espace : lire ou mettre en pause l’aperçu.",
-                    L"Ambiance de table", labels);
-                dialog.SetSelection(selected);
+                wxDialog dialog(weakThis, wxID_ANY, L"Ambiance de table");
+                auto* layout = new wxBoxSizer(wxVERTICAL);
+                layout->Add(new wxStaticText(&dialog, wxID_ANY,
+                    L"Flèche gauche/droite : volume. Espace : lire ou mettre en pause l’aperçu."),
+                    0, wxEXPAND | wxALL, 10);
+                auto* choices = new wxChoice(&dialog, wxID_ANY, wxDefaultPosition,
+                    wxDefaultSize, labels);
+                choices->SetSelection(selected);
+                choices->SetName(L"Ambiance de table");
+                layout->Add(choices, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+                auto* buttons = new wxStdDialogButtonSizer();
+                auto* cancel = new wxButton(&dialog, wxID_CANCEL, L"Annuler");
+                auto* accept = new wxButton(&dialog, wxID_OK, L"Valider");
+                buttons->AddButton(cancel); buttons->AddButton(accept); buttons->Realize();
+                layout->Add(buttons, 0, wxEXPAND | wxALL, 10);
+                dialog.SetSizerAndFit(layout); dialog.SetEscapeId(wxID_CANCEL);
                 const auto key = [&](wxKeyEvent& event)
                 {
                     const int keyCode = event.GetKeyCode();
@@ -84,17 +102,15 @@ void RoomPanel::ConfigureAmbience()
                         return;
                     }
                     if (keyCode != WXK_SPACE && keyCode != WXK_NUMPAD_SPACE) { event.Skip(); return; }
-                    const int choice = dialog.GetSelection();
+                    const int choice = choices->GetSelection();
                     weakThis->ToggleAmbiencePreview(choice <= 0 ? std::string{}
                         : (*result)[static_cast<std::size_t>(choice - 1)].soundId);
                 };
-                // CHAR_HOOK is delivered before the dialog's default button.
-                // Binding both CHAR_HOOK and KEY_DOWN toggled twice per Space,
-                // which made the preview appear not to react.
-                dialog.Bind(wxEVT_CHAR_HOOK, key);
+                choices->Bind(wxEVT_CHAR_HOOK, key);
+                choices->SetFocus();
                 const int accepted = dialog.ShowModal(); weakThis->ToggleAmbiencePreview({});
                 if (accepted != wxID_OK) return;
-                const int choice = dialog.GetSelection();
+                const int choice = choices->GetSelection();
                 weakThis->ExecuteCommand({domain::RoomCommand::SetAmbience, false, choice <= 0 ? std::string{} : (*result)[static_cast<std::size_t>(choice - 1)].soundId});
             });
         }));

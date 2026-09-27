@@ -18,6 +18,12 @@ public:
     {
         if (cue) Play(*cue);
     }
+    virtual void Preview(std::optional<domain::SoundCue> cue, float volume)
+    {
+        static_cast<void>(volume);
+        Preview(cue);
+    }
+    virtual void SetPreviewVolume(float volume) { static_cast<void>(volume); }
     virtual void TogglePreviewPause() {}
     virtual void StartLoop(domain::SoundCue cue) = 0;
     virtual void StopLoop() = 0;

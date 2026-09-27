@@ -110,6 +110,11 @@ void BassAudioBackend::SetLoop(std::optional<domain::SoundCue> cue, float volume
 
 void BassAudioBackend::Preview(std::optional<domain::SoundCue> cue)
 {
+    Preview(cue, 1.0F);
+}
+
+void BassAudioBackend::Preview(std::optional<domain::SoundCue> cue, float volume)
+{
     if (previewStream_ != 0)
     {
         BASS_StreamFree(previewStream_);
@@ -122,9 +127,15 @@ void BassAudioBackend::Preview(std::optional<domain::SoundCue> cue)
     previewStream_ = BASS_StreamCreateFile(FALSE, path.c_str(), 0, 0, BASS_UNICODE);
     if (previewStream_ != 0)
     {
-        BASS_ChannelSetAttribute(previewStream_, BASS_ATTRIB_VOL, 1.0F);
+        BASS_ChannelSetAttribute(previewStream_, BASS_ATTRIB_VOL, volume);
         BASS_ChannelPlay(previewStream_, FALSE);
     }
+}
+
+void BassAudioBackend::SetPreviewVolume(float volume)
+{
+    if (previewStream_ != 0)
+        BASS_ChannelSetAttribute(previewStream_, BASS_ATTRIB_VOL, volume);
 }
 
 void BassAudioBackend::TogglePreviewPause()
