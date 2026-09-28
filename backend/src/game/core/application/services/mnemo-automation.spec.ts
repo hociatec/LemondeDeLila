@@ -10,9 +10,71 @@ import { BotSettingsService } from './bot-settings.service';
 import { GameExecutionScopeService } from './game-execution-scope.service';
 import { FixedGameClock } from '../models/game-execution-context.model';
 import type { GameState } from '../models/game-state.model';
-import manifest from '../../../games/vents-infinis/arche-de-mnemosyne/manifest.json';
-import documentExtensionSource from '../../../games/vents-infinis/arche-de-mnemosyne/game.json';
-import quiz from '../../../games/vents-infinis/arche-de-mnemosyne/quiz.json';
+
+const manifest = {
+  code: 'simultaneous-quiz-automation',
+  name: 'Quiz automatique',
+  minPlayers: 2,
+  maxPlayers: 8,
+  engine: 'simultaneous-quiz-automation',
+};
+const documentExtensionSource = {
+  schemaVersion: 1,
+  contentVersion: '1',
+  definitionVersion: '1',
+  category: 'Tests',
+  world: 'Tests',
+  patterns: [],
+  components: [],
+  setup: {},
+  resourceIds: [],
+  shortcuts: [],
+  initialPhase: 'setup',
+  phases: {
+    setup: { actions: [], transitions: ['playing'] },
+    playing: { actions: ['answer', 'timeout', 'ready'], terminal: true },
+  },
+  actions: {
+    answer: { recipe: 'choice-simultaneous-quiz-answer' },
+    timeout: { recipe: 'choice-simultaneous-quiz-timeout' },
+    ready: { recipe: 'choice-simultaneous-quiz-ready' },
+  },
+  victory: { kind: 'by-simultaneous-quiz' },
+  extensions: [
+    {
+      type: 'simultaneousQuiz',
+      config: {
+        categories: { $content: 'content/quiz.json#/categories' },
+        questions: { $content: 'content/quiz.json#/questions' },
+        defaults: {
+          categoryId: 'all',
+          questionsPerRound: 5,
+          targetPoints: 20,
+          useTimer: true,
+          timerSeconds: 30,
+          interQuestionSeconds: 0,
+          correctSoloPoints: 2,
+          correctMultiPoints: 1,
+          wrongPoints: 0,
+          timeoutPoints: -1,
+        },
+      },
+    },
+  ],
+};
+const quiz = {
+  categories: [{ id: 'test', name: 'Test' }],
+  questions: Array.from({ length: 5 }, (_, index) => ({
+    id: `question-${index}`,
+    categoryId: 'test',
+    question: `Question ${index}`,
+    correct: 'Bonne réponse',
+    wrong1: 'Réponse 1',
+    wrong2: 'Réponse 2',
+    wrong3: 'Réponse 3',
+    status: 'validated',
+  })),
+};
 const document = legacyExtensionFixture(
   documentExtensionSource,
   'simultaneousQuiz',
