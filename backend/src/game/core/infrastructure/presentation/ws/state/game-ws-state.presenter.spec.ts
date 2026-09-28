@@ -903,7 +903,7 @@ describe('GameWsStatePresenter', () => {
       .filter(Boolean);
     expect(messages).toEqual([
       'Vous avez choisi « Capitaine Cacahuète ».',
-      "C'est au tour de Hacene.",
+      "C'est à votre tour.",
     ]);
   });
   it('explains manual draws and movement bonuses to players and spectators', () => {
