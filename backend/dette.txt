@@ -133,14 +133,6 @@
 
 90. Empêcher la publication d'un événement durable avant le commit correspondant.
 
-91. Faire passer tout hasard métier par un RNG injecté.
-
-92. Éliminer l'utilisation directe de hasard global dans les règles.
-
-93. Faire passer le temps métier par une horloge contrôlée.
-
-94. Éliminer `Date.now()` des règles déterministes.
-
 95. Stabiliser explicitement tous les tris ayant une conséquence métier.
 
 96. Garantir qu'état initial identique, commande identique et graine identique produisent le même résultat.
