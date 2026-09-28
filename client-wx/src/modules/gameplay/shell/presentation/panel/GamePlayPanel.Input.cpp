@@ -13,13 +13,14 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     if (const auto lifecycle = HandleInputLifecycle(event); lifecycle)
         return *lifecycle;
     const auto key = NormalizeKey(event);
+    const int keyCode = event.GetKeyCode();
     const auto genericPanel =
         application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(state_, key);
     if (!genericPanel.empty())
     {
         const auto message = application::info::GameCapabilityTextBuilder::Build(
             state_, genericPanel);
-        if (!message.empty()) UpdateStatus(FromUtf8(message), false, true);
+        if (!message.empty()) UpdateStatus(lila::shared::text::FromUtf8(message), false, true);
         return true;
     }
     if (inputSubmissionGuard_.IsInFlight())
@@ -34,7 +35,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     {
         return pawnSelectionPanel_->HandleKey(event);
     }
-    const int keyCode = event.GetKeyCode();
     // Tab belongs to RoomPanel's two-zone navigation. Handling it here would
     // trap the keyboard inside the hand because this panel uses CHAR_HOOK.
     if (keyCode == WXK_TAB || keyCode == WXK_NUMPAD_TAB) return false;
