@@ -27,7 +27,7 @@ bool GamePlayPanel::AnnounceSelectedHandCard()
     auto text = application::cards::GameCardTextBuilder::AccessibleText(*selected);
     if (state_.gameType == "zig-et-zag")
         text += " Dans Zig et Zag, posez-la sur la table : la carte la plus forte remporte la bataille.";
-    UpdateStatus(FromUtf8(text), false, true);
+    UpdateStatus(lila::shared::text::FromUtf8(text), false, true);
     return true;
 }
 }
