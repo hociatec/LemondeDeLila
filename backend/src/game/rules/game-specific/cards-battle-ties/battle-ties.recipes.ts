@@ -1,10 +1,11 @@
 import {
   defineGamePhases,
   completeRound,
+  gameInput,
 } from '../../../engine/sdk/public-api';
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { BattleTiesProgram } from './program';
-import { defineEmptyAction } from '../../../engine/sdk/extension-api';
+import { defineAction } from '../../../engine/sdk/extension-api';
 import { rejectRule } from '../../../engine/sdk/extension-api';
 import { GameCorruptedStateError } from '../../../core/domain/errors/game-runtime.errors';
 
@@ -33,18 +34,35 @@ export function battleTiesRules(source: BattleTiesProgram) {
       'battle-face-up': { transitions: ['battle-face-down', 'selection'] },
     },
   });
-  const draw = defineEmptyAction<State>({
+  const draw = defineAction<State, { cardId?: string }>({
+    ui: { label: 'Poser une carte', control: 'card' },
+    input: gameInput.object({ cardId: gameInput.optional(gameInput.cardId()) }),
     documentation:
-      'Retourne une carte de la pile privée pour la manche en cours.',
+      'Pose la carte choisie de la pile privée pour la manche en cours.',
     available: ({ state, actor, ctx }) =>
       waiting(runtime(state).battle, ctx, phases)[0] === actor.id,
-    execute: ({ state, actor, ctx }) => {
+    validate: ({ state, actor, input, ctx }) =>
+      waiting(runtime(state).battle, ctx, phases)[0] === actor.id &&
+      (input.cardId == null ||
+        ctx.cards
+          .hand<string>(program.handId, actor.id)
+          .includes(input.cardId)),
+    enumerate: ({ actor, ctx }) =>
+      ctx.cards
+        .hand<string>(program.handId, actor.id)
+        .map((cardId) => ({ cardId })),
+    execute: ({ state, actor, input, ctx }) => {
       const current = runtime(state);
       if (waiting(current.battle, ctx, phases)[0] !== actor.id)
         rejectRule('Ce joueur ne doit pas encore retourner de carte');
       const hand = ctx.cards.hand<string>(program.handId, actor.id);
-      const cardId = ctx.random.pick(hand);
+      // Card actions enumerate every card in the private hand so Enter on a
+      // selected card plays that card. The optional fallback preserves the
+      // historical Space shortcut, which selects a card at random.
+      const cardId = input.cardId ?? ctx.random.pick(hand);
       if (!cardId) rejectRule('Pile battle-ties cards vide');
+      if (!hand.includes(cardId))
+        rejectRule('Cette carte ne fait pas partie de votre pile');
       ctx.cards.take(program.handId, actor.id, cardId);
       const play = current.battle.plays.find(
         (item) => item.playerId === actor.id,

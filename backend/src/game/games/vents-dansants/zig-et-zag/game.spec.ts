@@ -11,6 +11,25 @@ const gameDefinition = compileJsonGame(manifest, document, {
 });
 
 describe('Zig et Zag declarative game', () => {
+  it('plays the card selected in the hand', async () => {
+    const game = testGame(gameDefinition).players(['Zig', 'Zag']).seed(0);
+    await game.start();
+    const selected = game.inspect.hand(1)[5] as string;
+
+    await game.as(1).do('draw_card', { cardId: selected });
+
+    expect(game.inspect.hand(1)).not.toContain(selected);
+    const state = game.state() as unknown as {
+      game: {
+        battle: { plays: Array<{ playerId: number; playedCards: string[] }> };
+      };
+    };
+    expect(state.game.battle.plays).toContainEqual({
+      playerId: 1,
+      playedCards: [selected],
+    });
+  });
+
   it('captures distinct bonus cards after a tied battle', async () => {
     const game = testGame(gameDefinition).players(['Zig', 'Zag']).seed(0);
     await game.start();
