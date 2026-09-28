@@ -9,7 +9,7 @@ namespace lila::modules::chat::application
 {
 ChatService::ChatService(
     IChatGateway& gateway,
-    lila::modules::chat::infrastructure::IChatProtocol& protocol,
+    IChatProtocol& protocol,
     lila::modules::session::application::SessionStore& sessionStore,
     lila::modules::options::application::OptionsStore& optionsStore,
     lila::modules::audio::application::IAudioService& audioService)
