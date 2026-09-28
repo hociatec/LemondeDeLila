@@ -19,6 +19,11 @@ describe('Zig et Zag declarative game', () => {
     await game.as(1).do('draw_card', { cardId: selected });
 
     expect(game.inspect.hand(1)).not.toContain(selected);
+    expect(
+      game
+        .state()
+        .log.some((entry) => entry.key === 'cards-battle-ties.card.placed'),
+    ).toBe(true);
     const state = game.state() as unknown as {
       game: {
         battle: { plays: Array<{ playerId: number; playedCards: string[] }> };

@@ -31,40 +31,20 @@
     "startRound": true
   },
   "resourceIds": [],
-  "shortcuts": [
-    {
-      "key": "Space",
-      "type": "action",
-      "actionType": "draw_card"
-    }
-  ],
+  "shortcuts": [],
   "initialPhase": "selection",
   "phases": {
     "selection": {
-      "actions": [
-        "draw_card"
-      ],
-      "transitions": [
-        "battle-face-down"
-      ]
+      "actions": ["draw_card"],
+      "transitions": ["battle-face-down"]
     },
     "battle-face-down": {
-      "actions": [
-        "draw_card"
-      ],
-      "transitions": [
-        "battle-face-up",
-        "selection"
-      ]
+      "actions": ["draw_card"],
+      "transitions": ["battle-face-up", "selection"]
     },
     "battle-face-up": {
-      "actions": [
-        "draw_card"
-      ],
-      "transitions": [
-        "battle-face-down",
-        "selection"
-      ]
+      "actions": ["draw_card"],
+      "transitions": ["battle-face-down", "selection"]
     }
   },
   "actions": {
