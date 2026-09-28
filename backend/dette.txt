@@ -1,17 +1,7 @@
 
-1. Supprimer toute référence à un jeu concret dans `game/engine`.
-
 2. Supprimer toute référence à un jeu concret dans le `game/core` générique.
 
 6. Rechercher et supprimer les autres identifiants de jeux présents dans les couches génériques.
-
-7. Interdire tout import `engine -> game-specific`.
-
-8. Interdire tout import `core générique -> game-specific` hors composition.
-
-9. Interdire tout `if` moteur dépendant d'un `gameType` concret.
-
-10. Interdire tout `switch` moteur dépendant d'un `gameType` concret.
 
 11. Interdire au moteur de connaître les événements spécifiques d'un jeu.
 
