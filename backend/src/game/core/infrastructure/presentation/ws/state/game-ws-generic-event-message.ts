@@ -192,7 +192,9 @@ function activityMessage(
 }
 
 function turnStartedMessage(name: string): string {
-  return name === 'Vous' ? "C'est à votre tour." : `C'est au tour de ${name}.`;
+  if (name === 'Vous') return "C'est à votre tour.";
+  const preposition = /^[aeiouyhàâäéèêëîïôöùûü]/iu.test(name) ? 'd’' : 'de ';
+  return `C'est au tour ${preposition}${name}.`;
 }
 
 function inventoryMessage(

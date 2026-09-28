@@ -358,7 +358,7 @@ export class GameWsStateMessagesPresenter {
           : 'Une nouvelle manche commence.',
       'Tout le monde reçoit son paquet de cartes.',
     ];
-    if (starter) messages.push(`C'est au tour de ${starter}.`);
+    if (starter) messages.push(turnAnnouncement(starter));
     return messages.join('\n');
   }
 
@@ -370,7 +370,7 @@ export class GameWsStateMessagesPresenter {
     const playerId = this.numberValue(nextTurnData.playerId);
     if (playerId == null) return message;
     const name = players.get(playerId) ?? `Joueur ${playerId}`;
-    return `${message}\nC'est au tour de ${name}.`;
+    return `${message}\n${turnAnnouncement(name)}`;
   }
 
   private scoreMessage(
@@ -435,6 +435,11 @@ function withDefiniteArticle(value: string): string {
 
 function fromHabitat(value: string): string {
   return /^[aeiouyéèêëàâîïôöùûü]/iu.test(value) ? `l’${value}` : `la ${value}`;
+}
+
+function turnAnnouncement(name: string): string {
+  const preposition = /^[aeiouyhàâäéèêëîïôöùûü]/iu.test(name) ? 'd’' : 'de ';
+  return `C'est au tour ${preposition}${name}.`;
 }
 
 function isActiveMatchStatus(value: unknown): boolean {
