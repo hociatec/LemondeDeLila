@@ -229,7 +229,9 @@ export class GameWsStateMessagesPresenter {
           ? play.cardNames.filter((card): card is string => typeof card === 'string')
           : [];
         return playerName && cardNames.length > 0
-          ? [`${playerName} a posé : ${cardNames.join(', ')}.`]
+          ? [playerName === 'Vous'
+            ? `Vous avez posé : ${cardNames.join(', ')}.`
+            : `${playerName} a posé : ${cardNames.join(', ')}.`]
           : [];
       });
       return [result, ...revealed].join(' ');
