@@ -2,7 +2,7 @@
 
 #include <nlohmann/json_fwd.hpp>
 
-#include "modules/gameplay/state/domain/GameCapabilities.h"
+#include "modules/gameplay/state/domain/GameCardCapabilities.h"
 
 namespace lila::modules::gameplay::infrastructure
 {

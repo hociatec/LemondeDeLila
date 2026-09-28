@@ -118,6 +118,9 @@ private:
     bool AnnounceSelectedHandCard();
     bool ActivateDiceRoll();
     bool ActivateSelectedGridCell();
+    [[nodiscard]] std::optional<bool> HandleInputLifecycle(wxKeyEvent& event);
+    [[nodiscard]] bool HandleFocusedActivation();
+    [[nodiscard]] bool HandleTableShortcut(wxKeyEvent& event) const;
     [[nodiscard]] bool ShouldCaptureWhileAwaitingStartedState(
         const std::string& normalizedKey) const;
     void SyncInlinePrompt();
