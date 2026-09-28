@@ -218,15 +218,26 @@ export class GameWsStateMessagesPresenter {
       const cardsWon = this.numberValue(params.cardsWon);
       if (cardsWon == null) return '';
       const cards = `carte${cardsWon === 1 ? '' : 's'}`;
-      return namedPlayer === 'Vous'
+      const result = namedPlayer === 'Vous'
         ? `Vous remportez la bataille et gagnez ${cardsWon} ${cards}.`
         : `${namedPlayer} remporte la bataille et gagne ${cardsWon} ${cards}.`;
+      const plays = Array.isArray(params.plays) ? params.plays : [];
+      const revealed = plays.flatMap((value) => {
+        const play = this.asRecord(value);
+        const playerName = player(play.playerId);
+        const cardNames = Array.isArray(play.cardNames)
+          ? play.cardNames.filter((card): card is string => typeof card === 'string')
+          : [];
+        return playerName && cardNames.length > 0
+          ? [`${playerName} a posé : ${cardNames.join(', ')}.`]
+          : [];
+      });
+      return [result, ...revealed].join(' ');
     }
     if (messageKey === 'cards-battle-ties.card.placed' && namedPlayer) {
-      const cardName = this.stringValue(params.cardName);
       return namedPlayer === 'Vous'
-        ? `Vous posez la carte ${cardName || 'sélectionnée'} sur la table.`
-        : `${namedPlayer} pose la carte ${cardName || 'sélectionnée'} sur la table.`;
+        ? 'Vous posez une carte sur la table.'
+        : `${namedPlayer} pose une carte sur la table.`;
     }
     if (messageKey === 'cards-battle-ties.battle.started')
       return 'Égalité : une bataille commence.';

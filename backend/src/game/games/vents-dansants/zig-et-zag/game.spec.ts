@@ -27,7 +27,7 @@ describe('Zig et Zag declarative game', () => {
     expect(game.state().log).toContainEqual(
       expect.objectContaining({
         key: 'cards-battle-ties.card.placed',
-        params: expect.objectContaining({ playerId: 1, cardName: expect.any(String) }),
+        params: expect.objectContaining({ playerId: 1 }),
       }),
     );
     const state = game.state() as unknown as {
