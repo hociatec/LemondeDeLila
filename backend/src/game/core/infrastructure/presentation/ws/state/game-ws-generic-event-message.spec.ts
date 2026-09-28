@@ -30,6 +30,15 @@ describe('genericGameEventMessage', () => {
     );
   });
 
+  it('uses the direct form when the viewer starts the turn', () => {
+    expect(message('turn.started', { playerId: 1 }, 1, 1)).toBe(
+      "C'est à votre tour.",
+    );
+    expect(message('turn.started', { playerId: 2 }, 2, 1)).toBe(
+      "C'est au tour de Baloo.",
+    );
+  });
+
   it('announces a grid move with human-readable coordinates', () => {
     expect(
       message('morpion.mark.placed', { playerId: 1, x: 0, y: 2 }, 1, 1),
