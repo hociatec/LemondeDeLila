@@ -3,8 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "modules/chat/infrastructure/ChatProtocol.h"
-#include "modules/chat/infrastructure/ChatProtocolFields.h"
+#include "generated/protocol/ChatProtocolFields.generated.h"
 #include "modules/options/application/OptionsStore.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/config/domain/AppConfig.h"

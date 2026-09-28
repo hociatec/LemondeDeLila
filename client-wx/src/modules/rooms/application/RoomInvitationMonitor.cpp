@@ -4,7 +4,7 @@
 #include <condition_variable>
 #include <chrono>
 
-#include "modules/rooms/infrastructure/RoomInvitationPayloadCodec.h"
+#include "modules/rooms/application/RoomInvitationParser.h"
 #include "modules/session/application/SessionConnectionRetry.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
@@ -94,7 +94,7 @@ void RoomInvitationMonitor::ApplyMessage(const std::string& rawJson)
     std::function<void(const std::string&)> messageHandler;
     { std::scoped_lock lock(mutex_); messageHandler = onMessage_; }
     if (messageHandler) messageHandler(rawJson);
-    auto invitation = lila::modules::rooms::infrastructure::ReadRoomInvitationMessage(rawJson);
+    auto invitation = ParseRoomInvitation(rawJson);
     if (!invitation) return;
     InvitationHandler handler;
     {

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "modules/chat/domain/ChatMessage.h"
-#include "modules/chat/infrastructure/ChatProtocolFields.h"
+#include "generated/protocol/ChatProtocolFields.generated.h"
 
 namespace lila::modules::chat::application
 {

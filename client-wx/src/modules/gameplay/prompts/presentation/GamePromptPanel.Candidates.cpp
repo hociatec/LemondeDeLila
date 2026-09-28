@@ -10,7 +10,7 @@
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
-#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
+#include "modules/gameplay/state/application/GameValuePayloadCodec.h"
 
 namespace lila::modules::gameplay::presentation::prompt
 {
@@ -23,7 +23,7 @@ std::string GamePromptPanel::BuildSignature(const domain::GamePrompt& prompt)
                   << ':' << field.multiple << ':' << field.ordering;
     for (const auto& field : prompt.fields)
         for (const auto& choice : field.choices)
-            signature << ':' << infrastructure::EncodeGameValue(choice).dump();
+            signature << ':' << application::EncodeGameValuePayload(choice).dump();
     return signature.str();
 }
 
@@ -69,7 +69,7 @@ void GamePromptPanel::RequestCandidates(bool reset)
     request.offset = reset ? 0 : nextCandidatesOffset_.value_or(0);
     const auto search = std::string(candidatesQuery_->GetValue().ToUTF8().data());
     if (!search.empty()) request.query.emplace("search", domain::GameValue{search});
-    request.query.emplace("context", infrastructure::DecodeGameValue(action_->payload));
+    request.query.emplace("context", application::DecodeGameValuePayload(action_->payload));
     if (reset)
     {
         candidates_.clear();
