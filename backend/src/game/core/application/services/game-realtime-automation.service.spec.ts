@@ -279,6 +279,29 @@ describe('GameRealtimeAutomationService', () => {
     );
   });
 
+  it('never publishes an automatic result when its CAS is rejected', async () => {
+    const test = harness();
+    const committed = jest.fn();
+    test.service.setStateCommittedHandler(committed);
+    test.engine.compareAndSetInternalState.mockResolvedValue({
+      committed: false,
+      version: 4,
+      state: test.current,
+    });
+    test.service.schedule({
+      roomId: 12,
+      gameType: 'example',
+      handler: test.runtime,
+      state: test.current,
+    });
+    await Promise.resolve();
+
+    await expect(test.processor()(test.scheduled[0]!)).rejects.toThrow(
+      'État modifié par une commande concurrente',
+    );
+    expect(committed).not.toHaveBeenCalled();
+  });
+
   it('does not commit or reschedule an already applied automatic command', async () => {
     const current = state();
     const test = harness(current);
