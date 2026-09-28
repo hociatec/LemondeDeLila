@@ -199,6 +199,21 @@ export class GameWsStateMessagesPresenter {
       return namedPlayer === 'Vous'
         ? 'Vous devez choisir votre pion.'
         : `${namedPlayer} doit choisir son pion.`;
+    if (messageKey === 'foulees.family.selected' && namedPlayer) {
+      const habitat = this.stringValue(params.habitat);
+      if (!habitat) return '';
+      return namedPlayer === 'Vous'
+        ? `Vous avez choisi ${withDefiniteArticle(habitat)}.`
+        : `${namedPlayer} a choisi ${withDefiniteArticle(habitat)}.`;
+    }
+    if (messageKey === 'foulees.dice.rolled' && namedPlayer) {
+      const total = this.numberValue(params.total);
+      if (total == null) return '';
+      const value = frenchNumber(total);
+      return namedPlayer === 'Vous'
+        ? `Vous lancez le dé et faites un ${value}.`
+        : `${namedPlayer} lance le dé et fait un ${value}.`;
+    }
     if (messageKey === 'game.pawn.bonus-advance' && namedPlayer)
       return this.pawnBonusMessage(namedPlayer, params);
     if (messageKey === 'game.team-pawn.moved' && namedPlayer)
@@ -268,17 +283,19 @@ export class GameWsStateMessagesPresenter {
     params: Record<string, unknown>,
   ): string {
     const pawn = scalarMessageText(params.pawnLabel) || 'le pion';
+    const origin = this.stringValue(params.originLabel) || 'enclos';
     const position = this.numberValue(params.position);
     if (position == null) return '';
     if (params.enteredTrack === true)
       return namedPlayer === 'Vous'
-        ? `Vous sortez ${pawn} et le placez en case ${position}.`
-        : `${namedPlayer} sort ${pawn} et le place en case ${position}.`;
+        ? `Vous sortez votre ${pawn} de ${fromHabitat(origin)} et le placez en case ${position}.`
+        : `${namedPlayer} sort son ${pawn} de ${fromHabitat(origin)} et le place en case ${position}.`;
     const distance = this.numberValue(params.distance) ?? 0;
     const spaces = `case${Math.abs(distance) === 1 ? '' : 's'}`;
+    const amount = frenchNumber(Math.abs(distance));
     return namedPlayer === 'Vous'
-      ? `Vous déplacez ${pawn} de ${distance} ${spaces} : il est en case ${position}.`
-      : `${namedPlayer} déplace ${pawn} de ${distance} ${spaces} : il est en case ${position}.`;
+      ? `Vous déplacez votre ${pawn} de ${amount} ${spaces} et le placez en case ${position}.`
+      : `${namedPlayer} déplace son ${pawn} de ${amount} ${spaces} et le place en case ${position}.`;
   }
 
   private drawnCardMessage(input: {
@@ -405,6 +422,19 @@ function scoreUnit(
     plural: 'points',
   };
   return Math.abs(value) === 1 ? unit.singular : unit.plural;
+}
+
+function frenchNumber(value: number): string {
+  const values = ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six'];
+  return values[value] ?? String(value);
+}
+
+function withDefiniteArticle(value: string): string {
+  return /^[aeiouyéèêëàâîïôöùûü]/iu.test(value) ? `l’${value}` : `la ${value}`;
+}
+
+function fromHabitat(value: string): string {
+  return /^[aeiouyéèêëàâîïôöùûü]/iu.test(value) ? `l’${value}` : `la ${value}`;
 }
 
 function isActiveMatchStatus(value: unknown): boolean {

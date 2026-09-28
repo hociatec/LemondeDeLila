@@ -28,6 +28,14 @@ export function teamPawnRaceRules(source: TeamPawnRaceProgram) {
       const first = ctx.players.all()[0];
       if (first) ctx.turn.to(first.id);
     },
+    assigned: ({ playerId, pawnId, ctx }) => {
+      const family = program.families.find((candidate) => candidate.id === pawnId);
+      if (family)
+        ctx.events.message('foulees.family.selected', {
+          playerId,
+          habitat: family.habitat,
+        });
+    },
   });
   const finishTurn = (total: number, ctx: Context) => {
     if (program.extraTurnRolls.includes(total)) ctx.turn.extra();
@@ -36,6 +44,10 @@ export function teamPawnRaceRules(source: TeamPawnRaceProgram) {
   const roll = rollDice<State>({
     diceId: program.diceId,
     available: ({ ctx }) => ctx.phase.current() === 'turn',
+    message: ({ playerId, total }) => ({
+      key: 'foulees.dice.rolled',
+      params: { playerId, total },
+    }),
     execute: ({ playerId, total, ctx }) => {
       const moves = legalMoves(program, playerId, total, ctx);
       if (moves.length === 0) return finishTurn(total, ctx);
@@ -176,6 +188,9 @@ function move(
     distance: selected.distance,
     position: selected.to + 1,
     enteredTrack: selected.from < 0 && selected.to >= 0,
+    originLabel:
+      program.families.find((family) => selected.pawnId.startsWith(`${family.id}:`))
+        ?.habitat ?? 'enclos',
   });
 }
 
