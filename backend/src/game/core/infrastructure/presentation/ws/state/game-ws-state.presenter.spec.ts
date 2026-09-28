@@ -567,7 +567,7 @@ describe('GameWsStatePresenter', () => {
                 id: '4:0',
                 type: 'game.message',
                 data: {
-                  key: 'goose.tile.effect',
+                  key: 'game.board.tile-description',
                   params: {
                     playerId: 1,
                     tileLabel: 'Oie',
