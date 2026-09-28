@@ -71,6 +71,37 @@ describe('backend debt contracts', () => {
     expect(definitions).toContain('GameEventDefinition<TType, TData>');
   });
 
+  it('keeps the command executor as the only production action-application boundary', () => {
+    const coreRoot = resolve(__dirname, '../../../core');
+    const applyActionFiles = walkProductionTs(coreRoot).filter(({ source }) =>
+      /\.applyActions\s*\(/.test(source),
+    );
+    expect(applyActionFiles.map(({ file }) => file)).toEqual([
+      'application/services/game-command-executor.service.ts',
+    ]);
+
+    const commandEntrypoints = [
+      'infrastructure/presentation/ws/game-ws.handler.ts',
+      'application/services/game-realtime-automation.service.ts',
+    ].map((file) => ({
+      file,
+      source: readFileSync(resolve(coreRoot, file), 'utf8'),
+    }));
+    for (const entrypoint of commandEntrypoints) {
+      expect(entrypoint.source).toContain('this.executor.execute({');
+      expect(entrypoint.source).not.toMatch(/\.applyActions\s*\(/);
+    }
+    expect(
+      gameSources().filter(
+        ({ file, source }) =>
+          !file.endsWith('.spec.ts') &&
+          /GameCommandExecutorService|compareAndSetInternalState|\.applyActions\s*\(/.test(
+            source,
+          ),
+      ),
+    ).toEqual([]);
+  });
+
   it('keeps lightweight cards optional and reserves system view namespaces', () => {
     const lightweight: CardInstance<'lama'> = 'lama';
     const stateful: CardInstance<
@@ -635,4 +666,26 @@ function walkTs(directory: string): string[] {
       return file.endsWith('.ts') ? [file] : [];
     })
     .sort();
+}
+
+function walkProductionTs(
+  directory: string,
+  root = directory,
+): Array<{ file: string; source: string }> {
+  return readdirSync(directory)
+    .flatMap((entry) => {
+      const file = resolve(directory, entry);
+      const stats = statSync(file);
+      if (stats.isDirectory()) {
+        return entry === 'testing' ? [] : walkProductionTs(file, root);
+      }
+      if (!file.endsWith('.ts') || file.endsWith('.spec.ts')) return [];
+      return [
+        {
+          file: file.slice(root.length + 1).replaceAll('\\', '/'),
+          source: readFileSync(file, 'utf8'),
+        },
+      ];
+    })
+    .sort((left, right) => left.file.localeCompare(right.file));
 }

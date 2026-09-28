@@ -113,10 +113,6 @@
 
 ### État, déterminisme et replay
 
-81. Conserver `GameCommandExecutorService` comme frontière d'exécution si sa responsabilité reste unique.
-
-82. Empêcher les jeux de contourner le command executor.
-
 87. Conserver la protection `restoreId`.
 
 88. Vérifier que toutes les mutations utilisent la même stratégie de concurrence.
