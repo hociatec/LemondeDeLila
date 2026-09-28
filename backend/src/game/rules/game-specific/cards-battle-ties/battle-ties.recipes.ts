@@ -153,6 +153,10 @@ export function battleTiesRules(source: BattleTiesProgram) {
       for (const cardId of tableCards)
         ctx.cards.give(program.handId, winnerId, cardId);
       captureBonus(state.battle, winnerId, ctx);
+      ctx.events.message('cards-battle-ties.battle.won', {
+        playerId: winnerId,
+        cardsWon: tableCards.length,
+      });
     }
     state.lastRound = {
       roundNumber: ctx.round.number,

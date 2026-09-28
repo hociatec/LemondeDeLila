@@ -50,7 +50,11 @@ function cardAndTurnMessage(
     return `${actor} ${actor === 'Vous' ? 'piochez' : 'pioche'} une carte.`;
   if (type === 'card.received') {
     const name = player(data.playerId);
-    return name ? `${name} reçoit une carte.` : '';
+    return name
+      ? name === 'Vous'
+        ? 'Vous recevez une carte.'
+        : `${name} reçoit une carte.`
+      : '';
   }
   if (type === 'card.played' && actor)
     return `${actor} joue ${scalarText(data.card) || 'une carte'}.`;

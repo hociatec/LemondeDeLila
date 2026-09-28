@@ -1081,7 +1081,7 @@ describe('GameWsStatePresenter', () => {
     });
     const events = presentedSystem(payload.system).events.latestByType;
     expect(events['game.message'].data.message).toBe(
-      "La partie démarre.\nTout le monde reçoit son paquet de cartes.\nC'est au tour de hacene.",
+      "La partie démarre.\nTout le monde reçoit son paquet de cartes.\nC'est au tour d’hacene.",
     );
     expect(presentedSystem(payload.system).events.recent[0].data.message).toBe(
       events['game.message'].data.message,
