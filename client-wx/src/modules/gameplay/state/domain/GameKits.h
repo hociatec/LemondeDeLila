@@ -4,7 +4,11 @@
 #include <optional>
 #include <string>
 
-#include "modules/gameplay/state/domain/GameCapabilities.h"
+#include "modules/gameplay/state/domain/GameAssetCapabilities.h"
+#include "modules/gameplay/state/domain/GameBoardCapabilities.h"
+#include "modules/gameplay/state/domain/GameCardCapabilities.h"
+#include "modules/gameplay/state/domain/GamePlayerValueCapabilities.h"
+#include "modules/gameplay/state/domain/GameWorkflowCapabilities.h"
 #include "modules/gameplay/state/domain/GameValue.h"
 
 namespace lila::modules::gameplay::domain

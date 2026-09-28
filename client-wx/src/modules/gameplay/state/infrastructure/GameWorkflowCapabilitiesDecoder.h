@@ -5,7 +5,7 @@
 
 #include <nlohmann/json_fwd.hpp>
 
-#include "modules/gameplay/state/domain/GameCapabilities.h"
+#include "modules/gameplay/state/domain/GameWorkflowCapabilities.h"
 
 namespace lila::modules::gameplay::infrastructure
 {

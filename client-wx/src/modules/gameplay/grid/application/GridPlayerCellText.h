@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
-#include "modules/gameplay/state/domain/GameCapabilities.h"
+#include "modules/gameplay/state/domain/GameBoardCapabilities.h"
 #include "modules/gameplay/state/domain/GameSystem.h"
 
 namespace lila::modules::gameplay::application::grid

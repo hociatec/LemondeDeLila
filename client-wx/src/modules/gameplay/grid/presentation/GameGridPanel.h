@@ -6,7 +6,7 @@
 #include <wx/panel.h>
 
 #include "modules/gameplay/actions/domain/GameAction.h"
-#include "modules/gameplay/state/domain/GameCapabilities.h"
+#include "modules/gameplay/state/domain/GameBoardCapabilities.h"
 #include "modules/gameplay/state/domain/GameSystem.h"
 
 class wxKeyEvent;
