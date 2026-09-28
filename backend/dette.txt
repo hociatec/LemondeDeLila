@@ -137,8 +137,6 @@
 
 97. Tester le déterminisme de chaque jeu indépendamment.
 
-102. Séparer migration SQL et migration de snapshot.
-
 103. Supprimer les compatibilités de snapshots devenues définitivement inutiles.
 
 104. Borner la taille des snapshots.
