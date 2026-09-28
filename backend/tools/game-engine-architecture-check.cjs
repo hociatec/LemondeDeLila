@@ -480,7 +480,7 @@ function findGameDirectory(file, gamesRoot) {
 
 function importSpecifiers(source) {
   const specifiers = [];
-  const matcher = /(?:from\s+|import\s*\(|require\s*\()\s*['"]([^'"]+)['"]/g;
+  const matcher = /(?:from\s+|import\s*\(\s*|require\s*\(\s*|import\s+)['"]([^'"]+)['"]/g;
   for (let match = matcher.exec(source); match; match = matcher.exec(source)) {
     specifiers.push(match[1]);
   }
@@ -495,6 +495,7 @@ function auditEngine(gameRoot, runtimeRoot, violations) {
     const source = fs.readFileSync(file, 'utf8');
     inspectUnsafeTypes(source, relative, violations, false);
     const gameRelative = normalize(path.relative(gameRoot, file));
+    const isEngineSource = gameRelative.startsWith('engine/');
     if (gameRelative.startsWith('rules/')) {
       if (/\b(?:Math\.random|Date\.now)\s*\(|\bnew\s+Date\s*\(/.test(source))
         add(
@@ -557,6 +558,29 @@ function auditEngine(gameRoot, runtimeRoot, violations) {
         }
       }
     }
+    if (!gameRelative.startsWith('games/')) {
+      for (const specifier of importSpecifiers(source)) {
+        if (/(?:^|\/)rules\/game-specific(?:\/|$)/.test(specifier))
+          add(
+            violations,
+            'generic-layers-do-not-import-game-specific-rules',
+            relative,
+            `Les couches génériques ne doivent pas importer une règle spécifique: ${specifier}.`,
+          );
+      }
+    }
+    if (
+      isEngineSource &&
+      (/\bswitch\s*\(\s*(?:this\.)?gameType\s*\)/.test(source) ||
+        /\b(?:this\.)?gameType\s*(?:===|!==|==|!=)\s*['"`]/.test(source) ||
+        /['"`][^'"`]+['"`]\s*(?:===|!==|==|!=)\s*(?:this\.)?gameType\b/.test(source))
+    )
+      add(
+        violations,
+        'engine-does-not-branch-on-game-type',
+        relative,
+        'Le moteur ne doit pas choisir un comportement selon un gameType concret.',
+      );
     for (const symbol of forbiddenLegacySymbols) {
       const matcher = new RegExp(`\\b${symbol}\\b`);
       if (matcher.test(source)) {

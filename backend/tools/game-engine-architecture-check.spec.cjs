@@ -414,6 +414,31 @@ test('enforces dependency direction through type imports, barrels and helpers', 
   }
 });
 
+test('rejects game-specific rule imports and concrete gameType branches in generic layers', () => {
+  const violations = fixture(({ gameRoot, runtimeRoot }) => {
+    fs.mkdirSync(path.join(gameRoot, 'core'), { recursive: true });
+    fs.writeFileSync(
+      path.join(gameRoot, 'core', 'bad.ts'),
+      "import '../rules/game-specific/example';",
+    );
+    fs.writeFileSync(
+      path.join(runtimeRoot, 'branch.ts'),
+      "const gameType = 'example'; if (gameType === 'example') {} switch (gameType) { default: break; }",
+    );
+  });
+  assert(
+    violations.some(
+      (value) =>
+        value.rule === 'generic-layers-do-not-import-game-specific-rules',
+    ),
+  );
+  assert(
+    violations.some(
+      (value) => value.rule === 'engine-does-not-branch-on-game-type',
+    ),
+  );
+});
+
 test('accepts types then constants then content then rules then composition', () => {
   const violations = fixture(({ gamesRoot }) => {
     fs.writeFileSync(path.join(gamesRoot, 'types.ts'), 'export type Card = { id: string };');
