@@ -262,10 +262,16 @@ function pawnLandedMessage(
   const internalPosition = numberValue(data.position);
   if (!name || internalPosition == null) return '';
   const verb = name === 'Vous' ? 'arrivez' : 'arrive';
+  // Le Jeu de l'Oie conserve ses positions selon les numéros imprimés sur son
+  // plateau (départ = 1), contrairement aux pistes génériques indexées à zéro.
+  const displayedPosition =
+    value('trackId') === 'goose-board'
+      ? internalPosition
+      : internalPosition + 1;
   const label = tileLabel(value('tileLabel'));
   const description = value('tileDescription');
   return [
-    `${name} ${verb} sur la case ${internalPosition + 1}${label ? ` : ${label}` : ''}.`,
+    `${name} ${verb} sur la case ${displayedPosition}${label ? ` : ${label}` : ''}.`,
     description,
   ]
     .filter(Boolean)
