@@ -71,6 +71,7 @@ export function battleTiesRules(source: BattleTiesProgram) {
       play.playedCards.push(cardId);
       ctx.events.message('cards-battle-ties.card.placed', {
         playerId: actor.id,
+        cardName: cards[cardId]?.name ?? cardId,
       });
       const pending = waiting(current.battle, ctx, phases);
       if (pending.length > 0) return ctx.turn.to(pending[0]);
