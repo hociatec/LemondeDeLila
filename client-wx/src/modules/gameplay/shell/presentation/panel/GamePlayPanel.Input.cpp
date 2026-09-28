@@ -47,9 +47,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     const auto key = NormalizeKey(event);
     if (key.empty()) return false;
 
-    // A projected game state can already contain the next run's pawn choice
-    // while the room is still in setup. Never let gameplay shortcuts start
-    // or alter that pending run: they need an authoritative started state.
     if (!roomStarted_)
     {
         return false;
@@ -66,9 +63,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         }
         return ShouldCaptureWhileAwaitingStartedState(key);
     }
-    // Generic gameplay information is meaningful only during an active run.
-    // In particular, the setup projection can already contain cards or pawns
-    // for the next game, but P/E must remain silent until it has started.
     const auto genericPanel =
         application::shortcuts::GameGenericShortcutPolicy::ResolveInterface(state_, key);
     if (!genericPanel.empty())
