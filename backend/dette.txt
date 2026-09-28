@@ -15,10 +15,6 @@
 
 16. Considérer le registre généré des jeux comme du code de composition.
 
-17. Réduire `GameDefinition` à la surface minimale nécessaire au moteur.
-
-18. Empêcher `GameDefinition` d'exposer des types appartenant à un jeu particulier.
-
 19. Faire dépendre systématiquement les jeux du moteur et jamais l'inverse.
 
 20. Vérifier que `game-rule-context.ts` reste totalement indépendant des jeux.
