@@ -119,27 +119,11 @@
 
 ### Concurrence distribuée
 
-106. Vérifier l'ordre d'acquisition de tous les verrous.
-
 107. Éliminer les verrous qui n'apportent aucune garantie supplémentaire au CAS.
-
-108. Tester deux commandes simultanées sur une même version.
-
-109. Tester deux commandes simultanées provenant de deux instances.
 
 110. Tester le rejeu simultané d'un même `commandId`.
 
-111. Tester une commande obsolète après restauration.
-
-112. Tester une commande obsolète après changement de run.
-
-113. Vérifier qu'une room fortement occupée ne bloque pas les autres rooms.
-
-114. Garantir qu'un verrou abandonné ne bloque pas définitivement une room.
-
 115. Borner le temps d'attente de chaque verrou.
-
-116. Échouer fermé lorsqu'un verrou indispensable ne peut pas être acquis.
 
 ### BullMQ et tâches différées
 
