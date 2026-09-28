@@ -93,14 +93,6 @@
 
 65. Empêcher le JSON réseau brut de traverser le domaine.
 
-66. Définir une union discriminée pour les événements universels du moteur.
-
-67. Ne pas créer une union centrale contenant tous les événements de tous les jeux.
-
-68. Donner à chaque jeu ses propres événements typés.
-
-69. Permettre au moteur de transporter les événements spécifiques sans interpréter leur contenu.
-
 70. Supprimer les `asRecord()` devenus inutiles.
 
 71. Supprimer les `stringValue()` devenus inutiles.
