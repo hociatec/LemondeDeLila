@@ -15,24 +15,6 @@
 
 16. Considérer le registre généré des jeux comme du code de composition.
 
-19. Faire dépendre systématiquement les jeux du moteur et jamais l'inverse.
-
-20. Vérifier que `game-rule-context.ts` reste totalement indépendant des jeux.
-
-21. Vérifier l'indépendance de chaque fichier de `engine/runtime/kits`.
-
-22. Vérifier l'indépendance de chaque fichier de `engine/runtime/effects`.
-
-23. Vérifier l'indépendance de chaque fichier de `engine/runtime/cards`.
-
-24. Vérifier l'indépendance de chaque fichier de `engine/runtime/lifecycle`.
-
-25. Vérifier l'indépendance de chaque fichier de `engine/runtime/projection`.
-
-26. Vérifier l'indépendance de chaque fichier de `engine/runtime/definitions`.
-
-27. Vérifier l'indépendance de chaque fichier de `engine/runtime/content`.
-
 28. Déplacer hors du moteur toute primitive qui encode réellement une règle particulière.
 
 29. Conserver `movement` dans le moteur uniquement comme mécanisme générique.
