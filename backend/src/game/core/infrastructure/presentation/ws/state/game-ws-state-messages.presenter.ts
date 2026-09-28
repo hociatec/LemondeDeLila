@@ -222,10 +222,16 @@ export class GameWsStateMessagesPresenter {
         ? `Vous remportez la bataille et gagnez ${cardsWon} ${cards}.`
         : `${namedPlayer} remporte la bataille et gagne ${cardsWon} ${cards}.`;
     }
-    if (messageKey === 'cards-battle-ties.card.placed' && namedPlayer)
+    if (messageKey === 'cards-battle-ties.card.placed' && namedPlayer) {
+      const cardName = this.stringValue(params.cardName);
       return namedPlayer === 'Vous'
-        ? 'Vous posez une carte sur la table.'
-        : `${namedPlayer} pose une carte sur la table.`;
+        ? `Vous posez la carte ${cardName || 'sélectionnée'} sur la table.`
+        : `${namedPlayer} pose la carte ${cardName || 'sélectionnée'} sur la table.`;
+    }
+    if (messageKey === 'cards-battle-ties.battle.started')
+      return 'Égalité : une bataille commence.';
+    if (messageKey === 'cards-battle-ties.battle.continues')
+      return 'Nouvelle égalité : la bataille continue.';
     if (messageKey === 'game.pawn.bonus-advance' && namedPlayer)
       return this.pawnBonusMessage(namedPlayer, params);
     if (messageKey === 'game.team-pawn.moved' && namedPlayer)
