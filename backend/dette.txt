@@ -109,8 +109,6 @@
 
 77. Éviter les value objects sans invariant.
 
-78. Vérifier qu'aucun `as unknown as` de production ne contourne une incompatibilité réelle.
-
 79. Éviter les assertions non-null lorsque le type peut exprimer correctement l'état.
 
 80. Faire remonter les invariants dans les types lorsque TypeScript peut les garantir.
