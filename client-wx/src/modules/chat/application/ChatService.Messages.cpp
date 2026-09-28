@@ -34,9 +34,9 @@ void ChatService::ProcessIncomingMessage(const std::string& rawJson, bool fatalE
 
     switch (event.type)
     {
-    case infrastructure::ChatEventType::Ignored:
+    case ChatEventType::Ignored:
         return;
-    case infrastructure::ChatEventType::History:
+    case ChatEventType::History:
         {
             messagesStore_.LoadHistory(std::move(event.messages), std::max(0, event.editWindowSeconds));
             NotifyMessagesChanged();
@@ -45,7 +45,7 @@ void ChatService::ProcessIncomingMessage(const std::string& rawJson, bool fatalE
             SetStatus(status.str(), false);
             return;
         }
-    case infrastructure::ChatEventType::MessageUpserted:
+    case ChatEventType::MessageUpserted:
         {
         bool receivedMessage = false;
         for (const auto& message : event.messages)
@@ -61,11 +61,11 @@ void ChatService::ProcessIncomingMessage(const std::string& rawJson, bool fatalE
         }
         return;
         }
-    case infrastructure::ChatEventType::MessageDeleted:
+    case ChatEventType::MessageDeleted:
         RemoveMessageById(event.deletedMessageId);
         NotifyMessagesChanged();
         return;
-    case infrastructure::ChatEventType::Error:
+    case ChatEventType::Error:
         if (event.error.has_value())
         {
             HandleIncomingError(event.error->message, &*event.error, fatalError);

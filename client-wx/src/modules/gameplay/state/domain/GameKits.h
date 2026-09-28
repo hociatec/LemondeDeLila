@@ -10,6 +10,7 @@
 #include "modules/gameplay/state/domain/GamePlayerValueCapabilities.h"
 #include "modules/gameplay/state/domain/GameWorkflowCapabilities.h"
 #include "modules/gameplay/state/domain/GameValue.h"
+#include "modules/gameplay/dice/domain/GameDiceState.h"
 
 namespace lila::modules::gameplay::domain
 {
