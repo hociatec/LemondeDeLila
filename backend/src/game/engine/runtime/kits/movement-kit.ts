@@ -12,6 +12,8 @@ export type TrackDefinition = {
   readonly component: 'movement.track';
   id: string;
   spaces: number;
+  /** Offset applied to positions exposed in movement events for narration. */
+  positionDisplayOffset?: number;
   overshoot?: 'clamp' | 'wrap' | 'bounce' | 'exact';
   finish?: number;
   homeStretch?: { from: number; to?: number };
@@ -63,6 +65,15 @@ export const movement = {
         'spaces',
       );
     }
+    if (
+      definition.positionDisplayOffset != null &&
+      (!Number.isSafeInteger(definition.positionDisplayOffset) ||
+        Math.abs(definition.positionDisplayOffset) > 1_000_000)
+    )
+      throw withAuthoringPath(
+        new GameConfigurationError('Décalage d’affichage de piste invalide'),
+        'positionDisplayOffset',
+      );
     for (const position of Object.keys(definition.landingEffects ?? {})) {
       const value = Number(position);
       if (!Number.isInteger(value) || value < 0 || value >= definition.spaces)
@@ -214,7 +225,12 @@ export class GameMovementController {
         onPass(position);
     }
     if (emitLanding) {
-      this.emit('pawn.landed', { trackId, playerId, position: next });
+      this.emit('pawn.landed', {
+        trackId,
+        playerId,
+        position: next,
+        displayPosition: next + (this.requireTrack(trackId).positionDisplayOffset ?? 1),
+      });
     }
     const effects = this.definitions.get(trackId)?.landingEffects?.[next] ?? [];
     this.scheduleEffects(...effects);
@@ -238,6 +254,9 @@ export class GameMovementController {
       trackId: options.trackId,
       playerId: options.playerId,
       position,
+      displayPosition:
+        position +
+        (this.requireTrack(options.trackId).positionDisplayOffset ?? 1),
       ...tileNarration(landing.tile),
     });
     options.onLand(landing);

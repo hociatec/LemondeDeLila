@@ -55,4 +55,26 @@ describe('GameMovementController', () => {
       1,
     );
   });
+
+  it('emits the declarative display position instead of relying on a track id', () => {
+    const events: Array<{ type: string; data: Record<string, unknown> }> = [];
+    const state = createMovementKitState();
+    const controller = new GameMovementController(
+      state,
+      (type, data) => events.push({ type, data }),
+      [
+        movement.track({
+          id: 'numbered-board',
+          spaces: 8,
+          positionDisplayOffset: 0,
+        }),
+      ],
+    );
+
+    controller.move('numbered-board', 1, 4);
+
+    expect(events.find((event) => event.type === 'pawn.landed')?.data).toEqual(
+      expect.objectContaining({ position: 4, displayPosition: 4 }),
+    );
+  });
 });

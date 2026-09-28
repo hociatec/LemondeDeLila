@@ -9,6 +9,7 @@
       "kind": "race",
       "trackId": "goose-board",
       "spaces": 64,
+      "positionDisplayOffset": 0,
       "overshoot": "bounce"
     }
   ],

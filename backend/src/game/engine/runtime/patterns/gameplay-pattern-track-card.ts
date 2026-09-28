@@ -67,6 +67,7 @@ export function eventTrackGame<TState extends object, TTile>(
 export function raceGame<TState extends object>(options: {
   trackId?: string;
   spaces: number;
+  positionDisplayOffset?: number;
   overshoot?: 'clamp' | 'wrap' | 'bounce' | 'exact';
   finish?: number;
   homeStretch?: { from: number; to?: number };
@@ -88,6 +89,7 @@ export function raceGame<TState extends object>(options: {
       movement.track({
         id: options.trackId ?? 'main',
         spaces: options.spaces,
+        positionDisplayOffset: options.positionDisplayOffset,
         overshoot: options.overshoot ?? 'clamp',
         finish: options.finish,
         homeStretch: options.homeStretch,
