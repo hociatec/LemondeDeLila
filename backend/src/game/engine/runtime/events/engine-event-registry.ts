@@ -82,6 +82,7 @@ export type EngineEventMap = {
     trackId: string;
     playerId: number;
     position: number;
+    displayPosition?: number;
     tileLabel?: string;
     tileDescription?: string;
   };
