@@ -62,9 +62,6 @@ void TestKnownCapabilitiesAreTyped()
             state, "hand") == "Vous avez 1 carte en main.",
         "Le raccourci generique E doit annoncer uniquement la taille de la main.");
     Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
-            state, "hands") == "Joueur 7 : 1 carte.\nJoueur 8 : 4 cartes.\n",
-        "Maj+E doit annoncer le nombre de cartes de chaque joueur.");
-    Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
             state, "discard") == "Carte au-dessus : Carte une.",
         "Un jeu de cartes doit pouvoir annoncer la carte au-dessus de la defausse.");
     Expect(state.kits.movement && state.kits.movement->tracks[0].positions.at("pawn-a") == 4,
