@@ -13,6 +13,7 @@
 #include "modules/chat/domain/ChatServerError.h"
 #include "modules/chat/domain/ChatState.h"
 #include "modules/chat/application/IChatGateway.h"
+#include "modules/chat/application/IChatProtocol.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "modules/chat/domain/ChatErrorMessages.h"
 
@@ -31,11 +32,6 @@ namespace lila::modules::session::application
 class SessionStore;
 }
 
-namespace lila::modules::chat::infrastructure
-{
-class IChatProtocol;
-}
-
 namespace lila::modules::chat::application
 {
 class ChatService final
@@ -49,7 +45,7 @@ public:
 
     ChatService(
         IChatGateway& gateway,
-        lila::modules::chat::infrastructure::IChatProtocol& protocol,
+        IChatProtocol& protocol,
         lila::modules::session::application::SessionStore& sessionStore,
         lila::modules::options::application::OptionsStore& optionsStore,
         lila::modules::audio::application::IAudioService& audioService);
@@ -91,7 +87,7 @@ private:
     void OpenGateway(std::stop_token stopToken = {});
 
     IChatGateway& gateway_;
-    lila::modules::chat::infrastructure::IChatProtocol& protocol_;
+    IChatProtocol& protocol_;
     lila::modules::session::application::SessionStore& sessionStore_;
     lila::modules::options::application::OptionsStore& optionsStore_;
     lila::modules::audio::application::IAudioService& audioService_;

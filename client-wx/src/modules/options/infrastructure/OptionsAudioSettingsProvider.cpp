@@ -1,27 +1,20 @@
-#include "modules/audio/infrastructure/OptionsAudioSettingsProvider.h"
+#include "modules/options/infrastructure/OptionsAudioSettingsProvider.h"
 
-#include "modules/options/application/OptionsStore.h"
 #include "modules/audio/domain/SoundCatalog.h"
+#include "modules/options/application/OptionsStore.h"
 
-namespace lila::modules::audio::infrastructure
+namespace lila::modules::options::infrastructure
 {
 OptionsAudioSettingsProvider::OptionsAudioSettingsProvider(
-    const lila::modules::options::application::OptionsStore& optionsStore) noexcept
-    : optionsStore_(optionsStore)
-{
-}
+    const application::OptionsStore& optionsStore) noexcept : optionsStore_(optionsStore) {}
 
-application::AudioSettings OptionsAudioSettingsProvider::Snapshot() const
+lila::modules::audio::application::AudioSettings OptionsAudioSettingsProvider::Snapshot() const
 {
     const auto revision = optionsStore_.Revision();
     std::scoped_lock lock(cacheMutex_);
-    if (hasCachedSettings_ && cachedRevision_ == revision)
-    {
-        return cachedSettings_;
-    }
-
+    if (hasCachedSettings_ && cachedRevision_ == revision) return cachedSettings_;
     const auto options = optionsStore_.Current();
-    application::AudioSettings result;
+    lila::modules::audio::application::AudioSettings result;
     result.muteAll = options.audio.muteAll;
     result.ambienceEnabled = options.audio.soundAmbience;
     result.appLaunchEnabled = options.audio.soundAppLaunch;
@@ -38,18 +31,11 @@ application::AudioSettings OptionsAudioSettingsProvider::Snapshot() const
     result.selectionVolume = options.audio.soundSelectVolume;
     result.messagesVolume = options.audio.soundChatMessagesVolume;
     result.tableAmbienceVolume = options.audio.soundTableAmbienceVolume;
-    for (const auto& sound : domain::GetSoundCatalog())
-    {
-        const auto configured = options.audio.cues.find(sound.key);
-        if (configured == options.audio.cues.end())
-        {
-            continue;
-        }
-        result.cues[static_cast<std::size_t>(sound.cue)] = {
-            configured->second.enabled,
-            configured->second.volume,
-        };
-    }
+    for (const auto& sound : lila::modules::audio::domain::GetSoundCatalog())
+        if (const auto configured = options.audio.cues.find(sound.key);
+            configured != options.audio.cues.end())
+            result.cues[static_cast<std::size_t>(sound.cue)] = {
+                configured->second.enabled, configured->second.volume};
     cachedSettings_ = result;
     cachedRevision_ = revision;
     hasCachedSettings_ = true;

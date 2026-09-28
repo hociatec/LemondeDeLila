@@ -18,7 +18,7 @@
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
-#include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
+#include "modules/gameplay/pawn_selection/application/PawnSelectionPolicy.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
@@ -95,7 +95,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
          state.runId == awaitingStartedRunId_) &&
         (state.system.match.status == "started" || state.system.match.status == "playing");
     auto nextLines = application::GameActionPresentationPolicy::GenericLines(state);
-    auto nextPawnSelection = infrastructure::PawnSelectionDecoder::Decode(state.pending);
+    auto nextPawnSelection = application::PawnSelectionPolicy::FromPending(state.pending);
     auto nextLogMessages = EventMessages(state);
     if (state_.runId != state.runId) observedEventIdentities_.clear();
     state_ = std::move(state);

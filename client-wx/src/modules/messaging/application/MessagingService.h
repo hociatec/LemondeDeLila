@@ -8,7 +8,7 @@
 #include "modules/messaging/domain/MessagingMessage.h"
 #include "modules/messaging/domain/MessagingUser.h"
 #include "modules/messaging/application/IMessagingGateway.h"
-#include "modules/messaging/infrastructure/MessagingProtocolFields.h"
+#include "generated/protocol/MessagingProtocolFields.generated.h"
 
 namespace lila::modules::audio::application
 {

@@ -15,7 +15,7 @@
 
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
-#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
+#include "modules/gameplay/state/application/GameValuePayloadCodec.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::gameplay::presentation::prompt
@@ -111,7 +111,7 @@ void GamePromptPanel::RebuildFields(const domain::GamePrompt& prompt)
             wxArrayString labels;
             for (const auto& choice : field.choices)
             {
-                const auto encoded = infrastructure::EncodeGameValue(choice);
+                const auto encoded = application::EncodeGameValuePayload(choice);
                 const auto value = encoded.is_string()
                     ? encoded.get<std::string>() : encoded.dump();
                 const auto label = field.choiceLabels.find(value);

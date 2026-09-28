@@ -5,7 +5,7 @@
 #include "modules/audio/application/AudioService.h"
 #include "modules/audio/infrastructure/AsyncAudioBackend.h"
 #include "modules/audio/infrastructure/BassAudioBackend.h"
-#include "modules/audio/infrastructure/OptionsAudioSettingsProvider.h"
+#include "modules/options/infrastructure/OptionsAudioSettingsProvider.h"
 
 namespace lila::bootstrap
 {
@@ -18,7 +18,7 @@ void AudioComposition::Assemble(
 {
     setStep("Creation du moteur audio BASS asynchrone");
     audioSettingsProvider =
-        std::make_unique<lila::modules::audio::infrastructure::OptionsAudioSettingsProvider>(
+        std::make_unique<lila::modules::options::infrastructure::OptionsAudioSettingsProvider>(
             optionsStore);
     audioBackend = std::make_unique<lila::modules::audio::infrastructure::AsyncAudioBackend>(
         std::make_unique<lila::modules::audio::infrastructure::BassAudioBackend>());

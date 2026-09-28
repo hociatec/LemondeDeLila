@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "modules/audio/application/IAudioService.h"
-#include "modules/social/infrastructure/SocialProtocolFields.h"
+#include "generated/protocol/SocialProtocolFields.generated.h"
 
 namespace lila::modules::social::application
 {

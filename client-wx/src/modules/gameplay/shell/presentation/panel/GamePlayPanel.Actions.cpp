@@ -9,7 +9,7 @@
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
-#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
+#include "modules/gameplay/state/application/GameValuePayloadCodec.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 
 namespace lila::modules::gameplay::presentation
@@ -142,7 +142,7 @@ bool GamePlayPanel::ActivateSelectedPendingChoice()
                 const int index = encodedIndex < 0 ? ~encodedIndex : encodedIndex;
                 if (index >= 0 && static_cast<std::size_t>(index) < pendingChoiceIndexes_.size() &&
                     pendingChoiceIndexes_[static_cast<std::size_t>(index)] < state_.pending->choices.size())
-                    action.payload["value"].push_back(infrastructure::EncodeGameValue(
+                    action.payload["value"].push_back(application::EncodeGameValuePayload(
                         state_.pending->choices[
                             pendingChoiceIndexes_[static_cast<std::size_t>(index)]].value));
             }
@@ -162,7 +162,7 @@ bool GamePlayPanel::ActivateSelectedPendingChoice()
         }
         for (const auto selected : selections)
             if (selected >= 0 && static_cast<std::size_t>(selected) < state_.pending->choices.size())
-                action.payload["value"].push_back(infrastructure::EncodeGameValue(
+                action.payload["value"].push_back(application::EncodeGameValuePayload(
                     state_.pending->choices[static_cast<std::size_t>(selected)].value));
         PrepareAndExecuteAction(std::move(action));
         return true;

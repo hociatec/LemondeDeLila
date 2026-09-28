@@ -4,7 +4,6 @@
 #include <ctime>
 
 #include "modules/session/application/SessionStore.h"
-#include "modules/chat/infrastructure/ChatProtocol.h"
 #include "modules/chat/domain/ChatErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "modules/audio/application/IAudioService.h"

@@ -10,7 +10,7 @@
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
-#include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
+#include "modules/gameplay/state/application/GameValuePayloadCodec.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/accessibility/application/NavigationController.h"
 
@@ -51,7 +51,7 @@ void GamePromptPanel::Submit()
             {
                 const int index = encodedIndex < 0 ? ~encodedIndex : encodedIndex;
                 if (index >= 0 && static_cast<std::size_t>(index) < control.field.choices.size())
-                    values.push_back(infrastructure::EncodeGameValue(
+                    values.push_back(application::EncodeGameValuePayload(
                         control.field.choices[static_cast<std::size_t>(index)]));
             }
             action.payload[control.field.key] = std::move(values);
@@ -62,7 +62,7 @@ void GamePromptPanel::Submit()
             auto values = nlohmann::json::array();
             for (unsigned int index = 0; index < control.multipleChoice->GetCount(); ++index)
                 if (control.multipleChoice->IsChecked(index))
-                    values.push_back(infrastructure::EncodeGameValue(control.field.choices[index]));
+                    values.push_back(application::EncodeGameValuePayload(control.field.choices[index]));
             const int count = static_cast<int>(values.size());
             if (count < control.field.minimumSelections ||
                 (control.field.maximumSelections > 0 && count > control.field.maximumSelections))
@@ -89,7 +89,7 @@ void GamePromptPanel::Submit()
                     FromUtf8(control.field.label), control.choice);
                 return;
             }
-            action.payload[control.field.key] = infrastructure::EncodeGameValue(
+            action.payload[control.field.key] = application::EncodeGameValuePayload(
                 control.field.choices[static_cast<std::size_t>(valueIndex)]);
             continue;
         }
