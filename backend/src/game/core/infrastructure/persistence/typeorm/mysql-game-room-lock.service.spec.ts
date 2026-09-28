@@ -4,7 +4,11 @@ import { GameRoomLockUnavailableError } from '../../../application/ports/game-ro
 import { MysqlGameRoomLockService } from './mysql-game-room-lock.service';
 
 describe('MysqlGameRoomLockService', () => {
-  const setup = (acquired: number, releaseError?: Error) => {
+  const setup = (
+    acquired: number,
+    releaseError?: Error,
+    timeoutSeconds?: number,
+  ) => {
     const query = jest
       .fn()
       .mockResolvedValueOnce([{ acquired }])
@@ -22,7 +26,7 @@ describe('MysqlGameRoomLockService', () => {
       createQueryRunner: () => runner,
     } as unknown as DataSource;
     const config = {
-      get: (_key: string, fallback: number) => fallback,
+      get: (_key: string, fallback: number) => timeoutSeconds ?? fallback,
     } as ConfigService;
     return {
       service: new MysqlGameRoomLockService(dataSource, config),
@@ -31,6 +35,19 @@ describe('MysqlGameRoomLockService', () => {
       query,
     };
   };
+
+  it.each([0, -1, 61, 1.5, Number.NaN])(
+    'falls back to the five-second bound for invalid timeout %p',
+    async (timeoutSeconds) => {
+      const { service, query } = setup(1, undefined, timeoutSeconds);
+      await service.runExclusive(42, async () => undefined);
+      expect(query).toHaveBeenNthCalledWith(
+        1,
+        'SELECT GET_LOCK(?, ?) AS acquired',
+        ['lmdl:game-room:42', 5],
+      );
+    },
+  );
 
   it('acquires and releases a parameterized MySQL named lock', async () => {
     const { service, runner, query } = setup(1);

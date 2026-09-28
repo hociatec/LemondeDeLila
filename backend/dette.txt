@@ -123,8 +123,6 @@
 
 110. Tester le rejeu simultané d'un même `commandId`.
 
-115. Borner le temps d'attente de chaque verrou.
-
 ### BullMQ et tâches différées
 
 117. Rendre chaque job métier critique idempotent.
