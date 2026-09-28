@@ -57,6 +57,20 @@ describe('backend debt contracts', () => {
     );
   });
 
+  it('keeps universal events typed and game events declarative', () => {
+    const registry = readFileSync(
+      resolve(__dirname, '../../../engine/runtime/events/engine-event-registry.ts'),
+      'utf8',
+    );
+    const definitions = readFileSync(
+      resolve(__dirname, '../../../engine/runtime/events/game-event-definition.ts'),
+      'utf8',
+    );
+    expect(registry).toContain('export type EngineEventMap');
+    expect(registry).not.toMatch(/rules\/game-specific|(?:^|\/)games(?:\/|$)/);
+    expect(definitions).toContain('GameEventDefinition<TType, TData>');
+  });
+
   it('keeps lightweight cards optional and reserves system view namespaces', () => {
     const lightweight: CardInstance<'lama'> = 'lama';
     const stateful: CardInstance<
