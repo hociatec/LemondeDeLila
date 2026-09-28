@@ -199,14 +199,14 @@ export class GameWsStateMessagesPresenter {
       return namedPlayer === 'Vous'
         ? 'Vous devez choisir votre pion.'
         : `${namedPlayer} doit choisir son pion.`;
-    if (messageKey === 'foulees.family.selected' && namedPlayer) {
+    if (messageKey === 'game.team-pawn.family-selected' && namedPlayer) {
       const habitat = this.stringValue(params.habitat);
       if (!habitat) return '';
       return namedPlayer === 'Vous'
         ? `Vous avez choisi ${withDefiniteArticle(habitat)}.`
         : `${namedPlayer} a choisi ${withDefiniteArticle(habitat)}.`;
     }
-    if (messageKey === 'foulees.dice.rolled' && namedPlayer) {
+    if (messageKey === 'game.dice.rolled' && namedPlayer) {
       const total = this.numberValue(params.total);
       if (total == null) return '';
       const value = frenchNumber(total);

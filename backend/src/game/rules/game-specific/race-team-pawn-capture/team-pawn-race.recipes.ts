@@ -31,7 +31,7 @@ export function teamPawnRaceRules(source: TeamPawnRaceProgram) {
     assigned: ({ playerId, pawnId, ctx }) => {
       const family = program.families.find((candidate) => candidate.id === pawnId);
       if (family)
-        ctx.events.message('foulees.family.selected', {
+        ctx.events.message('game.team-pawn.family-selected', {
           playerId,
           habitat: family.habitat,
         });
@@ -45,7 +45,7 @@ export function teamPawnRaceRules(source: TeamPawnRaceProgram) {
     diceId: program.diceId,
     available: ({ ctx }) => ctx.phase.current() === 'turn',
     message: ({ playerId, total }) => ({
-      key: 'foulees.dice.rolled',
+      key: 'game.dice.rolled',
       params: { playerId, total },
     }),
     execute: ({ playerId, total, ctx }) => {

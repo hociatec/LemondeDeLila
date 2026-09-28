@@ -1,0 +1,1116 @@
+
+1. Supprimer toute référence à un jeu concret dans `game/engine`.
+
+2. Supprimer toute référence à un jeu concret dans le `game/core` générique.
+
+4. Supprimer de `GameWsStateMessagesPresenter` les comportements spécifiques à `cards-battle-ties`.
+
+5. Supprimer de `GameWsStateMessagesPresenter` les comportements spécifiques au jeu de l'oie.
+
+6. Rechercher et supprimer les autres identifiants de jeux présents dans les couches génériques.
+
+7. Interdire tout import `engine -> game-specific`.
+
+8. Interdire tout import `core générique -> game-specific` hors composition.
+
+9. Interdire tout `if` moteur dépendant d'un `gameType` concret.
+
+10. Interdire tout `switch` moteur dépendant d'un `gameType` concret.
+
+11. Interdire au moteur de connaître les événements spécifiques d'un jeu.
+
+12. Interdire au moteur de générer les textes spécifiques d'un jeu.
+
+13. Déplacer chaque narration spécifique dans son jeu propriétaire.
+
+14. Créer un contrat générique permettant aux jeux de fournir leur présentation.
+
+15. Faire de la composition le seul endroit autorisé à connaître simultanément moteur et jeux.
+
+16. Considérer le registre généré des jeux comme du code de composition.
+
+17. Réduire `GameDefinition` à la surface minimale nécessaire au moteur.
+
+18. Empêcher `GameDefinition` d'exposer des types appartenant à un jeu particulier.
+
+19. Faire dépendre systématiquement les jeux du moteur et jamais l'inverse.
+
+20. Vérifier que `game-rule-context.ts` reste totalement indépendant des jeux.
+
+21. Vérifier l'indépendance de chaque fichier de `engine/runtime/kits`.
+
+22. Vérifier l'indépendance de chaque fichier de `engine/runtime/effects`.
+
+23. Vérifier l'indépendance de chaque fichier de `engine/runtime/cards`.
+
+24. Vérifier l'indépendance de chaque fichier de `engine/runtime/lifecycle`.
+
+25. Vérifier l'indépendance de chaque fichier de `engine/runtime/projection`.
+
+26. Vérifier l'indépendance de chaque fichier de `engine/runtime/definitions`.
+
+27. Vérifier l'indépendance de chaque fichier de `engine/runtime/content`.
+
+28. Déplacer hors du moteur toute primitive qui encode réellement une règle particulière.
+
+29. Conserver `movement` dans le moteur uniquement comme mécanisme générique.
+
+30. Conserver `cards` dans le moteur uniquement comme mécanisme générique.
+
+31. Conserver `quiz` dans le moteur uniquement comme mécanisme générique.
+
+32. Conserver `resources` dans le moteur uniquement comme mécanisme générique.
+
+33. Conserver `scoring` dans le moteur uniquement comme mécanisme générique.
+
+34. Conserver `status` dans le moteur uniquement comme mécanisme générique.
+
+35. Conserver `choice` dans le moteur uniquement comme mécanisme générique.
+
+36. Conserver `ownership` dans le moteur uniquement comme mécanisme générique.
+
+37. Conserver `targeting` dans le moteur uniquement comme mécanisme générique.
+
+38. Conserver `effects` comme mécanisme et non comme catalogue des règles des jeux.
+
+39. Déplacer les règles de victoire spécifiques dans leurs jeux.
+
+40. Déplacer les règles de scoring spécifiques dans leurs jeux.
+
+41. Déplacer les règles de mouvement spécifiques dans leurs jeux.
+
+42. Déplacer les règles de cartes spécifiques dans leurs jeux.
+
+43. Déplacer les règles de quiz spécifiques dans leurs jeux.
+
+44. Déplacer les règles économiques spécifiques dans leurs jeux.
+
+45. Déplacer les règles narratives spécifiques dans leurs jeux.
+
+46. Déplacer les règles d'équipes spécifiques dans leurs jeux.
+
+47. Ne plus modifier le moteur lorsqu'un nouveau jeu n'introduit aucune primitive réellement nouvelle.
+
+48. Exiger plusieurs usages indépendants avant de promouvoir une logique spécifique en primitive moteur.
+
+49. Accepter une petite duplication entre jeux lorsqu'elle évite une mauvaise abstraction.
+
+50. Supprimer les abstractions moteur créées en anticipation d'un besoin hypothétique.
+
+51. Supprimer les wrappers moteur n'apportant ni invariant ni transformation.
+
+52. Fusionner les composants moteur artificiellement séparés qui représentent une seule responsabilité.
+
+53. Scinder les kits qui mélangent plusieurs responsabilités indépendantes.
+
+54. Auditer particulièrement `quiz-kit.ts` pour sa cohésion.
+
+55. Auditer particulièrement `pawn-kit.ts` pour sa cohésion.
+
+56. Auditer particulièrement `inventory-kit.ts` pour sa cohésion.
+
+57. Vérifier que les différents contrôleurs Cards ne représentent pas plusieurs abstractions concurrentes du même état.
+
+58. Réduire les chemins différents permettant de modifier un état de jeu.
+
+59. Conserver une voie canonique pour les commandes joueur.
+
+60. Conserver une voie canonique pour les actions automatiques.
+
+### Typage du moteur
+
+61. Remplacer les `Record<string, unknown>` utilisés après validation par des modèles typés.
+
+62. Conserver `unknown` uniquement aux véritables frontières externes.
+
+63. Décoder les messages WebSocket à leur entrée.
+
+64. Transformer immédiatement une entrée validée en commande typée.
+
+65. Empêcher le JSON réseau brut de traverser le domaine.
+
+66. Définir une union discriminée pour les événements universels du moteur.
+
+67. Ne pas créer une union centrale contenant tous les événements de tous les jeux.
+
+68. Donner à chaque jeu ses propres événements typés.
+
+69. Permettre au moteur de transporter les événements spécifiques sans interpréter leur contenu.
+
+70. Supprimer les `asRecord()` devenus inutiles.
+
+71. Supprimer les `stringValue()` devenus inutiles.
+
+72. Supprimer les `numberValue()` devenus inutiles.
+
+73. Utiliser des génériques pour préserver le type d'état d'un jeu.
+
+74. Réduire le nombre de représentations successives d'une même commande.
+
+75. Supprimer les DTO intermédiaires qui n'apportent aucune validation.
+
+76. Donner des types spécifiques aux identifiants lorsque cela empêche réellement une confusion.
+
+77. Éviter les value objects sans invariant.
+
+78. Vérifier qu'aucun `as unknown as` de production ne contourne une incompatibilité réelle.
+
+79. Éviter les assertions non-null lorsque le type peut exprimer correctement l'état.
+
+80. Faire remonter les invariants dans les types lorsque TypeScript peut les garantir.
+
+### État, déterminisme et replay
+
+81. Conserver `GameCommandExecutorService` comme frontière d'exécution si sa responsabilité reste unique.
+
+82. Empêcher les jeux de contourner le command executor.
+
+83. Conserver l'idempotence par `commandId`.
+
+84. Conserver la vérification de version avant mutation.
+
+85. Conserver le CAS du store de sessions.
+
+86. Conserver le verrou transactionnel de ligne.
+
+87. Conserver la protection `restoreId`.
+
+88. Vérifier que toutes les mutations utilisent la même stratégie de concurrence.
+
+89. Vérifier qu'état et événements sont commités atomiquement.
+
+90. Empêcher la publication d'un événement durable avant le commit correspondant.
+
+91. Faire passer tout hasard métier par un RNG injecté.
+
+92. Éliminer l'utilisation directe de hasard global dans les règles.
+
+93. Faire passer le temps métier par une horloge contrôlée.
+
+94. Éliminer `Date.now()` des règles déterministes.
+
+95. Stabiliser explicitement tous les tris ayant une conséquence métier.
+
+96. Garantir qu'état initial identique, commande identique et graine identique produisent le même résultat.
+
+97. Tester le déterminisme de chaque jeu indépendamment.
+
+98. Garantir que les états persistés sont entièrement sérialisables.
+
+99. Refuser fonctions, cycles et nombres non finis dans les snapshots.
+
+100. Refuser `Map` et `Set` dans l'état persistant lorsqu'ils ne possèdent pas de codec explicite.
+
+101. Versionner explicitement le format des snapshots.
+
+102. Séparer migration SQL et migration de snapshot.
+
+103. Supprimer les compatibilités de snapshots devenues définitivement inutiles.
+
+104. Borner la taille des snapshots.
+
+105. Borner la taille de la timeline.
+
+### Concurrence distribuée
+
+106. Vérifier l'ordre d'acquisition de tous les verrous.
+
+107. Éliminer les verrous qui n'apportent aucune garantie supplémentaire au CAS.
+
+108. Tester deux commandes simultanées sur une même version.
+
+109. Tester deux commandes simultanées provenant de deux instances.
+
+110. Tester le rejeu simultané d'un même `commandId`.
+
+111. Tester une commande obsolète après restauration.
+
+112. Tester une commande obsolète après changement de run.
+
+113. Vérifier qu'une room fortement occupée ne bloque pas les autres rooms.
+
+114. Garantir qu'un verrou abandonné ne bloque pas définitivement une room.
+
+115. Borner le temps d'attente de chaque verrou.
+
+116. Échouer fermé lorsqu'un verrou indispensable ne peut pas être acquis.
+
+### BullMQ et tâches différées
+
+117. Rendre chaque job métier critique idempotent.
+
+118. Donner un identifiant stable aux jobs pouvant être rejoués.
+
+119. Vérifier le run courant avant d'appliquer un job.
+
+120. Vérifier la version pertinente avant d'appliquer un job.
+
+121. Rejeter un job appartenant à une ancienne partie.
+
+122. Tester une livraison BullMQ en double.
+
+123. Tester une livraison BullMQ après redémarrage.
+
+124. Tester une panne Redis entre planification et exécution.
+
+125. Éviter les timers locaux pour les échéances métier devant survivre au processus.
+
+126. Réserver `setTimeout` aux opérations reconstructibles.
+
+127. Supprimer correctement tous les timers au shutdown.
+
+### Redis
+
+128. Ne jamais utiliser Redis Pub/Sub comme unique stockage d'une information métier critique.
+
+129. Garantir que toute donnée importante diffusée par Pub/Sub est reconstructible.
+
+130. Vérifier les reconnexions Redis.
+
+131. Empêcher les doubles abonnements après reconnexion.
+
+132. Fermer toutes les connexions Redis au shutdown.
+
+133. Borner toutes les structures Redis créées par utilisateur ou room.
+
+134. Définir une expiration explicite pour les données temporaires.
+
+135. Vérifier le comportement lorsque Redis est totalement indisponible.
+
+136. Empêcher un cache Redis de devenir une source d'autorisation.
+
+### MySQL et TypeORM
+
+137. Conserver les transactions uniquement autour du travail devant réellement être atomique.
+
+138. Réduire la durée des transactions.
+
+139. Éviter les appels réseau pendant une transaction.
+
+140. Éviter le filesystem pendant une transaction.
+
+141. Éviter les calculs coûteux pendant une transaction.
+
+142. Rechercher les N+1 dans Room.
+
+143. Rechercher les N+1 dans Messaging.
+
+144. Rechercher les N+1 dans Notification.
+
+145. Rechercher les N+1 dans Social.
+
+146. Rechercher les N+1 dans Stats.
+
+147. Mesurer les requêtes les plus fréquentes.
+
+148. Examiner leurs plans d'exécution SQL.
+
+149. Ajouter les index manquants réellement justifiés par ces plans.
+
+150. Supprimer les index redondants.
+
+151. Vérifier les index des foreign keys utilisées fréquemment.
+
+152. Vérifier les index correspondant aux tris paginés.
+
+153. Vérifier les contraintes uniques correspondant aux invariants métier.
+
+154. Déplacer dans MySQL les invariants de concurrence que la base peut garantir directement.
+
+155. Simplifier les QueryBuilder qui n'ont aucune raison d'être complexes.
+
+156. Conserver les QueryBuilder lorsqu'ils expriment réellement une requête spécialisée.
+
+157. Mesurer `NotificationInboxTypeormRepository.createMany()`.
+
+158. Mesurer `NotificationInboxTypeormRepository.updatePayloads()`.
+
+159. Simplifier le `CASE` SQL de `updatePayloads()` si son bénéfice n'est pas démontré.
+
+160. Borner systématiquement les opérations bulk.
+
+161. Éviter les boucles de `save()` lorsque l'insertion bulk native est préférable.
+
+### Erreurs de persistance
+
+162. Ne jamais transformer une panne DB en tableau vide.
+
+163. Ne jamais transformer une panne DB en `null` lorsque `null` signifie « absent ».
+
+164. Ne jamais transformer une panne DB en `false` lorsque `false` possède une signification métier.
+
+165. Corriger `NotificationInboxTypeormRepository.listByContactId()` sur ce principe.
+
+166. Auditer tous les autres `catch` des repositories.
+
+167. Distinguer `NotFound` de `InfrastructureFailure`.
+
+168. Traduire les erreurs TypeORM à la frontière infrastructure.
+
+169. Ne jamais exposer une erreur SQL brute au client.
+
+170. Journaliser suffisamment l'erreur infrastructure pour l'exploitation sans exposer de secret.
+
+### Room
+
+171. Auditer les responsabilités des nombreux fichiers `room/application`.
+
+172. Auditer les responsabilités des nombreux fichiers `room/infrastructure`.
+
+173. Supprimer les use cases Room qui ne font que déléguer sans invariant.
+
+174. Fusionner les wrappers Room sans responsabilité propre.
+
+175. Conserver séparément les use cases portant une vraie règle métier.
+
+176. Réduire le nombre de services traversés pour créer une room.
+
+177. Réduire le nombre de services traversés pour rejoindre une room.
+
+178. Réduire le nombre de services traversés pour quitter une room.
+
+179. Réduire le nombre de services traversés pour démarrer une partie.
+
+180. Éliminer les lectures DB redondantes pendant ces opérations.
+
+181. Centraliser les invariants d'adhésion à une room.
+
+182. Centraliser les invariants de propriété d'une room.
+
+183. Centraliser les invariants de capacité d'une room.
+
+184. Éviter que différents handlers implémentent séparément les mêmes règles Room.
+
+185. Garder les caches Room hors des décisions d'autorisation.
+
+186. Garantir qu'une reconnexion peut reconstruire entièrement l'état Room.
+
+### Authentification
+
+187. Conserver RS256.
+
+188. Conserver la validation d'issuer.
+
+189. Conserver la validation d'audience.
+
+190. Conserver la validation d'expiration.
+
+191. Vérifier la rotation des refresh tokens.
+
+192. Détecter la réutilisation d'un refresh token remplacé.
+
+193. Permettre la révocation effective d'une session.
+
+194. Vérifier l'invalidation nécessaire après changement de mot de passe.
+
+195. Vérifier l'invalidation nécessaire après suspension d'un compte.
+
+196. Vérifier l'invalidation nécessaire après suppression d'un compte.
+
+197. Vérifier la fraîcheur des rôles pour les opérations administratives particulièrement sensibles.
+
+198. Ne jamais considérer le masquage d'une fonction côté client comme une autorisation.
+
+### Autorisation et IDOR
+
+199. Vérifier chaque endpoint HTTP manipulant une ressource appartenant à un utilisateur.
+
+200. Vérifier chaque commande WebSocket manipulant une ressource appartenant à un utilisateur.
+
+201. Inclure `userId` dans les requêtes de mutation lorsque la ressource appartient à l'utilisateur.
+
+202. Appliquer le même principe aux lectures privées.
+
+203. Tester les accès à la ressource d'un autre utilisateur.
+
+204. Tester les accès utilisateur vers une opération admin.
+
+205. Tester les accès d'un ancien membre à une room.
+
+206. Tester les accès d'un spectateur aux données privées d'un joueur.
+
+207. Vérifier les projections afin qu'une main de cartes privée ne fuite jamais.
+
+208. Vérifier que les événements internes du moteur ne sont jamais envoyés directement aux clients.
+
+### WebSocket
+
+209. Conserver une authentification explicite des connexions.
+
+210. Conserver une autorisation par opération après authentification.
+
+211. Borner la taille maximale d'un message.
+
+212. Borner la profondeur et la complexité du JSON.
+
+213. Borner le nombre de commandes dans un batch.
+
+214. Borner le débit par connexion.
+
+215. Borner le débit par utilisateur lorsque nécessaire.
+
+216. Borner la file d'émission d'une socket.
+
+217. Déconnecter les consommateurs trop lents avant croissance mémoire incontrôlée.
+
+218. Garantir que la reconnexion peut demander un snapshot autoritatif.
+
+219. Détecter les trous de séquence.
+
+220. Détecter un changement de flux/processus.
+
+221. Éviter de faire confiance à un `userId` fourni dans le payload client.
+
+222. Utiliser l'identité attachée à la connexion.
+
+### HTTP
+
+223. Conserver Helmet.
+
+224. Conserver les limites de body.
+
+225. Conserver la whitelist des DTO.
+
+226. Conserver `forbidNonWhitelisted`.
+
+227. Vérifier les limites des uploads indépendamment des limites JSON.
+
+228. Appliquer du rate limiting aux endpoints d'authentification.
+
+229. Appliquer du rate limiting aux uploads.
+
+230. Vérifier la configuration `trust proxy` en production.
+
+231. Garder CORS fermé lorsque aucune origine de production n'est configurée.
+
+232. Désactiver OpenAPI en production sauf besoin explicite.
+
+233. Éviter de renvoyer les stack traces aux clients.
+
+### Sounds
+
+234. Réduire la responsabilité de `sounds.service.ts`.
+
+235. Isoler la lecture du manifeste.
+
+236. Isoler les mutations du manifeste.
+
+237. Garder l'upload dans un composant spécialisé.
+
+238. Garder le réencodage dans un composant spécialisé.
+
+239. Garder le diagnostic dans un composant spécialisé.
+
+240. Garder le nettoyage dans un composant spécialisé.
+
+241. Transformer `SoundsService` en orchestrateur mince.
+
+242. Éliminer les accès filesystem synchrones des chemins fréquents s'ils sont mesurés comme coûteux.
+
+243. Garantir les écritures atomiques du manifeste.
+
+244. Vérifier les quotas avant upload.
+
+245. Vérifier l'espace disque avant traitement.
+
+246. Borner la durée FFmpeg.
+
+247. Borner la taille de sortie FFmpeg.
+
+248. Nettoyer les fichiers temporaires après échec.
+
+### Updates client
+
+249. Conserver la vérification cryptographique des artefacts.
+
+250. Refuser toute mise à jour non signée en production.
+
+251. Vérifier la taille avant stockage définitif.
+
+252. Vérifier le hash avant publication.
+
+253. Garantir qu'une publication partielle n'est jamais visible comme release valide.
+
+254. Nettoyer les uploads incomplets.
+
+255. Protéger la publication concurrente.
+
+256. Garantir qu'une release publiée est immuable.
+
+257. Séparer clairement upload, validation et publication.
+
+### Notification, Messaging et Social
+
+258. Clarifier la responsabilité entre notification temps réel et inbox durable.
+
+259. Garantir que la perte d'un broadcast Notification n'entraîne pas la perte de la notification durable.
+
+Oui, la réponse a été coupée. Je reprends **exactement au point 260**, avec toujours **une seule action par numéro**.
+
+260. Éviter les duplications de responsabilité entre Notification et Messaging.
+
+261. Définir clairement quel module possède la notion de message privé.
+
+262. Définir clairement quel module possède la notion de notification durable.
+
+263. Définir clairement quel module possède la diffusion temps réel d'une notification.
+
+264. Empêcher Notification de devenir un second système de Messaging.
+
+265. Empêcher Messaging de réimplémenter une inbox générique de notifications.
+
+266. Centraliser les règles de lecture/non-lu appartenant à une même ressource.
+
+267. Garantir l'idempotence de création des notifications générées par un événement métier.
+
+268. Empêcher une reconnexion WebSocket de créer une deuxième notification durable.
+
+269. Borner le nombre de notifications retournées par requête.
+
+270. Mettre en place une pagination stable lorsque l'historique peut dépasser cette limite.
+
+271. Éviter de charger des payloads volumineux lorsqu'une projection plus petite suffit.
+
+272. Vérifier les règles d'accès aux conversations privées.
+
+273. Vérifier l'autorisation lors de la suppression d'un message.
+
+274. Vérifier l'autorisation lors de la restauration d'un message.
+
+275. Vérifier l'autorisation lors de la purge d'un message.
+
+276. Vérifier l'autorisation lors du marquage comme lu.
+
+277. Garantir qu'un utilisateur ne peut pas manipuler l'inbox d'un autre utilisateur.
+
+278. Garantir que les contacts sociaux utilisent une identité provenant de la session authentifiée.
+
+279. Centraliser les règles de relation sociale symétriques.
+
+280. Garantir l'unicité DB d'une relation sociale lorsqu'elle doit être unique.
+
+281. Éviter deux représentations différentes de la même relation utilisateur-utilisateur.
+
+282. Garantir qu'une suppression de relation concurrente reste cohérente.
+
+283. Vérifier les courses entre demande, acceptation et suppression d'une relation.
+
+### Presence et Chat
+
+284. Réduire `presence.service.ts` si plusieurs responsabilités indépendantes y sont réellement regroupées.
+
+285. Séparer l'état de présence de la logique de chat.
+
+286. Séparer les règles de bannissement du transport WebSocket.
+
+287. Utiliser une source autoritative pour vérifier un bannissement avant une mutation sensible.
+
+288. Ne pas considérer le cache de bannissement comme autoritatif.
+
+289. Définir clairement la sémantique online/offline lors d'une perte brutale de connexion.
+
+290. Gérer plusieurs connexions simultanées du même utilisateur.
+
+291. Ne pas déclarer un utilisateur offline tant qu'une autre connexion valide subsiste.
+
+292. Nettoyer les présences orphelines après expiration.
+
+293. Empêcher les heartbeats de créer une croissance mémoire non bornée.
+
+294. Borner l'historique Chat chargé en mémoire.
+
+295. Paginer l'historique Chat persistant.
+
+296. Vérifier l'autorisation de suppression des messages Chat.
+
+297. Vérifier les courses entre suppression et diffusion d'un message.
+
+298. Garantir que le contenu Chat est validé avant persistance.
+
+299. Borner la longueur des messages Chat.
+
+300. Éviter de journaliser le contenu privé du Chat sans nécessité opérationnelle.
+
+### Admin
+
+301. Réduire le nombre de services Admin purement délégateurs.
+
+302. Garder l'administration comme orchestration de capacités existantes plutôt que comme duplication de leur logique métier.
+
+303. Empêcher Admin de manipuler directement les repositories d'autres modules lorsque leur API applicative suffit.
+
+304. Centraliser la vérification du rôle administrateur.
+
+305. Vérifier le rôle administrateur côté serveur pour chaque opération sensible.
+
+306. Ajouter une autorisation supplémentaire pour les opérations de maintenance système.
+
+307. Conserver un secret distinct pour les opérations de maintenance particulièrement dangereuses lorsque nécessaire.
+
+308. Comparer les secrets sensibles en temps constant lorsque pertinent.
+
+309. Ne jamais journaliser les tokens de maintenance.
+
+310. Ne jamais retourner les secrets de configuration via les endpoints Admin.
+
+311. Limiter les informations système exposées par les endpoints de statut.
+
+312. Borner la quantité de logs récupérable via l'administration.
+
+313. Éviter qu'un endpoint Admin permette de lire arbitrairement un fichier du serveur.
+
+314. Éviter qu'un endpoint Admin permette de choisir arbitrairement une commande système.
+
+315. Maintenir une allowlist stricte des opérations système exécutables.
+
+316. Borner la durée des commandes système lancées par l'administration.
+
+317. Terminer les processus enfants dépassant leur timeout.
+
+318. Empêcher deux déploiements administratifs incompatibles de s'exécuter simultanément.
+
+319. Garantir la récupération d'un verrou de maintenance réellement orphelin.
+
+320. Ne pas libérer un verrou uniquement parce qu'il est ancien.
+
+### Configuration
+
+321. Conserver une validation centralisée de la configuration au démarrage.
+
+322. Éliminer les lectures directes de `process.env` dans le code métier.
+
+323. Injecter les paramètres opérationnels nécessaires aux services.
+
+324. Donner un type précis aux groupes de configuration.
+
+325. Éviter que chaque service interprète différemment une même variable d'environnement.
+
+326. Supprimer les variables de configuration devenues inutilisées.
+
+327. Refuser les configurations dangereuses en production.
+
+328. Refuser les secrets par défaut en production.
+
+329. Refuser le compte DB root en production.
+
+330. Refuser un JWT symétrique si RS256 reste la politique retenue.
+
+331. Exiger les dépendances Redis indispensables en production.
+
+332. Vérifier les bornes numériques de toutes les configurations de capacité.
+
+333. Vérifier les bornes numériques de tous les timeouts.
+
+334. Vérifier les bornes numériques de tous les TTL.
+
+335. Éviter les valeurs silencieusement corrigées lorsqu'une configuration invalide devrait empêcher le démarrage.
+
+### Observabilité
+
+336. Conserver un correlation ID par requête HTTP.
+
+337. Propager le correlation ID dans les traitements WebSocket.
+
+338. Propager le correlation ID dans les jobs asynchrones lorsque cela apporte une traçabilité utile.
+
+339. Uniformiser la structure des logs.
+
+340. Éviter les messages JSON manuellement construits de plusieurs formats différents.
+
+341. Centraliser la sanitisation des données sensibles dans les logs.
+
+342. Interdire les mots de passe dans les logs.
+
+343. Interdire les JWT dans les logs.
+
+344. Interdire les refresh tokens dans les logs.
+
+345. Interdire les secrets d'API dans les logs.
+
+346. Éviter de journaliser les payloads privés complets.
+
+347. Donner aux erreurs importantes un identifiant ou contexte exploitable.
+
+348. Mesurer la latence HTTP.
+
+349. Mesurer la latence des commandes WebSocket.
+
+350. Mesurer la latence des commandes de jeu.
+
+351. Mesurer les conflits CAS.
+
+352. Mesurer les échecs d'acquisition de verrou.
+
+353. Mesurer l'attente des verrous.
+
+354. Mesurer la profondeur des queues BullMQ.
+
+355. Mesurer l'âge des jobs BullMQ en attente.
+
+356. Mesurer les reconnexions Redis.
+
+357. Mesurer les reconnexions WebSocket.
+
+358. Mesurer la backpressure WebSocket.
+
+359. Mesurer la saturation du pool MySQL.
+
+360. Mesurer la consommation mémoire du processus.
+
+361. Mesurer le retard de l'event loop.
+
+362. Éviter les labels Prometheus à cardinalité non bornée.
+
+363. Ne jamais utiliser `userId` comme label Prometheus.
+
+364. Ne jamais utiliser `roomId` comme label Prometheus.
+
+365. Ne jamais utiliser `commandId` comme label Prometheus.
+
+366. Définir des alertes uniquement sur des métriques réellement actionnables.
+
+367. Vérifier que `/metrics` reste protégé conformément au modèle d'exploitation choisi.
+
+### Health et cycle de vie
+
+368. Conserver `/health/live` indépendant des services externes.
+
+369. Conserver `/health/ready` dépendant des services nécessaires au trafic.
+
+370. Ajouter un timeout explicite aux checks de dépendances.
+
+371. Empêcher un health check lent de saturer lui-même une dépendance.
+
+372. Passer en non-ready avant le drainage lors du shutdown.
+
+373. Arrêter d'accepter de nouvelles mutations pendant le shutdown.
+
+374. Laisser terminer les mutations déjà engagées dans une limite temporelle.
+
+375. Arrêter les consumers BullMQ proprement.
+
+376. Fermer les sockets WebSocket proprement.
+
+377. Fermer les abonnements Redis proprement.
+
+378. Fermer les connexions Redis proprement.
+
+379. Fermer le pool MySQL après les consommateurs qui en dépendent.
+
+380. Annuler les timers locaux restants.
+
+381. Supprimer les listeners globaux installés par le processus.
+
+382. Borner la durée totale du graceful shutdown.
+
+383. Forcer la terminaison uniquement après expiration du délai de drainage.
+
+### Performance
+
+384. Établir un profil CPU réel du backend sous charge représentative.
+
+385. Établir un profil mémoire réel sous charge représentative.
+
+386. Mesurer le coût de sérialisation des gros états de jeu.
+
+387. Mesurer le coût de `structuredClone` sur les états de jeu.
+
+388. Optimiser `structuredClone` uniquement si les mesures montrent qu'il est significatif.
+
+389. Mesurer la taille moyenne d'un snapshot.
+
+390. Mesurer la taille maximale réaliste d'un snapshot.
+
+391. Mesurer la croissance des timelines.
+
+392. Mesurer le débit maximal d'une room active.
+
+393. Mesurer plusieurs rooms actives simultanément.
+
+394. Mesurer plusieurs instances backend simultanément.
+
+395. Identifier les allocations mémoire dominantes du moteur.
+
+396. Éviter les copies complètes d'état lorsqu'elles ne sont pas nécessaires et qu'elles sont réellement coûteuses.
+
+397. Ne pas introduire de mutation en place uniquement pour gagner de la performance sans preuve.
+
+398. Mesurer les projections envoyées aux clients.
+
+399. Éviter d'envoyer des snapshots complets lorsque des réponses plus petites suffisent.
+
+400. Conserver la possibilité de demander un snapshot complet pour la resynchronisation.
+
+401. Compresser uniquement les réponses pour lesquelles le gain compense le CPU.
+
+402. Vérifier l'impact de `compression()` sur les flux à forte fréquence.
+
+403. Mesurer la latence p50.
+
+404. Mesurer la latence p95.
+
+405. Mesurer la latence p99.
+
+406. Définir des objectifs de performance avant d'optimiser davantage.
+
+### Mémoire et capacités
+
+407. Borner toutes les `Map` persistantes en mémoire.
+
+408. Borner tous les `Set` persistants en mémoire.
+
+409. Borner les caches locaux.
+
+410. Borner les reçus de replay.
+
+411. Borner les informations de déduplication.
+
+412. Borner les historiques d'événements locaux.
+
+413. Borner les queues par room.
+
+414. Borner les données associées aux sockets.
+
+415. Nettoyer les données d'une socket à sa fermeture.
+
+416. Nettoyer les données d'une room à sa destruction.
+
+417. Nettoyer les données d'un run lorsqu'il est remplacé.
+
+418. Éviter les références empêchant le garbage collector de libérer une session terminée.
+
+419. Tester une succession importante de créations/destructions de rooms pour détecter les fuites.
+
+### Modules NestJS
+
+420. Examiner les quelque 110 fichiers liés à la composition/module NestJS pour détecter la cérémonie inutile.
+
+421. Supprimer les modules servant uniquement à réexporter un provider sans frontière réelle.
+
+422. Conserver un module distinct lorsqu'il possède une véritable responsabilité de composition.
+
+423. Éliminer les cycles NestJS plutôt que les masquer avec `forwardRef` lorsque possible.
+
+424. Garder les interfaces métier indépendantes de NestJS.
+
+425. Garder les décorateurs TypeORM hors du domaine.
+
+426. Garder les décorateurs HTTP hors du domaine.
+
+427. Garder les détails WebSocket hors du domaine.
+
+428. Garder les adapters dans l'infrastructure.
+
+429. Garder la composition des adapters dans les modules/composition roots.
+
+430. Éviter que les use cases importent des implémentations infrastructure.
+
+### API publiques internes
+
+431. Examiner les quelque 51 `public-api.ts`.
+
+432. Supprimer les `public-api.ts` qui ne matérialisent aucune véritable frontière.
+
+433. Réduire les exports publics au strict nécessaire.
+
+434. Éviter les réexports transitifs profonds.
+
+435. Empêcher un module de publier ses repositories TypeORM.
+
+436. Publier des capacités métier plutôt que des détails de stockage.
+
+437. Éviter qu'un module accède aux entités TypeORM d'un autre module.
+
+438. Éviter qu'un module dépende des DTO de transport d'un autre module lorsque le contrat métier suffit.
+
+439. Donner un propriétaire unique à chaque contrat transversal.
+
+### Dépendances externes
+
+440. Supprimer les packages npm inutilisés.
+
+441. Supprimer les devDependencies inutilisées.
+
+442. Vérifier les dépendances transitives critiques.
+
+443. Conserver un lockfile reproductible.
+
+444. Éviter les plages de versions trop permissives pour les composants critiques si elles compromettent la reproductibilité.
+
+445. Vérifier les breaking changes avant toute montée majeure.
+
+446. Maintenir Node sur une version réellement supportée par toutes les dépendances.
+
+447. Vérifier périodiquement les vulnérabilités de production.
+
+448. Ne pas corriger une vulnérabilité en appliquant aveuglément une mise à jour majeure.
+
+449. Vérifier particulièrement les dépendances manipulant JWT.
+
+450. Vérifier particulièrement les dépendances manipulant uploads.
+
+451. Vérifier particulièrement les dépendances WebSocket.
+
+452. Vérifier particulièrement FFmpeg et les binaires embarqués.
+
+### Tests
+
+453. Garder les tests unitaires centrés sur les invariants et non sur l'implémentation privée.
+
+454. Supprimer les tests qui ne font que reproduire le code de production.
+
+455. Réduire les mocks excessifs de TypeORM lorsque le comportement SQL est important.
+
+456. Préférer un vrai MySQL pour les tests de comportement SQL critique.
+
+457. Préférer un vrai Redis pour les comportements Redis critiques.
+
+458. Tester BullMQ avec un vrai Redis pour les garanties de livraison importantes.
+
+459. Tester réellement deux instances backend pour les scénarios distribués.
+
+460. Tester le shutdown pendant une mutation.
+
+461. Tester le shutdown pendant un job.
+
+462. Tester le shutdown pendant une connexion WebSocket active.
+
+463. Tester une panne MySQL.
+
+464. Tester une panne Redis.
+
+465. Tester une reconnexion Redis.
+
+466. Tester une reconnexion WebSocket.
+
+467. Tester les commandes dupliquées.
+
+468. Tester les commandes hors ordre.
+
+469. Tester les versions obsolètes.
+
+470. Tester les payloads excessivement gros.
+
+471. Tester les payloads excessivement profonds.
+
+472. Tester les payloads contenant des champs inconnus.
+
+473. Tester les limites de batch.
+
+474. Tester les autorisations négatives.
+
+475. Tester les IDOR.
+
+476. Tester la fuite d'informations entre joueurs.
+
+477. Tester le moteur indépendamment de tous les jeux réels.
+
+478. Tester chaque jeu indépendamment du reste du catalogue.
+
+479. Tester qu'un jeu peut être retiré sans casser le moteur.
+
+480. Tester qu'un nouveau faux jeu peut être ajouté sans modifier le moteur.
+
+### Qualité des tests
+
+481. Ne pas utiliser le pourcentage de couverture comme objectif principal.
+
+482. Utiliser la couverture pour identifier des zones non exercées.
+
+483. Augmenter prioritairement la couverture des branches de sécurité.
+
+484. Augmenter prioritairement la couverture des branches de concurrence.
+
+485. Augmenter prioritairement la couverture des transactions.
+
+486. Augmenter prioritairement la couverture des mécanismes de restauration.
+
+487. Conserver le mutation testing sur les composants où il apporte réellement de l'information.
+
+488. Éviter le mutation testing massif des getters, mappings et code trivial.
+
+489. Réduire les tests trop couplés à l'organisation des fichiers.
+
+490. Faire en sorte que les tests architecturaux vérifient des propriétés plutôt que des chaînes de texte lorsque possible.
+
+### Audits maison
+
+491. Inventorier tous les scripts d'audit du backend.
+
+492. Identifier les audits qui détectent une classe de bug réellement importante.
+
+493. Supprimer les audits redondants avec TypeScript.
+
+494. Supprimer les audits redondants avec ESLint.
+
+495. Supprimer les audits redondants avec les contraintes DB.
+
+496. Supprimer les audits redondants avec de vrais tests d'intégration.
+
+497. Remplacer les audits regex fragiles par une analyse AST lorsqu'une règle statique reste nécessaire.
+
+498. Remplacer une règle statique par le système de types lorsque c'est possible.
+
+499. Éviter les audits dépendant du nom exact d'une méthode.
+
+500. Éviter les audits dépendant de la présence littérale d'un morceau de code.
+
+501. Ne pas considérer un audit statique comme une preuve de sécurité comportementale.
+
+502. Réduire le nombre de commandes nécessaires pour certifier une modification ordinaire.
+
+503. Maintenir une seule commande de certification complète.
+
+504. Maintenir une commande rapide pour le développement local.
+
+### CI
+
+505. Déclencher la CI de validation sur les pull requests pertinentes plutôt que dépendre uniquement d'un lancement manuel.
+
+506. Séparer les tests rapides des tests distribués coûteux.
+
+507. Exécuter typecheck et lint tôt.
+
+508. Exécuter les tests unitaires avant les campagnes lourdes.
+
+509. Exécuter les intégrations MySQL/Redis après les contrôles rapides.
+
+510. Construire l'artefact uniquement après validation.
+
+511. Empêcher la publication d'un artefact qui n'a pas passé la certification.
+
+512. Garder les GitHub Actions épinglées de manière reproductible.
+
+513. Utiliser un cache uniquement lorsqu'il ne compromet pas la reproductibilité.
+
+514. Vérifier que la CI compile exactement la version Node utilisée en production.
+
+515. Tester l'artefact final et pas uniquement les sources.
+
+### Déploiement
+
+516. Construire un artefact immuable.
+
+517. Identifier l'artefact par le commit exact.
+
+518. Ne jamais déployer directement un worktree mutable.
+
+519. Exécuter les migrations de façon contrôlée avant la bascule nécessitant leur schéma.
+
+520. Garantir la compatibilité entre application précédente et schéma pendant une bascule progressive si plusieurs versions peuvent coexister.
+
+521. Définir une stratégie explicite pour les migrations non rétrocompatibles.
+
+522. Faire un health check après déploiement.
+
+523. Revenir automatiquement à la release précédente lorsque le nouveau processus ne devient pas sain et que le schéma reste compatible.
+
+524. Ne pas prétendre pouvoir rollback l'application lorsque la migration DB rend ce rollback impossible.
+
+525. Conserver plusieurs releases précédentes uniquement selon une politique bornée.
+
+526. Nettoyer les anciens artefacts.
+
+527. Vérifier l'espace disque avant déploiement.
+
+528. Empêcher deux déploiements simultanés.
