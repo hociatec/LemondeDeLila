@@ -17,6 +17,7 @@ const manifest = {
   minPlayers: 2,
   maxPlayers: 8,
   engine: 'simultaneous-quiz-automation',
+  summary: 'Fixture neutre pour l’automatisation du quiz.',
 };
 const documentExtensionSource = {
   schemaVersion: 1,
