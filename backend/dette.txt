@@ -115,10 +115,6 @@
 
 88. Vérifier que toutes les mutations utilisent la même stratégie de concurrence.
 
-96. Garantir qu'état initial identique, commande identique et graine identique produisent le même résultat.
-
-97. Tester le déterminisme de chaque jeu indépendamment.
-
 103. Supprimer les compatibilités de snapshots devenues définitivement inutiles.
 
 ### Concurrence distribuée
