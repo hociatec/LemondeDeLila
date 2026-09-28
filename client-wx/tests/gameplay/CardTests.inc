@@ -31,9 +31,13 @@ void TestGenericCardsContract()
         "S doit annoncer les scores quand ils sont disponibles.");
     Expect(GameGenericShortcutPolicy::ResolveInterface(state, "E") == "hand",
         "E doit annoncer le nombre de cartes en main.");
+    Expect(GameGenericShortcutPolicy::ResolveInterface(state, "SHIFT+E") == "hands",
+        "Maj+E doit annoncer le nombre de cartes de chaque joueur.");
     state.kits.movement = lila::modules::gameplay::domain::GameMovementView{};
     Expect(GameGenericShortcutPolicy::ResolveInterface(state, "E").empty(),
         "E ne doit pas être actif dans un jeu de plateau, même s'il comporte des cartes.");
+    Expect(GameGenericShortcutPolicy::ResolveInterface(state, "SHIFT+E").empty(),
+        "Maj+E ne doit pas être actif dans un jeu de plateau.");
     state.kits.movement.reset();
     lila::modules::gameplay::domain::GameCardsView cards;
     cards.discards.push_back({"discardPenaltyCards", 1,

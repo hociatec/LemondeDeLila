@@ -222,6 +222,10 @@ export class GameWsStateMessagesPresenter {
         ? `Vous remportez la bataille et gagnez ${cardsWon} ${cards}.`
         : `${namedPlayer} remporte la bataille et gagne ${cardsWon} ${cards}.`;
     }
+    if (messageKey === 'cards-battle-ties.card.placed' && namedPlayer)
+      return namedPlayer === 'Vous'
+        ? 'Vous posez une carte sur la table.'
+        : `${namedPlayer} pose une carte sur la table.`;
     if (messageKey === 'game.pawn.bonus-advance' && namedPlayer)
       return this.pawnBonusMessage(namedPlayer, params);
     if (messageKey === 'game.team-pawn.moved' && namedPlayer)

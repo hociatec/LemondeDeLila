@@ -69,6 +69,9 @@ export function battleTiesRules(source: BattleTiesProgram) {
       );
       if (!play) rejectRule('Participation battle-ties cards introuvable');
       play.playedCards.push(cardId);
+      ctx.events.message('cards-battle-ties.card.placed', {
+        playerId: actor.id,
+      });
       const pending = waiting(current.battle, ctx, phases);
       if (pending.length > 0) return ctx.turn.to(pending[0]);
       finalize(current, ctx);

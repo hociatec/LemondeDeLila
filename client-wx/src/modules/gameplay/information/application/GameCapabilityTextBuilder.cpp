@@ -26,6 +26,16 @@ std::string GameCapabilityTextBuilder::Build(
         return "Vous avez " + std::to_string(count) +
             (count > 1 ? " cartes en main." : " carte en main.");
     }
+    if (capability == "hands")
+    {
+        if (!state.kits.cards) return {};
+        std::ostringstream hands;
+        for (const auto& hand : state.kits.cards->hands)
+            for (const auto& holder : hand.players)
+                hands << Player(state, holder.playerId) << " : " << holder.count
+                    << (holder.count > 1 ? " cartes." : " carte.") << '\n';
+        return hands.str();
+    }
     if (capability == "current-turn")
     {
         const auto current = state.system.turn.currentPlayerId;

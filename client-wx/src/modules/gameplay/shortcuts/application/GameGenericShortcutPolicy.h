@@ -27,6 +27,8 @@ public:
         // Card-hand information has no shortcut in board games: E must not
         // compete with the board's own keyboard surface.
         if (!isBoardGame && normalizedKey == "E" && state.kits.cards) return "hand";
+        if (!isBoardGame && normalizedKey == "SHIFT+E" && state.kits.cards)
+            return "hands";
         return {};
     }
 };
