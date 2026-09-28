@@ -264,7 +264,7 @@ export class GameRoomStateLifecycle {
   }
 
   private isRosterConfigurationState(state: GameState): boolean {
-    // Games such as Morpion already expose phase "playing" in the lobby.
+    // Some games already expose phase "playing" in the lobby.
     // An explicit null start timestamp identifies their pre-start projection;
     // do not infer this from missing metadata on legacy live snapshots.
     return (

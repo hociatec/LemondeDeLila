@@ -586,7 +586,7 @@ describe('GameWsStatePresenter', () => {
       state,
       handler,
       roomId: 6,
-      gameType: 'jeu-oie',
+      gameType: 'board-race',
       version: 4,
       viewerPlayerId: 1,
     });
