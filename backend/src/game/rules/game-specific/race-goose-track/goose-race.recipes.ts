@@ -141,7 +141,7 @@ function announceLanding(
     position,
   });
   if (tile.description)
-    ctx.events.message('goose.tile.effect', {
+    ctx.events.message('game.board.tile-description', {
       playerId,
       tileId: tile.id,
       tileType: tile.type,

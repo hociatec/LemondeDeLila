@@ -249,8 +249,8 @@ export class GameWsStateMessagesPresenter {
       return this.pawnBonusMessage(namedPlayer, params);
     if (messageKey === 'game.team-pawn.moved' && namedPlayer)
       return this.teamPawnMovedMessage(namedPlayer, params);
-    if (messageKey === 'goose.tile.effect')
-      return this.gooseTileDescription(params);
+    if (messageKey === 'game.board.tile-description')
+      return this.boardTileDescription(params);
     if (messageKey === 'game.positions.swapped') {
       const actor = player(params.actorId);
       const target = player(params.targetId);
@@ -271,7 +271,7 @@ export class GameWsStateMessagesPresenter {
     return this.roundStartedMessage(params, players);
   }
 
-  private gooseTileDescription(params: Record<string, unknown>): string {
+  private boardTileDescription(params: Record<string, unknown>): string {
     const label = this.stringValue(params.tileLabel);
     const description = this.stringValue(params.tileDescription);
     if (!description) return '';
