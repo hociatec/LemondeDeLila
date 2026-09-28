@@ -139,8 +139,6 @@
 
 103. Supprimer les compatibilités de snapshots devenues définitivement inutiles.
 
-105. Borner la taille de la timeline.
-
 ### Concurrence distribuée
 
 106. Vérifier l'ordre d'acquisition de tous les verrous.
