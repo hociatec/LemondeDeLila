@@ -69,7 +69,7 @@ export function battleTiesRules(source: BattleTiesProgram) {
       );
       if (!play) rejectRule('Participation battle-ties cards introuvable');
       play.playedCards.push(cardId);
-      ctx.events.message('cards-battle-ties.card.placed', {
+      ctx.events.message('game.card.battle.card-placed', {
         playerId: actor.id,
       });
       const pending = waiting(current.battle, ctx, phases);
@@ -99,7 +99,7 @@ export function battleTiesRules(source: BattleTiesProgram) {
     );
     round.tiedPlayers = pending;
     phases.transition(ctx, 'battle-face-down');
-    ctx.events.message('cards-battle-ties.battle.started', {
+    ctx.events.message('game.card.battle.started', {
       roundNumber: ctx.round.number,
     });
     if (pending.length < 2) complete(state, pending[0] ?? winners[0], ctx);
@@ -137,7 +137,7 @@ export function battleTiesRules(source: BattleTiesProgram) {
       return complete(state, pending[0] ?? winners[0] ?? null, ctx);
     state.battle.tiedPlayers = pending;
     phases.transition(ctx, 'battle-face-down');
-    ctx.events.message('cards-battle-ties.battle.continues', {
+    ctx.events.message('game.card.battle.continues', {
       roundNumber: ctx.round.number,
     });
     ctx.turn.to(pending[0]);
@@ -156,7 +156,7 @@ export function battleTiesRules(source: BattleTiesProgram) {
       for (const cardId of tableCards)
         ctx.cards.give(program.handId, winnerId, cardId);
       captureBonus(state.battle, winnerId, ctx);
-      ctx.events.message('cards-battle-ties.battle.won', {
+      ctx.events.message('game.card.battle.won', {
         playerId: winnerId,
         cardsWon: tableCards.length,
         plays: state.battle.plays.map((play) => ({
@@ -280,8 +280,8 @@ export function battleTiesRules(source: BattleTiesProgram) {
               cardsWon: summary.cardsWon,
               plays: enrich({ plays: summary.plays, tiedPlayers: [] }),
               battleLog: ctx.events.messages().flatMap((entry) =>
-                (entry.key === 'cards-battle-ties.battle.started' ||
-                  entry.key === 'cards-battle-ties.battle.continues') &&
+                (entry.key === 'game.card.battle.started' ||
+                  entry.key === 'game.card.battle.continues') &&
                 entry.params.roundNumber === summary.roundNumber
                   ? [
                       {

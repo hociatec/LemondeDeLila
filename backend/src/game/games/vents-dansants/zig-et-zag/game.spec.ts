@@ -22,11 +22,11 @@ describe('Zig et Zag declarative game', () => {
     expect(
       game
         .state()
-        .log.some((entry) => entry.key === 'cards-battle-ties.card.placed'),
+        .log.some((entry) => entry.key === 'game.card.battle.card-placed'),
     ).toBe(true);
     expect(game.state().log).toContainEqual(
       expect.objectContaining({
-        key: 'cards-battle-ties.card.placed',
+        key: 'game.card.battle.card-placed',
         params: expect.objectContaining({ playerId: 1 }),
       }),
     );
@@ -73,7 +73,7 @@ describe('Zig et Zag declarative game', () => {
     expect(
       game
         .state()
-        .log.some((entry) => entry.key === 'cards-battle-ties.battle.won'),
+        .log.some((entry) => entry.key === 'game.card.battle.won'),
     ).toBe(true);
     expect(game.inspect.hand(1).length + game.inspect.hand(2).length).toBe(54);
     expect(await game.replay()).toEqual(game.state());

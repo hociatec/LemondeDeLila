@@ -3,8 +3,6 @@
 
 2. Supprimer toute référence à un jeu concret dans le `game/core` générique.
 
-4. Supprimer de `GameWsStateMessagesPresenter` les comportements spécifiques à `cards-battle-ties`.
-
 6. Rechercher et supprimer les autres identifiants de jeux présents dans les couches génériques.
 
 7. Interdire tout import `engine -> game-specific`.
