@@ -97,10 +97,12 @@ function modifiedRoll(
 ) {
   let value: number;
   if (ctx.status.consume(playerId, program.statuses.nextRollKeepLowest)) {
-    value = Math.min(
-      ctx.dice.roll(program.diceId).total,
-      ctx.dice.roll(program.diceId).total,
-    );
+    // Keep this as one dice operation. Two individual rolls each emit a raw
+    // dice event, which made the history announce the same turn twice.
+    value = ctx.dice.rollWith(program.diceId, {
+      attempts: 2,
+      select: 'worst',
+    }).total;
   } else value = ctx.dice.roll(program.diceId).total;
   const malus = statusNumber(
     program,
@@ -159,6 +161,7 @@ function drawCard(
   drawAndResolve<State, Card>(ctx, {
     deckId: program.deckId,
     playerId,
+    automatic: false,
     // These cards contain their full rule in the narrative. Do not append a
     // second, derived description (which can expose internal status names).
     eventData: (card) => ({ category: card.category, effectDescription: '' }),

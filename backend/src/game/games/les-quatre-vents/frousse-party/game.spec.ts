@@ -63,4 +63,48 @@ describe('Frousse Party declarative game', () => {
     expect('pendingSwap' in game.view(actor)).toBe(false);
     expect(await game.replay()).toEqual(game.state());
   });
+
+  it('lets the player choose an opponent before swapping places', async () => {
+    const game = await testGame(gameDefinition)
+      .players(['Alice', 'Bob'])
+      .seed(113)
+      .start();
+    await game.choose(1, 'citrouille-rigolote');
+    await game.choose(2, 'fantome-peureux');
+    const state: any = game.state();
+    const actorId = state.turn.currentPlayerId;
+    const opponentId = [1, 2].find((id) => id !== actorId)!;
+    state.engine.kits.movement.positions.manor[String(actorId)] = 3;
+    state.engine.kits.movement.positions.manor[String(opponentId)] = 12;
+    state.engine.playerValues.statuses[actorId] = [
+      {
+        id: 'protectedHaunted.next-move-cap',
+        remaining: null,
+        scope: 'until-used',
+        data: { value: 1 },
+      },
+    ];
+    const deck = state.engine.kits.cards.decks.frights;
+    state.engine.kits.cards.decks.frights = [
+      23,
+      ...deck.filter((id: number) => id !== 23),
+    ];
+
+    const runtime = new DeclarativeGameRuntime(gameDefinition);
+    const pending: any = runtime.applyActions(state, [
+      { type: 'roll', payload: {}, meta: { actorId } },
+    ]);
+    expect(pending.pending?.data.choiceId).toBe('protectedHaunted.swap');
+    const swapped: any = runtime.applyActions(pending, [
+      {
+        type: 'choice.resolve',
+        payload: { value: opponentId },
+        meta: { actorId },
+      },
+    ]);
+
+    const positions = swapped.engine.kits.movement.positions.manor;
+    expect(positions[String(actorId)]).toBe(12);
+    expect(positions[String(opponentId)]).toBe(4);
+  });
 });

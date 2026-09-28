@@ -37,6 +37,19 @@ describe('genericGameEventMessage', () => {
     expect(message('turn.started', { playerId: 2 }, 2, 1)).toBe(
       "C'est au tour de Baloo.",
     );
+    const vowelPlayers = new Map([
+      [1, 'Hacene'],
+      [2, 'Abu'],
+    ]);
+    expect(
+      genericGameEventMessage({
+        type: 'turn.started',
+        data: { playerId: 2 },
+        actorId: 2,
+        players: vowelPlayers,
+        viewerPlayerId: 1,
+      }),
+    ).toBe("C'est au tour d’Abu.");
   });
 
   it('announces a grid move with human-readable coordinates', () => {
