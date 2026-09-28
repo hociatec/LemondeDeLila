@@ -58,6 +58,7 @@ void PresenceMonitor::Stop()
     }
     catch (...)
     {
+        // Close is best-effort after cancellation; the worker is still joined below.
     }
     if (activityThread_.joinable()) activityThread_.join();
     if (receiveThread_.joinable()) receiveThread_.join();
@@ -107,6 +108,7 @@ void PresenceMonitor::ReceiveLoop(std::stop_token stopToken)
         catch (...)
         {
             if (stopToken.stop_requested()) break;
+            // A reconnect is attempted after any transport failure.
             SetStatus("Reconnexion de la présence...");
             std::mutex waitMutex;
             std::condition_variable_any wake;

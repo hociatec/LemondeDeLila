@@ -110,6 +110,7 @@ void RoomSessionGateway::Leave()
         }
         catch (...)
         {
+            // Best-effort leave notification; Close() remains mandatory.
         }
     }
     Close();

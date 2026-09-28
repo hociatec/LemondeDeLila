@@ -39,6 +39,7 @@ void AppendLog(const fs::path& root, const char* level, const std::string& messa
             << std::setw(2) << now.wHour << ':' << std::setw(2) << now.wMinute << ':'
             << std::setw(2) << now.wSecond << 'Z' << " [" << level << "] " << message << '\n';
     } catch (...) {
+        // Logging must not throw while reporting another failure.
     }
 }
 
