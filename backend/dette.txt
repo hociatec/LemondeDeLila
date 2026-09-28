@@ -133,8 +133,6 @@
 
 90. Empêcher la publication d'un événement durable avant le commit correspondant.
 
-95. Stabiliser explicitement tous les tris ayant une conséquence métier.
-
 96. Garantir qu'état initial identique, commande identique et graine identique produisent le même résultat.
 
 97. Tester le déterminisme de chaque jeu indépendamment.
