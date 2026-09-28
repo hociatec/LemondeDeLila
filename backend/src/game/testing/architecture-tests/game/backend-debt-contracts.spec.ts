@@ -40,6 +40,23 @@ import { GameSimulator } from '../../../core/testing/game-simulator';
 describe('backend debt contracts', () => {
   const definitions = discoverGameDefinitions();
 
+  it('keeps GameDefinition limited to engine contracts', () => {
+    const contracts = readFileSync(
+      resolve(
+        __dirname,
+        '../../../engine/runtime/definitions/game-definition-contracts.ts',
+      ),
+      'utf8',
+    );
+    const program = readFileSync(
+      resolve(__dirname, '../../../engine/runtime/contracts/game-rule-program.ts'),
+      'utf8',
+    );
+    expect(`${contracts}\n${program}`).not.toMatch(
+      /(?:^|\/)games(?:\/|$)|rules\/game-specific/,
+    );
+  });
+
   it('keeps lightweight cards optional and reserves system view namespaces', () => {
     const lightweight: CardInstance<'lama'> = 'lama';
     const stateful: CardInstance<
