@@ -141,6 +141,7 @@ function supersededTypes(messageKey: string): string[] {
   if (messageKey === 'game.card.drawn') return ['card.drawn', 'card.received'];
   if (messageKey === 'game.card.played') return ['card.played'];
   if (messageKey === 'game.dice.rolled') return ['dice.rolled'];
+  if (messageKey === 'cards-battle-ties.battle.won') return ['card.received'];
   if (messageKey === 'foulees.family.selected') return ['pawn.assigned'];
   if (messageKey === 'foulees.dice.rolled') return ['dice.rolled'];
   if (messageKey === 'game.round.started')

@@ -52,6 +52,15 @@ describe('genericGameEventMessage', () => {
     ).toBe("C'est au tour d’Abu.");
   });
 
+  it('conjugates a received card for the viewer', () => {
+    expect(message('card.received', { playerId: 1 }, 1, 1)).toBe(
+      'Vous recevez une carte.',
+    );
+    expect(message('card.received', { playerId: 2 }, 2, 1)).toBe(
+      'Baloo reçoit une carte.',
+    );
+  });
+
   it('announces a grid move with human-readable coordinates', () => {
     expect(
       message('morpion.mark.placed', { playerId: 1, x: 0, y: 2 }, 1, 1),

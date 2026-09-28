@@ -214,6 +214,14 @@ export class GameWsStateMessagesPresenter {
         ? `Vous lancez le dé et faites un ${value}.`
         : `${namedPlayer} lance le dé et fait un ${value}.`;
     }
+    if (messageKey === 'cards-battle-ties.battle.won' && namedPlayer) {
+      const cardsWon = this.numberValue(params.cardsWon);
+      if (cardsWon == null) return '';
+      const cards = `carte${cardsWon === 1 ? '' : 's'}`;
+      return namedPlayer === 'Vous'
+        ? `Vous remportez la bataille et gagnez ${cardsWon} ${cards}.`
+        : `${namedPlayer} remporte la bataille et gagne ${cardsWon} ${cards}.`;
+    }
     if (messageKey === 'game.pawn.bonus-advance' && namedPlayer)
       return this.pawnBonusMessage(namedPlayer, params);
     if (messageKey === 'game.team-pawn.moved' && namedPlayer)

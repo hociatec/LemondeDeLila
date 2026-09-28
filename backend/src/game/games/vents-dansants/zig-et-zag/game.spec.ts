@@ -59,6 +59,11 @@ describe('Zig et Zag declarative game', () => {
     await game.as(1).do('draw_card', {});
     await game.as(2).do('draw_card', {});
     expect(game.state().game.lastRound).not.toBeNull();
+    expect(
+      game
+        .state()
+        .log.some((entry) => entry.key === 'cards-battle-ties.battle.won'),
+    ).toBe(true);
     expect(game.inspect.hand(1).length + game.inspect.hand(2).length).toBe(54);
     expect(await game.replay()).toEqual(game.state());
   });
