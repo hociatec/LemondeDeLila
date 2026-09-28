@@ -139,8 +139,6 @@
 
 103. Supprimer les compatibilités de snapshots devenues définitivement inutiles.
 
-104. Borner la taille des snapshots.
-
 105. Borner la taille de la timeline.
 
 ### Concurrence distribuée
