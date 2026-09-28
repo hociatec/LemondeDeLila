@@ -34,6 +34,7 @@ int lila::modules::update::RunUpdateLauncher()
             AppendLog(ExecutablePath().parent_path(), "ERROR",
                 std::string("Launcher stopped: ") + error.what());
         } catch (...) {
+            // The user-facing error dialog remains available when logging fails.
         }
         MessageBoxW(nullptr, Widen(error.what()).c_str(), L"Le Monde de Lila - Mise à jour",
             MB_OK | MB_ICONERROR | MB_SETFOREGROUND);

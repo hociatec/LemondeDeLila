@@ -153,7 +153,7 @@ private:
         // All calls into the concrete backend, including teardown, stay on a
         // single thread. This avoids racing BASS_Free/BASS_Stop with a call in
         // progress.
-        if (graceful_) { try { backend_->FinishPlayback(); } catch (...) {} }
+        if (graceful_) { try { backend_->FinishPlayback(); } catch (...) { backend_->InterruptPlayback(); } }
         backend_->InterruptPlayback();
         backend_->Shutdown();
     }

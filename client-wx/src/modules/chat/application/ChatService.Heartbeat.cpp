@@ -2,7 +2,11 @@
 
 #include <algorithm>
 #include <chrono>
-#include <thread>
+#include <condition_variable>
+#include <exception>
+#include <mutex>
+
+#include "shared/logging/application/Logger.h"
 
 namespace lila::modules::chat::application
 {
@@ -34,12 +38,23 @@ void ChatService::HeartbeatLoop(std::stop_token stopToken, std::uint64_t lifecyc
 {
     while (!stopToken.stop_requested() && IsLifecycleCurrent(lifecycleGeneration))
     {
-        for (auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(HeartbeatInterval); remaining.count() > 0 && !stopToken.stop_requested();
-             remaining -= std::min(remaining, std::chrono::milliseconds(100)))
-            std::this_thread::sleep_for(std::min(remaining, std::chrono::milliseconds(100)));
+        std::mutex waitMutex;
+        std::condition_variable_any wake;
+        std::unique_lock lock(waitMutex);
+        wake.wait_for(lock, stopToken, HeartbeatInterval, [] { return false; });
         if (stopToken.stop_requested() || !IsLifecycleCurrent(lifecycleGeneration)) return;
-        try { SendRawJson(std::string(PresenceSyncPayload)); }
-        catch (...) { }
+        try
+        {
+            SendRawJson(std::string(PresenceSyncPayload));
+        }
+        catch (const std::exception& exception)
+        {
+            lila::shared::logging::LogWarning("Chat", "Heartbeat non envoyé: " + std::string(exception.what()));
+        }
+        catch (...)
+        {
+            lila::shared::logging::LogWarning("Chat", "Heartbeat non envoyé: erreur inconnue.");
+        }
     }
 }
 }

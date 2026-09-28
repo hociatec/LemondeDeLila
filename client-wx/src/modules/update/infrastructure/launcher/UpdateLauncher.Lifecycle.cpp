@@ -66,6 +66,7 @@ void CleanupStaging(const fs::path& root) noexcept
             }
         }
     } catch (...) {
+        // Old-version cleanup is best-effort and never blocks a launch.
     }
 }
 
@@ -84,6 +85,7 @@ void CleanupOldVersions(const fs::path& root, const State& state) noexcept
             }
         }
     } catch (...) {
+        // Cleanup cannot invalidate an already selected release.
     }
 }
 

@@ -45,6 +45,7 @@ void ClearReleaseDiagnostics(const fs::path& versions) noexcept
             fs::remove(entry.path() / L"client-crash.log", ignored);
         }
     } catch (...) {
+        // Diagnostics cleanup is best-effort.
     }
 }
 }

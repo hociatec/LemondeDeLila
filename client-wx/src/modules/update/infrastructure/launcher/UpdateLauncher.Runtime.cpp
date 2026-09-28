@@ -26,6 +26,7 @@ void ClearPreservedClientDiagnostics(const fs::path& root) noexcept
             }
         }
     } catch (...) {
+        // Previous diagnostics are optional housekeeping.
     }
 }
 
@@ -60,6 +61,7 @@ void PreserveFailedClientDiagnostics(
             AppendLog(root, "ERROR", "Preserved the latest client diagnostic in state\\client.log.");
         }
     } catch (...) {
+        // Preserving a diagnostic must not mask the primary launcher outcome.
     }
 }
 }

@@ -171,6 +171,7 @@ std::string SessionStore::RefreshAccessToken(std::stop_token stopToken)
                         }
                         catch (...)
                         {
+                            // Persistence cleanup is best-effort after local revocation.
                         }
                         lila::shared::logging::LogWarning(
                             "SessionStore",

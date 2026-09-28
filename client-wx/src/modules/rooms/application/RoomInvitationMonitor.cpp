@@ -3,11 +3,13 @@
 #include <utility>
 #include <condition_variable>
 #include <chrono>
+#include <exception>
 
 #include "modules/rooms/application/RoomInvitationParser.h"
 #include "modules/session/application/SessionConnectionRetry.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
+#include "shared/logging/application/Logger.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/websocket/AuthenticatedWebSocketHeaders.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
@@ -39,7 +41,18 @@ void RoomInvitationMonitor::Start()
 void RoomInvitationMonitor::Stop()
 {
     receiveThread_.request_stop();
-    try { webSocketClient_.Close(); } catch (...) {}
+    try
+    {
+        webSocketClient_.Close();
+    }
+    catch (const std::exception& exception)
+    {
+        lila::shared::logging::LogWarning("Rooms", "Fermeture du flux d'invitations: " + std::string(exception.what()));
+    }
+    catch (...)
+    {
+        lila::shared::logging::LogWarning("Rooms", "Fermeture du flux d'invitations: erreur inconnue.");
+    }
     if (receiveThread_.joinable()) receiveThread_.join();
 }
 
@@ -64,10 +77,30 @@ void RoomInvitationMonitor::ReceiveLoop(std::stop_token stopToken)
             Connect(stopToken);
             while (!stopToken.stop_requested()) ApplyMessage(webSocketClient_.Receive());
         }
+        catch (const std::exception& exception)
+        {
+            if (stopToken.stop_requested()) break;
+            lila::shared::logging::LogWarning("Rooms", "Flux d'invitations interrompu: " + std::string(exception.what()));
+            try { webSocketClient_.Close(); }
+            catch (const std::exception& closeException)
+            {
+                lila::shared::logging::LogWarning("Rooms", "Fermeture du flux d'invitations: " + std::string(closeException.what()));
+            }
+            catch (...)
+            {
+                lila::shared::logging::LogWarning("Rooms", "Fermeture du flux d'invitations: erreur inconnue.");
+            }
+            std::mutex waitMutex;
+            std::condition_variable_any wake;
+            std::unique_lock lock(waitMutex);
+            wake.wait_for(lock, stopToken, std::chrono::seconds(1), [] { return false; });
+        }
         catch (...)
         {
             if (stopToken.stop_requested()) break;
-            try { webSocketClient_.Close(); } catch (...) {}
+            lila::shared::logging::LogWarning("Rooms", "Flux d'invitations interrompu par une erreur inconnue.");
+            try { webSocketClient_.Close(); }
+            catch (...) { lila::shared::logging::LogWarning("Rooms", "Fermeture du flux d'invitations: erreur inconnue."); }
             std::mutex waitMutex;
             std::condition_variable_any wake;
             std::unique_lock lock(waitMutex);
