@@ -137,12 +137,6 @@
 
 97. Tester le déterminisme de chaque jeu indépendamment.
 
-98. Garantir que les états persistés sont entièrement sérialisables.
-
-99. Refuser fonctions, cycles et nombres non finis dans les snapshots.
-
-100. Refuser `Map` et `Set` dans l'état persistant lorsqu'ils ne possèdent pas de codec explicite.
-
 101. Versionner explicitement le format des snapshots.
 
 102. Séparer migration SQL et migration de snapshot.

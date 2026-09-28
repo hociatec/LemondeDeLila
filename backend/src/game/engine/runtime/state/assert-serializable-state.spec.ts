@@ -40,6 +40,13 @@ describe('snapshot JSON fidelity', () => {
     expect(toJSON).not.toHaveBeenCalled();
   });
 
+  it.each([['Map', new Map([['value', 1]])], ['Set', new Set([1])]])(
+    'rejects a persisted %s without an explicit codec',
+    (_name, value) => {
+      expect(() => assertSerializableState({ value })).toThrow();
+    },
+  );
+
   it('accepts the explicit Date timestamp codec', () => {
     expect(() =>
       assertSerializableState({ metadata: { roomStartedAt: new Date(0) } }),
