@@ -214,7 +214,7 @@ export class GameWsStateMessagesPresenter {
         ? `Vous lancez le dé et faites un ${value}.`
         : `${namedPlayer} lance le dé et fait un ${value}.`;
     }
-    if (messageKey === 'cards-battle-ties.battle.won' && namedPlayer) {
+    if (messageKey === 'game.card.battle.won' && namedPlayer) {
       const cardsWon = this.numberValue(params.cardsWon);
       if (cardsWon == null) return '';
       const cards = `carte${cardsWon === 1 ? '' : 's'}`;
@@ -236,14 +236,14 @@ export class GameWsStateMessagesPresenter {
       });
       return [result, ...revealed].join(' ');
     }
-    if (messageKey === 'cards-battle-ties.card.placed' && namedPlayer) {
+    if (messageKey === 'game.card.battle.card-placed' && namedPlayer) {
       return namedPlayer === 'Vous'
         ? 'Vous posez une carte sur la table.'
         : `${namedPlayer} pose une carte sur la table.`;
     }
-    if (messageKey === 'cards-battle-ties.battle.started')
+    if (messageKey === 'game.card.battle.started')
       return 'Égalité : une bataille commence.';
-    if (messageKey === 'cards-battle-ties.battle.continues')
+    if (messageKey === 'game.card.battle.continues')
       return 'Nouvelle égalité : la bataille continue.';
     if (messageKey === 'game.pawn.bonus-advance' && namedPlayer)
       return this.pawnBonusMessage(namedPlayer, params);
