@@ -31,11 +31,11 @@ function cardAndTurnMessage(
   actor: string,
   value: (key: string) => string,
 ): string {
-  const { type, data, players } = input;
+  const { type, data } = input;
   if (type === 'turn.started') {
     const id = numberValue(data.playerId);
-    const name = id == null ? '' : (players.get(id) ?? `Joueur ${id}`);
-    return name ? `C'est au tour de ${name}.` : '';
+    const name = id == null ? '' : player(id);
+    return name ? turnStartedMessage(name) : '';
   }
   if (type === 'dice.rolled' && actor) {
     const multipleDice = Array.isArray(data.values) && data.values.length > 1;
@@ -155,7 +155,7 @@ function activityMessage(
   if (type === 'round.started' && value('number')) {
     const starter = player(data.starterPlayerId);
     return starter
-      ? `La manche ${value('number')} commence. C'est au tour de ${starter}.`
+      ? `La manche ${value('number')} commence. ${turnStartedMessage(starter)}`
       : `La manche ${value('number')} commence.`;
   }
   if (type === 'round.ended') return 'La manche est terminée.';
@@ -189,6 +189,10 @@ function activityMessage(
   if (type === 'economy.item-bought' || type === 'economy.item-sold')
     return economyMessage(type, data, player, value);
   return '';
+}
+
+function turnStartedMessage(name: string): string {
+  return name === 'Vous' ? "C'est à votre tour." : `C'est au tour de ${name}.`;
 }
 
 function inventoryMessage(
