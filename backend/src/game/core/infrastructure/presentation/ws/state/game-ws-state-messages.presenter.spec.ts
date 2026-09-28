@@ -5,7 +5,7 @@ describe('GameWsStateMessagesPresenter', () => {
   it('names played battle cards and announces a battle', () => {
     const presenter = new GameWsStateMessagesPresenter();
     const placed = { id: 'placed', type: 'game.message', data: {
-      key: 'cards-battle-ties.card.placed', params: { playerId: 1, cardName: 'Chèvre (Banane)' } } };
+      key: 'cards-battle-ties.card.placed', params: { playerId: 1 } } };
     const battle = { id: 'battle', type: 'game.message', data: {
       key: 'cards-battle-ties.battle.started', params: {} } };
     const state = presenter.withServerMessages({
@@ -13,7 +13,7 @@ describe('GameWsStateMessagesPresenter', () => {
       events: { recent: [placed, battle], latestByType: { 'game.message': battle } },
     }, 1, {} as never);
     expect(presentedEvents(state.events).recent.map((event) => event.data.message)).toEqual([
-      'Vous posez la carte Chèvre (Banane) sur la table.',
+      'Vous posez une carte sur la table.',
       'Égalité : une bataille commence.',
     ]);
   });

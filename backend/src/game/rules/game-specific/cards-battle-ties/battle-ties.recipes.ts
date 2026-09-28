@@ -71,7 +71,6 @@ export function battleTiesRules(source: BattleTiesProgram) {
       play.playedCards.push(cardId);
       ctx.events.message('cards-battle-ties.card.placed', {
         playerId: actor.id,
-        cardName: cards[cardId]?.name ?? cardId,
       });
       const pending = waiting(current.battle, ctx, phases);
       if (pending.length > 0) return ctx.turn.to(pending[0]);
@@ -160,6 +159,10 @@ export function battleTiesRules(source: BattleTiesProgram) {
       ctx.events.message('cards-battle-ties.battle.won', {
         playerId: winnerId,
         cardsWon: tableCards.length,
+        plays: state.battle.plays.map((play) => ({
+          playerId: play.playerId,
+          cardNames: play.playedCards.map((cardId) => cards[cardId]?.name ?? cardId),
+        })),
       });
     }
     state.lastRound = {
