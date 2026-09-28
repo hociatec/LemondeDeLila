@@ -115,6 +115,7 @@ private:
     bool ActivateSelectedQuizAnswer();
     bool ActivateSelectedPendingChoice();
     bool ActivateSelectedHandCard();
+    bool AnnounceSelectedHandCard();
     bool ActivateDiceRoll();
     bool ActivateSelectedGridCell();
     [[nodiscard]] bool ShouldCaptureWhileAwaitingStartedState(

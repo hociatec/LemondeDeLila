@@ -1,5 +1,4 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
-#include <algorithm>
 #include <optional>
 #include <utility>
 #include <wx/event.h>
@@ -9,7 +8,6 @@
 #include <wx/button.h>
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
 #include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
-#include "modules/gameplay/cards/application/GameCardTextBuilder.h"
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
@@ -139,26 +137,7 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         return false;
     }
     if (key == "D")
-    {
-        auto* focused = wxWindow::FindFocus();
-        if (handPanel_->IsShown() && focused == handPanel_->NavigationTarget())
-        {
-            const auto key = handPanel_->SelectedCardKey();
-            const auto& hand = state_.kits.VisibleHand();
-            const auto selected = std::find_if(hand.begin(), hand.end(), [&key](const auto& card)
-            { return card.id == key; });
-            if (selected == hand.end())
-                UpdateStatus(wxString(L"Aucune carte sélectionnée."), true, true);
-            else
-            {
-                auto text = application::cards::GameCardTextBuilder::AccessibleText(*selected);
-                if (state_.gameType == "zig-et-zag")
-                    text += " Dans Zig et Zag, posez-la sur la table : la carte la plus forte remporte la bataille.";
-                UpdateStatus(FromUtf8(text), false, true);
-            }
-            return true;
-        }
-    }
+        if (AnnounceSelectedHandCard()) return true;
     if (key == "F5")
     {
         RequestRefresh();
