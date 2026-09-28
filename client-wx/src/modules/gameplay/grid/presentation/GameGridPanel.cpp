@@ -93,6 +93,13 @@ GameGridPanel::GameGridPanel(wxWindow* parent) : wxPanel(parent)
         0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
     cells_->SetName(wxString(
         L"Grille de jeu. Flèches pour naviguer, Page précédente ou suivante pour changer de plateau, Entrée pour activer."));
+    // A wxListBox normally treats Left/Right like Up/Down. Capture these keys
+    // on the native control as well as on the gameplay CHAR_HOOK so reaching
+    // C1 or A2 never wraps to the next or previous row.
+    cells_->Bind(wxEVT_KEY_DOWN, [this](wxKeyEvent& event)
+    {
+        if (!HandleKey(event)) event.Skip();
+    });
     layout->Add(cells_, 1, wxEXPAND);
     SetSizer(layout);
     Hide();
