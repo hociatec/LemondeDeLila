@@ -145,5 +145,7 @@ function announceLanding(
       playerId,
       tileId: tile.id,
       tileType: tile.type,
+      tileLabel: tile.label,
+      tileDescription: tile.description,
     });
 }

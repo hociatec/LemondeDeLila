@@ -551,6 +551,50 @@ describe('GameWsStatePresenter', () => {
         .message,
     ).toBe('Vous piochez « Coup de chance ». Effet : Avancez de 2 cases.');
   });
+  it('narrates the description of a Jeu de l’Oie tile', () => {
+    const state = {
+      status: 'started',
+      players: [{ id: 1, username: 'Lila' }],
+    } as unknown as GameState;
+    const handler = {
+      exposeStateForUser: () => ({
+        system: {
+          match: { status: 'started' },
+          players: { all: state.players },
+          events: {
+            latestByType: {
+              'game.message': {
+                id: '4:0',
+                type: 'game.message',
+                data: {
+                  key: 'goose.tile.effect',
+                  params: {
+                    playerId: 1,
+                    tileLabel: 'Oie',
+                    tileDescription: 'Une oie vous pousse à continuer.',
+                  },
+                },
+              },
+            },
+          },
+        },
+        actions: [],
+      }),
+      getShortcuts: () => [],
+    } as unknown as GameRuntime;
+    const payload = createPresenter().present({
+      state,
+      handler,
+      roomId: 6,
+      gameType: 'jeu-oie',
+      version: 4,
+      viewerPlayerId: 1,
+    });
+    expect(
+      presentedSystem(payload.system).events.latestByType['game.message'].data
+        .message,
+    ).toBe('Oie. Une oie vous pousse à continuer.');
+  });
   it('does not repeat an effect already written on a revealed card', () => {
     const state = {
       status: 'started',

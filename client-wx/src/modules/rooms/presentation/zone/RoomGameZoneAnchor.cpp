@@ -28,6 +28,15 @@ public:
         return wxACC_OK;
     }
 
+    wxAccStatus GetName(int childId, wxString* name) override
+    {
+        auto* anchor = anchor_.get();
+        if (childId != wxACC_SELF || name == nullptr || anchor == nullptr)
+            return wxACC_INVALID_ARG;
+        *name = anchor->GetName();
+        return name->empty() ? wxACC_NOT_SUPPORTED : wxACC_OK;
+    }
+
     wxAccStatus GetState(int childId, long* state) override
     {
         if (childId != wxACC_SELF || state == nullptr) return wxACC_INVALID_ARG;
