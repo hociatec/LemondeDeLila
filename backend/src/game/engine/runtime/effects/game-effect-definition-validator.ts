@@ -2,19 +2,17 @@ import { validatePlayerValueInstruction } from './effect-value-validator';
 import { assertEffectJson } from '../contracts/effect-json-schema';
 import { AuthoringError } from '../contracts/authoring-error';
 import { validateCardMove } from './card-location-validator';
-import { authoringProperty } from '../contracts/authoring-diagnostics';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import {
-  requireFinite,
   requirePositiveInteger,
   requireReference,
   requireCardReference,
   requireTrackPosition,
-  requireResourceReference,
-  validateEffectCondition,
   validateEffectTarget,
   validateInstructionTargets,
 } from './game-effect-reference-validator';
+import { validateNumericExpression } from './numeric-expression-validator';
+import { validateControlInstruction } from './effect-control-validator';
 
 import type {
   GameEffectValidationReferences,
@@ -63,7 +61,13 @@ function validateInstruction(
   validateInstructionTargets(instruction, path, references, fail);
   const input = { instruction, path, references, fail };
   if (
-    validateControlInstruction(input) ||
+    validateControlInstruction(
+      instruction,
+      path,
+      references,
+      fail,
+      assertEffectInstructions,
+    ) ||
     validateMovementInstruction(input) ||
     validateCardInstruction(input) ||
     validateInventoryInstruction(input) ||
@@ -77,130 +81,53 @@ function validateInstruction(
   );
 }
 
-function validateControlInstruction({
-  instruction,
-  path,
-  references,
-  fail,
-}: ValidationInput): boolean {
-  if (instruction.kind === 'conditional') {
-    validateEffectCondition(
-      instruction.condition,
-      `${path}.condition`,
-      references,
-      fail,
-    );
-    assertEffectInstructions(
-      instruction.then,
-      `${path}.then`,
-      references,
-      fail,
-    );
-    assertEffectInstructions(
-      instruction.else ?? [],
-      `${path}.else`,
-      references,
-      fail,
-    );
-    return true;
-  }
-  return validateReactionInstruction({ instruction, path, references, fail });
-}
-
-function validateReactionInstruction({
-  instruction,
-  path,
-  references,
-  fail,
-}: ValidationInput): boolean {
-  if (instruction.kind !== 'reaction') return false;
-  if (instruction.availability) {
-    validateEffectTarget(
-      instruction.availability.owner,
-      `${path}.availability.owner`,
-      fail,
-      references,
-    );
-    if (instruction.availability.kind === 'cards') {
-      requireReference(
-        references.hands,
-        instruction.availability.handId,
-        `${path}.availability.handId`,
-        fail,
-      );
-      for (const [index, cardId] of instruction.options.entries()) {
-        requireCardReference(
-          references,
-          instruction.availability.handId,
-          cardId,
-          `${path}.options[${index}]`,
-          fail,
-        );
-      }
-    } else if (
-      instruction.availability.amount != null &&
-      (!Number.isInteger(instruction.availability.amount) ||
-        instruction.availability.amount < 1)
-    )
-      fail(`${path}.availability.amount`, 'quantité positive attendue');
-    if (instruction.availability.kind === 'resources') {
-      for (const [index, resource] of instruction.options.entries()) {
-        requireResourceReference(
-          references,
-          resource,
-          `${path}.options[${index}]`,
-          fail,
-        );
-      }
-    }
-  }
-  if (
-    instruction.options.length === 0 ||
-    instruction.options.some((option) => !option.trim()) ||
-    new Set(instruction.options).size !== instruction.options.length
-  )
-    fail(`${path}.options`, 'options de réaction invalides');
-  for (const [option, reaction] of Object.entries(instruction.reactions)) {
-    if (!instruction.options.includes(option))
-      fail(
-        authoringProperty(`${path}.reactions`, option),
-        'option non déclarée',
-      );
-    assertEffectInstructions(
-      reaction,
-      authoringProperty(`${path}.reactions`, option),
-      references,
-      fail,
-    );
-  }
-  assertEffectInstructions(
-    instruction.fallback ?? [],
-    `${path}.fallback`,
-    references,
-    fail,
-  );
-  return true;
-}
-
 function validateMovementInstruction({
   instruction,
   path,
   references,
   fail,
 }: ValidationInput): boolean {
-  if (instruction.kind === 'move' || instruction.kind === 'move-to') {
+  if (
+    instruction.kind === 'move' ||
+    instruction.kind === 'move-to' ||
+    instruction.kind === 'move-relative-to' ||
+    instruction.kind === 'move-to-tag'
+  ) {
     requireReference(
       references.tracks,
       instruction.trackId,
       `${path}.trackId`,
       fail,
     );
-    requireFinite(
-      instruction.kind === 'move' ? instruction.spaces : instruction.position,
-      path,
+    if (instruction.kind === 'move-to-tag') {
+      const tags = references.trackTags?.get(instruction.trackId);
+      if (tags && !tags.has(instruction.tag))
+        fail(`${path}.tag`, 'tag de piste inconnu');
+      return true;
+    }
+    const expression =
+      instruction.kind === 'move'
+        ? instruction.spaces
+        : instruction.kind === 'move-to'
+          ? instruction.position
+          : (instruction.offset ?? 0);
+    validateNumericExpression(
+      expression,
+      `${path}.${instruction.kind === 'move' ? 'spaces' : instruction.kind === 'move-to' ? 'position' : 'offset'}`,
+      references,
       fail,
     );
-    if (instruction.kind === 'move-to')
+    if (instruction.kind === 'move-relative-to') {
+      validateEffectTarget(
+        instruction.reference,
+        `${path}.reference`,
+        fail,
+        references,
+      );
+    } else if (
+      instruction.kind === 'move-to' &&
+      typeof instruction.position === 'number'
+    )
       requireTrackPosition(
         references,
         instruction.trackId,
@@ -208,7 +135,11 @@ function validateMovementInstruction({
         `${path}.position`,
         fail,
       );
-    else if (!Number.isSafeInteger(instruction.spaces))
+    else if (
+      instruction.kind === 'move' &&
+      typeof instruction.spaces === 'number' &&
+      !Number.isSafeInteger(instruction.spaces)
+    )
       fail(`${path}.spaces`, 'distance entière requise');
     return true;
   }
@@ -229,34 +160,7 @@ function validateCardInstruction({
   fail,
 }: ValidationInput): boolean {
   if (validateCardMove(instruction, path, references, fail)) return true;
-  if (
-    instruction.kind === 'draw-cards' ||
-    instruction.kind === 'discard-random'
-  ) {
-    requireReference(
-      references.decks,
-      instruction.deckId,
-      `${path}.deckId`,
-      fail,
-    );
-    requireReference(
-      references.hands,
-      instruction.handId,
-      `${path}.handId`,
-      fail,
-    );
-    requirePositiveInteger(instruction.count, `${path}.count`, fail);
-    const handDeck = references.handDecks?.get(instruction.handId);
-    if (
-      handDeck != null &&
-      handDeck !== instruction.deckId &&
-      !references.handAcceptedDecks
-        ?.get(instruction.handId)
-        ?.has(instruction.deckId)
-    )
-      fail(`${path}.deckId`, 'pioche différente de celle de la main');
-    return true;
-  }
+  if (validateCardCollection(instruction, path, references, fail)) return true;
   if (instruction.kind === 'give-card') {
     requireReference(
       references.hands,
@@ -296,6 +200,66 @@ function validateCardInstruction({
     fail,
   );
   return true;
+}
+
+function validateCardCollection(
+  instruction: GameEffectInstruction,
+  path: string,
+  references: GameEffectValidationReferences,
+  fail: ValidationFailure,
+): boolean {
+  if (
+    instruction.kind === 'draw-cards' ||
+    instruction.kind === 'discard-random' ||
+    instruction.kind === 'draw-to-zone'
+  ) {
+    requireReference(
+      references.decks,
+      instruction.deckId,
+      `${path}.deckId`,
+      fail,
+    );
+    if (instruction.kind === 'draw-to-zone') {
+      requireReference(
+        references.zoneDecks ?? new Map(),
+        instruction.zoneId,
+        `${path}.zoneId`,
+        fail,
+      );
+    } else {
+      requireReference(
+        references.hands,
+        instruction.handId,
+        `${path}.handId`,
+        fail,
+      );
+    }
+    requirePositiveInteger(instruction.count, `${path}.count`, fail);
+    const handDeck =
+      instruction.kind === 'draw-to-zone'
+        ? references.zoneDecks?.get(instruction.zoneId)
+        : references.handDecks?.get(instruction.handId);
+    if (
+      handDeck != null &&
+      handDeck !== instruction.deckId &&
+      (instruction.kind === 'draw-to-zone' ||
+        !references.handAcceptedDecks
+          ?.get(instruction.handId)
+          ?.has(instruction.deckId))
+    )
+      fail(`${path}.deckId`, 'pioche différente de la destination');
+    return true;
+  }
+  if (instruction.kind === 'shuffle-cards') {
+    requireReference(
+      references.decks,
+      instruction.deckId,
+      `${path}.deckId`,
+      fail,
+    );
+    return true;
+  }
+  return false;
 }
 
 function validateInventoryInstruction({
@@ -390,6 +354,17 @@ function validateMiscInstruction({
         }
       }
     }
+    return true;
+  }
+  if (instruction.kind === 'transition-phase') {
+    if (!instruction.phase.trim()) fail(`${path}.phase`, 'ID vide');
+    if (references.phases)
+      requireReference(
+        references.phases,
+        instruction.phase,
+        `${path}.phase`,
+        fail,
+      );
     return true;
   }
   return [

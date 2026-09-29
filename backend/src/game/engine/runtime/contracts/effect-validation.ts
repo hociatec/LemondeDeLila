@@ -13,6 +13,7 @@ export type GameEffectValidationReferences = {
   readonly handAcceptedDecks?: ReadonlyMap<string, ReadonlySet<string>>;
   readonly cardIdsByDeck?: ReadonlyMap<string, ReadonlySet<string>>;
   readonly trackSpaces?: ReadonlyMap<string, number>;
+  readonly trackTags?: ReadonlyMap<string, ReadonlySet<string>>;
   readonly resources?: ReadonlySet<string>;
   readonly inventoryItems?: ReadonlyMap<string, ReadonlySet<string> | null>;
   readonly ownershipAssets?: ReadonlyMap<string, ReadonlySet<string>>;

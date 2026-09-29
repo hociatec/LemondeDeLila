@@ -36,10 +36,19 @@ export function validatePlayerValueInstruction({
   }
   if (
     instruction.kind === 'gain-resource' ||
+    instruction.kind === 'set-resource' ||
     instruction.kind === 'lose-resource' ||
     instruction.kind === 'transfer-resource'
   ) {
-    if (typeof instruction.amount === 'number' && instruction.amount < 0)
+    const expression =
+      instruction.kind === 'set-resource'
+        ? instruction.value
+        : instruction.amount;
+    if (
+      instruction.kind !== 'set-resource' &&
+      typeof expression === 'number' &&
+      expression < 0
+    )
       fail(`${path}.amount`, 'negative resource amount');
     requireResourceReference(
       references,
@@ -48,17 +57,17 @@ export function validatePlayerValueInstruction({
       fail,
     );
     validateNumericExpression(
-      instruction.amount,
-      `${path}.amount`,
+      expression,
+      `${path}.${instruction.kind === 'set-resource' ? 'value' : 'amount'}`,
       references,
       fail,
     );
     return true;
   }
-  if (instruction.kind === 'gain-score') {
+  if (instruction.kind === 'gain-score' || instruction.kind === 'set-score') {
     validateNumericExpression(
-      instruction.amount,
-      `${path}.amount`,
+      instruction.kind === 'set-score' ? instruction.value : instruction.amount,
+      `${path}.${instruction.kind === 'set-score' ? 'value' : 'amount'}`,
       references,
       fail,
     );

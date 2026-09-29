@@ -19,6 +19,8 @@ export type TrackDefinition = {
   finish?: number;
   homeStretch?: { from: number; to?: number };
   landingEffects?: Readonly<Record<number, readonly GameEffectInstruction[]>>;
+  positionTags?: Readonly<Record<number, readonly string[]>>;
+  tagEffects?: Readonly<Record<string, readonly GameEffectInstruction[]>>;
 };
 
 export type MovementKitState = {
@@ -83,6 +85,16 @@ export const movement = {
             `Effet associé à une case inexistante: ${definition.id}`,
           ),
           authoringProperty('landingEffects', position),
+        );
+    }
+    for (const position of Object.keys(definition.positionTags ?? {})) {
+      const value = Number(position);
+      if (!Number.isInteger(value) || value < 0 || value >= definition.spaces)
+        throw withAuthoringPath(
+          new GameConfigurationError(
+            `Tags associés à une case inexistante: ${definition.id}`,
+          ),
+          authoringProperty('positionTags', position),
         );
     }
     return deepFreeze({ ...definition, component: 'movement.track' });
@@ -234,7 +246,11 @@ export class GameMovementController {
       });
     }
     const effects = this.definitions.get(trackId)?.landingEffects?.[next] ?? [];
-    this.scheduleEffects(...effects);
+    const definition = this.definitions.get(trackId);
+    const tagEffects = (definition?.positionTags?.[next] ?? []).flatMap(
+      (tag) => definition?.tagEffects?.[tag] ?? [],
+    );
+    this.scheduleEffects(...effects, ...tagEffects);
     return next;
   }
 
@@ -293,6 +309,28 @@ export class GameMovementController {
       playerId,
       position - this.position(trackId, playerId),
     );
+  }
+
+  taggedPosition(
+    trackId: string,
+    playerId: number,
+    tag: string,
+    direction: 'next' | 'previous',
+    includeCurrent = false,
+  ): number | null {
+    const track = this.requireTrack(trackId);
+    const current = this.position(trackId, playerId);
+    const step = direction === 'next' ? 1 : -1;
+    for (
+      let distance = includeCurrent ? 0 : 1;
+      distance < track.spaces;
+      distance += 1
+    ) {
+      const position = current + step * distance;
+      if (position < 0 || position >= track.spaces) break;
+      if (track.positionTags?.[position]?.includes(tag)) return position;
+    }
+    return null;
   }
 
   swap(trackId: string, leftPlayerId: number, rightPlayerId: number): void {

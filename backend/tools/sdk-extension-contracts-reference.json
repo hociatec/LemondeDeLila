@@ -19,7 +19,7 @@
     },
     {
       "file": "src/game/engine/runtime/contracts/effect-ir.ts",
-      "sha256": "afa8409e18678d2ae29d2866f23f6b80a97a6bdee8e957edb50d62dcf9482dc4"
+      "sha256": "e8ef517da366550e7f20964fbbf309632bbeeef6cd72f49b74b4c681e0218b8a"
     },
     {
       "file": "src/game/engine/runtime/contracts/numeric-expression.ts",

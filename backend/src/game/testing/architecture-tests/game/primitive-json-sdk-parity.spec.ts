@@ -27,8 +27,8 @@ import {
   conditionCases,
   targetCases,
   choiceAvailabilityCases,
-  type Pair,
-} from './primitive-parity-cases';
+} from './primitive-parity-cases.spec';
+import type { Pair } from './parity-case';
 import manifest from '../../fixtures/json-course/manifest.json';
 import document from '../../fixtures/json-course/game.json';
 
@@ -210,8 +210,9 @@ function initial(runtime: (typeof runtimes)[number], seed: number) {
       rng: new StateGameRng(base),
     }),
   ) as MutableStateCopy<DeclarativeState<Record<string, never>>>;
-  const { inventory, ownership } = state.engine.kits;
-  if (!inventory || !ownership) throw new Error('Missing parity components');
+  const { cards, inventory, ownership } = state.engine.kits;
+  if (!cards || !inventory || !ownership)
+    throw new Error('Missing parity components');
   inventory.byPlayer.bag = {
     1: ['apple', 'apple', 'pear'],
     2: ['pear', 'pear'],
@@ -221,6 +222,8 @@ function initial(runtime: (typeof runtimes)[number], seed: number) {
   state.engine.playerValues.statuses['1'] = [
     { id: 'shield', scope: 'until-used', remaining: null, data: {} },
   ];
+  const zoneCard = cards.decks.deck.shift();
+  if (zoneCard != null) cards.zones.removed.push(zoneCard);
   return state;
 }
 
@@ -280,12 +283,15 @@ describe.each([3, 91])('JSON/SDK primitive semantics, seed %i', (seed) => {
             '1'
           ],
         ).toBe(expectedExpressionScores.get(name));
-      if (name.startsWith('condition-'))
+      if (name.startsWith('condition-')) {
+        const baseMatches = !name.includes('compare-zone-cards');
+        const inverted = name.endsWith('-true');
         expect(
           (outputs[0] as DeclarativeState<object>).engine.playerValues.scores[
             '1'
           ],
-        ).toBe(name.endsWith('-true') ? 0 : 7);
+        ).toBe(baseMatches !== inverted ? 7 : 0);
+      }
       if (outputs[0].pending) {
         const value =
           name === 'availability-cards'

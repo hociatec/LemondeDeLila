@@ -137,6 +137,8 @@ const components: AuthorSchema = {
         overshoot: { enum: ['clamp', 'wrap', 'bounce', 'exact'] },
         homeStretch: object({ from: nonnegative, to: nonnegative }, ['from']),
         landingEffects: record(array(ref('effect'))),
+        positionTags: record(array(id, 1)),
+        tagEffects: record(array(ref('effect'))),
       },
       ['spaces'],
     ),

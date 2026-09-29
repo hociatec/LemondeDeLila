@@ -5,7 +5,7 @@ import type {
   EffectTarget,
 } from '../../../engine/runtime/contracts/effect-ir';
 
-export type Pair<Value> = { json: Value; sdk: Value };
+import type { Pair } from './parity-case';
 const self: EffectTarget = { kind: 'self' };
 const other: EffectTarget = { kind: 'player', playerId: 2 };
 const reward: GameEffectInstruction[] = [{ kind: 'gain-score', amount: 3 }];
@@ -37,9 +37,45 @@ export const primitiveCases = {
     json: { kind: 'move-to', trackId: 'board', position: 7 },
     sdk: effects.moveTo('board', 7),
   },
+  'move-relative-to': {
+    json: {
+      kind: 'move-relative-to',
+      trackId: 'board',
+      reference: other,
+      offset: 1,
+    },
+    sdk: {
+      kind: 'move-relative-to',
+      trackId: 'board',
+      reference: other,
+      offset: 1,
+    },
+  },
+  'move-to-tag': {
+    json: {
+      kind: 'move-to-tag',
+      trackId: 'board',
+      tag: 'goal',
+      direction: 'next',
+    },
+    sdk: {
+      kind: 'move-to-tag',
+      trackId: 'board',
+      tag: 'goal',
+      direction: 'next',
+    },
+  },
   'draw-cards': {
     json: { kind: 'draw-cards', deckId: 'deck', handId: 'hand', count: 2 },
     sdk: effects.drawCards({ deckId: 'deck', handId: 'hand', count: 2 }),
+  },
+  'draw-to-zone': {
+    json: { kind: 'draw-to-zone', deckId: 'deck', zoneId: 'removed', count: 2 },
+    sdk: { kind: 'draw-to-zone', deckId: 'deck', zoneId: 'removed', count: 2 },
+  },
+  'shuffle-cards': {
+    json: { kind: 'shuffle-cards', deckId: 'deck' },
+    sdk: { kind: 'shuffle-cards', deckId: 'deck' },
   },
   'discard-random': {
     json: { kind: 'discard-random', deckId: 'deck', handId: 'hand', count: 1 },
@@ -52,6 +88,10 @@ export const primitiveCases = {
   'gain-resource': {
     json: { kind: 'gain-resource', resource: 'stars', amount: 4 },
     sdk: effects.gainResource('stars', 4),
+  },
+  'set-resource': {
+    json: { kind: 'set-resource', resource: 'stars', value: 4 },
+    sdk: { kind: 'set-resource', resource: 'stars', value: 4 },
   },
   'lose-resource': {
     json: {
@@ -147,6 +187,10 @@ export const primitiveCases = {
     json: { kind: 'gain-score', amount: 4 },
     sdk: effects.gainScore(4),
   },
+  'set-score': {
+    json: { kind: 'set-score', value: 4 },
+    sdk: { kind: 'set-score', value: 4 },
+  },
   'skip-turn': {
     json: { kind: 'skip-turn', target: other, count: 2 },
     sdk: effects.skipTurn(2, other),
@@ -189,6 +233,10 @@ export const primitiveCases = {
     sdk: { kind: 'start-round' },
   },
   'end-round': { json: { kind: 'end-round' }, sdk: { kind: 'end-round' } },
+  'transition-phase': {
+    json: { kind: 'transition-phase', phase: 'playing' },
+    sdk: { kind: 'transition-phase', phase: 'playing' },
+  },
   'eliminate-player': {
     json: { kind: 'eliminate-player', target: other },
     sdk: { kind: 'eliminate-player', target: other },
@@ -221,6 +269,29 @@ export const primitiveCases = {
     json: { kind: 'choose-player', choiceId: 'select' },
     sdk: effects.choosePlayer({ choiceId: 'select' }),
   },
+  repeat: {
+    json: { kind: 'repeat', count: 2, effects: reward },
+    sdk: { kind: 'repeat', count: 2, effects: reward },
+  },
+  switch: {
+    json: {
+      kind: 'switch',
+      cases: [
+        { condition: { kind: 'phase-is', phase: 'playing' }, effects: reward },
+      ],
+    },
+    sdk: {
+      kind: 'switch',
+      cases: [
+        { condition: { kind: 'phase-is', phase: 'playing' }, effects: reward },
+      ],
+    },
+  },
+  'random-choice': {
+    json: { kind: 'random-choice', choices: [reward, []] },
+    sdk: { kind: 'random-choice', choices: [reward, []] },
+  },
+  stop: { json: { kind: 'stop' }, sdk: { kind: 'stop' } },
 } satisfies Record<GameEffectInstruction['kind'], Pair<GameEffectInstruction>>;
 
 export const conditionCases = {
@@ -285,6 +356,24 @@ export const conditionCases = {
   'has-card': {
     json: { kind: 'has-card', handId: 'hand', cardId: 'a' },
     sdk: effects.condition.hasCard('hand', 'a'),
+  },
+  'compare-zone-cards': {
+    json: {
+      kind: 'compare-zone-cards',
+      leftZoneId: 'removed',
+      rightZoneId: 'removed',
+      property: 'length',
+      select: 'highest',
+      compare: 'gt',
+    },
+    sdk: {
+      kind: 'compare-zone-cards',
+      leftZoneId: 'removed',
+      rightZoneId: 'removed',
+      property: 'length',
+      select: 'highest',
+      compare: 'gt',
+    },
   },
   not: {
     json: { kind: 'not', condition: { kind: 'has-status', status: 'missing' } },
@@ -362,6 +451,10 @@ export const targetCases = {
     json: { kind: 'random-opponent' },
     sdk: effects.target.randomOpponent(),
   },
+  'co-located': {
+    json: { kind: 'co-located', trackId: 'board' },
+    sdk: { kind: 'co-located', trackId: 'board' },
+  },
   'chosen-opponent': {
     json: { kind: 'chosen-opponent', choiceId: 'select', optional: false },
     sdk: effects.target.chosenOpponent('select'),
@@ -416,3 +509,7 @@ export const choiceAvailabilityCases: Record<
     }),
   },
 };
+
+it('keeps exhaustive JSON/SDK parity fixtures importable', () => {
+  expect(Object.keys(primitiveCases).length).toBeGreaterThan(0);
+});

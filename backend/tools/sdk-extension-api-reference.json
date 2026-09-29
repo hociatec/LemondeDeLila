@@ -143,7 +143,7 @@
     },
     {
       "file": "src/game/engine/runtime/contracts/context-components-capability.ts",
-      "sha256": "8cdb27615e14c54170ef909056d863077027b94953c24427057208d7b960f510"
+      "sha256": "341ff5a3a1a868328d1ff1969f9619639be7cfc89b568fb6523025f2c0ef0962"
     },
     {
       "file": "src/game/engine/runtime/contracts/context-configuration-capability.ts",
@@ -183,7 +183,7 @@
     },
     {
       "file": "src/game/engine/runtime/contracts/effect-ir.ts",
-      "sha256": "afa8409e18678d2ae29d2866f23f6b80a97a6bdee8e957edb50d62dcf9482dc4"
+      "sha256": "e8ef517da366550e7f20964fbbf309632bbeeef6cd72f49b74b4c681e0218b8a"
     },
     {
       "file": "src/game/engine/runtime/contracts/effect-json-schema.ts",
@@ -303,7 +303,7 @@
     },
     {
       "file": "src/game/engine/runtime/effects/effects-dsl.ts",
-      "sha256": "f90eb3012e5cab2f2348f40ba053eec71d72e3f9a50030cf5983978de6da1aa9"
+      "sha256": "2d58e57a9abbcc540d9bda636fa78eb911702083de94ecbc14ffccac045a97fe"
     },
     {
       "file": "src/game/engine/runtime/effects/effects-kit.ts",
@@ -351,7 +351,7 @@
     },
     {
       "file": "src/game/engine/runtime/kits/movement-kit.ts",
-      "sha256": "c604e6386df0bb72cb6bc35fbf2dad340760812b1bf5a80d8761b071f71b46eb"
+      "sha256": "ec60f90786ced951635fe72c3ec57b4ee9465d2964f18538e23f66214474924f"
     },
     {
       "file": "src/game/engine/runtime/kits/ownership-kit.ts",

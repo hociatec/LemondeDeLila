@@ -6,7 +6,17 @@ import type {
 
 type ControlEffectInstruction = Extract<
   GameEffectInstruction,
-  { kind: 'conditional' | 'reaction' | 'choose-player' | 'custom' }
+  {
+    kind:
+      | 'conditional'
+      | 'reaction'
+      | 'choose-player'
+      | 'custom'
+      | 'repeat'
+      | 'switch'
+      | 'random-choice'
+      | 'stop';
+  }
 >;
 export type PrimitiveEffectInstruction = Exclude<
   GameEffectInstruction,
@@ -34,6 +44,8 @@ export function executeRegisteredPrimitive(
   handlers: PrimitiveEffectHandlers,
   instruction: PrimitiveEffectInstruction,
 ): boolean {
+  const extension = executeExtendedPrimitive(handlers, instruction);
+  if (extension != null) return extension;
   switch (instruction.kind) {
     case 'move-card':
       return handlers['move-card'](instruction);
@@ -95,6 +107,30 @@ export function executeRegisteredPrimitive(
       return handlers['remove-status'](instruction);
   }
   throw new GameStateViolationError(
-    `Primitive d'effet non enregistrée: ${JSON.stringify(instruction satisfies never)}`,
+    `Primitive d'effet non enregistrée: ${JSON.stringify(instruction)}`,
   );
+}
+
+function executeExtendedPrimitive(
+  handlers: PrimitiveEffectHandlers,
+  instruction: PrimitiveEffectInstruction,
+): boolean | null {
+  switch (instruction.kind) {
+    case 'move-relative-to':
+      return handlers['move-relative-to'](instruction);
+    case 'move-to-tag':
+      return handlers['move-to-tag'](instruction);
+    case 'draw-to-zone':
+      return handlers['draw-to-zone'](instruction);
+    case 'shuffle-cards':
+      return handlers['shuffle-cards'](instruction);
+    case 'set-resource':
+      return handlers['set-resource'](instruction);
+    case 'set-score':
+      return handlers['set-score'](instruction);
+    case 'transition-phase':
+      return handlers['transition-phase'](instruction);
+    default:
+      return null;
+  }
 }

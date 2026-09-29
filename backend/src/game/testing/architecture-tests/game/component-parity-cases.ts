@@ -9,7 +9,7 @@ import {
   resources,
 } from '../../../engine/sdk/public-api';
 import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
-import type { Pair } from './primitive-parity-cases';
+import type { Pair } from './parity-case';
 
 export const componentCases: Pair<GameComponentDefinition>[] = [
   {
@@ -75,8 +75,17 @@ export const componentCases: Pair<GameComponentDefinition>[] = [
     }),
   },
   {
-    json: { component: 'movement.track', id: 'board', spaces: 10 },
-    sdk: movement.track({ id: 'board', spaces: 10 }),
+    json: {
+      component: 'movement.track',
+      id: 'board',
+      spaces: 10,
+      positionTags: { 5: ['goal'] },
+    },
+    sdk: movement.track({
+      id: 'board',
+      spaces: 10,
+      positionTags: { 5: ['goal'] },
+    }),
   },
   {
     json: { component: 'dice.set', id: 'main', count: 2, sides: 6 },

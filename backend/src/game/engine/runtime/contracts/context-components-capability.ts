@@ -129,6 +129,7 @@ export interface ContextComponentsCapability {
     | 'resolveLanding'
     | 'moveAndResolve'
     | 'moveTo'
+    | 'taggedPosition'
   >;
   readonly pawns: PublicController<
     GamePawnController,
