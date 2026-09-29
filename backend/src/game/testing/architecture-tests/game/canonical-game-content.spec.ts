@@ -28,6 +28,14 @@ function recompileJson(id: string, source: unknown): Definition {
   );
 }
 
+function patternConfig<T>(source: unknown, kind: string): T {
+  const patterns = (source as { patterns?: Array<Record<string, unknown>> })
+    .patterns;
+  const pattern = patterns?.find((candidate) => candidate.kind === kind);
+  if (!pattern?.config) throw new Error(`Missing pattern ${kind}`);
+  return pattern.config as T;
+}
+
 it('round-trips every canonical JSON payload through the authoring protocol', () => {
   const games = (GENERATED_GAME_DEFINITIONS as readonly Definition[]).filter(
     (game) =>
@@ -118,43 +126,42 @@ it('accepts nullable mine scores and rejects duplicate card identifiers', () => 
 });
 
 it('uses the released LAMA order in a configured round', () => {
-  const payload = structuredClone(jsonDefinition('lama').content.data) as {
-    discardPenaltyCards: { cards: unknown[] };
-  };
-  payload.discardPenaltyCards.cards.reverse();
+  const payload = structuredClone(jsonDefinition('lama').content.data);
+  const program = patternConfig<{ cards: unknown[] }>(
+    payload,
+    'discard-penalty',
+  );
+  program.cards.reverse();
   expect(recompileJson('lama', payload).content.data).toEqual(payload);
-  payload.discardPenaltyCards.cards.push('LAMA');
+  program.cards.push('LAMA');
   expect(() => recompileJson('lama', payload)).toThrow();
 });
 
 it('uses released Gerard names and effects in rule catalogues', () => {
   const payload = structuredClone(
     jsonDefinition('gerard-president').content.data,
-  ) as {
-    themeNameCards: {
-      names: Array<Record<string, unknown>>;
-      specialCards: Array<Record<string, unknown>>;
-    };
-  };
-  const names = payload.themeNameCards.names;
+  );
+  const program = patternConfig<{
+    names: Array<Record<string, unknown>>;
+    specialCards: Array<Record<string, unknown>>;
+  }>(payload, 'theme-name');
+  const names = program.names;
   names[0].name = 'Prénom de la release';
   expect(recompileJson('gerard-president', payload).content.data).toEqual(
     payload,
   );
-  payload.themeNameCards.specialCards[1].id =
-    payload.themeNameCards.specialCards[0].id;
+  program.specialCards[1].id = program.specialCards[0].id;
   expect(() => recompileJson('gerard-president', payload)).toThrow();
 });
 
 it('rejects Mnemosyne questions in an unknown category', () => {
   const payload = structuredClone(
     jsonDefinition('arche-de-mnemosyne').content.data,
-  ) as {
-    simultaneousQuiz: {
-      questions: Array<{ status: string; categoryId: string }>;
-    };
-  };
-  const question = payload.simultaneousQuiz.questions.find(
+  );
+  const program = patternConfig<{
+    questions: Array<{ status: string; categoryId: string }>;
+  }>(payload, 'simultaneous-quiz');
+  const question = program.questions.find(
     (candidate) => candidate.status === 'validated',
   )!;
   question.categoryId = 'absente';
@@ -164,35 +171,39 @@ it('rejects Mnemosyne questions in an unknown category', () => {
 it('uses released Entre Rites cards from the JSON program', () => {
   const payload = structuredClone(
     jsonDefinition('entre-rites-et-lumieres').content.data,
-  ) as {
-    ritualPhases: { cards: Array<Record<string, unknown>> };
-  };
-  payload.ritualPhases.cards[0].name = 'Carte de la release';
+  );
+  const program = patternConfig<{ cards: Array<Record<string, unknown>> }>(
+    payload,
+    'ritual-phases',
+  );
+  program.cards[0].name = 'Carte de la release';
   expect(
     recompileJson('entre-rites-et-lumieres', payload).content.data,
   ).toEqual(payload);
-  payload.ritualPhases.cards[1].id = payload.ritualPhases.cards[0].id;
+  program.cards[1].id = program.cards[0].id;
   expect(() => recompileJson('entre-rites-et-lumieres', payload)).toThrow();
 });
 
 it('uses released Cat Pattes cards from the JSON program', () => {
-  const payload = structuredClone(
-    jsonDefinition('cat-pattes').content.data,
-  ) as {
-    pawScoring: { cards: Array<Record<string, unknown>> };
-  };
-  payload.pawScoring.cards[0].name = 'Carte de la release';
+  const payload = structuredClone(jsonDefinition('cat-pattes').content.data);
+  const program = patternConfig<{ cards: Array<Record<string, unknown>> }>(
+    payload,
+    'paw-scoring',
+  );
+  program.cards[0].name = 'Carte de la release';
   expect(recompileJson('cat-pattes', payload).content.data).toEqual(payload);
-  payload.pawScoring.cards[1].id = payload.pawScoring.cards[0].id;
+  program.cards[1].id = program.cards[0].id;
   expect(() => recompileJson('cat-pattes', payload)).toThrow();
 });
 
 it('reloads the released Voyage payload into its rules catalogue', () => {
   const initial = jsonDefinition('voyage-en-terre-de-brumes');
-  const payload = structuredClone(initial.content.data) as {
-    chapterEncounter: { tiles: Array<{ title: string }> };
-  };
-  payload.chapterEncounter.tiles[0].title = 'Titre de la release';
+  const payload = structuredClone(initial.content.data);
+  const program = patternConfig<{ tiles: Array<{ title: string }> }>(
+    payload,
+    'chapter-encounter',
+  );
+  program.tiles[0].title = 'Titre de la release';
   const released = recompileJson('voyage-en-terre-de-brumes', payload);
   expect(released.content.data).toEqual(payload);
 });

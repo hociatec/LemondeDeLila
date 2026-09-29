@@ -2,14 +2,14 @@ import { GENERATED_GAME_PACKAGES } from '../../../composition/generated-game-reg
 import { compileJsonGame } from '../../../rules/public-api';
 
 const catalogues = [
-  ['contes-et-cacahuetes', ['storyChallenge', 'decks', 'bonus']],
+  ['contes-et-cacahuetes', ['patterns', '0', 'config', 'decks', 'bonus']],
   ['la-grande-mine-de-barbak', ['patterns', '0', 'cards']],
   ['frousse-party', ['patterns', '1', 'cards']],
   ['les-mains-de-la-terre', ['patterns', '0', 'cards']],
   ['en-attendant-minuit', ['patterns', '1', 'cards']],
   ['a-fond-les-ballons', ['patterns', '1', 'config', 'cards']],
   ['galopons-ensemble', ['patterns', '1', 'cards']],
-  ['ca-derape', ['directionalHazardRace', 'cards']],
+  ['ca-derape', ['patterns', '1', 'config', 'cards']],
 ] as const;
 
 describe.each(catalogues)(

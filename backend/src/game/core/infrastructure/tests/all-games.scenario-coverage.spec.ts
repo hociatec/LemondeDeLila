@@ -6,6 +6,8 @@ import { runGameReplayCampaign } from '../../../testing/architecture-tests/game/
 
 describe('replay campaigns for every installed game', () => {
   const definitions = discoverGameDefinitions();
+  const seeds =
+    process.env.GAME_TEST_PROFILE === 'exhaustive' ? [0, 1, 17, 65535] : [0];
   let quietLogs: jest.SpyInstance;
   const results: Array<{
     gameId: string;
@@ -29,7 +31,7 @@ describe('replay campaigns for every installed game', () => {
       JSON.stringify(
         {
           expectedGames: definitions.length,
-          seeds: [0, 1, 17, 65535],
+          seeds,
           maximumSteps: 64,
           results,
         },
@@ -49,7 +51,7 @@ describe('replay campaigns for every installed game', () => {
   )(
     '%s replays complete command sequences deterministically',
     (_id, definition) => {
-      for (const seed of [0, 1, 17, 65535]) {
+      for (const seed of seeds) {
         appendFileSync(
           'logs/game-replay-progress.ndjson',
           JSON.stringify({ gameId: definition.id, seed, status: 'started' }) +

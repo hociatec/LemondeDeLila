@@ -63,6 +63,14 @@
   "profiles": {},
   "registrationOrder": [],
   "coreRootFieldReviews": {
+    "bot": {
+      "architectureDecision": "Keep bot selection as one validated top-level policy because it governs action choice across every phase and pattern, while compilation normalizes the closed random, first, and scored strategies for the runtime.",
+      "insufficiency": "Components, actions, effects, conditions, phases, and individual patterns cannot express a single game-wide automated-player policy without duplicating strategy configuration and creating conflicting bot behavior between mechanisms."
+    },
+    "playerValuesVisibility": {
+      "architectureDecision": "Keep player-value visibility as one validated top-level presentation policy because scores, resources, counters, and statuses span multiple patterns and must be projected consistently for every viewer.",
+      "insufficiency": "Per-component or per-pattern settings cannot guarantee consistent secrecy across all player-owned values; duplicating the policy would allow contradictory projections and could expose private game state."
+    },
     "extensions": {
       "architectureDecision": "Adopt one validated discriminated extensions array as the sole generic escape hatch. Compile each registered variant through its owning extension adapter, reject unknown kinds and duplicate entries, and preserve the closed core schema instead of adding one root property per legacy mechanic.",
       "insufficiency": "Existing components, actions, effects, conditions and phases remain preferred, but cannot transport legacy extension configurations without a new business root property per contract. One validated discriminated extension array replaces that structural growth while retaining normalized content compatibility."

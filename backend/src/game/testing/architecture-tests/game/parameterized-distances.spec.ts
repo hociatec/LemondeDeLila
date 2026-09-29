@@ -4,14 +4,29 @@ import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 
 type Data = Record<string, any>;
+const patternKinds: Record<string, string> = {
+  chapterEncounter: 'chapter-encounter',
+  directionalHazardRace: 'directional-hazard',
+  storyChallenge: 'story-challenge',
+};
 function fixture(key: string) {
+  const kind = patternKinds[key];
   const definition = discoverGameDefinitions().find(
-    (item) => item.content?.data && key in item.content.data,
+    (item) =>
+      item.content?.data &&
+      Array.isArray((item.content.data as Data).patterns) &&
+      (item.content.data as Data).patterns.some(
+        (pattern: Data) => pattern.kind === kind,
+      ),
   );
   if (!definition) throw new Error('Missing mechanism fixture: ' + key);
   const document: Data = structuredClone(definition.content?.data);
+  const pattern = document.patterns.find(
+    (candidate: Data) => candidate.kind === kind,
+  );
   return {
     document,
+    program: pattern.config,
     compile: () =>
       compileJsonGame(
         {
@@ -39,8 +54,7 @@ afterAll(() => jest.restoreAllMocks());
 it.each(['correct', 'incorrect'])(
   'resolves a %s quiz from a nonlegacy deck with overlapping card IDs',
   async (answer) => {
-    const { document, compile } = fixture('chapterEncounter');
-    const program = document.chapterEncounter;
+    const { document, program, compile } = fixture('chapterEncounter');
     const deck = program.collectionKinds.find(
       (kind: string) => kind !== program.legacyQuizDeckId,
     );
@@ -89,8 +103,8 @@ it.each(['correct', 'incorrect'])(
 );
 
 it('rejects a token referring to an undeclared resource', () => {
-  const { document, compile } = fixture('storyChallenge');
-  document.storyChallenge.tokens = [{ id: 'charge', resource: 'absent' }];
+  const { program, compile } = fixture('storyChallenge');
+  program.tokens = [{ id: 'charge', resource: 'absent' }];
   expect(compile).toThrow(/unknown resource absent/);
 });
 
@@ -100,8 +114,7 @@ it.each([
 ])(
   'uses checkpoint span 3 at position %i, including the failure branch',
   async (start, destination) => {
-    const { document, compile } = fixture('directionalHazardRace');
-    const program = document.directionalHazardRace;
+    const { document, program, compile } = fixture('directionalHazardRace');
     Object.assign(program.parameters, {
       checkpointSpan: 3,
       checkpointSuccess: 6,

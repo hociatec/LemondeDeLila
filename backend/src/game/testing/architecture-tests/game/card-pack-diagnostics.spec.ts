@@ -45,9 +45,9 @@ const cases: Case[] = [
 ];
 
 it.each(cases)('locates invalid $key authoring %#', ({ key, change }) => {
-  const { source, program, manifest } = fixture(key);
+  const { source, program, root, manifest } = fixture(key);
   const field = change(program);
-  const path = `extensions[0].config.${field}`;
+  const path = `${root}.${field}`;
   try {
     compileJsonGame(manifest, source);
     throw new Error('Expected authoring error');

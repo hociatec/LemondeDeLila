@@ -38,8 +38,8 @@ add('themeNameCards', (p) => {
 });
 
 it.each(cases)('locates the invalid member of $key', ({ key, change }) => {
-  const { source, program, manifest } = fixture(key);
-  const path = 'extensions[0].config.' + change(program);
+  const { source, program, root, manifest } = fixture(key);
+  const path = root + '.' + change(program);
   try {
     compileJsonGame(manifest, source);
     throw new Error('Expected authoring error');

@@ -67,7 +67,7 @@ for (const expected of [
   'npm run quality:check',
   'npm run typecheck',
   'npm run lint',
-  'npm test -- --maxWorkers=2 --shard=',
+  'npm run test:exhaustive -- --maxWorkers=2 --shard=',
   'npm run test:integration:real',
 ]) {
   if (!workflow.includes(expected)) {

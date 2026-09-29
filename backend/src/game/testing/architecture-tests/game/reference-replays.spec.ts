@@ -15,8 +15,10 @@ const corpus = [
 const definitions = discoverGameDefinitions().sort((left, right) =>
   left.id.localeCompare(right.id),
 );
+const catalogueSeeds =
+  process.env.GAME_TEST_PROFILE === 'exhaustive' ? [11, 23, 67] : [23];
 const additionalCorpus = definitions.flatMap((definition) =>
-  [11, 23, 67]
+  catalogueSeeds
     .filter(
       (seed) =>
         !corpus.some(

@@ -143,7 +143,7 @@ jobs:
       - name: Install the locked FFmpeg binary for audio integration tests
         run: npm rebuild ffmpeg-static
       - name: Exercise application and game regression shard ${{ matrix.shard }}/2
-        run: npm test -- --maxWorkers=2 --shard=${{ matrix.shard }}/2
+        run: npm run test:exhaustive -- --maxWorkers=2 --shard=${{ matrix.shard }}/2
 
   release-artifact:
     needs: [real-integration]

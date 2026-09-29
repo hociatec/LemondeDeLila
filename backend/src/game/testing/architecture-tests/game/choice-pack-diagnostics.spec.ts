@@ -153,8 +153,8 @@ for (const duplicate of [true, false])
   });
 
 it.each(cases)('locates $key reference errors', ({ key, change }) => {
-  const { source, program, manifest } = fixture(key);
-  const path = 'extensions[0].config.' + change(program);
+  const { source, program, root, manifest } = fixture(key);
+  const path = root + '.' + change(program);
   try {
     compileJsonGame(manifest, source);
     throw new Error('Expected authoring error');

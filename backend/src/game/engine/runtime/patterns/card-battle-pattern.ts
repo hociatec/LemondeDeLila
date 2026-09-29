@@ -3,10 +3,8 @@ import { defineGamePhases } from '../kits/phase-kit';
 import { gameInput } from '../actions/game-input-schema';
 import type { GameContext } from '../definitions/game-author-context';
 import { defineAction } from '../actions/action-builders';
-import {
-  GameRuleViolationError,
-  rejectRule,
-} from '../contracts/game-domain.errors';
+import { rejectRule } from '../contracts/game-domain.errors';
+import { GameCorruptedStateError } from '../../../core/domain/errors/game-runtime.errors';
 import { battleWonNarration } from './card-battle-narration';
 import { definePattern } from './gameplay-pattern-core';
 
@@ -356,7 +354,7 @@ export function cardBattle(source: CardBattleOptions) {
 
 function runtime(state: State): RuntimeState {
   if (!isRuntimeState(state))
-    throw new GameRuleViolationError('INVALID_CARD_BATTLE_STATE');
+    throw new GameCorruptedStateError('Invalid card battle runtime state');
   return state;
 }
 
