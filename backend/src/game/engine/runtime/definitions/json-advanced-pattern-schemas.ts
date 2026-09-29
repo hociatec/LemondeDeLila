@@ -333,3 +333,23 @@ export const orderedAssemblyPatternSchema = object({
   finishReason: id,
   eventNamespace: id,
 });
+
+export const judgedSubmissionPatternSchema = object({
+  kind: { const: 'judged-submission' },
+  submitRecipe: id,
+  pickRecipe: id,
+  submitAction: id,
+  pickAction: id,
+  judgeId: id,
+  submissionId: id,
+  promptDeckId: id,
+  answerDeckId: id,
+  answerHandId: id,
+  collectingPhase: id,
+  judgingPhase: id,
+  scoreToWin: { type: 'integer', minimum: 1 },
+  winningReason: id,
+  submittedMessage: id,
+  revealedEvent: id,
+  botSelection: { enum: ['first', 'random'] },
+});

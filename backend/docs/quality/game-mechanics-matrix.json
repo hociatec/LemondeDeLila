@@ -1993,9 +1993,7 @@
     },
     {
       "id": "les-absurdissimes",
-      "packs": [
-        "cards-judged-submission"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -2003,61 +2001,32 @@
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/vents-dansants/les-absurdissimes/game.json:11",
-          "src/game/games/vents-dansants/les-absurdissimes/game.json:14",
-          "src/game/games/vents-dansants/les-absurdissimes/game.json:19",
-          "src/game/games/vents-dansants/les-absurdissimes/game.json:23",
-          "src/game/games/vents-dansants/les-absurdissimes/game.json:30",
-          "src/game/games/vents-dansants/les-absurdissimes/game.spec.ts:7",
-          "src/game/games/vents-dansants/les-absurdissimes/game.spec.ts:11",
-          "src/game/rules/game-specific/cards-judged-submission/effect-pack.ts:6",
-          "src/game/rules/game-specific/cards-judged-submission/json-judged-cards-schema.ts:58",
-          "src/game/rules/game-specific/cards-judged-submission/json-judged-cards-schema.ts:61",
-          "src/game/rules/game-specific/cards-judged-submission/json-judged-cards-schema.ts:62",
-          "src/game/rules/game-specific/cards-judged-submission/json-judged-cards-schema.ts:63",
-          "src/game/rules/game-specific/cards-judged-submission/json-judged-cards-schema.ts:72",
-          "src/game/rules/game-specific/cards-judged-submission/json-judged-cards-schema.ts:75",
-          "src/game/rules/game-specific/cards-judged-submission/json-judged-cards-schema.ts:76",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:78",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:94",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:96",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:97",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:147",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:148"
+          "src/game/games/vents-dansants/les-absurdissimes/game.json:33",
+          "src/game/games/vents-dansants/les-absurdissimes/game.json:36",
+          "src/game/games/vents-dansants/les-absurdissimes/game.json:41",
+          "src/game/games/vents-dansants/les-absurdissimes/game.json:45",
+          "src/game/games/vents-dansants/les-absurdissimes/game.json:52",
+          "src/game/games/vents-dansants/les-absurdissimes/game.spec.ts:6",
+          "src/game/games/vents-dansants/les-absurdissimes/game.spec.ts:9"
         ],
-        "zones": [
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:96",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:147",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:148"
-        ],
+        "zones": [],
         "choices": [
-          "src/game/games/vents-dansants/les-absurdissimes/game.json:91",
-          "src/game/games/vents-dansants/les-absurdissimes/game.spec.ts:27",
-          "src/game/games/vents-dansants/les-absurdissimes/game.spec.ts:39",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:39",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:152"
+          "src/game/games/vents-dansants/les-absurdissimes/game.json:25",
+          "src/game/games/vents-dansants/les-absurdissimes/game.spec.ts:25",
+          "src/game/games/vents-dansants/les-absurdissimes/game.spec.ts:37"
         ],
         "status": [],
         "collections": [],
         "scoring": [
-          "src/game/games/vents-dansants/les-absurdissimes/game.spec.ts:47",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:112",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:117"
+          "src/game/games/vents-dansants/les-absurdissimes/game.spec.ts:45"
         ],
         "victory": [
-          "src/game/games/vents-dansants/les-absurdissimes/game.json:62",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:118"
+          "src/game/games/vents-dansants/les-absurdissimes/game.json:76"
         ],
         "targeting": [
-          "src/game/games/vents-dansants/les-absurdissimes/game.json:89"
+          "src/game/games/vents-dansants/les-absurdissimes/game.json:23"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/cards-judged-submission/effect-pack.ts:9",
-          "src/game/rules/game-specific/cards-judged-submission/effect-pack.ts:43",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:40",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:54",
-          "src/game/rules/game-specific/cards-judged-submission/judged-cards.recipes.ts:113"
-        ]
+        "triggers": []
       }
     },
     {
@@ -3356,12 +3325,6 @@
       "name": "cards-discard-penalty",
       "consumers": [
         "lama"
-      ]
-    },
-    {
-      "name": "cards-judged-submission",
-      "consumers": [
-        "les-absurdissimes"
       ]
     },
     {

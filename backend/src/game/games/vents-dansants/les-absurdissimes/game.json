@@ -1,9 +1,31 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "2",
+  "snapshotMigrations": [{ "fromVersion": "1", "toVersion": "2" }],
   "category": "Cartes",
   "world": "VentsDansants",
+  "patterns": [
+    {
+      "kind": "judged-submission",
+      "submitRecipe": "judged-submit-card",
+      "pickRecipe": "judged-pick",
+      "submitAction": "play_card",
+      "pickAction": "judge_pick",
+      "judgeId": "absurdissimes.judge",
+      "submissionId": "absurdissimes.answers",
+      "promptDeckId": "white",
+      "answerDeckId": "black",
+      "answerHandId": "answers",
+      "collectingPhase": "play",
+      "judgingPhase": "judge",
+      "scoreToWin": 10,
+      "winningReason": "target-score",
+      "submittedMessage": "absurdissimes.answer.submitted",
+      "revealedEvent": "absurdissimes.submissions.revealed",
+      "botSelection": "random"
+    }
+  ],
   "components": [
     {
       "id": "white",
@@ -35,20 +57,12 @@
   "initialPhase": "play",
   "phases": {
     "play": {
-      "actions": [
-        "play_card"
-      ],
-      "transitions": [
-        "judge"
-      ]
+      "actions": ["play_card"],
+      "transitions": ["judge"]
     },
     "judge": {
-      "actions": [
-        "judge_pick"
-      ],
-      "transitions": [
-        "play"
-      ]
+      "actions": ["judge_pick"],
+      "transitions": ["play"]
     }
   },
   "actions": {
@@ -59,9 +73,7 @@
       "recipe": "judged-pick"
     }
   },
-  "victory": {
-    "kind": "by-judged-cards"
-  },
+  "victory": { "kind": "manual" },
   "shortcuts": [
     {
       "key": "C",
@@ -74,23 +86,5 @@
       "actionType": "judge_pick"
     }
   ],
-  "extensions": [
-    {
-      "type": "judgedCards",
-      "config": {
-        "judgeId": "absurdissimes.judge",
-        "submissionId": "absurdissimes.answers",
-        "promptDeckId": "white",
-        "answerDeckId": "black",
-        "answerHandId": "answers",
-        "collectingPhase": "play",
-        "judgingPhase": "judge",
-        "scoreToWin": 10,
-        "winningReason": "target-score",
-        "submittedMessage": "absurdissimes.answer.submitted",
-        "revealedEvent": "absurdissimes.submissions.revealed",
-        "botSelection": "random"
-      }
-    }
-  ]
+  "extensions": []
 }

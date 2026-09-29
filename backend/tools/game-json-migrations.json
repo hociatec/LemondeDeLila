@@ -110,6 +110,16 @@
         "src/game/testing/architecture-tests/game/ordered-assembly-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-ordered-assembly.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/les-absurdissimes/game.json",
+      "fromSha256": "441b42aed1695fc2e5a88756182c86877e71bac5be05901ad44d203770cfa6cc",
+      "toSha256": "6a55781d3dda25be65e867f05e9f7a8d711a5d5904fabf2da1c899622d098a0a",
+      "justification": "Le pattern judged-submission générique porte désormais soumissions privées, juge tournant, révélation, score, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/judged-submission-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-judged-submission.spec.ts"
+      ]
     }
   ]
 }

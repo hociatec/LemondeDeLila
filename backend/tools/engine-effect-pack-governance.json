@@ -64,7 +64,6 @@
     "cards-public-domain": "Compared with generic card selection and collection primitives: public-domain card classification and collection completion remain a catalogue rule, isolated from the engine by the injected extension contract.",
     "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
     "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible.",
-    "cards-judged-submission": "Compared with submissions, rotating judges and cards: collecting, revealing, judging and redealing are assembled into one flow; the relocated recipe and schema do not prove a second independent game.",
     "race-paired-pawns": "Compared with movement and resource transfer primitives: paired meetings, shared advance, rerolls and token victory remain coupled in this pack and require a distinct second-game test before promotion.",
     "choice-anonymous-vote": "Compared with submissions and scoring: anonymous answers and subsequent voting constitute a two-stage composition; its relocated schema increases the measured size, not its reuse evidence.",
     "race-treasure-track": "Compared with inventory, card resolution and movement: protected decks, collection limits, gold requirements and theft remain a single catalogue composition with one demonstrated consumer.",
@@ -94,7 +93,6 @@
     ],
     "cards": [
       "cards-theme-name",
-      "cards-judged-submission",
       "cards-discard-penalty",
       "cards-public-domain",
       "cards-shared-prestige",
@@ -245,14 +243,6 @@
       "classificationReason": "cards-theme-name implements name and theme card combinations. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "cards-judged-submission": {
-      "property": "judgedCards",
-      "mechanic": "private submissions with a rotating judge",
-      "domain": "cards",
-      "scope": "game-specific",
-      "classificationReason": "cards-judged-submission implements private submissions with a rotating judge. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "cards-discard-penalty": {
       "property": "discardPenaltyCards",
       "mechanic": "discard rounds and unique-value penalties",
@@ -384,7 +374,6 @@
     "board-path-walls",
     "choice-story-challenge",
     "cards-discard-penalty",
-    "cards-judged-submission",
     "board-movement-landings"
   ],
   "coreRootFieldReviews": {

@@ -25,7 +25,6 @@ import { effectPack as choiceSimultaneousQuizEffectPack } from '../game-specific
 import { effectPack as boardPathWallsEffectPack } from '../game-specific/board-path-walls/effect-pack';
 import { effectPack as choiceStoryChallengeEffectPack } from '../game-specific/choice-story-challenge/effect-pack';
 import { effectPack as cardsDiscardPenaltyEffectPack } from '../game-specific/cards-discard-penalty/effect-pack';
-import { effectPack as cardsJudgedSubmissionEffectPack } from '../game-specific/cards-judged-submission/effect-pack';
 import { effectPack as boardMovementLandingsEffectPack } from '../game-specific/board-movement-landings/effect-pack';
 
 /** Deterministic composition root. No filesystem discovery occurs at runtime. */
@@ -55,7 +54,6 @@ export const jsonEffectPacks = Object.freeze([
   boardPathWallsEffectPack,
   choiceStoryChallengeEffectPack,
   cardsDiscardPenaltyEffectPack,
-  cardsJudgedSubmissionEffectPack,
   boardMovementLandingsEffectPack,
 ] as const);
 

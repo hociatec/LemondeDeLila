@@ -47,6 +47,10 @@ import {
   type OrderedAssemblyOptions,
 } from '../patterns/ordered-assembly-pattern';
 import {
+  judgedSubmission,
+  type JudgedSubmissionOptions,
+} from '../patterns/judged-submission-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -63,6 +67,7 @@ import {
   familyRequestPatternSchema,
   gridPlacementPatternSchema,
   orderedAssemblyPatternSchema,
+  judgedSubmissionPatternSchema,
 } from './json-advanced-pattern-schemas';
 
 export type JsonGamePattern =
@@ -95,6 +100,7 @@ export type JsonGamePattern =
   | ({ kind: 'family-request' } & FamilyRequestOptions)
   | ({ kind: 'grid-placement' } & GridPlacementOptions)
   | ({ kind: 'ordered-assembly' } & OrderedAssemblyOptions)
+  | ({ kind: 'judged-submission' } & JudgedSubmissionOptions)
   | {
       kind: 'market';
       marketId: string;
@@ -307,6 +313,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     familyRequestPatternSchema,
     gridPlacementPatternSchema,
     orderedAssemblyPatternSchema,
+    judgedSubmissionPatternSchema,
     object(
       {
         kind: { const: 'market' },
@@ -405,6 +412,10 @@ export function compileJsonPattern(
     case 'ordered-assembly': {
       const { kind: _kind, ...options } = pattern;
       return orderedAssembly(options);
+    }
+    case 'judged-submission': {
+      const { kind: _kind, ...options } = pattern;
+      return judgedSubmission(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

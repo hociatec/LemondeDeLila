@@ -8,6 +8,7 @@ import {
 import { assertGridPlacementReferences } from './json-grid-pattern-reference-validation';
 import { assertOrderedAssemblyReferences } from './json-ordered-assembly-reference-validation';
 import { assertDeliveryReferences } from './json-delivery-pattern-reference-validation';
+import { assertJudgedSubmissionReferences } from './json-judged-submission-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
 
@@ -19,6 +20,7 @@ export function assertJsonPatternReferences(
   phases: Readonly<Record<string, { transitions?: readonly string[] }>>,
   initialPhase: string,
   gameId: string,
+  minimumPlayers: number,
   maximumPlayers: number,
   fail: Failure,
 ): void {
@@ -55,37 +57,76 @@ export function assertJsonPatternReferences(
       );
     if (pattern.kind === 'card-battle')
       assertCardBattleReferences(pattern, index, components, fail);
-    if (pattern.kind === 'track-zone-collection')
-      assertTrackZoneCollectionReferences(
-        pattern,
-        index,
-        components,
-        resources,
-        fail,
-      );
-    if (pattern.kind === 'themed-set-collection')
-      assertThemedSetCollectionReferences(pattern, index, components, fail);
-    if (pattern.kind === 'family-request')
-      assertFamilyRequestReferences(pattern, index, components, counters, fail);
-    if (pattern.kind === 'grid-placement')
-      assertGridPlacementReferences(
-        pattern,
-        index,
-        components,
-        gameId,
-        maximumPlayers,
-        fail,
-      );
-    if (pattern.kind === 'ordered-assembly')
-      assertOrderedAssemblyReferences(
-        pattern,
-        index,
-        components,
-        resources,
-        counters,
-        fail,
-      );
+    assertAdvancedPatternReferences(pattern, index, {
+      components,
+      resources,
+      counters,
+      phases,
+      initialPhase,
+      gameId,
+      minimumPlayers,
+      maximumPlayers,
+      fail,
+    });
   }
+}
+
+function assertAdvancedPatternReferences(
+  pattern: JsonGamePattern,
+  index: number,
+  context: {
+    components: readonly GameComponentDefinition[];
+    resources: ReadonlySet<string>;
+    counters: ReadonlySet<string>;
+    phases: Readonly<Record<string, { transitions?: readonly string[] }>>;
+    initialPhase: string;
+    gameId: string;
+    minimumPlayers: number;
+    maximumPlayers: number;
+    fail: Failure;
+  },
+): void {
+  const { components, resources, counters, phases, fail } = context;
+  if (pattern.kind === 'track-zone-collection')
+    assertTrackZoneCollectionReferences(
+      pattern,
+      index,
+      components,
+      resources,
+      fail,
+    );
+  if (pattern.kind === 'themed-set-collection')
+    assertThemedSetCollectionReferences(pattern, index, components, fail);
+  if (pattern.kind === 'family-request')
+    assertFamilyRequestReferences(pattern, index, components, counters, fail);
+  if (pattern.kind === 'grid-placement')
+    assertGridPlacementReferences(
+      pattern,
+      index,
+      components,
+      context.gameId,
+      context.maximumPlayers,
+      fail,
+    );
+  if (pattern.kind === 'ordered-assembly')
+    assertOrderedAssemblyReferences(
+      pattern,
+      index,
+      components,
+      resources,
+      counters,
+      fail,
+    );
+  if (pattern.kind === 'judged-submission')
+    assertJudgedSubmissionReferences(
+      pattern,
+      index,
+      components,
+      phases,
+      context.initialPhase,
+      context.minimumPlayers,
+      fail,
+    );
 }
 
 function assertTrackZoneCollectionReferences(

@@ -251,6 +251,7 @@ function assertDocumentReferences(
     document.phases,
     document.initialPhase,
     manifest.code,
+    manifest.minPlayers,
     manifest.maxPlayers,
     fail,
   );
