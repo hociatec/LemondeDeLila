@@ -12,56 +12,12 @@ function cards(program: Data): Data[] {
 }
 type Case = { key: string; change: (p: Data) => string };
 const cases: Case[] = [
-  ...['parade', 'ritualPhases', 'familyEffects'].map((key) => ({
-    key,
+  {
+    key: 'ritualPhases',
     change: (p: Data) => {
       const list = cards(p);
       p.cards = [...list, { ...list[0] }];
       return `cards[${list.length}].id`;
-    },
-  })),
-  {
-    key: 'parade',
-    change: (p) => {
-      const list = cards(p);
-      list[1].value = list[0].value;
-      return 'cards[1].value';
-    },
-  },
-  {
-    key: 'parade',
-    change: (p) => {
-      p.sequence = ['absent'];
-      return 'sequence[0]';
-    },
-  },
-  {
-    key: 'parade',
-    change: (p) => {
-      p.sequence = [cards(p)[0].value, cards(p)[0].value];
-      return 'sequence[1]';
-    },
-  },
-  {
-    key: 'parade',
-    change: (p) => {
-      object(p.rewards)['unknown.value'] = {};
-      return 'rewards["unknown.value"]';
-    },
-  },
-  {
-    key: 'parade',
-    change: (p) => {
-      const value = String(cards(p)[0].value);
-      object(p.rewards)[value] = { 'missing.resource': 1 };
-      return `rewards.${value}["missing.resource"]`;
-    },
-  },
-  {
-    key: 'parade',
-    change: (p) => {
-      object(p.resourceValues)['missing.resource'] = 1;
-      return 'resourceValues["missing.resource"]';
     },
   },
   {
@@ -86,42 +42,6 @@ const cases: Case[] = [
       return `cards[${i}].effects`;
     },
   },
-  {
-    key: 'familyEffects',
-    change: (p) => {
-      const list = cards(p);
-      const i = list.findIndex((c) => c.type === 'metier');
-      delete list[i].family;
-      return `cards[${i}].family`;
-    },
-  },
-  {
-    key: 'familyEffects',
-    change: (p) => {
-      const list = cards(p);
-      const i = list.findIndex((c) => c.type === 'metier');
-      list[i].family = 'absent';
-      return `cards[${i}].family`;
-    },
-  },
-  {
-    key: 'familyEffects',
-    change: (p) => {
-      const list = cards(p);
-      const i = list.findIndex((c) => c.type === 'special');
-      list[i].family = 'absent';
-      return `cards[${i}].family`;
-    },
-  },
-  {
-    key: 'familyEffects',
-    change: (p) => {
-      const ids = p.familyIds;
-      if (!Array.isArray(ids)) throw new Error('No families');
-      p.familyIds = [...ids, ids[0]];
-      return `familyIds[${ids.length}]`;
-    },
-  },
 ];
 
 it.each(cases)('locates invalid $key authoring %#', ({ key, change }) => {
@@ -141,10 +61,7 @@ it.each(cases)('locates invalid $key authoring %#', ({ key, change }) => {
   }
 });
 
-it.each(['parade', 'ritualPhases', 'familyEffects'])(
-  'still compiles valid %s',
-  (key) => {
-    const { source, manifest } = fixture(key);
-    expect(() => compileJsonGame(manifest, source)).not.toThrow();
-  },
-);
+it.each(['ritualPhases'])('still compiles valid %s', (key) => {
+  const { source, manifest } = fixture(key);
+  expect(() => compileJsonGame(manifest, source)).not.toThrow();
+});

@@ -63,6 +63,10 @@ import {
   type TreasureTrackRaceOptions,
 } from '../patterns/treasure-track-race-pattern';
 import {
+  familyEffects,
+  type FamilyEffectsOptions,
+} from '../patterns/family-effects-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -84,6 +88,7 @@ import {
   marketPatternSchema,
 } from './json-advanced-pattern-schemas';
 import { treasureTrackRacePatternSchema } from './json-treasure-track-pattern-schema';
+import { familyEffectsPatternSchema } from './json-family-effects-pattern-schema';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -118,6 +123,7 @@ export type JsonGamePattern =
   | ({ kind: 'judged-submission' } & JudgedSubmissionOptions)
   | ({ kind: 'anonymous-vote' } & AnonymousVoteOptions)
   | ({ kind: 'treasure-track-race' } & TreasureTrackRaceOptions)
+  | ({ kind: 'family-effects' } & FamilyEffectsOptions)
   | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
         exchange?: MarketExchangeOptions['exchange'];
       })
@@ -322,6 +328,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     judgedSubmissionPatternSchema,
     anonymousVotePatternSchema,
     treasureTrackRacePatternSchema,
+    familyEffectsPatternSchema,
     marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
@@ -400,10 +407,10 @@ export function compileJsonPattern(
       const { kind: _kind, ...options } = pattern;
       return anonymousVote(options);
     }
-    case 'treasure-track-race': {
-      const { kind: _kind, ...options } = pattern;
-      return treasureTrackRace(options);
-    }
+    case 'treasure-track-race':
+      return compileTreasureTrackRace(pattern);
+    case 'family-effects':
+      return compileFamilyEffects(pattern);
     case 'market': {
       const { kind: _kind, ...options } = pattern;
       return options.exchange
@@ -417,4 +424,18 @@ export function compileJsonPattern(
       return submissionJudgeGame(options);
     }
   }
+}
+
+function compileTreasureTrackRace(
+  pattern: Extract<JsonGamePattern, { kind: 'treasure-track-race' }>,
+): ReturnType<typeof treasureTrackRace> {
+  const { kind: _kind, ...options } = pattern;
+  return treasureTrackRace(options);
+}
+
+function compileFamilyEffects(
+  pattern: Extract<JsonGamePattern, { kind: 'family-effects' }>,
+): ReturnType<typeof familyEffects> {
+  const { kind: _kind, ...options } = pattern;
+  return familyEffects(options);
 }

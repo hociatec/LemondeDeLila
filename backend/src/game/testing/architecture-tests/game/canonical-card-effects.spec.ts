@@ -5,7 +5,7 @@ const catalogues = [
   ['contes-et-cacahuetes', ['storyChallenge', 'decks', 'bonus']],
   ['la-grande-mine-de-barbak', ['publicDomainCards', 'cards']],
   ['frousse-party', ['protectedHauntedRace', 'cards']],
-  ['les-mains-de-la-terre', ['familyEffects', 'cards']],
+  ['les-mains-de-la-terre', ['patterns', '0', 'cards']],
   ['en-attendant-minuit', ['bounceQuizRace', 'cards']],
   ['a-fond-les-ballons', ['chainedTileRace', 'cards']],
   ['galopons-ensemble', ['bidirectionalCollisionRace', 'cards']],

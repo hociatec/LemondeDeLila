@@ -150,6 +150,16 @@
         "src/game/testing/architecture-tests/game/treasure-track-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-treasure-track-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/les-mains-de-la-terre/game.json",
+      "fromSha256": "b750768404d3485a26d2af3fb5e28777658a00f312d54253ac2e3d3fb7f57f58",
+      "toSha256": "93febfb64d7c4a30ea0b73f94d62e755b849e8bde5b19bdb396584c0f88beec5",
+      "justification": "Le pattern family-effects générique porte désormais demandes, familles, pioches supplémentaires, cartes spéciales, bot, confidentialité et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/family-effects-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-family-effects.spec.ts"
+      ]
     }
   ]
 }

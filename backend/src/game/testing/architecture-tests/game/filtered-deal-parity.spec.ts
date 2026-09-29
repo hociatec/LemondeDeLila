@@ -13,10 +13,7 @@ const ritesDocument = legacyExtensionFixture(
   ritesDocumentExtensionSource,
   'ritualPhases',
 );
-const professionsDocument = legacyExtensionFixture(
-  professionsDocumentExtensionSource,
-  'familyEffects',
-);
+const professionsDocument = professionsDocumentExtensionSource;
 
 const rites = compileJsonGame(ritesManifest, ritesDocument, {
   'content/catalogue.json': ritesCatalogue,

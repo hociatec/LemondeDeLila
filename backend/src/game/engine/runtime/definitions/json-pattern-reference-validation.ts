@@ -2,6 +2,7 @@ import type { GameComponentDefinition } from './component-kit';
 import type { JsonGamePattern } from './json-game-patterns';
 import { authoringProperty } from '../contracts/authoring-diagnostics';
 import {
+  assertFamilyEffectsReferences,
   assertFamilyRequestReferences,
   assertThemedSetCollectionReferences,
 } from './json-collection-pattern-reference-validation';
@@ -105,6 +106,8 @@ function assertAdvancedPatternReferences(
     assertThemedSetCollectionReferences(pattern, index, components, fail);
   if (pattern.kind === 'family-request')
     assertFamilyRequestReferences(pattern, index, components, counters, fail);
+  if (pattern.kind === 'family-effects')
+    assertFamilyEffectsReferences(pattern, index, components, resources, fail);
   if (pattern.kind === 'grid-placement')
     assertGridPlacementReferences(
       pattern,

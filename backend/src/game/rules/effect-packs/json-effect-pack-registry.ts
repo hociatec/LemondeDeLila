@@ -5,7 +5,6 @@ import { effectPack as racePairedPawnsEffectPack } from '../game-specific/race-p
 import { effectPack as cardsPublicDomainEffectPack } from '../game-specific/cards-public-domain/effect-pack';
 import { effectPack as raceProtectedHauntedTrackEffectPack } from '../game-specific/race-protected-haunted-track/effect-pack';
 import { effectPack as raceBidirectionalCollisionEffectPack } from '../game-specific/race-bidirectional-collision/effect-pack';
-import { effectPack as collectionFamilyEffectsEffectPack } from '../game-specific/collection-family-effects/effect-pack';
 import { effectPack as raceTeamPawnCaptureEffectPack } from '../game-specific/race-team-pawn-capture/effect-pack';
 import { effectPack as raceQuizEventTrackEffectPack } from '../game-specific/race-quiz-event-track/effect-pack';
 import { effectPack as raceBounceQuizEffectPack } from '../game-specific/race-bounce-quiz/effect-pack';
@@ -31,7 +30,6 @@ export const jsonEffectPacks = Object.freeze([
   cardsPublicDomainEffectPack,
   raceProtectedHauntedTrackEffectPack,
   raceBidirectionalCollisionEffectPack,
-  collectionFamilyEffectsEffectPack,
   raceTeamPawnCaptureEffectPack,
   raceQuizEventTrackEffectPack,
   raceBounceQuizEffectPack,

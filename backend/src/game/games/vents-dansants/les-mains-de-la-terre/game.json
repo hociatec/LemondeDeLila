@@ -1,9 +1,35 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "3",
+  "snapshotMigrations": [{ "fromVersion": "1", "toVersion": "2" }],
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
+  "patterns": [
+    {
+      "kind": "family-effects",
+      "requestRecipe": "collection-family-effects-request",
+      "requestAction": "request_card",
+      "deckId": "professions",
+      "handId": "players",
+      "setsId": "profession-families",
+      "cards": { "$content": "content/catalogue.json#/cards" },
+      "familyIds": [
+        "tradition",
+        "nature",
+        "mer",
+        "art",
+        "insolites",
+        "innovation",
+        "sante"
+      ],
+      "extraDrawResource": "collection-family-effects.extra-draws",
+      "freeRequestStatus": "collection-family-effects.free-family-request",
+      "vanishedStatus": "collection-family-effects.vanished-used",
+      "finishReason": "families-complete",
+      "eventNamespace": "les-mains"
+    }
+  ],
   "components": [
     {
       "component": "cards.deck",
@@ -145,9 +171,7 @@
     }
   ],
   "setup": {},
-  "resourceIds": [
-    "collection-family-effects.extra-draws"
-  ],
+  "resourceIds": ["collection-family-effects.extra-draws"],
   "shortcuts": [
     {
       "key": "D",
@@ -158,9 +182,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "request_card"
-      ],
+      "actions": ["request_card"],
       "terminal": true
     }
   },
@@ -170,33 +192,7 @@
     }
   },
   "victory": {
-    "kind": "by-family-effects"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "familyEffects",
-      "config": {
-        "deckId": "professions",
-        "handId": "players",
-        "setsId": "profession-families",
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        },
-        "familyIds": [
-          "tradition",
-          "nature",
-          "mer",
-          "art",
-          "insolites",
-          "innovation",
-          "sante"
-        ],
-        "extraDrawResource": "collection-family-effects.extra-draws",
-        "freeRequestStatus": "collection-family-effects.free-family-request",
-        "vanishedStatus": "collection-family-effects.vanished-used",
-        "finishReason": "families-complete",
-        "eventNamespace": "les-mains"
-      }
-    }
-  ]
+  "extensions": []
 }

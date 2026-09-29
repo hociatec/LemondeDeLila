@@ -64,8 +64,7 @@
     "cards-public-domain": "Compared with generic card selection and collection primitives: public-domain card classification and collection completion remain a catalogue rule, isolated from the engine by the injected extension contract.",
     "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
     "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible.",
-    "race-paired-pawns": "Compared with movement and resource transfer primitives: paired meetings, shared advance, rerolls and token victory remain coupled in this pack and require a distinct second-game test before promotion.",
-    "collection-family-effects": "Compared with card requests, sets and status primitives: extra draws, free requests and vanished targets are specific additions to family collection; colocation does not establish generic behavior."
+    "race-paired-pawns": "Compared with movement and resource transfer primitives: paired meetings, shared advance, rerolls and token victory remain coupled in this pack and require a distinct second-game test before promotion."
   },
   "structuralReviews": [
     {
@@ -101,7 +100,7 @@
       "choice-simultaneous-quiz",
       "choice-chapter-encounter"
     ],
-    "collection": ["collection-species-troops", "collection-family-effects"],
+    "collection": ["collection-species-troops"],
     "race": [
       "race-chained-tile-cards",
       "race-directional-hazards",
@@ -282,14 +281,6 @@
       "classificationReason": "cards-shared-prestige implements shared prestige-card hand. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "collection-family-effects": {
-      "property": "familyEffects",
-      "mechanic": "profession-family requests and effects",
-      "domain": "collection",
-      "scope": "game-specific",
-      "classificationReason": "collection-family-effects implements profession-family requests and effects. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "cards-ritual-phases": {
       "property": "ritualPhases",
       "mechanic": "ritual card phases and light scoring",
@@ -321,7 +312,6 @@
     "cards-public-domain",
     "race-protected-haunted-track",
     "race-bidirectional-collision",
-    "collection-family-effects",
     "race-team-pawn-capture",
     "race-quiz-event-track",
     "race-bounce-quiz",
