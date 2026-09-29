@@ -120,6 +120,16 @@
         "src/game/testing/architecture-tests/game/judged-submission-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-judged-submission.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/le-marche-des-merveilles/game.json",
+      "fromSha256": "ffcd8b02448b03a3f92c3d570344bad6dd84251d7c0ece4d3e3ce29a6f89abb1",
+      "toSha256": "d982097ec7a1e39d197f5e7e3bb0c4a58604d9e30247b3481a146002386cf79f",
+      "justification": "Le pattern market générique porte désormais achat, vente, rumeur, protection, vol, bot, visibilité et clôture bornée depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/market-exchange-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-market-exchange.spec.ts"
+      ]
     }
   ]
 }

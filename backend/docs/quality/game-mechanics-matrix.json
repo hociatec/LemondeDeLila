@@ -1943,52 +1943,26 @@
     },
     {
       "id": "le-marche-des-merveilles",
-      "packs": [
-        "collection-market-exchange"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
         "collision": [],
-        "resources": [
-          "src/game/rules/game-specific/collection-market-exchange/json-market-exchange-schema.ts:60",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:70",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:96"
-        ],
-        "payment": [
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:79",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:100"
-        ],
+        "resources": [],
+        "payment": [],
         "cards": [],
         "zones": [],
         "choices": [],
         "status": [
-          "src/game/games/vents-dansants/le-marche-des-merveilles/game.spec.ts:32",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:97",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:101",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:115",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:125",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:162"
+          "src/game/games/vents-dansants/le-marche-des-merveilles/game.spec.ts:27"
         ],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/le-marche-des-merveilles/game.json:96"
+          "src/game/games/vents-dansants/le-marche-des-merveilles/game.json:105"
         ],
-        "targeting": [
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:124",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:125",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:129",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:131"
-        ],
-        "triggers": [
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:31",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:55",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:85",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:104",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:141",
-          "src/game/rules/game-specific/collection-market-exchange/market-exchange.recipes.ts:152"
-        ]
+        "targeting": [],
+        "triggers": []
       }
     },
     {
@@ -3385,12 +3359,6 @@
       "name": "collection-family-effects",
       "consumers": [
         "les-mains-de-la-terre"
-      ]
-    },
-    {
-      "name": "collection-market-exchange",
-      "consumers": [
-        "le-marche-des-merveilles"
       ]
     },
     {

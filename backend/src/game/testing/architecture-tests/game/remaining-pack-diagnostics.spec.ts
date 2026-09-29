@@ -119,11 +119,6 @@ add('speciesTroops', (p) => {
   rows(p.cards)[0].species = 'absent';
   return 'cards[0].species';
 });
-duplicate('marketExchange', 'goods');
-add('marketExchange', (p) => {
-  list(p.goods)[0] = 'absent';
-  return 'goods[0]';
-});
 duplicate('publicDomainCards', 'collectibleCategories');
 add('publicDomainCards', (p) => {
   p.lossCategory = 'absent';

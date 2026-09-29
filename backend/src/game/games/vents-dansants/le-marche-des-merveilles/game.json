@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "3",
+  "snapshotMigrations": [{ "fromVersion": "1", "toVersion": "2" }],
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
   "patterns": [
@@ -21,9 +22,24 @@
       "maxPrice": 10,
       "turnsCounterId": "collection-market-exchange.turns-taken",
       "maxRounds": 6,
-      "winnerReason": "market-closed"
+      "winnerReason": "market-closed",
+      "exchange": {
+        "buyRecipe": "collection-market-exchange-buy",
+        "sellRecipe": "collection-market-exchange-sell",
+        "rumorRecipe": "collection-market-exchange-rumor",
+        "protectRecipe": "collection-market-exchange-protect",
+        "stealRecipe": "collection-market-exchange-steal",
+        "passRecipe": "collection-market-exchange-pass",
+        "buyAction": "buy",
+        "sellAction": "sell",
+        "passAction": "pass",
+        "rumorCost": 1,
+        "protectCost": 2,
+        "eventNamespace": "wonder-market"
+      }
     }
   ],
+  "playerValuesVisibility": { "statuses": "public" },
   "components": [],
   "setup": {},
   "resourceIds": [],
@@ -62,14 +78,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "buy",
-        "sell",
-        "rumor",
-        "protect",
-        "steal_deal",
-        "pass"
-      ],
+      "actions": ["buy", "sell", "rumor", "protect", "steal_deal", "pass"],
       "terminal": true
     }
   },
@@ -93,25 +102,6 @@
       "recipe": "collection-market-exchange-pass"
     }
   },
-  "victory": {
-    "kind": "by-market-exchange"
-  },
-  "extensions": [
-    {
-      "type": "marketExchange",
-      "config": {
-        "marketId": "wonders",
-        "inventoryId": "wonder-goods",
-        "currency": "coins",
-        "goods": {
-          "$content": "content/catalogue.json#/goods"
-        },
-        "turnsCounterId": "collection-market-exchange.turns-taken",
-        "maxRounds": 6,
-        "rumorCost": 1,
-        "protectCost": 2,
-        "eventNamespace": "wonder-market"
-      }
-    }
-  ]
+  "victory": { "kind": "manual" },
+  "extensions": []
 }

@@ -67,8 +67,7 @@
     "race-paired-pawns": "Compared with movement and resource transfer primitives: paired meetings, shared advance, rerolls and token victory remain coupled in this pack and require a distinct second-game test before promotion.",
     "choice-anonymous-vote": "Compared with submissions and scoring: anonymous answers and subsequent voting constitute a two-stage composition; its relocated schema increases the measured size, not its reuse evidence.",
     "race-treasure-track": "Compared with inventory, card resolution and movement: protected decks, collection limits, gold requirements and theft remain a single catalogue composition with one demonstrated consumer.",
-    "collection-family-effects": "Compared with card requests, sets and status primitives: extra draws, free requests and vanished targets are specific additions to family collection; colocation does not establish generic behavior.",
-    "collection-market-exchange": "Compared with market, inventory and resource primitives: rumor, protection and bounded round costs remain one economic composition; explicit reuse proof is required before moving it to reusable."
+    "collection-family-effects": "Compared with card requests, sets and status primitives: extra draws, free requests and vanished targets are specific additions to family collection; colocation does not establish generic behavior."
   },
   "structuralReviews": [
     {
@@ -105,11 +104,7 @@
       "choice-anonymous-vote",
       "choice-chapter-encounter"
     ],
-    "collection": [
-      "collection-species-troops",
-      "collection-family-effects",
-      "collection-market-exchange"
-    ],
+    "collection": ["collection-species-troops", "collection-family-effects"],
     "race": [
       "race-chained-tile-cards",
       "race-directional-hazards",
@@ -338,20 +333,11 @@
       "scope": "game-specific",
       "classificationReason": "choice-chapter-encounter implements journey chapters and encounters. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
-    },
-    "collection-market-exchange": {
-      "property": "marketExchange",
-      "mechanic": "market collection and exchange",
-      "domain": "collection",
-      "scope": "game-specific",
-      "classificationReason": "collection-market-exchange implements market collection and exchange. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
     }
   },
   "registrationOrder": [
     "race-resource-track",
     "race-treasure-track",
-    "collection-market-exchange",
     "race-paired-pawns",
     "cards-public-domain",
     "race-protected-haunted-track",

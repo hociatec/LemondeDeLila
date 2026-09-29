@@ -51,6 +51,10 @@ import {
   type JudgedSubmissionOptions,
 } from '../patterns/judged-submission-pattern';
 import {
+  marketExchange,
+  type MarketExchangeOptions,
+} from '../patterns/market-exchange-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -101,20 +105,9 @@ export type JsonGamePattern =
   | ({ kind: 'grid-placement' } & GridPlacementOptions)
   | ({ kind: 'ordered-assembly' } & OrderedAssemblyOptions)
   | ({ kind: 'judged-submission' } & JudgedSubmissionOptions)
-  | {
-      kind: 'market';
-      marketId: string;
-      inventoryId: string;
-      items: readonly string[];
-      currency: string;
-      prices: Readonly<Record<string, number>>;
-      startingCurrency: number;
-      minPrice: number;
-      maxPrice: number;
-      turnsCounterId: string;
-      maxRounds: number;
-      winnerReason: string;
-    }
+  | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
+        exchange?: MarketExchangeOptions['exchange'];
+      })
   | { kind: 'simultaneous-answers' }
   | {
       kind: 'submission-judge';
@@ -328,6 +321,20 @@ export const jsonGamePatternSchema: AuthorSchema = {
         turnsCounterId: id,
         maxRounds: { type: 'integer', minimum: 1, maximum: 10000 },
         winnerReason: id,
+        exchange: object({
+          buyRecipe: id,
+          sellRecipe: id,
+          rumorRecipe: id,
+          protectRecipe: id,
+          stealRecipe: id,
+          passRecipe: id,
+          buyAction: id,
+          sellAction: id,
+          passAction: id,
+          rumorCost: { type: 'integer', minimum: 0, maximum: 1000000 },
+          protectCost: { type: 'integer', minimum: 0, maximum: 1000000 },
+          eventNamespace: id,
+        }),
       },
       [
         'kind',
@@ -419,7 +426,9 @@ export function compileJsonPattern(
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;
-      return marketGame(options);
+      return options.exchange
+        ? marketExchange({ ...options, exchange: options.exchange })
+        : marketGame(options);
     }
     case 'simultaneous-answers':
       return simultaneousAnswers();
