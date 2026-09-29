@@ -7,11 +7,9 @@ import {
   defineActorEffect,
   defineEffect,
   defineEmptyEffect,
-} from '../effects/effects-core';
-import {
   drawAndResolve,
   sequentialPawnSelection,
-} from '../recipes/gameplay-recipes';
+} from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 type State = Record<string, never>;
 type Context = GameContext<State>;

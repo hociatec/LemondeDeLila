@@ -2,12 +2,12 @@ import { defineAction, defineChoice } from '../actions/action-builders';
 import { gameInput } from '../actions/game-input-schema';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import type { GameContext } from '../definitions/game-author-context';
-import { defineEffect } from '../effects/effects-core';
 import {
+  defineEffect,
   drawAndResolve,
   rollDice,
   sequentialPawnSelection,
-} from '../recipes/gameplay-recipes';
+} from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 type State = Record<string, never>;

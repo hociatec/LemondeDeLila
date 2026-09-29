@@ -3,12 +3,12 @@ import { gameInput } from '../actions/game-input-schema';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import type { GameContext } from '../definitions/game-author-context';
-import { defineEffect } from '../effects/effects-core';
 import {
+  defineEffect,
   drawAndResolve,
   drawEvent,
   raceTurn,
-} from '../recipes/gameplay-recipes';
+} from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 export type QuizEventRaceTile = {

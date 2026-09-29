@@ -2,7 +2,7 @@ import { defineAction } from '../actions/action-builders';
 import { gameInput } from '../actions/game-input-schema';
 import { GameConfigurationError } from '../contracts/game-domain.errors';
 import type { GameContext } from '../definitions/game-author-context';
-import { drawEvent } from '../recipes/gameplay-recipes';
+import { drawEvent } from './pattern-capabilities';
 
 type AttributedCard = {
   id: string | number;

@@ -1,13 +1,13 @@
 import { defineAction, defineEmptyAction } from '../actions/action-builders';
 import { gameInput } from '../actions/game-input-schema';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
-import { gameEffects } from '../effects/effects-dsl';
 import type { GameContext } from '../definitions/game-author-context';
 import {
+  defineActorEffect,
   defineEffect,
   defineEmptyEffect,
-  defineActorEffect,
-} from '../effects/effects-core';
+  gameEffects,
+} from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 export type PublicDomainCardCategory = string;

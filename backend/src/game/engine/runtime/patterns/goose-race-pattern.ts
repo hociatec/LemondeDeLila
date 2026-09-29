@@ -2,7 +2,7 @@ import { defineAction, defineChoice } from '../actions/action-builders';
 import { gameInput } from '../actions/game-input-schema';
 import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import type { GameContext } from '../definitions/game-author-context';
-import { sequentialPawnSelection } from '../recipes/gameplay-recipes';
+import { sequentialPawnSelection } from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 type State = Record<string, never>;

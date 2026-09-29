@@ -1,5 +1,4 @@
-import { completeRound } from './pattern-capabilities';
-import { defineGamePhases } from '../kits/phase-kit';
+import { completeRound, defineGamePhases } from './pattern-capabilities';
 import { gameInput } from '../actions/game-input-schema';
 import type { GameContext } from '../definitions/game-author-context';
 import { defineAction } from '../actions/action-builders';

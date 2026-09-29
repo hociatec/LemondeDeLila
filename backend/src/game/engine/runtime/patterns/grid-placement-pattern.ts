@@ -4,8 +4,11 @@ import type { PlayerState } from '../../../core/application/models/game-state.mo
 import type { ChoiceResolverShape } from '../contracts/author-rule-contracts';
 import type { GameContext } from '../definitions/game-author-context';
 import { defineEvent } from '../events/game-event-definition';
-import { scanGridWinner, type GridPosition } from '../kits/grid-kit';
-import { sequentialPawnSelection } from '../recipes/gameplay-recipes';
+import {
+  scanGridWinner,
+  sequentialPawnSelection,
+  type GridPosition,
+} from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 import { gridGame } from './gameplay-pattern-round-economy';
 

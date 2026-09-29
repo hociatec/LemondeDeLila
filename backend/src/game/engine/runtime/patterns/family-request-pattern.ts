@@ -1,4 +1,4 @@
-import { requestCardFromPlayer } from '../recipes/gameplay-recipes';
+import { requestCardFromPlayer } from './pattern-capabilities';
 import type { GameContext } from '../definitions/game-author-context';
 import { defineEmptyAction } from '../actions/action-builders';
 import { definePattern } from './gameplay-pattern-core';

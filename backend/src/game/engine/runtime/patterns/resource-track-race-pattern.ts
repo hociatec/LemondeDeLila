@@ -1,8 +1,7 @@
 import { gameInput } from '../actions/game-input-schema';
 import type { GameContext } from '../definitions/game-author-context';
 import { defineEvent } from '../events/game-event-definition';
-import { rollDice } from '../recipes/gameplay-recipes';
-import { resourceDeltaEffects } from '../recipes/resource-deltas';
+import { resourceDeltaEffects, rollDice } from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 export type ResourceTrackFace = string;

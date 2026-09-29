@@ -1,7 +1,7 @@
 import { defineAction, defineEmptyAction } from '../actions/action-builders';
 import { gameInput } from '../actions/game-input-schema';
 import type { GameContext } from '../definitions/game-author-context';
-import { commonStatuses } from '../kits/player-values-contracts';
+import { commonStatuses } from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 import { marketGame } from './gameplay-pattern-round-economy';
 

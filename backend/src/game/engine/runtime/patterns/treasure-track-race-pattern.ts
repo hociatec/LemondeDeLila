@@ -1,8 +1,7 @@
 import { gameInput } from '../actions/game-input-schema';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import type { GameContext } from '../definitions/game-author-context';
-import { defineEffect } from '../effects/effects-core';
-import { drawAndResolve, raceTurn } from '../recipes/gameplay-recipes';
+import { defineEffect, drawAndResolve, raceTurn } from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 type State = Record<string, never>;

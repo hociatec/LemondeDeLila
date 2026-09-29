@@ -6,12 +6,10 @@ import {
   defineActorEffect,
   defineEffect,
   defineEmptyEffect,
-} from '../effects/effects-core';
-import {
   drawAndResolve,
   drawEvent,
   sequentialPawnSelection,
-} from '../recipes/gameplay-recipes';
+} from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 export type ChainedTileType = string;

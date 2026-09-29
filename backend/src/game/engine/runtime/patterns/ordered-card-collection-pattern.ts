@@ -1,9 +1,8 @@
 import { defineAction } from '../actions/action-builders';
 import { gameInput } from '../actions/game-input-schema';
 import type { GameContext } from '../definitions/game-author-context';
-import { playCard } from '../recipes/gameplay-recipes';
+import { clockwise, playCard } from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
-import { clockwise } from '../kits/turn-kit';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 
 export type OrderedCardCollectionOptions = {

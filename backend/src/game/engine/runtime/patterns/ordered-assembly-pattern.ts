@@ -2,7 +2,7 @@ import { defineAction, defineEmptyAction } from '../actions/action-builders';
 import { gameInput } from '../actions/game-input-schema';
 import { when } from '../automation/automatic-kit';
 import type { GameContext } from '../definitions/game-author-context';
-import { discardCard, drawForPlayer } from '../recipes/gameplay-recipes';
+import { discardCard, drawForPlayer } from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 export type OrderedAssemblyOptions = {

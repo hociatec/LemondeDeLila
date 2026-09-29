@@ -6,8 +6,8 @@ import {
   defineActorEffect,
   defineEffect,
   defineEmptyEffect,
-} from '../effects/effects-core';
-import { drawAndResolve } from '../recipes/gameplay-recipes';
+  drawAndResolve,
+} from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 type State = Record<string, never>;
 type Context = GameContext<State>;
