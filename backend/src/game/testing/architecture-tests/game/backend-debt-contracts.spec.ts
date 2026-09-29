@@ -49,7 +49,10 @@ describe('backend debt contracts', () => {
       'utf8',
     );
     const program = readFileSync(
-      resolve(__dirname, '../../../engine/runtime/contracts/game-rule-program.ts'),
+      resolve(
+        __dirname,
+        '../../../engine/runtime/contracts/game-rule-program.ts',
+      ),
       'utf8',
     );
     expect(`${contracts}\n${program}`).not.toMatch(
@@ -59,11 +62,17 @@ describe('backend debt contracts', () => {
 
   it('keeps universal events typed and game events declarative', () => {
     const registry = readFileSync(
-      resolve(__dirname, '../../../engine/runtime/events/engine-event-registry.ts'),
+      resolve(
+        __dirname,
+        '../../../engine/runtime/events/engine-event-registry.ts',
+      ),
       'utf8',
     );
     const definitions = readFileSync(
-      resolve(__dirname, '../../../engine/runtime/events/game-event-definition.ts'),
+      resolve(
+        __dirname,
+        '../../../engine/runtime/events/game-event-definition.ts',
+      ),
       'utf8',
     );
     expect(registry).toContain('export type EngineEventMap');

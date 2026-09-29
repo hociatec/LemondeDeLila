@@ -78,11 +78,6 @@ function main() {
       }
     }
 
-    const rulesPath = path.join(gameDir, 'rules.md');
-    if (!fs.existsSync(rulesPath)) {
-      errors.push(`rules.md manquant: ${rulesPath}`);
-    }
-
     const contentFiles = listFilesRecursive(gameDir).filter((file) =>
       file.toLowerCase().endsWith('.json') && path.basename(file) !== 'manifest.json',
     );

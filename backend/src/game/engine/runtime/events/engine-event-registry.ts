@@ -104,6 +104,7 @@ export type EngineEventMap = {
     previous: number;
     value: number;
     delta: number;
+    announce?: boolean;
   };
   'resource.transferred': {
     from: number;

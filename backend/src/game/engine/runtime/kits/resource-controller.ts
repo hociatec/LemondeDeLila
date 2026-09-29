@@ -50,7 +50,12 @@ export class GameResourcesController<TResourceId extends string = string> {
     return this.state.resources[resource]?.[String(playerId)] ?? 0;
   }
 
-  set(playerId: number, resource: TResourceId, value: number): number {
+  set(
+    playerId: number,
+    resource: TResourceId,
+    value: number,
+    options: { announce?: boolean } = {},
+  ): number {
     const previous = this.get(playerId, resource);
     assertGameValue(value);
     assertGameValue(previous);
@@ -67,6 +72,7 @@ export class GameResourcesController<TResourceId extends string = string> {
       previous,
       value,
       delta: value - previous,
+      ...(options.announce === false ? { announce: false } : {}),
     });
     return value;
   }

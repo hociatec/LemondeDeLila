@@ -3,15 +3,13 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "builder": "swc",
-    "typeCheck": true,
+    "builder": "tsc",
     "deleteOutDir": true,
     "assets": [
       "game/core/infrastructure/system/generated-game-catalog-index.json",
       "game/games/**/*.txt",
       "game/games/**/*.json",
-      "game/games/**/manifest.json",
-      "game/games/**/rules.md"
+      "game/games/**/manifest.json"
     ]
   }
 }

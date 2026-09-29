@@ -95,7 +95,9 @@ export function pathWallsRules(source: PathWallsProgram) {
 
   function start(wallsPerPlayer: number, ctx: Context): void {
     for (const player of ctx.players.all())
-      ctx.resources.set(player.id, program.wallsResourceId, wallsPerPlayer);
+      ctx.resources.set(player.id, program.wallsResourceId, wallsPerPlayer, {
+        announce: false,
+      });
     pawnSelection.requestAll(
       ctx.players.all().map((player) => player.id),
       ctx,

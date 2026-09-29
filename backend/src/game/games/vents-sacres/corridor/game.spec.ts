@@ -1,4 +1,7 @@
-import { legacyExtensionFixture, testGame } from '../../../engine/testing/public-api';
+import {
+  legacyExtensionFixture,
+  testGame,
+} from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import documentExtensionSource from './game.json';
 import manifest from './manifest.json';
@@ -13,6 +16,7 @@ describe('Le Corridor declarative game', () => {
       .seed(71)
       .start();
 
+    await game.as(1).do('game.configure', { wallsPerPlayer: 10 });
     await game.choose(1, 'vent');
     await game.choose(2, 'eau');
 

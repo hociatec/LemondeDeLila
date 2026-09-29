@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
   "testRunner": "jest",
+  "plugins": ["@stryker-mutator/jest-runner"],
   "coverageAnalysis": "perTest",
   "ignoreStatic": true,
   "concurrency": 4,
@@ -18,13 +19,14 @@
     "src/platform/ws/application/services/ws-ticket-auth.service.ts",
     "src/platform/ws/application/services/ws-ticket.service.ts",
     "src/modules/admin/infrastructure/presentation/http/guards/*.ts",
-    "src/modules/update/application/update-policy.service.ts"
+    "src/modules/update/infrastructure/persistence/wx-update-release.service.ts",
+    "!src/**/*.spec.ts"
   ],
   "thresholds": { "high": 90, "low": 85, "break": 85 },
   "reporters": ["clear-text", "json"],
   "jsonReporter": { "fileName": "reports/mutation/mutation.json" },
   "jest": {
     "projectType": "custom",
-    "configFile": "package.json"
+    "configFile": "stryker.jest.config.cjs"
   }
 }

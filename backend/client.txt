@@ -1,0 +1,3323 @@
+
+1. Réduire la fragmentation excessive des 779 fichiers de production.
+
+2. Fusionner les fichiers qui ont été séparés sans représenter des responsabilités réellement indépendantes.
+
+3. Ne pas fusionner des fichiers uniquement pour diminuer artificiellement leur nombre.
+
+4. Faire correspondre chaque fichier à une responsabilité identifiable.
+
+5. Faire correspondre chaque classe à une raison principale de changer.
+
+6. Garder le domaine indépendant de wxWidgets.
+
+7. Garder le domaine indépendant de WinHTTP.
+
+8. Garder le domaine indépendant de nlohmann JSON lorsque JSON n'est pas intrinsèquement une donnée métier.
+
+9. Garder l'application indépendante des widgets wxWidgets.
+
+10. Garder les détails réseau dans l'infrastructure.
+
+11. Garder les codecs protocole à la frontière infrastructure.
+
+12. Éviter que les structures du protocole backend deviennent directement les modèles UI.
+
+13. Éviter que la présentation connaisse les détails de transport.
+
+14. Éviter que les services applicatifs construisent directement des messages réseau.
+
+15. Maintenir `bootstrap` comme composition root plutôt que comme couche métier.
+
+### JSON et protocole
+
+16. Empêcher `nlohmann::json` de remonter inutilement dans les interfaces application.
+
+17. Supprimer `nlohmann::json` de `IAdminGateway`.
+
+18. Supprimer `nlohmann::json` de `AdminService`.
+
+19. Remplacer les payloads Admin JSON génériques par des commandes typées lorsque le contrat est stable.
+
+20. Remplacer les résultats Admin JSON génériques par des résultats typés lorsque le contrat est stable.
+
+21. Garder JSON uniquement pour les commandes Admin réellement dynamiques.
+
+22. Décoder les réponses réseau immédiatement après réception.
+
+23. Valider le type JSON avant chaque extraction.
+
+24. Refuser explicitement les payloads réseau malformés.
+
+25. Éviter les coercitions silencieuses de types réseau lorsqu'elles cachent une incompatibilité protocolaire.
+
+26. Centraliser les règles communes de lecture JSON.
+
+27. Éviter que chaque module possède une manière différente d'interpréter une erreur protocolaire.
+
+28. Transformer les erreurs de parsing en erreurs applicatives structurées.
+
+29. Ne pas laisser une exception nlohmann brute atteindre la présentation.
+
+30. Conserver les constantes d'événements WebSocket générées depuis le contrat backend.
+
+31. Éviter les noms d'événements WebSocket écrits manuellement lorsqu'un contrat généré existe.
+
+32. Faire échouer la compilation ou les tests lorsqu'un événement backend nécessaire au client disparaît.
+
+33. Vérifier les champs obligatoires du protocole plutôt que d'utiliser silencieusement des valeurs par défaut.
+
+34. Tolérer les champs supplémentaires du serveur uniquement lorsqu'ils n'altèrent pas la sémantique.
+
+35. Versionner explicitement les ruptures de protocole.
+
+### Gameplay
+
+36. Réduire les responsabilités de `GamePlayPanel`.
+
+37. Retirer de `GamePlayPanel` l'orchestration réseau.
+
+38. Retirer de `GamePlayPanel` la gestion directe du cycle de reconnexion.
+
+39. Retirer de `GamePlayPanel` les décisions métier de validation d'action.
+
+40. Retirer de `GamePlayPanel` la logique de déduplication d'événements qui peut appartenir à l'application.
+
+41. Retirer de `GamePlayPanel` les décisions de version d'état qui peuvent appartenir à l'application.
+
+42. Garder `GamePlayPanel` centré sur la coordination de composants visuels.
+
+43. Extraire la gestion du cycle d'une session gameplay dans un contrôleur/presenter non-wx.
+
+44. Extraire la gestion de l'état courant affiché dans un modèle de présentation.
+
+45. Extraire la gestion des interactions obligatoires dans un composant dédié.
+
+46. Extraire la gestion du focus après mise à jour d'état dans une politique UI dédiée.
+
+47. Réduire le nombre d'états booléens directement conservés par `GamePlayPanel`.
+
+48. Remplacer les combinaisons de booléens incompatibles par un état de cycle de vie explicite.
+
+49. Éviter qu'un panel puisse simultanément représenter plusieurs phases incompatibles.
+
+50. Formaliser les états `closed`, `joining`, `waiting-start`, `active`, `reconnecting` et `finished`.
+
+51. Faire dépendre les actions disponibles de cet état explicite.
+
+52. Éviter les flags comme `awaitingStartedState_` lorsqu'ils peuvent être représentés par cet état.
+
+53. Éviter les flags comme `roomStartPending_` lorsqu'ils peuvent être représentés par cet état.
+
+54. Éviter les flags comme `roomStartFlowRequested_` lorsqu'ils peuvent être représentés par cet état.
+
+55. Centraliser la logique déterminant si une entrée clavier est autorisée.
+
+56. Centraliser la logique déterminant l'interaction actuellement obligatoire.
+
+57. Centraliser la logique déterminant la cible de focus prioritaire.
+
+58. Éviter que plusieurs sous-panels implémentent indépendamment les mêmes règles de clavier.
+
+59. Conserver les sous-panels Hand, Grid, Movement, Workflow et Prompt uniquement s'ils possèdent une vraie responsabilité indépendante.
+
+60. Fusionner les sous-composants gameplay qui ne font que déléguer.
+
+### État gameplay
+
+61. Donner à `GameState` une représentation strictement typée.
+
+62. Éviter de conserver du JSON brut à l'intérieur de `GameState` lorsque la structure est connue.
+
+63. Réduire la complexité de `GameSystemDecoder.cpp`.
+
+64. Scinder `GameSystemDecoder` par véritables sous-domaines du protocole lorsque nécessaire.
+
+65. Éviter qu'un decoder central connaisse tous les détails possibles du gameplay.
+
+66. Garder les capacités optionnelles explicitement typées.
+
+67. Distinguer absence d'une capability et capability invalide.
+
+68. Ne pas transformer une capability invalide en capability absente.
+
+69. Vérifier la cohérence entre version d'état et contenu reçu.
+
+70. Rejeter les régressions de version.
+
+71. Détecter les sauts nécessitant une resynchronisation.
+
+72. Éviter que la présentation décide seule si un état réseau est autoritatif.
+
+73. Déplacer cette décision dans la couche application/session.
+
+74. Conserver un seul état autoritatif courant côté client.
+
+75. Éviter les copies divergentes du même état dans plusieurs composants.
+
+### Actions gameplay
+
+76. Donner à chaque action un identifiant de commande explicite.
+
+77. Conserver cet identifiant pendant les retries.
+
+78. Ne pas générer une nouvelle identité lors du retry de la même intention.
+
+79. Centraliser la construction de `knownVersion`.
+
+80. Empêcher une action d'utiliser une version provenant d'un ancien run.
+
+81. Empêcher l'envoi d'une action pendant une resynchronisation obligatoire.
+
+82. Distinguer commande refusée de commande dont le résultat est inconnu à cause d'une coupure réseau.
+
+83. Ne pas réexécuter automatiquement une commande non idempotente sans identité stable.
+
+84. Resynchroniser avant de demander à l'utilisateur de prendre une nouvelle décision après conflit.
+
+85. Centraliser la politique de retry des commandes gameplay.
+
+### Événements gameplay
+
+86. Donner aux événements reçus un modèle typé.
+
+87. Centraliser leur identité/déduplication.
+
+88. Borner `observedEventIdentities_`.
+
+89. Nettoyer les identités d'événements lors d'un nouveau run.
+
+90. Nettoyer les identités d'événements lors de la fermeture de session.
+
+91. Éviter que l'historique UI serve de mécanisme de déduplication réseau.
+
+92. Séparer événement métier et texte présenté.
+
+93. Garder la présentation linguistique hors des modèles réseau.
+
+94. Éviter que `GameEventPresenter` connaisse des jeux concrets si le serveur fournit déjà une narration adaptée.
+
+95. Si le client doit présenter certains événements, utiliser une extension fournie par le domaine gameplay plutôt qu'un switch central par jeu.
+
+### Reconnexion
+
+96. Supprimer la duplication de `WaitForDelay` entre Room et Gameplay.
+
+97. Supprimer la duplication de `ReconnectDelay` entre Room et Gameplay.
+
+98. Créer une politique de backoff commune.
+
+99. Ajouter du jitter au backoff lorsque plusieurs clients peuvent se reconnecter simultanément.
+
+100. Borner explicitement le backoff maximal.
+
+101. Permettre l'annulation immédiate de l'attente de reconnexion.
+
+102. Éviter le polling de 100 ms pour implémenter une attente annulable lorsque `condition_variable` ou équivalent convient mieux.
+
+103. Centraliser le comportement de reconnexion réseau.
+
+104. Laisser chaque module définir seulement l'opération de reconnexion et de resynchronisation.
+
+105. Distinguer panne réseau transitoire et erreur protocolaire permanente.
+
+106. Ne pas reconnecter indéfiniment sur une erreur d'authentification définitive.
+
+107. Ne pas reconnecter indéfiniment sur une incompatibilité protocolaire.
+
+108. Rafraîchir l'authentification avant reconnexion lorsque nécessaire.
+
+109. Informer l'UI de l'état de reconnexion par un modèle structuré.
+
+110. Éviter les chaînes françaises comme représentation interne de l'état réseau.
+
+### Threads et tâches de fond
+
+111. Utiliser `std::jthread` lorsque la propriété et l'annulation d'un thread sont locales.
+
+112. Utiliser `BackgroundExecutor` pour les tâches courtes réellement partageables.
+
+113. Éviter de mélanger plusieurs modèles de concurrence sans nécessité.
+
+114. Documenter clairement quel composant possède chaque thread long-lived.
+
+115. Garantir qu'aucun thread ne survit à son propriétaire.
+
+116. Garantir que les callbacks UI ne capturent pas un widget détruit.
+
+117. Utiliser systématiquement des références faibles lorsque le callback peut dépasser la vie du widget.
+
+118. Éviter les callbacks `[this]` asynchrones lorsque la durée de vie n'est pas garantie.
+
+119. Garantir que toutes les tâches de fond sont annulables.
+
+120. Garantir que les opérations réseau longues observent `stop_token`.
+
+121. Garantir que les opérations filesystem longues sont interruptibles lorsque nécessaire.
+
+122. Éviter les `catch (...) {}` silencieux dans les workers.
+
+123. Corriger le `catch (...) {}` silencieux du heartbeat Chat.
+
+124. Corriger les autres exceptions silencieusement ignorées lorsque l'échec est opérationnellement pertinent.
+
+125. Distinguer explicitement les erreurs volontairement best-effort.
+
+### BackgroundExecutor
+
+126. Définir explicitement la politique lorsque sa queue est pleine.
+
+127. Ne pas simplement perdre une tâche importante lorsque la capacité est atteinte.
+
+128. Distinguer tâches abandonnables et tâches obligatoires.
+
+129. Retourner au caller l'information qu'une tâche n'a pas été acceptée.
+
+130. Éviter qu'un appelant interprète une tâche abandonnée comme une réussite.
+
+131. Borner le nombre de workers par défaut.
+
+132. Éviter d'utiliser automatiquement tous les hardware threads pour des tâches principalement réseau.
+
+133. Mesurer la charge réelle avant de choisir le nombre de workers.
+
+134. Garantir qu'une exception d'un `job.work()` ne tue pas silencieusement un worker.
+
+135. Capturer les exceptions à la frontière du worker.
+
+136. Propager l'échec à l'objet représentant la tâche.
+
+137. Garantir que `Shutdown()` ne peut pas attendre indéfiniment un job non coopératif.
+
+### Chat
+
+138. Remplacer la boucle heartbeat avec `sleep_for(100ms)` par une attente annulable propre.
+
+139. Ne pas ignorer silencieusement les erreurs heartbeat.
+
+140. Distinguer heartbeat raté et connexion réellement perdue.
+
+141. Éviter que Chat possède une deuxième logique de reconnexion incompatible avec la logique réseau commune.
+
+142. Centraliser l'état de connexion Chat.
+
+143. Borner l'historique Chat conservé dans l'UI.
+
+144. Ne pas conserver indéfiniment des messages déjà retirés de l'affichage.
+
+145. Séparer parsing Chat et présentation Chat.
+
+146. Éviter les coercitions permissives dans `ChatEventPayloadParser`.
+
+147. Rejeter explicitement un message Chat structurellement invalide.
+
+### Rooms
+
+148. Réutiliser la politique commune de reconnexion.
+
+149. Réutiliser la primitive commune d'attente annulable.
+
+150. Centraliser le cycle de vie Room.
+
+151. Remplacer les combinaisons de `reconnecting_`, génération et état implicite par un modèle de session explicite si cela simplifie réellement le code.
+
+152. Garantir que `StopTasks()` ne peut pas provoquer un callback tardif vers l'UI.
+
+153. Vérifier l'ordre entre arrêt des threads et fermeture du gateway.
+
+154. Garantir qu'un ancien événement Room est rejeté après changement de génération.
+
+155. Conserver la génération comme garde si elle reste nécessaire malgré l'état explicite.
+
+156. Éviter deux mécanismes concurrents protégeant exactement la même chose.
+
+157. Resynchroniser systématiquement l'état Room après reconnexion.
+
+158. Ne pas appliquer un delta Room après détection d'un trou de séquence.
+
+159. Éviter que la présentation décide elle-même si une Room est synchronisée.
+
+### Social
+
+160. Réduire les 41 fichiers de `social/presentation` lorsqu'ils résultent de découpage artificiel.
+
+161. Identifier un propriétaire clair de l'état de l'écran Social.
+
+162. Éviter de répartir le même état entre Frame, View et Coordinator sans nécessité.
+
+163. Centraliser le chargement asynchrone Social.
+
+164. Centraliser la gestion d'annulation Social.
+
+165. Centraliser les erreurs Social.
+
+166. Éviter que chaque action Social construise sa propre logique de feedback.
+
+167. Garder les modèles Social indépendants de wxWidgets.
+
+### Messaging
+
+168. Réduire les 30 fichiers de `messaging/presentation` lorsqu'ils représentent un même écran artificiellement éclaté.
+
+169. Centraliser l'état de sélection de conversation.
+
+170. Centraliser la pagination.
+
+171. Centraliser l'état unread.
+
+172. Éviter les mises à jour optimistes non réconciliées avec le serveur.
+
+173. Garantir qu'une suppression reçue en temps réel met à jour toutes les vues concernées.
+
+174. Garantir qu'une reconnexion resynchronise les conversations.
+
+175. Éviter de conserver du JSON brut dans les modèles Messaging.
+
+### Admin
+
+176. Réduire le caractère générique de `AdminGateway`.
+
+177. Séparer les transports HTTP Admin et WebSocket Admin.
+
+178. Séparer le multipart du transport HTTP JSON.
+
+179. Éviter qu'une seule méthode `Execute` interprète toutes les commandes Admin possibles.
+
+180. Remplacer progressivement le catalogue de commandes dynamiques par des opérations typées pour les fonctionnalités stables.
+
+181. Garder une couche dynamique uniquement pour les opérations qui en ont réellement besoin.
+
+182. Sortir la construction multipart de `AdminGateway.cpp`.
+
+183. Générer une boundary multipart aléatoire plutôt qu'une constante fixe.
+
+184. Éviter de charger intégralement un gros fichier audio en mémoire avant upload.
+
+185. Streamer les uploads audio lorsque l'infrastructure HTTP le permet.
+
+186. Conserver une limite explicite de taille avant lecture complète du fichier.
+
+187. Centraliser le refresh JWT HTTP au lieu de l'implémenter spécialement dans Admin.
+
+188. Éviter le retry automatique d'une mutation HTTP lorsque son idempotence n'est pas garantie.
+
+189. Déterminer explicitement quelles opérations Admin peuvent être rejouées après 401.
+
+190. Ne pas réenvoyer automatiquement un upload potentiellement partiellement reçu sans protocole idempotent.
+
+191. Supprimer `nlohmann::json` de `AdminFrame`.
+
+192. Remplacer `std::vector<nlohmann::json> resultItems_` par un modèle de résultat de présentation.
+
+193. Éviter que `AdminCommandDialog` édite directement un document JSON.
+
+194. Construire les formulaires depuis des métadonnées typées.
+
+195. Convertir vers JSON uniquement dans l'adapter réseau.
+
+196. Garder les secrets de maintenance uniquement en mémoire.
+
+197. Effacer explicitement les buffers contenant ces secrets lorsque raisonnablement possible.
+
+198. Ne jamais afficher le token de maintenance dans les logs.
+
+199. Ne jamais persister le token de maintenance.
+
+### Options
+
+200. Réduire la duplication entre modèle Options, view state et JSON mapper.
+
+201. Définir un modèle canonique d'options.
+
+202. Limiter les adapters UI aux conversions réellement nécessaires.
+
+203. Valider les options au chargement.
+
+204. Revenir à une valeur sûre lorsqu'un fichier d'options est corrompu.
+
+205. Informer l'utilisateur lorsqu'une corruption importante a nécessité une réinitialisation.
+
+206. Écrire les options atomiquement.
+
+207. Éviter une écriture disque à chaque petit changement UI si elle est trop fréquente.
+
+208. Regrouper les écritures lorsque nécessaire sans risquer de perdre les paramètres au shutdown.
+
+### Persistance locale
+
+209. Utiliser une écriture atomique pour chaque fichier utilisateur important.
+
+210. Synchroniser correctement le fichier avant remplacement lorsqu'une perte de données est importante.
+
+211. Valider les données après lecture.
+
+212. Versionner les formats locaux devant survivre aux mises à jour.
+
+213. Migrer explicitement les anciennes versions supportées.
+
+214. Supprimer les anciennes migrations lorsque plus aucune installation supportée ne peut les utiliser.
+
+215. Ne pas stocker les credentials en clair.
+
+216. Conserver l'utilisation du stockage sécurisé Windows pour les secrets appropriés.
+
+217. Ne pas considérer la simple obfuscation comme protection d'un secret.
+
+### Audio
+
+218. Vérifier que `AsyncAudioBackend` possède entièrement son worker.
+
+219. Garantir l'arrêt du worker avant destruction du backend réel.
+
+220. Borner la queue audio.
+
+221. Définir ce qui arrive aux sons lorsque la queue audio est saturée.
+
+222. Donner priorité aux sons fonctionnellement importants lorsqu'une saturation survient.
+
+223. Éviter qu'une erreur BASS fasse tomber l'application.
+
+224. Centraliser la traduction des erreurs BASS.
+
+225. Éviter les boucles `sleep_for(10ms)` lorsque BASS offre une primitive plus adaptée.
+
+226. Borner toutes les attentes de fin de lecture.
+
+227. Garantir que Preview peut être interrompu immédiatement.
+
+228. Éviter les accès filesystem répétés pour résoudre le même asset audio.
+
+229. Centraliser la stratégie de reconnexion actuellement dupliquée entre `GameSessionService`, `RoomSessionService`, Chat et les autres connexions temps réel.
+
+230. Centraliser le calcul du backoff de reconnexion.
+
+231. Ajouter du jitter contrôlé au backoff lorsque plusieurs clients peuvent se reconnecter simultanément.
+
+232. Centraliser l'attente annulable utilisée pendant les reconnexions.
+
+233. Remplacer les boucles répétées de `sleep_for(100ms)` par une primitive d'attente annulable commune.
+
+234. Garantir que toute attente de reconnexion réagit immédiatement à `stop_token`.
+
+235. Définir une politique commune de nombre de tentatives lorsque les reconnexions ne doivent pas être infinies.
+
+236. Définir explicitement les connexions qui doivent au contraire tenter de se reconnecter indéfiniment.
+
+237. Réinitialiser correctement le backoff après une connexion réellement rétablie.
+
+238. Éviter que plusieurs mécanismes de reconnexion travaillent simultanément pour la même connexion.
+
+239. Garantir qu'une ancienne boucle de reconnexion ne peut pas remplacer une connexion plus récente.
+
+240. Conserver un identifiant de génération pour invalider les callbacks appartenant à une ancienne session.
+
+241. Uniformiser le mécanisme de génération actuellement utilisé dans Game et Room.
+
+242. Vérifier que Chat possède une protection équivalente contre les callbacks obsolètes.
+
+243. Vérifier que Presence possède une protection équivalente contre les callbacks obsolètes.
+
+244. Vérifier que Messaging possède une protection équivalente contre les callbacks obsolètes.
+
+245. Vérifier que Social possède une protection équivalente contre les callbacks obsolètes.
+
+246. Garantir qu'une fermeture volontaire ne déclenche pas une reconnexion automatique.
+
+247. Distinguer explicitement déconnexion volontaire et panne réseau.
+
+248. Distinguer explicitement expiration d'authentification et panne réseau.
+
+249. Rafraîchir l'authentification avant de recréer une connexion lorsque la cause est un token expiré.
+
+250. Éviter les refresh tokens concurrents provenant de plusieurs services.
+
+251. Centraliser la coordination du renouvellement du token d'accès.
+
+252. Garantir qu'un seul refresh est exécuté lorsqu'une rafale de requêtes reçoit simultanément une expiration.
+
+253. Réutiliser le nouveau token pour les requêtes qui attendaient le refresh.
+
+254. Déconnecter proprement la session lorsque le refresh token est définitivement refusé.
+
+255. Ne jamais boucler indéfiniment sur une erreur d'authentification permanente.
+
+256. Ne jamais confondre une erreur serveur permanente avec une erreur réseau transitoire.
+
+257. Donner aux erreurs réseau une classification exploitable par les stratégies de retry.
+
+258. Donner aux erreurs HTTP une classification exploitable par les stratégies de retry.
+
+259. Donner aux erreurs WebSocket une classification exploitable par les stratégies de retry.
+
+260. Ne pas baser les décisions de retry uniquement sur des chaînes de caractères d'erreur.
+
+261. Centraliser les politiques de retry HTTP.
+
+262. Ne retry automatiquement que les opérations idempotentes ou explicitement protégées contre les doublons.
+
+263. Éviter de renvoyer automatiquement une mutation dont le résultat serveur est inconnu.
+
+264. Utiliser les identifiants de commande prévus par le protocole pour sécuriser les retries de gameplay.
+
+265. Conserver le `knownVersion` lors d'un retry uniquement si sa sémantique reste valide.
+
+266. Demander un nouvel état autoritatif lorsqu'une commande échoue pour conflit de version.
+
+267. Éviter les boucles automatiques « conflit → retry → conflit ».
+
+268. Laisser l'utilisateur reprendre une décision lorsque l'état métier a changé.
+
+### Concurrence C++
+
+269. Auditer tous les `std::thread`.
+
+270. Auditer tous les `std::jthread`.
+
+271. Éliminer les threads manuels lorsqu'ils peuvent passer par l'exécuteur partagé sans perdre de garantie.
+
+272. Conserver un thread dédié lorsqu'une connexion bloquante nécessite réellement son propre cycle de vie.
+
+273. Garantir qu'aucun thread n'est détaché.
+
+274. Garantir que tous les threads sont joints avant destruction de leur propriétaire.
+
+275. Garantir que tous les workers observent une demande d'arrêt.
+
+276. Éviter de capturer `this` dans un travail asynchrone dont la durée peut dépasser celle de l'objet.
+
+277. Utiliser une stratégie de durée de vie explicite lorsque `this` doit être capturé.
+
+278. Utiliser `wxWeakRef` pour les callbacks asynchrones ciblant une fenêtre wxWidgets susceptible d'être détruite.
+
+279. Vérifier systématiquement le `wxWeakRef` avant toute utilisation de la fenêtre.
+
+280. Ne jamais manipuler un widget wxWidgets depuis un worker thread.
+
+281. Faire repasser toutes les mutations UI par le thread principal.
+
+282. Centraliser la primitive utilisée pour poster du travail vers le thread UI.
+
+283. Vérifier que les callbacks postés au thread UI ne conservent pas inutilement des objets lourds.
+
+284. Annuler les requêtes appartenant à une vue lorsqu'elle est détruite.
+
+285. Garantir que `AsyncRequestSlot` invalide correctement les anciennes requêtes.
+
+286. Éviter qu'une réponse lente écrase l'état produit par une requête plus récente.
+
+287. Généraliser le concept de génération de requête pour les écrans exposés aux réponses hors ordre.
+
+288. Vérifier particulièrement Social pour les réponses hors ordre.
+
+289. Vérifier particulièrement Messaging pour les réponses hors ordre.
+
+290. Vérifier particulièrement Rooms pour les réponses hors ordre.
+
+291. Vérifier particulièrement Admin pour les réponses hors ordre.
+
+292. Vérifier particulièrement Catalog pour les réponses hors ordre.
+
+293. Vérifier particulièrement Gameplay pour les réponses hors ordre.
+
+294. Protéger chaque donnée réellement partagée par plusieurs threads.
+
+295. Supprimer les mutex protégeant des données qui peuvent être confinées à un seul thread.
+
+296. Éviter de conserver un mutex pendant un appel réseau.
+
+297. Éviter de conserver un mutex pendant un callback utilisateur.
+
+298. Éviter de conserver un mutex pendant un appel wxWidgets.
+
+299. Définir un ordre d'acquisition lorsque plusieurs mutex peuvent être nécessaires.
+
+300. Utiliser `std::scoped_lock` lorsque plusieurs mutex doivent être acquis ensemble.
+
+### BackgroundExecutor
+
+301. Conserver une capacité maximale de queue.
+
+302. Ne pas simplement perdre silencieusement une tâche lorsque la queue est pleine.
+
+303. Faire remonter au demandeur que la soumission d'une tâche a été refusée.
+
+304. Différencier annulation demandée et saturation de l'exécuteur.
+
+305. Empêcher une tâche High permanente d'affamer les tâches Normal.
+
+306. Empêcher les tâches Normal d'affamer indéfiniment les tâches Low.
+
+307. Définir une politique de fairness entre priorités.
+
+308. Capturer les exceptions sortant de `job.work()`.
+
+309. Empêcher une exception non capturée dans un worker de terminer le processus.
+
+310. Journaliser l'échec d'une tâche avec son contexte.
+
+311. Garantir le retrait d'une tâche de `activeStopSources` même lorsqu'elle échoue.
+
+312. Utiliser une garde RAII pour le retrait d'une tâche active.
+
+313. Borner le nombre de workers par défaut plutôt que d'utiliser aveuglément tous les hardware threads.
+
+314. Mesurer si le nombre de workers actuel est adapté à une application desktop principalement I/O.
+
+315. Éviter de créer plus de concurrence que les services réseau n'en nécessitent.
+
+316. Vérifier le comportement de `Shutdown()` lorsqu'une tâche ignore son `stop_token`.
+
+317. Définir les tâches autorisées à bloquer le shutdown.
+
+318. Définir un timeout de shutdown lorsque nécessaire.
+
+### Gameplay UI
+
+319. Réduire les responsabilités de `GamePlayPanel`.
+
+320. Sortir la gestion du cycle de session de `GamePlayPanel`.
+
+321. Sortir la gestion des commandes réseau de `GamePlayPanel`.
+
+322. Sortir la politique de retry de `GamePlayPanel`.
+
+323. Sortir la restauration du focus de `GamePlayPanel`.
+
+324. Sortir la synchronisation des sous-panneaux de `GamePlayPanel`.
+
+325. Sortir la gestion de l'historique de `GamePlayPanel`.
+
+326. Sortir la gestion des timers annoncés de `GamePlayPanel`.
+
+327. Sortir la déduplication des événements observés de `GamePlayPanel`.
+
+328. Sortir la construction des textes d'état de `GamePlayPanel`.
+
+329. Garder `GamePlayPanel` principalement comme composition visuelle et routage d'interactions.
+
+330. Regrouper l'état purement UI du gameplay dans un modèle de présentation explicite.
+
+331. Éviter que `GamePlayPanel` possède directement trop de détails du protocole.
+
+332. Ne pas laisser `GamePlayPanel` construire directement des commandes réseau arbitraires.
+
+333. Faire passer les intentions utilisateur par une API applicative typée.
+
+334. Conserver la logique de blocage des commandes concurrentes hors des widgets.
+
+335. Vérifier que `GameCommandSubmissionGuard` est le propriétaire unique de cette politique.
+
+336. Éviter une deuxième politique concurrente dans `GamePlayPanel`.
+
+337. Séparer état autoritatif serveur et état temporaire d'interface.
+
+338. Ne jamais modifier l'état serveur localement comme s'il était autoritatif avant confirmation.
+
+339. Identifier explicitement les états optimistes s'il en existe.
+
+340. Restaurer proprement l'UI lorsqu'une action optimiste échoue.
+
+### Game state decoding
+
+341. Garder `nlohmann::json` dans la couche infrastructure de décodage.
+
+342. Ne pas faire remonter le JSON brut dans le domaine gameplay lorsque cela peut être typé.
+
+343. Décomposer `GameSystemDecoder` si plusieurs familles indépendantes de protocole y sont décodées.
+
+344. Décomposer `GameBoardCapabilitiesDecoder` selon les véritables capacités métier.
+
+345. Décomposer `GameWorkflowCapabilitiesDecoder` selon les véritables capacités métier.
+
+346. Éviter les décodeurs monolithiques remplis de branches facultatives.
+
+347. Définir un type C++ pour chaque capacité publique stable du protocole.
+
+348. Utiliser `std::optional` lorsqu'une capacité peut réellement être absente.
+
+349. Ne pas utiliser `std::optional` pour masquer un protocole incohérent.
+
+350. Refuser les champs obligatoires absents.
+
+351. Refuser les types JSON invalides.
+
+352. Borner les tableaux reçus avant allocation importante.
+
+353. Borner les chaînes reçues avant leur stockage durable dans l'UI.
+
+354. Borner les collections d'événements reçues.
+
+355. Éviter les conversions permissives nombre-chaîne sauf lorsqu'elles sont explicitement nécessaires à la compatibilité.
+
+356. Centraliser les conversions JSON strictes.
+
+357. Supprimer les coercitions historiques devenues inutiles.
+
+358. Retourner des erreurs de protocole distinctes des erreurs réseau.
+
+359. Déclencher une resynchronisation lorsqu'un état reçu est structurellement incohérent et récupérable.
+
+360. Fermer la session lorsque le protocole est incompatible et non récupérable.
+
+### Domain gameplay
+
+361. Garder `GameState` indépendant de wxWidgets.
+
+362. Garder `GameAction` indépendant de wxWidgets.
+
+363. Éliminer `nlohmann::json` de `GameAction` si le payload peut être représenté par un type domaine stable.
+
+364. Conserver un payload opaque uniquement pour les actions réellement dynamiques.
+
+365. Encapsuler le payload opaque derrière une abstraction plutôt que l'exposer partout.
+
+366. Éviter que le domaine gameplay connaisse les détails du codec réseau.
+
+367. Éviter que le domaine gameplay connaisse les noms d'événements WebSocket.
+
+368. Faire appartenir les noms de protocole à l'infrastructure.
+
+369. Conserver les identifiants métier dans des types appropriés lorsqu'une confusion est dangereuse.
+
+370. Éviter les wrappers de types qui n'ajoutent aucun invariant.
+
+### Admin
+
+371. Retirer `nlohmann::json` de `IAdminGateway`.
+
+372. Retirer `nlohmann::json` de `AdminService`.
+
+373. Éviter que la couche application Admin dépende directement du format réseau.
+
+374. Définir un modèle typé pour une requête Admin.
+
+375. Définir un modèle typé pour une réponse Admin.
+
+376. Garder la conversion modèle ↔ JSON dans `AdminGateway`.
+
+377. Réduire les responsabilités de `AdminGateway.cpp`.
+
+378. Extraire la construction des requêtes HTTP Admin.
+
+379. Extraire le multipart Admin.
+
+380. Extraire la transformation des paramètres de chemin.
+
+381. Extraire la normalisation des réponses Admin.
+
+382. Centraliser la gestion du 401 HTTP.
+
+383. Ne pas spécialiser le retry d'authentification uniquement pour l'upload audio.
+
+384. Utiliser la même politique d'authentification HTTP pour toutes les requêtes concernées.
+
+385. Éviter de charger intégralement un gros fichier audio en mémoire pour construire un multipart.
+
+386. Envoyer les gros uploads en streaming lorsque le transport le permet.
+
+387. Générer une boundary multipart suffisamment unique.
+
+388. Ne pas utiliser une boundary multipart constante.
+
+389. Borner la taille du fichier côté client avant lecture.
+
+390. Vérifier l'existence du fichier avant préparation de l'upload.
+
+391. Vérifier qu'il s'agit d'un fichier régulier.
+
+392. Gérer correctement les erreurs de permission filesystem.
+
+393. Ne pas exposer le chemin local complet du fichier dans les erreurs utilisateur.
+
+394. Réduire la responsabilité de `AdminCommandDialog`.
+
+395. Séparer construction du formulaire et validation du formulaire.
+
+396. Éviter que `AdminFormMetadata` dépende directement du JSON réseau.
+
+397. Donner des types explicites aux valeurs de formulaires Admin.
+
+398. Réduire la quantité de logique métier dans `AdminFrame`.
+
+399. Conserver `AdminFrame` comme coordination d'écran plutôt que moteur de commandes.
+
+400. Déplacer le formatage des résultats hors de la Frame.
+
+401. Vérifier si `AdminResultFormatter` est devenu un switch central sur toutes les commandes Admin.
+
+402. Distribuer le formatage lorsqu'il appartient à des familles fonctionnelles distinctes.
+
+### Rooms
+
+403. Réduire la fragmentation des 37 fichiers de présentation Rooms lorsque plusieurs fichiers appartiennent à une même responsabilité.
+
+404. Ne pas fusionner les fichiers Rooms uniquement pour diminuer leur nombre.
+
+405. Faire de `RoomSessionService` le propriétaire explicite du cycle de connexion Room.
+
+406. Extraire la stratégie de reconnexion générique hors de `RoomSessionService`.
+
+407. Extraire l'attente annulable hors de `RoomSessionService`.
+
+408. Éviter que `RoomSessionService` construise directement des messages destinés à l'utilisateur.
+
+409. Faire remonter des états de connexion typés.
+
+410. Laisser la présentation transformer ces états en texte.
+
+411. Éviter les chaînes UTF-8 assemblées manuellement comme `"Connexion \xC3..."`.
+
+412. Centraliser les textes UI dans le système de texte existant.
+
+413. Garder le codec Room dans l'infrastructure.
+
+414. Refuser les payloads Room invalides plutôt que fabriquer silencieusement des valeurs par défaut dangereuses.
+
+415. Garantir qu'un snapshot Room plus ancien ne remplace pas un snapshot récent.
+
+416. Garantir qu'un événement d'une ancienne session Room est ignoré.
+
+417. Garantir qu'une reconnexion récupère un état complet autoritatif.
+
+418. Tester la destruction d'un écran Room pendant une reconnexion.
+
+### Chat
+
+419. Supprimer le `catch (...) {}` silencieux du heartbeat.
+
+420. Classifier les échecs de heartbeat.
+
+421. Journaliser les échecs utiles sans spammer les logs toutes les 15 secondes.
+
+422. Faire interrompre la connexion lorsqu'un heartbeat révèle réellement une connexion morte.
+
+423. Centraliser la primitive de heartbeat.
+
+424. Ne pas encoder `{"type":"presence-sync"}` comme chaîne JSON brute dans le service applicatif.
+
+425. Construire ce message dans la couche protocole.
+
+426. Éviter que `ChatService` connaisse le JSON du transport.
+
+427. Extraire la reconnexion Chat vers la stratégie partagée.
+
+428. Vérifier que Chat ne crée pas plusieurs heartbeats après reconnexion.
+
+429. Vérifier que le heartbeat est arrêté à la fermeture de session.
+
+430. Garantir qu'un callback Chat ne cible pas une Frame détruite.
+
+431. Borner l'historique Chat conservé côté client.
+
+432. Paginer ou tronquer proprement l'historique long.
+
+433. Éviter les copies répétées de tout l'historique à chaque nouveau message.
+
+434. Vérifier le coût de `ChatEventPayloadParser`.
+
+435. Décomposer ce parser s'il interprète plusieurs familles de messages sans relation.
+
+### Social
+
+436. Réduire les 41 fichiers de présentation Social lorsque la fragmentation n'apporte aucune isolation utile.
+
+437. Identifier un propriétaire unique de l'état de l'écran Social.
+
+438. Éviter que plusieurs composants chargent simultanément les mêmes données Social.
+
+439. Dédupliquer les requêtes de profil concurrentes.
+
+440. Annuler les requêtes Social lorsque la vue correspondante disparaît.
+
+441. Ignorer les réponses appartenant à une sélection précédente.
+
+442. Séparer état de chargement, données et erreurs.
+
+443. Éviter que la Frame soit le stockage principal de l'état métier Social.
+
+444. Centraliser les transformations des réponses Social dans les codecs.
+
+445. Garder `nlohmann::json` hors de la présentation Social.
+
+446. Éviter la duplication des patterns de feedback utilisateur.
+
+### Messaging
+
+447. Réduire la fragmentation des 30 fichiers de présentation Messaging lorsqu'elle n'apporte pas de frontière utile.
+
+448. Séparer la liste des conversations de l'état de la conversation active.
+
+449. Annuler le chargement d'une conversation lorsqu'une autre est sélectionnée.
+
+450. Empêcher une réponse tardive de remplacer la conversation actuellement affichée.
+
+451. Conserver l'identité du message côté domaine.
+
+452. Dédupliquer les messages reçus après reconnexion.
+
+453. Éviter de reconstruire toute la liste pour une modification locale simple lorsque le coût devient significatif.
+
+454. Borner le nombre de messages conservés en mémoire.
+
+455. Paginer les historiques longs.
+
+456. Garder le codec Messaging dans l'infrastructure.
+
+457. Garder les décisions d'ownership côté serveur même si le client masque les actions interdites.
+
+### Navigation
+
+458. Réduire la responsabilité globale d'`AppNavigator`.
+
+459. Éviter qu'`AppNavigator` contienne la logique métier de Chat.
+
+460. Éviter qu'`AppNavigator` contienne la logique métier des invitations.
+
+461. Éviter qu'`AppNavigator` contienne la logique métier des Rooms.
+
+462. Éviter qu'`AppNavigator` contienne la logique métier de session utilisateur.
+
+463. Éviter qu'`AppNavigator` orchestre directement les détails des connexions réseau.
+
+464. Limiter `AppNavigator` aux transitions entre écrans et au cycle de navigation.
+
+465. Déplacer les workflows métier déclenchés par la navigation vers des services applicatifs.
+
+466. Centraliser la fermeture propre d'un écran avant navigation.
+
+467. Annuler les opérations asynchrones appartenant à l'écran quitté.
+
+468. Empêcher un callback de navigation provenant d'un écran devenu obsolète.
+
+469. Conserver explicitement l'état de navigation nécessaire à la restauration d'un écran.
+
+470. Éviter de conserver des Frames invisibles uniquement pour préserver leur état lorsque cet état peut être externalisé.
+
+471. Définir clairement la propriété et la durée de vie de chaque Frame.
+
+472. Éviter les références croisées fortes entre Frames.
+
+473. Utiliser des événements ou callbacks limités plutôt que des accès directs entre écrans.
+
+474. Vérifier que la fermeture de l'application ne déclenche pas de nouvelle navigation.
+
+475. Centraliser la confirmation de fermeture de l'application.
+
+476. Séparer la demande de fermeture de la logique d'arrêt des services.
+
+477. Garantir que la navigation reste exécutée exclusivement sur le thread UI.
+
+### UI wxWidgets
+
+478. Vérifier la propriété de chaque widget créé dynamiquement.
+
+479. S'appuyer sur la hiérarchie wxWidgets pour la destruction des widgets enfants.
+
+480. Éviter les `delete` manuels sur des widgets déjà possédés par leur parent.
+
+481. Vérifier les handlers `Bind` dont la durée de vie peut dépasser celle de leur propriétaire logique.
+
+482. Effectuer les `Unbind` nécessaires pour les handlers attachés à des objets externes.
+
+483. Éviter les lambdas capturant des pointeurs bruts vers des objets susceptibles d'être détruits.
+
+484. Utiliser `wxWeakRef` lorsque la durée de vie du destinataire n'est pas garantie.
+
+485. Éviter `FindWindow` comme mécanisme principal de dépendance entre composants.
+
+486. Passer explicitement les dépendances nécessaires aux composants UI.
+
+487. Éviter `GetParent()` en cascade pour retrouver un contrôleur métier.
+
+488. Maintenir les widgets comme couche de présentation et non comme service locator.
+
+489. Centraliser les patterns communs d'affichage d'erreur.
+
+490. Centraliser les patterns communs de confirmation.
+
+491. Éviter la prolifération de `wxMessageBox` avec des comportements légèrement différents.
+
+492. Préserver le focus après fermeture d'une boîte de dialogue.
+
+493. Définir une politique uniforme de focus après une erreur.
+
+494. Définir une politique uniforme de focus après une action réussie.
+
+495. Garantir la navigation clavier complète sans souris.
+
+496. Vérifier l'ordre de tabulation des écrans.
+
+497. Vérifier les raccourcis lorsqu'un champ texte possède le focus.
+
+498. Éviter qu'un raccourci global intercepte une frappe destinée à un champ de saisie.
+
+499. Garantir que les contrôles désactivés ne restent pas des cibles de navigation.
+
+500. Donner un nom accessible aux contrôles interactifs.
+
+501. Donner une description accessible lorsque le nom seul est insuffisant.
+
+502. Annoncer les changements d'état importants sans provoquer d'annonces répétitives.
+
+503. Éviter que chaque rafraîchissement serveur réannonce tout l'écran.
+
+504. Conserver une identité stable pour les éléments permettant la déduplication des annonces.
+
+505. Tester les écrans avec un lecteur d'écran réellement utilisé par les utilisateurs ciblés.
+
+506. Vérifier que les dialogues modaux ne piègent pas incorrectement le focus.
+
+507. Vérifier la restauration du focus après fermeture des dialogues modaux.
+
+508. Éviter les tailles fixes qui cassent avec un facteur DPI élevé.
+
+509. Vérifier le comportement à 125 % de scaling.
+
+510. Vérifier le comportement à 150 % de scaling.
+
+511. Vérifier le comportement à 200 % de scaling.
+
+512. Éviter les calculs de layout dépendant de dimensions de police supposées.
+
+513. Utiliser les sizers wxWidgets comme mécanisme principal de layout.
+
+514. Vérifier les textes longs afin qu'ils ne soient pas tronqués sans alternative accessible.
+
+515. Vérifier les traductions ou textes futurs plus longs que le français actuel.
+
+### Textes UI
+
+516. Supprimer les textes utilisateur codés directement dans les fichiers de logique lorsqu'ils appartiennent au catalogue UI.
+
+517. Centraliser les textes réutilisés.
+
+518. Ne pas centraliser artificiellement les chaînes techniques non destinées à l'utilisateur.
+
+519. Utiliser un mécanisme cohérent UTF-8 → `wxString`.
+
+520. Supprimer les assemblages manuels `\xC3...` lorsque le code source peut utiliser correctement UTF-8.
+
+521. Séparer message utilisateur et détail technique d'une erreur.
+
+522. Ne pas afficher directement `exception.what()` à l'utilisateur.
+
+523. Conserver le détail technique pour les logs.
+
+524. Donner à l'utilisateur un message orienté action lorsqu'une récupération est possible.
+
+525. Éviter les messages d'erreur génériques lorsque le client connaît précisément la cause.
+
+### Gestion des erreurs
+
+526. Définir une taxonomie d'erreurs commune au client.
+
+527. Distinguer erreur réseau transitoire et erreur réseau permanente.
+
+528. Distinguer erreur d'authentification et erreur d'autorisation.
+
+529. Distinguer erreur protocolaire et erreur métier.
+
+530. Distinguer erreur filesystem et erreur réseau.
+
+531. Distinguer erreur de mise à jour et erreur normale de l'application.
+
+532. Éviter les `catch (...)` sauf aux frontières où une exception inconnue doit impérativement être contenue.
+
+533. Ne jamais laisser un `catch (...)` vide.
+
+534. Journaliser les exceptions inconnues avant récupération.
+
+535. Ne pas utiliser les exceptions pour le contrôle de flux normal.
+
+536. Convertir les exceptions infrastructure en `AppError` à une frontière claire.
+
+537. Éviter plusieurs conversions successives de la même erreur.
+
+538. Préserver la cause technique pour le diagnostic.
+
+539. Préserver un message utilisateur indépendant de la cause technique.
+
+540. Éviter d'inclure des secrets dans la représentation technique de l'erreur.
+
+541. Éviter d'inclure les tokens dans les logs d'erreur HTTP.
+
+542. Éviter d'inclure des messages privés dans les logs réseau.
+
+543. Éviter d'inclure des payloads gameplay privés complets dans les logs.
+
+### JSON
+
+544. Limiter `nlohmann::json` aux frontières réseau, persistance JSON et données réellement dynamiques.
+
+545. Retirer `nlohmann::json` des interfaces applicatives lorsqu'un modèle typé est possible.
+
+546. Retirer `nlohmann::json` des interfaces domaine lorsqu'un modèle typé est possible.
+
+547. Centraliser le parsing JSON strict.
+
+548. Refuser les documents dont la racine possède un type inattendu.
+
+549. Vérifier explicitement les champs obligatoires.
+
+550. Vérifier explicitement le type des champs obligatoires.
+
+551. Borner les chaînes provenant du serveur.
+
+552. Borner les tableaux provenant du serveur.
+
+553. Borner les objets dynamiques provenant du serveur.
+
+554. Éviter `.value(..., default)` lorsqu'un champ manquant indique une incompatibilité protocolaire.
+
+555. Utiliser une valeur par défaut uniquement lorsque le protocole définit réellement le champ comme optionnel.
+
+556. Éviter les coercitions silencieuses de types.
+
+557. Supprimer les helpers JSON permissifs qui ne sont plus nécessaires.
+
+558. Garder des codecs séparés par contexte métier.
+
+559. Éviter un codec JSON universel connaissant tous les modules.
+
+560. Tester chaque codec avec des payloads malformés.
+
+561. Tester chaque codec avec des valeurs aux limites.
+
+562. Tester chaque codec avec des champs supplémentaires lorsque le protocole doit les tolérer.
+
+563. Tester explicitement les incompatibilités devant être refusées.
+
+### Protocole backend/client
+
+564. Considérer le protocole réseau comme une frontière versionnée.
+
+565. Centraliser les noms d'événements WebSocket.
+
+566. Éviter les chaînes d'événements écrites manuellement dans les services applicatifs.
+
+567. Générer les constantes de protocole lorsqu'une source de vérité commune est disponible.
+
+568. Vérifier automatiquement la compatibilité des contrats générés avec le backend.
+
+569. Ne pas faire dépendre le domaine client des noms de commandes backend.
+
+570. Convertir les événements réseau en événements domaine dans les gateways.
+
+571. Convertir les commandes domaine en messages réseau dans les gateways.
+
+572. Garder les `requestId` dans la couche réseau sauf lorsqu'ils ont une signification applicative réelle.
+
+573. Vérifier les types de réponse attendus.
+
+574. Rejeter une réponse portant un `requestId` incompatible.
+
+575. Rejeter une réponse appartenant à une ancienne connexion.
+
+576. Détecter les trous de séquence Room.
+
+577. Détecter les régressions de version Game.
+
+578. Demander une resynchronisation après un trou détecté.
+
+579. Éviter d'essayer de reconstruire localement un état autoritatif perdu.
+
+580. Garantir la compatibilité ascendante uniquement lorsqu'elle est explicitement supportée.
+
+581. Afficher une erreur claire lorsque client et serveur sont incompatibles.
+
+582. Utiliser le mécanisme d'update forcé lorsqu'une ancienne version ne peut plus parler au serveur.
+
+### Session et credentials
+
+583. Centraliser la propriété du token d'accès.
+
+584. Centraliser la propriété du refresh token.
+
+585. Ne jamais dupliquer le refresh token dans plusieurs services.
+
+586. Conserver le refresh token uniquement dans le stockage sécurisé prévu.
+
+587. Ne jamais écrire le refresh token en clair dans un fichier de configuration.
+
+588. Ne jamais journaliser le refresh token.
+
+589. Ne jamais journaliser le token d'accès.
+
+590. Effacer les credentials persistés lors d'une déconnexion explicite lorsque la sémantique l'exige.
+
+591. Gérer proprement l'échec de déchiffrement des credentials.
+
+592. Ne pas considérer un credential illisible comme une session valide.
+
+593. Vérifier l'expiration du JWT avec une tolérance d'horloge raisonnable.
+
+594. Ne pas faire confiance aux rôles du JWT comme mécanisme de sécurité client.
+
+595. Utiliser les rôles uniquement pour adapter l'interface.
+
+596. Laisser le serveur prendre toutes les décisions d'autorisation.
+
+597. Éviter que le décodage local du JWT soit confondu avec une vérification cryptographique.
+
+598. Nommer clairement les fonctions de décodage local afin de ne pas suggérer qu'elles vérifient la signature.
+
+### HTTP
+
+599. Centraliser la construction des requêtes HTTP.
+
+600. Centraliser les timeouts HTTP par catégorie d'opération.
+
+601. Définir un timeout de connexion.
+
+602. Définir un timeout d'envoi.
+
+603. Définir un timeout de réception.
+
+604. Permettre l'annulation via `stop_token`.
+
+605. Vérifier que l'annulation interrompt réellement WinHTTP.
+
+606. Ne pas attendre la totalité d'un timeout après demande d'annulation.
+
+607. Centraliser la gestion des codes 401.
+
+608. Centraliser la gestion des codes 403.
+
+609. Centraliser la gestion des codes 429.
+
+610. Respecter `Retry-After` lorsqu'il est fourni et pertinent.
+
+611. Ne pas retry automatiquement les erreurs HTTP 4xx non transitoires.
+
+612. Borner la taille des réponses HTTP chargées en mémoire.
+
+613. Streamer les téléchargements importants.
+
+614. Streamer les uploads importants.
+
+615. Vérifier les redirections avant de les suivre.
+
+616. Ne pas autoriser une redirection d'update vers un schéma non sécurisé.
+
+617. Vérifier TLS selon les garanties du système.
+
+618. Ne pas ajouter de bypass de validation TLS pour faciliter le développement.
+
+### Audio
+
+619. Conserver l'audio hors du thread UI.
+
+620. Vérifier le cycle de vie du worker `AsyncAudioBackend`.
+
+621. Garantir que son thread se termine avant destruction du backend réel.
+
+622. Empêcher les commandes audio de croître sans limite.
+
+623. Définir la politique lorsque trop de sons sont demandés simultanément.
+
+624. Prioriser les sons importants si une saturation est possible.
+
+625. Éviter les attentes actives de type polling lorsque BASS fournit un mécanisme approprié.
+
+626. Revoir la boucle `IsPlaying()` + `sleep_for(10ms)` si elle bloque un worker inutilement.
+
+627. Borner explicitement l'attente de fin de preview.
+
+628. Interrompre immédiatement une preview lors du shutdown.
+
+629. Garantir qu'un fichier audio manquant ne provoque pas une cascade d'erreurs.
+
+630. Mettre en cache uniquement les chemins ou assets dont la réutilisation est démontrée.
+
+631. Borner les caches audio.
+
+632. Libérer les samples inutilisés.
+
+633. Vérifier les changements de périphérique audio.
+
+634. Gérer l'absence de périphérique audio sans compromettre l'application.
+
+635. Séparer les erreurs audio des erreurs générales de gameplay.
+
+### Options
+
+636. Garder le modèle Options indépendant de wxWidgets.
+
+637. Garder le mapping JSON des Options dans l'infrastructure.
+
+638. Simplifier `OptionsStateJsonMapper` si plusieurs générations de formats historiques ne sont plus nécessaires.
+
+639. Versionner explicitement le format des options persistées.
+
+640. Migrer les anciennes versions à une frontière unique.
+
+641. Supprimer les migrations d'options devenues inutiles lorsque leur support n'est plus requis.
+
+642. Valider les valeurs chargées depuis le disque.
+
+643. Borner les valeurs numériques des options.
+
+644. Restaurer une valeur sûre lorsqu'une option non critique est corrompue.
+
+645. Signaler clairement une corruption lorsque la récupération silencieuse ferait perdre une donnée importante.
+
+646. Écrire les options atomiquement.
+
+647. Éviter les écritures disque à chaque petite interaction lorsque ce n'est pas nécessaire.
+
+648. Débouncer les sauvegardes fréquentes si elles sont mesurées comme coûteuses.
+
+649. Réduire la responsabilité de `OptionsViewPagesBuilder`.
+
+650. Réduire la responsabilité de `OptionsViewStateAdapter` si elle mélange mapping et règles UI.
+
+651. Réduire la responsabilité de `OptionsEventBinder` si elle contient des règles applicatives.
+
+### Persistance locale
+
+652. Centraliser les écritures atomiques de fichiers.
+
+653. Écrire dans un fichier temporaire avant remplacement.
+
+654. Synchroniser les données avant remplacement lorsqu'une garantie de durabilité est requise.
+
+655. Ne pas laisser un fichier partiellement écrit devenir la version active.
+
+656. Valider les fichiers JSON après lecture.
+
+657. Borner la taille des fichiers locaux lus en mémoire.
+
+658. Gérer explicitement les fichiers inexistants.
+
+659. Distinguer fichier inexistant et fichier corrompu.
+
+660. Distinguer erreur de permission et corruption.
+
+661. Ne pas supprimer automatiquement une donnée utilisateur corrompue avant d'avoir prévu une stratégie de récupération.
+
+662. Utiliser les répertoires système appropriés pour les données utilisateur.
+
+663. Éviter les chemins relatifs dépendant du working directory.
+
+### Update launcher
+
+664. Conserver la vérification cryptographique avant installation.
+
+665. Conserver la vérification SHA-256.
+
+666. Conserver la vérification de signature du manifeste.
+
+667. Conserver Authenticode lorsque cette garantie fait partie du modèle de sécurité Windows.
+
+668. Vérifier la signature avant d'exécuter un nouvel exécutable.
+
+669. Refuser un manifeste malformé.
+
+670. Refuser un manifeste excessivement volumineux.
+
+671. Refuser les URLs non autorisées par la politique d'update.
+
+672. Refuser les schémas non HTTPS en production.
+
+673. Borner la taille maximale du téléchargement.
+
+674. Vérifier la taille réellement reçue.
+
+675. Télécharger dans un emplacement temporaire.
+
+676. Vérifier le hash avant extraction.
+
+677. Vérifier la signature avant bascule.
+
+678. Empêcher les chemins `../` lors de l'extraction d'une archive.
+
+679. Empêcher les chemins absolus dans l'archive.
+
+680. Empêcher une archive d'écrire hors du répertoire cible.
+
+681. Borner le nombre de fichiers extraits.
+
+682. Borner la taille totale extraite.
+
+683. Se protéger contre les archives de décompression disproportionnée.
+
+684. Vérifier l'espace disque avant extraction.
+
+685. Extraire vers un répertoire temporaire distinct.
+
+686. Valider l'installation temporaire avant activation.
+
+687. Faire une bascule atomique lorsque le filesystem le permet.
+
+688. Conserver une version précédente récupérable.
+
+689. Restaurer la version précédente lorsque le lancement de la nouvelle version échoue.
+
+690. Ne pas supprimer la dernière version fonctionnelle avant validation de la nouvelle.
+
+691. Nettoyer les téléchargements temporaires après succès.
+
+692. Nettoyer les téléchargements temporaires après échec.
+
+693. Borner le nombre de versions locales conservées.
+
+694. Centraliser les retries filesystem du launcher.
+
+695. Centraliser les retries réseau du launcher.
+
+696. Rendre les attentes de retry annulables lorsqu'elles se produisent pendant l'application.
+
+697. Ne pas multiplier les `sleep_for` spécifiques dans chaque fichier Update.
+
+698. Classifier les erreurs Update pour fournir un diagnostic compréhensible.
+
+699. Ne pas exposer les détails cryptographiques inutiles à l'utilisateur final.
+
+700. Conserver les détails cryptographiques dans les logs techniques.
+
+### Sécurité filesystem
+
+701. Canonicaliser les chemins provenant de données externes avant utilisation sensible.
+
+702. Vérifier qu'un chemin attendu sous une racine reste sous cette racine après normalisation.
+
+703. Ne pas faire confiance au nom de fichier fourni par un serveur.
+
+704. Nettoyer les caractères interdits dans les noms générés.
+
+705. Éviter les collisions de fichiers temporaires.
+
+706. Utiliser des noms temporaires imprévisibles lorsqu'un attaquant local pourrait influencer le répertoire.
+
+707. Ouvrir les fichiers avec les permissions minimales nécessaires.
+
+708. Ne pas suivre aveuglément les liens symboliques ou reparse points dans les opérations sensibles d'update.
+
+709. Vérifier les reparse points avant remplacement d'un exécutable.
+
+### Home et écrans principaux
+
+710. Réduire la responsabilité de `HomeFrame.Layout.cpp` si le layout construit également des comportements.
+
+711. Séparer construction visuelle et branchement des événements.
+
+712. Garder la logique de chargement hors de HomeFrame.
+
+713. Éviter que HomeFrame connaisse les détails réseau des modules qu'elle ouvre.
+
+
+714. Réduire les dépendances directes de `HomeFrame` vers les services métier.
+
+715. Faire passer les actions de `HomeFrame` par des intentions de navigation ou des use cases explicites.
+
+716. Éviter que `HomeFrame` devienne le composition root de l'application.
+
+717. Garder la création des dépendances dans `bootstrap/composition`.
+
+718. Garantir que la destruction de `HomeFrame` n'interrompt pas incorrectement des services ayant une durée de vie applicative.
+
+719. Garantir que les callbacks asynchrones de Home ne s'exécutent plus après destruction de la Frame.
+
+720. Externaliser l'état Home devant survivre à une reconstruction de la Frame.
+
+### Bootstrap et composition
+
+721. Auditer les fichiers de `bootstrap/composition` pour supprimer les assemblages redondants.
+
+722. Maintenir un propriétaire unique pour chaque service à durée de vie applicative.
+
+723. Définir explicitement la durée de vie des services réseau.
+
+724. Définir explicitement la durée de vie des stores.
+
+725. Définir explicitement la durée de vie des services audio.
+
+726. Définir explicitement la durée de vie du système d'update.
+
+727. Définir explicitement la durée de vie des services de navigation.
+
+728. Éviter plusieurs instances involontaires d'un même service stateful.
+
+729. Éviter les singletons globaux lorsque l'injection explicite suffit.
+
+730. Éviter les accès statiques aux services métier.
+
+731. Construire les dépendances de bas niveau avant les services qui les consomment.
+
+732. Détruire les dépendances dans l'ordre inverse.
+
+733. Arrêter les tâches asynchrones avant de détruire leurs dépendances.
+
+734. Fermer les connexions réseau avant de détruire les stores de session qu'elles utilisent.
+
+735. Arrêter l'audio avant de détruire son backend.
+
+736. Arrêter la navigation et les callbacks UI avant de détruire les services applicatifs.
+
+737. Éviter que le bootstrap contienne des règles métier.
+
+738. Éviter que les modules créent eux-mêmes leurs dépendances infrastructure principales.
+
+739. Permettre l'injection d'implémentations factices pour les tests.
+
+740. Réduire les constructeurs recevant un nombre excessif de dépendances en corrigeant d'abord les responsabilités trop larges.
+
+### Ownership C++
+
+741. Utiliser `std::unique_ptr` pour les objets possédés exclusivement hors ownership wxWidgets.
+
+742. Utiliser `std::shared_ptr` uniquement lorsqu'une propriété réellement partagée est nécessaire.
+
+743. Éviter `shared_ptr` comme solution par défaut aux problèmes de durée de vie.
+
+744. Utiliser `std::weak_ptr` pour casser les cycles de propriété lorsque `shared_ptr` est nécessaire.
+
+745. Auditer les pointeurs bruts stockés comme membres.
+
+746. Documenter implicitement leur non-propriété par le type ou l'API utilisée.
+
+747. Éviter de retourner des pointeurs vers des objets temporaires.
+
+748. Éviter de conserver des références vers des éléments de conteneurs susceptibles d'être réalloués.
+
+749. Préférer les valeurs pour les petits objets domaine.
+
+750. Préférer RAII pour toutes les ressources natives Windows.
+
+751. Encapsuler les `HANDLE` Win32 dans des propriétaires RAII.
+
+752. Encapsuler les handles WinHTTP dans des propriétaires RAII.
+
+753. Encapsuler les handles BASS lorsque leur durée de vie n'est pas déjà correctement gérée.
+
+754. Garantir la libération des ressources sur toutes les branches d'exception.
+
+755. Éliminer les couples manuels acquire/release pouvant être exprimés par RAII.
+
+### C++ moderne
+
+756. Utiliser `std::string_view` pour les paramètres texte en lecture lorsque la durée de vie est maîtrisée.
+
+757. Éviter de stocker un `string_view` dont la source peut disparaître.
+
+758. Utiliser `const&` pour les objets lourds en lecture lorsqu'une copie n'est pas nécessaire.
+
+759. Utiliser le passage par valeur lorsque la fonction prend réellement possession de la valeur.
+
+760. Déplacer explicitement les objets dont la propriété est transférée.
+
+761. Éviter les `std::move` empêchant le copy elision sans bénéfice.
+
+762. Marquer `[[nodiscard]]` les résultats dont l'ignorance représente probablement une erreur.
+
+763. Marquer `noexcept` uniquement lorsque la garantie est réellement tenue.
+
+764. Vérifier les destructeurs `noexcept` implicites contenant des opérations susceptibles d'échouer.
+
+765. Éviter les macros lorsqu'une constante ou fonction C++ suffit.
+
+766. Utiliser `enum class` pour les ensembles fermés.
+
+767. Éviter les entiers magiques représentant des états.
+
+768. Éviter les chaînes magiques représentant des états internes.
+
+769. Utiliser `std::chrono` pour toutes les durées.
+
+770. Éviter les paramètres de timeout exprimés en `int` sans unité dans les APIs internes.
+
+771. Utiliser des types chrono dans les couches internes puis convertir à la frontière Win32.
+
+772. Éviter les casts C lorsqu'un cast C++ explicite est nécessaire.
+
+773. Auditer les `reinterpret_cast`.
+
+774. Auditer les `const_cast`.
+
+775. Réduire les `dynamic_cast` en clarifiant les interfaces lorsqu'ils sont utilisés comme dispatch métier.
+
+### Collections et performances UI
+
+776. Éviter de reconstruire intégralement une liste wxWidgets lorsque quelques éléments seulement changent et que cela est mesurable.
+
+777. Préserver la sélection lors des rafraîchissements de liste.
+
+778. Préserver la position de scroll lors des rafraîchissements lorsque pertinent.
+
+779. Utiliser une identité stable pour retrouver un élément après rafraîchissement.
+
+780. Ne pas utiliser l'index visuel comme identité métier durable.
+
+781. Borner les listes pouvant recevoir un historique non borné.
+
+782. Virtualiser les listes réellement volumineuses si wxWidgets et l'usage le justifient.
+
+783. Éviter les tris répétés sur le thread UI lorsque les données n'ont pas changé.
+
+784. Éviter les conversions UTF-8 répétées des mêmes textes statiques.
+
+785. Mesurer avant d'introduire des caches de présentation.
+
+786. Supprimer les caches de présentation qui compliquent l'invalidation sans gain mesuré.
+
+### État des vues
+
+787. Donner un propriétaire clair à l'état de chaque écran.
+
+788. Séparer l'état métier de l'état purement visuel.
+
+789. Éviter de dupliquer le même état métier dans un Store et dans une Frame.
+
+790. Dériver l'état visuel depuis l'état métier lorsque possible.
+
+791. Éviter les booléens multiples représentant implicitement une machine à états.
+
+792. Introduire un `enum class` lorsqu'un écran possède des états mutuellement exclusifs.
+
+793. Éviter les combinaisons impossibles de flags UI.
+
+794. Rendre explicites les états `Loading`.
+
+795. Rendre explicites les états `Ready`.
+
+796. Rendre explicites les états `Error`.
+
+797. Rendre explicites les états `Reconnecting`.
+
+798. Rendre explicites les états `Closed`.
+
+799. Empêcher une réponse `Loading` ancienne de modifier un écran déjà passé dans un nouvel état.
+
+### GamePlayPanel
+
+800. Remplacer les nombreux booléens de `GamePlayPanel` par des états structurés lorsque leurs combinaisons représentent un workflow.
+
+801. Regrouper l'état de démarrage de room dans une structure dédiée.
+
+802. Regrouper l'état des choix en attente dans une structure dédiée.
+
+803. Regrouper l'état des annonces dans une structure dédiée.
+
+804. Regrouper l'état de session gameplay dans une structure dédiée.
+
+805. Éviter que `GamePlayPanel.h` expose les détails de toutes les sous-capacités Gameplay.
+
+806. Réduire le nombre de handlers fonctionnels stockés directement dans `GamePlayPanel`.
+
+807. Introduire une interface de coordination lorsque plusieurs callbacks appartiennent à la même responsabilité.
+
+808. Éviter qu'un changement de capacité Gameplay impose systématiquement de modifier `GamePlayPanel`.
+
+809. Permettre à un sous-panneau Gameplay de recevoir son modèle de vue sans connaître tout `GameState`.
+
+810. Éviter de transmettre le `GameState` complet à des composants n'utilisant que quelques champs.
+
+811. Calculer les view models en dehors des widgets lorsque cette logique devient complexe.
+
+812. Tester les view models sans wxWidgets.
+
+### Présentation gameplay générique
+
+813. Garantir que le client Gameplay générique ne connaît pas les jeux concrets lorsque le protocole fournit suffisamment de métadonnées.
+
+814. Rechercher les noms de jeux concrets dans `modules/gameplay`.
+
+815. Supprimer les branches UI `if gameType == ...` lorsqu'une capacité générique peut les remplacer.
+
+816. Supprimer les `switch` UI sur des jeux concrets lorsqu'une capacité serveur décrit le comportement.
+
+817. Ne pas reproduire côté client les règles métier appartenant au serveur.
+
+818. Utiliser les capabilities reçues pour déterminer les contrôles disponibles.
+
+819. Ne pas deviner une capability depuis le nom du jeu.
+
+820. Ne pas calculer localement une règle de victoire.
+
+821. Ne pas recalculer localement un mouvement autorisé lorsque le serveur est autoritatif.
+
+822. Ne pas recalculer localement un coût métier lorsque le serveur est autoritatif.
+
+823. Utiliser les données serveur pour présenter les choix disponibles.
+
+824. Garder uniquement les règles nécessaires à l'interaction et à l'accessibilité côté client.
+
+825. Autoriser une logique de présentation spécifique uniquement lorsqu'elle ne constitue pas une règle métier serveur.
+
+### Accessibilité
+
+826. Auditer chaque écran principal au clavier uniquement.
+
+827. Auditer chaque écran principal avec lecteur d'écran.
+
+828. Vérifier Home.
+
+829. Vérifier Rooms.
+
+830. Vérifier Gameplay.
+
+831. Vérifier Chat.
+
+832. Vérifier Messaging.
+
+833. Vérifier Social.
+
+834. Vérifier Vault.
+
+835. Vérifier Catalog.
+
+836. Vérifier Leaderboard.
+
+837. Vérifier Options.
+
+838. Vérifier Admin.
+
+839. Vérifier le launcher d'update lorsque son interface est interactive.
+
+840. Donner un ordre logique aux zones Gameplay.
+
+841. Permettre d'atteindre rapidement la zone d'action principale.
+
+842. Permettre de revenir à la zone de navigation principale.
+
+843. Annoncer une reconnexion sans voler inutilement le focus.
+
+844. Annoncer une erreur sans déplacer arbitrairement la sélection.
+
+845. Annoncer un changement de tour une seule fois.
+
+846. Éviter les annonces dupliquées provenant simultanément de l'état et de l'événement.
+
+847. Conserver l'identité des annonces déjà entendues de manière bornée.
+
+848. Purger cette déduplication au changement de partie.
+
+849. Vérifier que les raccourcis sont découvrables.
+
+850. Éviter les raccourcis dépendant uniquement d'une convention non annoncée.
+
+851. Donner une alternative accessible aux interactions visuelles de grille.
+
+852. Donner une alternative accessible aux drag-and-drop éventuels.
+
+853. Vérifier les contrôles de réordonnancement avec clavier.
+
+854. Vérifier les choix multiples avec lecteur d'écran.
+
+855. Vérifier les timers sans dépendre uniquement d'une représentation visuelle.
+
+856. Éviter d'annoncer chaque seconde d'un timer.
+
+857. Définir des seuils d'annonce utiles pour les timers.
+
+### Audio et accessibilité
+
+858. Ne pas utiliser un son comme unique moyen de transmettre une information critique.
+
+859. Fournir un équivalent textuel ou accessible aux événements sonores importants.
+
+860. Respecter les préférences de volume.
+
+861. Respecter la désactivation des sons.
+
+862. Séparer volume d'ambiance et volume d'événements si l'interface le propose.
+
+863. Ne pas relancer inutilement une ambiance identique lors d'un rafraîchissement d'état.
+
+864. Interrompre l'ambiance appartenant à une session quittée.
+
+865. Éviter qu'une ancienne callback audio démarre un son après changement de room.
+
+### Sécurité client
+
+866. Considérer toutes les données serveur comme non fiables jusqu'au décodage.
+
+867. Considérer toutes les données de fichiers locaux comme potentiellement corrompues.
+
+868. Considérer les chemins du manifeste d'update comme non fiables.
+
+869. Ne jamais exécuter une chaîne reçue du serveur comme commande système.
+
+870. Ne jamais construire une commande shell avec une donnée réseau.
+
+871. Préférer les APIs de création de processus avec arguments structurés.
+
+872. Vérifier tous les appels à `CreateProcess` ou équivalent.
+
+873. Éviter `system()`.
+
+874. Éviter `ShellExecute` pour les opérations sensibles lorsque la cible n'est pas strictement contrôlée.
+
+875. Valider les URLs ouvertes dans le navigateur.
+
+876. Autoriser uniquement les schémas prévus pour les URLs externes.
+
+877. Éviter de permettre `file:` depuis une URL serveur.
+
+878. Éviter les credentials dans les URLs.
+
+879. Ne pas afficher les tokens dans une boîte de dialogue de diagnostic.
+
+880. Nettoyer les secrets des logs.
+
+### Update et privilèges
+
+881. Éviter de lancer toute l'application avec des privilèges administrateur uniquement pour permettre l'update.
+
+882. Élever uniquement le composant nécessitant réellement des privilèges lorsque nécessaire.
+
+883. Réduire au minimum les données transmises au processus élevé.
+
+884. Vérifier l'identité de l'exécutable lancé avec élévation.
+
+885. Éviter qu'un chemin contrôlable par un utilisateur sélectionne l'exécutable élevé.
+
+886. Vérifier la signature avant élévation.
+
+887. Vérifier de nouveau les artefacts sensibles après une frontière de privilège si nécessaire.
+
+### Logging
+
+888. Centraliser les niveaux de logs.
+
+889. Éviter les `LogWarning` pour des situations normales.
+
+890. Éviter les logs répétitifs de reconnexion à chaque poll.
+
+891. Dédupliquer ou limiter les logs d'une panne persistante.
+
+892. Inclure le contexte fonctionnel utile dans une erreur.
+
+893. Ne pas inclure de données personnelles inutiles.
+
+894. Ne pas inclure les messages privés complets.
+
+895. Ne pas inclure les tokens.
+
+896. Ne pas inclure le contenu complet d'un snapshot de jeu.
+
+897. Prévoir une rotation des fichiers de logs.
+
+898. Borner leur taille totale.
+
+899. Gérer l'échec d'écriture des logs sans faire tomber l'application.
+
+900. Permettre de désactiver les logs fichiers lorsque nécessaire.
+
+### Tests unitaires C++
+
+901. Augmenter les tests du domaine sans wxWidgets.
+
+902. Augmenter les tests des codecs réseau.
+
+903. Augmenter les tests des stores.
+
+904. Augmenter les tests des politiques de reconnexion.
+
+905. Augmenter les tests de cancellation.
+
+906. Tester `BackgroundExecutor` à saturation.
+
+907. Tester `BackgroundExecutor` pendant shutdown.
+
+908. Tester une tâche lançant une exception dans `BackgroundExecutor`.
+
+909. Tester la fairness des priorités si elle est introduite.
+
+910. Tester `AsyncRequestSlot` avec réponses inversées.
+
+911. Tester la destruction du propriétaire avant la fin d'une requête.
+
+912. Tester les générations de session.
+
+913. Tester la reconnexion Game.
+
+914. Tester la reconnexion Room.
+
+915. Tester la reconnexion Chat.
+
+916. Tester une expiration de token pendant une requête.
+
+917. Tester plusieurs requêtes recevant simultanément 401.
+
+918. Tester l'échec définitif du refresh token.
+
+919. Tester les payloads JSON malformés.
+
+920. Tester les payloads JSON excessivement volumineux.
+
+921. Tester les collections excessivement grandes.
+
+922. Tester les valeurs numériques hors limites.
+
+923. Tester les champs obligatoires absents.
+
+924. Tester les champs de mauvais type.
+
+### Tests UI
+
+925. Tester la navigation clavier des écrans critiques.
+
+926. Tester la conservation de sélection après refresh.
+
+927. Tester la conservation du focus après refresh.
+
+928. Tester la fermeture d'une Frame pendant une opération asynchrone.
+
+929. Tester le changement rapide de sélection pendant plusieurs chargements.
+
+930. Tester une reconnexion pendant que l'utilisateur change d'écran.
+
+931. Tester une invitation reçue pendant un changement de navigation.
+
+932. Tester la fermeture de l'application pendant une reconnexion.
+
+933. Tester la fermeture pendant un upload Admin.
+
+934. Tester la fermeture pendant un téléchargement d'update.
+
+935. Tester la fermeture pendant une preview audio.
+
+936. Tester Gameplay pendant un changement de run.
+
+937. Tester Gameplay lorsqu'un état ancien arrive après un état récent.
+
+938. Tester Gameplay après un trou de version.
+
+939. Tester Room après un trou de séquence.
+
+### Tests d'intégration backend/client
+
+940. Construire des tests de contrat à partir des mêmes schémas que le backend lorsque possible.
+
+941. Tester que tous les événements WebSocket attendus par le client existent encore côté serveur.
+
+942. Tester que tous les champs obligatoires attendus par le client sont encore fournis.
+
+943. Tester que les enums serveur et client restent compatibles.
+
+944. Tester les structures Room.
+
+945. Tester les structures Game.
+
+946. Tester les structures Social.
+
+947. Tester les structures Messaging.
+
+948. Tester les structures Notification.
+
+949. Tester les structures Vault.
+
+950. Tester les structures Catalog.
+
+951. Tester les structures Admin réellement partagées.
+
+952. Faire échouer la CI lors d'une rupture protocolaire non versionnée.
+
+953. Générer les contrats simples plutôt que maintenir manuellement deux copies lorsque cela réduit réellement les divergences.
+
+### CMake et build
+
+954. Simplifier le `CMakeLists.txt` lorsqu'il encode manuellement des listes pouvant être structurées proprement par targets.
+
+955. Utiliser des targets CMake par composant cohérent plutôt qu'un énorme target monolithique si ce n'est pas déjà le cas.
+
+956. Utiliser `target_include_directories` avec la visibilité appropriée.
+
+957. Utiliser `target_link_libraries` avec `PRIVATE`, `PUBLIC` et `INTERFACE` correctement.
+
+958. Éviter les include directories globaux.
+
+959. Éviter les définitions de compilation globales inutiles.
+
+960. Activer un niveau élevé de warnings.
+
+961. Traiter les warnings du code projet comme erreurs dans la CI lorsque le build est stabilisé.
+
+962. Ne pas transformer les warnings des dépendances tierces en erreurs projet.
+
+963. Conserver C++20 de manière cohérente sur toutes les targets.
+
+964. Vérifier la reproductibilité du build avec un environnement propre.
+
+965. Éviter les dépendances implicitement trouvées sur la machine du développeur.
+
+966. Déclarer explicitement les dépendances requises.
+
+967. Épingler les versions nécessaires à la reproductibilité.
+
+968. Vérifier les configurations Debug et Release.
+
+969. Tester systématiquement le build x64 réellement distribué aux utilisateurs.
+
+970. Vérifier que le build Release n'active aucun comportement de développement dangereux.
+
+971. Vérifier que les assertions supprimées en Release ne constituent jamais une validation nécessaire au fonctionnement.
+
+972. Garder les validations des données externes actives en Release.
+
+973. Générer les informations de version depuis une source de vérité unique.
+
+974. Associer chaque binaire distribué au commit ayant servi à le construire.
+
+975. Produire des symboles de debug exploitables pour les builds Release.
+
+976. Archiver les symboles correspondant exactement à chaque release.
+
+977. Ne pas distribuer les symboles internes avec l'application lorsqu'ils ne sont pas nécessaires au fonctionnement.
+
+978. Activer les protections de compilation Windows appropriées supportées par la toolchain.
+
+979. Vérifier que les dépendances natives sont construites avec une configuration compatible.
+
+980. Vérifier que Debug et Release ne mélangent pas des runtimes C++ incompatibles.
+
+981. Vérifier que toutes les DLL nécessaires sont explicitement identifiées.
+
+982. Éviter de charger une DLL depuis un emplacement non contrôlé.
+
+983. Utiliser des chemins absolus ou contrôlés pour les DLL sensibles.
+
+984. Vérifier particulièrement le chargement des bibliothèques audio.
+
+985. Éviter qu'une DLL placée dans le working directory puisse détourner un chargement sensible.
+
+### Dépendances C++ et vcpkg
+
+986. Supprimer les dépendances vcpkg inutilisées.
+
+987. Vérifier les dépendances transitives réellement embarquées.
+
+988. Épingler le baseline vcpkg utilisé pour les releases reproductibles.
+
+989. Vérifier les changements de version de wxWidgets avant intégration.
+
+990. Vérifier les changements de version de `nlohmann-json` avant intégration.
+
+991. Vérifier les changements des bibliothèques réseau avant intégration.
+
+992. Vérifier les licences des dépendances distribuées avec le client.
+
+993. Maintenir l'inventaire des composants natifs effectivement distribués.
+
+994. Éviter de vendoriser une dépendance lorsqu'un mécanisme reproductible de package suffit.
+
+995. Vérifier les binaires tiers avant leur intégration dans une release.
+
+996. Éviter les téléchargements de dépendances non vérifiés pendant le build de production.
+
+### Temps de compilation
+
+997. Mesurer le temps de compilation propre du client.
+
+998. Mesurer le temps de compilation incrémentale.
+
+999. Identifier les headers entraînant les plus grosses recompilations.
+
+1000. Réduire les includes inutiles dans les headers publics.
+
+1001. Utiliser les forward declarations lorsque cela réduit réellement le couplage.
+
+1002. Éviter d'inclure `nlohmann/json.hpp` dans les headers domaine lorsque le JSON peut rester en infrastructure.
+
+1003. Éviter d'inclure wxWidgets dans les headers application et domaine.
+
+1004. Déplacer les détails d'implémentation lourds dans les `.cpp`.
+
+1005. Utiliser PImpl uniquement pour les composants où il apporte un bénéfice réel de compilation ou d'ABI.
+
+1006. Éviter PImpl sur les petits types domaine.
+
+1007. Examiner les headers Gameplay fortement inclus.
+
+1008. Examiner les headers Shared fortement inclus.
+
+1009. Examiner les headers Network fortement inclus.
+
+1010. Éliminer les dépendances circulaires de headers.
+
+### Structure des fichiers
+
+1011. Réexaminer la nécessité d'environ 779 fichiers C++ de production.
+
+1012. Ne pas fixer arbitrairement un objectif de nombre de fichiers.
+
+1013. Fusionner les `.cpp` artificiellement séparés lorsqu'ils appartiennent à une seule petite responsabilité.
+
+1014. Conserver les fichiers séparés lorsqu'ils isolent réellement une responsabilité complexe.
+
+1015. Éviter les classes réparties sur trop de `.cpp` lorsque cela rend leur comportement difficile à suivre.
+
+1016. Réexaminer particulièrement les nombreux fichiers `GamePlayPanel.*.cpp`.
+
+1017. Réexaminer particulièrement les nombreux fichiers `AdminFrame.*.cpp`.
+
+1018. Réexaminer particulièrement les nombreux fichiers `SocialFrame` et coordinateurs associés.
+
+1019. Réexaminer particulièrement les nombreux fichiers de présentation Rooms.
+
+1020. Réexaminer particulièrement les nombreux fichiers de présentation Messaging.
+
+1021. Ne pas compenser une classe trop grosse uniquement en répartissant ses méthodes dans dix fichiers.
+
+1022. Réduire d'abord la responsabilité de la classe lorsque sa surface publique ou son état est excessif.
+
+1023. Regrouper ensuite les fichiers selon les responsabilités obtenues.
+
+1024. Donner aux répertoires une signification architecturale claire.
+
+1025. Éviter les dossiers ne contenant qu'un wrapper sans responsabilité.
+
+1026. Éviter les profondeurs de répertoires qui n'apportent aucune frontière réelle.
+
+### Interfaces
+
+1027. Réexaminer les interfaces ne possédant qu'une seule implémentation et aucun besoin réel de substitution.
+
+1028. Conserver une interface lorsqu'elle matérialise une frontière architecturelle importante.
+
+1029. Conserver une interface lorsqu'elle est nécessaire aux tests sans coupler l'application à l'infrastructure.
+
+1030. Supprimer les interfaces créées uniquement par convention.
+
+1031. Éviter les interfaces reproduisant exactement toutes les méthodes d'une classe sans abstraction supplémentaire.
+
+1032. Réduire les interfaces trop larges selon le principe de ségrégation.
+
+1033. Éviter qu'une vue dépende d'une interface donnant accès à des opérations qu'elle n'utilise jamais.
+
+1034. Éviter qu'un service application expose directement des opérations de transport.
+
+1035. Nommer les interfaces selon la capacité qu'elles fournissent plutôt que selon leur technologie lorsque pertinent.
+
+### Modèles domaine
+
+1036. Vérifier que les objets du domaine ne dépendent pas de wxWidgets.
+
+1037. Vérifier que les objets du domaine ne dépendent pas de WinHTTP.
+
+1038. Vérifier que les objets du domaine ne dépendent pas de BASS.
+
+1039. Vérifier que les objets du domaine ne dépendent pas du filesystem.
+
+1040. Réduire la dépendance du domaine à `nlohmann::json`.
+
+1041. Éviter les modèles domaine servant simplement de copie exacte d'un payload réseau.
+
+1042. Donner une sémantique métier aux modèles domaine conservés.
+
+1043. Garder les DTO réseau dans l'infrastructure lorsqu'ils n'ont aucune sémantique domaine.
+
+1044. Éviter les setters permettant de créer des états domaine invalides.
+
+1045. Utiliser les constructeurs ou factories pour établir les invariants importants.
+
+1046. Éviter les modèles contenant de nombreux booléens interdépendants.
+
+1047. Utiliser des variantes ou enums pour les états mutuellement exclusifs.
+
+### Duplication
+
+1048. Rechercher les implémentations dupliquées de backoff.
+
+1049. Rechercher les implémentations dupliquées d'attente annulable.
+
+1050. Rechercher les implémentations dupliquées de retry HTTP.
+
+1051. Rechercher les implémentations dupliquées de refresh d'authentification.
+
+1052. Rechercher les implémentations dupliquées de parsing d'erreur serveur.
+
+1053. Rechercher les implémentations dupliquées de parsing JSON scalaire.
+
+1054. Rechercher les implémentations dupliquées de conversion UTF-8.
+
+1055. Rechercher les implémentations dupliquées de restauration du focus.
+
+1056. Rechercher les implémentations dupliquées d'affichage d'erreur.
+
+1057. Rechercher les implémentations dupliquées de confirmation destructive.
+
+1058. Rechercher les implémentations dupliquées de gestion Loading/Ready/Error.
+
+1059. Extraire une primitive commune uniquement lorsque les sémantiques sont réellement identiques.
+
+1060. Ne pas fusionner deux comportements uniquement parce que leur code se ressemble.
+
+### Constantes et configuration
+
+1061. Centraliser les timeouts réseau partageant réellement la même politique.
+
+1062. Garder distincts les timeouts dont les besoins fonctionnels diffèrent.
+
+1063. Éviter les nombres magiques de retry répartis dans les modules.
+
+1064. Éviter les intervalles heartbeat dupliqués sans justification.
+
+1065. Donner des noms aux limites de taille.
+
+1066. Donner des noms aux limites de collections.
+
+1067. Donner des noms aux délais de reconnexion.
+
+1068. Ne pas rendre configurable chaque constante simplement pour éviter une constante dans le code.
+
+1069. Exposer en configuration uniquement ce qui doit réellement varier selon l'environnement ou l'utilisateur.
+
+1070. Valider toutes les configurations chargées.
+
+1071. Refuser les URLs backend invalides.
+
+1072. Refuser les schémas réseau inattendus en production.
+
+1073. Normaliser les URLs à une frontière unique.
+
+### Réseau temps réel
+
+1074. Donner un propriétaire unique à chaque connexion WebSocket.
+
+1075. Éviter plusieurs wrappers possédant implicitement la même connexion.
+
+1076. Définir explicitement si une connexion est partagée ou dédiée à un module.
+
+1077. Sérialiser les écritures si le transport ne garantit pas les envois concurrents.
+
+1078. Empêcher une lecture et une fermeture concurrentes de produire un use-after-free.
+
+1079. Garantir que `Interrupt()` est sûr depuis un autre thread.
+
+1080. Garantir que `Close()` est idempotent.
+
+1081. Garantir que `Reconnect()` ne peut pas courir avec `Close()`.
+
+1082. Garantir qu'une connexion remplacée ne continue pas à publier des événements.
+
+1083. Borner la taille des messages entrants avant parsing JSON.
+
+1084. Borner la taille des messages sortants.
+
+1085. Borner le nombre de requêtes en attente.
+
+1086. Expirer les requêtes auxquelles le serveur ne répond jamais.
+
+1087. Retirer une requête en attente lorsqu'elle est annulée.
+
+1088. Retirer une requête en attente lorsque la connexion est perdue.
+
+1089. Ne pas réutiliser un `requestId` encore actif.
+
+1090. Utiliser une génération de connexion avec les requêtes en attente.
+
+### AuthenticatedRealtimeApiClient
+
+1091. Garantir que l'accès concurrent à ses structures internes est sûr.
+
+1092. Centraliser l'association `requestId → réponse`.
+
+1093. Centraliser les timeouts de requêtes.
+
+1094. Centraliser l'annulation de requêtes.
+
+1095. Centraliser le comportement après fermeture de connexion.
+
+1096. Éviter que chaque module reconstruise sa propre abstraction request/response WebSocket.
+
+1097. Exposer une API typée au-dessus du transport brut lorsque possible.
+
+1098. Garder l'enveloppe JSON réseau hors des couches application.
+
+### Cache côté client
+
+1099. Inventorier les caches mémoire du client.
+
+1100. Définir un propriétaire pour chaque cache.
+
+1101. Définir une limite pour chaque cache non trivial.
+
+1102. Définir une invalidation pour chaque cache.
+
+1103. Supprimer les caches sans gain mesuré.
+
+1104. Éviter de mettre en cache une décision d'autorisation.
+
+1105. Éviter de conserver indéfiniment les données d'une ancienne session utilisateur.
+
+1106. Vider les données privées nécessaires lors du logout.
+
+1107. Vider les données d'une room quittée lorsqu'elles ne doivent plus être conservées.
+
+1108. Vider les données d'une partie terminée lorsqu'elles ne servent plus.
+
+### Confidentialité locale
+
+1109. Identifier les données utilisateur persistées localement.
+
+1110. Ne persister que les données réellement nécessaires.
+
+1111. Éviter de stocker des messages privés dans des fichiers de diagnostic sans consentement explicite.
+
+1112. Éviter de stocker les snapshots privés de jeu dans les logs.
+
+1113. Protéger les credentials avec les mécanismes Windows appropriés.
+
+1114. Supprimer les credentials lors de la suppression volontaire de session persistante.
+
+1115. Éviter les dumps contenant des secrets.
+
+1116. Vérifier les crash reports avant d'y inclure des données applicatives.
+
+### Performance réseau
+
+1117. Mesurer le nombre de messages WebSocket reçus par seconde pendant une partie active.
+
+1118. Mesurer le volume de données WebSocket.
+
+1119. Mesurer le coût du parsing JSON.
+
+1120. Mesurer le coût de construction des modèles domaine.
+
+1121. Mesurer le coût de mise à jour de l'UI après réception d'un état.
+
+1122. Éviter plusieurs décodages du même payload.
+
+1123. Éviter plusieurs sérialisations de la même commande.
+
+1124. Ne pas optimiser le JSON sans mesure démontrant qu'il constitue un goulot.
+
+1125. Évaluer un protocole plus compact uniquement si les mesures le justifient.
+
+### Performance Gameplay
+
+1126. Mesurer `GamePlayPanel::ApplyState`.
+
+1127. Identifier les sous-panneaux reconstruits à chaque état.
+
+1128. Mettre à jour uniquement les sous-panneaux dont les données ont changé lorsque le gain est réel.
+
+1129. Éviter de recalculer les mêmes textes plusieurs fois pour un même état.
+
+1130. Éviter de reparcourir plusieurs fois les mêmes grosses collections.
+
+1131. Borner `observedEventIdentities_`.
+
+1132. Purger `observedEventIdentities_` au changement de run.
+
+1133. Borner `announcedTimers_`.
+
+1134. Purger `announcedTimers_` au changement de run.
+
+1135. Vérifier que `renderedLineIds_` ne grossit pas au-delà de son besoin réel.
+
+1136. Éviter de conserver simultanément plusieurs représentations complètes du même état sans nécessité.
+
+### Mémoire
+
+1137. Mesurer la mémoire après lancement.
+
+1138. Mesurer la mémoire après connexion.
+
+1139. Mesurer la mémoire après plusieurs changements de Room.
+
+1140. Mesurer la mémoire après plusieurs parties.
+
+1141. Mesurer la mémoire après ouverture/fermeture répétée de Social.
+
+1142. Mesurer la mémoire après ouverture/fermeture répétée de Messaging.
+
+1143. Mesurer la mémoire après plusieurs previews audio.
+
+1144. Mesurer la mémoire après une mise à jour annulée.
+
+1145. Vérifier qu'elle revient approximativement à un niveau stable après libération des écrans.
+
+1146. Utiliser les outils de diagnostic mémoire Windows pour détecter les ressources natives non libérées.
+
+### CPU
+
+1147. Profiler le client pendant une partie active.
+
+1148. Profiler le client pendant une reconnexion.
+
+1149. Profiler le client pendant un gros rafraîchissement Social.
+
+1150. Profiler le client pendant un historique Messaging important.
+
+1151. Profiler le client pendant une preview audio.
+
+1152. Rechercher les boucles de polling réveillant inutilement le CPU.
+
+1153. Remplacer le polling par des primitives bloquantes/conditionnelles lorsque possible.
+
+1154. Éviter les timers UI très fréquents lorsqu'aucune donnée ne change.
+
+### Shutdown
+
+1155. Définir un ordre unique de shutdown applicatif.
+
+1156. Bloquer le lancement de nouvelles tâches dès le début du shutdown.
+
+1157. Annuler les requêtes UI.
+
+1158. Fermer les workflows Gameplay.
+
+1159. Fermer les sessions Room.
+
+1160. Fermer Chat.
+
+1161. Fermer Messaging.
+
+1162. Fermer Social temps réel.
+
+1163. Arrêter les workers réseau.
+
+1164. Arrêter l'audio.
+
+1165. Arrêter `BackgroundExecutor`.
+
+1166. Persister les options nécessaires.
+
+1167. Détruire ensuite les services.
+
+1168. Garantir que le shutdown peut être appelé plusieurs fois.
+
+1169. Garantir qu'une exception pendant le shutdown n'empêche pas la libération des ressources restantes.
+
+1170. Ne jamais laisser un thread continuer après destruction du bootstrap.
+
+### Update forcé et shutdown
+
+1171. Séparer l'état « fermeture utilisateur » de l'état « fermeture pour update ».
+
+1172. Ne pas afficher la confirmation normale de fermeture pendant un update forcé.
+
+1173. Garantir que toutes les données nécessaires sont flushées avant de lancer l'updater.
+
+1174. Fermer les fichiers susceptibles de bloquer leur remplacement.
+
+1175. Fermer les DLL ou ressources pouvant empêcher l'installation.
+
+1176. Ne lancer l'updater qu'après préparation réussie du shutdown.
+
+1177. Éviter une situation où l'application se ferme sans que l'updater puisse démarrer.
+
+1178. Éviter une boucle application → updater → application en cas d'échec permanent.
+
+### Tests Update
+
+1179. Tester un manifeste invalide.
+
+1180. Tester une signature invalide.
+
+1181. Tester un hash invalide.
+
+1182. Tester un téléchargement tronqué.
+
+1183. Tester une archive malveillante avec traversal.
+
+1184. Tester une archive trop volumineuse.
+
+1185. Tester un disque plein.
+
+1186. Tester un fichier verrouillé.
+
+1187. Tester un antivirus retardant l'accès au nouvel exécutable.
+
+1188. Tester l'échec d'Authenticode.
+
+1189. Tester l'échec du lancement de la nouvelle version.
+
+1190. Tester le rollback.
+
+1191. Tester un crash de l'updater pendant la bascule.
+
+1192. Tester le nettoyage après échec.
+
+### Tests audio
+
+1193. Tester l'absence de périphérique audio.
+
+1194. Tester un fichier audio absent.
+
+1195. Tester un fichier audio invalide.
+
+1196. Tester une preview interrompue.
+
+1197. Tester le shutdown pendant une preview.
+
+1198. Tester une rafale d'événements sonores.
+
+1199. Tester la saturation de la queue audio.
+
+1200. Tester un changement rapide de volume.
+
+### Static analysis
+
+1201. Activer une analyse statique C++ adaptée à MSVC.
+
+1202. Traiter les warnings sérieux de durée de vie.
+
+1203. Traiter les warnings de conversions numériques dangereuses.
+
+1204. Traiter les warnings d'utilisation de variables non initialisées.
+
+1205. Traiter les warnings de ressources non libérées.
+
+1206. Utiliser `clang-tidy` sur les parties compatibles si son coût reste acceptable.
+
+1207. Éviter d'activer des centaines de règles sans stratégie de correction.
+
+1208. Stabiliser un ensemble réduit de règles utiles.
+
+1209. Faire échouer la CI sur les nouvelles violations de ces règles.
+
+### Sanitizers
+
+1210. Exécuter AddressSanitizer sur les tests compatibles.
+
+1211. Rechercher les use-after-free.
+
+1212. Rechercher les dépassements de buffers.
+
+1213. Rechercher les doubles libérations.
+
+1214. Utiliser les outils adaptés à Windows pour détecter les problèmes de heap non couverts.
+
+1215. Tester particulièrement les codecs avec sanitizers.
+
+1216. Tester particulièrement le launcher avec sanitizers lorsque possible.
+
+
+1217. Tester particulièrement les composants réseau avec les sanitizers lorsque la toolchain le permet.
+
+1218. Tester particulièrement les composants audio avec les sanitizers lorsque les bibliothèques natives sont compatibles.
+
+1219. Utiliser UndefinedBehaviorSanitizer sur les configurations compatibles.
+
+1220. Corriger tout undefined behavior détecté avant de poursuivre les optimisations.
+
+### Fuzzing et robustesse des entrées
+
+1221. Fuzzer les décodeurs JSON exposés aux réponses serveur.
+
+1222. Fuzzer `GameSystemDecoder`.
+
+1223. Fuzzer `GameBoardCapabilitiesDecoder`.
+
+1224. Fuzzer `GameWorkflowCapabilitiesDecoder`.
+
+1225. Fuzzer `RoomPayloadCodec`.
+
+1226. Fuzzer les codecs Messaging.
+
+1227. Fuzzer les codecs Social.
+
+1228. Fuzzer les codecs Chat.
+
+1229. Fuzzer les codecs Vault.
+
+1230. Fuzzer les codecs Catalog.
+
+1231. Fuzzer le parsing des réponses Admin.
+
+1232. Fuzzer le parsing du manifeste d'update.
+
+1233. Fuzzer les composants manipulant les chemins d'archives.
+
+1234. Vérifier qu'aucune entrée malformée ne provoque de crash natif.
+
+1235. Vérifier qu'une entrée excessivement profonde est rejetée avec une consommation raisonnable.
+
+1236. Vérifier qu'une entrée excessivement large est rejetée avant une allocation disproportionnée.
+
+### Tests de concurrence
+
+1237. Tester la fermeture d'une connexion pendant une lecture bloquante.
+
+1238. Tester `Reconnect()` en concurrence avec `Close()`.
+
+1239. Tester l'annulation pendant une requête HTTP.
+
+1240. Tester l'annulation pendant une requête WebSocket.
+
+1241. Tester la destruction d'une Frame pendant un callback réseau.
+
+1242. Tester plusieurs réponses arrivant dans un ordre différent de celui des requêtes.
+
+1243. Tester plusieurs événements Gameplay arrivant rapidement.
+
+1244. Tester plusieurs événements Room arrivant rapidement.
+
+1245. Tester plusieurs notifications arrivant pendant une navigation.
+
+1246. Tester plusieurs requêtes nécessitant simultanément un refresh JWT.
+
+1247. Tester le shutdown pendant une saturation de `BackgroundExecutor`.
+
+1248. Tester les changements rapides de session utilisateur.
+
+1249. Tester logout puis login avec un autre compte sans redémarrer l'application.
+
+1250. Vérifier qu'aucun état du premier compte n'apparaît dans le second.
+
+### Tests longue durée
+
+1251. Exécuter un test client de plusieurs heures avec connexions temps réel actives.
+
+1252. Vérifier la stabilité mémoire pendant ce test.
+
+1253. Vérifier la stabilité du nombre de threads pendant ce test.
+
+1254. Vérifier la stabilité du nombre de handles Windows pendant ce test.
+
+1255. Vérifier la stabilité du nombre de connexions réseau pendant ce test.
+
+1256. Vérifier que les caches bornés restent effectivement bornés.
+
+1257. Simuler plusieurs pertes et retours réseau pendant ce test.
+
+1258. Simuler plusieurs changements de Room pendant ce test.
+
+1259. Simuler plusieurs parties successives pendant ce test.
+
+1260. Simuler plusieurs ouvertures et fermetures de fenêtres secondaires pendant ce test.
+
+### Gestion des handles Windows
+
+1261. Mesurer le nombre de handles Windows après lancement.
+
+1262. Mesurer le nombre de handles après plusieurs connexions et déconnexions.
+
+1263. Mesurer le nombre de handles après plusieurs téléchargements.
+
+1264. Mesurer le nombre de handles après plusieurs previews audio.
+
+1265. Vérifier la fermeture de tous les handles WinHTTP.
+
+1266. Vérifier la fermeture de tous les handles de fichiers.
+
+1267. Vérifier la fermeture de tous les handles de processus.
+
+1268. Vérifier la fermeture de tous les handles de threads natifs.
+
+1269. Vérifier la libération de toutes les ressources cryptographiques Windows.
+
+1270. Encapsuler toute ressource native restante avec RAII.
+
+### Synchronisation UI
+
+1271. Centraliser la publication de callbacks vers le thread wxWidgets.
+
+1272. Refuser en debug les mutations UI provenant d'un worker lorsque cela peut être détecté.
+
+1273. Vérifier la durée de vie de l'objet avant exécution d'un callback UI différé.
+
+1274. Associer les callbacks différés à une génération d'écran lorsque nécessaire.
+
+1275. Ignorer les callbacks appartenant à une ancienne génération.
+
+1276. Éviter de capturer une référence vers une variable locale dans un callback différé.
+
+1277. Éviter de capturer un pointeur brut vers une Frame dont la durée de vie n'est pas garantie.
+
+1278. Vérifier que la fermeture d'une Frame purge ou invalide ses callbacks différés.
+
+### Architecture des modules client
+
+1279. Faire dépendre `presentation` de `application` et du domaine nécessaire.
+
+1280. Faire dépendre `infrastructure` des contrats définis par les couches internes.
+
+1281. Empêcher `application` de dépendre de `presentation`.
+
+1282. Empêcher `domain` de dépendre de `presentation`.
+
+1283. Empêcher `domain` de dépendre de `infrastructure`.
+
+1284. Empêcher un module de dépendre des détails d'infrastructure d'un autre module.
+
+1285. Exposer une API publique minimale pour chaque module ayant réellement besoin d'être consommé ailleurs.
+
+1286. Éviter les imports profonds entre modules.
+
+1287. Déplacer les contrats réellement partagés vers un propriétaire transversal approprié.
+
+1288. Ne pas déplacer dans `shared` un concept appartenant clairement à un module.
+
+1289. Garder `shared` réservé aux primitives réellement transversales.
+
+1290. Rechercher les dépendances circulaires entre modules.
+
+1291. Supprimer les cycles en corrigeant le sens des responsabilités.
+
+### `shared`
+
+1292. Auditer chaque composant de `shared` pour vérifier qu'il est réellement partagé.
+
+1293. Rapatrier dans son module tout composant `shared` utilisé par une seule capacité métier.
+
+1294. Empêcher `shared` de devenir un dépôt de code difficile à classer.
+
+1295. Garder les utilitaires JSON génériques indépendants des modules.
+
+1296. Garder les primitives de concurrence génériques indépendantes des modules.
+
+1297. Garder les primitives réseau génériques indépendantes des modules métier.
+
+1298. Garder les primitives d'accessibilité génériques indépendantes des écrans particuliers.
+
+1299. Éviter que `shared` connaisse Gameplay.
+
+1300. Éviter que `shared` connaisse Rooms.
+
+1301. Éviter que `shared` connaisse Social.
+
+1302. Éviter que `shared` connaisse Admin.
+
+### Couplage backend/client
+
+1303. Ne pas reproduire dans le client les règles métier déjà détenues par le backend.
+
+1304. Garder le backend autoritatif sur l'état de partie.
+
+1305. Garder le backend autoritatif sur les permissions.
+
+1306. Garder le backend autoritatif sur les résultats d'action.
+
+1307. Garder le backend autoritatif sur le scoring.
+
+1308. Garder le backend autoritatif sur les règles de victoire.
+
+1309. Garder le backend autoritatif sur les ressources des joueurs.
+
+1310. Garder le backend autoritatif sur les relations sociales.
+
+1311. Garder le backend autoritatif sur les bannissements.
+
+1312. Garder le backend autoritatif sur les rôles.
+
+1313. Utiliser le client comme projection et interface d'intention.
+
+1314. Ne pas obliger le client à connaître les détails internes du moteur backend.
+
+1315. Faire reposer le Gameplay générique sur les capabilities publiques reçues du backend.
+
+1316. Empêcher une nouvelle mécanique générique backend d'imposer une branche par jeu côté client.
+
+### Indépendance des jeux côté client
+
+1317. Rechercher tous les noms de jeux concrets dans le code Gameplay générique.
+
+1318. Identifier chaque branche conditionnelle dépendant d'un jeu concret.
+
+1319. Remplacer ces branches par des capabilities lorsque le comportement est générique.
+
+1320. Déplacer une présentation réellement spécifique dans une extension appartenant au jeu lorsqu'elle ne peut pas être générique.
+
+1321. Empêcher le shell Gameplay de connaître les jeux installés.
+
+1322. Empêcher `GamePlayPanel` de connaître les jeux installés.
+
+1323. Empêcher les panneaux génériques Hand, Grid, Movement et Workflow de connaître des jeux concrets.
+
+1324. Empêcher les codecs génériques Gameplay de comparer `gameType` à un jeu concret.
+
+1325. Autoriser le catalogue à connaître l'identité d'un jeu comme donnée, sans en connaître les règles.
+
+1326. Autoriser la navigation à transporter un `gameType`, sans l'interpréter comme comportement.
+
+1327. Faire de la composition le seul endroit pouvant associer une extension spécifique à un jeu lorsqu'une telle extension est indispensable.
+
+1328. Tester le client Gameplay avec un faux jeu inconnu au moment de sa compilation lorsque le protocole le permet.
+
+1329. Vérifier qu'une nouvelle définition de jeu utilisant des capabilities existantes ne nécessite aucune modification du shell client.
+
+### Cohérence moteur backend/client
+
+1330. Définir précisément quelles capabilities sont des contrats publics entre moteur backend et client.
+
+1331. Versionner ces capabilities lorsqu'une rupture de structure est nécessaire.
+
+1332. Éviter d'exposer directement la représentation interne d'une primitive moteur.
+
+1333. Exposer une projection réseau stable adaptée au client.
+
+1334. Permettre au backend de refactorer son moteur sans modifier cette projection.
+
+1335. Permettre au client de refactorer son UI sans modifier les règles serveur.
+
+1336. Ajouter des tests de compatibilité sur chaque capability publique.
+
+### Admin et données dynamiques
+
+1337. Déterminer quelles commandes Admin sont réellement dynamiques.
+
+1338. Conserver une représentation dynamique uniquement pour ces commandes.
+
+1339. Donner des types C++ explicites aux commandes Admin stables.
+
+1340. Donner des types C++ explicites aux réponses Admin stables.
+
+1341. Éviter un énorme catalogue central de comportements Admin codés par identifiant de commande.
+
+1342. Séparer les commandes Admin par capacité fonctionnelle.
+
+1343. Éviter que l'ajout d'une commande Admin impose de modifier plusieurs switches centraux.
+
+1344. Définir les métadonnées de formulaire comme données lorsque leur comportement est réellement déclaratif.
+
+1345. Garder les validations métier sensibles côté backend.
+
+1346. Utiliser la validation client uniquement pour fournir un retour rapide à l'utilisateur.
+
+### Internationalisation
+
+1347. Préparer les textes UI pour une éventuelle localisation sans mélanger cette préoccupation au domaine.
+
+1348. Éviter de construire des phrases complexes par concaténation de fragments lorsque cela empêcherait leur traduction.
+
+1349. Donner des clés ou unités sémantiques aux textes réutilisables.
+
+1350. Garder les messages techniques séparés des messages utilisateur.
+
+1351. Utiliser Unicode de manière cohérente.
+
+1352. Éliminer les séquences d'octets UTF-8 écrites manuellement dans les chaînes C++ lorsque possible.
+
+1353. Tester les caractères accentués dans toutes les entrées utilisateur.
+
+1354. Tester les noms Unicode provenant du serveur.
+
+1355. Vérifier les conversions `std::string` ↔ `wxString`.
+
+1356. Éviter les conversions passant par l'encodage système Windows.
+
+### Dates et temps
+
+1357. Utiliser `std::chrono` pour les timestamps internes lorsque possible.
+
+1358. Définir explicitement si un timestamp réseau est UTC.
+
+1359. Parser les timestamps serveur dans une couche dédiée.
+
+1360. Éviter les conversions dépendant du fuseau local pour les comparaisons techniques.
+
+1361. Convertir vers l'heure locale uniquement pour l'affichage.
+
+1362. Tester les changements d'heure saisonniers pour les écrans affichant des dates locales.
+
+1363. Tester les dates invalides reçues du serveur.
+
+1364. Ne pas utiliser l'horloge système pour mesurer une durée.
+
+1365. Utiliser `steady_clock` pour les timeouts et backoffs.
+
+### Identifiants numériques
+
+1366. Vérifier les conversions JSON vers `int`.
+
+1367. Refuser les identifiants dépassant la plage du type C++ choisi.
+
+1368. Éviter les conversions implicites signed/unsigned.
+
+1369. Éviter d'utiliser `0` comme valeur sentinelle lorsqu'un `optional` exprime mieux l'absence.
+
+1370. Migrer progressivement les sentinelles `roomId_ = 0` vers un état explicite lorsque cela simplifie les invariants.
+
+1371. Faire de même pour les autres identifiants optionnels.
+
+1372. Vérifier les conversions `size_t` vers `int` pour les APIs wxWidgets.
+
+1373. Vérifier les index avant tout accès à une collection.
+
+### Valeurs utilisateur
+
+1374. Borner les textes saisis avant envoi.
+
+1375. Valider les champs numériques avant conversion.
+
+1376. Ne pas utiliser `atoi` ou équivalent permissif.
+
+1377. Fournir une erreur claire pour une saisie numérique invalide.
+
+1378. Ne pas tronquer silencieusement une donnée utilisateur importante.
+
+1379. Normaliser uniquement les données pour lesquelles le protocole définit une normalisation.
+
+1380. Ne pas transformer arbitrairement la casse d'un identifiant sensible.
+
+### Clipboard et interactions système
+
+1381. Vérifier les données copiées vers le presse-papiers.
+
+1382. Éviter de copier automatiquement des secrets.
+
+1383. Nettoyer les textes avant de les passer à une API système si nécessaire.
+
+1384. Valider les URLs avant ouverture externe.
+
+1385. Demander confirmation avant une ouverture externe sensible lorsque l'origine n'est pas évidente.
+
+### Crash et récupération
+
+1386. Définir un handler global pour journaliser les exceptions fatales récupérables au niveau application.
+
+1387. Ne pas tenter de continuer après une corruption mémoire ou un état natif manifestement incohérent.
+
+1388. Flush les logs essentiels lors d'un crash lorsque cela peut être fait sûrement.
+
+1389. Ne pas écrire de secrets dans les crash diagnostics.
+
+1390. Permettre de redémarrer proprement après un crash sans dépendre de fichiers temporaires laissés dans un état invalide.
+
+1391. Nettoyer les artefacts temporaires obsolètes au prochain lancement lorsque cela est sûr.
+
+1392. Détecter une mise à jour interrompue et choisir explicitement entre reprise et rollback.
+
+### Démarrage
+
+1393. Mesurer le temps de démarrage.
+
+1394. Éviter les appels réseau bloquants sur le thread UI pendant le démarrage.
+
+1395. Éviter les scans filesystem coûteux sur le thread UI.
+
+1396. Initialiser paresseusement les services lourds qui ne sont pas nécessaires immédiatement.
+
+1397. Ne pas retarder l'affichage de l'interface pour initialiser une fonctionnalité secondaire.
+
+1398. Charger les options essentielles avant la construction des écrans qui en dépendent.
+
+1399. Gérer une configuration locale corrompue sans rendre l'application inutilisable lorsque des valeurs sûres peuvent être restaurées.
+
+1400. Afficher un état de démarrage explicite lorsque l'initialisation asynchrone prend du temps.
+
+### Réseau au démarrage
+
+1401. Ne pas lancer plusieurs connexions redondantes immédiatement au démarrage.
+
+1402. Mutualiser une connexion lorsqu'elle est réellement conçue pour être partagée.
+
+1403. Retarder les connexions des fonctionnalités non utilisées lorsque cela réduit la charge sans dégrader l'expérience.
+
+1404. Éviter une tempête de requêtes après login.
+
+1405. Coordonner les chargements initiaux des écrans.
+
+1406. Mettre en cache uniquement les réponses initiales réellement partagées.
+
+### Logout
+
+1407. Arrêter les connexions appartenant à l'utilisateur avant d'effacer sa session.
+
+1408. Annuler les requêtes en cours.
+
+1409. Invalider les générations de callbacks.
+
+1410. Fermer les Rooms actives.
+
+1411. Fermer Gameplay.
+
+1412. Fermer Chat.
+
+1413. Fermer Messaging.
+
+1414. Fermer Presence.
+
+1415. Fermer les flux Social concernés.
+
+1416. Vider les données privées en mémoire qui ne doivent pas survivre au logout.
+
+1417. Vider les tokens.
+
+1418. Effacer les credentials persistés lorsque le logout demandé implique une déconnexion durable.
+
+1419. Revenir à un état UI propre.
+
+1420. Tester login A → logout → login B sans redémarrage.
+
+### CI client
+
+1421. Compiler le client sur chaque pull request touchant son code ou ses contrats.
+
+1422. Exécuter les tests unitaires client sur chaque pull request pertinente.
+
+1423. Exécuter les tests de contrat backend/client lorsqu'un protocole partagé change.
+
+1424. Exécuter l'analyse statique dans la CI.
+
+1425. Exécuter les tests sanitizers dans une pipeline adaptée lorsqu'ils sont supportés.
+
+1426. Construire le vrai artefact Release dans la CI.
+
+1427. Tester le lancement minimal de cet artefact lorsque l'environnement CI le permet.
+
+1428. Vérifier les DLL requises sur l'artefact final.
+
+1429. Vérifier la signature de l'artefact destiné à la distribution.
+
+1430. Vérifier que l'artefact final ne contient pas de secrets.
+
+1431. Vérifier que l'artefact final ne contient pas de fichiers de développement inutiles.
+
+1432. Vérifier la reproductibilité du packaging.
+
+### Tests end-to-end
+
+1433. Tester login complet client → backend.
+
+1434. Tester refresh token complet.
+
+1435. Tester logout complet.
+
+1436. Tester création de Room.
+
+1437. Tester join Room.
+
+1438. Tester départ Room.
+
+1439. Tester reconnexion Room.
+
+1440. Tester démarrage d'une partie.
+
+1441. Tester une commande Gameplay.
+
+1442. Tester un conflit de version Gameplay.
+
+1443. Tester une reconnexion Gameplay.
+
+1444. Tester Chat.
+
+1445. Tester Messaging.
+
+1446. Tester Social.
+
+1447. Tester Notification.
+
+1448. Tester Vault.
+
+1449. Tester Catalog.
+
+1450. Tester Leaderboard.
+
+1451. Tester les opérations Admin critiques dans un environnement isolé.
+
+1452. Tester la récupération après redémarrage backend pendant une session client.
+
+1453. Tester la perte Redis côté serveur sans crash client.
+
+1454. Tester une indisponibilité MySQL exposée proprement au client.
+
+1455. Tester une réponse serveur invalide sans crash natif du client.
+
+### Nettoyage architectural final
+
+1456. Supprimer les wrappers devenus inutiles après les refactorings.
+
+1457. Supprimer les anciennes APIs internes devenues inutilisées.
+
+1458. Supprimer les chemins de compatibilité qui n'ont plus de consommateurs.
+
+1459. Supprimer les classes devenues vides.
+
+1460. Supprimer les fichiers devenus vides.
+
+1461. Supprimer les includes devenus inutil
+
+
+1462. Supprimer les forward declarations devenues inutiles.
+
+1463. Supprimer les constantes devenues inutilisées.
+
+1464. Supprimer les configurations devenues inutilisées.
+
+1465. Supprimer les anciennes branches de protocole qui ne sont plus supportées.
+
+1466. Supprimer les anciennes migrations locales qui ne sont plus nécessaires.
+
+1467. Supprimer les workarounds devenus inutiles après correction de leur cause.
+
+1468. Supprimer les commentaires décrivant un ancien comportement qui n'existe plus.
+
+1469. Mettre à jour les noms de classes qui ne correspondent plus à leur responsabilité.
+
+1470. Mettre à jour les noms de méthodes qui cachent désormais leur véritable effet.
+
+1471. Réduire les interfaces publiques devenues trop larges après refactoring.
+
+1472. Rendre privées les méthodes qui n'ont plus besoin d'être exposées.
+
+1473. Rendre internes les types qui n'appartiennent plus à une API publique.
+
+1474. Vérifier une dernière fois les dépendances `domain → infrastructure`.
+
+1475. Vérifier une dernière fois les dépendances `application → presentation`.
+
+1476. Vérifier une dernière fois les imports profonds entre modules.
+
+1477. Vérifier une dernière fois les dépendances de `shared` vers les modules.
+
+1478. Vérifier une dernière fois qu'aucun jeu concret n'est connu du Gameplay générique.
+
+1479. Vérifier une dernière fois que le client ne réimplémente aucune règle métier autoritative du backend.
+
+1480. Vérifier une dernière fois que le JSON brut reste aux frontières prévues.
+
+1481. Vérifier une dernière fois les `catch (...)`.
+
+1482. Vérifier une dernière fois les pointeurs bruts possédants.
+
+1483. Vérifier une dernière fois les captures asynchrones de `this`.
+
+1484. Vérifier une dernière fois les accès UI depuis les workers.
+
+1485. Vérifier une dernière fois les threads non joints.
+
+1486. Vérifier une dernière fois les ressources Win32 non RAII.
+
+1487. Vérifier une dernière fois les collections non bornées.
+
+1488. Vérifier une dernière fois les retries non bornés ou injustifiés.
+
+1489. Vérifier une dernière fois les boucles de polling.
+
+1490. Vérifier une dernière fois les opérations réseau effectuées sur le thread UI.
+
+1491. Vérifier une dernière fois les opérations filesystem lourdes effectuées sur le thread UI.
+
+1492. Vérifier une dernière fois les secrets potentiellement présents dans les logs.
+
+1493. Vérifier une dernière fois les données privées présentes dans les diagnostics.
+
+1494. Vérifier une dernière fois les chemins filesystem provenant de données externes.
+
+1495. Vérifier une dernière fois les URLs provenant du serveur.
+
+1496. Vérifier une dernière fois les limites de taille des données réseau.
+
+1497. Vérifier une dernière fois les limites de taille des données locales.
+
+1498. Vérifier une dernière fois la cancellation de chaque opération longue.
+
+1499. Vérifier une dernière fois le shutdown de chaque service stateful.
+
+1500. Vérifier une dernière fois le logout et la destruction des données de session.
+
+1501. Exécuter tous les tests unitaires après le désendettement.
+
+1502. Exécuter tous les tests d'intégration après le désendettement.
+
+1503. Exécuter les tests de contrat backend/client après le désendettement.
+
+1504. Exécuter les tests de concurrence après le désendettement.
+
+1505. Exécuter les tests de reconnexion après le désendettement.
+
+1506. Exécuter les tests d'accessibilité après le désendettement.
+
+1507. Exécuter les tests Update après le désendettement.
+
+1508. Exécuter les tests audio après le désendettement.
+
+1509. Exécuter l'analyse statique finale.
+
+1510. Exécuter les sanitizers finaux.
+
+1511. Exécuter le test longue durée final.
+
+1512. Profiler la mémoire finale.
+
+1513. Profiler le CPU final.
+
+1514. Vérifier le nombre de threads final.
+
+1515. Vérifier le nombre de handles Windows final.
+
+1516. Mesurer le temps de démarrage final.
+
+1517. Mesurer les performances Gameplay finales.
+
+1518. Mesurer les performances réseau finales.
+
+1519. Construire le client depuis un environnement propre.
+
+1520. Construire le package Release exact destiné à la distribution.
+
+1521. Installer ce package sur une machine Windows propre.
+
+1522. Tester l'application sans environnement de développement installé.
+
+1523. Tester une mise à jour depuis la release précédente.
+
+1524. Tester un rollback d'update.
+
+1525. Tester le client final contre le backend de production compatible.
+
+1526. Vérifier qu'aucune modification du chantier n'a introduit une rupture de protocole involontaire.
+
+1527. Vérifier qu'un jeu utilisant uniquement les capabilities existantes peut être ajouté côté backend sans modification du Gameplay générique client.
+
+1528. Vérifier qu'un jeu peut être retiré sans casser le Gameplay générique.
+
+1529. Vérifier que le shell Gameplay peut fonctionner sans connaître la liste des jeux existants.
+
+1530. Vérifier que les règles métier restent autoritatives côté backend.
+
+1531. Vérifier que le client reste principalement une couche d'intention, de projection et d'accessibilité.
+
+1532. Vérifier que chaque service important possède une responsabilité explicable en une phrase.
+
+1533. Vérifier que chaque classe UI importante possède une responsabilité explicable en une phrase.
+
+1534. Vérifier qu'une fonctionnalité ordinaire ne nécessite pas de traverser inutilement une grande quantité de wrappers.
+
+1535. Vérifier qu'un nouveau développeur peut suivre une requête réseau depuis la vue jusqu'au gateway sans ambiguïté.
+
+1536. Vérifier qu'un événement serveur peut être suivi du gateway jusqu'à la vue sans passer par des transformations redondantes.
+
+1537. Vérifier que chaque abstraction restante apporte soit un invariant, soit une substitution, soit une réduction réelle du couplage.
+
+1538. Supprimer les abstractions restantes qui n'apportent aucune de ces trois propriétés.
+
+1539. Vérifier que les performances n'ont pas régressé par rapport à la version précédant le désendettement.
+
+1540. Vérifier que la consommation mémoire n'a pas régressé.
+
+1541. Vérifier que le temps de démarrage n'a pas régressé.
+
+1542. Vérifier que l'accessibilité n'a pas régressé.
+
+1543. Vérifier que la résilience réseau n'a pas régressé.
+
+1544. Vérifier que la sécurité de l'updater n'a pas régressé.
+
+1545. Vérifier que les garanties de stockage des credentials n'ont pas régressé.
+
+1546. Vérifier que le comportement de shutdown n'a pas régressé.
+
+1547. Vérifier qu'il ne reste aucun avertissement de compilation projet non justifié.
+
+1548. Vérifier qu'il ne reste aucune erreur d'analyse statique retenue comme pertinente.
+
+1549. Vérifier qu'il ne reste aucun défaut sanitizer connu.
+
+1550. Vérifier qu'il ne reste aucune fuite de handle connue.
+
+1551. Vérifier qu'il ne reste aucune croissance mémoire non bornée connue.
+
+1552. Vérifier qu'il ne reste aucune race condition connue.
+
+1553. Vérifier qu'il ne reste aucun callback pouvant cibler un objet détruit.
+
+1554. Vérifier qu'il ne reste aucune entrée externe non bornée connue.
+
+1555. Vérifier qu'il ne reste aucun secret journalisé connu.
+
+1556. Vérifier qu'il ne reste aucune règle métier serveur dupliquée dans le client.
+
+1557. Vérifier qu'il ne reste aucune dépendance à un jeu concret dans le Gameplay générique.
+
+1558. Vérifier qu'il ne reste aucune abstraction identifiée comme inutile.
+
+1559. Vérifier qu'il ne reste aucune duplication identifiée dont l'extraction améliore réellement la conception.
+
+1560. Considérer le chantier de dette client terminé lorsque **toutes les dettes identifiées ont été soit corrigées, soit explicitement démontrées comme complexité nécessaire par le code et les tests**.

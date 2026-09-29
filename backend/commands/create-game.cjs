@@ -13,9 +13,8 @@ const GENERATED_FILES = [
   'content.ts',
   'game.spec.ts',
   'manifest.json',
-  'rules.md',
 ];
-const JSON_ONLY_FILES = ['manifest.json', 'game.json', 'rules.md'];
+const JSON_ONLY_FILES = ['manifest.json', 'game.json'];
 const GAME_TEMPLATES = ['empty', 'card', 'race', 'quiz', 'party', 'board'];
 
 function kebabToPascal(value) {
@@ -81,7 +80,6 @@ function templates(configuration) {
   const family = familyTemplate(template, typeName);
   return {
     'manifest.json': JSON.stringify({code, name, engine: code, minPlayers, maxPlayers, summary: `Règles de ${name} à compléter.`}, null, 2) + '\n',
-    'rules.md': `# ${name}\n\nRègles à compléter avant publication du jeu.\n`,
     'content.ts': `import { defineGameContent, gameInput${family.contentImports} } from '../../../engine/sdk/public-api';
 import manifest from './manifest.json';
 
@@ -140,7 +138,6 @@ function jsonOnlyTemplates(configuration) {
       actions: { score: { effects: [{ kind: 'gain-score', amount: 1 }, { kind: 'complete-turn' }] } },
       victory: { kind: 'score-at-least', amount: 3 },
     }, null, 2) + '\n',
-    'rules.md': `# ${name}\n\nÀ votre tour, gagnez un point. Le premier joueur à trois points gagne.\n`,
   };
 }
 

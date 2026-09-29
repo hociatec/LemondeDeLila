@@ -29,12 +29,24 @@ export function teamPawnRaceRules(source: TeamPawnRaceProgram) {
       if (first) ctx.turn.to(first.id);
     },
     assigned: ({ playerId, pawnId, ctx }) => {
-      const family = program.families.find((candidate) => candidate.id === pawnId);
+      const family = program.families.find(
+        (candidate) => candidate.id === pawnId,
+      );
       if (family)
-        ctx.events.message('game.team-pawn.family-selected', {
-          playerId,
-          habitat: family.habitat,
-        });
+        ctx.events.message(
+          'game.team-pawn.family-selected',
+          {
+            playerId,
+            habitat: family.habitat,
+          },
+          {
+            default: `${playerName(ctx, playerId)} a choisi ${withDefiniteArticle(family.habitat)}.`,
+            byPlayerId: {
+              [playerId]: `Vous avez choisi ${withDefiniteArticle(family.habitat)}.`,
+            },
+            supersedes: ['pawn.assigned'],
+          },
+        );
     },
   });
   const finishTurn = (total: number, ctx: Context) => {
@@ -182,16 +194,63 @@ function move(
     onFinish: () =>
       ctx.match.finish({ winners: [playerId], reason: program.finishReason }),
   });
-  ctx.events.message('game.team-pawn.moved', {
-    playerId,
-    pawnLabel: pawnLabel(program, selected.pawnId),
-    distance: selected.distance,
-    position: selected.to + 1,
-    enteredTrack: selected.from < 0 && selected.to >= 0,
-    originLabel:
-      program.families.find((family) => selected.pawnId.startsWith(`${family.id}:`))
-        ?.habitat ?? 'enclos',
-  });
+  ctx.events.message(
+    'game.team-pawn.moved',
+    {
+      playerId,
+      pawnLabel: pawnLabel(program, selected.pawnId),
+      distance: selected.distance,
+      position: selected.to + 1,
+      enteredTrack: selected.from < 0 && selected.to >= 0,
+      originLabel:
+        program.families.find((family) =>
+          selected.pawnId.startsWith(`${family.id}:`),
+        )?.habitat ?? 'enclos',
+    },
+    teamPawnMoveNarration(program, playerId, selected, ctx),
+  );
+}
+
+function teamPawnMoveNarration(
+  program: TeamPawnRaceProgram,
+  playerId: number,
+  selected: PawnMove,
+  ctx: Context,
+) {
+  const pawn = pawnLabel(program, selected.pawnId) || 'le pion';
+  const origin =
+    program.families.find((family) =>
+      selected.pawnId.startsWith(`${family.id}:`),
+    )?.habitat ?? 'enclos';
+  const position = selected.to + 1;
+  const name = playerName(ctx, playerId);
+  const entered = selected.from < 0 && selected.to >= 0;
+  const distance = Math.abs(selected.distance);
+  return {
+    default: entered
+      ? `${name} sort son ${pawn} de ${fromHabitat(origin)} et le place en case ${position}.`
+      : `${name} déplace son ${pawn} de ${distance} case${distance === 1 ? '' : 's'} et le place en case ${position}.`,
+    byPlayerId: {
+      [playerId]: entered
+        ? `Vous sortez votre ${pawn} de ${fromHabitat(origin)} et le placez en case ${position}.`
+        : `Vous déplacez votre ${pawn} de ${distance} case${distance === 1 ? '' : 's'} et le placez en case ${position}.`,
+    },
+  };
+}
+
+function playerName(ctx: Context, playerId: number): string {
+  return (
+    ctx.players.all().find((player) => player.id === playerId)?.username ??
+    `Joueur ${playerId}`
+  );
+}
+
+function withDefiniteArticle(value: string): string {
+  return /^[aeiouyéèêëàâîïôöùûü]/iu.test(value) ? `l’${value}` : `la ${value}`;
+}
+
+function fromHabitat(value: string): string {
+  return /^[aeiouyéèêëàâîïôöùûü]/iu.test(value) ? `l’${value}` : `la ${value}`;
 }
 
 function capture(

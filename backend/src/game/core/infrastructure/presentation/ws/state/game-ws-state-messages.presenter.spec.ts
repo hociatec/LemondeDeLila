@@ -4,15 +4,47 @@ import { presentedEvents } from '../../../../../testing/helpers/presented-state-
 describe('GameWsStateMessagesPresenter', () => {
   it('names played battle cards and announces a battle', () => {
     const presenter = new GameWsStateMessagesPresenter();
-    const placed = { id: 'placed', type: 'game.message', data: {
-      key: 'game.card.battle.card-placed', params: { playerId: 1 } } };
-    const battle = { id: 'battle', type: 'game.message', data: {
-      key: 'game.card.battle.started', params: {} } };
-    const state = presenter.withServerMessages({
-      match: { status: 'playing' }, players: { all: [{ id: 1, username: 'Lila' }, { id: 2, username: 'Noé' }] },
-      events: { recent: [placed, battle], latestByType: { 'game.message': battle } },
-    }, 1, {} as never);
-    expect(presentedEvents(state.events).recent.map((event) => event.data.message)).toEqual([
+    const placed = {
+      id: 'placed',
+      type: 'game.message',
+      data: {
+        key: 'game.card.battle.card-placed',
+        params: { playerId: 1 },
+        narration: {
+          default: 'Lila pose une carte sur la table.',
+          byPlayerId: { 1: 'Vous posez une carte sur la table.' },
+        },
+      },
+    };
+    const battle = {
+      id: 'battle',
+      type: 'game.message',
+      data: {
+        key: 'game.card.battle.started',
+        params: {},
+        narration: { default: 'Égalité : une bataille commence.' },
+      },
+    };
+    const state = presenter.withServerMessages(
+      {
+        match: { status: 'playing' },
+        players: {
+          all: [
+            { id: 1, username: 'Lila' },
+            { id: 2, username: 'Noé' },
+          ],
+        },
+        events: {
+          recent: [placed, battle],
+          latestByType: { 'game.message': battle },
+        },
+      },
+      1,
+      {} as never,
+    );
+    expect(
+      presentedEvents(state.events).recent.map((event) => event.data.message),
+    ).toEqual([
       'Vous posez une carte sur la table.',
       'Égalité : une bataille commence.',
     ]);
@@ -83,7 +115,9 @@ describe('GameWsStateMessagesPresenter', () => {
       {} as never,
     );
 
-    expect(presentedEvents(state.events).recent[0].data.message).toBeUndefined();
+    expect(
+      presentedEvents(state.events).recent[0].data.message,
+    ).toBeUndefined();
 
     const wrongViewer = new GameWsStateMessagesPresenter().withServerMessages(
       state,

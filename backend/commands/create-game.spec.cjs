@@ -128,7 +128,7 @@ test('create-game can scaffold a JSON-only engine profile', async () => {
       maxPlayers: 4,
       jsonOnly: true,
     });
-    assert.deepEqual(fs.readdirSync(directory).sort(), ['game.json', 'manifest.json', 'rules.md']);
+    assert.deepEqual(fs.readdirSync(directory).sort(), ['game.json', 'manifest.json']);
     assert.equal(JSON.parse(fs.readFileSync(path.join(directory, 'game.json'), 'utf8')).schemaVersion, 1);
     assert.equal(fs.existsSync(path.join(directory, 'game.ts')), false);
   } finally {

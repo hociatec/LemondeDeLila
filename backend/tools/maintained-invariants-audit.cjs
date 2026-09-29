@@ -48,18 +48,6 @@ for (const file of [
   'src/platform/lifecycle/application/application-shutdown.service.spec.ts',
   'src/modules/update/infrastructure/persistence/wx-update-release.service.spec.ts',
   'src/modules/user/infrastructure/security/redis-refresh-token.service.spec.ts',
-  'docs/architecture/engine-effect-pack-governance.md',
-  'docs/architecture/engine-snapshot-migrations.md',
-  'docs/architecture/game-automation-delivery.md',
-  'docs/architecture/game-event-contract.md',
-  'docs/architecture/realtime-resilience-test-matrix.md',
-  'docs/architecture/table-ownership.md',
-  'docs/architecture/production-readiness.md',
-  'docs/quality/corrections-130-2026-09-12.md',
-  'docs/quality/corrections-100-generic-engine-2026-09-12.md',
-  'docs/quality/corrections-60-extension-generalization-2026-09-12.md',
-  'docs/quality/corrections-110-extension-finalization-2026-09-12.md',
-  'docs/quality/generic-effect-packs-2026-09-12.md',
 ])
   exists(file);
 

@@ -1,7 +1,4 @@
-import {
-  appendGameTimelineCommit,
-  createGameTimeline,
-} from './game-timeline';
+import { appendGameTimelineCommit, createGameTimeline } from './game-timeline';
 import type { GameState } from '../models/game-state.model';
 
 describe('game timeline bounds', () => {

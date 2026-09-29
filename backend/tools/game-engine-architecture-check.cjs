@@ -202,7 +202,7 @@ function auditGamePackages(gamesRoot, violations) {
         'Un jeu JSON ne doit pas contenir de logique TypeScript parallèle.',
       );
     }
-    for (const file of jsonOnly ? ['game.json', 'rules.md'] : standardFiles) {
+    for (const file of jsonOnly ? ['game.json'] : standardFiles) {
       if (!fs.existsSync(path.join(gameDirectory, file))) {
         add(
           violations,
@@ -643,13 +643,13 @@ function auditCli(violations) {
   const cli = require(path.join(repoRoot, 'commands', 'create-game.cjs'));
   if (
     JSON.stringify(cli.GENERATED_FILES) !==
-    JSON.stringify([...standardFiles, 'manifest.json', 'rules.md'])
+    JSON.stringify([...standardFiles, 'manifest.json'])
   ) {
     add(
       violations,
       'complete-game-package-cli',
       'commands/create-game.cjs',
-      'Le CLI doit générer les quatre fichiers TypeScript, le manifeste et les règles.',
+      'Le CLI doit générer les quatre fichiers TypeScript et le manifeste.',
     );
   }
 }
