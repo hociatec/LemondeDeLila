@@ -117,25 +117,31 @@ it('runs a minimal board without collection, cards, quiz, exchange or pawns', ()
       { component: 'dice.set', id: 'die', count: 1, sides: 6 },
     ],
     actions: { roll: { recipe: 'board-roll' } },
-    victory: { kind: 'by-board' },
-    board: {
-      namespace: 'minimal',
-      trackId: 'path',
-      diceId: 'die',
-      playingPhase: 'playing',
-      startingPlayer: 'first',
-      maxDepth: 4,
-      bindings: {},
-      tiles: [
-        { id: 'start', label: 'Start', description: '', operations: [] },
-        {
-          id: 'end',
-          label: 'Finish',
-          description: '',
-          operations: [{ kind: 'finish', reason: 'arrived' }],
+    victory: { kind: 'manual' },
+    patterns: [
+      {
+        kind: 'board-movement-landings',
+        actionIds: { roll: 'roll', draw: 'draw' },
+        config: {
+          namespace: 'minimal',
+          trackId: 'path',
+          diceId: 'die',
+          playingPhase: 'playing',
+          startingPlayer: 'first',
+          maxDepth: 4,
+          bindings: {},
+          tiles: [
+            { id: 'start', label: 'Start', description: '', operations: [] },
+            {
+              id: 'end',
+              label: 'Finish',
+              description: '',
+              operations: [{ kind: 'finish', reason: 'arrived' }],
+            },
+          ],
         },
-      ],
-    },
+      },
+    ],
   });
   const runtime = new DeclarativeGameRuntime(definition);
   const initial = runtime.hydrateInitialState(baseState());
