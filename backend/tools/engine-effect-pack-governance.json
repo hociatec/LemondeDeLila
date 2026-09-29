@@ -125,8 +125,7 @@
       "race-paired-pawns",
       "race-bounce-quiz",
       "race-treasure-track"
-    ],
-    "spatial": ["spatial-grid-placement"]
+    ]
   },
   "genericGameplayFiles": [
     "card-actions.recipes.ts",
@@ -254,14 +253,6 @@
       "domain": "cards",
       "scope": "game-specific",
       "classificationReason": "cards-theme-name implements name and theme card combinations. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "spatial-grid-placement": {
-      "property": "grid",
-      "mechanic": "grid token placement",
-      "domain": "spatial",
-      "scope": "game-specific",
-      "classificationReason": "spatial-grid-placement implements grid token placement. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
     "cards-judged-submission": {
@@ -405,7 +396,6 @@
     "choice-story-challenge",
     "cards-discard-penalty",
     "cards-judged-submission",
-    "spatial-grid-placement",
     "board-movement-landings"
   ],
   "coreRootFieldReviews": {

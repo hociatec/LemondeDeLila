@@ -90,6 +90,16 @@
         "src/game/testing/architecture-tests/game/family-request-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-family-request.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-sacres/morpion/game.json",
+      "fromSha256": "0080c812de2c03a4dbecac1da353e5d165a2a824fb8b1203a4aa7eef763b833b",
+      "toSha256": "1511e5ce8e77df5bfacb147f0ece6079014c3a0d9e549140476bbc0fc2d79875",
+      "justification": "Le pattern grid-placement générique porte désormais grille, placement, sélection de pion, bot, alignement et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/morpion-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-grid-placement.spec.ts"
+      ]
     }
   ]
 }

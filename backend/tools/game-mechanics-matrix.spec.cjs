@@ -7,7 +7,7 @@ const { buildMatrix } = require('./game-mechanics-matrix.cjs');
 test('maps every game and specific pack, with real shared resource recipe consumers', () => {
   const matrix = buildMatrix();
   assert.equal(matrix.games.length, 39);
-  assert.equal(matrix.packs.length, 29);
+  assert.equal(matrix.packs.length, 28);
   assert(matrix.packs.every((pack) => pack.consumers.length > 0));
   assert(
     matrix.games.every((game) => Object.keys(game.mechanics).length === 14),

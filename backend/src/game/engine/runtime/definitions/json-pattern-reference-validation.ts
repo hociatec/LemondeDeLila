@@ -5,6 +5,7 @@ import {
   assertFamilyRequestReferences,
   assertThemedSetCollectionReferences,
 } from './json-collection-pattern-reference-validation';
+import { assertGridPlacementReferences } from './json-grid-pattern-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
 
@@ -15,6 +16,7 @@ export function assertJsonPatternReferences(
   counters: ReadonlySet<string>,
   phases: Readonly<Record<string, { transitions?: readonly string[] }>>,
   initialPhase: string,
+  gameId: string,
   maximumPlayers: number,
   fail: Failure,
 ): void {
@@ -63,6 +65,15 @@ export function assertJsonPatternReferences(
       assertThemedSetCollectionReferences(pattern, index, components, fail);
     if (pattern.kind === 'family-request')
       assertFamilyRequestReferences(pattern, index, components, counters, fail);
+    if (pattern.kind === 'grid-placement')
+      assertGridPlacementReferences(
+        pattern,
+        index,
+        components,
+        gameId,
+        maximumPlayers,
+        fail,
+      );
   }
 }
 

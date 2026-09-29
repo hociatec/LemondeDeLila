@@ -2284,19 +2284,13 @@
     },
     {
       "id": "morpion",
-      "packs": [
-        "spatial-grid-placement"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/vents-sacres/morpion/game.json:9",
-          "src/game/games/vents-sacres/morpion/game.json:12",
-          "src/game/games/vents-sacres/morpion/game.spec.ts:7",
-          "src/game/games/vents-sacres/morpion/game.spec.ts:14",
-          "src/game/rules/game-specific/spatial-grid-placement/json-grid-schema.ts:79",
-          "src/game/rules/game-specific/spatial-grid-placement/json-grid-schema.ts:82",
-          "src/game/rules/game-specific/spatial-grid-placement/json-grid-schema.ts:83",
-          "src/game/rules/game-specific/spatial-grid-placement/json-grid-schema.ts:84"
+          "src/game/games/vents-sacres/morpion/game.json:43",
+          "src/game/games/vents-sacres/morpion/game.json:46",
+          "src/game/games/vents-sacres/morpion/game.spec.ts:6",
+          "src/game/games/vents-sacres/morpion/game.spec.ts:12"
         ],
         "ownership": [],
         "collision": [],
@@ -2304,27 +2298,17 @@
         "payment": [],
         "cards": [],
         "zones": [],
-        "choices": [
-          "src/game/rules/game-specific/spatial-grid-placement/grid-placement.recipes.ts:3",
-          "src/game/rules/game-specific/spatial-grid-placement/grid-placement.recipes.ts:76"
-        ],
+        "choices": [],
         "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-sacres/morpion/game.json:37",
-          "src/game/games/vents-sacres/morpion/game.spec.ts:64"
+          "src/game/games/vents-sacres/morpion/game.json:69",
+          "src/game/games/vents-sacres/morpion/game.spec.ts:62"
         ],
         "targeting": [],
         "triggers": [
-          "src/game/games/vents-sacres/morpion/game.json:90",
-          "src/game/rules/game-specific/spatial-grid-placement/effect-pack.ts:6",
-          "src/game/rules/game-specific/spatial-grid-placement/effect-pack.ts:39",
-          "src/game/rules/game-specific/spatial-grid-placement/grid-placement.recipes.ts:37",
-          "src/game/rules/game-specific/spatial-grid-placement/grid-placement.recipes.ts:49",
-          "src/game/rules/game-specific/spatial-grid-placement/grid-placement.recipes.ts:70",
-          "src/game/rules/game-specific/spatial-grid-placement/json-grid-schema.ts:30",
-          "src/game/rules/game-specific/spatial-grid-placement/program.ts:16"
+          "src/game/games/vents-sacres/morpion/game.json:37"
         ]
       }
     },
@@ -3542,12 +3526,6 @@
       "name": "race-treasure-track",
       "consumers": [
         "pirates-en-vadrouille"
-      ]
-    },
-    {
-      "name": "spatial-grid-placement",
-      "consumers": [
-        "morpion"
       ]
     }
   ]

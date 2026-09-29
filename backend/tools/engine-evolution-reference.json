@@ -68,8 +68,7 @@
     "race-quiz-event-track",
     "race-resource-track",
     "race-team-pawn-capture",
-    "race-treasure-track",
-    "spatial-grid-placement"
+    "race-treasure-track"
   ],
   "primitives": [
     "availability:cards",

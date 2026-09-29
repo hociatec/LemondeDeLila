@@ -4,6 +4,7 @@ import {
   authorObject as object,
   authorRecord as record,
   authorArray as array,
+  authorBoolean as boolean,
 } from '../contracts/json-author-schema';
 
 const position: AuthorSchema = { type: 'integer', minimum: 0 };
@@ -256,5 +257,51 @@ export const familyRequestPatternSchema = object(
     'pollutionFinishReason',
     'familyFinishReason',
     'eventNamespace',
+  ],
+);
+
+const gridSize: AuthorSchema = { type: 'integer', minimum: 1, maximum: 32 };
+const gridCoordinate: AuthorSchema = {
+  type: 'integer',
+  minimum: 0,
+  maximum: 31,
+};
+export const gridPlacementPatternSchema = object(
+  {
+    kind: { const: 'grid-placement' },
+    playRecipe: id,
+    playAction: id,
+    boardId: id,
+    width: gridSize,
+    height: gridSize,
+    winLength: gridSize,
+    drawWhenFull: boolean,
+    winnerReason: id,
+    drawReason: id,
+    markEvent: id,
+    preferredCells: array(object({ x: gridCoordinate, y: gridCoordinate })),
+    pawnSelection: object(
+      {
+        setId: id,
+        choiceId: id,
+        order: { enum: ['players', 'shuffled'] },
+        automatic: boolean,
+      },
+      ['setId', 'choiceId', 'order'],
+    ),
+  },
+  [
+    'kind',
+    'playRecipe',
+    'playAction',
+    'boardId',
+    'width',
+    'height',
+    'winLength',
+    'drawWhenFull',
+    'winnerReason',
+    'drawReason',
+    'markEvent',
+    'preferredCells',
   ],
 );

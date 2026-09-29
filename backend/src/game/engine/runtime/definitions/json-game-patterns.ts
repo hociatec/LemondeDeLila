@@ -39,6 +39,10 @@ import {
   type FamilyRequestOptions,
 } from '../patterns/family-request-pattern';
 import {
+  gridPlacement,
+  type GridPlacementOptions,
+} from '../patterns/grid-placement-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -53,6 +57,7 @@ import {
   trackZoneCollectionPatternSchema,
   themedSetCollectionPatternSchema,
   familyRequestPatternSchema,
+  gridPlacementPatternSchema,
 } from './json-advanced-pattern-schemas';
 
 export type JsonGamePattern =
@@ -83,6 +88,7 @@ export type JsonGamePattern =
   | ({ kind: 'track-zone-collection' } & TrackZoneCollectionOptions)
   | ({ kind: 'themed-set-collection' } & ThemedSetCollectionOptions)
   | ({ kind: 'family-request' } & FamilyRequestOptions)
+  | ({ kind: 'grid-placement' } & GridPlacementOptions)
   | {
       kind: 'market';
       marketId: string;
@@ -293,6 +299,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     trackZoneCollectionPatternSchema,
     themedSetCollectionPatternSchema,
     familyRequestPatternSchema,
+    gridPlacementPatternSchema,
     object(
       {
         kind: { const: 'market' },
@@ -383,6 +390,10 @@ export function compileJsonPattern(
     case 'family-request': {
       const { kind: _kind, ...options } = pattern;
       return familyRequest(options);
+    }
+    case 'grid-placement': {
+      const { kind: _kind, ...options } = pattern;
+      return gridPlacement(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

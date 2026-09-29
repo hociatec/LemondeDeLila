@@ -1,9 +1,43 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "4",
+  "snapshotMigrations": [
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
+    }
+  ],
   "category": "JeuxDePlateaux",
   "world": "VentsSacres",
+  "patterns": [
+    {
+      "kind": "grid-placement",
+      "playRecipe": "grid-place",
+      "playAction": "morpion_play",
+      "boardId": "morpion",
+      "width": 3,
+      "height": 3,
+      "winLength": 3,
+      "drawWhenFull": true,
+      "winnerReason": "line-3",
+      "drawReason": "draw",
+      "markEvent": "morpion.mark.placed",
+      "preferredCells": [
+        { "x": 1, "y": 1 },
+        { "x": 0, "y": 0 },
+        { "x": 2, "y": 0 },
+        { "x": 0, "y": 2 },
+        { "x": 2, "y": 2 }
+      ],
+      "pawnSelection": {
+        "setId": "morpion",
+        "choiceId": "morpion.pawn",
+        "order": "players",
+        "automatic": false
+      }
+    }
+  ],
   "components": [
     {
       "component": "pawn.set",
@@ -22,9 +56,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "morpion_play"
-      ],
+      "actions": ["morpion_play"],
       "terminal": true
     }
   },
@@ -34,9 +66,7 @@
       "documentation": "Place le pion du joueur sur une case vide de la grille 3×3."
     }
   },
-  "victory": {
-    "kind": "by-grid"
-  },
+  "victory": { "kind": "manual" },
   "shortcuts": [
     {
       "key": "P",
@@ -49,47 +79,5 @@
       "id": "play"
     }
   ],
-  "extensions": [
-    {
-      "type": "grid",
-      "config": {
-        "boardId": "morpion",
-        "width": 3,
-        "height": 3,
-        "winLength": 3,
-        "drawWhenFull": true,
-        "winnerReason": "line-3",
-        "drawReason": "draw",
-        "markEvent": "morpion.mark.placed",
-        "preferredCells": [
-          {
-            "x": 1,
-            "y": 1
-          },
-          {
-            "x": 0,
-            "y": 0
-          },
-          {
-            "x": 2,
-            "y": 0
-          },
-          {
-            "x": 0,
-            "y": 2
-          },
-          {
-            "x": 2,
-            "y": 2
-          }
-        ],
-        "pawnSelection": {
-          "setId": "morpion",
-          "choiceId": "morpion.pawn",
-          "order": "players",
-          "automatic": false
-        }
-      }
-    }
-  ]
+  "extensions": []
 }

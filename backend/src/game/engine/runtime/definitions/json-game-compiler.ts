@@ -250,6 +250,7 @@ function assertDocumentReferences(
     new Set(Object.keys(document.setup.counters ?? {})),
     document.phases,
     document.initialPhase,
+    manifest.code,
     manifest.maxPlayers,
     fail,
   );
