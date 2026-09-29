@@ -367,6 +367,10 @@ function validateMiscInstruction({
       );
     return true;
   }
+  if (instruction.kind === 'narrate') {
+    validateNarrationInstruction(instruction, path, references, fail);
+    return true;
+  }
   return [
     'choose-player',
     'complete-turn',
@@ -375,4 +379,24 @@ function validateMiscInstruction({
     'end-round',
     'eliminate-player',
   ].includes(instruction.kind);
+}
+
+function validateNarrationInstruction(
+  instruction: Extract<GameEffectInstruction, { kind: 'narrate' }>,
+  path: string,
+  references: GameEffectValidationReferences,
+  fail: ValidationFailure,
+): void {
+  if (!instruction.key.trim()) fail(`${path}.key`, 'ID vide');
+  if (!instruction.default.trim()) fail(`${path}.default`, 'narration vide');
+  for (const [index, variant] of (instruction.variants ?? []).entries()) {
+    validateEffectTarget(
+      variant.target,
+      `${path}.variants[${index}].target`,
+      fail,
+      references,
+    );
+    if (!variant.text.trim())
+      fail(`${path}.variants[${index}].text`, 'narration vide');
+  }
 }

@@ -3,6 +3,7 @@ import type { CompiledJsonPrograms as Programs } from './json-game-program-compi
 import { publicField } from '../kits/visibility-kit';
 import { AuthoringError } from '../contracts/authoring-error';
 import {
+  declarativeBot,
   fallbackRecipeBot,
   recipeBot,
   selectedRecipeBot,
@@ -39,8 +40,11 @@ export function programHandlers<Catalog extends JsonEffectPackCatalog>(
         );
       }),
   };
-  const result: JsonEffectPackHandlers<JsonGameViewAugmentation<Catalog>> = {};
+  const result: JsonEffectPackHandlers<JsonGameViewAugmentation<Catalog>> = {
+    ...(document.bot ? { bot: declarativeBot(document.bot) } : {}),
+  };
   const owners = new Map<string, string>();
+  if (document.bot) owners.set('bot', 'bot');
   for (const extension of jsonEffectPacks) {
     const source = sources.get(extension.documentKey);
     const contribution = programs.contributions.get(extension.outputKey);

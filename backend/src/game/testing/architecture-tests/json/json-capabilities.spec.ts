@@ -25,6 +25,7 @@ type Intrinsic =
   | 'eliminate-player'
   | 'complete-turn'
   | 'transition-phase'
+  | 'narrate'
   | 'repeat'
   | 'switch'
   | 'random-choice'

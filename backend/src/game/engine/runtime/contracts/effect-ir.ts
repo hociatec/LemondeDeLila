@@ -315,6 +315,14 @@ export type GameEffectInstruction =
   | { kind: 'start-round' }
   | { kind: 'end-round' }
   | { kind: 'transition-phase'; phase: string }
+  | {
+      kind: 'narrate';
+      key: string;
+      params?: Readonly<Record<string, unknown>>;
+      default: string;
+      variants?: readonly { target: EffectTarget; text: string }[];
+      supersedes?: readonly string[];
+    }
   | { kind: 'eliminate-player'; target?: EffectTarget }
   | {
       kind: 'repeat';

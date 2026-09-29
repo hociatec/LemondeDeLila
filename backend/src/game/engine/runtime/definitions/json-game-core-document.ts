@@ -8,6 +8,16 @@ import type {
 import type { JsonGameAction, JsonGameVictory } from './json-game-action-types';
 import type { JsonGamePattern } from './json-game-patterns';
 
+export type JsonBotStrategy =
+  | { kind: 'random' }
+  | { kind: 'first' }
+  | {
+      kind: 'scored';
+      actionScores: Readonly<Record<string, number>>;
+      defaultScore?: number;
+      ties?: 'first' | 'random';
+    };
+
 export type JsonGameCoreDocument = {
   schemaVersion: 1;
   contentVersion: string;
@@ -16,6 +26,7 @@ export type JsonGameCoreDocument = {
   category: string;
   world: string;
   presentation?: GamePresentation;
+  bot?: JsonBotStrategy;
   patterns?: readonly JsonGamePattern[];
   shortcuts?: readonly GameShortcutHint[];
   components: readonly Extract<

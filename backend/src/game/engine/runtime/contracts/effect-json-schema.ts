@@ -324,6 +324,25 @@ const instructions = {
   'start-round': variant('start-round'),
   'end-round': variant('end-round'),
   'transition-phase': variant('transition-phase', { phase: id }),
+  narrate: variant(
+    'narrate',
+    {
+      key: id,
+      params: record(ref('json')),
+      default: { type: 'string', minLength: 1, maxLength: 2000 },
+      variants: array(
+        object(
+          {
+            target,
+            text: { type: 'string', minLength: 1, maxLength: 2000 },
+          },
+          ['target', 'text'],
+        ),
+      ),
+      supersedes: array(id),
+    },
+    ['key', 'default'],
+  ),
   'eliminate-player': targeted('eliminate-player', {}),
   repeat: variant('repeat', {
     count: { type: 'integer', minimum: 0, maximum: 64 },

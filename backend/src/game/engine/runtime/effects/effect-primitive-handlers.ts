@@ -31,6 +31,7 @@ function createControlHandlers<TState extends object>({
   | 'transfer-resource'
   | 'exchange-resources'
   | 'transition-phase'
+  | 'narrate'
 > {
   return {
     'extra-turn': (instruction) => {
@@ -77,6 +78,27 @@ function createControlHandlers<TState extends object>({
       ),
     'transition-phase': (instruction) => {
       context.phase.transitionTo(instruction.phase);
+      return true;
+    },
+    narrate: (instruction) => {
+      const byPlayerId: Record<string, string> = {};
+      for (const variant of instruction.variants ?? []) {
+        const playerIds = targets.targets(variant.target, instruction);
+        if (playerIds == null) return false;
+        for (const playerId of playerIds)
+          byPlayerId[String(playerId)] = variant.text;
+      }
+      context.events.message(
+        instruction.key,
+        structuredClone(instruction.params ?? {}),
+        {
+          default: instruction.default,
+          ...(Object.keys(byPlayerId).length > 0 ? { byPlayerId } : {}),
+          ...(instruction.supersedes
+            ? { supersedes: [...instruction.supersedes] }
+            : {}),
+        },
+      );
       return true;
     },
   };

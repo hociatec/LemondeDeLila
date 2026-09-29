@@ -224,3 +224,57 @@ it('resolves tagged landings and collisions through generic composition', async 
   expect(game.state()).toHaveProperty('engine.playerValues.scores.2', 3);
   expect(await game.replay()).toEqual(game.state());
 });
+
+it('emits structured JSON narration with server-owned player variants', async () => {
+  const definition = compileJsonGame(manifest, {
+    ...document,
+    actions: {
+      advance: {
+        effects: [
+          {
+            kind: 'narrate',
+            key: 'race.checkpoint',
+            params: { checkpoint: 4 },
+            default: 'Un joueur atteint le point de contrôle.',
+            variants: [
+              {
+                target: { kind: 'self' },
+                text: 'Vous atteignez le point de contrôle.',
+              },
+              {
+                target: { kind: 'all-opponents' },
+                text: 'Un adversaire atteint le point de contrôle.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    victory: { kind: 'score-at-least', amount: 99 },
+  });
+  const game = await testGame(definition).players(2).start();
+
+  await game.as(1).do('advance', {});
+
+  expect(
+    (await game.events()).find(
+      (event) =>
+        event.type === 'game.message' &&
+        (event.data as { key?: string }).key === 'race.checkpoint',
+    ),
+  ).toMatchObject({
+    type: 'game.message',
+    data: {
+      key: 'race.checkpoint',
+      params: { checkpoint: 4 },
+      narration: {
+        default: 'Un joueur atteint le point de contrôle.',
+        byPlayerId: {
+          1: 'Vous atteignez le point de contrôle.',
+          2: 'Un adversaire atteint le point de contrôle.',
+        },
+      },
+    },
+  });
+  expect(await game.replay()).toEqual(game.state());
+});

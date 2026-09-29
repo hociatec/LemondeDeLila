@@ -244,6 +244,11 @@ function assertDocumentReferences(
     )
       fail(`shortcuts[${index}].actionType`, 'unknown action');
   }
+  if (document.bot?.kind === 'scored') {
+    for (const actionId of Object.keys(document.bot.actionScores))
+      if (!Object.hasOwn(document.actions, actionId))
+        fail(`bot.actionScores.${actionId}`, `unknown action ${actionId}`);
+  }
   assertUniqueAuthorValues(
     document.resourceIds,
     (i) => `resourceIds[${i}]`,

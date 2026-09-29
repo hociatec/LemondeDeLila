@@ -181,6 +181,21 @@ export const jsonGameSchema = freezeAuthorSchema({
         },
         [],
       ),
+      bot: {
+        oneOf: [
+          object({ kind: { const: 'random' } }, ['kind']),
+          object({ kind: { const: 'first' } }, ['kind']),
+          object(
+            {
+              kind: { const: 'scored' },
+              actionScores: record(number),
+              defaultScore: number,
+              ties: { enum: ['first', 'random'] },
+            },
+            ['kind', 'actionScores'],
+          ),
+        ],
+      },
       patterns: array(jsonGamePatternSchema),
       shortcuts: array({
         oneOf: [

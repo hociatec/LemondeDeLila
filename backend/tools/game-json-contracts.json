@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "2abf58093b0e4bf5863439c4ccacd1d371dfde49",
+  "files": [
+    {
+      "file": "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json",
+      "sha256": "fbadf4aec058c82c44824fb12c0d385ba68044230adf58ceee5ec4c7a38a2f5d",
+      "contentVersion": "2",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/aventure-sauvage/game.json",
+      "sha256": "01bd3efd2518d77f76f053e42ae979d695e97aacf6d19dbee860ad48a9337a48",
+      "contentVersion": "1",
+      "definitionVersion": "4"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/ca-derape/game.json",
+      "sha256": "75d09061f9e1f368a6c8ef76abf528b9ecf2beb6acd002d7652d6eb748883ada",
+      "contentVersion": "3",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json",
+      "sha256": "2cd7509bbd1822b3cde8511e5f7c715096b1a5b52f1ae2cc7b44c557a5165c98",
+      "contentVersion": "2",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/en-attendant-minuit/game.json",
+      "sha256": "02684835ad4bdfe0dfb2057750358a95410639ca3231e2253756c1d74e76c6ae",
+      "contentVersion": "1",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/frousse-party/game.json",
+      "sha256": "4469cdc346e1d0b72bbd2b50c8971a25bfb9a0b7e5944820438238f33047dbb7",
+      "contentVersion": "2",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/galopons-ensemble/game.json",
+      "sha256": "14ab3e72055adb3b00cbd218ef1047b77ae89b0b95477f243ec93a6cf98421af",
+      "contentVersion": "1",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/mission-galaxie/game.json",
+      "sha256": "5706bdba5e64ec4365db6f30a9738bf611d2677793b93501545eebd57f1b32c9",
+      "contentVersion": "1",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json",
+      "sha256": "bc87c1527223f3a4ae2af127a3517f138c1969b2c688776ce0339627afd54afb",
+      "contentVersion": "1",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/odyssee-quatre-cieux/game.json",
+      "sha256": "000e9566c43b922ea0f2395da7c70045645ebc14086229f2ff12182e22c4aa50",
+      "contentVersion": "1",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/panier-express/game.json",
+      "sha256": "b2366ae817762423f460796d2a606cc3cdb3dffb4b8e273f6682dd489ab0ad02",
+      "contentVersion": "2",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json",
+      "sha256": "0cccc9c931a7b68f59df2bf1f4650309021cc88b8b6d7577b33279efb00c0096",
+      "contentVersion": "3",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/primalis/game.json",
+      "sha256": "29df857769d5ae71250d36881ebeea3890aa503a6369db75b43d4660765aeae6",
+      "contentVersion": "2",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/sac-a-malices/game.json",
+      "sha256": "20ebfd79ea4e5fb462010dfb426340a11cd691acd21d04f3e4d7775798ac2dce",
+      "contentVersion": "1",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/taxi-express/game.json",
+      "sha256": "e0d53a59fb26f10e949bf1353f3d0f27c113da479e10eb650124107987c18f75",
+      "contentVersion": "2",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json",
+      "sha256": "613449e78f89bfbb1b9175692bf33ec78f26a57ce1d3603c45a69ad7167931fe",
+      "contentVersion": "3",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json",
+      "sha256": "784ae0d92280daab6b5fe41374592af4daab2bf3d5b01cec9d2ebc7d8ec4ed43",
+      "contentVersion": "2",
+      "definitionVersion": "4"
+    },
+    {
+      "file": "src/game/games/vents-dansants/cat-pattes/game.json",
+      "sha256": "f26b73787144c602b740eb839849406d40da2a8d28580b92eba282e57d9bac38",
+      "contentVersion": "3",
+      "definitionVersion": "1"
+    },
+    {
+      "file": "src/game/games/vents-dansants/cercles-sacres/game.json",
+      "sha256": "18709e11064aeca9cc76482a62330397a9a39d3012a14e618d48b5b5908dfea8",
+      "contentVersion": "1",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/vents-dansants/dame-nature/game.json",
+      "sha256": "f69aa1037de61123d1ad6d50b76077595baaa3e5e0bb71a8db5966d58c089824",
+      "contentVersion": "2",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/vents-dansants/entre-rites-et-lumieres/game.json",
+      "sha256": "38745d3c7b5b60e8491f8f57f08ad14ca69b8ff27e93123235791c8c979f1802",
+      "contentVersion": "2",
+      "definitionVersion": "1"
+    },
+    {
+      "file": "src/game/games/vents-dansants/gerard-president/game.json",
+      "sha256": "e9b0ef00b04d0503aa953076f0b9dfe8781a4847264d3052d30306983b98c39b",
+      "contentVersion": "2",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/vents-dansants/la-bande-a-banane/game.json",
+      "sha256": "39eb0a0c4f5a0a42fcd24005a0104db0db14fea486650b885239d8658709a0c1",
+      "contentVersion": "1",
+      "definitionVersion": "1"
+    },
+    {
+      "file": "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json",
+      "sha256": "8b82993d09d0f96b4a851b535460ec11b78cb74ceaba6b6d535c8bba9485f468",
+      "contentVersion": "2",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/vents-dansants/la-parade-sucree/game.json",
+      "sha256": "6f2d81c5381dacb4011cee33eae315c2ca4acb39dc44486bb27c16b919755f29",
+      "contentVersion": "1",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/vents-dansants/le-marche-des-merveilles/game.json",
+      "sha256": "ffcd8b02448b03a3f92c3d570344bad6dd84251d7c0ece4d3e3ce29a6f89abb1",
+      "contentVersion": "1",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/vents-dansants/les-absurdissimes/game.json",
+      "sha256": "441b42aed1695fc2e5a88756182c86877e71bac5be05901ad44d203770cfa6cc",
+      "contentVersion": "1",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/vents-dansants/les-mains-de-la-terre/game.json",
+      "sha256": "b750768404d3485a26d2af3fb5e28777658a00f312d54253ac2e3d3fb7f57f58",
+      "contentVersion": "1",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/vents-dansants/nawak/game.json",
+      "sha256": "526d8b9a61e4d67ea8da15d2db74a774c77b15786507e8758f14a59aaf54aa35",
+      "contentVersion": "1",
+      "definitionVersion": "1"
+    },
+    {
+      "file": "src/game/games/vents-dansants/olympia/game.json",
+      "sha256": "3310546b5318de7cd5a4e30db8eb53c368df811b77bb6ac2235181a82c188b06",
+      "contentVersion": "3",
+      "definitionVersion": "1"
+    },
+    {
+      "file": "src/game/games/vents-dansants/pimp-my-ride/game.json",
+      "sha256": "73b2752e0a3f7aa2a3ea2d97bba04cdd6c1c82e49857be268a3fb25be38917dd",
+      "contentVersion": "1",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/vents-dansants/zig-et-zag/game.json",
+      "sha256": "543afa0e3d9594d5a7faf2619fdf4db335ad181ec1122e8237deb9f8e6efcec8",
+      "contentVersion": "1",
+      "definitionVersion": "1"
+    },
+    {
+      "file": "src/game/games/vents-infinis/arche-de-mnemosyne/game.json",
+      "sha256": "237f2f321c201ab566071c4cefe14758345b1bc23b36c742551e3a7d4de16f5b",
+      "contentVersion": "1",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/vents-sacres/corridor/game.json",
+      "sha256": "8dc49ca871b99407cfde2b8c68635c2453433dda48c2dbfdb7cc80123cfa0f00",
+      "contentVersion": "1",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/vents-sacres/course-des-etoiles/game.json",
+      "sha256": "8ab9524e905506633ce14f716882f97b5da86972c6507c8651b71f5653c3d1df",
+      "contentVersion": "1",
+      "definitionVersion": "1"
+    },
+    {
+      "file": "src/game/games/vents-sacres/foulees-fantastiques/game.json",
+      "sha256": "c4cd44892e2d90cca940d581b109132f9fae33523769195402832185009b2020",
+      "contentVersion": "2",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/vents-sacres/jeu-oie/game.json",
+      "sha256": "dc6987c1d5476b449a8a076f4ba15c2722a25438f5e9765b42e85c9ef0a51e1c",
+      "contentVersion": "2",
+      "definitionVersion": "3"
+    },
+    {
+      "file": "src/game/games/vents-sacres/lama/game.json",
+      "sha256": "ff099675dea60c9b115fd35d36206d786c9c67977a6611931a8e8a9795e9f49f",
+      "contentVersion": "1",
+      "definitionVersion": "2"
+    },
+    {
+      "file": "src/game/games/vents-sacres/morpion/game.json",
+      "sha256": "0080c812de2c03a4dbecac1da353e5d165a2a824fb8b1203a4aa7eef763b833b",
+      "contentVersion": "1",
+      "definitionVersion": "4"
+    }
+  ]
+}

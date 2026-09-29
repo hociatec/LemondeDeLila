@@ -2,11 +2,42 @@ import type { GameActionMap } from '../contracts/author-rule-contracts';
 import type { GameBotDefinition } from './game-definition-contracts';
 import type { JsonGameDocument } from './json-game-schema';
 import type { JsonRecipeBotSelector } from '../contracts/json-effect-pack';
+import type { JsonBotStrategy } from './json-game-core-document';
 
 export type JsonProgramBot = GameBotDefinition<
   Record<string, never>,
   GameActionMap<Record<string, never>>
 >;
+
+/** Selects only server-validated legal actions and consumes the game RNG for every random choice. */
+export function declarativeBot(strategy: JsonBotStrategy): JsonProgramBot {
+  return {
+    choose: ({ legalActions, ctx }) => {
+      if (legalActions.length === 0) return null;
+      let candidates = legalActions;
+      if (strategy.kind === 'scored') {
+        const score = (type: string) =>
+          strategy.actionScores[type] ?? strategy.defaultScore ?? 0;
+        const highest = Math.max(
+          ...legalActions.map((action) => score(action.type)),
+        );
+        candidates = legalActions.filter(
+          (action) => score(action.type) === highest,
+        );
+      }
+      const selected =
+        strategy.kind === 'random' ||
+        (strategy.kind === 'scored' && strategy.ties === 'random')
+          ? ctx.random.pick(candidates)
+          : candidates[0];
+      if (!selected) return null;
+      return {
+        type: selected.type,
+        payload: structuredClone(selected.payload ?? {}),
+      };
+    },
+  };
+}
 
 export function recipeBot(
   document: JsonGameDocument,

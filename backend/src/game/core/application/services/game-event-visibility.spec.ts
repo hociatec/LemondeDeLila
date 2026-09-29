@@ -73,3 +73,32 @@ it('rejects future versions before presenting them under the current protocol', 
     'unsupported',
   );
 });
+
+it('never exposes another player narration variant', () => {
+  const source: GameEvent = {
+    ...event(),
+    type: 'game.message',
+    data: {
+      key: 'card.played',
+      narration: {
+        default: 'Une carte est jouée.',
+        byPlayerId: {
+          1: 'Votre carte secrète est le dragon.',
+          2: 'Votre carte secrète est le phénix.',
+        },
+      },
+    },
+  };
+
+  expect(projectGameEvent(source, 1)?.data).toEqual({
+    key: 'card.played',
+    narration: {
+      default: 'Une carte est jouée.',
+      byPlayerId: { 1: 'Votre carte secrète est le dragon.' },
+    },
+  });
+  expect(projectGameEvent(source, null)?.data).toEqual({
+    key: 'card.played',
+    narration: { default: 'Une carte est jouée.' },
+  });
+});

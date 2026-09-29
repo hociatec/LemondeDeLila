@@ -130,6 +130,8 @@ function executeExtendedPrimitive(
       return handlers['set-score'](instruction);
     case 'transition-phase':
       return handlers['transition-phase'](instruction);
+    case 'narrate':
+      return handlers.narrate(instruction);
     default:
       return null;
   }

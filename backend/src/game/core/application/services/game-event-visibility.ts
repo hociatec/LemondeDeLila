@@ -54,7 +54,7 @@ function projectVisibleEvent(
     actorId: event.actorId,
     type: event.type,
     occurredAtMs: event.occurredAtMs,
-    data: structuredClone(event.data),
+    data: projectEventData(event.type, event.data, viewerPlayerId),
   };
   if (visibility.kind !== 'split' || viewerPlayerId == null) return projected;
   const privateData =
@@ -63,4 +63,36 @@ function projectVisibleEvent(
     ...projected,
     data: { ...projected.data, ...structuredClone(privateData) },
   };
+}
+
+/** Player-specific narration is selected at the trusted server boundary. */
+function projectEventData(
+  type: string,
+  source: object,
+  viewerPlayerId: number | null,
+): Record<string, unknown> {
+  const data = structuredClone(source) as Record<string, unknown>;
+  if (type !== 'game.message') return data;
+  const narration = record(data.narration);
+  if (!narration) return data;
+  const variants = record(narration.byPlayerId);
+  const selected =
+    viewerPlayerId == null || !variants
+      ? undefined
+      : variants[String(viewerPlayerId)];
+  data.narration = {
+    ...narration,
+    ...(typeof selected === 'string'
+      ? { byPlayerId: { [String(viewerPlayerId)]: selected } }
+      : {}),
+  };
+  if (typeof selected !== 'string')
+    Reflect.deleteProperty(data.narration as object, 'byPlayerId');
+  return data;
+}
+
+function record(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }

@@ -237,6 +237,22 @@ export const primitiveCases = {
     json: { kind: 'transition-phase', phase: 'playing' },
     sdk: { kind: 'transition-phase', phase: 'playing' },
   },
+  narrate: {
+    json: {
+      kind: 'narrate',
+      key: 'turn.summary',
+      params: { points: 3 },
+      default: 'Le tour est terminé.',
+      variants: [{ target: self, text: 'Votre tour est terminé.' }],
+    },
+    sdk: {
+      kind: 'narrate',
+      key: 'turn.summary',
+      params: { points: 3 },
+      default: 'Le tour est terminé.',
+      variants: [{ target: self, text: 'Votre tour est terminé.' }],
+    },
+  },
   'eliminate-player': {
     json: { kind: 'eliminate-player', target: other },
     sdk: { kind: 'eliminate-player', target: other },
