@@ -229,7 +229,8 @@ export class GameMovementController {
         trackId,
         playerId,
         position: next,
-        displayPosition: next + (this.requireTrack(trackId).positionDisplayOffset ?? 1),
+        displayPosition:
+          next + (this.requireTrack(trackId).positionDisplayOffset ?? 1),
       });
     }
     const effects = this.definitions.get(trackId)?.landingEffects?.[next] ?? [];

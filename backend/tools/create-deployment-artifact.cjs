@@ -52,6 +52,87 @@ function sha256(file) {
   return hash.digest('hex');
 }
 
+function listFiles(root) {
+  const files = [];
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    const target = path.join(root, entry.name);
+    if (entry.isDirectory()) files.push(...listFiles(target));
+    else if (entry.isFile() || entry.isSymbolicLink()) files.push(target);
+  }
+  return files;
+}
+
+const FORBIDDEN_ARTIFACT_DIRECTORY =
+  /^(?:coverage|reports?|fixtures?|__fixtures__|__snapshots__|__tests__|tests?|specs?)$/i;
+
+function isForbiddenArtifactEntry(relative, isDirectory) {
+  const normalized = relative.replaceAll(path.sep, '/');
+  const parts = normalized.split('/');
+  const basename = parts.at(-1) || '';
+  if (isDirectory && FORBIDDEN_ARTIFACT_DIRECTORY.test(basename)) return true;
+  return (
+    /(?:^|\/)\.env(?:\.|$)/i.test(normalized) ||
+    /(?:^|\/)(?:id_rsa|id_ed25519|.*private.*key.*)$/i.test(normalized) ||
+    /(?:^|\/).+\.(?:spec|test)\.(?:[cm]?js|json|map|d\.ts)$/i.test(normalized)
+  );
+}
+
+function pruneProductionTree(root, current = root) {
+  for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+    const target = path.join(current, entry.name);
+    const relative = path.relative(root, target);
+    if (isForbiddenArtifactEntry(relative, entry.isDirectory())) {
+      fs.rmSync(target, { recursive: true, force: true });
+      continue;
+    }
+    if (entry.isDirectory()) pruneProductionTree(root, target);
+  }
+}
+
+function assertProductionTree(root) {
+  const forbidden = [];
+  const inspect = (current) => {
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const target = path.join(current, entry.name);
+      const relative = path.relative(root, target);
+      if (isForbiddenArtifactEntry(relative, entry.isDirectory())) {
+        forbidden.push(relative.replaceAll(path.sep, '/'));
+      } else if (entry.isDirectory()) {
+        inspect(target);
+      }
+    }
+  };
+  inspect(root);
+  if (forbidden.length > 0) {
+    throw new Error(
+      `L'artefact de production contient des fichiers inutiles:\n${forbidden
+        .slice(0, 20)
+        .join('\n')}`,
+    );
+  }
+}
+
+function assertProductionDist(dist) {
+  const forbidden = listFiles(dist)
+    .map((file) => path.relative(dist, file).replaceAll(path.sep, '/'))
+    .filter(
+      (file) =>
+        /(^|\/)(?:coverage|reports?|fixtures?|__snapshots__)(\/|$)/i.test(
+          file,
+        ) ||
+        /(?:^|\/).*\.(?:spec|test)\.js$/i.test(file) ||
+        /(?:^|\/)\.env(?:\.|$)/i.test(file) ||
+        /(?:^|\/)(?:id_rsa|id_ed25519|.*private.*key.*)$/i.test(file),
+    );
+  if (forbidden.length > 0) {
+    throw new Error(
+      `Le dist de production contient des fichiers interdits:\n${forbidden
+        .slice(0, 20)
+        .join('\n')}`,
+    );
+  }
+}
+
 function archiveArguments(output, staging) {
   const version = spawnSync('tar', ['--version'], { encoding: 'utf8' });
   if (version.status !== 0) throw new Error('Commande tar indisponible');
@@ -83,7 +164,9 @@ function archiveArguments(output, staging) {
 
 function main() {
   assertRequiredNodeMajor();
+  const dist = requirePath('dist');
   requirePath('dist/main.js');
+  assertProductionDist(dist);
   requirePath('node_modules');
   if (fs.existsSync(path.join(backendRoot, 'node_modules/jest'))) {
     throw new Error(
@@ -107,6 +190,8 @@ function main() {
         dereference: false,
       });
     }
+    pruneProductionTree(stagedBackend);
+    assertProductionTree(stagedBackend);
     const manifest = {
       schemaVersion: 1,
       sourceGitSha: sourceGitSha(),
@@ -130,4 +215,10 @@ function main() {
   }
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = {
+  assertProductionTree,
+  isForbiddenArtifactEntry,
+  pruneProductionTree,
+};

@@ -9,6 +9,15 @@ import type { GameShortcutHint } from '../../../../../shortcuts/public-api';
 import { projectDiceActionView } from '../../../../../engine/runtime/projection/dice-action-view';
 import { GameVisibilityService } from '../../../../application/services/game-visibility.service';
 import { GameWsStateMessagesPresenter } from './game-ws-state-messages.presenter';
+import type { ScorePlayerView } from '../../../../../engine/runtime/kits/player-values-kit';
+
+type PresentedScore = ScorePlayerView & {
+  label: string;
+  unit: { singular: string; plural: string };
+};
+type PresentedGameKits = Record<string, unknown> & {
+  score: PresentedScore | null;
+};
 
 type PresentStateInput = {
   state: GameState;
@@ -46,12 +55,12 @@ export class GameWsStatePresenter {
     );
     const presentation = this.presentation(input.handler);
     const kits = this.withScorePresentation(
-      this.asRecord(exposed.kits),
+      exposed.kits,
       presentation.score,
       input.state.status,
     );
     const system = this.messages.withServerMessages(
-      this.asRecord(exposed.system),
+      exposed.system,
       this.safeViewerId(input.viewerPlayerId),
       presentation,
     );
@@ -94,14 +103,14 @@ export class GameWsStatePresenter {
     handler: GameRuntime,
     state: GameState,
     exposed: GameStateWithActions,
-    kits: Record<string, unknown>,
+    kits: PresentedGameKits,
   ): GameShortcutHint[] {
     const declaredShortcuts = handler.getShortcuts({
       currentPlayerId: state.turn?.currentPlayerId ?? null,
       started: this.isActiveMatchStatus(state.status),
     });
-    const score = this.asRecord(kits.score);
-    const hasScore = Object.keys(score).length > 0;
+    const score = kits.score;
+    const hasScore = score !== null;
     const declaredScoreKey = declaredShortcuts.find(
       (shortcut) =>
         this.stringValue(shortcut.key).toUpperCase() === 'S' &&
@@ -118,7 +127,7 @@ export class GameWsStatePresenter {
         key: 'S',
         type: 'interface',
         id: 'score',
-        label: this.stringValue(score.label) || 'Scores',
+        label: score?.label ?? 'Scores',
       });
     }
     return this.withActionShortcutLabels(shortcuts, exposed, kits);
@@ -127,7 +136,7 @@ export class GameWsStatePresenter {
   private withActionShortcutLabels(
     shortcuts: GameShortcutHint[],
     exposed: GameStateWithActions,
-    kits: Record<string, unknown>,
+    kits: PresentedGameKits,
   ): GameShortcutHint[] {
     const actions = this.exposedActions(exposed);
     const actionTypes = new Set(
@@ -139,8 +148,7 @@ export class GameWsStatePresenter {
       .filter(
         (shortcut) =>
           (shortcut.type === 'interface' &&
-            (shortcut.id !== 'score' ||
-              Object.keys(this.asRecord(kits.score)).length > 0)) ||
+            (shortcut.id !== 'score' || kits.score !== null)) ||
           (shortcut.type === 'action' && actionTypes.has(shortcut.actionType)),
       )
       .map((shortcut) => this.withActionShortcutLabel(shortcut, actions));
@@ -148,16 +156,13 @@ export class GameWsStatePresenter {
 
   private exposedActions(
     exposed: GameStateWithActions,
-  ): Record<string, unknown>[] {
-    const rawActions = exposed.actions;
-    return (Array.isArray(rawActions) ? rawActions : []).map((action) =>
-      this.asRecord(action),
-    );
+  ): NonNullable<GameStateWithActions['actions']> {
+    return exposed.actions ?? [];
   }
 
   private withActionShortcutLabel(
     shortcut: GameShortcutHint,
-    actions: readonly Record<string, unknown>[],
+    actions: readonly NonNullable<GameStateWithActions['actions']>[number][],
   ): GameShortcutHint {
     if (shortcut.label || shortcut.type === 'interface') return shortcut;
     const action = actions.find(
@@ -173,32 +178,26 @@ export class GameWsStatePresenter {
   }
 
   private withScorePresentation(
-    kits: Record<string, unknown>,
+    rawKits: unknown,
     presentation?: ScorePresentationDescriptor,
     status?: unknown,
-  ): Record<string, unknown> {
+  ): PresentedGameKits {
+    const kits = decodeKits(rawKits);
     if (
       presentation?.visibility === 'active-match' &&
       !this.isActiveMatchStatus(status)
     ) {
       return { ...kits, score: null };
     }
-    const score = this.asRecord(kits.score);
-    if (Object.keys(score).length === 0) return kits;
+    if (kits.score === null) return { ...kits, score: null };
     return {
       ...kits,
       score: {
-        ...score,
+        ...kits.score,
         label: presentation?.label ?? 'Scores',
         unit: presentation?.unit ?? { singular: 'point', plural: 'points' },
       },
     };
-  }
-
-  private asRecord(value: unknown): Record<string, unknown> {
-    return value && typeof value === 'object'
-      ? (value as Record<string, unknown>)
-      : {};
   }
 
   private stringValue(value: unknown): string {
@@ -214,4 +213,34 @@ export class GameWsStatePresenter {
     const id = Number(value ?? 0);
     return Number.isSafeInteger(id) && id > 0 ? id : null;
   }
+}
+
+function decodeKits(value: unknown): Record<string, unknown> & {
+  score: ScorePlayerView | null;
+} {
+  const kits = asUnknownRecord(value);
+  const score = asUnknownRecord(kits.score);
+  if (Object.keys(score).length === 0) return { ...kits, score: null };
+  const byPlayer = Object.fromEntries(
+    Object.entries(asUnknownRecord(score.byPlayer)).filter(
+      (entry): entry is [string, number] => typeof entry[1] === 'number',
+    ),
+  );
+  const leaderboard = (
+    Array.isArray(score.leaderboard) ? score.leaderboard : []
+  ).flatMap((value) => {
+    const row = asUnknownRecord(value);
+    return typeof row.playerId === 'number' &&
+      typeof row.score === 'number' &&
+      typeof row.rank === 'number'
+      ? [{ playerId: row.playerId, score: row.score, rank: row.rank }]
+      : [];
+  });
+  return { ...kits, score: { byPlayer, leaderboard } };
+}
+
+function asUnknownRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : {};
 }

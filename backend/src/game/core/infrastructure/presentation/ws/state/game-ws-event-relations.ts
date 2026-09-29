@@ -43,9 +43,15 @@ export function presentationRelations(
     const semantic = asRecord(ordered[index]);
     if (stringValue(semantic.type) !== 'game.message') continue;
     const semanticId = stringValue(semantic.id);
-    const key = stringValue(asRecord(semantic.data).key);
+    const semanticData = asRecord(semantic.data);
+    const key = stringValue(semanticData.key);
     const commandId = eventCommandId(semanticId);
-    const replacedTypes = supersededTypes(key);
+    const ownedSupersededTypes = asRecord(semanticData.narration).supersedes;
+    const replacedTypes = Array.isArray(ownedSupersededTypes)
+      ? ownedSupersededTypes.filter(
+          (value): value is string => typeof value === 'string',
+        )
+      : supersededTypes(key);
     if (replacedTypes.length > 0) {
       for (const rawEvent of ordered) {
         const event = asRecord(rawEvent);
@@ -140,9 +146,6 @@ function orderedUniqueEvents(events: unknown[]): Record<string, unknown>[] {
 function supersededTypes(messageKey: string): string[] {
   if (messageKey === 'game.card.drawn') return ['card.drawn', 'card.received'];
   if (messageKey === 'game.card.played') return ['card.played'];
-  if (messageKey === 'game.dice.rolled') return ['dice.rolled'];
-  if (messageKey === 'game.card.battle.won') return ['card.received'];
-  if (messageKey === 'game.team-pawn.family-selected') return ['pawn.assigned'];
   if (messageKey === 'game.dice.rolled') return ['dice.rolled'];
   if (messageKey === 'game.round.started')
     return [

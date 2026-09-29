@@ -8,6 +8,7 @@ import type { BattleTiesProgram } from './program';
 import { defineAction } from '../../../engine/sdk/extension-api';
 import { rejectRule } from '../../../engine/sdk/extension-api';
 import { GameCorruptedStateError } from '../../../core/domain/errors/game-runtime.errors';
+import { battleWonNarration } from './battle-ties.narration';
 
 type PlayState = { playerId: number; playedCards: string[] };
 type RoundState = { plays: PlayState[]; tiedPlayers: number[] };
@@ -69,9 +70,16 @@ export function battleTiesRules(source: BattleTiesProgram) {
       );
       if (!play) rejectRule('Participation battle-ties cards introuvable');
       play.playedCards.push(cardId);
-      ctx.events.message('game.card.battle.card-placed', {
-        playerId: actor.id,
-      });
+      ctx.events.message(
+        'game.card.battle.card-placed',
+        {
+          playerId: actor.id,
+        },
+        {
+          default: `${actor.username} pose une carte sur la table.`,
+          byPlayerId: { [actor.id]: 'Vous posez une carte sur la table.' },
+        },
+      );
       const pending = waiting(current.battle, ctx, phases);
       if (pending.length > 0) return ctx.turn.to(pending[0]);
       finalize(current, ctx);
@@ -99,9 +107,13 @@ export function battleTiesRules(source: BattleTiesProgram) {
     );
     round.tiedPlayers = pending;
     phases.transition(ctx, 'battle-face-down');
-    ctx.events.message('game.card.battle.started', {
-      roundNumber: ctx.round.number,
-    });
+    ctx.events.message(
+      'game.card.battle.started',
+      {
+        roundNumber: ctx.round.number,
+      },
+      { default: 'Égalité : une bataille commence.' },
+    );
     if (pending.length < 2) complete(state, pending[0] ?? winners[0], ctx);
     else ctx.turn.to(pending[0]);
   }
@@ -137,9 +149,13 @@ export function battleTiesRules(source: BattleTiesProgram) {
       return complete(state, pending[0] ?? winners[0] ?? null, ctx);
     state.battle.tiedPlayers = pending;
     phases.transition(ctx, 'battle-face-down');
-    ctx.events.message('game.card.battle.continues', {
-      roundNumber: ctx.round.number,
-    });
+    ctx.events.message(
+      'game.card.battle.continues',
+      {
+        roundNumber: ctx.round.number,
+      },
+      { default: 'Nouvelle égalité : la bataille continue.' },
+    );
     ctx.turn.to(pending[0]);
   }
 
@@ -156,14 +172,21 @@ export function battleTiesRules(source: BattleTiesProgram) {
       for (const cardId of tableCards)
         ctx.cards.give(program.handId, winnerId, cardId);
       captureBonus(state.battle, winnerId, ctx);
-      ctx.events.message('game.card.battle.won', {
-        playerId: winnerId,
-        cardsWon: tableCards.length,
-        plays: state.battle.plays.map((play) => ({
-          playerId: play.playerId,
-          cardNames: play.playedCards.map((cardId) => cards[cardId]?.name ?? cardId),
-        })),
-      });
+      const plays = state.battle.plays.map((play) => ({
+        playerId: play.playerId,
+        cardNames: play.playedCards.map(
+          (cardId) => cards[cardId]?.name ?? cardId,
+        ),
+      }));
+      ctx.events.message(
+        'game.card.battle.won',
+        {
+          playerId: winnerId,
+          cardsWon: tableCards.length,
+          plays,
+        },
+        battleWonNarration(ctx, winnerId, tableCards.length, plays),
+      );
     }
     state.lastRound = {
       roundNumber: ctx.round.number,
@@ -311,6 +334,7 @@ export function battleTiesRules(source: BattleTiesProgram) {
     };
   }
 }
+
 function runtime(state: State): RuntimeState {
   if (!isRuntimeState(state))
     throw new GameCorruptedStateError(

@@ -291,7 +291,7 @@
     },
     {
       "file": "src/game/engine/runtime/definitions/json-game-patterns.ts",
-      "sha256": "47eaa7eb1e7e5c4a8ffe637a1d59024fbafe05f938f3f1889469d576a59422f6"
+      "sha256": "5496c584131bdab2c9c667e72b5ff28ae517f10a5da00b17416bb13c9a58c29c"
     },
     {
       "file": "src/game/engine/runtime/definitions/json-standard-victory.ts",
@@ -311,11 +311,11 @@
     },
     {
       "file": "src/game/engine/runtime/events/engine-event-registry.ts",
-      "sha256": "449c54940503dcc5b5374a0e3bfacfa9795751541ba05094fd70080d1098fa3e"
+      "sha256": "9b83946f8b83c1222b1a68b25baabbede16f9f13dbd8b8d71c5875e25d5b1e48"
     },
     {
       "file": "src/game/engine/runtime/events/game-context-events.ts",
-      "sha256": "950395c22a301dbaf87724764ac4ef1eb0913c7659e572385413a1267c981af6"
+      "sha256": "73a8d0c3dd7d093637ecf22ada29425950a7da71d7df4289411b659900495048"
     },
     {
       "file": "src/game/engine/runtime/events/game-event-definition.ts",
@@ -351,7 +351,7 @@
     },
     {
       "file": "src/game/engine/runtime/kits/movement-kit.ts",
-      "sha256": "c080ee1e6f38015498fbcd294a9675ce9841d5e7502ff8e8a3ebb9e595aac08d"
+      "sha256": "df1bb76577d4d21f0f0e1382ba2d4d4246ed7096ab9f116969170ae77119a280"
     },
     {
       "file": "src/game/engine/runtime/kits/ownership-kit.ts",
@@ -383,7 +383,7 @@
     },
     {
       "file": "src/game/engine/runtime/kits/resource-controller.ts",
-      "sha256": "f6f9e8d2520297acd3e9496a9aad2dcae17e6c7ce4987a3d65e06eca8287077f"
+      "sha256": "8525d0051c606f39ec71ca3fa62cc7f3553b11552505dcdfd3d9fc01ae71b271"
     },
     {
       "file": "src/game/engine/runtime/kits/round-kit.ts",
@@ -403,7 +403,7 @@
     },
     {
       "file": "src/game/engine/runtime/patterns/gameplay-pattern-track-card.ts",
-      "sha256": "290beeea6bf91d664031883434fdd655051925d2d037c427e1eb0cfc2cd072dd"
+      "sha256": "6305ff43dc6da2ce7a51c8438d029148ed07c01ae0fc13e3d1a938dceda00d5e"
     },
     {
       "file": "src/game/engine/runtime/patterns/pattern-capabilities.ts",

@@ -14,12 +14,12 @@
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:108",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:134",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:137",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:246",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:268",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:300",
-          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:106",
-          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:109",
-          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:127"
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:251",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:273",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:304",
+          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:107",
+          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:110",
+          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:128"
         ],
         "ownership": [],
         "collision": [],
@@ -67,18 +67,18 @@
           "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:102",
           "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:19",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:168",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:178",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:182",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:233",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:240",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:253",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:260",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:271",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:280",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:283",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:296",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:338",
-          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:121"
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:183",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:187",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:238",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:245",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:258",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:265",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:276",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:285",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:288",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:300",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:342",
+          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:122"
         ],
         "zones": [],
         "choices": [
@@ -96,8 +96,8 @@
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:67",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:91",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:167",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:195",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:196"
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:200",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:201"
         ],
         "collections": [],
         "scoring": [],
@@ -146,19 +146,19 @@
           "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:207",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:125",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:137",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:180",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:235",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:236",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:254",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:256",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:185",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:240",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:241",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:259",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:261",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:262",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:263",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:266",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:267",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:268",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:284",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:285",
-          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:101"
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:271",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:273",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:289",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:290",
+          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:102"
         ],
         "triggers": [
           "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:171",
@@ -168,9 +168,11 @@
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:142",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:161",
           "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:168",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:199",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:264",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:338"
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:174",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:204",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:269",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:292",
+          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:342"
         ]
       }
     },
@@ -233,12 +235,12 @@
           "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:99",
           "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:103",
           "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:121",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:28",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:31",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:64",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:67",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:68",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:69"
+          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:38",
+          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:41",
+          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:74",
+          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:77",
+          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:78",
+          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:79"
         ],
         "ownership": [],
         "collision": [],
@@ -252,9 +254,9 @@
           "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:8",
           "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:14",
           "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:33",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:44",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:46",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:49"
+          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:54",
+          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:56",
+          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:59"
         ],
         "zones": [],
         "choices": [
@@ -936,7 +938,7 @@
       ],
       "mechanics": {
         "movement": [
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:244"
+          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:246"
         ],
         "ownership": [],
         "collision": [],
@@ -944,7 +946,7 @@
           "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:79",
           "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:87",
           "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:98",
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:149"
+          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:151"
         ],
         "payment": [
           "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:87"
@@ -977,7 +979,7 @@
         "ownership": [],
         "collision": [],
         "resources": [
-          "src/game/games/vents-sacres/course-des-etoiles/game.json:22"
+          "src/game/games/vents-sacres/course-des-etoiles/game.json:23"
         ],
         "payment": [],
         "cards": [],
@@ -987,7 +989,7 @@
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-sacres/course-des-etoiles/game.json:27",
+          "src/game/games/vents-sacres/course-des-etoiles/game.json:28",
           "src/game/games/vents-sacres/course-des-etoiles/game.spec.ts:9"
         ],
         "targeting": [],
@@ -1084,10 +1086,10 @@
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:233",
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:236",
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:241",
-          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:72",
           "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:74",
           "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:76",
-          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:83"
+          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:78",
+          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:85"
         ],
         "ownership": [],
         "collision": [
@@ -1100,8 +1102,8 @@
           "src/game/games/les-quatre-vents/en-attendant-minuit/game.json:25",
           "src/game/games/les-quatre-vents/en-attendant-minuit/game.spec.ts:24",
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:67",
-          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:82",
-          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:98"
+          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:84",
+          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:100"
         ],
         "zones": [],
         "choices": [
@@ -1114,9 +1116,9 @@
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:148"
         ],
         "status": [
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:465",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:532",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:755",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:524",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:596",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:836",
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:36",
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:132",
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:136",
@@ -1129,16 +1131,16 @@
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:128"
         ],
         "targeting": [
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:516",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:546",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:616",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:681",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:731",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:768",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:818",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:831",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:844",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:858",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:579",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:611",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:686",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:756",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:810",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:850",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:904",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:918",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:932",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:947",
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:7",
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:120",
           "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:212",
@@ -1276,20 +1278,20 @@
           "src/game/rules/game-specific/race-team-pawn-capture/json-team-pawn-race-schema.ts:53",
           "src/game/rules/game-specific/race-team-pawn-capture/json-team-pawn-race-schema.ts:73",
           "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:24",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:107",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:167",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:200",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:228",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:230",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:259"
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:131",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:191",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:274",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:302",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:304",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:333"
         ],
         "ownership": [],
         "collision": [
           "src/game/games/vents-sacres/foulees-fantastiques/game.json:47",
           "src/game/rules/game-specific/race-team-pawn-capture/effect-pack.ts:23",
           "src/game/rules/game-specific/race-team-pawn-capture/effect-pack.ts:26",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:169",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:182"
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:193",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:256"
         ],
         "resources": [],
         "payment": [],
@@ -1298,25 +1300,26 @@
         "choices": [
           "src/game/games/vents-sacres/foulees-fantastiques/game.spec.ts:47",
           "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:2",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:46",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:61",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:66",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:69"
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:70",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:85",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:90",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:93"
         ],
         "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
           "src/game/games/vents-sacres/foulees-fantastiques/game.json:50",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:171"
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:195"
         ],
         "targeting": [
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:108",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:124"
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:132",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:148"
         ],
         "triggers": [
           "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:20",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:173"
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:36",
+          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:197"
         ]
       }
     },
@@ -1328,15 +1331,18 @@
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/frousse-party/game.json:17",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:77",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:78",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:106",
           "src/game/rules/game-specific/race-protected-haunted-track/json-protected-haunted-race-schema.ts:91",
           "src/game/rules/game-specific/race-protected-haunted-track/json-protected-haunted-race-schema.ts:94",
           "src/game/rules/game-specific/race-protected-haunted-track/json-protected-haunted-race-schema.ts:112",
           "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:36",
           "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:38",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:123",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:204",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:205",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:221"
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:125",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:207",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:208",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:224"
         ],
         "ownership": [],
         "collision": [],
@@ -1352,12 +1358,15 @@
           "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:38",
           "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:50",
           "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:62",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:87",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:88",
           "src/game/rules/game-specific/race-protected-haunted-track/json-protected-haunted-race-schema.ts:82",
           "src/game/rules/game-specific/race-protected-haunted-track/json-protected-haunted-race-schema.ts:106"
         ],
         "zones": [],
         "choices": [
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:235"
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:100",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:238"
         ],
         "status": [
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:424",
@@ -1396,17 +1405,17 @@
           "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:70",
           "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:81",
           "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:99",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:111",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:112",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:182",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:243",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:273"
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:113",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:114",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:185",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:246",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:276"
         ],
         "collections": [],
         "scoring": [],
         "victory": [
           "src/game/games/les-quatre-vents/frousse-party/game.json:66",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:148"
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:150"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:411",
@@ -1441,21 +1450,22 @@
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2129",
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2136",
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2316",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:218",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:219",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:220",
           "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:221",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:226",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:227",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:228"
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:222",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:223",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:224",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:229",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:230",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:231"
         ],
         "triggers": [
           "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:51",
           "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:57",
           "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:65",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:132",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:146",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:212"
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:134",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:148",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:164",
+          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:215"
         ]
       }
     },
@@ -1710,7 +1720,7 @@
       ],
       "mechanics": {
         "movement": [
-          "src/game/games/vents-sacres/jeu-oie/game.json:18",
+          "src/game/games/vents-sacres/jeu-oie/game.json:19",
           "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:50",
           "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:58",
           "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:62",
@@ -1742,7 +1752,7 @@
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-sacres/jeu-oie/game.json:87",
+          "src/game/games/vents-sacres/jeu-oie/game.json:88",
           "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:87"
         ],
         "targeting": [],
@@ -1767,19 +1777,19 @@
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:395",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:410",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:425",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:440",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:455",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:435",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:451",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:467",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:483",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:499",
           "src/game/games/vents-dansants/la-bande-a-banane/game.json:9",
           "src/game/games/vents-dansants/la-bande-a-banane/game.json:18",
           "src/game/games/vents-dansants/la-bande-a-banane/game.spec.ts:48",
           "src/game/games/vents-dansants/la-bande-a-banane/game.spec.ts:49",
           "src/game/games/vents-dansants/la-bande-a-banane/game.spec.ts:50",
-          "src/game/rules/game-specific/collection-species-troops/json-species-troops-schema.ts:52",
-          "src/game/rules/game-specific/collection-species-troops/json-species-troops-schema.ts:58",
-          "src/game/rules/game-specific/collection-species-troops/json-species-troops-schema.ts:78",
+          "src/game/rules/game-specific/collection-species-troops/json-species-troops-schema.ts:53",
+          "src/game/rules/game-specific/collection-species-troops/json-species-troops-schema.ts:59",
+          "src/game/rules/game-specific/collection-species-troops/json-species-troops-schema.ts:79",
           "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:28",
           "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:77",
           "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:83",
@@ -1805,16 +1815,16 @@
           "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:136"
         ],
         "targeting": [
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:308",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:326",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:344",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:343",
           "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:362",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:380",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:472",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:487",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:502",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:381",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:400",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:419",
           "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:517",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:532",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:533",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:549",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:565",
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:581",
           "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:104",
           "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:107",
           "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:159",
@@ -2061,7 +2071,7 @@
           "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:333"
         ],
         "victory": [
-          "src/game/games/vents-sacres/lama/game.json:95",
+          "src/game/games/vents-sacres/lama/game.json:107",
           "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:292"
         ],
         "targeting": [],
@@ -2204,12 +2214,14 @@
       "mechanics": {
         "movement": [],
         "ownership": [],
-        "collision": [],
+        "collision": [
+          "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json:201"
+        ],
         "resources": [
-          "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json:341",
+          "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json:385",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:49",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:50",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:70"
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:71"
         ],
         "payment": [],
         "cards": [
@@ -2246,15 +2258,15 @@
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:210",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:211",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:214",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:53",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:56",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:59",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:61",
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:54",
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:57",
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:60",
           "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:62",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:65",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:72",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:75",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:84"
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:63",
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:66",
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:73",
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:76",
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:85"
         ],
         "zones": [
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:67",
@@ -2262,7 +2274,7 @@
         ],
         "choices": [],
         "status": [
-          "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json:422",
+          "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json:470",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:22",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:41",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:148",
@@ -2274,9 +2286,9 @@
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:37",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:86",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:164",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:59",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:65",
-          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:84"
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:60",
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:66",
+          "src/game/rules/game-specific/collection-family-effects/json-family-effects-schema.ts:85"
         ],
         "scoring": [],
         "victory": [
@@ -2284,8 +2296,8 @@
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:220"
         ],
         "targeting": [
-          "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json:344",
-          "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json:365",
+          "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json:388",
+          "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json:410",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:31",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:34",
           "src/game/rules/game-specific/collection-family-effects/family-effects.recipes.ts:126",
@@ -2311,8 +2323,8 @@
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/mission-galaxie/game.spec.ts:30",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:91",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:94",
+          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:92",
+          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:95",
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:37",
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:122",
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:150",
@@ -2329,7 +2341,7 @@
           "src/game/games/les-quatre-vents/mission-galaxie/game.json:26",
           "src/game/games/les-quatre-vents/mission-galaxie/game.json:34",
           "src/game/games/les-quatre-vents/mission-galaxie/game.json:42",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:105"
+          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:106"
         ],
         "zones": [],
         "choices": [
@@ -2351,15 +2363,15 @@
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:173"
         ],
         "targeting": [
-          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:245",
-          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:593",
-          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:661",
-          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:714",
-          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:727",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:54",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:124",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:126",
-          "src/game/rules/game-specific/race-quiz-event-track/program.ts:20",
+          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:290",
+          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:643",
+          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:711",
+          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:764",
+          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:777",
+          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:55",
+          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:125",
+          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:127",
+          "src/game/rules/game-specific/race-quiz-event-track/program.ts:21",
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:116",
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:118",
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:122",
@@ -2368,14 +2380,14 @@
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:255"
         ],
         "triggers": [
-          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:584",
+          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:634",
           "src/game/games/les-quatre-vents/mission-galaxie/game.json:43",
           "src/game/games/les-quatre-vents/mission-galaxie/game.json:45",
           "src/game/games/les-quatre-vents/mission-galaxie/game.json:89",
           "src/game/games/les-quatre-vents/mission-galaxie/game.json:101",
           "src/game/games/les-quatre-vents/mission-galaxie/game.json:102",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:63",
-          "src/game/rules/game-specific/race-quiz-event-track/program.ts:50",
+          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:64",
+          "src/game/rules/game-specific/race-quiz-event-track/program.ts:51",
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:46",
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:91",
           "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:158",
@@ -3277,12 +3289,12 @@
       ],
       "mechanics": {
         "movement": [
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:42",
           "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:44",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:46",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:62",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:48",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:50",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:52"
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:60",
+          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:49",
+          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:51",
+          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:53"
         ],
         "ownership": [],
         "collision": [],
@@ -3292,29 +3304,29 @@
           "src/game/games/les-quatre-vents/taxi-express/game.json:22",
           "src/game/games/les-quatre-vents/taxi-express/game.json:31",
           "src/game/games/les-quatre-vents/taxi-express/game.json:38",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:86",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:91",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:112",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:67",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:70",
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:83",
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:88",
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:108",
+          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:68",
           "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:71",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:80",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:83",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:100"
+          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:72",
+          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:81",
+          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:84",
+          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:101"
         ],
         "zones": [
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:91"
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:88"
         ],
         "choices": [],
         "status": [],
         "collections": [],
         "scoring": [
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:68",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:74"
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:66",
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:72"
         ],
         "victory": [
           "src/game/games/les-quatre-vents/taxi-express/game.json:65",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:75"
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:73"
         ],
         "targeting": [],
         "triggers": [
@@ -3325,11 +3337,11 @@
           "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:18",
           "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:25",
           "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:36",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:40",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:47",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:57",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:69",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:98",
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:38",
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:45",
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:55",
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:67",
+          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:95",
           "src/game/rules/game-specific/race-route-delivery/program.ts:3"
         ]
       }
@@ -3571,42 +3583,44 @@
         "cards": [
           "src/game/games/vents-dansants/zig-et-zag/game.json:10",
           "src/game/games/vents-dansants/zig-et-zag/game.json:22",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:26",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:45",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:48",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:77",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:90",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:113",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:133",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:136",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:149",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:153",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:189",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:191",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:192",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:276",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:28",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:59",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:67",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:106",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:123",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:146",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:170",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:173",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:201",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:205",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:241",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:243",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:244",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:328",
           "src/game/rules/game-specific/cards-battle-ties/json-battle-ties-schema.ts:38"
         ],
         "zones": [
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:133"
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:170"
         ],
         "choices": [],
         "status": [],
         "collections": [],
         "scoring": [
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:204",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:206",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:207"
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:256",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:258",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:259"
         ],
         "victory": [
-          "src/game/games/vents-dansants/zig-et-zag/game.json:75",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:161"
+          "src/game/games/vents-dansants/zig-et-zag/game.json:55",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:213"
         ],
         "targeting": [],
         "triggers": [
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:81",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:119",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:253"
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:73",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:110",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:152",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:181",
+          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:305"
         ]
       }
     }

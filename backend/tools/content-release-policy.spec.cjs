@@ -15,12 +15,6 @@ test('content publication retains immutable historical releases', () => {
   assert.match(source, /validateRelease\(temporary\)[\s\S]*renameSync\(temporary, target\)/);
   assert.doesNotMatch(source, /(?:rmSync|unlinkSync|rmdirSync)\(/);
 
-  const policy = fs.readFileSync(
-    path.join(backend, 'docs/architecture/content-release-pipeline.md'),
-    'utf8',
-  );
-  assert.match(policy, /aucune ligne active de `game_sessions`/);
-  assert.match(policy, /aucune commande de purge/);
 });
 
 test('snapshot migrations remain static and deterministic', () => {

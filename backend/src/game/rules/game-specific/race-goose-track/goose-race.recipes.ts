@@ -141,11 +141,15 @@ function announceLanding(
     position,
   });
   if (tile.description)
-    ctx.events.message('game.board.tile-description', {
-      playerId,
-      tileId: tile.id,
-      tileType: tile.type,
-      tileLabel: tile.label,
-      tileDescription: tile.description,
-    });
+    ctx.events.message(
+      'game.board.tile-description',
+      {
+        playerId,
+        tileId: tile.id,
+        tileType: tile.type,
+        tileLabel: tile.label,
+        tileDescription: tile.description,
+      },
+      { default: `${tile.label}. ${tile.description}` },
+    );
 }

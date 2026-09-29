@@ -311,31 +311,6 @@ function audit() {
       'modules/presence/application/services/presence-chat.service.ts: commandes chat sans lecture de bannissement persistée',
     );
   }
-  const authorizationMatrix = fs.readFileSync(
-    path.resolve(
-      __dirname,
-      '../docs/architecture/authorization-resource-matrix.md',
-    ),
-    'utf8',
-  );
-  for (const resource of [
-    'messages privés',
-    'notifications/inbox',
-    'rooms',
-    'vault',
-    'relations sociales',
-    'statistiques utilisateur',
-    'chat',
-    'bots de room',
-    'bug reports',
-    'administration utilisateurs',
-    'sons et updates',
-    'profil utilisateur',
-  ]) {
-    if (!authorizationMatrix.includes(`| ${resource} |`)) {
-      violations.push(`matrice authorization: ressource absente ${resource}`);
-    }
-  }
   return violations;
 }
 

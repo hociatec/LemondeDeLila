@@ -1,4 +1,7 @@
-import { legacyExtensionFixture, testGame } from '../../../engine/testing/public-api';
+import {
+  legacyExtensionFixture,
+  testGame,
+} from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import documentExtensionSource from './game.json';
 import manifest from './manifest.json';

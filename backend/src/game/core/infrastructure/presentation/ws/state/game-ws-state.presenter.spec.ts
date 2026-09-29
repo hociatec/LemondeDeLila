@@ -568,6 +568,9 @@ describe('GameWsStatePresenter', () => {
                 type: 'game.message',
                 data: {
                   key: 'game.board.tile-description',
+                  narration: {
+                    default: 'Oie. Une oie vous pousse à continuer.',
+                  },
                   params: {
                     playerId: 1,
                     tileLabel: 'Oie',

@@ -3,14 +3,12 @@ import { GameInvariantViolationError } from '../../../core/domain/errors/game-ru
 import type { GameContext } from '../../../engine/sdk/public-api';
 import type { DeliveryRaceProgram } from './program';
 import { defineEmptyAction } from '../../../engine/sdk/extension-api';
-
 type State = Record<string, never>;
 type Context = GameContext<State>;
 type DeliveryCard = {
   id: string | number;
   attributes: Readonly<Record<string, string | number | boolean | null>>;
 };
-
 export function deliveryRaceRules(source: DeliveryRaceProgram) {
   const program = structuredClone(source);
   return {
@@ -77,7 +75,6 @@ function playTurn(
   }
   if (ctx.match.lifecycle() !== 'finished') ctx.turn.end();
 }
-
 function ensureClient(
   program: DeliveryRaceProgram,
   playerId: number,
@@ -102,7 +99,6 @@ function ensureClient(
   });
   return client;
 }
-
 function discardClient(
   program: DeliveryRaceProgram,
   playerId: number,

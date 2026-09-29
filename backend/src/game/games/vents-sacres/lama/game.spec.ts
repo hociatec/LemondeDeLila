@@ -1,4 +1,7 @@
-import { legacyExtensionFixture, testGame } from '../../../engine/testing/public-api';
+import {
+  legacyExtensionFixture,
+  testGame,
+} from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import documentExtensionSource from './game.json';
 import manifest from './manifest.json';
@@ -15,11 +18,13 @@ describe('LAMA declarative game', () => {
       .players(['Lila', 'Mina'])
       .seed(73)
       .start();
+    await game.as(1).do('game.configure', {});
 
-    expect(game.availableActions(1)).toEqual(
-      expect.arrayContaining(['draw', 'cards-discard-penalty-pass']),
+    const actor = game.state().turn?.currentPlayerId ?? 1;
+    expect(game.availableActions(actor)).toEqual(
+      expect.arrayContaining(['draw', 'cards-discard-penalty-quit']),
     );
-    await game.as(1).do('draw', {});
+    await game.as(actor).do('draw', {});
     expect(await game.replay()).toEqual(game.state());
   });
 });

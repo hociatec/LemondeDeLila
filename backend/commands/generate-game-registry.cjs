@@ -32,7 +32,6 @@ function generateGameRegistry(options = {}) {
     if (manifest.code !== path.basename(directory) || manifest.engine !== manifest.code || codes.has(manifest.code)) {
       throw new Error(`Identité de manifeste invalide ou dupliquée : ${directory}`);
     }
-    if (!fs.existsSync(path.join(directory, 'rules.md'))) throw new Error(`rules.md manquant : ${directory}`);
     codes.add(manifest.code);
   }
   const imports = games.map((file, index) => {

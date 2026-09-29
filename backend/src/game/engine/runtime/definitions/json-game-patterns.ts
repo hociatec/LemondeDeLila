@@ -102,7 +102,11 @@ export const jsonGamePatternSchema: AuthorSchema = {
         kind: { const: 'race' },
         trackId: id,
         spaces: { type: 'integer', minimum: 1, maximum: 10000 },
-        positionDisplayOffset: { type: 'integer', minimum: -1000000, maximum: 1000000 },
+        positionDisplayOffset: {
+          type: 'integer',
+          minimum: -1000000,
+          maximum: 1000000,
+        },
         overshoot: { enum: ['clamp', 'wrap', 'bounce', 'exact'] },
         finish: position,
         homeStretch: object({ from: position, to: position }, ['from']),

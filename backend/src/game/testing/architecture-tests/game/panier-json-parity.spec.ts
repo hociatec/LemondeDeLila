@@ -44,9 +44,9 @@ it.each(reference)(
     const trace = result.events
       .filter((event) => event.type !== 'engine.state.committed')
       .map(({ type, data, visibility }) => ({ type, data, visibility }));
-    expect(trace).toHaveLength(events);
     expect(
       createHash('sha256').update(JSON.stringify(trace)).digest('hex'),
     ).toBe(sha256);
+    expect(trace).toHaveLength(events);
   },
 );

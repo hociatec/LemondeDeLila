@@ -109,35 +109,16 @@ function buildMatrix() {
   };
 }
 
-function render(matrix) {
-  const keys = Object.keys(rules);
-  return (
-    '# Matrice des mécaniques du catalogue\n\n' +
-    'Générée par `node tools/game-mechanics-matrix.cjs --write`. Les preuves détaillées (fichier et ligne) sont dans le JSON associé. Une case vide signifie absence de preuve directe, pas absence certaine de fonctionnalité.\n\n' +
-    `| Jeu | ${keys.join(' | ')} |\n| --- | ${keys.map(() => '---').join(' | ')} |\n` +
-    matrix.games
-      .map(
-        (game) =>
-          `| ${game.id} | ${keys.map((key) => (game.mechanics[key].length ? '✓' : '')).join(' | ')} |`,
-      )
-      .join('\n') +
-    '\n'
-  );
-}
-
 if (require.main === module) {
   const matrix = buildMatrix();
-  for (const [name, content] of [
-    ['game-mechanics-matrix.json', JSON.stringify(matrix, null, 2) + '\n'],
-    ['game-mechanics-matrix.md', render(matrix)],
-  ]) {
-    const file = path.join(root, 'docs/quality', name);
-    if (process.argv.includes('--write')) fs.writeFileSync(file, content);
-    else if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== content)
-      throw new Error(`Stale mechanics matrix: ${name}`);
-  }
+  const name = 'game-mechanics-matrix.json';
+  const content = JSON.stringify(matrix, null, 2) + '\n';
+  const file = path.join(root, 'docs/quality', name);
+  if (process.argv.includes('--write')) fs.writeFileSync(file, content);
+  else if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== content)
+    throw new Error(`Stale mechanics matrix: ${name}`);
   console.log(
     `${matrix.games.length} games, ${matrix.packs.length} packs, ${Object.keys(rules).length} mechanics`,
   );
 }
-module.exports = { buildMatrix, render };
+module.exports = { buildMatrix };

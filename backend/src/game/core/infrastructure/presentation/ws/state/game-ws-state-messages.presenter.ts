@@ -8,6 +8,10 @@ import { genericGameEventMessage } from './game-ws-generic-event-message';
 import { gridPawnMessage } from './game-ws-grid-pawn-message';
 import { cardMessageLabel, scalarMessageText } from './game-ws-message-values';
 import { withoutRepeatedTurnAnnouncements } from './game-ws-turn-announcements';
+import {
+  decodeMessageSystem,
+  type MessageSystemView,
+} from './game-ws-message-system-view';
 
 type GamePresentationDescriptor = NonNullable<
   GameRuntimeDescriptor['presentation']
@@ -17,19 +21,20 @@ type ScorePresentationDescriptor = NonNullable<
 >;
 export class GameWsStateMessagesPresenter {
   withServerMessages(
-    system: Record<string, unknown>,
+    rawSystem: unknown,
     viewerPlayerId: number | null,
     presentation: GamePresentationDescriptor,
   ): Record<string, unknown> {
+    const system = decodeMessageSystem(rawSystem);
     const playerNames = this.playerNames(system);
-    const events = this.asRecord(system.events);
-    const latestByType = this.asRecord(events.latestByType);
+    const events = system.events;
+    const latestByType: Record<string, unknown> = events.latestByType;
     const receivedCardData = this.asRecord(
       this.asRecord(latestByType['card.received']).data,
     );
-    const recentEvents = Array.isArray(events.recent) ? events.recent : [];
+    const recentEvents: unknown[] = events.recent;
     const relations = presentationRelations(recentEvents, latestByType);
-    const started = isActiveMatchStatus(this.asRecord(system.match).status);
+    const started = isActiveMatchStatus(system.match.status);
     const presentEvent = (rawEvent: unknown): Record<string, unknown> =>
       this.presentEvent({
         rawEvent,
@@ -52,14 +57,12 @@ export class GameWsStateMessagesPresenter {
     };
   }
 
-  private playerNames(system: Record<string, unknown>): Map<number, string> {
-    const players = this.asRecord(system.players).all;
+  private playerNames(system: MessageSystemView): Map<number, string> {
+    const players = system.players.all;
     const names = new Map<number, string>();
-    for (const value of (Array.isArray(players) ? players : []).slice(0, 128)) {
-      const player = this.asRecord(value);
-      const id = this.numberValue(player.id);
-      const username = this.stringValue(player.username);
-      if (id != null && username) names.set(id, username.slice(0, 255));
+    for (const player of players.slice(0, 128)) {
+      const username = player.username.trim();
+      if (username) names.set(player.id, username.slice(0, 255));
     }
     return names;
   }
@@ -118,6 +121,14 @@ export class GameWsStateMessagesPresenter {
     if (!started && (type === 'turn.started' || type === 'turn.ended'))
       return '';
     if (data.announce === false) return '';
+    const narration = this.asRecord(data.narration);
+    const narrationByPlayerId = this.asRecord(narration.byPlayerId);
+    const ownedNarration =
+      (viewerPlayerId == null
+        ? ''
+        : this.stringValue(narrationByPlayerId[String(viewerPlayerId)])) ||
+      this.stringValue(narration.default);
+    if (ownedNarration) return ownedNarration;
     const explicit = this.stringValue(data.message);
     if (explicit) return explicit;
 
@@ -199,13 +210,6 @@ export class GameWsStateMessagesPresenter {
       return namedPlayer === 'Vous'
         ? 'Vous devez choisir votre pion.'
         : `${namedPlayer} doit choisir son pion.`;
-    if (messageKey === 'game.team-pawn.family-selected' && namedPlayer) {
-      const habitat = this.stringValue(params.habitat);
-      if (!habitat) return '';
-      return namedPlayer === 'Vous'
-        ? `Vous avez choisi ${withDefiniteArticle(habitat)}.`
-        : `${namedPlayer} a choisi ${withDefiniteArticle(habitat)}.`;
-    }
     if (messageKey === 'game.dice.rolled' && namedPlayer) {
       const total = this.numberValue(params.total);
       if (total == null) return '';
@@ -214,43 +218,8 @@ export class GameWsStateMessagesPresenter {
         ? `Vous lancez le dé et faites un ${value}.`
         : `${namedPlayer} lance le dé et fait un ${value}.`;
     }
-    if (messageKey === 'game.card.battle.won' && namedPlayer) {
-      const cardsWon = this.numberValue(params.cardsWon);
-      if (cardsWon == null) return '';
-      const cards = `carte${cardsWon === 1 ? '' : 's'}`;
-      const result = namedPlayer === 'Vous'
-        ? `Vous remportez la bataille et gagnez ${cardsWon} ${cards}.`
-        : `${namedPlayer} remporte la bataille et gagne ${cardsWon} ${cards}.`;
-      const plays = Array.isArray(params.plays) ? params.plays : [];
-      const revealed = plays.flatMap((value) => {
-        const play = this.asRecord(value);
-        const playerName = player(play.playerId);
-        const cardNames = Array.isArray(play.cardNames)
-          ? play.cardNames.filter((card): card is string => typeof card === 'string')
-          : [];
-        return playerName && cardNames.length > 0
-          ? [playerName === 'Vous'
-            ? `Vous avez posé : ${cardNames.join(', ')}.`
-            : `${playerName} a posé : ${cardNames.join(', ')}.`]
-          : [];
-      });
-      return [result, ...revealed].join(' ');
-    }
-    if (messageKey === 'game.card.battle.card-placed' && namedPlayer) {
-      return namedPlayer === 'Vous'
-        ? 'Vous posez une carte sur la table.'
-        : `${namedPlayer} pose une carte sur la table.`;
-    }
-    if (messageKey === 'game.card.battle.started')
-      return 'Égalité : une bataille commence.';
-    if (messageKey === 'game.card.battle.continues')
-      return 'Nouvelle égalité : la bataille continue.';
     if (messageKey === 'game.pawn.bonus-advance' && namedPlayer)
       return this.pawnBonusMessage(namedPlayer, params);
-    if (messageKey === 'game.team-pawn.moved' && namedPlayer)
-      return this.teamPawnMovedMessage(namedPlayer, params);
-    if (messageKey === 'game.board.tile-description')
-      return this.boardTileDescription(params);
     if (messageKey === 'game.positions.swapped') {
       const actor = player(params.actorId);
       const target = player(params.targetId);
@@ -269,13 +238,6 @@ export class GameWsStateMessagesPresenter {
       );
     if (messageKey !== 'game.round.started') return '';
     return this.roundStartedMessage(params, players);
-  }
-
-  private boardTileDescription(params: Record<string, unknown>): string {
-    const label = this.stringValue(params.tileLabel);
-    const description = this.stringValue(params.tileDescription);
-    if (!description) return '';
-    return label ? `${label}. ${description}` : description;
   }
 
   private quizResolvedMessage(
@@ -307,26 +269,6 @@ export class GameWsStateMessagesPresenter {
         ? 'vous avancez'
         : `${namedPlayer} avance`;
     return `Effet : ${verb} de ${amount}.`;
-  }
-
-  private teamPawnMovedMessage(
-    namedPlayer: string,
-    params: Record<string, unknown>,
-  ): string {
-    const pawn = scalarMessageText(params.pawnLabel) || 'le pion';
-    const origin = this.stringValue(params.originLabel) || 'enclos';
-    const position = this.numberValue(params.position);
-    if (position == null) return '';
-    if (params.enteredTrack === true)
-      return namedPlayer === 'Vous'
-        ? `Vous sortez votre ${pawn} de ${fromHabitat(origin)} et le placez en case ${position}.`
-        : `${namedPlayer} sort son ${pawn} de ${fromHabitat(origin)} et le place en case ${position}.`;
-    const distance = this.numberValue(params.distance) ?? 0;
-    const spaces = `case${Math.abs(distance) === 1 ? '' : 's'}`;
-    const amount = frenchNumber(Math.abs(distance));
-    return namedPlayer === 'Vous'
-      ? `Vous déplacez votre ${pawn} de ${amount} ${spaces} et le placez en case ${position}.`
-      : `${namedPlayer} déplace son ${pawn} de ${amount} ${spaces} et le place en case ${position}.`;
   }
 
   private drawnCardMessage(input: {
@@ -458,14 +400,6 @@ function scoreUnit(
 function frenchNumber(value: number): string {
   const values = ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six'];
   return values[value] ?? String(value);
-}
-
-function withDefiniteArticle(value: string): string {
-  return /^[aeiouyéèêëàâîïôöùûü]/iu.test(value) ? `l’${value}` : `la ${value}`;
-}
-
-function fromHabitat(value: string): string {
-  return /^[aeiouyéèêëàâîïôöùûü]/iu.test(value) ? `l’${value}` : `la ${value}`;
 }
 
 function turnAnnouncement(name: string): string {

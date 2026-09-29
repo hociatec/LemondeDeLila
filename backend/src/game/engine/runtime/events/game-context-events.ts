@@ -10,6 +10,11 @@ import {
 } from './engine-event-registry';
 
 export type EventDataMap = Record<string, object>;
+export type GameMessageNarration = {
+  default: string;
+  byPlayerId?: Readonly<Record<string, string>>;
+  supersedes?: readonly string[];
+};
 export type DomainEvent<TEvents extends EventDataMap = EventDataMap> = {
   [TType in keyof TEvents & string]: {
     type: TType;
@@ -48,13 +53,22 @@ export class GameContextEvents {
         visibility: resolveEngineVisibility(type, visibility),
       });
     },
-    message: (key: string, params: Record<string, unknown> = {}) => {
+    message: (
+      key: string,
+      params: Record<string, unknown> = {},
+      narration?: GameMessageNarration,
+    ) => {
       assertSerializableState(params, 'event.data.params');
+      if (narration) assertSerializableState(narration, 'event.data.narration');
       const normalizedKey = key.trim();
       if (!normalizedKey) return;
       this.enqueue({
         type: 'game.message',
-        data: { key: normalizedKey, params: structuredClone(params) },
+        data: {
+          key: normalizedKey,
+          params: structuredClone(params),
+          ...(narration ? { narration: structuredClone(narration) } : {}),
+        },
         visibility: { kind: 'public' },
       });
       this.log.push({
