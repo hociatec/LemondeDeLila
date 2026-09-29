@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "2",
+  "snapshotMigrations": [{ "fromVersion": "1", "toVersion": "2" }],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
   "patterns": [
@@ -10,6 +11,25 @@
       "trackId": "minuit",
       "spaces": 56,
       "overshoot": "bounce"
+    },
+    {
+      "kind": "bounce-quiz-race",
+      "rollRecipe": "race-bounce-quiz-roll",
+      "trackId": "minuit",
+      "diceId": "main",
+      "deckId": "noel",
+      "pawnSetId": "minuit",
+      "pawnChoiceId": "race-bounce-quiz.pawn",
+      "answerChoiceId": "race-bounce-quiz.resolve",
+      "maxDepth": 24,
+      "finishReason": "bounceQuiz",
+      "statuses": {
+        "ignoreNextMalus": "race-bounce-quiz.ignore-next-malus",
+        "ignoreNextSkip": "race-bounce-quiz.ignore-next-skip",
+        "forceDrawNextTurn": "race-bounce-quiz.force-draw-next-turn"
+      },
+      "tiles": { "$content": "content/catalogue.json#/tiles" },
+      "cards": { "$content": "content/catalogue.json#/cards" }
     }
   ],
   "components": [
@@ -47,14 +67,10 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "playing"
-      ]
+      "transitions": ["playing"]
     },
     "playing": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -64,32 +80,8 @@
     }
   },
   "victory": {
-    "kind": "by-bounce-quiz-race"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "bounceQuizRace",
-      "config": {
-        "trackId": "minuit",
-        "diceId": "main",
-        "deckId": "noel",
-        "pawnSetId": "minuit",
-        "pawnChoiceId": "race-bounce-quiz.pawn",
-        "answerChoiceId": "race-bounce-quiz.resolve",
-        "maxDepth": 24,
-        "finishReason": "bounceQuiz",
-        "statuses": {
-          "ignoreNextMalus": "race-bounce-quiz.ignore-next-malus",
-          "ignoreNextSkip": "race-bounce-quiz.ignore-next-skip",
-          "forceDrawNextTurn": "race-bounce-quiz.force-draw-next-turn"
-        },
-        "tiles": {
-          "$content": "content/catalogue.json#/tiles"
-        },
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        }
-      }
-    }
-  ]
+  "extensions": [],
+  "playerValuesVisibility": { "statuses": "public" }
 }

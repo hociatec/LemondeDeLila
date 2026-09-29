@@ -14,6 +14,7 @@ import { assertJudgedSubmissionReferences } from './json-judged-submission-refer
 import { assertAnonymousVoteReferences } from './json-anonymous-vote-reference-validation';
 import { assertTreasureTrackReferences } from './json-treasure-track-reference-validation';
 import { assertPairedPawnRaceReferences } from './json-paired-pawn-race-reference-validation';
+import { assertBounceQuizRaceReferences } from './json-bounce-quiz-race-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
 
@@ -114,6 +115,8 @@ function assertAdvancedPatternReferences(
     assertSpeciesTroopsReferences(pattern, index, components, fail);
   if (pattern.kind === 'paired-pawn-race')
     assertPairedPawnRaceReferences(pattern, index, components, resources, fail);
+  if (pattern.kind === 'bounce-quiz-race')
+    assertBounceQuizRaceReferences(pattern, index, components, fail);
   if (pattern.kind === 'grid-placement')
     assertGridPlacementReferences(
       pattern,

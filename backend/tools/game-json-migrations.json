@@ -180,6 +180,16 @@
         "src/game/testing/architecture-tests/game/paired-pawn-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-paired-pawn-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/en-attendant-minuit/game.json",
+      "fromSha256": "02684835ad4bdfe0dfb2057750358a95410639ca3231e2253756c1d74e76c6ae",
+      "toSha256": "ffb3ba62e1ceae1726e29171baf6509a3caa15b87b219f1455dd7c7e3b207d9a",
+      "justification": "Le pattern bounce-quiz-race générique porte désormais pions, rebond, collisions, quiz privés, cartes, protections, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/bounce-quiz-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-bounce-quiz-race.spec.ts"
+      ]
     }
   ]
 }

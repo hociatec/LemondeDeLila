@@ -979,70 +979,30 @@
     },
     {
       "id": "en-attendant-minuit",
-      "packs": [
-        "race-bounce-quiz"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/les-quatre-vents/en-attendant-minuit/game.json:17",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:52",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:54",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:91",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:105",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:118",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:122",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:123",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:196",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:207",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:215",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:223",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:228",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:233",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:236",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:241",
-          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:74",
-          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:76",
-          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:78",
-          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:85"
+          "src/game/games/les-quatre-vents/en-attendant-minuit/game.json:37"
         ],
         "ownership": [],
-        "collision": [
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:7",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:120"
-        ],
+        "collision": [],
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/les-quatre-vents/en-attendant-minuit/game.json:25",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/game.spec.ts:24",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:67",
-          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:84",
-          "src/game/rules/game-specific/race-bounce-quiz/json-bounce-quiz-race-schema.ts:100"
+          "src/game/games/les-quatre-vents/en-attendant-minuit/game.json:45",
+          "src/game/games/les-quatre-vents/en-attendant-minuit/game.spec.ts:20"
         ],
         "zones": [],
-        "choices": [
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:10",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:55",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:64",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:99",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:112",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:142",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:148"
-        ],
+        "choices": [],
         "status": [
           "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:524",
           "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:596",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:836",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:36",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:132",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:136",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:171"
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:836"
         ],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/en-attendant-minuit/game.json:66",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:128"
+          "src/game/games/les-quatre-vents/en-attendant-minuit/game.json:82"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:579",
@@ -1054,22 +1014,9 @@
           "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:904",
           "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:918",
           "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:932",
-          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:947",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:7",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:120",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:212",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:213",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:220",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:221",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:231"
+          "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json:947"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:40",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:70",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:100",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:113",
-          "src/game/rules/game-specific/race-bounce-quiz/bounce-quiz-race.recipes.ts:126"
-        ]
+        "triggers": []
       }
     },
     {
@@ -3162,12 +3109,6 @@
       "name": "race-bidirectional-collision",
       "consumers": [
         "galopons-ensemble"
-      ]
-    },
-    {
-      "name": "race-bounce-quiz",
-      "consumers": [
-        "en-attendant-minuit"
       ]
     },
     {

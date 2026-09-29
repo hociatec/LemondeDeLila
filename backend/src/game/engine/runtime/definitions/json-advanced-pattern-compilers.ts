@@ -22,6 +22,14 @@ import {
   judgedSubmission,
   type JudgedSubmissionOptions,
 } from '../patterns/judged-submission-pattern';
+import {
+  bounceQuizRace,
+  type BounceQuizRaceOptions,
+} from '../patterns/bounce-quiz-race-pattern';
+import {
+  orderedAssembly,
+  type OrderedAssemblyOptions,
+} from '../patterns/ordered-assembly-pattern';
 
 export function compileTreasureTrackRace(
   pattern: { kind: 'treasure-track-race' } & TreasureTrackRaceOptions,
@@ -58,4 +66,16 @@ export function compileJudgedSubmission(
 ) {
   const { kind: _kind, ...options } = pattern;
   return judgedSubmission(options);
+}
+export function compileBounceQuizRace(
+  pattern: { kind: 'bounce-quiz-race' } & BounceQuizRaceOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return bounceQuizRace(options);
+}
+export function compileOrderedAssembly(
+  pattern: { kind: 'ordered-assembly' } & OrderedAssemblyOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return orderedAssembly(options);
 }

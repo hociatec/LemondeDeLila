@@ -7,20 +7,12 @@ import {
 import propertyManifest from '../../../games/les-quatre-vents/sac-a-malices/manifest.json';
 import propertyDocument from '../../../games/les-quatre-vents/sac-a-malices/game.json';
 import propertyContent from '../../../games/les-quatre-vents/sac-a-malices/catalogue.json';
-import quizManifest from '../../../games/les-quatre-vents/en-attendant-minuit/manifest.json';
-import quizDocument from '../../../games/les-quatre-vents/en-attendant-minuit/game.json';
-import quizContent from '../../../games/les-quatre-vents/en-attendant-minuit/catalogue.json';
 
 const fixtures = {
   propertyEconomy: {
     manifest: propertyManifest,
     document: propertyDocument,
     content: propertyContent,
-  },
-  bounceQuizRace: {
-    manifest: quizManifest,
-    document: quizDocument,
-    content: quizContent,
   },
 };
 
@@ -68,12 +60,6 @@ const cases: Case[] = [
     'variants[0].community[0].id',
     propertyContent.variants[0].chance[0].id,
   ],
-  ['bounceQuizRace', 'trackId', 'missing'],
-  ['bounceQuizRace', 'diceId', 'missing'],
-  ['bounceQuizRace', 'deckId', 'missing'],
-  ['bounceQuizRace', 'pawnSetId', 'missing'],
-  ['bounceQuizRace', 'tiles[1].n', 999],
-  ['bounceQuizRace', 'tiles[0].type', 'neutral'],
 ];
 
 describe.each([false, true])(
@@ -137,18 +123,6 @@ describe.each([false, true])(
           ]);
         },
       );
-    });
-
-    it('points to an out-of-range quiz answer', () => {
-      check('bounceQuizRace', 'cards[0].quiz.correctIndex', 99, (config) => {
-        replace(config, 'cards[0].quiz', {
-          prompt: 'Question',
-          choices: ['A', 'B', 'C'],
-          correctIndex: 99,
-          successDelta: 1,
-          failureDelta: -1,
-        });
-      });
     });
   },
 );

@@ -54,7 +54,6 @@
     "race-bidirectional-collision": "Compared with pawn-race and track-round; bidirectional movement and collisions remain unique.",
     "cards-theme-name": "Compared with judged-cards and card-actions; name/theme composition and special cards remain unique.",
     "cards-discard-penalty": "Compared with card-actions; discard legality, quitting and unique-value penalties remain unique.",
-    "race-bounce-quiz": "Compared with movement-quiz and track-round; bouncing movement, quiz and protection remain unique.",
     "choice-simultaneous-quiz": "Compared with movement-quiz and scoring-submission; configurable simultaneous quiz remains unique.",
     "cards-shared-prestige": "Compared with card-actions and shared hands; prestige statuses and exploit rules remain unique.",
     "cards-ritual-phases": "Compared with collection and card primitives; ritual phases and light scoring remain unique.",
@@ -71,11 +70,7 @@
         "/straight:ranking.rank",
         "/if.then:movement.swap"
       ],
-      "profiles": [
-        "choice-story-challenge",
-        "race-quiz-event-track",
-        "race-bounce-quiz"
-      ],
+      "profiles": ["choice-story-challenge", "race-quiz-event-track"],
       "decision": "Keep composed primitives: each profile selects a different target (closest, behind, or rule-specific), so a callback wrapper would add indirection without a shared invariant."
     }
   ],
@@ -105,8 +100,7 @@
       "race-team-pawn-capture",
       "race-protected-haunted-track",
       "race-quiz-event-track",
-      "race-bidirectional-collision",
-      "race-bounce-quiz"
+      "race-bidirectional-collision"
     ]
   },
   "genericGameplayFiles": [
@@ -229,14 +223,6 @@
       "classificationReason": "cards-discard-penalty implements discard rounds and unique-value penalties. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "race-bounce-quiz": {
-      "property": "bounceQuizRace",
-      "mechanic": "bouncing race with quiz and protection",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-bounce-quiz implements bouncing race with quiz and protection. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "cards-public-domain": {
       "property": "publicDomainCards",
       "mechanic": "private cards resolved into a public domain",
@@ -293,7 +279,6 @@
     "race-bidirectional-collision",
     "race-team-pawn-capture",
     "race-quiz-event-track",
-    "race-bounce-quiz",
     "race-directional-hazards",
     "race-chained-tile-cards",
     "choice-chapter-encounter",
