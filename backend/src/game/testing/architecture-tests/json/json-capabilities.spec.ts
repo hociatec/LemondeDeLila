@@ -14,6 +14,7 @@ type Intrinsic =
   | 'custom'
   | 'choose-player'
   | 'gain-score'
+  | 'set-score'
   | 'skip-turn'
   | 'extra-turn'
   | 'add-status'
@@ -22,7 +23,13 @@ type Intrinsic =
   | 'start-round'
   | 'end-round'
   | 'eliminate-player'
-  | 'complete-turn';
+  | 'complete-turn'
+  | 'transition-phase'
+  | 'repeat'
+  | 'switch'
+  | 'random-choice'
+  | 'stop';
+// Generic control-flow and value-only effects have no component reference.
 
 // A new component-dependent instruction must add a case here to compile.
 const effects = {
@@ -34,6 +41,17 @@ const effects = {
   },
   move: { kind: 'move', trackId: 'board', spaces: 1 },
   'move-to': { kind: 'move-to', trackId: 'board', position: 1 },
+  'move-relative-to': {
+    kind: 'move-relative-to',
+    trackId: 'board',
+    reference: { kind: 'next' },
+  },
+  'move-to-tag': {
+    kind: 'move-to-tag',
+    trackId: 'board',
+    tag: 'goal',
+    direction: 'next',
+  },
   'swap-positions': { kind: 'swap-positions', trackId: 'board', ...pair },
   'draw-cards': {
     kind: 'draw-cards',
@@ -41,6 +59,13 @@ const effects = {
     handId: 'hand',
     count: 1,
   },
+  'draw-to-zone': {
+    kind: 'draw-to-zone',
+    deckId: 'deck',
+    zoneId: 'removed',
+    count: 1,
+  },
+  'shuffle-cards': { kind: 'shuffle-cards', deckId: 'deck' },
   'discard-random': {
     kind: 'discard-random',
     deckId: 'deck',
@@ -72,6 +97,7 @@ const effects = {
     ...pair,
   },
   'gain-resource': { kind: 'gain-resource', resource: 'stars', amount: 1 },
+  'set-resource': { kind: 'set-resource', resource: 'stars', value: 1 },
   'lose-resource': { kind: 'lose-resource', resource: 'stars', amount: 1 },
   'transfer-resource': {
     kind: 'transfer-resource',
@@ -92,7 +118,17 @@ const effects = {
 >;
 
 const components = [
-  ...document.components,
+  ...document.components.map((component) =>
+    component.component === 'movement.track'
+      ? { ...component, positionTags: { 5: ['goal'] } }
+      : component,
+  ),
+  {
+    component: 'cards.zone',
+    id: 'removed',
+    deck: 'deck',
+    visibility: 'hidden',
+  },
   { component: 'inventory.set', id: 'bag', items: ['item'] },
   { component: 'dice.set', id: 'main', count: 1, sides: 6 },
   { component: 'ownership.registry', id: 'property', assets: ['house'] },
@@ -145,6 +181,13 @@ const conditions = {
   resource: { kind: 'resource', resource: 'stars', compare: 'gte', amount: 1 },
   'has-resource': { kind: 'has-resource', resource: 'stars', amount: 1 },
   'has-card': { kind: 'has-card', handId: 'hand', cardId: 'a' },
+  'compare-zone-cards': {
+    kind: 'compare-zone-cards',
+    leftZoneId: 'removed',
+    rightZoneId: 'removed',
+    property: 'power',
+    compare: 'eq',
+  },
   'track-position': { kind: 'track-position', trackId: 'board', position: 0 },
   'inventory-count': {
     kind: 'inventory-count',

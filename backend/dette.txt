@@ -1,1 +1,172 @@
-# Aucun point backend ouvert après la certification reproductible 1–109.
+101. Garantir déterminisme et idempotence des actions automatiques.
+102. Généraliser les comportements de bot.
+103. Faire choisir les bots depuis les actions disponibles génériques.
+104. Éviter les bots TypeScript spécifiques lorsqu'une stratégie déclarative suffit.
+105. Permettre des stratégies génériques aléatoires et scorées.
+106. Garder le RNG des bots déterministe.
+107. Généraliser la narration des jeux.
+108. Permettre au JSON de fournir narration, variantes par joueur et paramètres structurés.
+109. Garder le presenter WebSocket ignorant des jeux concrets.
+110. Ne jamais ajouter une branche au presenter pour supporter un nouveau jeu.
+111. Séparer événements internes et narrations publiques.
+112. Empêcher toute narration de révéler une donnée privée.
+113. Généraliser la projection privée par joueur.
+114. Permettre au JSON de déclarer la visibilité lorsque nécessaire.
+115. Ne jamais dépendre du client pour cacher une information secrète.
+116. Versionner le langage JSON du moteur.
+117. Définir une version explicite du schéma de jeu.
+118. Refuser une version inconnue.
+119. Migrer explicitement les anciennes versions si nécessaire.
+120. Éviter les comportements implicites fondés sur l'absence d'un champ.
+121. Valider entièrement un jeu JSON avant enregistrement.
+122. Vérifier toutes les références entre effets, phases, cartes, zones, ressources, actions, selectors et triggers.
+123. Produire des diagnostics précis pour les JSON invalides.
+124. Permettre de valider un jeu indépendamment du backend complet.
+125. Fournir une commande CI validant tous les jeux JSON.
+126. Faire échouer la CI lorsqu'un jeu nécessite un effect pack TypeScript spécifique.
+127. Faire échouer la CI lorsqu'un fichier game-specific contient une règle métier.
+128. Faire échouer la CI si game/engine contient un nom de jeu concret.
+129. Faire échouer la CI si game/engine importe game-specific.
+130. Faire échouer la CI si un JSON appelle un effet non déclaré.
+131. Faire échouer la CI si une primitive générique n'a ni schéma ni test.
+132. Considérer les JSON actuels des jeux comme des contrats à préserver.
+133. Ne modifier aucun JSON existant lorsqu'une compatibilité peut être obtenue en enrichissant le moteur.
+134. Préférer l'élargissement rétrocompatible d'une primitive à la modification des JSON existants.
+135. Ne jamais modifier un JSON uniquement pour faciliter le refactoring.
+136. Établir avant migration un snapshot Git exact de tous les JSON existants.
+137. Calculer et conserver un hash de chaque JSON existant.
+138. Identifier explicitement chaque JSON qui doit réellement changer.
+139. Exiger une justification technique pour chaque JSON modifié.
+140. Vérifier qu'un JSON non concerné reste byte-for-byte identique lorsque possible.
+141. Faire échouer la CI lorsqu'un JSON existant change sans migration déclarée.
+142. Si un JSON doit changer, garantir la jouabilité et le comportement du jeu concerné.
+143. Exécuter les tests complets du jeu avant modification de son JSON.
+144. Conserver une baseline comportementale avant migration.
+145. Après modification, rejouer exactement les mêmes scénarios.
+146. Comparer état final, événements, actions disponibles et transitions de phase avant/après.
+147. Comparer scoring, victoire, projections privées et narrations contractuelles avant/après.
+148. Comparer les replays avant/après avec les mêmes seeds RNG.
+149. Vérifier que les mêmes commandes produisent les mêmes états et événements.
+150. Vérifier que les actions invalides conservent leur comportement contractuel.
+151. Tester le minimum et maximum de joueurs après migration.
+152. Tester une partie complète après migration.
+153. Tester restauration de snapshot et replay complet après migration.
+154. Tester une reconnexion pendant une partie après migration.
+155. Tester bots, timers, choix, données cachées, égalités et cas limites après migration.
+156. Ne supprimer l'ancien effect pack qu'après réussite de la certification du jeu migré.
+157. Vérifier après suppression que le jeu fonctionne sans charger son ancien TypeScript spécifique.
+158. Migrer cards-battle-ties afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+159. Supprimer game/rules/game-specific/cards-battle-ties/effect-pack.ts après certification comportementale complète.
+160. Migrer race-goose-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+161. Supprimer game/rules/game-specific/race-goose-track/effect-pack.ts après certification comportementale complète.
+162. Migrer race-multi-pawn afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+163. Supprimer game/rules/game-specific/race-multi-pawn/effect-pack.ts après certification comportementale complète.
+164. Migrer board-property-economy afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+165. Supprimer game/rules/game-specific/board-property-economy/effect-pack.ts après certification comportementale complète.
+166. Migrer race-event-cards afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+167. Supprimer game/rules/game-specific/race-event-cards/effect-pack.ts après certification comportementale complète.
+168. Migrer choice-story-challenge afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+169. Supprimer game/rules/game-specific/choice-story-challenge/effect-pack.ts après certification comportementale complète.
+170. Migrer race-team-pawn-capture afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+171. Supprimer game/rules/game-specific/race-team-pawn-capture/effect-pack.ts après certification comportementale complète.
+172. Migrer collection-family-effects afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+173. Supprimer game/rules/game-specific/collection-family-effects/effect-pack.ts après certification comportementale complète.
+174. Migrer cards-theme-name afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+175. Supprimer game/rules/game-specific/cards-theme-name/effect-pack.ts après certification comportementale complète.
+176. Migrer race-bounce-quiz afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+177. Supprimer game/rules/game-specific/race-bounce-quiz/effect-pack.ts après certification comportementale complète.
+178. Migrer board-path-walls afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+179. Supprimer game/rules/game-specific/board-path-walls/effect-pack.ts après certification comportementale complète.
+180. Migrer race-paired-pawns afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+181. Supprimer game/rules/game-specific/race-paired-pawns/effect-pack.ts après certification comportementale complète.
+182. Migrer cards-public-domain afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+183. Supprimer game/rules/game-specific/cards-public-domain/effect-pack.ts après certification comportementale complète.
+184. Migrer race-resource-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+185. Supprimer game/rules/game-specific/race-resource-track/effect-pack.ts après certification comportementale complète.
+186. Migrer race-route-delivery afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+187. Supprimer game/rules/game-specific/race-route-delivery/effect-pack.ts après certification comportementale complète.
+188. Migrer race-treasure-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+189. Supprimer game/rules/game-specific/race-treasure-track/effect-pack.ts après certification comportementale complète.
+190. Migrer cards-ritual-phases afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+191. Supprimer game/rules/game-specific/cards-ritual-phases/effect-pack.ts après certification comportementale complète.
+192. Migrer cards-ordered-parade afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+193. Supprimer game/rules/game-specific/cards-ordered-parade/effect-pack.ts après certification comportementale complète.
+194. Migrer cards-shared-prestige afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+195. Supprimer game/rules/game-specific/cards-shared-prestige/effect-pack.ts après certification comportementale complète.
+196. Migrer choice-anonymous-vote afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+197. Supprimer game/rules/game-specific/choice-anonymous-vote/effect-pack.ts après certification comportementale complète.
+198. Migrer cards-discard-penalty afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+199. Supprimer game/rules/game-specific/cards-discard-penalty/effect-pack.ts après certification comportementale complète.
+200. Migrer race-quiz-event-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+201. Supprimer game/rules/game-specific/race-quiz-event-track/effect-pack.ts après certification comportementale complète.
+202. Migrer collection-track-zones afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+203. Supprimer game/rules/game-specific/collection-track-zones/effect-pack.ts après certification comportementale complète.
+204. Migrer spatial-grid-placement afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+205. Supprimer game/rules/game-specific/spatial-grid-placement/effect-pack.ts après certification comportementale complète.
+206. Migrer cards-ordered-assembly afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+207. Supprimer game/rules/game-specific/cards-ordered-assembly/effect-pack.ts après certification comportementale complète.
+208. Migrer cards-judged-submission afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+209. Supprimer game/rules/game-specific/cards-judged-submission/effect-pack.ts après certification comportementale complète.
+210. Migrer board-movement-landings afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+211. Supprimer game/rules/game-specific/board-movement-landings/effect-pack.ts après certification comportementale complète.
+212. Migrer race-chained-tile-cards afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+213. Supprimer game/rules/game-specific/race-chained-tile-cards/effect-pack.ts après certification comportementale complète.
+214. Migrer race-directional-hazards afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+215. Supprimer game/rules/game-specific/race-directional-hazards/effect-pack.ts après certification comportementale complète.
+216. Migrer choice-chapter-encounter afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+217. Supprimer game/rules/game-specific/choice-chapter-encounter/effect-pack.ts après certification comportementale complète.
+218. Migrer choice-simultaneous-quiz afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+219. Supprimer game/rules/game-specific/choice-simultaneous-quiz/effect-pack.ts après certification comportementale complète.
+220. Migrer collection-themed-circles afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+221. Supprimer game/rules/game-specific/collection-themed-circles/effect-pack.ts après certification comportementale complète.
+222. Migrer collection-family-request afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+223. Supprimer game/rules/game-specific/collection-family-request/effect-pack.ts après certification comportementale complète.
+224. Migrer collection-species-troops afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+225. Supprimer game/rules/game-specific/collection-species-troops/effect-pack.ts après certification comportementale complète.
+226. Migrer collection-market-exchange afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+227. Supprimer game/rules/game-specific/collection-market-exchange/effect-pack.ts après certification comportementale complète.
+228. Migrer race-bidirectional-collision afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+229. Supprimer game/rules/game-specific/race-bidirectional-collision/effect-pack.ts après certification comportementale complète.
+230. Migrer race-protected-haunted-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+231. Supprimer game/rules/game-specific/race-protected-haunted-track/effect-pack.ts après certification comportementale complète.
+232. Migrer choice-simultaneous-paw-scoring afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
+233. Supprimer game/rules/game-specific/choice-simultaneous-paw-scoring/effect-pack.ts après certification comportementale complète.
+234. Après migration de tous les packs, supprimer le registre des effect packs spécifiques s'il n'a plus de responsabilité générique.
+235. Supprimer game/rules/game-specific lorsqu'il ne contient plus aucune règle métier nécessaire.
+236. Faire échouer la CI si game/rules/game-specific réapparaît avec du code de règles spécifique.
+237. Créer un nouveau jeu de certification uniquement en JSON sans ajouter de TypeScript métier.
+238. Faire utiliser à ce jeu plusieurs catégories de primitives génériques.
+239. Compiler et valider ce jeu sans modification du moteur.
+240. Jouer une partie complète de ce jeu sans modification du moteur.
+241. Rejouer déterministiquement cette partie avec les mêmes commandes et la même seed.
+242. Restaurer un snapshot de ce jeu.
+243. Tester une reconnexion et les projections privées sur ce jeu.
+244. Supprimer ce jeu de certification sans modifier le moteur.
+245. Vérifier qu'aucun registry manuel TypeScript n'a besoin d'être édité pour ajouter ou retirer ce jeu.
+246. Vérifier qu'ajouter un jeu JSON ne nécessite aucune modification de game/engine.
+247. Vérifier qu'ajouter un jeu JSON ne nécessite aucune modification de game/core.
+248. Vérifier qu'ajouter un jeu JSON ne nécessite aucune modification du presenter WebSocket.
+249. Vérifier qu'ajouter un jeu JSON ne nécessite aucune modification d'un effect-pack TypeScript.
+250. Vérifier qu'ajouter un jeu JSON ne nécessite aucune modification d'un switch central.
+251. Vérifier que tous les jeux historiques restent jouables après suppression des effect packs spécifiques.
+252. Exécuter les tests de chaque jeu historique après la migration complète.
+253. Exécuter les tests de replay déterministe de chaque jeu historique.
+254. Exécuter les tests de snapshot/restore de chaque jeu historique.
+255. Exécuter les tests de confidentialité de chaque jeu historique.
+256. Exécuter les tests de bots des jeux qui en utilisent.
+257. Exécuter les tests de reconnexion des jeux concernés.
+258. Exécuter les tests de contrat backend/client après la migration.
+259. Vérifier que les JSON non migrés sont restés identiques.
+260. Vérifier que chaque JSON migré possède une justification et une preuve de non-régression.
+261. Vérifier qu'aucun jeu ne dépend encore d'un code TypeScript spécifique pour ses règles.
+262. Vérifier qu'aucun effet générique ne contient une branche dédiée à un jeu concret.
+263. Vérifier qu'aucun selector générique ne contient une branche dédiée à un jeu concret.
+264. Vérifier qu'aucune condition générique ne contient une branche dédiée à un jeu concret.
+265. Vérifier qu'aucun trigger générique ne contient une branche dédiée à un jeu concret.
+266. Vérifier qu'aucune primitive de flow ne contient une branche dédiée à un jeu concret.
+267. Vérifier que les primitives ajoutées sont réutilisables indépendamment des jeux ayant motivé leur création.
+268. Vérifier que le moteur peut être testé sans charger le catalogue réel des jeux.
+269. Vérifier que le moteur peut être compilé sans charger le catalogue réel des jeux.
+270. Faire échouer la CI si cette indépendance régresse.
+271. Considérer ce chantier terminé uniquement lorsque tous les jeux existants sont jouables avec JSON + primitives génériques sans règle TypeScript spécifique.
+272. Considérer ce chantier terminé uniquement lorsqu'un nouveau jeu utilisant les primitives existantes peut être ajouté sans écrire ni modifier de TypeScript métier.

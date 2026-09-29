@@ -70,9 +70,15 @@ function describeEffects(effects: readonly GameEffectInstruction[]): string {
 function describeEffect(effect: GameEffectInstruction): string {
   switch (effect.kind) {
     case 'move':
-      return movementDescription(effect.spaces);
+      return typeof effect.spaces === 'number'
+        ? movementDescription(effect.spaces)
+        : 'Déplacez-vous selon la situation';
     case 'move-to':
-      return `Allez à la case ${effect.position + 1}`;
+      return typeof effect.position === 'number'
+        ? `Allez à la case ${effect.position + 1}`
+        : 'Allez à la position indiquée';
+    case 'move-relative-to':
+      return 'Déplacez-vous relativement au joueur indiqué';
     case 'draw-cards':
       return `Piochez ${countLabel(effect.count, 'carte')}`;
     case 'discard-random':
@@ -82,6 +88,8 @@ function describeEffect(effect: GameEffectInstruction): string {
       return typeof effect.amount === 'number'
         ? `Gagnez ${effect.amount} ${humanize(effect.resource)}`
         : `Gagnez des ${humanize(effect.resource)} selon la situation`;
+    case 'set-resource':
+      return `Fixez les ${humanize(effect.resource)} selon la situation`;
     case 'lose-resource':
       return typeof effect.amount === 'number'
         ? `Perdez ${effect.amount} ${humanize(effect.resource)}`
@@ -90,6 +98,8 @@ function describeEffect(effect: GameEffectInstruction): string {
       return typeof effect.amount === 'number'
         ? `Gagnez ${countLabel(effect.amount, 'point')}`
         : 'Modifiez votre score selon la situation';
+    case 'set-score':
+      return 'Fixez votre score selon la situation';
     case 'skip-turn':
       return `Passez ${countLabel(effect.count ?? 1, 'tour')}`;
     case 'extra-turn':

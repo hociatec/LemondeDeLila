@@ -62,6 +62,7 @@ const targets = {
   'all-players': variant('all-players'),
   'all-opponents': variant('all-opponents'),
   'random-opponent': variant('random-opponent'),
+  'co-located': variant('co-located', { trackId: id }),
   'chosen-opponent': variant(
     'chosen-opponent',
     { choiceId: id, optional: boolean, chooserPlayerId: integer },
@@ -117,6 +118,17 @@ const conditions = {
     ['trackId'],
   ),
   'has-card': targeted('has-card', { handId: id, cardId: id }, ['handId']),
+  'compare-zone-cards': variant(
+    'compare-zone-cards',
+    {
+      leftZoneId: id,
+      rightZoneId: id,
+      property: id,
+      select: { enum: ['top', 'highest', 'lowest'] },
+      compare: { enum: ['eq', 'ne', 'lt', 'lte', 'gt', 'gte'] },
+    },
+    ['leftZoneId', 'rightZoneId', 'property', 'compare'],
+  ),
   not: variant('not', { condition: ref('condition') }),
   all: variant('all', { conditions: array(ref('condition'), 1) }),
   any: variant('any', { conditions: array(ref('condition'), 1) }),
@@ -150,13 +162,41 @@ const instructions = {
     { choiceId: id, candidates: { enum: ['opponents', 'active-players'] } },
     [],
   ),
-  move: targeted('move', { trackId: id, spaces: integer }),
-  'move-to': targeted('move-to', { trackId: id, position: integer }),
+  move: targeted('move', { trackId: id, spaces: ref('numeric-expression') }),
+  'move-to': targeted('move-to', {
+    trackId: id,
+    position: ref('numeric-expression'),
+  }),
+  'move-relative-to': targeted(
+    'move-relative-to',
+    {
+      trackId: id,
+      reference: target,
+      offset: ref('numeric-expression'),
+    },
+    ['trackId', 'reference'],
+  ),
+  'move-to-tag': targeted(
+    'move-to-tag',
+    {
+      trackId: id,
+      tag: id,
+      direction: { enum: ['next', 'previous'] },
+      includeCurrent: boolean,
+    },
+    ['trackId', 'tag', 'direction'],
+  ),
   'draw-cards': targeted(
     'draw-cards',
     { deckId: id, handId: id, count: positive, recycle: boolean },
     ['deckId', 'handId', 'count'],
   ),
+  'draw-to-zone': variant(
+    'draw-to-zone',
+    { deckId: id, zoneId: id, count: positive, recycle: boolean },
+    ['deckId', 'zoneId', 'count'],
+  ),
+  'shuffle-cards': variant('shuffle-cards', { deckId: id }),
   'discard-random': targeted('discard-random', {
     deckId: id,
     handId: id,
@@ -174,6 +214,10 @@ const instructions = {
         ...numericExpressionSchema.oneOf.slice(1),
       ],
     },
+  }),
+  'set-resource': targeted('set-resource', {
+    resource: id,
+    value: ref('numeric-expression'),
   }),
   'lose-resource': targeted(
     'lose-resource',
@@ -250,6 +294,7 @@ const instructions = {
     right: target,
   }),
   'gain-score': targeted('gain-score', { amount: ref('numeric-expression') }),
+  'set-score': targeted('set-score', { value: ref('numeric-expression') }),
   'skip-turn': targeted('skip-turn', { count: positive }, []),
   'extra-turn': variant('extra-turn', { count: positive }, []),
   'add-status': targeted(
@@ -278,7 +323,30 @@ const instructions = {
   'complete-turn': variant('complete-turn'),
   'start-round': variant('start-round'),
   'end-round': variant('end-round'),
+  'transition-phase': variant('transition-phase', { phase: id }),
   'eliminate-player': targeted('eliminate-player', {}),
+  repeat: variant('repeat', {
+    count: { type: 'integer', minimum: 0, maximum: 64 },
+    effects,
+  }),
+  switch: variant(
+    'switch',
+    {
+      cases: array(
+        object({ condition: ref('condition'), effects }, [
+          'condition',
+          'effects',
+        ]),
+        1,
+      ),
+      default: effects,
+    },
+    ['cases'],
+  ),
+  'random-choice': variant('random-choice', {
+    choices: array(effects, 1),
+  }),
+  stop: variant('stop'),
   custom: targeted('custom', { effectId: id, data: ref('json') }, ['effectId']),
 } satisfies Record<GameEffectInstruction['kind'], AuthorSchema>;
 

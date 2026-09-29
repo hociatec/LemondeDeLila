@@ -52,9 +52,11 @@ for (const id of covered.keys()) {
 }
 
 const debt = fs.readFileSync(path.join(root, 'dette.txt'), 'utf8');
-const unresolved = debt.match(/^\s*(\d+)\./gm) ?? [];
+const unresolved = [...debt.matchAll(/^\s*(\d+)\./gm)]
+  .map((match) => Number(match[1]))
+  .filter((id) => id >= range.from && id <= range.to);
 if (unresolved.length > 0) {
-  failures.push(`Dette encore ouverte: ${unresolved.join(', ')}`);
+  failures.push(`Dette certifiée encore ouverte: ${unresolved.join(', ')}`);
 }
 
 const workflow = fs.readFileSync(

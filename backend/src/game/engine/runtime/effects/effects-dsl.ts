@@ -156,12 +156,12 @@ export const gameEffects = {
   },
   move: (
     trackId: string,
-    spaces: number,
+    spaces: NumericExpression,
     target: EffectTarget = self(),
   ): GameEffectInstruction => ({ kind: 'move', trackId, spaces, target }),
   moveTo: (
     trackId: string,
-    position: number,
+    position: NumericExpression,
     target: EffectTarget = self(),
   ): GameEffectInstruction => ({ kind: 'move-to', trackId, position, target }),
   drawCards: (options: {

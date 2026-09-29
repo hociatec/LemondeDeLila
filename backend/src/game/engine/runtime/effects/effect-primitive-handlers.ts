@@ -7,6 +7,7 @@ import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import type { EffectEngineState } from '../contracts/effect-ir';
 import type { PrimitiveEffectHandlers } from './effect-primitive-executor';
 import type { EffectTargetResolver } from './effect-target-resolver';
+import { createCollectionHandlers } from './effect-collection-handlers';
 
 type HandlerGroup<TKind extends keyof PrimitiveEffectHandlers> = Pick<
   PrimitiveEffectHandlers,
@@ -29,6 +30,7 @@ function createControlHandlers<TState extends object>({
   | 'reverse-turn-order'
   | 'transfer-resource'
   | 'exchange-resources'
+  | 'transition-phase'
 > {
   return {
     'extra-turn': (instruction) => {
@@ -73,6 +75,10 @@ function createControlHandlers<TState extends object>({
             instruction.rightOffer,
           ),
       ),
+    'transition-phase': (instruction) => {
+      context.phase.transitionTo(instruction.phase);
+      return true;
+    },
   };
 }
 
@@ -221,75 +227,15 @@ function createInventoryHandlers<TState extends object>({
   };
 }
 
-function createCollectionHandlers<TState extends object>({
-  context,
-  targets,
-}: HandlerInput<TState>): HandlerGroup<
-  | 'move'
-  | 'move-to'
-  | 'draw-cards'
-  | 'discard-random'
-  | 'discard-random-inventory'
-> {
-  return {
-    move: (instruction) =>
-      targets.applyToTargets(instruction, (playerId) =>
-        context.movement.move(
-          instruction.trackId,
-          playerId,
-          instruction.spaces,
-        ),
-      ),
-    'move-to': (instruction) =>
-      targets.applyToTargets(instruction, (playerId) =>
-        context.movement.moveTo(
-          instruction.trackId,
-          playerId,
-          instruction.position,
-        ),
-      ),
-    'draw-cards': (instruction) =>
-      targets.applyToTargets(instruction, (playerId) => {
-        for (let count = 0; count < instruction.count; count += 1) {
-          const card = instruction.recycle
-            ? context.cards.drawOrRecycle(instruction.deckId)
-            : context.cards.draw(instruction.deckId);
-          if (card == null) break;
-          context.cards.give(instruction.handId, playerId, card);
-        }
-      }),
-    'discard-random': (instruction) =>
-      targets.applyToTargets(instruction, (playerId) => {
-        for (let count = 0; count < instruction.count; count += 1) {
-          if (
-            !context.cards.discardRandom(
-              instruction.handId,
-              instruction.deckId,
-              playerId,
-            )
-          )
-            break;
-        }
-      }),
-    'discard-random-inventory': (instruction) =>
-      targets.applyToTargets(instruction, (playerId) => {
-        for (let count = 0; count < instruction.count; count += 1) {
-          if (
-            !context.inventory.removeRandom(instruction.inventoryId, playerId)
-          )
-            break;
-        }
-      }),
-  };
-}
-
 function createPlayerValueHandlers<TState extends object>({
   context,
   targets,
 }: HandlerInput<TState>): HandlerGroup<
   | 'gain-resource'
+  | 'set-resource'
   | 'lose-resource'
   | 'gain-score'
+  | 'set-score'
   | 'skip-turn'
   | 'add-status'
   | 'remove-status'
@@ -301,6 +247,14 @@ function createPlayerValueHandlers<TState extends object>({
           playerId,
           instruction.resource,
           evaluateResourceAmount(instruction.amount, context, playerId),
+        ),
+      ),
+    'set-resource': (instruction) =>
+      targets.applyToTargets(instruction, (playerId) =>
+        context.resources.set(
+          playerId,
+          instruction.resource,
+          evaluateNumericExpression(instruction.value, context, playerId),
         ),
       ),
     'lose-resource': (instruction) =>
@@ -330,6 +284,13 @@ function createPlayerValueHandlers<TState extends object>({
         context.score.add(
           playerId,
           evaluateNumericExpression(instruction.amount, context, playerId),
+        ),
+      ),
+    'set-score': (instruction) =>
+      targets.applyToTargets(instruction, (playerId) =>
+        context.score.set(
+          playerId,
+          evaluateNumericExpression(instruction.value, context, playerId),
         ),
       ),
     'skip-turn': (instruction) =>
@@ -368,7 +329,7 @@ export function createPrimitiveEffectHandlers<TState extends object>(
     ...createRoundAndEliminationHandlers(input),
     ...createCardHandlers(input),
     ...createInventoryHandlers(input),
-    ...createCollectionHandlers(input),
+    ...createCollectionHandlers(input.context, input.targets),
     ...createPlayerValueHandlers(input),
   };
 }

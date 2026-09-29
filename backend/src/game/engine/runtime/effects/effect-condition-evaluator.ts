@@ -29,6 +29,26 @@ export function evaluateEffectCondition<TState extends object>(
       ? results.every(Boolean)
       : results.some(Boolean);
   }
+  if (condition.kind === 'compare-zone-cards') {
+    const value = (zoneId: string): number | null => {
+      const values = context.cards
+        .zone<Record<string, unknown>>(zoneId)
+        .map((card) => card[condition.property])
+        .filter(
+          (candidate): candidate is number =>
+            typeof candidate === 'number' && Number.isFinite(candidate),
+        );
+      if (values.length === 0) return null;
+      if (condition.select === 'highest') return Math.max(...values);
+      if (condition.select === 'lowest') return Math.min(...values);
+      return values[0];
+    };
+    const left = value(condition.leftZoneId);
+    const right = value(condition.rightZoneId);
+    return left != null && right != null
+      ? compare(left, condition.compare, right)
+      : false;
+  }
   const playerIds = targets(condition.target);
   if (!playerIds) return null;
   return playerIds.every((id) =>
@@ -39,7 +59,7 @@ export function evaluateEffectCondition<TState extends object>(
 function evaluatePlayerCondition<TState extends object>(
   condition: Exclude<
     EffectCondition,
-    { kind: 'all' | 'any' | 'not' | 'phase-is' }
+    { kind: 'all' | 'any' | 'not' | 'phase-is' | 'compare-zone-cards' }
   >,
   playerId: number,
   context: GameContext<TState>,

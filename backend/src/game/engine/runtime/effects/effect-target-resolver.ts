@@ -60,7 +60,11 @@ export class EffectTargetResolver<TState extends object> {
     const categories = [`effect:${instruction.kind}`];
     if (instruction.kind === 'move' || instruction.kind === 'move-to')
       categories.push('movement');
-    if (instruction.kind === 'move' && instruction.spaces < 0)
+    if (
+      instruction.kind === 'move' &&
+      typeof instruction.spaces === 'number' &&
+      instruction.spaces < 0
+    )
       categories.push('negative-movement');
     if (
       instruction.kind === 'lose-resource' ||
@@ -142,6 +146,9 @@ export class EffectTargetResolver<TState extends object> {
     if (selector.kind === 'all-players') {
       return this.context.players.all().map((player) => player.id);
     }
+    if (selector.kind === 'co-located') {
+      return this.coLocatedTargets(selector.trackId, actorId);
+    }
     const opponents = this.context.players
       .active()
       .filter((player) => player.id !== actorId)
@@ -152,6 +159,19 @@ export class EffectTargetResolver<TState extends object> {
       return selected == null ? [] : [selected];
     }
     return this.chosenTargets(selector, instruction);
+  }
+
+  private coLocatedTargets(trackId: string, actorId: number | null): number[] {
+    if (actorId == null) return [];
+    const position = this.context.movement.position(trackId, actorId);
+    return this.context.players
+      .active()
+      .filter(
+        (player) =>
+          player.id !== actorId &&
+          this.context.movement.position(trackId, player.id) === position,
+      )
+      .map((player) => player.id);
   }
 
   private chosenTargets(

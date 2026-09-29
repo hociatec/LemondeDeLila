@@ -7,10 +7,8 @@ import {
 } from '../effects/game-effect-definition-validator';
 import type { GameComponentDefinition } from './component-kit';
 import { assertPlayerValueId } from '../kits/numeric-invariants';
-import {
-  requireReference,
-  requireTrackPosition,
-} from '../effects/game-effect-reference-validator';
+import { requireReference } from '../effects/game-effect-reference-validator';
+import { assertMovementComponent } from './movement-component-validator';
 import { assertStaticEffectReferences } from './static-effect-references';
 import { assertComponentCatalog } from './component-catalog-validation';
 import { assertHandDeckDefinitions } from '../cards/hand-deck-definitions';
@@ -47,6 +45,7 @@ type ComponentReferences = Omit<
   handAcceptedDecks: Map<string, ReadonlySet<string>>;
   cardIdsByDeck: Map<string, ReadonlySet<string>>;
   trackSpaces: Map<string, number>;
+  trackTags: Map<string, ReadonlySet<string>>;
   resources: Set<string>;
   inventoryItems: Map<string, ReadonlySet<string> | null>;
   ownershipAssets: Map<string, ReadonlySet<string>>;
@@ -130,6 +129,7 @@ export function indexComponents(
     handAcceptedDecks: new Map(),
     cardIdsByDeck: new Map(),
     trackSpaces: new Map(),
+    trackTags: new Map(),
     inventoryItems: new Map(),
     ownershipAssets: new Map(),
     resources: new Set([
@@ -180,13 +180,24 @@ export function indexComponents(
     if (component.component === 'cards.zone')
       references.zoneDecks.set(component.id, component.deck);
     if (component.component === 'movement.track') {
-      references.tracks.add(component.id);
-      references.trackSpaces.set(component.id, component.spaces);
+      indexTrack(component, references);
     }
     if (component.component === 'dice.set')
       references.diceSets.add(component.id);
   }
   return references;
+}
+
+function indexTrack(
+  component: Extract<GameComponentDefinition, { component: 'movement.track' }>,
+  references: ComponentReferences,
+): void {
+  references.tracks.add(component.id);
+  references.trackSpaces.set(component.id, component.spaces);
+  references.trackTags.set(
+    component.id,
+    new Set(Object.values(component.positionTags ?? {}).flat()),
+  );
 }
 
 function resourcePoolIds(definition: DefinitionToValidate): string[] {
@@ -244,37 +255,7 @@ function assertComponent(
   if (component.component === 'economy.market')
     assertMarket(component, references, fail);
   if (component.component === 'movement.track') {
-    for (const [field, value] of Object.entries({
-      finish: component.finish,
-      'homeStretch.from': component.homeStretch?.from,
-      'homeStretch.to': component.homeStretch?.to,
-    })) {
-      if (value != null)
-        requireTrackPosition(
-          references,
-          component.id,
-          value,
-          `components.${component.id}.${field}`,
-          fail,
-        );
-    }
-    for (const [position, instructions] of Object.entries(
-      component.landingEffects ?? {},
-    )) {
-      requireTrackPosition(
-        references,
-        component.id,
-        Number(position),
-        `components.${component.id}.landingEffects.${position}`,
-        fail,
-      );
-      assertEffectInstructions(
-        instructions,
-        `components.${component.id}.landingEffects.${position}`,
-        references,
-        fail,
-      );
-    }
+    assertMovementComponent(component, references, fail);
   }
   if (component.component === 'collection.view')
     assertCollectionResources(component, references, fail);

@@ -36,34 +36,13 @@ export function validateEffectCondition(
 ): void {
   if (!condition || typeof condition !== 'object')
     fail(path, 'condition invalide');
-  if (condition.kind === 'phase-is') {
-    if (!condition.phase.trim()) fail(`${path}.phase`, 'empty phase');
-    if (references.phases && !references.phases.has(condition.phase))
-      fail(`${path}.phase`, `unknown phase ${condition.phase}`);
-    return;
-  }
-  if (condition.kind === 'not') {
-    validateEffectCondition(
-      condition.condition,
-      `${path}.condition`,
-      references,
-      fail,
-    );
-    return;
-  }
-  if (condition.kind === 'all' || condition.kind === 'any') {
-    if (condition.conditions.length === 0) fail(path, 'condition vide');
-    condition.conditions.forEach((nested, index) =>
-      validateEffectCondition(
-        nested,
-        `${path}.conditions[${index}]`,
-        references,
-        fail,
-      ),
-    );
-    return;
-  }
-  validateEffectTarget(condition.target, `${path}.target`, fail, references);
+  if (validateCompoundCondition(condition, path, references, fail)) return;
+  validateEffectTarget(
+    'target' in condition ? condition.target : undefined,
+    `${path}.target`,
+    fail,
+    references,
+  );
   if (validateValueCondition(condition, path, references, fail)) return;
   if (condition.kind === 'has-resource') {
     requireResourceReference(
@@ -97,19 +76,65 @@ export function validateEffectCondition(
       `${path}.trackId`,
       fail,
     );
-    for (const value of [condition.position, condition.min, condition.max]) {
+    for (const value of [condition.position, condition.min, condition.max])
       if (value != null)
         requireTrackPosition(references, condition.trackId, value, path, fail);
-    }
     if (
       condition.min != null &&
       condition.max != null &&
       condition.min > condition.max
     )
       fail(path, 'intervalle de positions inversé');
-  } else {
-    fail(path, 'condition inconnue');
+  } else fail(path, 'condition inconnue');
+}
+
+function validateCompoundCondition(
+  condition: EffectCondition,
+  path: string,
+  references: GameEffectValidationReferences,
+  fail: ValidationFailure,
+): boolean {
+  if (condition.kind === 'phase-is') {
+    if (!condition.phase.trim()) fail(`${path}.phase`, 'empty phase');
+    if (references.phases && !references.phases.has(condition.phase))
+      fail(`${path}.phase`, `unknown phase ${condition.phase}`);
+    return true;
   }
+  if (condition.kind === 'not') {
+    validateEffectCondition(
+      condition.condition,
+      `${path}.condition`,
+      references,
+      fail,
+    );
+    return true;
+  }
+  if (condition.kind === 'all' || condition.kind === 'any') {
+    if (condition.conditions.length === 0) fail(path, 'condition vide');
+    condition.conditions.forEach((nested, index) =>
+      validateEffectCondition(
+        nested,
+        `${path}.conditions[${index}]`,
+        references,
+        fail,
+      ),
+    );
+    return true;
+  }
+  if (condition.kind === 'compare-zone-cards') {
+    for (const [field, zoneId] of [
+      ['leftZoneId', condition.leftZoneId],
+      ['rightZoneId', condition.rightZoneId],
+    ] as const)
+      requireReference(
+        references.zoneDecks ?? new Map(),
+        zoneId,
+        `${path}.${field}`,
+        fail,
+      );
+    return true;
+  }
+  return false;
 }
 
 function validateValueCondition(
@@ -227,20 +252,16 @@ export function validateEffectTarget(
     );
     return;
   }
-  const playerIds = references.playerIds;
-  if (playerIds) {
-    const referenced = [
-      ...(target.kind === 'player' ? [target.playerId] : []),
-      ...(target.kind === 'chosen-player' ? target.playerIds : []),
-      ...((target.kind === 'chosen-player' ||
-        target.kind === 'chosen-opponent') &&
-      target.chooserPlayerId !== undefined
-        ? [target.chooserPlayerId]
-        : []),
-    ];
-    if (referenced.some((id) => !playerIds.has(id)))
-      fail(path, 'joueur absent de la session');
+  if (target.kind === 'co-located') {
+    requireReference(
+      references.tracks,
+      target.trackId,
+      `${path}.trackId`,
+      fail,
+    );
+    return;
   }
+  validateTargetPlayerReferences(target, path, references.playerIds, fail);
   if (
     ![
       'self',
@@ -254,6 +275,7 @@ export function validateEffectTarget(
       'all-players',
       'all-opponents',
       'random-opponent',
+      'co-located',
       'chosen-opponent',
       'chosen-player',
     ].includes(target.kind)
@@ -291,6 +313,26 @@ export function validateEffectTarget(
   ) {
     fail(`${path}.chooserPlayerId`, 'joueur invalide');
   }
+}
+
+function validateTargetPlayerReferences(
+  target: EffectTarget,
+  path: string,
+  playerIds: ReadonlySet<number> | undefined,
+  fail: ValidationFailure,
+): void {
+  if (!playerIds) return;
+  const referenced = [
+    ...(target.kind === 'player' ? [target.playerId] : []),
+    ...(target.kind === 'chosen-player' ? target.playerIds : []),
+    ...((target.kind === 'chosen-player' ||
+      target.kind === 'chosen-opponent') &&
+    target.chooserPlayerId !== undefined
+      ? [target.chooserPlayerId]
+      : []),
+  ];
+  if (referenced.some((id) => !playerIds.has(id)))
+    fail(path, 'joueur absent de la session');
 }
 
 /** A selector predicate is local to each candidate and cannot request choices. */

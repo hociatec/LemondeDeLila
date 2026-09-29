@@ -202,6 +202,13 @@ export class GameEffectEngineController<TState extends object> {
   }
 
   private execute(instruction: GameEffectInstruction): boolean {
+    if (
+      instruction.kind === 'repeat' ||
+      instruction.kind === 'switch' ||
+      instruction.kind === 'random-choice' ||
+      instruction.kind === 'stop'
+    )
+      return this.executeFlow(instruction) ?? true;
     if (instruction.kind === 'conditional') {
       const matched = evaluateEffectCondition(
         instruction.condition,
@@ -270,6 +277,37 @@ export class GameEffectEngineController<TState extends object> {
       });
     }
     return executeRegisteredPrimitive(this.primitiveHandlers, instruction);
+  }
+
+  private executeFlow(instruction: GameEffectInstruction): boolean | null {
+    if (instruction.kind === 'repeat') {
+      for (let count = 0; count < instruction.count; count += 1)
+        this.state.queue.unshift(...structuredClone(instruction.effects));
+      return true;
+    }
+    if (instruction.kind === 'switch') {
+      for (const branch of instruction.cases) {
+        const matched = evaluateEffectCondition(
+          branch.condition,
+          (target) => this.targetResolver.targets(target, instruction),
+          this.context,
+        );
+        if (matched == null) return false;
+        if (!matched) continue;
+        this.state.queue.unshift(...structuredClone(branch.effects));
+        return true;
+      }
+      this.state.queue.unshift(...structuredClone(instruction.default ?? []));
+      return true;
+    }
+    if (instruction.kind === 'random-choice') {
+      const selected = this.context.random.pick(instruction.choices);
+      if (selected) this.state.queue.unshift(...structuredClone(selected));
+      return true;
+    }
+    if (instruction.kind !== 'stop') return null;
+    this.state.queue = [];
+    return true;
   }
 
   private reset(): void {

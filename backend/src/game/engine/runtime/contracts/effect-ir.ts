@@ -21,6 +21,7 @@ export type EffectTarget =
   | { kind: 'all-players' }
   | { kind: 'all-opponents' }
   | { kind: 'random-opponent' }
+  | { kind: 'co-located'; trackId: string }
   | {
       kind: 'chosen-opponent';
       choiceId?: string;
@@ -89,6 +90,14 @@ export type EffectCondition =
       target?: EffectTarget;
     }
   | { kind: 'has-card'; handId: string; cardId?: string; target?: EffectTarget }
+  | {
+      kind: 'compare-zone-cards';
+      leftZoneId: string;
+      rightZoneId: string;
+      property: string;
+      select?: 'top' | 'highest' | 'lowest';
+      compare: EffectComparison;
+    }
   | { kind: 'not'; condition: EffectCondition }
   | { kind: 'all'; conditions: readonly EffectCondition[] }
   | { kind: 'any'; conditions: readonly EffectCondition[] };
@@ -135,13 +144,28 @@ export type GameEffectInstruction =
   | {
       kind: 'move';
       trackId: string;
-      spaces: number;
+      spaces: NumericExpression;
       target?: EffectTarget;
     }
   | {
       kind: 'move-to';
       trackId: string;
-      position: number;
+      position: NumericExpression;
+      target?: EffectTarget;
+    }
+  | {
+      kind: 'move-relative-to';
+      trackId: string;
+      reference: EffectTarget;
+      offset?: NumericExpression;
+      target?: EffectTarget;
+    }
+  | {
+      kind: 'move-to-tag';
+      trackId: string;
+      tag: string;
+      direction: 'next' | 'previous';
+      includeCurrent?: boolean;
       target?: EffectTarget;
     }
   | {
@@ -152,6 +176,14 @@ export type GameEffectInstruction =
       recycle?: boolean;
       target?: EffectTarget;
     }
+  | {
+      kind: 'draw-to-zone';
+      deckId: string;
+      zoneId: string;
+      count: number;
+      recycle?: boolean;
+    }
+  | { kind: 'shuffle-cards'; deckId: string }
   | {
       kind: 'discard-random';
       deckId: string;
@@ -169,6 +201,12 @@ export type GameEffectInstruction =
       kind: 'gain-resource';
       resource: string;
       amount: NumericExpression;
+      target?: EffectTarget;
+    }
+  | {
+      kind: 'set-resource';
+      resource: string;
+      value: NumericExpression;
       target?: EffectTarget;
     }
   | {
@@ -243,6 +281,11 @@ export type GameEffectInstruction =
       amount: NumericExpression;
       target?: EffectTarget;
     }
+  | {
+      kind: 'set-score';
+      value: NumericExpression;
+      target?: EffectTarget;
+    }
   | { kind: 'skip-turn'; count?: number; target?: EffectTarget }
   | { kind: 'extra-turn'; count?: number }
   | {
@@ -271,7 +314,26 @@ export type GameEffectInstruction =
   | { kind: 'complete-turn' }
   | { kind: 'start-round' }
   | { kind: 'end-round' }
+  | { kind: 'transition-phase'; phase: string }
   | { kind: 'eliminate-player'; target?: EffectTarget }
+  | {
+      kind: 'repeat';
+      count: number;
+      effects: readonly GameEffectInstruction[];
+    }
+  | {
+      kind: 'switch';
+      cases: readonly {
+        condition: EffectCondition;
+        effects: readonly GameEffectInstruction[];
+      }[];
+      default?: readonly GameEffectInstruction[];
+    }
+  | {
+      kind: 'random-choice';
+      choices: readonly (readonly GameEffectInstruction[])[];
+    }
+  | { kind: 'stop' }
   | {
       kind: 'custom';
       effectId: string;
