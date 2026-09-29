@@ -36,7 +36,6 @@ for (const file of [
   'src/game/testing/architecture-tests/json/json-version-policy.spec.ts',
   'src/game/testing/architecture-tests/json/json-restored-session.spec.ts',
   'src/game/engine/runtime/definitions/static-effect-references.spec.ts',
-  'src/game/rules/effect-packs/json-effect-pack-registry.spec.ts',
   'src/game/engine/runtime/state/assert-serializable-state.spec.ts',
   'src/game/engine/runtime/state/setup-state-isolation.spec.ts',
   'src/game/engine/runtime/lifecycle/automatic-stabilization.spec.ts',
@@ -88,10 +87,6 @@ contains('tools/architecture-check.cjs', /public-api-no-typeorm-entity/);
 contains(
   'src/game/engine/runtime/definitions/json-game-schema.ts',
   /freezeAuthorSchema/,
-);
-contains(
-  'src/game/rules/effect-packs/json-effect-pack-registry.ts',
-  /Object\.freeze/,
 );
 contains(
   'src/game/engine/runtime/contracts/json-effect-pack.ts',

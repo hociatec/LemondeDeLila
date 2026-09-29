@@ -26,10 +26,13 @@ const additionalCorpus = definitions.flatMap((definition) =>
     .map((seed) => [definition.id, seed] as const),
 );
 
+beforeEach(() => {
+  jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+  jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
+});
 afterEach(() => jest.restoreAllMocks());
 
 it.each(corpus)('%s reference replay: %s, seed %i', (_family, id, seed) => {
-  jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
   const definition = definitions.find((game) => game.id === id);
   if (!definition) throw new Error(`Missing reference game ${id}`);
   expect(runGameReplayCampaign(definition, seed, 64)).toMatchSnapshot();
@@ -38,7 +41,6 @@ it.each(corpus)('%s reference replay: %s, seed %i', (_family, id, seed) => {
 it.each(additionalCorpus)(
   'catalogue reference replay: %s, seed %i',
   (id, seed) => {
-    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
     const definition = definitions.find((game) => game.id === id);
     if (!definition) throw new Error(`Missing reference game ${id}`);
     expect(runGameReplayCampaign(definition, seed, 64)).toMatchSnapshot();

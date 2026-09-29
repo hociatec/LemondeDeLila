@@ -9,7 +9,7 @@ exports[`board reference replay: panier-express, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "ab8aeba61c023ea240fa72894d163a86ab3e38589693a726fb99707c4e588ac2",
+  "traceDigest": "96eb5ae02c2d6fac3f6b8d1219339ffe31cdcc35072c663b6053bf8625fb0f89",
 }
 `;
 
@@ -21,7 +21,7 @@ exports[`cards reference replay: pimp-my-ride, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "f9b03d74658757c166cb37eb0cfca69d70604f855f1cd8417bf72eb021f5384e",
+  "traceDigest": "fefea994db1f5f12856cc544d6c683cc6299b8840662d7a07abb022c01bba16f",
 }
 `;
 
@@ -34,7 +34,7 @@ exports[`catalogue reference replay: a-fond-les-ballons, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 61,
-  "traceDigest": "996b3396e1b876f17206e685eb4a4bb61b18f97ee793ff775290e75a41880ef7",
+  "traceDigest": "acdd54bfe096c7ec755e7cc0a1afa7849054c6b74587443ecf3868a674bbf68e",
 }
 `;
 
@@ -47,7 +47,7 @@ exports[`catalogue reference replay: a-fond-les-ballons, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 34,
-  "traceDigest": "2a99504035340a1350eb774784d4c75a383dda9ebe3f9bd57e3ae8e01a14a78e",
+  "traceDigest": "40031fbe080123cfbd3d81875d9b869d74fa4aff345a4ccc1e7a4065801172e0",
 }
 `;
 
@@ -60,7 +60,7 @@ exports[`catalogue reference replay: a-fond-les-ballons, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 28,
-  "traceDigest": "82a68a78c663d928c3e8c9c5d7ab01a02bdf5758d8c5492b0399bbaff97f2b96",
+  "traceDigest": "2ea51db2f6142801d190faf7fb355e79348759cb197a8e41da0df73612de8ed8",
 }
 `;
 
@@ -73,7 +73,7 @@ exports[`catalogue reference replay: arche-de-mnemosyne, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "efff3b8fc5ff06b9a3fa7ee9099de47976b0e0b3b0a422430925eed2511d36ad",
+  "traceDigest": "9b65113f5444b223ff858e5042470ca7b3e534e42658f881dbbe3bc690e41709",
 }
 `;
 
@@ -86,7 +86,7 @@ exports[`catalogue reference replay: arche-de-mnemosyne, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "9d74d725d3de313e87e60ffcce6e0ab7bcfab5aed20867cdf0cd8fc1416f345d",
+  "traceDigest": "f6bb5fc9f8c60530136db68b3434a5ac1326cf616c80d0549d8ffc4abaee19cb",
 }
 `;
 
@@ -99,7 +99,7 @@ exports[`catalogue reference replay: arche-de-mnemosyne, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "821d6c796fda7865302e35c1a6ff5f94246cde90a6e828fe8caa483a9d478567",
+  "traceDigest": "e681fbb8a7c973eb543add4e9a24563945ed0e335b28f88a9734792eacc10a0d",
 }
 `;
 
@@ -112,7 +112,7 @@ exports[`catalogue reference replay: aventure-sauvage, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 27,
-  "traceDigest": "cc5fef50f6d2c55def6d10e71811ba11754a376a30de6d7d27d6734778a03a8c",
+  "traceDigest": "0b5bdae00b7a48c7f4b262f58bbaf07bbc80d8b3a52920b4f35248ebf42ae873",
 }
 `;
 
@@ -125,7 +125,7 @@ exports[`catalogue reference replay: aventure-sauvage, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 28,
-  "traceDigest": "85db635b2b314664bfd1bf037875063fe75723c7346ce097c1282801f29136de",
+  "traceDigest": "b1b2bb73b5434b087b5028fa0ae3d0410c71ca812219a763788a4911d0229991",
 }
 `;
 
@@ -138,7 +138,7 @@ exports[`catalogue reference replay: aventure-sauvage, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 33,
-  "traceDigest": "99994abe69c3ef3a0bd540f9a448c6583d4e9913c78939f77138073365bcd105",
+  "traceDigest": "ad01f748efa813fe2e9d747ed8e346129d0e8a1e20c84196ebf1c7c2a7a10d52",
 }
 `;
 
@@ -149,7 +149,7 @@ exports[`catalogue reference replay: ca-derape, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 11,
-  "traceDigest": "8d5074ea0254f0b88d0ce002c6e2babb304d9fdce439136cdca42fdc7bde395c",
+  "traceDigest": "41c67043669325a25836e9da16d6ead9688504e1e1fd82eae78482997e414d76",
 }
 `;
 
@@ -160,7 +160,7 @@ exports[`catalogue reference replay: ca-derape, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 11,
-  "traceDigest": "0399d61b90655ecbb2d4519b6cfd93461c5e46bcf16359981e690541bf779864",
+  "traceDigest": "09df1c69a559b4d51e1c0aabe2cd0979817a66e7743dd8d301d35a19df9e14bf",
 }
 `;
 
@@ -171,7 +171,7 @@ exports[`catalogue reference replay: ca-derape, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 17,
-  "traceDigest": "db24bfb40bd9ee1511317e249b8aec759b24ab67edd2e3354a039d4cf1462764",
+  "traceDigest": "32d6a3b70f2b114b6f71e030d933552db5eb5931f81354340e690e23f615d881",
 }
 `;
 
@@ -185,7 +185,7 @@ exports[`catalogue reference replay: cat-pattes, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "072ac65e4972b296ea52fb50d49997bf61bf72ef0664f6176727a0780ccd8950",
+  "traceDigest": "3c40bc7131e88932f43d031382159c4c53f7825933cf2d46ab5947fac20b5776",
 }
 `;
 
@@ -199,7 +199,7 @@ exports[`catalogue reference replay: cat-pattes, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "e0485db6b0c42ead0ce95fcd851448c70a318c6c282cbaa5fd5743adc2d55138",
+  "traceDigest": "e6dd3f0a392db9849082bc3f02a9808933119a2b30c6561233b44d66d5632a79",
 }
 `;
 
@@ -213,7 +213,7 @@ exports[`catalogue reference replay: cat-pattes, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "cc61b4a6c92a0dfb98d270b523bebda010a4c6a590a79fc35ce5591dd68fcfec",
+  "traceDigest": "c8dd8b9d85a08e0a797c2cef0749d74f592dda72e85918aa3221ee9ef253908e",
 }
 `;
 
@@ -225,7 +225,7 @@ exports[`catalogue reference replay: cercles-sacres, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "52986d7c078648b9f41276c73e4e4df02eb3ad3d94af7cc5c5881e5865f40d50",
+  "traceDigest": "588c14351c36ae24d0054c1879b065274c6491eee9deaf1761e888bff9c40691",
 }
 `;
 
@@ -237,7 +237,7 @@ exports[`catalogue reference replay: cercles-sacres, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "98044ff41595c4acc1459a4af0fbbcc0201a91e0317eb0c89e9f05c55bd44719",
+  "traceDigest": "8880f0e5080253aaba5160759ae96c84506d0ecb46af934fdc16fe4ed985539b",
 }
 `;
 
@@ -249,7 +249,7 @@ exports[`catalogue reference replay: cercles-sacres, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "4d4f811f761c38ab7a14ca1504aa0545e0e9039ae5e2d0a082dbe544e1b4782d",
+  "traceDigest": "4cc4e0a8570b2f4611287f1b9e7a4c58658a8babf067b1837085afa3238a75c8",
 }
 `;
 
@@ -261,7 +261,7 @@ exports[`catalogue reference replay: contes-et-cacahuetes, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 40,
-  "traceDigest": "bc2a0712368819273bd9cdd48400ffbbf960e5a8f74cff846d819265ce360add",
+  "traceDigest": "957c4579985d3f9f910a138c1db9b4ab97ffd0fdd9b91802205553b9091d676a",
 }
 `;
 
@@ -273,7 +273,7 @@ exports[`catalogue reference replay: contes-et-cacahuetes, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 37,
-  "traceDigest": "d6d3c15b348bd629408d1c0142a45c808eb61df2835f58b0f85b540120e49976",
+  "traceDigest": "d4d3108cdf144156a3eed4a164fb936b17cb32b2834635e1c59428a4bd5c756f",
 }
 `;
 
@@ -285,7 +285,7 @@ exports[`catalogue reference replay: contes-et-cacahuetes, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 62,
-  "traceDigest": "89f7d752d21f05a0a242b47f9b4f68847edb5393e281296f787753f77a3198d6",
+  "traceDigest": "a65d20b1360946cc7f3eb4584d336b39f5f2527a33ffd9333b34eccfd22acd3c",
 }
 `;
 
@@ -299,7 +299,7 @@ exports[`catalogue reference replay: corridor, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "fca0988b35bbe3c9aa5f40085e0cdd2639e1c2efe84b942eb3265e2e2e67827d",
+  "traceDigest": "4e4711374dc2d5953f4d514e30b3bccac0bc7198d49e57ab7ab538897076353e",
 }
 `;
 
@@ -313,7 +313,7 @@ exports[`catalogue reference replay: corridor, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "92970ccf843a16495ff26be483d490067ec8f75e54f8d93db79a18e3a4ce0a02",
+  "traceDigest": "a94da262daa5bc16d54bc7a153c5c72f8cda8d7c8088eb882c78815c3bf1d679",
 }
 `;
 
@@ -327,7 +327,7 @@ exports[`catalogue reference replay: corridor, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "15b9ee41941032895dce482ae35ce107031aadf33a0be46a80145b76dffa9507",
+  "traceDigest": "f77674a4626bad371dacb7b16b31af9a34aa162fac700af9c736e9c25c04e34d",
 }
 `;
 
@@ -372,7 +372,7 @@ exports[`catalogue reference replay: dame-nature, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "8d9ee0755c228595fdb7e818d5431e4cb078dd7b695039df41b9bbdf5675b3e6",
+  "traceDigest": "f935181a5aa8c8a70510380fe0cf9c89d2bf4457501ed624e800a1df7b9406b2",
 }
 `;
 
@@ -384,7 +384,7 @@ exports[`catalogue reference replay: dame-nature, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "d8a504adeff0ce4990b6b3813c280646b148779828d365b2a2bc7a22f9e532b2",
+  "traceDigest": "3fe23896fa133de774230775c45cd1c693a47df7086c6b829e1830e38e8a763c",
 }
 `;
 
@@ -396,7 +396,7 @@ exports[`catalogue reference replay: dame-nature, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "e3a9ff5e8506264080c696dacc14c149909b6ec3e47b5f51351c41ffc2d2c92f",
+  "traceDigest": "4ab87a248e18456a179649668ed0aae5f12fb1b301a7b9d36d456b94ab63b8d3",
 }
 `;
 
@@ -408,7 +408,7 @@ exports[`catalogue reference replay: en-attendant-minuit, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 45,
-  "traceDigest": "3ac5039b1ebb1ed13503ce62335ae0a4bf3a13689e58e81c2b2c65e2e7080a03",
+  "traceDigest": "3f8bbf5eb589a48652d1bff2226e636cfe60a5724896d7457fbb8ce60b0b00b2",
 }
 `;
 
@@ -420,7 +420,7 @@ exports[`catalogue reference replay: en-attendant-minuit, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 61,
-  "traceDigest": "5f768c1149fe090bfb46f7e136f3394c8d592bdf84beaccdc66d73f640c210bd",
+  "traceDigest": "8943a9120b27e70cb3d27e51bcb8e72131102658f0a26ab8a5eb4f30eaff36d6",
 }
 `;
 
@@ -432,7 +432,7 @@ exports[`catalogue reference replay: en-attendant-minuit, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 48,
-  "traceDigest": "468c7a2641ffdbfe7f8dec05d652150eadb82a6c9245c53aba30d765df29a7ff",
+  "traceDigest": "cf3ba7422f68750d21dbc98b30e9d0e32a7089dfd5e7bafe5b691eea51695454",
 }
 `;
 
@@ -445,7 +445,7 @@ exports[`catalogue reference replay: entre-rites-et-lumieres, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "7ea185466e72a429436ddd15e6b644bcbf8ec57eedf93e1a69e32d0318706ae1",
+  "traceDigest": "43a1767ab93dab03e978725b34f7477a7dcf6e488c2c21af112767cf6cb5baef",
 }
 `;
 
@@ -458,7 +458,7 @@ exports[`catalogue reference replay: entre-rites-et-lumieres, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "afbee66c15545451455b8922afe97ef30c130c18eaf952c9ddf65d364a708172",
+  "traceDigest": "2714ab8fd9e476178fe58efa4c939f1407d2c048771044642cafeb802bb2638e",
 }
 `;
 
@@ -471,7 +471,7 @@ exports[`catalogue reference replay: entre-rites-et-lumieres, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "2491c4b18758736bd2160d091f37348db45ad95606ff91332df3f54361b7b2d4",
+  "traceDigest": "e93b92394efa39c4e9a040c1675c089120de045fbe43cb5d546955a2bdc33399",
 }
 `;
 
@@ -483,7 +483,7 @@ exports[`catalogue reference replay: foulees-fantastiques, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "02a67b00e9e512552d5fed352e12d85d5b13ad3387296db484e648265d5aa45f",
+  "traceDigest": "2eac08acce9d67672d254e070ce4d8f5102a3b7c5e4a6c91b7fd83169535ed78",
 }
 `;
 
@@ -495,7 +495,7 @@ exports[`catalogue reference replay: foulees-fantastiques, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "90ff2586852f5de8c8c872b67dfb8d2000f0ee9af03ee156562671c339e2242e",
+  "traceDigest": "8d5fcb8cfd9e7dbaf95789fa110988d1ee58a4066b291dc33b87470f1aaf54dc",
 }
 `;
 
@@ -507,7 +507,7 @@ exports[`catalogue reference replay: foulees-fantastiques, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "2c990b5bf486e19949b1e48652de253019c97a31798c71d1a88150f1cbc1f4cf",
+  "traceDigest": "1b4a40ecb0cd3addc578fb31f9d9fdbbbbc30e6f6e40ca54a2db839baf00f19f",
 }
 `;
 
@@ -519,7 +519,7 @@ exports[`catalogue reference replay: frousse-party, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 43,
-  "traceDigest": "754426cc53cdcab6479aab507e8a271e4397040a8e4d9e10f1905abc2559511b",
+  "traceDigest": "3f22cf9edd8e2f38dd71545efa46ea8f849e769e8c89af3d516b867fc5af4048",
 }
 `;
 
@@ -531,7 +531,7 @@ exports[`catalogue reference replay: frousse-party, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 39,
-  "traceDigest": "e3fb8d829b80b53f50bca4e653438d5961f68fa70e8882d9861467ecead71352",
+  "traceDigest": "529c7a84a6511fb2b2a241cf8101c67b21ce4849fd308976a3e1ae57d767367f",
 }
 `;
 
@@ -543,7 +543,7 @@ exports[`catalogue reference replay: frousse-party, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 35,
-  "traceDigest": "d818f238d45d5bd98abde09e3e245de95a7bff10a10ba0730ae4f4df2724faec",
+  "traceDigest": "ef674232e3fbfca113ae0bef6100bfcd953804b6ca8223011bc12af6edc1c97d",
 }
 `;
 
@@ -555,7 +555,7 @@ exports[`catalogue reference replay: galopons-ensemble, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "ab9f31bfb803d02ab7b4307a75b9b4ed2ff3ad553795d482a38a18619ef8d849",
+  "traceDigest": "f584734cd135ea88e3959169b55c9c27abe9a664febd24457940c25d1dab27d4",
 }
 `;
 
@@ -567,7 +567,7 @@ exports[`catalogue reference replay: galopons-ensemble, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "9f013154184b5a0539f03da827c727102ef1b62a2b1f2bd3e9cc7408b0e57685",
+  "traceDigest": "47cfb79a1bcf32b2649d32a056731ce11f840f7d6892d1290e1347f5a2accbc0",
 }
 `;
 
@@ -579,7 +579,7 @@ exports[`catalogue reference replay: galopons-ensemble, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 20,
-  "traceDigest": "4885cd2f06ab8a8bd73e67a813cd16594a1499e712fd855a2aec8b0fcd339dc5",
+  "traceDigest": "8c02b4284ce2f4217d4e5c65fc1d8dcde795736a2ed2b4a39924fdffe540537e",
 }
 `;
 
@@ -594,7 +594,7 @@ exports[`catalogue reference replay: gerard-president, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "13c82814f11a2a9dcfd125b073ca3b2dd3d20d539115af272ecb37f71458c233",
+  "traceDigest": "3b2ba76504bdf624841e4e07bd5d3384baf184c951892ee8dbf08ed1dd8f9b9a",
 }
 `;
 
@@ -609,7 +609,7 @@ exports[`catalogue reference replay: gerard-president, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 56,
-  "traceDigest": "be0ffa171455b10d8823b0aad318fe12ff2b4579773811ce8cddea4160e52c87",
+  "traceDigest": "a53368108b02cdd15431630d14eb276f8821b0faaaabb0d6c09e41042493718b",
 }
 `;
 
@@ -624,7 +624,7 @@ exports[`catalogue reference replay: gerard-president, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 64,
-  "traceDigest": "aeff75f7194e65870a77e6448755f7111242e760789e9987ad9a8bb668010c0d",
+  "traceDigest": "1ee92d6b3069bd0f4f3864ad25c68da53043614bf0f9f58d8f1af6da646ce5d4",
 }
 `;
 
@@ -636,7 +636,7 @@ exports[`catalogue reference replay: jeu-oie, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 39,
-  "traceDigest": "fb7d2dce40c6f4862c612274e369eae7843f06e8038a507c645b0e9ed4d230ee",
+  "traceDigest": "f244aab492948634aff147344b80c3f542793520b9466b393b575c98a6a1e291",
 }
 `;
 
@@ -648,7 +648,7 @@ exports[`catalogue reference replay: jeu-oie, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 31,
-  "traceDigest": "008634b259d6ab7c8f9b2804f4f8a8a16275bac427f09c98b71f19113fbf64cb",
+  "traceDigest": "e44f90d98f9a46cfc70521968ad9c86740e4227afa7ec728a5409c7ed449f5c9",
 }
 `;
 
@@ -660,7 +660,7 @@ exports[`catalogue reference replay: jeu-oie, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 19,
-  "traceDigest": "d3251a08e0fc87845880d2c15965d2bc6795e8513af4572d5d84a0fd4b7946ac",
+  "traceDigest": "98a598514908c75ad311db0d5e78c124f93b26ff46e6be25531be38b2cc22be5",
 }
 `;
 
@@ -673,7 +673,7 @@ exports[`catalogue reference replay: la-bande-a-banane, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 32,
-  "traceDigest": "dd98d5136add366c5e32fde645912bd52945b10941719748f477d74ef7c6756e",
+  "traceDigest": "05a3079e856feac93110453c9785178de41e10fa0562827a3a4af27b03e738fe",
 }
 `;
 
@@ -687,7 +687,7 @@ exports[`catalogue reference replay: la-bande-a-banane, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 23,
-  "traceDigest": "65d65776f9cfc71dd351ade1e6fb906bbdfd8e186db66ea567d7e614bbe89aa4",
+  "traceDigest": "b554e2ffcbe37484cb66191758f6b3ff42c98f235111b9606110f2fce3501250",
 }
 `;
 
@@ -700,7 +700,7 @@ exports[`catalogue reference replay: la-bande-a-banane, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 24,
-  "traceDigest": "84dfcd261325db756c3ec4db60876d670b98eff0c9740fc28cc83b554122a089",
+  "traceDigest": "97fb525536b9ed072c5295f2a38da5b4dcb6385621c2e09d808b0b507c2e5091",
 }
 `;
 
@@ -712,7 +712,7 @@ exports[`catalogue reference replay: la-grande-mine-de-barbak, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 48,
-  "traceDigest": "fae379f5f7b18d8b9a5da64ffd92fda8064a44dfb8a0e9d121e3c7020295f03e",
+  "traceDigest": "422c5820cfd4954987898c7e25b24756dfa02e4237c0c41c54d0efca8592831f",
 }
 `;
 
@@ -724,7 +724,7 @@ exports[`catalogue reference replay: la-grande-mine-de-barbak, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 21,
-  "traceDigest": "df063dd30be7840ef8ca69f9887059935ec0db84f2714825eb72740c67047001",
+  "traceDigest": "fe4ab73e0c5821c008371e81edf9a4fcf4eae5218ffb12b8d9a873d950cb0a28",
 }
 `;
 
@@ -736,7 +736,7 @@ exports[`catalogue reference replay: la-grande-mine-de-barbak, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 52,
-  "traceDigest": "c33a513a96cf23f53caac7a1fc91a6bf1aa660c71d1f58f33163a68f0e58c4f1",
+  "traceDigest": "8257a4dbded0aece4f480321a860427b32c744dcfb90cbc3bd85cd46b15640a9",
 }
 `;
 
@@ -747,7 +747,7 @@ exports[`catalogue reference replay: la-parade-sucree, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "60a930dd1ae0fb1a9d2aaf8a679087d55ac19c00b4c9b6ce648d566ee9092e03",
+  "traceDigest": "a783207f2534a4252adf974acfe53b031a6a3cd7b77dfd0f24434892d79ea9bd",
 }
 `;
 
@@ -758,7 +758,7 @@ exports[`catalogue reference replay: la-parade-sucree, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "614dfeb5055c708857e66e9ce6992456b57784e96fea828db059f0090985dc52",
+  "traceDigest": "97129bbebd9281cab8f252900b7eeb1b62e6180ddc0d1612ff22cdef39096c03",
 }
 `;
 
@@ -770,7 +770,7 @@ exports[`catalogue reference replay: la-parade-sucree, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "5e32c99b6abb2c8a312c64c22a2da9728acca3f213d401cd861611c0a3e1b9f7",
+  "traceDigest": "d7b3181e7ea0d23c00ae3843c0408fd1527f9577ad5c8533c6483e65ebb37878",
 }
 `;
 
@@ -784,7 +784,7 @@ exports[`catalogue reference replay: lama, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 17,
-  "traceDigest": "ade0660851c5aff8f065b79c34879abed9e6cb44ecceb632d58277c8d963124c",
+  "traceDigest": "7601fd7d3d29c7e6192635637195ad3b1be6b15bc7a312da2506163abfe5199e",
 }
 `;
 
@@ -797,7 +797,7 @@ exports[`catalogue reference replay: lama, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 12,
-  "traceDigest": "598bc50b3601f4718dfbd09dca3980772bc7c35ef297eef27d7da3d186dcd80c",
+  "traceDigest": "00f7a68a614077cf479c612841568f3d4f157d79f062f15caaf5ee4b7fa9a2ec",
 }
 `;
 
@@ -810,7 +810,7 @@ exports[`catalogue reference replay: lama, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 9,
-  "traceDigest": "781c00fdf8b106bb79f28f64fe5c39856aa61cfa4d95e8e4fa82619b937bb2c2",
+  "traceDigest": "e0f72feb0a77ed6cb19d5c6925797a2b9de03e470d295ee0ad235415bb797879",
 }
 `;
 
@@ -825,7 +825,7 @@ exports[`catalogue reference replay: le-marche-des-merveilles, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 12,
-  "traceDigest": "7161edba8fd06c2f50b6864f49b3fbbbe0eda266a1f680837b36cc79cfba039e",
+  "traceDigest": "e3236bfe8f596ef72548cae63b969b485a1703071876237c2cbda911c048a164",
 }
 `;
 
@@ -839,7 +839,7 @@ exports[`catalogue reference replay: le-marche-des-merveilles, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 12,
-  "traceDigest": "0fd7d49d966990cc6dd8bb765554ad13527ebc421f2d9602d868536cc2babb53",
+  "traceDigest": "99beb3fa4a8b558024c0c415f5010cb55a518a404fac15204b3b8771d25031d9",
 }
 `;
 
@@ -853,7 +853,7 @@ exports[`catalogue reference replay: le-marche-des-merveilles, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 12,
-  "traceDigest": "9ac8a1ef20f94e4a2a8b53738517792c39e9457dd9caed94d4b74df374f5cc90",
+  "traceDigest": "a6bad6c7aad104a34e33950a03bb90ee630c2e8d1e27286043330fc92b42314b",
 }
 `;
 
@@ -865,7 +865,7 @@ exports[`catalogue reference replay: les-absurdissimes, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "9d7824a2ae58b20928413617ace474257bb587fd53dfc33ad6c09d3b5676699f",
+  "traceDigest": "7d1c32686f78c1211f35db3e6151771e496f088747826967867436c198518b81",
 }
 `;
 
@@ -877,7 +877,7 @@ exports[`catalogue reference replay: les-absurdissimes, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "e89529d0062a82d674821bdc709da2a1514c2ec24e827317a20d64e6bd11ebcd",
+  "traceDigest": "275631c4c5b79bf31e1063ee7b88be3d77325f2d8a89bbe2676d64f77dc55508",
 }
 `;
 
@@ -889,7 +889,7 @@ exports[`catalogue reference replay: les-absurdissimes, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "7763c29c8bf90c9d564d98460a9588fdc862732bcebc4c8636ca1294c51b38fe",
+  "traceDigest": "f6a7f916d9d9fac3fa23211f36fef31d93ad3674dcc8d28c168772ccc59912ed",
 }
 `;
 
@@ -900,7 +900,7 @@ exports[`catalogue reference replay: les-mains-de-la-terre, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "b2c3f36d67e8d118d00e3860083af83be62a98e84547633953a31a53c099be08",
+  "traceDigest": "9b577a33a3cde7777d7d9b04901f10b65c4ae80959adc0d421a4b141aa93a124",
 }
 `;
 
@@ -911,7 +911,7 @@ exports[`catalogue reference replay: les-mains-de-la-terre, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "3566db17210a656064639fda6b6fa81749ecfbc0ab4bdfb20c01453f2b6c6685",
+  "traceDigest": "17c4ad6d48da0ae855e50497db17138b2cca67c95f212ea56b702c0e33a29f47",
 }
 `;
 
@@ -922,7 +922,7 @@ exports[`catalogue reference replay: les-mains-de-la-terre, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "c5f5c35b12d74532eced1b0e490e4b948e221b65b53d5db0e9da0f61f5b9a7f1",
+  "traceDigest": "0cd195e2fc344c859bd8ad9e95d8a79b43d9ba5b2ff34cd3fe774519b449fae1",
 }
 `;
 
@@ -934,7 +934,7 @@ exports[`catalogue reference replay: mission-galaxie, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 32,
-  "traceDigest": "02b85e896f65412fb73e3d7881d98c83e684fcd45388f74d58a088d2db0908fe",
+  "traceDigest": "68cb786ab95245d9b00935698ed44302e198126fc7bfb2bb3b112fc9eb45dfa7",
 }
 `;
 
@@ -946,7 +946,7 @@ exports[`catalogue reference replay: mission-galaxie, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 23,
-  "traceDigest": "c22d009f29d9c54ab7cf06ed93d06769f47a8509515adb10421de8d9ad6aeae8",
+  "traceDigest": "6a015fecb2b6e0673326d0ca202a521caa2129bcd3b76cc1c561297a16088019",
 }
 `;
 
@@ -958,7 +958,7 @@ exports[`catalogue reference replay: mission-galaxie, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 29,
-  "traceDigest": "864f4cac1829ba8638d9f2e5ed726998d7fd410c8062e90e77728f28a5ed243d",
+  "traceDigest": "a6c08864be1a4e7f4fc005e0394051cb12df8cf99167977dee158d9e3b3004ab",
 }
 `;
 
@@ -969,7 +969,7 @@ exports[`catalogue reference replay: mon-village-mon-histoire, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 22,
-  "traceDigest": "f1b38aa6285f3a42e9dcbcb6932ece83deb19ee6e9d68422414df54235367670",
+  "traceDigest": "748e87b361b72956801bab7b1d3aa549b4821b5bf7f261cc23728ade04682a57",
 }
 `;
 
@@ -980,7 +980,7 @@ exports[`catalogue reference replay: mon-village-mon-histoire, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 22,
-  "traceDigest": "de8f0d50a8fe3bf837c31a361554ab3e8c26762ffbb9eef52ca3090afeb6bdbb",
+  "traceDigest": "88e1c3fe8508da808e9fd3d69f28be083ff3699fc3d326756870ed0aab02480e",
 }
 `;
 
@@ -991,7 +991,7 @@ exports[`catalogue reference replay: mon-village-mon-histoire, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 28,
-  "traceDigest": "69b765f767239aa342e1eb74e914495f317e4490cee5dd385e4f4ac1eb15e109",
+  "traceDigest": "40f5d262f65a30feda5cad7d0bfcdf7130a7990e0af5150b29fa1df84ed970d2",
 }
 `;
 
@@ -1003,7 +1003,7 @@ exports[`catalogue reference replay: morpion, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 11,
-  "traceDigest": "93c509a5f09f8776a30f961dfacaeaaa60a205d04420ef06c4edd27f939bbe01",
+  "traceDigest": "94cae25a42af15554af95aca395ee091a89cb59e94646a65d779ff1fa0b8d154",
 }
 `;
 
@@ -1015,7 +1015,7 @@ exports[`catalogue reference replay: morpion, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 7,
-  "traceDigest": "9fb1091bd2b22c60484f4eb02e963fc9e5c6493db4b860c09f808c6953dadad6",
+  "traceDigest": "c38364f0c3c0bb53dd2714cb560f3190bb08490fd6386a479b587d994735b643",
 }
 `;
 
@@ -1027,7 +1027,7 @@ exports[`catalogue reference replay: nawak, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "afa3670f88c0105b95bf558f2134df8c3c86bbf615f7618ea8a03a2570f92fcf",
+  "traceDigest": "950a029cfd9f73957e5eb6c18b15d3dac9b37771e240413973a73366acdaf545",
 }
 `;
 
@@ -1039,7 +1039,7 @@ exports[`catalogue reference replay: nawak, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "6b81caba8afcc50f9a1d28d14e003dea998e3dacd96469803a6c5b3d145bb0d9",
+  "traceDigest": "7046b4adbb837a77b9bcb88e2b640796c18bc79be3ff0b47b065fe47cae7b90e",
 }
 `;
 
@@ -1051,7 +1051,7 @@ exports[`catalogue reference replay: nawak, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "d900c4d1fe77a8e4d2ee9eac825bddca4ae9749d8179c31322279fe898518de2",
+  "traceDigest": "a47a0fd844c0dd56900f9d472472011359f579e1ac6c0489df85dce1fb245e79",
 }
 `;
 
@@ -1063,7 +1063,7 @@ exports[`catalogue reference replay: odyssee-quatre-cieux, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "47f96d654083f7f8b15bf0141a1894be509ef45791a2fc739923ba2e259787ed",
+  "traceDigest": "2e0b7edeb8c51e28771893a4fe380aa33f5469dadb744af86ab0ac6d84587290",
 }
 `;
 
@@ -1075,7 +1075,7 @@ exports[`catalogue reference replay: odyssee-quatre-cieux, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "1e6c2131767a48909ead05138aacf72e43e40644ed75c3071902f6794312c6c7",
+  "traceDigest": "be6c1cde9dee25bbbcb2f403c00d581438d6c83a315e363aff077fbf9083ee20",
 }
 `;
 
@@ -1087,7 +1087,7 @@ exports[`catalogue reference replay: odyssee-quatre-cieux, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "86079c4bb815e85c318bb45a966fca7194510b199dac3dca740ceac36c12f139",
+  "traceDigest": "fc1a8d464604bba1655c8e6fcdab9e69ecb7623f3de82f826e5c4be72259b3d8",
 }
 `;
 
@@ -1100,7 +1100,7 @@ exports[`catalogue reference replay: olympia, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "80d59b8311a745d3297b0e37007eb152190b5e8b1957183d06888889547b1925",
+  "traceDigest": "5a0e758423ecb02502761c52595335be39e3d2c5e0b15fa3bb4d4756c7f70908",
 }
 `;
 
@@ -1113,7 +1113,7 @@ exports[`catalogue reference replay: olympia, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "f96d46245166f52414c478fe85981be8e210fe254b7788546d731a93aadae597",
+  "traceDigest": "99c2ac341bae5cf3c8b4a25766c411009f68de747acce9031dd9ea78c61d40e7",
 }
 `;
 
@@ -1126,7 +1126,7 @@ exports[`catalogue reference replay: olympia, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "374880fd0474c7c2c64591e95529c47f442fa5b3e61bfae5536ac4b376ed1bd8",
+  "traceDigest": "d443df8a2a48b6ab43eaeba7ae72dc00e797249022e0b667634b316e825aa178",
 }
 `;
 
@@ -1139,7 +1139,7 @@ exports[`catalogue reference replay: panier-express, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "5b1bfcebef2122cce0d12d84ab2adf9dfcebab638fceaf8bc6007ac06ef147bb",
+  "traceDigest": "a27ac609b952117476b84288d94cc2f992d3febc9495f75e4aa3a801ba413670",
 }
 `;
 
@@ -1152,7 +1152,7 @@ exports[`catalogue reference replay: panier-express, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "509c0a0c9cc04bda5c53db7352eec43c6a2da9850ba362778f00970f4342d01b",
+  "traceDigest": "7f2b60202690f81b55bab647358295b2b6ce9a0cf75cef55eace028beea91549",
 }
 `;
 
@@ -1164,7 +1164,7 @@ exports[`catalogue reference replay: pimp-my-ride, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "b4a6cbf5746f2c628d1db15c5980e29498c3d1132cfe1a87683ecd4d3b90190f",
+  "traceDigest": "5273bcb4ccdff00ec7207c40f23a1f0f6a4d0ef8d37f9c8ca33f09c2f404820c",
 }
 `;
 
@@ -1176,7 +1176,7 @@ exports[`catalogue reference replay: pimp-my-ride, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "5d1ca37d60530519c8eafe611915402cc452be07e3da4908a0722ba988705230",
+  "traceDigest": "de0687297e727405350c987863cff107d933c9f3e36bd51d46428f0599af6e1d",
 }
 `;
 
@@ -1187,7 +1187,7 @@ exports[`catalogue reference replay: pirates-en-vadrouille, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 33,
-  "traceDigest": "7723cde48e7c729b5682295628b07f981090fe435e204acd2c891784808116c3",
+  "traceDigest": "99b6f06e265ba02c8ca82f1cb3f6f0db5a8b947cb6db2395334ed4b2ab2e0564",
 }
 `;
 
@@ -1198,7 +1198,7 @@ exports[`catalogue reference replay: pirates-en-vadrouille, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "7ee006e46a94addbc75d3207d0b1b5fa8e50b020078e366d7e15a5d9a558773a",
+  "traceDigest": "c14b59bac0a2b25693eccee0e947e5a066a87b629b6b9bfbc04794b60c6dc714",
 }
 `;
 
@@ -1209,7 +1209,7 @@ exports[`catalogue reference replay: pirates-en-vadrouille, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 27,
-  "traceDigest": "8ff50ff013831bfd13be669396d5a5fdae3c9bcfd0634d95bff9c1efd3057ea2",
+  "traceDigest": "fc2c86e576b430a59880fc58d3c3f783306b4124f69ae878df921e502863ec49",
 }
 `;
 
@@ -1220,7 +1220,7 @@ exports[`catalogue reference replay: primalis, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 13,
-  "traceDigest": "b59a8a55b517140517a8e24aed7e3ba7163a9145b8ec32a4329f036325e0a9a1",
+  "traceDigest": "5dd79910633e0af2264df0223f04258b84df5c28f07d2adf9826d114fa65d58f",
 }
 `;
 
@@ -1231,7 +1231,7 @@ exports[`catalogue reference replay: primalis, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 14,
-  "traceDigest": "a29550c8605167198aab2d69648bb54f059d19471aa3cfb071877b80bb8017e0",
+  "traceDigest": "909395e4663d62b2750ceffced88cc21e2a2015292870d6fe0c38d59c72f33c9",
 }
 `;
 
@@ -1242,7 +1242,7 @@ exports[`catalogue reference replay: primalis, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 9,
-  "traceDigest": "90bfe6222d96097a5e601d5f9fb43265ef44084ddf546b299f5a7c25848b2606",
+  "traceDigest": "c6814c85935d5a2f4ab940129d7e6394da3b9af4e4d2671580838d3e15df6750",
 }
 `;
 
@@ -1258,7 +1258,7 @@ exports[`catalogue reference replay: sac-a-malices, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "6aafe6eef8c43735f1ceeef60f8b9eba292d3b88e77c9b907cd5dbcb0e07097f",
+  "traceDigest": "7c885a8b31a24574a19bec508bdbce7bc285eed08b11ea20a0dc132efc8c686d",
 }
 `;
 
@@ -1273,7 +1273,7 @@ exports[`catalogue reference replay: sac-a-malices, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "1aa1b18edf90f9ea903011db0ca5a66a1bedd1a8150ac74bb410fdaee7269581",
+  "traceDigest": "8392de45ab448907399df0d698fa4b4d2aba42e9588d4c50dbaa6235d26952b8",
 }
 `;
 
@@ -1289,7 +1289,7 @@ exports[`catalogue reference replay: sac-a-malices, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "686935dd41438369298b02a7bb95f699d879363939973c2adb64c347d990746c",
+  "traceDigest": "b0f11fd5102e6de8e7bdb122abb24c31c0fe66f468d0eca489fb741d6a0aca7f",
 }
 `;
 
@@ -1300,7 +1300,7 @@ exports[`catalogue reference replay: taxi-express, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "a4f62973b1fa0962108ddc221b57af219abf2575488bf36b61ff8f54a6f8ea98",
+  "traceDigest": "76f5f9e5c36ab016e24143101e59175936a327452fc32cda761f1b61988d80b6",
 }
 `;
 
@@ -1311,7 +1311,7 @@ exports[`catalogue reference replay: taxi-express, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "4b1db8977d5ea1273475f4d06382774451a92ad0776af7000cb8cd417b02d76a",
+  "traceDigest": "a6af4a12e7145ba596f3fc37049e73aa69f937f1d61f7b979b03d15cb3188425",
 }
 `;
 
@@ -1322,7 +1322,7 @@ exports[`catalogue reference replay: taxi-express, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "991b859b7eabf737563d3a6c779343d9fa555327cc30c71753f22965c18c59d9",
+  "traceDigest": "f6a62ff1652cf8c9ac5f76f9d32b25d0b7337c26fe4545bebabd5bcb10004b91",
 }
 `;
 
@@ -1333,7 +1333,7 @@ exports[`catalogue reference replay: tout-pres-de-maman, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 23,
-  "traceDigest": "9ae253846a688dcbd506b02e24d10d5d6844e16d5e57ff7fff3c3919e4130685",
+  "traceDigest": "d9d99191150ba11b7bbb1cc6af626d7bdfaec3e99c17550c6cd18247ea7cf187",
 }
 `;
 
@@ -1344,7 +1344,7 @@ exports[`catalogue reference replay: tout-pres-de-maman, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 18,
-  "traceDigest": "7dc13a953819a0c0cbf45afa8f5cd9500c2ed6381e86e972cb99148044681def",
+  "traceDigest": "05fa8cb41c9ba80209aa6311bcbae541bccc04195f65255e75174b92bd9436ad",
 }
 `;
 
@@ -1355,7 +1355,7 @@ exports[`catalogue reference replay: tout-pres-de-maman, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 21,
-  "traceDigest": "9d02fc4bcf46fdaf26789456e3661194ef8bb4ca3dd98855459d379e3ac3dee6",
+  "traceDigest": "b8557c50943a54de12025fbeb67513c42f8d6ec0dff486b3cc66456732d595e3",
 }
 `;
 
@@ -1366,7 +1366,7 @@ exports[`catalogue reference replay: voyage-en-terre-de-brumes, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "d2243174e4774c0be90f2f4fc833447df6a40baab37b751395dfdbba61af186f",
+  "traceDigest": "ba079ad7de335f1ac91e5188a5c845e76034649be04aa31759101af91615e5f4",
 }
 `;
 
@@ -1377,7 +1377,7 @@ exports[`catalogue reference replay: voyage-en-terre-de-brumes, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "c6d5d8764f67f8df304f3a016aa0429cec17876137f58bfab49b7397fda18448",
+  "traceDigest": "2bb715864f4b7e0d1673923638236e406be5716d2a5171ddec8fe0a06a5020fd",
 }
 `;
 
@@ -1388,7 +1388,7 @@ exports[`catalogue reference replay: voyage-en-terre-de-brumes, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "cf752c251e6b21e54a7c7b372195a2e7656107dd621680c07b425b183e162d9f",
+  "traceDigest": "161c399bef7404d613d0b71339c2f00ab1283e1582b9ccf987ef7ca1db5ccad0",
 }
 `;
 
@@ -1399,7 +1399,7 @@ exports[`catalogue reference replay: zig-et-zag, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "5b3103017ea2c4069be20295f837df158882dfa2b914f4107f98c22cf48c01ad",
+  "traceDigest": "49d1086f3ec584eecef5083722b56f6854666e826faa5f713d8f4a022b8519ee",
 }
 `;
 
@@ -1410,7 +1410,7 @@ exports[`catalogue reference replay: zig-et-zag, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "e5c45086de97860d52d2242942e6e772a7cd29f3d5c1e557262331a6c6c95eba",
+  "traceDigest": "2aae5a9e839bb15ab093503b68dd1f6e6332bce0811117b6639bedb666f2f9cc",
 }
 `;
 
@@ -1421,7 +1421,7 @@ exports[`catalogue reference replay: zig-et-zag, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "8508eacf5c35b21b9bbc4b66fc916c108cc170296c4d2db38bc3851e692f3e97",
+  "traceDigest": "9d6e3eda7afe2e24531e7ac01b3500a25b64ed7f97b8b6e394751a322eecbc93",
 }
 `;
 
@@ -1435,7 +1435,7 @@ exports[`choice reference replay: cat-pattes, seed 37 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "883eb76d832436b182eeac258324e5e0005f08442da34194c986897683ff9869",
+  "traceDigest": "465a2f9a5d7c3dee47af5631e43e347e24f2533f8a0aa070290022e566949633",
 }
 `;
 
@@ -1448,7 +1448,7 @@ exports[`collection reference replay: la-bande-a-banane, seed 41 1`] = `
   ],
   "finished": true,
   "steps": 26,
-  "traceDigest": "7caa27662593155ad29eb8d41753f928b9840aa1f497de59774fb6b111bacaa8",
+  "traceDigest": "dcad52b9157d6f658cca2a8fc9d0507d57d1f1a04dcab31bf9426ae79b306aff",
 }
 `;
 
@@ -1461,7 +1461,7 @@ exports[`race reference replay: a-fond-les-ballons, seed 53 1`] = `
   ],
   "finished": true,
   "steps": 50,
-  "traceDigest": "979bd497d4e14879d5f68d829674258322e1e04049f4e8738caecbc3419a4f4b",
+  "traceDigest": "ae06ed5001bf9a39202add27dc5fc7404378d791edf1af0a0d1370ad36cc1226",
 }
 `;
 
@@ -1473,6 +1473,6 @@ exports[`spatial reference replay: morpion, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 11,
-  "traceDigest": "528e7a05e18809cdd98408423e4e85c4a10658f66061d44409eb7aec48481b10",
+  "traceDigest": "a0caaea0a7b69bd133469d1f3c4efe0cfee1f03336f8b42791fb351a85c257ac",
 }
 `;

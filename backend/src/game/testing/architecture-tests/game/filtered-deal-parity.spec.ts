@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { createHash } from 'node:crypto';
 import { testGame } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
@@ -9,10 +8,7 @@ import professionsManifest from '../../../games/vents-dansants/les-mains-de-la-t
 import professionsDocumentExtensionSource from '../../../games/vents-dansants/les-mains-de-la-terre/game.json';
 import professionsCatalogue from '../../../games/vents-dansants/les-mains-de-la-terre/catalogue.json';
 import reference from '../../fixtures/filtered-deal-before-parity.json';
-const ritesDocument = legacyExtensionFixture(
-  ritesDocumentExtensionSource,
-  'ritualPhases',
-);
+const ritesDocument = ritesDocumentExtensionSource;
 const professionsDocument = professionsDocumentExtensionSource;
 
 const rites = compileJsonGame(ritesManifest, ritesDocument, {

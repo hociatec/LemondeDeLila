@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { discoverGameDefinitions } from '../../../composition/game-module-discovery';
 import {
@@ -709,6 +709,7 @@ function walkProductionTs(
   directory: string,
   root = directory,
 ): Array<{ file: string; source: string }> {
+  if (!existsSync(directory)) return [];
   return readdirSync(directory)
     .flatMap((entry) => {
       const file = resolve(directory, entry);

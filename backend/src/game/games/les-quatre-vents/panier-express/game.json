@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
-  "definitionVersion": "2",
+  "contentVersion": "3",
+  "definitionVersion": "3",
+  "snapshotMigrations": [{ "fromVersion": "2", "toVersion": "3" }],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
   "components": [
@@ -74,15 +75,10 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "playing"
-      ]
+      "transitions": ["playing"]
     },
     "playing": {
-      "actions": [
-        "roll",
-        "draw_card"
-      ],
+      "actions": ["roll", "draw_card"],
       "terminal": true
     }
   },
@@ -95,7 +91,7 @@
     }
   },
   "victory": {
-    "kind": "by-board"
+    "kind": "manual"
   },
   "shortcuts": [
     {
@@ -128,9 +124,9 @@
       "label": "Inventaire"
     }
   ],
-  "extensions": [
+  "patterns": [
     {
-      "type": "board",
+      "kind": "board-movement-landings",
       "config": {
         "namespace": "panier",
         "trackId": "market",
@@ -200,6 +196,10 @@
           "ruleId": "restore-market-direction"
         },
         "startingPlayer": "random"
+      },
+      "actionIds": {
+        "roll": "roll",
+        "draw": "draw_card"
       }
     }
   ]

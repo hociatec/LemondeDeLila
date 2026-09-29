@@ -1,6 +1,6 @@
-import { consumeFirstProtection } from './protection-cost';
-import { settleResourceDelta } from './resource-settlement';
-import { firstOtherPlayerAt } from './track-collision';
+import { consumeFirstProtection } from '../../engine/runtime/recipes/protection-cost';
+import { settleResourceDelta } from '../../engine/runtime/recipes/resource-settlement';
+import { firstOtherPlayerAt } from '../../engine/runtime/recipes/track-collision';
 
 it('detects collisions independently of penalties, preserving player order and track isolation', () => {
   const positions: Record<string, Record<number, number>> = {

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
-  "definitionVersion": "3",
+  "contentVersion": "3",
+  "definitionVersion": "4",
   "snapshotMigrations": [
     {
       "fromVersion": "contes-et-cacahuetes@content:32cd4133",
@@ -10,65 +10,17 @@
     {
       "fromVersion": "1",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
-  "patterns": [],
-  "components": [],
-  "setup": {
-    "firstPlayer": "random",
-    "startRound": true
-  },
-  "resourceIds": [
-    "choice-story-challenge.reroll-token",
-    "choice-story-challenge.malus-shield"
-  ],
-  "shortcuts": [
+  "patterns": [
     {
-      "key": "S",
-      "type": "interface",
-      "id": "race-ranking",
-      "label": "Classement de la course"
-    },
-    {
-      "key": "P",
-      "type": "interface",
-      "id": "position",
-      "label": "Ma position"
-    },
-    {
-      "key": "D",
-      "type": "action",
-      "actionType": "roll"
-    }
-  ],
-  "initialPhase": "setup",
-  "phases": {
-    "setup": {
-      "actions": [],
-      "transitions": [
-        "playing"
-      ]
-    },
-    "playing": {
-      "actions": [
-        "roll"
-      ],
-      "terminal": true
-    }
-  },
-  "actions": {
-    "roll": {
-      "recipe": "choice-story-challenge-roll"
-    }
-  },
-  "victory": {
-    "kind": "by-story-challenge"
-  },
-  "extensions": [
-    {
-      "type": "storyChallenge",
+      "kind": "story-challenge",
       "config": {
         "trackId": "story-road",
         "pawnSetId": "storyChallenge",
@@ -219,24 +171,69 @@
         },
         "giftTargetEffect": "give-bonus",
         "conditionalTargetEffect": "gold-key",
-        "numberOptions": [
-          1,
-          2,
-          3
-        ],
+        "numberOptions": [1, 2, 3],
         "numberAdvance": 1,
         "choiceDrawCount": 2,
-        "randomDrawDecks": [
-          "bonus",
-          "malus",
-          "surprise"
-        ],
+        "randomDrawDecks": ["bonus", "malus", "surprise"],
         "randomDrawCount": 2,
         "forcedRoll": 1,
         "replacementRoll": 4,
         "lowRollThreshold": 4,
         "protectionAdvance": 1
+      },
+      "actionIds": {
+        "roll": "roll"
       }
     }
-  ]
+  ],
+  "components": [],
+  "setup": {
+    "firstPlayer": "random",
+    "startRound": true
+  },
+  "resourceIds": [
+    "choice-story-challenge.reroll-token",
+    "choice-story-challenge.malus-shield"
+  ],
+  "shortcuts": [
+    {
+      "key": "S",
+      "type": "interface",
+      "id": "race-ranking",
+      "label": "Classement de la course"
+    },
+    {
+      "key": "P",
+      "type": "interface",
+      "id": "position",
+      "label": "Ma position"
+    },
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    }
+  ],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": {
+      "actions": [],
+      "transitions": ["playing"]
+    },
+    "playing": {
+      "actions": ["roll"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "choice-story-challenge-roll"
+    }
+  },
+  "victory": {
+    "kind": "manual"
+  },
+  "playerValuesVisibility": {
+    "statuses": "public"
+  }
 }

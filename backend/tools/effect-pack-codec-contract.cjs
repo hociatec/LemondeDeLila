@@ -12,26 +12,15 @@ function checkCodecContracts() {
   const { effectJsonDefinitions } = require(
     path.join(root, 'src/game/engine/runtime/contracts/effect-json-schema'),
   );
-  const { jsonEffectPacks } = require(
-    path.join(root, 'src/game/rules/effect-packs/json-effect-pack-registry'),
-  );
   const references = Object.fromEntries(
     Object.keys(effectJsonDefinitions).map((name, index) => [
       name,
       `Reference${index}`,
     ]),
   );
-  const lines = [
-    "import { jsonEffectPacks } from './json-effect-pack-registry';",
-  ];
+  const lines = [];
   for (const [name, schema] of Object.entries(effectJsonDefinitions))
     lines.push(`type ${references[name]} = ${schemaType(schema, references)};`);
-  jsonEffectPacks.forEach((pack, index) => {
-    lines.push(`type Input${index} = ${schemaType(pack.schema, references)};`);
-    lines.push(
-      `export function check_${pack.documentKey}(value: Input${index}): Parameters<(typeof jsonEffectPacks)[${index}]['compile']>[0] { return value; }`,
-    );
-  });
   const file = path.join(
     root,
     'src/game/rules/effect-packs/__codec-contracts__.ts',
@@ -78,13 +67,13 @@ function checkCodecContracts() {
         getNewLine: () => '\n',
       }),
     );
-  return jsonEffectPacks.length;
+  return Object.keys(effectJsonDefinitions).length;
 }
 module.exports = { checkCodecContracts };
 if (require.main === module) {
   try {
     console.log(
-      `Codec contracts: ${checkCodecContracts()} schemas statically assignable to their program inputs`,
+      `Codec contracts: ${checkCodecContracts()} generic effect schemas compile to static types`,
     );
   } catch (error) {
     console.error(error.message);

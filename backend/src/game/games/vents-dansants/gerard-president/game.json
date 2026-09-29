@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
-  "definitionVersion": "2",
+  "contentVersion": "3",
+  "definitionVersion": "3",
   "snapshotMigrations": [
     {
       "fromVersion": "gerard-president@content:25d38394",
@@ -10,80 +10,17 @@
     {
       "fromVersion": "1",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
-  "patterns": [],
-  "components": [],
-  "setup": {},
-  "resourceIds": [],
-  "shortcuts": [
+  "patterns": [
     {
-      "key": "C",
-      "type": "action",
-      "actionType": "play_name"
-    },
-    {
-      "key": "S",
-      "type": "action",
-      "actionType": "play_special"
-    }
-  ],
-  "initialPhase": "waiting-theme",
-  "phases": {
-    "waiting-theme": {
-      "actions": [
-        "set_theme"
-      ],
-      "transitions": [
-        "collecting-names",
-        "choosing-winner"
-      ]
-    },
-    "collecting-names": {
-      "actions": [
-        "play_name",
-        "play_special",
-        "pass"
-      ],
-      "transitions": [
-        "choosing-winner"
-      ]
-    },
-    "choosing-winner": {
-      "actions": [
-        "choose_winner"
-      ],
-      "transitions": [
-        "waiting-theme",
-        "collecting-names"
-      ]
-    }
-  },
-  "actions": {
-    "set_theme": {
-      "recipe": "cards-theme-name-set-theme"
-    },
-    "play_name": {
-      "recipe": "cards-theme-name-play-name"
-    },
-    "play_special": {
-      "recipe": "cards-theme-name-play-special"
-    },
-    "choose_winner": {
-      "recipe": "cards-theme-name-choose-winner"
-    },
-    "pass": {
-      "recipe": "cards-theme-name-pass"
-    }
-  },
-  "victory": {
-    "kind": "by-theme-name-cards"
-  },
-  "extensions": [
-    {
-      "type": "themeNameCards",
+      "kind": "theme-name",
       "config": {
         "targetScore": 7,
         "names": {
@@ -222,7 +159,64 @@
             "targeting": "opponent"
           }
         ]
+      },
+      "actionIds": {
+        "setTheme": "set_theme",
+        "playName": "play_name",
+        "playSpecial": "play_special",
+        "chooseWinner": "choose_winner",
+        "pass": "pass"
       }
     }
-  ]
+  ],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    {
+      "key": "C",
+      "type": "action",
+      "actionType": "play_name"
+    },
+    {
+      "key": "S",
+      "type": "action",
+      "actionType": "play_special"
+    }
+  ],
+  "initialPhase": "waiting-theme",
+  "phases": {
+    "waiting-theme": {
+      "actions": ["set_theme"],
+      "transitions": ["collecting-names", "choosing-winner"]
+    },
+    "collecting-names": {
+      "actions": ["play_name", "play_special", "pass"],
+      "transitions": ["choosing-winner"]
+    },
+    "choosing-winner": {
+      "actions": ["choose_winner"],
+      "transitions": ["waiting-theme", "collecting-names"]
+    }
+  },
+  "actions": {
+    "set_theme": {
+      "recipe": "cards-theme-name-set-theme"
+    },
+    "play_name": {
+      "recipe": "cards-theme-name-play-name"
+    },
+    "play_special": {
+      "recipe": "cards-theme-name-play-special"
+    },
+    "choose_winner": {
+      "recipe": "cards-theme-name-choose-winner"
+    },
+    "pass": {
+      "recipe": "cards-theme-name-pass"
+    }
+  },
+  "victory": {
+    "kind": "manual"
+  }
 }

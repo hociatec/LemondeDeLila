@@ -62,67 +62,60 @@ const cases: Case[] = [
   ],
 ];
 
-describe.each([false, true])(
-  'indexed semantic diagnostics (legacy=%s)',
-  (legacy) => {
-    function check(
-      key: keyof typeof fixtures,
-      field: string,
-      received: unknown,
-      prepare?: (config: unknown) => void,
-    ) {
-      const fixture = fixtures[key];
-      const resolved = resolveJsonContent(fixture.document, {
-        'content/catalogue.json': fixture.content,
-      });
-      const source = record(structuredClone(resolved));
-      const config = authoringValueAt(source, 'extensions[0].config');
-      if (prepare) prepare(config);
-      else replace(config, field, received);
-      if (legacy) {
-        Reflect.deleteProperty(source, 'extensions');
-        Reflect.set(source, key, config);
-      }
-      let error: unknown;
-      try {
-        compileJsonGame(fixture.manifest, source);
-      } catch (caught) {
-        error = caught;
-      }
-      expect(error).toBeInstanceOf(AuthoringError);
-      expect(error).toMatchObject({
-        code: 'GAME_AUTHORING_ERROR',
-        path: `game.json.${legacy ? key : 'extensions[0].config'}.${field}`,
-        received,
-      });
+describe('indexed native-pattern semantic diagnostics', () => {
+  function check(
+    key: keyof typeof fixtures,
+    field: string,
+    received: unknown,
+    prepare?: (config: unknown) => void,
+  ) {
+    const fixture = fixtures[key];
+    const resolved = resolveJsonContent(fixture.document, {
+      'content/catalogue.json': fixture.content,
+    });
+    const source = record(structuredClone(resolved));
+    const config = authoringValueAt(source, 'patterns[0].config');
+    if (prepare) prepare(config);
+    else replace(config, field, received);
+    let error: unknown;
+    try {
+      compileJsonGame(fixture.manifest, source);
+    } catch (caught) {
+      error = caught;
     }
+    expect(error).toBeInstanceOf(AuthoringError);
+    expect(error).toMatchObject({
+      code: 'GAME_AUTHORING_ERROR',
+      path: `game.json.patterns[0].config.${field}`,
+      received,
+    });
+  }
 
-    it.each(cases)(
-      '%s identifies %s and its received value',
-      (key, field, value) => check(key, field, value),
-    );
+  it.each(cases)(
+    '%s identifies %s and its received value',
+    (key, field, value) => check(key, field, value),
+  );
 
-    it('points into a custom movement nested inside a card', () => {
-      check(
-        'propertyEconomy',
-        'variants[0].chance[0].effects[0].data.movement.tileId',
-        'missing',
-        (config) => {
-          replace(config, 'variants[0].chance[0].effects', [
-            {
-              kind: 'custom',
-              effectId: 'board-property-economy.movement',
-              data: {
-                movement: {
-                  kind: 'tile',
-                  tileId: 'missing',
-                  direction: 'forward',
-                },
+  it('points into a custom movement nested inside a card', () => {
+    check(
+      'propertyEconomy',
+      'variants[0].chance[0].effects[0].data.movement.tileId',
+      'missing',
+      (config) => {
+        replace(config, 'variants[0].chance[0].effects', [
+          {
+            kind: 'custom',
+            effectId: 'board-property-economy.movement',
+            data: {
+              movement: {
+                kind: 'tile',
+                tileId: 'missing',
+                direction: 'forward',
               },
             },
-          ]);
-        },
-      );
-    });
-  },
-);
+          },
+        ]);
+      },
+    );
+  });
+});

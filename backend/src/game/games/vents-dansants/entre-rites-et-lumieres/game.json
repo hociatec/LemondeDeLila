@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
-  "definitionVersion": "1",
+  "contentVersion": "3",
+  "definitionVersion": "2",
   "snapshotMigrations": [
     {
       "fromVersion": "entre-rites-et-lumieres@content:6b100bc2",
@@ -10,11 +10,31 @@
     {
       "fromVersion": "1",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
-  "patterns": [],
+  "patterns": [
+    {
+      "kind": "ritual-phases",
+      "config": {
+        "cards": {
+          "$content": "content/catalogue.json#/cards"
+        },
+        "initialHandSize": 5,
+        "exchangeFamilyCount": 3,
+        "finishReason": "five-families"
+      },
+      "actionIds": {
+        "ask": "ask_card",
+        "pass": "pass"
+      }
+    }
+  ],
   "components": [],
   "setup": {},
   "resourceIds": [],
@@ -33,10 +53,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "ask_card",
-        "pass"
-      ],
+      "actions": ["ask_card", "pass"],
       "terminal": true
     }
   },
@@ -49,19 +66,6 @@
     }
   },
   "victory": {
-    "kind": "by-ritual-phases"
-  },
-  "extensions": [
-    {
-      "type": "ritualPhases",
-      "config": {
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        },
-        "initialHandSize": 5,
-        "exchangeFamilyCount": 3,
-        "finishReason": "five-families"
-      }
-    }
-  ]
+    "kind": "manual"
+  }
 }

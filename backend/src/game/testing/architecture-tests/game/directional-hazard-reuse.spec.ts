@@ -5,30 +5,47 @@ import type { DeclarativeState } from '../../../engine/runtime/state/declarative
 import manifest from '../../../games/les-quatre-vents/ca-derape/manifest.json';
 import rally from '../../fixtures/second-game-attempts/checkpoint-rally.json';
 
+function nativeRally(
+  config: unknown = rally.extensions[0].config,
+  victory: object = rally.victory,
+) {
+  const { extensions: _extensions, ...document } = rally;
+  return {
+    ...document,
+    victory,
+    patterns: [
+      ...document.patterns,
+      {
+        kind: 'directional-hazard' as const,
+        config,
+        actionIds: { roll: 'advance' },
+      },
+    ],
+  };
+}
+
 function candidate(
   effects?: GameEffectInstruction[],
   overshoot = 'wrap',
   primitive = false,
   external = false,
 ) {
+  const config = {
+    ...rally.extensions[0].config,
+    victoryMode: external ? ('external' as const) : ('arrival' as const),
+  };
+  const source = nativeRally(
+    config,
+    primitive || external ? rally.victory : { kind: 'manual' },
+  );
   return compileJsonGame(
     { ...manifest, code: 'checkpoint-rally', engine: 'checkpoint-rally' },
     {
-      ...rally,
-      extensions: primitive
-        ? []
-        : rally.extensions.map((entry) => ({
-            ...entry,
-            config: {
-              ...entry.config,
-              victoryMode: external ? 'external' : 'arrival',
-            },
-          })),
-      victory:
-        primitive || external
-          ? rally.victory
-          : { kind: 'by-directional-hazard-race' },
-      patterns: [{ ...rally.patterns[0], overshoot }],
+      ...source,
+      patterns: [
+        { ...rally.patterns[0], overshoot },
+        ...(primitive ? [] : source.patterns.slice(1)),
+      ],
       ...(effects ? { actions: { advance: { effects } } } : {}),
     },
   );
@@ -56,7 +73,7 @@ describe('checkpoint rally: a second-game attempt, not a reuse certification', (
     expect(() =>
       compileJsonGame(
         { ...manifest, code: 'checkpoint-rally', engine: 'checkpoint-rally' },
-        rally,
+        nativeRally(),
       ),
     ).not.toThrow();
   });
@@ -70,13 +87,14 @@ describe('checkpoint rally: a second-game attempt, not a reuse certification', (
     if (mode) config.victoryMode = mode;
     expect(() =>
       compileJsonGame(manifest, {
-        ...rally,
-        victory: kind === 'resource-at-least' ? rally.victory : { kind },
-        extensions: [{ type: 'directionalHazardRace', config }],
+        ...nativeRally(
+          config,
+          kind === 'resource-at-least' ? rally.victory : { kind: 'manual' },
+        ),
       }),
     ).toThrow('game.json.victory.kind');
   });
-  it('exposes the pack finish rule before any checkpoint is earned', async () => {
+  it('exposes the pattern finish rule before any checkpoint is earned', async () => {
     const game = await started();
     await game.as(1).do('advance', {});
     expect(snapshot(game).engine.match.result).toEqual({
@@ -94,23 +112,18 @@ describe('checkpoint rally: a second-game attempt, not a reuse certification', (
       ...rally.extensions[0].config.cards[0],
       effects: [{ kind: 'gain-resource', resource: 'checkpoints', amount: 1 }],
     };
-    const document = {
-      ...rally,
+    const document = nativeRally({
+      ...rally.extensions[0].config,
+      victoryMode: 'external',
+      cards: [card],
+      tiles: rally.extensions[0].config.tiles.map((tile) => ({
+        ...tile,
+        isNeutral: false,
+      })),
+    });
+    Object.assign(document, {
       components: [{ ...rally.components[0], cards: [card] }],
-      extensions: [
-        {
-          ...rally.extensions[0],
-          config: {
-            ...rally.extensions[0].config,
-            cards: [card],
-            tiles: rally.extensions[0].config.tiles.map((tile) => ({
-              ...tile,
-              isNeutral: false,
-            })),
-          },
-        },
-      ],
-    };
+    });
     const game = testGame(compileJsonGame(manifest, document))
       .players(['A', 'B', 'C'])
       .seed(91);

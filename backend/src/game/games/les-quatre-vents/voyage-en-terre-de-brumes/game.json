@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
-  "definitionVersion": "4",
+  "contentVersion": "3",
+  "definitionVersion": "5",
   "snapshotMigrations": [
     {
       "fromVersion": "voyage-en-terre-de-brumes@content:f37084a0@format:2",
@@ -10,6 +10,10 @@
     {
       "fromVersion": "1",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
   "category": "JeuxDePlateaux",
@@ -20,6 +24,42 @@
       "trackId": "ireland",
       "spaces": 71,
       "overshoot": "bounce"
+    },
+    {
+      "kind": "chapter-encounter",
+      "config": {
+        "trackId": "ireland",
+        "diceId": "main",
+        "choiceId": "choice-chapter-encounter.choice",
+        "lastTargetStatusId": "choice-chapter-encounter.last-target",
+        "finishStartedCounterId": "choice-chapter-encounter.finish-started",
+        "finishCountdownCounterId": "choice-chapter-encounter.finish-countdown",
+        "collectionResourcePrefix": "choice-chapter-encounter.collection.",
+        "collectionKinds": ["legend", "farce", "treasure", "landscape"],
+        "tiles": {
+          "$content": "content/catalogue.json#/tiles"
+        },
+        "decks": {
+          "legend": {
+            "$content": "content/catalogue.json#/legend"
+          },
+          "farce": {
+            "$content": "content/catalogue.json#/farce"
+          },
+          "treasure": {
+            "$content": "content/catalogue.json#/treasure"
+          },
+          "landscape": {
+            "$content": "content/catalogue.json#/landscape"
+          }
+        },
+        "legacyQuizDeckId": "legend",
+        "tieBreakCollection": "legend",
+        "finishReason": "irish-collection"
+      },
+      "actionIds": {
+        "roll": "roll"
+      }
     }
   ],
   "components": [
@@ -115,9 +155,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -127,46 +165,6 @@
     }
   },
   "victory": {
-    "kind": "by-chapter-encounter"
-  },
-  "extensions": [
-    {
-      "type": "chapterEncounter",
-      "config": {
-        "trackId": "ireland",
-        "diceId": "main",
-        "choiceId": "choice-chapter-encounter.choice",
-        "lastTargetStatusId": "choice-chapter-encounter.last-target",
-        "finishStartedCounterId": "choice-chapter-encounter.finish-started",
-        "finishCountdownCounterId": "choice-chapter-encounter.finish-countdown",
-        "collectionResourcePrefix": "choice-chapter-encounter.collection.",
-        "collectionKinds": [
-          "legend",
-          "farce",
-          "treasure",
-          "landscape"
-        ],
-        "tiles": {
-          "$content": "content/catalogue.json#/tiles"
-        },
-        "decks": {
-          "legend": {
-            "$content": "content/catalogue.json#/legend"
-          },
-          "farce": {
-            "$content": "content/catalogue.json#/farce"
-          },
-          "treasure": {
-            "$content": "content/catalogue.json#/treasure"
-          },
-          "landscape": {
-            "$content": "content/catalogue.json#/landscape"
-          }
-        },
-        "legacyQuizDeckId": "legend",
-        "tieBreakCollection": "legend",
-        "finishReason": "irish-collection"
-      }
-    }
-  ]
+    "kind": "manual"
+  }
 }

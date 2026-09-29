@@ -1,15 +1,9 @@
-import {
-  legacyExtensionFixture,
-  testGame,
-} from '../../../engine/testing/public-api';
+import { testGame } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import documentSource from './game.json';
 import manifest from './manifest.json';
 
-const definition = compileJsonGame(
-  manifest,
-  legacyExtensionFixture(documentSource, 'pathWalls'),
-);
+const definition = compileJsonGame(manifest, documentSource);
 
 it('announces a committed wall placement with its player for client audio', async () => {
   const game = testGame(definition).players(['Alice', 'Bob']).seed(3);

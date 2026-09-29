@@ -121,9 +121,7 @@
     },
     {
       "id": "arche-de-mnemosyne",
-      "packs": [
-        "choice-simultaneous-quiz"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -137,29 +135,13 @@
         "choices": [],
         "status": [],
         "collections": [],
-        "scoring": [
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:161",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:162",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:163"
-        ],
+        "scoring": [],
         "victory": [
-          "src/game/games/vents-infinis/arche-de-mnemosyne/game.json:46",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:3",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:198",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:209"
+          "src/game/games/vents-infinis/arche-de-mnemosyne/game.json:43"
         ],
-        "targeting": [
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:203",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:209"
-        ],
+        "targeting": [],
         "triggers": [
-          "src/game/games/vents-infinis/arche-de-mnemosyne/answer-order.spec.ts:38",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/effect-pack.ts:14",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/effect-pack.ts:31",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:89",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:137",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:168",
-          "src/game/rules/game-specific/choice-simultaneous-quiz/simultaneous-quiz.recipes.ts:243"
+          "src/game/games/vents-infinis/arche-de-mnemosyne/answer-order.spec.ts:34"
         ]
       }
     },
@@ -233,174 +215,61 @@
     },
     {
       "id": "ca-derape",
-      "packs": [
-        "race-directional-hazards"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/les-quatre-vents/ca-derape/simultaneous-arrival.spec.ts:33",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:123",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:143",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:148",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:164",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:274",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:282",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:298",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:388",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:389",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-global-effects.ts:48",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-global-effects.ts:51",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-landing.ts:14",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-movement.ts:11",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-movement.ts:35",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-movement.ts:38",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-movement.ts:49",
-          "src/game/rules/game-specific/race-directional-hazards/json-directional-hazard-race-schema.ts:87",
-          "src/game/rules/game-specific/race-directional-hazards/json-directional-hazard-race-schema.ts:90"
+          "src/game/games/les-quatre-vents/ca-derape/simultaneous-arrival.spec.ts:29"
         ],
         "ownership": [],
-        "collision": [
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:2",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:267"
-        ],
-        "resources": [
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:221",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:245",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:305",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:390",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:391",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-race.recipes.ts:57",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-race.recipes.ts:61",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-turn.ts:13",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-turn.ts:14",
-          "src/game/rules/game-specific/race-directional-hazards/json-directional-hazard-race-schema.ts:107",
-          "src/game/rules/game-specific/race-directional-hazards/json-directional-hazard-race-schema.ts:108"
-        ],
+        "collision": [],
+        "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/les-quatre-vents/ca-derape/game.json:16",
-          "src/game/games/les-quatre-vents/ca-derape/game.spec.ts:21",
-          "src/game/rules/game-specific/race-directional-hazards/json-directional-hazard-race-schema.ts:102"
+          "src/game/games/les-quatre-vents/ca-derape/game.json:62",
+          "src/game/games/les-quatre-vents/ca-derape/game.spec.ts:17"
         ],
         "zones": [],
-        "choices": [
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:344",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-race.recipes.ts:5",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-race.recipes.ts:31",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-race.recipes.ts:34"
-        ],
+        "choices": [],
         "status": [
           "src/game/games/les-quatre-vents/ca-derape/catalogue.json:437",
           "src/game/games/les-quatre-vents/ca-derape/catalogue.json:490",
           "src/game/games/les-quatre-vents/ca-derape/catalogue.json:543",
           "src/game/games/les-quatre-vents/ca-derape/catalogue.json:680",
           "src/game/games/les-quatre-vents/ca-derape/catalogue.json:1327",
-          "src/game/games/les-quatre-vents/ca-derape/catalogue.json:1365",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:100",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:132",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:335",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:338",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:352",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:377",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-race.recipes.ts:59",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-race.recipes.ts:60",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-race.recipes.ts:64",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-turn.ts:21"
+          "src/game/games/les-quatre-vents/ca-derape/catalogue.json:1365"
         ],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/ca-derape/game.json:56",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:405",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-landing.ts:28",
-          "src/game/rules/game-specific/race-directional-hazards/effect-pack.ts:22",
-          "src/game/rules/game-specific/race-directional-hazards/effect-pack.ts:25",
-          "src/game/rules/game-specific/race-directional-hazards/effect-pack.ts:27",
-          "src/game/rules/game-specific/race-directional-hazards/effect-pack.ts:28",
-          "src/game/rules/game-specific/race-directional-hazards/program.ts:16"
+          "src/game/games/les-quatre-vents/ca-derape/game.json:100"
         ],
-        "targeting": [
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:2",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:93",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:94",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:98",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:99",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:102",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:136",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:186",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:187",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:267",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:365",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:388",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-effects.ts:389"
-        ],
-        "triggers": [
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-landing.ts:21",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-landing.ts:23",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-landing.ts:39",
-          "src/game/rules/game-specific/race-directional-hazards/directional-hazard-race.recipes.ts:67"
-        ]
+        "targeting": [],
+        "triggers": []
       }
     },
     {
       "id": "cat-pattes",
-      "packs": [
-        "choice-simultaneous-paw-scoring"
-      ],
+      "packs": [],
       "mechanics": {
-        "movement": [
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:77",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:19",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:38",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:199",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:252"
-        ],
+        "movement": [],
         "ownership": [],
         "collision": [],
-        "resources": [
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:73",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:21",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:206"
-        ],
+        "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/vents-dansants/cat-pattes/game.spec.ts:23",
-          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:30",
-          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:53",
-          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:67",
-          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:75",
-          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:82",
-          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:87",
-          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:97",
-          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:110",
-          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:121",
-          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:133",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/json-paw-scoring-schema.ts:187",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/json-paw-scoring-schema.ts:189",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:21",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:31",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:9",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:11",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:12",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:14",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:15",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:16",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:17",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:26",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:50",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:52",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:58",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:88",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:116",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:141",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:152",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:161",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:164",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:182"
+          "src/game/games/vents-dansants/cat-pattes/game.spec.ts:22",
+          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:29",
+          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:52",
+          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:66",
+          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:74",
+          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:81",
+          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:86",
+          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:96",
+          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:109",
+          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:120",
+          "src/game/games/vents-dansants/cat-pattes/reports.spec.ts:132"
         ],
-        "zones": [
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:14"
-        ],
+        "zones": [],
         "choices": [],
         "status": [
           "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:998",
@@ -420,41 +289,12 @@
           "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1362",
           "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1388",
           "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1414",
-          "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1440",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:54",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:66",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:87",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:108",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:126",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:128",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:129",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:130",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:132",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:133",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:134",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:138",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:141",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:142",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:144",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:145",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:146",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:164",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:165",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:172",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:176",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:22",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:24"
+          "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1440"
         ],
         "collections": [],
-        "scoring": [
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:38",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:48",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:11",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:189"
-        ],
+        "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/cat-pattes/game.json:65",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:51"
+          "src/game/games/vents-dansants/cat-pattes/game.json:75"
         ],
         "targeting": [
           "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1004",
@@ -474,15 +314,9 @@
           "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1368",
           "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1394",
           "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1420",
-          "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1446",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-card-rules.ts:55"
+          "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json:1446"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring-rounds.ts:41",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:81",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:90",
-          "src/game/rules/game-specific/choice-simultaneous-paw-scoring/paw-scoring.recipes.ts:117"
-        ]
+        "triggers": []
       }
     },
     {
@@ -514,45 +348,18 @@
     },
     {
       "id": "contes-et-cacahuetes",
-      "packs": [
-        "choice-story-challenge"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:79",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:125",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:130",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:145",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:63",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:168",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:171",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:174",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:262",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:268",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:273",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:279",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:283",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:286",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:289",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:202",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:216",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:253"
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:75",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:121",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:126"
         ],
         "ownership": [],
         "collision": [],
         "resources": [
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:423",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:439",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:129",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:130",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:132",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:91",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:105",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:131",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:132",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:248",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:62",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:89"
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:439"
         ],
         "payment": [
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:19",
@@ -574,88 +381,37 @@
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1411",
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1571",
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1619",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1635",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:105",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:89"
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1635"
         ],
         "cards": [
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.spec.ts:25",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:45",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:46",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:48",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:97",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:114",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:117",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:181",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:185",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:54",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:56",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:57",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:61",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:66",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:68",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:139",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:178"
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.spec.ts:21",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:41",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:42",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:44",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:93",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:110",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:113"
         ],
         "zones": [
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:97",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:114",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:117",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:54",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:56"
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:93",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:110",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:113"
         ],
         "choices": [
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:91",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:112",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:24",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:45",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:63",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:80",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:116",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:107",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:224",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:302",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:12",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:41",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:65",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:83",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:105",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:128",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:147",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:161"
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:87",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:108"
         ],
         "status": [
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:455",
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:507",
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:634",
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1064",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1098",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:92",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:107",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-choices.ts:108",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:143",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:194",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:51",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:92",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:135",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:136",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:293",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:297",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:312",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:313",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:48",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:53",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:93",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:122",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:218"
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1098"
         ],
         "collections": [],
-        "scoring": [
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:133"
-        ],
+        "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:66",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:88"
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:233"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:410",
@@ -740,111 +496,25 @@
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1625",
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1641",
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json:1657",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:181",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:193",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:200",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:208",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:215",
-          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:106",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:52",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:58",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:61",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:143",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:163",
-          "src/game/rules/game-specific/choice-story-challenge/json-story-challenge-schema.ts:166",
-          "src/game/rules/game-specific/choice-story-challenge/program.ts:14",
-          "src/game/rules/game-specific/choice-story-challenge/program.ts:18",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:28",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:29",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:40",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:41",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:60",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:61",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:65",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:72",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:73",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:93",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:94",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:99",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:100",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:118",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:119",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:126",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:127",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:135",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:136",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:140",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:141",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:149",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:150",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:155",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:156",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:165",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:166",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:171",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:172",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:177",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:178",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:186",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:187",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:192",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:193",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:201",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:214",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:215",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-effects.ts:234",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:142",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:143",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:156",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:188",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:190",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:191",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:262",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:264",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:265",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:267",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:268",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:269",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:282",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:286",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:115",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:119",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:120"
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:133",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:145",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:152",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:160",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json:167",
+          "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:102"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/choice-story-challenge/effect-pack.ts:11",
-          "src/game/rules/game-specific/choice-story-challenge/effect-pack.ts:34",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:71",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge-resolution.ts:86",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:56",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:96",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:168",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:185",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:234",
-          "src/game/rules/game-specific/choice-story-challenge/story-challenge.recipes.ts:244"
-        ]
+        "triggers": []
       }
     },
     {
       "id": "corridor",
-      "packs": [
-        "board-path-walls"
-      ],
+      "packs": [],
       "mechanics": {
-        "movement": [
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:246"
-        ],
+        "movement": [],
         "ownership": [],
         "collision": [],
-        "resources": [
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:79",
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:87",
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:98",
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:151"
-        ],
-        "payment": [
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:87"
-        ],
+        "resources": [],
+        "payment": [],
         "cards": [],
         "zones": [],
         "choices": [],
@@ -852,15 +522,10 @@
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-sacres/corridor/game.json:48",
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:66"
+          "src/game/games/vents-sacres/corridor/game.json:96"
         ],
         "targeting": [],
-        "triggers": [
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:37",
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:61",
-          "src/game/rules/game-specific/board-path-walls/path-walls.recipes.ts:88"
-        ]
+        "triggers": []
       }
     },
     {
@@ -964,89 +629,27 @@
     },
     {
       "id": "entre-rites-et-lumieres",
-      "packs": [
-        "cards-ritual-phases"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
         "collision": [],
-        "resources": [
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:112",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:113"
-        ],
+        "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/vents-dansants/entre-rites-et-lumieres/game.spec.ts:20",
-          "src/game/games/vents-dansants/entre-rites-et-lumieres/game.spec.ts:21",
-          "src/game/rules/game-specific/cards-ritual-phases/json-ritual-phases-schema.ts:69",
-          "src/game/rules/game-specific/cards-ritual-phases/json-ritual-phases-schema.ts:73",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:28",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:29",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:58",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:63",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:69",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:130",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:134",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:164",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:165",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:200",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:234",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:50",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:90",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:93",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:106",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:114",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:161",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:178",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:183",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:204",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:220",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:222",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:228"
+          "src/game/games/vents-dansants/entre-rites-et-lumieres/game.spec.ts:16",
+          "src/game/games/vents-dansants/entre-rites-et-lumieres/game.spec.ts:17"
         ],
-        "zones": [
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:134",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:164",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:165",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:90"
-        ],
-        "choices": [
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:158",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:172",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:190",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:223",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:240",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:248",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:10",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:64",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:81",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:84",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:99",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:102",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:126",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:135",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:192",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:194"
-        ],
+        "zones": [],
+        "choices": [],
         "status": [
           "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json:324",
-          "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json:399",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:90",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:110",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:111",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:275",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:263"
+          "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json:399"
         ],
-        "collections": [
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:63",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:114",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:204"
-        ],
+        "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/entre-rites-et-lumieres/game.json:51",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:85"
+          "src/game/games/vents-dansants/entre-rites-et-lumieres/game.json:68"
         ],
         "targeting": [
           "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json:259",
@@ -1057,18 +660,9 @@
           "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json:368",
           "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json:385",
           "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json:403",
-          "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json:420",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:42",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:47",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:101",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:116",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases-support.ts:117",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:280",
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:281"
+          "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json:420"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/cards-ritual-phases/ritual-phases.recipes.ts:72"
-        ]
+        "triggers": []
       }
     },
     {
@@ -1261,117 +855,32 @@
     },
     {
       "id": "gerard-president",
-      "packs": [
-        "cards-theme-name"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
         "collision": [],
-        "resources": [
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:139",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:62",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:67",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:139",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:133",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:241"
-        ],
+        "resources": [],
         "payment": [],
-        "cards": [
-          "src/game/rules/game-specific/cards-theme-name/effect-pack.ts:6",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:59",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:95",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:122",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:136",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:166",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:248",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:253",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:259",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:267",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:273",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:74",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:170",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-presentation.ts:57",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:87",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:102",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:105",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:112",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:116",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:122",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:147",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:152",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:155",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:166",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:179",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:183"
-        ],
-        "zones": [
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:59",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:74",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:87",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:102",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:105",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:116",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:155",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:179"
-        ],
+        "cards": [],
+        "zones": [],
         "choices": [
-          "src/game/games/vents-dansants/gerard-president/game.spec.ts:77",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:193",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:199",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:211",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:86",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:124",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-presentation.ts:45",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:63",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:84",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:209"
+          "src/game/games/vents-dansants/gerard-president/game.spec.ts:73"
         ],
-        "status": [
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:45",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:81",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:134",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:249",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:258",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:260",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:267",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:277"
-        ],
+        "status": [],
         "collections": [],
-        "scoring": [
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:216",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:217"
-        ],
+        "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/gerard-president/game.json:81",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-cards.recipes.ts:218"
+          "src/game/games/vents-dansants/gerard-president/game.json:219"
         ],
         "targeting": [
-          "src/game/games/vents-dansants/gerard-president/game.json:107",
-          "src/game/games/vents-dansants/gerard-president/game.json:143",
-          "src/game/games/vents-dansants/gerard-president/game.json:221",
-          "src/game/rules/game-specific/cards-theme-name/json-theme-name-cards-schema.ts:16",
-          "src/game/rules/game-specific/cards-theme-name/json-theme-name-cards-schema.ts:22",
-          "src/game/rules/game-specific/cards-theme-name/json-theme-name-cards-schema.ts:35",
-          "src/game/rules/game-specific/cards-theme-name/program.ts:5",
-          "src/game/rules/game-specific/cards-theme-name/program.ts:11",
-          "src/game/rules/game-specific/cards-theme-name/program.ts:24",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:93",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:94",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:104",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:118",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:132",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:152",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:165",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:166",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-effects.ts:182",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:207",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:234",
-          "src/game/rules/game-specific/cards-theme-name/theme-name-support.ts:235"
+          "src/game/games/vents-dansants/gerard-president/game.json:44",
+          "src/game/games/vents-dansants/gerard-president/game.json:80",
+          "src/game/games/vents-dansants/gerard-president/game.json:158"
         ],
         "triggers": [
-          "src/game/games/vents-dansants/gerard-president/game.spec.ts:53",
-          "src/game/games/vents-dansants/gerard-president/game.spec.ts:61"
+          "src/game/games/vents-dansants/gerard-president/game.spec.ts:49",
+          "src/game/games/vents-dansants/gerard-president/game.spec.ts:57"
         ]
       }
     },
@@ -1525,75 +1034,24 @@
     },
     {
       "id": "lama",
-      "packs": [
-        "cards-discard-penalty"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
         "collision": [],
         "resources": [],
         "payment": [],
-        "cards": [
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:91",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:98",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:114",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:117",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:119",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:168",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:176",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:203",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:213",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:225",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:230",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:231",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:240",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:246",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:248",
-          "src/game/rules/game-specific/cards-discard-penalty/effect-pack.ts:6",
-          "src/game/rules/game-specific/cards-discard-penalty/json-discard-penalty-cards-schema.ts:54",
-          "src/game/rules/game-specific/cards-discard-penalty/json-discard-penalty-cards-schema.ts:63"
-        ],
-        "zones": [
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:117",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:246",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:248"
-        ],
-        "choices": [
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:14",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:268",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:298",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:323",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:337"
-        ],
+        "cards": [],
+        "zones": [],
+        "choices": [],
         "status": [],
         "collections": [],
-        "scoring": [
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:8",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:165",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:210",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:263",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:267",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:282",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:290",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:331",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:333"
-        ],
+        "scoring": [],
         "victory": [
-          "src/game/games/vents-sacres/lama/game.json:107",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:292"
+          "src/game/games/vents-sacres/lama/game.json:272"
         ],
         "targeting": [],
-        "triggers": [
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:92",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:120",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:143",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:236",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:259",
-          "src/game/rules/game-specific/cards-discard-penalty/discard-penalty-cards.recipes.ts:350",
-          "src/game/rules/game-specific/cards-discard-penalty/effect-pack.ts:11",
-          "src/game/rules/game-specific/cards-discard-penalty/effect-pack.ts:32"
-        ]
+        "triggers": []
       }
     },
     {
@@ -2049,71 +1507,45 @@
     },
     {
       "id": "panier-express",
-      "packs": [
-        "board-movement-landings"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/les-quatre-vents/panier-express/game.json:12",
-          "src/game/games/les-quatre-vents/panier-express/game.json:31",
-          "src/game/games/les-quatre-vents/panier-express/game.json:33",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:11",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:19",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:144",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:174",
-          "src/game/rules/game-specific/board-movement-landings/json-board-pawn-capacity.ts:16",
-          "src/game/rules/game-specific/board-movement-landings/json-board-pawn-capacity.ts:19",
-          "src/game/rules/game-specific/board-movement-landings/json-board-pawn-capacity.ts:20",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:122",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:124",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:179"
+          "src/game/games/les-quatre-vents/panier-express/game.json:13",
+          "src/game/games/les-quatre-vents/panier-express/game.json:32",
+          "src/game/games/les-quatre-vents/panier-express/game.json:34",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:10",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:18"
         ],
         "ownership": [],
         "collision": [],
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/les-quatre-vents/panier-express/game.json:39",
-          "src/game/games/les-quatre-vents/panier-express/game.json:42",
-          "src/game/games/les-quatre-vents/panier-express/game.json:47",
-          "src/game/games/les-quatre-vents/panier-express/game.json:50",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:13",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:21",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:24",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:25",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:232",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:237",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:238"
+          "src/game/games/les-quatre-vents/panier-express/game.json:40",
+          "src/game/games/les-quatre-vents/panier-express/game.json:43",
+          "src/game/games/les-quatre-vents/panier-express/game.json:48",
+          "src/game/games/les-quatre-vents/panier-express/game.json:51",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:12",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:20",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:23",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:24"
         ],
         "zones": [],
         "choices": [
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:95",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:115",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:155",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:156",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:3",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:50",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:63",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:82",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:142"
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:94",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:114",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:154",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:155"
         ],
         "status": [
           "src/game/games/les-quatre-vents/panier-express/content/cards.json:377",
           "src/game/games/les-quatre-vents/panier-express/content/cards.json:536",
-          "src/game/games/les-quatre-vents/panier-express/content/cards.json:561",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:202",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:208"
+          "src/game/games/les-quatre-vents/panier-express/content/cards.json:561"
         ],
-        "collections": [
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:199",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:202",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:206",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:209",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:211"
-        ],
+        "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/panier-express/game.json:97"
+          "src/game/games/les-quatre-vents/panier-express/game.json:93"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/panier-express/content/cards.json:233",
@@ -2128,41 +1560,30 @@
           "src/game/games/les-quatre-vents/panier-express/content/cards.json:745",
           "src/game/games/les-quatre-vents/panier-express/content/cards.json:787",
           "src/game/games/les-quatre-vents/panier-express/content/cards.json:848",
-          "src/game/games/les-quatre-vents/panier-express/content/cards.json:921",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:187",
-          "src/game/rules/game-specific/board-movement-landings/json-board-schema.ts:192"
+          "src/game/games/les-quatre-vents/panier-express/content/cards.json:921"
         ],
         "triggers": [
           "src/game/games/les-quatre-vents/panier-express/content/board.json:35",
           "src/game/games/les-quatre-vents/panier-express/content/board.json:204",
           "src/game/games/les-quatre-vents/panier-express/content/board.json:449",
           "src/game/games/les-quatre-vents/panier-express/content/cards.json:2",
-          "src/game/games/les-quatre-vents/panier-express/game.json:37",
-          "src/game/games/les-quatre-vents/panier-express/game.json:39",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:24",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:72",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:99",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:118",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:168",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:176",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:182",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:184",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:191",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:196",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:203",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:217",
+          "src/game/games/les-quatre-vents/panier-express/game.json:38",
+          "src/game/games/les-quatre-vents/panier-express/game.json:40",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:23",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:71",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:98",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:117",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:167",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:175",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:181",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:183",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:190",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:195",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:202",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:216",
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:222",
           "src/game/games/les-quatre-vents/panier-express/game.spec.ts:223",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:224",
-          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:233",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:68",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:92",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:109",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:110",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:125",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:193",
-          "src/game/rules/game-specific/board-movement-landings/board-turn.recipes.ts:215",
-          "src/game/rules/game-specific/board-movement-landings/effect-pack.ts:7",
-          "src/game/rules/game-specific/board-movement-landings/effect-pack.ts:46"
+          "src/game/games/les-quatre-vents/panier-express/game.spec.ts:232"
         ]
       }
     },
@@ -2272,112 +1693,30 @@
     },
     {
       "id": "sac-a-malices",
-      "packs": [
-        "board-property-economy"
-      ],
+      "packs": [],
       "mechanics": {
-        "movement": [
-          "src/game/rules/game-specific/board-property-economy/json-property-economy-schema.ts:291",
-          "src/game/rules/game-specific/board-property-economy/json-property-economy-schema.ts:292",
-          "src/game/rules/game-specific/board-property-economy/json-property-economy-schema.ts:296",
-          "src/game/rules/game-specific/board-property-economy/json-property-economy-schema.ts:297",
-          "src/game/rules/game-specific/board-property-economy/json-property-economy-schema.ts:306",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:66",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:88",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:274",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:275",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:280",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:281",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:298",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:299",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:300",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:301",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:303",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:305",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:307",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:308",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:309",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:311",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:111"
-        ],
-        "ownership": [
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:136",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:224",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:230",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:91",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:161",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:173",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:207",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:254",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:328",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:300"
-        ],
+        "movement": [],
+        "ownership": [],
         "collision": [],
         "resources": [
           "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:989",
           "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:3738",
           "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:5040",
           "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:6236",
-          "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:8940",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:36",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:45",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:47",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:142",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:159",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:226",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:123",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:269",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:281",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:61",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:76",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:84",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:85",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:93",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:126",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:128",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:138",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:148",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:149",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:151",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:152"
+          "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:8940"
         ],
         "payment": [
           "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:304",
-          "src/game/games/les-quatre-vents/sac-a-malices/game.json:70",
-          "src/game/rules/game-specific/board-property-economy/effect-pack.ts:46",
-          "src/game/rules/game-specific/board-property-economy/effect-pack.ts:64",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:162",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:171",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:173",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:174",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:177",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:2",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:70",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:151",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:341"
+          "src/game/games/les-quatre-vents/sac-a-malices/game.json:80"
         ],
-        "cards": [
-          "src/game/rules/game-specific/board-property-economy/effect-pack.ts:56",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:267"
-        ],
-        "zones": [
-          "src/game/rules/game-specific/board-property-economy/effect-pack.ts:56"
-        ],
-        "choices": [
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:139",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:202",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:247",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:12",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:110",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:243",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:251"
-        ],
+        "cards": [],
+        "zones": [],
+        "choices": [],
         "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/sac-a-malices/game.json:76",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:101"
+          "src/game/games/les-quatre-vents/sac-a-malices/game.json:86"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:449",
@@ -2390,27 +1729,9 @@
           "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:7188",
           "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:7586",
           "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:8250",
-          "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:8943",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:278",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:279",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:281",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:289",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:108",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:111"
+          "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json:8943"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/board-property-economy/effect-pack.ts:16",
-          "src/game/rules/game-specific/board-property-economy/effect-pack.ts:53",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:95",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:97",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:174",
-          "src/game/rules/game-specific/board-property-economy/property-economy-board.ts:236",
-          "src/game/rules/game-specific/board-property-economy/property-economy-support.ts:98",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:86",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:139",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:153",
-          "src/game/rules/game-specific/board-property-economy/property-economy.recipes.ts:290"
-        ]
+        "triggers": []
       }
     },
     {
@@ -2511,84 +1832,41 @@
     },
     {
       "id": "voyage-en-terre-de-brumes",
-      "packs": [
-        "choice-chapter-encounter"
-      ],
+      "packs": [],
       "mechanics": {
-        "movement": [
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:50",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:70",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:140",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:178",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:182",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:235",
-          "src/game/rules/game-specific/choice-chapter-encounter/json-chapter-encounter-schema.ts:96",
-          "src/game/rules/game-specific/choice-chapter-encounter/json-chapter-encounter-schema.ts:99"
-        ],
+        "movement": [],
         "ownership": [],
         "collision": [],
-        "resources": [
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:109",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:134",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:254",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:261",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:263",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:273",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:275",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:281",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:300",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:307"
-        ],
+        "resources": [],
         "payment": [
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/catalogue.json:350",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:254",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:261",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:263",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:275"
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/catalogue.json:350"
         ],
         "cards": [
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:27",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:36",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:45",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:54",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:132",
-          "src/game/rules/game-specific/choice-chapter-encounter/json-chapter-encounter-schema.ts:140"
-        ],
-        "zones": [
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:132"
-        ],
-        "choices": [
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:2",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:38",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:93",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:96",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:102",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:118",
-          "src/game/rules/game-specific/choice-chapter-encounter/json-chapter-encounter-schema.ts:164",
-          "src/game/rules/game-specific/choice-chapter-encounter/json-chapter-encounter-schema.ts:168"
-        ],
-        "status": [
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:205",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:238"
-        ],
-        "collections": [
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:63",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:68",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:72",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:67",
           "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:76",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:80",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:93",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:94",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:95",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:96",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:142",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/quiz-identifiers.spec.ts:54",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/quiz-identifiers.spec.ts:68"
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:85",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:94"
+        ],
+        "zones": [],
+        "choices": [],
+        "status": [],
+        "collections": [
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:37",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:103",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:108",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:112",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:116",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:120",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:133",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:134",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:135",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:136",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/quiz-identifiers.spec.ts:50",
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/quiz-identifiers.spec.ts:64"
         ],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:129",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:313"
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:167"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/catalogue.json:547",
@@ -2613,23 +1891,9 @@
           "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/catalogue.json:1338",
           "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/catalogue.json:1365",
           "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/catalogue.json:1403",
-          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:139",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:151",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:177",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:181",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:182",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:185",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:190",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:191",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:208",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:214",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:216"
+          "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json:34"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:54",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:56",
-          "src/game/rules/game-specific/choice-chapter-encounter/chapter-encounter.recipes.ts:127"
-        ]
+        "triggers": []
       }
     },
     {
@@ -2658,72 +1922,5 @@
       }
     }
   ],
-  "packs": [
-    {
-      "name": "board-movement-landings",
-      "consumers": [
-        "panier-express"
-      ]
-    },
-    {
-      "name": "board-path-walls",
-      "consumers": [
-        "corridor"
-      ]
-    },
-    {
-      "name": "board-property-economy",
-      "consumers": [
-        "sac-a-malices"
-      ]
-    },
-    {
-      "name": "cards-discard-penalty",
-      "consumers": [
-        "lama"
-      ]
-    },
-    {
-      "name": "cards-ritual-phases",
-      "consumers": [
-        "entre-rites-et-lumieres"
-      ]
-    },
-    {
-      "name": "cards-theme-name",
-      "consumers": [
-        "gerard-president"
-      ]
-    },
-    {
-      "name": "choice-chapter-encounter",
-      "consumers": [
-        "voyage-en-terre-de-brumes"
-      ]
-    },
-    {
-      "name": "choice-simultaneous-paw-scoring",
-      "consumers": [
-        "cat-pattes"
-      ]
-    },
-    {
-      "name": "choice-simultaneous-quiz",
-      "consumers": [
-        "arche-de-mnemosyne"
-      ]
-    },
-    {
-      "name": "choice-story-challenge",
-      "consumers": [
-        "contes-et-cacahuetes"
-      ]
-    },
-    {
-      "name": "race-directional-hazards",
-      "consumers": [
-        "ca-derape"
-      ]
-    }
-  ]
+  "packs": []
 }

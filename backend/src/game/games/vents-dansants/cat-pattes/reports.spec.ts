@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import {
   DeclarativeGameRuntime,
@@ -7,7 +6,7 @@ import {
 import catalogue from './content/cat-pattes.json';
 import documentExtensionSource from './game.json';
 import manifest from './manifest.json';
-const document = legacyExtensionFixture(documentExtensionSource, 'pawScoring');
+const document = documentExtensionSource;
 
 const definition = compileJsonGame(manifest, document, {
   'content/cat-pattes.json': catalogue,

@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { createHash } from 'node:crypto';
 import {
   testGame,
@@ -13,10 +12,7 @@ import gerardManifest from '../../../games/vents-dansants/gerard-president/manif
 import gerardDocumentExtensionSource from '../../../games/vents-dansants/gerard-president/game.json';
 import gerardCatalogue from '../../../games/vents-dansants/gerard-president/content/catalogue.json';
 import reference from '../../fixtures/refill-hand-before-parity.json';
-const gerardDocument = legacyExtensionFixture(
-  gerardDocumentExtensionSource,
-  'themeNameCards',
-);
+const gerardDocument = gerardDocumentExtensionSource;
 
 const cercles = compileJsonGame(cerclesManifest, cerclesDocument, {
   'content/catalogue.json': cerclesCatalogue,

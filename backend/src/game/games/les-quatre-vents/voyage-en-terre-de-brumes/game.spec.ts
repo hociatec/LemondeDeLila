@@ -1,13 +1,9 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 import catalogue from './catalogue.json';
 import documentExtensionSource from './game.json';
 import manifest from './manifest.json';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'chapterEncounter',
-);
+const document = documentExtensionSource;
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/catalogue.json': catalogue,

@@ -5,10 +5,10 @@
     {
       "gameId": "a-fond-les-ballons",
       "contentLoc": 937,
-      "declarativeLoc": 160,
+      "declarativeLoc": 161,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 1097,
+      "jsonLoc": 1098,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json",
@@ -19,7 +19,7 @@
         {
           "file": "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json",
           "category": "declarativeLoc",
-          "loc": 160,
+          "loc": 161,
           "functions": []
         },
         {
@@ -35,15 +35,15 @@
     {
       "gameId": "arche-de-mnemosyne",
       "contentLoc": 5678,
-      "declarativeLoc": 74,
+      "declarativeLoc": 71,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 5752,
+      "jsonLoc": 5749,
       "files": [
         {
           "file": "src/game/games/vents-infinis/arche-de-mnemosyne/game.json",
           "category": "declarativeLoc",
-          "loc": 74,
+          "loc": 71,
           "functions": []
         },
         {
@@ -59,10 +59,10 @@
     {
       "gameId": "aventure-sauvage",
       "contentLoc": 587,
-      "declarativeLoc": 117,
+      "declarativeLoc": 115,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 704,
+      "jsonLoc": 702,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/aventure-sauvage/content/board.json",
@@ -85,7 +85,7 @@
         {
           "file": "src/game/games/les-quatre-vents/aventure-sauvage/game.json",
           "category": "declarativeLoc",
-          "loc": 117,
+          "loc": 115,
           "functions": []
         }
       ],
@@ -119,10 +119,10 @@
     {
       "gameId": "cat-pattes",
       "contentLoc": 2288,
-      "declarativeLoc": 76,
+      "declarativeLoc": 81,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 2364,
+      "jsonLoc": 2369,
       "files": [
         {
           "file": "src/game/games/vents-dansants/cat-pattes/content/cat-pattes.json",
@@ -133,7 +133,7 @@
         {
           "file": "src/game/games/vents-dansants/cat-pattes/game.json",
           "category": "declarativeLoc",
-          "loc": 76,
+          "loc": 81,
           "functions": []
         }
       ],
@@ -143,10 +143,10 @@
     {
       "gameId": "cercles-sacres",
       "contentLoc": 547,
-      "declarativeLoc": 99,
+      "declarativeLoc": 95,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 646,
+      "jsonLoc": 642,
       "files": [
         {
           "file": "src/game/games/vents-dansants/cercles-sacres/content/catalogue.json",
@@ -157,7 +157,7 @@
         {
           "file": "src/game/games/vents-dansants/cercles-sacres/game.json",
           "category": "declarativeLoc",
-          "loc": 99,
+          "loc": 95,
           "functions": []
         }
       ],
@@ -167,10 +167,10 @@
     {
       "gameId": "contes-et-cacahuetes",
       "contentLoc": 1665,
-      "declarativeLoc": 242,
+      "declarativeLoc": 239,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 1907,
+      "jsonLoc": 1904,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json",
@@ -181,7 +181,7 @@
         {
           "file": "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json",
           "category": "declarativeLoc",
-          "loc": 242,
+          "loc": 239,
           "functions": []
         }
       ],
@@ -191,15 +191,15 @@
     {
       "gameId": "corridor",
       "contentLoc": 0,
-      "declarativeLoc": 97,
+      "declarativeLoc": 99,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 97,
+      "jsonLoc": 99,
       "files": [
         {
           "file": "src/game/games/vents-sacres/corridor/game.json",
           "category": "declarativeLoc",
-          "loc": 97,
+          "loc": 99,
           "functions": []
         }
       ],
@@ -251,10 +251,10 @@
     {
       "gameId": "en-attendant-minuit",
       "contentLoc": 1393,
-      "declarativeLoc": 95,
+      "declarativeLoc": 87,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 1488,
+      "jsonLoc": 1480,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/en-attendant-minuit/catalogue.json",
@@ -265,7 +265,7 @@
         {
           "file": "src/game/games/les-quatre-vents/en-attendant-minuit/game.json",
           "category": "declarativeLoc",
-          "loc": 95,
+          "loc": 87,
           "functions": []
         }
       ],
@@ -275,10 +275,10 @@
     {
       "gameId": "entre-rites-et-lumieres",
       "contentLoc": 427,
-      "declarativeLoc": 67,
+      "declarativeLoc": 71,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 494,
+      "jsonLoc": 498,
       "files": [
         {
           "file": "src/game/games/vents-dansants/entre-rites-et-lumieres/content/catalogue.json",
@@ -289,7 +289,7 @@
         {
           "file": "src/game/games/vents-dansants/entre-rites-et-lumieres/game.json",
           "category": "declarativeLoc",
-          "loc": 67,
+          "loc": 71,
           "functions": []
         }
       ],
@@ -299,10 +299,10 @@
     {
       "gameId": "foulees-fantastiques",
       "contentLoc": 340,
-      "declarativeLoc": 96,
+      "declarativeLoc": 77,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 436,
+      "jsonLoc": 417,
       "files": [
         {
           "file": "src/game/games/vents-sacres/foulees-fantastiques/catalogue.json",
@@ -313,7 +313,7 @@
         {
           "file": "src/game/games/vents-sacres/foulees-fantastiques/game.json",
           "category": "declarativeLoc",
-          "loc": 96,
+          "loc": 77,
           "functions": []
         }
       ],
@@ -323,10 +323,10 @@
     {
       "gameId": "frousse-party",
       "contentLoc": 2326,
-      "declarativeLoc": 135,
+      "declarativeLoc": 127,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 2461,
+      "jsonLoc": 2453,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json",
@@ -337,7 +337,7 @@
         {
           "file": "src/game/games/les-quatre-vents/frousse-party/game.json",
           "category": "declarativeLoc",
-          "loc": 135,
+          "loc": 127,
           "functions": []
         }
       ],
@@ -347,10 +347,10 @@
     {
       "gameId": "galopons-ensemble",
       "contentLoc": 810,
-      "declarativeLoc": 94,
+      "declarativeLoc": 84,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 904,
+      "jsonLoc": 894,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json",
@@ -361,7 +361,7 @@
         {
           "file": "src/game/games/les-quatre-vents/galopons-ensemble/game.json",
           "category": "declarativeLoc",
-          "loc": 94,
+          "loc": 84,
           "functions": []
         }
       ],
@@ -371,10 +371,10 @@
     {
       "gameId": "gerard-president",
       "contentLoc": 1844,
-      "declarativeLoc": 228,
+      "declarativeLoc": 222,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 2072,
+      "jsonLoc": 2066,
       "files": [
         {
           "file": "src/game/games/vents-dansants/gerard-president/content/catalogue.json",
@@ -385,7 +385,7 @@
         {
           "file": "src/game/games/vents-dansants/gerard-president/game.json",
           "category": "declarativeLoc",
-          "loc": 228,
+          "loc": 222,
           "functions": []
         }
       ],
@@ -419,10 +419,10 @@
     {
       "gameId": "la-bande-a-banane",
       "contentLoc": 761,
-      "declarativeLoc": 88,
+      "declarativeLoc": 81,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 849,
+      "jsonLoc": 842,
       "files": [
         {
           "file": "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json",
@@ -433,7 +433,7 @@
         {
           "file": "src/game/games/vents-dansants/la-bande-a-banane/game.json",
           "category": "declarativeLoc",
-          "loc": 88,
+          "loc": 81,
           "functions": []
         }
       ],
@@ -443,10 +443,10 @@
     {
       "gameId": "la-grande-mine-de-barbak",
       "contentLoc": 1016,
-      "declarativeLoc": 98,
+      "declarativeLoc": 96,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 1114,
+      "jsonLoc": 1112,
       "files": [
         {
           "file": "src/game/games/vents-dansants/la-grande-mine-de-barbak/content/catalogue.json",
@@ -457,7 +457,7 @@
         {
           "file": "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json",
           "category": "declarativeLoc",
-          "loc": 98,
+          "loc": 96,
           "functions": []
         }
       ],
@@ -467,10 +467,10 @@
     {
       "gameId": "la-parade-sucree",
       "contentLoc": 134,
-      "declarativeLoc": 93,
+      "declarativeLoc": 94,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 227,
+      "jsonLoc": 228,
       "files": [
         {
           "file": "src/game/games/vents-dansants/la-parade-sucree/content/catalogue.json",
@@ -481,7 +481,7 @@
         {
           "file": "src/game/games/vents-dansants/la-parade-sucree/game.json",
           "category": "declarativeLoc",
-          "loc": 93,
+          "loc": 94,
           "functions": []
         }
       ],
@@ -491,15 +491,15 @@
     {
       "gameId": "lama",
       "contentLoc": 0,
-      "declarativeLoc": 283,
+      "declarativeLoc": 275,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 283,
+      "jsonLoc": 275,
       "files": [
         {
           "file": "src/game/games/vents-sacres/lama/game.json",
           "category": "declarativeLoc",
-          "loc": 283,
+          "loc": 275,
           "functions": []
         }
       ],
@@ -509,10 +509,10 @@
     {
       "gameId": "le-marche-des-merveilles",
       "contentLoc": 21,
-      "declarativeLoc": 117,
+      "declarativeLoc": 107,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 138,
+      "jsonLoc": 128,
       "files": [
         {
           "file": "src/game/games/vents-dansants/le-marche-des-merveilles/content/catalogue.json",
@@ -523,7 +523,7 @@
         {
           "file": "src/game/games/vents-dansants/le-marche-des-merveilles/game.json",
           "category": "declarativeLoc",
-          "loc": 117,
+          "loc": 107,
           "functions": []
         }
       ],
@@ -533,10 +533,10 @@
     {
       "gameId": "les-absurdissimes",
       "contentLoc": 4006,
-      "declarativeLoc": 96,
+      "declarativeLoc": 90,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 4102,
+      "jsonLoc": 4096,
       "files": [
         {
           "file": "src/game/games/vents-dansants/les-absurdissimes/content/cards.json",
@@ -547,7 +547,7 @@
         {
           "file": "src/game/games/vents-dansants/les-absurdissimes/game.json",
           "category": "declarativeLoc",
-          "loc": 96,
+          "loc": 90,
           "functions": []
         }
       ],
@@ -557,10 +557,10 @@
     {
       "gameId": "les-mains-de-la-terre",
       "contentLoc": 485,
-      "declarativeLoc": 202,
+      "declarativeLoc": 198,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 687,
+      "jsonLoc": 683,
       "files": [
         {
           "file": "src/game/games/vents-dansants/les-mains-de-la-terre/catalogue.json",
@@ -571,7 +571,7 @@
         {
           "file": "src/game/games/vents-dansants/les-mains-de-la-terre/game.json",
           "category": "declarativeLoc",
-          "loc": 202,
+          "loc": 198,
           "functions": []
         }
       ],
@@ -581,10 +581,10 @@
     {
       "gameId": "mission-galaxie",
       "contentLoc": 784,
-      "declarativeLoc": 109,
+      "declarativeLoc": 101,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 893,
+      "jsonLoc": 885,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json",
@@ -595,7 +595,7 @@
         {
           "file": "src/game/games/les-quatre-vents/mission-galaxie/game.json",
           "category": "declarativeLoc",
-          "loc": 109,
+          "loc": 101,
           "functions": []
         }
       ],
@@ -605,10 +605,10 @@
     {
       "gameId": "mon-village-mon-histoire",
       "contentLoc": 1474,
-      "declarativeLoc": 240,
+      "declarativeLoc": 236,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 1714,
+      "jsonLoc": 1710,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/mon-village-mon-histoire/content/catalogue.json",
@@ -619,7 +619,7 @@
         {
           "file": "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json",
           "category": "declarativeLoc",
-          "loc": 240,
+          "loc": 236,
           "functions": []
         }
       ],
@@ -629,10 +629,10 @@
     {
       "gameId": "morpion",
       "contentLoc": 56,
-      "declarativeLoc": 95,
+      "declarativeLoc": 83,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 151,
+      "jsonLoc": 139,
       "files": [
         {
           "file": "src/game/games/vents-sacres/morpion/content/pawns.json",
@@ -643,7 +643,7 @@
         {
           "file": "src/game/games/vents-sacres/morpion/game.json",
           "category": "declarativeLoc",
-          "loc": 95,
+          "loc": 83,
           "functions": []
         }
       ],
@@ -653,10 +653,10 @@
     {
       "gameId": "nawak",
       "contentLoc": 1445,
-      "declarativeLoc": 70,
+      "declarativeLoc": 58,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 1515,
+      "jsonLoc": 1503,
       "files": [
         {
           "file": "src/game/games/vents-dansants/nawak/catalogue.json",
@@ -667,7 +667,7 @@
         {
           "file": "src/game/games/vents-dansants/nawak/game.json",
           "category": "declarativeLoc",
-          "loc": 70,
+          "loc": 58,
           "functions": []
         }
       ],
@@ -677,15 +677,15 @@
     {
       "gameId": "odyssee-quatre-cieux",
       "contentLoc": 0,
-      "declarativeLoc": 147,
+      "declarativeLoc": 141,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 147,
+      "jsonLoc": 141,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/odyssee-quatre-cieux/game.json",
           "category": "declarativeLoc",
-          "loc": 147,
+          "loc": 141,
           "functions": []
         }
       ],
@@ -695,10 +695,10 @@
     {
       "gameId": "olympia",
       "contentLoc": 2046,
-      "declarativeLoc": 216,
+      "declarativeLoc": 206,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 2262,
+      "jsonLoc": 2252,
       "files": [
         {
           "file": "src/game/games/vents-dansants/olympia/catalogue.json",
@@ -709,7 +709,7 @@
         {
           "file": "src/game/games/vents-dansants/olympia/game.json",
           "category": "declarativeLoc",
-          "loc": 216,
+          "loc": 206,
           "functions": []
         }
       ],
@@ -767,10 +767,10 @@
     {
       "gameId": "pimp-my-ride",
       "contentLoc": 1016,
-      "declarativeLoc": 157,
+      "declarativeLoc": 152,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 1173,
+      "jsonLoc": 1168,
       "files": [
         {
           "file": "src/game/games/vents-dansants/pimp-my-ride/content/catalogue.json",
@@ -781,7 +781,7 @@
         {
           "file": "src/game/games/vents-dansants/pimp-my-ride/game.json",
           "category": "declarativeLoc",
-          "loc": 157,
+          "loc": 152,
           "functions": []
         }
       ],
@@ -791,10 +791,10 @@
     {
       "gameId": "pirates-en-vadrouille",
       "contentLoc": 668,
-      "declarativeLoc": 244,
+      "declarativeLoc": 183,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 912,
+      "jsonLoc": 851,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json",
@@ -805,7 +805,7 @@
         {
           "file": "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json",
           "category": "declarativeLoc",
-          "loc": 244,
+          "loc": 183,
           "functions": []
         }
       ],
@@ -815,10 +815,10 @@
     {
       "gameId": "primalis",
       "contentLoc": 70,
-      "declarativeLoc": 246,
+      "declarativeLoc": 209,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 316,
+      "jsonLoc": 279,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/primalis/content/catalogue.json",
@@ -829,7 +829,7 @@
         {
           "file": "src/game/games/les-quatre-vents/primalis/game.json",
           "category": "declarativeLoc",
-          "loc": 246,
+          "loc": 209,
           "functions": []
         }
       ],
@@ -839,10 +839,10 @@
     {
       "gameId": "sac-a-malices",
       "contentLoc": 9222,
-      "declarativeLoc": 87,
+      "declarativeLoc": 89,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 9309,
+      "jsonLoc": 9311,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/sac-a-malices/catalogue.json",
@@ -853,7 +853,7 @@
         {
           "file": "src/game/games/les-quatre-vents/sac-a-malices/game.json",
           "category": "declarativeLoc",
-          "loc": 87,
+          "loc": 89,
           "functions": []
         }
       ],
@@ -863,10 +863,10 @@
     {
       "gameId": "taxi-express",
       "contentLoc": 484,
-      "declarativeLoc": 89,
+      "declarativeLoc": 82,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 573,
+      "jsonLoc": 566,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/taxi-express/content/board.json",
@@ -889,7 +889,7 @@
         {
           "file": "src/game/games/les-quatre-vents/taxi-express/game.json",
           "category": "declarativeLoc",
-          "loc": 89,
+          "loc": 82,
           "functions": []
         }
       ],
@@ -899,10 +899,10 @@
     {
       "gameId": "tout-pres-de-maman",
       "contentLoc": 717,
-      "declarativeLoc": 152,
+      "declarativeLoc": 116,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 869,
+      "jsonLoc": 833,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json",
@@ -913,7 +913,7 @@
         {
           "file": "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json",
           "category": "declarativeLoc",
-          "loc": 152,
+          "loc": 116,
           "functions": []
         }
       ],
@@ -923,10 +923,10 @@
     {
       "gameId": "voyage-en-terre-de-brumes",
       "contentLoc": 1439,
-      "declarativeLoc": 172,
+      "declarativeLoc": 170,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 1611,
+      "jsonLoc": 1609,
       "files": [
         {
           "file": "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/catalogue.json",
@@ -937,7 +937,7 @@
         {
           "file": "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json",
           "category": "declarativeLoc",
-          "loc": 172,
+          "loc": 170,
           "functions": []
         }
       ],
@@ -947,10 +947,10 @@
     {
       "gameId": "zig-et-zag",
       "contentLoc": 498,
-      "declarativeLoc": 71,
+      "declarativeLoc": 75,
       "customRulesLoc": 0,
       "typescriptLoc": 0,
-      "jsonLoc": 569,
+      "jsonLoc": 573,
       "files": [
         {
           "file": "src/game/games/vents-dansants/zig-et-zag/catalogue.json",
@@ -961,7 +961,7 @@
         {
           "file": "src/game/games/vents-dansants/zig-et-zag/game.json",
           "category": "declarativeLoc",
-          "loc": 71,
+          "loc": 75,
           "functions": []
         }
       ],
@@ -978,43 +978,36 @@
       "gameId": "les-mains-de-la-terre",
       "metric": "declarativeLoc",
       "before": 88,
-      "after": 202,
-      "delta": 114
+      "after": 198,
+      "delta": 110
     },
     {
       "gameId": "mon-village-mon-histoire",
       "metric": "declarativeLoc",
       "before": 50,
-      "after": 240,
-      "delta": 190
+      "after": 236,
+      "delta": 186
     },
     {
       "gameId": "olympia",
       "metric": "declarativeLoc",
       "before": 96,
-      "after": 216,
-      "delta": 120
+      "after": 206,
+      "delta": 110
     },
     {
       "gameId": "pirates-en-vadrouille",
       "metric": "declarativeLoc",
       "before": 77,
-      "after": 244,
-      "delta": 167
+      "after": 183,
+      "delta": 106
     },
     {
       "gameId": "primalis",
       "metric": "declarativeLoc",
       "before": 62,
-      "after": 246,
-      "delta": 184
-    },
-    {
-      "gameId": "tout-pres-de-maman",
-      "metric": "declarativeLoc",
-      "before": 42,
-      "after": 152,
-      "delta": 110
+      "after": 209,
+      "delta": 147
     }
   ],
   "structuralDuplicates": []

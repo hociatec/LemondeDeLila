@@ -270,6 +270,116 @@
         "src/game/testing/architecture-tests/game/chained-tile-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-chained-tile-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/ca-derape/game.json",
+      "fromSha256": "75d09061f9e1f368a6c8ef76abf528b9ecf2beb6acd002d7652d6eb748883ada",
+      "toSha256": "1dee189ce4029ab55598e435506105989fea35efa4680d3d0b4ad1df2c19207f",
+      "justification": "Le pattern directionnel natif remplace l'adaptateur effect-pack sans modifier les règles de course, de cartes, de déplacement ni de victoire.",
+      "tests": [
+        "src/game/games/les-quatre-vents/ca-derape/game.spec.ts",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json",
+      "fromSha256": "2cd7509bbd1822b3cde8511e5f7c715096b1a5b52f1ae2cc7b44c557a5165c98",
+      "toSha256": "cd22706a6bcd96d62013d0afb6abb6eeb946369ef27a68834da4d62cd8df89c4",
+      "justification": "Le pattern narratif natif remplace l'adaptateur effect-pack en conservant les choix, cartes, effets, projections et résolutions historiques.",
+      "tests": [
+        "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.spec.ts",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/panier-express/game.json",
+      "fromSha256": "b2366ae817762423f460796d2a606cc3cdb3dffb4b8e273f6682dd489ab0ad02",
+      "toSha256": "08818675e9e78e7caccc94c159630735d744346f2bef53f51a5d0e35b1a1e57e",
+      "justification": "Le pattern de plateau natif remplace l'adaptateur effect-pack en conservant déplacements, cases, inventaire, échanges et choix.",
+      "tests": [
+        "src/game/games/les-quatre-vents/panier-express/game.spec.ts",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/sac-a-malices/game.json",
+      "fromSha256": "20ebfd79ea4e5fb462010dfb426340a11cd691acd21d04f3e4d7775798ac2dce",
+      "toSha256": "cbf4e344ae697d3aacb4649f0f0dff43a42ea9ed072123968f4e299554e40ec8",
+      "justification": "Le pattern d'économie de plateau natif remplace l'adaptateur effect-pack tout en conservant propriété, bâtiments, hypothèques, prison et paiements.",
+      "tests": [
+        "src/game/games/les-quatre-vents/sac-a-malices/game.spec.ts",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.json",
+      "fromSha256": "784ae0d92280daab6b5fe41374592af4daab2bf3d5b01cec9d2ebc7d8ec4ed43",
+      "toSha256": "0a22924141a1e9828c28f49ec1bd436827886e9175bc4afe6e50696c9d80b9d6",
+      "justification": "Le pattern de chapitres natif remplace l'adaptateur effect-pack en conservant rencontres, compte à rebours, cartes et progression.",
+      "tests": [
+        "src/game/games/les-quatre-vents/voyage-en-terre-de-brumes/game.spec.ts",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/cat-pattes/game.json",
+      "fromSha256": "f26b73787144c602b740eb839849406d40da2a8d28580b92eba282e57d9bac38",
+      "toSha256": "0875bc6df9ef3b212446efe2df1a092c98d52c010ce4557016b70a65abcc4d5d",
+      "justification": "Le pattern de score simultané natif remplace l'adaptateur effect-pack en conservant manches, obstacles, cartes, confidentialité et bots.",
+      "tests": [
+        "src/game/games/vents-dansants/cat-pattes/game.spec.ts",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/entre-rites-et-lumieres/game.json",
+      "fromSha256": "38745d3c7b5b60e8491f8f57f08ad14ca69b8ff27e93123235791c8c979f1802",
+      "toSha256": "8ee8e64fe2838a0b977fda74047e13c20b149d4032569dff68b4625f307369a1",
+      "justification": "Le pattern de rituels natif remplace l'adaptateur effect-pack en conservant phases, demandes, lumière, mains et score.",
+      "tests": [
+        "src/game/games/vents-dansants/entre-rites-et-lumieres/game.spec.ts",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/gerard-president/game.json",
+      "fromSha256": "e9b0ef00b04d0503aa953076f0b9dfe8781a4847264d3052d30306983b98c39b",
+      "toSha256": "07f17b95218e1931b36f522ace50f0333ad79d4f1cd71429fc63914b42091dbe",
+      "justification": "Le pattern thème-nom natif remplace l'adaptateur effect-pack en conservant composition, cartes spéciales, jugement et présentation.",
+      "tests": [
+        "src/game/games/vents-dansants/gerard-president/game.spec.ts",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "file": "src/game/games/vents-infinis/arche-de-mnemosyne/game.json",
+      "fromSha256": "237f2f321c201ab566071c4cefe14758345b1bc23b36c742551e3a7d4de16f5b",
+      "toSha256": "aedf33e8ba52c03047c753ab2c53b09b368910c26e5e87a8fdad765ee6cd057c",
+      "justification": "Le pattern de quiz simultané natif remplace l'adaptateur effect-pack en conservant configuration, minuteurs, scores, bots et questions privées.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/simultaneous-quiz-json-parity.spec.ts",
+        "src/game/games/vents-infinis/arche-de-mnemosyne/game.spec.ts"
+      ]
+    },
+    {
+      "file": "src/game/games/vents-sacres/corridor/game.json",
+      "fromSha256": "8dc49ca871b99407cfde2b8c68635c2453433dda48c2dbfdb7cc80123cfa0f00",
+      "toSha256": "d7c2a1d7971c7d132945199d29f5dc38cec04be226c696b626dc51c0e0c07f0b",
+      "justification": "Le pattern de chemins et murs natif remplace l'adaptateur effect-pack en conservant légalité des murs, déplacements, configuration et bot.",
+      "tests": [
+        "src/game/games/vents-sacres/corridor/game.spec.ts",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
+    },
+    {
+      "file": "src/game/games/vents-sacres/lama/game.json",
+      "fromSha256": "ff099675dea60c9b115fd35d36206d786c9c67977a6611931a8e8a9795e9f49f",
+      "toSha256": "5009f8f593599e8f95ea616e577171df4202c9be815d300a153bfca2d7eaf8ea",
+      "justification": "Le pattern de défausse natif remplace l'adaptateur effect-pack en conservant tours, pénalités, abandon, score, configuration et bot.",
+      "tests": [
+        "src/game/games/vents-sacres/lama/game.spec.ts",
+        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+      ]
     }
   ]
 }

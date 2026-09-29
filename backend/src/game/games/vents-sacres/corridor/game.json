@@ -1,56 +1,22 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
-  "definitionVersion": "3",
+  "contentVersion": "2",
+  "definitionVersion": "4",
   "snapshotMigrations": [
     {
       "fromVersion": "corridor@content:1adb0e9e",
       "toVersion": "1"
+    },
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
     }
   ],
   "category": "JeuxDePlateaux",
   "world": "VentsSacres",
-  "patterns": [],
-  "components": [],
-  "setup": {},
-  "resourceIds": [],
-  "shortcuts": [
+  "patterns": [
     {
-      "key": "M",
-      "type": "action",
-      "actionType": "pathWalls_place_wall"
-    }
-  ],
-  "initialPhase": "setup",
-  "phases": {
-    "setup": {
-      "actions": [],
-      "transitions": [
-        "playing"
-      ]
-    },
-    "playing": {
-      "actions": [
-        "pathWalls_move",
-        "pathWalls_place_wall"
-      ],
-      "terminal": true
-    }
-  },
-  "actions": {
-    "pathWalls_move": {
-      "recipe": "board-path-walls-move"
-    },
-    "pathWalls_place_wall": {
-      "recipe": "board-path-walls-place-wall"
-    }
-  },
-  "victory": {
-    "kind": "by-path-walls"
-  },
-  "extensions": [
-    {
-      "type": "pathWalls",
+      "kind": "path-walls",
       "config": {
         "boardId": "pathWalls",
         "pawnSetId": "pathWalls",
@@ -91,7 +57,43 @@
             "description": "Direct et audacieux, il cherche la ligne d’arrivée."
           }
         ]
+      },
+      "actionIds": {
+        "move": "pathWalls_move",
+        "placeWall": "pathWalls_place_wall"
       }
     }
-  ]
+  ],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "shortcuts": [
+    {
+      "key": "M",
+      "type": "action",
+      "actionType": "pathWalls_place_wall"
+    }
+  ],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": {
+      "actions": [],
+      "transitions": ["playing"]
+    },
+    "playing": {
+      "actions": ["pathWalls_move", "pathWalls_place_wall"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "pathWalls_move": {
+      "recipe": "board-path-walls-move"
+    },
+    "pathWalls_place_wall": {
+      "recipe": "board-path-walls-place-wall"
+    }
+  },
+  "victory": {
+    "kind": "manual"
+  }
 }

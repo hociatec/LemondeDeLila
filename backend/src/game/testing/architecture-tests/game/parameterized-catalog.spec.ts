@@ -38,7 +38,7 @@ function rename(value: unknown, names: Record<string, string>): unknown {
   return value;
 }
 const variants: Record<string, (program: Data) => Data> = {
-  chapterEncounter: (program) =>
+  'chapter-encounter': (program) =>
     object(
       rename(
         program,
@@ -50,7 +50,7 @@ const variants: Record<string, (program: Data) => Data> = {
         ),
       ),
     ),
-  themeNameCards: (program) => ({
+  'theme-name': (program) => ({
     ...object(
       rename(
         program,
@@ -65,12 +65,12 @@ const variants: Record<string, (program: Data) => Data> = {
     handSize: 7,
     redrawCount: 2,
   }),
-  ritualPhases: (program) => ({
+  'ritual-phases': (program) => ({
     ...program,
     initialHandSize: 4,
     exchangeFamilyCount: 2,
   }),
-  storyChallenge: (program) =>
+  'story-challenge': (program) =>
     object(
       rename(
         program,
@@ -83,7 +83,7 @@ const variants: Record<string, (program: Data) => Data> = {
         ),
       ),
     ),
-  directionalHazardRace: (program) => ({
+  'directional-hazard': (program) => ({
     ...program,
     parameters: {
       ...object(program.parameters),
@@ -106,12 +106,18 @@ describe('mechanisms run under an unrelated game identity', () => {
     '$manifest.code',
     ({ manifest, definition }) => {
       const document = structuredClone(object(definition.content?.data));
-      const changed = Object.keys(variants).filter((key) => document[key]);
-      for (const key of changed) {
-        const program = object(document[key]);
-        document[key] = variants[key](program);
+      const patterns = Array.isArray(document.patterns)
+        ? document.patterns.map(object)
+        : [];
+      const changed = patterns.filter(
+        (pattern) => typeof pattern.kind === 'string' && variants[pattern.kind],
+      );
+      for (const pattern of changed) {
+        const key = String(pattern.kind);
+        const program = object(pattern.config);
+        pattern.config = variants[key](program);
         let names: Record<string, string> = {};
-        if (key === 'chapterEncounter')
+        if (key === 'chapter-encounter')
           names = Object.fromEntries(
             (program.collectionKinds as string[]).flatMap((kind, i) => [
               [kind, 'archive-' + i],
@@ -142,9 +148,11 @@ describe('mechanisms run under an unrelated game identity', () => {
       );
       if (!isGameDefinition(other)) throw new Error('Compilation failed');
       expect(other.id).toBe('mechanism-fixture');
-      for (const key of changed)
-        expect(document[key]).not.toEqual(
-          object(definition.content?.data)[key],
+      for (const pattern of changed)
+        expect(pattern.config).not.toEqual(
+          (object(definition.content?.data).patterns as Data[]).find(
+            (source) => source.kind === pattern.kind,
+          )?.config,
         );
       expect(runGameReplayCampaign(other, 17, 8).steps).toBeGreaterThan(0);
     },
@@ -155,7 +163,11 @@ describe('mechanisms run under an unrelated game identity', () => {
 it('exercises every newly configurable profile in the variant matrix', () => {
   const used = new Set(
     packages.flatMap(({ definition }) =>
-      Object.keys(object(definition.content?.data)),
+      Array.isArray(object(definition.content?.data).patterns)
+        ? (object(definition.content?.data).patterns as Data[]).map(
+            (pattern) => pattern.kind,
+          )
+        : [],
     ),
   );
   expect(Object.keys(variants).filter((key) => !used.has(key))).toEqual([]);

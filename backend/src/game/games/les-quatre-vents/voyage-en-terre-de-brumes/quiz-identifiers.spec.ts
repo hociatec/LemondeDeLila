@@ -1,13 +1,9 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 import catalogue from './catalogue.json';
 import documentExtensionSource from './game.json';
 import manifest from './manifest.json';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'chapterEncounter',
-);
+const document = documentExtensionSource;
 
 function withQuiz(label: string, answerId = 'answer-2') {
   const asset = structuredClone(catalogue) as unknown as {

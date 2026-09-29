@@ -66,6 +66,7 @@ const runtimeRootFiles = new Set([
   'declarative-game.runtime.ts',
   'game-identifiers.ts',
   'game-rule-context.ts',
+  'internal-pattern-api.ts',
   'public-api.ts',
   'typed-contracts.spec.ts',
 ]);

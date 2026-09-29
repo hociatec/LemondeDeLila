@@ -182,8 +182,12 @@
       "sha256": "f3e141c7fe734cc209f5572344da1f9ef0d5d932f1d638eab36f3289c5f6b9cb"
     },
     {
+      "file": "src/game/engine/runtime/contracts/effect-card.ts",
+      "sha256": "46bc025af5f23ea2d53390b7bf5bf0524b00ba26d1b99e96683ae5dcd6667539"
+    },
+    {
       "file": "src/game/engine/runtime/contracts/effect-ir.ts",
-      "sha256": "e8ef517da366550e7f20964fbbf309632bbeeef6cd72f49b74b4c681e0218b8a"
+      "sha256": "d4511a59fed67f23a20ffbe0d02497148968f46271cb3ef42eff98040000d4ad"
     },
     {
       "file": "src/game/engine/runtime/contracts/effect-json-schema.ts",
@@ -219,7 +223,7 @@
     },
     {
       "file": "src/game/engine/runtime/contracts/pattern-definition.ts",
-      "sha256": "bc943bab2c73f0cb157d2ca099b4fb72c34a19532d8848a669b5b7e3003b9275"
+      "sha256": "d9328c9c0534f89b8696e37edda36bb2a8818203e3ee4dcd04eb530fac2c5e34"
     },
     {
       "file": "src/game/engine/runtime/contracts/public-controller.ts",
@@ -236,6 +240,10 @@
     {
       "file": "src/game/engine/runtime/contracts/state-copy.ts",
       "sha256": "c71be1a91d163b94ded30600b3ac82d63df7a5fe70ebacf90c7b71a63c482a4a"
+    },
+    {
+      "file": "src/game/engine/runtime/contracts/track-race-contract.ts",
+      "sha256": "5672b9553170ff5e3d6f2d8d30cadc9272911e741cad812aa71746545cac6985"
     },
     {
       "file": "src/game/engine/runtime/definitions/component-kit.ts",
@@ -266,6 +274,10 @@
       "sha256": "b193072046e2b589376b5976fe22d5e8fafec8bfda37813f4a24a2ab7ec8de07"
     },
     {
+      "file": "src/game/engine/runtime/definitions/json-advanced-pattern-compilers.ts",
+      "sha256": "c723f7f54fb5113b4346c6c86bd2fff2bbffed4772a4e1990daa90cc55717da3"
+    },
+    {
       "file": "src/game/engine/runtime/definitions/json-game-action-types.ts",
       "sha256": "ec36e3450dae5a800e366c0910480d88cc0aafcdeea45393dd01bfbf78101191"
     },
@@ -279,7 +291,7 @@
     },
     {
       "file": "src/game/engine/runtime/definitions/json-game-core-document.ts",
-      "sha256": "8d3df22e848516ee12e000c1e494303c33c31c1206ed6df01e35afddf9dcd28a"
+      "sha256": "f858b918cecc944586434a5df7e2513a90a0949f848502ac6341beb6c7815da8"
     },
     {
       "file": "src/game/engine/runtime/definitions/json-game-document.ts",
@@ -291,11 +303,15 @@
     },
     {
       "file": "src/game/engine/runtime/definitions/json-game-patterns.ts",
-      "sha256": "5496c584131bdab2c9c667e72b5ff28ae517f10a5da00b17416bb13c9a58c29c"
+      "sha256": "d4889f491240113d61e07f9d6e426a1a3f815a3fbcc6f7a96829875560ddf2be"
+    },
+    {
+      "file": "src/game/engine/runtime/definitions/json-promoted-patterns.ts",
+      "sha256": "e52366651f393fcd42a3effb76c38a8ef4ad69f2e97c6152d7a8073254dba06b"
     },
     {
       "file": "src/game/engine/runtime/definitions/json-standard-victory.ts",
-      "sha256": "a0eef5fd4dc561fc60fb966d02e467282002901011e655a24f7c9f96526b8d2b"
+      "sha256": "762f53346c353a99d9580d813e742ab33e54decc6d7552f74e6e20edcb2d2479"
     },
     {
       "file": "src/game/engine/runtime/effects/effects-core.ts",
@@ -402,12 +418,164 @@
       "sha256": "dc04e42a2ecc8a9a5589e7923acff92841068797f5a502999801f10f435f4f0a"
     },
     {
+      "file": "src/game/engine/runtime/patterns/anonymous-vote-pattern.ts",
+      "sha256": "3b922df5cb926e9adb773499ebd51dff85d1c67b8d7e2c680faa617dbaf864d0"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/bidirectional-collision-race-pattern.ts",
+      "sha256": "b301c558f11adecf3e36055391f4f23a2dd4898ded1ffcb3eb99f020bc5adbaa"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/board-movement-landings/program.ts",
+      "sha256": "89a9d53c3f000673ef57918977ecf7d88014f2d6e5abc422151083a1da83a419"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/board-path-walls/program.ts",
+      "sha256": "c114d6d8da80dd1e1b7a26ec98dfd6e8deaa298087fcce5d905a6c97b4e40e53"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/board-property-economy/program.ts",
+      "sha256": "68e53efeb049e8707ad7eed72a93b9c07cc1146cfb98b3cd812079f8ae54c2e0"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/bounce-quiz-race-pattern.ts",
+      "sha256": "82a0cce265793fa807a6fcf269ef7bda472e2ed0b589614e4315b3517a78b5d8"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/card-battle-pattern.ts",
+      "sha256": "8d07f35128cbef904dbbed76a314fb2e6f9510ad3021e2250ca667ad5c1bfa19"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/cards-discard-penalty/program.ts",
+      "sha256": "bdb63736bbef8ad59e8358eb51b8e5dcdf53cd7748e0dcea4b0a08f69fd730a9"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/cards-ritual-phases/program.ts",
+      "sha256": "53b3a52288947e920ee76791ccafa0b3cde2136d0ff3f019347742b6509801dc"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/cards-theme-name/program.ts",
+      "sha256": "0deb6dc3e7ae1483c2936d891a1a34476055d266789fe1d4ddf2ea3efbd9914c"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/chained-tile-race-pattern.ts",
+      "sha256": "49c9f4f64af1bd5e483211ca404f0646d34f98d67c12d1dce458dd2a8d186784"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/choice-chapter-encounter/program.ts",
+      "sha256": "174f42bfc5f11f7c7b29e7387d3c29b10c841c240b193db7fca996b71f4117d9"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/choice-simultaneous-paw-scoring/program.ts",
+      "sha256": "f5ad01f453e9f9bce177cbe3cb91282bc17c9cd6b5942536ec1bf8320c51a593"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/choice-simultaneous-quiz/program.ts",
+      "sha256": "5db509b7a7b4807db636fc554b8497d4ccfbea11a0a9bc4a0a30d443722685b1"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/choice-story-challenge/program.ts",
+      "sha256": "d40c15c64807e3fd78cf3da25b4e13ae531edd7e937231b698506ef1e7c438d3"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/delivery-race-pattern.ts",
+      "sha256": "a7d3dcf8d398302693bf173cc1c16b585b8f1d4a45cb8df01a2d18b27abac4f3"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/event-card-race-pattern.ts",
+      "sha256": "0155eb8d45a3147415f3c2aa9f9289ed112062d6e0e2cb3ad8956d9f9ba00dd2"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/family-effects-pattern.ts",
+      "sha256": "31229d375c4aed2e3624e1a4237a25f61bf07959a49363255a017f0c0ea674f4"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/family-request-pattern.ts",
+      "sha256": "4bbd141c7d1841ab9e44462275dd32b8b6959cebf6e1b9396e9a1ef75e0a7589"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/gameplay-pattern-core.ts",
+      "sha256": "517e6318cd261da7d8749c0290073d9d04de43c114d8b288e537147f35903110"
+    },
+    {
       "file": "src/game/engine/runtime/patterns/gameplay-pattern-track-card.ts",
-      "sha256": "6305ff43dc6da2ce7a51c8438d029148ed07c01ae0fc13e3d1a938dceda00d5e"
+      "sha256": "55fccccf32cfe1d265a2c75a1e7852e7c888c69dafe70e605c4732de0ef75507"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/goose-race-pattern.ts",
+      "sha256": "f3a7d3056e52734482b18cdf0ec7493cbd63f9f781d5364bd3bd3489d6727f53"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/grid-placement-pattern.ts",
+      "sha256": "68cb38274cf82189f8916d3166091a0b1532d6e3dea0d7502a9b2da9a0eaadf1"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/judged-submission-pattern.ts",
+      "sha256": "05ab7c5e3c974952f0ede8deaaa2726346264314d39b24c67bc502a7b0b625fe"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/market-exchange-pattern.ts",
+      "sha256": "8b4252151029236b86db2d986a45922c47dc476f9b9ce1b93906c2d69a599437"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/ordered-assembly-pattern.ts",
+      "sha256": "b7e66720fb4fdf26b5268245776ff6031e055e523f23708360da44b7faebd3d3"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/ordered-card-collection-pattern.ts",
+      "sha256": "8a0d896e01a6e80160aa0959aced0b5bd6c695e7a9959f688f6e59a8a5afd4d4"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/paired-pawn-race-pattern.ts",
+      "sha256": "89b15670e153f58053781cdc4c8d2eae8ffc5cb3946d0e6e8b9ae5475019c375"
     },
     {
       "file": "src/game/engine/runtime/patterns/pattern-capabilities.ts",
       "sha256": "031d70a23d8f6d4612ca5cb7b0dfc1e50f6482ddea004ed5670720de87372fc5"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/protected-haunted-race-pattern.ts",
+      "sha256": "e69d108af890593a5479ab33e963177e191f1a67aa97d1fbf67f7fde1ff78cdf"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/public-domain-cards-pattern.ts",
+      "sha256": "311ced8bc9469d54dcc4d397e2b5b24ef474b026220d74955ca1852f454c2227"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/quiz-event-race-pattern.ts",
+      "sha256": "f2464fa3583d0db673f1980108323981d8c8dbbc77ac1143c3f7ce879e48c30f"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/race-directional-hazards/program.ts",
+      "sha256": "314194b68c1d0ab42d74118496c30842d82b7abf768ff5136169486211d8e959"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/resource-track-race-pattern.ts",
+      "sha256": "ddcba3cc8947004d5a8881595c58f33458aeaa9d576e560365fa80a9c1f4505a"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/shared-prestige-cards-pattern.ts",
+      "sha256": "e3b606ebf5ca51bb4a4f9bb9a7a8d94ab3c5eac881799d35aa5f80ed3fc45075"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/species-troops-pattern.ts",
+      "sha256": "d0025d95d3e21aa78241fd5026bada2a47ba01fb6f32fda44574993a9bb4327b"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/team-pawn-race-pattern.ts",
+      "sha256": "8c02603d08aea3a8e40f1430fbbf4b579905e6ec258b2be644d2597c51a55b60"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/themed-set-collection-pattern.ts",
+      "sha256": "0aad97edb67714935258b5d40a1fc9196892f4951ac3fc5f18de6aac1d463085"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/track-zone-collection-pattern.ts",
+      "sha256": "5732bf0b0071f896cbe36a82437e5d1ba4b89d1dd32148c0898201e0feacfd04"
+    },
+    {
+      "file": "src/game/engine/runtime/patterns/treasure-track-race-pattern.ts",
+      "sha256": "f38d531993fdf529eca6f8fedee0c49715a8badfb8a9a0cf5807adcf9d253b27"
     },
     {
       "file": "src/game/engine/runtime/projection/collection-view.ts",
@@ -476,6 +644,10 @@
     {
       "file": "src/game/engine/sdk/extension-api.ts",
       "sha256": "2f84308890252f05841158e1a135994c86eea0e64a7bbd2f8af01759f127e09f"
+    },
+    {
+      "file": "src/game/engine/sdk/extension-contracts.ts",
+      "sha256": "50bb1b0dc216343ec3d3350f11f40eba9d89f41ec24f716d283b0a107746f1e9"
     },
     {
       "file": "src/game/shortcuts/application/shortcut-presets.ts",

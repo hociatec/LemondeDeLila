@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import {
   DeclarativeGameRuntime,
@@ -7,7 +6,7 @@ import {
 import documentExtensionSource from './game.json';
 import manifest from './manifest.json';
 import catPattes from './content/cat-pattes.json';
-const document = legacyExtensionFixture(documentExtensionSource, 'pawScoring');
+const document = documentExtensionSource;
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/cat-pattes.json': catPattes,
@@ -61,7 +60,7 @@ describe('Cat Pattes declarative game', () => {
         [{ type: 'draw', payload: {}, meta: { actorId } }],
       ) as typeof legacy;
 
-      expect(restored.engine?.contentVersion).toBe('3');
+      expect(restored.engine?.contentVersion).toBe('4');
       const cards = restored.engine.kits?.cards;
       expect(cards?.hands?.players?.[String(actorId)]).toHaveLength(7);
     },

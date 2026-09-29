@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../engine/testing/public-api';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -18,10 +17,8 @@ import { assertGameStateSize } from '../core/application/services/game-timeline'
 import { GameRegistryService } from '../core/application/services/game-registry.service';
 import { withCatalogWriteLock } from '../../modules/admin/infrastructure/storage/mnemo-catalog-lock';
 import { archivedContent } from '../engine/infrastructure/content/archived-content';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'simultaneousQuiz',
-);
+const document = documentExtensionSource;
+const quizDefaults = document.patterns[0].config.defaults;
 
 const definition = compileJsonGame(manifest, document, {
   'content/quiz.json': seed,
@@ -77,7 +74,7 @@ function start(runtime: GameRuntime) {
   });
   let state = runtime.hydrateInitialState(base, scope.create(base, 1, clock));
   state = act(runtime, state, 'game.configure', {
-    ...document.simultaneousQuiz.defaults,
+    ...quizDefaults,
     useTimer: false,
   });
   // Configuration enters the quiz phase and starts its first question automatically.

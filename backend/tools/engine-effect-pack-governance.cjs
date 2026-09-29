@@ -6,11 +6,6 @@ const { inspectSources } = require('./game-structural-sequences.cjs');
 const { classifyEffectPack } = require('./effect-pack-classification.cjs');
 const { assertPrimitiveSource } = require('./effect-pack-promotion.cjs');
 const { effectPackDirectory: locatePack } = require('./effect-pack-layout.cjs');
-const {
-  generateEffectPackRegistry,
-} = require('../commands/generate-effect-pack-registry.cjs');
-generateEffectPackRegistry({ check: true });
-
 const ROOT = path.resolve(__dirname, '..');
 const EFFECT_PACKS = path.join(ROOT, 'src/game/rules');
 const REGISTRY = path.join(ROOT, 'src/game/rules/effect-packs');
@@ -21,6 +16,9 @@ const GAMES =
     : path.resolve(process.argv[gamesRootIndex + 1]);
 const GAMEPLAY = path.join(ROOT, 'src/game/engine/runtime/recipes/gameplay');
 const ENGINE_RUNTIME = path.join(ROOT, 'src/game/engine/runtime');
+const GAME_SPECIFIC = path.join(EFFECT_PACKS, 'game-specific');
+if (fs.existsSync(GAME_SPECIFIC))
+  throw new Error('src/game/rules/game-specific must stay removed');
 const policy = JSON.parse(
   fs.readFileSync(
     path.join(__dirname, 'engine-effect-pack-governance.json'),
@@ -337,16 +335,9 @@ if (behaviorLines > policy.maximumBehaviorLines)
     `Effect-pack behavior LOC grew: ${behaviorLines} > ${policy.maximumBehaviorLines}`,
   );
 
-const registryFile = path.join(REGISTRY, 'json-effect-pack-registry.ts');
-const registry = fs.readFileSync(registryFile, 'utf8');
-const registered = [...registry.matchAll(/^  \w+EffectPack,?$/gm)].length;
-if (
-  !registry.includes('Object.freeze([') ||
-  !registry.includes('No filesystem discovery')
-)
-  throw new Error(
-    'The effect-pack registry must be static, frozen and deterministic',
-  );
+const registered = 0;
+if (fs.existsSync(path.join(REGISTRY, 'json-effect-pack-registry.ts')))
+  throw new Error('The obsolete production effect-pack registry must stay removed');
 if (registered > policy.maximumRegisteredEffectPacks)
   throw new Error(
     `Registered effect-pack count grew: ${registered} > ${policy.maximumRegisteredEffectPacks}`,
@@ -364,7 +355,7 @@ const centralFiles = [
 const effectPackProperties = Object.values(policy.profiles)
   .filter(({ property }) => property)
   .map(({ property }) => property);
-for (const relative of centralFiles) {
+for (const relative of effectPackProperties.length ? centralFiles : []) {
   const source = fs.readFileSync(
     path.resolve(
       relative === 'json-effect-pack-document-fields.ts'

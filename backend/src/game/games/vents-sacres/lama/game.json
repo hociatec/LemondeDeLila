@@ -1,130 +1,29 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
-  "definitionVersion": "2",
+  "contentVersion": "2",
+  "definitionVersion": "3",
   "snapshotMigrations": [
     {
       "fromVersion": "lama@content:bc467eda",
       "toVersion": "1"
+    },
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
     }
   ],
   "category": "JeuxDeCartes",
   "world": "VentsSacres",
-  "patterns": [],
-  "components": [],
-  "setup": {},
-  "resourceIds": [],
-  "presentation": {
-    "score": {
-      "label": "Jetons",
-      "unit": {
-        "singular": "jeton",
-        "plural": "jetons"
-      },
-      "changeNarration": "delta-and-total",
-      "visibility": "active-match"
-    }
-  },
-  "shortcuts": [
+  "patterns": [
     {
-      "key": "Space",
-      "type": "action",
-      "actionType": "draw",
-      "label": "Piocher"
-    },
-    {
-      "key": "S",
-      "type": "interface",
-      "id": "score",
-      "label": "Jetons"
-    },
-    {
-      "key": "C",
-      "type": "interface",
-      "id": "discard",
-      "label": "Carte au-dessus"
-    },
-    {
-      "key": "Shift+C",
-      "type": "interface",
-      "id": "hand-sort-ascending",
-      "label": "Trier ma main par ordre croissant"
-    },
-    {
-      "key": "Shift+D",
-      "type": "interface",
-      "id": "hand-sort-descending",
-      "label": "Trier ma main par ordre décroissant"
-    }
-  ],
-  "initialPhase": "setup",
-  "phases": {
-    "setup": {
-      "actions": [],
-      "transitions": [
-        "turn"
-      ]
-    },
-    "turn": {
-      "actions": [
-        "cards-discard-penalty-play",
-        "draw",
-        "cards-discard-penalty-pass",
-        "cards-discard-penalty-quit"
-      ],
-      "transitions": [
-        "return"
-      ]
-    },
-    "return": {
-      "actions": [],
-      "transitions": [
-        "pause",
-        "turn"
-      ]
-    },
-    "pause": {
-      "actions": [],
-      "transitions": [
-        "turn"
-      ]
-    }
-  },
-  "actions": {
-    "cards-discard-penalty-play": {
-      "recipe": "cards-discard-penalty-play"
-    },
-    "draw": {
-      "recipe": "cards-discard-penalty-draw"
-    },
-    "cards-discard-penalty-pass": {
-      "recipe": "cards-discard-penalty-pass"
-    },
-    "cards-discard-penalty-quit": {
-      "recipe": "cards-discard-penalty-quit"
-    }
-  },
-  "victory": {
-    "kind": "by-discard-penalty-cards"
-  },
-  "extensions": [
-    {
-      "type": "discardPenaltyCards",
+      "kind": "discard-penalty",
       "config": {
         "deckId": "discardPenaltyCards",
         "handId": "cards-discard-penalty-hands",
         "returnChoiceId": "cards-discard-penalty.return",
         "pauseChoiceId": "cards-discard-penalty.pause",
         "drawnTurnFlag": "cards-discard-penalty.drawn",
-        "orderedValues": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          "LAMA"
-        ],
+        "orderedValues": [1, 2, 3, 4, 5, 6, "LAMA"],
         "specialValue": "LAMA",
         "specialScore": 10,
         "cards": [
@@ -277,7 +176,100 @@
           "copiesPerCardValue": 8,
           "returnTokenFromRound": 2
         }
+      },
+      "actionIds": {
+        "play": "cards-discard-penalty-play",
+        "draw": "draw",
+        "pass": "cards-discard-penalty-pass",
+        "quit": "cards-discard-penalty-quit"
       }
     }
-  ]
+  ],
+  "components": [],
+  "setup": {},
+  "resourceIds": [],
+  "presentation": {
+    "score": {
+      "label": "Jetons",
+      "unit": {
+        "singular": "jeton",
+        "plural": "jetons"
+      },
+      "changeNarration": "delta-and-total",
+      "visibility": "active-match"
+    }
+  },
+  "shortcuts": [
+    {
+      "key": "Space",
+      "type": "action",
+      "actionType": "draw",
+      "label": "Piocher"
+    },
+    {
+      "key": "S",
+      "type": "interface",
+      "id": "score",
+      "label": "Jetons"
+    },
+    {
+      "key": "C",
+      "type": "interface",
+      "id": "discard",
+      "label": "Carte au-dessus"
+    },
+    {
+      "key": "Shift+C",
+      "type": "interface",
+      "id": "hand-sort-ascending",
+      "label": "Trier ma main par ordre croissant"
+    },
+    {
+      "key": "Shift+D",
+      "type": "interface",
+      "id": "hand-sort-descending",
+      "label": "Trier ma main par ordre décroissant"
+    }
+  ],
+  "initialPhase": "setup",
+  "phases": {
+    "setup": {
+      "actions": [],
+      "transitions": ["turn"]
+    },
+    "turn": {
+      "actions": [
+        "cards-discard-penalty-play",
+        "draw",
+        "cards-discard-penalty-pass",
+        "cards-discard-penalty-quit"
+      ],
+      "transitions": ["return"]
+    },
+    "return": {
+      "actions": [],
+      "transitions": ["pause", "turn"]
+    },
+    "pause": {
+      "actions": [],
+      "transitions": ["turn"]
+    }
+  },
+  "actions": {
+    "cards-discard-penalty-play": {
+      "recipe": "cards-discard-penalty-play"
+    },
+    "draw": {
+      "recipe": "cards-discard-penalty-draw"
+    },
+    "cards-discard-penalty-pass": {
+      "recipe": "cards-discard-penalty-pass"
+    },
+    "cards-discard-penalty-quit": {
+      "recipe": "cards-discard-penalty-quit"
+    }
+  },
+  "victory": {
+    "kind": "manual"
+  }
 }

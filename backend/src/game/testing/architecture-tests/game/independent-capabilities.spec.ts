@@ -6,9 +6,9 @@ import {
   movement,
 } from '../../../engine/sdk/public-api';
 import { testGame } from '../../../engine/testing/public-api';
-import { consumeFirstProtection } from '../../../rules/recipes/protection-cost';
-import { settleResourceDelta } from '../../../rules/recipes/resource-settlement';
-import { firstOtherPlayerAt } from '../../../rules/recipes/track-collision';
+import { consumeFirstProtection } from '../../../engine/runtime/recipes/protection-cost';
+import { settleResourceDelta } from '../../../engine/runtime/recipes/resource-settlement';
+import { firstOtherPlayerAt } from '../../../engine/runtime/recipes/track-collision';
 
 // A second composition: exhaustion awards fatigue, never bankruptcy or a race win.
 const expedition = defineGame<Record<string, never>>()({

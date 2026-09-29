@@ -1,8 +1,12 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "3",
-  "definitionVersion": "1",
+  "contentVersion": "4",
+  "definitionVersion": "2",
   "snapshotMigrations": [
+    {
+      "fromVersion": "3",
+      "toVersion": "4"
+    },
     {
       "fromVersion": "2",
       "toVersion": "3"
@@ -18,7 +22,19 @@
   ],
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
-  "patterns": [],
+  "patterns": [
+    {
+      "kind": "paw-scoring",
+      "config": {
+        "$content": "content/cat-pattes.json"
+      },
+      "actionIds": {
+        "draw": "draw",
+        "play": "play_card",
+        "discard": "discard_card"
+      }
+    }
+  ],
   "components": [],
   "setup": {},
   "resourceIds": [],
@@ -38,16 +54,10 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "playing"
-      ]
+      "transitions": ["playing"]
     },
     "playing": {
-      "actions": [
-        "draw",
-        "play_card",
-        "discard_card"
-      ],
+      "actions": ["draw", "play_card", "discard_card"],
       "terminal": true
     }
   },
@@ -63,14 +73,9 @@
     }
   },
   "victory": {
-    "kind": "by-paw-scoring"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "pawScoring",
-      "config": {
-        "$content": "content/cat-pattes.json"
-      }
-    }
-  ]
+  "playerValuesVisibility": {
+    "statuses": "public"
+  }
 }

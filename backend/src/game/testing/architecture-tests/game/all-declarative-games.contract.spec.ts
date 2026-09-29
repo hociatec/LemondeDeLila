@@ -1,8 +1,15 @@
+import { Logger } from '@nestjs/common';
 import { discoverGameDefinitions } from '../../../composition/game-module-discovery';
 import { auditGameDefinition } from './game-contract-auditor';
 
 describe('contract tests for every declarative game', () => {
   const definitions = discoverGameDefinitions();
+
+  beforeEach(() => {
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => jest.restoreAllMocks());
 
   it('discovers at least one game through the official entry point', () => {
     expect(definitions.length).toBeGreaterThan(0);

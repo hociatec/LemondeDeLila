@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { createHash } from 'node:crypto';
 import {
   testGame,
@@ -15,7 +14,7 @@ import pawns from '../../../games/les-quatre-vents/panier-express/content/pawns.
 import products from '../../../games/les-quatre-vents/panier-express/content/products.json';
 import quizzes from '../../../games/les-quatre-vents/panier-express/content/quizzes.json';
 import reference from '../../fixtures/panier-before-json-parity.json';
-const composition = legacyExtensionFixture(compositionExtensionSource, 'board');
+const composition = compositionExtensionSource;
 
 const document = resolveJsonContent(composition, {
   'content/board.json': board,

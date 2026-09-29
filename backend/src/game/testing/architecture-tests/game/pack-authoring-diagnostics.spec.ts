@@ -4,8 +4,8 @@ import {
   authoringValueAt,
 } from '../../../engine/runtime/contracts/authoring-error';
 import { createAuthorCodec } from '../../../engine/runtime/contracts/json-author-codec';
-import { jsonStoryChallengeSchema } from '../../../rules/game-specific/choice-story-challenge/json-story-challenge-schema';
-import type { StoryChallengeProgram } from '../../../rules/game-specific/choice-story-challenge/program';
+import { jsonStoryChallengeSchema } from '../../../engine/runtime/patterns/choice-story-challenge/json-story-challenge-schema';
+import type { StoryChallengeProgram } from '../../../engine/runtime/patterns/choice-story-challenge/program';
 import manifest from '../../../games/les-quatre-vents/contes-et-cacahuetes/manifest.json';
 import document from '../../../games/les-quatre-vents/contes-et-cacahuetes/game.json';
 import catalogue from '../../../games/les-quatre-vents/contes-et-cacahuetes/content/catalogue.json';
@@ -16,7 +16,7 @@ const base = createAuthorCodec<StoryChallengeProgram>(
   jsonStoryChallengeSchema,
 ).parse(
   {
-    ...document.extensions[0].config,
+    ...document.patterns[0].config,
     ...catalogue,
   },
   'storyChallenge',
@@ -155,8 +155,9 @@ function expectDiagnostic(
   compile: () => unknown,
   source: unknown,
   field: string,
+  root = 'patterns[0].config',
 ) {
-  const path = `game.json.extensions[0].config.${field}`;
+  const path = `game.json.${root}.${field}`;
   try {
     compile();
     throw new Error('Expected authoring failure');
@@ -180,7 +181,7 @@ it.each(cases)(
     change(config);
     const source = {
       ...document,
-      extensions: [{ type: 'storyChallenge', config }],
+      patterns: [{ ...document.patterns[0], config }],
     };
     expectDiagnostic(() => compileJsonGame(manifest, source), source, field);
   },
@@ -189,12 +190,22 @@ it.each(cases)(
 it.each(['lastRoll', 'lastMove', 'idleTurns'] as const)(
   'pinpoints hazard resource %s',
   (field) => {
-    const source = structuredClone(rally);
-    source.extensions[0].config.resources[field] = 'absent';
+    const legacy = structuredClone(rally);
+    const config = legacy.extensions[0].config;
+    config.resources[field] = 'absent';
+    const { extensions: _extensions, ...core } = legacy;
+    const source = {
+      ...core,
+      patterns: [
+        ...core.patterns,
+        { kind: 'directional-hazard', config, actionIds: { roll: 'advance' } },
+      ],
+    };
     expectDiagnostic(
       () => compileJsonGame(hazardManifest, source),
       source,
       `resources.${field}`,
+      'patterns[1].config',
     );
   },
 );

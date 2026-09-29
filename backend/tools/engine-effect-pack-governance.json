@@ -1,11 +1,11 @@
 {
-  "maximumProgramFiles": 38,
-  "maximumProgramLines": 1207,
+  "maximumProgramFiles": 0,
+  "maximumProgramLines": 0,
   "maximumProductionLines": 19076,
   "maximumBehaviorLines": 19000,
   "maximumFileBytes": 13500,
   "sizeReview": "2026-09-22: reviewed explicit configurable descriptors for remaining mechanisms (categories, tile rules, special operations, movement amounts and dice policies). 1201 contract lines / 13583 production / 13507 behavior. No extra pack; per-file 13500-byte ceiling unchanged. Directional effect protocol moved from kernel to its owning pack. Reuse exercised by parameterized-catalog.spec.ts and numeric mechanic tests. 2026-09-23: pre-change audit already measured 13595/13519 lines (12 lines above the stale ceiling); scope reclassification changes no behavior or line count. 2026-09-23: colocation moves 4801 existing schema/recipe lines into their owning packs; no gameplay code added. 2026-09-23: canonical authoring diagnostics add 368 lines after formatting, including structured code/path/expected/received and precise reference fields; measured totals 18763/18687. No new pack or gameplay rule; program and per-file limits unchanged. Reference paths for narrative branches/decks refined: final measured total 18770/18694. 2026-09-23 CI: move the directional hazard card-kind tuple type into its compiled contract; the author schema constant is constrained to that exact tuple. Contract count 1207; no new gameplay behavior. 2026-09-23 follow-up: explicit capability declarations in 38 packs and facade import formatting, net +69 production lines; no new pack or gameplay branch. 18839 production / 18763 behavior lines. The follow-up also adds validated readers for persisted turn flags (+34 net formatted lines). Final: 18873 production / 18797 behavior; no new mechanic. 2026-09-28: remeasured the committed effect-pack surface at 18946 production / 18870 behavior lines. The prior ceiling was stale by 73 formatted source lines; no pack, primitive, cross-pack import, or game rule was added. Program count (38), program lines (1207), and per-file ceiling remain unchanged. 2026-09-28: moved 130 lines of game-specific narration out of the generic WebSocket presenter into the three owning packs. The increase is presentation ownership, not a new mechanic, primitive, pack, or cross-pack dependency; totals are 19076 production / 19000 behavior lines and the per-file ceiling remains unchanged.",
-  "maximumRegisteredEffectPacks": 38,
+  "maximumRegisteredEffectPacks": 0,
   "forbiddenEngineVocabulary": [
     "balloon",
     "banana",
@@ -42,39 +42,9 @@
     "bande-a-banane"
   ],
   "largeSingleConsumerReviewLines": 300,
-  "largeSingleConsumerReviews": {
-    "choice-simultaneous-paw-scoring": "Compared with card-selection and scoring-submission; simultaneous paw scoring and obstacles remain unique.",
-    "choice-story-challenge": "Compared with judged-cards and choice primitives; mixed story, challenge and laughter resolution remains unique.",
-    "board-path-walls": "Compared with board-game and grid-placement; wall legality and path preservation remain unique.",
-    "race-directional-hazards": "Compared with track-round and board landings; directional movement and chained hazards remain unique.",
-    "cards-theme-name": "Compared with judged-cards and card-actions; name/theme composition and special cards remain unique.",
-    "cards-discard-penalty": "Compared with card-actions; discard legality, quitting and unique-value penalties remain unique.",
-    "choice-simultaneous-quiz": "Compared with movement-quiz and scoring-submission; configurable simultaneous quiz remains unique.",
-    "cards-ritual-phases": "Compared with collection and card primitives; ritual phases and light scoring remain unique.",
-    "board-property-economy": "Compared with board-turn, board-landings and economy-kit; mortgages, jail, ownership and city economy remain unique.",
-    "choice-chapter-encounter": "Compared with track-round and collection primitives; chapters, encounters and final countdown remain unique.",
-    "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status."
-  },
+  "largeSingleConsumerReviews": {},
   "structuralReviews": [],
-  "effectDomains": {
-    "board": [
-      "board-movement-landings",
-      "board-path-walls",
-      "board-property-economy"
-    ],
-    "cards": [
-      "cards-theme-name",
-      "cards-discard-penalty",
-      "cards-ritual-phases"
-    ],
-    "choice": [
-      "choice-simultaneous-paw-scoring",
-      "choice-story-challenge",
-      "choice-simultaneous-quiz",
-      "choice-chapter-encounter"
-    ],
-    "race": ["race-directional-hazards"]
-  },
+  "effectDomains": {},
   "genericGameplayFiles": [
     "card-actions.recipes.ts",
     "card-dice.recipes.ts",
@@ -90,109 +60,8 @@
     "scoring-submission.recipes.ts",
     "track-round.recipes.ts"
   ],
-  "profiles": {
-    "board-movement-landings": {
-      "property": "board",
-      "mechanic": "parameterized board movement and landing effects",
-      "domain": "board",
-      "scope": "game-specific",
-      "classificationReason": "board-movement-landings implements parameterized board movement and landing effects. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "choice-simultaneous-paw-scoring": {
-      "property": "pawScoring",
-      "mechanic": "simultaneous paw scoring rounds",
-      "domain": "choice",
-      "scope": "game-specific",
-      "classificationReason": "choice-simultaneous-paw-scoring implements simultaneous paw scoring rounds. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "choice-story-challenge": {
-      "property": "storyChallenge",
-      "mechanic": "story response, challenge and laughter rounds",
-      "domain": "choice",
-      "scope": "game-specific",
-      "classificationReason": "choice-story-challenge implements story response, challenge and laughter rounds. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "board-path-walls": {
-      "property": "pathWalls",
-      "mechanic": "pawn grid paths and wall placement",
-      "domain": "board",
-      "scope": "game-specific",
-      "classificationReason": "board-path-walls implements pawn grid paths and wall placement. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "race-directional-hazards": {
-      "property": "directionalHazardRace",
-      "mechanic": "directional racing with chained hazards",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-directional-hazards implements directional racing with chained hazards. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "cards-theme-name": {
-      "property": "themeNameCards",
-      "mechanic": "name and theme card combinations",
-      "domain": "cards",
-      "scope": "game-specific",
-      "classificationReason": "cards-theme-name implements name and theme card combinations. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "cards-discard-penalty": {
-      "property": "discardPenaltyCards",
-      "mechanic": "discard rounds and unique-value penalties",
-      "domain": "cards",
-      "scope": "game-specific",
-      "classificationReason": "cards-discard-penalty implements discard rounds and unique-value penalties. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "choice-simultaneous-quiz": {
-      "property": "simultaneousQuiz",
-      "mechanic": "configurable simultaneous quiz",
-      "domain": "choice",
-      "scope": "game-specific",
-      "classificationReason": "choice-simultaneous-quiz implements configurable simultaneous quiz. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "cards-ritual-phases": {
-      "property": "ritualPhases",
-      "mechanic": "ritual card phases and light scoring",
-      "domain": "cards",
-      "scope": "game-specific",
-      "classificationReason": "cards-ritual-phases implements ritual card phases and light scoring. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "board-property-economy": {
-      "property": "propertyEconomy",
-      "mechanic": "large city board economy",
-      "domain": "board",
-      "scope": "game-specific",
-      "classificationReason": "board-property-economy implements large city board economy. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "choice-chapter-encounter": {
-      "property": "chapterEncounter",
-      "mechanic": "journey chapters and encounters",
-      "domain": "choice",
-      "scope": "game-specific",
-      "classificationReason": "choice-chapter-encounter implements journey chapters and encounters. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    }
-  },
-  "registrationOrder": [
-    "race-directional-hazards",
-    "choice-chapter-encounter",
-    "choice-simultaneous-paw-scoring",
-    "cards-theme-name",
-    "cards-ritual-phases",
-    "board-property-economy",
-    "choice-simultaneous-quiz",
-    "board-path-walls",
-    "choice-story-challenge",
-    "cards-discard-penalty",
-    "board-movement-landings"
-  ],
+  "profiles": {},
+  "registrationOrder": [],
   "coreRootFieldReviews": {
     "extensions": {
       "architectureDecision": "Adopt one validated discriminated extensions array as the sole generic escape hatch. Compile each registered variant through its owning extension adapter, reject unknown kinds and duplicate entries, and preserve the closed core schema instead of adding one root property per legacy mechanic.",

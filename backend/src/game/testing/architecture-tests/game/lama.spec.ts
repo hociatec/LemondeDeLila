@@ -1,14 +1,10 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import type { DeclarativeState } from '../../../engine/runtime/state/declarative-state';
 import { testGame } from '../../../engine/testing/public-api';
 
 import documentExtensionSource from '../../../games/vents-sacres/lama/game.json';
 import manifest from '../../../games/vents-sacres/lama/manifest.json';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'discardPenaltyCards',
-);
+const document = documentExtensionSource;
 
 const gameDefinition = compileJsonGame(manifest, document);
 type LamaCard = 1 | 2 | 3 | 4 | 5 | 6 | 'LAMA';

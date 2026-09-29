@@ -73,11 +73,12 @@ function assertNumericCardAttribute(
   for (const [index, card] of cards.entries()) {
     if (card == null || typeof card !== 'object')
       fail(path, `card ${index} must be an object`);
-    const attributes = Reflect.get(card, 'attributes');
+    const attributes = (card as Record<PropertyKey, unknown>).attributes;
     if (
       attributes == null ||
       typeof attributes !== 'object' ||
-      typeof Reflect.get(attributes, attribute) !== 'number'
+      typeof (attributes as Record<PropertyKey, unknown>)[attribute] !==
+        'number'
     )
       fail(
         authoringProperty(path, attribute),

@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import {
   DeclarativeGameRuntime,
@@ -7,10 +6,7 @@ import {
 import catalogue from './content/catalogue.json';
 import documentExtensionSource from './game.json';
 import manifest from './manifest.json';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'storyChallenge',
-);
+const document = documentExtensionSource;
 
 const definition = compileJsonGame(manifest, document, {
   'content/catalogue.json': catalogue,

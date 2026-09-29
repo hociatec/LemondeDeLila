@@ -1,14 +1,10 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 
 import manifest from './manifest.json';
 import documentExtensionSource from './game.json';
 import catalogue from './catalogue.json';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'propertyEconomy',
-);
+const document = documentExtensionSource;
 
 const compile = (source: unknown) =>
   compileJsonGame(manifest, document, {
@@ -36,8 +32,11 @@ describe('Sac stable catalogue references', () => {
         utility.name = 'Autre équipement';
 
       expect(
-        (compile(source).content.data as { propertyEconomy: unknown })
-          .propertyEconomy,
+        (
+          compile(source).content.data as {
+            patterns: Array<{ config: unknown }>;
+          }
+        ).patterns[0].config,
       ).toEqual(source);
       expect(variant.tiles.map((tile) => tile.id)).toEqual(
         original.tiles.map((tile) => tile.id),

@@ -1,27 +1,39 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
-  "definitionVersion": "2",
+  "contentVersion": "2",
+  "definitionVersion": "3",
   "snapshotMigrations": [
     {
       "fromVersion": "sac-a-malices@content:2959fe7b@format:2",
       "toVersion": "1"
+    },
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
     }
   ],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
-  "patterns": [],
-  "components": [],
-  "setup": {
-    "counters": {
-      "board-property-economy.pot": 0
-    },
-    "startRound": false
-  },
-  "resourceIds": [
-    "money",
-    "board-property-economy.jail-cards"
+  "patterns": [
+    {
+      "kind": "property-economy",
+      "config": {
+        "$content": "content/catalogue.json"
+      },
+      "actionIds": {
+        "roll": "roll",
+        "build": "build",
+        "sell": "sell_building",
+        "mortgage": "mortgage",
+        "unmortgage": "unmortgage",
+        "payFine": "pay_fine",
+        "useJailCard": "use_jail_card"
+      }
+    }
   ],
+  "components": [],
+  "setup": {},
+  "resourceIds": ["money", "board-property-economy.jail-cards"],
   "shortcuts": [
     {
       "key": "D",
@@ -33,9 +45,7 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "playing"
-      ]
+      "transitions": ["playing"]
     },
     "playing": {
       "actions": [
@@ -74,14 +84,6 @@
     }
   },
   "victory": {
-    "kind": "by-property-economy"
-  },
-  "extensions": [
-    {
-      "type": "propertyEconomy",
-      "config": {
-        "$content": "content/catalogue.json"
-      }
-    }
-  ]
+    "kind": "manual"
+  }
 }

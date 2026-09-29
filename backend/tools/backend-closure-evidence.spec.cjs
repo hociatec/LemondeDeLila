@@ -13,5 +13,5 @@ test('certifies every backend closure point with tracked evidence', () => {
     { cwd: root, encoding: 'utf8' },
   );
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /OK \(100 points/);
+  assert.match(result.stdout, /OK \(272 points/);
 });

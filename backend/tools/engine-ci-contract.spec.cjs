@@ -71,7 +71,7 @@ test('required quality context cannot succeed when a certification job fails or 
     'generated-actions.property',
     'directional-hazard-primitives-parity',
     'primitive-json-sdk-parity',
-    'second-game-catalogue',
+    'simultaneous-quiz-json-parity',
     'independent-capabilities',
     'reference-replays',
     'generated-capability-models.property',

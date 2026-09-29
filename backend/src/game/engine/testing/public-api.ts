@@ -2,5 +2,3 @@
 export { testGame, GameTestKit } from '../../core/testing/game-test-kit';
 export { GameSimulator } from '../../core/testing/game-simulator';
 export { DeclarativeGameRuntime } from '../runtime/declarative-game.runtime';
-
-export { legacyExtensionFixture } from './legacy-extension-fixture';

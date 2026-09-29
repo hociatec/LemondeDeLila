@@ -1,14 +1,10 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 import { rejectRule } from '../../../engine/sdk/public-api';
 import documentExtensionSource from './game.json';
 import manifest from './manifest.json';
 import quiz from './quiz.json';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'simultaneousQuiz',
-);
+const document = documentExtensionSource;
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/quiz.json': quiz,

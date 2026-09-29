@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "3",
-  "definitionVersion": "3",
+  "contentVersion": "4",
+  "definitionVersion": "4",
+  "snapshotMigrations": [{ "fromVersion": "3", "toVersion": "4" }],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
   "patterns": [
@@ -9,62 +10,9 @@
       "kind": "race",
       "trackId": "directionalHazard",
       "spaces": 30
-    }
-  ],
-  "components": [
+    },
     {
-      "component": "cards.deck",
-      "id": "situations",
-      "cards": {
-        "$content": "content/catalogue.json#/cards"
-      },
-      "shuffle": true
-    }
-  ],
-  "setup": {
-    "startRound": false,
-    "counters": {
-      "race-hazard.next-player-delta": 0
-    }
-  },
-  "resourceIds": [
-    "race-hazard.last-roll",
-    "race-hazard.last-move",
-    "race-hazard.idle-turns"
-  ],
-  "shortcuts": [
-    {
-      "key": "D",
-      "type": "action",
-      "actionType": "roll"
-    }
-  ],
-  "initialPhase": "playing",
-  "phases": {
-    "playing": {
-      "actions": [
-        "roll"
-      ],
-      "terminal": true
-    }
-  },
-  "actions": {
-    "roll": {
-      "recipe": "race-hazard-roll"
-    }
-  },
-  "victory": {
-    "kind": "by-directional-hazard-race"
-  },
-  "snapshotMigrations": [
-    {
-      "fromVersion": "1",
-      "toVersion": "2"
-    }
-  ],
-  "extensions": [
-    {
-      "type": "directionalHazardRace",
+      "kind": "directional-hazard",
       "config": {
         "trackId": "directionalHazard",
         "diceId": "main",
@@ -103,7 +51,59 @@
           "globalRetreat": -2,
           "globalAdvance": 1
         }
+      },
+      "actionIds": {
+        "roll": "roll"
       }
+    }
+  ],
+  "components": [
+    {
+      "component": "cards.deck",
+      "id": "situations",
+      "cards": {
+        "$content": "content/catalogue.json#/cards"
+      },
+      "shuffle": true
+    }
+  ],
+  "setup": {
+    "startRound": false,
+    "counters": {
+      "race-hazard.next-player-delta": 0
+    }
+  },
+  "resourceIds": [
+    "race-hazard.last-roll",
+    "race-hazard.last-move",
+    "race-hazard.idle-turns"
+  ],
+  "shortcuts": [
+    {
+      "key": "D",
+      "type": "action",
+      "actionType": "roll"
+    }
+  ],
+  "initialPhase": "playing",
+  "phases": {
+    "playing": {
+      "actions": ["roll"],
+      "terminal": true
+    }
+  },
+  "actions": {
+    "roll": {
+      "recipe": "race-hazard-roll"
+    }
+  },
+  "victory": {
+    "kind": "manual"
+  },
+  "snapshotMigrations": [
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
     }
   ]
 }

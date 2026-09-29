@@ -37,8 +37,7 @@ function files(directory) {
 
 function buildMatrix() {
   const packRoot = path.join(root, 'src/game/rules/game-specific');
-  const packs = fs
-    .readdirSync(packRoot)
+  const packs = (fs.existsSync(packRoot) ? fs.readdirSync(packRoot) : [])
     .filter((name) =>
       fs.existsSync(path.join(packRoot, name, 'effect-pack.ts')),
     )

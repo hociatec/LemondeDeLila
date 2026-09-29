@@ -18,14 +18,13 @@ import type { FamilyRequestOptions } from '../patterns/family-request-pattern';
 import type { GridPlacementOptions } from '../patterns/grid-placement-pattern';
 import type { OrderedAssemblyOptions } from '../patterns/ordered-assembly-pattern';
 import type { JudgedSubmissionOptions } from '../patterns/judged-submission-pattern';
-import type { MarketExchangeOptions } from '../patterns/market-exchange-pattern';
 import type { AnonymousVoteOptions } from '../patterns/anonymous-vote-pattern';
 import type { TreasureTrackRaceOptions } from '../patterns/treasure-track-race-pattern';
 import type { FamilyEffectsOptions } from '../patterns/family-effects-pattern';
 import type { SpeciesTroopsOptions } from '../patterns/species-troops-pattern';
 import type { PairedPawnRaceOptions } from '../patterns/paired-pawn-race-pattern';
 import type { BounceQuizRaceOptions } from '../patterns/bounce-quiz-race-pattern';
-import type { BidirectionalCollisionRaceOptions } from '../patterns/bidirectional-collision-race-pattern';
+import type { BidirectionalCollisionRaceOptions as BidirectionalOptions } from '../patterns/bidirectional-collision-race-pattern';
 import type { PublicDomainCardsOptions } from '../patterns/public-domain-cards-pattern';
 import type { TeamPawnRaceOptions } from '../patterns/team-pawn-race-pattern';
 import type { QuizEventRaceOptions } from '../patterns/quiz-event-race-pattern';
@@ -62,6 +61,8 @@ import {
   compileTriggerPattern,
   compilePawnRace,
   compileRace,
+  type JsonMarketPattern,
+  type JsonSubmissionJudgePattern,
 } from './json-advanced-pattern-compilers';
 import {
   type AuthorSchema,
@@ -97,6 +98,12 @@ import { protectedHauntedRacePatternSchema } from './json-protected-haunted-race
 import { sharedPrestigeCardsPatternSchema } from './json-shared-prestige-cards-pattern-schema';
 import { resourceTrackRacePatternSchema } from './json-resource-track-race-pattern-schema';
 import { chainedTileRacePatternSchema } from './json-chained-tile-race-pattern-schema';
+import {
+  compilePromotedJsonPattern,
+  isPromotedJsonPattern,
+  promotedJsonPatternSchemas,
+  type PromotedJsonGamePattern,
+} from './json-promoted-patterns';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -135,9 +142,7 @@ export type JsonGamePattern =
   | ({ kind: 'species-troops' } & SpeciesTroopsOptions)
   | ({ kind: 'paired-pawn-race' } & PairedPawnRaceOptions)
   | ({ kind: 'bounce-quiz-race' } & BounceQuizRaceOptions)
-  | ({
-      kind: 'bidirectional-collision-race';
-    } & BidirectionalCollisionRaceOptions)
+  | ({ kind: 'bidirectional-collision-race' } & BidirectionalOptions)
   | ({ kind: 'public-domain-cards' } & PublicDomainCardsOptions)
   | ({ kind: 'team-pawn-race' } & TeamPawnRaceOptions)
   | ({ kind: 'quiz-event-race' } & QuizEventRaceOptions)
@@ -145,18 +150,10 @@ export type JsonGamePattern =
   | ({ kind: 'shared-prestige-cards' } & SharedPrestigeCardsProgram)
   | { kind: 'resource-track-race'; config: ResourceTrackRaceProgram }
   | { kind: 'chained-tile-race'; config: ChainedTileRaceProgram }
-  | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
-        exchange?: MarketExchangeOptions['exchange'];
-      })
+  | PromotedJsonGamePattern
+  | JsonMarketPattern
   | { kind: 'simultaneous-answers' }
-  | {
-      kind: 'submission-judge';
-      submissionId?: string;
-      voteId?: string;
-      secret?: boolean;
-      targetScore?: number;
-      winnerReason?: string;
-    };
+  | JsonSubmissionJudgePattern;
 
 const position: AuthorSchema = { type: 'integer', minimum: 0 };
 export const jsonGamePatternSchema: AuthorSchema = {
@@ -361,6 +358,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     sharedPrestigeCardsPatternSchema,
     resourceTrackRacePatternSchema,
     chainedTileRacePatternSchema,
+    ...promotedJsonPatternSchemas,
     marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
@@ -380,6 +378,8 @@ export const jsonGamePatternSchema: AuthorSchema = {
 export function compileJsonPattern(
   pattern: JsonGamePattern,
 ): GamePattern<Record<string, never>> {
+  if (isPromotedJsonPattern(pattern))
+    return compilePromotedJsonPattern(pattern);
   switch (pattern.kind) {
     case 'trigger':
       return compileTriggerPattern(pattern);

@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -10,7 +9,7 @@ import { projectEventsForPlayer } from '../../../engine/runtime/projection/game-
 
 import documentExtensionSource from '../../../games/vents-sacres/corridor/game.json';
 import manifest from '../../../games/vents-sacres/corridor/manifest.json';
-const document = legacyExtensionFixture(documentExtensionSource, 'pathWalls');
+const document = documentExtensionSource;
 
 const gameDefinition = compileJsonGame(manifest, document);
 

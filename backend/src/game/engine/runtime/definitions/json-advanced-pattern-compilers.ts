@@ -103,6 +103,19 @@ import {
   type MarketExchangeOptions,
 } from '../patterns/market-exchange-pattern';
 
+export type JsonMarketPattern = { kind: 'market' } & Omit<
+  MarketExchangeOptions,
+  'exchange'
+> & { exchange?: MarketExchangeOptions['exchange'] };
+export type JsonSubmissionJudgePattern = {
+  kind: 'submission-judge';
+  submissionId?: string;
+  voteId?: string;
+  secret?: boolean;
+  targetScore?: number;
+  winnerReason?: string;
+};
+
 export function compileTreasureTrackRace(
   pattern: { kind: 'treasure-track-race' } & TreasureTrackRaceOptions,
 ) {
@@ -267,11 +280,7 @@ export function compileRace(
   const { kind: _kind, ...options } = pattern;
   return raceGame(options);
 }
-export function compileMarket(
-  pattern: { kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
-      exchange?: MarketExchangeOptions['exchange'];
-    },
-) {
+export function compileMarket(pattern: JsonMarketPattern) {
   const { kind: _kind, ...options } = pattern;
   return options.exchange
     ? marketExchange({ ...options, exchange: options.exchange })

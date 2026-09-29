@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import {
   DeclarativeGameRuntime,
@@ -25,7 +24,6 @@ const documentExtensionSource = {
   definitionVersion: '1',
   category: 'Tests',
   world: 'Tests',
-  patterns: [],
   components: [],
   setup: {},
   resourceIds: [],
@@ -40,10 +38,10 @@ const documentExtensionSource = {
     timeout: { recipe: 'choice-simultaneous-quiz-timeout' },
     ready: { recipe: 'choice-simultaneous-quiz-ready' },
   },
-  victory: { kind: 'by-simultaneous-quiz' },
-  extensions: [
+  victory: { kind: 'manual' },
+  patterns: [
     {
-      type: 'simultaneousQuiz',
+      kind: 'simultaneous-quiz',
       config: {
         categories: { $content: 'content/quiz.json#/categories' },
         questions: { $content: 'content/quiz.json#/questions' },
@@ -76,10 +74,8 @@ const quiz = {
     status: 'validated',
   })),
 };
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'simultaneousQuiz',
-);
+const document = documentExtensionSource;
+const quizDefaults = documentExtensionSource.patterns[0].config.defaults;
 
 const definition = compileJsonGame(manifest, document, {
   'content/quiz.json': quiz,
@@ -119,7 +115,7 @@ it('schedules a bot answer for the question started automatically', async () => 
   const game = await testGame(definition)
     .players(['Human', { username: 'Bot', isBot: true }])
     .start();
-  await game.as(1).do('game.configure', document.simultaneousQuiz.defaults);
+  await game.as(1).do('game.configure', quizDefaults);
   await game.as(1).do('answer', { answerIndex: 0 });
   await game.as(-2).do('answer', { answerIndex: 0 });
   const { resolve, clock, scope } = automation();
@@ -147,7 +143,7 @@ it('keeps the deadline after the current bot answers and resolves human timeouts
   const game = await testGame(definition)
     .players([{ username: 'Bot', isBot: true }, 'Human'])
     .start();
-  await game.as(2).do('game.configure', document.simultaneousQuiz.defaults);
+  await game.as(2).do('game.configure', quizDefaults);
   await game.as(-1).do('answer', { answerIndex: 0 });
   const { resolve, clock, scope } = automation();
   const state = game.state();
@@ -178,7 +174,7 @@ it('lets another bot answer after the current bot and prioritizes an earlier dea
       'Human',
     ])
     .start();
-  await game.as(3).do('game.configure', document.simultaneousQuiz.defaults);
+  await game.as(3).do('game.configure', quizDefaults);
   await game.as(-1).do('answer', { answerIndex: 0 });
   const { resolve, clock } = automation();
   expect(resolve(game.state())).toMatchObject({

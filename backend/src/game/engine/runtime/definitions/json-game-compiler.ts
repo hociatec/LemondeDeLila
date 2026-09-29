@@ -36,6 +36,7 @@ import type {
 
 import { createJsonGameSchema } from './json-game-schema';
 import { assertJsonPatternReferences } from './json-pattern-reference-validation';
+import { assertMigratedPatternSourceReferences } from './json-migrated-pattern-reference-validation';
 
 export type { JsonGameManifest } from './json-game-manifest';
 
@@ -140,6 +141,15 @@ function compileResolvedJsonGame<Catalog extends JsonEffectPackCatalog>(
       authoringValueAt(document, path),
     );
   };
+  assertMigratedPatternSourceReferences(
+    document.patterns,
+    new Set([
+      ...document.resourceIds,
+      ...document.components
+        .filter((component) => component.component === 'resource.pool')
+        .map((component) => component.id),
+    ]),
+  );
   const programs = compileJsonPrograms(document, jsonEffectPacks);
   const { patterns } = programs;
   assertDocumentReferences(document, patterns, manifest, fail, jsonEffectPacks);
@@ -240,6 +250,18 @@ function assertDocumentReferences(
     new Set(Object.keys(document.phases ?? {})),
   );
   assertProgramReferences(document, patterns, manifest, fail, jsonEffectPacks);
+  for (const pattern of document.patterns ?? []) {
+    if (pattern.kind !== 'directional-hazard') continue;
+    const external = pattern.config.victoryMode === 'external';
+    const internal = document.victory.kind === 'manual';
+    if (external === internal)
+      fail(
+        'victory.kind',
+        external
+          ? 'external hazard victory requires an independent objective'
+          : 'arrival hazard victory requires manual engine victory',
+      );
+  }
   assertJsonPatternReferences(
     document.patterns,
     [

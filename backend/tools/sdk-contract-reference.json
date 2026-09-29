@@ -171,7 +171,7 @@
     },
     {
       "file": "src/game/engine/runtime/contracts/effect-ir.ts",
-      "sha256": "e8ef517da366550e7f20964fbbf309632bbeeef6cd72f49b74b4c681e0218b8a"
+      "sha256": "d4511a59fed67f23a20ffbe0d02497148968f46271cb3ef42eff98040000d4ad"
     },
     {
       "file": "src/game/engine/runtime/contracts/effect-resolver.ts",
@@ -191,7 +191,7 @@
     },
     {
       "file": "src/game/engine/runtime/contracts/pattern-definition.ts",
-      "sha256": "bc943bab2c73f0cb157d2ca099b4fb72c34a19532d8848a669b5b7e3003b9275"
+      "sha256": "d9328c9c0534f89b8696e37edda36bb2a8818203e3ee4dcd04eb530fac2c5e34"
     },
     {
       "file": "src/game/engine/runtime/contracts/public-controller.ts",
@@ -374,6 +374,10 @@
       "sha256": "a5e808c3048a642972cb20462319dcff3f1eb02f88b2f3c6dd76510a9612acc7"
     },
     {
+      "file": "src/game/engine/runtime/patterns/delivery-race-pattern.ts",
+      "sha256": "a7d3dcf8d398302693bf173cc1c16b585b8f1d4a45cb8df01a2d18b27abac4f3"
+    },
+    {
       "file": "src/game/engine/runtime/patterns/gameplay-pattern-core.ts",
       "sha256": "517e6318cd261da7d8749c0290073d9d04de43c114d8b288e537147f35903110"
     },
@@ -383,7 +387,7 @@
     },
     {
       "file": "src/game/engine/runtime/patterns/gameplay-pattern-track-card.ts",
-      "sha256": "6305ff43dc6da2ce7a51c8438d029148ed07c01ae0fc13e3d1a938dceda00d5e"
+      "sha256": "55fccccf32cfe1d265a2c75a1e7852e7c888c69dafe70e605c4732de0ef75507"
     },
     {
       "file": "src/game/engine/runtime/patterns/gameplay-patterns.ts",

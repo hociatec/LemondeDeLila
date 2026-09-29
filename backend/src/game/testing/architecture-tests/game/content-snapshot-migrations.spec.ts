@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   testGame,
   DeclarativeGameRuntime,
@@ -40,16 +39,13 @@ import sacCatalogue from '../../../games/les-quatre-vents/sac-a-malices/catalogu
 import natureManifest from '../../../games/vents-dansants/dame-nature/manifest.json';
 import natureDocument from '../../../games/vents-dansants/dame-nature/game.json';
 import natureCatalogue from '../../../games/vents-dansants/dame-nature/content/catalogue.json';
-const composition = legacyExtensionFixture(compositionExtensionSource, 'board');
+const composition = compositionExtensionSource;
 const olympiaDocument = olympiaDocumentExtensionSource;
 const aventureDocument = aventureDocumentExtensionSource;
 const missionDocument = missionDocumentExtensionSource;
 const piratesDocument = piratesDocumentExtensionSource;
 const mamanDocument = mamanDocumentExtensionSource;
-const sacDocument = legacyExtensionFixture(
-  sacDocumentExtensionSource,
-  'propertyEconomy',
-);
+const sacDocument = sacDocumentExtensionSource;
 
 const panierDocument = resolveJsonContent(composition, {
   'content/board.json': board,

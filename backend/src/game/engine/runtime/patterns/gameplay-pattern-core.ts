@@ -37,6 +37,9 @@ export function composePatterns<TState extends object>(
   ...patterns: readonly GamePattern<TState>[]
 ): Omit<GamePattern<TState>, 'id'> & { ids: string[] } {
   assertComposablePatterns(patterns);
+  const viewPattern = patterns.find((pattern) => pattern.viewExtension);
+  const botPattern = patterns.find((pattern) => pattern.bot);
+  const setupPattern = patterns.find((pattern) => pattern.setup !== undefined);
   return {
     ids: patterns.map((pattern) => pattern.id),
     mechanics: [...new Set(patterns.flatMap((pattern) => pattern.mechanics))],
@@ -52,13 +55,22 @@ export function composePatterns<TState extends object>(
       }),
       {},
     ),
-    choices: Object.assign({}, ...patterns.map((pattern) => pattern.choices)),
+    choices: patterns.reduce<NonNullable<GamePattern<TState>['choices']>>(
+      (merged, pattern) => ({ ...merged, ...(pattern.choices ?? {}) }),
+      {},
+    ),
     automatic: patterns.flatMap((pattern) => pattern.automatic ?? []),
-    effects: Object.assign({}, ...patterns.map((pattern) => pattern.effects)),
-    viewExtension: patterns.find((pattern) => pattern.viewExtension)
-      ?.viewExtension,
-    bot: patterns.find((pattern) => pattern.bot)?.bot,
-    setup: patterns.find((pattern) => pattern.setup)?.setup,
+    effects: patterns.reduce<NonNullable<GamePattern<TState>['effects']>>(
+      (merged, pattern) => ({ ...merged, ...(pattern.effects ?? {}) }),
+      {},
+    ),
+    viewExtension: viewPattern
+      ? (input) => viewPattern.viewExtension?.(input) ?? {}
+      : undefined,
+    bot: botPattern?.bot,
+    setup: setupPattern
+      ? (input) => setupPattern.setup?.(input) ?? {}
+      : undefined,
     lifecycle: composeLifecycle(
       patterns.flatMap((pattern) =>
         pattern.lifecycle ? [pattern.lifecycle] : [],

@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   AuthoringError,
   authoringValueAt,
@@ -7,11 +6,7 @@ import { authoringProperty } from '../../../engine/runtime/contracts/authoring-d
 import { compileJsonGame } from '../../../rules/public-api';
 import { defineGameContent } from '../../../engine/runtime/content/game-content';
 import manifest from '../../../games/vents-sacres/lama/manifest.json';
-import documentExtensionSource from '../../../games/vents-sacres/lama/game.json';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'discardPenaltyCards',
-);
+import document from '../../../games/vents-sacres/lama/game.json';
 
 function diagnostic(run: () => unknown): AuthoringError {
   try {
@@ -23,38 +18,28 @@ function diagnostic(run: () => unknown): AuthoringError {
   throw new Error('Expected authoring failure');
 }
 
-it.each([false, true])(
-  'reports semantic failures in the original JSON surface (extensions=%s)',
-  (generic) => {
-    const config = { ...document.discardPenaltyCards, specialValue: 'missing' };
-    const { discardPenaltyCards: _legacy, ...base } = document;
-    const source = generic
-      ? { ...base, extensions: [{ type: 'discardPenaltyCards', config }] }
-      : { ...base, discardPenaltyCards: config };
-    const error = diagnostic(() => compileJsonGame(manifest, source));
-    expect(error).toMatchObject({
-      code: 'GAME_AUTHORING_ERROR',
-      path: generic
-        ? 'game.json.extensions[0].config.specialValue'
-        : 'game.json.discardPenaltyCards.specialValue',
-      expected: 'member of orderedValues',
-      received: 'missing',
-    });
-    expect(error.message).toContain(error.path);
-  },
-);
+it('reports semantic failures in the native pattern JSON surface', () => {
+  const source = structuredClone(document) as Record<string, unknown> & {
+    patterns: Array<{ config: Record<string, unknown> }>;
+  };
+  source.patterns[0].config.specialValue = 'missing';
+  const error = diagnostic(() => compileJsonGame(manifest, source));
+  expect(error).toMatchObject({
+    code: 'GAME_AUTHORING_ERROR',
+    path: 'game.json.patterns[0].config.specialValue',
+    expected: 'member of orderedValues',
+    received: 'missing',
+  });
+  expect(error.message).toContain(error.path);
+});
 
 it('reports grammar failures at the array item and property', () => {
-  const error = diagnostic(() =>
-    compileJsonGame(manifest, {
-      ...document,
-      discardPenaltyCards: {
-        ...document.discardPenaltyCards,
-        orderedValues: [1, false],
-      },
-    }),
-  );
-  expect(error.path).toBe('game.json.discardPenaltyCards.orderedValues[1]');
+  const source = structuredClone(document) as Record<string, unknown> & {
+    patterns: Array<{ config: Record<string, unknown> }>;
+  };
+  source.patterns[0].config.orderedValues = [1, false];
+  const error = diagnostic(() => compileJsonGame(manifest, source));
+  expect(error.path).toBe('game.json.patterns[0].config.orderedValues[1]');
   expect(error.received).toBe(false);
 });
 

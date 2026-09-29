@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -8,10 +7,7 @@ import { compileJsonGame } from '../../../rules/public-api';
 import manifest from './manifest.json';
 import documentExtensionSource from './game.json';
 import catalogue from './catalogue.json';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'propertyEconomy',
-);
+const document = documentExtensionSource;
 
 const assets = { 'content/catalogue.json': catalogue };
 const gameDefinition = compileJsonGame(manifest, document, assets);
@@ -50,7 +46,11 @@ describe('Sac structured cards', () => {
         'content/catalogue.json': edited,
       });
       expect(
-        (compiled.content.data as { propertyEconomy: unknown }).propertyEconomy,
+        (
+          compiled.content.data as {
+            patterns: Array<{ config: unknown }>;
+          }
+        ).patterns[0].config,
       ).toEqual(edited);
       for (const tile of variant.tiles.filter((tile) => tile.type === 'tax')) {
         expect(Number.isSafeInteger(tile.taxAmount)).toBe(true);
@@ -115,6 +115,6 @@ describe('Sac à Malices declarative game', () => {
       source,
       [],
     ) as typeof source;
-    expect(restored.engine.contentVersion).toBe('1');
+    expect(restored.engine.contentVersion).toBe('2');
   });
 });

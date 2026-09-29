@@ -14,9 +14,24 @@ function sourceDefinition() {
     (entry) => entry.id === 'arche-de-mnemosyne',
   );
   const document = definition?.content?.data;
-  if (!document || !('simultaneousQuiz' in document))
+  if (
+    !document ||
+    !('patterns' in document) ||
+    !Array.isArray(document.patterns)
+  )
     throw new Error('Missing quiz definition');
-  const quiz = document.simultaneousQuiz;
+  const patterns: unknown[] = document.patterns;
+  const pattern = patterns.find(
+    (entry): entry is { kind: string; config: object } =>
+      !!entry &&
+      typeof entry === 'object' &&
+      'kind' in entry &&
+      entry.kind === 'simultaneous-quiz' &&
+      'config' in entry &&
+      !!entry.config &&
+      typeof entry.config === 'object',
+  );
+  const quiz = pattern?.config;
   if (
     !quiz ||
     typeof quiz !== 'object' ||
@@ -24,7 +39,7 @@ function sourceDefinition() {
     !('questions' in quiz)
   )
     throw new Error('Missing quiz content');
-  return { document, quiz };
+  return { document, patterns, pattern, quiz };
 }
 
 export function mnemoQuizSeed(): object {
@@ -33,7 +48,7 @@ export function mnemoQuizSeed(): object {
 }
 
 export function mnemoContentRuntime(fallback: GameRuntime) {
-  const { document, quiz } = sourceDefinition();
+  const { document, patterns, pattern, quiz } = sourceDefinition();
   const manifest = {
     code: fallback.gameType,
     engine: fallback.gameType,
@@ -60,11 +75,18 @@ export function mnemoContentRuntime(fallback: GameRuntime) {
       previousCatalog = catalogue;
       previousSource = {
         ...document,
-        simultaneousQuiz: {
-          ...quiz,
-          categories: catalogue.categories,
-          questions: catalogue.questions,
-        },
+        patterns: patterns.map((entry) =>
+          entry === pattern
+            ? {
+                ...pattern,
+                config: {
+                  ...quiz,
+                  categories: catalogue.categories,
+                  questions: catalogue.questions,
+                },
+              }
+            : entry,
+        ),
       };
       return previousSource;
     },
