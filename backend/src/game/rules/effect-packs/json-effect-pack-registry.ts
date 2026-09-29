@@ -25,7 +25,6 @@ import { effectPack as cardsRitualPhasesEffectPack } from '../game-specific/card
 import { effectPack as boardPropertyEconomyEffectPack } from '../game-specific/board-property-economy/effect-pack';
 import { effectPack as choiceAnonymousVoteEffectPack } from '../game-specific/choice-anonymous-vote/effect-pack';
 import { effectPack as cardsSharedPrestigeEffectPack } from '../game-specific/cards-shared-prestige/effect-pack';
-import { effectPack as cardsBattleTiesEffectPack } from '../game-specific/cards-battle-ties/effect-pack';
 import { effectPack as choiceSimultaneousQuizEffectPack } from '../game-specific/choice-simultaneous-quiz/effect-pack';
 import { effectPack as boardPathWallsEffectPack } from '../game-specific/board-path-walls/effect-pack';
 import { effectPack as choiceStoryChallengeEffectPack } from '../game-specific/choice-story-challenge/effect-pack';
@@ -61,7 +60,6 @@ export const jsonEffectPacks = Object.freeze([
   boardPropertyEconomyEffectPack,
   choiceAnonymousVoteEffectPack,
   cardsSharedPrestigeEffectPack,
-  cardsBattleTiesEffectPack,
   choiceSimultaneousQuizEffectPack,
   boardPathWallsEffectPack,
   choiceStoryChallengeEffectPack,

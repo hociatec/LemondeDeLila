@@ -23,6 +23,10 @@ import {
   type GooseRaceOptions,
 } from '../patterns/goose-race-pattern';
 import {
+  cardBattle,
+  type CardBattleOptions,
+} from '../patterns/card-battle-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -56,6 +60,7 @@ export type JsonGamePattern =
   | ({ kind: 'ordered-card-collection' } & OrderedCardCollectionOptions)
   | ({ kind: 'event-card-race' } & EventCardRaceOptions)
   | ({ kind: 'goose-race' } & GooseRaceOptions)
+  | ({ kind: 'card-battle' } & CardBattleOptions)
   | {
       kind: 'market';
       marketId: string;
@@ -328,6 +333,31 @@ export const jsonGamePatternSchema: AuthorSchema = {
     ),
     object(
       {
+        kind: { const: 'card-battle' },
+        playRecipe: id,
+        deckId: id,
+        handId: id,
+        totalCards: { type: 'integer', minimum: 1, maximum: 10000 },
+        cards: array(
+          object(
+            {
+              id,
+              name: { type: 'string', minLength: 1, maxLength: 1000 },
+              type: id,
+              color: id,
+              family: id,
+              value: { type: 'number' },
+              allowedFamilies: array(id),
+            },
+            ['id', 'name', 'type', 'color', 'value'],
+          ),
+          1,
+        ),
+      },
+      ['kind', 'playRecipe', 'deckId', 'handId', 'totalCards', 'cards'],
+    ),
+    object(
+      {
         kind: { const: 'market' },
         marketId: id,
         inventoryId: id,
@@ -400,6 +430,10 @@ export function compileJsonPattern(
     case 'goose-race': {
       const { kind: _kind, ...options } = pattern;
       return gooseRace(options);
+    }
+    case 'card-battle': {
+      const { kind: _kind, ...options } = pattern;
+      return cardBattle(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

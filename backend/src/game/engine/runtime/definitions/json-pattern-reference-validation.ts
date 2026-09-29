@@ -44,7 +44,33 @@ export function assertJsonPatternReferences(
         maximumPlayers,
         fail,
       );
+    if (pattern.kind === 'card-battle')
+      assertCardBattleReferences(pattern, index, components, fail);
   }
+}
+
+function assertCardBattleReferences(
+  pattern: Extract<JsonGamePattern, { kind: 'card-battle' }>,
+  patternIndex: number,
+  components: readonly GameComponentDefinition[],
+  fail: Failure,
+): void {
+  const root = `patterns[${patternIndex}]`;
+  assertUnique(
+    pattern.cards.map((card) => card.id),
+    `${root}.cards`,
+    'id',
+    fail,
+  );
+  if (pattern.totalCards !== pattern.cards.length)
+    fail(`${root}.totalCards`, 'totalCards must match the card catalogue');
+  requireDeck(pattern.deckId, `${root}.deckId`, components, fail);
+  const hand = components.find(
+    (component) =>
+      component.component === 'cards.hands' && component.id === pattern.handId,
+  );
+  if (hand?.component !== 'cards.hands' || hand.deck !== pattern.deckId)
+    fail(`${root}.handId`, 'unknown hand or mismatched deck');
 }
 
 function assertGooseRaceReferences(

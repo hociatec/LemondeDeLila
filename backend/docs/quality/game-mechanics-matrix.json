@@ -3440,9 +3440,7 @@
     },
     {
       "id": "zig-et-zag",
-      "packs": [
-        "cards-battle-ties"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -3450,47 +3448,19 @@
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/vents-dansants/zig-et-zag/game.json:10",
           "src/game/games/vents-dansants/zig-et-zag/game.json:22",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:28",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:59",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:67",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:106",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:123",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:146",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:170",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:173",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:201",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:205",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:241",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:243",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:244",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:328",
-          "src/game/rules/game-specific/cards-battle-ties/json-battle-ties-schema.ts:38"
+          "src/game/games/vents-dansants/zig-et-zag/game.json:34"
         ],
-        "zones": [
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:170"
-        ],
+        "zones": [],
         "choices": [],
         "status": [],
         "collections": [],
-        "scoring": [
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:256",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:258",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:259"
-        ],
+        "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/zig-et-zag/game.json:55",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:213"
+          "src/game/games/vents-dansants/zig-et-zag/game.json:67"
         ],
         "targeting": [],
-        "triggers": [
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:73",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:110",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:152",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:181",
-          "src/game/rules/game-specific/cards-battle-ties/battle-ties.recipes.ts:305"
-        ]
+        "triggers": []
       }
     }
   ],
@@ -3511,12 +3481,6 @@
       "name": "board-property-economy",
       "consumers": [
         "sac-a-malices"
-      ]
-    },
-    {
-      "name": "cards-battle-ties",
-      "consumers": [
-        "zig-et-zag"
       ]
     },
     {

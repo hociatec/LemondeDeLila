@@ -1,4 +1,4 @@
-import type { GameContext } from '../../../engine/sdk/public-api';
+import type { GameContext } from '../definitions/game-author-context';
 
 type BattlePlay = { playerId: number; cardNames: string[] };
 

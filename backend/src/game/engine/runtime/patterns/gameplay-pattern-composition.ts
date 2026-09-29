@@ -25,6 +25,7 @@ export function assertComposablePatterns<TState extends object>(
   const initializedPawns = new Map<string, string>();
   let selectedTurn: { id: string; policy: TurnPolicy } | null = null;
   let setupPatternId: string | null = null;
+  let viewPatternId: string | null = null;
   for (const [patternIndex, pattern] of patterns.entries()) {
     const path = `patterns[${patternIndex}]`;
     if (seenPatternIds.has(pattern.id)) {
@@ -70,6 +71,7 @@ export function assertComposablePatterns<TState extends object>(
     assertPawnInitialization(pattern, initializedPawns, path);
 
     setupPatternId = selectSetupPattern(pattern, setupPatternId, path);
+    viewPatternId = selectViewPattern(pattern, viewPatternId, path);
 
     if (!pattern.turn) continue;
     if (!selectedTurn) {
@@ -84,6 +86,21 @@ export function assertComposablePatterns<TState extends object>(
       `${path}.turn`,
     );
   }
+}
+
+function selectViewPattern<TState extends object>(
+  pattern: GamePattern<TState>,
+  selected: string | null,
+  path: string,
+): string | null {
+  if (!pattern.viewExtension) return selected;
+  if (!selected) return pattern.id;
+  throw withAuthoringPath(
+    new GameConfigurationError(
+      `Composition de patterns invalide: vues concurrentes « ${selected} » et « ${pattern.id} »`,
+    ),
+    `${path}.viewExtension`,
+  );
 }
 
 function selectSetupPattern<TState extends object>(

@@ -61,7 +61,6 @@
     "cards-ritual-phases": "Compared with collection and card primitives; ritual phases and light scoring remain unique.",
     "board-property-economy": "Compared with board-turn, board-landings and economy-kit; mortgages, jail, ownership and city economy remain unique.",
     "choice-chapter-encounter": "Compared with track-round and collection primitives; chapters, encounters and final countdown remain unique.",
-    "cards-battle-ties": "Compared with card-actions; successive ties and battle resolution remain unique.",
     "cards-public-domain": "Compared with generic card selection and collection primitives: public-domain card classification and collection completion remain a catalogue rule, isolated from the engine by the injected extension contract.",
     "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
     "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible.",
@@ -110,8 +109,7 @@
       "cards-discard-penalty",
       "cards-public-domain",
       "cards-shared-prestige",
-      "cards-ritual-phases",
-      "cards-battle-ties"
+      "cards-ritual-phases"
     ],
     "choice": [
       "choice-simultaneous-paw-scoring",
@@ -413,14 +411,6 @@
       "scope": "game-specific",
       "classificationReason": "collection-market-exchange implements market collection and exchange. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
-    },
-    "cards-battle-ties": {
-      "property": "battleTies",
-      "mechanic": "successive-tie card battle",
-      "domain": "cards",
-      "scope": "game-specific",
-      "classificationReason": "cards-battle-ties implements successive-tie card battle. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
     }
   },
   "registrationOrder": [
@@ -449,7 +439,6 @@
     "board-property-economy",
     "choice-anonymous-vote",
     "cards-shared-prestige",
-    "cards-battle-ties",
     "choice-simultaneous-quiz",
     "board-path-walls",
     "choice-story-challenge",

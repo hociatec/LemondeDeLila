@@ -53,6 +53,8 @@ export function composePatterns<TState extends object>(
     ),
     choices: Object.assign({}, ...patterns.map((pattern) => pattern.choices)),
     effects: Object.assign({}, ...patterns.map((pattern) => pattern.effects)),
+    viewExtension: patterns.find((pattern) => pattern.viewExtension)
+      ?.viewExtension,
     setup: patterns.find((pattern) => pattern.setup)?.setup,
     lifecycle: composeLifecycle(
       patterns.flatMap((pattern) =>

@@ -38,6 +38,11 @@ export type GamePattern<
   readonly actions?: GameActionMap<TState>;
   readonly choices?: Readonly<Record<string, ChoiceResolverShape<TState>>>;
   readonly effects?: Readonly<Record<string, GameEffectResolverShape<TState>>>;
+  readonly viewExtension?: (input: {
+    state: TState;
+    actor: PlayerState | null;
+    ctx: GameContext<TState>;
+  }) => object;
   setup?(input: { players: PlayerState[]; ctx: GameContext<TState> }): object;
   readonly config?: GameConfigurationShape<TState>;
 };

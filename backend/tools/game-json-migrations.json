@@ -50,6 +50,16 @@
         "src/game/testing/architecture-tests/game/goose-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-goose-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/zig-et-zag/game.json",
+      "fromSha256": "543afa0e3d9594d5a7faf2619fdf4db335ad181ec1122e8237deb9f8e6efcec8",
+      "toSha256": "e02210f9ce3432bb1996a10e2afabaf4408a60021fb0d2e51df0cd029f4aaaa6",
+      "justification": "Le pattern card-battle générique porte désormais l'état de manche, les égalités successives, les jokers, la capture des cartes, la vue dérivée et la victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/card-battle-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-card-battle.spec.ts"
+      ]
     }
   ]
 }

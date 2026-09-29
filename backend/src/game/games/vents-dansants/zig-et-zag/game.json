@@ -1,10 +1,22 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "1",
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
-  "patterns": [],
+  "patterns": [
+    {
+      "kind": "card-battle",
+      "playRecipe": "cards-battle-ties-draw",
+      "deckId": "battle",
+      "handId": "players",
+      "totalCards": 54,
+      "cards": {
+        "$content": "content/catalogue.json#/cards"
+      }
+    }
+  ],
+  "bot": { "kind": "first" },
   "components": [
     {
       "component": "cards.deck",
@@ -52,20 +64,12 @@
       "recipe": "cards-battle-ties-draw"
     }
   },
-  "victory": {
-    "kind": "by-battle-ties"
-  },
-  "extensions": [
+  "victory": { "kind": "manual" },
+  "snapshotMigrations": [
     {
-      "type": "battleTies",
-      "config": {
-        "deckId": "battle",
-        "handId": "players",
-        "totalCards": 54,
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        }
-      }
+      "fromVersion": "1",
+      "toVersion": "2"
     }
-  ]
+  ],
+  "extensions": []
 }

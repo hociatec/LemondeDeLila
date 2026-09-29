@@ -55,8 +55,6 @@
 155. Tester bots, timers, choix, données cachées, égalités et cas limites après migration.
 156. Ne supprimer l'ancien effect pack qu'après réussite de la certification du jeu migré.
 157. Vérifier après suppression que le jeu fonctionne sans charger son ancien TypeScript spécifique.
-158. Migrer cards-battle-ties afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
-159. Supprimer game/rules/game-specific/cards-battle-ties/effect-pack.ts après certification comportementale complète.
 164. Migrer board-property-economy afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 165. Supprimer game/rules/game-specific/board-property-economy/effect-pack.ts après certification comportementale complète.
 168. Migrer choice-story-challenge afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.

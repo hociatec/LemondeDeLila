@@ -30,10 +30,8 @@ it('retains concrete fields from the registry through the compiler public contra
   expect([wrongField, wrongScalar, reserved]).toHaveLength(3);
 });
 
-it('keeps different last-round schemas distinct for consumers selecting an extension', () => {
+it('keeps concrete view fields for consumers selecting an extension', () => {
   const challenge: JsonGameViews['anonymousVote']['currentChallengeId'] =
     'challenge-1';
-  const battle: JsonGameViews['battleTies']['lastRound'] = null;
   expect(challenge).toBe('challenge-1');
-  expect(battle).toBeNull();
 });

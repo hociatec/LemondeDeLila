@@ -1,14 +1,31 @@
+import { completeRound } from './pattern-capabilities';
+import { defineGamePhases } from '../kits/phase-kit';
+import { gameInput } from '../actions/game-input-schema';
+import type { GameContext } from '../definitions/game-author-context';
+import { defineAction } from '../actions/action-builders';
 import {
-  defineGamePhases,
-  completeRound,
-  gameInput,
-} from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
-import type { BattleTiesProgram } from './program';
-import { defineAction } from '../../../engine/sdk/extension-api';
-import { rejectRule } from '../../../engine/sdk/extension-api';
-import { GameCorruptedStateError } from '../../../core/domain/errors/game-runtime.errors';
-import { battleWonNarration } from './battle-ties.narration';
+  GameRuleViolationError,
+  rejectRule,
+} from '../contracts/game-domain.errors';
+import { battleWonNarration } from './card-battle-narration';
+import { definePattern } from './gameplay-pattern-core';
+
+export type CardBattleCard = {
+  id: string;
+  name: string;
+  type: string;
+  color: string;
+  family?: string;
+  value: number;
+  allowedFamilies?: readonly string[];
+};
+export type CardBattleOptions = {
+  playRecipe: string;
+  deckId: string;
+  handId: string;
+  totalCards: number;
+  cards: readonly CardBattleCard[];
+};
 
 type PlayState = { playerId: number; playedCards: string[] };
 type RoundState = { plays: PlayState[]; tiedPlayers: number[] };
@@ -22,7 +39,7 @@ type RuntimeState = { battle: RoundState; lastRound: RoundSummary | null };
 type State = Record<string, never>;
 type Context = GameContext<State>;
 
-export function battleTiesRules(source: BattleTiesProgram) {
+export function cardBattle(source: CardBattleOptions) {
   const program = structuredClone(source);
   const cards = Object.fromEntries(
     program.cards.map((card) => [card.id, card]),
@@ -61,14 +78,14 @@ export function battleTiesRules(source: BattleTiesProgram) {
       // selected card plays that card. The optional fallback preserves the
       // historical Space shortcut, which selects a card at random.
       const cardId = input.cardId ?? ctx.random.pick(hand);
-      if (!cardId) rejectRule('Pile battle-ties cards vide');
+      if (!cardId) rejectRule('Pile de cartes de bataille vide');
       if (!hand.includes(cardId))
         rejectRule('Cette carte ne fait pas partie de votre pile');
       ctx.cards.take(program.handId, actor.id, cardId);
       const play = current.battle.plays.find(
         (item) => item.playerId === actor.id,
       );
-      if (!play) rejectRule('Participation battle-ties cards introuvable');
+      if (!play) rejectRule('Participation à la bataille introuvable');
       play.playedCards.push(cardId);
       ctx.events.message(
         'game.card.battle.card-placed',
@@ -285,8 +302,10 @@ export function battleTiesRules(source: BattleTiesProgram) {
     });
   }
 
-  return {
-    draw,
+  return definePattern({
+    id: `card-battle:${program.deckId}`,
+    mechanics: ['cards', 'rounds', 'successive-ties'],
+    actions: { [program.playRecipe]: draw },
     setup: ({ ctx }: { ctx: Context }): State => {
       const state: State = {};
       Reflect.set(state, 'battle', createRound(ctx));
@@ -318,7 +337,7 @@ export function battleTiesRules(source: BattleTiesProgram) {
           : null,
       };
     },
-  };
+  });
 
   function createRound(ctx: Context): RoundState {
     const playerIds = ctx.players
@@ -337,9 +356,7 @@ export function battleTiesRules(source: BattleTiesProgram) {
 
 function runtime(state: State): RuntimeState {
   if (!isRuntimeState(state))
-    throw new GameCorruptedStateError(
-      'Invalid battle-ties cards runtime state',
-    );
+    throw new GameRuleViolationError('INVALID_CARD_BATTLE_STATE');
   return state;
 }
 
