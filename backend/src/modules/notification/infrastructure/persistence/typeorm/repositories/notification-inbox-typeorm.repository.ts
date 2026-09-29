@@ -181,8 +181,9 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
       return [];
     }
 
+    let rows: NotificationInboxContactRawRow[];
     try {
-      const rows = await this.repo
+      rows = await this.repo
         .createQueryBuilder('it')
         .innerJoin('it.user', 'u')
         .select('it.id', 'id')
@@ -201,42 +202,16 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
         .andWhere('it.deletedAt IS NULL')
         .limit(500)
         .getRawMany<NotificationInboxContactRawRow>();
-
-      return rows
-        .map((row) => ({
-          id: toText(row.id),
-          userId: requireStrictInteger(row.userId, 'notification.userId', {
-            min: 1,
-          }),
-          kind: toText(row.kind),
-          contactId: toNullableText(row.contactId),
-          fromUserId:
-            row.fromUserId == null
-              ? null
-              : requireStrictInteger(
-                  row.fromUserId,
-                  'notification.fromUserId',
-                  { min: 1 },
-                ),
-          fromUsername: toNullableText(row.fromUsername),
-          toUserId:
-            row.toUserId == null
-              ? null
-              : requireStrictInteger(row.toUserId, 'notification.toUserId', {
-                  min: 1,
-                }),
-          message: toNullableText(row.message),
-          payload: this.normalizePayload(row?.payload),
-          createdAt: requireStoredDate(toDate(row.createdAt)),
-          readAt: toDate(row.readAt),
-        }))
-        .filter((row) => row.id && row.userId > 0);
     } catch (error) {
       throw new NotificationInboxPersistenceError(
         'Unable to list notification inbox items by contact',
         { cause: error },
       );
     }
+
+    return rows
+      .map((row) => this.toContactRow(row))
+      .filter((row): row is NotificationInboxContactRow => row !== null);
   }
 
   async updatePayload(
@@ -355,6 +330,41 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
         MAX_NOTIFICATION_PAYLOAD_BYTES
         ? (value as Record<string, unknown>)
         : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private toContactRow(
+    row: NotificationInboxContactRawRow,
+  ): NotificationInboxContactRow | null {
+    try {
+      const mapped: NotificationInboxContactRow = {
+        id: toText(row.id),
+        userId: requireStrictInteger(row.userId, 'notification.userId', {
+          min: 1,
+        }),
+        kind: toText(row.kind),
+        contactId: toNullableText(row.contactId),
+        fromUserId:
+          row.fromUserId == null
+            ? null
+            : requireStrictInteger(row.fromUserId, 'notification.fromUserId', {
+                min: 1,
+              }),
+        fromUsername: toNullableText(row.fromUsername),
+        toUserId:
+          row.toUserId == null
+            ? null
+            : requireStrictInteger(row.toUserId, 'notification.toUserId', {
+                min: 1,
+              }),
+        message: toNullableText(row.message),
+        payload: this.normalizePayload(row.payload),
+        createdAt: requireStoredDate(toDate(row.createdAt)),
+        readAt: toDate(row.readAt),
+      };
+      return mapped.id && mapped.userId > 0 ? mapped : null;
     } catch {
       return null;
     }
