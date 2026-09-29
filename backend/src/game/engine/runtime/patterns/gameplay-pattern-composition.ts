@@ -26,6 +26,7 @@ export function assertComposablePatterns<TState extends object>(
   let selectedTurn: { id: string; policy: TurnPolicy } | null = null;
   let setupPatternId: string | null = null;
   let viewPatternId: string | null = null;
+  let botPatternId: string | null = null;
   for (const [patternIndex, pattern] of patterns.entries()) {
     const path = `patterns[${patternIndex}]`;
     if (seenPatternIds.has(pattern.id)) {
@@ -72,6 +73,7 @@ export function assertComposablePatterns<TState extends object>(
 
     setupPatternId = selectSetupPattern(pattern, setupPatternId, path);
     viewPatternId = selectViewPattern(pattern, viewPatternId, path);
+    botPatternId = selectExclusivePattern(pattern, botPatternId, path, 'bot');
 
     if (!pattern.turn) continue;
     if (!selectedTurn) {
@@ -86,6 +88,22 @@ export function assertComposablePatterns<TState extends object>(
       `${path}.turn`,
     );
   }
+}
+
+function selectExclusivePattern<TState extends object>(
+  pattern: GamePattern<TState>,
+  selected: string | null,
+  path: string,
+  field: 'bot',
+): string | null {
+  if (!pattern[field]) return selected;
+  if (!selected) return pattern.id;
+  throw withAuthoringPath(
+    new GameConfigurationError(
+      `Composition de patterns invalide: ${field} concurrents « ${selected} » et « ${pattern.id} »`,
+    ),
+    `${path}.${field}`,
+  );
 }
 
 function selectViewPattern<TState extends object>(

@@ -1,9 +1,31 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "3",
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
+  "patterns": [
+    {
+      "kind": "themed-set-collection",
+      "formRecipe": "collection-themed-circles-form",
+      "discardRecipe": "collection-themed-circles-discard",
+      "passRecipe": "collection-themed-circles-pass",
+      "formAction": "form_circle",
+      "discardAction": "discard_card",
+      "passAction": "pass",
+      "deckId": "sacred-circles",
+      "handId": "players",
+      "inventoryId": "sacred-circles-completed",
+      "cards": { "$content": "content/catalogue.json#/cards" },
+      "themes": { "$content": "content/catalogue.json#/themes" },
+      "cardsPerCircle": 6,
+      "circlesToWin": 3,
+      "handMinimum": 6,
+      "handLimit": 8,
+      "finishReason": "three-circles",
+      "eventNamespace": "cercles"
+    }
+  ],
   "components": [
     {
       "component": "cards.deck",
@@ -52,11 +74,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "form_circle",
-        "discard_card",
-        "pass"
-      ],
+      "actions": ["form_circle", "discard_card", "pass"],
       "terminal": true
     }
   },
@@ -71,29 +89,7 @@
       "recipe": "collection-themed-circles-pass"
     }
   },
-  "victory": {
-    "kind": "by-card-circles"
-  },
-  "extensions": [
-    {
-      "type": "cardCircles",
-      "config": {
-        "deckId": "sacred-circles",
-        "handId": "players",
-        "inventoryId": "sacred-circles-completed",
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        },
-        "themes": {
-          "$content": "content/catalogue.json#/themes"
-        },
-        "cardsPerCircle": 6,
-        "circlesToWin": 3,
-        "handMinimum": 6,
-        "handLimit": 8,
-        "finishReason": "three-circles",
-        "eventNamespace": "cercles"
-      }
-    }
-  ]
+  "victory": { "kind": "manual" },
+  "snapshotMigrations": [{ "fromVersion": "1", "toVersion": "2" }],
+  "extensions": []
 }

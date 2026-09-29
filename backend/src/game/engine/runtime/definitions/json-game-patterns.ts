@@ -31,6 +31,10 @@ import {
   type TrackZoneCollectionOptions,
 } from '../patterns/track-zone-collection-pattern';
 import {
+  themedSetCollection,
+  type ThemedSetCollectionOptions,
+} from '../patterns/themed-set-collection-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -43,6 +47,7 @@ import {
   cardBattlePatternSchema,
   gooseRacePatternSchema,
   trackZoneCollectionPatternSchema,
+  themedSetCollectionPatternSchema,
 } from './json-advanced-pattern-schemas';
 
 export type JsonGamePattern =
@@ -71,6 +76,7 @@ export type JsonGamePattern =
   | ({ kind: 'goose-race' } & GooseRaceOptions)
   | ({ kind: 'card-battle' } & CardBattleOptions)
   | ({ kind: 'track-zone-collection' } & TrackZoneCollectionOptions)
+  | ({ kind: 'themed-set-collection' } & ThemedSetCollectionOptions)
   | {
       kind: 'market';
       marketId: string;
@@ -279,6 +285,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     gooseRacePatternSchema,
     cardBattlePatternSchema,
     trackZoneCollectionPatternSchema,
+    themedSetCollectionPatternSchema,
     object(
       {
         kind: { const: 'market' },
@@ -361,6 +368,10 @@ export function compileJsonPattern(
     case 'track-zone-collection': {
       const { kind: _kind, ...options } = pattern;
       return trackZoneCollection(options);
+    }
+    case 'themed-set-collection': {
+      const { kind: _kind, ...options } = pattern;
+      return themedSetCollection(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

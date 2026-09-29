@@ -1,6 +1,7 @@
 import type { GameComponentDefinition } from './component-kit';
 import type { JsonGamePattern } from './json-game-patterns';
 import { authoringProperty } from '../contracts/authoring-diagnostics';
+import { assertThemedSetCollectionReferences } from './json-collection-pattern-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
 
@@ -54,6 +55,8 @@ export function assertJsonPatternReferences(
         resources,
         fail,
       );
+    if (pattern.kind === 'themed-set-collection')
+      assertThemedSetCollectionReferences(pattern, index, components, fail);
   }
 }
 

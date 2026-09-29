@@ -120,7 +120,6 @@
     ],
     "collection": [
       "collection-species-troops",
-      "collection-themed-circles",
       "collection-family-request",
       "collection-family-effects",
       "collection-market-exchange"
@@ -185,14 +184,6 @@
       "domain": "cards",
       "scope": "game-specific",
       "classificationReason": "cards-ordered-assembly implements ordered vehicle-part assembly. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "collection-themed-circles": {
-      "property": "cardCircles",
-      "mechanic": "themed card circle completion",
-      "domain": "collection",
-      "scope": "game-specific",
-      "classificationReason": "collection-themed-circles implements themed card circle completion. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
     "choice-simultaneous-paw-scoring": {
@@ -411,7 +402,6 @@
     "cards-ordered-assembly",
     "collection-market-exchange",
     "race-paired-pawns",
-    "collection-themed-circles",
     "cards-public-domain",
     "race-protected-haunted-track",
     "race-bidirectional-collision",

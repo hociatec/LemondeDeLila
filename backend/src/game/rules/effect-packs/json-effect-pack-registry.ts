@@ -6,7 +6,6 @@ import { effectPack as collectionFamilyRequestEffectPack } from '../game-specifi
 import { effectPack as cardsOrderedAssemblyEffectPack } from '../game-specific/cards-ordered-assembly/effect-pack';
 import { effectPack as collectionMarketExchangeEffectPack } from '../game-specific/collection-market-exchange/effect-pack';
 import { effectPack as racePairedPawnsEffectPack } from '../game-specific/race-paired-pawns/effect-pack';
-import { effectPack as collectionThemedCirclesEffectPack } from '../game-specific/collection-themed-circles/effect-pack';
 import { effectPack as cardsPublicDomainEffectPack } from '../game-specific/cards-public-domain/effect-pack';
 import { effectPack as raceProtectedHauntedTrackEffectPack } from '../game-specific/race-protected-haunted-track/effect-pack';
 import { effectPack as raceBidirectionalCollisionEffectPack } from '../game-specific/race-bidirectional-collision/effect-pack';
@@ -40,7 +39,6 @@ export const jsonEffectPacks = Object.freeze([
   cardsOrderedAssemblyEffectPack,
   collectionMarketExchangeEffectPack,
   racePairedPawnsEffectPack,
-  collectionThemedCirclesEffectPack,
   cardsPublicDomainEffectPack,
   raceProtectedHauntedTrackEffectPack,
   raceBidirectionalCollisionEffectPack,

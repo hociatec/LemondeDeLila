@@ -544,9 +544,7 @@
     },
     {
       "id": "cercles-sacres",
-      "packs": [
-        "collection-themed-circles"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -554,43 +552,20 @@
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/vents-dansants/cercles-sacres/game.json:9",
-          "src/game/games/vents-dansants/cercles-sacres/game.json:18",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:16",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:35",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:36",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:38",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:44",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:49",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:56",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:63",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:82",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:111",
-          "src/game/rules/game-specific/collection-themed-circles/effect-pack.ts:24",
-          "src/game/rules/game-specific/collection-themed-circles/effect-pack.ts:26",
-          "src/game/rules/game-specific/collection-themed-circles/json-card-circles-schema.ts:44",
-          "src/game/rules/game-specific/collection-themed-circles/json-card-circles-schema.ts:48",
-          "src/game/rules/game-specific/collection-themed-circles/json-card-circles-schema.ts:52",
-          "src/game/rules/game-specific/collection-themed-circles/json-card-circles-schema.ts:68"
+          "src/game/games/vents-dansants/cercles-sacres/game.json:31",
+          "src/game/games/vents-dansants/cercles-sacres/game.json:40"
         ],
-        "zones": [
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:56"
-        ],
+        "zones": [],
         "choices": [],
         "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/cercles-sacres/game.json:74",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:72"
+          "src/game/games/vents-dansants/cercles-sacres/game.json:92"
         ],
         "targeting": [],
         "triggers": [
-          "src/game/games/vents-dansants/cercles-sacres/game.spec.ts:14",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:25",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:67",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:84",
-          "src/game/rules/game-specific/collection-themed-circles/card-circles.recipes.ts:94"
+          "src/game/games/vents-dansants/cercles-sacres/game.spec.ts:11"
         ]
       }
     },
@@ -3550,12 +3525,6 @@
       "name": "collection-species-troops",
       "consumers": [
         "la-bande-a-banane"
-      ]
-    },
-    {
-      "name": "collection-themed-circles",
-      "consumers": [
-        "cercles-sacres"
       ]
     },
     {

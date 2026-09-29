@@ -70,6 +70,16 @@
         "src/game/testing/architecture-tests/game/track-zone-collection-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-track-zone-collection.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/cercles-sacres/game.json",
+      "fromSha256": "18709e11064aeca9cc76482a62330397a9a39d3012a14e618d48b5b5908dfea8",
+      "toSha256": "59938c4f90dac2f848292d10f8edbfbca77c88daf4777387de494ff60f5f8a12",
+      "justification": "Le pattern themed-set-collection générique porte désormais combinaisons de thèmes, limite et recharge de main, inventaire, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/refill-hand-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-themed-set-collection.spec.ts"
+      ]
     }
   ]
 }

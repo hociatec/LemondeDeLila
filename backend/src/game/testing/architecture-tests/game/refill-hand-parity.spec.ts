@@ -7,16 +7,12 @@ import {
 } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import cerclesManifest from '../../../games/vents-dansants/cercles-sacres/manifest.json';
-import cerclesDocumentExtensionSource from '../../../games/vents-dansants/cercles-sacres/game.json';
+import cerclesDocument from '../../../games/vents-dansants/cercles-sacres/game.json';
 import cerclesCatalogue from '../../../games/vents-dansants/cercles-sacres/content/catalogue.json';
 import gerardManifest from '../../../games/vents-dansants/gerard-president/manifest.json';
 import gerardDocumentExtensionSource from '../../../games/vents-dansants/gerard-president/game.json';
 import gerardCatalogue from '../../../games/vents-dansants/gerard-president/content/catalogue.json';
 import reference from '../../fixtures/refill-hand-before-parity.json';
-const cerclesDocument = legacyExtensionFixture(
-  cerclesDocumentExtensionSource,
-  'cardCircles',
-);
 const gerardDocument = legacyExtensionFixture(
   gerardDocumentExtensionSource,
   'themeNameCards',

@@ -119,11 +119,6 @@ add('speciesTroops', (p) => {
   rows(p.cards)[0].species = 'absent';
   return 'cards[0].species';
 });
-duplicate('cardCircles', 'themes');
-add('cardCircles', (p) => {
-  list(p.themes)[0] = 'absent';
-  return 'themes[0]';
-});
 duplicate('marketExchange', 'goods');
 add('marketExchange', (p) => {
   list(p.goods)[0] = 'absent';
