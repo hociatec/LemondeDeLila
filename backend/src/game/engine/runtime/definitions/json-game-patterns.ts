@@ -38,6 +38,7 @@ export type JsonGamePattern =
       diceCount?: number;
       diceSides?: number;
       winOnFinish?: boolean | string;
+      delivery?: NonNullable<Parameters<typeof raceGame>[0]['delivery']>;
     }
   | { kind: 'push-your-luck' }
   | {
@@ -129,6 +130,40 @@ export const jsonGamePatternSchema: AuthorSchema = {
         diceCount: { type: 'integer', minimum: 1, maximum: 100 },
         diceSides: { type: 'integer', minimum: 2, maximum: 1000000 },
         winOnFinish: { oneOf: [boolean, id] },
+        delivery: object(
+          {
+            recipe: id,
+            clientDeckId: id,
+            clientHandId: id,
+            eventDeckId: id,
+            destinationAttribute: id,
+            blockedPositionAttribute: id,
+            positionOffset: {
+              type: 'integer',
+              minimum: -10000,
+              maximum: 10000,
+            },
+            targetScore: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 1000000,
+            },
+            finishReason: id,
+            eventNamespace: id,
+          },
+          [
+            'recipe',
+            'clientDeckId',
+            'clientHandId',
+            'eventDeckId',
+            'destinationAttribute',
+            'blockedPositionAttribute',
+            'positionOffset',
+            'targetScore',
+            'finishReason',
+            'eventNamespace',
+          ],
+        ),
       },
       ['kind', 'trackId', 'spaces'],
     ),

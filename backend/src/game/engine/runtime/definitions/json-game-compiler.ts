@@ -35,6 +35,7 @@ import type {
 } from '../contracts/json-effect-pack-catalog';
 
 import { createJsonGameSchema } from './json-game-schema';
+import { assertJsonPatternReferences } from './json-pattern-reference-validation';
 
 export type { JsonGameManifest } from './json-game-manifest';
 
@@ -239,6 +240,14 @@ function assertDocumentReferences(
     new Set(Object.keys(document.phases ?? {})),
   );
   assertProgramReferences(document, patterns, manifest, fail, jsonEffectPacks);
+  assertJsonPatternReferences(
+    document.patterns,
+    [
+      ...document.components,
+      ...(patterns ?? []).flatMap((pattern) => pattern.components ?? []),
+    ],
+    fail,
+  );
   assertSelections(document, patterns, fail, jsonEffectPacks);
   for (const [index, shortcut] of (document.shortcuts ?? []).entries()) {
     if (

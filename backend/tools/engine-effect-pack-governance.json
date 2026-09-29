@@ -147,7 +147,6 @@
     ],
     "race": [
       "race-chained-tile-cards",
-      "race-route-delivery",
       "race-directional-hazards",
       "race-resource-track",
       "race-event-cards",
@@ -250,14 +249,6 @@
       "domain": "board",
       "scope": "game-specific",
       "classificationReason": "board-path-walls implements pawn grid paths and wall placement. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "race-route-delivery": {
-      "property": "deliveryRace",
-      "mechanic": "route delivery race",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-route-delivery implements route delivery race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
     "race-directional-hazards": {
@@ -479,7 +470,6 @@
   },
   "registrationOrder": [
     "race-event-cards",
-    "race-route-delivery",
     "race-goose-track",
     "collection-track-zones",
     "race-resource-track",

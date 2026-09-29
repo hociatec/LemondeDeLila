@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "2",
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
@@ -8,7 +8,19 @@
     {
       "kind": "race",
       "trackId": "city",
-      "spaces": 25
+      "spaces": 25,
+      "delivery": {
+        "recipe": "race-route-delivery-roll",
+        "clientDeckId": "clients",
+        "clientHandId": "taxi-clients",
+        "eventDeckId": "events",
+        "destinationAttribute": "destinationId",
+        "blockedPositionAttribute": "blockedTileId",
+        "positionOffset": 1,
+        "targetScore": 5,
+        "finishReason": "five-trips",
+        "eventNamespace": "taxi"
+      }
     }
   ],
   "components": [
@@ -50,9 +62,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -63,27 +73,10 @@
     }
   },
   "victory": {
-    "kind": "by-delivery-race"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "deliveryRace",
-      "config": {
-        "trackId": "city",
-        "diceId": "main",
-        "clientDeckId": "clients",
-        "clientHandId": "taxi-clients",
-        "eventDeckId": "events",
-        "destinationAttribute": "destinationId",
-        "blockedPositionAttribute": "blockedTileId",
-        "positionOffset": 1,
-        "targetScore": 5,
-        "finishReason": "five-trips",
-        "eventNamespace": "taxi",
-        "tiles": {
-          "$content": "content/board.json#/tiles"
-        }
-      }
-    }
-  ]
+  "bot": {
+    "kind": "first"
+  },
+  "extensions": []
 }

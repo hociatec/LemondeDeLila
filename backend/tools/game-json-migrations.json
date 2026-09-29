@@ -10,6 +10,16 @@
         "src/game/testing/architecture-tests/game/pawn-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-pawn-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/taxi-express/game.json",
+      "fromSha256": "e0d53a59fb26f10e949bf1353f3d0f27c113da479e10eb650124107987c18f75",
+      "toSha256": "a657c96a9937830ae5f6234b831dfeb73e7843b06ffac3d5531a46e9a2e5fc2d",
+      "justification": "Le pattern de course générique compose désormais livraison, événements de route, score et victoire à partir de la configuration JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/delivery-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-delivery-race.spec.ts"
+      ]
     }
   ]
 }

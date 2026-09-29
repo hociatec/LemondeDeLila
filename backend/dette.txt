@@ -81,8 +81,6 @@
 183. Supprimer game/rules/game-specific/cards-public-domain/effect-pack.ts après certification comportementale complète.
 184. Migrer race-resource-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 185. Supprimer game/rules/game-specific/race-resource-track/effect-pack.ts après certification comportementale complète.
-186. Migrer race-route-delivery afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
-187. Supprimer game/rules/game-specific/race-route-delivery/effect-pack.ts après certification comportementale complète.
 188. Migrer race-treasure-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 189. Supprimer game/rules/game-specific/race-treasure-track/effect-pack.ts après certification comportementale complète.
 190. Migrer cards-ritual-phases afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.

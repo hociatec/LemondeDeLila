@@ -3267,65 +3267,35 @@
     },
     {
       "id": "taxi-express",
-      "packs": [
-        "race-route-delivery"
-      ],
+      "packs": [],
       "mechanics": {
-        "movement": [
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:42",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:44",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:60",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:49",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:51",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:53"
-        ],
+        "movement": [],
         "ownership": [],
         "collision": [],
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/les-quatre-vents/taxi-express/game.json:22",
-          "src/game/games/les-quatre-vents/taxi-express/game.json:31",
-          "src/game/games/les-quatre-vents/taxi-express/game.json:38",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:83",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:88",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:108",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:68",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:71",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:72",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:81",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:84",
-          "src/game/rules/game-specific/race-route-delivery/json-delivery-race-schema.ts:101"
+          "src/game/games/les-quatre-vents/taxi-express/game.json:34",
+          "src/game/games/les-quatre-vents/taxi-express/game.json:43",
+          "src/game/games/les-quatre-vents/taxi-express/game.json:50"
         ],
-        "zones": [
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:88"
-        ],
+        "zones": [],
         "choices": [],
         "status": [],
         "collections": [],
-        "scoring": [
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:66",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:72"
-        ],
+        "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/taxi-express/game.json:65",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:73"
+          "src/game/games/les-quatre-vents/taxi-express/game.json:75"
         ],
         "targeting": [],
         "triggers": [
-          "src/game/games/les-quatre-vents/taxi-express/game.json:25",
-          "src/game/games/les-quatre-vents/taxi-express/game.json:27",
-          "src/game/games/les-quatre-vents/taxi-express/game.json:76",
-          "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:9",
-          "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:18",
-          "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:25",
-          "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:36",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:38",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:45",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:55",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:67",
-          "src/game/rules/game-specific/race-route-delivery/delivery-race.recipes.ts:95",
-          "src/game/rules/game-specific/race-route-delivery/program.ts:3"
+          "src/game/games/les-quatre-vents/taxi-express/game.json:16",
+          "src/game/games/les-quatre-vents/taxi-express/game.json:37",
+          "src/game/games/les-quatre-vents/taxi-express/game.json:39",
+          "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:8",
+          "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:14",
+          "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:21",
+          "src/game/games/les-quatre-vents/taxi-express/game.spec.ts:32"
         ]
       }
     },
@@ -3805,12 +3775,6 @@
       "name": "race-resource-track",
       "consumers": [
         "primalis"
-      ]
-    },
-    {
-      "name": "race-route-delivery",
-      "consumers": [
-        "taxi-express"
       ]
     },
     {

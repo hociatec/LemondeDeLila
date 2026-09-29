@@ -23,6 +23,7 @@ import type { GameContext } from '../definitions/game-author-context';
 import type { PawnMove } from '../kits/pawn-kit';
 import { GameConfigurationError } from '../contracts/game-domain.errors';
 import { withAuthoringPath } from '../contracts/authoring-origin';
+import { deliveryRaceAction } from './delivery-race-pattern';
 
 export function eventTrackGame<TState extends object, TTile>(
   options: EventTrackOptions<TState, TTile> & {
@@ -70,7 +71,7 @@ export function eventTrackGame<TState extends object, TTile>(
   });
 }
 
-export function raceGame<TState extends object>(options: {
+export type RaceGameOptions = {
   trackId?: string;
   spaces: number;
   positionDisplayOffset?: number;
@@ -82,11 +83,28 @@ export function raceGame<TState extends object>(options: {
   diceCount?: number;
   diceSides?: number;
   winOnFinish?: boolean | string;
-}): GamePattern<
+  delivery?: {
+    recipe: string;
+    clientDeckId: string;
+    clientHandId: string;
+    eventDeckId: string;
+    destinationAttribute: string;
+    blockedPositionAttribute: string;
+    positionOffset: number;
+    targetScore: number;
+    finishReason: string;
+    eventNamespace: string;
+  };
+};
+
+export function raceGame<TState extends object>(
+  options: RaceGameOptions,
+): GamePattern<
   TState,
   'movement.track' | 'dice.set',
   'race' | 'track' | 'dice'
 > {
+  const deliveryAction = deliveryRaceAction<TState>(options);
   return definePattern({
     id: `race-game:${options.trackId ?? 'main'}`,
     mechanics: ['race', 'track', 'dice'],
@@ -107,6 +125,9 @@ export function raceGame<TState extends object>(options: {
         sides: options.diceSides ?? 6,
       }),
     ],
+    ...(options.delivery && deliveryAction
+      ? { actions: { [options.delivery.recipe]: deliveryAction } }
+      : {}),
     ...(options.winOnFinish
       ? {
           victory: {
