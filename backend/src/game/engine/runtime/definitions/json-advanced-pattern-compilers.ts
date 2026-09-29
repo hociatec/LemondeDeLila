@@ -38,6 +38,14 @@ import {
   gridPlacement,
   type GridPlacementOptions,
 } from '../patterns/grid-placement-pattern';
+import {
+  familyRequest,
+  type FamilyRequestOptions,
+} from '../patterns/family-request-pattern';
+import {
+  publicDomainCards,
+  type PublicDomainCardsOptions,
+} from '../patterns/public-domain-cards-pattern';
 
 export function compileTreasureTrackRace(
   pattern: { kind: 'treasure-track-race' } & TreasureTrackRaceOptions,
@@ -100,4 +108,16 @@ export function compileGridPlacement(
 ) {
   const { kind: _kind, ...options } = pattern;
   return gridPlacement(options);
+}
+export function compileFamilyRequest(
+  pattern: { kind: 'family-request' } & FamilyRequestOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return familyRequest(options);
+}
+export function compilePublicDomainCards(
+  pattern: { kind: 'public-domain-cards' } & PublicDomainCardsOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return publicDomainCards(options);
 }

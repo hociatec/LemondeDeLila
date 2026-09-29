@@ -1570,9 +1570,7 @@
     },
     {
       "id": "la-grande-mine-de-barbak",
-      "packs": [
-        "cards-public-domain"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1580,61 +1578,18 @@
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json:9",
-          "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json:18",
-          "src/game/rules/game-specific/cards-public-domain/effect-pack.ts:6",
-          "src/game/rules/game-specific/cards-public-domain/json-public-domain-cards-schema.ts:57",
-          "src/game/rules/game-specific/cards-public-domain/json-public-domain-cards-schema.ts:61",
-          "src/game/rules/game-specific/cards-public-domain/json-public-domain-cards-schema.ts:65",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:20",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:24",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:33",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:34",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:39",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:138",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:146",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:149",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:155",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:157",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:173",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:175",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:176",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:177",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:183",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:185",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:186",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:193",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:197",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:204",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:210",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:215",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:223",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:229"
+          "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json:26",
+          "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json:35"
         ],
-        "zones": [
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:39",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:138",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:146",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:157",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:173",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:177",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:197",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:204",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:215"
-        ],
+        "zones": [],
         "choices": [],
         "status": [
-          "src/game/games/vents-dansants/la-grande-mine-de-barbak/content/catalogue.json:540",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:145"
+          "src/game/games/vents-dansants/la-grande-mine-de-barbak/content/catalogue.json:540"
         ],
         "collections": [],
-        "scoring": [
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:230",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:237"
-        ],
+        "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json:67",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:240"
+          "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json:81"
         ],
         "targeting": [
           "src/game/games/vents-dansants/la-grande-mine-de-barbak/content/catalogue.json:415",
@@ -1660,21 +1615,10 @@
           "src/game/games/vents-dansants/la-grande-mine-de-barbak/content/catalogue.json:845",
           "src/game/games/vents-dansants/la-grande-mine-de-barbak/content/catalogue.json:862",
           "src/game/games/vents-dansants/la-grande-mine-de-barbak/content/catalogue.json:864",
-          "src/game/games/vents-dansants/la-grande-mine-de-barbak/content/catalogue.json:882",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:65",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:66",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:67",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:99",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:100",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:102",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:110"
+          "src/game/games/vents-dansants/la-grande-mine-de-barbak/content/catalogue.json:882"
         ],
         "triggers": [
-          "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.spec.ts:17",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:51",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:123",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:150",
-          "src/game/rules/game-specific/cards-public-domain/public-domain-cards.recipes.ts:165"
+          "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.spec.ts:12"
         ]
       }
     },
@@ -2981,12 +2925,6 @@
       "name": "cards-discard-penalty",
       "consumers": [
         "lama"
-      ]
-    },
-    {
-      "name": "cards-public-domain",
-      "consumers": [
-        "la-grande-mine-de-barbak"
       ]
     },
     {

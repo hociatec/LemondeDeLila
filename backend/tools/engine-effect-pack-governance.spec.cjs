@@ -19,7 +19,7 @@ test('effect-pack governance reports every consumer, domain, LOC and reason', ()
   const audit = JSON.parse(result.stdout);
   const policy = require('./engine-effect-pack-governance.json');
   assert.equal(audit.effectPacks.length, audit.summary.programFiles);
-  assert.equal(audit.summary.registeredEffectPacks, 18);
+  assert.equal(audit.summary.registeredEffectPacks, 17);
   assert.equal(
     audit.summary.productionLines,
     audit.effectPacks.reduce((total, pack) => total + pack.productionLines, 0),
@@ -30,11 +30,11 @@ test('effect-pack governance reports every consumer, domain, LOC and reason', ()
   assert.equal(policy.maximumFileBytes, 13500);
   assert(audit.summary.behaviorLines <= policy.maximumBehaviorLines);
   assert.deepEqual(audit.summary.scopes, {
-    'game-specific': 18,
+    'game-specific': 17,
     reusable: 0,
     'engine-primitive': 0,
   });
-  assert.equal(audit.summary.largeSingleConsumerReviews, 18);
+  assert.equal(audit.summary.largeSingleConsumerReviews, 17);
   assert.equal(audit.summary.structuralCandidates, 1);
   assert.equal(audit.summary.exactGameCodeMatches, 0);
   assert.equal(audit.summary.forbiddenVocabularyMatches, 0);
@@ -95,7 +95,7 @@ test('copying a JSON game does not demonstrate reuse or automatically promote a 
       });
     const original = documents(directory).find((file) =>
       JSON.parse(fs.readFileSync(file, 'utf8')).extensions?.some(
-        (extension) => extension.type === 'publicDomainCards',
+        (extension) => extension.type === 'sharedPrestigeCards',
       ),
     );
     assert(original);
@@ -117,7 +117,7 @@ test('copying a JSON game does not demonstrate reuse or automatically promote a 
     );
     assert.equal(result.status, 0, result.stderr);
     const pack = JSON.parse(result.stdout).effectPacks.find(
-      (pack) => pack.name === 'cards-public-domain',
+      (pack) => pack.name === 'cards-shared-prestige',
     );
     assert.equal(pack.consumerCount, 2);
     assert.equal(pack.distinctMechanicalConsumers, 1);

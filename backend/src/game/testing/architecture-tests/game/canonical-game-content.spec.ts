@@ -96,15 +96,19 @@ it('accepts nullable mine scores and rejects duplicate card identifiers', () => 
   const payload = structuredClone(
     jsonDefinition('la-grande-mine-de-barbak').content.data,
   ) as {
-    publicDomainCards: {
+    patterns: Array<{
+      kind: string;
       cards: Array<{ id: string; points: number | null }>;
-    };
+    }>;
   };
-  payload.publicDomainCards.cards[0].points = null;
+  const publicDomain = payload.patterns.find(
+    (pattern) => pattern.kind === 'public-domain-cards',
+  )!;
+  publicDomain.cards[0].points = null;
   expect(
     recompileJson('la-grande-mine-de-barbak', payload).content.data,
   ).toEqual(payload);
-  payload.publicDomainCards.cards[1].id = payload.publicDomainCards.cards[0].id;
+  publicDomain.cards[1].id = publicDomain.cards[0].id;
   expect(() => recompileJson('la-grande-mine-de-barbak', payload)).toThrow();
 });
 

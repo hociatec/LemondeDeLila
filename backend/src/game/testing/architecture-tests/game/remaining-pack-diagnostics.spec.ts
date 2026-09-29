@@ -74,11 +74,6 @@ add('chainedTileRace', (p) => {
 });
 duplicate('chainedTileRace', 'cards', 'id');
 duplicate('chainedTileRace', 'pawns', 'id');
-duplicate('publicDomainCards', 'collectibleCategories');
-add('publicDomainCards', (p) => {
-  p.lossCategory = 'absent';
-  return 'lossCategory';
-});
 for (const field of ['id', 'effectId'])
   add('themeNameCards', (p) => {
     const rules = rows(p.specialRules);

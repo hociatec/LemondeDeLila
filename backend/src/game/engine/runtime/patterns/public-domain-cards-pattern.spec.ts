@@ -1,8 +1,12 @@
-import { publicDomainCardsRules } from './public-domain-cards.recipes';
-import type { PublicDomainCardsProgram } from './program';
+import {
+  publicDomainCards,
+  type PublicDomainCardsOptions,
+} from './public-domain-cards-pattern';
 
 it('keeps each factory configuration and card catalogue isolated from later mutations', () => {
-  const source: PublicDomainCardsProgram = {
+  const source: PublicDomainCardsOptions = {
+    playRecipe: 'play',
+    passRecipe: 'pass',
     collectibleCategories: ['tresor'],
     lossCategory: 'tresor',
     deckId: 'first-deck',
@@ -22,11 +26,11 @@ it('keeps each factory configuration and card catalogue isolated from later muta
       },
     ],
   };
-  const first = publicDomainCardsRules(source);
+  const first = publicDomainCards(source);
   source.deckId = 'second-deck';
   source.handId = 'second-hand';
   source.cards[0].category = 'event';
-  const second = publicDomainCardsRules(source);
+  const second = publicDomainCards(source);
   source.deckId = 'mutated-deck';
   source.cards[0].id = 'mutated-card';
   const ctx = {
@@ -44,13 +48,18 @@ it('keeps each factory configuration and card catalogue isolated from later muta
     events: { message: jest.fn() },
     status: { consume: () => false },
   };
-  first.lifecycle.beforeTurn({ ctx: ctx as never });
+  const beforeTurn = (pattern: typeof first) => {
+    const hook = pattern.lifecycle?.beforeTurn;
+    if (!hook) throw new Error('Missing before-turn hook');
+    hook({ state: {}, player: { id: 1, username: 'One' }, ctx: ctx as never });
+  };
+  beforeTurn(first);
   expect(ctx.cards.drawOrRecycle).toHaveBeenLastCalledWith('first-deck');
   expect(ctx.cards.give).toHaveBeenLastCalledWith('first-hand', 1, 'coin');
-  second.lifecycle.beforeTurn({ ctx: ctx as never });
+  beforeTurn(second);
   expect(ctx.cards.drawOrRecycle).toHaveBeenLastCalledWith('second-deck');
   expect(ctx.cards.discard).toHaveBeenLastCalledWith('second-deck', 'coin');
   expect(ctx.cards.give).toHaveBeenCalledTimes(1);
-  first.lifecycle.beforeTurn({ ctx: ctx as never });
+  beforeTurn(first);
   expect(ctx.cards.give).toHaveBeenLastCalledWith('first-hand', 1, 'coin');
 });

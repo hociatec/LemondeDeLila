@@ -58,7 +58,6 @@
     "cards-ritual-phases": "Compared with collection and card primitives; ritual phases and light scoring remain unique.",
     "board-property-economy": "Compared with board-turn, board-landings and economy-kit; mortgages, jail, ownership and city economy remain unique.",
     "choice-chapter-encounter": "Compared with track-round and collection primitives; chapters, encounters and final countdown remain unique.",
-    "cards-public-domain": "Compared with generic card selection and collection primitives: public-domain card classification and collection completion remain a catalogue rule, isolated from the engine by the injected extension contract.",
     "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
     "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible."
   },
@@ -82,7 +81,6 @@
     "cards": [
       "cards-theme-name",
       "cards-discard-penalty",
-      "cards-public-domain",
       "cards-shared-prestige",
       "cards-ritual-phases"
     ],
@@ -213,14 +211,6 @@
       "classificationReason": "cards-discard-penalty implements discard rounds and unique-value penalties. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "cards-public-domain": {
-      "property": "publicDomainCards",
-      "mechanic": "private cards resolved into a public domain",
-      "domain": "cards",
-      "scope": "game-specific",
-      "classificationReason": "cards-public-domain implements private cards resolved into a public domain. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "choice-simultaneous-quiz": {
       "property": "simultaneousQuiz",
       "mechanic": "configurable simultaneous quiz",
@@ -264,7 +254,6 @@
   },
   "registrationOrder": [
     "race-resource-track",
-    "cards-public-domain",
     "race-protected-haunted-track",
     "race-team-pawn-capture",
     "race-quiz-event-track",

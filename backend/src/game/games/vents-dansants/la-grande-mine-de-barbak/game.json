@@ -1,9 +1,26 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "3",
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
+  "patterns": [
+    {
+      "kind": "public-domain-cards",
+      "playRecipe": "cards-public-domain-play",
+      "passRecipe": "cards-public-domain-pass",
+      "deckId": "mine",
+      "handId": "players",
+      "inventoryId": "mine-domains",
+      "discardNextDrawStatus": "cards-public-domain.discard-next-draw",
+      "handLimit": 5,
+      "finishReason": "mine-collapsed",
+      "eventNamespace": "grande-mine",
+      "cards": { "$content": "content/catalogue.json#/cards" },
+      "collectibleCategories": ["tresor", "objet"],
+      "lossCategory": "tresor"
+    }
+  ],
   "components": [
     {
       "component": "cards.deck",
@@ -49,10 +66,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "play_card",
-        "pass"
-      ],
+      "actions": ["play_card", "pass"],
       "terminal": true
     }
   },
@@ -65,34 +79,18 @@
     }
   },
   "victory": {
-    "kind": "by-public-domain-cards"
+    "kind": "manual"
   },
   "snapshotMigrations": [
     {
       "fromVersion": "1",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
-  "extensions": [
-    {
-      "type": "publicDomainCards",
-      "config": {
-        "deckId": "mine",
-        "handId": "players",
-        "inventoryId": "mine-domains",
-        "discardNextDrawStatus": "cards-public-domain.discard-next-draw",
-        "handLimit": 5,
-        "finishReason": "mine-collapsed",
-        "eventNamespace": "grande-mine",
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        },
-        "collectibleCategories": [
-          "tresor",
-          "objet"
-        ],
-        "lossCategory": "tresor"
-      }
-    }
-  ]
+  "extensions": [],
+  "playerValuesVisibility": { "statuses": "public" }
 }

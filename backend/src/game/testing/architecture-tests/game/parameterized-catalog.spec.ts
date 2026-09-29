@@ -105,7 +105,6 @@ const variants: Record<string, (program: Data) => Data> = {
     handSize: 7,
     redrawCount: 2,
   }),
-  publicDomainCards: (program) => renamedCategories(program, 'cards'),
   ritualPhases: (program) => ({
     ...program,
     initialHandSize: 4,

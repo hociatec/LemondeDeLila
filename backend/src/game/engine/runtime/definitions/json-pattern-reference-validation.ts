@@ -17,6 +17,7 @@ import { assertPairedPawnRaceReferences } from './json-paired-pawn-race-referenc
 import { assertBounceQuizRaceReferences } from './json-bounce-quiz-race-reference-validation';
 import { assertBidirectionalCollisionRaceReferences } from './json-bidirectional-collision-race-reference-validation';
 import { assertCardBattleReferences } from './json-card-battle-reference-validation';
+import { assertPublicDomainCardsReferences } from './json-public-domain-cards-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
 
@@ -127,6 +128,8 @@ function assertAdvancedPatternReferences(
       resources,
       fail,
     );
+  if (pattern.kind === 'public-domain-cards')
+    assertPublicDomainCardsReferences(pattern, index, components, fail);
   if (pattern.kind === 'grid-placement')
     assertGridPlacementReferences(
       pattern,

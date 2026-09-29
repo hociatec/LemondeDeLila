@@ -200,6 +200,16 @@
         "src/game/testing/architecture-tests/game/bidirectional-collision-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-bidirectional-collision-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/la-grande-mine-de-barbak/game.json",
+      "fromSha256": "8b82993d09d0f96b4a851b535460ec11b78cb74ceaba6b6d535c8bba9485f468",
+      "toSha256": "18a4638c5dec9b6ff907d151c941f5c0be31e46b4576cd8a24cda7a404a90b87",
+      "justification": "Le pattern public-domain-cards générique porte désormais main privée, collection publique, effets immédiats, score, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/public-domain-cards-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-public-domain-cards.spec.ts"
+      ]
     }
   ]
 }

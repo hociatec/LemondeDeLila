@@ -1,21 +1,43 @@
-import { gameInput, gameEffects } from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
-import type { PublicDomainCardsProgram } from './program';
-import {
-  defineAction,
-  defineEmptyAction,
-} from '../../../engine/sdk/extension-api';
+import { defineAction, defineEmptyAction } from '../actions/action-builders';
+import { gameInput } from '../actions/game-input-schema';
+import type { GameEffectInstruction } from '../contracts/effect-ir';
+import { gameEffects } from '../effects/effects-dsl';
+import type { GameContext } from '../definitions/game-author-context';
 import {
   defineEffect,
   defineEmptyEffect,
   defineActorEffect,
-} from '../../../engine/sdk/extension-api';
+} from '../effects/effects-core';
+import { definePattern } from './gameplay-pattern-core';
+
+export type PublicDomainCardCategory = string;
+export type PublicDomainCardsOptions = {
+  playRecipe: string;
+  passRecipe: string;
+  collectibleCategories: readonly string[];
+  lossCategory: string;
+  deckId: string;
+  handId: string;
+  inventoryId: string;
+  discardNextDrawStatus: string;
+  handLimit: number;
+  finishReason: string;
+  eventNamespace: string;
+  cards: readonly {
+    id: string;
+    name: string;
+    category: PublicDomainCardCategory;
+    description: string;
+    points?: number | null;
+    effects: readonly GameEffectInstruction[];
+  }[];
+};
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
-type Card = PublicDomainCardsProgram['cards'][number];
+type Card = PublicDomainCardsOptions['cards'][number];
 
-export function publicDomainCardsRules(source: PublicDomainCardsProgram) {
+export function publicDomainCards(source: PublicDomainCardsOptions) {
   const program = structuredClone(source);
   const cards = new Map(program.cards.map((card) => [card.id, card]));
   const enumerate = (playerId: number, ctx: Context) =>
@@ -23,41 +45,56 @@ export function publicDomainCardsRules(source: PublicDomainCardsProgram) {
       .hand<string>(program.handId, playerId)
       .filter((cardId) => cards.has(cardId))
       .map((cardId) => ({ cardId }));
-  return {
-    play: defineAction<State, { cardId: string }>({
-      input: gameInput.object({ cardId: gameInput.cardId() }),
-      validate: ({ actor, input, ctx }) =>
-        enumerate(actor.id, ctx).some(({ cardId }) => cardId === input.cardId),
-      enumerate: ({ actor, ctx }) => enumerate(actor.id, ctx),
-      execute: ({ actor, input, ctx }) => {
-        const card = cards.get(input.cardId)!;
-        ctx.cards.take(program.handId, actor.id, input.cardId);
-        if (isCollectible(card)) {
-          ctx.inventory.add(program.inventoryId, actor.id, card.id);
-          syncScore(actor.id, ctx);
-        } else {
-          ctx.cards.discard(program.deckId, card.id);
-          resolveImmediate(card, ctx);
-        }
-        trimHand(actor.id, ctx);
-        if (isCollectible(card)) ctx.turn.complete();
-        else ctx.effects.schedule(gameEffects.completeTurn());
-      },
-      documentation: 'Pose une carte de domaine ou résout son effet immédiat.',
-    }),
-    pass: defineEmptyAction<State>({
-      execute: ({ actor, ctx }) => {
-        trimHand(actor.id, ctx);
-        ctx.events.message('game.player.passed', { playerId: actor.id });
-        ctx.turn.complete();
-      },
-    }),
+  const play = defineAction<State, { cardId: string }>({
+    input: gameInput.object({ cardId: gameInput.cardId() }),
+    validate: ({ actor, input, ctx }) =>
+      enumerate(actor.id, ctx).some(({ cardId }) => cardId === input.cardId),
+    enumerate: ({ actor, ctx }) => enumerate(actor.id, ctx),
+    execute: ({ actor, input, ctx }) => {
+      const card = cards.get(input.cardId);
+      if (!card) return ctx.reject('PUBLIC_DOMAIN_CARD_UNKNOWN');
+      ctx.cards.take(program.handId, actor.id, input.cardId);
+      if (isCollectible(card)) {
+        ctx.inventory.add(program.inventoryId, actor.id, card.id);
+        syncScore(actor.id, ctx);
+      } else {
+        ctx.cards.discard(program.deckId, card.id);
+        resolveImmediate(card, ctx);
+      }
+      trimHand(actor.id, ctx);
+      if (isCollectible(card)) ctx.turn.complete();
+      else ctx.effects.schedule(gameEffects.completeTurn());
+    },
+    documentation: 'Pose une carte de domaine ou résout son effet immédiat.',
+  });
+  const pass = defineEmptyAction<State>({
+    execute: ({ actor, ctx }) => {
+      trimHand(actor.id, ctx);
+      ctx.events.message('game.player.passed', { playerId: actor.id });
+      ctx.turn.complete();
+    },
+  });
+  return definePattern({
+    id: `public-domain-cards:${program.deckId}`,
+    mechanics: ['cards', 'collection', 'inventory', 'effects'],
+    actions: {
+      [program.playRecipe]: play,
+      [program.passRecipe]: pass,
+    },
     lifecycle: {
       beforeTurn: ({ ctx }: { ctx: Context }) => drawAtTurnStart(ctx),
     },
     effects: publicDomainEffects(),
-    enumerate,
-  };
+    bot: {
+      choose: ({ actor, ctx, availableActions }) => {
+        const candidate = enumerate(actor.id, ctx)[0];
+        const type = candidate ? program.playRecipe : program.passRecipe;
+        return availableActions.includes(type)
+          ? { type, payload: candidate ?? {} }
+          : null;
+      },
+    },
+  });
 
   function publicDomainEffects() {
     return {
