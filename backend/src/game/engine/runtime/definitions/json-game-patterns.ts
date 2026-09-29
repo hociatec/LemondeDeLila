@@ -54,18 +54,16 @@ import {
   marketExchange,
   type MarketExchangeOptions,
 } from '../patterns/market-exchange-pattern';
+import type { AnonymousVoteOptions } from '../patterns/anonymous-vote-pattern';
+import type { TreasureTrackRaceOptions } from '../patterns/treasure-track-race-pattern';
+import type { FamilyEffectsOptions } from '../patterns/family-effects-pattern';
+import type { SpeciesTroopsOptions } from '../patterns/species-troops-pattern';
 import {
-  anonymousVote,
-  type AnonymousVoteOptions,
-} from '../patterns/anonymous-vote-pattern';
-import {
-  treasureTrackRace,
-  type TreasureTrackRaceOptions,
-} from '../patterns/treasure-track-race-pattern';
-import {
-  familyEffects,
-  type FamilyEffectsOptions,
-} from '../patterns/family-effects-pattern';
+  compileAnonymousVote,
+  compileFamilyEffects,
+  compileSpeciesTroops,
+  compileTreasureTrackRace,
+} from './json-advanced-pattern-compilers';
 import {
   type AuthorSchema,
   authorId as id,
@@ -89,6 +87,7 @@ import {
 } from './json-advanced-pattern-schemas';
 import { treasureTrackRacePatternSchema } from './json-treasure-track-pattern-schema';
 import { familyEffectsPatternSchema } from './json-family-effects-pattern-schema';
+import { speciesTroopsPatternSchema } from './json-species-troops-pattern-schema';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -124,6 +123,7 @@ export type JsonGamePattern =
   | ({ kind: 'anonymous-vote' } & AnonymousVoteOptions)
   | ({ kind: 'treasure-track-race' } & TreasureTrackRaceOptions)
   | ({ kind: 'family-effects' } & FamilyEffectsOptions)
+  | ({ kind: 'species-troops' } & SpeciesTroopsOptions)
   | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
         exchange?: MarketExchangeOptions['exchange'];
       })
@@ -329,6 +329,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     anonymousVotePatternSchema,
     treasureTrackRacePatternSchema,
     familyEffectsPatternSchema,
+    speciesTroopsPatternSchema,
     marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
@@ -403,14 +404,14 @@ export function compileJsonPattern(
       const { kind: _kind, ...options } = pattern;
       return judgedSubmission(options);
     }
-    case 'anonymous-vote': {
-      const { kind: _kind, ...options } = pattern;
-      return anonymousVote(options);
-    }
+    case 'anonymous-vote':
+      return compileAnonymousVote(pattern);
     case 'treasure-track-race':
       return compileTreasureTrackRace(pattern);
     case 'family-effects':
       return compileFamilyEffects(pattern);
+    case 'species-troops':
+      return compileSpeciesTroops(pattern);
     case 'market': {
       const { kind: _kind, ...options } = pattern;
       return options.exchange
@@ -424,18 +425,4 @@ export function compileJsonPattern(
       return submissionJudgeGame(options);
     }
   }
-}
-
-function compileTreasureTrackRace(
-  pattern: Extract<JsonGamePattern, { kind: 'treasure-track-race' }>,
-): ReturnType<typeof treasureTrackRace> {
-  const { kind: _kind, ...options } = pattern;
-  return treasureTrackRace(options);
-}
-
-function compileFamilyEffects(
-  pattern: Extract<JsonGamePattern, { kind: 'family-effects' }>,
-): ReturnType<typeof familyEffects> {
-  const { kind: _kind, ...options } = pattern;
-  return familyEffects(options);
 }

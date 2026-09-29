@@ -160,6 +160,16 @@
         "src/game/testing/architecture-tests/game/family-effects-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-family-effects.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/la-bande-a-banane/game.json",
+      "fromSha256": "39eb0a0c4f5a0a42fcd24005a0104db0db14fea486650b885239d8658709a0c1",
+      "toSha256": "718fa3166a56198f84427275875dda3504f27854f4db7f667f405c7fb823d871",
+      "justification": "Le pattern species-troops générique porte désormais collecte, jokers, pièges, échanges, choix, bot, confidentialité et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/species-troops-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-species-troops.spec.ts"
+      ]
     }
   ]
 }

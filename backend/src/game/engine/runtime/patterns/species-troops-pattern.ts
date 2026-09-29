@@ -1,57 +1,74 @@
-import {
-  gameInput,
-  gameEffects,
-  drawCardsAtTurnStart,
-} from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
-import type { SpeciesSpecies, SpeciesTroopsProgram } from './program';
-import {
-  defineAction,
-  defineEmptyAction,
-} from '../../../engine/sdk/extension-api';
-import {
-  defineEffect,
-  defineEmptyEffect,
-} from '../../../engine/sdk/extension-api';
-import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
+import { defineAction, defineEmptyAction } from '../actions/action-builders';
+import { gameInput } from '../actions/game-input-schema';
+import { GameRuleViolationError } from '../contracts/game-domain.errors';
+import type { GameEffectInstruction } from '../contracts/effect-ir';
+import type { GameContext } from '../definitions/game-author-context';
+import { defineEffect, defineEmptyEffect } from '../effects/effects-core';
+import { gameEffects } from '../effects/effects-dsl';
+import { drawCardsAtTurnStart } from './gameplay-pattern-track-card';
+import { definePattern } from './gameplay-pattern-core';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
-type Play = {
-  cardId: string;
-  targetPlayerId?: number;
-  species?: SpeciesSpecies;
+type Play = { cardId: string; targetPlayerId?: number; species?: string };
+type Card = {
+  id: string;
+  name: string;
+  description?: string;
+  type: 'monkey' | 'action' | 'trap' | 'joker';
+  species?: string;
+  action?: string;
+  trap?: string;
+  effects: readonly GameEffectInstruction[];
+};
+export type SpeciesTroopsOptions = {
+  playRecipe: string;
+  passRecipe: string;
+  playAction: string;
+  passAction: string;
+  deckId: string;
+  handId: string;
+  inventoryId: string;
+  exchangeChoiceId: string;
+  handLimit: number;
+  victoryReason: string;
+  species: readonly string[];
+  cards: readonly Card[];
 };
 
-export function speciesTroopsRules(source: SpeciesTroopsProgram) {
+export function speciesTroops(source: SpeciesTroopsOptions) {
   const program = structuredClone(source);
   const byId = new Map(program.cards.map((card) => [card.id, card]));
   const enumerate = (playerId: number, ctx: Context) =>
     enumeratePlays(program, byId, playerId, ctx);
-  return {
-    play: defineAction<State, Play>({
-      input: gameInput.object({
-        cardId: gameInput.cardId(),
-        targetPlayerId: gameInput.optional(gameInput.playerId()),
-        species: gameInput.optional(gameInput.enum(program.species)),
+  return definePattern({
+    id: `species-troops:${program.deckId}`,
+    mechanics: ['cards', 'collection', 'effects', 'choices'],
+    actions: {
+      [program.playRecipe]: defineAction<State, Play>({
+        input: gameInput.object({
+          cardId: gameInput.cardId(),
+          targetPlayerId: gameInput.optional(gameInput.playerId()),
+          species: gameInput.optional(gameInput.enum(program.species)),
+        }),
+        validate: ({ actor, input, ctx }) =>
+          enumerate(actor.id, ctx).some((candidate) =>
+            samePlay(candidate, input),
+          ),
+        enumerate: ({ actor, ctx }) => enumerate(actor.id, ctx),
+        execute: ({ actor, input, ctx }) =>
+          play(program, byId, actor.id, input, ctx),
+        documentation: 'Joue une carte de collection, action ou piège.',
       }),
-      validate: ({ actor, input, ctx }) =>
-        enumerate(actor.id, ctx).some((candidate) =>
-          samePlay(candidate, input),
-        ),
-      enumerate: ({ actor, ctx }) => enumerate(actor.id, ctx),
-      execute: ({ actor, input, ctx }) =>
-        play(program, byId, actor.id, input, ctx),
-      documentation: 'Joue une carte Singe, Joker, Action ou Piège de la main.',
-    }),
-    pass: defineEmptyAction<State>({
-      execute: ({ actor, ctx }) => {
-        ctx.events.message('game.player.passed', { playerId: actor.id });
-        ctx.turn.complete();
-      },
-      documentation: 'Termine le tour sans jouer de carte.',
-    }),
-    effects: effects(program),
+      [program.passRecipe]: defineEmptyAction<State>({
+        execute: ({ actor, ctx }) => {
+          ctx.events.message('game.player.passed', { playerId: actor.id });
+          ctx.turn.complete();
+        },
+        documentation: 'Termine le tour sans jouer de carte.',
+      }),
+    },
+    effects: buildEffects(program),
     lifecycle: {
       beforeTurn: drawCardsAtTurnStart<State, string>({
         deckId: program.deckId,
@@ -65,12 +82,21 @@ export function speciesTroopsRules(source: SpeciesTroopsProgram) {
         },
       }),
     },
-    enumerate,
-  };
+    bot: {
+      choose: ({ actor, ctx, availableActions }) => {
+        const payload = enumerate(actor.id, ctx)[0];
+        const action = payload ? program.playAction : program.passAction;
+        return availableActions.includes(action)
+          ? { type: action, payload: payload ?? {} }
+          : null;
+      },
+    },
+  });
 }
+
 function enumeratePlays(
-  program: SpeciesTroopsProgram,
-  byId: ReadonlyMap<string, SpeciesTroopsProgram['cards'][number]>,
+  program: SpeciesTroopsOptions,
+  byId: ReadonlyMap<string, Card>,
   playerId: number,
   ctx: Context,
 ): Play[] {
@@ -83,8 +109,7 @@ function enumeratePlays(
         ctx.cards.hand(program.handId, player.id).length > 0,
     );
   const missing = program.species.filter(
-    (species) =>
-      !troops(program, byId, playerId, ctx).some((entry) => entry === species),
+    (species) => !troops(program, byId, playerId, ctx).includes(species),
   );
   return hand.flatMap((cardId) => {
     const card = byId.get(cardId);
@@ -110,12 +135,12 @@ function enumeratePlays(
 }
 
 function play(
-  program: SpeciesTroopsProgram,
-  byId: ReadonlyMap<string, SpeciesTroopsProgram['cards'][number]>,
+  program: SpeciesTroopsOptions,
+  byId: ReadonlyMap<string, Card>,
   playerId: number,
   input: Play,
   ctx: Context,
-) {
+): void {
   const card = byId.get(input.cardId);
   if (!card)
     throw new GameRuleViolationError('COLLECTION_SPECIES_TROOPS_CARD_UNKNOWN');
@@ -149,9 +174,9 @@ function play(
 }
 
 function effectsForPlay(
-  card: SpeciesTroopsProgram['cards'][number],
+  card: Card,
   input: Play,
-) {
+): readonly GameEffectInstruction[] {
   return card.effects.map((effect) => {
     if (effect.kind === 'steal-card' && input.targetPlayerId != null)
       return {
@@ -171,7 +196,7 @@ function effectsForPlay(
   });
 }
 
-function effects(program: SpeciesTroopsProgram) {
+function buildEffects(program: SpeciesTroopsOptions) {
   return {
     'species.exchange-random': defineEmptyEffect<State>(
       ({ actorPlayerId, targetPlayerIds, ctx }) => {
@@ -224,22 +249,21 @@ function effects(program: SpeciesTroopsProgram) {
 }
 
 function enforceHandLimit(
-  program: SpeciesTroopsProgram,
+  program: SpeciesTroopsOptions,
   playerId: number,
   ctx: Context,
-) {
+): void {
   const excess =
     ctx.cards.hand<string>(program.handId, playerId).length - program.handLimit;
   for (let index = 0; index < excess; index++)
     ctx.cards.discardRandom(program.handId, program.deckId, playerId);
 }
-
 function troops(
-  program: SpeciesTroopsProgram,
-  byId: ReadonlyMap<string, SpeciesTroopsProgram['cards'][number]>,
+  program: SpeciesTroopsOptions,
+  byId: ReadonlyMap<string, Card>,
   playerId: number,
   ctx: Context,
-): SpeciesSpecies[] {
+): string[] {
   return ctx.inventory
     .items(program.inventoryId, playerId)
     .flatMap((itemId) => {
@@ -252,8 +276,7 @@ function troops(
       return separator >= 0 && card && matched ? [matched] : [];
     });
 }
-
-function samePlay(left: Play, right: Play) {
+function samePlay(left: Play, right: Play): boolean {
   return (
     left.cardId === right.cardId &&
     left.targetPlayerId === right.targetPlayerId &&

@@ -4,6 +4,7 @@ import { authoringProperty } from '../contracts/authoring-diagnostics';
 import {
   assertFamilyEffectsReferences,
   assertFamilyRequestReferences,
+  assertSpeciesTroopsReferences,
   assertThemedSetCollectionReferences,
 } from './json-collection-pattern-reference-validation';
 import { assertGridPlacementReferences } from './json-grid-pattern-reference-validation';
@@ -108,6 +109,8 @@ function assertAdvancedPatternReferences(
     assertFamilyRequestReferences(pattern, index, components, counters, fail);
   if (pattern.kind === 'family-effects')
     assertFamilyEffectsReferences(pattern, index, components, resources, fail);
+  if (pattern.kind === 'species-troops')
+    assertSpeciesTroopsReferences(pattern, index, components, fail);
   if (pattern.kind === 'grid-placement')
     assertGridPlacementReferences(
       pattern,

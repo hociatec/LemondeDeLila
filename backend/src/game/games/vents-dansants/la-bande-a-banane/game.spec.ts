@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -8,10 +7,7 @@ import { compileJsonGame } from '../../../rules/public-api';
 import catalogue from './catalogue.json';
 import documentExtensionSource from './game.json';
 import manifest from './manifest.json';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'speciesTroops',
-);
+const document = documentExtensionSource;
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/catalogue.json': catalogue,
@@ -22,12 +18,9 @@ describe('La Bande à Banane declarative game', () => {
     const source = structuredClone(document);
     const content = structuredClone(catalogue);
     const kinds = new Map(
-      source.speciesTroops.species.map((id, index) => [
-        id,
-        'component-' + index,
-      ]),
+      source.patterns[0].species.map((id, index) => [id, 'component-' + index]),
     );
-    source.speciesTroops.species = [...kinds.values()];
+    source.patterns[0].species = [...kinds.values()];
     for (const card of content.cards) {
       if (card.species) card.species = kinds.get(card.species)!;
       if (card.action) card.action = 'unrelated-action';
@@ -73,7 +66,7 @@ describe('La Bande à Banane declarative game', () => {
     ).toEqual(normalize(originalRuntime.getAvailableActions(originalState, 1)));
     await alternative.as(1).do('pass', {});
     expect(await alternative.replay()).toEqual(alternative.state());
-    source.speciesTroops.species = ['unknown'];
+    source.patterns[0].species = ['unknown'];
     expect(() =>
       compileJsonGame(manifest, source, { 'content/catalogue.json': content }),
     ).toThrow();

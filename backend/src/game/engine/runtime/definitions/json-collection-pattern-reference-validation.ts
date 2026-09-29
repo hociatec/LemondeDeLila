@@ -157,6 +157,60 @@ export function assertFamilyEffectsReferences(
     fail(`${root}.setsId`, 'invalid family set');
 }
 
+export function assertSpeciesTroopsReferences(
+  pattern: Extract<JsonGamePattern, { kind: 'species-troops' }>,
+  patternIndex: number,
+  components: readonly GameComponentDefinition[],
+  fail: Failure,
+): void {
+  const root = `patterns[${patternIndex}]`;
+  if (
+    !components.some(
+      (item) => item.component === 'cards.deck' && item.id === pattern.deckId,
+    )
+  )
+    fail(`${root}.deckId`, 'unknown deck');
+  if (
+    !components.some(
+      (item) => item.component === 'cards.hands' && item.id === pattern.handId,
+    )
+  )
+    fail(`${root}.handId`, 'unknown hand');
+  if (
+    !components.some(
+      (item) =>
+        item.component === 'inventory.set' && item.id === pattern.inventoryId,
+    )
+  )
+    fail(`${root}.inventoryId`, 'unknown inventory');
+  assertUnique(
+    pattern.cards.map((card) => card.id),
+    `${root}.cards`,
+    'id',
+    fail,
+  );
+  assertUnique(pattern.species, `${root}.species`, null, fail);
+  for (const [index, value] of pattern.species.entries())
+    if (value.includes(':'))
+      fail(
+        `${root}.species[${index}]`,
+        'collection kind cannot contain the inventory separator',
+      );
+  for (const [index, card] of pattern.cards.entries()) {
+    if (card.species != null && !pattern.species.includes(card.species))
+      fail(
+        `${root}.cards[${index}].species`,
+        `unknown collection kind on ${card.id}`,
+      );
+    if (card.type === 'monkey' && !card.species)
+      fail(`${root}.cards[${index}].species`, `missing species on ${card.id}`);
+    if (card.type === 'action' && !card.action)
+      fail(`${root}.cards[${index}].action`, `missing action on ${card.id}`);
+    if (card.type === 'trap' && !card.trap)
+      fail(`${root}.cards[${index}].trap`, `missing trap on ${card.id}`);
+  }
+}
+
 function assertUnique(
   values: readonly string[],
   root: string,

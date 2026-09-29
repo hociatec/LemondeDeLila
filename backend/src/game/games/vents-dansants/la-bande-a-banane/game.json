@@ -1,9 +1,27 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "1",
+  "snapshotMigrations": [{ "fromVersion": "1", "toVersion": "2" }],
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
+  "patterns": [
+    {
+      "kind": "species-troops",
+      "playRecipe": "collection-species-troops-play",
+      "passRecipe": "collection-species-troops-pass",
+      "playAction": "play_card",
+      "passAction": "pass",
+      "deckId": "species",
+      "handId": "players",
+      "inventoryId": "species-troops",
+      "exchangeChoiceId": "species.exchange-card",
+      "handLimit": 7,
+      "victoryReason": "five-species",
+      "species": ["capucin", "mandrill", "gibbon", "babouin", "macaque"],
+      "cards": { "$content": "content/catalogue.json#/cards" }
+    }
+  ],
   "components": [
     {
       "component": "cards.deck",
@@ -44,10 +62,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "play_card",
-        "pass"
-      ],
+      "actions": ["play_card", "pass"],
       "terminal": true
     }
   },
@@ -60,29 +75,7 @@
     }
   },
   "victory": {
-    "kind": "by-species-troops"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "speciesTroops",
-      "config": {
-        "deckId": "species",
-        "handId": "players",
-        "inventoryId": "species-troops",
-        "exchangeChoiceId": "species.exchange-card",
-        "handLimit": 7,
-        "victoryReason": "five-species",
-        "species": [
-          "capucin",
-          "mandrill",
-          "gibbon",
-          "babouin",
-          "macaque"
-        ],
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        }
-      }
-    }
-  ]
+  "extensions": []
 }

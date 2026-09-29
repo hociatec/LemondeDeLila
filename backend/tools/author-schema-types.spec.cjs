@@ -29,7 +29,7 @@ function accepts(schema, expected) {
 }
 
 test('all registered schemas produce values assignable to their actual compile input', () => {
-  assert.equal(checkCodecContracts(), 22);
+  assert.equal(checkCodecContracts(), 21);
 });
 
 test('schema/type drift rejects missing fields, wrong scalars and broadened discriminators', () => {

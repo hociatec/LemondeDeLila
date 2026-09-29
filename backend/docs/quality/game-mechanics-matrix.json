@@ -1653,9 +1653,7 @@
     },
     {
       "id": "la-bande-a-banane",
-      "packs": [
-        "collection-species-troops"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1668,37 +1666,19 @@
           "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:467",
           "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:483",
           "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:499",
-          "src/game/games/vents-dansants/la-bande-a-banane/game.json:9",
-          "src/game/games/vents-dansants/la-bande-a-banane/game.json:18",
-          "src/game/games/vents-dansants/la-bande-a-banane/game.spec.ts:48",
-          "src/game/games/vents-dansants/la-bande-a-banane/game.spec.ts:49",
-          "src/game/games/vents-dansants/la-bande-a-banane/game.spec.ts:50",
-          "src/game/rules/game-specific/collection-species-troops/json-species-troops-schema.ts:53",
-          "src/game/rules/game-specific/collection-species-troops/json-species-troops-schema.ts:59",
-          "src/game/rules/game-specific/collection-species-troops/json-species-troops-schema.ts:79",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:28",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:77",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:83",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:122",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:142",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:180",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:209",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:215",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:232",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:234"
+          "src/game/games/vents-dansants/la-bande-a-banane/game.json:27",
+          "src/game/games/vents-dansants/la-bande-a-banane/game.json:36",
+          "src/game/games/vents-dansants/la-bande-a-banane/game.spec.ts:41",
+          "src/game/games/vents-dansants/la-bande-a-banane/game.spec.ts:42",
+          "src/game/games/vents-dansants/la-bande-a-banane/game.spec.ts:43"
         ],
-        "zones": [
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:142",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:234"
-        ],
+        "zones": [],
         "choices": [],
         "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/la-bande-a-banane/game.json:62",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:135",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:136"
+          "src/game/games/vents-dansants/la-bande-a-banane/game.json:77"
         ],
         "targeting": [
           "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:343",
@@ -1710,26 +1690,9 @@
           "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:533",
           "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:549",
           "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:565",
-          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:581",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:104",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:107",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:159",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:168",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:177",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:178",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:185",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:186",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:195",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:206",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:207"
+          "src/game/games/vents-dansants/la-bande-a-banane/catalogue.json:581"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:49",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:61",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:130",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:136",
-          "src/game/rules/game-specific/collection-species-troops/species-troops.recipes.ts:143"
-        ]
+        "triggers": []
       }
     },
     {
@@ -3231,12 +3194,6 @@
       "name": "choice-story-challenge",
       "consumers": [
         "contes-et-cacahuetes"
-      ]
-    },
-    {
-      "name": "collection-species-troops",
-      "consumers": [
-        "la-bande-a-banane"
       ]
     },
     {

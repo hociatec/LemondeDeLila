@@ -83,27 +83,6 @@ add('chainedTileRace', (p) => {
 });
 duplicate('chainedTileRace', 'cards', 'id');
 duplicate('chainedTileRace', 'pawns', 'id');
-duplicate('speciesTroops', 'species');
-add('speciesTroops', (p) => {
-  list(p.species)[0] = 'bad:species';
-  return 'species[0]';
-});
-for (const [type, field] of [
-  ['monkey', 'species'],
-  ['action', 'action'],
-  ['trap', 'trap'],
-])
-  add('speciesTroops', (p) => {
-    const cards = rows(p.cards);
-    const i = cards.findIndex((card) => card.type === type);
-    if (i < 0) throw new Error('Missing ' + type);
-    delete cards[i][field];
-    return `cards[${i}].${field}`;
-  });
-add('speciesTroops', (p) => {
-  rows(p.cards)[0].species = 'absent';
-  return 'cards[0].species';
-});
 duplicate('publicDomainCards', 'collectibleCategories');
 add('publicDomainCards', (p) => {
   p.lossCategory = 'absent';
