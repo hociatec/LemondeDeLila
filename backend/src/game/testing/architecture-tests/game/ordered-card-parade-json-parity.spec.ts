@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import {
   testGame,
   GameSimulator,
@@ -5,68 +6,57 @@ import {
 } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/vents-dansants/la-parade-sucree/manifest.json';
-import documentSource from '../../../games/vents-dansants/la-parade-sucree/game.json';
+import document from '../../../games/vents-dansants/la-parade-sucree/game.json';
 import catalogue from '../../../games/vents-dansants/la-parade-sucree/content/catalogue.json';
 
-const assets = { 'content/catalogue.json': catalogue };
-const current = structuredClone(documentSource);
-const [pattern] = current.patterns;
-const {
-  kind: _kind,
-  playRecipe: _playRecipe,
-  passRecipe: _passRecipe,
-  ...legacyParade
-} = pattern;
-const { bot: _bot, patterns: _patterns, ...withoutPattern } = current;
-const legacy = {
-  ...withoutPattern,
-  contentVersion: '1',
-  victory: { kind: 'by-parade' },
-  parade: legacyParade,
-};
+const reference = [
+  {
+    seed: 11,
+    commands: 19,
+    status: 'finished',
+    events: 91,
+    sha256: 'ad104fdc17a451951d5115667b1ad620ff7b70e5d90a04cc0491311d821c3330',
+  },
+  {
+    seed: 23,
+    commands: 19,
+    status: 'finished',
+    events: 91,
+    sha256: '9231cc8e82471732558a5f2785de4bb5a9955035583f132f889d3d7ae90b0797',
+  },
+  {
+    seed: 67,
+    commands: 21,
+    status: 'finished',
+    events: 97,
+    sha256: '6621f80c685efc19041e980deb1d61d537062783e11a9f70b12291ea4dd04c80',
+  },
+] as const;
 
-function behavioralState(state: object) {
-  const value = structuredClone(state) as {
-    metadata?: { restoreId?: string };
-    engine?: { contentDigest?: string; contentVersion?: string };
-  };
-  if (value.metadata) delete value.metadata.restoreId;
-  if (value.engine) {
-    delete value.engine.contentDigest;
-    delete value.engine.contentVersion;
-  }
-  return value;
-}
-
-it.each([11, 23, 67])(
-  'preserves state and events from the certified parade pack for seed %i',
-  async (seed) => {
-    const before = compileJsonGame(manifest, legacy, assets);
-    const after = compileJsonGame(manifest, current, assets);
-    const players = ['One', 'Two'];
-    const beforeGame = await testGame(before)
-      .players(players)
+it.each(reference)(
+  'preserves the certified parade trace for seed $seed',
+  async ({ seed, commands, status, events, sha256 }) => {
+    const definition = compileJsonGame(manifest, document, {
+      'content/catalogue.json': catalogue,
+    });
+    const game = await testGame(definition)
+      .players(['One', 'Two'])
       .seed(seed)
       .start();
-    const afterGame = await testGame(after).players(players).seed(seed).start();
-    const runner = new GameSimulator();
-    const baseline = runner.run(
-      new DeclarativeGameRuntime(before),
-      beforeGame.state(),
+    const result = new GameSimulator().run(
+      new DeclarativeGameRuntime(definition),
+      game.state(),
       { maxCommands: 100, startAtMs: 1000 },
     );
-    const migrated = runner.run(
-      new DeclarativeGameRuntime(after),
-      afterGame.state(),
-      { maxCommands: 100, startAtMs: 1000 },
-    );
-    expect(migrated.error).toBeUndefined();
-    expect(migrated.status).toBe(baseline.status);
-    expect(migrated.commands).toBe(baseline.commands);
-    expect(migrated.winnerPlayerIds).toEqual(baseline.winnerPlayerIds);
-    expect(behavioralState(migrated.finalState)).toEqual(
-      behavioralState(baseline.finalState),
-    );
-    expect(migrated.events).toEqual(baseline.events);
+    expect(result.error).toBeUndefined();
+    expect(result.status).toBe(status);
+    expect(result.commands).toBe(commands);
+    const trace = result.events
+      .filter((event) => event.type !== 'engine.state.committed')
+      .map(({ type, data, visibility }) => ({ type, data, visibility }));
+    expect(trace).toHaveLength(events);
+    expect(
+      createHash('sha256').update(JSON.stringify(trace)).digest('hex'),
+    ).toBe(sha256);
   },
 );

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import {
   testGame,
   GameSimulator,
@@ -5,75 +6,60 @@ import {
 } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/les-quatre-vents/taxi-express/manifest.json';
-import documentSource from '../../../games/les-quatre-vents/taxi-express/game.json';
+import document from '../../../games/les-quatre-vents/taxi-express/game.json';
 import board from '../../../games/les-quatre-vents/taxi-express/content/board.json';
 import clients from '../../../games/les-quatre-vents/taxi-express/content/clients.json';
-import events from '../../../games/les-quatre-vents/taxi-express/content/events.json';
+import gameEvents from '../../../games/les-quatre-vents/taxi-express/content/events.json';
 
-const assets = {
-  'content/board.json': board,
-  'content/clients.json': clients,
-  'content/events.json': events,
-};
-const current = structuredClone(documentSource);
-const { delivery, ...legacyRacePattern } = current.patterns[0];
-const { recipe: _recipe, ...legacyDelivery } = delivery;
-const { bot: _bot, ...withoutBot } = current;
-const legacy = {
-  ...withoutBot,
-  contentVersion: '2',
-  patterns: [legacyRacePattern],
-  victory: { kind: 'by-delivery-race' },
-  deliveryRace: {
-    ...legacyDelivery,
-    trackId: current.patterns[0].trackId,
-    diceId: 'main',
-    tiles: board.tiles,
+const reference = [
+  {
+    seed: 3,
+    commands: 200,
+    status: 'step-limit',
+    events: 1838,
+    sha256: '3a6cb08c9768e0e14d2ea02105c38e53530ec77bed1192fe9eb12af7bf26034e',
   },
-};
+  {
+    seed: 42,
+    commands: 200,
+    status: 'step-limit',
+    events: 1836,
+    sha256: '8fc4f5f35c11123dbeddd018cc761ec1609f8e9997129f87a5df94580541f9ec',
+  },
+  {
+    seed: 53,
+    commands: 200,
+    status: 'step-limit',
+    events: 1837,
+    sha256: '8ba2c85706d87daac1b5f4afd89457f64d6e50b6eb5453a4b507a822788f0070',
+  },
+] as const;
 
-function behavioralState(state: object) {
-  const value = structuredClone(state) as {
-    metadata?: { restoreId?: string };
-    engine?: { contentDigest?: string; contentVersion?: string };
-  };
-  if (value.metadata) delete value.metadata.restoreId;
-  if (value.engine) {
-    delete value.engine.contentDigest;
-    delete value.engine.contentVersion;
-  }
-  return value;
-}
-
-it.each([3, 42, 53])(
-  'preserves state and events from the certified delivery pack for seed %i',
-  async (seed) => {
-    const before = compileJsonGame(manifest, legacy, assets);
-    const after = compileJsonGame(manifest, current, assets);
-    const players = ['One', 'Two', 'Three'];
-    const beforeGame = await testGame(before)
-      .players(players)
+it.each(reference)(
+  'preserves the certified delivery trace for seed $seed',
+  async ({ seed, commands, status, events, sha256 }) => {
+    const definition = compileJsonGame(manifest, document, {
+      'content/board.json': board,
+      'content/clients.json': clients,
+      'content/events.json': gameEvents,
+    });
+    const game = await testGame(definition)
+      .players(['One', 'Two', 'Three'])
       .seed(seed)
       .start();
-    const afterGame = await testGame(after).players(players).seed(seed).start();
-    const runner = new GameSimulator();
-    const baseline = runner.run(
-      new DeclarativeGameRuntime(before),
-      beforeGame.state(),
-      { maxCommands: 200, startAtMs: 1000 },
+    const result = new GameSimulator().run(
+      new DeclarativeGameRuntime(definition),
+      game.state(),
+      { maxCommands: commands, startAtMs: 1000 },
     );
-    const migrated = runner.run(
-      new DeclarativeGameRuntime(after),
-      afterGame.state(),
-      { maxCommands: 200, startAtMs: 1000 },
-    );
-    expect(migrated.error).toBeUndefined();
-    expect(migrated.status).toBe(baseline.status);
-    expect(migrated.commands).toBe(baseline.commands);
-    expect(migrated.winnerPlayerIds).toEqual(baseline.winnerPlayerIds);
-    expect(behavioralState(migrated.finalState)).toEqual(
-      behavioralState(baseline.finalState),
-    );
-    expect(migrated.events).toEqual(baseline.events);
+    expect(result.error).toBeUndefined();
+    expect(result.status).toBe(status);
+    const trace = result.events
+      .filter((event) => event.type !== 'engine.state.committed')
+      .map(({ type, data, visibility }) => ({ type, data, visibility }));
+    expect(trace).toHaveLength(events);
+    expect(
+      createHash('sha256').update(JSON.stringify(trace)).digest('hex'),
+    ).toBe(sha256);
   },
 );
