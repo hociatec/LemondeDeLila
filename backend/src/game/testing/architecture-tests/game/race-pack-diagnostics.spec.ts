@@ -134,12 +134,10 @@ it.each(cases)(
   },
 );
 
-it.each([
-  'resourceTrackRace',
-  'bidirectionalCollisionRace',
-  'pairedPawnRace',
-  'teamPawnRace',
-])('accepts unchanged %s', (key) => {
-  const { source, manifest } = fixture(key);
-  expect(() => compileJsonGame(manifest, source)).not.toThrow();
-});
+it.each(['resourceTrackRace', 'bidirectionalCollisionRace', 'teamPawnRace'])(
+  'accepts unchanged %s',
+  (key) => {
+    const { source, manifest } = fixture(key);
+    expect(() => compileJsonGame(manifest, source)).not.toThrow();
+  },
+);

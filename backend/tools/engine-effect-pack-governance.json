@@ -62,8 +62,7 @@
     "choice-chapter-encounter": "Compared with track-round and collection primitives; chapters, encounters and final countdown remain unique.",
     "cards-public-domain": "Compared with generic card selection and collection primitives: public-domain card classification and collection completion remain a catalogue rule, isolated from the engine by the injected extension contract.",
     "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
-    "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible.",
-    "race-paired-pawns": "Compared with movement and resource transfer primitives: paired meetings, shared advance, rerolls and token victory remain coupled in this pack and require a distinct second-game test before promotion."
+    "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible."
   },
   "structuralReviews": [
     {
@@ -107,7 +106,6 @@
       "race-protected-haunted-track",
       "race-quiz-event-track",
       "race-bidirectional-collision",
-      "race-paired-pawns",
       "race-bounce-quiz"
     ]
   },
@@ -231,14 +229,6 @@
       "classificationReason": "cards-discard-penalty implements discard rounds and unique-value penalties. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "race-paired-pawns": {
-      "property": "pairedPawnRace",
-      "mechanic": "parent-and-child reunion race",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-paired-pawns implements parent-and-child reunion race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "race-bounce-quiz": {
       "property": "bounceQuizRace",
       "mechanic": "bouncing race with quiz and protection",
@@ -298,7 +288,6 @@
   },
   "registrationOrder": [
     "race-resource-track",
-    "race-paired-pawns",
     "cards-public-domain",
     "race-protected-haunted-track",
     "race-bidirectional-collision",

@@ -2876,19 +2876,9 @@
     },
     {
       "id": "tout-pres-de-maman",
-      "packs": [
-        "race-paired-pawns"
-      ],
+      "packs": [],
       "mechanics": {
-        "movement": [
-          "src/game/rules/game-specific/race-paired-pawns/json-paired-pawn-race-schema.ts:73",
-          "src/game/rules/game-specific/race-paired-pawns/json-paired-pawn-race-schema.ts:76",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:30",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:103",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:113",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:141",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:142"
-        ],
+        "movement": [],
         "ownership": [],
         "collision": [],
         "resources": [
@@ -2896,35 +2886,21 @@
           "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:425",
           "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:541",
           "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:619",
-          "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:691",
-          "src/game/rules/game-specific/race-paired-pawns/json-paired-pawn-race-schema.ts:92",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:130",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:146",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:182",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:188"
+          "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:691"
         ],
-        "payment": [
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:188"
-        ],
+        "payment": [],
         "cards": [
-          "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json:31",
-          "src/game/rules/game-specific/race-paired-pawns/json-paired-pawn-race-schema.ts:88"
+          "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json:67"
         ],
         "zones": [],
-        "choices": [
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:43",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:58",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:102"
-        ],
+        "choices": [],
         "status": [
-          "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:414",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:22"
+          "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:414"
         ],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json:80",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:132"
+          "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json:112"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:255",
@@ -2952,25 +2928,11 @@
           "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:670",
           "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:686",
           "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:694",
-          "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:710",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:32",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:34",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:38",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:40",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:73",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:153",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:154",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:177",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:178",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:197",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:198",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:204",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:207"
+          "src/game/games/les-quatre-vents/tout-pres-de-maman/content/catalogue.json:710"
         ],
         "triggers": [
-          "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json:32",
-          "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json:89",
-          "src/game/rules/game-specific/race-paired-pawns/paired-pawn-race.recipes.ts:35"
+          "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json:37",
+          "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json:68"
         ]
       }
     },
@@ -3218,12 +3180,6 @@
       "name": "race-directional-hazards",
       "consumers": [
         "ca-derape"
-      ]
-    },
-    {
-      "name": "race-paired-pawns",
-      "consumers": [
-        "tout-pres-de-maman"
       ]
     },
     {

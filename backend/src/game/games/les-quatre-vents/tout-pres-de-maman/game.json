@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "3",
+  "contentVersion": "4",
   "definitionVersion": "3",
   "snapshotMigrations": [
     {
@@ -14,6 +14,10 @@
     {
       "fromVersion": "2",
       "toVersion": "3"
+    },
+    {
+      "fromVersion": "3",
+      "toVersion": "4"
     }
   ],
   "category": "JeuxDePlateaux",
@@ -24,6 +28,38 @@
       "trackId": "forest",
       "spaces": 40,
       "overshoot": "bounce"
+    },
+    {
+      "kind": "paired-pawn-race",
+      "rollRecipe": "race-paired-pawns-roll",
+      "trackId": "forest",
+      "diceId": "main",
+      "deckId": "events",
+      "tokenResource": "eucalyptus",
+      "bonusRerollStatus": "pairedPawn.bonus-reroll",
+      "tokensToWin": 3,
+      "maxDepth": 12,
+      "finishReason": "pairedPawn-found",
+      "eventNamespace": "pairedPawn",
+      "tiles": { "$content": "content/catalogue.json#/tiles" },
+      "cards": { "$content": "content/catalogue.json#/cards" },
+      "transferAmount": 1,
+      "sharedAdvance": 1,
+      "meetingAdvance": 1,
+      "rollMinimum": 4,
+      "rollAdvance": 1,
+      "tileRules": {
+        "start": { "kind": "gain", "amount": 2 },
+        "neutral": { "kind": "none", "amount": 0 },
+        "token": { "kind": "gain", "amount": 1 },
+        "card": { "kind": "draw", "amount": 0 },
+        "bonds": { "kind": "move", "amount": 2 },
+        "slide": { "kind": "move", "amount": -2 },
+        "storm": { "kind": "skip", "amount": 1 },
+        "nest": { "kind": "skip", "amount": 1 },
+        "meeting": { "kind": "meeting", "amount": 0 },
+        "finish": { "kind": "finish", "amount": 0 }
+      }
     }
   ],
   "components": [
@@ -43,9 +79,7 @@
     },
     "startRound": false
   },
-  "resourceIds": [
-    "eucalyptus"
-  ],
+  "resourceIds": ["eucalyptus"],
   "shortcuts": [
     {
       "key": "D",
@@ -66,9 +100,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -78,75 +110,7 @@
     }
   },
   "victory": {
-    "kind": "by-paired-pawn-race"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "pairedPawnRace",
-      "config": {
-        "trackId": "forest",
-        "diceId": "main",
-        "deckId": "events",
-        "tokenResource": "eucalyptus",
-        "bonusRerollStatus": "pairedPawn.bonus-reroll",
-        "tokensToWin": 3,
-        "maxDepth": 12,
-        "finishReason": "pairedPawn-found",
-        "eventNamespace": "pairedPawn",
-        "tiles": {
-          "$content": "content/catalogue.json#/tiles"
-        },
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        },
-        "transferAmount": 1,
-        "sharedAdvance": 1,
-        "meetingAdvance": 1,
-        "rollMinimum": 4,
-        "rollAdvance": 1,
-        "tileRules": {
-          "start": {
-            "kind": "gain",
-            "amount": 2
-          },
-          "neutral": {
-            "kind": "none",
-            "amount": 0
-          },
-          "token": {
-            "kind": "gain",
-            "amount": 1
-          },
-          "card": {
-            "kind": "draw",
-            "amount": 0
-          },
-          "bonds": {
-            "kind": "move",
-            "amount": 2
-          },
-          "slide": {
-            "kind": "move",
-            "amount": -2
-          },
-          "storm": {
-            "kind": "skip",
-            "amount": 1
-          },
-          "nest": {
-            "kind": "skip",
-            "amount": 1
-          },
-          "meeting": {
-            "kind": "meeting",
-            "amount": 0
-          },
-          "finish": {
-            "kind": "finish",
-            "amount": 0
-          }
-        }
-      }
-    }
-  ]
+  "extensions": []
 }

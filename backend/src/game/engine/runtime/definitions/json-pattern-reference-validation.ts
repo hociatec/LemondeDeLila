@@ -13,6 +13,7 @@ import { assertDeliveryReferences } from './json-delivery-pattern-reference-vali
 import { assertJudgedSubmissionReferences } from './json-judged-submission-reference-validation';
 import { assertAnonymousVoteReferences } from './json-anonymous-vote-reference-validation';
 import { assertTreasureTrackReferences } from './json-treasure-track-reference-validation';
+import { assertPairedPawnRaceReferences } from './json-paired-pawn-race-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
 
@@ -111,6 +112,8 @@ function assertAdvancedPatternReferences(
     assertFamilyEffectsReferences(pattern, index, components, resources, fail);
   if (pattern.kind === 'species-troops')
     assertSpeciesTroopsReferences(pattern, index, components, fail);
+  if (pattern.kind === 'paired-pawn-race')
+    assertPairedPawnRaceReferences(pattern, index, components, resources, fail);
   if (pattern.kind === 'grid-placement')
     assertGridPlacementReferences(
       pattern,

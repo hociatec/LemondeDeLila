@@ -67,8 +67,6 @@
 177. Supprimer game/rules/game-specific/race-bounce-quiz/effect-pack.ts après certification comportementale complète.
 178. Migrer board-path-walls afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 179. Supprimer game/rules/game-specific/board-path-walls/effect-pack.ts après certification comportementale complète.
-180. Migrer race-paired-pawns afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
-181. Supprimer game/rules/game-specific/race-paired-pawns/effect-pack.ts après certification comportementale complète.
 182. Migrer cards-public-domain afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 183. Supprimer game/rules/game-specific/cards-public-domain/effect-pack.ts après certification comportementale complète.
 184. Migrer race-resource-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.

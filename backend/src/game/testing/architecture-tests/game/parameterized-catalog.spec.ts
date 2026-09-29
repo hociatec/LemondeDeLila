@@ -126,11 +126,6 @@ const variants: Record<string, (program: Data) => Data> = {
     },
   }),
   chainedTileRace: renamedTiles,
-  pairedPawnRace: (program) => ({
-    ...renamedTiles(program),
-    rollMinimum: 2,
-    rollAdvance: 3,
-  }),
   storyChallenge: (program) =>
     object(
       rename(
@@ -202,7 +197,7 @@ describe('mechanisms run under an unrelated game identity', () => {
               'category-' + String(card.category),
             ]),
           );
-        if (key === 'chainedTileRace' || key === 'pairedPawnRace')
+        if (key === 'chainedTileRace')
           names = Object.fromEntries(
             Object.keys(object(program.tileRules)).map((kind, i) => [
               kind,
@@ -212,11 +207,7 @@ describe('mechanisms run under an unrelated game identity', () => {
         document.components = rename(document.components, names);
         document.resourceIds = rename(document.resourceIds, names);
         document.setup = rename(document.setup, names);
-        if (
-          key === 'chainedTileRace' ||
-          key === 'pairedPawnRace' ||
-          key === 'bidirectionalCollisionRace'
-        )
+        if (key === 'chainedTileRace' || key === 'bidirectionalCollisionRace')
           object(document[key]).cards = rename(program.cards, names);
       }
       const gridPattern = Array.isArray(document.patterns)

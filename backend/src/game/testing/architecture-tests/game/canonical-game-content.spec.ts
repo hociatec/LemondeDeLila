@@ -81,10 +81,12 @@ it('rejects invalid references and effects in canonical JSON catalogues', () => 
 
   const maman = structuredClone(
     jsonDefinition('tout-pres-de-maman').content.data,
-  ) as { pairedPawnRace: { cards: Array<{ effects: unknown[] }> } };
-  maman.pairedPawnRace.cards[0].effects = [
-    { kind: 'custom', effectId: 'not-declared' },
-  ];
+  ) as {
+    patterns: Array<{ kind: string; cards: Array<{ effects: unknown[] }> }>;
+  };
+  maman.patterns.find(
+    (pattern) => pattern.kind === 'paired-pawn-race',
+  )!.cards[0].effects = [{ kind: 'custom', effectId: 'not-declared' }];
   expect(() => recompileJson('tout-pres-de-maman', maman)).toThrow(
     'effet inconnu',
   );

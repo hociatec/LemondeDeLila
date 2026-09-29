@@ -119,18 +119,3 @@ it.each([
     expect(await game.replay()).toEqual(game.state());
   },
 );
-
-it('uses the configured threshold movement amount', async () => {
-  const { document, compile } = fixture('pairedPawnRace');
-  const program = document.pairedPawnRace;
-  program.rollMinimum = 1;
-  program.rollAdvance = 3;
-  for (const rule of Object.values(program.tileRules) as Data[])
-    if (rule.kind !== 'finish') rule.kind = 'none';
-  action(document, 'pairedPawn.roll-threshold-move');
-  const game = testGame(compile()).players(2);
-  await game.start();
-  await game.as(1).do('probe', {});
-  expect(game.inspect.positions(program.trackId)['1']).toBe(3);
-  expect(await game.replay()).toEqual(game.state());
-});

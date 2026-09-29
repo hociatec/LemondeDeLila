@@ -14,6 +14,14 @@ import {
   treasureTrackRace,
   type TreasureTrackRaceOptions,
 } from '../patterns/treasure-track-race-pattern';
+import {
+  pairedPawnRace,
+  type PairedPawnRaceOptions,
+} from '../patterns/paired-pawn-race-pattern';
+import {
+  judgedSubmission,
+  type JudgedSubmissionOptions,
+} from '../patterns/judged-submission-pattern';
 
 export function compileTreasureTrackRace(
   pattern: { kind: 'treasure-track-race' } & TreasureTrackRaceOptions,
@@ -38,4 +46,16 @@ export function compileSpeciesTroops(
 ) {
   const { kind: _kind, ...options } = pattern;
   return speciesTroops(options);
+}
+export function compilePairedPawnRace(
+  pattern: { kind: 'paired-pawn-race' } & PairedPawnRaceOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return pairedPawnRace(options);
+}
+export function compileJudgedSubmission(
+  pattern: { kind: 'judged-submission' } & JudgedSubmissionOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return judgedSubmission(options);
 }

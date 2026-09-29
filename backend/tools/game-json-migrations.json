@@ -170,6 +170,16 @@
         "src/game/testing/architecture-tests/game/species-troops-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-species-troops.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/tout-pres-de-maman/game.json",
+      "fromSha256": "613449e78f89bfbb1b9175692bf33ec78f26a57ce1d3603c45a69ad7167931fe",
+      "toSha256": "807fc9de1d7b0baf123abb6c61f0bb180d28f127e24325db07cc749f473610d7",
+      "justification": "Le pattern paired-pawn-race générique porte désormais rebond, cases chaînées, cartes, rencontres, ressources, choix, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/paired-pawn-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-paired-pawn-race.spec.ts"
+      ]
     }
   ]
 }

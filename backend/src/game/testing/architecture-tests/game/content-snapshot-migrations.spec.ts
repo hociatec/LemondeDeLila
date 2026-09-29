@@ -51,10 +51,7 @@ const missionDocument = legacyExtensionFixture(
   'quizEventRace',
 );
 const piratesDocument = piratesDocumentExtensionSource;
-const mamanDocument = legacyExtensionFixture(
-  mamanDocumentExtensionSource,
-  'pairedPawnRace',
-);
+const mamanDocument = mamanDocumentExtensionSource;
 const sacDocument = legacyExtensionFixture(
   sacDocumentExtensionSource,
   'propertyEconomy',

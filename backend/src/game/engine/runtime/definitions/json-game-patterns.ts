@@ -46,10 +46,7 @@ import {
   orderedAssembly,
   type OrderedAssemblyOptions,
 } from '../patterns/ordered-assembly-pattern';
-import {
-  judgedSubmission,
-  type JudgedSubmissionOptions,
-} from '../patterns/judged-submission-pattern';
+import type { JudgedSubmissionOptions } from '../patterns/judged-submission-pattern';
 import {
   marketExchange,
   type MarketExchangeOptions,
@@ -58,11 +55,14 @@ import type { AnonymousVoteOptions } from '../patterns/anonymous-vote-pattern';
 import type { TreasureTrackRaceOptions } from '../patterns/treasure-track-race-pattern';
 import type { FamilyEffectsOptions } from '../patterns/family-effects-pattern';
 import type { SpeciesTroopsOptions } from '../patterns/species-troops-pattern';
+import type { PairedPawnRaceOptions } from '../patterns/paired-pawn-race-pattern';
 import {
   compileAnonymousVote,
   compileFamilyEffects,
   compileSpeciesTroops,
   compileTreasureTrackRace,
+  compilePairedPawnRace,
+  compileJudgedSubmission,
 } from './json-advanced-pattern-compilers';
 import {
   type AuthorSchema,
@@ -88,6 +88,7 @@ import {
 import { treasureTrackRacePatternSchema } from './json-treasure-track-pattern-schema';
 import { familyEffectsPatternSchema } from './json-family-effects-pattern-schema';
 import { speciesTroopsPatternSchema } from './json-species-troops-pattern-schema';
+import { pairedPawnRacePatternSchema } from './json-paired-pawn-race-pattern-schema';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -124,6 +125,7 @@ export type JsonGamePattern =
   | ({ kind: 'treasure-track-race' } & TreasureTrackRaceOptions)
   | ({ kind: 'family-effects' } & FamilyEffectsOptions)
   | ({ kind: 'species-troops' } & SpeciesTroopsOptions)
+  | ({ kind: 'paired-pawn-race' } & PairedPawnRaceOptions)
   | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
         exchange?: MarketExchangeOptions['exchange'];
       })
@@ -330,6 +332,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     treasureTrackRacePatternSchema,
     familyEffectsPatternSchema,
     speciesTroopsPatternSchema,
+    pairedPawnRacePatternSchema,
     marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
@@ -400,10 +403,8 @@ export function compileJsonPattern(
       const { kind: _kind, ...options } = pattern;
       return orderedAssembly(options);
     }
-    case 'judged-submission': {
-      const { kind: _kind, ...options } = pattern;
-      return judgedSubmission(options);
-    }
+    case 'judged-submission':
+      return compileJudgedSubmission(pattern);
     case 'anonymous-vote':
       return compileAnonymousVote(pattern);
     case 'treasure-track-race':
@@ -412,6 +413,8 @@ export function compileJsonPattern(
       return compileFamilyEffects(pattern);
     case 'species-troops':
       return compileSpeciesTroops(pattern);
+    case 'paired-pawn-race':
+      return compilePairedPawnRace(pattern);
     case 'market': {
       const { kind: _kind, ...options } = pattern;
       return options.exchange
