@@ -507,7 +507,7 @@
     },
     {
       "file": "src/game/engine/runtime/patterns/grid-placement-pattern.ts",
-      "sha256": "68cb38274cf82189f8916d3166091a0b1532d6e3dea0d7502a9b2da9a0eaadf1"
+      "sha256": "1376cbce7617ca998b2471247211db6e257b0f3644d99d06157ea0f3a8a25b74"
     },
     {
       "file": "src/game/engine/runtime/patterns/judged-submission-pattern.ts",
@@ -531,7 +531,7 @@
     },
     {
       "file": "src/game/engine/runtime/patterns/pattern-capabilities.ts",
-      "sha256": "031d70a23d8f6d4612ca5cb7b0dfc1e50f6482ddea004ed5670720de87372fc5"
+      "sha256": "b192b0a59d779a1cdb1512153694c8b13595fd1ad5f16acb215886dac2507703"
     },
     {
       "file": "src/game/engine/runtime/patterns/protected-haunted-race-pattern.ts",
@@ -616,6 +616,10 @@
     {
       "file": "src/game/engine/runtime/recipes/gameplay/track-round.recipes.ts",
       "sha256": "38fbc6d704408ec9ea150bb1bdfe966872bbf9ad9c8ef7eb30840ea2efbdf13f"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/resource-deltas.ts",
+      "sha256": "201fd6f6d8b923f0ecb15270d84e7681728b8c809da4f9409cc101c3fe128ff7"
     },
     {
       "file": "src/game/engine/runtime/state/declarative-state.ts",

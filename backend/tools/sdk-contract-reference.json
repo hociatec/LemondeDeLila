@@ -395,7 +395,7 @@
     },
     {
       "file": "src/game/engine/runtime/patterns/pattern-capabilities.ts",
-      "sha256": "031d70a23d8f6d4612ca5cb7b0dfc1e50f6482ddea004ed5670720de87372fc5"
+      "sha256": "b192b0a59d779a1cdb1512153694c8b13595fd1ad5f16acb215886dac2507703"
     },
     {
       "file": "src/game/engine/runtime/projection/collection-view.ts",
@@ -448,6 +448,10 @@
     {
       "file": "src/game/engine/runtime/recipes/gameplay/track-round.recipes.ts",
       "sha256": "38fbc6d704408ec9ea150bb1bdfe966872bbf9ad9c8ef7eb30840ea2efbdf13f"
+    },
+    {
+      "file": "src/game/engine/runtime/recipes/resource-deltas.ts",
+      "sha256": "201fd6f6d8b923f0ecb15270d84e7681728b8c809da4f9409cc101c3fe128ff7"
     },
     {
       "file": "src/game/engine/runtime/state/declarative-state.ts",
