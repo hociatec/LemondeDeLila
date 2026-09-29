@@ -2257,9 +2257,7 @@
     },
     {
       "id": "nawak",
-      "packs": [
-        "choice-anonymous-vote"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -2281,39 +2279,21 @@
         "cards": [],
         "zones": [],
         "choices": [
-          "src/game/games/vents-dansants/nawak/game.spec.ts:29",
-          "src/game/games/vents-dansants/nawak/game.spec.ts:37",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:83",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:87",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:149",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:168",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:171",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:173"
+          "src/game/games/vents-dansants/nawak/game.spec.ts:24",
+          "src/game/games/vents-dansants/nawak/game.spec.ts:32"
         ],
         "status": [],
         "collections": [],
         "scoring": [
-          "src/game/games/vents-dansants/nawak/game.spec.ts:45",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:175",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:181"
+          "src/game/games/vents-dansants/nawak/game.spec.ts:40"
         ],
         "victory": [
-          "src/game/games/vents-dansants/nawak/game.json:53"
+          "src/game/games/vents-dansants/nawak/game.json:56"
         ],
         "targeting": [
-          "src/game/games/vents-dansants/nawak/game.json:14",
-          "src/game/games/vents-dansants/nawak/game.json:63",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:174",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:175",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:176"
+          "src/game/games/vents-dansants/nawak/game.json:18"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:60",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:97",
-          "src/game/rules/game-specific/choice-anonymous-vote/anonymous-vote.recipes.ts:107",
-          "src/game/rules/game-specific/choice-anonymous-vote/effect-pack.ts:9",
-          "src/game/rules/game-specific/choice-anonymous-vote/effect-pack.ts:25"
-        ]
+        "triggers": []
       }
     },
     {
@@ -3323,12 +3303,6 @@
       "name": "cards-theme-name",
       "consumers": [
         "gerard-president"
-      ]
-    },
-    {
-      "name": "choice-anonymous-vote",
-      "consumers": [
-        "nawak"
       ]
     },
     {

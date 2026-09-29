@@ -65,7 +65,6 @@
     "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
     "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible.",
     "race-paired-pawns": "Compared with movement and resource transfer primitives: paired meetings, shared advance, rerolls and token victory remain coupled in this pack and require a distinct second-game test before promotion.",
-    "choice-anonymous-vote": "Compared with submissions and scoring: anonymous answers and subsequent voting constitute a two-stage composition; its relocated schema increases the measured size, not its reuse evidence.",
     "race-treasure-track": "Compared with inventory, card resolution and movement: protected decks, collection limits, gold requirements and theft remain a single catalogue composition with one demonstrated consumer.",
     "collection-family-effects": "Compared with card requests, sets and status primitives: extra draws, free requests and vanished targets are specific additions to family collection; colocation does not establish generic behavior."
   },
@@ -101,7 +100,6 @@
       "choice-simultaneous-paw-scoring",
       "choice-story-challenge",
       "choice-simultaneous-quiz",
-      "choice-anonymous-vote",
       "choice-chapter-encounter"
     ],
     "collection": ["collection-species-troops", "collection-family-effects"],
@@ -278,14 +276,6 @@
       "classificationReason": "choice-simultaneous-quiz implements configurable simultaneous quiz. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "choice-anonymous-vote": {
-      "property": "anonymousVote",
-      "mechanic": "anonymous answers and voting",
-      "domain": "choice",
-      "scope": "game-specific",
-      "classificationReason": "choice-anonymous-vote implements anonymous answers and voting. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "cards-shared-prestige": {
       "property": "sharedPrestigeCards",
       "mechanic": "shared prestige-card hand",
@@ -354,7 +344,6 @@
     "cards-theme-name",
     "cards-ritual-phases",
     "board-property-economy",
-    "choice-anonymous-vote",
     "cards-shared-prestige",
     "choice-simultaneous-quiz",
     "board-path-walls",

@@ -55,6 +55,10 @@ import {
   type MarketExchangeOptions,
 } from '../patterns/market-exchange-pattern';
 import {
+  anonymousVote,
+  type AnonymousVoteOptions,
+} from '../patterns/anonymous-vote-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -72,6 +76,8 @@ import {
   gridPlacementPatternSchema,
   orderedAssemblyPatternSchema,
   judgedSubmissionPatternSchema,
+  anonymousVotePatternSchema,
+  marketPatternSchema,
 } from './json-advanced-pattern-schemas';
 
 export type JsonGamePattern =
@@ -105,6 +111,7 @@ export type JsonGamePattern =
   | ({ kind: 'grid-placement' } & GridPlacementOptions)
   | ({ kind: 'ordered-assembly' } & OrderedAssemblyOptions)
   | ({ kind: 'judged-submission' } & JudgedSubmissionOptions)
+  | ({ kind: 'anonymous-vote' } & AnonymousVoteOptions)
   | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
         exchange?: MarketExchangeOptions['exchange'];
       })
@@ -307,50 +314,8 @@ export const jsonGamePatternSchema: AuthorSchema = {
     gridPlacementPatternSchema,
     orderedAssemblyPatternSchema,
     judgedSubmissionPatternSchema,
-    object(
-      {
-        kind: { const: 'market' },
-        marketId: id,
-        inventoryId: id,
-        items: array(id, 1),
-        currency: id,
-        prices: record({ type: 'integer', minimum: 0, maximum: 1000000 }),
-        startingCurrency: { type: 'integer', minimum: 0, maximum: 1000000 },
-        minPrice: { type: 'integer', minimum: 0, maximum: 1000000 },
-        maxPrice: { type: 'integer', minimum: 0, maximum: 1000000 },
-        turnsCounterId: id,
-        maxRounds: { type: 'integer', minimum: 1, maximum: 10000 },
-        winnerReason: id,
-        exchange: object({
-          buyRecipe: id,
-          sellRecipe: id,
-          rumorRecipe: id,
-          protectRecipe: id,
-          stealRecipe: id,
-          passRecipe: id,
-          buyAction: id,
-          sellAction: id,
-          passAction: id,
-          rumorCost: { type: 'integer', minimum: 0, maximum: 1000000 },
-          protectCost: { type: 'integer', minimum: 0, maximum: 1000000 },
-          eventNamespace: id,
-        }),
-      },
-      [
-        'kind',
-        'marketId',
-        'inventoryId',
-        'items',
-        'currency',
-        'prices',
-        'startingCurrency',
-        'minPrice',
-        'maxPrice',
-        'turnsCounterId',
-        'maxRounds',
-        'winnerReason',
-      ],
-    ),
+    anonymousVotePatternSchema,
+    marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
       {
@@ -423,6 +388,10 @@ export function compileJsonPattern(
     case 'judged-submission': {
       const { kind: _kind, ...options } = pattern;
       return judgedSubmission(options);
+    }
+    case 'anonymous-vote': {
+      const { kind: _kind, ...options } = pattern;
+      return anonymousVote(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

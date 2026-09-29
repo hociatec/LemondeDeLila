@@ -9,6 +9,7 @@ import { assertGridPlacementReferences } from './json-grid-pattern-reference-val
 import { assertOrderedAssemblyReferences } from './json-ordered-assembly-reference-validation';
 import { assertDeliveryReferences } from './json-delivery-pattern-reference-validation';
 import { assertJudgedSubmissionReferences } from './json-judged-submission-reference-validation';
+import { assertAnonymousVoteReferences } from './json-anonymous-vote-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
 
@@ -87,6 +88,8 @@ function assertAdvancedPatternReferences(
   },
 ): void {
   const { components, resources, counters, phases, fail } = context;
+  if (pattern.kind === 'anonymous-vote')
+    assertAnonymousVoteReferences(pattern, index, fail);
   if (pattern.kind === 'track-zone-collection')
     assertTrackZoneCollectionReferences(
       pattern,

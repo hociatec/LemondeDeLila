@@ -81,8 +81,6 @@
 191. Supprimer game/rules/game-specific/cards-ritual-phases/effect-pack.ts après certification comportementale complète.
 194. Migrer cards-shared-prestige afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 195. Supprimer game/rules/game-specific/cards-shared-prestige/effect-pack.ts après certification comportementale complète.
-196. Migrer choice-anonymous-vote afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
-197. Supprimer game/rules/game-specific/choice-anonymous-vote/effect-pack.ts après certification comportementale complète.
 198. Migrer cards-discard-penalty afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 199. Supprimer game/rules/game-specific/cards-discard-penalty/effect-pack.ts après certification comportementale complète.
 200. Migrer race-quiz-event-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.

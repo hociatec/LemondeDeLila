@@ -9,13 +9,10 @@ type CompiledView = ReturnType<
 >;
 
 it('retains concrete fields from the registry through the compiler public contract', () => {
-  const view: JsonGameViews['anonymousVote'] = {
-    currentChallengeId: 'challenge-1',
-    lastRound: null,
-  };
+  const view: JsonGameViews['propertyEconomy'] = { buildings: {} };
   const compiled: CompiledView = view;
   const aggregate: JsonGameView = compiled;
-  expect(aggregate.currentChallengeId).toBe('challenge-1');
+  expect(aggregate.buildings).toEqual({});
   const wrongField: JsonGameView = {
     // @ts-expect-error Unknown public fields must not be accepted by an index signature.
     arbitraryField: true,
@@ -28,7 +25,6 @@ it('retains concrete fields from the registry through the compiler public contra
 });
 
 it('keeps concrete view fields for consumers selecting an extension', () => {
-  const challenge: JsonGameViews['anonymousVote']['currentChallengeId'] =
-    'challenge-1';
-  expect(challenge).toBe('challenge-1');
+  const buildings: JsonGameViews['propertyEconomy']['buildings'] = {};
+  expect(buildings).toEqual({});
 });

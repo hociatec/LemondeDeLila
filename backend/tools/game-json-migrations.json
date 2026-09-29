@@ -130,6 +130,16 @@
         "src/game/testing/architecture-tests/game/market-exchange-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-market-exchange.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/nawak/game.json",
+      "fromSha256": "526d8b9a61e4d67ea8da15d2db74a774c77b15786507e8758f14a59aaf54aa35",
+      "toSha256": "67d3d5fbe2b78d60e7410d9d64fc4935dab437331c8eb88b1388474c700b8131",
+      "justification": "Le pattern anonymous-vote générique porte désormais réponses secrètes, révélation, vote, égalités, score, bot, vue et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/anonymous-vote-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-anonymous-vote.spec.ts"
+      ]
     }
   ]
 }

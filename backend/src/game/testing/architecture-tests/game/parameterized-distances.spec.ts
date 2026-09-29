@@ -1,10 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { discoverGameDefinitions } from '../../../composition/game-module-discovery';
 import { compileJsonGame } from '../../../rules/public-api';
-import {
-  testGame,
-  DeclarativeGameRuntime,
-} from '../../../engine/testing/public-api';
+import { testGame } from '../../../engine/testing/public-api';
 
 type Data = Record<string, any>;
 function fixture(key: string) {
@@ -135,25 +132,5 @@ it('uses the configured threshold movement amount', async () => {
   await game.start();
   await game.as(1).do('probe', {});
   expect(game.inspect.positions(program.trackId)['1']).toBe(3);
-  expect(await game.replay()).toEqual(game.state());
-});
-
-it('enumerates and accepts five answers while rejecting an index outside the current challenge', async () => {
-  const { document, compile } = fixture('anonymousVote');
-  document.anonymousVote.challenges.forEach((challenge: Data) => {
-    challenge.answers = ['a', 'b', 'c', 'd', 'e'];
-  });
-  const definition = compile();
-  const game = testGame(definition).players(3);
-  await game.start();
-  const choices = new DeclarativeGameRuntime(definition)
-    .getAvailableActions(game.state(), 1)
-    .filter((candidate) => candidate.payload?.answerIndex != null);
-  expect(choices.map((candidate) => candidate.payload?.answerIndex)).toEqual([
-    0, 1, 2, 3, 4,
-  ]);
-  const type = choices[0].type;
-  await expect(game.as(1).do(type, { answerIndex: 5 })).rejects.toThrow();
-  await game.as(1).do(type, { answerIndex: 4 });
   expect(await game.replay()).toEqual(game.state());
 });

@@ -65,13 +65,6 @@ function renamedTiles(program: Data): Data {
   };
 }
 const variants: Record<string, (program: Data) => Data> = {
-  anonymousVote: (program) => ({
-    ...program,
-    challenges: list(program.challenges).map((challenge) => ({
-      ...challenge,
-      answers: ['First', 'Second', 'Third', 'Fourth', 'Fifth'],
-    })),
-  }),
   chapterEncounter: (program) =>
     object(
       rename(
@@ -240,8 +233,12 @@ describe('mechanisms run under an unrelated game identity', () => {
         )
           object(document[key]).cards = rename(program.cards, names);
       }
-      if (document.grid)
-        object(document.grid).markEvent = 'mechanism-fixture.mark';
+      const gridPattern = Array.isArray(document.patterns)
+        ? document.patterns
+            .map(object)
+            .find((pattern) => pattern.kind === 'grid-placement')
+        : undefined;
+      if (gridPattern) gridPattern.markEvent = 'mechanism-fixture.mark';
       const other: unknown = compileJsonGame(
         {
           ...manifest,

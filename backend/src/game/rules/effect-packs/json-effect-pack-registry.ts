@@ -18,7 +18,6 @@ import { effectPack as choiceSimultaneousPawScoringEffectPack } from '../game-sp
 import { effectPack as cardsThemeNameEffectPack } from '../game-specific/cards-theme-name/effect-pack';
 import { effectPack as cardsRitualPhasesEffectPack } from '../game-specific/cards-ritual-phases/effect-pack';
 import { effectPack as boardPropertyEconomyEffectPack } from '../game-specific/board-property-economy/effect-pack';
-import { effectPack as choiceAnonymousVoteEffectPack } from '../game-specific/choice-anonymous-vote/effect-pack';
 import { effectPack as cardsSharedPrestigeEffectPack } from '../game-specific/cards-shared-prestige/effect-pack';
 import { effectPack as choiceSimultaneousQuizEffectPack } from '../game-specific/choice-simultaneous-quiz/effect-pack';
 import { effectPack as boardPathWallsEffectPack } from '../game-specific/board-path-walls/effect-pack';
@@ -46,7 +45,6 @@ export const jsonEffectPacks = Object.freeze([
   cardsThemeNameEffectPack,
   cardsRitualPhasesEffectPack,
   boardPropertyEconomyEffectPack,
-  choiceAnonymousVoteEffectPack,
   cardsSharedPrestigeEffectPack,
   choiceSimultaneousQuizEffectPack,
   boardPathWallsEffectPack,

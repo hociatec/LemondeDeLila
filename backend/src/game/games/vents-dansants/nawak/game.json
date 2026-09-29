@@ -1,17 +1,23 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "1",
+  "snapshotMigrations": [{ "fromVersion": "1", "toVersion": "2" }],
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
   "patterns": [
     {
-      "kind": "submission-judge",
-      "submissionId": "choice-anonymous-vote.answers",
-      "voteId": "choice-anonymous-vote.votes",
-      "secret": true,
+      "kind": "anonymous-vote",
+      "chooseRecipe": "choice-anonymous-vote-choose",
+      "voteRecipe": "choice-anonymous-vote-vote",
+      "chooseAction": "choose_answer",
+      "voteAction": "vote_answer",
+      "answerSubmissionId": "choice-anonymous-vote.answers",
+      "voteSubmissionId": "choice-anonymous-vote.votes",
       "targetScore": 5,
-      "winnerReason": "target-score"
+      "winnerReason": "target-score",
+      "challenges": { "$content": "content/catalogue.json#/challenges" },
+      "eventNamespace": "choice-anonymous-vote"
     }
   ],
   "components": [],
@@ -35,10 +41,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "choose_answer",
-        "vote_answer"
-      ],
+      "actions": ["choose_answer", "vote_answer"],
       "terminal": true
     }
   },
@@ -50,21 +53,6 @@
       "recipe": "choice-anonymous-vote-vote"
     }
   },
-  "victory": {
-    "kind": "by-anonymous-vote"
-  },
-  "extensions": [
-    {
-      "type": "anonymousVote",
-      "config": {
-        "answerSubmissionId": "choice-anonymous-vote.answers",
-        "voteSubmissionId": "choice-anonymous-vote.votes",
-        "targetScore": 5,
-        "winnerReason": "target-score",
-        "challenges": {
-          "$content": "content/catalogue.json#/challenges"
-        }
-      }
-    }
-  ]
+  "victory": { "kind": "manual" },
+  "extensions": []
 }
