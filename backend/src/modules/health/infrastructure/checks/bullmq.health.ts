@@ -55,12 +55,22 @@ export class BullmqHealthIndicator extends HealthIndicator {
       const counts = await withHealthCheckTimeout(
         queue.getJobCounts('waiting', 'active', 'delayed', 'failed'),
       );
+      const [oldestJob] = await withHealthCheckTimeout(
+        queue.getJobs(['waiting', 'active', 'delayed'], 0, 0, true),
+      );
+      const oldestJobAgeMs = oldestJob
+        ? Math.max(0, Date.now() - oldestJob.timestamp)
+        : 0;
       prometheusMetrics.setBullmqJobs('game-engine-tasks', {
         waiting: counts.waiting,
         active: counts.active,
         delayed: counts.delayed,
         failed: counts.failed,
       });
+      prometheusMetrics.setBullmqOldestJobAge(
+        'game-engine-tasks',
+        oldestJobAgeMs / 1_000,
+      );
       prometheusMetrics.setDependencyUp('bullmq', true);
       const queued = counts.waiting + counts.active + counts.delayed;
       prometheusMetrics.setDependencySaturation(
@@ -79,6 +89,7 @@ export class BullmqHealthIndicator extends HealthIndicator {
           : 100;
       const status = this.getStatus(key, counts.failed <= maximumFailed, {
         ...counts,
+        oldestJobAgeMs,
         maximumFailed,
       });
       if (counts.failed > maximumFailed) {

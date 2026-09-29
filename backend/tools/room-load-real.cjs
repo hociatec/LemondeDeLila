@@ -6,6 +6,10 @@ const path = require('path');
 const { WebSocket } = require('ws');
 const mysql = require('mysql2/promise');
 const Redis = require('ioredis');
+const clientHeaders = {
+  'x-lila-client-product': 'client-wx',
+  'x-lila-client-version': '9.9.9.9',
+};
 
 function loadEnv(envPath) {
   const out = {};
@@ -51,10 +55,20 @@ function phaseMs(start) {
   return nowMs() - start;
 }
 
+function endpointList(value, fallback) {
+  const endpoints = String(value || fallback)
+    .split(',')
+    .map((item) => item.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+  assert(endpoints.length > 0, 'At least one backend endpoint is required');
+  return endpoints;
+}
+
 class WsClient {
-  constructor(url, label) {
+  constructor(url, label, headers = {}) {
     this.url = url;
     this.label = label;
+    this.headers = headers;
     this.ws = null;
     this.messages = [];
     this.closedCode = null;
@@ -63,7 +77,9 @@ class WsClient {
 
   async connect(timeoutMs = 10000) {
     await new Promise((resolve, reject) => {
-      const ws = new WebSocket(this.url);
+      const ws = new WebSocket(this.url, {
+        headers: { ...clientHeaders, ...this.headers },
+      });
       let settled = false;
       const timeout = setTimeout(() => {
         if (settled) return;
@@ -102,6 +118,28 @@ class WsClient {
       throw new Error(`WS not open [${this.label}]`);
     }
     this.ws.send(JSON.stringify(payload));
+  }
+
+  sendIntent(intentId, data = {}) {
+    this.send({
+      type: 'room.intent.execute',
+      payload: { intentId, data },
+    });
+  }
+
+  async waitUntilRoomReady(timeoutMs = 15000) {
+    const deadline = nowMs() + timeoutMs;
+    while (!this.messages.some((message) => message.type === 'room.pong')) {
+      if (
+        !this.ws ||
+        this.ws.readyState !== WebSocket.OPEN ||
+        nowMs() >= deadline
+      ) {
+        throw new Error(`Room connection not ready [${this.label}]`);
+      }
+      this.sendIntent('room.ping');
+      await sleep(50);
+    }
   }
 
   async waitFor(predicate, timeoutMs = 15000, label = 'waitFor') {
@@ -299,7 +337,7 @@ async function registerAndLoginOverApiWs(baseWsUrl, user, password) {
 async function issueRoomTicket(baseHttpUrl, token) {
   const res = await fetchJson(`${baseHttpUrl}/api/ws/ticket?scope=room`, {
     method: 'GET',
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { ...clientHeaders, Authorization: `Bearer ${token}` },
   });
   assert(res.ok, `ws/ticket failed: ${res.status}`);
   const ticket = String(res?.body?.ticket || '').trim();
@@ -356,12 +394,23 @@ async function main() {
   const backendRoot = path.resolve(__dirname, '..');
   const env = loadEnv(path.join(backendRoot, '.env'));
 
-  const baseHttpUrl = process.env.E2E_BASE_HTTP_URL || 'http://127.0.0.1:3001';
-  const baseWsUrl = process.env.E2E_BASE_WS_URL || 'ws://127.0.0.1:3001';
+  const baseHttpUrls = endpointList(
+    process.env.ROOM_LOAD_BASE_HTTP_URLS || process.env.E2E_BASE_HTTP_URL,
+    'http://127.0.0.1:3001',
+  );
+  const baseWsUrls = endpointList(
+    process.env.ROOM_LOAD_BASE_WS_URLS || process.env.E2E_BASE_WS_URL,
+    'ws://127.0.0.1:3001',
+  );
+  assert(
+    baseHttpUrls.length === baseWsUrls.length,
+    'HTTP and WebSocket endpoint counts must match',
+  );
   const roomsCount = Number(process.env.ROOM_LOAD_ROOMS || 5);
   const extraPlayersPerRoom = Number(process.env.ROOM_LOAD_EXTRA_PLAYERS || 2);
   const spectatorsPerRoom = Number(process.env.ROOM_LOAD_SPECTATORS || 1);
   const poolSize = Number(process.env.ROOM_LOAD_CONCURRENCY || 8);
+  const soakRounds = Number(process.env.ROOM_LOAD_SOAK_ROUNDS || 1);
   const password = process.env.ROOM_LOAD_PASSWORD || 'Passw0rd!Load';
   const runId = `${Date.now().toString(36)}${Math.floor(
     Math.random() * 1_000_000,
@@ -372,6 +421,10 @@ async function main() {
   assert(roomsCount >= 1, 'ROOM_LOAD_ROOMS must be >= 1');
   assert(extraPlayersPerRoom >= 1, 'ROOM_LOAD_EXTRA_PLAYERS must be >= 1');
   assert(spectatorsPerRoom >= 0, 'ROOM_LOAD_SPECTATORS must be >= 0');
+  assert(
+    Number.isSafeInteger(soakRounds) && soakRounds >= 1 && soakRounds <= 100,
+    'ROOM_LOAD_SOAK_ROUNDS must be between 1 and 100',
+  );
 
   const users = buildUsers(
     runId,
@@ -379,6 +432,11 @@ async function main() {
     extraPlayersPerRoom,
     spectatorsPerRoom,
   );
+  users.forEach((user) => {
+    const endpointIndex = user.roomIndex % baseHttpUrls.length;
+    user.baseHttpUrl = baseHttpUrls[endpointIndex];
+    user.baseWsUrl = baseWsUrls[endpointIndex];
+  });
   const rooms = groupByRoom(users, roomsCount);
 
   const db = mysql.createPool({
@@ -413,6 +471,8 @@ async function main() {
   const allSockets = [];
   const createdRoomIds = [];
   const summary = {
+    backendInstances: baseHttpUrls.length,
+    soakRounds,
     roomsCount,
     extraPlayersPerRoom,
     spectatorsPerRoom,
@@ -423,13 +483,24 @@ async function main() {
   };
 
   try {
-    const health = await fetchJson(`${baseHttpUrl}/health`, { method: 'GET' });
-    assert(health.ok, `Health check failed: ${health.status}`);
+    for (const baseHttpUrl of baseHttpUrls) {
+      const health = await fetchJson(`${baseHttpUrl}/health`, {
+        method: 'GET',
+      });
+      assert(
+        health.ok,
+        `Health check failed for ${baseHttpUrl}: ${health.status}`,
+      );
+    }
 
     const authStart = nowMs();
     await runPool(users, poolSize, async (user) => {
-      user.token = await registerAndLoginOverApiWs(baseWsUrl, user, password);
-      user.ticket = await issueRoomTicket(baseHttpUrl, user.token);
+      user.token = await registerAndLoginOverApiWs(
+        user.baseWsUrl,
+        user,
+        password,
+      );
+      user.ticket = await issueRoomTicket(user.baseHttpUrl, user.token);
       return user;
     });
     summary.timingsMs.authAndTickets = phaseMs(authStart);
@@ -440,23 +511,22 @@ async function main() {
       assert(owner, `Missing owner for room index ${room.roomIndex}`);
 
       const ws = new WsClient(
-        withClientVersion(
-          `${baseWsUrl}/ws?token=${encodeURIComponent(owner.token)}&ticket=${encodeURIComponent(owner.ticket)}`,
-        ),
+        withClientVersion(`${owner.baseWsUrl}/ws`),
         `owner:${owner.username}`,
+        {
+          Authorization: `Bearer ${owner.token}`,
+          'x-lila-ws-ticket': owner.ticket,
+        },
       );
       owner.ws = ws;
       allSockets.push(ws);
       await ws.connect();
-      await sleep(250);
-      ws.send({
-        type: 'room.create',
-        payload: {
-          gameType: 'lama',
-          name: `ROOM-LOAD-${room.roomIndex}-${runId}`,
-          maxPlayers: 6,
-          isPrivate: false,
-        },
+      await ws.waitUntilRoomReady();
+      ws.sendIntent('room.create', {
+        gameType: 'lama',
+        name: `ROOM-LOAD-${room.roomIndex}-${runId}`,
+        maxPlayers: 6,
+        isPrivate: false,
       });
 
       const createdOrUpdated = await ws.waitFor(
@@ -492,13 +562,22 @@ async function main() {
     await runPool(joinWork, poolSize, async (job) => {
       const ws = new WsClient(
         withClientVersion(
-          `${baseWsUrl}/ws?token=${encodeURIComponent(job.user.token)}&ticket=${encodeURIComponent(job.user.ticket)}&room=${job.roomId}${job.spectator ? '&spectator=true' : ''}`,
+          `${job.user.baseWsUrl}/ws?room=${job.roomId}${job.spectator ? '&spectator=true' : ''}`,
         ),
         `${job.spectator ? 'spectator' : 'player'}:${job.user.username}`,
+        {
+          Authorization: `Bearer ${job.user.token}`,
+          'x-lila-ws-ticket': job.user.ticket,
+        },
       );
       job.user.ws = ws;
       allSockets.push(ws);
       await ws.connect();
+      await ws.waitUntilRoomReady();
+      ws.sendIntent('room.join', {
+        roomId: job.roomId,
+        spectator: job.spectator,
+      });
       await ws.waitFor(
         (m) =>
           m &&
@@ -513,11 +592,8 @@ async function main() {
     const startStart = nowMs();
     await runPool(rooms, poolSize, async (room) => {
       const owner = room.owner;
-      owner.ws.send({
-        type: 'room.start',
-        payload: {
-          _trace: { id: `load-start-${room.roomIndex}`, sentAtMs: nowMs() },
-        },
+      owner.ws.sendIntent('room.start', {
+        _trace: { id: `load-start-${room.roomIndex}`, sentAtMs: nowMs() },
       });
       await owner.ws.waitFor(
         (m) =>
@@ -563,27 +639,60 @@ async function main() {
     const chatStart = nowMs();
     const chatWork = [];
     for (const room of rooms) {
-      chatWork.push({ user: room.owner, roomId: room.roomId, kind: 'owner' });
+      chatWork.push({
+        user: room.owner,
+        observer: room.owner,
+        roomId: room.roomId,
+        kind: 'owner',
+      });
       for (const user of room.players) {
-        chatWork.push({ user, roomId: room.roomId, kind: 'player' });
+        chatWork.push({
+          user,
+          observer: room.owner,
+          roomId: room.roomId,
+          kind: 'player',
+        });
       }
       for (const user of room.spectators) {
-        chatWork.push({ user, roomId: room.roomId, kind: 'spectator' });
+        chatWork.push({
+          user,
+          observer: room.owner,
+          roomId: room.roomId,
+          kind: 'spectator',
+        });
       }
     }
 
-    await runPool(chatWork, poolSize, async (job, index) => {
-      const msg = `load-chat-${job.roomId}-${job.kind}-${index}-${runId}`;
-      job.user._sentMessage = msg;
-      job.user.ws.send({
-        type: 'room.chat.send',
-        payload: { message: msg },
+    for (let round = 0; round < soakRounds; round += 1) {
+      await runPool(chatWork, poolSize, async (job, index) => {
+        const msg = `load-chat-${job.roomId}-${job.kind}-${round}-${index}-${runId}`;
+        job.user._sentMessage = msg;
+        job.user.ws.sendIntent('room.chat.send', { message: msg });
+        await job.user.ws.waitFor(
+          (message) =>
+            message?.type === 'room.chat.message' &&
+            Number(message.roomId) === Number(job.roomId) &&
+            message?.payload?.message === msg,
+          25000,
+          'room.chat.message echo',
+        );
+        if (job.user !== job.observer) {
+          await job.observer.ws.waitFor(
+            (message) =>
+              message?.type === 'room.chat.message' &&
+              Number(message.roomId) === Number(job.roomId) &&
+              message?.payload?.message === msg,
+            25000,
+            'cross-instance room.chat.message',
+          );
+        }
       });
-    });
+      if (round + 1 < soakRounds) await sleep(450);
+    }
 
     for (const room of rooms) {
       const owner = room.owner;
-      owner.ws.send({ type: 'room.chat.history', payload: {} });
+      owner.ws.sendIntent('room.chat.history');
       const history = await owner.ws.waitFor(
         (m) =>
           m &&
@@ -592,7 +701,12 @@ async function main() {
         25000,
         'chat.history',
       );
-      const minExpected = 1 + room.players.length + room.spectators.length;
+      const usersOnOwnerInstance = [
+        room.owner,
+        ...room.players,
+        ...room.spectators,
+      ].filter((user) => user.baseWsUrl === room.owner.baseWsUrl).length;
+      const minExpected = soakRounds * usersOnOwnerInstance;
       const count = Array.isArray(history?.payload?.messages)
         ? history.payload.messages.length
         : 0;
@@ -624,10 +738,28 @@ async function main() {
       waitCount: mysqlPoolWaitCount,
       saturated: mysqlPoolWaitCount > 0,
     };
+    summary.status = 'passed';
+    const heapGrowthBytes =
+      summary.processAfter.heapUsedBytes - summary.processBefore.heapUsedBytes;
+    summary.processGrowth = { heapUsedBytes: heapGrowthBytes };
+    assert(
+      heapGrowthBytes < 256 * 1024 * 1024,
+      `Load runner heap growth is unbounded: ${heapGrowthBytes} bytes`,
+    );
+
+    if (process.env.ROOM_LOAD_REPORT_PATH) {
+      fs.mkdirSync(path.dirname(process.env.ROOM_LOAD_REPORT_PATH), {
+        recursive: true,
+      });
+      fs.writeFileSync(
+        process.env.ROOM_LOAD_REPORT_PATH,
+        `${JSON.stringify(summary, null, 2)}\n`,
+      );
+    }
 
     console.log('ROOM LOAD TEST REPORT');
     console.log(
-      `- Config: rooms=${roomsCount}, extraPlayersPerRoom=${extraPlayersPerRoom}, spectatorsPerRoom=${spectatorsPerRoom}, users=${users.length}, pool=${poolSize}`,
+      `- Config: instances=${baseHttpUrls.length}, rooms=${roomsCount}, extraPlayersPerRoom=${extraPlayersPerRoom}, spectatorsPerRoom=${spectatorsPerRoom}, users=${users.length}, pool=${poolSize}, soakRounds=${soakRounds}`,
     );
     console.log(`- Phase auth+tickets: ${summary.timingsMs.authAndTickets}ms`);
     console.log(`- Phase create rooms: ${summary.timingsMs.createRooms}ms`);

@@ -84,6 +84,12 @@ export class PrometheusMetrics {
     labelNames: ['queue'] as const,
     registers: [this.registry],
   });
+  private readonly bullmqOldestJobAge = new Gauge({
+    name: 'lila_bullmq_oldest_job_age_seconds',
+    help: 'Âge du plus ancien job BullMQ non terminé.',
+    labelNames: ['queue'] as const,
+    registers: [this.registry],
+  });
   private readonly activeRooms = new Gauge({
     name: 'lila_active_rooms',
     help: 'Nombre de salles avec au moins un joueur connecté.',
@@ -190,6 +196,15 @@ export class PrometheusMetrics {
 
   recordBullmqFailure(queue: string): void {
     this.bullmqFailures.inc({ queue: this.queues.resolve(queue) });
+  }
+
+  setBullmqOldestJobAge(queue: string, ageSeconds: number): void {
+    this.bullmqOldestJobAge.set(
+      { queue: this.queues.resolve(queue) },
+      Number.isFinite(ageSeconds)
+        ? Math.max(0, Math.min(86_400, ageSeconds))
+        : 0,
+    );
   }
 }
 
