@@ -91,28 +91,6 @@ const resourceCases: Array<(p: Data) => string> = [
 ];
 const cases: Case[] = [
   ...resourceCases.map((change) => ({ key: 'resourceTrackRace', change })),
-  {
-    key: 'bidirectionalCollisionRace',
-    change: (p) => {
-      tiles(p)[1].n = 999;
-      return 'tiles[1].n';
-    },
-  },
-  {
-    key: 'bidirectionalCollisionRace',
-    change: (p) => {
-      tiles(p)[0].type = 'neutral';
-      return 'tiles[0].type';
-    },
-  },
-  {
-    key: 'bidirectionalCollisionRace',
-    change: (p) => {
-      const index = tiles(p).length - 1;
-      tiles(p)[index].type = 'neutral';
-      return `tiles[${index}].type`;
-    },
-  },
 ];
 
 it.each(cases)(
@@ -134,7 +112,7 @@ it.each(cases)(
   },
 );
 
-it.each(['resourceTrackRace', 'bidirectionalCollisionRace', 'teamPawnRace'])(
+it.each(['resourceTrackRace', 'teamPawnRace'])(
   'accepts unchanged %s',
   (key) => {
     const { source, manifest } = fixture(key);

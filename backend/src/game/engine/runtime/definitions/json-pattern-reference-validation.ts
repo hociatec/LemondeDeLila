@@ -15,6 +15,8 @@ import { assertAnonymousVoteReferences } from './json-anonymous-vote-reference-v
 import { assertTreasureTrackReferences } from './json-treasure-track-reference-validation';
 import { assertPairedPawnRaceReferences } from './json-paired-pawn-race-reference-validation';
 import { assertBounceQuizRaceReferences } from './json-bounce-quiz-race-reference-validation';
+import { assertBidirectionalCollisionRaceReferences } from './json-bidirectional-collision-race-reference-validation';
+import { assertCardBattleReferences } from './json-card-battle-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
 
@@ -117,6 +119,14 @@ function assertAdvancedPatternReferences(
     assertPairedPawnRaceReferences(pattern, index, components, resources, fail);
   if (pattern.kind === 'bounce-quiz-race')
     assertBounceQuizRaceReferences(pattern, index, components, fail);
+  if (pattern.kind === 'bidirectional-collision-race')
+    assertBidirectionalCollisionRaceReferences(
+      pattern,
+      index,
+      components,
+      resources,
+      fail,
+    );
   if (pattern.kind === 'grid-placement')
     assertGridPlacementReferences(
       pattern,
@@ -211,30 +221,6 @@ function assertTrackZoneCollectionReferences(
         'zone cards require matching zoneId attributes',
       );
   }
-}
-
-function assertCardBattleReferences(
-  pattern: Extract<JsonGamePattern, { kind: 'card-battle' }>,
-  patternIndex: number,
-  components: readonly GameComponentDefinition[],
-  fail: Failure,
-): void {
-  const root = `patterns[${patternIndex}]`;
-  assertUnique(
-    pattern.cards.map((card) => card.id),
-    `${root}.cards`,
-    'id',
-    fail,
-  );
-  if (pattern.totalCards !== pattern.cards.length)
-    fail(`${root}.totalCards`, 'totalCards must match the card catalogue');
-  requireDeck(pattern.deckId, `${root}.deckId`, components, fail);
-  const hand = components.find(
-    (component) =>
-      component.component === 'cards.hands' && component.id === pattern.handId,
-  );
-  if (hand?.component !== 'cards.hands' || hand.deck !== pattern.deckId)
-    fail(`${root}.handId`, 'unknown hand or mismatched deck');
 }
 
 function assertGooseRaceReferences(

@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "3",
+  "snapshotMigrations": [{ "fromVersion": "1", "toVersion": "2" }],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
   "patterns": [
@@ -9,6 +10,23 @@
       "kind": "race",
       "trackId": "bidirectionalCollision",
       "spaces": 40
+    },
+    {
+      "kind": "bidirectional-collision-race",
+      "rollRecipe": "race-bidirectional-collision-roll",
+      "trackId": "bidirectionalCollision",
+      "diceId": "main",
+      "deckId": "adventure",
+      "pawnSetId": "bidirectionalCollision",
+      "pawnChoiceId": "bidirectionalCollision.pawn",
+      "appleResource": "apple",
+      "iouPrefix": "bidirectionalCollision.iou",
+      "returningStatus": "bidirectionalCollision.returning",
+      "applesToWin": 3,
+      "maxDepth": 12,
+      "finishReason": "three-apples-at-finish",
+      "tiles": { "$content": "content/catalogue.json#/tiles" },
+      "cards": { "$content": "content/catalogue.json#/cards" }
     }
   ],
   "components": [
@@ -34,9 +52,7 @@
     "firstPlayer": "first",
     "startRound": true
   },
-  "resourceIds": [
-    "apple"
-  ],
+  "resourceIds": ["apple"],
   "shortcuts": [
     {
       "key": "D",
@@ -48,14 +64,10 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "playing"
-      ]
+      "transitions": ["playing"]
     },
     "playing": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -65,30 +77,8 @@
     }
   },
   "victory": {
-    "kind": "by-bidirectional-collision-race"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "bidirectionalCollisionRace",
-      "config": {
-        "trackId": "bidirectionalCollision",
-        "diceId": "main",
-        "deckId": "adventure",
-        "pawnSetId": "bidirectionalCollision",
-        "pawnChoiceId": "bidirectionalCollision.pawn",
-        "appleResource": "apple",
-        "iouPrefix": "bidirectionalCollision.iou",
-        "returningStatus": "bidirectionalCollision.returning",
-        "applesToWin": 3,
-        "maxDepth": 12,
-        "finishReason": "three-apples-at-finish",
-        "tiles": {
-          "$content": "content/catalogue.json#/tiles"
-        },
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        }
-      }
-    }
-  ]
+  "extensions": [],
+  "playerValuesVisibility": { "statuses": "public" }
 }

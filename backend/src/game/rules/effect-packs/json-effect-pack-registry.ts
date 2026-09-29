@@ -3,7 +3,6 @@ import type { JsonEffectPackDomain } from '../../engine/sdk/extension-api';
 import { effectPack as raceResourceTrackEffectPack } from '../game-specific/race-resource-track/effect-pack';
 import { effectPack as cardsPublicDomainEffectPack } from '../game-specific/cards-public-domain/effect-pack';
 import { effectPack as raceProtectedHauntedTrackEffectPack } from '../game-specific/race-protected-haunted-track/effect-pack';
-import { effectPack as raceBidirectionalCollisionEffectPack } from '../game-specific/race-bidirectional-collision/effect-pack';
 import { effectPack as raceTeamPawnCaptureEffectPack } from '../game-specific/race-team-pawn-capture/effect-pack';
 import { effectPack as raceQuizEventTrackEffectPack } from '../game-specific/race-quiz-event-track/effect-pack';
 import { effectPack as raceDirectionalHazardsEffectPack } from '../game-specific/race-directional-hazards/effect-pack';
@@ -25,7 +24,6 @@ export const jsonEffectPacks = Object.freeze([
   raceResourceTrackEffectPack,
   cardsPublicDomainEffectPack,
   raceProtectedHauntedTrackEffectPack,
-  raceBidirectionalCollisionEffectPack,
   raceTeamPawnCaptureEffectPack,
   raceQuizEventTrackEffectPack,
   raceDirectionalHazardsEffectPack,

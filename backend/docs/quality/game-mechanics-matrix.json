@@ -1332,34 +1332,16 @@
     },
     {
       "id": "galopons-ensemble",
-      "packs": [
-        "race-bidirectional-collision"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:16",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:42",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:44",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:68",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:84",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:96",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:224",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:232",
-          "src/game/rules/game-specific/race-bidirectional-collision/json-bidirectional-collision-race-schema.ts:62",
-          "src/game/rules/game-specific/race-bidirectional-collision/json-bidirectional-collision-race-schema.ts:65",
-          "src/game/rules/game-specific/race-bidirectional-collision/json-bidirectional-collision-race-schema.ts:83"
+          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:34"
         ],
         "ownership": [],
         "collision": [
-          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:64",
-          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:68",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:8",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:119",
-          "src/game/rules/game-specific/race-bidirectional-collision/effect-pack.ts:5",
-          "src/game/rules/game-specific/race-bidirectional-collision/effect-pack.ts:6",
-          "src/game/rules/game-specific/race-bidirectional-collision/effect-pack.ts:16",
-          "src/game/rules/game-specific/race-bidirectional-collision/effect-pack.ts:27",
-          "src/game/rules/game-specific/race-bidirectional-collision/effect-pack.ts:30"
+          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:15",
+          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:16",
+          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:76"
         ],
         "resources": [
           "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:31",
@@ -1367,46 +1349,20 @@
           "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:192",
           "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:211",
           "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:321",
-          "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:336",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:107",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:127",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:191",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:192",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:242",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:243",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:244",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:255",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:258",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:261",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:262",
-          "src/game/rules/game-specific/race-bidirectional-collision/json-bidirectional-collision-race-schema.ts:87"
+          "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:336"
         ],
-        "payment": [
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:192",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:243",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:261",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:262"
-        ],
+        "payment": [],
         "cards": [
-          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:24",
-          "src/game/games/les-quatre-vents/galopons-ensemble/game.spec.ts:24",
-          "src/game/rules/game-specific/race-bidirectional-collision/json-bidirectional-collision-race-schema.ts:77"
+          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:42",
+          "src/game/games/les-quatre-vents/galopons-ensemble/game.spec.ts:19"
         ],
         "zones": [],
-        "choices": [
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:141"
-        ],
-        "status": [
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:86",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:87",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:114",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:274"
-        ],
+        "choices": [],
+        "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:67",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:109"
+          "src/game/games/les-quatre-vents/galopons-ensemble/game.json:79"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:34",
@@ -1423,39 +1379,9 @@
           "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:339",
           "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:381",
           "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:399",
-          "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:406",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:8",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:71",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:74",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:75",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:76",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:78",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:79",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:83",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:84",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:119",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:176",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:177",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:178",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:179",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:187",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:188",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:189",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:190",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:191",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:193",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:206",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:207",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:208",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:211",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:226",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:231",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:232"
+          "src/game/games/les-quatre-vents/galopons-ensemble/content/catalogue.json:406"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:103",
-          "src/game/rules/game-specific/race-bidirectional-collision/bidirectional-collision-race.recipes.ts:105"
-        ]
+        "triggers": []
       }
     },
     {
@@ -3103,12 +3029,6 @@
       "name": "choice-story-challenge",
       "consumers": [
         "contes-et-cacahuetes"
-      ]
-    },
-    {
-      "name": "race-bidirectional-collision",
-      "consumers": [
-        "galopons-ensemble"
       ]
     },
     {

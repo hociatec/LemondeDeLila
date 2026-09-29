@@ -1,26 +1,49 @@
+import { gameInput } from '../actions/game-input-schema';
+import type { GameEffectInstruction } from '../contracts/effect-ir';
+import type { GameContext } from '../definitions/game-author-context';
+import { defineEffect, defineEmptyEffect } from '../effects/effects-core';
 import {
-  gameInput,
   drawAndResolve,
   rollDice,
   sequentialPawnSelection,
-} from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
-import { firstOtherPlayerAt } from '../../recipes/track-collision';
-import type {
-  BidirectionalCollisionRaceProgram,
-  BidirectionalCollisionRegion,
-} from './program';
-import {
-  defineEffect,
-  defineEmptyEffect,
-} from '../../../engine/sdk/extension-api';
+} from '../recipes/gameplay-recipes';
+import { definePattern } from './gameplay-pattern-core';
+
+export type BidirectionalCollisionRegion = string;
+export type BidirectionalCollisionRaceOptions = {
+  rollRecipe: string;
+  trackId: string;
+  diceId: string;
+  deckId: string;
+  pawnSetId: string;
+  pawnChoiceId: string;
+  appleResource: string;
+  iouPrefix: string;
+  returningStatus: string;
+  applesToWin: number;
+  maxDepth: number;
+  finishReason: string;
+  tiles: readonly {
+    n: number;
+    type: 'start' | 'neutral' | 'card' | 'bonus' | 'skip' | 'finish';
+    region: BidirectionalCollisionRegion;
+    apples?: number;
+    skipTurns?: number;
+    [key: string]: unknown;
+  }[];
+  cards: readonly {
+    id: number;
+    text: string;
+    effects: readonly GameEffectInstruction[];
+  }[];
+};
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
-type Card = BidirectionalCollisionRaceProgram['cards'][number];
+type Card = BidirectionalCollisionRaceOptions['cards'][number];
 
-export function bidirectionalCollisionRaceRules(
-  source: BidirectionalCollisionRaceProgram,
+export function bidirectionalCollisionRace(
+  source: BidirectionalCollisionRaceOptions,
 ) {
   const program = structuredClone(source);
   const pawns = sequentialPawnSelection<State>({
@@ -28,26 +51,31 @@ export function bidirectionalCollisionRaceRules(
     choiceId: program.pawnChoiceId,
     completePhase: 'playing',
   });
-  return {
-    roll: rollDice<State>({
-      diceId: program.diceId,
-      available: ({ ctx }) => ctx.phase.current() === 'playing',
-      execute: ({ playerId, total, ctx }) => {
-        payIou(program, playerId, ctx);
-        moveAndResolve(program, playerId, total, 0, ctx);
-        ctx.turn.complete();
-      },
-      documentation: 'Paie les dettes, lance le dé et résout la case équestre.',
-    }),
+  return definePattern({
+    id: `bidirectional-collision-race:${program.trackId}`,
+    mechanics: ['race', 'cards', 'resources', 'pawns', 'effects'],
+    actions: {
+      [program.rollRecipe]: rollDice<State>({
+        diceId: program.diceId,
+        available: ({ ctx }) => ctx.phase.current() === 'playing',
+        execute: ({ playerId, total, ctx }) => {
+          payIou(program, playerId, ctx);
+          moveAndResolve(program, playerId, total, 0, ctx);
+          ctx.turn.complete();
+        },
+        documentation:
+          'Paie les dettes, lance le dé et résout la case équestre.',
+      }),
+    },
     setup: pawns.setup(() => ({})),
     choices: {
       [program.pawnChoiceId]: pawns.choice,
     },
     effects: effects(program),
-  };
+  });
 }
 function moveAndResolve(
-  program: BidirectionalCollisionRaceProgram,
+  program: BidirectionalCollisionRaceOptions,
   playerId: number,
   delta: number,
   depth: number,
@@ -59,7 +87,7 @@ function moveAndResolve(
 }
 
 function moveHorse(
-  program: BidirectionalCollisionRaceProgram,
+  program: BidirectionalCollisionRaceOptions,
   playerId: number,
   delta: number,
   ctx: Context,
@@ -88,7 +116,7 @@ function moveHorse(
 }
 
 function resolveTile(
-  program: BidirectionalCollisionRaceProgram,
+  program: BidirectionalCollisionRaceOptions,
   playerId: number,
   depth: number,
   ctx: Context,
@@ -116,12 +144,9 @@ function resolveTile(
           });
         return;
       }
-      const occupant = firstOtherPlayerAt(
-        ctx,
-        program.trackId,
-        position,
-        playerId,
-      );
+      const occupant = ctx.players
+        .otherIds(playerId)
+        .find((id) => ctx.movement.position(program.trackId, id) === position);
       if (occupant !== undefined) moveHorse(program, occupant, -5, ctx);
       if (tile.type === 'bonus' && tile.apples)
         ctx.resources.add(playerId, program.appleResource, tile.apples);
@@ -133,7 +158,7 @@ function resolveTile(
 }
 
 function drawCard(
-  program: BidirectionalCollisionRaceProgram,
+  program: BidirectionalCollisionRaceOptions,
   playerId: number,
   depth: number,
   ctx: Context,
@@ -146,7 +171,7 @@ function drawCard(
   });
 }
 
-function effects(program: BidirectionalCollisionRaceProgram) {
+function effects(program: BidirectionalCollisionRaceOptions) {
   const delta = gameInput.object({
     delta: gameInput.number({ integer: true }),
   });
@@ -215,7 +240,7 @@ function effects(program: BidirectionalCollisionRaceProgram) {
 }
 
 function moveToRegion(
-  program: BidirectionalCollisionRaceProgram,
+  program: BidirectionalCollisionRaceOptions,
   playerId: number,
   region: BidirectionalCollisionRegion,
   depth: number,
@@ -234,7 +259,7 @@ function moveToRegion(
 }
 
 function giveApple(
-  program: BidirectionalCollisionRaceProgram,
+  program: BidirectionalCollisionRaceOptions,
   actorId: number,
   targetId: number,
   ctx: Context,
@@ -245,7 +270,7 @@ function giveApple(
 }
 
 function payIou(
-  program: BidirectionalCollisionRaceProgram,
+  program: BidirectionalCollisionRaceOptions,
   playerId: number,
   ctx: Context,
 ) {
@@ -262,12 +287,12 @@ function payIou(
   ctx.resources.remove(playerId, iou(program, creditor), 1);
 }
 
-function iou(program: BidirectionalCollisionRaceProgram, creditorId: number) {
+function iou(program: BidirectionalCollisionRaceOptions, creditorId: number) {
   return `${program.iouPrefix}.${creditorId}`;
 }
 
 function movementDirection(
-  program: BidirectionalCollisionRaceProgram,
+  program: BidirectionalCollisionRaceOptions,
   playerId: number,
   ctx: Context,
 ): 1 | -1 {

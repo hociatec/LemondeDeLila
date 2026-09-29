@@ -8,7 +8,7 @@ const catalogues = [
   ['les-mains-de-la-terre', ['patterns', '0', 'cards']],
   ['en-attendant-minuit', ['patterns', '1', 'cards']],
   ['a-fond-les-ballons', ['chainedTileRace', 'cards']],
-  ['galopons-ensemble', ['bidirectionalCollisionRace', 'cards']],
+  ['galopons-ensemble', ['patterns', '1', 'cards']],
   ['ca-derape', ['directionalHazardRace', 'cards']],
 ] as const;
 

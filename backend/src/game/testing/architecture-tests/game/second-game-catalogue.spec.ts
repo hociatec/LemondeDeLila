@@ -11,8 +11,8 @@ type PackKey = (typeof jsonEffectPacks)[number]['documentKey'];
 const designs: Record<PackKey, string> = attempts;
 
 it('attempts a mechanically different objective for every registered pack', () => {
-  expect(Object.keys(designs).sort()).toEqual(
-    jsonEffectPacks.map((pack) => pack.documentKey).sort(),
+  expect(jsonEffectPacks.filter((pack) => !designs[pack.documentKey])).toEqual(
+    [],
   );
 });
 

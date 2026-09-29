@@ -38,10 +38,7 @@ import {
   familyRequest,
   type FamilyRequestOptions,
 } from '../patterns/family-request-pattern';
-import {
-  gridPlacement,
-  type GridPlacementOptions,
-} from '../patterns/grid-placement-pattern';
+import type { GridPlacementOptions } from '../patterns/grid-placement-pattern';
 import type { OrderedAssemblyOptions } from '../patterns/ordered-assembly-pattern';
 import type { JudgedSubmissionOptions } from '../patterns/judged-submission-pattern';
 import {
@@ -54,6 +51,7 @@ import type { FamilyEffectsOptions } from '../patterns/family-effects-pattern';
 import type { SpeciesTroopsOptions } from '../patterns/species-troops-pattern';
 import type { PairedPawnRaceOptions } from '../patterns/paired-pawn-race-pattern';
 import type { BounceQuizRaceOptions } from '../patterns/bounce-quiz-race-pattern';
+import type { BidirectionalCollisionRaceOptions } from '../patterns/bidirectional-collision-race-pattern';
 import {
   compileAnonymousVote,
   compileFamilyEffects,
@@ -63,6 +61,8 @@ import {
   compileJudgedSubmission,
   compileBounceQuizRace,
   compileOrderedAssembly,
+  compileBidirectionalCollisionRace,
+  compileGridPlacement,
 } from './json-advanced-pattern-compilers';
 import {
   type AuthorSchema,
@@ -90,6 +90,7 @@ import { familyEffectsPatternSchema } from './json-family-effects-pattern-schema
 import { speciesTroopsPatternSchema } from './json-species-troops-pattern-schema';
 import { pairedPawnRacePatternSchema } from './json-paired-pawn-race-pattern-schema';
 import { bounceQuizRacePatternSchema } from './json-bounce-quiz-race-pattern-schema';
+import { bidirectionalCollisionRacePatternSchema } from './json-bidirectional-collision-race-pattern-schema';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -128,6 +129,9 @@ export type JsonGamePattern =
   | ({ kind: 'species-troops' } & SpeciesTroopsOptions)
   | ({ kind: 'paired-pawn-race' } & PairedPawnRaceOptions)
   | ({ kind: 'bounce-quiz-race' } & BounceQuizRaceOptions)
+  | ({
+      kind: 'bidirectional-collision-race';
+    } & BidirectionalCollisionRaceOptions)
   | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
         exchange?: MarketExchangeOptions['exchange'];
       })
@@ -336,6 +340,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     speciesTroopsPatternSchema,
     pairedPawnRacePatternSchema,
     bounceQuizRacePatternSchema,
+    bidirectionalCollisionRacePatternSchema,
     marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
@@ -398,10 +403,8 @@ export function compileJsonPattern(
       const { kind: _kind, ...options } = pattern;
       return familyRequest(options);
     }
-    case 'grid-placement': {
-      const { kind: _kind, ...options } = pattern;
-      return gridPlacement(options);
-    }
+    case 'grid-placement':
+      return compileGridPlacement(pattern);
     case 'ordered-assembly':
       return compileOrderedAssembly(pattern);
     case 'judged-submission':
@@ -418,6 +421,8 @@ export function compileJsonPattern(
       return compilePairedPawnRace(pattern);
     case 'bounce-quiz-race':
       return compileBounceQuizRace(pattern);
+    case 'bidirectional-collision-race':
+      return compileBidirectionalCollisionRace(pattern);
     case 'market': {
       const { kind: _kind, ...options } = pattern;
       return options.exchange

@@ -30,6 +30,14 @@ import {
   orderedAssembly,
   type OrderedAssemblyOptions,
 } from '../patterns/ordered-assembly-pattern';
+import {
+  bidirectionalCollisionRace,
+  type BidirectionalCollisionRaceOptions,
+} from '../patterns/bidirectional-collision-race-pattern';
+import {
+  gridPlacement,
+  type GridPlacementOptions,
+} from '../patterns/grid-placement-pattern';
 
 export function compileTreasureTrackRace(
   pattern: { kind: 'treasure-track-race' } & TreasureTrackRaceOptions,
@@ -78,4 +86,18 @@ export function compileOrderedAssembly(
 ) {
   const { kind: _kind, ...options } = pattern;
   return orderedAssembly(options);
+}
+export function compileBidirectionalCollisionRace(
+  pattern: {
+    kind: 'bidirectional-collision-race';
+  } & BidirectionalCollisionRaceOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return bidirectionalCollisionRace(options);
+}
+export function compileGridPlacement(
+  pattern: { kind: 'grid-placement' } & GridPlacementOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return gridPlacement(options);
 }

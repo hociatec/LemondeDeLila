@@ -190,6 +190,16 @@
         "src/game/testing/architecture-tests/game/bounce-quiz-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-bounce-quiz-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/galopons-ensemble/game.json",
+      "fromSha256": "14ab3e72055adb3b00cbd218ef1047b77ae89b0b95477f243ec93a6cf98421af",
+      "toSha256": "ee0702c164d0aefaf6b90760449360862d45693796650190eba513b0ed9be1c2",
+      "justification": "Le pattern bidirectional-collision-race générique porte désormais pions, aller-retour, collisions, cartes, pommes, dettes, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/bidirectional-collision-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-bidirectional-collision-race.spec.ts"
+      ]
     }
   ]
 }

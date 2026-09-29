@@ -77,13 +77,6 @@ const variants: Record<string, (program: Data) => Data> = {
         ),
       ),
     ),
-  bidirectionalCollisionRace: (program) => ({
-    ...program,
-    tiles: list(program.tiles).map((tile) => ({
-      ...tile,
-      region: `region-${String(tile.region)}`,
-    })),
-  }),
   protectedHauntedRace: (program) => ({
     ...renamedCategories(program, 'cards'),
     conditionalMove: { equals: 2, delta: -3 },
@@ -183,13 +176,6 @@ describe('mechanisms run under an unrelated game identity', () => {
               ],
             ]),
           );
-        if (key === 'bidirectionalCollisionRace')
-          names = Object.fromEntries(
-            list(program.tiles).map((tile) => [
-              String(tile.region),
-              'region-' + String(tile.region),
-            ]),
-          );
         if (key === 'sharedPrestigeCards')
           names = Object.fromEntries(
             list(program.cards).map((card) => [
@@ -207,7 +193,7 @@ describe('mechanisms run under an unrelated game identity', () => {
         document.components = rename(document.components, names);
         document.resourceIds = rename(document.resourceIds, names);
         document.setup = rename(document.setup, names);
-        if (key === 'chainedTileRace' || key === 'bidirectionalCollisionRace')
+        if (key === 'chainedTileRace')
           object(document[key]).cards = rename(program.cards, names);
       }
       const gridPattern = Array.isArray(document.patterns)

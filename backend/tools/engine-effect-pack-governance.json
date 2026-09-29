@@ -51,7 +51,6 @@
     "race-team-pawn-capture": "Compared with pawn-race; family groups, multiple pawns and capture remain unique.",
     "race-protected-haunted-track": "Compared with event-race and track-round; haunted protection and blocking remain unique.",
     "race-quiz-event-track": "Compared with movement-quiz and event-race; combined quiz, challenge and event choices remain unique.",
-    "race-bidirectional-collision": "Compared with pawn-race and track-round; bidirectional movement and collisions remain unique.",
     "cards-theme-name": "Compared with judged-cards and card-actions; name/theme composition and special cards remain unique.",
     "cards-discard-penalty": "Compared with card-actions; discard legality, quitting and unique-value penalties remain unique.",
     "choice-simultaneous-quiz": "Compared with movement-quiz and scoring-submission; configurable simultaneous quiz remains unique.",
@@ -99,8 +98,7 @@
       "race-resource-track",
       "race-team-pawn-capture",
       "race-protected-haunted-track",
-      "race-quiz-event-track",
-      "race-bidirectional-collision"
+      "race-quiz-event-track"
     ]
   },
   "genericGameplayFiles": [
@@ -199,14 +197,6 @@
       "classificationReason": "race-quiz-event-track implements quiz, challenge and event track race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "race-bidirectional-collision": {
-      "property": "bidirectionalCollisionRace",
-      "mechanic": "bidirectional horse race and collisions",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-bidirectional-collision implements bidirectional horse race and collisions. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "cards-theme-name": {
       "property": "themeNameCards",
       "mechanic": "name and theme card combinations",
@@ -276,7 +266,6 @@
     "race-resource-track",
     "cards-public-domain",
     "race-protected-haunted-track",
-    "race-bidirectional-collision",
     "race-team-pawn-capture",
     "race-quiz-event-track",
     "race-directional-hazards",
