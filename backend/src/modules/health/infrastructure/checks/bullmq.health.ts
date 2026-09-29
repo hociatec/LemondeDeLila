@@ -55,12 +55,22 @@ export class BullmqHealthIndicator extends HealthIndicator {
       const counts = await withHealthCheckTimeout(
         queue.getJobCounts('waiting', 'active', 'delayed', 'failed'),
       );
+      const [oldestJob] = await withHealthCheckTimeout(
+        queue.getJobs(['waiting', 'active', 'delayed'], 0, 0, true),
+      );
+      const oldestJobAgeMs = oldestJob
+        ? Math.max(0, Date.now() - oldestJob.timestamp)
+        : 0;
       prometheusMetrics.setBullmqJobs('game-engine-tasks', {
         waiting: counts.waiting,
         active: counts.active,
         delayed: counts.delayed,
         failed: counts.failed,
       });
+      prometheusMetrics.setBullmqOldestJobAge(
+        'game-engine-tasks',
+        oldestJobAgeMs / 1_000,
+      );
       prometheusMetrics.setDependencyUp('bullmq', true);
       const queued = counts.waiting + counts.active + counts.delayed;
       prometheusMetrics.setDependencySaturation(
@@ -68,17 +78,10 @@ export class BullmqHealthIndicator extends HealthIndicator {
         'queued-jobs',
         queued / Math.max(1, queued + 100),
       );
-      const configuredMaximumFailed = Number(
-        this.config.get<number>('HEALTH_MAX_FAILED_JOBS', 100),
-      );
-      const maximumFailed =
-        Number.isSafeInteger(configuredMaximumFailed) &&
-        configuredMaximumFailed >= 0 &&
-        configuredMaximumFailed <= 1_000_000
-          ? configuredMaximumFailed
-          : 100;
+      const maximumFailed = this.getMaximumFailedJobs();
       const status = this.getStatus(key, counts.failed <= maximumFailed, {
         ...counts,
+        oldestJobAgeMs,
         maximumFailed,
       });
       if (counts.failed > maximumFailed) {
@@ -97,6 +100,17 @@ export class BullmqHealthIndicator extends HealthIndicator {
     } finally {
       await this.closeProbe(queue, connection);
     }
+  }
+
+  private getMaximumFailedJobs(): number {
+    const configured = Number(
+      this.config.get<number>('HEALTH_MAX_FAILED_JOBS', 100),
+    );
+    return Number.isSafeInteger(configured) &&
+      configured >= 0 &&
+      configured <= 1_000_000
+      ? configured
+      : 100;
   }
 
   private async closeProbe(queue: Queue | null, connection: Redis | null) {

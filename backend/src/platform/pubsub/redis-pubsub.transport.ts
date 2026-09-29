@@ -99,6 +99,9 @@ export class RedisPubSubTransport<TEvent> {
         // and blocking API requests (default ioredis maxRetriesPerRequest is 20).
         maxRetriesPerRequest: 1,
         autoResendUnfulfilledCommands: false,
+        // Recovery is coordinated by onReady so every resubscription rejection
+        // is observed instead of being launched internally by ioredis.
+        autoResubscribe: false,
         enableOfflineQueue: false,
         enableReadyCheck: false,
       });

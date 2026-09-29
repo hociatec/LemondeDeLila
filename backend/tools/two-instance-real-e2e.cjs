@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 const mysql = require('mysql2/promise');
 const { WebSocket } = require('ws');
 
@@ -19,6 +21,57 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function residentBytes(child) {
+  const status = fs.readFileSync(`/proc/${child.pid}/status`, 'utf8');
+  const match = status.match(/^VmRSS:\s+(\d+)\s+kB$/m);
+  if (!match) throw new Error(`VmRSS absent pour pid=${child.pid}`);
+  return Number(match[1]) * 1024;
+}
+
+function runMultiInstanceLoad(backends) {
+  const before = backends.map(residentBytes);
+  const result = spawnSync(process.execPath, ['tools/room-load-real.cjs'], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      ROOM_LOAD_BASE_HTTP_URLS: ports
+        .map((port) => `http://127.0.0.1:${port}`)
+        .join(','),
+      ROOM_LOAD_BASE_WS_URLS: ports
+        .map((port) => `ws://127.0.0.1:${port}`)
+        .join(','),
+      ROOM_LOAD_ROOMS: '3',
+      ROOM_LOAD_EXTRA_PLAYERS: '1',
+      ROOM_LOAD_SPECTATORS: '1',
+      ROOM_LOAD_CONCURRENCY: '6',
+      ROOM_LOAD_SOAK_ROUNDS: '3',
+      ROOM_LOAD_REPORT_PATH: path.join(
+        process.cwd(),
+        'logs/room-load-real.json',
+      ),
+    },
+    stdio: 'inherit',
+  });
+  if (result.status !== 0) throw new Error('Charge multi-instance échouée');
+  const after = backends.map(residentBytes);
+  const growth = after.map((value, index) => value - before[index]);
+  if (growth.some((value) => value >= 256 * 1024 * 1024)) {
+    throw new Error(`Croissance RSS non bornée: ${growth.join(', ')}`);
+  }
+  return growth;
+}
+
+function dockerCompose(args) {
+  const result = spawnSync(
+    'docker',
+    ['compose', '-f', 'tools/real-integration.compose.yml', ...args],
+    { cwd: process.cwd(), stdio: 'inherit' },
+  );
+  if (result.status !== 0) {
+    throw new Error(`docker compose ${args.join(' ')} a échoué`);
+  }
+}
+
 async function waitForHttp(url, timeoutMs = 30_000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -35,7 +88,13 @@ function startBackend(port) {
   const output = [];
   const child = spawn(process.execPath, ['dist/main.js'], {
     cwd: process.cwd(),
-    env: { ...process.env, PORT: String(port), LOG_FILES_ENABLED: 'false' },
+    env: {
+      ...process.env,
+      PORT: String(port),
+      LOG_FILES_ENABLED: 'false',
+      AUTH_REQUEST_RATE_LIMIT_COUNT: '1000',
+      WS_RATE_LIMIT_COUNT: '1000',
+    },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   child.stdout.on('data', (chunk) => output.push(String(chunk)));
@@ -78,10 +137,10 @@ class ApiClient {
     });
   }
 
-  async request(type, payload) {
+  async request(type, payload, timeoutMs = 15_000) {
     const requestId = `${type}-${Date.now()}-${Math.random()}`;
     this.socket.send(JSON.stringify({ requestId, type, payload }));
-    const deadline = Date.now() + 15_000;
+    const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
       const index = this.messages.findIndex(
         (row) => row.requestId === requestId,
@@ -101,6 +160,81 @@ class ApiClient {
   close() {
     this.socket?.close();
   }
+}
+
+async function exerciseRedisOutage(client, refreshToken, username, password) {
+  if (process.env.INTEGRATION_REDIS_COMPOSE !== 'true') return 'skipped-native';
+  dockerCompose(['stop', 'redis']);
+  let rejectedDuringOutage = false;
+  try {
+    try {
+      await client.request('auth.refresh', { refreshToken }, 3_000);
+    } catch {
+      rejectedDuringOutage = true;
+    }
+  } finally {
+    dockerCompose(['start', 'redis']);
+  }
+  if (!rejectedDuringOutage) {
+    throw new Error('La mutation Redis a réussi pendant la coupure');
+  }
+  await Promise.all(
+    ports.map((port) =>
+      waitForHttp(`http://127.0.0.1:${port}/health/ready`, 30_000),
+    ),
+  );
+  const recovered = new ApiClient(ports[1]);
+  await recovered.connect();
+  try {
+    const login = await recovered.request('auth.login', { username, password });
+    if (typeof login.payload?.token !== 'string') {
+      throw new Error('Login absent après reconnexion Redis');
+    }
+  } finally {
+    recovered.close();
+  }
+  return 'passed';
+}
+
+async function exerciseMysqlOutage(client, username, password) {
+  dockerCompose(['pause', 'mysql']);
+  let rejectedDuringOutage = false;
+  try {
+    try {
+      await client.request(
+        'auth.register',
+        {
+          username: `mysql_outage_${Date.now()}`,
+          email: `mysql-outage-${Date.now()}@example.test`,
+          password,
+        },
+        3_000,
+      );
+    } catch {
+      rejectedDuringOutage = true;
+    }
+  } finally {
+    dockerCompose(['unpause', 'mysql']);
+  }
+  if (!rejectedDuringOutage) {
+    throw new Error('La mutation MySQL a réussi pendant la coupure');
+  }
+  await Promise.all(
+    ports.map((port) =>
+      waitForHttp(`http://127.0.0.1:${port}/health/ready`, 45_000),
+    ),
+  );
+  const recovered = new ApiClient(ports[0]);
+  await recovered.connect();
+  try {
+    const login = await recovered.request('auth.login', { username, password });
+    if (typeof login.payload?.token !== 'string') {
+      throw new Error('Login absent après reconnexion MySQL');
+    }
+  } finally {
+    recovered.close();
+  }
+  return 'passed';
 }
 
 class RoomClient {
@@ -140,17 +274,20 @@ class RoomClient {
   }
 
   send(type, payload = {}) {
-    this.socket.send(JSON.stringify({
-      type: 'room.intent.execute',
-      payload: { intentId: type, data: payload },
-    }));
+    this.socket.send(
+      JSON.stringify({
+        type: 'room.intent.execute',
+        payload: { intentId: type, data: payload },
+      }),
+    );
   }
 
   async waitFor(predicate, timeoutMs = 15_000) {
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
       const error = this.messages.find((message) => message.type === 'error');
-      if (error) throw new Error(`Room WS rejected: ${JSON.stringify(error.payload)}`);
+      if (error)
+        throw new Error(`Room WS rejected: ${JSON.stringify(error.payload)}`);
       const index = this.messages.findIndex(predicate);
       if (index >= 0) return this.messages.splice(index, 1)[0];
       await sleep(20);
@@ -283,13 +420,21 @@ async function main() {
       return Number(rows[0]?.isPrivate) === 0;
     });
     await db.end();
+    const rssGrowthBytes = runMultiInstanceLoad([firstProcess, secondProcess]);
+    const redisOutage = await exerciseRedisOutage(
+      first,
+      refreshed.payload?.refreshToken ?? refreshToken,
+      username,
+      password,
+    );
+    const mysqlOutage = await exerciseMysqlOutage(first, username, password);
     firstRoom.close();
     secondRoom.close();
     first.close();
     second.close();
     await stopBackendsGracefully();
     console.log(
-      'two-instance-real-e2e: OK (DB/session partagées et commandes concurrentes sérialisées sur une room)',
+      `two-instance-real-e2e: OK (DB/session partagées, commandes concurrentes, charge multi-Room, coupure Redis=${redisOutage}, coupure MySQL=${mysqlOutage}; croissance RSS=${rssGrowthBytes.join('/')})`,
     );
   } finally {
     firstRoom?.close();

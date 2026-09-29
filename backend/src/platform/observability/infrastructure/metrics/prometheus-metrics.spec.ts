@@ -69,6 +69,7 @@ describe('PrometheusMetrics', () => {
       delayed: 3,
       failed: 4,
     });
+    prometheusMetrics.setBullmqOldestJobAge('game-engine-tasks', 12.5);
     prometheusMetrics.setActiveRooms(3);
 
     const output = await prometheusMetrics.registry.metrics();
@@ -88,6 +89,10 @@ describe('PrometheusMetrics', () => {
     expect(output).toContain(
       'lila_bullmq_jobs{queue="game-engine-tasks",state="failed"} 4',
     );
+    expect(output).toContain(
+      'lila_bullmq_oldest_job_age_seconds{queue="game-engine-tasks"} 12.5',
+    );
+    expect(output).toContain('lila_nodejs_eventloop_lag_seconds');
     expect(output).toContain('lila_active_rooms 3');
   });
 });

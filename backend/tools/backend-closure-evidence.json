@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "scope": "backend debt 101-180",
+  "groups": [
+    {
+      "ids": [101, 102, 103, 104, 105, 106, 107],
+      "command": "npm run test:integration:real",
+      "evidence": [
+        "src/modules/health/infrastructure/checks/bullmq.health.spec.ts",
+        "src/platform/observability/infrastructure/metrics/prometheus-metrics.spec.ts",
+        "tools/room-load-real.cjs",
+        "tools/notification-inbox-profile.cjs"
+      ]
+    },
+    {
+      "ids": [
+        108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121,
+        122, 123
+      ],
+      "command": "npm run test:integration:real && npm test",
+      "evidence": [
+        "tools/two-instance-real-e2e.cjs",
+        "tools/redis-bullmq-integration.cjs",
+        "src/game/core/application/services/game-engine.service.spec.ts",
+        "src/game/core/application/services/game-realtime-automation.service.spec.ts",
+        "src/platform/lifecycle/application/application-shutdown.service.spec.ts",
+        "src/platform/ws/infrastructure/platform/lila-ws-shutdown.spec.ts",
+        "src/modules/update/infrastructure/persistence/wx-upload-atomicity.spec.ts",
+        "src/modules/sounds/infrastructure/storage/sounds-audio-process.spec.ts",
+        "src/modules/sounds/infrastructure/storage/sounds-audio-cleanup.spec.ts"
+      ]
+    },
+    {
+      "ids": [124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134],
+      "command": "npm run test:integration:real",
+      "evidence": [
+        "tools/mysql-pool-profile.cjs",
+        "tools/debt-mysql-integration.cjs",
+        "tools/notification-inbox-profile.cjs",
+        "tools/mysql-migrations-integration.cjs",
+        "src/platform/database/migrations/migration-history.spec.ts"
+      ]
+    },
+    {
+      "ids": [
+        135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148,
+        149, 150
+      ],
+      "command": "npm run security:audit && npm test",
+      "evidence": [
+        "tools/security-boundary-audit.cjs",
+        "src/modules/user/application/use-cases/user-authentication.spec.ts",
+        "src/modules/user/infrastructure/security/redis-refresh-token.service.spec.ts",
+        "src/app/boundaries/http-upload-rate-limit.spec.ts",
+        "src/platform/filesystem/infrastructure/atomic-file.utils.spec.ts",
+        "src/platform/validation/application/services/json-input-limits.spec.ts",
+        "src/platform/ws/application/services/ws-request-rate-limit.service.spec.ts",
+        "src/platform/ws/application/services/ws-api-hub.service.spec.ts",
+        "src/platform/serialization/application/error-payload.utils.spec.ts",
+        "src/game/testing/architecture-tests/game/hidden-data-projection.spec.ts"
+      ]
+    },
+    {
+      "ids": [151, 152, 153, 154, 155, 156, 157, 158],
+      "command": "npm run sdk:contract && npm run contracts:ws && npm run final:game-contracts",
+      "evidence": [
+        "tools/sdk-contract-check.cjs",
+        "tools/sdk-contract-reference.json",
+        "tools/generate-asyncapi-contract.cjs",
+        "src/game/engine/runtime/content/engine-snapshot-migrations.spec.ts"
+      ]
+    },
+    {
+      "ids": [159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170],
+      "command": "npm run quality:check && npm run typecheck && npm run lint && npm test",
+      "evidence": [
+        "tools/dead-code-audit.cjs",
+        "tools/runtime-dependency-graph.spec.cjs",
+        "tools/backend-debt-check.cjs",
+        "../.github/workflows/backend-architecture.yml"
+      ]
+    },
+    {
+      "ids": [171, 172, 173, 174, 175, 176, 177, 178, 179, 180],
+      "command": "npm run closure:certify",
+      "evidence": [
+        "src/modules/notification/infrastructure/persistence/typeorm/repositories/notification-inbox-typeorm.repository.spec.ts",
+        "src/game/engine/runtime/typed-contracts.spec.ts",
+        "tools/runtime-separation-audit.cjs",
+        "tools/run-real-integration.cjs",
+        "tools/security-boundary-audit.cjs",
+        "tools/sdk-contract-check.cjs",
+        "../.github/workflows/backend-architecture.yml"
+      ]
+    }
+  ]
+}

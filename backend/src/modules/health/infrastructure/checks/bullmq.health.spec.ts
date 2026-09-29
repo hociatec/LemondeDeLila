@@ -12,6 +12,7 @@ function fixture() {
     getJobCounts: jest
       .fn()
       .mockResolvedValue({ waiting: 0, active: 0, delayed: 0, failed: 0 }),
+    getJobs: jest.fn().mockResolvedValue([]),
     close: jest.fn().mockResolvedValue(undefined),
   };
   (Queue as unknown as jest.Mock).mockImplementation(() => queue);
@@ -32,6 +33,22 @@ it('reports the queue and always releases the probe connection', async () => {
   );
   expect(connection.disconnect).toHaveBeenCalledTimes(1);
   expect(queue.close).toHaveBeenCalledTimes(1);
+});
+
+it('reports the oldest unfinished job age without scanning the queue', async () => {
+  jest.spyOn(Date, 'now').mockReturnValue(10_000);
+  const { health, queue } = fixture();
+  queue.getJobs.mockResolvedValue([{ timestamp: 7_500 }]);
+  await expect(health.check('bullmq')).resolves.toMatchObject({
+    bullmq: { status: 'up', oldestJobAgeMs: 2_500 },
+  });
+  expect(queue.getJobs).toHaveBeenCalledWith(
+    ['waiting', 'active', 'delayed'],
+    0,
+    0,
+    true,
+  );
+  jest.restoreAllMocks();
 });
 
 it('keeps failed-job readiness policy active', async () => {

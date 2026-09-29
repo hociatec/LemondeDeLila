@@ -52,8 +52,10 @@ let nativeRedisDirectory = null;
 
 function startDependencies() {
   if (succeeds('docker', ['compose', '-f', compose, 'up', '-d', '--wait'])) {
+    integrationEnv.INTEGRATION_REDIS_COMPOSE = 'true';
     return;
   }
+  integrationEnv.INTEGRATION_REDIS_COMPOSE = 'false';
   console.warn(
     'Compose simultané indisponible; nouvelle tentative avec MySQL Docker et Redis local isolé.',
   );
@@ -106,6 +108,13 @@ try {
   run('npm', ['run', 'migration:run:dev'], integrationEnv);
   run('npm', ['run', 'test:db:migrations'], integrationEnv);
   run(process.execPath, ['tools/debt-mysql-integration.cjs'], integrationEnv);
+  run(process.execPath, ['tools/notification-inbox-profile.cjs'], {
+    ...integrationEnv,
+    NOTIFICATION_INBOX_PROFILE_PATH: path.join(
+      root,
+      'logs/notification-inbox-profile.json',
+    ),
+  });
   run(
     process.execPath,
     ['tools/game-room-locks-integration.cjs'],

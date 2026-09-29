@@ -24,6 +24,7 @@ export class RedisPresenceTransport extends PresenceTransport {
             redisFactory.create(u, name, {
               lazyConnect: true,
               maxRetriesPerRequest: 1,
+              autoResubscribe: false,
               enableOfflineQueue: false,
               enableReadyCheck: false,
               connectionName: name,

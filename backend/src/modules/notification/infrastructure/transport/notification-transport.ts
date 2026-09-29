@@ -40,6 +40,7 @@ export class RedisNotificationTransport extends NotificationTransport {
               lazyConnect: true,
               // Pub/sub notifications should never block API requests when Redis is down.
               maxRetriesPerRequest: 1,
+              autoResubscribe: false,
               enableOfflineQueue: false,
               enableReadyCheck: false,
               connectionName: name,
