@@ -85,15 +85,6 @@
         "race-bounce-quiz"
       ],
       "decision": "Keep composed primitives: each profile selects a different target (closest, behind, or rule-specific), so a callback wrapper would add indirection without a shared invariant."
-    },
-    {
-      "operations": [
-        "/straight:cards.drawOrRecycle",
-        "/if.then:cards.give",
-        "/if.else:cards.discard"
-      ],
-      "profiles": ["cards-public-domain", "collection-family-request"],
-      "decision": "Keep composed primitives: classification and post-draw behavior differ; the shared draw/give/discard operations are already provided by the Cards kit."
     }
   ],
   "effectDomains": {
@@ -120,7 +111,6 @@
     ],
     "collection": [
       "collection-species-troops",
-      "collection-family-request",
       "collection-family-effects",
       "collection-market-exchange"
     ],
@@ -322,14 +312,6 @@
       "classificationReason": "choice-simultaneous-quiz implements configurable simultaneous quiz. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "collection-family-request": {
-      "property": "familyRequest",
-      "mechanic": "family requests and completed sets",
-      "domain": "collection",
-      "scope": "game-specific",
-      "classificationReason": "collection-family-request implements family requests and completed sets. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "choice-anonymous-vote": {
       "property": "anonymousVote",
       "mechanic": "anonymous answers and voting",
@@ -398,7 +380,6 @@
   "registrationOrder": [
     "race-resource-track",
     "race-treasure-track",
-    "collection-family-request",
     "cards-ordered-assembly",
     "collection-market-exchange",
     "race-paired-pawns",

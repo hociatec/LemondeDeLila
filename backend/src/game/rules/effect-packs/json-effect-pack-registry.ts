@@ -2,7 +2,6 @@
 import type { JsonEffectPackDomain } from '../../engine/sdk/extension-api';
 import { effectPack as raceResourceTrackEffectPack } from '../game-specific/race-resource-track/effect-pack';
 import { effectPack as raceTreasureTrackEffectPack } from '../game-specific/race-treasure-track/effect-pack';
-import { effectPack as collectionFamilyRequestEffectPack } from '../game-specific/collection-family-request/effect-pack';
 import { effectPack as cardsOrderedAssemblyEffectPack } from '../game-specific/cards-ordered-assembly/effect-pack';
 import { effectPack as collectionMarketExchangeEffectPack } from '../game-specific/collection-market-exchange/effect-pack';
 import { effectPack as racePairedPawnsEffectPack } from '../game-specific/race-paired-pawns/effect-pack';
@@ -35,7 +34,6 @@ import { effectPack as boardMovementLandingsEffectPack } from '../game-specific/
 export const jsonEffectPacks = Object.freeze([
   raceResourceTrackEffectPack,
   raceTreasureTrackEffectPack,
-  collectionFamilyRequestEffectPack,
   cardsOrderedAssemblyEffectPack,
   collectionMarketExchangeEffectPack,
   racePairedPawnsEffectPack,

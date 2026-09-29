@@ -1,7 +1,10 @@
 import type { GameComponentDefinition } from './component-kit';
 import type { JsonGamePattern } from './json-game-patterns';
 import { authoringProperty } from '../contracts/authoring-diagnostics';
-import { assertThemedSetCollectionReferences } from './json-collection-pattern-reference-validation';
+import {
+  assertFamilyRequestReferences,
+  assertThemedSetCollectionReferences,
+} from './json-collection-pattern-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
 
@@ -9,6 +12,7 @@ export function assertJsonPatternReferences(
   patterns: readonly JsonGamePattern[] | undefined,
   components: readonly GameComponentDefinition[],
   resources: ReadonlySet<string>,
+  counters: ReadonlySet<string>,
   phases: Readonly<Record<string, { transitions?: readonly string[] }>>,
   initialPhase: string,
   maximumPlayers: number,
@@ -57,6 +61,8 @@ export function assertJsonPatternReferences(
       );
     if (pattern.kind === 'themed-set-collection')
       assertThemedSetCollectionReferences(pattern, index, components, fail);
+    if (pattern.kind === 'family-request')
+      assertFamilyRequestReferences(pattern, index, components, counters, fail);
   }
 }
 

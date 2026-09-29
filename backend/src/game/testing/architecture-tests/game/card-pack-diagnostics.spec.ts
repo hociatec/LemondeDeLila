@@ -12,16 +12,14 @@ function cards(program: Data): Data[] {
 }
 type Case = { key: string; change: (p: Data) => string };
 const cases: Case[] = [
-  ...['parade', 'ritualPhases', 'familyRequest', 'familyEffects'].map(
-    (key) => ({
-      key,
-      change: (p: Data) => {
-        const list = cards(p);
-        p.cards = [...list, { ...list[0] }];
-        return `cards[${list.length}].id`;
-      },
-    }),
-  ),
+  ...['parade', 'ritualPhases', 'familyEffects'].map((key) => ({
+    key,
+    change: (p: Data) => {
+      const list = cards(p);
+      p.cards = [...list, { ...list[0] }];
+      return `cards[${list.length}].id`;
+    },
+  })),
   {
     key: 'parade',
     change: (p) => {
@@ -89,15 +87,6 @@ const cases: Case[] = [
     },
   },
   {
-    key: 'familyRequest',
-    change: (p) => {
-      const list = cards(p);
-      const i = list.findIndex((c) => c.type === 'quiz');
-      list[i].answerIndex = 99;
-      return `cards[${i}].answerIndex`;
-    },
-  },
-  {
     key: 'familyEffects',
     change: (p) => {
       const list = cards(p);
@@ -152,7 +141,7 @@ it.each(cases)('locates invalid $key authoring %#', ({ key, change }) => {
   }
 });
 
-it.each(['parade', 'ritualPhases', 'familyRequest', 'familyEffects'])(
+it.each(['parade', 'ritualPhases', 'familyEffects'])(
   'still compiles valid %s',
   (key) => {
     const { source, manifest } = fixture(key);

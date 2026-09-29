@@ -194,3 +194,67 @@ export const themedSetCollectionPatternSchema = object(
     'eventNamespace',
   ],
 );
+
+const text = { type: 'string', minLength: 1, maxLength: 2000 } as const;
+export const familyRequestPatternSchema = object(
+  {
+    kind: { const: 'family-request' },
+    askRecipe: id,
+    passRecipe: id,
+    askAction: id,
+    passAction: id,
+    deckId: id,
+    handId: id,
+    setsId: id,
+    cards: array(
+      {
+        oneOf: [
+          object({
+            id,
+            type: { const: 'family' },
+            familyId: id,
+            familyName: text,
+            memberName: text,
+          }),
+          object({
+            id,
+            type: { const: 'quiz' },
+            question: text,
+            choices: array(text, 2),
+            answerIndex: { type: 'integer', minimum: 0, maximum: 100 },
+          }),
+          object({
+            id,
+            type: { const: 'nature' },
+            description: text,
+            delta: { type: 'integer', minimum: -1000000, maximum: 1000000 },
+          }),
+        ],
+      },
+      1,
+    ),
+    pollutionCounter: id,
+    pollutionLimit: { type: 'integer', minimum: 1 },
+    familiesToWin: { type: 'integer', minimum: 1 },
+    pollutionFinishReason: id,
+    familyFinishReason: id,
+    eventNamespace: id,
+  },
+  [
+    'kind',
+    'askRecipe',
+    'passRecipe',
+    'askAction',
+    'passAction',
+    'deckId',
+    'handId',
+    'setsId',
+    'cards',
+    'pollutionCounter',
+    'pollutionLimit',
+    'familiesToWin',
+    'pollutionFinishReason',
+    'familyFinishReason',
+    'eventNamespace',
+  ],
+);

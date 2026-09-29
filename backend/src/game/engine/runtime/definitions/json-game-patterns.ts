@@ -35,6 +35,10 @@ import {
   type ThemedSetCollectionOptions,
 } from '../patterns/themed-set-collection-pattern';
 import {
+  familyRequest,
+  type FamilyRequestOptions,
+} from '../patterns/family-request-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -48,6 +52,7 @@ import {
   gooseRacePatternSchema,
   trackZoneCollectionPatternSchema,
   themedSetCollectionPatternSchema,
+  familyRequestPatternSchema,
 } from './json-advanced-pattern-schemas';
 
 export type JsonGamePattern =
@@ -77,6 +82,7 @@ export type JsonGamePattern =
   | ({ kind: 'card-battle' } & CardBattleOptions)
   | ({ kind: 'track-zone-collection' } & TrackZoneCollectionOptions)
   | ({ kind: 'themed-set-collection' } & ThemedSetCollectionOptions)
+  | ({ kind: 'family-request' } & FamilyRequestOptions)
   | {
       kind: 'market';
       marketId: string;
@@ -286,6 +292,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     cardBattlePatternSchema,
     trackZoneCollectionPatternSchema,
     themedSetCollectionPatternSchema,
+    familyRequestPatternSchema,
     object(
       {
         kind: { const: 'market' },
@@ -372,6 +379,10 @@ export function compileJsonPattern(
     case 'themed-set-collection': {
       const { kind: _kind, ...options } = pattern;
       return themedSetCollection(options);
+    }
+    case 'family-request': {
+      const { kind: _kind, ...options } = pattern;
+      return familyRequest(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

@@ -247,6 +247,7 @@ function assertDocumentReferences(
       ...(patterns ?? []).flatMap((pattern) => pattern.components ?? []),
     ],
     resources,
+    new Set(Object.keys(document.setup.counters ?? {})),
     document.phases,
     document.initialPhase,
     manifest.maxPlayers,

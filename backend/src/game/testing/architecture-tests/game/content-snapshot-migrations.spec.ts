@@ -38,17 +38,14 @@ import sacManifest from '../../../games/les-quatre-vents/sac-a-malices/manifest.
 import sacDocumentExtensionSource from '../../../games/les-quatre-vents/sac-a-malices/game.json';
 import sacCatalogue from '../../../games/les-quatre-vents/sac-a-malices/catalogue.json';
 import natureManifest from '../../../games/vents-dansants/dame-nature/manifest.json';
-import natureDocumentExtensionSource from '../../../games/vents-dansants/dame-nature/game.json';
+import natureDocument from '../../../games/vents-dansants/dame-nature/game.json';
 import natureCatalogue from '../../../games/vents-dansants/dame-nature/content/catalogue.json';
 const composition = legacyExtensionFixture(compositionExtensionSource, 'board');
 const olympiaDocument = legacyExtensionFixture(
   olympiaDocumentExtensionSource,
   'sharedPrestigeCards',
 );
-const aventureDocument = legacyExtensionFixture(
-  aventureDocumentExtensionSource,
-  'eventRace',
-);
+const aventureDocument = aventureDocumentExtensionSource;
 const missionDocument = legacyExtensionFixture(
   missionDocumentExtensionSource,
   'quizEventRace',
@@ -64,10 +61,6 @@ const mamanDocument = legacyExtensionFixture(
 const sacDocument = legacyExtensionFixture(
   sacDocumentExtensionSource,
   'propertyEconomy',
-);
-const natureDocument = legacyExtensionFixture(
-  natureDocumentExtensionSource,
-  'familyRequest',
 );
 
 const panierDocument = resolveJsonContent(composition, {

@@ -46,13 +46,15 @@ it('validates Dame Nature answer indices independently of labels', () => {
   const payload = structuredClone(
     jsonDefinition('dame-nature').content.data,
   ) as {
-    familyRequest: {
+    patterns: Array<{
+      kind: string;
       cards: Array<{ type: string; choices?: string[]; answerIndex?: number }>;
-    };
+    }>;
   };
-  const quiz = payload.familyRequest.cards.find(
-    (card) => card.type === 'quiz',
+  const familyRequest = payload.patterns.find(
+    (pattern) => pattern.kind === 'family-request',
   )!;
+  const quiz = familyRequest.cards.find((card) => card.type === 'quiz')!;
   quiz.choices = quiz.choices!.map(() => 'Même libellé');
   expect(recompileJson('dame-nature', payload).content.data).toEqual(payload);
   quiz.answerIndex = quiz.choices.length;
@@ -62,8 +64,13 @@ it('validates Dame Nature answer indices independently of labels', () => {
 it('rejects invalid references and effects in canonical JSON catalogues', () => {
   const parade = structuredClone(
     jsonDefinition('la-parade-sucree').content.data,
-  ) as { parade: { sequence: string[] } };
-  parade.parade.sequence[0] = 'absente';
+  ) as {
+    patterns: Array<{ kind: string; sequence: string[] }>;
+  };
+  const orderedCollection = parade.patterns.find(
+    (pattern) => pattern.kind === 'ordered-card-collection',
+  )!;
+  orderedCollection.sequence[0] = 'absente';
   expect(() => recompileJson('la-parade-sucree', parade)).toThrow();
 
   const foulees = structuredClone(

@@ -80,6 +80,16 @@
         "src/game/testing/architecture-tests/game/refill-hand-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-themed-set-collection.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/dame-nature/game.json",
+      "fromSha256": "f69aa1037de61123d1ad6d50b76077595baaa3e5e0bb71a8db5966d58c089824",
+      "toSha256": "d1b304ca6868f50249436269ff1817529ac0dbcfbba0919f72f370a7aeb8553e",
+      "justification": "Le pattern family-request générique porte désormais demandes de cartes, pioche sur échec, pollution, familles complètes, bot et victoires depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/family-request-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-family-request.spec.ts"
+      ]
     }
   ]
 }

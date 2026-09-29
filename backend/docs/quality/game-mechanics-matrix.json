@@ -949,9 +949,7 @@
     },
     {
       "id": "dame-nature",
-      "packs": [
-        "collection-family-request"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -961,57 +959,22 @@
           "src/game/games/vents-dansants/dame-nature/content/catalogue.json:416"
         ],
         "cards": [
-          "src/game/games/vents-dansants/dame-nature/game.json:19",
-          "src/game/games/vents-dansants/dame-nature/game.json:28",
-          "src/game/games/vents-dansants/dame-nature/game.json:38",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:11",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:48",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:50",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:53",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:56",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:89",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:90",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:92",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:64",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:68",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:72",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:74",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:75",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:78",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:87",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:89",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:98"
+          "src/game/games/vents-dansants/dame-nature/game.json:42",
+          "src/game/games/vents-dansants/dame-nature/game.json:51",
+          "src/game/games/vents-dansants/dame-nature/game.json:61"
         ],
-        "zones": [
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:48",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:56"
-        ],
+        "zones": [],
         "choices": [],
         "status": [],
         "collections": [
-          "src/game/games/vents-dansants/dame-nature/game.json:38",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:1",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:16",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:90",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:72",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:78",
-          "src/game/rules/game-specific/collection-family-request/json-family-request-schema.ts:98"
+          "src/game/games/vents-dansants/dame-nature/game.json:61"
         ],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/dame-nature/game.json:85",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:78",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:95"
+          "src/game/games/vents-dansants/dame-nature/game.json:105"
         ],
-        "targeting": [
-          "src/game/rules/game-specific/collection-family-request/effect-pack.ts:25",
-          "src/game/rules/game-specific/collection-family-request/effect-pack.ts:29",
-          "src/game/rules/game-specific/collection-family-request/effect-pack.ts:34"
-        ],
-        "triggers": [
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:26",
-          "src/game/rules/game-specific/collection-family-request/family-request.recipes.ts:72"
-        ]
+        "targeting": [],
+        "triggers": []
       }
     },
     {
@@ -3507,12 +3470,6 @@
       "name": "collection-family-effects",
       "consumers": [
         "les-mains-de-la-terre"
-      ]
-    },
-    {
-      "name": "collection-family-request",
-      "consumers": [
-        "dame-nature"
       ]
     },
     {

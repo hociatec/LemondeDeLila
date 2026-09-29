@@ -103,8 +103,6 @@
 217. Supprimer game/rules/game-specific/choice-chapter-encounter/effect-pack.ts après certification comportementale complète.
 218. Migrer choice-simultaneous-quiz afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 219. Supprimer game/rules/game-specific/choice-simultaneous-quiz/effect-pack.ts après certification comportementale complète.
-222. Migrer collection-family-request afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
-223. Supprimer game/rules/game-specific/collection-family-request/effect-pack.ts après certification comportementale complète.
 224. Migrer collection-species-troops afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 225. Supprimer game/rules/game-specific/collection-species-troops/effect-pack.ts après certification comportementale complète.
 226. Migrer collection-market-exchange afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "3",
   "snapshotMigrations": [
     {
@@ -10,10 +10,33 @@
     {
       "fromVersion": "dame-nature@content:5fc7c131",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
+  "patterns": [
+    {
+      "kind": "family-request",
+      "askRecipe": "collection-family-request-ask",
+      "passRecipe": "collection-family-request-pass",
+      "askAction": "ask_card",
+      "passAction": "pass",
+      "deckId": "nature",
+      "handId": "players",
+      "setsId": "nature-families",
+      "cards": { "$content": "content/catalogue.json#/cards" },
+      "pollutionCounter": "dame-nature.pollution",
+      "pollutionLimit": 12,
+      "familiesToWin": 4,
+      "pollutionFinishReason": "pollution-limit",
+      "familyFinishReason": "nature-completed",
+      "eventNamespace": "dame-nature"
+    }
+  ],
   "components": [
     {
       "component": "cards.deck",
@@ -67,10 +90,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "ask_card",
-        "pass"
-      ],
+      "actions": ["ask_card", "pass"],
       "terminal": true
     }
   },
@@ -82,26 +102,6 @@
       "recipe": "collection-family-request-pass"
     }
   },
-  "victory": {
-    "kind": "by-family-request"
-  },
-  "extensions": [
-    {
-      "type": "familyRequest",
-      "config": {
-        "deckId": "nature",
-        "handId": "players",
-        "setsId": "nature-families",
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        },
-        "pollutionCounter": "dame-nature.pollution",
-        "pollutionLimit": 12,
-        "familiesToWin": 4,
-        "pollutionFinishReason": "pollution-limit",
-        "familyFinishReason": "nature-completed",
-        "eventNamespace": "dame-nature"
-      }
-    }
-  ]
+  "victory": { "kind": "manual" },
+  "extensions": []
 }
