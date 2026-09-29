@@ -103,6 +103,9 @@ describe('backend debt contracts', () => {
     for (const eventType of customEventTypes) {
       expect(presenter).not.toContain(`'${eventType}'`);
     }
+    expect(presenter).not.toMatch(
+      /private\s+(?:asRecord|stringValue|numberValue)\s*\(/,
+    );
   });
 
   it('keeps the command executor as the only production action-application boundary', () => {

@@ -1,6 +1,6 @@
 export function gridPawnMessage(
   key: string,
-  params: Record<string, unknown>,
+  params: { x?: number; y?: number },
   name: string,
 ): string {
   if (key !== 'game.grid.pawn.positioned' && key !== 'game.grid.pawn.moved')

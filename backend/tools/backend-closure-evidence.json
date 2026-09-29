@@ -1,28 +1,63 @@
 {
-  "version": 1,
-  "scope": "backend debt 101-180",
+  "version": 3,
+  "scope": "backend final debt 1-109",
+  "range": { "from": 1, "to": 109 },
   "groups": [
     {
-      "ids": [101, 102, 103, 104, 105, 106, 107],
-      "command": "npm run test:integration:real",
+      "ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+      "command": "npm run typecheck && npm run architecture:test",
       "evidence": [
-        "src/modules/health/infrastructure/checks/bullmq.health.spec.ts",
-        "src/platform/observability/infrastructure/metrics/prometheus-metrics.spec.ts",
-        "tools/room-load-real.cjs",
-        "tools/notification-inbox-profile.cjs"
+        "src/game/core/infrastructure/presentation/ws/state/game-ws-message-system-view.ts",
+        "src/game/core/infrastructure/presentation/ws/state/game-ws-message-system-view.spec.ts",
+        "src/game/core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts",
+        "src/game/testing/architecture-tests/game/backend-debt-contracts.spec.ts",
+        "src/game/engine/runtime/typed-contracts.spec.ts",
+        "src/modules/user/domain/models/user.model.ts"
       ]
     },
     {
-      "ids": [
-        108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121,
-        122, 123
-      ],
-      "command": "npm run test:integration:real && npm test",
+      "ids": [24, 25, 26, 27, 28, 29],
+      "command": "npm run engine:boundary:audit && npm run engine:merge-contracts && npm run engine:authoring-contracts",
+      "evidence": [
+        "tools/engine-catalog-boundary.cjs",
+        "tools/engine-catalog-boundary.spec.cjs",
+        "tools/game-engine-architecture-check.cjs",
+        "src/game/rules/effect-packs/json-effect-pack-registry.spec.ts",
+        "../.github/workflows/backend-architecture.yml"
+      ]
+    },
+    {
+      "ids": [30, 31, 32, 33, 34, 35, 36, 37, 38],
+      "command": "npm run quality:check && npm run typecheck && npm run lint && npm test && npm run test:integration:real && npm run verify:dist",
+      "evidence": [
+        "../.github/workflows/backend-architecture.yml",
+        "tools/run-real-integration.cjs",
+        "tools/create-deployment-artifact.spec.cjs",
+        "tools/backend-closure-evidence.cjs"
+      ]
+    },
+    {
+      "ids": [39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52],
+      "command": "npm run profile:game-replay && npm run test:integration:real",
+      "evidence": [
+        "tools/game-replay-profile.cjs",
+        "tools/room-load-real.cjs",
+        "tools/two-instance-real-e2e.cjs",
+        "tools/mysql-pool-profile.cjs",
+        "tools/redis-bullmq-integration.cjs",
+        "src/platform/observability/infrastructure/metrics/prometheus-metrics.spec.ts",
+        "../.github/workflows/backend-architecture.yml"
+      ]
+    },
+    {
+      "ids": [53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68],
+      "command": "npm run test:integration:real && npm run scheduling:audit && npm test",
       "evidence": [
         "tools/two-instance-real-e2e.cjs",
         "tools/redis-bullmq-integration.cjs",
         "src/game/core/application/services/game-engine.service.spec.ts",
         "src/game/core/application/services/game-realtime-automation.service.spec.ts",
+        "src/game/core/infrastructure/scheduling/bullmq-game-task-scheduler.service.spec.ts",
         "src/platform/lifecycle/application/application-shutdown.service.spec.ts",
         "src/platform/ws/infrastructure/platform/lila-ws-shutdown.spec.ts",
         "src/modules/update/infrastructure/persistence/wx-upload-atomicity.spec.ts",
@@ -31,28 +66,26 @@
       ]
     },
     {
-      "ids": [124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134],
+      "ids": [69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79],
       "command": "npm run test:integration:real",
       "evidence": [
-        "tools/mysql-pool-profile.cjs",
         "tools/debt-mysql-integration.cjs",
         "tools/notification-inbox-profile.cjs",
         "tools/mysql-migrations-integration.cjs",
+        "tools/migration-history.json",
         "src/platform/database/migrations/migration-history.spec.ts"
       ]
     },
     {
-      "ids": [
-        135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148,
-        149, 150
-      ],
+      "ids": [80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93],
       "command": "npm run security:audit && npm test",
       "evidence": [
         "tools/security-boundary-audit.cjs",
+        "src/modules/messaging/application/services/private-messaging.service.spec.ts",
         "src/modules/user/application/use-cases/user-authentication.spec.ts",
         "src/modules/user/infrastructure/security/redis-refresh-token.service.spec.ts",
         "src/app/boundaries/http-upload-rate-limit.spec.ts",
-        "src/platform/filesystem/infrastructure/atomic-file.utils.spec.ts",
+        "src/modules/update/infrastructure/persistence/wx-update-upload.service.spec.ts",
         "src/platform/validation/application/services/json-input-limits.spec.ts",
         "src/platform/ws/application/services/ws-request-rate-limit.service.spec.ts",
         "src/platform/ws/application/services/ws-api-hub.service.spec.ts",
@@ -61,35 +94,24 @@
       ]
     },
     {
-      "ids": [151, 152, 153, 154, 155, 156, 157, 158],
+      "ids": [94, 95, 96, 97, 98, 99, 100, 101],
       "command": "npm run sdk:contract && npm run contracts:ws && npm run final:game-contracts",
       "evidence": [
         "tools/sdk-contract-check.cjs",
         "tools/sdk-contract-reference.json",
         "tools/generate-asyncapi-contract.cjs",
-        "src/game/engine/runtime/content/engine-snapshot-migrations.spec.ts"
-      ]
-    },
-    {
-      "ids": [159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170],
-      "command": "npm run quality:check && npm run typecheck && npm run lint && npm test",
-      "evidence": [
-        "tools/dead-code-audit.cjs",
-        "tools/runtime-dependency-graph.spec.cjs",
-        "tools/backend-debt-check.cjs",
+        "src/game/engine/runtime/content/engine-snapshot-migrations.spec.ts",
         "../.github/workflows/backend-architecture.yml"
       ]
     },
     {
-      "ids": [171, 172, 173, 174, 175, 176, 177, 178, 179, 180],
-      "command": "npm run closure:certify",
+      "ids": [102, 103, 104, 105, 106, 107, 108, 109],
+      "command": "npm run dead-code:audit && npm run cycles:audit && npm run typecheck && npm run lint && npm test && npm run closure:certify",
       "evidence": [
-        "src/modules/notification/infrastructure/persistence/typeorm/repositories/notification-inbox-typeorm.repository.spec.ts",
-        "src/game/engine/runtime/typed-contracts.spec.ts",
-        "tools/runtime-separation-audit.cjs",
+        "tools/dead-code-audit.cjs",
+        "tools/runtime-dependency-graph.spec.cjs",
+        "tools/backend-closure-evidence.spec.cjs",
         "tools/run-real-integration.cjs",
-        "tools/security-boundary-audit.cjs",
-        "tools/sdk-contract-check.cjs",
         "../.github/workflows/backend-architecture.yml"
       ]
     }

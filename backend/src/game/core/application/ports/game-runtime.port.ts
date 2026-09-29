@@ -69,6 +69,7 @@ export interface GameRuntime {
 }
 
 export type GameActionCandidateQuery = {
+  /** Provider-specific search fields, validated by the candidate provider. */
   query?: Readonly<Record<string, unknown>>;
   offset?: number;
   limit?: number;
@@ -100,6 +101,7 @@ export type GameRuntimeDescriptor = {
   };
   actions: Array<{
     type: string;
+    /** Serialized input-schema descriptor consumed by generic clients. */
     input: Record<string, unknown>;
     documentation?: string;
     paginatedCandidates?: boolean;

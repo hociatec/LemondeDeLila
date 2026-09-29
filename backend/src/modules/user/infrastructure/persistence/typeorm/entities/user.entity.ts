@@ -4,6 +4,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import type { UserPreferences } from '../../../../domain/models/user.model';
 
 @Entity({ name: 'users' })
 export class User {
@@ -26,7 +27,7 @@ export class User {
   avatar?: string | null;
 
   @Column({ type: 'json', nullable: true })
-  preferences?: Record<string, unknown> | null;
+  preferences?: UserPreferences | null;
 
   @Column({ name: 'banned_until', type: 'datetime', nullable: true })
   bannedUntil?: Date | null;

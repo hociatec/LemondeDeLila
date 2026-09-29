@@ -255,6 +255,7 @@ export type GameEffectInstruction =
       stacking?: 'replace' | 'add';
       source?: { playerId?: number; effectId?: string };
       categories?: readonly string[];
+      /** Status-specific JSON interpreted by the named status definition. */
       data?: Record<string, unknown>;
       target?: EffectTarget;
     }

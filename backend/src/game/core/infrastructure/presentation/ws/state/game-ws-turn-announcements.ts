@@ -4,9 +4,9 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
-export function withoutRepeatedTurnAnnouncements(
-  events: Record<string, unknown>[],
-): Record<string, unknown>[] {
+export function withoutRepeatedTurnAnnouncements<
+  TEvent extends Record<string, unknown>,
+>(events: TEvent[]): TEvent[] {
   let previousLastLine = '';
   return events.map((event) => {
     const data = asRecord(event.data);
