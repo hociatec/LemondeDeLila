@@ -1,5 +1,6 @@
 export type GameLogEntry = {
   key: string;
+  /** Extensible localization parameters interpreted by the presentation edge. */
   params: Record<string, unknown>;
   timestamp?: string;
 };
@@ -44,6 +45,7 @@ export type PendingState = {
   blocking?: boolean;
   question?: string | null;
   choices?: string[];
+  /** Persisted continuation owned by the selected workflow kind. */
   data?: { options?: unknown[]; [key: string]: unknown };
   queue?: PendingState[];
 };
@@ -81,6 +83,7 @@ export type GameState<TGame extends object = object> = {
   pending?: PendingState | null;
   automation?: GameAutomationContext;
   game?: TGame;
+  /** Compatibility namespace for game-authored state outside engine kits. */
   extras?: Record<string, unknown>;
   board?: unknown;
 };

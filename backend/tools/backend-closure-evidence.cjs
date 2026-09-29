@@ -34,11 +34,21 @@ for (const group of manifest.groups ?? []) {
   }
 }
 
-for (let id = 101; id <= 180; id += 1) {
+const range = manifest.range ?? {};
+if (
+  !Number.isSafeInteger(range.from) ||
+  !Number.isSafeInteger(range.to) ||
+  range.from < 1 ||
+  range.to < range.from
+) {
+  failures.push('Périmètre de certification invalide');
+}
+for (let id = range.from; id <= range.to; id += 1) {
   if (!covered.has(id)) failures.push(`Point ${id} sans preuve`);
 }
 for (const id of covered.keys()) {
-  if (id < 101 || id > 180) failures.push(`Point hors périmètre: ${id}`);
+  if (id < range.from || id > range.to)
+    failures.push(`Point hors périmètre: ${id}`);
 }
 
 const debt = fs.readFileSync(path.join(root, 'dette.txt'), 'utf8');

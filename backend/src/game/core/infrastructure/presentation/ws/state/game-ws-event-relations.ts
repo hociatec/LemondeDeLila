@@ -4,9 +4,9 @@ export type PresentationRelations = {
   turnByMessageId: ReadonlyMap<string, PairedTurn>;
 };
 
-export function withoutDuplicateTurnIdentities(
-  events: Record<string, unknown>[],
-): Record<string, unknown>[] {
+export function withoutDuplicateTurnIdentities<
+  TEvent extends Record<string, unknown>,
+>(events: TEvent[]): TEvent[] {
   const seen = new Set<string>();
   return [...events]
     .reverse()

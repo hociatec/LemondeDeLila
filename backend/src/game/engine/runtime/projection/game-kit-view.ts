@@ -75,6 +75,19 @@ export type PawnSetsPlayerView = {
   >;
 };
 
+export type QuizSessionPlayerView = {
+  id: string;
+  bankId: string;
+  question: { id: string; prompt: string; choices: readonly string[] };
+  participantPlayerIds: number[];
+  answeredPlayerIds: number[];
+  phase: QuizSessionState['phase'];
+  scored: boolean;
+  answers?: Record<string, number>;
+  correctAnswerIndex?: number;
+  myAnswer?: number;
+};
+
 export type GameKitsPlayerView = {
   cards?: CardsPlayerView;
   inventory?: ReturnType<typeof projectInventoryKitState>;
@@ -87,6 +100,7 @@ export type GameKitsPlayerView = {
     boards: Record<
       string,
       Partial<GridDefinition> & {
+        /** Game-authored generic cell/overlay payloads stay opaque to the kit. */
         cells: Record<string, unknown>;
         overlays: Record<string, unknown[]>;
       }
@@ -94,7 +108,7 @@ export type GameKitsPlayerView = {
   };
   quiz?: {
     banks: Record<string, { count: number; cursor: number; remaining: number }>;
-    sessions: Record<string, Record<string, unknown>>;
+    sessions: Record<string, QuizSessionPlayerView>;
   };
 };
 

@@ -9,10 +9,19 @@ import { gridPawnMessage } from './game-ws-grid-pawn-message';
 import { cardMessageLabel, scalarMessageText } from './game-ws-message-values';
 import { withoutRepeatedTurnAnnouncements } from './game-ws-turn-announcements';
 import {
+  decodeReceivedCardData,
+  decodeScoreChangedData,
+  decodeSemanticMessageData,
   decodeMessageSystem,
+  decodeTurnStartedData,
   type MessageEventData,
+  type ReceivedCardEventData,
+  type ScoreChangedEventData,
+  type SemanticMessageData,
+  type SemanticMessageParams,
   type MessageSystemView,
   type MessageViewEvent,
+  type TurnStartedEventData,
 } from './game-ws-message-system-view';
 
 type GamePresentationDescriptor = NonNullable<
@@ -26,12 +35,14 @@ export class GameWsStateMessagesPresenter {
     rawSystem: unknown,
     viewerPlayerId: number | null,
     presentation: GamePresentationDescriptor,
-  ): Record<string, unknown> {
+  ): MessageSystemView {
     const system = decodeMessageSystem(rawSystem);
     const playerNames = this.playerNames(system);
     const events = system.events;
     const latestByType = events.latestByType;
-    const receivedCardData = latestByType['card.received']?.data ?? {};
+    const receivedCardData = decodeReceivedCardData(
+      latestByType['card.received']?.data,
+    );
     const recentEvents = events.recent;
     const relations = presentationRelations(recentEvents, latestByType);
     const started = isActiveMatchStatus(system.match.status);
@@ -84,7 +95,7 @@ export class GameWsStateMessagesPresenter {
     playerNames: ReadonlyMap<number, string>;
     started: boolean;
     viewerPlayerId: number | null;
-    receivedCardData: Record<string, unknown>;
+    receivedCardData: ReceivedCardEventData;
     presentation: GamePresentationDescriptor;
   }): MessageViewEvent {
     const event = input.rawEvent;
@@ -101,7 +112,7 @@ export class GameWsStateMessagesPresenter {
       input.started,
       input.viewerPlayerId,
       input.receivedCardData,
-      pairedTurn?.data ?? {},
+      decodeTurnStartedData(pairedTurn?.data),
       input.presentation,
     );
     return message ? { ...event, data: { ...data, message } } : event;
@@ -114,29 +125,29 @@ export class GameWsStateMessagesPresenter {
     players: ReadonlyMap<number, string>,
     started: boolean,
     viewerPlayerId: number | null,
-    receivedCardData: Record<string, unknown>,
-    nextTurnData: Record<string, unknown>,
+    receivedCardData: ReceivedCardEventData,
+    nextTurnData: TurnStartedEventData,
     presentation: GamePresentationDescriptor,
   ): string {
     if (!started && (type === 'turn.started' || type === 'turn.ended'))
       return '';
     if (data.announce === false) return '';
-    const narration = this.asRecord(data.narration);
-    const narrationByPlayerId = this.asRecord(narration.byPlayerId);
+    const narration = data.narration;
+    const narrationByPlayerId = narration?.byPlayerId ?? {};
     const ownedNarration =
       (viewerPlayerId == null
         ? ''
-        : this.stringValue(narrationByPlayerId[String(viewerPlayerId)])) ||
-      this.stringValue(narration.default);
+        : narrationByPlayerId[String(viewerPlayerId)]?.trim()) ||
+      narration?.default?.trim();
     if (ownedNarration) return ownedNarration;
-    const explicit = this.stringValue(data.message);
+    const explicit = data.message?.trim();
     if (explicit) return explicit;
 
-    const player = (value: unknown): string =>
+    const player = (value: number | null | undefined): string =>
       this.playerLabel(value, players, viewerPlayerId);
     if (type === 'game.message') {
       return this.semanticMessage(
-        data,
+        decodeSemanticMessageData(data),
         player,
         players,
         viewerPlayerId,
@@ -145,7 +156,11 @@ export class GameWsStateMessagesPresenter {
       );
     }
     if (type === 'score.changed')
-      return this.scoreMessage(data, player, presentation.score);
+      return this.scoreMessage(
+        decodeScoreChangedData(data),
+        player,
+        presentation.score,
+      );
     return genericGameEventMessage({
       type,
       data,
@@ -156,25 +171,25 @@ export class GameWsStateMessagesPresenter {
   }
 
   private playerLabel(
-    value: unknown,
+    value: number | null | undefined,
     players: ReadonlyMap<number, string>,
     viewerPlayerId: number | null,
   ): string {
-    const id = this.numberValue(value);
+    const id = value;
     if (id == null) return '';
     return id === viewerPlayerId ? 'Vous' : (players.get(id) ?? `Joueur ${id}`);
   }
 
   private semanticMessage(
-    data: Record<string, unknown>,
-    player: (value: unknown) => string,
+    data: SemanticMessageData,
+    player: (value: number | undefined) => string,
     players: ReadonlyMap<number, string>,
     viewerPlayerId: number | null,
-    receivedCardData: Record<string, unknown>,
-    nextTurnData: Record<string, unknown>,
+    receivedCardData: ReceivedCardEventData,
+    nextTurnData: TurnStartedEventData,
   ): string {
-    const messageKey = this.stringValue(data.key);
-    const params = this.asRecord(data.params);
+    const messageKey = data.key;
+    const params = data.params;
     const namedPlayer = player(params.playerId);
     const gridMessage = gridPawnMessage(messageKey, params, namedPlayer);
     if (gridMessage) return gridMessage;
@@ -211,7 +226,7 @@ export class GameWsStateMessagesPresenter {
         ? 'Vous devez choisir votre pion.'
         : `${namedPlayer} doit choisir son pion.`;
     if (messageKey === 'game.dice.rolled' && namedPlayer) {
-      const total = this.numberValue(params.total);
+      const total = params.total;
       if (total == null) return '';
       const value = frenchNumber(total);
       return namedPlayer === 'Vous'
@@ -241,24 +256,24 @@ export class GameWsStateMessagesPresenter {
   }
 
   private quizResolvedMessage(
-    params: Record<string, unknown>,
+    params: SemanticMessageParams,
     viewerPlayerId: number | null,
   ): string {
     if (viewerPlayerId != null) {
-      const ownResult = (Array.isArray(params.results) ? params.results : [])
-        .map((result) => this.asRecord(result))
-        .find((result) => this.numberValue(result.playerId) === viewerPlayerId);
-      if (this.stringValue(ownResult?.outcome) === 'correct') return '';
+      const ownResult = params.results.find(
+        (result) => result.playerId === viewerPlayerId,
+      );
+      if (ownResult?.outcome === 'correct') return '';
     }
-    const correctAnswer = this.stringValue(params.correctAnswer);
+    const correctAnswer = params.correctAnswer;
     return correctAnswer ? `La bonne réponse était « ${correctAnswer} ».` : '';
   }
 
   private pawnBonusMessage(
     namedPlayer: string,
-    params: Record<string, unknown>,
+    params: SemanticMessageParams,
   ): string {
-    const spaces = this.numberValue(params.spaces) ?? 0;
+    const spaces = params.spaces ?? 0;
     const backward = spaces < 0;
     const amount = `${Math.abs(spaces)} case${Math.abs(spaces) === 1 ? '' : 's'}`;
     const verb = backward
@@ -273,10 +288,10 @@ export class GameWsStateMessagesPresenter {
 
   private drawnCardMessage(input: {
     namedPlayer: string;
-    params: Record<string, unknown>;
+    params: SemanticMessageParams;
     card: string;
-    receivedCardData: Record<string, unknown>;
-    nextTurnData: Record<string, unknown>;
+    receivedCardData: ReceivedCardEventData;
+    nextTurnData: TurnStartedEventData;
     players: ReadonlyMap<number, string>;
   }): string {
     const card = this.displayedCard(input);
@@ -298,12 +313,12 @@ export class GameWsStateMessagesPresenter {
 
   private displayedCard(input: {
     namedPlayer: string;
-    params: Record<string, unknown>;
+    params: SemanticMessageParams;
     card: string;
-    receivedCardData: Record<string, unknown>;
+    receivedCardData: ReceivedCardEventData;
   }): string {
-    const drawnForPlayer = this.numberValue(input.params.playerId);
-    const receivedByPlayer = this.numberValue(input.receivedCardData.playerId);
+    const drawnForPlayer = input.params.playerId;
+    const receivedByPlayer = input.receivedCardData.playerId;
     const privateCard =
       input.namedPlayer === 'Vous' && drawnForPlayer === receivedByPlayer
         ? cardMessageLabel(input.receivedCardData.card)
@@ -314,11 +329,11 @@ export class GameWsStateMessagesPresenter {
   }
 
   private roundStartedMessage(
-    params: Record<string, unknown>,
+    params: SemanticMessageParams,
     players: ReadonlyMap<number, string>,
   ): string {
     const round = scalarMessageText(params.round);
-    const starterId = this.numberValue(params.starterPlayerId);
+    const starterId = params.starterPlayerId;
     const starter =
       starterId == null
         ? ''
@@ -337,23 +352,23 @@ export class GameWsStateMessagesPresenter {
 
   private withNextTurn(
     message: string,
-    nextTurnData: Record<string, unknown>,
+    nextTurnData: TurnStartedEventData,
     players: ReadonlyMap<number, string>,
   ): string {
-    const playerId = this.numberValue(nextTurnData.playerId);
+    const playerId = nextTurnData.playerId;
     if (playerId == null) return message;
     const name = players.get(playerId) ?? `Joueur ${playerId}`;
     return `${message}\n${turnAnnouncement(name)}`;
   }
 
   private scoreMessage(
-    data: Record<string, unknown>,
-    player: (value: unknown) => string,
+    data: ScoreChangedEventData,
+    player: (value: number | undefined) => string,
     presentation?: ScorePresentationDescriptor,
   ): string {
     const name = player(data.playerId);
     const value = scalarMessageText(data.value);
-    const delta = this.numberValue(data.delta);
+    const delta = data.delta;
     if (
       presentation?.changeNarration === 'delta-and-total' &&
       name &&
@@ -366,23 +381,8 @@ export class GameWsStateMessagesPresenter {
       return '';
     }
     return name && value
-      ? `${name} ${name === 'Vous' ? 'avez' : 'a'} maintenant ${value} ${scoreUnit(presentation, this.numberValue(data.value) ?? 0)}.`
+      ? `${name} ${name === 'Vous' ? 'avez' : 'a'} maintenant ${value} ${scoreUnit(presentation, typeof data.value === 'number' ? data.value : 0)}.`
       : '';
-  }
-
-  private asRecord(value: unknown): Record<string, unknown> {
-    return value && typeof value === 'object'
-      ? (value as Record<string, unknown>)
-      : {};
-  }
-
-  private stringValue(value: unknown): string {
-    return typeof value === 'string' ? value.trim().slice(0, 2_000) : '';
-  }
-
-  private numberValue(value: unknown): number | null {
-    const number = typeof value === 'number' ? value : Number.NaN;
-    return Number.isSafeInteger(number) ? number : null;
   }
 }
 

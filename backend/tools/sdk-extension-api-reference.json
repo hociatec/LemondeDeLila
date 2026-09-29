@@ -11,7 +11,7 @@
     },
     {
       "file": "src/game/core/application/models/game-event.model.ts",
-      "sha256": "ccfb384566b35393bb54f25ab97f6b474518b5926a5491dd1e8b03765d5d862e"
+      "sha256": "c10c633a523f23d71c375283b3b3c7659a7031bff5539fca038eb14471da1065"
     },
     {
       "file": "src/game/core/application/models/game-execution-context.model.ts",

@@ -53,6 +53,17 @@ jobs:
         run: npm run quality:check
       - name: Compile every game and exercise deterministic replays
         run: npm run typecheck && npm run engine:merge-contracts
+      - name: Profile CPU, memory, event loop, commands and snapshots
+        run: GAME_PROFILE_RUNS=3 npm run profile:game-replay
+      - name: Preserve the final workload profile
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: backend-workload-profile-${{ github.sha }}
+          path: |
+            backend/logs/game-replay-profile.json
+            backend/logs/game-replay.cpuprofile
+          if-no-files-found: error
+          retention-days: 30
       - name: Verify authoring diagnostics and source paths
         run: npm run engine:authoring-contracts
       - name: Check alert behavior with Prometheus

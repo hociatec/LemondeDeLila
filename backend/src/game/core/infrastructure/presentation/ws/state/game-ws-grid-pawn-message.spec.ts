@@ -13,7 +13,11 @@ describe('gridPawnMessage', () => {
     expect(gridPawnMessage('game.other', { x: 0, y: 0 }, 'Hacene')).toBe('');
     for (const x of [-1, 0.5, NaN, Infinity, '1', undefined])
       expect(
-        gridPawnMessage('game.grid.pawn.moved', { x, y: 0 }, 'Hacene'),
+        gridPawnMessage(
+          'game.grid.pawn.moved',
+          { x: x as never, y: 0 },
+          'Hacene',
+        ),
       ).toBe('');
   });
 });

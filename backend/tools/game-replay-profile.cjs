@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Session } = require('node:inspector');
 const { promisify } = require('node:util');
-const { performance } = require('node:perf_hooks');
+const { monitorEventLoopDelay, performance } = require('node:perf_hooks');
 const { Logger } = require('@nestjs/common');
 const {
   discoverGameDefinitions,
@@ -45,9 +45,11 @@ async function main() {
   let elapsedMs;
   const samples = [];
   const memorySamples = [];
+  const eventLoopDelay = monitorEventLoopDelay({ resolution: 10 });
   const cpuBefore = process.cpuUsage();
   const memoryBefore = process.memoryUsage();
   try {
+    eventLoopDelay.enable();
     await post('Profiler.enable');
     await post('Profiler.start');
     const startedAt = performance.now();
@@ -60,6 +62,9 @@ async function main() {
           (sample) => samples.push(sample),
         );
         memorySamples.push(process.memoryUsage().heapUsed);
+        // Give the delay histogram one event-loop turn between synchronous
+        // replay bursts so it measures the blocking caused by the workload.
+        await new Promise((resolve) => setImmediate(resolve));
       }
     } finally {
       elapsedMs = performance.now() - startedAt;
@@ -111,6 +116,12 @@ async function main() {
           heapUsedByRunBytes: memorySamples,
           finalDeltaBytes: memoryAfter.heapUsed - memoryBefore.heapUsed,
         },
+        eventLoopDelayMs: {
+          mean: nanosecondsToMilliseconds(eventLoopDelay.mean),
+          p95: nanosecondsToMilliseconds(eventLoopDelay.percentile(95)),
+          p99: nanosecondsToMilliseconds(eventLoopDelay.percentile(99)),
+          maximum: nanosecondsToMilliseconds(eventLoopDelay.max),
+        },
         hotFunctions: summary,
       };
       fs.writeFileSync(
@@ -120,8 +131,13 @@ async function main() {
       console.log(JSON.stringify(report, null, 2));
     }
   } finally {
+    eventLoopDelay.disable();
     session.disconnect();
   }
+}
+
+function nanosecondsToMilliseconds(value) {
+  return Number((Number.isFinite(value) ? value / 1e6 : 0).toFixed(3));
 }
 
 function percentile(values, ratio) {

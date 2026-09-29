@@ -11,7 +11,9 @@ import {
 import type { PendingState } from './game-state.model';
 
 export class GameSingleActionDto<
+  /** Action-specific payload validated by the runtime input schema. */
   TPayload extends object = Record<string, unknown>,
+  /** Transport metadata extended by command producers. */
   TMeta extends object = Record<string, unknown>,
 > {
   @IsString()
@@ -45,6 +47,7 @@ export type GameStateResponse = GameStateWithActions;
 /** Projection publique versionnée, distincte de l'état persistant interne. */
 export interface GameStateWithActions {
   viewVersion: number;
+  /** Versioned engine namespaces; concrete shapes live in projection contracts. */
   system: Record<string, unknown>;
   kits: Record<string, unknown>;
   effect: Record<string, unknown>;

@@ -14,6 +14,7 @@ import { defineAction } from './actions/action-builders';
 import { defineGame } from './definitions/game-definition-compiler';
 import { gameInput } from './actions/game-input-schema';
 import { defineEvent } from './events/game-event-definition';
+import type { GamePendingEvent } from '../../core/application/models/game-event.model';
 
 const ROUND_REVEALED = defineEvent({
   type: 'sample.round.revealed',
@@ -164,6 +165,28 @@ describe('typed game contracts', () => {
     expect(grid.overlays.board?.walls?.[0]?.to).toBe('0,1');
     expect(values.statuses['1']?.[0]?.data.sourcePlayerId).toBe(2);
     expect(values.turnFlags.resolution.step).toBe(3);
+  });
+
+  it('types split-event private data independently from public data', () => {
+    const event: GamePendingEvent<
+      'card.received',
+      { playerId: number },
+      { cardId: string }
+    > = {
+      actorId: 1,
+      type: 'card.received',
+      data: { playerId: 1 },
+      visibility: {
+        kind: 'split',
+        privateDataByPlayer: { '1': { cardId: 'sun' } },
+      },
+      occurredAtMs: 10,
+    };
+
+    expect(event.visibility.kind).toBe('split');
+    if (event.visibility.kind === 'split') {
+      expect(event.visibility.privateDataByPlayer['1']?.cardId).toBe('sun');
+    }
   });
 
   it('derives player-view resources, counters and custom events from the compiled definition', () => {

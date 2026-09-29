@@ -14,18 +14,21 @@ export type EventVisibility<
 export type GamePendingEvent<
   TType extends string = string,
   TData extends object = Record<string, unknown>,
+  TPrivateData extends object = Record<string, unknown>,
 > = {
   actorId: number | null;
   type: TType;
   data: TData;
-  visibility: EventVisibility;
+  /** Public data and per-player private data are independently typed. */
+  visibility: EventVisibility<TPrivateData>;
   occurredAtMs: number;
 };
 
 export type GameEvent<
   TType extends string = string,
   TData extends object = Record<string, unknown>,
-> = GamePendingEvent<TType, TData> & {
+  TPrivateData extends object = Record<string, unknown>,
+> = GamePendingEvent<TType, TData, TPrivateData> & {
   /** Missing only on historical v1 events read from storage. */
   schemaVersion?: number;
   seq: number;
