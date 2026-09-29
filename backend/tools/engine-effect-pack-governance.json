@@ -65,7 +65,6 @@
     "cards-public-domain": "Compared with generic card selection and collection primitives: public-domain card classification and collection completion remain a catalogue rule, isolated from the engine by the injected extension contract.",
     "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
     "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible.",
-    "race-goose-track": "Compared with movement and skip-status primitives: well escape rolls, repeated rolls and recursive tile resolution still form a single-consumer composition; no new generic abstraction is claimed.",
     "cards-judged-submission": "Compared with submissions, rotating judges and cards: collecting, revealing, judging and redealing are assembled into one flow; the relocated recipe and schema do not prove a second independent game.",
     "race-paired-pawns": "Compared with movement and resource transfer primitives: paired meetings, shared advance, rerolls and token victory remain coupled in this pack and require a distinct second-game test before promotion.",
     "choice-anonymous-vote": "Compared with submissions and scoring: anonymous answers and subsequent voting constitute a two-stage composition; its relocated schema increases the measured size, not its reuse evidence.",
@@ -94,23 +93,8 @@
         "/if.then:cards.give",
         "/if.else:cards.discard"
       ],
-      "profiles": [
-        "cards-public-domain",
-        "collection-family-request"
-      ],
+      "profiles": ["cards-public-domain", "collection-family-request"],
       "decision": "Keep composed primitives: classification and post-draw behavior differ; the shared draw/give/discard operations are already provided by the Cards kit."
-    },
-    {
-      "operations": [
-        "/straight:phase.transitionTo",
-        "/straight:round.starter",
-        "/if.then:turn.to"
-      ],
-      "profiles": [
-        "board-movement-landings",
-        "race-goose-track"
-      ],
-      "decision": "Keep explicit composition of the already reusable phase and turn APIs: selecting the round starter after a phase transition is a three-call initialization sequence, not a new stateful mechanic. Colocation made the board recipe visible to this audit."
     }
   ],
   "effectDomains": {
@@ -152,14 +136,11 @@
       "race-protected-haunted-track",
       "race-quiz-event-track",
       "race-bidirectional-collision",
-      "race-goose-track",
       "race-paired-pawns",
       "race-bounce-quiz",
       "race-treasure-track"
     ],
-    "spatial": [
-      "spatial-grid-placement"
-    ]
+    "spatial": ["spatial-grid-placement"]
   },
   "genericGameplayFiles": [
     "card-actions.recipes.ts",
@@ -305,14 +286,6 @@
       "classificationReason": "cards-theme-name implements name and theme card combinations. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "race-goose-track": {
-      "property": "gooseRace",
-      "mechanic": "parameterized goose-style race",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-goose-track implements parameterized goose-style race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "spatial-grid-placement": {
       "property": "grid",
       "mechanic": "grid token placement",
@@ -451,7 +424,6 @@
     }
   },
   "registrationOrder": [
-    "race-goose-track",
     "collection-track-zones",
     "race-resource-track",
     "race-treasure-track",

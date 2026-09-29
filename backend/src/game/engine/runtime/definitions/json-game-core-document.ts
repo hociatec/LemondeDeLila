@@ -18,6 +18,9 @@ export type JsonBotStrategy =
       ties?: 'first' | 'random';
     };
 
+export type JsonVisibilityRule =
+  'public' | 'hidden' | 'private-by-player' | 'count-only';
+
 export type JsonGameCoreDocument = {
   schemaVersion: 1;
   contentVersion: string;
@@ -27,6 +30,12 @@ export type JsonGameCoreDocument = {
   world: string;
   presentation?: GamePresentation;
   bot?: JsonBotStrategy;
+  playerValuesVisibility?: {
+    scores?: JsonVisibilityRule;
+    resources?: Readonly<Record<string, JsonVisibilityRule>>;
+    counters?: Readonly<Record<string, JsonVisibilityRule>>;
+    statuses?: JsonVisibilityRule;
+  };
   patterns?: readonly JsonGamePattern[];
   shortcuts?: readonly GameShortcutHint[];
   components: readonly Extract<

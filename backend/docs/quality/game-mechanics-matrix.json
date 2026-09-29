@@ -1691,24 +1691,10 @@
     },
     {
       "id": "jeu-oie",
-      "packs": [
-        "race-goose-track"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/vents-sacres/jeu-oie/game.json:19",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:50",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:58",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:62",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:78",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:114",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:125",
-          "src/game/rules/game-specific/race-goose-track/json-goose-race-schema.ts:67",
-          "src/game/rules/game-specific/race-goose-track/json-goose-race-schema.ts:71",
-          "src/game/rules/game-specific/race-goose-track/json-goose-race-schema.ts:85",
-          "src/game/rules/game-specific/race-goose-track/json-goose-race-schema.ts:89",
-          "src/game/rules/game-specific/race-goose-track/json-goose-race-schema.ts:90",
-          "src/game/rules/game-specific/race-goose-track/json-goose-race-schema.ts:91"
+          "src/game/games/vents-sacres/jeu-oie/game.json:60"
         ],
         "ownership": [],
         "collision": [],
@@ -1716,29 +1702,15 @@
         "payment": [],
         "cards": [],
         "zones": [],
-        "choices": [
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:3",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:60"
-        ],
-        "status": [
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:39",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:45",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:120"
-        ],
+        "choices": [],
+        "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-sacres/jeu-oie/game.json:88",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:87"
+          "src/game/games/vents-sacres/jeu-oie/game.json:125"
         ],
         "targeting": [],
-        "triggers": [
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:24",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:34",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:41",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:138",
-          "src/game/rules/game-specific/race-goose-track/goose-race.recipes.ts:144"
-        ]
+        "triggers": []
       }
     },
     {
@@ -3677,12 +3649,6 @@
       "name": "race-directional-hazards",
       "consumers": [
         "ca-derape"
-      ]
-    },
-    {
-      "name": "race-goose-track",
-      "consumers": [
-        "jeu-oie"
       ]
     },
     {

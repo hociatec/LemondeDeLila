@@ -57,8 +57,6 @@
 157. Vérifier après suppression que le jeu fonctionne sans charger son ancien TypeScript spécifique.
 158. Migrer cards-battle-ties afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 159. Supprimer game/rules/game-specific/cards-battle-ties/effect-pack.ts après certification comportementale complète.
-160. Migrer race-goose-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
-161. Supprimer game/rules/game-specific/race-goose-track/effect-pack.ts après certification comportementale complète.
 164. Migrer board-property-economy afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 165. Supprimer game/rules/game-specific/board-property-economy/effect-pack.ts après certification comportementale complète.
 168. Migrer choice-story-challenge afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.

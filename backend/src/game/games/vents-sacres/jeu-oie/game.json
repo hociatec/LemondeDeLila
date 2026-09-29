@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "3",
   "category": "JeuxDePlateaux",
   "world": "VentsSacres",
@@ -11,8 +11,49 @@
       "spaces": 64,
       "positionDisplayOffset": 0,
       "overshoot": "bounce"
+    },
+    {
+      "kind": "goose-race",
+      "rollRecipe": "race-goose-track-roll",
+      "trackId": "goose-board",
+      "diceId": "main",
+      "playingPhase": "playing",
+      "wellStatus": "goose.in-well",
+      "finishReason": "case-63",
+      "maxDepth": 20,
+      "bridgeDestination": 12,
+      "tiles": {
+        "$content": "content/catalogue.json#/tiles"
+      },
+      "pawnSelection": {
+        "setId": "goose",
+        "choiceId": "goose.pawn"
+      },
+      "escapeRolls": [1],
+      "forwardRollMaximum": 3,
+      "defaultReturn": 1,
+      "defaultSkip": 1,
+      "tileRules": {
+        "start": "none",
+        "normal": "none",
+        "finish": "finish",
+        "bridge": "move-to",
+        "death": "return",
+        "labyrinth": "return",
+        "inn": "skip",
+        "prison": "skip",
+        "magic-die": "roll-directed",
+        "well": "block",
+        "goose": "repeat-roll"
+      }
     }
   ],
+  "bot": {
+    "kind": "first"
+  },
+  "playerValuesVisibility": {
+    "statuses": "public"
+  },
   "components": [
     {
       "id": "goose",
@@ -68,14 +109,10 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "playing"
-      ]
+      "transitions": ["playing"]
     },
     "playing": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -85,53 +122,16 @@
       "documentation": "Lance le dé et résout toutes les cases spéciales."
     }
   },
-  "victory": {
-    "kind": "by-goose-race"
-  },
+  "victory": { "kind": "manual" },
   "snapshotMigrations": [
     {
       "fromVersion": "1",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
-  "extensions": [
-    {
-      "type": "gooseRace",
-      "config": {
-        "trackId": "goose-board",
-        "diceId": "main",
-        "playingPhase": "playing",
-        "wellStatus": "goose.in-well",
-        "finishReason": "case-63",
-        "maxDepth": 20,
-        "bridgeDestination": 12,
-        "tiles": {
-          "$content": "content/catalogue.json#/tiles"
-        },
-        "pawnSelection": {
-          "setId": "goose",
-          "choiceId": "goose.pawn"
-        },
-        "escapeRolls": [
-          1
-        ],
-        "forwardRollMaximum": 3,
-        "defaultReturn": 1,
-        "defaultSkip": 1,
-        "tileRules": {
-          "start": "none",
-          "normal": "none",
-          "finish": "finish",
-          "bridge": "move-to",
-          "death": "return",
-          "labyrinth": "return",
-          "inn": "skip",
-          "prison": "skip",
-          "magic-die": "roll-directed",
-          "well": "block",
-          "goose": "repeat-roll"
-        }
-      }
-    }
-  ]
+  "extensions": []
 }

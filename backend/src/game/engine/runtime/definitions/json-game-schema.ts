@@ -25,6 +25,9 @@ export type { JsonGameDocument } from './json-game-document';
 
 const nonnegative: AuthorSchema = { type: 'integer', minimum: 0 };
 const perPlayer: AuthorSchema = { oneOf: [number, record(number)] };
+const visibilityRule: AuthorSchema = {
+  enum: ['public', 'hidden', 'private-by-player', 'count-only'],
+};
 // Game authors may reserve a plain key or a Shift-modified letter for a
 // client-only interface command. Other modifiers remain application-level.
 const shortcutKey: AuthorSchema = {
@@ -196,6 +199,15 @@ export const jsonGameSchema = freezeAuthorSchema({
           ),
         ],
       },
+      playerValuesVisibility: object(
+        {
+          scores: visibilityRule,
+          resources: record(visibilityRule),
+          counters: record(visibilityRule),
+          statuses: visibilityRule,
+        },
+        [],
+      ),
       patterns: array(jsonGamePatternSchema),
       shortcuts: array({
         oneOf: [

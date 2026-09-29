@@ -34,7 +34,78 @@ export function assertJsonPatternReferences(
         maximumPlayers,
         fail,
       );
+    if (pattern.kind === 'goose-race')
+      assertGooseRaceReferences(
+        pattern,
+        index,
+        components,
+        phases,
+        initialPhase,
+        maximumPlayers,
+        fail,
+      );
   }
+}
+
+function assertGooseRaceReferences(
+  pattern: Extract<JsonGamePattern, { kind: 'goose-race' }>,
+  patternIndex: number,
+  components: readonly GameComponentDefinition[],
+  phases: Readonly<Record<string, { transitions?: readonly string[] }>>,
+  initialPhase: string,
+  maximumPlayers: number,
+  fail: Failure,
+): void {
+  const root = `patterns[${patternIndex}]`;
+  for (const [index, tile] of pattern.tiles.entries())
+    if (!Object.hasOwn(pattern.tileRules, tile.type))
+      fail(`${root}.tiles[${index}].type`, 'unknown tile rule');
+  const track = components.find(
+    (component) =>
+      component.component === 'movement.track' &&
+      component.id === pattern.trackId,
+  );
+  if (
+    track?.component !== 'movement.track' ||
+    track.spaces !== pattern.tiles.length ||
+    track.overshoot !== 'bounce'
+  )
+    fail(`${root}.trackId`, 'matching bounce track required');
+  if (
+    !components.some(
+      (component) =>
+        component.component === 'dice.set' && component.id === pattern.diceId,
+    )
+  )
+    fail(`${root}.diceId`, 'unknown dice');
+  const pawns = components.find(
+    (component) =>
+      component.component === 'pawn.set' &&
+      component.id === pattern.pawnSelection.setId,
+  );
+  if (
+    pawns?.component !== 'pawn.set' ||
+    pawns.perPlayer !== 1 ||
+    pawns.pawns.length < maximumPlayers
+  )
+    fail(
+      `${root}.pawnSelection.setId`,
+      'one available pawn per player required',
+    );
+  if (
+    initialPhase === pattern.playingPhase ||
+    !phases[initialPhase]?.transitions?.includes(pattern.playingPhase)
+  )
+    fail(`${root}.playingPhase`, 'setup must transition to the playing phase');
+  for (const [field, value] of [
+    ['defaultReturn', pattern.defaultReturn],
+    ['bridgeDestination', pattern.bridgeDestination],
+  ] as const)
+    if (value >= pattern.tiles.length)
+      fail(`${root}.${field}`, 'destination outside track');
+  for (const [index, tile] of pattern.tiles.entries())
+    if (tile.backTo !== undefined && tile.backTo >= pattern.tiles.length)
+      fail(`${root}.tiles[${index}].backTo`, 'back destination outside track');
 }
 
 function assertEventCardRaceReferences(

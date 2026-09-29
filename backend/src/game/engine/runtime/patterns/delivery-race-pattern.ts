@@ -3,16 +3,33 @@ import { gameInput } from '../actions/game-input-schema';
 import { GameConfigurationError } from '../contracts/game-domain.errors';
 import type { GameContext } from '../definitions/game-author-context';
 import { drawEvent } from '../recipes/gameplay-recipes';
-import type { RaceGameOptions } from './gameplay-pattern-track-card';
 
 type AttributedCard = {
   id: string | number;
   attributes: Readonly<Record<string, string | number | boolean | null>>;
 };
-type DeliveryOptions = NonNullable<RaceGameOptions['delivery']>;
+export type DeliveryRaceOptions = {
+  recipe: string;
+  clientDeckId: string;
+  clientHandId: string;
+  eventDeckId: string;
+  destinationAttribute: string;
+  blockedPositionAttribute: string;
+  positionOffset: number;
+  targetScore: number;
+  finishReason: string;
+  eventNamespace: string;
+};
+
+type RaceWithDeliveryOptions = {
+  trackId?: string;
+  diceId?: string;
+  delivery?: DeliveryRaceOptions;
+};
+type DeliveryOptions = DeliveryRaceOptions;
 
 export function deliveryRaceAction<TState extends object>(
-  options: RaceGameOptions,
+  options: RaceWithDeliveryOptions,
 ) {
   if (!options.delivery) return null;
   return defineAction<TState, Record<string, never>>({
@@ -23,7 +40,7 @@ export function deliveryRaceAction<TState extends object>(
 }
 
 function playDeliveryTurn<TState extends object>(
-  options: RaceGameOptions,
+  options: RaceWithDeliveryOptions,
   playerId: number,
   ctx: GameContext<TState>,
 ): void {

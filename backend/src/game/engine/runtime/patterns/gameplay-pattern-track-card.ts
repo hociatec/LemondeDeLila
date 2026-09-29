@@ -23,7 +23,10 @@ import type { GameContext } from '../definitions/game-author-context';
 import type { PawnMove } from '../kits/pawn-kit';
 import { GameConfigurationError } from '../contracts/game-domain.errors';
 import { withAuthoringPath } from '../contracts/authoring-origin';
-import { deliveryRaceAction } from './delivery-race-pattern';
+import {
+  deliveryRaceAction,
+  type DeliveryRaceOptions,
+} from './delivery-race-pattern';
 
 export function eventTrackGame<TState extends object, TTile>(
   options: EventTrackOptions<TState, TTile> & {
@@ -83,18 +86,7 @@ export type RaceGameOptions = {
   diceCount?: number;
   diceSides?: number;
   winOnFinish?: boolean | string;
-  delivery?: {
-    recipe: string;
-    clientDeckId: string;
-    clientHandId: string;
-    eventDeckId: string;
-    destinationAttribute: string;
-    blockedPositionAttribute: string;
-    positionOffset: number;
-    targetScore: number;
-    finishReason: string;
-    eventNamespace: string;
-  };
+  delivery?: DeliveryRaceOptions;
 };
 
 export function raceGame<TState extends object>(

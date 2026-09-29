@@ -1,6 +1,12 @@
 import type { JsonGameDocument as JsonDocument } from './json-game-schema';
 import type { CompiledJsonPrograms as Programs } from './json-game-program-compiler';
-import { publicField } from '../kits/visibility-kit';
+import {
+  countOnly,
+  hidden,
+  privateByPlayer,
+  publicField,
+  type VisibilityRule,
+} from '../kits/visibility-kit';
 import { AuthoringError } from '../contracts/authoring-error';
 import {
   declarativeBot,
@@ -42,6 +48,20 @@ export function programHandlers<Catalog extends JsonEffectPackCatalog>(
   };
   const result: JsonEffectPackHandlers<JsonGameViewAugmentation<Catalog>> = {
     ...(document.bot ? { bot: declarativeBot(document.bot) } : {}),
+    ...(document.playerValuesVisibility
+      ? {
+          playerValuesVisibility: {
+            scores: mapVisibility(document.playerValuesVisibility.scores),
+            statuses: mapVisibility(document.playerValuesVisibility.statuses),
+            resources: mapVisibilityRecord(
+              document.playerValuesVisibility.resources,
+            ),
+            counters: mapVisibilityRecord(
+              document.playerValuesVisibility.counters,
+            ),
+          },
+        }
+      : {}),
   };
   const owners = new Map<string, string>();
   if (document.bot) owners.set('bot', 'bot');
@@ -70,4 +90,24 @@ export function programHandlers<Catalog extends JsonEffectPackCatalog>(
     Object.assign(result, handlers);
   }
   return result;
+}
+
+function mapVisibilityRecord(
+  source: Readonly<Record<string, string | undefined>> | undefined,
+): Record<string, VisibilityRule> | undefined {
+  if (!source) return undefined;
+  return Object.fromEntries(
+    Object.entries(source).flatMap(([key, value]) => {
+      const rule = mapVisibility(value);
+      return rule ? [[key, rule]] : [];
+    }),
+  );
+}
+
+function mapVisibility(value: string | undefined): VisibilityRule | undefined {
+  if (value === 'public') return publicField();
+  if (value === 'hidden') return hidden();
+  if (value === 'private-by-player') return privateByPlayer();
+  if (value === 'count-only') return countOnly();
+  return undefined;
 }

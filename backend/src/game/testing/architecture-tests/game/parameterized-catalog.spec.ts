@@ -138,7 +138,6 @@ const variants: Record<string, (program: Data) => Data> = {
     rollMinimum: 2,
     rollAdvance: 3,
   }),
-  gooseRace: renamedTiles,
   storyChallenge: (program) =>
     object(
       rename(

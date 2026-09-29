@@ -92,27 +92,6 @@ const resourceCases: Array<(p: Data) => string> = [
 const cases: Case[] = [
   ...resourceCases.map((change) => ({ key: 'resourceTrackRace', change })),
   {
-    key: 'gooseRace',
-    change: (p) => {
-      tiles(p)[1].type = 'absent';
-      return 'tiles[1].type';
-    },
-  },
-  {
-    key: 'gooseRace',
-    change: (p) => {
-      tiles(p)[1].backTo = tiles(p).length;
-      return 'tiles[1].backTo';
-    },
-  },
-  {
-    key: 'gooseRace',
-    change: (p) => {
-      object(p.pawnSelection).setId = 'absent';
-      return 'pawnSelection.setId';
-    },
-  },
-  {
     key: 'bidirectionalCollisionRace',
     change: (p) => {
       tiles(p)[1].n = 999;
@@ -157,7 +136,6 @@ it.each(cases)(
 
 it.each([
   'resourceTrackRace',
-  'gooseRace',
   'bidirectionalCollisionRace',
   'pairedPawnRace',
   'teamPawnRace',

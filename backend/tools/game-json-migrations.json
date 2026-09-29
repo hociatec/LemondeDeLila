@@ -40,6 +40,16 @@
         "src/game/testing/architecture-tests/game/event-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-event-card-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-sacres/jeu-oie/game.json",
+      "fromSha256": "dc6987c1d5476b449a8a076f4ba15c2722a25438f5e9765b42e85c9ef0a51e1c",
+      "toSha256": "4e21dcbf7cbabcfa5a7687f568e36eea0566e2c5d43e3d0eb6ac73083d66f0c5",
+      "justification": "Le pattern goose-race générique porte désormais sélection de pion, cases récursives, puits, relances, retours et victoire depuis le JSON; la visibilité des statuts est également déclarative.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/goose-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-goose-race.spec.ts"
+      ]
     }
   ]
 }

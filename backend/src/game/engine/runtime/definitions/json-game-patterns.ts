@@ -19,6 +19,10 @@ import {
   type EventCardRaceOptions,
 } from '../patterns/event-card-race-pattern';
 import {
+  gooseRace,
+  type GooseRaceOptions,
+} from '../patterns/goose-race-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -51,6 +55,7 @@ export type JsonGamePattern =
   | { kind: 'push-your-luck' }
   | ({ kind: 'ordered-card-collection' } & OrderedCardCollectionOptions)
   | ({ kind: 'event-card-race' } & EventCardRaceOptions)
+  | ({ kind: 'goose-race' } & GooseRaceOptions)
   | {
       kind: 'market';
       marketId: string;
@@ -258,6 +263,71 @@ export const jsonGamePatternSchema: AuthorSchema = {
     ),
     object(
       {
+        kind: { const: 'goose-race' },
+        rollRecipe: id,
+        trackId: id,
+        diceId: id,
+        playingPhase: id,
+        wellStatus: id,
+        finishReason: id,
+        maxDepth: { type: 'integer', minimum: 1, maximum: 64 },
+        bridgeDestination: position,
+        tiles: array(
+          object(
+            {
+              id,
+              label: { type: 'string', minLength: 1, maxLength: 2000 },
+              description: { type: 'string', maxLength: 10000 },
+              type: id,
+              turnsToSkip: { type: 'integer', minimum: 1, maximum: 1000 },
+              backTo: position,
+            },
+            ['id', 'label', 'type'],
+          ),
+          2,
+        ),
+        pawnSelection: object({ setId: id, choiceId: id }, [
+          'setId',
+          'choiceId',
+        ]),
+        escapeRolls: array({ type: 'integer', minimum: 1 }, 1),
+        forwardRollMaximum: { type: 'integer', minimum: 0 },
+        defaultReturn: position,
+        defaultSkip: { type: 'integer', minimum: 1 },
+        tileRules: record({
+          enum: [
+            'none',
+            'finish',
+            'move-to',
+            'return',
+            'skip',
+            'roll-directed',
+            'block',
+            'repeat-roll',
+          ],
+        }),
+      },
+      [
+        'kind',
+        'rollRecipe',
+        'trackId',
+        'diceId',
+        'playingPhase',
+        'wellStatus',
+        'finishReason',
+        'maxDepth',
+        'bridgeDestination',
+        'tiles',
+        'pawnSelection',
+        'escapeRolls',
+        'forwardRollMaximum',
+        'defaultReturn',
+        'defaultSkip',
+        'tileRules',
+      ],
+    ),
+    object(
+      {
         kind: { const: 'market' },
         marketId: id,
         inventoryId: id,
@@ -326,6 +396,10 @@ export function compileJsonPattern(
     case 'event-card-race': {
       const { kind: _kind, ...options } = pattern;
       return eventCardRace(options);
+    }
+    case 'goose-race': {
+      const { kind: _kind, ...options } = pattern;
+      return gooseRace(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

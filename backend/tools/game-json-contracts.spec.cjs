@@ -15,7 +15,27 @@ test('snapshots every canonical game document byte for byte', () => {
     fs.readFileSync(path.join(__dirname, 'game-json-contracts.json'), 'utf8'),
   );
   assert.equal(baseline.files.length, 39);
-  assert.deepEqual(inventory(), baseline.files);
+  const migrations = JSON.parse(
+    fs.readFileSync(path.join(__dirname, 'game-json-migrations.json'), 'utf8'),
+  ).migrations;
+  const actual = inventory();
+  assert.equal(actual.length, baseline.files.length);
+  for (const [index, current] of actual.entries()) {
+    const previous = baseline.files[index];
+    assert.equal(current.file, previous.file);
+    if (current.sha256 === previous.sha256) {
+      assert.deepEqual(current, previous);
+      continue;
+    }
+    const migration = migrations.find(
+      (entry) =>
+        entry.file === current.file &&
+        entry.fromSha256 === previous.sha256 &&
+        entry.toSha256 === current.sha256,
+    );
+    assert.ok(migration, `${current.file}: missing exact migration contract`);
+    assert.ok(BigInt(current.contentVersion) > BigInt(previous.contentVersion));
+  }
 });
 
 test('binds a migration declaration to its exact old and new hashes', () => {
