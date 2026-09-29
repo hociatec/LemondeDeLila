@@ -100,6 +100,16 @@
         "src/game/testing/architecture-tests/game/morpion-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-grid-placement.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/pimp-my-ride/game.json",
+      "fromSha256": "73b2752e0a3f7aa2a3ea2d97bba04cdd6c1c82e49857be268a3fb25be38917dd",
+      "toSha256": "2b2b4d86867a678bbdcca610803668539cc54c52760658b397f6542e0bcb6bf9",
+      "justification": "Le pattern ordered-assembly générique porte désormais ordre des pièces, inventaires, pioche automatique, vue, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/ordered-assembly-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-ordered-assembly.spec.ts"
+      ]
     }
   ]
 }

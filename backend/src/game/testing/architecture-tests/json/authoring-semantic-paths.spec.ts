@@ -10,9 +10,6 @@ import propertyContent from '../../../games/les-quatre-vents/sac-a-malices/catal
 import quizManifest from '../../../games/les-quatre-vents/en-attendant-minuit/manifest.json';
 import quizDocument from '../../../games/les-quatre-vents/en-attendant-minuit/game.json';
 import quizContent from '../../../games/les-quatre-vents/en-attendant-minuit/catalogue.json';
-import assemblyManifest from '../../../games/vents-dansants/pimp-my-ride/manifest.json';
-import assemblyDocument from '../../../games/vents-dansants/pimp-my-ride/game.json';
-import assemblyContent from '../../../games/vents-dansants/pimp-my-ride/content/catalogue.json';
 
 const fixtures = {
   propertyEconomy: {
@@ -24,11 +21,6 @@ const fixtures = {
     manifest: quizManifest,
     document: quizDocument,
     content: quizContent,
-  },
-  carAssembly: {
-    manifest: assemblyManifest,
-    document: assemblyDocument,
-    content: assemblyContent,
   },
 };
 
@@ -82,14 +74,6 @@ const cases: Case[] = [
   ['bounceQuizRace', 'pawnSetId', 'missing'],
   ['bounceQuizRace', 'tiles[1].n', 999],
   ['bounceQuizRace', 'tiles[0].type', 'neutral'],
-  ['carAssembly', 'deckId', 'missing'],
-  ['carAssembly', 'handId', 'missing'],
-  ['carAssembly', 'currentInventoryId', 'missing'],
-  ['carAssembly', 'completedInventoryIds[1]', 'missing'],
-  ['carAssembly', 'completedNameResources[1]', 'missing'],
-  ['carAssembly', 'completedCountResource', 'missing'],
-  ['carAssembly', 'carNameCounter', 'missing'],
-  ['carAssembly', 'categoryOrder[1]', 'missing'],
 ];
 
 describe.each([false, true])(

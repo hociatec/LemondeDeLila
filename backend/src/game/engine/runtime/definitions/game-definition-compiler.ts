@@ -247,7 +247,10 @@ function compileGameDefinition<
     stateVersion: 1,
     rulesVersion: '1',
     ...definition,
-    automatic: orderAutomaticRules(definition.automatic ?? []),
+    automatic: orderAutomaticRules([
+      ...(patterns.automatic ?? []),
+      ...(definition.automatic ?? []),
+    ]),
     content,
     contentVersion: definition.contentVersion ?? content.version,
     patterns: [...(definition.patterns ?? [])],

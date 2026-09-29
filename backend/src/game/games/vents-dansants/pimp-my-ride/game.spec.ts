@@ -1,10 +1,8 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { testGame } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
-import documentExtensionSource from './game.json';
+import document from './game.json';
 import manifest from './manifest.json';
 import catalogue from './content/catalogue.json';
-const document = legacyExtensionFixture(documentExtensionSource, 'carAssembly');
 
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/catalogue.json': catalogue,

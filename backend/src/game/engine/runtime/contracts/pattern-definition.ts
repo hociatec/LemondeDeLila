@@ -7,7 +7,10 @@ import type { DeclarativeTrigger } from './declarative-trigger';
 import type { TurnPolicy } from '../kits/turn-kit';
 import type { VictoryRule } from './author-rule-contracts';
 import type { GameActionMap } from './author-rule-contracts';
-import type { ChoiceResolverShape } from './author-rule-contracts';
+import type {
+  AutomaticRule,
+  ChoiceResolverShape,
+} from './author-rule-contracts';
 import type { PlayerState } from '../../../core/application/models/game-state.model';
 import type { GameContext } from '../definitions/game-author-context';
 import type { GameEffectResolverShape } from './effect-resolver';
@@ -39,6 +42,7 @@ export type GamePattern<
   readonly victory?: VictoryRule<TState>;
   readonly actions?: GameActionMap<TState>;
   readonly choices?: Readonly<Record<string, ChoiceResolverShape<TState>>>;
+  readonly automatic?: readonly AutomaticRule<TState>[];
   readonly effects?: Readonly<Record<string, GameEffectResolverShape<TState>>>;
   readonly events?: readonly GameEventDefinition<string, object>[];
   readonly bot?: GameRuleProgram<TState, GameActionMap<TState>>['bot'];

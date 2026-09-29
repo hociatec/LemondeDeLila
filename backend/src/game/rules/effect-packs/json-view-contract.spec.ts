@@ -9,25 +9,22 @@ type CompiledView = ReturnType<
 >;
 
 it('retains concrete fields from the registry through the compiler public contract', () => {
-  const view: JsonGameViews['carAssembly'] = {
-    progress: { 1: { stageIndex: 2, carParts: ['wheel'], completedCars: [] } },
+  const view: JsonGameViews['anonymousVote'] = {
+    currentChallengeId: 'challenge-1',
+    lastRound: null,
   };
   const compiled: CompiledView = view;
   const aggregate: JsonGameView = compiled;
-  expect(aggregate.progress?.[1].stageIndex).toBe(2);
+  expect(aggregate.currentChallengeId).toBe('challenge-1');
   const wrongField: JsonGameView = {
     // @ts-expect-error Unknown public fields must not be accepted by an index signature.
     arbitraryField: true,
-  };
-  const wrongScalar: CompiledView = {
-    // @ts-expect-error Concrete pack view values must survive catalogue compilation.
-    progress: 'not a player progress map',
   };
   const reserved: JsonGameView = {
     // @ts-expect-error Extensions cannot overwrite engine namespaces.
     system: {},
   };
-  expect([wrongField, wrongScalar, reserved]).toHaveLength(3);
+  expect([wrongField, reserved]).toHaveLength(2);
 });
 
 it('keeps concrete view fields for consumers selecting an extension', () => {

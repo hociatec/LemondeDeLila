@@ -305,3 +305,31 @@ export const gridPlacementPatternSchema = object(
     'preferredCells',
   ],
 );
+
+export const orderedAssemblyPatternSchema = object({
+  kind: { const: 'ordered-assembly' },
+  playRecipe: id,
+  discardRecipe: id,
+  passRecipe: id,
+  playAction: id,
+  passAction: id,
+  deckId: id,
+  handId: id,
+  currentInventoryId: id,
+  completedInventoryIds: array(id, 1),
+  completedNameResources: array(id, 1),
+  completedCountResource: id,
+  nameCounter: id,
+  cards: array(
+    object({ id, name: text, category: id }, ['id', 'name', 'category']),
+    1,
+  ),
+  categoryOrder: array(id, 1),
+  names: array(
+    object({ name: text, description: text }, ['name', 'description']),
+    1,
+  ),
+  setsToWin: { type: 'integer', minimum: 1 },
+  finishReason: id,
+  eventNamespace: id,
+});

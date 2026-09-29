@@ -43,6 +43,10 @@ import {
   type GridPlacementOptions,
 } from '../patterns/grid-placement-pattern';
 import {
+  orderedAssembly,
+  type OrderedAssemblyOptions,
+} from '../patterns/ordered-assembly-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -58,6 +62,7 @@ import {
   themedSetCollectionPatternSchema,
   familyRequestPatternSchema,
   gridPlacementPatternSchema,
+  orderedAssemblyPatternSchema,
 } from './json-advanced-pattern-schemas';
 
 export type JsonGamePattern =
@@ -89,6 +94,7 @@ export type JsonGamePattern =
   | ({ kind: 'themed-set-collection' } & ThemedSetCollectionOptions)
   | ({ kind: 'family-request' } & FamilyRequestOptions)
   | ({ kind: 'grid-placement' } & GridPlacementOptions)
+  | ({ kind: 'ordered-assembly' } & OrderedAssemblyOptions)
   | {
       kind: 'market';
       marketId: string;
@@ -300,6 +306,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     themedSetCollectionPatternSchema,
     familyRequestPatternSchema,
     gridPlacementPatternSchema,
+    orderedAssemblyPatternSchema,
     object(
       {
         kind: { const: 'market' },
@@ -394,6 +401,10 @@ export function compileJsonPattern(
     case 'grid-placement': {
       const { kind: _kind, ...options } = pattern;
       return gridPlacement(options);
+    }
+    case 'ordered-assembly': {
+      const { kind: _kind, ...options } = pattern;
+      return orderedAssembly(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

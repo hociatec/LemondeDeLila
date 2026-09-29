@@ -2750,32 +2750,16 @@
     },
     {
       "id": "pimp-my-ride",
-      "packs": [
-        "cards-ordered-assembly"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
         "collision": [],
-        "resources": [
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:118",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:135",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:136",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:153",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:160",
-          "src/game/rules/game-specific/cards-ordered-assembly/json-car-assembly-schema.ts:72"
-        ],
+        "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/vents-dansants/pimp-my-ride/game.json:9",
-          "src/game/games/vents-dansants/pimp-my-ride/game.json:18",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:19",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:25",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:35",
-          "src/game/rules/game-specific/cards-ordered-assembly/json-car-assembly-schema.ts:43",
-          "src/game/rules/game-specific/cards-ordered-assembly/json-car-assembly-schema.ts:44",
-          "src/game/rules/game-specific/cards-ordered-assembly/json-car-assembly-schema.ts:45",
-          "src/game/rules/game-specific/cards-ordered-assembly/json-car-assembly-schema.ts:81"
+          "src/game/games/vents-dansants/pimp-my-ride/game.json:49",
+          "src/game/games/vents-dansants/pimp-my-ride/game.json:58"
         ],
         "zones": [],
         "choices": [],
@@ -2783,20 +2767,10 @@
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/pimp-my-ride/game.json:114",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:146"
+          "src/game/games/vents-dansants/pimp-my-ride/game.json:150"
         ],
         "targeting": [],
-        "triggers": [
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:37",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:61",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:65",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:71",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:110",
-          "src/game/rules/game-specific/cards-ordered-assembly/car-assembly.recipes.ts:141",
-          "src/game/rules/game-specific/cards-ordered-assembly/effect-pack.ts:9",
-          "src/game/rules/game-specific/cards-ordered-assembly/effect-pack.ts:25"
-        ]
+        "triggers": []
       }
     },
     {
@@ -3388,12 +3362,6 @@
       "name": "cards-judged-submission",
       "consumers": [
         "les-absurdissimes"
-      ]
-    },
-    {
-      "name": "cards-ordered-assembly",
-      "consumers": [
-        "pimp-my-ride"
       ]
     },
     {

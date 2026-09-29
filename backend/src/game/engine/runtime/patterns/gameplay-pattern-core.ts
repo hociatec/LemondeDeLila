@@ -53,6 +53,7 @@ export function composePatterns<TState extends object>(
       {},
     ),
     choices: Object.assign({}, ...patterns.map((pattern) => pattern.choices)),
+    automatic: patterns.flatMap((pattern) => pattern.automatic ?? []),
     effects: Object.assign({}, ...patterns.map((pattern) => pattern.effects)),
     viewExtension: patterns.find((pattern) => pattern.viewExtension)
       ?.viewExtension,
