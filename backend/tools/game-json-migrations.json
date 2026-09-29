@@ -140,6 +140,16 @@
         "src/game/testing/architecture-tests/game/anonymous-vote-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-anonymous-vote.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json",
+      "fromSha256": "0cccc9c931a7b68f59df2bf1f4650309021cc88b8b6d7577b33279efb00c0096",
+      "toSha256": "1f94f1c3297049b884bb97ff66150fd088d7d0374852919ac7538c9f5dbb58f7",
+      "justification": "Le pattern treasure-track-race générique porte désormais déplacement, collecte bornée, protections, ressources, vol, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/treasure-track-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-treasure-track-race.spec.ts"
+      ]
     }
   ]
 }

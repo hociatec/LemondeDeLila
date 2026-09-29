@@ -2698,56 +2698,39 @@
     },
     {
       "id": "pirates-en-vadrouille",
-      "packs": [
-        "race-treasure-track"
-      ],
+      "packs": [],
       "mechanics": {
-        "movement": [
-          "src/game/rules/game-specific/race-treasure-track/json-treasure-track-race-schema.ts:68",
-          "src/game/rules/game-specific/race-treasure-track/json-treasure-track-race-schema.ts:72",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:33",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:120"
-        ],
+        "movement": [],
         "ownership": [],
         "collision": [],
         "resources": [
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:459",
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:504",
-          "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:625",
-          "src/game/rules/game-specific/race-treasure-track/json-treasure-track-race-schema.ts:117",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:44",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:113"
+          "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:625"
         ],
         "payment": [],
         "cards": [
-          "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json:30",
-          "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json:38",
-          "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json:46",
-          "src/game/rules/game-specific/race-treasure-track/json-treasure-track-race-schema.ts:84",
-          "src/game/rules/game-specific/race-treasure-track/json-treasure-track-race-schema.ts:86"
+          "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json:77",
+          "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json:85",
+          "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json:93"
         ],
         "zones": [],
         "choices": [],
         "status": [
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:537",
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:577",
-          "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:659",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:94",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:97",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:99"
+          "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:659"
         ],
         "collections": [
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:72",
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:114",
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:156",
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:314",
-          "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json:105"
+          "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json:119"
         ],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json:168",
-          "src/game/rules/game-specific/race-treasure-track/json-treasure-track-race-schema.ts:116",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:115"
+          "src/game/games/les-quatre-vents/pirates-en-vadrouille/game.json:179"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:376",
@@ -2765,18 +2748,9 @@
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:594",
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:609",
           "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:628",
-          "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:643",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:23",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:24"
+          "src/game/games/les-quatre-vents/pirates-en-vadrouille/content/catalogue.json:643"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:37",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:39",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:69",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:116",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:121",
-          "src/game/rules/game-specific/race-treasure-track/treasure-track-race.recipes.ts:136"
-        ]
+        "triggers": []
       }
     },
     {
@@ -3393,12 +3367,6 @@
       "name": "race-team-pawn-capture",
       "consumers": [
         "foulees-fantastiques"
-      ]
-    },
-    {
-      "name": "race-treasure-track",
-      "consumers": [
-        "pirates-en-vadrouille"
       ]
     }
   ]

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "3",
+  "contentVersion": "4",
   "definitionVersion": "3",
   "snapshotMigrations": [
     {
@@ -14,6 +14,10 @@
     {
       "fromVersion": "2",
       "toVersion": "3"
+    },
+    {
+      "fromVersion": "3",
+      "toVersion": "4"
     }
   ],
   "category": "JeuxDePlateaux",
@@ -23,6 +27,49 @@
       "kind": "race",
       "trackId": "island",
       "spaces": 50
+    },
+    {
+      "kind": "treasure-track-race",
+      "rollRecipe": "race-treasure-track-roll",
+      "trackId": "island",
+      "diceId": "main",
+      "tiles": {
+        "$content": "content/catalogue.json#/tiles"
+      },
+      "decks": {
+        "treasure": "treasure",
+        "obstacle": "obstacle",
+        "bonus": "bonus"
+      },
+      "inventories": {
+        "treasure": "pirates-treasure",
+        "obstacle": "pirates-obstacle",
+        "bonus": "pirates-bonus"
+      },
+      "goldResource": "treasureTrack-gold",
+      "obstacleImmunityStatus": "pirates.obstacle-immunity",
+      "collectionLimit": 5,
+      "requiredTreasures": 3,
+      "requiredGold": 3,
+      "retreatSpaces": 2,
+      "finishReason": "legendary-chest",
+      "stealEffectId": "pirates.steal-treasure",
+      "eventNamespace": "pirates",
+      "tileRules": {
+        "start": { "kind": "none" },
+        "neutral": { "kind": "none" },
+        "gold": { "kind": "gain", "amount": 1 },
+        "finish": { "kind": "finish" },
+        "treasure": { "kind": "draw", "deck": "treasure" },
+        "obstacle": { "kind": "draw", "deck": "obstacle" },
+        "bonus": { "kind": "draw", "deck": "bonus" }
+      },
+      "deckRules": {
+        "treasure": { "resolveEffects": false, "protected": false },
+        "bonus": { "resolveEffects": true, "protected": false },
+        "obstacle": { "resolveEffects": true, "protected": true }
+      },
+      "victoryCollection": "treasure"
     }
   ],
   "components": [
@@ -53,52 +100,19 @@
     {
       "component": "inventory.set",
       "id": "pirates-treasure",
-      "items": [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "10"
-      ],
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
       "visibility": "public"
     },
     {
       "component": "inventory.set",
       "id": "pirates-obstacle",
-      "items": [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "10"
-      ],
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
       "visibility": "public"
     },
     {
       "component": "inventory.set",
       "id": "pirates-bonus",
-      "items": [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "10"
-      ],
+      "items": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
       "visibility": "public"
     },
     {
@@ -130,9 +144,7 @@
     },
     "startRound": false
   },
-  "resourceIds": [
-    "treasureTrack-gold"
-  ],
+  "resourceIds": ["treasureTrack-gold"],
   "shortcuts": [
     {
       "key": "D",
@@ -153,9 +165,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -165,80 +175,9 @@
       "documentation": "Lance le dÃ©, avance et rÃ©sout la case atteinte."
     }
   },
+  "bot": { "kind": "first" },
   "victory": {
-    "kind": "by-treasure-track-race"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "treasureTrackRace",
-      "config": {
-        "trackId": "island",
-        "diceId": "main",
-        "tiles": {
-          "$content": "content/catalogue.json#/tiles"
-        },
-        "decks": {
-          "treasure": "treasure",
-          "obstacle": "obstacle",
-          "bonus": "bonus"
-        },
-        "inventories": {
-          "treasure": "pirates-treasure",
-          "obstacle": "pirates-obstacle",
-          "bonus": "pirates-bonus"
-        },
-        "goldResource": "treasureTrack-gold",
-        "obstacleImmunityStatus": "pirates.obstacle-immunity",
-        "collectionLimit": 5,
-        "requiredTreasures": 3,
-        "requiredGold": 3,
-        "retreatSpaces": 2,
-        "finishReason": "legendary-chest",
-        "stealEffectId": "pirates.steal-treasure",
-        "eventNamespace": "pirates",
-        "tileRules": {
-          "start": {
-            "kind": "none"
-          },
-          "neutral": {
-            "kind": "none"
-          },
-          "gold": {
-            "kind": "gain",
-            "amount": 1
-          },
-          "finish": {
-            "kind": "finish"
-          },
-          "treasure": {
-            "kind": "draw",
-            "deck": "treasure"
-          },
-          "obstacle": {
-            "kind": "draw",
-            "deck": "obstacle"
-          },
-          "bonus": {
-            "kind": "draw",
-            "deck": "bonus"
-          }
-        },
-        "deckRules": {
-          "treasure": {
-            "resolveEffects": false,
-            "protected": false
-          },
-          "bonus": {
-            "resolveEffects": true,
-            "protected": false
-          },
-          "obstacle": {
-            "resolveEffects": true,
-            "protected": true
-          }
-        },
-        "victoryCollection": "treasure"
-      }
-    }
-  ]
+  "extensions": []
 }

@@ -1,8 +1,4 @@
 import { compileJsonGame } from '../../../rules/public-api';
-import {
-  AuthoringError,
-  authoringValueAt,
-} from '../../../engine/runtime/contracts/authoring-error';
 import { fixture, object } from './extension-diagnostic-fixture';
 import { authoringProperty } from '../../../engine/runtime/contracts/authoring-diagnostics';
 import { jsonEffectPacks } from '../../../rules/effect-packs/json-effect-pack-registry';

@@ -59,6 +59,10 @@ import {
   type AnonymousVoteOptions,
 } from '../patterns/anonymous-vote-pattern';
 import {
+  treasureTrackRace,
+  type TreasureTrackRaceOptions,
+} from '../patterns/treasure-track-race-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -79,6 +83,7 @@ import {
   anonymousVotePatternSchema,
   marketPatternSchema,
 } from './json-advanced-pattern-schemas';
+import { treasureTrackRacePatternSchema } from './json-treasure-track-pattern-schema';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -112,6 +117,7 @@ export type JsonGamePattern =
   | ({ kind: 'ordered-assembly' } & OrderedAssemblyOptions)
   | ({ kind: 'judged-submission' } & JudgedSubmissionOptions)
   | ({ kind: 'anonymous-vote' } & AnonymousVoteOptions)
+  | ({ kind: 'treasure-track-race' } & TreasureTrackRaceOptions)
   | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
         exchange?: MarketExchangeOptions['exchange'];
       })
@@ -315,6 +321,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     orderedAssemblyPatternSchema,
     judgedSubmissionPatternSchema,
     anonymousVotePatternSchema,
+    treasureTrackRacePatternSchema,
     marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
@@ -392,6 +399,10 @@ export function compileJsonPattern(
     case 'anonymous-vote': {
       const { kind: _kind, ...options } = pattern;
       return anonymousVote(options);
+    }
+    case 'treasure-track-race': {
+      const { kind: _kind, ...options } = pattern;
+      return treasureTrackRace(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

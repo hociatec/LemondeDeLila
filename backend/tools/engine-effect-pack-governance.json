@@ -65,7 +65,6 @@
     "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
     "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible.",
     "race-paired-pawns": "Compared with movement and resource transfer primitives: paired meetings, shared advance, rerolls and token victory remain coupled in this pack and require a distinct second-game test before promotion.",
-    "race-treasure-track": "Compared with inventory, card resolution and movement: protected decks, collection limits, gold requirements and theft remain a single catalogue composition with one demonstrated consumer.",
     "collection-family-effects": "Compared with card requests, sets and status primitives: extra draws, free requests and vanished targets are specific additions to family collection; colocation does not establish generic behavior."
   },
   "structuralReviews": [
@@ -112,8 +111,7 @@
       "race-quiz-event-track",
       "race-bidirectional-collision",
       "race-paired-pawns",
-      "race-bounce-quiz",
-      "race-treasure-track"
+      "race-bounce-quiz"
     ]
   },
   "genericGameplayFiles": [
@@ -284,14 +282,6 @@
       "classificationReason": "cards-shared-prestige implements shared prestige-card hand. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "race-treasure-track": {
-      "property": "treasureTrackRace",
-      "mechanic": "treasure collection track race",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-treasure-track implements treasure collection track race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "collection-family-effects": {
       "property": "familyEffects",
       "mechanic": "profession-family requests and effects",
@@ -327,7 +317,6 @@
   },
   "registrationOrder": [
     "race-resource-track",
-    "race-treasure-track",
     "race-paired-pawns",
     "cards-public-domain",
     "race-protected-haunted-track",

@@ -36,7 +36,7 @@ for (const key of [
     tiles[index].type = tiles[0].type;
     return `tiles[${index}].type`;
   });
-for (const key of ['pairedPawnRace', 'chainedTileRace', 'treasureTrackRace'])
+for (const key of ['pairedPawnRace', 'chainedTileRace'])
   add(key, (p) => {
     rows(p.tiles)[1].type = 'absent';
     return 'tiles[1].type';
@@ -83,21 +83,6 @@ add('chainedTileRace', (p) => {
 });
 duplicate('chainedTileRace', 'cards', 'id');
 duplicate('chainedTileRace', 'pawns', 'id');
-for (const field of ['decks', 'inventories'])
-  add('treasureTrackRace', (p) => {
-    object(p[field])['bad.key'] = 'absent';
-    return `${field}["bad.key"]`;
-  });
-add('treasureTrackRace', (p) => {
-  object(p.tileRules)['bad.rule'] = { kind: 'draw', deck: 'absent' };
-  return 'tileRules["bad.rule"].deck';
-});
-for (const field of ['inventories', 'deckRules'])
-  add('treasureTrackRace', (p) => {
-    const key = Object.keys(object(p.decks))[0];
-    delete object(p[field])[key];
-    return `${field}.${key}`;
-  });
 duplicate('speciesTroops', 'species');
 add('speciesTroops', (p) => {
   list(p.species)[0] = 'bad:species';

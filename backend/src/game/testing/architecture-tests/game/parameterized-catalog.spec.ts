@@ -153,14 +153,6 @@ const variants: Record<string, (program: Data) => Data> = {
       randomSides: 4,
     },
   }),
-  treasureTrackRace: (program) =>
-    object(
-      rename(renamedTiles(program), {
-        treasure: 'samples',
-        obstacle: 'hazards',
-        bonus: 'supplies',
-      }),
-    ),
   teamPawnRace: (program) => ({
     ...program,
     entryRolls: [1, 3],
@@ -210,12 +202,6 @@ describe('mechanisms run under an unrelated game identity', () => {
               'category-' + String(card.category),
             ]),
           );
-        if (key === 'treasureTrackRace')
-          names = {
-            treasure: 'samples',
-            obstacle: 'hazards',
-            bonus: 'supplies',
-          };
         if (key === 'chainedTileRace' || key === 'pairedPawnRace')
           names = Object.fromEntries(
             Object.keys(object(program.tileRules)).map((kind, i) => [
