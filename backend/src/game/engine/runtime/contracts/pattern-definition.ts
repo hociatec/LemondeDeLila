@@ -7,6 +7,7 @@ import type { DeclarativeTrigger } from './declarative-trigger';
 import type { TurnPolicy } from '../kits/turn-kit';
 import type { VictoryRule } from './author-rule-contracts';
 import type { GameActionMap } from './author-rule-contracts';
+import type { ChoiceResolverShape } from './author-rule-contracts';
 import type { GameConfigurationShape } from '../configuration/configuration-kit';
 
 type PatternComponents = {
@@ -32,5 +33,6 @@ export type GamePattern<
   readonly turn?: TurnPolicy;
   readonly victory?: VictoryRule<TState>;
   readonly actions?: GameActionMap<TState>;
+  readonly choices?: Readonly<Record<string, ChoiceResolverShape<TState>>>;
   readonly config?: GameConfigurationShape<TState>;
 };

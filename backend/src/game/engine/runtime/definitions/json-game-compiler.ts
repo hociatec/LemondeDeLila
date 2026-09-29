@@ -175,7 +175,10 @@ function compileResolvedJsonGame<Catalog extends JsonEffectPackCatalog>(
       phases: document.phases,
       actions,
       ...handlers,
-      choices: selectionChoices(document, handlers.choices),
+      choices: selectionChoices(document, {
+        ...programs.choices,
+        ...handlers.choices,
+      }),
       ...(isProgramVictory(document.victory)
         ? {}
         : { victory: standardVictory(document.victory) }),

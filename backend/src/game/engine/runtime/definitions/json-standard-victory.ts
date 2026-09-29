@@ -24,6 +24,7 @@ type RankingMetric = (
 ) & { direction: 'asc' | 'desc' };
 
 export type JsonStandardVictory =
+  | { kind: 'manual' }
   | ConditionVictory
   | ThresholdVictory
   | ((
@@ -42,6 +43,7 @@ const reason = { type: 'string', minLength: 1, maxLength: 128 } as const;
 const ties = { enum: ['all', 'lowest-id'] } as const;
 const direction = { enum: ['asc', 'desc'] } as const;
 export const standardVictorySchemas = [
+  object({ kind: { const: 'manual' } }, ['kind']),
   object(
     {
       kind: { const: 'condition' },
@@ -82,6 +84,7 @@ export const standardVictorySchemas = [
 export function standardVictory<TState extends object>(
   condition: JsonStandardVictory,
 ): VictoryRule<TState> {
+  if (condition.kind === 'manual') return { evaluate: () => null };
   if (condition.kind === 'condition') return conditionVictory(condition);
   if (
     condition.kind === 'score-at-least' ||
@@ -96,6 +99,7 @@ function evaluate<TState extends object>(
   ctx: GameContext<TState>,
   rule: Exclude<JsonStandardVictory, ThresholdVictory | ConditionVictory>,
 ) {
+  if (rule.kind === 'manual') return null;
   let ranking: number[][];
   if (rule.kind === 'last-player') {
     const active = ctx.players.active();

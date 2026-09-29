@@ -17,6 +17,12 @@ import {
 import { eventTrackTurn, type EventTrackOptions } from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 import { type GamePattern } from '../contracts/pattern-definition';
+import { defineAction, defineChoice } from '../actions/action-builders';
+import { gameInput } from '../actions/game-input-schema';
+import type { GameContext } from '../definitions/game-author-context';
+import type { PawnMove } from '../kits/pawn-kit';
+import { GameConfigurationError } from '../contracts/game-domain.errors';
+import { withAuthoringPath } from '../contracts/authoring-origin';
 
 export function eventTrackGame<TState extends object, TTile>(
   options: EventTrackOptions<TState, TTile> & {
@@ -174,11 +180,102 @@ export function pawnRace<TState extends object>(options: {
   diceId?: string;
   diceCount?: number;
   diceSides?: number;
+  play?: {
+    recipe: string;
+    choiceId: string;
+    finishAt: number;
+    finishReason: string;
+    extraTurnRolls?: readonly number[];
+  };
 }): GamePattern<
   TState,
   'pawn.set' | 'dice.set',
   'race' | 'pawns' | 'dice' | 'pawn-selection'
 > {
+  const play = options.play;
+  if (play) assertPawnRacePlay(options, play);
+  const finishTurn = (ctx: GameContext<TState>, total: number) => {
+    if (play?.extraTurnRolls?.includes(total)) ctx.turn.extra();
+    ctx.turn.end();
+  };
+  type Move = PawnMove & { roll: number };
+  const applyMove = (
+    ctx: GameContext<TState>,
+    playerId: number,
+    selected: Move,
+  ) => {
+    if (!play) return;
+    ctx.pawns.applyRaceMove(options.pawnSetId, playerId, selected, {
+      finishAt: play.finishAt,
+      afterMove: () =>
+        ctx.events.message('game.pawn.moved', {
+          playerId,
+          pawnId: selected.pawnId,
+          target: selected.to,
+        }),
+      onFinish: () =>
+        ctx.match.finish({
+          winners: [playerId],
+          reason: play.finishReason,
+        }),
+    });
+  };
+  const action = play
+    ? defineAction<TState, Record<string, never>>({
+        input: gameInput.object({}),
+        execute: ({ actor, ctx }) => {
+          const diceId = options.diceId ?? 'main';
+          const total = ctx.dice.roll(diceId).total;
+          ctx.events.message('game.dice.rolled', {
+            playerId: actor.id,
+            diceId,
+            total,
+          });
+          const moves = ctx.pawns
+            .legalMoves(options.pawnSetId, actor.id, total)
+            .map((candidate) => ({ ...candidate, roll: total }));
+          if (moves.length === 0) {
+            ctx.events.message('game.pawn.no-legal-move', {
+              playerId: actor.id,
+            });
+            finishTurn(ctx, total);
+          } else if (moves.length === 1) {
+            applyMove(ctx, actor.id, moves[0]);
+            if (ctx.match.lifecycle() !== 'finished') finishTurn(ctx, total);
+          } else {
+            const names = new Map(
+              ctx.pawns
+                .definitions(options.pawnSetId)
+                .map((pawn) => [pawn.id, pawn.label ?? pawn.name ?? pawn.id]),
+            );
+            ctx.choice.one({
+              id: play.choiceId,
+              player: actor.id,
+              options: moves,
+              label: (selected) =>
+                `${names.get(selected.pawnId)} → ${selected.to}`,
+            });
+          }
+        },
+      })
+    : null;
+  const choice = play
+    ? defineChoice<TState, Move>({
+        input: gameInput.object({
+          pawnId: gameInput.string({ min: 1, max: 128 }),
+          from: gameInput.number({ integer: true }),
+          to: gameInput.number({ integer: true }),
+          distance: gameInput.number({ integer: true }),
+          roll: gameInput.number({ integer: true, min: 1 }),
+        }),
+        resolve: ({ actor, value, ctx }) => {
+          const total = ctx.dice.last(options.diceId ?? 'main')?.total;
+          if (total == null) return ctx.reject('PAWN_RACE_ROLL_MISSING');
+          applyMove(ctx, actor.id, value);
+          if (ctx.match.lifecycle() !== 'finished') finishTurn(ctx, total);
+        },
+      })
+    : null;
   return definePattern({
     id: `pawn-race:${options.pawnSetId}`,
     mechanics: ['race', 'pawns', 'dice', 'pawn-selection'],
@@ -202,7 +299,34 @@ export function pawnRace<TState extends object>(options: {
         homeStretchFrom: options.homeStretchFrom,
       }),
     ],
+    ...(play && action && choice
+      ? {
+          actions: { [play.recipe]: action },
+          choices: { [play.choiceId]: choice },
+        }
+      : {}),
   });
+}
+
+function assertPawnRacePlay(
+  options: Parameters<typeof pawnRace>[0],
+  play: NonNullable<Parameters<typeof pawnRace>[0]['play']>,
+): void {
+  const fail = (field: string, message: string): never => {
+    throw withAuthoringPath(new GameConfigurationError(message), field);
+  };
+  if (play.choiceId.startsWith('engine.'))
+    fail('play.choiceId', 'Reserved pawn race choice identifier');
+  if (options.spaces == null || play.finishAt >= options.spaces)
+    fail('play.finishAt', 'Pawn race finish must be inside its track');
+  const minimum = options.diceCount ?? 1;
+  const maximum = minimum * (options.diceSides ?? 6);
+  for (const [index, total] of (play.extraTurnRolls ?? []).entries())
+    if (total < minimum || total > maximum)
+      fail(
+        `play.extraTurnRolls[${index}]`,
+        'Pawn race extra turn roll is unreachable',
+      );
 }
 
 export function cardGame<TState extends object>(options: {

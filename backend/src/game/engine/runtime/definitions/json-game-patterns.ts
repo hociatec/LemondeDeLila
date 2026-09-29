@@ -94,6 +94,20 @@ export const jsonGamePatternSchema: AuthorSchema = {
         diceId: id,
         diceCount: { type: 'integer', minimum: 1, maximum: 100 },
         diceSides: { type: 'integer', minimum: 2, maximum: 1000000 },
+        play: object(
+          {
+            recipe: id,
+            choiceId: id,
+            finishAt: position,
+            finishReason: id,
+            extraTurnRolls: array({
+              type: 'integer',
+              minimum: 1,
+              maximum: 100000000,
+            }),
+          },
+          ['recipe', 'choiceId', 'finishAt', 'finishReason'],
+        ),
       },
       ['kind', 'pawnSetId', 'pawns', 'spaces'],
     ),

@@ -6,6 +6,7 @@ import type { GameEventDefinition } from '../events/game-event-definition';
 import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
 import type { JsonEffectPackContribution } from '../contracts/json-effect-pack';
 import type { GameActionShape } from '../contracts/author-rule-contracts';
+import type { ChoiceResolverShape } from '../contracts/author-rule-contracts';
 import { AuthoringError } from '../contracts/authoring-error';
 
 type CompiledPattern = ReturnType<typeof compileJsonPattern>;
@@ -14,6 +15,9 @@ export type CompiledJsonPrograms = {
   readonly contributions: ReadonlyMap<string, JsonEffectPackContribution>;
   readonly actions: Readonly<
     Record<string, GameActionShape<Record<string, never>>>
+  >;
+  readonly choices: Readonly<
+    Record<string, ChoiceResolverShape<Record<string, never>>>
   >;
   readonly events: GameEventDefinition<string, object>[];
   readonly components: GameComponentDefinition[];
@@ -27,14 +31,27 @@ export function compileJsonPrograms(
   const sources = new Map<string, unknown>(Object.entries(document));
   const contributions = new Map<string, JsonEffectPackContribution>();
   const actions: Record<string, GameActionShape<Record<string, never>>> = {};
+  const choices: Record<
+    string,
+    ChoiceResolverShape<Record<string, never>>
+  > = {};
   const events: GameEventDefinition<string, object>[] = [];
   const components: GameComponentDefinition[] = [];
-  const patterns =
+  const compiledPatterns =
     document.patterns?.map((pattern, index) =>
       compileWithPatternDiagnostic(pattern, index, () =>
         compileJsonPattern(pattern),
       ),
     ) ?? [];
+  for (const pattern of compiledPatterns) {
+    Object.assign(actions, pattern.actions ?? {});
+    Object.assign(choices, pattern.choices ?? {});
+  }
+  const patterns: CompiledPattern[] = compiledPatterns.map((pattern) => ({
+    ...pattern,
+    actions: {},
+    choices: {},
+  }));
   for (const extension of jsonEffectPacks) {
     const source = sources.get(extension.documentKey);
     if (source === undefined) {
@@ -57,6 +74,7 @@ export function compileJsonPrograms(
   return {
     contributions,
     actions,
+    choices,
     events,
     components,
     patterns,

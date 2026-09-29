@@ -27,6 +27,7 @@ export function definePattern<
     mechanics: Object.freeze([...pattern.mechanics]),
     components: Object.freeze([...(pattern.components ?? [])]),
     actions: Object.freeze({ ...(pattern.actions ?? {}) }),
+    choices: Object.freeze({ ...(pattern.choices ?? {}) }),
   });
 }
 

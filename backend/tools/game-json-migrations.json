@@ -1,4 +1,15 @@
 {
   "schemaVersion": 1,
-  "migrations": []
+  "migrations": [
+    {
+      "file": "src/game/games/les-quatre-vents/odyssee-quatre-cieux/game.json",
+      "fromSha256": "000e9566c43b922ea0f2395da7c70045645ebc14086229f2ff12182e22c4aa50",
+      "toSha256": "7155b08c04a7e98c0993fd40e9e9c6f7c90dceb691cce9e06de38817ce622105",
+      "justification": "Le pattern pawn-race générique porte désormais l'action, le choix de pion, les tours supplémentaires et la victoire sans effect pack spécifique.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/pawn-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-pawn-race.spec.ts"
+      ]
+    }
+  ]
 }

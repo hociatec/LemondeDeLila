@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "2",
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
@@ -80,7 +80,14 @@
       "entryRoll": 6,
       "entryPosition": 0,
       "exactFinish": true,
-      "homeStretchFrom": 56
+      "homeStretchFrom": 56,
+      "play": {
+        "recipe": "race-multi-pawn-roll",
+        "choiceId": "odyssee.move",
+        "finishAt": 61,
+        "finishReason": "all-pawns-arrived",
+        "extraTurnRolls": [6]
+      }
     }
   ],
   "components": [],
@@ -97,9 +104,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -110,7 +115,10 @@
     }
   },
   "victory": {
-    "kind": "by-pawn-race"
+    "kind": "manual"
+  },
+  "bot": {
+    "kind": "first"
   },
   "shortcuts": [
     {
@@ -129,19 +137,5 @@
       "id": "score"
     }
   ],
-  "extensions": [
-    {
-      "type": "pawnRace",
-      "config": {
-        "setId": "odyssee",
-        "diceId": "main",
-        "choiceId": "odyssee.move",
-        "finishAt": 61,
-        "finishReason": "all-pawns-arrived",
-        "extraTurnRolls": [
-          6
-        ]
-      }
-    }
-  ]
+  "extensions": []
 }

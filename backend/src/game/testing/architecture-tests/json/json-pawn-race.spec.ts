@@ -1,33 +1,26 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import { testGame } from '../../../core/testing/game-test-kit';
 import manifest from '../../../games/les-quatre-vents/odyssee-quatre-cieux/manifest.json';
 import documentExtensionSource from '../../../games/les-quatre-vents/odyssee-quatre-cieux/game.json';
-const document = legacyExtensionFixture(documentExtensionSource, 'pawnRace');
+const document = structuredClone(documentExtensionSource);
 
 it.each<{ name: string; change: (value: typeof document) => void }>([
   {
     name: 'unknown pawn set',
     change: (value) => {
-      value.pawnRace.setId = 'missing';
-    },
-  },
-  {
-    name: 'unknown dice',
-    change: (value) => {
-      value.pawnRace.diceId = 'missing';
+      value.patterns[0].pawnSetId = 'missing';
     },
   },
   {
     name: 'arrival outside the track',
     change: (value) => {
-      value.pawnRace.finishAt = 62;
+      value.patterns[0].play.finishAt = 62;
     },
   },
   {
     name: 'unreachable extra turn roll',
     change: (value) => {
-      value.pawnRace.extraTurnRolls = [7];
+      value.patterns[0].play.extraTurnRolls = [7];
     },
   },
   {
@@ -39,7 +32,7 @@ it.each<{ name: string; change: (value: typeof document) => void }>([
   {
     name: 'reserved choice',
     change: (value) => {
-      value.pawnRace.choiceId = 'engine.reserved';
+      value.patterns[0].play.choiceId = 'engine.reserved';
     },
   },
   ...(['initialPosition', 'entryPosition', 'homeStretchFrom'] as const).map(

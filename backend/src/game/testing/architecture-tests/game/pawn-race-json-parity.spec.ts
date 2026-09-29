@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import { createHash } from 'node:crypto';
 import {
   testGame,
@@ -9,7 +8,7 @@ import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/les-quatre-vents/odyssee-quatre-cieux/manifest.json';
 import documentExtensionSource from '../../../games/les-quatre-vents/odyssee-quatre-cieux/game.json';
 import reference from '../../fixtures/odyssee-before-json-parity.json';
-const document = legacyExtensionFixture(documentExtensionSource, 'pawnRace');
+const document = structuredClone(documentExtensionSource);
 
 it.each(reference)(
   'preserves the complete pawn race for seed $seed',

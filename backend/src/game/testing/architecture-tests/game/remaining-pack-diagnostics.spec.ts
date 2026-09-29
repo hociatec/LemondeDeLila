@@ -60,10 +60,6 @@ add('quizEventRace', (p) => {
   Object.assign(rows(p.tiles)[1], { type: 'goto', target: 9999 });
   return 'tiles[1].target';
 });
-add('pawnRace', (p) => {
-  p.extraTurnRolls = [999];
-  return 'extraTurnRolls[0]';
-});
 add('teamPawnRace', (p) => {
   list(p.startPositions)[0] = p.trackLength;
   return 'startPositions[0]';

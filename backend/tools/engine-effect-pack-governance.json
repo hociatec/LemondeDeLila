@@ -158,7 +158,6 @@
       "race-goose-track",
       "race-paired-pawns",
       "race-bounce-quiz",
-      "race-multi-pawn",
       "race-treasure-track"
     ],
     "spatial": [
@@ -421,14 +420,6 @@
       "classificationReason": "cards-ordered-parade implements ordered parade collection. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "race-multi-pawn": {
-      "property": "pawnRace",
-      "mechanic": "parameterized multi-pawn race",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-multi-pawn implements parameterized multi-pawn race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "race-treasure-track": {
       "property": "treasureTrackRace",
       "mechanic": "treasure collection track race",
@@ -487,7 +478,6 @@
     }
   },
   "registrationOrder": [
-    "race-multi-pawn",
     "race-event-cards",
     "race-route-delivery",
     "race-goose-track",
