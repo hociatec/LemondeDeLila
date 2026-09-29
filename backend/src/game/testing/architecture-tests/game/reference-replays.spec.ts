@@ -16,7 +16,7 @@ const definitions = discoverGameDefinitions().sort((left, right) =>
   left.id.localeCompare(right.id),
 );
 const catalogueSeeds =
-  process.env.GAME_TEST_PROFILE === 'exhaustive' ? [11, 23, 67] : [23];
+  process.env.GAME_TEST_PROFILE === 'fast' ? [23] : [11, 23, 67];
 const additionalCorpus = definitions.flatMap((definition) =>
   catalogueSeeds
     .filter(

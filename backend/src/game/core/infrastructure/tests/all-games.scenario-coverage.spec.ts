@@ -7,7 +7,7 @@ import { runGameReplayCampaign } from '../../../testing/architecture-tests/game/
 describe('replay campaigns for every installed game', () => {
   const definitions = discoverGameDefinitions();
   const seeds =
-    process.env.GAME_TEST_PROFILE === 'exhaustive' ? [0, 1, 17, 65535] : [0];
+    process.env.GAME_TEST_PROFILE === 'fast' ? [0] : [0, 1, 17, 65535];
   let quietLogs: jest.SpyInstance;
   const results: Array<{
     gameId: string;
