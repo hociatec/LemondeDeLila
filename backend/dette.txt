@@ -69,8 +69,6 @@
 199. Supprimer game/rules/game-specific/cards-discard-penalty/effect-pack.ts après certification comportementale complète.
 210. Migrer board-movement-landings afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 211. Supprimer game/rules/game-specific/board-movement-landings/effect-pack.ts après certification comportementale complète.
-212. Migrer race-chained-tile-cards afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
-213. Supprimer game/rules/game-specific/race-chained-tile-cards/effect-pack.ts après certification comportementale complète.
 214. Migrer race-directional-hazards afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 215. Supprimer game/rules/game-specific/race-directional-hazards/effect-pack.ts après certification comportementale complète.
 216. Migrer choice-chapter-encounter afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.

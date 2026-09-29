@@ -3,6 +3,7 @@ import type { JsonGamePattern } from './json-game-patterns';
 import { assertProtectedHauntedRaceReferences } from './json-protected-haunted-race-reference-validation';
 import { assertSharedPrestigeCardsReferences } from './json-shared-prestige-cards-pattern-schema';
 import { assertResourceTrackRaceReferences } from './json-resource-track-race-pattern-schema';
+import { assertChainedTileRaceReferences } from './json-chained-tile-race-pattern-schema';
 
 type Failure = (path: string, reason: string) => never;
 type Context = {
@@ -29,4 +30,6 @@ export function assertMigratedPatternReferences(
       resources,
       counters,
     );
+  if (pattern.kind === 'chained-tile-race')
+    assertChainedTileRaceReferences(pattern.config, components);
 }

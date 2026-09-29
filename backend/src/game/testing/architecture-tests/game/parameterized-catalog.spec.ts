@@ -37,24 +37,6 @@ function rename(value: unknown, names: Record<string, string>): unknown {
     );
   return value;
 }
-function renamedTiles(program: Data): Data {
-  const names = Object.fromEntries(
-    Object.keys(object(program.tileRules)).map((key, i) => [key, `zone-${i}`]),
-  );
-  return {
-    ...program,
-    tiles: list(program.tiles).map((tile) => ({
-      ...tile,
-      type: names[String(tile.type)],
-    })),
-    tileRules: Object.fromEntries(
-      Object.entries(object(program.tileRules)).map(([key, rule]) => [
-        names[key],
-        rule,
-      ]),
-    ),
-  };
-}
 const variants: Record<string, (program: Data) => Data> = {
   chapterEncounter: (program) =>
     object(
@@ -88,7 +70,6 @@ const variants: Record<string, (program: Data) => Data> = {
     initialHandSize: 4,
     exchangeFamilyCount: 2,
   }),
-  chainedTileRace: renamedTiles,
   storyChallenge: (program) =>
     object(
       rename(
@@ -140,18 +121,9 @@ describe('mechanisms run under an unrelated game identity', () => {
               ],
             ]),
           );
-        if (key === 'chainedTileRace')
-          names = Object.fromEntries(
-            Object.keys(object(program.tileRules)).map((kind, i) => [
-              kind,
-              'zone-' + i,
-            ]),
-          );
         document.components = rename(document.components, names);
         document.resourceIds = rename(document.resourceIds, names);
         document.setup = rename(document.setup, names);
-        if (key === 'chainedTileRace')
-          object(document[key]).cards = rename(program.cards, names);
       }
       const gridPattern = Array.isArray(document.patterns)
         ? document.patterns

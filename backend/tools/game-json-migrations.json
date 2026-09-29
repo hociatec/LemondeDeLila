@@ -260,6 +260,16 @@
         "src/game/testing/architecture-tests/game/resource-track-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-resource-track-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json",
+      "fromSha256": "fbadf4aec058c82c44824fb12c0d385ba68044230adf58ceee5ec4c7a38a2f5d",
+      "toSha256": "eabce29120f5a76f18e56d3c73d8bcbf9ba2738bdfe4e21ea7369cc3ebb55f33",
+      "justification": "Le pattern chained-tile-race générique porte désormais pions, dé, cases chaînées, cartes, choix, protections, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/chained-tile-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-chained-tile-race.spec.ts"
+      ]
     }
   ]
 }

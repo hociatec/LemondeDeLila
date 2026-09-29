@@ -2,9 +2,9 @@ import {
   authoringFailure,
   authoringProperty,
   assertUniqueAuthorValues,
-} from '../../../engine/sdk/extension-api';
-import type { ChainedTileRaceProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
+} from '../contracts/authoring-diagnostics';
+import type { ChainedTileRaceProgram } from '../patterns/chained-tile-race-pattern';
+import type { GameComponentDefinition } from './component-kit';
 import {
   type AuthorSchema,
   authorArray as array,
@@ -12,10 +12,12 @@ import {
   authorRecord as record,
   authorObject as object,
   authorPositive as positive,
-} from '../../../engine/sdk/extension-api';
-import { effectJsonSchema } from '../../../engine/sdk/extension-api';
+} from '../contracts/json-author-schema';
+import { effectJsonSchema } from '../contracts/effect-json-schema';
 
-export const jsonChainedTileRaceSchema: AuthorSchema = object({
+const chainedTileRaceConfigSchema: AuthorSchema = object({
+  rollRecipe: id,
+  drawRecipe: id,
   finishReason: id,
   selectionDrawCount: { type: 'integer', minimum: 1, maximum: 100 },
   tileRules: record({
@@ -75,13 +77,17 @@ export const jsonChainedTileRaceSchema: AuthorSchema = object({
     2,
   ),
 });
+export const chainedTileRacePatternSchema = object({
+  kind: { const: 'chained-tile-race' },
+  config: chainedTileRaceConfigSchema,
+});
 
 export function assertChainedTileRaceReferences(
   program: ChainedTileRaceProgram,
   components?: readonly GameComponentDefinition[],
 ): void {
   const fail = authoringFailure(
-    'game.json.chainedTileRace',
+    'game.json.patterns',
     program,
     'Chained tile race: ',
   );

@@ -43,7 +43,6 @@
   ],
   "largeSingleConsumerReviewLines": 300,
   "largeSingleConsumerReviews": {
-    "race-chained-tile-cards": "Compared with event-race and track-round; chained tile/card resolution remains unique.",
     "choice-simultaneous-paw-scoring": "Compared with card-selection and scoring-submission; simultaneous paw scoring and obstacles remain unique.",
     "choice-story-challenge": "Compared with judged-cards and choice primitives; mixed story, challenge and laughter resolution remains unique.",
     "board-path-walls": "Compared with board-game and grid-placement; wall legality and path preservation remain unique.",
@@ -74,7 +73,7 @@
       "choice-simultaneous-quiz",
       "choice-chapter-encounter"
     ],
-    "race": ["race-chained-tile-cards", "race-directional-hazards"]
+    "race": ["race-directional-hazards"]
   },
   "genericGameplayFiles": [
     "card-actions.recipes.ts",
@@ -92,14 +91,6 @@
     "track-round.recipes.ts"
   ],
   "profiles": {
-    "race-chained-tile-cards": {
-      "property": "chainedTileRace",
-      "mechanic": "chained track landings and card movement",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-chained-tile-cards implements chained track landings and card movement. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "board-movement-landings": {
       "property": "board",
       "mechanic": "parameterized board movement and landing effects",
@@ -191,7 +182,6 @@
   },
   "registrationOrder": [
     "race-directional-hazards",
-    "race-chained-tile-cards",
     "choice-chapter-encounter",
     "choice-simultaneous-paw-scoring",
     "cards-theme-name",

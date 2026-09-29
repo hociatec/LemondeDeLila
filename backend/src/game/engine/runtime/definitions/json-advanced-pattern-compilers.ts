@@ -90,6 +90,13 @@ import {
   orderedCardCollection,
   type OrderedCardCollectionOptions,
 } from '../patterns/ordered-card-collection-pattern';
+import {
+  chainedTileRace,
+  type ChainedTileRaceProgram,
+} from '../patterns/chained-tile-race-pattern';
+import { triggerPattern } from '../automation/trigger-pattern';
+import type { DeclarativeTrigger } from '../contracts/declarative-trigger';
+import { pawnRace, raceGame } from '../patterns/gameplay-pattern-track-card';
 import { marketGame } from '../patterns/gameplay-pattern-round-economy';
 import {
   marketExchange,
@@ -235,6 +242,30 @@ export function compileOrderedCardCollection(
 ) {
   const { kind: _kind, ...options } = pattern;
   return orderedCardCollection(options);
+}
+export function compileChainedTileRace(pattern: {
+  kind: 'chained-tile-race';
+  config: ChainedTileRaceProgram;
+}) {
+  return chainedTileRace(pattern.config);
+}
+export function compileTriggerPattern(
+  pattern: { kind: 'trigger' } & DeclarativeTrigger,
+) {
+  const { kind: _kind, ...rule } = pattern;
+  return triggerPattern(rule);
+}
+export function compilePawnRace(
+  pattern: { kind: 'pawn-race' } & Parameters<typeof pawnRace>[0],
+) {
+  const { kind: _kind, ...options } = pattern;
+  return pawnRace(options);
+}
+export function compileRace(
+  pattern: { kind: 'race' } & Parameters<typeof raceGame>[0],
+) {
+  const { kind: _kind, ...options } = pattern;
+  return raceGame(options);
 }
 export function compileMarket(
   pattern: { kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {

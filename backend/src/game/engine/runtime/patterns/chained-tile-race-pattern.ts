@@ -1,23 +1,60 @@
+import { defineEmptyAction } from '../actions/action-builders';
+import { gameInput } from '../actions/game-input-schema';
+import type { GameEffectInstruction } from '../contracts/effect-ir';
+import type { GameContext } from '../definitions/game-author-context';
 import {
-  gameInput,
+  defineActorEffect,
+  defineEffect,
+  defineEmptyEffect,
+} from '../effects/effects-core';
+import {
   drawAndResolve,
   drawEvent,
   sequentialPawnSelection,
-} from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
-import { defineEmptyAction } from '../../../engine/sdk/extension-api';
-import type { ChainedTileRaceProgram } from './program';
-import {
-  defineEffect,
-  defineEmptyEffect,
-  defineActorEffect,
-} from '../../../engine/sdk/extension-api';
+} from '../recipes/gameplay-recipes';
+import { definePattern } from './gameplay-pattern-core';
+
+export type ChainedTileType = string;
+export type ChainedTileRule = { description: string } & (
+  | { kind: 'none' | 'finish' | 'choose-swap' | 'await-draw' }
+  | { kind: 'move' | 'protected-move'; delta: number }
+  | { kind: 'random-move'; maximum: number }
+  | { kind: 'move-to'; position: number }
+);
+export type ChainedTileCard = {
+  id: number;
+  text: string;
+  retreatScore: number;
+  effects: readonly GameEffectInstruction[];
+};
+export type ChainedTileRaceProgram = {
+  rollRecipe: string;
+  drawRecipe: string;
+  tileRules: Readonly<Record<string, ChainedTileRule>>;
+  finishReason: string;
+  selectionDrawCount: number;
+  trackId: string;
+  pawnSetId: string;
+  pawnChoiceId: string;
+  deckId: string;
+  diceId: string;
+  trapImmunityStatusId: string;
+  awaitingCardStatusId: string;
+  cards: readonly ChainedTileCard[];
+  pawns: readonly { id: string; label: string; description: string }[];
+  tiles: readonly {
+    type: ChainedTileType;
+    label: string;
+    description?: string;
+  }[];
+  maxResolutionDepth: number;
+};
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
 type Card = ChainedTileRaceProgram['cards'][number];
 
-export function chainedTileRaceRules(source: ChainedTileRaceProgram) {
+export function chainedTileRace(source: ChainedTileRaceProgram) {
   const program: ChainedTileRaceProgram = {
     ...structuredClone(source),
     tiles: source.tiles.map((tile) => ({
@@ -30,55 +67,69 @@ export function chainedTileRaceRules(source: ChainedTileRaceProgram) {
     choiceId: program.pawnChoiceId,
     completePhase: 'playing',
   });
-  return {
-    roll: defineEmptyAction<State>({
-      documentation: 'Lance le dé et résout la chaîne de cases et de cartes.',
-      available: ({ state, actor, ctx }) =>
-        ctx.phase.current() === 'playing' &&
-        !awaiting(program, actor.id, state, ctx),
-      execute: ({ state, actor, ctx }) => {
-        const turnNumber = ctx.turn.number();
-        const total = ctx.dice.roll(program.diceId).total;
-        ctx.events.message('game.dice.rolled', {
-          playerId: actor.id,
-          diceId: program.diceId,
-          total,
-        });
-        moveBy(program, state, actor.id, total, 0, ctx);
-        if (
-          ctx.turn.number() === turnNumber &&
-          !awaiting(program, actor.id, state, ctx)
-        )
-          ctx.turn.complete();
-      },
-    }),
-    draw: defineEmptyAction<State>({
-      ui: { label: 'Piocher', control: 'button', shortcut: 'Space' },
-      documentation: 'Pioche la carte demandée par une case Folie loufoque.',
-      available: ({ state, actor, ctx }) =>
-        ctx.phase.current() === 'playing' &&
-        ctx.players.current()?.id === actor.id &&
-        awaiting(program, actor.id, state, ctx),
-      execute: ({ state, actor, ctx }) => {
-        const turnNumber = ctx.turn.number();
-        if (Reflect.has(state, 'awaitingCardDraw'))
-          Reflect.set(state, 'awaitingCardDraw', false);
-        for (const player of ctx.players.all())
-          ctx.status.remove(player.id, program.awaitingCardStatusId);
-        drawCard(program, actor.id, ctx);
-        if (
-          ctx.turn.number() === turnNumber &&
-          !awaiting(program, actor.id, state, ctx)
-        )
-          ctx.turn.complete();
-      },
-    }),
+  const roll = defineEmptyAction<State>({
+    documentation: 'Lance le dé et résout la chaîne de cases et de cartes.',
+    available: ({ state, actor, ctx }) =>
+      ctx.phase.current() === 'playing' &&
+      !awaiting(program, actor.id, state, ctx),
+    execute: ({ state, actor, ctx }) => {
+      const turnNumber = ctx.turn.number();
+      const total = ctx.dice.roll(program.diceId).total;
+      ctx.events.message('game.dice.rolled', {
+        playerId: actor.id,
+        diceId: program.diceId,
+        total,
+      });
+      moveBy(program, state, actor.id, total, 0, ctx);
+      if (
+        ctx.turn.number() === turnNumber &&
+        !awaiting(program, actor.id, state, ctx)
+      )
+        ctx.turn.complete();
+    },
+  });
+  const draw = defineEmptyAction<State>({
+    ui: { label: 'Piocher', control: 'button', shortcut: 'Space' },
+    documentation: 'Pioche la carte demandée par une case Folie loufoque.',
+    available: ({ state, actor, ctx }) =>
+      ctx.phase.current() === 'playing' &&
+      ctx.players.current()?.id === actor.id &&
+      awaiting(program, actor.id, state, ctx),
+    execute: ({ state, actor, ctx }) => {
+      const turnNumber = ctx.turn.number();
+      if (Reflect.has(state, 'awaitingCardDraw'))
+        Reflect.set(state, 'awaitingCardDraw', false);
+      for (const player of ctx.players.all())
+        ctx.status.remove(player.id, program.awaitingCardStatusId);
+      drawCard(program, actor.id, ctx);
+      if (
+        ctx.turn.number() === turnNumber &&
+        !awaiting(program, actor.id, state, ctx)
+      )
+        ctx.turn.complete();
+    },
+  });
+  return definePattern({
+    id: `chained-tile-race:${program.trackId}`,
+    mechanics: ['race', 'cards', 'pawns', 'effects'],
+    actions: {
+      [program.rollRecipe]: roll,
+      [program.drawRecipe]: draw,
+    },
     setup: pawns.setup(() => ({})),
     choices: {
       [program.pawnChoiceId]: pawns.choice,
     },
     effects: effects(program),
-  };
+    bot: {
+      choose: ({ availableActions }) => {
+        const type = [program.drawRecipe, program.rollRecipe].find((recipe) =>
+          availableActions.includes(recipe),
+        );
+        return type ? { type, payload: {} } : null;
+      },
+    },
+  });
 }
 function awaiting(
   program: ChainedTileRaceProgram,

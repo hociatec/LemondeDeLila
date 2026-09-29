@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
-  "definitionVersion": "2",
+  "contentVersion": "3",
+  "definitionVersion": "3",
   "snapshotMigrations": [
     {
       "fromVersion": "a-fond-les-ballons@content:c5adb978",
@@ -10,18 +10,14 @@
     {
       "fromVersion": "1",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
-  "patterns": [
-    {
-      "kind": "race",
-      "trackId": "balloons",
-      "spaces": 40,
-      "overshoot": "bounce"
-    }
-  ],
   "components": [
     {
       "component": "pawn.set",
@@ -63,15 +59,10 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "playing"
-      ]
+      "transitions": ["playing"]
     },
     "playing": {
-      "actions": [
-        "roll",
-        "draw_card"
-      ],
+      "actions": ["roll", "draw_card"],
       "terminal": true
     }
   },
@@ -89,10 +80,18 @@
     "ties": "lowest-id",
     "reason": "golden-nut"
   },
-  "extensions": [
+  "patterns": [
     {
-      "type": "chainedTileRace",
+      "kind": "race",
+      "trackId": "balloons",
+      "spaces": 40,
+      "overshoot": "bounce"
+    },
+    {
+      "kind": "chained-tile-race",
       "config": {
+        "rollRecipe": "race-chained-tile-cards-roll",
+        "drawRecipe": "race-chained-tile-cards-draw",
         "trackId": "balloons",
         "pawnSetId": "balloons-pawns",
         "pawnChoiceId": "race-chained-tile-cards.pawn",
@@ -156,5 +155,7 @@
         }
       }
     }
-  ]
+  ],
+  "extensions": [],
+  "playerValuesVisibility": { "statuses": "public" }
 }

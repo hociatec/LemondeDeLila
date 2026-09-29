@@ -1,4 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
 import {
   DeclarativeGameRuntime,
   testGame,
@@ -6,13 +5,8 @@ import {
 import { type StableGameKitsView } from '../../../engine/sdk/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import catalogue from './catalogue.json';
-import documentExtensionSource from './game.json';
+import document from './game.json';
 import manifest from './manifest.json';
-const document = legacyExtensionFixture(
-  documentExtensionSource,
-  'chainedTileRace',
-);
-
 const gameDefinition = compileJsonGame(manifest, document, {
   'content/catalogue.json': catalogue,
 });

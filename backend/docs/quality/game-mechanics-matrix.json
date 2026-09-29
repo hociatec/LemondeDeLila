@@ -3,23 +3,10 @@
   "games": [
     {
       "id": "a-fond-les-ballons",
-      "packs": [
-        "race-chained-tile-cards"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:27",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:76",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:78",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:108",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:134",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:137",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:251",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:273",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:304",
-          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:107",
-          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:110",
-          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:128"
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:23"
         ],
         "ownership": [],
         "collision": [],
@@ -61,49 +48,30 @@
           "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json:630",
           "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json:645",
           "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json:662",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:35",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:98",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:31",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:97",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:100",
           "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:101",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:102",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:19",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:168",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:183",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:187",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:238",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:245",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:258",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:265",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:276",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:285",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:288",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:300",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:342",
-          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:122"
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:13"
         ],
         "zones": [],
         "choices": [
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:39",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:63",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:81",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:82",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:120",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:124",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:134",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:158"
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:33",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:57",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:75",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:76",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:114",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:118",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:128",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:152"
         ],
         "status": [
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json:590",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:67",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:91",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:167",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:200",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:201"
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json:590"
         ],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:86",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:159"
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:77"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json:14",
@@ -143,36 +111,11 @@
           "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json:624",
           "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json:632",
           "src/game/games/les-quatre-vents/a-fond-les-ballons/catalogue.json:649",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:207",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:125",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:137",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:185",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:240",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:241",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:259",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:261",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:266",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:267",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:268",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:271",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:273",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:289",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:290",
-          "src/game/rules/game-specific/race-chained-tile-cards/json-chained-tile-race-schema.ts:102"
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:201"
         ],
         "triggers": [
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:171",
-          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:207",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:42",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:116",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:142",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:161",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:168",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:174",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:204",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:269",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:292",
-          "src/game/rules/game-specific/race-chained-tile-cards/chained-tile-race.recipes.ts:342"
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:165",
+          "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts:201"
         ]
       }
     },
@@ -2774,12 +2717,6 @@
       "name": "choice-story-challenge",
       "consumers": [
         "contes-et-cacahuetes"
-      ]
-    },
-    {
-      "name": "race-chained-tile-cards",
-      "consumers": [
-        "a-fond-les-ballons"
       ]
     },
     {

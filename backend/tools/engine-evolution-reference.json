@@ -51,7 +51,6 @@
     "choice-simultaneous-paw-scoring",
     "choice-simultaneous-quiz",
     "choice-story-challenge",
-    "race-chained-tile-cards",
     "race-directional-hazards"
   ],
   "primitives": [
@@ -129,7 +128,7 @@
     "definition": "Production game.json documents; not a measure of reusable implementation."
   },
   "reuse": {
-    "game-specific": 35,
+    "game-specific": 34,
     "reusable": 0,
     "engine-primitive": 0
   }
