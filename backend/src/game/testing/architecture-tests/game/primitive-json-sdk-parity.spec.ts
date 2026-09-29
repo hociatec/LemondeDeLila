@@ -27,8 +27,8 @@ import {
   conditionCases,
   targetCases,
   choiceAvailabilityCases,
-  type Pair,
 } from './primitive-parity-cases.spec';
+import type { Pair } from './parity-case';
 import manifest from '../../fixtures/json-course/manifest.json';
 import document from '../../fixtures/json-course/game.json';
 

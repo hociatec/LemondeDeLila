@@ -5,7 +5,7 @@ import type {
   EffectTarget,
 } from '../../../engine/runtime/contracts/effect-ir';
 
-export type Pair<Value> = { json: Value; sdk: Value };
+import type { Pair } from './parity-case';
 const self: EffectTarget = { kind: 'self' };
 const other: EffectTarget = { kind: 'player', playerId: 2 };
 const reward: GameEffectInstruction[] = [{ kind: 'gain-score', amount: 3 }];

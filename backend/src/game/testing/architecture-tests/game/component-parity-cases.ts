@@ -9,7 +9,7 @@ import {
   resources,
 } from '../../../engine/sdk/public-api';
 import type { GameComponentDefinition } from '../../../engine/runtime/definitions/component-kit';
-import type { Pair } from './primitive-parity-cases.spec';
+import type { Pair } from './parity-case';
 
 export const componentCases: Pair<GameComponentDefinition>[] = [
   {
