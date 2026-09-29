@@ -230,6 +230,16 @@
         "src/game/testing/architecture-tests/game/quiz-event-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-quiz-event-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/frousse-party/game.json",
+      "fromSha256": "4469cdc346e1d0b72bbd2b50c8971a25bfb9a0b7e5944820438238f33047dbb7",
+      "toSha256": "46054bdae3dadd590dbd461e46768ddb51882a119fe59f82be13b48300735ef2",
+      "justification": "Le pattern protected-haunted-race générique porte désormais piste, protections, cartes, blocages, déplacements conditionnels, choix, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/protected-haunted-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-protected-haunted-race.spec.ts"
+      ]
     }
   ]
 }

@@ -48,7 +48,6 @@
     "choice-story-challenge": "Compared with judged-cards and choice primitives; mixed story, challenge and laughter resolution remains unique.",
     "board-path-walls": "Compared with board-game and grid-placement; wall legality and path preservation remain unique.",
     "race-directional-hazards": "Compared with track-round and board landings; directional movement and chained hazards remain unique.",
-    "race-protected-haunted-track": "Compared with event-race and track-round; haunted protection and blocking remain unique.",
     "cards-theme-name": "Compared with judged-cards and card-actions; name/theme composition and special cards remain unique.",
     "cards-discard-penalty": "Compared with card-actions; discard legality, quitting and unique-value penalties remain unique.",
     "choice-simultaneous-quiz": "Compared with movement-quiz and scoring-submission; configurable simultaneous quiz remains unique.",
@@ -81,8 +80,7 @@
     "race": [
       "race-chained-tile-cards",
       "race-directional-hazards",
-      "race-resource-track",
-      "race-protected-haunted-track"
+      "race-resource-track"
     ]
   },
   "genericGameplayFiles": [
@@ -157,14 +155,6 @@
       "classificationReason": "race-resource-track implements resource collection track race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "race-protected-haunted-track": {
-      "property": "protectedHauntedRace",
-      "mechanic": "protected haunted track movement",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-protected-haunted-track implements protected haunted track movement. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "cards-theme-name": {
       "property": "themeNameCards",
       "mechanic": "name and theme card combinations",
@@ -224,7 +214,6 @@
   },
   "registrationOrder": [
     "race-resource-track",
-    "race-protected-haunted-track",
     "race-directional-hazards",
     "race-chained-tile-cards",
     "choice-chapter-encounter",

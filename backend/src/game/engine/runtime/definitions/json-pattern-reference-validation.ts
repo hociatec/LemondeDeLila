@@ -20,6 +20,7 @@ import { assertCardBattleReferences } from './json-card-battle-reference-validat
 import { assertPublicDomainCardsReferences } from './json-public-domain-cards-reference-validation';
 import { assertTeamPawnRaceReferences } from './json-team-pawn-race-reference-validation';
 import { assertQuizEventRaceReferences } from './json-quiz-event-race-reference-validation';
+import { assertProtectedHauntedRaceReferences } from './json-protected-haunted-race-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
 type AdvancedContext = {
@@ -137,6 +138,8 @@ function assertAdvancedPatternReferences(
     assertTeamPawnRaceReferences(pattern, index, components, fail);
   if (pattern.kind === 'quiz-event-race')
     assertQuizEventRaceReferences(pattern, index, components, fail);
+  if (pattern.kind === 'protected-haunted-race')
+    assertProtectedHauntedRaceReferences(pattern, index, components, fail);
   if (pattern.kind === 'grid-placement')
     assertGridPlacementReferences(
       pattern,

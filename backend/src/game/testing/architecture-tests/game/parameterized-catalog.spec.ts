@@ -77,10 +77,6 @@ const variants: Record<string, (program: Data) => Data> = {
         ),
       ),
     ),
-  protectedHauntedRace: (program) => ({
-    ...renamedCategories(program, 'cards'),
-    conditionalMove: { equals: 2, delta: -3 },
-  }),
   resourceTrackRace: (program) => ({
     ...program,
     mechanics: {

@@ -1,44 +1,98 @@
+import { defineEmptyAction } from '../actions/action-builders';
+import { gameInput } from '../actions/game-input-schema';
+import type { GameEffectInstruction } from '../contracts/effect-ir';
+import type { GameContext } from '../definitions/game-author-context';
+import { defineEffect, defineEmptyEffect } from '../effects/effects-core';
 import {
-  gameInput,
   drawAndResolve,
   sequentialPawnSelection,
-} from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
-import type {
-  ProtectedHauntedBlock,
-  ProtectedHauntedRaceProgram,
-} from './program';
-import { defineEmptyAction } from '../../../engine/sdk/extension-api';
-import {
-  defineEffect,
-  defineEmptyEffect,
-} from '../../../engine/sdk/extension-api';
+} from '../recipes/gameplay-recipes';
+import { definePattern } from './gameplay-pattern-core';
+
+export type ProtectedHauntedBlock =
+  | { kind: 'one-of'; allowed: number[] }
+  | { kind: 'minimum'; minimum: number }
+  | { kind: 'even' };
+export type ProtectedHauntedRaceProgram = {
+  rollRecipe: string;
+  trackId: string;
+  diceId: string;
+  finishReason: string;
+  conditionalMove: { equals: number; delta: number };
+  protections: readonly {
+    category: string;
+    status: string;
+    consume: 'draw' | 'matching-card';
+  }[];
+  deckId: string;
+  pawnSetId: string;
+  pawnChoiceId: string;
+  swapChoiceId: string;
+  maxChainDepth: number;
+  eventNamespace: string;
+  statuses: {
+    ignoreNextTrap: string;
+    ignoreTrapUntilNextDraw: string;
+    ignoreNextPrank: string;
+    ignoreNextGhost: string;
+    nextMoveCap: string;
+    nextRollMalus: string;
+    nextRollKeepLowest: string;
+    nextRollDouble: string;
+    nextRollIfThreeBackTwo: string;
+    blocked: string;
+  };
+  tiles: readonly {
+    n: number;
+    title: string;
+    label: string;
+    description: string;
+    type: 'neutral' | 'card' | 'finish';
+  }[];
+  cards: readonly {
+    id: number;
+    localNumber: number;
+    category: string;
+    text: string;
+    effects: readonly GameEffectInstruction[];
+  }[];
+};
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
 type Card = ProtectedHauntedRaceProgram['cards'][number];
 
-export function protectedHauntedRaceRules(source: ProtectedHauntedRaceProgram) {
+export function protectedHauntedRace(source: ProtectedHauntedRaceProgram) {
   const program = structuredClone(source);
   const pawns = sequentialPawnSelection<State>({
     setId: program.pawnSetId,
     choiceId: program.pawnChoiceId,
     completePhase: 'playing',
   });
-  return {
-    roll: defineEmptyAction<State>({
-      available: ({ ctx }) =>
-        ctx.phase.current() === 'playing' && !pendingSwap(program, ctx),
-      execute: ({ actor, ctx }) => executeRoll(program, actor.id, ctx),
-      documentation:
-        'Lance le dé, applique les altérations puis résout la case.',
-    }),
+  return definePattern({
+    id: `protected-haunted-race:${program.trackId}`,
+    mechanics: ['race', 'cards', 'protection', 'pawns', 'effects'],
+    actions: {
+      [program.rollRecipe]: defineEmptyAction<State>({
+        available: ({ ctx }) =>
+          ctx.phase.current() === 'playing' && !pendingSwap(program, ctx),
+        execute: ({ actor, ctx }) => executeRoll(program, actor.id, ctx),
+        documentation:
+          'Lance le dé, applique les altérations puis résout la case.',
+      }),
+    },
     setup: pawns.setup(() => ({})),
     choices: {
       [program.pawnChoiceId]: pawns.choice,
     },
     effects: protectedHauntedEffects(program),
-  };
+    bot: {
+      choose: ({ availableActions }) =>
+        availableActions.includes(program.rollRecipe)
+          ? { type: program.rollRecipe, payload: {} }
+          : null,
+    },
+  });
 }
 function executeRoll(
   program: ProtectedHauntedRaceProgram,

@@ -81,8 +81,6 @@
 217. Supprimer game/rules/game-specific/choice-chapter-encounter/effect-pack.ts après certification comportementale complète.
 218. Migrer choice-simultaneous-quiz afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 219. Supprimer game/rules/game-specific/choice-simultaneous-quiz/effect-pack.ts après certification comportementale complète.
-230. Migrer race-protected-haunted-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
-231. Supprimer game/rules/game-specific/race-protected-haunted-track/effect-pack.ts après certification comportementale complète.
 232. Migrer choice-simultaneous-paw-scoring afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 233. Supprimer game/rules/game-specific/choice-simultaneous-paw-scoring/effect-pack.ts après certification comportementale complète.
 234. Après migration de tous les packs, supprimer le registre des effect packs spécifiques s'il n'a plus de responsabilité générique.

@@ -1157,24 +1157,13 @@
     },
     {
       "id": "frousse-party",
-      "packs": [
-        "race-protected-haunted-track"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/les-quatre-vents/frousse-party/game.json:17",
-          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:77",
-          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:78",
-          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:106",
-          "src/game/rules/game-specific/race-protected-haunted-track/json-protected-haunted-race-schema.ts:91",
-          "src/game/rules/game-specific/race-protected-haunted-track/json-protected-haunted-race-schema.ts:94",
-          "src/game/rules/game-specific/race-protected-haunted-track/json-protected-haunted-race-schema.ts:112",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:36",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:38",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:125",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:207",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:208",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:224"
+          "src/game/games/les-quatre-vents/frousse-party/game.json:67",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:72",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:73",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:101"
         ],
         "ownership": [],
         "collision": [],
@@ -1185,20 +1174,17 @@
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:1534"
         ],
         "cards": [
-          "src/game/games/les-quatre-vents/frousse-party/game.json:25",
-          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:37",
-          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:38",
-          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:50",
-          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:62",
-          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:87",
-          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:88",
-          "src/game/rules/game-specific/race-protected-haunted-track/json-protected-haunted-race-schema.ts:82",
-          "src/game/rules/game-specific/race-protected-haunted-track/json-protected-haunted-race-schema.ts:106"
+          "src/game/games/les-quatre-vents/frousse-party/game.json:75",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:32",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:33",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:45",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:57",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:82",
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:83"
         ],
         "zones": [],
         "choices": [
-          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:100",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:238"
+          "src/game/games/les-quatre-vents/frousse-party/game.spec.ts:95"
         ],
         "status": [
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:424",
@@ -1232,22 +1218,12 @@
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2110",
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2166",
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2238",
-          "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2284",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:56",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:70",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:81",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:99",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:113",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:114",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:185",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:246",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:276"
+          "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2284"
         ],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/frousse-party/game.json:66",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:150"
+          "src/game/games/les-quatre-vents/frousse-party/game.json:112"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:411",
@@ -1281,24 +1257,9 @@
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2032",
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2129",
           "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2136",
-          "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2316",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:221",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:222",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:223",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:224",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:229",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:230",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:231"
+          "src/game/games/les-quatre-vents/frousse-party/content/catalogue.json:2316"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:51",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:57",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:65",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:134",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:148",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:164",
-          "src/game/rules/game-specific/race-protected-haunted-track/protected-haunted-race.recipes.ts:215"
-        ]
+        "triggers": []
       }
     },
     {
@@ -2910,12 +2871,6 @@
       "name": "race-directional-hazards",
       "consumers": [
         "ca-derape"
-      ]
-    },
-    {
-      "name": "race-protected-haunted-track",
-      "consumers": [
-        "frousse-party"
       ]
     },
     {

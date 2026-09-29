@@ -19,7 +19,7 @@ test('effect-pack governance reports every consumer, domain, LOC and reason', ()
   const audit = JSON.parse(result.stdout);
   const policy = require('./engine-effect-pack-governance.json');
   assert.equal(audit.effectPacks.length, audit.summary.programFiles);
-  assert.equal(audit.summary.registeredEffectPacks, 15);
+  assert.equal(audit.summary.registeredEffectPacks, 14);
   assert.equal(
     audit.summary.productionLines,
     audit.effectPacks.reduce((total, pack) => total + pack.productionLines, 0),
@@ -30,11 +30,11 @@ test('effect-pack governance reports every consumer, domain, LOC and reason', ()
   assert.equal(policy.maximumFileBytes, 13500);
   assert(audit.summary.behaviorLines <= policy.maximumBehaviorLines);
   assert.deepEqual(audit.summary.scopes, {
-    'game-specific': 15,
+    'game-specific': 14,
     reusable: 0,
     'engine-primitive': 0,
   });
-  assert.equal(audit.summary.largeSingleConsumerReviews, 15);
+  assert.equal(audit.summary.largeSingleConsumerReviews, 14);
   assert.equal(audit.summary.structuralCandidates, 0);
   assert.equal(audit.summary.exactGameCodeMatches, 0);
   assert.equal(audit.summary.forbiddenVocabularyMatches, 0);

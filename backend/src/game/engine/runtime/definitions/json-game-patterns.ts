@@ -2,7 +2,6 @@ import { raceGame, pawnRace } from '../patterns/gameplay-pattern-track-card';
 import {
   pushYourLuck,
   simultaneousAnswers,
-  marketGame,
   submissionJudgeGame,
 } from '../patterns/gameplay-pattern-round-economy';
 import type { GamePattern } from '../contracts/pattern-definition';
@@ -32,10 +31,7 @@ import type { FamilyRequestOptions } from '../patterns/family-request-pattern';
 import type { GridPlacementOptions } from '../patterns/grid-placement-pattern';
 import type { OrderedAssemblyOptions } from '../patterns/ordered-assembly-pattern';
 import type { JudgedSubmissionOptions } from '../patterns/judged-submission-pattern';
-import {
-  marketExchange,
-  type MarketExchangeOptions,
-} from '../patterns/market-exchange-pattern';
+import type { MarketExchangeOptions } from '../patterns/market-exchange-pattern';
 import type { AnonymousVoteOptions } from '../patterns/anonymous-vote-pattern';
 import type { TreasureTrackRaceOptions } from '../patterns/treasure-track-race-pattern';
 import type { FamilyEffectsOptions } from '../patterns/family-effects-pattern';
@@ -46,6 +42,7 @@ import type { BidirectionalCollisionRaceOptions } from '../patterns/bidirectiona
 import type { PublicDomainCardsOptions } from '../patterns/public-domain-cards-pattern';
 import type { TeamPawnRaceOptions } from '../patterns/team-pawn-race-pattern';
 import type { QuizEventRaceOptions } from '../patterns/quiz-event-race-pattern';
+import type { ProtectedHauntedRaceProgram } from '../patterns/protected-haunted-race-pattern';
 import {
   compileAnonymousVote,
   compileFamilyEffects,
@@ -63,6 +60,8 @@ import {
   compileTeamPawnRace,
   compileQuizEventRace,
   compileTrackZoneCollection,
+  compileProtectedHauntedRace,
+  compileMarket,
 } from './json-advanced-pattern-compilers';
 import {
   type AuthorSchema,
@@ -94,6 +93,7 @@ import { bidirectionalCollisionRacePatternSchema } from './json-bidirectional-co
 import { publicDomainCardsPatternSchema } from './json-public-domain-cards-pattern-schema';
 import { teamPawnRacePatternSchema } from './json-team-pawn-race-pattern-schema';
 import { quizEventRacePatternSchema } from './json-quiz-event-race-pattern-schema';
+import { protectedHauntedRacePatternSchema } from './json-protected-haunted-race-pattern-schema';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -138,6 +138,7 @@ export type JsonGamePattern =
   | ({ kind: 'public-domain-cards' } & PublicDomainCardsOptions)
   | ({ kind: 'team-pawn-race' } & TeamPawnRaceOptions)
   | ({ kind: 'quiz-event-race' } & QuizEventRaceOptions)
+  | ({ kind: 'protected-haunted-race' } & ProtectedHauntedRaceProgram)
   | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
         exchange?: MarketExchangeOptions['exchange'];
       })
@@ -350,6 +351,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     publicDomainCardsPatternSchema,
     teamPawnRacePatternSchema,
     quizEventRacePatternSchema,
+    protectedHauntedRacePatternSchema,
     marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
@@ -432,12 +434,10 @@ export function compileJsonPattern(
       return compileTeamPawnRace(pattern);
     case 'quiz-event-race':
       return compileQuizEventRace(pattern);
-    case 'market': {
-      const { kind: _kind, ...options } = pattern;
-      return options.exchange
-        ? marketExchange({ ...options, exchange: options.exchange })
-        : marketGame(options);
-    }
+    case 'protected-haunted-race':
+      return compileProtectedHauntedRace(pattern);
+    case 'market':
+      return compileMarket(pattern);
     case 'simultaneous-answers':
       return simultaneousAnswers();
     case 'submission-judge': {

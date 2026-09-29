@@ -54,7 +54,6 @@
     "choice-story-challenge",
     "race-chained-tile-cards",
     "race-directional-hazards",
-    "race-protected-haunted-track",
     "race-resource-track"
   ],
   "primitives": [
@@ -132,7 +131,7 @@
     "definition": "Production game.json documents; not a measure of reusable implementation."
   },
   "reuse": {
-    "game-specific": 38,
+    "game-specific": 37,
     "reusable": 0,
     "engine-primitive": 0
   }

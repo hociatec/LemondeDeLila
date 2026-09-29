@@ -62,6 +62,15 @@ import {
   trackZoneCollection,
   type TrackZoneCollectionOptions,
 } from '../patterns/track-zone-collection-pattern';
+import {
+  protectedHauntedRace,
+  type ProtectedHauntedRaceProgram,
+} from '../patterns/protected-haunted-race-pattern';
+import { marketGame } from '../patterns/gameplay-pattern-round-economy';
+import {
+  marketExchange,
+  type MarketExchangeOptions,
+} from '../patterns/market-exchange-pattern';
 
 export function compileTreasureTrackRace(
   pattern: { kind: 'treasure-track-race' } & TreasureTrackRaceOptions,
@@ -160,4 +169,20 @@ export function compileTrackZoneCollection(
 ) {
   const { kind: _kind, ...options } = pattern;
   return trackZoneCollection(options);
+}
+export function compileProtectedHauntedRace(
+  pattern: { kind: 'protected-haunted-race' } & ProtectedHauntedRaceProgram,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return protectedHauntedRace(options);
+}
+export function compileMarket(
+  pattern: { kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
+      exchange?: MarketExchangeOptions['exchange'];
+    },
+) {
+  const { kind: _kind, ...options } = pattern;
+  return options.exchange
+    ? marketExchange({ ...options, exchange: options.exchange })
+    : marketGame(options);
 }
