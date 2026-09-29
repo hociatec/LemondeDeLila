@@ -1,4 +1,5 @@
 import { RedisPubSubTransport } from './redis-pubsub.transport';
+import type { RedisOptions } from 'ioredis';
 import {
   currentCorrelationId,
   runWithCorrelationId,
@@ -35,6 +36,19 @@ describe('RedisPubSubTransport degradation', () => {
     const { transport } = setup();
     await expect(transport.connect()).resolves.toBeUndefined();
     await expect(transport.publish({ id: 1 })).resolves.toBeUndefined();
+  });
+
+  it('owns reconnect subscriptions instead of delegating them to ioredis', async () => {
+    const transport = new RedisPubSubTransport<{ id: number }>(
+      'redis://unused',
+      'events',
+      (value) => value as { id: number },
+    );
+    const subscriber = (
+      transport as unknown as { subscriber: { options: RedisOptions } }
+    ).subscriber;
+    expect(subscriber.options.autoResubscribe).toBe(false);
+    await transport.disconnect();
   });
 
   it('disconnects both owned clients during shutdown', async () => {
