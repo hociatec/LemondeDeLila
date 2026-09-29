@@ -54,6 +54,14 @@ import {
   teamPawnRace,
   type TeamPawnRaceOptions,
 } from '../patterns/team-pawn-race-pattern';
+import {
+  quizEventRace,
+  type QuizEventRaceOptions,
+} from '../patterns/quiz-event-race-pattern';
+import {
+  trackZoneCollection,
+  type TrackZoneCollectionOptions,
+} from '../patterns/track-zone-collection-pattern';
 
 export function compileTreasureTrackRace(
   pattern: { kind: 'treasure-track-race' } & TreasureTrackRaceOptions,
@@ -140,4 +148,16 @@ export function compileTeamPawnRace(
 ) {
   const { kind: _kind, ...options } = pattern;
   return teamPawnRace(options);
+}
+export function compileQuizEventRace(
+  pattern: { kind: 'quiz-event-race' } & QuizEventRaceOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return quizEventRace(options);
+}
+export function compileTrackZoneCollection(
+  pattern: { kind: 'track-zone-collection' } & TrackZoneCollectionOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return trackZoneCollection(options);
 }

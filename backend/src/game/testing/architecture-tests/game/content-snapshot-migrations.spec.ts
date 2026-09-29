@@ -46,10 +46,7 @@ const olympiaDocument = legacyExtensionFixture(
   'sharedPrestigeCards',
 );
 const aventureDocument = aventureDocumentExtensionSource;
-const missionDocument = legacyExtensionFixture(
-  missionDocumentExtensionSource,
-  'quizEventRace',
-);
+const missionDocument = missionDocumentExtensionSource;
 const piratesDocument = piratesDocumentExtensionSource;
 const mamanDocument = mamanDocumentExtensionSource;
 const sacDocument = legacyExtensionFixture(

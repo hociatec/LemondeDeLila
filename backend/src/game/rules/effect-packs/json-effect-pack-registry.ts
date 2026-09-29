@@ -2,7 +2,6 @@
 import type { JsonEffectPackDomain } from '../../engine/sdk/extension-api';
 import { effectPack as raceResourceTrackEffectPack } from '../game-specific/race-resource-track/effect-pack';
 import { effectPack as raceProtectedHauntedTrackEffectPack } from '../game-specific/race-protected-haunted-track/effect-pack';
-import { effectPack as raceQuizEventTrackEffectPack } from '../game-specific/race-quiz-event-track/effect-pack';
 import { effectPack as raceDirectionalHazardsEffectPack } from '../game-specific/race-directional-hazards/effect-pack';
 import { effectPack as raceChainedTileCardsEffectPack } from '../game-specific/race-chained-tile-cards/effect-pack';
 import { effectPack as choiceChapterEncounterEffectPack } from '../game-specific/choice-chapter-encounter/effect-pack';
@@ -21,7 +20,6 @@ import { effectPack as boardMovementLandingsEffectPack } from '../game-specific/
 export const jsonEffectPacks = Object.freeze([
   raceResourceTrackEffectPack,
   raceProtectedHauntedTrackEffectPack,
-  raceQuizEventTrackEffectPack,
   raceDirectionalHazardsEffectPack,
   raceChainedTileCardsEffectPack,
   choiceChapterEncounterEffectPack,

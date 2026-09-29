@@ -220,6 +220,16 @@
         "src/game/testing/architecture-tests/game/team-pawn-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-team-pawn-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/mission-galaxie/game.json",
+      "fromSha256": "5706bdba5e64ec4365db6f30a9738bf611d2677793b93501545eebd57f1b32c9",
+      "toSha256": "7e7ce59a3aaf84d2aba0a049c1e8a5087ae168dd04390d648e43bd4dfbe1fb58",
+      "justification": "Le pattern quiz-event-race générique porte désormais piste, questions, défis, événements, déplacements choisis, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/quiz-event-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-quiz-event-race.spec.ts"
+      ]
     }
   ]
 }

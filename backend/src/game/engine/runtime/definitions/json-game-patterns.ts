@@ -26,10 +26,7 @@ import {
   cardBattle,
   type CardBattleOptions,
 } from '../patterns/card-battle-pattern';
-import {
-  trackZoneCollection,
-  type TrackZoneCollectionOptions,
-} from '../patterns/track-zone-collection-pattern';
+import type { TrackZoneCollectionOptions } from '../patterns/track-zone-collection-pattern';
 import type { ThemedSetCollectionOptions } from '../patterns/themed-set-collection-pattern';
 import type { FamilyRequestOptions } from '../patterns/family-request-pattern';
 import type { GridPlacementOptions } from '../patterns/grid-placement-pattern';
@@ -48,6 +45,7 @@ import type { BounceQuizRaceOptions } from '../patterns/bounce-quiz-race-pattern
 import type { BidirectionalCollisionRaceOptions } from '../patterns/bidirectional-collision-race-pattern';
 import type { PublicDomainCardsOptions } from '../patterns/public-domain-cards-pattern';
 import type { TeamPawnRaceOptions } from '../patterns/team-pawn-race-pattern';
+import type { QuizEventRaceOptions } from '../patterns/quiz-event-race-pattern';
 import {
   compileAnonymousVote,
   compileFamilyEffects,
@@ -63,6 +61,8 @@ import {
   compilePublicDomainCards,
   compileThemedSetCollection,
   compileTeamPawnRace,
+  compileQuizEventRace,
+  compileTrackZoneCollection,
 } from './json-advanced-pattern-compilers';
 import {
   type AuthorSchema,
@@ -93,6 +93,7 @@ import { bounceQuizRacePatternSchema } from './json-bounce-quiz-race-pattern-sch
 import { bidirectionalCollisionRacePatternSchema } from './json-bidirectional-collision-race-pattern-schema';
 import { publicDomainCardsPatternSchema } from './json-public-domain-cards-pattern-schema';
 import { teamPawnRacePatternSchema } from './json-team-pawn-race-pattern-schema';
+import { quizEventRacePatternSchema } from './json-quiz-event-race-pattern-schema';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -136,6 +137,7 @@ export type JsonGamePattern =
     } & BidirectionalCollisionRaceOptions)
   | ({ kind: 'public-domain-cards' } & PublicDomainCardsOptions)
   | ({ kind: 'team-pawn-race' } & TeamPawnRaceOptions)
+  | ({ kind: 'quiz-event-race' } & QuizEventRaceOptions)
   | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
         exchange?: MarketExchangeOptions['exchange'];
       })
@@ -347,6 +349,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     bidirectionalCollisionRacePatternSchema,
     publicDomainCardsPatternSchema,
     teamPawnRacePatternSchema,
+    quizEventRacePatternSchema,
     marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
@@ -397,10 +400,8 @@ export function compileJsonPattern(
       const { kind: _kind, ...options } = pattern;
       return cardBattle(options);
     }
-    case 'track-zone-collection': {
-      const { kind: _kind, ...options } = pattern;
-      return trackZoneCollection(options);
-    }
+    case 'track-zone-collection':
+      return compileTrackZoneCollection(pattern);
     case 'themed-set-collection':
       return compileThemedSetCollection(pattern);
     case 'family-request':
@@ -429,6 +430,8 @@ export function compileJsonPattern(
       return compilePublicDomainCards(pattern);
     case 'team-pawn-race':
       return compileTeamPawnRace(pattern);
+    case 'quiz-event-race':
+      return compileQuizEventRace(pattern);
     case 'market': {
       const { kind: _kind, ...options } = pattern;
       return options.exchange

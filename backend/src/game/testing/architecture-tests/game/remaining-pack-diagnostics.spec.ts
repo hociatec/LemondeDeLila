@@ -24,7 +24,7 @@ function duplicate(key: string, field: string, member?: string) {
     return `${field}[${entries.length}]${member ? '.' + member : ''}`;
   });
 }
-for (const key of ['protectedHauntedRace', 'quizEventRace', 'chainedTileRace'])
+for (const key of ['protectedHauntedRace', 'chainedTileRace'])
   add(key, (p) => {
     const tiles = rows(p.tiles);
     const index = tiles.length - 1;
@@ -36,7 +36,7 @@ for (const key of ['chainedTileRace'])
     rows(p.tiles)[1].type = 'absent';
     return 'tiles[1].type';
   });
-for (const key of ['protectedHauntedRace', 'quizEventRace'])
+for (const key of ['protectedHauntedRace'])
   add(key, (p) => {
     rows(p.tiles)[1].n = 999;
     return 'tiles[1].n';
@@ -46,10 +46,6 @@ add('protectedHauntedRace', (p) => {
   return 'protections[0].category';
 });
 duplicate('protectedHauntedRace', 'protections', 'status');
-add('quizEventRace', (p) => {
-  Object.assign(rows(p.tiles)[1], { type: 'goto', target: 9999 });
-  return 'tiles[1].target';
-});
 add('chainedTileRace', (p) => {
   object(p.tileRules)['bad.rule'] = {
     kind: 'move-to',

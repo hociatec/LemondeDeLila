@@ -1,18 +1,68 @@
+import { defineChoice } from '../actions/action-builders';
+import { gameInput } from '../actions/game-input-schema';
+import type { GameEffectInstruction } from '../contracts/effect-ir';
+import { GameRuleViolationError } from '../contracts/game-domain.errors';
+import type { GameContext } from '../definitions/game-author-context';
+import { defineEffect } from '../effects/effects-core';
 import {
-  defineChoice,
-  defineEffect,
-  gameInput,
   drawAndResolve,
   drawEvent,
   raceTurn,
-} from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
-import type {
-  QuizEventChoiceCard,
-  QuizEventEventCard,
-  QuizEventRaceProgram,
-} from './program';
-import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
+} from '../recipes/gameplay-recipes';
+import { definePattern } from './gameplay-pattern-core';
+
+export type QuizEventRaceTile = {
+  n: number;
+  title: string;
+  description?: string;
+  type:
+    | 'start'
+    | 'neutral'
+    | 'question'
+    | 'challenge'
+    | 'event'
+    | 'move'
+    | 'skip'
+    | 'finish'
+    | 'swapNearest'
+    | 'goto';
+  delta?: number;
+  turnsToSkip?: number;
+  target?: number;
+  keepTurn?: boolean;
+};
+export type QuizEventChoiceCard = {
+  id: number;
+  title: string;
+  prompt: string;
+  choices: readonly string[];
+  correctIndex: number;
+  correctDelta: number;
+  wrongDelta: number;
+};
+export type QuizEventEventCard = {
+  id: number;
+  title: string;
+  description: string;
+  effects: readonly GameEffectInstruction[];
+  moveDeltas?: readonly number[];
+};
+export type QuizEventRaceOptions = {
+  rollRecipe: string;
+  trackId: string;
+  diceId: string;
+  finishReason: string;
+  questionDeckId: string;
+  challengeDeckId: string;
+  eventDeckId: string;
+  answerChoiceId: string;
+  eventMoveChoiceId: string;
+  tiles: readonly QuizEventRaceTile[];
+  questions: readonly QuizEventChoiceCard[];
+  challenges: readonly QuizEventChoiceCard[];
+  events: readonly QuizEventEventCard[];
+  maxDepth: number;
+};
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
@@ -31,7 +81,7 @@ type Move = (
   ctx: Context,
 ) => void;
 
-export function quizEventRaceRules(source: QuizEventRaceProgram) {
+export function quizEventRace(source: QuizEventRaceOptions) {
   const program = structuredClone(source);
   const move: Move = (playerId, delta, depth, ctx) =>
     ctx.movement.moveAndResolve({
@@ -45,17 +95,27 @@ export function quizEventRaceRules(source: QuizEventRaceProgram) {
         ctx.choice.current() != null || ctx.match.lifecycle() === 'finished',
       onLand: () => resolveTile(move, playerId, depth + 1, ctx),
     });
-  return {
-    roll: raceTurn<State>({
-      trackId: program.trackId,
-      diceId: program.diceId,
-      resolveLanding: ({ playerId, ctx }) =>
-        resolveTile(move, playerId, 0, ctx),
-      documentation: 'Lance le dé et résout entièrement la case galactique.',
-    }),
+  return definePattern({
+    id: `quiz-event-race:${program.trackId}`,
+    mechanics: ['race', 'quiz', 'cards', 'effects'],
+    actions: {
+      [program.rollRecipe]: raceTurn<State>({
+        trackId: program.trackId,
+        diceId: program.diceId,
+        resolveLanding: ({ playerId, ctx }) =>
+          resolveTile(move, playerId, 0, ctx),
+        documentation: 'Lance le dé et résout entièrement la case galactique.',
+      }),
+    },
     choices: choices(move),
     effects: effects(move),
-  };
+    bot: {
+      choose: ({ availableActions }) =>
+        availableActions.includes(program.rollRecipe)
+          ? { type: program.rollRecipe, payload: {} }
+          : null,
+    },
+  });
 
   function choices(move: Move) {
     return {

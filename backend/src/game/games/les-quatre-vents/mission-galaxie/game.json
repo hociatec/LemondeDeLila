@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "2",
   "snapshotMigrations": [
     {
@@ -10,6 +10,10 @@
     {
       "fromVersion": "mission-galaxie@content:1b17e6f9",
       "toVersion": "1"
+    },
+    {
+      "fromVersion": "1",
+      "toVersion": "2"
     }
   ],
   "category": "JeuxDePlateaux",
@@ -19,6 +23,23 @@
       "kind": "race",
       "trackId": "quizEvent",
       "spaces": 50
+    },
+    {
+      "kind": "quiz-event-race",
+      "rollRecipe": "race-quiz-event-track-roll",
+      "trackId": "quizEvent",
+      "diceId": "main",
+      "questionDeckId": "questions",
+      "challengeDeckId": "challenges",
+      "eventDeckId": "events",
+      "answerChoiceId": "race-quiz-event-track.answer",
+      "eventMoveChoiceId": "race-quiz-event-track.event-move",
+      "tiles": { "$content": "content/catalogue.json#/tiles" },
+      "questions": { "$content": "content/catalogue.json#/questions" },
+      "challenges": { "$content": "content/catalogue.json#/challenges" },
+      "events": { "$content": "content/catalogue.json#/events" },
+      "maxDepth": 20,
+      "finishReason": "legendary-planet"
     }
   ],
   "components": [
@@ -64,9 +85,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -76,34 +95,7 @@
     }
   },
   "victory": {
-    "kind": "by-quiz-event-race"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "quizEventRace",
-      "config": {
-        "trackId": "quizEvent",
-        "diceId": "main",
-        "questionDeckId": "questions",
-        "challengeDeckId": "challenges",
-        "eventDeckId": "events",
-        "answerChoiceId": "race-quiz-event-track.answer",
-        "eventMoveChoiceId": "race-quiz-event-track.event-move",
-        "tiles": {
-          "$content": "content/catalogue.json#/tiles"
-        },
-        "questions": {
-          "$content": "content/catalogue.json#/questions"
-        },
-        "challenges": {
-          "$content": "content/catalogue.json#/challenges"
-        },
-        "events": {
-          "$content": "content/catalogue.json#/events"
-        },
-        "maxDepth": 20,
-        "finishReason": "legendary-planet"
-      }
-    }
-  ]
+  "extensions": []
 }

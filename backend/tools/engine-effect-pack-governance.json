@@ -49,7 +49,6 @@
     "board-path-walls": "Compared with board-game and grid-placement; wall legality and path preservation remain unique.",
     "race-directional-hazards": "Compared with track-round and board landings; directional movement and chained hazards remain unique.",
     "race-protected-haunted-track": "Compared with event-race and track-round; haunted protection and blocking remain unique.",
-    "race-quiz-event-track": "Compared with movement-quiz and event-race; combined quiz, challenge and event choices remain unique.",
     "cards-theme-name": "Compared with judged-cards and card-actions; name/theme composition and special cards remain unique.",
     "cards-discard-penalty": "Compared with card-actions; discard legality, quitting and unique-value penalties remain unique.",
     "choice-simultaneous-quiz": "Compared with movement-quiz and scoring-submission; configurable simultaneous quiz remains unique.",
@@ -60,17 +59,7 @@
     "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
     "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible."
   },
-  "structuralReviews": [
-    {
-      "operations": [
-        "/straight:movement.position",
-        "/straight:ranking.rank",
-        "/if.then:movement.swap"
-      ],
-      "profiles": ["choice-story-challenge", "race-quiz-event-track"],
-      "decision": "Keep composed primitives: each profile selects a different target (closest, behind, or rule-specific), so a callback wrapper would add indirection without a shared invariant."
-    }
-  ],
+  "structuralReviews": [],
   "effectDomains": {
     "board": [
       "board-movement-landings",
@@ -93,8 +82,7 @@
       "race-chained-tile-cards",
       "race-directional-hazards",
       "race-resource-track",
-      "race-protected-haunted-track",
-      "race-quiz-event-track"
+      "race-protected-haunted-track"
     ]
   },
   "genericGameplayFiles": [
@@ -177,14 +165,6 @@
       "classificationReason": "race-protected-haunted-track implements protected haunted track movement. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "race-quiz-event-track": {
-      "property": "quizEventRace",
-      "mechanic": "quiz, challenge and event track race",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-quiz-event-track implements quiz, challenge and event track race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "cards-theme-name": {
       "property": "themeNameCards",
       "mechanic": "name and theme card combinations",
@@ -245,7 +225,6 @@
   "registrationOrder": [
     "race-resource-track",
     "race-protected-haunted-track",
-    "race-quiz-event-track",
     "race-directional-hazards",
     "race-chained-tile-cards",
     "choice-chapter-encounter",

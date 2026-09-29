@@ -1795,81 +1795,41 @@
     },
     {
       "id": "mission-galaxie",
-      "packs": [
-        "race-quiz-event-track"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/les-quatre-vents/mission-galaxie/game.spec.ts:30",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:92",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:95",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:37",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:122",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:150",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:170",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:254",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:257",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:260"
+          "src/game/games/les-quatre-vents/mission-galaxie/game.spec.ts:25"
         ],
         "ownership": [],
         "collision": [],
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/les-quatre-vents/mission-galaxie/game.json:26",
-          "src/game/games/les-quatre-vents/mission-galaxie/game.json:34",
-          "src/game/games/les-quatre-vents/mission-galaxie/game.json:42",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:106"
+          "src/game/games/les-quatre-vents/mission-galaxie/game.json:47",
+          "src/game/games/les-quatre-vents/mission-galaxie/game.json:55",
+          "src/game/games/les-quatre-vents/mission-galaxie/game.json:63"
         ],
         "zones": [],
-        "choices": [
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:2",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:45",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:62",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:65",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:85",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:88",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:157",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:197",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:228"
-        ],
+        "choices": [],
         "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/mission-galaxie/game.json:78",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:173"
+          "src/game/games/les-quatre-vents/mission-galaxie/game.json:97"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:290",
           "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:643",
           "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:711",
           "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:764",
-          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:777",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:55",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:125",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:127",
-          "src/game/rules/game-specific/race-quiz-event-track/program.ts:21",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:116",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:118",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:122",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:169",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:170",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:255"
+          "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:777"
         ],
         "triggers": [
           "src/game/games/les-quatre-vents/mission-galaxie/catalogue.json:634",
-          "src/game/games/les-quatre-vents/mission-galaxie/game.json:43",
-          "src/game/games/les-quatre-vents/mission-galaxie/game.json:45",
-          "src/game/games/les-quatre-vents/mission-galaxie/game.json:89",
-          "src/game/games/les-quatre-vents/mission-galaxie/game.json:101",
-          "src/game/games/les-quatre-vents/mission-galaxie/game.json:102",
-          "src/game/rules/game-specific/race-quiz-event-track/json-quiz-event-race-schema.ts:64",
-          "src/game/rules/game-specific/race-quiz-event-track/program.ts:51",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:46",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:91",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:158",
-          "src/game/rules/game-specific/race-quiz-event-track/quiz-event-race.recipes.ts:160"
+          "src/game/games/les-quatre-vents/mission-galaxie/game.json:34",
+          "src/game/games/les-quatre-vents/mission-galaxie/game.json:40",
+          "src/game/games/les-quatre-vents/mission-galaxie/game.json:64",
+          "src/game/games/les-quatre-vents/mission-galaxie/game.json:66"
         ]
       }
     },
@@ -2956,12 +2916,6 @@
       "name": "race-protected-haunted-track",
       "consumers": [
         "frousse-party"
-      ]
-    },
-    {
-      "name": "race-quiz-event-track",
-      "consumers": [
-        "mission-galaxie"
       ]
     },
     {
