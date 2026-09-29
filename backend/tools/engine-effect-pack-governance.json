@@ -121,7 +121,6 @@
     "collection": [
       "collection-species-troops",
       "collection-themed-circles",
-      "collection-track-zones",
       "collection-family-request",
       "collection-family-effects",
       "collection-market-exchange"
@@ -202,14 +201,6 @@
       "domain": "choice",
       "scope": "game-specific",
       "classificationReason": "choice-simultaneous-paw-scoring implements simultaneous paw scoring rounds. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "collection-track-zones": {
-      "property": "trackZoneCollection",
-      "mechanic": "track race with zone collection",
-      "domain": "collection",
-      "scope": "game-specific",
-      "classificationReason": "collection-track-zones implements track race with zone collection. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
     "choice-story-challenge": {
@@ -414,7 +405,6 @@
     }
   },
   "registrationOrder": [
-    "collection-track-zones",
     "race-resource-track",
     "race-treasure-track",
     "collection-family-request",

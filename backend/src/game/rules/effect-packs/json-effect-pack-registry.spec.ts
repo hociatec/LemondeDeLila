@@ -14,7 +14,7 @@ const pathWallsDocument = legacyExtensionFixture(
 describe('JSON effect-pack registry', () => {
   it('is frozen, deterministic and has unique document and output keys', () => {
     expect(Object.isFrozen(jsonEffectPacks)).toBe(true);
-    expect(jsonEffectPacks).toHaveLength(32);
+    expect(jsonEffectPacks).toHaveLength(31);
 
     const documentKeys = jsonEffectPacks.map(
       (extension) => extension.documentKey,
@@ -24,7 +24,6 @@ describe('JSON effect-pack registry', () => {
     expect(new Set(documentKeys).size).toBe(documentKeys.length);
     expect(new Set(outputKeys).size).toBe(outputKeys.length);
     expect(documentKeys).toEqual([
-      'trackZoneCollection',
       'resourceTrackRace',
       'treasureTrackRace',
       'familyRequest',
@@ -89,7 +88,7 @@ describe('JSON effect-pack registry', () => {
       board: 3,
       cards: 7,
       choice: 5,
-      collection: 6,
+      collection: 5,
       race: 10,
       spatial: 1,
     });
@@ -118,6 +117,6 @@ describe('JSON effect-pack registry', () => {
       'pathWalls_move',
       'pathWalls_place_wall',
     ]);
-    expect(jsonEffectPacks).toHaveLength(32);
+    expect(jsonEffectPacks).toHaveLength(31);
   });
 });

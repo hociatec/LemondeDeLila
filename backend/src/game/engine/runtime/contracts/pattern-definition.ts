@@ -12,6 +12,7 @@ import type { PlayerState } from '../../../core/application/models/game-state.mo
 import type { GameContext } from '../definitions/game-author-context';
 import type { GameEffectResolverShape } from './effect-resolver';
 import type { GameConfigurationShape } from '../configuration/configuration-kit';
+import type { GameEventDefinition } from '../events/game-event-definition';
 
 type PatternComponents = {
   [TKind in GameComponentDefinition['component']]: Extract<
@@ -38,6 +39,7 @@ export type GamePattern<
   readonly actions?: GameActionMap<TState>;
   readonly choices?: Readonly<Record<string, ChoiceResolverShape<TState>>>;
   readonly effects?: Readonly<Record<string, GameEffectResolverShape<TState>>>;
+  readonly events?: readonly GameEventDefinition<string, object>[];
   readonly viewExtension?: (input: {
     state: TState;
     actor: PlayerState | null;

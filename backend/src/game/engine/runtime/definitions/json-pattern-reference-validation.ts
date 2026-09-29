@@ -46,6 +46,80 @@ export function assertJsonPatternReferences(
       );
     if (pattern.kind === 'card-battle')
       assertCardBattleReferences(pattern, index, components, fail);
+    if (pattern.kind === 'track-zone-collection')
+      assertTrackZoneCollectionReferences(
+        pattern,
+        index,
+        components,
+        resources,
+        fail,
+      );
+  }
+}
+
+function assertTrackZoneCollectionReferences(
+  pattern: Extract<JsonGamePattern, { kind: 'track-zone-collection' }>,
+  patternIndex: number,
+  components: readonly GameComponentDefinition[],
+  resources: ReadonlySet<string>,
+  fail: Failure,
+): void {
+  const root = `patterns[${patternIndex}]`;
+  const track = components.find(
+    (component) =>
+      component.component === 'movement.track' &&
+      component.id === pattern.trackId,
+  );
+  if (
+    track?.component !== 'movement.track' ||
+    track.spaces !== pattern.tiles.length
+  )
+    fail(`${root}.trackId`, 'one tile per track position required');
+  if (
+    !components.some(
+      (component) =>
+        component.component === 'dice.set' && component.id === pattern.diceId,
+    )
+  )
+    fail(`${root}.diceId`, 'unknown dice');
+  if (pattern.tiles.at(-1)?.type !== 'finish')
+    fail(
+      `${root}.tiles[${pattern.tiles.length - 1}].type`,
+      'last tile must finish the race',
+    );
+  const zoneIds = new Set<number>();
+  for (const [index, zone] of pattern.zones.entries()) {
+    if (zoneIds.has(zone.id))
+      fail(`${root}.zones[${index}].id`, 'duplicate zone');
+    zoneIds.add(zone.id);
+    if (zone.minimumTile > zone.maximumTile)
+      fail(`${root}.zones[${index}].maximumTile`, 'inverted zone range');
+    if (!resources.has(zone.resourceId))
+      fail(`${root}.zones[${index}].resourceId`, 'unknown zone resource');
+    const deck = components.find(
+      (component) =>
+        component.component === 'cards.deck' && component.id === zone.deckId,
+    );
+    if (deck?.component !== 'cards.deck') {
+      fail(`${root}.zones[${index}].deckId`, 'unknown zone deck');
+      continue;
+    }
+    if (
+      deck.cards.some(
+        (card) =>
+          card === null ||
+          typeof card !== 'object' ||
+          !('id' in card) ||
+          !('attributes' in card) ||
+          card.attributes === null ||
+          typeof card.attributes !== 'object' ||
+          Reflect.get(card.attributes, 'zoneId') !== zone.id,
+      )
+    )
+      fail(
+        `${root}.zones[${index}].deckId`,
+        'zone cards require matching zoneId attributes',
+      );
   }
 }
 

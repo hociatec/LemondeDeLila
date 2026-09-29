@@ -29,7 +29,6 @@ for (const key of [
   'protectedHauntedRace',
   'quizEventRace',
   'chainedTileRace',
-  'trackZoneCollection',
 ])
   add(key, (p) => {
     const tiles = rows(p.tiles);
@@ -130,18 +129,6 @@ add('marketExchange', (p) => {
   list(p.goods)[0] = 'absent';
   return 'goods[0]';
 });
-duplicate('trackZoneCollection', 'zones', 'id');
-for (const [field, value] of [
-  ['maximumTile', 0],
-  ['resourceId', 'absent'],
-  ['deckId', 'absent'],
-] as const)
-  add('trackZoneCollection', (p) => {
-    const zone = rows(p.zones)[0];
-    if (field === 'maximumTile') zone.minimumTile = 1;
-    zone[field] = value;
-    return `zones[0].${field}`;
-  });
 duplicate('publicDomainCards', 'collectibleCategories');
 add('publicDomainCards', (p) => {
   p.lossCategory = 'absent';

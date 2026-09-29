@@ -60,6 +60,16 @@
         "src/game/testing/architecture-tests/game/card-battle-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-card-battle.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json",
+      "fromSha256": "bc87c1527223f3a4ae2af127a3517f138c1969b2c688776ce0339627afd54afb",
+      "toSha256": "60b039867276c94a4d1557d298a3eda06f761492b4d30fece998a4d123664c63",
+      "justification": "Le pattern track-zone-collection générique porte désormais déplacement, pioche par zone, ressources, score, classement et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/track-zone-collection-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-track-zone-collection.spec.ts"
+      ]
     }
   ]
 }

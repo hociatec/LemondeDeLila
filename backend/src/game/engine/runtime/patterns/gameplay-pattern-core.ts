@@ -29,6 +29,7 @@ export function definePattern<
     actions: Object.freeze({ ...(pattern.actions ?? {}) }),
     choices: Object.freeze({ ...(pattern.choices ?? {}) }),
     effects: Object.freeze({ ...(pattern.effects ?? {}) }),
+    events: Object.freeze([...(pattern.events ?? [])]),
   });
 }
 

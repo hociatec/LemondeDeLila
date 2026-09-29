@@ -2313,62 +2313,35 @@
     },
     {
       "id": "mon-village-mon-histoire",
-      "packs": [
-        "collection-track-zones"
-      ],
+      "packs": [],
       "mechanics": {
-        "movement": [
-          "src/game/rules/game-specific/collection-track-zones/json-track-zone-collection-schema.ts:50",
-          "src/game/rules/game-specific/collection-track-zones/json-track-zone-collection-schema.ts:54"
-        ],
+        "movement": [],
         "ownership": [],
         "collision": [],
-        "resources": [
-          "src/game/rules/game-specific/collection-track-zones/json-track-zone-collection-schema.ts:76",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:54",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:75"
-        ],
+        "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:21",
-          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:29",
-          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:37",
-          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:45",
-          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:53",
-          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:61",
-          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:69",
-          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:77",
-          "src/game/rules/game-specific/collection-track-zones/json-track-zone-collection-schema.ts:80",
-          "src/game/rules/game-specific/collection-track-zones/json-track-zone-collection-schema.ts:82",
-          "src/game/rules/game-specific/collection-track-zones/json-track-zone-collection-schema.ts:87"
+          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:92",
+          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:100",
+          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:108",
+          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:116",
+          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:124",
+          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:132",
+          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:140",
+          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:148"
         ],
         "zones": [],
         "choices": [],
         "status": [],
         "collections": [
-          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:118",
-          "src/game/rules/game-specific/collection-track-zones/effect-pack.ts:6",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:81"
+          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:189"
         ],
-        "scoring": [
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:53",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:73",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:83"
-        ],
+        "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:164",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:85"
+          "src/game/games/les-quatre-vents/mon-village-mon-histoire/game.json:233"
         ],
         "targeting": [],
-        "triggers": [
-          "src/game/rules/game-specific/collection-track-zones/effect-pack.ts:9",
-          "src/game/rules/game-specific/collection-track-zones/effect-pack.ts:32",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:31",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:48",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:55",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:67",
-          "src/game/rules/game-specific/collection-track-zones/track-zone-collection.recipes.ts:81"
-        ]
+        "triggers": []
       }
     },
     {
@@ -3583,12 +3556,6 @@
       "name": "collection-themed-circles",
       "consumers": [
         "cercles-sacres"
-      ]
-    },
-    {
-      "name": "collection-track-zones",
-      "consumers": [
-        "mon-village-mon-histoire"
       ]
     },
     {

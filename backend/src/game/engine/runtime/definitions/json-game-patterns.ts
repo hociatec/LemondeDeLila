@@ -27,6 +27,10 @@ import {
   type CardBattleOptions,
 } from '../patterns/card-battle-pattern';
 import {
+  trackZoneCollection,
+  type TrackZoneCollectionOptions,
+} from '../patterns/track-zone-collection-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -35,6 +39,11 @@ import {
   authorArray as array,
   authorRef as ref,
 } from '../contracts/json-author-schema';
+import {
+  cardBattlePatternSchema,
+  gooseRacePatternSchema,
+  trackZoneCollectionPatternSchema,
+} from './json-advanced-pattern-schemas';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -61,6 +70,7 @@ export type JsonGamePattern =
   | ({ kind: 'event-card-race' } & EventCardRaceOptions)
   | ({ kind: 'goose-race' } & GooseRaceOptions)
   | ({ kind: 'card-battle' } & CardBattleOptions)
+  | ({ kind: 'track-zone-collection' } & TrackZoneCollectionOptions)
   | {
       kind: 'market';
       marketId: string;
@@ -266,96 +276,9 @@ export const jsonGamePatternSchema: AuthorSchema = {
         'pawnSelection',
       ],
     ),
-    object(
-      {
-        kind: { const: 'goose-race' },
-        rollRecipe: id,
-        trackId: id,
-        diceId: id,
-        playingPhase: id,
-        wellStatus: id,
-        finishReason: id,
-        maxDepth: { type: 'integer', minimum: 1, maximum: 64 },
-        bridgeDestination: position,
-        tiles: array(
-          object(
-            {
-              id,
-              label: { type: 'string', minLength: 1, maxLength: 2000 },
-              description: { type: 'string', maxLength: 10000 },
-              type: id,
-              turnsToSkip: { type: 'integer', minimum: 1, maximum: 1000 },
-              backTo: position,
-            },
-            ['id', 'label', 'type'],
-          ),
-          2,
-        ),
-        pawnSelection: object({ setId: id, choiceId: id }, [
-          'setId',
-          'choiceId',
-        ]),
-        escapeRolls: array({ type: 'integer', minimum: 1 }, 1),
-        forwardRollMaximum: { type: 'integer', minimum: 0 },
-        defaultReturn: position,
-        defaultSkip: { type: 'integer', minimum: 1 },
-        tileRules: record({
-          enum: [
-            'none',
-            'finish',
-            'move-to',
-            'return',
-            'skip',
-            'roll-directed',
-            'block',
-            'repeat-roll',
-          ],
-        }),
-      },
-      [
-        'kind',
-        'rollRecipe',
-        'trackId',
-        'diceId',
-        'playingPhase',
-        'wellStatus',
-        'finishReason',
-        'maxDepth',
-        'bridgeDestination',
-        'tiles',
-        'pawnSelection',
-        'escapeRolls',
-        'forwardRollMaximum',
-        'defaultReturn',
-        'defaultSkip',
-        'tileRules',
-      ],
-    ),
-    object(
-      {
-        kind: { const: 'card-battle' },
-        playRecipe: id,
-        deckId: id,
-        handId: id,
-        totalCards: { type: 'integer', minimum: 1, maximum: 10000 },
-        cards: array(
-          object(
-            {
-              id,
-              name: { type: 'string', minLength: 1, maxLength: 1000 },
-              type: id,
-              color: id,
-              family: id,
-              value: { type: 'number' },
-              allowedFamilies: array(id),
-            },
-            ['id', 'name', 'type', 'color', 'value'],
-          ),
-          1,
-        ),
-      },
-      ['kind', 'playRecipe', 'deckId', 'handId', 'totalCards', 'cards'],
-    ),
+    gooseRacePatternSchema,
+    cardBattlePatternSchema,
+    trackZoneCollectionPatternSchema,
     object(
       {
         kind: { const: 'market' },
@@ -434,6 +357,10 @@ export function compileJsonPattern(
     case 'card-battle': {
       const { kind: _kind, ...options } = pattern;
       return cardBattle(options);
+    }
+    case 'track-zone-collection': {
+      const { kind: _kind, ...options } = pattern;
+      return trackZoneCollection(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

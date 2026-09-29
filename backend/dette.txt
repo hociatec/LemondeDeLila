@@ -87,8 +87,6 @@
 199. Supprimer game/rules/game-specific/cards-discard-penalty/effect-pack.ts après certification comportementale complète.
 200. Migrer race-quiz-event-track afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 201. Supprimer game/rules/game-specific/race-quiz-event-track/effect-pack.ts après certification comportementale complète.
-202. Migrer collection-track-zones afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
-203. Supprimer game/rules/game-specific/collection-track-zones/effect-pack.ts après certification comportementale complète.
 204. Migrer spatial-grid-placement afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 205. Supprimer game/rules/game-specific/spatial-grid-placement/effect-pack.ts après certification comportementale complète.
 206. Migrer cards-ordered-assembly afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.

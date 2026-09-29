@@ -46,11 +46,13 @@ export function compileJsonPrograms(
   for (const pattern of compiledPatterns) {
     Object.assign(actions, pattern.actions ?? {});
     Object.assign(choices, pattern.choices ?? {});
+    events.push(...(pattern.events ?? []));
   }
   const patterns: CompiledPattern[] = compiledPatterns.map((pattern) => ({
     ...pattern,
     actions: {},
     choices: {},
+    events: [],
   }));
   for (const extension of jsonEffectPacks) {
     const source = sources.get(extension.documentKey);
