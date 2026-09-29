@@ -1958,60 +1958,28 @@
     },
     {
       "id": "la-parade-sucree",
-      "packs": [
-        "cards-ordered-parade"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
         "collision": [],
-        "resources": [
-          "src/game/rules/game-specific/cards-ordered-parade/json-parade-schema.ts:69",
-          "src/game/rules/game-specific/cards-ordered-parade/json-parade-schema.ts:76",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:5",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:41",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:92"
-        ],
+        "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/vents-dansants/la-parade-sucree/game.json:9",
-          "src/game/games/vents-dansants/la-parade-sucree/game.json:18",
-          "src/game/games/vents-dansants/la-parade-sucree/game.spec.ts:13",
-          "src/game/rules/game-specific/cards-ordered-parade/json-parade-schema.ts:44",
-          "src/game/rules/game-specific/cards-ordered-parade/json-parade-schema.ts:48",
-          "src/game/rules/game-specific/cards-ordered-parade/json-parade-schema.ts:50",
-          "src/game/rules/game-specific/cards-ordered-parade/json-parade-schema.ts:51",
-          "src/game/rules/game-specific/cards-ordered-parade/json-parade-schema.ts:53",
-          "src/game/rules/game-specific/cards-ordered-parade/json-parade-schema.ts:56",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:12",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:14",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:18",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:27",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:31",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:58",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:62"
+          "src/game/games/vents-dansants/la-parade-sucree/game.json:32",
+          "src/game/games/vents-dansants/la-parade-sucree/game.json:41",
+          "src/game/games/vents-dansants/la-parade-sucree/game.spec.ts:12"
         ],
-        "zones": [
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:14",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:58"
-        ],
+        "zones": [],
         "choices": [],
         "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/la-parade-sucree/game.json:67",
-          "src/game/rules/game-specific/cards-ordered-parade/effect-pack.ts:6",
-          "src/game/rules/game-specific/cards-ordered-parade/effect-pack.ts:17",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:1",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:56"
+          "src/game/games/vents-dansants/la-parade-sucree/game.json:87"
         ],
         "targeting": [],
-        "triggers": [
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:33",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:43",
-          "src/game/rules/game-specific/cards-ordered-parade/parade.recipes.ts:52"
-        ]
+        "triggers": []
       }
     },
     {
@@ -3619,12 +3587,6 @@
       "name": "cards-ordered-assembly",
       "consumers": [
         "pimp-my-ride"
-      ]
-    },
-    {
-      "name": "cards-ordered-parade",
-      "consumers": [
-        "la-parade-sucree"
       ]
     },
     {

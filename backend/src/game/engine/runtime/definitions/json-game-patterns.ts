@@ -11,6 +11,10 @@ import { declarativeTriggerFields } from '../contracts/declarative-trigger-schem
 import { triggerPattern } from '../automation/trigger-pattern';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import {
+  orderedCardCollection,
+  type OrderedCardCollectionOptions,
+} from '../patterns/ordered-card-collection-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -41,6 +45,7 @@ export type JsonGamePattern =
       delivery?: NonNullable<Parameters<typeof raceGame>[0]['delivery']>;
     }
   | { kind: 'push-your-luck' }
+  | ({ kind: 'ordered-card-collection' } & OrderedCardCollectionOptions)
   | {
       kind: 'market';
       marketId: string;
@@ -170,6 +175,45 @@ export const jsonGamePatternSchema: AuthorSchema = {
     object({ kind: { const: 'push-your-luck' } }),
     object(
       {
+        kind: { const: 'ordered-card-collection' },
+        playRecipe: id,
+        passRecipe: id,
+        deckId: id,
+        handId: id,
+        cards: array(
+          object(
+            {
+              id,
+              name: { type: 'string', minLength: 1, maxLength: 2000 },
+              value: id,
+              special: boolean,
+            },
+            ['id', 'name', 'value', 'special'],
+          ),
+          1,
+        ),
+        sequence: array(id, 1),
+        rewards: record(record({ type: 'number' })),
+        resourceValues: record({ type: 'number' }),
+        finishReason: id,
+        eventNamespace: id,
+      },
+      [
+        'kind',
+        'playRecipe',
+        'passRecipe',
+        'deckId',
+        'handId',
+        'cards',
+        'sequence',
+        'rewards',
+        'resourceValues',
+        'finishReason',
+        'eventNamespace',
+      ],
+    ),
+    object(
+      {
         kind: { const: 'market' },
         marketId: id,
         inventoryId: id,
@@ -231,6 +275,10 @@ export function compileJsonPattern(
     }
     case 'push-your-luck':
       return pushYourLuck();
+    case 'ordered-card-collection': {
+      const { kind: _kind, ...options } = pattern;
+      return orderedCardCollection(options);
+    }
     case 'market': {
       const { kind: _kind, ...options } = pattern;
       return marketGame(options);

@@ -126,7 +126,6 @@
       "cards-discard-penalty",
       "cards-public-domain",
       "cards-shared-prestige",
-      "cards-ordered-parade",
       "cards-ritual-phases",
       "cards-battle-ties"
     ],
@@ -403,14 +402,6 @@
       "classificationReason": "cards-shared-prestige implements shared prestige-card hand. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "cards-ordered-parade": {
-      "property": "parade",
-      "mechanic": "ordered parade collection",
-      "domain": "cards",
-      "scope": "game-specific",
-      "classificationReason": "cards-ordered-parade implements ordered parade collection. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "race-treasure-track": {
       "property": "treasureTrackRace",
       "mechanic": "treasure collection track race",
@@ -474,7 +465,6 @@
     "collection-track-zones",
     "race-resource-track",
     "race-treasure-track",
-    "cards-ordered-parade",
     "collection-family-request",
     "cards-ordered-assembly",
     "collection-market-exchange",

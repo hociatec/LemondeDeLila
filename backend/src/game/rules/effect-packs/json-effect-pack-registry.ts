@@ -5,7 +5,6 @@ import { effectPack as raceGooseTrackEffectPack } from '../game-specific/race-go
 import { effectPack as collectionTrackZonesEffectPack } from '../game-specific/collection-track-zones/effect-pack';
 import { effectPack as raceResourceTrackEffectPack } from '../game-specific/race-resource-track/effect-pack';
 import { effectPack as raceTreasureTrackEffectPack } from '../game-specific/race-treasure-track/effect-pack';
-import { effectPack as cardsOrderedParadeEffectPack } from '../game-specific/cards-ordered-parade/effect-pack';
 import { effectPack as collectionFamilyRequestEffectPack } from '../game-specific/collection-family-request/effect-pack';
 import { effectPack as cardsOrderedAssemblyEffectPack } from '../game-specific/cards-ordered-assembly/effect-pack';
 import { effectPack as collectionMarketExchangeEffectPack } from '../game-specific/collection-market-exchange/effect-pack';
@@ -44,7 +43,6 @@ export const jsonEffectPacks = Object.freeze([
   collectionTrackZonesEffectPack,
   raceResourceTrackEffectPack,
   raceTreasureTrackEffectPack,
-  cardsOrderedParadeEffectPack,
   collectionFamilyRequestEffectPack,
   cardsOrderedAssemblyEffectPack,
   collectionMarketExchangeEffectPack,

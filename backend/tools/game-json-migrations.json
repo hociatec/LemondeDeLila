@@ -20,6 +20,16 @@
         "src/game/testing/architecture-tests/game/delivery-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-delivery-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/la-parade-sucree/game.json",
+      "fromSha256": "6f2d81c5381dacb4011cee33eae315c2ca4acb39dc44486bb27c16b919755f29",
+      "toSha256": "da8f54a99111c380ccf0c6e29dda65dc896c59481bf54db6ec0fbf51800e2630",
+      "justification": "Le pattern générique de collection ordonnée porte désormais la légalité des cartes, les récompenses, le classement et la victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/ordered-card-parade-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-ordered-card-collection.spec.ts"
+      ]
     }
   ]
 }

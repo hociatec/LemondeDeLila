@@ -1,9 +1,32 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "3",
   "category": "JeuxDePlateaux",
   "world": "VentsDansants",
+  "patterns": [
+    {
+      "kind": "ordered-card-collection",
+      "playRecipe": "cards-ordered-parade-play",
+      "passRecipe": "cards-ordered-parade-pass",
+      "deckId": "parade",
+      "handId": "players",
+      "cards": {
+        "$content": "content/catalogue.json#/cards"
+      },
+      "sequence": {
+        "$content": "content/catalogue.json#/sequence"
+      },
+      "rewards": {
+        "$content": "content/catalogue.json#/rewards"
+      },
+      "resourceValues": {
+        "$content": "content/catalogue.json#/resourceValues"
+      },
+      "finishReason": "cards-ordered-parade-complete",
+      "eventNamespace": "parade"
+    }
+  ],
   "components": [
     {
       "component": "cards.deck",
@@ -49,10 +72,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "play_card",
-        "pass"
-      ],
+      "actions": ["play_card", "pass"],
       "terminal": true
     }
   },
@@ -65,29 +85,10 @@
     }
   },
   "victory": {
-    "kind": "by-parade"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "parade",
-      "config": {
-        "deckId": "parade",
-        "handId": "players",
-        "cards": {
-          "$content": "content/catalogue.json#/cards"
-        },
-        "sequence": {
-          "$content": "content/catalogue.json#/sequence"
-        },
-        "rewards": {
-          "$content": "content/catalogue.json#/rewards"
-        },
-        "resourceValues": {
-          "$content": "content/catalogue.json#/resourceValues"
-        },
-        "finishReason": "cards-ordered-parade-complete",
-        "eventNamespace": "parade"
-      }
-    }
-  ]
+  "bot": {
+    "kind": "first"
+  },
+  "extensions": []
 }
