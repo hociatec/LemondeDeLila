@@ -6,6 +6,13 @@ const os = require('node:os');
 const path = require('node:path');
 const { inspectDuplicates } = require('./game-duplication-check.cjs');
 
+test('accepts a repository with no remaining effect-pack directory', () => {
+  assert.deepEqual(
+    inspectDuplicates(path.join(os.tmpdir(), 'missing-effect-packs')),
+    [],
+  );
+});
+
 test('requires review at the second game, including helpers with renamed identifiers', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lila-clones-'));
   try {

@@ -18,6 +18,7 @@ const minimumTokens = 160;
 const requiredGames = 2;
 
 function walk(directory) {
+  if (!fs.existsSync(directory)) return [];
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const target = path.join(directory, entry.name);
     if (entry.isDirectory()) return walk(target);
