@@ -1,17 +1,18 @@
 import {
   authoringFailure,
   authoringProperty,
-} from '../../../engine/sdk/extension-api';
-import type { ResourceTrackRaceProgram } from './program';
-import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
+} from '../contracts/authoring-diagnostics';
+import type { ResourceTrackRaceProgram } from '../patterns/resource-track-race-pattern';
+import type { GameComponentDefinition } from './component-kit';
 import {
   authorArray as array,
   authorId as id,
   authorRecord as record,
   authorObject as object,
-} from '../../../engine/sdk/extension-api';
+} from '../contracts/json-author-schema';
 
-export const jsonResourceTrackRaceSchema = object({
+const resourceTrackRaceConfigSchema = object({
+  rollRecipe: id,
   trackId: id,
   diceId: id,
   tiles: array(
@@ -61,6 +62,10 @@ export const jsonResourceTrackRaceSchema = object({
   finishReason: id,
   resolvedEvent: id,
   eventNamespace: id,
+});
+export const resourceTrackRacePatternSchema = object({
+  kind: { const: 'resource-track-race' },
+  config: resourceTrackRaceConfigSchema,
 });
 
 export function assertResourceTrackRaceReferences(

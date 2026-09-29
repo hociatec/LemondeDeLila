@@ -82,6 +82,14 @@ import {
   cardBattle,
   type CardBattleOptions,
 } from '../patterns/card-battle-pattern';
+import {
+  resourceTrackRace,
+  type ResourceTrackRaceProgram,
+} from '../patterns/resource-track-race-pattern';
+import {
+  orderedCardCollection,
+  type OrderedCardCollectionOptions,
+} from '../patterns/ordered-card-collection-pattern';
 import { marketGame } from '../patterns/gameplay-pattern-round-economy';
 import {
   marketExchange,
@@ -215,6 +223,18 @@ export function compileCardBattle(
 ) {
   const { kind: _kind, ...options } = pattern;
   return cardBattle(options);
+}
+export function compileResourceTrackRace(pattern: {
+  kind: 'resource-track-race';
+  config: ResourceTrackRaceProgram;
+}) {
+  return resourceTrackRace(pattern.config);
+}
+export function compileOrderedCardCollection(
+  pattern: { kind: 'ordered-card-collection' } & OrderedCardCollectionOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return orderedCardCollection(options);
 }
 export function compileMarket(
   pattern: { kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {

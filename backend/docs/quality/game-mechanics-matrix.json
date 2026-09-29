@@ -2307,34 +2307,12 @@
     },
     {
       "id": "primalis",
-      "packs": [
-        "race-resource-track"
-      ],
+      "packs": [],
       "mechanics": {
-        "movement": [
-          "src/game/rules/game-specific/race-resource-track/json-resource-track-race-schema.ts:79",
-          "src/game/rules/game-specific/race-resource-track/json-resource-track-race-schema.ts:83",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:51",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:90",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:111"
-        ],
+        "movement": [],
         "ownership": [],
         "collision": [],
-        "resources": [
-          "src/game/rules/game-specific/race-resource-track/json-resource-track-race-schema.ts:94",
-          "src/game/rules/game-specific/race-resource-track/json-resource-track-race-schema.ts:100",
-          "src/game/rules/game-specific/race-resource-track/json-resource-track-race-schema.ts:115",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:8",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:42",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:43",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:44",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:49",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:65",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:66",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:73",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:120",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:121"
-        ],
+        "resources": [],
         "payment": [],
         "cards": [],
         "zones": [],
@@ -2343,17 +2321,10 @@
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/primalis/game.json:65",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:129"
+          "src/game/games/les-quatre-vents/primalis/game.json:51"
         ],
         "targeting": [],
-        "triggers": [
-          "src/game/rules/game-specific/race-resource-track/effect-pack.ts:9",
-          "src/game/rules/game-specific/race-resource-track/effect-pack.ts:34",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:77",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:80",
-          "src/game/rules/game-specific/race-resource-track/resource-track-race.recipes.ts:102"
-        ]
+        "triggers": []
       }
     },
     {
@@ -2815,12 +2786,6 @@
       "name": "race-directional-hazards",
       "consumers": [
         "ca-derape"
-      ]
-    },
-    {
-      "name": "race-resource-track",
-      "consumers": [
-        "primalis"
       ]
     }
   ]

@@ -13,8 +13,7 @@
     "choice-simultaneous-quiz",
     "choice-story-challenge",
     "race-chained-tile-cards",
-    "race-directional-hazards",
-    "race-resource-track"
+    "race-directional-hazards"
   ],
   "coreRootFields": [
     "actions",

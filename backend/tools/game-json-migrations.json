@@ -250,6 +250,16 @@
         "src/game/testing/architecture-tests/game/shared-prestige-cards-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-shared-prestige-cards.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/primalis/game.json",
+      "fromSha256": "29df857769d5ae71250d36881ebeea3890aa503a6369db75b43d4660765aeae6",
+      "toSha256": "d7e7f08ed3dedbe92e5d1b8aeebe681581351486ecfbebc378ff573bf182ff63",
+      "justification": "Le pattern resource-track-race générique porte désormais dé, ressources, cases, danger, classement, événements, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/resource-track-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-resource-track-race.spec.ts"
+      ]
     }
   ]
 }

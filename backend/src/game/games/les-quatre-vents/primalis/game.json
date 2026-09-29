@@ -1,16 +1,9 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
-  "definitionVersion": "3",
+  "contentVersion": "3",
+  "definitionVersion": "4",
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
-  "patterns": [
-    {
-      "kind": "race",
-      "trackId": "comet",
-      "spaces": 11
-    }
-  ],
   "components": [],
   "setup": {
     "resources": {
@@ -24,12 +17,7 @@
     },
     "startRound": false
   },
-  "resourceIds": [
-    "herbivores",
-    "carnivores",
-    "eggs",
-    "leaves"
-  ],
+  "resourceIds": ["herbivores", "carnivores", "eggs", "leaves"],
   "shortcuts": [
     {
       "key": "P",
@@ -50,9 +38,7 @@
   "initialPhase": "playing",
   "phases": {
     "playing": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -62,19 +48,27 @@
       "documentation": "Lance le dé, collecte des ressources et avance la comète."
     }
   },
-  "victory": {
-    "kind": "by-resource-track-race"
-  },
+  "victory": { "kind": "manual" },
   "snapshotMigrations": [
     {
       "fromVersion": "1",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
-  "extensions": [
+  "patterns": [
     {
-      "type": "resourceTrackRace",
+      "kind": "race",
+      "trackId": "comet",
+      "spaces": 11
+    },
+    {
+      "kind": "resource-track-race",
       "config": {
+        "rollRecipe": "race-resource-track-roll",
         "trackId": "comet",
         "diceId": "main",
         "tiles": {
@@ -99,45 +93,34 @@
         "resolvedEvent": "primalis.roll.resolved",
         "eventNamespace": "primalis",
         "mechanics": {
-          "rerollValues": [
-            6
-          ],
+          "rerollValues": [6],
           "rerollLimit": 1,
           "advance": 1,
           "faceGains": {
             "herbivore": [
               {
-                "resources": [
-                  "herbivores"
-                ],
+                "resources": ["herbivores"],
                 "amount": 1,
                 "select": "first"
               }
             ],
             "carnivore": [
               {
-                "resources": [
-                  "carnivores"
-                ],
+                "resources": ["carnivores"],
                 "amount": 1,
                 "select": "first"
               }
             ],
             "egg": [
               {
-                "resources": [
-                  "herbivores",
-                  "carnivores"
-                ],
+                "resources": ["herbivores", "carnivores"],
                 "amount": 1,
                 "select": "largest"
               }
             ],
             "leaf": [
               {
-                "resources": [
-                  "leaves"
-                ],
+                "resources": ["leaves"],
                 "amount": 1,
                 "select": "first"
               }
@@ -147,9 +130,7 @@
           "tileRules": [
             {
               "position": 1,
-              "faces": [
-                "egg"
-              ],
+              "faces": ["egg"],
               "gains": {
                 "eggs": 1
               },
@@ -157,9 +138,7 @@
             },
             {
               "position": 1,
-              "faces": [
-                "leaf"
-              ],
+              "faces": ["leaf"],
               "gains": {
                 "leaves": 1
               },
@@ -177,18 +156,14 @@
             },
             {
               "position": 3,
-              "faces": [
-                "leaf"
-              ],
+              "faces": ["leaf"],
               "gains": {
                 "leaves": 1
               }
             },
             {
               "position": 4,
-              "faces": [
-                "carnivore"
-              ],
+              "faces": ["carnivore"],
               "gains": {
                 "eggs": 1
               }
@@ -209,38 +184,26 @@
             },
             {
               "position": 8,
-              "faces": [
-                "herbivore",
-                "carnivore"
-              ],
+              "faces": ["herbivore", "carnivore"],
               "gains": {
                 "leaves": 1
               }
             }
           ],
-          "dangerFaces": [
-            "danger"
-          ],
+          "dangerFaces": ["danger"],
           "dangerDistance": 1,
           "amplifiedDistance": 1,
           "extraDistance": {
             "9": 1
           },
           "ranking": [
-            [
-              "herbivores",
-              "carnivores",
-              "leaves"
-            ],
-            [
-              "leaves"
-            ],
-            [
-              "eggs"
-            ]
+            ["herbivores", "carnivores", "leaves"],
+            ["leaves"],
+            ["eggs"]
           ]
         }
       }
     }
-  ]
+  ],
+  "extensions": []
 }

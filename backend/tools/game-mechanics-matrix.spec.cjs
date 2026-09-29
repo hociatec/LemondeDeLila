@@ -4,10 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { buildMatrix } = require('./game-mechanics-matrix.cjs');
 
-test('maps every game and specific pack, with real shared resource recipe consumers', () => {
+test('maps every game and remaining specific pack', () => {
   const matrix = buildMatrix();
   assert.equal(matrix.games.length, 39);
-  assert.equal(matrix.packs.length, 13);
+  assert.equal(matrix.packs.length, 12);
   assert(matrix.packs.every((pack) => pack.consumers.length > 0));
   assert(
     matrix.games.every((game) => Object.keys(game.mechanics).length === 14),
@@ -21,6 +21,6 @@ test('maps every game and specific pack, with real shared resource recipe consum
         [Number(line) - 1].includes('resourceDeltaEffects(');
     }),
   );
-  assert.equal(consumers.length, 1);
-  assert.equal(new Set(consumers.flatMap((game) => game.packs)).size, 1);
+  assert.equal(consumers.length, 0);
+  assert.equal(new Set(consumers.flatMap((game) => game.packs)).size, 0);
 });

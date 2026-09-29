@@ -138,7 +138,7 @@ function assertAdvancedPatternReferences(
     assertTeamPawnRaceReferences(pattern, index, components, fail);
   if (pattern.kind === 'quiz-event-race')
     assertQuizEventRaceReferences(pattern, index, components, fail);
-  assertMigratedPatternReferences(pattern, index, components, fail);
+  assertMigratedPatternReferences(pattern, index, context);
   if (pattern.kind === 'grid-placement')
     assertGridPlacementReferences(
       pattern,

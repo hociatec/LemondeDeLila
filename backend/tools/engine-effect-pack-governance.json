@@ -54,8 +54,7 @@
     "cards-ritual-phases": "Compared with collection and card primitives; ritual phases and light scoring remain unique.",
     "board-property-economy": "Compared with board-turn, board-landings and economy-kit; mortgages, jail, ownership and city economy remain unique.",
     "choice-chapter-encounter": "Compared with track-round and collection primitives; chapters, encounters and final countdown remain unique.",
-    "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status.",
-    "race-resource-track": "Compared with movement and player resource primitives: face-dependent gains, danger amplification and multi-resource ranking form a specific combined turn; relocation of its schema makes this size visible."
+    "board-movement-landings": "Compared with movement, cards, quiz and inventory primitives: chained landings, inventory distributions and exchange continuations remain one catalogue composition; schema and recipe are now colocated without claiming generic status."
   },
   "structuralReviews": [],
   "effectDomains": {
@@ -75,11 +74,7 @@
       "choice-simultaneous-quiz",
       "choice-chapter-encounter"
     ],
-    "race": [
-      "race-chained-tile-cards",
-      "race-directional-hazards",
-      "race-resource-track"
-    ]
+    "race": ["race-chained-tile-cards", "race-directional-hazards"]
   },
   "genericGameplayFiles": [
     "card-actions.recipes.ts",
@@ -145,14 +140,6 @@
       "classificationReason": "race-directional-hazards implements directional racing with chained hazards. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "race-resource-track": {
-      "property": "resourceTrackRace",
-      "mechanic": "resource collection track race",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-resource-track implements resource collection track race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "cards-theme-name": {
       "property": "themeNameCards",
       "mechanic": "name and theme card combinations",
@@ -203,7 +190,6 @@
     }
   },
   "registrationOrder": [
-    "race-resource-track",
     "race-directional-hazards",
     "race-chained-tile-cards",
     "choice-chapter-encounter",

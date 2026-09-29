@@ -1,9 +1,9 @@
-import {
-  gameEffects,
-  type EffectTarget,
-  type GameEffectInstruction,
-  type InsufficientResourcePolicy,
-} from '../../engine/sdk/public-api';
+import { gameEffects } from '../effects/effects-dsl';
+import type {
+  EffectTarget,
+  GameEffectInstruction,
+} from '../contracts/effect-ir';
+import type { InsufficientResourcePolicy } from '../contracts/resource-payment';
 
 /** Compose a reward or cost bundle using the same settlement policy per debit. */
 export function resourceDeltaEffects(

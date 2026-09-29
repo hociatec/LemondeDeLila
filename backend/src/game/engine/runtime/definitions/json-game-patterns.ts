@@ -9,10 +9,7 @@ import type { DeclarativeTrigger } from '../contracts/declarative-trigger';
 import { declarativeTriggerFields } from '../contracts/declarative-trigger-schema';
 import { triggerPattern } from '../automation/trigger-pattern';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
-import {
-  orderedCardCollection,
-  type OrderedCardCollectionOptions,
-} from '../patterns/ordered-card-collection-pattern';
+import type { OrderedCardCollectionOptions } from '../patterns/ordered-card-collection-pattern';
 import type { EventCardRaceOptions } from '../patterns/event-card-race-pattern';
 import type { GooseRaceOptions } from '../patterns/goose-race-pattern';
 import type { CardBattleOptions } from '../patterns/card-battle-pattern';
@@ -35,6 +32,7 @@ import type { TeamPawnRaceOptions } from '../patterns/team-pawn-race-pattern';
 import type { QuizEventRaceOptions } from '../patterns/quiz-event-race-pattern';
 import type { ProtectedHauntedRaceProgram } from '../patterns/protected-haunted-race-pattern';
 import type { SharedPrestigeCardsProgram } from '../patterns/shared-prestige-cards-pattern';
+import type { ResourceTrackRaceProgram } from '../patterns/resource-track-race-pattern';
 import {
   compileAnonymousVote,
   compileFamilyEffects,
@@ -58,6 +56,8 @@ import {
   compileEventCardRace,
   compileGooseRace,
   compileCardBattle,
+  compileResourceTrackRace,
+  compileOrderedCardCollection,
 } from './json-advanced-pattern-compilers';
 import {
   type AuthorSchema,
@@ -91,6 +91,7 @@ import { teamPawnRacePatternSchema } from './json-team-pawn-race-pattern-schema'
 import { quizEventRacePatternSchema } from './json-quiz-event-race-pattern-schema';
 import { protectedHauntedRacePatternSchema } from './json-protected-haunted-race-pattern-schema';
 import { sharedPrestigeCardsPatternSchema } from './json-shared-prestige-cards-pattern-schema';
+import { resourceTrackRacePatternSchema } from './json-resource-track-race-pattern-schema';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -137,6 +138,7 @@ export type JsonGamePattern =
   | ({ kind: 'quiz-event-race' } & QuizEventRaceOptions)
   | ({ kind: 'protected-haunted-race' } & ProtectedHauntedRaceProgram)
   | ({ kind: 'shared-prestige-cards' } & SharedPrestigeCardsProgram)
+  | { kind: 'resource-track-race'; config: ResourceTrackRaceProgram }
   | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
         exchange?: MarketExchangeOptions['exchange'];
       })
@@ -351,6 +353,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     quizEventRacePatternSchema,
     protectedHauntedRacePatternSchema,
     sharedPrestigeCardsPatternSchema,
+    resourceTrackRacePatternSchema,
     marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
@@ -385,10 +388,8 @@ export function compileJsonPattern(
     }
     case 'push-your-luck':
       return pushYourLuck();
-    case 'ordered-card-collection': {
-      const { kind: _kind, ...options } = pattern;
-      return orderedCardCollection(options);
-    }
+    case 'ordered-card-collection':
+      return compileOrderedCardCollection(pattern);
     case 'event-card-race':
       return compileEventCardRace(pattern);
     case 'goose-race':
@@ -431,6 +432,8 @@ export function compileJsonPattern(
       return compileProtectedHauntedRace(pattern);
     case 'shared-prestige-cards':
       return compileSharedPrestigeCards(pattern);
+    case 'resource-track-race':
+      return compileResourceTrackRace(pattern);
     case 'market':
       return compileMarket(pattern);
     case 'simultaneous-answers':

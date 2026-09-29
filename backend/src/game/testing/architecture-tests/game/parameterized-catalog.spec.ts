@@ -68,15 +68,6 @@ const variants: Record<string, (program: Data) => Data> = {
         ),
       ),
     ),
-  resourceTrackRace: (program) => ({
-    ...program,
-    mechanics: {
-      ...object(program.mechanics),
-      advance: 2,
-      rerollValues: [],
-      dangerDistance: 2,
-    },
-  }),
   themeNameCards: (program) => ({
     ...object(
       rename(
