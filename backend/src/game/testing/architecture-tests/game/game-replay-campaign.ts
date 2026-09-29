@@ -5,6 +5,7 @@ import type { GameRuntime } from '../../../core/application/ports/game-runtime.p
 import type { DiscoveredGameDefinition } from '../../../composition/game-module-discovery';
 import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
 import type { GameState } from '../../../core/application/models/game-state.model';
+import type { GamePendingEvent } from '../../../core/application/models/game-event.model';
 import {
   FixedGameClock,
   type GameExecutionContext,
@@ -53,10 +54,7 @@ export function runGameReplayCampaign(
   let steps = 0;
   for (; steps < maximumSteps && state.status !== 'finished'; steps++) {
     const before = structuredClone(state);
-    const context = scope.create(state, null, clock);
-    const candidate = scope.run(context, () =>
-      selectCandidate(runtime, state, clock, seed + steps, context),
-    );
+    const candidate = pickCandidate(scope, runtime, state, clock, seed + steps);
     assertSameJson(state, before, 'Action enumeration mutated state');
     ok(
       candidate,
@@ -64,15 +62,14 @@ export function runGameReplayCampaign(
     );
     const action = campaignCommand(candidate, seed, steps);
     try {
-      const commandStartedAt = performance.now();
-      const next = executor.execute({
-        handler: runtime,
+      const { next, commandMs } = executeTimedCommand({
+        executor,
+        runtime,
         state,
-        actions: [action],
+        action,
         actorId: candidate.actorId,
         clock,
       });
-      const commandMs = performance.now() - commandStartedAt;
       trace.append(action, candidate.actorId, clock, next);
       const replayed = executor.execute({
         handler: replayRuntime,
@@ -81,26 +78,14 @@ export function runGameReplayCampaign(
         actorId: candidate.actorId,
         clock: new FixedGameClock(clock.nowMs()),
       });
-      assertSameJson(
-        next,
-        replayed,
-        'Replaying the same command produced a different state',
-      );
+      assertSameJson(next, replayed, 'Replay command produced different state');
       assertSameJson(state, before, 'Command mutated its input state');
       // Drain the outbox to model the real persistence boundary.
       const appendedEvents = drainPendingGameEvents(next);
       drainPendingGameEvents(replayed);
       replay = roundTripSnapshot(replayed);
       state = next;
-      observePerformance?.({
-        commandMs,
-        snapshotBytes: Buffer.byteLength(JSON.stringify(state), 'utf8'),
-        appendedEventBytes: Buffer.byteLength(
-          JSON.stringify(appendedEvents),
-          'utf8',
-        ),
-        appendedEvents: appendedEvents.length,
-      });
+      observePerformance?.(performanceSample(commandMs, state, appendedEvents));
       assertCampaignState(runtime, state, clock);
       types.add(action.type);
       assertReplayedViews({
@@ -125,6 +110,51 @@ export function runGameReplayCampaign(
     actionTypes: [...types].sort(),
     finished: state.status === 'finished',
     traceDigest: trace.digest(),
+  };
+}
+
+function pickCandidate(
+  scope: GameExecutionScopeService,
+  runtime: GameRuntime,
+  state: GameState,
+  clock: FixedGameClock,
+  selector: number,
+): Candidate | null {
+  const context = scope.create(state, null, clock);
+  return scope.run(context, () =>
+    selectCandidate(runtime, state, clock, selector, context),
+  );
+}
+
+function executeTimedCommand(input: {
+  executor: GameCommandExecutorService;
+  runtime: GameRuntime;
+  state: GameState;
+  action: GameSingleActionDto;
+  actorId: number | null;
+  clock: FixedGameClock;
+}): { next: GameState; commandMs: number } {
+  const startedAt = performance.now();
+  const next = input.executor.execute({
+    handler: input.runtime,
+    state: input.state,
+    actions: [input.action],
+    actorId: input.actorId,
+    clock: input.clock,
+  });
+  return { next, commandMs: performance.now() - startedAt };
+}
+
+function performanceSample(
+  commandMs: number,
+  state: GameState,
+  events: readonly GamePendingEvent[],
+): GameReplayPerformanceSample {
+  return {
+    commandMs,
+    snapshotBytes: Buffer.byteLength(JSON.stringify(state), 'utf8'),
+    appendedEventBytes: Buffer.byteLength(JSON.stringify(events), 'utf8'),
+    appendedEvents: events.length,
   };
 }
 
