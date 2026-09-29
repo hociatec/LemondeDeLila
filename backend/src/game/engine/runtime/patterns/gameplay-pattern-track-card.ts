@@ -20,7 +20,7 @@ import { type GamePattern } from '../contracts/pattern-definition';
 import { defineAction, defineChoice } from '../actions/action-builders';
 import { gameInput } from '../actions/game-input-schema';
 import type { GameContext } from '../definitions/game-author-context';
-import type { PawnMove } from '../kits/pawn-kit';
+import type { PawnMove } from './pattern-capabilities';
 import { GameConfigurationError } from '../contracts/game-domain.errors';
 import { withAuthoringPath } from '../contracts/authoring-origin';
 import {

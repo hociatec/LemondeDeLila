@@ -1,12 +1,13 @@
 import { gameInput } from '../actions/game-input-schema';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import type { GameContext } from '../definitions/game-author-context';
-import { defineEffect, defineEmptyEffect } from '../effects/effects-core';
 import {
+  defineEffect,
+  defineEmptyEffect,
   drawAndResolve,
   rollDice,
   sequentialPawnSelection,
-} from '../recipes/gameplay-recipes';
+} from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 export type BidirectionalCollisionRegion = string;

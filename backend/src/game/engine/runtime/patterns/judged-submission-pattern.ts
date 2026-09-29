@@ -3,9 +3,8 @@ import { gameInput } from '../actions/game-input-schema';
 import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import type { GameContext } from '../definitions/game-author-context';
 import { defineEvent } from '../events/game-event-definition';
-import { clockwise } from '../kits/turn-kit';
 import { definePattern } from './gameplay-pattern-core';
-import { completeRound } from './pattern-capabilities';
+import { clockwise, completeRound } from './pattern-capabilities';
 
 export type JudgedSubmissionOptions = {
   submitRecipe: string;

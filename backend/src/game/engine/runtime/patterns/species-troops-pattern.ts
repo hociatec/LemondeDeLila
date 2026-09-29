@@ -3,8 +3,11 @@ import { gameInput } from '../actions/game-input-schema';
 import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import type { GameContext } from '../definitions/game-author-context';
-import { defineEffect, defineEmptyEffect } from '../effects/effects-core';
-import { gameEffects } from '../effects/effects-dsl';
+import {
+  defineEffect,
+  defineEmptyEffect,
+  gameEffects,
+} from './pattern-capabilities';
 import { drawCardsAtTurnStart } from './gameplay-pattern-track-card';
 import { definePattern } from './gameplay-pattern-core';
 

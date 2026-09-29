@@ -1,4 +1,4 @@
-import { discardCard } from '../recipes/gameplay-recipes';
+import { discardCard } from './pattern-capabilities';
 import { gameInput } from '../actions/game-input-schema';
 import { defineAction, defineEmptyAction } from '../actions/action-builders';
 import { definePattern } from './gameplay-pattern-core';

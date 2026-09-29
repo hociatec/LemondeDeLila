@@ -2,8 +2,11 @@ import { defineChoice } from '../actions/action-builders';
 import { gameInput } from '../actions/game-input-schema';
 import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import type { GameContext } from '../definitions/game-author-context';
-import type { PawnMove } from '../kits/pawn-kit';
-import { rollDice, sequentialPawnSelection } from '../recipes/gameplay-recipes';
+import {
+  rollDice,
+  sequentialPawnSelection,
+  type PawnMove,
+} from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 export type TeamPawnFamily = {

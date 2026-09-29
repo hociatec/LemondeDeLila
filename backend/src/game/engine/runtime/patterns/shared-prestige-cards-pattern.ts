@@ -3,9 +3,12 @@ import { gameInput } from '../actions/game-input-schema';
 import { GameRuleViolationError } from '../contracts/game-domain.errors';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import type { GameContext } from '../definitions/game-author-context';
-import { defineEffect, defineEmptyEffect } from '../effects/effects-core';
-import { gameEffects } from '../effects/effects-dsl';
-import { drawForPlayer } from '../recipes/gameplay-recipes';
+import {
+  defineEffect,
+  defineEmptyEffect,
+  drawForPlayer,
+  gameEffects,
+} from './pattern-capabilities';
 import { definePattern } from './gameplay-pattern-core';
 
 export type SharedPrestigeCardsCard = {

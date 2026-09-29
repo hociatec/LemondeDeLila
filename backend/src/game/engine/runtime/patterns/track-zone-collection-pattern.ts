@@ -1,5 +1,5 @@
 import { defineEvent } from '../events/game-event-definition';
-import { drawEvent, raceTurn } from '../recipes/gameplay-recipes';
+import { drawEvent, raceTurn } from './pattern-capabilities';
 import { gameInput } from '../actions/game-input-schema';
 import type { GameContext } from '../definitions/game-author-context';
 import { definePattern } from './gameplay-pattern-core';
