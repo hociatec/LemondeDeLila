@@ -148,7 +148,6 @@
       "race-chained-tile-cards",
       "race-directional-hazards",
       "race-resource-track",
-      "race-event-cards",
       "race-team-pawn-capture",
       "race-protected-haunted-track",
       "race-quiz-event-track",
@@ -264,14 +263,6 @@
       "domain": "race",
       "scope": "game-specific",
       "classificationReason": "race-resource-track implements resource collection track race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "race-event-cards": {
-      "property": "eventRace",
-      "mechanic": "track race with event cards",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-event-cards implements track race with event cards. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
     "race-team-pawn-capture": {
@@ -460,7 +451,6 @@
     }
   },
   "registrationOrder": [
-    "race-event-cards",
     "race-goose-track",
     "collection-track-zones",
     "race-resource-track",

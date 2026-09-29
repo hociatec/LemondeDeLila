@@ -28,6 +28,7 @@ export function definePattern<
     components: Object.freeze([...(pattern.components ?? [])]),
     actions: Object.freeze({ ...(pattern.actions ?? {}) }),
     choices: Object.freeze({ ...(pattern.choices ?? {}) }),
+    effects: Object.freeze({ ...(pattern.effects ?? {}) }),
   });
 }
 
@@ -50,6 +51,9 @@ export function composePatterns<TState extends object>(
       }),
       {},
     ),
+    choices: Object.assign({}, ...patterns.map((pattern) => pattern.choices)),
+    effects: Object.assign({}, ...patterns.map((pattern) => pattern.effects)),
+    setup: patterns.find((pattern) => pattern.setup)?.setup,
     lifecycle: composeLifecycle(
       patterns.flatMap((pattern) =>
         pattern.lifecycle ? [pattern.lifecycle] : [],

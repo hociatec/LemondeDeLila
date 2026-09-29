@@ -222,54 +222,34 @@
     },
     {
       "id": "aventure-sauvage",
-      "packs": [
-        "race-event-cards"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:29",
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:31",
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:9",
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:15",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:63",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:99",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:103",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:121",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:38",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:41",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:74",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:77",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:78",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:79"
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:46",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:48",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:8",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:14"
         ],
         "ownership": [],
         "collision": [],
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:37",
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:40",
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:45",
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:48",
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:8",
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:14",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:33",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:54",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:56",
-          "src/game/rules/game-specific/race-event-cards/json-event-race-schema.ts:59"
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:32",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:54",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:57",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:62",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:65",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:7",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:13"
         ],
         "zones": [],
-        "choices": [
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:3",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:42",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:101"
-        ],
+        "choices": [],
         "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:96",
-          "src/game/rules/game-specific/race-event-cards/effect-pack.ts:23"
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.json:108"
         ],
         "targeting": [
           "src/game/games/les-quatre-vents/aventure-sauvage/content/cards.json:12",
@@ -302,13 +282,9 @@
           "src/game/games/les-quatre-vents/aventure-sauvage/content/cards.json:511"
         ],
         "triggers": [
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:49",
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:56",
-          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:63",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:69",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:90",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:126",
-          "src/game/rules/game-specific/race-event-cards/event-race.recipes.ts:133"
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:48",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:55",
+          "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts:62"
         ]
       }
     },
@@ -3701,12 +3677,6 @@
       "name": "race-directional-hazards",
       "consumers": [
         "ca-derape"
-      ]
-    },
-    {
-      "name": "race-event-cards",
-      "consumers": [
-        "aventure-sauvage"
       ]
     },
     {

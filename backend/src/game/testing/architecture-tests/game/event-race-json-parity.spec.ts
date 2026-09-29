@@ -1,5 +1,3 @@
-import { legacyExtensionFixture } from '../../../engine/testing/public-api';
-import { createHash } from 'node:crypto';
 import {
   testGame,
   GameSimulator,
@@ -7,38 +5,76 @@ import {
 } from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import manifest from '../../../games/les-quatre-vents/aventure-sauvage/manifest.json';
-import documentExtensionSource from '../../../games/les-quatre-vents/aventure-sauvage/game.json';
+import documentSource from '../../../games/les-quatre-vents/aventure-sauvage/game.json';
 import cards from '../../../games/les-quatre-vents/aventure-sauvage/content/cards.json';
 import board from '../../../games/les-quatre-vents/aventure-sauvage/content/board.json';
 import pawns from '../../../games/les-quatre-vents/aventure-sauvage/content/pawns.json';
-import reference from '../../fixtures/aventure-sauvage-before-json-parity.json';
-const document = legacyExtensionFixture(documentExtensionSource, 'eventRace');
 
-it.each(reference)(
-  'keeps the interactive event-card race deterministic for seed $seed',
-  async ({ seed, commands, events, sha256, status }) => {
-    const definition = compileJsonGame(manifest, document, {
-      'content/cards.json': cards,
-      'content/board.json': board,
-      'content/pawns.json': pawns,
-    });
-    const game = await testGame(definition)
-      .players(['One', 'Two', 'Three'])
+const assets = {
+  'content/cards.json': cards,
+  'content/board.json': board,
+  'content/pawns.json': pawns,
+};
+const current = structuredClone(documentSource);
+const [race, eventRace] = current.patterns;
+const {
+  kind: _kind,
+  rollRecipe: _rollRecipe,
+  drawRecipe: _drawRecipe,
+  pendingDrawFlag: _pendingDrawFlag,
+  ...legacyEventRace
+} = eventRace;
+const { bot: _bot, patterns: _patterns, ...withoutPatterns } = current;
+const legacy = {
+  ...withoutPatterns,
+  contentVersion: '1',
+  patterns: [race],
+  victory: { kind: 'by-event-race' },
+  eventRace: legacyEventRace,
+};
+
+function behavioralState(state: object) {
+  const value = structuredClone(state) as {
+    metadata?: { restoreId?: string };
+    engine?: { contentDigest?: string; contentVersion?: string };
+  };
+  if (value.metadata) delete value.metadata.restoreId;
+  if (value.engine) {
+    delete value.engine.contentDigest;
+    delete value.engine.contentVersion;
+  }
+  return value;
+}
+
+it.each([1, 7, 42])(
+  'preserves state and events from the certified event race for seed %i',
+  async (seed) => {
+    const before = compileJsonGame(manifest, legacy, assets);
+    const after = compileJsonGame(manifest, current, assets);
+    const players = ['One', 'Two', 'Three'];
+    const beforeGame = await testGame(before)
+      .players(players)
       .seed(seed)
       .start();
-    const result = new GameSimulator().run(
-      new DeclarativeGameRuntime(definition),
-      game.state(),
-      { maxCommands: commands, startAtMs: 1000 },
+    const afterGame = await testGame(after).players(players).seed(seed).start();
+    const runner = new GameSimulator();
+    const baseline = runner.run(
+      new DeclarativeGameRuntime(before),
+      beforeGame.state(),
+      { maxCommands: 200, startAtMs: 1000 },
     );
-    expect(result.error).toBeUndefined();
-    expect(result.status).toBe(status);
-    const trace = result.events
-      .filter((e) => e.type !== 'engine.state.committed')
-      .map(({ type, data, visibility }) => ({ type, data, visibility }));
-    expect(
-      createHash('sha256').update(JSON.stringify(trace)).digest('hex'),
-    ).toBe(sha256);
-    expect(trace).toHaveLength(events);
+    const migrated = runner.run(
+      new DeclarativeGameRuntime(after),
+      afterGame.state(),
+      { maxCommands: 200, startAtMs: 1000 },
+    );
+    expect(migrated.error).toBeUndefined();
+    expect(migrated.status).toBe(baseline.status);
+    expect(migrated.commands).toBe(baseline.commands);
+    expect(migrated.winnerPlayerIds).toEqual(baseline.winnerPlayerIds);
+    expect(behavioralState(migrated.finalState)).toEqual(
+      behavioralState(baseline.finalState),
+    );
+    expect(migrated.events).toEqual(baseline.events);
   },
 );

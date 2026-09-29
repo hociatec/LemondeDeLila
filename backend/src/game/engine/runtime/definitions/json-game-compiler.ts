@@ -247,6 +247,9 @@ function assertDocumentReferences(
       ...(patterns ?? []).flatMap((pattern) => pattern.components ?? []),
     ],
     resources,
+    document.phases,
+    document.initialPhase,
+    manifest.maxPlayers,
     fail,
   );
   assertSelections(document, patterns, fail, jsonEffectPacks);

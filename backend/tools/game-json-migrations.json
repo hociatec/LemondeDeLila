@@ -30,6 +30,16 @@
         "src/game/testing/architecture-tests/game/ordered-card-parade-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-ordered-card-collection.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/les-quatre-vents/aventure-sauvage/game.json",
+      "fromSha256": "01bd3efd2518d77f76f053e42ae979d695e97aacf6d19dbee860ad48a9337a48",
+      "toSha256": "09aec3a58e5ae12b6256f3ca20fcb71dcf12e41d2405874bdd9217d7bd7317d4",
+      "justification": "Le pattern event-card-race générique porte désormais sélection de pion, déplacement, pioche différée, résolution d'effets et reprise de landing depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/event-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-event-card-race.spec.ts"
+      ]
     }
   ]
 }

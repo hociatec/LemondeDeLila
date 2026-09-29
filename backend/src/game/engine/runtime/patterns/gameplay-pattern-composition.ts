@@ -17,11 +17,14 @@ export function assertComposablePatterns<TState extends object>(
   const seenPatternIds = new Set<string>();
   const seenComponentKeys = new Set<string>();
   const seenActionKeys = new Set<string>();
+  const seenChoiceKeys = new Set<string>();
+  const seenEffectKeys = new Set<string>();
   const initializedResources = new Map<string, string>();
   const initializedCounters = new Map<string, string>();
   const initializedTracks = new Map<string, string>();
   const initializedPawns = new Map<string, string>();
   let selectedTurn: { id: string; policy: TurnPolicy } | null = null;
+  let setupPatternId: string | null = null;
   for (const [patternIndex, pattern] of patterns.entries()) {
     const path = `patterns[${patternIndex}]`;
     if (seenPatternIds.has(pattern.id)) {
@@ -34,7 +37,14 @@ export function assertComposablePatterns<TState extends object>(
     }
     seenPatternIds.add(pattern.id);
 
-    assertPatternMembers(pattern, path, seenComponentKeys, seenActionKeys);
+    assertPatternMembers(
+      pattern,
+      path,
+      seenComponentKeys,
+      seenActionKeys,
+      seenChoiceKeys,
+      seenEffectKeys,
+    );
 
     assertInitializationKeys(
       pattern.initialization?.resources,
@@ -59,6 +69,8 @@ export function assertComposablePatterns<TState extends object>(
     );
     assertPawnInitialization(pattern, initializedPawns, path);
 
+    setupPatternId = selectSetupPattern(pattern, setupPatternId, path);
+
     if (!pattern.turn) continue;
     if (!selectedTurn) {
       selectedTurn = { id: pattern.id, policy: pattern.turn };
@@ -74,11 +86,28 @@ export function assertComposablePatterns<TState extends object>(
   }
 }
 
+function selectSetupPattern<TState extends object>(
+  pattern: GamePattern<TState>,
+  selected: string | null,
+  path: string,
+): string | null {
+  if (!pattern.setup) return selected;
+  if (!selected) return pattern.id;
+  throw withAuthoringPath(
+    new GameConfigurationError(
+      `Composition de patterns invalide: setups concurrents « ${selected} » et « ${pattern.id} »`,
+    ),
+    `${path}.setup`,
+  );
+}
+
 function assertPatternMembers<TState extends object>(
   pattern: GamePattern<TState>,
   path: string,
   seenComponentKeys: Set<string>,
   seenActionKeys: Set<string>,
+  seenChoiceKeys: Set<string>,
+  seenEffectKeys: Set<string>,
 ): void {
   for (const [index, component] of (pattern.components ?? []).entries()) {
     const id = 'id' in component ? component.id : undefined;
@@ -104,6 +133,26 @@ function assertPatternMembers<TState extends object>(
       );
     }
     seenActionKeys.add(actionId);
+  }
+  assertUniquePatternKeys(pattern.choices, 'choice', path, seenChoiceKeys);
+  assertUniquePatternKeys(pattern.effects, 'effect', path, seenEffectKeys);
+}
+
+function assertUniquePatternKeys(
+  values: Readonly<Record<string, unknown>> | undefined,
+  kind: string,
+  path: string,
+  seen: Set<string>,
+): void {
+  for (const key of Object.keys(values ?? {})) {
+    if (seen.has(key))
+      throw withAuthoringPath(
+        new GameConfigurationError(
+          `Composition de patterns invalide: ${kind} dupliqué « ${key} »`,
+        ),
+        authoringProperty(`${path}.${kind}s`, key),
+      );
+    seen.add(key);
   }
 }
 

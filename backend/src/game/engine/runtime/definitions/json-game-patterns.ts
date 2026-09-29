@@ -15,6 +15,10 @@ import {
   type OrderedCardCollectionOptions,
 } from '../patterns/ordered-card-collection-pattern';
 import {
+  eventCardRace,
+  type EventCardRaceOptions,
+} from '../patterns/event-card-race-pattern';
+import {
   type AuthorSchema,
   authorId as id,
   authorBoolean as boolean,
@@ -46,6 +50,7 @@ export type JsonGamePattern =
     }
   | { kind: 'push-your-luck' }
   | ({ kind: 'ordered-card-collection' } & OrderedCardCollectionOptions)
+  | ({ kind: 'event-card-race' } & EventCardRaceOptions)
   | {
       kind: 'market';
       marketId: string;
@@ -214,6 +219,45 @@ export const jsonGamePatternSchema: AuthorSchema = {
     ),
     object(
       {
+        kind: { const: 'event-card-race' },
+        rollRecipe: id,
+        drawRecipe: id,
+        trackId: id,
+        diceId: id,
+        playingPhase: id,
+        landingEffectId: id,
+        pendingDrawFlag: id,
+        tiles: array(
+          object(
+            {
+              label: { type: 'string' },
+              description: { type: 'string', minLength: 1, maxLength: 10000 },
+              deckId: id,
+            },
+            ['label'],
+          ),
+          2,
+        ),
+        pawnSelection: object({ setId: id, choiceId: id }, [
+          'setId',
+          'choiceId',
+        ]),
+      },
+      [
+        'kind',
+        'rollRecipe',
+        'drawRecipe',
+        'trackId',
+        'diceId',
+        'playingPhase',
+        'landingEffectId',
+        'pendingDrawFlag',
+        'tiles',
+        'pawnSelection',
+      ],
+    ),
+    object(
+      {
         kind: { const: 'market' },
         marketId: id,
         inventoryId: id,
@@ -278,6 +322,10 @@ export function compileJsonPattern(
     case 'ordered-card-collection': {
       const { kind: _kind, ...options } = pattern;
       return orderedCardCollection(options);
+    }
+    case 'event-card-race': {
+      const { kind: _kind, ...options } = pattern;
+      return eventCardRace(options);
     }
     case 'market': {
       const { kind: _kind, ...options } = pattern;

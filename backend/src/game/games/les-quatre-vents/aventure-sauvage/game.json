@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "1",
+  "contentVersion": "2",
   "definitionVersion": "4",
   "snapshotMigrations": [
     {
@@ -20,6 +20,23 @@
       "trackId": "jungle",
       "spaces": 30,
       "winOnFinish": "jungle-finish"
+    },
+    {
+      "kind": "event-card-race",
+      "rollRecipe": "race-event-cards-roll",
+      "drawRecipe": "race-event-cards-draw",
+      "trackId": "jungle",
+      "diceId": "main",
+      "playingPhase": "playing",
+      "landingEffectId": "aventure.resolve-landing",
+      "pendingDrawFlag": "race-event-cards.pending-draw",
+      "tiles": {
+        "$content": "content/board.json"
+      },
+      "pawnSelection": {
+        "setId": "avatars",
+        "choiceId": "aventure.pawn"
+      }
     }
   ],
   "components": [
@@ -71,15 +88,10 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "playing"
-      ]
+      "transitions": ["playing"]
     },
     "playing": {
-      "actions": [
-        "roll",
-        "draw_card"
-      ],
+      "actions": ["roll", "draw_card"],
       "terminal": true
     }
   },
@@ -94,24 +106,10 @@
     }
   },
   "victory": {
-    "kind": "by-event-race"
+    "kind": "manual"
   },
-  "extensions": [
-    {
-      "type": "eventRace",
-      "config": {
-        "trackId": "jungle",
-        "diceId": "main",
-        "playingPhase": "playing",
-        "landingEffectId": "aventure.resolve-landing",
-        "tiles": {
-          "$content": "content/board.json"
-        },
-        "pawnSelection": {
-          "setId": "avatars",
-          "choiceId": "aventure.pawn"
-        }
-      }
-    }
-  ]
+  "bot": {
+    "kind": "first"
+  },
+  "extensions": []
 }

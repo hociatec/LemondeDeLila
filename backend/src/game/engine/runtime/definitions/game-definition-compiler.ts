@@ -262,6 +262,9 @@ function compileGameDefinition<
       ...(patterns.actions ?? {}),
       ...definition.actions,
     },
+    choices: Object.assign({}, patterns.choices, definition.choices),
+    effects: Object.assign({}, patterns.effects, definition.effects),
+    setup: definition.setup ?? patterns.setup,
     initialization: atAuthoringPath('definition', () =>
       mergeInitialization(patterns.initialization, definition.initialization),
     ),

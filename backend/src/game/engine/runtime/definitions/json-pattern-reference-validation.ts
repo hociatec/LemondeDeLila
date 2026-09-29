@@ -8,6 +8,9 @@ export function assertJsonPatternReferences(
   patterns: readonly JsonGamePattern[] | undefined,
   components: readonly GameComponentDefinition[],
   resources: ReadonlySet<string>,
+  phases: Readonly<Record<string, { transitions?: readonly string[] }>>,
+  initialPhase: string,
+  maximumPlayers: number,
   fail: Failure,
 ): void {
   for (const [index, pattern] of (patterns ?? []).entries()) {
@@ -21,7 +24,88 @@ export function assertJsonPatternReferences(
         resources,
         fail,
       );
+    if (pattern.kind === 'event-card-race')
+      assertEventCardRaceReferences(
+        pattern,
+        index,
+        components,
+        phases,
+        initialPhase,
+        maximumPlayers,
+        fail,
+      );
   }
+}
+
+function assertEventCardRaceReferences(
+  pattern: Extract<JsonGamePattern, { kind: 'event-card-race' }>,
+  patternIndex: number,
+  components: readonly GameComponentDefinition[],
+  phases: Readonly<Record<string, { transitions?: readonly string[] }>>,
+  initialPhase: string,
+  maximumPlayers: number,
+  fail: Failure,
+): void {
+  const root = `patterns[${patternIndex}]`;
+  const track = components.find(
+    (component) =>
+      component.component === 'movement.track' &&
+      component.id === pattern.trackId,
+  );
+  if (
+    track?.component !== 'movement.track' ||
+    track.spaces !== pattern.tiles.length
+  )
+    fail(`${root}.trackId`, 'one tile per track position required');
+  if (
+    !components.some(
+      (component) =>
+        component.component === 'dice.set' && component.id === pattern.diceId,
+    )
+  )
+    fail(`${root}.diceId`, 'unknown dice');
+  for (const [index, tile] of pattern.tiles.entries()) {
+    if (!tile.deckId) continue;
+    const deck = requireDeck(
+      tile.deckId,
+      `${root}.tiles[${index}].deckId`,
+      components,
+      fail,
+    );
+    if (
+      deck.cards.some(
+        (card) =>
+          card == null ||
+          typeof card !== 'object' ||
+          !('id' in card) ||
+          !('effects' in card) ||
+          ('deck' in card && card.deck !== tile.deckId),
+      )
+    )
+      fail(
+        `${root}.tiles[${index}].deckId`,
+        'event cards require identifiers, effects and a matching deck',
+      );
+  }
+  const pawnSet = components.find(
+    (component) =>
+      component.component === 'pawn.set' &&
+      component.id === pattern.pawnSelection.setId,
+  );
+  if (
+    pawnSet?.component !== 'pawn.set' ||
+    pawnSet.perPlayer !== 1 ||
+    pawnSet.pawns.length < maximumPlayers
+  )
+    fail(
+      `${root}.pawnSelection.setId`,
+      'one available pawn per player required',
+    );
+  if (
+    initialPhase === pattern.playingPhase ||
+    !phases[initialPhase]?.transitions?.includes(pattern.playingPhase)
+  )
+    fail(`${root}.playingPhase`, 'setup must transition to the playing phase');
 }
 
 function assertOrderedCollectionReferences(
