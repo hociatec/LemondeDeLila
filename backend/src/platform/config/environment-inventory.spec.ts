@@ -66,3 +66,31 @@ it('declares every literal environment read and every RuntimeEnvironmentKey in t
   }
   expect(missing).toEqual([]);
 });
+
+it('keeps raw production environment access inside the two config owners', () => {
+  const root = path.resolve(__dirname, '../..');
+  const owners = new Set([
+    'platform/config/environment-validation.ts',
+    'platform/config/runtime-environment.ts',
+  ]);
+  const violations: string[] = [];
+  for (const file of files(root)) {
+    const relative = path.relative(root, file).replaceAll(path.sep, '/');
+    if (owners.has(relative)) continue;
+    const source = fs.readFileSync(file, 'utf8');
+    const ast = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
+    function visit(node: ts.Node): void {
+      if (
+        ts.isPropertyAccessExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === 'process' &&
+        node.name.text === 'env'
+      ) {
+        violations.push(relative);
+      }
+      ts.forEachChild(node, visit);
+    }
+    visit(ast);
+  }
+  expect(violations).toEqual([]);
+});

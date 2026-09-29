@@ -22,6 +22,7 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
   private timer: NodeJS.Timeout | null = null;
   private initialTimer: NodeJS.Timeout | null = null;
   private lastRunAtMs: number | null = null;
+  private activeTick: Promise<void> | null = null;
 
   constructor(
     private readonly roomAdminContext: RoomAdminContextService,
@@ -38,7 +39,7 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
     // Timer is always running (cheap). Actual execution is gated by settings.
     this.timer = setInterval(() => {
       void bestEffort(
-        this.shutdown.run(() => this.tick()),
+        this.shutdown.run(() => this.runTick()),
         'nettoyage automatique des rooms',
         this.logger,
       );
@@ -46,7 +47,7 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
     this.initialTimer = setTimeout(() => {
       this.initialTimer = null;
       void bestEffort(
-        this.shutdown.run(() => this.tick()),
+        this.shutdown.run(() => this.runTick()),
         'nettoyage automatique initial des rooms',
         this.logger,
       );
@@ -97,6 +98,15 @@ export class RoomAutoCleanupService implements OnModuleInit, OnModuleDestroy {
         `Auto cleanup removed rooms: deleted=${res.deleted} matched=${res.matched} olderThanMinutes=${s.autoCleanupOlderThanMinutes}`,
       );
     }
+  }
+
+  private runTick(): Promise<void> {
+    if (this.activeTick) return this.activeTick;
+    const tick = this.tick().finally(() => {
+      if (this.activeTick === tick) this.activeTick = null;
+    });
+    this.activeTick = tick;
+    return tick;
   }
 }
 /** Room application capability boundary. */

@@ -1,9 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import {
   businessMsToDate,
-  getErrorMessage,
   requireStrictInteger,
 } from '@shared/utils/public-api';
 import type { NotificationInboxRepository } from '../../../../application/ports/notification-inbox.repository';
@@ -40,8 +39,6 @@ const MAX_NOTIFICATION_PAYLOAD_BYTES = 256 * 1024;
 
 @Injectable()
 export class NotificationInboxTypeormRepository implements NotificationInboxRepository {
-  private readonly logger = new Logger(NotificationInboxTypeormRepository.name);
-
   constructor(
     @InjectRepository(NotificationInboxItemEntity)
     private readonly repo: Repository<NotificationInboxItemEntity>,
@@ -234,11 +231,11 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
           readAt: toDate(row.readAt),
         }))
         .filter((row) => row.id && row.userId > 0);
-    } catch (err) {
-      this.logger.warn(
-        `listByContactId failed kind=${kind} contactId=${contactId}: ${getErrorMessage(err)}`,
+    } catch (error) {
+      throw new NotificationInboxPersistenceError(
+        'Unable to list notification inbox items by contact',
+        { cause: error },
       );
-      return [];
     }
   }
 
@@ -361,6 +358,15 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
     } catch {
       return null;
     }
+  }
+}
+
+export class NotificationInboxPersistenceError extends Error {
+  readonly code = 'NOTIFICATION_INBOX_PERSISTENCE_FAILURE';
+
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'NotificationInboxPersistenceError';
   }
 }
 

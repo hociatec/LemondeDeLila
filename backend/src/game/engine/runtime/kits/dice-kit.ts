@@ -9,6 +9,7 @@ import type {
   DiceRollResult,
   PersistedDiceRoll,
 } from './dice-contracts';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 
 export type {
   DiceDefinition,
@@ -57,10 +58,7 @@ export class GameDiceController {
   constructor(
     private readonly state: DiceKitState,
     private readonly random: GameRng,
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-    ) => void = () => {},
+    private readonly emit: EngineEventEmitter<'dice.rolled'> = () => {},
     definitions: readonly DiceDefinition[] = [],
     private readonly actorPlayerId: () => number | null = () => null,
   ) {

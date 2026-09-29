@@ -1,6 +1,7 @@
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import type { GameContext } from '../definitions/game-author-context';
 import type { GameInputSchema } from '../actions/game-input-schema';
+import type { OpaqueGameEventType } from './game-context-events';
 
 export type GameEventDefinition<TType extends string, TData extends object> = {
   readonly type: TType;
@@ -58,7 +59,11 @@ export function defineEvent<
     visibility,
     emit: <TState extends object>(ctx: GameContext<TState>, data: TData) => {
       const parsed = definition.data.parse(data, `event.${definition.type}`);
-      ctx.events.emit(definition.type, parsed, visibility);
+      ctx.events.emit(
+        definition.type as OpaqueGameEventType<TType>,
+        parsed,
+        visibility,
+      );
     },
   });
 }

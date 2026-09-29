@@ -1,4 +1,5 @@
 import type { PlayerState } from '../../../core/application/models/game-state.model';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 import { GameNotFoundError } from '../contracts/game-domain.errors';
 
 export type MatchLifecycleStatus =
@@ -41,10 +42,12 @@ export class GameMatchController {
     private readonly state: MatchKitState,
     private readonly players: readonly PlayerState[],
     private readonly nowMs: () => number,
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-    ) => void,
+    private readonly emit: EngineEventEmitter<
+      | 'match.started'
+      | 'match.cancelled'
+      | 'game.finished'
+      | 'player.eliminated'
+    >,
     private readonly setRuntimeStatus: (status: MatchLifecycleStatus) => void,
   ) {}
 

@@ -174,7 +174,22 @@ function processMetrics() {
 }
 
 async function dependencyMetrics(db, redis) {
-  const threads = await queryOne(db, "SHOW STATUS LIKE 'Threads_connected'", []);
+  const threads = await queryOne(
+    db,
+    "SHOW STATUS LIKE 'Threads_connected'",
+    [],
+  );
+  const running = await queryOne(db, "SHOW STATUS LIKE 'Threads_running'", []);
+  const maxUsed = await queryOne(
+    db,
+    "SHOW STATUS LIKE 'Max_used_connections'",
+    [],
+  );
+  const maxConnections = await queryOne(
+    db,
+    "SHOW VARIABLES LIKE 'max_connections'",
+    [],
+  );
   const questions = await queryOne(db, "SHOW STATUS LIKE 'Questions'", []);
   let redisMetrics = null;
   if (redis) {
@@ -182,13 +197,22 @@ async function dependencyMetrics(db, redis) {
     redisMetrics = Object.fromEntries(
       info
         .split(/\r?\n/)
-        .filter((line) => /^(used_memory|used_memory_rss|mem_fragmentation_ratio):/.test(line))
+        .filter((line) =>
+          /^(used_memory|used_memory_rss|mem_fragmentation_ratio):/.test(line),
+        )
         .map((line) => line.split(':')),
     );
   }
   return {
     mysql: {
       threadsConnected: Number(threads?.Value ?? 0),
+      threadsRunning: Number(running?.Value ?? 0),
+      maxUsedConnections: Number(maxUsed?.Value ?? 0),
+      maxConnections: Number(maxConnections?.Value ?? 0),
+      capacityRatio:
+        Number(maxConnections?.Value ?? 0) > 0
+          ? Number(threads?.Value ?? 0) / Number(maxConnections.Value)
+          : 0,
       questions: Number(questions?.Value ?? 0),
     },
     redis: redisMetrics,
@@ -212,7 +236,10 @@ async function runPool(items, limit, worker) {
 }
 
 async function registerAndLoginOverApiWs(baseWsUrl, user, password) {
-  const api = new WsClient(withClientVersion(`${baseWsUrl}/ws/api`), `api:${user.username}`);
+  const api = new WsClient(
+    withClientVersion(`${baseWsUrl}/ws/api`),
+    `api:${user.username}`,
+  );
   await api.connect();
   try {
     const regRequestId = `reg-${user.username}`;
@@ -354,12 +381,19 @@ async function main() {
   );
   const rooms = groupByRoom(users, roomsCount);
 
-  const db = await mysql.createConnection({
+  const db = mysql.createPool({
     host: process.env.DB_HOST || env.DB_HOST || '127.0.0.1',
     port: Number(process.env.DB_PORT || env.DB_PORT || 3306),
     user: process.env.DB_USER || env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || env.DB_PASSWORD || '',
     database: process.env.DB_NAME || env.DB_NAME || 'le_monde_de_lila',
+    connectionLimit: Math.max(1, poolSize),
+    waitForConnections: true,
+    queueLimit: 0,
+  });
+  let mysqlPoolWaitCount = 0;
+  db.on('enqueue', () => {
+    mysqlPoolWaitCount += 1;
   });
   const redisUrl =
     process.env.ROOM_LOAD_REDIS_URL ||
@@ -368,7 +402,11 @@ async function main() {
     env.SESSION_STORE_REDIS_URL ||
     null;
   const redis = redisUrl
-    ? new Redis(redisUrl, { lazyConnect: true, connectTimeout: 3000, maxRetriesPerRequest: 1 })
+    ? new Redis(redisUrl, {
+        lazyConnect: true,
+        connectTimeout: 3000,
+        maxRetriesPerRequest: 1,
+      })
     : null;
   if (redis) await redis.connect();
 
@@ -477,7 +515,9 @@ async function main() {
       const owner = room.owner;
       owner.ws.send({
         type: 'room.start',
-        payload: { _trace: { id: `load-start-${room.roomIndex}`, sentAtMs: nowMs() } },
+        payload: {
+          _trace: { id: `load-start-${room.roomIndex}`, sentAtMs: nowMs() },
+        },
       });
       await owner.ws.waitFor(
         (m) =>
@@ -513,7 +553,10 @@ async function main() {
         `Room not started in DB id=${room.roomId}`,
       );
       assert(row.started_at != null, `started_at null in DB id=${room.roomId}`);
-      assert(Number(row.run_id) >= 1, `run_id not incremented id=${room.roomId}`);
+      assert(
+        Number(row.run_id) >= 1,
+        `run_id not incremented id=${room.roomId}`,
+      );
     }
     summary.timingsMs.validateDbStarted = phaseMs(dbValidateStart);
 
@@ -549,8 +592,7 @@ async function main() {
         25000,
         'chat.history',
       );
-      const minExpected =
-        1 + room.players.length + room.spectators.length;
+      const minExpected = 1 + room.players.length + room.spectators.length;
       const count = Array.isArray(history?.payload?.messages)
         ? history.payload.messages.length
         : 0;
@@ -577,6 +619,11 @@ async function main() {
     summary.timingsMs.validateParticipants = phaseMs(participantsStart);
     summary.processAfter = processMetrics();
     summary.dependenciesAfter = await dependencyMetrics(db, redis);
+    summary.mysqlPool = {
+      connectionLimit: Math.max(1, poolSize),
+      waitCount: mysqlPoolWaitCount,
+      saturated: mysqlPoolWaitCount > 0,
+    };
 
     console.log('ROOM LOAD TEST REPORT');
     console.log(
@@ -594,10 +641,16 @@ async function main() {
       `- Phase validate participants: ${summary.timingsMs.validateParticipants}ms`,
     );
     console.log(`- Rooms created: ${createdRoomIds.length}`);
-    console.log(`- Resources: ${JSON.stringify({
-      process: { before: summary.processBefore, after: summary.processAfter },
-      dependencies: { before: summary.dependenciesBefore, after: summary.dependenciesAfter },
-    })}`);
+    console.log(
+      `- Resources: ${JSON.stringify({
+        process: { before: summary.processBefore, after: summary.processAfter },
+        dependencies: {
+          before: summary.dependenciesBefore,
+          after: summary.dependenciesAfter,
+        },
+        mysqlPool: summary.mysqlPool,
+      })}`,
+    );
     console.log('RESULT: PASS');
   } finally {
     for (const ws of allSockets.reverse()) {

@@ -10,7 +10,9 @@ import { cardMessageLabel, scalarMessageText } from './game-ws-message-values';
 import { withoutRepeatedTurnAnnouncements } from './game-ws-turn-announcements';
 import {
   decodeMessageSystem,
+  type MessageEventData,
   type MessageSystemView,
+  type MessageViewEvent,
 } from './game-ws-message-system-view';
 
 type GamePresentationDescriptor = NonNullable<
@@ -28,14 +30,12 @@ export class GameWsStateMessagesPresenter {
     const system = decodeMessageSystem(rawSystem);
     const playerNames = this.playerNames(system);
     const events = system.events;
-    const latestByType: Record<string, unknown> = events.latestByType;
-    const receivedCardData = this.asRecord(
-      this.asRecord(latestByType['card.received']).data,
-    );
-    const recentEvents: unknown[] = events.recent;
+    const latestByType = events.latestByType;
+    const receivedCardData = latestByType['card.received']?.data ?? {};
+    const recentEvents = events.recent;
     const relations = presentationRelations(recentEvents, latestByType);
     const started = isActiveMatchStatus(system.match.status);
-    const presentEvent = (rawEvent: unknown): Record<string, unknown> =>
+    const presentEvent = (rawEvent: MessageViewEvent): MessageViewEvent =>
       this.presentEvent({
         rawEvent,
         relations,
@@ -68,10 +68,10 @@ export class GameWsStateMessagesPresenter {
   }
 
   private presentLatestByType(
-    latestByType: Record<string, unknown>,
-    presentEvent: (rawEvent: unknown) => Record<string, unknown>,
-  ): Record<string, unknown> {
-    const presented: Record<string, unknown> = {};
+    latestByType: Readonly<Record<string, MessageViewEvent>>,
+    presentEvent: (rawEvent: MessageViewEvent) => MessageViewEvent,
+  ): Record<string, MessageViewEvent> {
+    const presented: Record<string, MessageViewEvent> = {};
     for (const [key, rawEvent] of Object.entries(latestByType).slice(0, 512)) {
       presented[key] = presentEvent(rawEvent);
     }
@@ -79,24 +79,24 @@ export class GameWsStateMessagesPresenter {
   }
 
   private presentEvent(input: {
-    rawEvent: unknown;
+    rawEvent: MessageViewEvent;
     relations: PresentationRelations;
     playerNames: ReadonlyMap<number, string>;
     started: boolean;
     viewerPlayerId: number | null;
     receivedCardData: Record<string, unknown>;
     presentation: GamePresentationDescriptor;
-  }): Record<string, unknown> {
-    const event = this.asRecord(input.rawEvent);
-    const data = this.asRecord(event.data);
-    const type = this.stringValue(event.type);
-    const eventId = this.stringValue(event.id);
+  }): MessageViewEvent {
+    const event = input.rawEvent;
+    const data = event.data;
+    const type = event.type;
+    const eventId = event.id;
     if (input.relations.suppressedEventIds.has(eventId)) return event;
     const pairedTurn = input.relations.turnByMessageId.get(eventId);
     const message = this.eventMessage(
       type,
       data,
-      this.numberValue(event.actorId),
+      event.actorId,
       input.playerNames,
       input.started,
       input.viewerPlayerId,
@@ -109,7 +109,7 @@ export class GameWsStateMessagesPresenter {
 
   private eventMessage(
     type: string,
-    data: Record<string, unknown>,
+    data: MessageEventData,
     actorId: number | null,
     players: ReadonlyMap<number, string>,
     started: boolean,
@@ -144,7 +144,7 @@ export class GameWsStateMessagesPresenter {
         nextTurnData,
       );
     }
-    if (type === 'score.changed' && data.announce !== false)
+    if (type === 'score.changed')
       return this.scoreMessage(data, player, presentation.score);
     return genericGameEventMessage({
       type,

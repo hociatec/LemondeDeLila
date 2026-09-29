@@ -9,6 +9,7 @@ import {
   GameRuleViolationError,
   GameStateViolationError,
 } from '../contracts/game-domain.errors';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import { assertGamePlayerId, assertPlayerValueId } from './numeric-invariants';
 
@@ -57,11 +58,9 @@ export const ownership = {
 export class GameOwnershipController {
   constructor(
     private readonly state: OwnershipKitState,
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-      visibility?: EventVisibility,
-    ) => void = () => {},
+    private readonly emit: EngineEventEmitter<
+      'ownership.claimed' | 'ownership.released' | 'ownership.transferred'
+    > = () => {},
     definitions: readonly OwnershipDefinition[] = [],
   ) {
     for (const definition of definitions) {

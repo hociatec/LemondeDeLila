@@ -61,6 +61,7 @@
     "test:load:room:real": "node tools/room-load-real.cjs",
     "benchmark:game-engine": "node tools/game-engine-benchmark.cjs",
     "profile:game-replay": "node tools/game-replay-profile.cjs",
+    "profile:mysql-pool": "node tools/mysql-pool-profile.cjs",
     "artifact:create": "node tools/create-deployment-artifact.cjs",
     "content:export": "node tools/content-release.cjs export",
     "content:publish": "node tools/content-release.cjs publish",

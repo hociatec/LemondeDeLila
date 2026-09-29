@@ -76,7 +76,12 @@ const sampleGame = defineGame({
       execute: ({ state, input, ctx }) => {
         state.score += input.amount;
         ctx.movement.move('main', ctx.actor?.id ?? 0, input.amount);
-        ctx.events.emit('score.changed', { score: state.score });
+        ctx.events.engine('score.changed', {
+          playerId: ctx.actor?.id ?? 0,
+          previous: state.score - input.amount,
+          value: state.score,
+          delta: input.amount,
+        });
       },
     }),
     confirm: defineAction<SampleState, Record<string, never>>({

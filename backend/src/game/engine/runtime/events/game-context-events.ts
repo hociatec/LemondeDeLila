@@ -4,6 +4,7 @@ import type { EventVisibility } from '../../../core/application/models/game-even
 import type { GameLogEntry } from '../../../core/application/models/game-state.model';
 import {
   ENGINE_EVENT_VISIBILITY,
+  type EngineEventEmitter,
   type EngineEventMap,
   type EngineEventType,
   isEngineEventType,
@@ -23,6 +24,9 @@ export type DomainEvent<TEvents extends EventDataMap = EventDataMap> = {
   };
 }[keyof TEvents & string];
 
+export type OpaqueGameEventType<TType extends string> =
+  TType extends EngineEventType ? never : TType;
+
 type EngineVisibilityArguments<TType extends EngineEventType> =
   (typeof ENGINE_EVENT_VISIBILITY)[TType] extends 'dynamic'
     ? [visibility: EventVisibility]
@@ -37,8 +41,8 @@ export class GameContextEvents {
   ) {}
 
   readonly api = {
-    emit: (
-      type: string,
+    emit: <TType extends string>(
+      type: OpaqueGameEventType<TType>,
       data: object = {},
       visibility: EventVisibility = { kind: 'public' },
     ) => this.enqueue({ type, data, visibility }),
@@ -86,7 +90,7 @@ export class GameContextEvents {
 
   emitDomainEvent(
     type: string,
-    data: Record<string, unknown>,
+    data: object,
     visibility?: EventVisibility,
   ): void {
     this.enqueue({
@@ -107,6 +111,8 @@ export class GameContextEvents {
     return this.buffer.splice(0);
   }
 }
+
+export type GameContextEngineEventEmitter = EngineEventEmitter;
 
 function resolveEngineVisibility(
   type: EngineEventType,

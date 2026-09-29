@@ -6,6 +6,7 @@ import {
   GameStateViolationError,
 } from '../contracts/game-domain.errors';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 import { assertGameCount, assertGamePlayerId } from './numeric-invariants';
 
 export type TrackDefinition = {
@@ -93,10 +94,9 @@ export class GameMovementController {
 
   constructor(
     private readonly state: MovementKitState,
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-    ) => void = () => {},
+    private readonly emit: EngineEventEmitter<
+      'pawn.moved' | 'pawn.landed'
+    > = () => {},
     definitions: readonly TrackDefinition[] = [],
     private readonly scheduleEffects: (
       ...effects: readonly GameEffectInstruction[]

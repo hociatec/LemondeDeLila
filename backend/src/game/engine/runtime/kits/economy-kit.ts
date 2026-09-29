@@ -5,7 +5,7 @@ import {
   GameNotFoundError,
   GameStateViolationError,
 } from '../contracts/game-domain.errors';
-import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 import type { GameInventoryController } from './inventory-kit';
 import type { GameResourcesController } from './player-values-kit';
 import { assertGameValue } from './numeric-invariants';
@@ -64,11 +64,9 @@ export class GameEconomyController {
     private readonly state: EconomyKitState,
     private readonly resources: GameResourcesController,
     private readonly inventories: GameInventoryController,
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-      visibility?: EventVisibility,
-    ) => void = () => {},
+    private readonly emit: EngineEventEmitter<
+      'economy.price-changed' | 'economy.item-bought' | 'economy.item-sold'
+    > = () => {},
     definitions: readonly MarketDefinition[] = [],
   ) {
     for (const definition of definitions) {

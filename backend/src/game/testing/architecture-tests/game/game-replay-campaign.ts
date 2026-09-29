@@ -1,5 +1,6 @@
 import { ok } from 'node:assert';
 import { createHash } from 'node:crypto';
+import { performance } from 'node:perf_hooks';
 import type { GameRuntime } from '../../../core/application/ports/game-runtime.port';
 import type { DiscoveredGameDefinition } from '../../../composition/game-module-discovery';
 import type { GameSingleActionDto } from '../../../core/application/models/game-action.model';
@@ -25,10 +26,18 @@ type CampaignResult = {
   traceDigest: string;
 };
 
+export type GameReplayPerformanceSample = {
+  commandMs: number;
+  snapshotBytes: number;
+  appendedEventBytes: number;
+  appendedEvents: number;
+};
+
 export function runGameReplayCampaign(
   definition: DiscoveredGameDefinition,
   seed: number,
   maximumSteps = 64,
+  observePerformance?: (sample: GameReplayPerformanceSample) => void,
 ): CampaignResult {
   const scope = new GameExecutionScopeService();
   const executor = new GameCommandExecutorService(scope);
@@ -55,6 +64,7 @@ export function runGameReplayCampaign(
     );
     const action = campaignCommand(candidate, seed, steps);
     try {
+      const commandStartedAt = performance.now();
       const next = executor.execute({
         handler: runtime,
         state,
@@ -62,6 +72,7 @@ export function runGameReplayCampaign(
         actorId: candidate.actorId,
         clock,
       });
+      const commandMs = performance.now() - commandStartedAt;
       trace.append(action, candidate.actorId, clock, next);
       const replayed = executor.execute({
         handler: replayRuntime,
@@ -77,10 +88,19 @@ export function runGameReplayCampaign(
       );
       assertSameJson(state, before, 'Command mutated its input state');
       // Drain the outbox to model the real persistence boundary.
-      drainPendingGameEvents(next);
+      const appendedEvents = drainPendingGameEvents(next);
       drainPendingGameEvents(replayed);
       replay = roundTripSnapshot(replayed);
       state = next;
+      observePerformance?.({
+        commandMs,
+        snapshotBytes: Buffer.byteLength(JSON.stringify(state), 'utf8'),
+        appendedEventBytes: Buffer.byteLength(
+          JSON.stringify(appendedEvents),
+          'utf8',
+        ),
+        appendedEvents: appendedEvents.length,
+      });
       assertCampaignState(runtime, state, clock);
       types.add(action.type);
       assertReplayedViews({

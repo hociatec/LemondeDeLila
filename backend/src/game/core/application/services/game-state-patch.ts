@@ -20,7 +20,13 @@ export function createStatePatch(
     if (!(key in after)) {
       patch.push({ operation: 'remove', key });
     } else if (!sameSerializableValue(before[key], after[key])) {
-      patch.push({ operation: 'set', key, value: structuredClone(after[key]) });
+      // Object-key iteration is the dynamic boundary; the public patch type
+      // keeps the key/value relationship for all typed consumers.
+      patch.push({
+        operation: 'set',
+        key,
+        value: structuredClone(after[key]),
+      } as GameStatePatchOperation);
     }
   }
   if (patch.length > MAX_PATCH_OPERATIONS) {

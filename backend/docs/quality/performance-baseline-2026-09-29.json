@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-29T10:06:00Z",
+  "baseCommit": "a2153dbe4b046805ed6d2abb553365d75e09eb42",
+  "reproduce": "npm run profile:game-replay -- gerard-president 65535 16",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "linux",
+    "architecture": "x64",
+    "cpu": "AMD EPYC-Genoa Processor",
+    "logicalCpus": 4
+  },
+  "workload": {
+    "gameId": "gerard-president",
+    "runs": 3,
+    "stepsPerRun": 16,
+    "commandSamples": 48
+  },
+  "commands": {
+    "p50Ms": 5.779,
+    "p95Ms": 9.127,
+    "p99Ms": 18.69
+  },
+  "snapshots": {
+    "averageBytes": 9295,
+    "maximumBytes": 10911
+  },
+  "timeline": {
+    "events": 656,
+    "totalBytes": 145449,
+    "averageGrowthBytesPerCommand": 3030.1875
+  },
+  "cpu": {
+    "userMs": 2578.845,
+    "systemMs": 160.225,
+    "profileOutput": "logs/game-replay.cpuprofile"
+  },
+  "memory": {
+    "heapUsedBeforeBytes": 504777448,
+    "heapUsedAfterBytes": 516908752,
+    "heapUsedByRunBytes": [522890400, 511149280, 515061504],
+    "finalDeltaBytes": 12131304,
+    "interpretation": "No monotonic growth across the three independent room/game lifecycles."
+  },
+  "mysql": {
+    "reproduce": "npm run profile:mysql-pool",
+    "connectionLimit": 2,
+    "concurrency": 16,
+    "peakActive": 2,
+    "enqueued": 14,
+    "saturated": true,
+    "acquisitionWaitMs": {
+      "p50": 91.018,
+      "p95": 181.913,
+      "p99": 181.913,
+      "maximum": 181.913
+    },
+    "ciOutput": "logs/mysql-pool-profile.json"
+  }
+}

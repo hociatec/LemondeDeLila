@@ -80,6 +80,31 @@ describe('backend debt contracts', () => {
     expect(definitions).toContain('GameEventDefinition<TType, TData>');
   });
 
+  it('keeps the generic WebSocket presenter free of concrete games and custom event keys', () => {
+    const presenter = readFileSync(
+      resolve(
+        __dirname,
+        '../../../core/infrastructure/presentation/ws/state/game-ws-state-messages.presenter.ts',
+      ),
+      'utf8',
+    );
+    for (const definition of definitions) {
+      expect(presenter).not.toContain(definition.id);
+    }
+    const customEventTypes = walkProductionTs(
+      resolve(__dirname, '../../../rules/game-specific'),
+    ).flatMap(({ source }) =>
+      [
+        ...source.matchAll(
+          /defineEvent\s*\(\s*\{[\s\S]{0,400}?type:\s*'([^']+)'/g,
+        ),
+      ].map((match) => match[1]),
+    );
+    for (const eventType of customEventTypes) {
+      expect(presenter).not.toContain(`'${eventType}'`);
+    }
+  });
+
   it('keeps the command executor as the only production action-application boundary', () => {
     const coreRoot = resolve(__dirname, '../../../core');
     const applyActionFiles = walkProductionTs(coreRoot).filter(({ source }) =>

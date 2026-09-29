@@ -2,8 +2,8 @@ import {
   GameRuleViolationError,
   GameStateViolationError,
 } from '../contracts/game-domain.errors';
-import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import type { PlayerState } from '../../../core/application/models/game-state.model';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 import {
   orderedSubmissionValues,
   recordSubmissionValue,
@@ -57,11 +57,19 @@ export type SubmissionFlowStage =
   | 'voting'
   | 'complete';
 
-export type SubmissionEmitter = (
-  type: string,
-  data: Record<string, unknown>,
-  visibility?: EventVisibility,
-) => void;
+export type SubmissionEmitter = EngineEventEmitter<
+  | 'submission.received'
+  | 'submission.replaced'
+  | 'submission.pending.reordered'
+  | 'submission.opened'
+  | 'submission.closed'
+  | 'submissions.revealed'
+  | 'vote.opened'
+  | 'vote.received'
+  | 'vote.closed'
+  | 'judge.started'
+  | 'judge.changed'
+>;
 
 export function createSubmissionKitState<
   TSubmission = unknown,

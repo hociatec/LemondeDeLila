@@ -84,4 +84,29 @@ describe('RoomAutoCleanupService durability policy', () => {
       jest.useRealTimers();
     }
   });
+
+  it('coalesces concurrent ticks into one cleanup operation', async () => {
+    let releaseCleanup: (() => void) | undefined;
+    const cleanup = jest.fn(
+      () =>
+        new Promise<{ deleted: number; matched: number }>((resolve) => {
+          releaseCleanup = () => resolve({ deleted: 0, matched: 0 });
+        }),
+    );
+    const service = createService(cleanup);
+    const runTick = () =>
+      (
+        service as unknown as {
+          runTick: () => Promise<void>;
+        }
+      ).runTick();
+
+    const first = runTick();
+    const concurrent = runTick();
+    expect(cleanup).toHaveBeenCalledTimes(1);
+    expect(concurrent).toBe(first);
+
+    releaseCleanup?.();
+    await Promise.all([first, concurrent]);
+  });
 });

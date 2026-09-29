@@ -10,7 +10,10 @@ import {
 } from 'class-validator';
 import type { PendingState } from './game-state.model';
 
-export class GameSingleActionDto {
+export class GameSingleActionDto<
+  TPayload extends object = Record<string, unknown>,
+  TMeta extends object = Record<string, unknown>,
+> {
   @IsString()
   @MaxLength(128)
   type!: string;
@@ -22,11 +25,11 @@ export class GameSingleActionDto {
 
   @IsOptional()
   @IsObject()
-  payload?: Record<string, unknown>;
+  payload?: TPayload;
 
   @IsOptional()
   @IsObject()
-  meta?: Record<string, unknown>;
+  meta?: TMeta;
 }
 
 export class GameActionListDto {
