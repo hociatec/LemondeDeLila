@@ -140,12 +140,6 @@ const variants: Record<string, (program: Data) => Data> = {
       randomSides: 4,
     },
   }),
-  teamPawnRace: (program) => ({
-    ...program,
-    entryRolls: [1, 3],
-    extraTurnRolls: [2],
-    startPositions: [...(program.startPositions as number[])].reverse(),
-  }),
 };
 
 beforeAll(() =>

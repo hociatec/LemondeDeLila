@@ -59,8 +59,6 @@
 165. Supprimer game/rules/game-specific/board-property-economy/effect-pack.ts après certification comportementale complète.
 168. Migrer choice-story-challenge afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 169. Supprimer game/rules/game-specific/choice-story-challenge/effect-pack.ts après certification comportementale complète.
-170. Migrer race-team-pawn-capture afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
-171. Supprimer game/rules/game-specific/race-team-pawn-capture/effect-pack.ts après certification comportementale complète.
 174. Migrer cards-theme-name afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.
 175. Supprimer game/rules/game-specific/cards-theme-name/effect-pack.ts après certification comportementale complète.
 178. Migrer board-path-walls afin que toutes ses règles soient exprimées par le JSON et les primitives génériques.

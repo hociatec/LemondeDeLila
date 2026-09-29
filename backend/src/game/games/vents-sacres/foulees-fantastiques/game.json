@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "2",
   "category": "JeuxDePlateaux",
   "world": "VentsSacres",
@@ -15,6 +15,23 @@
       "spaces": 56,
       "initialPosition": -1,
       "homeStretchFrom": 52
+    },
+    {
+      "kind": "team-pawn-race",
+      "rollRecipe": "race-team-pawn-capture-roll",
+      "setId": "teamPawn",
+      "diceId": "main",
+      "familyChoiceId": "teamPawn.family",
+      "moveChoiceId": "teamPawn.move",
+      "families": { "$content": "content/catalogue.json#/families" },
+      "trackLength": 52,
+      "homeLength": 4,
+      "safeTiles": { "$content": "content/catalogue.json#/board/safeTiles" },
+      "finishReason": "four-pawns-home",
+      "entryRolls": [6],
+      "extraTurnRolls": [6],
+      "startPositions": [0, 26, 13, 39],
+      "homeRolls": [2, 3, 4]
     }
   ],
   "components": [],
@@ -31,14 +48,10 @@
   "phases": {
     "setup": {
       "actions": [],
-      "transitions": [
-        "turn"
-      ]
+      "transitions": ["turn"]
     },
     "turn": {
-      "actions": [
-        "roll"
-      ],
+      "actions": ["roll"],
       "terminal": true
     }
   },
@@ -48,49 +61,17 @@
     }
   },
   "victory": {
-    "kind": "by-team-pawn-race"
+    "kind": "manual"
   },
   "snapshotMigrations": [
     {
       "fromVersion": "1",
       "toVersion": "2"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
-  "extensions": [
-    {
-      "type": "teamPawnRace",
-      "config": {
-        "setId": "teamPawn",
-        "diceId": "main",
-        "familyChoiceId": "teamPawn.family",
-        "moveChoiceId": "teamPawn.move",
-        "families": {
-          "$content": "content/catalogue.json#/families"
-        },
-        "trackLength": 52,
-        "homeLength": 4,
-        "safeTiles": {
-          "$content": "content/catalogue.json#/board/safeTiles"
-        },
-        "finishReason": "four-pawns-home",
-        "entryRolls": [
-          6
-        ],
-        "extraTurnRolls": [
-          6
-        ],
-        "startPositions": [
-          0,
-          26,
-          13,
-          39
-        ],
-        "homeRolls": [
-          2,
-          3,
-          4
-        ]
-      }
-    }
-  ]
+  "extensions": []
 }

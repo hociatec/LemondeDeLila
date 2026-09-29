@@ -50,20 +50,6 @@ add('quizEventRace', (p) => {
   Object.assign(rows(p.tiles)[1], { type: 'goto', target: 9999 });
   return 'tiles[1].target';
 });
-add('teamPawnRace', (p) => {
-  list(p.startPositions)[0] = p.trackLength;
-  return 'startPositions[0]';
-});
-add('teamPawnRace', (p) => {
-  p.safeTiles = [p.trackLength];
-  return 'safeTiles[0]';
-});
-duplicate('teamPawnRace', 'startPositions');
-duplicate('teamPawnRace', 'families', 'id');
-add('teamPawnRace', (p) => {
-  rows(p.families)[0].pawns = [];
-  return 'families[0].pawns';
-});
 add('chainedTileRace', (p) => {
   object(p.tileRules)['bad.rule'] = {
     kind: 'move-to',

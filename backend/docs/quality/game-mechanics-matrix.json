@@ -1130,58 +1130,29 @@
     },
     {
       "id": "foulees-fantastiques",
-      "packs": [
-        "race-team-pawn-capture"
-      ],
+      "packs": [],
       "mechanics": {
-        "movement": [
-          "src/game/rules/game-specific/race-team-pawn-capture/json-team-pawn-race-schema.ts:47",
-          "src/game/rules/game-specific/race-team-pawn-capture/json-team-pawn-race-schema.ts:53",
-          "src/game/rules/game-specific/race-team-pawn-capture/json-team-pawn-race-schema.ts:73",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:24",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:131",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:191",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:274",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:302",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:304",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:333"
-        ],
+        "movement": [],
         "ownership": [],
         "collision": [
-          "src/game/games/vents-sacres/foulees-fantastiques/game.json:47",
-          "src/game/rules/game-specific/race-team-pawn-capture/effect-pack.ts:23",
-          "src/game/rules/game-specific/race-team-pawn-capture/effect-pack.ts:26",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:193",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:256"
+          "src/game/games/vents-sacres/foulees-fantastiques/game.json:21",
+          "src/game/games/vents-sacres/foulees-fantastiques/game.json:60"
         ],
         "resources": [],
         "payment": [],
         "cards": [],
         "zones": [],
         "choices": [
-          "src/game/games/vents-sacres/foulees-fantastiques/game.spec.ts:47",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:2",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:70",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:85",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:90",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:93"
+          "src/game/games/vents-sacres/foulees-fantastiques/game.spec.ts:42"
         ],
         "status": [],
         "collections": [],
         "scoring": [],
         "victory": [
-          "src/game/games/vents-sacres/foulees-fantastiques/game.json:50",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:195"
+          "src/game/games/vents-sacres/foulees-fantastiques/game.json:63"
         ],
-        "targeting": [
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:132",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:148"
-        ],
-        "triggers": [
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:20",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:36",
-          "src/game/rules/game-specific/race-team-pawn-capture/team-pawn-race.recipes.ts:197"
-        ]
+        "targeting": [],
+        "triggers": []
       }
     },
     {
@@ -2997,12 +2968,6 @@
       "name": "race-resource-track",
       "consumers": [
         "primalis"
-      ]
-    },
-    {
-      "name": "race-team-pawn-capture",
-      "consumers": [
-        "foulees-fantastiques"
       ]
     }
   ]

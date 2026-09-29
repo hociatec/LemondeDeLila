@@ -75,8 +75,13 @@ it('rejects invalid references and effects in canonical JSON catalogues', () => 
 
   const foulees = structuredClone(
     jsonDefinition('foulees-fantastiques').content.data,
-  ) as { teamPawnRace: { safeTiles: number[]; trackLength: number } };
-  foulees.teamPawnRace.safeTiles.push(foulees.teamPawnRace.trackLength);
+  ) as {
+    patterns: Array<{ kind: string; safeTiles: number[]; trackLength: number }>;
+  };
+  const teamRace = foulees.patterns.find(
+    (pattern) => pattern.kind === 'team-pawn-race',
+  )!;
+  teamRace.safeTiles.push(teamRace.trackLength);
   expect(() => recompileJson('foulees-fantastiques', foulees)).toThrow();
 
   const maman = structuredClone(

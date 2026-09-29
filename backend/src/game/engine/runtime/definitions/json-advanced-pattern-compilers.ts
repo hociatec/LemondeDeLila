@@ -46,6 +46,14 @@ import {
   publicDomainCards,
   type PublicDomainCardsOptions,
 } from '../patterns/public-domain-cards-pattern';
+import {
+  themedSetCollection,
+  type ThemedSetCollectionOptions,
+} from '../patterns/themed-set-collection-pattern';
+import {
+  teamPawnRace,
+  type TeamPawnRaceOptions,
+} from '../patterns/team-pawn-race-pattern';
 
 export function compileTreasureTrackRace(
   pattern: { kind: 'treasure-track-race' } & TreasureTrackRaceOptions,
@@ -120,4 +128,16 @@ export function compilePublicDomainCards(
 ) {
   const { kind: _kind, ...options } = pattern;
   return publicDomainCards(options);
+}
+export function compileThemedSetCollection(
+  pattern: { kind: 'themed-set-collection' } & ThemedSetCollectionOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return themedSetCollection(options);
+}
+export function compileTeamPawnRace(
+  pattern: { kind: 'team-pawn-race' } & TeamPawnRaceOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return teamPawnRace(options);
 }

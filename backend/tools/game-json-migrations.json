@@ -210,6 +210,16 @@
         "src/game/testing/architecture-tests/game/public-domain-cards-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-public-domain-cards.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-sacres/foulees-fantastiques/game.json",
+      "fromSha256": "c4cd44892e2d90cca940d581b109132f9fae33523769195402832185009b2020",
+      "toSha256": "c1ba0a324dd89c10894cd19df0b9c2b28e2d3f7de8fb2719e8f7211726bbe90d",
+      "justification": "Le pattern team-pawn-race générique porte désormais familles de pions, entrée, maison, blocage, capture, choix, narration, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/team-pawn-race-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-team-pawn-race.spec.ts"
+      ]
     }
   ]
 }

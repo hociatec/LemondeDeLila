@@ -48,7 +48,6 @@
     "choice-story-challenge": "Compared with judged-cards and choice primitives; mixed story, challenge and laughter resolution remains unique.",
     "board-path-walls": "Compared with board-game and grid-placement; wall legality and path preservation remain unique.",
     "race-directional-hazards": "Compared with track-round and board landings; directional movement and chained hazards remain unique.",
-    "race-team-pawn-capture": "Compared with pawn-race; family groups, multiple pawns and capture remain unique.",
     "race-protected-haunted-track": "Compared with event-race and track-round; haunted protection and blocking remain unique.",
     "race-quiz-event-track": "Compared with movement-quiz and event-race; combined quiz, challenge and event choices remain unique.",
     "cards-theme-name": "Compared with judged-cards and card-actions; name/theme composition and special cards remain unique.",
@@ -94,7 +93,6 @@
       "race-chained-tile-cards",
       "race-directional-hazards",
       "race-resource-track",
-      "race-team-pawn-capture",
       "race-protected-haunted-track",
       "race-quiz-event-track"
     ]
@@ -169,14 +167,6 @@
       "domain": "race",
       "scope": "game-specific",
       "classificationReason": "race-resource-track implements resource collection track race. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
-    "race-team-pawn-capture": {
-      "property": "teamPawnRace",
-      "mechanic": "multi-pawn family race and capture",
-      "domain": "race",
-      "scope": "game-specific",
-      "classificationReason": "race-team-pawn-capture implements multi-pawn family race and capture. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
     "race-protected-haunted-track": {
@@ -255,7 +245,6 @@
   "registrationOrder": [
     "race-resource-track",
     "race-protected-haunted-track",
-    "race-team-pawn-capture",
     "race-quiz-event-track",
     "race-directional-hazards",
     "race-chained-tile-cards",

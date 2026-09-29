@@ -1,18 +1,39 @@
-import {
-  defineChoice,
-  gameInput,
-  rollDice,
-  sequentialPawnSelection,
-} from '../../../engine/sdk/public-api';
-import type { GameContext, PawnMove } from '../../../engine/sdk/public-api';
-import type { TeamPawnRaceProgram } from './program';
-import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
+import { defineChoice } from '../actions/action-builders';
+import { gameInput } from '../actions/game-input-schema';
+import { GameRuleViolationError } from '../contracts/game-domain.errors';
+import type { GameContext } from '../definitions/game-author-context';
+import type { PawnMove } from '../kits/pawn-kit';
+import { rollDice, sequentialPawnSelection } from '../recipes/gameplay-recipes';
+import { definePattern } from './gameplay-pattern-core';
+
+export type TeamPawnFamily = {
+  id: string;
+  family: string;
+  habitat: string;
+  pawns: readonly string[];
+};
+export type TeamPawnRaceOptions = {
+  rollRecipe: string;
+  setId: string;
+  diceId: string;
+  familyChoiceId: string;
+  moveChoiceId: string;
+  families: readonly TeamPawnFamily[];
+  trackLength: number;
+  homeLength: number;
+  safeTiles: readonly number[];
+  finishReason: string;
+  entryRolls: readonly number[];
+  extraTurnRolls: readonly number[];
+  startPositions: readonly number[];
+  homeRolls: readonly number[];
+};
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
 type Pending = { actorId: number };
 
-export function teamPawnRaceRules(source: TeamPawnRaceProgram) {
+export function teamPawnRace(source: TeamPawnRaceOptions) {
   const program = structuredClone(source);
   const selection = sequentialPawnSelection<State>({
     setId: program.setId,
@@ -78,8 +99,10 @@ export function teamPawnRaceRules(source: TeamPawnRaceProgram) {
     documentation:
       'Lance le dé puis déplace un pion selon les règles de course.',
   });
-  return {
-    roll,
+  return definePattern({
+    id: `team-pawn-race:${program.setId}`,
+    mechanics: ['race', 'pawns', 'capture'],
+    actions: { [program.rollRecipe]: roll },
     setup: selection.setup(() => ({})),
     choices: {
       [program.familyChoiceId]: defineChoice<State, string>({
@@ -109,10 +132,16 @@ export function teamPawnRaceRules(source: TeamPawnRaceProgram) {
         },
       }),
     },
-  };
+    bot: {
+      choose: ({ availableActions }) =>
+        availableActions.includes(program.rollRecipe)
+          ? { type: program.rollRecipe, payload: {} }
+          : null,
+    },
+  });
 }
 function legalMoves(
-  program: TeamPawnRaceProgram,
+  program: TeamPawnRaceOptions,
   playerId: number,
   total: number,
   ctx: Context,
@@ -146,7 +175,7 @@ function legalMoves(
 }
 
 function target(
-  program: TeamPawnRaceProgram,
+  program: TeamPawnRaceOptions,
   from: number,
   roll: number,
   arrival: number,
@@ -165,7 +194,7 @@ function target(
 }
 
 function blocked(
-  program: TeamPawnRaceProgram,
+  program: TeamPawnRaceOptions,
   offset: number,
   from: number,
   destination: number,
@@ -182,7 +211,7 @@ function blocked(
 }
 
 function move(
-  program: TeamPawnRaceProgram,
+  program: TeamPawnRaceOptions,
   playerId: number,
   selected: PawnMove,
   ctx: Context,
@@ -212,7 +241,7 @@ function move(
 }
 
 function teamPawnMoveNarration(
-  program: TeamPawnRaceProgram,
+  program: TeamPawnRaceOptions,
   playerId: number,
   selected: PawnMove,
   ctx: Context,
@@ -254,7 +283,7 @@ function fromHabitat(value: string): string {
 }
 
 function capture(
-  program: TeamPawnRaceProgram,
+  program: TeamPawnRaceOptions,
   playerId: number,
   progress: number,
   ctx: Context,
@@ -276,7 +305,7 @@ function capture(
 }
 
 function opponentPositions(
-  program: TeamPawnRaceProgram,
+  program: TeamPawnRaceOptions,
   playerId: number,
   ctx: Context,
 ) {
@@ -291,14 +320,14 @@ function opponentPositions(
   return result;
 }
 
-function safeTiles(program: TeamPawnRaceProgram, ctx: Context) {
+function safeTiles(program: TeamPawnRaceOptions, ctx: Context) {
   return new Set([
     ...program.safeTiles,
     ...ctx.players.all().map((player) => playerOffset(program, player.id, ctx)),
   ]);
 }
 
-function pawns(program: TeamPawnRaceProgram, playerId: number, ctx: Context) {
+function pawns(program: TeamPawnRaceOptions, playerId: number, ctx: Context) {
   return ctx.pawns.assigned(program.setId, playerId).map((pawnId) => ({
     pawnId,
     progress: ctx.pawns.position(program.setId, pawnId),
@@ -306,7 +335,7 @@ function pawns(program: TeamPawnRaceProgram, playerId: number, ctx: Context) {
 }
 
 function playerOffset(
-  program: TeamPawnRaceProgram,
+  program: TeamPawnRaceOptions,
   playerId: number,
   ctx: Context,
 ) {
@@ -322,7 +351,7 @@ function encode(move: PawnMove) {
 }
 
 function describe(
-  program: TeamPawnRaceProgram,
+  program: TeamPawnRaceOptions,
   playerId: number,
   value: string,
   ctx: Context,
@@ -334,7 +363,7 @@ function describe(
   return `${pawnLabel(program, pawnId) ?? `Pion ${pawnIndex + 1}`} vers la case ${progress + 1}`;
 }
 
-function pawnLabel(program: TeamPawnRaceProgram, pawnId: string | undefined) {
+function pawnLabel(program: TeamPawnRaceOptions, pawnId: string | undefined) {
   const [familyId, rawIndex] = pawnId?.split(':') ?? [];
   const pawnIndex = Number(rawIndex);
   return (

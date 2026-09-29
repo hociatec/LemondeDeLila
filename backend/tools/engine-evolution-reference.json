@@ -56,8 +56,7 @@
     "race-directional-hazards",
     "race-protected-haunted-track",
     "race-quiz-event-track",
-    "race-resource-track",
-    "race-team-pawn-capture"
+    "race-resource-track"
   ],
   "primitives": [
     "availability:cards",

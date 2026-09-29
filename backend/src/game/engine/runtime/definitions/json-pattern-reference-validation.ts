@@ -18,8 +18,20 @@ import { assertBounceQuizRaceReferences } from './json-bounce-quiz-race-referenc
 import { assertBidirectionalCollisionRaceReferences } from './json-bidirectional-collision-race-reference-validation';
 import { assertCardBattleReferences } from './json-card-battle-reference-validation';
 import { assertPublicDomainCardsReferences } from './json-public-domain-cards-reference-validation';
+import { assertTeamPawnRaceReferences } from './json-team-pawn-race-reference-validation';
 
 type Failure = (path: string, reason: string) => never;
+type AdvancedContext = {
+  components: readonly GameComponentDefinition[];
+  resources: ReadonlySet<string>;
+  counters: ReadonlySet<string>;
+  phases: Readonly<Record<string, { transitions?: readonly string[] }>>;
+  initialPhase: string;
+  gameId: string;
+  minimumPlayers: number;
+  maximumPlayers: number;
+  fail: Failure;
+};
 
 export function assertJsonPatternReferences(
   patterns: readonly JsonGamePattern[] | undefined,
@@ -83,17 +95,7 @@ export function assertJsonPatternReferences(
 function assertAdvancedPatternReferences(
   pattern: JsonGamePattern,
   index: number,
-  context: {
-    components: readonly GameComponentDefinition[];
-    resources: ReadonlySet<string>;
-    counters: ReadonlySet<string>;
-    phases: Readonly<Record<string, { transitions?: readonly string[] }>>;
-    initialPhase: string;
-    gameId: string;
-    minimumPlayers: number;
-    maximumPlayers: number;
-    fail: Failure;
-  },
+  context: AdvancedContext,
 ): void {
   const { components, resources, counters, phases, fail } = context;
   if (pattern.kind === 'anonymous-vote')
@@ -130,6 +132,8 @@ function assertAdvancedPatternReferences(
     );
   if (pattern.kind === 'public-domain-cards')
     assertPublicDomainCardsReferences(pattern, index, components, fail);
+  if (pattern.kind === 'team-pawn-race')
+    assertTeamPawnRaceReferences(pattern, index, components, fail);
   if (pattern.kind === 'grid-placement')
     assertGridPlacementReferences(
       pattern,
