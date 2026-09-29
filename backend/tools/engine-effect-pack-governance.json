@@ -51,7 +51,6 @@
     "cards-theme-name": "Compared with judged-cards and card-actions; name/theme composition and special cards remain unique.",
     "cards-discard-penalty": "Compared with card-actions; discard legality, quitting and unique-value penalties remain unique.",
     "choice-simultaneous-quiz": "Compared with movement-quiz and scoring-submission; configurable simultaneous quiz remains unique.",
-    "cards-shared-prestige": "Compared with card-actions and shared hands; prestige statuses and exploit rules remain unique.",
     "cards-ritual-phases": "Compared with collection and card primitives; ritual phases and light scoring remain unique.",
     "board-property-economy": "Compared with board-turn, board-landings and economy-kit; mortgages, jail, ownership and city economy remain unique.",
     "choice-chapter-encounter": "Compared with track-round and collection primitives; chapters, encounters and final countdown remain unique.",
@@ -68,7 +67,6 @@
     "cards": [
       "cards-theme-name",
       "cards-discard-penalty",
-      "cards-shared-prestige",
       "cards-ritual-phases"
     ],
     "choice": [
@@ -179,14 +177,6 @@
       "classificationReason": "choice-simultaneous-quiz implements configurable simultaneous quiz. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
       "maturity": "experimental"
     },
-    "cards-shared-prestige": {
-      "property": "sharedPrestigeCards",
-      "mechanic": "shared prestige-card hand",
-      "domain": "cards",
-      "scope": "game-specific",
-      "classificationReason": "cards-shared-prestige implements shared prestige-card hand. Its current catalogue use does not demonstrate reuse in mechanically different games; configurable input alone is insufficient evidence.",
-      "maturity": "experimental"
-    },
     "cards-ritual-phases": {
       "property": "ritualPhases",
       "mechanic": "ritual card phases and light scoring",
@@ -221,7 +211,6 @@
     "cards-theme-name",
     "cards-ritual-phases",
     "board-property-economy",
-    "cards-shared-prestige",
     "choice-simultaneous-quiz",
     "board-path-walls",
     "choice-story-challenge",

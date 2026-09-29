@@ -240,6 +240,16 @@
         "src/game/testing/architecture-tests/game/protected-haunted-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-protected-haunted-race.spec.ts"
       ]
+    },
+    {
+      "file": "src/game/games/vents-dansants/olympia/game.json",
+      "fromSha256": "3310546b5318de7cd5a4e30db8eb53c368df811b77bb6ac2235181a82c188b06",
+      "toSha256": "11431e2b1034cb442e938cb6c1a329389a7b81a78eb8d10c457827e66ee65245",
+      "justification": "Le pattern shared-prestige-cards générique porte désormais mains, pioches, cartes, prestige, protections, échanges, bot et victoire depuis le JSON.",
+      "tests": [
+        "src/game/testing/architecture-tests/game/shared-prestige-cards-json-parity.spec.ts",
+        "src/game/testing/architecture-tests/json/json-shared-prestige-cards.spec.ts"
+      ]
     }
   ]
 }

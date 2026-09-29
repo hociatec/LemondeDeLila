@@ -1925,9 +1925,7 @@
     },
     {
       "id": "olympia",
-      "packs": [
-        "cards-shared-prestige"
-      ],
+      "packs": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1935,35 +1933,15 @@
         "resources": [],
         "payment": [],
         "cards": [
-          "src/game/games/vents-dansants/olympia/game.json:23",
-          "src/game/games/vents-dansants/olympia/game.json:32",
-          "src/game/games/vents-dansants/olympia/game.json:44",
-          "src/game/games/vents-dansants/olympia/game.json:52",
-          "src/game/games/vents-dansants/olympia/game.json:60",
-          "src/game/games/vents-dansants/olympia/game.json:68",
-          "src/game/games/vents-dansants/olympia/game.json:76",
-          "src/game/games/vents-dansants/olympia/game.json:84",
-          "src/game/games/vents-dansants/olympia/game.json:98",
-          "src/game/rules/game-specific/cards-shared-prestige/effect-pack.ts:6",
-          "src/game/rules/game-specific/cards-shared-prestige/json-shared-prestige-cards-schema.ts:73",
-          "src/game/rules/game-specific/cards-shared-prestige/json-shared-prestige-cards-schema.ts:76",
-          "src/game/rules/game-specific/cards-shared-prestige/json-shared-prestige-cards-schema.ts:80",
-          "src/game/rules/game-specific/cards-shared-prestige/json-shared-prestige-cards-schema.ts:88",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:26",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:34",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:40",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:72",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:77",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:82",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:101",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:196",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:199",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:259",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:279",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:281",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:282",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:297",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:301"
+          "src/game/games/vents-dansants/olympia/game.json:71",
+          "src/game/games/vents-dansants/olympia/game.json:80",
+          "src/game/games/vents-dansants/olympia/game.json:92",
+          "src/game/games/vents-dansants/olympia/game.json:100",
+          "src/game/games/vents-dansants/olympia/game.json:108",
+          "src/game/games/vents-dansants/olympia/game.json:116",
+          "src/game/games/vents-dansants/olympia/game.json:124",
+          "src/game/games/vents-dansants/olympia/game.json:132",
+          "src/game/games/vents-dansants/olympia/game.json:146"
         ],
         "zones": [],
         "choices": [],
@@ -2007,27 +1985,12 @@
           "src/game/games/vents-dansants/olympia/catalogue.json:1861",
           "src/game/games/vents-dansants/olympia/catalogue.json:1870",
           "src/game/games/vents-dansants/olympia/catalogue.json:1919",
-          "src/game/games/vents-dansants/olympia/catalogue.json:1928",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:33",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:37",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:63",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:67",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:226",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:245",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:321",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:342",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:346"
+          "src/game/games/vents-dansants/olympia/catalogue.json:1928"
         ],
         "collections": [],
-        "scoring": [
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:121",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:248",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:331",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:332"
-        ],
+        "scoring": [],
         "victory": [
-          "src/game/games/vents-dansants/olympia/game.json:160",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:335"
+          "src/game/games/vents-dansants/olympia/game.json:204"
         ],
         "targeting": [
           "src/game/games/vents-dansants/olympia/catalogue.json:136",
@@ -2136,22 +2099,9 @@
           "src/game/games/vents-dansants/olympia/catalogue.json:1894",
           "src/game/games/vents-dansants/olympia/catalogue.json:1905",
           "src/game/games/vents-dansants/olympia/catalogue.json:1923",
-          "src/game/games/vents-dansants/olympia/catalogue.json:1932",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:111",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:112",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:118",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:119",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:134",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:135",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:149",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:150",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:170",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:171"
+          "src/game/games/vents-dansants/olympia/catalogue.json:1932"
         ],
-        "triggers": [
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:52",
-          "src/game/rules/game-specific/cards-shared-prestige/shared-prestige-cards.recipes.ts:231"
-        ]
+        "triggers": []
       }
     },
     {
@@ -2823,12 +2773,6 @@
       "name": "cards-ritual-phases",
       "consumers": [
         "entre-rites-et-lumieres"
-      ]
-    },
-    {
-      "name": "cards-shared-prestige",
-      "consumers": [
-        "olympia"
       ]
     },
     {

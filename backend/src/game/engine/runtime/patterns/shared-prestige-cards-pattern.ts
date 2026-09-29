@@ -1,27 +1,54 @@
-import {
-  gameInput,
-  gameEffects,
-  drawForPlayer,
-} from '../../../engine/sdk/public-api';
-import type { GameContext } from '../../../engine/sdk/public-api';
-import { GameRuleViolationError } from '../../../engine/sdk/extension-api';
-import {
-  defineAction,
-  defineEmptyAction,
-} from '../../../engine/sdk/extension-api';
-import type {
-  SharedPrestigeCardsCard,
-  SharedPrestigeCardsProgram,
-} from './program';
-import {
-  defineEffect,
-  defineEmptyEffect,
-} from '../../../engine/sdk/extension-api';
+import { defineAction, defineEmptyAction } from '../actions/action-builders';
+import { gameInput } from '../actions/game-input-schema';
+import { GameRuleViolationError } from '../contracts/game-domain.errors';
+import type { GameEffectInstruction } from '../contracts/effect-ir';
+import type { GameContext } from '../definitions/game-author-context';
+import { defineEffect, defineEmptyEffect } from '../effects/effects-core';
+import { gameEffects } from '../effects/effects-dsl';
+import { drawForPlayer } from '../recipes/gameplay-recipes';
+import { definePattern } from './gameplay-pattern-core';
+
+export type SharedPrestigeCardsCard = {
+  id: string;
+  name?: string;
+  description?: string;
+  category: string;
+  deck: string;
+  points?: number;
+  effects: readonly GameEffectInstruction[];
+};
+export type SharedPrestigeCardsProgram = {
+  drawRecipe: string;
+  playRecipe: string;
+  passRecipe: string;
+  playAction: string;
+  passAction: string;
+  mechanics: {
+    blockDrawStatus: string;
+    blockPlayStatus: string;
+    reducedGainStatus: string;
+    lossProtectionStatus: string;
+    gainDivisor: number;
+    categories: readonly {
+      category: string;
+      blockedBy: readonly string[];
+      globallyBlockedBy: readonly string[];
+      multiplierStatus?: string;
+      bonusStatus?: string;
+      penaltyStatus?: string;
+    }[];
+  };
+  handId: string;
+  deckIds: readonly string[];
+  targetScore: number;
+  winnerReason: string;
+  cards: readonly SharedPrestigeCardsCard[];
+};
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
 
-export function sharedPrestigeCardsRules(source: SharedPrestigeCardsProgram) {
+export function sharedPrestigeCards(source: SharedPrestigeCardsProgram) {
   const program = structuredClone(source);
   const cards = new Map(program.cards.map((card) => [card.id, card]));
   const draw = defineAction<State, { deck: string }>({
@@ -92,14 +119,25 @@ export function sharedPrestigeCardsRules(source: SharedPrestigeCardsProgram) {
     documentation: 'Termine le tour sans jouer de carte.',
     execute: ({ ctx }) => ctx.turn.complete(),
   });
-  return {
-    draw,
-    play,
-    pass,
+  return definePattern({
+    id: `shared-prestige-cards:${program.handId}`,
+    mechanics: ['cards', 'hands', 'score', 'effects'],
+    actions: {
+      [program.drawRecipe]: draw,
+      [program.playRecipe]: play,
+      [program.passRecipe]: pass,
+    },
     effects: effects(program, cards),
-    firstCard: (playerId: number, ctx: Context) =>
-      ctx.cards.hand<string>(program.handId, playerId)[0],
-  };
+    bot: {
+      choose: ({ actor, ctx }) => {
+        const cardId = ctx.cards.hand<string>(program.handId, actor.id)[0];
+        return {
+          type: cardId ? program.playAction : program.passAction,
+          payload: cardId ? { cardId } : {},
+        };
+      },
+    },
+  });
 }
 function effects(
   program: SharedPrestigeCardsProgram,

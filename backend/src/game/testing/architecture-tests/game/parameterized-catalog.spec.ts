@@ -37,15 +37,6 @@ function rename(value: unknown, names: Record<string, string>): unknown {
     );
   return value;
 }
-function renamedCategories(program: Data, field: string): Data {
-  const names = Object.fromEntries(
-    list(program[field]).map((card) => [
-      String(card.category),
-      `category-${String(card.category)}`,
-    ]),
-  );
-  return object(rename(program, names));
-}
 function renamedTiles(program: Data): Data {
   const names = Object.fromEntries(
     Object.keys(object(program.tileRules)).map((key, i) => [key, `zone-${i}`]),
@@ -106,13 +97,6 @@ const variants: Record<string, (program: Data) => Data> = {
     initialHandSize: 4,
     exchangeFamilyCount: 2,
   }),
-  sharedPrestigeCards: (program) => ({
-    ...renamedCategories(program, 'cards'),
-    mechanics: {
-      ...object(renamedCategories(program, 'cards').mechanics),
-      gainDivisor: 3,
-    },
-  }),
   chainedTileRace: renamedTiles,
   storyChallenge: (program) =>
     object(
@@ -163,13 +147,6 @@ describe('mechanisms run under an unrelated game identity', () => {
                 String(program.collectionResourcePrefix) + kind,
                 String(program.collectionResourcePrefix) + 'archive-' + i,
               ],
-            ]),
-          );
-        if (key === 'sharedPrestigeCards')
-          names = Object.fromEntries(
-            list(program.cards).map((card) => [
-              String(card.category),
-              'category-' + String(card.category),
             ]),
           );
         if (key === 'chainedTileRace')

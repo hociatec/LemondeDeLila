@@ -1,20 +1,26 @@
-import { assertUniqueAuthorIds } from '../../../engine/sdk/extension-api';
+import { assertUniqueAuthorIds } from '../contracts/authoring-diagnostics';
 import {
   authoringFailure,
   assertUniqueAuthorValues,
-} from '../../../engine/sdk/extension-api';
-import type { SharedPrestigeCardsProgram } from './program';
+} from '../contracts/authoring-diagnostics';
+import type { SharedPrestigeCardsProgram } from '../patterns/shared-prestige-cards-pattern';
 import {
   type AuthorSchema,
   authorArray as array,
   authorId as id,
   authorObject as object,
   authorRef as ref,
-} from '../../../engine/sdk/extension-api';
-import type { GameComponentDefinition } from '../../../engine/sdk/extension-api';
+} from '../contracts/json-author-schema';
+import type { GameComponentDefinition } from './component-kit';
 
-export const jsonSharedPrestigeCardsSchema: AuthorSchema = object(
+export const sharedPrestigeCardsPatternSchema: AuthorSchema = object(
   {
+    kind: { const: 'shared-prestige-cards' },
+    drawRecipe: id,
+    playRecipe: id,
+    passRecipe: id,
+    playAction: id,
+    passAction: id,
     mechanics: object({
       blockDrawStatus: id,
       blockPlayStatus: id,
@@ -55,14 +61,27 @@ export const jsonSharedPrestigeCardsSchema: AuthorSchema = object(
       1,
     ),
   },
-  ['mechanics', 'handId', 'deckIds', 'targetScore', 'winnerReason', 'cards'],
+  [
+    'kind',
+    'drawRecipe',
+    'playRecipe',
+    'passRecipe',
+    'playAction',
+    'passAction',
+    'mechanics',
+    'handId',
+    'deckIds',
+    'targetScore',
+    'winnerReason',
+    'cards',
+  ],
 );
 
 export function assertSharedPrestigeCardsReferences(
   program: SharedPrestigeCardsProgram,
   components: readonly GameComponentDefinition[],
 ): void {
-  const fail = authoringFailure('game.json.sharedPrestigeCards', program);
+  const fail = authoringFailure('game.json.patterns', program);
   const categories = program.mechanics.categories.map((rule) => rule.category);
   assertUniqueAuthorValues(
     categories,

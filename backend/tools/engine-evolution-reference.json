@@ -46,7 +46,6 @@
     "board-property-economy",
     "cards-discard-penalty",
     "cards-ritual-phases",
-    "cards-shared-prestige",
     "cards-theme-name",
     "choice-chapter-encounter",
     "choice-simultaneous-paw-scoring",
@@ -131,7 +130,7 @@
     "definition": "Production game.json documents; not a measure of reusable implementation."
   },
   "reuse": {
-    "game-specific": 37,
+    "game-specific": 36,
     "reusable": 0,
     "engine-primitive": 0
   }

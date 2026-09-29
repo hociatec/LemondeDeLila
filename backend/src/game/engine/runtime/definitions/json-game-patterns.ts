@@ -13,18 +13,9 @@ import {
   orderedCardCollection,
   type OrderedCardCollectionOptions,
 } from '../patterns/ordered-card-collection-pattern';
-import {
-  eventCardRace,
-  type EventCardRaceOptions,
-} from '../patterns/event-card-race-pattern';
-import {
-  gooseRace,
-  type GooseRaceOptions,
-} from '../patterns/goose-race-pattern';
-import {
-  cardBattle,
-  type CardBattleOptions,
-} from '../patterns/card-battle-pattern';
+import type { EventCardRaceOptions } from '../patterns/event-card-race-pattern';
+import type { GooseRaceOptions } from '../patterns/goose-race-pattern';
+import type { CardBattleOptions } from '../patterns/card-battle-pattern';
 import type { TrackZoneCollectionOptions } from '../patterns/track-zone-collection-pattern';
 import type { ThemedSetCollectionOptions } from '../patterns/themed-set-collection-pattern';
 import type { FamilyRequestOptions } from '../patterns/family-request-pattern';
@@ -43,6 +34,7 @@ import type { PublicDomainCardsOptions } from '../patterns/public-domain-cards-p
 import type { TeamPawnRaceOptions } from '../patterns/team-pawn-race-pattern';
 import type { QuizEventRaceOptions } from '../patterns/quiz-event-race-pattern';
 import type { ProtectedHauntedRaceProgram } from '../patterns/protected-haunted-race-pattern';
+import type { SharedPrestigeCardsProgram } from '../patterns/shared-prestige-cards-pattern';
 import {
   compileAnonymousVote,
   compileFamilyEffects,
@@ -61,7 +53,11 @@ import {
   compileQuizEventRace,
   compileTrackZoneCollection,
   compileProtectedHauntedRace,
+  compileSharedPrestigeCards,
   compileMarket,
+  compileEventCardRace,
+  compileGooseRace,
+  compileCardBattle,
 } from './json-advanced-pattern-compilers';
 import {
   type AuthorSchema,
@@ -94,6 +90,7 @@ import { publicDomainCardsPatternSchema } from './json-public-domain-cards-patte
 import { teamPawnRacePatternSchema } from './json-team-pawn-race-pattern-schema';
 import { quizEventRacePatternSchema } from './json-quiz-event-race-pattern-schema';
 import { protectedHauntedRacePatternSchema } from './json-protected-haunted-race-pattern-schema';
+import { sharedPrestigeCardsPatternSchema } from './json-shared-prestige-cards-pattern-schema';
 
 export type JsonGamePattern =
   | ({ kind: 'trigger' } & DeclarativeTrigger)
@@ -139,6 +136,7 @@ export type JsonGamePattern =
   | ({ kind: 'team-pawn-race' } & TeamPawnRaceOptions)
   | ({ kind: 'quiz-event-race' } & QuizEventRaceOptions)
   | ({ kind: 'protected-haunted-race' } & ProtectedHauntedRaceProgram)
+  | ({ kind: 'shared-prestige-cards' } & SharedPrestigeCardsProgram)
   | ({ kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
         exchange?: MarketExchangeOptions['exchange'];
       })
@@ -352,6 +350,7 @@ export const jsonGamePatternSchema: AuthorSchema = {
     teamPawnRacePatternSchema,
     quizEventRacePatternSchema,
     protectedHauntedRacePatternSchema,
+    sharedPrestigeCardsPatternSchema,
     marketPatternSchema,
     object({ kind: { const: 'simultaneous-answers' } }),
     object(
@@ -390,18 +389,12 @@ export function compileJsonPattern(
       const { kind: _kind, ...options } = pattern;
       return orderedCardCollection(options);
     }
-    case 'event-card-race': {
-      const { kind: _kind, ...options } = pattern;
-      return eventCardRace(options);
-    }
-    case 'goose-race': {
-      const { kind: _kind, ...options } = pattern;
-      return gooseRace(options);
-    }
-    case 'card-battle': {
-      const { kind: _kind, ...options } = pattern;
-      return cardBattle(options);
-    }
+    case 'event-card-race':
+      return compileEventCardRace(pattern);
+    case 'goose-race':
+      return compileGooseRace(pattern);
+    case 'card-battle':
+      return compileCardBattle(pattern);
     case 'track-zone-collection':
       return compileTrackZoneCollection(pattern);
     case 'themed-set-collection':
@@ -436,6 +429,8 @@ export function compileJsonPattern(
       return compileQuizEventRace(pattern);
     case 'protected-haunted-race':
       return compileProtectedHauntedRace(pattern);
+    case 'shared-prestige-cards':
+      return compileSharedPrestigeCards(pattern);
     case 'market':
       return compileMarket(pattern);
     case 'simultaneous-answers':

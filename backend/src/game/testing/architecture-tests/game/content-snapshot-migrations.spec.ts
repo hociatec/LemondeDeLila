@@ -41,10 +41,7 @@ import natureManifest from '../../../games/vents-dansants/dame-nature/manifest.j
 import natureDocument from '../../../games/vents-dansants/dame-nature/game.json';
 import natureCatalogue from '../../../games/vents-dansants/dame-nature/content/catalogue.json';
 const composition = legacyExtensionFixture(compositionExtensionSource, 'board');
-const olympiaDocument = legacyExtensionFixture(
-  olympiaDocumentExtensionSource,
-  'sharedPrestigeCards',
-);
+const olympiaDocument = olympiaDocumentExtensionSource;
 const aventureDocument = aventureDocumentExtensionSource;
 const missionDocument = missionDocumentExtensionSource;
 const piratesDocument = piratesDocumentExtensionSource;

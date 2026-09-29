@@ -66,6 +66,22 @@ import {
   protectedHauntedRace,
   type ProtectedHauntedRaceProgram,
 } from '../patterns/protected-haunted-race-pattern';
+import {
+  sharedPrestigeCards,
+  type SharedPrestigeCardsProgram,
+} from '../patterns/shared-prestige-cards-pattern';
+import {
+  eventCardRace,
+  type EventCardRaceOptions,
+} from '../patterns/event-card-race-pattern';
+import {
+  gooseRace,
+  type GooseRaceOptions,
+} from '../patterns/goose-race-pattern';
+import {
+  cardBattle,
+  type CardBattleOptions,
+} from '../patterns/card-battle-pattern';
 import { marketGame } from '../patterns/gameplay-pattern-round-economy';
 import {
   marketExchange,
@@ -175,6 +191,30 @@ export function compileProtectedHauntedRace(
 ) {
   const { kind: _kind, ...options } = pattern;
   return protectedHauntedRace(options);
+}
+export function compileSharedPrestigeCards(
+  pattern: { kind: 'shared-prestige-cards' } & SharedPrestigeCardsProgram,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return sharedPrestigeCards(options);
+}
+export function compileEventCardRace(
+  pattern: { kind: 'event-card-race' } & EventCardRaceOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return eventCardRace(options);
+}
+export function compileGooseRace(
+  pattern: { kind: 'goose-race' } & GooseRaceOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return gooseRace(options);
+}
+export function compileCardBattle(
+  pattern: { kind: 'card-battle' } & CardBattleOptions,
+) {
+  const { kind: _kind, ...options } = pattern;
+  return cardBattle(options);
 }
 export function compileMarket(
   pattern: { kind: 'market' } & Omit<MarketExchangeOptions, 'exchange'> & {
