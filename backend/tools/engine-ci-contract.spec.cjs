@@ -30,6 +30,7 @@ test('required quality context cannot succeed when a certification job fails or 
   assert.deepEqual(quality.needs, [
     'architecture',
     'real-integration',
+    'regression',
     'release-artifact',
   ]);
   const step = quality.steps[0];

@@ -106,7 +106,15 @@ try {
   run('npm', ['run', 'migration:run:dev'], integrationEnv);
   run('npm', ['run', 'test:db:migrations'], integrationEnv);
   run(process.execPath, ['tools/debt-mysql-integration.cjs'], integrationEnv);
-  run(process.execPath, ['tools/game-room-locks-integration.cjs'], integrationEnv);
+  run(
+    process.execPath,
+    ['tools/game-room-locks-integration.cjs'],
+    integrationEnv,
+  );
+  run(process.execPath, ['tools/mysql-pool-profile.cjs'], {
+    ...integrationEnv,
+    MYSQL_POOL_PROFILE_PATH: path.join(root, 'logs/mysql-pool-profile.json'),
+  });
   run('npm', ['run', 'test:redis:bullmq'], integrationEnv);
   run('npm', ['run', 'test:disaster-recovery'], integrationEnv);
   run('npm', ['run', 'build'], integrationEnv);

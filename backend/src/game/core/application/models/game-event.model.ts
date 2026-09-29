@@ -1,25 +1,31 @@
 import type { GameState } from './game-state.model';
 
-export type EventVisibility =
+export type EventVisibility<
+  TPrivateData extends object = Record<string, unknown>,
+> =
   | { kind: 'public' }
   | { kind: 'internal' }
   | { kind: 'private'; playerIds: readonly number[] }
   | {
       kind: 'split';
-      privateDataByPlayer: Readonly<
-        Record<string, Readonly<Record<string, unknown>>>
-      >;
+      privateDataByPlayer: Readonly<Record<string, Readonly<TPrivateData>>>;
     };
 
-export type GamePendingEvent = {
+export type GamePendingEvent<
+  TType extends string = string,
+  TData extends object = Record<string, unknown>,
+> = {
   actorId: number | null;
-  type: string;
-  data: Record<string, unknown>;
+  type: TType;
+  data: TData;
   visibility: EventVisibility;
   occurredAtMs: number;
 };
 
-export type GameEvent = GamePendingEvent & {
+export type GameEvent<
+  TType extends string = string,
+  TData extends object = Record<string, unknown>,
+> = GamePendingEvent<TType, TData> & {
   /** Missing only on historical v1 events read from storage. */
   schemaVersion?: number;
   seq: number;
@@ -34,9 +40,17 @@ export type ProjectedGameEvent = Omit<
 };
 export type ProjectedGamePendingEvent = Omit<GamePendingEvent, 'visibility'>;
 
-export type GameStatePatchOperation =
-  | { operation: 'set'; key: keyof GameState; value: unknown }
-  | { operation: 'remove'; key: keyof GameState };
+type GameStatePatchSetOperation<TState extends GameState> = {
+  [TKey in keyof TState]-?: {
+    operation: 'set';
+    key: TKey;
+    value: TState[TKey];
+  };
+}[keyof TState];
+
+export type GameStatePatchOperation<TState extends GameState = GameState> =
+  | GameStatePatchSetOperation<TState>
+  | { operation: 'remove'; key: keyof TState };
 
 export type GameSnapshot = {
   seq: number;

@@ -13,15 +13,15 @@ import type {
   InsufficientResourcePolicy,
   ResourcePayment,
 } from '../contracts/resource-payment';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 
 export class GameResourcesController<TResourceId extends string = string> {
   private readonly definitions = new Map<string, ResourceDefinition>();
   constructor(
     private readonly state: PlayerValuesKitState<TResourceId>,
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-    ) => void,
+    private readonly emit: EngineEventEmitter<
+      'resource.changed' | 'resource.transferred' | 'resource.exchanged'
+    >,
     definitions: readonly ResourceDefinition[] = [],
   ) {
     for (const definition of definitions)

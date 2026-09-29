@@ -11,6 +11,7 @@ import type {
   PlayerValuesKitState,
   StatusScope,
 } from './player-values-contracts';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 export type {
   CommonStatusId,
   PlayerStatus,
@@ -42,10 +43,7 @@ export function createPlayerValuesKitState<
 export class GameScoreController {
   constructor(
     private readonly state: PlayerValuesKitState,
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-    ) => void,
+    private readonly emit: EngineEventEmitter<'score.changed'>,
   ) {}
 
   get(playerId: number): number {
@@ -106,10 +104,7 @@ export { GameResourcesController } from './resource-controller';
 export class GameCountersController<TCounterId extends string = string> {
   constructor(
     private readonly state: PlayerValuesKitState<string, TCounterId>,
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-    ) => void,
+    private readonly emit: EngineEventEmitter<'counter.changed'>,
   ) {}
 
   get(counter: TCounterId): number {

@@ -7,6 +7,7 @@ import {
 } from '../contracts/game-domain.errors';
 import type { PlayerState } from '../../../core/application/models/game-state.model';
 import { resolveTrackPosition } from './movement-kit';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 
 export type PawnDefinition = {
   id: string;
@@ -125,10 +126,9 @@ export class GamePawnController {
   constructor(
     private readonly state: PawnKitState,
     private readonly players: readonly PlayerState[],
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-    ) => void = () => {},
+    private readonly emit: EngineEventEmitter<
+      'pawn.assigned' | 'pawn.moved'
+    > = () => {},
     definitions: readonly PawnSetDefinition[] = [],
   ) {
     for (const definition of definitions) {

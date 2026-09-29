@@ -9,19 +9,16 @@ const root = path.resolve(__dirname, '..');
 const src = path.join(root, 'src');
 const allowedCalls = new Map([
   // Recovery poll only: durable intent is the SQL session, never the local timer.
-  ['game/core/infrastructure/scheduling/game-automation-recovery.service.ts', 1],
+  [
+    'game/core/infrastructure/scheduling/game-automation-recovery.service.ts',
+    1,
+  ],
   // Transport shutdown: bounded close handshake before forced termination.
   ['platform/ws/infrastructure/platform/lila-ws.adapter.ts', 1],
+  ['modules/admin/infrastructure/system/admin-maintenance-child.ts', 1],
+  // Reconnect backoff is cancelled by the socket close event during shutdown.
   [
-    'modules/admin/infrastructure/system/admin-maintenance-child.ts',
-    1,
-  ],
-  [
-    'modules/notification/infrastructure/presentation/ws/notification-ws-connection.service.ts',
-    1,
-  ],
-  [
-    'modules/notification/infrastructure/presentation/ws/notification-ws.handler.ts',
+    'modules/notification/infrastructure/presentation/ws/notification-reconnect-delay.ts',
     1,
   ],
   ['modules/presence/application/services/presence-heartbeat.ts', 2],

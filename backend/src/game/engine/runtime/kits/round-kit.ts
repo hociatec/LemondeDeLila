@@ -1,4 +1,5 @@
 import type { PlayerState } from '../../../core/application/models/game-state.model';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 
 export type RoundKitState = {
   number: number;
@@ -26,10 +27,9 @@ export class GameRoundController {
   constructor(
     private readonly state: RoundKitState,
     private readonly players: readonly PlayerState[],
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-    ) => void,
+    private readonly emit: EngineEventEmitter<
+      'round.started' | 'round.player-left' | 'round.ended'
+    >,
     private readonly lifecycle: {
       onStart?: (roundNumber: number) => void;
       onEnd?: (roundNumber: number) => void;

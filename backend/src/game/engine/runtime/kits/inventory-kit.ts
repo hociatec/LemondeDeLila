@@ -9,6 +9,7 @@ import {
   GameRuleViolationError,
   GameStateViolationError,
 } from '../contracts/game-domain.errors';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 import type { EventVisibility } from '../../../core/application/models/game-event.model';
 import {
   assertGameCount,
@@ -62,11 +63,13 @@ export class GameInventoryController {
   constructor(
     private readonly state: InventoryKitState,
     private readonly random: { shuffle<T>(values: readonly T[]): T[] },
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-      visibility?: EventVisibility,
-    ) => void = () => {},
+    private readonly emit: EngineEventEmitter<
+      | 'inventory.item-added'
+      | 'inventory.item-removed'
+      | 'inventory.transferred'
+      | 'inventory.exchanged'
+      | 'inventory.swapped'
+    > = () => {},
     definitions: readonly InventoryDefinition[] = [],
   ) {
     for (const definition of definitions) {

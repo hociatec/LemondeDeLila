@@ -5,7 +5,7 @@ import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
 import { ClientUpdateQueryService } from '../../../../update/public-api';
 import type { NotificationClientMeta } from './notification-ws.types';
 import { NotificationWsInboxHandler } from './notification-ws-inbox.handler';
-import { notificationReconnectDelay } from './notification-reconnect-delay';
+import { waitForNotificationReconnect } from './notification-reconnect-delay';
 
 const MAX_NOTIFICATION_WS_OUTBOUND_BYTES = 1 * 1024 * 1024;
 
@@ -59,9 +59,7 @@ export class NotificationWsHandler {
       );
       if (notice.updateRequired && notice.minimumVersion) {
         this.sendRequiredUpdate(client, version, notice);
-        await new Promise((resolve) =>
-          setTimeout(resolve, notificationReconnectDelay()),
-        );
+        await waitForNotificationReconnect(client);
         try {
           client.close(4406, 'update required');
         } catch {

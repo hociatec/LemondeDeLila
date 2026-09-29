@@ -1,4 +1,7 @@
-import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import type {
+  EventVisibility,
+  GamePendingEvent,
+} from '../../../core/application/models/game-event.model';
 
 export type EventValue =
   | null
@@ -7,6 +10,9 @@ export type EventValue =
   | boolean
   | EventValue[]
   | { [key: string]: EventValue };
+
+/** JSON-validated content whose shape belongs to an installed game. */
+export type ExtensibleEventValue = string | number | object;
 
 export type EngineEventMap = {
   'turn.started': {
@@ -28,17 +34,17 @@ export type EngineEventMap = {
   'card.drawn': { deckId: string };
   'card.received': { handId: string; playerId: number };
   'card.moved': {
-    source: EventValue;
-    destination: EventValue;
-    card?: EventValue;
+    source: object;
+    destination: object;
+    card?: ExtensibleEventValue;
   };
   'card.played': {
     handId: string;
     deckId: string;
     playerId: number;
-    card?: EventValue;
+    card?: ExtensibleEventValue;
   };
-  'card.discarded': { deckId: string; card: EventValue };
+  'card.discarded': { deckId: string; card: ExtensibleEventValue };
   'card.transferred': {
     handId: string;
     fromPlayerId: number;
@@ -98,6 +104,12 @@ export type EngineEventMap = {
     value: number;
     delta: number;
   };
+  'counter.changed': {
+    counter: string;
+    previous: number;
+    value: number;
+    delta: number;
+  };
   'resource.changed': {
     playerId: number;
     resource: string;
@@ -111,6 +123,12 @@ export type EngineEventMap = {
     to: number;
     resource: string;
     amount: number;
+  };
+  'resource.exchanged': {
+    leftPlayerId: number;
+    rightPlayerId: number;
+    left: { resource: string; amount: number };
+    right: { resource: string; amount: number };
   };
   'player.eliminated': { playerId: number; reason: string };
   'player.skipped': { playerId: number };
@@ -241,6 +259,16 @@ export type EngineEventMap = {
 };
 
 export type EngineEventType = keyof EngineEventMap;
+export type EngineEventEmitter<
+  TType extends EngineEventType = EngineEventType,
+> = <TCurrent extends TType>(
+  type: TCurrent,
+  data: EngineEventMap[TCurrent],
+  visibility?: EventVisibility,
+) => void;
+export type EnginePendingEvent = {
+  [TType in EngineEventType]: GamePendingEvent<TType, EngineEventMap[TType]>;
+}[EngineEventType];
 export type EngineEventVisibilityPolicy = EventVisibility['kind'] | 'dynamic';
 
 export const ENGINE_EVENT_VISIBILITY = {
@@ -266,8 +294,10 @@ export const ENGINE_EVENT_VISIBILITY = {
   'pawn.landed': 'public',
   'pawn.assigned': 'public',
   'score.changed': 'public',
+  'counter.changed': 'public',
   'resource.changed': 'public',
   'resource.transferred': 'public',
+  'resource.exchanged': 'public',
   'player.eliminated': 'public',
   'player.skipped': 'public',
   'round.started': 'public',

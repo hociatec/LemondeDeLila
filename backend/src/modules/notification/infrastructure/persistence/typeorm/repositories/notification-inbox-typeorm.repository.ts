@@ -1,9 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import {
   businessMsToDate,
-  getErrorMessage,
   requireStrictInteger,
 } from '@shared/utils/public-api';
 import type { NotificationInboxRepository } from '../../../../application/ports/notification-inbox.repository';
@@ -40,8 +39,6 @@ const MAX_NOTIFICATION_PAYLOAD_BYTES = 256 * 1024;
 
 @Injectable()
 export class NotificationInboxTypeormRepository implements NotificationInboxRepository {
-  private readonly logger = new Logger(NotificationInboxTypeormRepository.name);
-
   constructor(
     @InjectRepository(NotificationInboxItemEntity)
     private readonly repo: Repository<NotificationInboxItemEntity>,
@@ -184,8 +181,9 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
       return [];
     }
 
+    let rows: NotificationInboxContactRawRow[];
     try {
-      const rows = await this.repo
+      rows = await this.repo
         .createQueryBuilder('it')
         .innerJoin('it.user', 'u')
         .select('it.id', 'id')
@@ -204,42 +202,16 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
         .andWhere('it.deletedAt IS NULL')
         .limit(500)
         .getRawMany<NotificationInboxContactRawRow>();
-
-      return rows
-        .map((row) => ({
-          id: toText(row.id),
-          userId: requireStrictInteger(row.userId, 'notification.userId', {
-            min: 1,
-          }),
-          kind: toText(row.kind),
-          contactId: toNullableText(row.contactId),
-          fromUserId:
-            row.fromUserId == null
-              ? null
-              : requireStrictInteger(
-                  row.fromUserId,
-                  'notification.fromUserId',
-                  { min: 1 },
-                ),
-          fromUsername: toNullableText(row.fromUsername),
-          toUserId:
-            row.toUserId == null
-              ? null
-              : requireStrictInteger(row.toUserId, 'notification.toUserId', {
-                  min: 1,
-                }),
-          message: toNullableText(row.message),
-          payload: this.normalizePayload(row?.payload),
-          createdAt: requireStoredDate(toDate(row.createdAt)),
-          readAt: toDate(row.readAt),
-        }))
-        .filter((row) => row.id && row.userId > 0);
-    } catch (err) {
-      this.logger.warn(
-        `listByContactId failed kind=${kind} contactId=${contactId}: ${getErrorMessage(err)}`,
+    } catch (error) {
+      throw new NotificationInboxPersistenceError(
+        'Unable to list notification inbox items by contact',
+        { cause: error },
       );
-      return [];
     }
+
+    return rows
+      .map((row) => this.toContactRow(row))
+      .filter((row): row is NotificationInboxContactRow => row !== null);
   }
 
   async updatePayload(
@@ -361,6 +333,50 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
     } catch {
       return null;
     }
+  }
+
+  private toContactRow(
+    row: NotificationInboxContactRawRow,
+  ): NotificationInboxContactRow | null {
+    try {
+      const mapped: NotificationInboxContactRow = {
+        id: toText(row.id),
+        userId: requireStrictInteger(row.userId, 'notification.userId', {
+          min: 1,
+        }),
+        kind: toText(row.kind),
+        contactId: toNullableText(row.contactId),
+        fromUserId:
+          row.fromUserId == null
+            ? null
+            : requireStrictInteger(row.fromUserId, 'notification.fromUserId', {
+                min: 1,
+              }),
+        fromUsername: toNullableText(row.fromUsername),
+        toUserId:
+          row.toUserId == null
+            ? null
+            : requireStrictInteger(row.toUserId, 'notification.toUserId', {
+                min: 1,
+              }),
+        message: toNullableText(row.message),
+        payload: this.normalizePayload(row.payload),
+        createdAt: requireStoredDate(toDate(row.createdAt)),
+        readAt: toDate(row.readAt),
+      };
+      return mapped.id && mapped.userId > 0 ? mapped : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+export class NotificationInboxPersistenceError extends Error {
+  readonly code = 'NOTIFICATION_INBOX_PERSISTENCE_FAILURE';
+
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'NotificationInboxPersistenceError';
   }
 }
 

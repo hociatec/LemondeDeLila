@@ -1,6 +1,9 @@
 import type { Repository } from 'typeorm';
 import { NotificationInboxItemEntity } from '../entities/notification-inbox-item.entity';
-import { NotificationInboxTypeormRepository } from './notification-inbox-typeorm.repository';
+import {
+  NotificationInboxPersistenceError,
+  NotificationInboxTypeormRepository,
+} from './notification-inbox-typeorm.repository';
 
 describe('NotificationInboxTypeormRepository ownership', () => {
   it('never deletes an inbox item without matching its owner', async () => {
@@ -33,5 +36,34 @@ describe('NotificationInboxTypeormRepository ownership', () => {
       userId: 7,
     });
     expect(repository.findOne).not.toHaveBeenCalled();
+  });
+
+  it('distinguishes an empty contact inbox from a SQL failure', async () => {
+    const builder = Object.fromEntries(
+      ['innerJoin', 'select', 'addSelect', 'where', 'andWhere', 'limit'].map(
+        (method) => [method, jest.fn().mockReturnThis()],
+      ),
+    ) as Record<string, jest.Mock> & { getRawMany: jest.Mock };
+    const repository = {
+      createQueryBuilder: jest.fn().mockReturnValue(builder),
+    } as unknown as Repository<NotificationInboxItemEntity>;
+    const inbox = new NotificationInboxTypeormRepository(repository, {
+      now: () => Date.now(),
+    });
+
+    builder.getRawMany = jest.fn().mockResolvedValueOnce([]);
+    await expect(
+      inbox.listByContactId('message', 'contact-1'),
+    ).resolves.toEqual([]);
+
+    const sqlFailure = new Error('connection lost');
+    builder.getRawMany.mockRejectedValueOnce(sqlFailure);
+    await expect(
+      inbox.listByContactId('message', 'contact-1'),
+    ).rejects.toMatchObject({
+      name: 'NotificationInboxPersistenceError',
+      code: 'NOTIFICATION_INBOX_PERSISTENCE_FAILURE',
+      cause: sqlFailure,
+    } satisfies Partial<NotificationInboxPersistenceError>);
   });
 });

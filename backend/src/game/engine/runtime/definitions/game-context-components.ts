@@ -1,5 +1,5 @@
 import type { GameExecutionContext } from '../../../core/application/models/game-execution-context.model';
-import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 import {
   createCardsKitState,
   GameCardsController,
@@ -62,12 +62,6 @@ import type {
   GameScoreController,
 } from '../kits/player-values-kit';
 
-type EmitDomainEvent = (
-  type: string,
-  data: Record<string, unknown>,
-  visibility?: EventVisibility,
-) => void;
-
 /** Lazily creates only the optional component controllers used by a game. */
 export class GameContextComponents<TState extends object> {
   private cardsController?: GameCardsController;
@@ -84,7 +78,7 @@ export class GameContextComponents<TState extends object> {
     private readonly runtime: DeclarativeState<TState>,
     private readonly execution: GameExecutionContext,
     private readonly definitions: readonly GameComponentDefinition[],
-    private readonly emit: EmitDomainEvent,
+    private readonly emit: EngineEventEmitter,
     private readonly resources: () => GameResourcesController,
     private readonly score: () => GameScoreController,
     private readonly scheduleEffects: (

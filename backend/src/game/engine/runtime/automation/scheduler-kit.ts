@@ -10,6 +10,7 @@ import {
   assertScheduledTask,
   SCHEDULED_TASK_SCHEMA_VERSION,
 } from './scheduler-contracts';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 
 export type {
   GameSchedulerState,
@@ -25,10 +26,9 @@ export class GameSchedulerController {
   constructor(
     private readonly state: GameSchedulerState,
     private readonly nowMs: () => number,
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-    ) => void = () => {},
+    private readonly emit: EngineEventEmitter<
+      'timer.scheduled' | 'timer.cancelled' | 'timer.fired'
+    > = () => {},
   ) {}
 
   schedule(

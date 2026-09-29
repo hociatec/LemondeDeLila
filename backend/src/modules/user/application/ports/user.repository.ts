@@ -1,11 +1,14 @@
-import type { UserModel } from '../../domain/models/user.model';
+import type {
+  UserModel,
+  UserPreferences,
+} from '../../domain/models/user.model';
 
 export type CreateUserRecord = {
   email: string;
   roles: string[];
   username: string;
   avatar: string | null;
-  preferences: Record<string, unknown> | null;
+  preferences: UserPreferences | null;
   bannedUntil: Date | null;
   banReason: string | null;
   chatBannedUntil: Date | null;

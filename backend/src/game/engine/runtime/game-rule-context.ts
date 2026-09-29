@@ -47,6 +47,7 @@ import { GameSchedulerController } from './automation/scheduler-kit';
 import type { PhaseConfiguration } from './kits/phase-kit';
 import type { PlayerMap } from './game-identifiers';
 import { GameContextComponents } from './definitions/game-context-components';
+import type { EngineEventEmitter } from './events/engine-event-registry';
 
 export type { EventDataMap, DomainEvent } from './events/game-context-events';
 export type { EngineEventMap } from './events/engine-event-registry';
@@ -206,9 +207,9 @@ export class GameContext<
       () => this,
     );
     this.turn = this.turnController.api;
-    const emit = (
-      type: string,
-      data: Record<string, unknown>,
+    const emit: EngineEventEmitter = (
+      type,
+      data,
       visibility?: EventVisibility,
     ) => {
       this.eventCollector.emitDomainEvent(type, data, visibility);

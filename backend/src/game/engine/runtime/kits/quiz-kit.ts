@@ -9,7 +9,7 @@ import {
   GameRuleViolationError,
   GameStateViolationError,
 } from '../contracts/game-domain.errors';
-import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 import type { QuizQuestion } from '../content/quiz-content-contract';
 import { GameContentValidationError } from '../contracts/game-domain.errors';
 
@@ -108,11 +108,13 @@ export class GameQuizController {
     private readonly state: QuizKitState,
     private readonly random: GameRng,
     definitions: readonly QuizDefinition[] = [],
-    private readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-      visibility?: EventVisibility,
-    ) => void = () => {},
+    private readonly emit: EngineEventEmitter<
+      | 'quiz.asked'
+      | 'quiz.answered'
+      | 'quiz.revealed'
+      | 'quiz.closed'
+      | 'quiz.scored'
+    > = () => {},
     private readonly addScore: (
       playerId: number,
       amount: number,

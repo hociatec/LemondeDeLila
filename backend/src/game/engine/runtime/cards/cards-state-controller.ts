@@ -16,7 +16,7 @@ import {
   GameStateViolationError,
 } from '../contracts/game-domain.errors';
 import type { GameRng } from '../../../core/application/models/game-execution-context.model';
-import type { EventVisibility } from '../../../core/application/models/game-event.model';
+import type { EngineEventEmitter } from '../events/engine-event-registry';
 import {
   contentIdKey,
   isIdentifiedCard,
@@ -48,11 +48,20 @@ export abstract class GameCardsStateController {
   constructor(
     protected readonly state: CardsKitState,
     protected readonly random: Pick<GameRng, 'pick' | 'shuffle'>,
-    protected readonly emit: (
-      type: string,
-      data: Record<string, unknown>,
-      visibility?: EventVisibility,
-    ) => void = () => {},
+    protected readonly emit: EngineEventEmitter<
+      | 'card.drawn'
+      | 'card.received'
+      | 'card.moved'
+      | 'card.played'
+      | 'card.discarded'
+      | 'card.transferred'
+      | 'cards.exchanged'
+      | 'cards.hands-shuffled'
+      | 'cards.hands-swapped'
+      | 'deck.exhausted'
+      | 'deck.recycled'
+      | 'cards.set-completed'
+    > = () => {},
     definitions: readonly (
       | DeckDefinition<CardValue>
       | HandsDefinition
