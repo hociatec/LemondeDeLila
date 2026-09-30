@@ -62,6 +62,7 @@ lila_add_test_executable(lemonde_de_lila_wx_game_sound_tests
     tests/GameSoundPolicyTests.cpp
     src/modules/audio/domain/SoundCatalog.cpp
     src/modules/audio/application/SoundVolumeResolver.cpp
+    src/modules/audio/presentation/SoundOptionsCatalog.cpp
 )
 
 lila_add_test_executable(lemonde_de_lila_wx_logger_sanitization_tests

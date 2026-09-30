@@ -92,6 +92,7 @@ std::wstring_view GetSoundFamilyLabel(domain::SoundFamily family) noexcept
     case domain::SoundFamily::Select: return L"Sélections et jeu";
     case domain::SoundFamily::Messages: return L"Tchat et messages";
     case domain::SoundFamily::TableAmbience: return L"Ambiances de table";
+    case domain::SoundFamily::Gameplay: return L"Sons de jeu";
     }
     return L"Autres sons";
 }

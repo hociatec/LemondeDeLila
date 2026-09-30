@@ -1,6 +1,7 @@
 #include <cassert>
 #include "modules/audio/application/SoundVolumeResolver.h"
 #include "modules/audio/domain/SoundCatalog.h"
+#include "modules/audio/presentation/SoundOptionsCatalog.h"
 #include "modules/rooms/application/GameSoundPolicy.h"
 
 int main()
@@ -50,6 +51,12 @@ int main()
     }
     for (const auto cue : {SoundCue::Selection, SoundCue::Navigation, SoundCue::ChatMessageReceived})
         assert(!application::ResolvePlaybackSettings(*domain::FindSoundDescriptor(cue), settings).enabled);
+
+    for (const auto family : {domain::SoundFamily::AppLaunch, domain::SoundFamily::Ambience,
+             domain::SoundFamily::Navigate, domain::SoundFamily::Select,
+             domain::SoundFamily::Messages, domain::SoundFamily::TableAmbience,
+             domain::SoundFamily::Gameplay})
+        assert(!presentation::GetSoundFamilyLabel(family).empty());
 
     // Every catalogue entry must honour its own controls and the global mute.
     for (const auto& descriptor : domain::GetSoundCatalog())

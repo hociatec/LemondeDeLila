@@ -79,6 +79,7 @@ scope_enabled() {
 cxx_build "${COMMON_FLAGS[@]}" "$ROOT/tests/GameSoundPolicyTests.cpp" \
   "$ROOT/src/modules/audio/domain/SoundCatalog.cpp" \
   "$ROOT/src/modules/audio/application/SoundVolumeResolver.cpp" \
+  "$ROOT/src/modules/audio/presentation/SoundOptionsCatalog.cpp" \
   -o "$BUILD_DIR/game-sound-policy-tests"
 "$BUILD_DIR/game-sound-policy-tests"
 JSON_INCLUDE="$BUILD_DIR/dependencies/nlohmann-json-3.12.0"
