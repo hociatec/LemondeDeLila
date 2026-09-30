@@ -64,7 +64,7 @@ jobs:
           }
           "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File `
             -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
       - name: Install Ninja
         shell: pwsh
         run: choco install ninja --yes --no-progress
@@ -72,7 +72,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/client-wx/build
-            ${{ env.VCPKG_ROOT }}/installed
+            C:\vcpkg\installed
           key: client-wx-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('client-wx/vcpkg.json', 'client-wx/CMakeLists.txt', 'client-wx/cmake/**') }}
       - name: Configure ${{ matrix.preset }}
         working-directory: client-wx
@@ -96,7 +96,7 @@ jobs:
             -Version '1.2.651.0' | Tee-Object -FilePath "${{ runner.temp }}/client-release.json"
       - name: Upload certified Windows artifacts
         if: matrix.preset == 'windows-vcpkg-release'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: client-windows-certified
           path: |
