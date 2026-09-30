@@ -62,7 +62,9 @@ jobs:
 
   windows:
     runs-on: windows-latest
-    timeout-minutes: 25
+    # A cold vcpkg cache can consume more than ten minutes before the full
+    # Debug build and CTest suite start. Keep enough headroom for both.
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
