@@ -13,7 +13,6 @@
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
-#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::gameplay::presentation
@@ -43,9 +42,6 @@ void GamePlayPanel::BuildLayout()
 
     promptPanel_ = new prompt::GamePromptPanel(this);
     root->Add(promptPanel_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
-
-    pawnSelectionPanel_ = new pawn_selection::PawnSelectionPanel(this);
-    root->Add(pawnSelectionPanel_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
 
     contentPanel_ = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         wxVSCROLL | wxTAB_TRAVERSAL);
@@ -109,8 +105,7 @@ void GamePlayPanel::BuildLayout()
 void GamePlayPanel::SyncContentVisibility()
 {
     const bool overlayVisible =
-        confirmationPanel_->IsActive() || promptPanel_->IsActive() ||
-        pawnSelectionPanel_->IsActive();
+        confirmationPanel_->IsActive() || promptPanel_->IsActive();
     contentPanel_->Show(!overlayVisible);
     Layout();
 }

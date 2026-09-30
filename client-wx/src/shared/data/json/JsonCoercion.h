@@ -5,6 +5,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "shared/data/application/IntegerText.h"
+
 namespace lila::shared::data::json
 {
 [[nodiscard]] inline std::string ScalarText(const nlohmann::json& value)
@@ -25,16 +27,6 @@ namespace lila::shared::data::json
     if (found->is_number_integer()) return found->get<int>();
     if (!found->is_string()) return std::nullopt;
 
-    try
-    {
-        std::size_t consumed = 0;
-        const auto raw = found->get<std::string>();
-        const int parsed = std::stoi(raw, &consumed);
-        return consumed == raw.size() ? std::optional<int>{parsed} : std::nullopt;
-    }
-    catch (...)
-    {
-        return std::nullopt;
-    }
+    return lila::shared::data::ParseInteger(found->get<std::string>());
 }
 }

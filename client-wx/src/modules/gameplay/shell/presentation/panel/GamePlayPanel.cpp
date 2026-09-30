@@ -12,7 +12,6 @@
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
-#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 
 namespace lila::modules::gameplay::presentation
@@ -62,6 +61,7 @@ void GamePlayPanel::CloseSession()
 
 void GamePlayPanel::ResetSessionState()
 {
+    eventMailbox_.Clear();
     requestSlot_.Cancel();
     inputRequestSlot_.Cancel();
     inputSubmissionGuard_.Reset();
@@ -72,7 +72,6 @@ void GamePlayPanel::ResetSessionState()
     gameName_.clear();
     state_ = {};
     lines_.clear();
-    pawnSelection_.reset();
     lifecycle_.Close();
     startConfigurationFlow_.Reset();
     ClearView();
@@ -90,7 +89,7 @@ bool GamePlayPanel::IsOpen() const noexcept
 
 bool GamePlayPanel::IsFinished() const noexcept
 {
-    return state_.system.match.status == "finished";
+    return state_.system.match.status == domain::GameMatchStatus::Finished;
 }
 
 void GamePlayPanel::SetZoneFocusRequestedHandler(ZoneFocusRequestedHandler handler)
@@ -135,18 +134,8 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     // controls must remain hidden from keyboard navigation until the room
     // confirms the transition; only the stable game-zone anchor is exposed.
     if (!lifecycle_.IsRoomStarted()) return nullptr;
-    if (pawnSelectionPanel_ != nullptr)
-    {
-        if (auto* target = pawnSelectionPanel_->NavigationTarget()) return target;
-    }
-    // Pawn selection is sequential. While another player is choosing, keep
-    // focus on the stable game-zone anchor instead of announcing a read-only
-    // movement row such as "player, track, square, progress". When it becomes
-    // this viewer's turn, the actionable pawn panel above takes priority.
-    if (state_.pending && state_.pending->workflowKind == "pawn") return nullptr;
-    // A blocking generic choice must take priority over the stable dice-game
-    // anchor. Otherwise a human can receive an effect choice (for example a
-    // Tornado target) without keyboard or screen-reader focus reaching it.
+    // An authoritative pending choice always takes priority over read-only
+    // capability views, independently of the workflow that produced it.
     if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
         return choicesList_;
     if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
@@ -161,11 +150,6 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     {
         if (auto* target = handPanel_->NavigationTarget()) return target;
     }
-    // Dice games are always represented by the stable room game-zone anchor,
-    // including while a bot owns the turn and no roll action is projected for
-    // this viewer. Falling through here would replace that anchor with the
-    // read-only movement/pawn list until the bot finishes playing.
-    if (state_.kits.Dice() != nullptr) return nullptr;
     if (gridPanel_ != nullptr)
     {
         if (auto* target = gridPanel_->NavigationTarget(); target && gridPanel_->IsShown())
@@ -194,9 +178,6 @@ wxWindow* GamePlayPanel::RequiredInteractionTarget() const
         if (!targets.empty()) return targets.front();
     }
     if (!lifecycle_.IsRoomStarted()) return nullptr;
-    if (pawnSelectionPanel_ != nullptr)
-        if (auto* target = pawnSelectionPanel_->NavigationTarget()) return target;
-    if (state_.pending && state_.pending->workflowKind == "pawn") return nullptr;
     if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
         return choicesList_;
     if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
@@ -208,14 +189,8 @@ wxWindow* GamePlayPanel::RequiredInteractionTarget() const
         if (auto* target = handPanel_->NavigationTarget()) return target;
     // A board replaces the zone anchor even during the opponent's turn.
     // Keep it directly navigable without an extra Enter to activate it.
-    if (state_.kits.Dice() == nullptr && gridPanel_ != nullptr && gridPanel_->IsShown())
+    if (gridPanel_ != nullptr && gridPanel_->IsShown())
         if (auto* target = gridPanel_->NavigationTarget()) return target;
-    // A quiz question remains the stable navigation target while answers are
-    // collected and when the application regains focus. Do not fall back to
-    // the generic game-zone anchor merely because this viewer has already
-    // answered or a bot currently owns the turn.
-    if (state_.kits.quiz && !state_.kits.quiz->sessions.empty())
-        if (auto* target = workflowPanel_->NavigationTarget()) return target;
     return nullptr;
 }
 }

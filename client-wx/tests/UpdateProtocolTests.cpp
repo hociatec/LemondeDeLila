@@ -110,6 +110,56 @@ void TestArchivePathsStayInsideStaging()
     Expect(!IsSafeArchivePath(std::string("file\0.exe", 9)),
         "Un chemin ZIP contenant un octet nul doit etre rejete");
 }
+
+void TestArchiveBudgetsRejectCorruptionAndZipBombs()
+{
+    using namespace lila::modules::update;
+    Expect(IsArchiveDirectoryLayoutSafe(1000, 800, 200, 2),
+        "Un repertoire ZIP borne doit etre accepte");
+    Expect(!IsArchiveDirectoryLayoutSafe(1000, 900, 200, 2),
+        "Un repertoire ZIP tronque doit etre rejete");
+    Expect(!IsArchiveDirectoryLayoutSafe(1000, 0, 1, MaximumArchiveEntries + 1),
+        "Un nombre excessif de fichiers doit etre rejete");
+    Expect(IsArchiveExpansionSafe(50ULL * 1024ULL * 1024ULL,
+            500ULL * 1024ULL * 1024ULL, 10),
+        "Une expansion ZIP raisonnable doit etre acceptee");
+    Expect(!IsArchiveExpansionSafe(1024, 600ULL * 1024ULL * 1024ULL, 1),
+        "Une zip bomb doit etre rejetee");
+    Expect(MaximumExtractedEntryBytes < MaximumExtractedBytes,
+        "Chaque entree doit avoir une limite plus stricte que l'archive");
+}
+
+void TestMalformedAndModifiedManifestsAreRejected()
+{
+    using namespace lila::modules::update;
+    for (const auto& raw : {std::string("{broken"), std::string("[]"),
+             std::string(R"({"schemaVersion":2})")})
+    {
+        bool rejected = false;
+        try { static_cast<void>(ParseUpdateManifest(raw)); }
+        catch (const std::exception&) { rejected = true; }
+        Expect(rejected, "Un manifeste malforme doit etre rejete");
+    }
+    bool oversizedRejected = false;
+    try { static_cast<void>(ParseUpdateManifest(std::string(MaximumUpdateManifestBytes + 1, 'x'))); }
+    catch (const std::exception&) { oversizedRejected = true; }
+    Expect(oversizedRejected, "Un manifeste trop volumineux doit etre rejete");
+
+    UpdateManifest original{
+        "release", "2.0.0", 7, "2026-01-01T00:00:00.000Z", {}, {},
+        "https://updates.example/client.zip", 100, std::string(64, 'a'), "AA=="};
+    auto modified = original;
+    modified.sha256[0] = 'b';
+    Expect(CanonicalUpdateSignature(original) != CanonicalUpdateSignature(modified),
+        "La modification du contenu doit invalider les donnees signees");
+    modified = original;
+    modified.size++;
+    Expect(CanonicalUpdateSignature(original) != CanonicalUpdateSignature(modified),
+        "La taille de l'artefact doit etre couverte par la signature");
+    Expect(IsUpdateSequenceAllowed(8, 7) && IsUpdateSequenceAllowed(7, 7) &&
+            !IsUpdateSequenceAllowed(6, 7),
+        "La politique anti-rollback doit refuser une sequence inferieure");
+}
 }
 
 int main()
@@ -119,6 +169,8 @@ int main()
         TestUpdateProtocolRejectsUnsafeMetadata();
         TestStagedArchiveUsesZipExtension();
         TestArchivePathsStayInsideStaging();
+        TestArchiveBudgetsRejectCorruptionAndZipBombs();
+        TestMalformedAndModifiedManifestsAreRejected();
         std::cout << "Update protocol tests passed.\n";
         return 0;
     }

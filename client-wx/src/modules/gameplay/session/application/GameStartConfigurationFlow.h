@@ -3,6 +3,7 @@
 #include <string_view>
 
 #include "modules/gameplay/state/domain/GameSystem.h"
+#include "modules/gameplay/session/domain/GameProtocol.h"
 
 namespace lila::modules::gameplay::application
 {
@@ -18,7 +19,7 @@ public:
 
     [[nodiscard]] bool Acknowledge(std::string_view command) noexcept
     {
-        if (phase_ != Phase::AwaitingActionAcknowledgement || command != "game.action")
+        if (phase_ != Phase::AwaitingActionAcknowledgement || command != protocol::Action)
             return false;
         phase_ = Phase::AwaitingSetupProjection;
         return true;

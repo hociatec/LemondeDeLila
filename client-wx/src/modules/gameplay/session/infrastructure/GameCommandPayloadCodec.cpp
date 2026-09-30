@@ -23,7 +23,8 @@ nlohmann::json GameCommandPayloadCodec::EncodeAction(
     {
         if (action.type.empty())
             throw std::invalid_argument("Action de jeu invalide.");
-        actions.push_back({{"type", action.type}, {"payload", action.payload}});
+        actions.push_back({{"type", action.type},
+            {"payload", EncodeGameValue(domain::GameValue{action.payload})}});
     }
     return {{"roomId", command.roomId}, {"gameType", command.gameType},
         {"commandId", command.commandId}, {"knownVersion", command.knownVersion},
@@ -40,8 +41,8 @@ nlohmann::json GameCommandPayloadCodec::EncodeCandidatesRequest(
     domain::GameValue queryValue{request.query};
     return {{"roomId", roomId}, {"gameType", gameType},
         {"actionType", request.actionType}, {"query", EncodeGameValue(queryValue)},
-        {"offset", std::max(0, request.offset)},
-        {"limit", std::clamp(request.limit, 1, 200)}};
+        {"offset", std::clamp(request.offset, 0, domain::MaximumActionCandidatesOffset)},
+        {"limit", std::clamp(request.limit, 1, domain::MaximumActionCandidatesLimit)}};
 }
 
 domain::GameActionCandidatesResult GameCommandPayloadCodec::DecodeCandidates(
@@ -53,12 +54,17 @@ domain::GameActionCandidatesResult GameCommandPayloadCodec::DecodeCandidates(
     result.roomId = detail::ReadInt(payload, "roomId");
     result.gameType = detail::ReadString(payload, "gameType");
     result.actionType = detail::ReadString(payload, "actionType");
-    result.offset = std::max(0, detail::ReadInt(payload, "offset"));
-    result.limit = std::clamp(detail::ReadInt(payload, "limit"), 1, 200);
+    result.offset = std::clamp(
+        detail::ReadInt(payload, "offset"), 0, domain::MaximumActionCandidatesOffset);
+    result.limit = std::clamp(
+        detail::ReadInt(payload, "limit"), 1, domain::MaximumActionCandidatesLimit);
     const auto nextOffset = payload.find("nextOffset");
-    if (nextOffset != payload.end() && nextOffset->is_number_integer() &&
-        nextOffset->get<int>() >= 0)
-        result.nextOffset = nextOffset->get<int>();
+    if (nextOffset != payload.end() && nextOffset->is_number_integer())
+    {
+        const auto value = detail::ReadInt(payload, "nextOffset");
+        if (value >= 0)
+            result.nextOffset = std::min(value, domain::MaximumActionCandidatesOffset);
+    }
     const auto items = payload.find("items");
     if (items == payload.end() || !items->is_array())
         throw std::runtime_error("Liste de candidats de jeu absente.");
@@ -68,8 +74,14 @@ domain::GameActionCandidatesResult GameCommandPayloadCodec::DecodeCandidates(
         domain::GameAction action;
         action.type = detail::ReadString(item, "type");
         const auto actionPayload = item.find("payload");
-        if (actionPayload != item.end() && actionPayload->is_object())
-            action.payload = *actionPayload;
+        if (actionPayload != item.end())
+        {
+            auto decoded = DecodeGameValue(*actionPayload);
+            auto* object = decoded.ObjectValue();
+            if (object == nullptr)
+                throw std::runtime_error("Payload de candidat de jeu invalide.");
+            action.payload = std::move(*object);
+        }
         if (!action.type.empty()) result.items.push_back(std::move(action));
     }
     if (result.roomId <= 0 || result.gameType.empty() || result.actionType.empty())

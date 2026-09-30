@@ -10,6 +10,7 @@
 #include <string>
 
 #include "modules/update/domain/UpdateProtocol.h"
+#include "modules/update/domain/UpdateInstallationState.h"
 
 namespace lila::modules::update::launcher
 {
@@ -28,21 +29,14 @@ inline constexpr wchar_t LauncherExecutable[] = L"lila_launcher.exe";
 inline constexpr wchar_t LauncherMutex[] = L"Local\\LeMondeDeLilaWX.Launcher";
 inline constexpr auto PollInterval = std::chrono::seconds(120);
 inline constexpr std::uint64_t MinimumFreeSpaceReserve = 128ULL * 1024ULL * 1024ULL;
-inline constexpr std::uint64_t MaximumArchiveEntries = 20'000;
-inline constexpr std::uint64_t MaximumExtractedBytes = 8ULL * 1024ULL * 1024ULL * 1024ULL;
+using lila::modules::update::MaximumArchiveEntries;
+using lila::modules::update::MaximumExtractedBytes;
+using lila::modules::update::MaximumExtractedEntryBytes;
+using lila::modules::update::IsArchiveDirectoryLayoutSafe;
+using lila::modules::update::IsArchiveExpansionSafe;
+using lila::modules::update::IsUpdateSequenceAllowed;
 
-struct State
-{
-    std::string currentVersion;
-    std::string currentReleaseId;
-    std::string previousVersion;
-    std::string previousReleaseId;
-    std::string retainedReleaseId;
-    std::string failedReleaseId;
-    std::string failedVersion;
-    std::string requiredVersion;
-    std::uint64_t highestSequence = 0;
-};
+using State = lila::modules::update::UpdateInstallationState;
 
 struct Process
 {
@@ -69,6 +63,8 @@ public:
     void Show(const std::string& version) noexcept;
     void SetStage(const std::wstring& stage, std::uint64_t percent) noexcept;
     void SetDownloadProgress(std::uint64_t completed, std::uint64_t total) noexcept;
+    [[nodiscard]] bool Cancelled() const noexcept;
+    void ThrowIfCancelled() const;
     void Close() noexcept;
 
 private:
@@ -76,6 +72,10 @@ private:
     bool comInitialized_ = false;
     int lastDownloadPercent_ = -1;
 };
+
+[[nodiscard]] bool WaitForRetry(
+    std::chrono::milliseconds delay,
+    const UpdateProgressDialog* progress = nullptr);
 
 std::wstring Widen(const std::string& value);
 std::string Narrow(const std::wstring& value);
@@ -91,11 +91,12 @@ std::string RequiredVersion(const Manifest& manifest);
 std::string DownloadText(const std::string& url);
 void DownloadFile(const std::string& url, const fs::path& destination,
     std::uint64_t expectedBytes, UpdateProgressDialog* progress = nullptr);
-std::string Sha256(const fs::path& path);
+std::string Sha256(const fs::path& path, const UpdateProgressDialog* progress = nullptr);
 bool VerifyAuthenticode(const fs::path& executable, std::string* failureReason = nullptr);
 bool VerifyAuthenticodeWithRetry(
     const fs::path& executable,
-    std::string* failureReason = nullptr);
+    std::string* failureReason = nullptr,
+    const UpdateProgressDialog* progress = nullptr);
 bool VerifyManifestSignature(const Manifest& manifest);
 Manifest ParseManifest(const std::string& raw);
 std::string ManifestUrl(const std::string& currentVersion);
@@ -103,7 +104,8 @@ std::uint64_t InspectArchive(const fs::path& archive, std::uint64_t compressedBy
 void EnsureFreeSpace(const fs::path& root, std::uint64_t requiredBytes);
 void ExtractArchive(const fs::path& archive, const fs::path& destination,
     std::uint64_t expectedExtractedBytes, UpdateProgressDialog* progress = nullptr);
-void RenameWithRetry(const fs::path& source, const fs::path& destination);
+void RenameWithRetry(const fs::path& source, const fs::path& destination,
+    const UpdateProgressDialog* progress = nullptr);
 fs::path PrepareRelease(const fs::path& root, const Manifest& manifest,
     UpdateProgressDialog* progress = nullptr);
 Process LaunchClient(const fs::path& directory);

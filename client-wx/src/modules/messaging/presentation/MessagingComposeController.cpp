@@ -11,9 +11,9 @@
 namespace lila::modules::messaging::presentation
 {
 MessagingComposeController::MessagingComposeController(
-    MessagingMailboxController& mailboxController,
+    std::shared_ptr<MessagingMailboxController> mailboxController,
     Callbacks callbacks)
-    : mailboxController_(mailboxController),
+    : mailboxController_(std::move(mailboxController)),
       callbacks_(std::move(callbacks))
 {
 }
@@ -26,7 +26,7 @@ void MessagingComposeController::Send(SendPayload payload) const
     }
 
     auto result = std::make_shared<MessagingMailboxController::SendResult>();
-    auto* mailbox = &mailboxController_;
+    const auto mailbox = mailboxController_;
     callbacks_.runTask(
         lila::shared::text::ui::MessagingSendBusy.data(),
         [mailbox, result, payload = std::move(payload)]() mutable

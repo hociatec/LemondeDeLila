@@ -15,12 +15,12 @@
 namespace lila::modules::messaging::presentation
 {
 MessagingMailboxLoader::MessagingMailboxLoader(
-    MessagingMailboxController& mailboxController,
+    std::shared_ptr<MessagingMailboxController> mailboxController,
     MessagingSelectionMemory& selectionMemory,
     std::vector<domain::MessagingMessage>& boxMessages,
     MessagingView& view,
     Callbacks callbacks) noexcept
-    : mailboxController_(mailboxController),
+    : mailboxController_(std::move(mailboxController)),
       selectionMemory_(selectionMemory),
       boxMessages_(boxMessages),
       view_(view),
@@ -40,11 +40,12 @@ void MessagingMailboxLoader::LoadBox(domain::MessagingBox box, bool preserveSele
     }
 
     auto results = std::make_shared<std::vector<domain::MessagingMessage>>();
+    const auto mailboxController = mailboxController_;
     callbacks_.runBackgroundTask(
         lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingLoadMessagesBusy),
-        [this, results, box]()
+        [mailboxController, results, box]()
         {
-            *results = mailboxController_.LoadBox(box);
+            *results = mailboxController->LoadBox(box);
         },
         [this, results, box]()
         {

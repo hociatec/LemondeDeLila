@@ -7,10 +7,10 @@
 #include <wx/string.h>
 #include <wx/timer.h>
 
+#include "shared/accessibility/application/IScreenReaderAnnouncer.h"
+
 class wxStaticText;
 class wxWindow;
-
-namespace lila::shared::accessibility { class NvdaScreenReaderAnnouncer; }
 
 namespace lila::modules::rooms::presentation::history
 {
@@ -31,6 +31,6 @@ private:
     std::deque<wxString> pending_;
     wxString lastAnnounced_;
     wxTimer timer_;
-    std::unique_ptr<lila::shared::accessibility::NvdaScreenReaderAnnouncer> screenReader_;
+    std::unique_ptr<lila::shared::accessibility::IScreenReaderAnnouncer> screenReader_;
 };
 }

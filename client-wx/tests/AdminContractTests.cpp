@@ -135,6 +135,12 @@ int main()
     assert(!lila::modules::admin::domain::IsAdminPaginationField("rooms.cleanup", "limit"));
     assert((lila::modules::admin::domain::AdminPageSizeChoices(userPagination, 20) ==
         std::vector<int>{10, 20, 50, 100}));
+    assert(lila::modules::admin::domain::NormalizeAdminPage(-9) == 1);
+    assert(lila::modules::admin::domain::NormalizeAdminPage(50'000) == 10'000);
+    assert(lila::modules::admin::domain::NormalizeAdminPageSize(
+        userPagination, 50'000) == 100);
+    assert(lila::modules::admin::domain::NormalizeAdminOffset(-1) == 0);
+    assert(lila::modules::admin::domain::NormalizeAdminOffset(9'000'000) == 1'000'000);
     const auto gamesUpdate = nlohmann::json::parse(findCommand("games.update").payloadTemplate);
     assert(gamesUpdate.contains("enabled"));
     assert(gamesUpdate.contains("rules"));

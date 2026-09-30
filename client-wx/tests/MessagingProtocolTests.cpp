@@ -3,12 +3,18 @@
 #include <utility>
 #include "modules/messaging/infrastructure/MessagingResponseType.h"
 #include "modules/messaging/infrastructure/MessagingPayloadCodec.h"
+#include "modules/messaging/domain/MessagingPagination.h"
 #include "shared/network/application/realtime/RealtimeProtocol.h"
+#include "shared/data/json/JsonReaders.h"
+#include "shared/errors/domain/AppError.h"
 
 int main()
 {
     using namespace lila::shared::network::realtime;
     using namespace lila::modules::messaging::infrastructure;
+    assert(lila::modules::messaging::domain::NormalizePageLimit(-5) == 1);
+    assert(lila::modules::messaging::domain::NormalizePageLimit(100) == 100);
+    assert(lila::modules::messaging::domain::NormalizePageLimit(50'000) == 200);
     const std::pair<const char*, const char*> routes[] = {
         {"messaging.search", "messaging.user"},
         {"messaging.send", "messaging.message"},
@@ -45,5 +51,19 @@ int main()
     assert(codec::ReadMessagesPayload(response).empty());
     response.payload = {{"user", {{"id", 2}, {"username", "Bob"}}}};
     assert(codec::ReadSearchUserPayload(response)->username == "Bob");
+
+    const std::string secret = "private-refresh-token";
+    try
+    {
+        static_cast<void>(lila::shared::data::json::ParseDocument(
+            "{\"refreshToken\":\"" + secret + "\",",
+            "Invalid messaging payload"));
+        assert(false && "Malformed JSON should be rejected");
+    }
+    catch (const lila::shared::errors::AppException& error)
+    {
+        assert(std::string(error.what()).find(secret) == std::string::npos);
+        assert(error.Error().DiagnosticDetails().find(secret) == std::string::npos);
+    }
     std::cout << "Messaging protocol and decoding tests passed.\n";
 }

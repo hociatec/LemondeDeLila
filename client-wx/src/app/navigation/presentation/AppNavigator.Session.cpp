@@ -93,15 +93,16 @@ void AppNavigator::CloseApplication(bool forUpdate)
     }
 
     const wxWeakRef<HostFrame> weakFrame(hostFrame_);
+    const std::weak_ptr<int> lifetime(lifetimeToken_);
     sessionRevocationTask_ = sessionStore_.RevokeTransientSessionAsync(
-        [this, weakFrame]()
+        [this, weakFrame, lifetime]()
         {
-            if (weakFrame)
+            if (weakFrame && !lifetime.expired())
             {
                 weakFrame->CallAfter(
-                    [this, weakFrame]()
+                    [this, weakFrame, lifetime]()
                     {
-                        if (weakFrame)
+                        if (weakFrame && !lifetime.expired())
                         {
                             OnSessionRevocationFinished();
                         }

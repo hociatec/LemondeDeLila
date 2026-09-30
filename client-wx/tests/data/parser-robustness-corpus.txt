@@ -1,0 +1,11 @@
+{
+null
+[]
+{}
+{"type":17,"payload":"wrong"}
+{"type":"presence-update","players":null}
+{"items":[null,false,0,"text",[],{}]}
+{"viewVersion":"1","roomId":-1,"gameType":null}
+{"categories":{"unexpected":true}}
+{"snapshots":[{"id":[],"roomId":"large"}]}
+{"games":[{"title":false,"stats":"invalid"}]}

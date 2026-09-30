@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
+#include "shared/data/application/IntegerText.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -15,10 +16,6 @@ std::optional<double> Number(const nlohmann::json& value)
     return value.is_number() ? std::optional<double>(value.get<double>()) : std::nullopt;
 }
 
-int PlayerId(const std::string& key)
-{
-    try { return std::stoi(key); } catch (const std::exception&) { return 0; }
-}
 }
 
 std::optional<domain::GameScoreView> GamePlayerValuesDecoder::Score(const nlohmann::json& raw)
@@ -45,7 +42,8 @@ std::optional<domain::GameScoreView> GamePlayerValuesDecoder::Score(const nlohma
     if (byPlayer != raw.end() && byPlayer->is_object())
         for (const auto& item : byPlayer->items())
             if (const auto value = Number(item.value()))
-                result.byPlayer.emplace(PlayerId(item.key()), *value);
+                if (const auto id = lila::shared::data::ParseInteger(item.key()); id && *id != 0)
+                    result.byPlayer.emplace(*id, *value);
     const auto leaderboard = raw.find("leaderboard");
     if (leaderboard != raw.end() && leaderboard->is_array())
         for (const auto& item : *leaderboard)
@@ -53,6 +51,7 @@ std::optional<domain::GameScoreView> GamePlayerValuesDecoder::Score(const nlohma
             if (!item.is_object()) continue;
             domain::GameScoreEntry entry;
             entry.playerId = detail::ReadInt(item, "playerId");
+            if (entry.playerId == 0) continue;
             entry.rank = detail::ReadInt(item, "rank");
             if (const auto score = item.find("score"); score != item.end())
                 entry.score = Number(*score).value_or(0);
@@ -72,9 +71,10 @@ std::optional<domain::GameResourcesView> GamePlayerValuesDecoder::Resources(
         for (const auto& item : resource.value().items())
             if (const auto value = Number(item.value()))
             {
-                const int id = PlayerId(item.key());
-                auto& player = players[id];
-                player.playerId = id;
+                const auto id = lila::shared::data::ParseInteger(item.key());
+                if (!id || *id == 0) continue;
+                auto& player = players[*id];
+                player.playerId = *id;
                 player.values.push_back({resource.key(), *value});
             }
     }
@@ -106,9 +106,11 @@ std::optional<domain::GameStatusView> GamePlayerValuesDecoder::Status(
         for (const auto& player : status.value().items())
         {
             if (!player.value().is_object()) continue;
+            const auto playerId = lila::shared::data::ParseInteger(player.key());
+            if (!playerId || *playerId == 0) continue;
             domain::GameStatusValue value;
             value.id = status.key();
-            value.playerId = PlayerId(player.key());
+            value.playerId = *playerId;
             value.scope = detail::ReadString(player.value(), "scope");
             const auto remaining = player.value().find("remaining");
             if (remaining != player.value().end() && remaining->is_number_integer())

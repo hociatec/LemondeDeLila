@@ -13,14 +13,6 @@ inline std::string PresentedErrorMessage(
 {
     if (!payload.is_object()) return std::string(fallback);
 
-    for (const char* field : {"message", "error"})
-    {
-        const auto value = payload.find(field);
-        if (value != payload.end() && value->is_string() &&
-            !value->get_ref<const std::string&>().empty())
-            return value->get<std::string>();
-    }
-
     const auto codeValue = payload.find("code");
     if (codeValue == payload.end() || !codeValue->is_string())
         return std::string(fallback);

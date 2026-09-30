@@ -100,15 +100,16 @@ void AppNavigator::OnLogoutRequested(std::size_t)
     }
     pendingInvitations_.clear();
     const wxWeakRef<HostFrame> weakFrame(hostFrame_);
+    const std::weak_ptr<int> lifetime(lifetimeToken_);
     sessionRevocationTask_ = sessionStore_.LogoutAsync(
-        [this, weakFrame]()
+        [this, weakFrame, lifetime]()
         {
-            if (weakFrame)
+            if (weakFrame && !lifetime.expired())
             {
                 weakFrame->CallAfter(
-                    [this, weakFrame]()
+                    [this, weakFrame, lifetime]()
                     {
-                        if (weakFrame)
+                        if (weakFrame && !lifetime.expired())
                         {
                             OnSessionRevocationFinished();
                         }

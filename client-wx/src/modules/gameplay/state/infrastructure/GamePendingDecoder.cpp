@@ -1,11 +1,11 @@
 #include "modules/gameplay/state/infrastructure/GamePendingDecoder.h"
 
 #include <algorithm>
+#include <stdexcept>
 #include <utility>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
 #include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
-#include "shared/data/json/JsonCoercion.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -17,7 +17,11 @@ std::vector<int> ReadIds(const nlohmann::json& object, const char* key)
     const auto values = object.find(key);
     if (values == object.end() || !values->is_array()) return result;
     for (const auto& value : *values)
-        if (value.is_number_integer()) result.push_back(value.get<int>());
+        if (value.is_number_integer())
+        {
+            const auto id = value.get<int>();
+            if (id != 0) result.push_back(id);
+        }
     return result;
 }
 
@@ -31,12 +35,29 @@ std::optional<domain::GameAction> DecodeMappedAction(
     domain::GameAction action;
     action.type = detail::ReadString(raw, "type");
     action.label = detail::ReadString(raw, "label");
-    action.payload = detail::ObjectOrEmpty(
-        raw.value("payload", nlohmann::json::object()));
+    const auto payload = raw.find("payload");
+    if (payload != raw.end())
+    {
+        auto decoded = DecodeGameValue(*payload);
+        auto* object = decoded.ObjectValue();
+        if (object == nullptr)
+            throw std::runtime_error("Payload d'action de choix invalide.");
+        action.payload = std::move(*object);
+    }
     action.disabled = detail::ReadBool(raw, "disabled");
     action.confirm = detail::ReadBool(raw, "confirm");
     return action.type.empty() ? std::nullopt
                                : std::optional<domain::GameAction>(std::move(action));
+}
+
+domain::GamePendingSelectionKind SelectionKind(const std::string& kind)
+{
+    if (kind == "one" || kind == "single")
+        return domain::GamePendingSelectionKind::Single;
+    if (kind == "many") return domain::GamePendingSelectionKind::Multiple;
+    if (kind == "players") return domain::GamePendingSelectionKind::Players;
+    if (kind == "ordering") return domain::GamePendingSelectionKind::Ordering;
+    return domain::GamePendingSelectionKind::Unknown;
 }
 }
 
@@ -53,27 +74,33 @@ std::optional<domain::GamePending> GamePendingDecoder::Decode(
     pending.question = detail::ReadString(rawPending, "question");
     pending.choiceId = detail::ReadString(rawPending, "choiceId");
     pending.workflowKind = detail::ReadString(rawPending, "workflowKind");
-    pending.playerId = lila::shared::data::json::ReadOptionalIntegerCoerced(rawPending, "playerId");
-    pending.targetPlayerId = lila::shared::data::json::ReadOptionalIntegerCoerced(rawPending, "targetPlayerId");
+    pending.playerId = detail::ReadOptionalPlayerId(rawPending, "playerId");
+    pending.targetPlayerId = detail::ReadOptionalPlayerId(rawPending, "targetPlayerId");
     pending.playerIds = ReadIds(rawPending, "playerIds");
     pending.resolvedPlayerIds = ReadIds(rawPending, "resolvedPlayerIds");
     pending.blocking = detail::ReadBool(rawPending, "blocking");
     const auto data = detail::ObjectOrEmpty(
         rawPending.value("data", nlohmann::json::object()));
     const auto kind = detail::ReadString(data, "kind");
+    pending.selectionKind = SelectionKind(kind);
     if (pending.workflowKind.empty()) pending.workflowKind = kind;
     if (pending.choiceId.empty()) pending.choiceId = detail::ReadString(data, "choiceId");
-    pending.multipleSelection = kind == "many" || kind == "players" || kind == "ordering";
-    pending.ordering = kind == "ordering";
-    pending.minimumSelections = lila::shared::data::json::ReadOptionalIntegerCoerced(
+    pending.multipleSelection =
+        pending.selectionKind == domain::GamePendingSelectionKind::Multiple ||
+        pending.selectionKind == domain::GamePendingSelectionKind::Players ||
+        pending.selectionKind == domain::GamePendingSelectionKind::Ordering;
+    pending.ordering =
+        pending.selectionKind == domain::GamePendingSelectionKind::Ordering;
+    pending.minimumSelections = detail::ReadOptionalInt(
         data, "min").value_or(pending.ordering ? 0 : 1);
-    pending.maximumSelections = lila::shared::data::json::ReadOptionalIntegerCoerced(
-        data, "max").value_or(0);
+    pending.maximumSelections = detail::ReadOptionalInt(data, "max").value_or(0);
 
     const auto mappings = data.find("choiceActionsByIndex");
     const auto choices = rawPending.find("choices");
     if (choices != rawPending.end() && choices->is_array())
     {
+        if (choices->size() > 256)
+            throw std::runtime_error("Trop de choix gameplay.");
         pending.choices.reserve(choices->size());
         for (std::size_t index = 0; index < choices->size(); ++index)
         {
@@ -81,6 +108,8 @@ std::optional<domain::GamePending> GamePendingDecoder::Decode(
             std::string label;
             if (rawChoice.is_string()) label = rawChoice.get<std::string>();
             else if (!rawChoice.is_null()) label = rawChoice.dump();
+            if (label.size() > 2'000)
+                throw std::runtime_error("Libelle de choix trop volumineux.");
             if (label.empty()) continue;
             domain::GamePendingChoice choice;
             choice.label = std::move(label);
@@ -108,13 +137,15 @@ std::optional<domain::GamePending> GamePendingDecoder::Decode(
     if (pending.multipleSelection && !pending.selectionAction)
     {
         const auto actionType = detail::ReadString(data, "selectionActionType");
-        const auto templateAction = std::find_if(actions.begin(), actions.end(),
-            [&actionType](const domain::GameAction& action)
-            {
-                return !action.disabled && action.type ==
-                    (actionType.empty() ? "choice.resolve" : actionType);
-            });
-        if (templateAction != actions.end()) pending.selectionAction = *templateAction;
+        if (!actionType.empty())
+        {
+            const auto templateAction = std::find_if(actions.begin(), actions.end(),
+                [&actionType](const domain::GameAction& action)
+                {
+                    return !action.disabled && action.type == actionType;
+                });
+            if (templateAction != actions.end()) pending.selectionAction = *templateAction;
+        }
     }
     pending.viewerActionable = hasMappedAction || pending.selectionAction.has_value();
 

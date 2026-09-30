@@ -20,6 +20,4 @@ namespace lila::shared::text {
 
 [[nodiscard]] wxString RepairBrokenAccents(const wxString& value);
 
-[[nodiscard]] std::wstring Utf8ToWide(const std::string& value);
-
 }

@@ -51,19 +51,20 @@ void AppNavigator::HandleRoomInvitation(modules::rooms::domain::RoomInvitation i
 
     auto* service = &roomLobbyService_;
     const wxWeakRef<HostFrame> weakFrame(hostFrame_);
+    const std::weak_ptr<int> lifetime(lifetimeToken_);
     invitationResponseTask_ = lila::shared::concurrency::RunAsync(
         [service, id = invitation.invitationId, accept](std::stop_token stopToken)
         {
             service->RespondInvite(id, accept, stopToken);
         },
-        [this, weakFrame, accept, roomId = invitation.roomId](
+        [this, weakFrame, lifetime, accept, roomId = invitation.roomId](
             std::optional<lila::shared::errors::AppError> error)
         {
-            if (!weakFrame) return;
-            weakFrame->CallAfter([this, weakFrame, accept, roomId, error = std::move(error)]() mutable
+            if (!weakFrame || lifetime.expired()) return;
+            weakFrame->CallAfter([this, weakFrame, lifetime, accept, roomId, error = std::move(error)]() mutable
             {
+                if (!weakFrame || lifetime.expired()) return;
                 invitationResponseTask_.reset();
-                if (!weakFrame) return;
                 if (error)
                 {
                     const wxWeakRef<wxWindow> focusedBeforeError(wxWindow::FindFocus());

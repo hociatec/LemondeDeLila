@@ -59,10 +59,10 @@ MessagingFrame::MessagingFrame(
     frameSizer->Add(view_, 1, wxEXPAND);
     SetSizer(frameSizer);
     view_->ApplyTheme();
-    mailboxController_ = std::make_unique<MessagingMailboxController>(messagingService);
+    mailboxController_ = std::make_shared<MessagingMailboxController>(messagingService);
     focusController_ = std::make_unique<MessagingFocusController>(*view_, navigationState_, [this]() { SyncSelectionState(); });
     screenCoordinator_ = std::make_unique<MessagingScreenCoordinator>(
-        *mailboxController_,
+        mailboxController_,
         navigationState_,
         selectionMemory_,
         boxMessages_,
@@ -115,7 +115,7 @@ MessagingFrame::MessagingFrame(
                 RefreshCurrentBox(false);
             }});
     composeController_ = std::make_unique<MessagingComposeController>(
-        *mailboxController_,
+        mailboxController_,
         MessagingComposeController::Callbacks{
             [this](const char* busyMessage, std::function<void()> worker, std::function<void()> onSuccess)
             {

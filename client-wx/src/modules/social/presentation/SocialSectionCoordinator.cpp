@@ -12,13 +12,13 @@
 namespace lila::modules::social::presentation
 {
 SocialSectionCoordinator::SocialSectionCoordinator(
-    SocialLoadController& loadController,
+    std::shared_ptr<SocialLoadController> loadController,
     SocialDataStore& dataStore,
     SocialNavigationState& navigationState,
     SocialSectionPresenter& sectionPresenter,
     SocialView& view,
     Callbacks callbacks) noexcept
-    : loadController_(loadController),
+    : loadController_(std::move(loadController)),
       dataStore_(dataStore),
       navigationState_(navigationState),
       sectionPresenter_(sectionPresenter),

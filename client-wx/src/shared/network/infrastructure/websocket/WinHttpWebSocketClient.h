@@ -6,6 +6,7 @@
 #include <string>
 
 #include "shared/network/application/websocket/IWebSocketClient.h"
+#include "shared/network/application/websocket/WebSocketOperationGate.h"
 
 namespace lila::shared::network::websocket
 {
@@ -35,20 +36,22 @@ public:
         std::stop_token stopToken = {}) override;
 
 private:
+    struct NativeState;
     struct OperationTicket final
     {
         void* handle = nullptr;
         std::uint64_t generation = 0;
-        bool receive = false;
+        std::shared_ptr<NativeState> state;
+        WebSocketOperationGate::Ticket gate;
     };
 
-    void ThrowIfCancelled(std::stop_token stopToken);
+    static void ThrowIfCancelled(std::stop_token stopToken);
     void ResetTransport() noexcept;
+    static void ResetTransportState(const std::shared_ptr<NativeState>& state) noexcept;
     void CancelIfCurrent(std::uint64_t generation) noexcept;
     [[nodiscard]] OperationTicket BeginOperation(bool receive);
-    void EndOperation(const OperationTicket& ticket) noexcept;
+    void EndOperation(OperationTicket& ticket) noexcept;
 
-    struct NativeState;
-    std::unique_ptr<NativeState> state_;
+    std::shared_ptr<NativeState> state_;
 };
 }

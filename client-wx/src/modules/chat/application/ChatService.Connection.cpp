@@ -9,7 +9,7 @@
 #include "shared/config/domain/AppConfig.h"
 #include "modules/chat/domain/ChatErrorMessages.h"
 #include "shared/errors/catalog/NetworkErrorMessages.h"
-#include "shared/errors/presentation/ErrorFormatting.h"
+#include "shared/errors/domain/ErrorFormatting.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "modules/audio/application/IAudioService.h"
@@ -87,10 +87,7 @@ bool ChatService::Open()
         {
             sessionStore_.Clear();
         }
-        {
-            std::scoped_lock lock(mutex_);
-            lastServerError_ = domain::ChatServerError{exception.what(), {}, std::nullopt};
-        }
+        lila::shared::logging::LogWarning("Chat", exception.what());
         SetStatus(
             lila::shared::errors::WithDetails(
                 lila::shared::errors::ChatConnectionFailed,
@@ -106,17 +103,8 @@ bool ChatService::Open()
         gateway_.Close();
         SetState(domain::ChatState::Error);
         const std::string exceptionMessage = exception.what();
-        {
-            std::scoped_lock lock(mutex_);
-            if (!exceptionMessage.empty())
-            {
-                lastServerError_ = domain::ChatServerError{
-                    exceptionMessage,
-                    {},
-                    std::nullopt};
-            }
-        }
-        SetStatus(lila::shared::errors::WithDetails(lila::shared::errors::ChatConnectionFailed, exception.what()), true);
+        lila::shared::logging::LogWarning("Chat", exceptionMessage);
+        SetStatus(lila::shared::errors::ChatConnectionFailed, true);
         return false;
     }
 }
@@ -188,12 +176,9 @@ void ChatService::Send(const std::string& text)
     }
     catch (const std::exception& exception)
     {
-        const std::string failure = lila::shared::errors::WithDetails(
-            lila::shared::errors::ChatSendFailed,
-            exception.what());
-        lila::shared::logging::LogError("Chat", failure);
-        SetStatus(failure, true);
-        throw std::runtime_error(failure);
+        lila::shared::logging::LogError("Chat", exception.what());
+        SetStatus(lila::shared::errors::ChatSendFailed, true);
+        throw std::runtime_error(lila::shared::errors::ChatSendFailed);
     }
 }
 
@@ -210,12 +195,9 @@ void ChatService::Edit(const std::string& messageId, const std::string& text)
     }
     catch (const std::exception& exception)
     {
-        const std::string failure = lila::shared::errors::WithDetails(
-            lila::shared::errors::ChatEditFailed,
-            exception.what());
-        lila::shared::logging::LogError("Chat", failure);
-        SetStatus(failure, true);
-        throw std::runtime_error(failure);
+        lila::shared::logging::LogError("Chat", exception.what());
+        SetStatus(lila::shared::errors::ChatEditFailed, true);
+        throw std::runtime_error(lila::shared::errors::ChatEditFailed);
     }
 }
 
@@ -232,12 +214,9 @@ void ChatService::Delete(const std::string& messageId)
     }
     catch (const std::exception& exception)
     {
-        const std::string failure = lila::shared::errors::WithDetails(
-            lila::shared::errors::ChatDeleteFailed,
-            exception.what());
-        lila::shared::logging::LogError("Chat", failure);
-        SetStatus(failure, true);
-        throw std::runtime_error(failure);
+        lila::shared::logging::LogError("Chat", exception.what());
+        SetStatus(lila::shared::errors::ChatDeleteFailed, true);
+        throw std::runtime_error(lila::shared::errors::ChatDeleteFailed);
     }
 }
 

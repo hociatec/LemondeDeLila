@@ -128,6 +128,7 @@ private:
     std::deque<lila::modules::rooms::domain::RoomInvitation> pendingInvitations_;
     bool invitationDialogOpen_ = false;
     std::unique_ptr<wxTimer> closeRevocationTimeout_;
+    std::shared_ptr<int> lifetimeToken_ = std::make_shared<int>(0);
     bool closing_ = false;
     bool closeFinalized_ = false;
     lila::shared::accessibility::FocusTransition focusTransition_;

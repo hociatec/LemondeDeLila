@@ -1,10 +1,11 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
-#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/prompts/domain/GamePrompt.h"
 #include "shared/accessibility/presentation/NavigationController.h"
+
+#include <wx/weakref.h>
 
 namespace lila::modules::gameplay::presentation
 {
@@ -49,9 +50,10 @@ bool GamePlayPanel::BeginRoomStart()
     action.type = prompt.actionType;
     static_cast<void>(promptPanel_->ShowPrompt(prompt, std::move(action)));
     if (GetParent()) GetParent()->Layout();
-    CallAfter([this]()
+    CallAfter([weakThis = wxWeakRef<GamePlayPanel>(this)]()
     {
-        const auto targets = promptPanel_->TabTargets();
+        if (!weakThis) return;
+        const auto targets = weakThis->promptPanel_->TabTargets();
         if (!targets.empty())
             static_cast<void>(lila::shared::accessibility::NavigationController::Focus(targets.front()));
     });
@@ -68,8 +70,7 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
         if (becameStarted)
         {
             activeProjection = lifecycle_.HasAuthoritativeState() &&
-                (state_.system.match.status == "started" ||
-                 state_.system.match.status == "playing") &&
+                domain::IsActive(state_.system.match.status) &&
                 (runId <= 0 || state_.runId <= 0 || state_.runId == runId);
             if (!activeProjection)
             {
@@ -89,10 +90,6 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
         }
         lifecycle_.SetRoomStarted(true, activeProjection || !becameStarted, runId);
         startConfigurationFlow_.Reset();
-        // Setup already prepares the viewer's pawn choices. Reveal that
-        // projection immediately when the room starts; the server rebases it
-        // against its authoritative roster before accepting the command.
-        pawnSelectionPanel_->Apply(pawnSelection_);
         SyncContentVisibility();
         if (becameStarted && state_.roomId <= 0) StartJoin();
     }
@@ -104,7 +101,6 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
         startConfigurationFlow_.Reset();
         state_ = {};
         lines_.clear();
-        pawnSelection_.reset();
         ClearView();
         RequestRefresh();
     }
@@ -123,7 +119,6 @@ void GamePlayPanel::ResetRoomSetup()
     startConfigurationFlow_.Reset();
     state_ = {};
     lines_.clear();
-    pawnSelection_.reset();
     ClearView();
     Hide();
     RequestRefresh();
