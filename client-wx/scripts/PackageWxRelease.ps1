@@ -47,9 +47,27 @@ if ($missingMsvcRuntime.Count -gt 0) {
     if ([string]::IsNullOrWhiteSpace($redistRoot)) {
         throw "VCToolsRedistDir absent; runtime MSVC non empaqueté: $($missingMsvcRuntime -join ', ')."
     }
-    $crtDirectory = Join-Path $redistRoot 'x64\Microsoft.VC143.CRT'
-    if (!(Test-Path -LiteralPath $crtDirectory -PathType Container)) {
-        throw "Runtime MSVC x64 introuvable: $crtDirectory"
+    $crtRoot = Join-Path $redistRoot 'x64'
+    $crtDirectory = $null
+    $crtCandidates = @(
+        Get-ChildItem -LiteralPath $crtRoot -Directory -Filter 'Microsoft.VC*.CRT' |
+            Sort-Object -Property Name -Descending
+    )
+    foreach ($candidate in $crtCandidates) {
+        $complete = $true
+        foreach ($runtimeName in $missingMsvcRuntime) {
+            if (!(Test-Path -LiteralPath (Join-Path $candidate.FullName $runtimeName) -PathType Leaf)) {
+                $complete = $false
+                break
+            }
+        }
+        if ($complete) {
+            $crtDirectory = $candidate.FullName
+            break
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($crtDirectory)) {
+        throw "Runtime MSVC x64 complet introuvable sous: $crtRoot"
     }
     foreach ($runtimeName in $missingMsvcRuntime) {
         $runtimePath = Join-Path $crtDirectory $runtimeName
