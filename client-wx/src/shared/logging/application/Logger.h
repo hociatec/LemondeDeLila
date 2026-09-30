@@ -13,6 +13,7 @@ enum class LogLevel
     Error
 };
 
+[[nodiscard]] std::string SanitizeLogMessage(std::string_view message);
 void Log(LogLevel level, std::string_view category, std::string_view message);
 void LogDebug(std::string_view category, std::string_view message);
 void LogInfo(std::string_view category, std::string_view message);

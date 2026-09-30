@@ -7,6 +7,7 @@
 #include <unordered_set>
 
 #include "modules/audio/domain/SoundCue.h"
+#include "modules/audio/infrastructure/SoundAssetManifest.h"
 
 namespace lila::modules::audio::infrastructure
 {
@@ -19,21 +20,14 @@ public:
     void Invalidate();
 
 private:
-    struct RemoteSound final
-    {
-        std::string url;
-        std::string sha256;
-        std::size_t bytes = 0;
-    };
-
     void LoadRemoteManifest();
     [[nodiscard]] std::filesystem::path ResolveRemote(
         const std::string& soundId,
-        const RemoteSound& sound);
+        const RemoteSoundDescriptor& sound);
 
     std::filesystem::path soundDirectory_;
     std::filesystem::path cacheDirectory_;
-    std::unordered_map<std::string, RemoteSound> remoteSounds_;
+    std::unordered_map<std::string, RemoteSoundDescriptor> remoteSounds_;
     std::unordered_set<std::string> disabledSounds_;
     bool manifestLoaded_ = false;
     std::chrono::steady_clock::time_point nextManifestAttempt_{};

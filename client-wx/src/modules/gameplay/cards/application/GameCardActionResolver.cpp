@@ -4,23 +4,23 @@
 #include <string>
 #include <string_view>
 
-#include "shared/data/json/JsonCoercion.h"
-
 namespace lila::modules::gameplay::application::cards
 {
 namespace
 {
 bool TargetsCard(const domain::GameAction& action, const std::string& cardId)
 {
-    if (!action.payload.is_object() || cardId.empty()) return false;
+    if (cardId.empty()) return false;
     static constexpr std::array<std::string_view, 5> keys{
         "cardId", "memberId", "card", "id", "value"};
     for (const auto key : keys)
     {
         const auto found = action.payload.find(std::string(key));
-        if (found != action.payload.end() &&
-            lila::shared::data::json::ScalarText(*found) == cardId)
+        if (found == action.payload.end()) continue;
+        if (const auto* text = found->second.Text(); text != nullptr && *text == cardId)
             return true;
+        if (const auto integer = found->second.Integer(); integer &&
+            std::to_string(*integer) == cardId) return true;
     }
     return false;
 }

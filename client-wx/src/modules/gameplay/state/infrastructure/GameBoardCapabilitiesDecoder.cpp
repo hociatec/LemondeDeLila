@@ -1,6 +1,7 @@
 #include "modules/gameplay/state/infrastructure/GameBoardCapabilitiesDecoder.h"
 
 #include <algorithm>
+#include <stdexcept>
 
 #include <nlohmann/json.hpp>
 
@@ -11,6 +12,7 @@ namespace lila::modules::gameplay::infrastructure
 {
 namespace
 {
+constexpr std::size_t MaximumBoardOverlays = 4'096;
 std::optional<int> Integer(const nlohmann::json& raw, const char* key)
 {
     const auto found = raw.find(key);
@@ -90,7 +92,10 @@ std::optional<domain::GamePawnsView> GameBoardCapabilitiesDecoder::Pawns(
             {
                 const auto owner = owners.find(pawnId);
                 if (owner != owners.end() && owner->is_number_integer())
-                    pawn.ownerId = owner->get<int>();
+                {
+                    const auto ownerId = owner->get<int>();
+                    if (ownerId != 0) pawn.ownerId = ownerId;
+                }
             }
             result.pawns.push_back(std::move(pawn));
         }
@@ -104,13 +109,19 @@ std::optional<domain::GameGridView> GameBoardCapabilitiesDecoder::Grid(
     const auto boards = raw.find("boards");
     domain::GameGridView result;
     if (boards == raw.end() || !boards->is_object()) return result;
+    if (boards->size() > 32) throw std::runtime_error("Trop de plateaux gameplay.");
     for (const auto& item : boards->items())
     {
         if (!item.value().is_object()) continue;
         domain::GameGridBoardView board;
         board.id = item.key();
-        board.width = std::max(1, detail::ReadInt(item.value(), "width"));
-        board.height = std::max(1, detail::ReadInt(item.value(), "height"));
+        board.width = item.value().contains("width")
+            ? detail::ReadInt(item.value(), "width") : 1;
+        board.height = item.value().contains("height")
+            ? detail::ReadInt(item.value(), "height") : 1;
+        if (board.width <= 0 || board.height <= 0 ||
+            board.width > 128 || board.height > 128)
+            throw std::runtime_error("Dimensions de plateau gameplay invalides.");
         const auto rawCells = item.value().value("cells", nlohmann::json::object());
         for (int y = 0; y < board.height; ++y)
             for (int x = 0; x < board.width; ++x)
@@ -132,22 +143,32 @@ std::optional<domain::GameGridView> GameBoardCapabilitiesDecoder::Grid(
                         if (cell.entityId.empty()) cell.entityId = PrimitiveId(*found, "entity");
                         cell.pawnId = PrimitiveId(*found, "pawnId");
                         cell.ownerId = Integer(*found, "ownerId");
+                        if (cell.ownerId == 0) cell.ownerId.reset();
                         cell.label = detail::ReadString(*found, "label");
                     }
                     else
                     {
                         cell.occupied = !found->is_null();
-                        // These boards store player IDs directly, including negative bot IDs.
-                        if ((board.id == "morpion" || board.id == "pathWalls") && found->is_number_integer())
-                            cell.ownerId = found->get<int>();
+                        // A numeric cell is the generic compact ownership form,
+                        // including negative bot IDs.
+                        if (found->is_number_integer())
+                        {
+                            const auto ownerId = found->get<int>();
+                            if (ownerId != 0) cell.ownerId = ownerId;
+                        }
                     }
                 }
                 board.cells.push_back(std::move(cell));
             }
         const auto layers = item.value().value("overlays", nlohmann::json::object());
+        std::size_t overlayCount = 0;
         if (layers.is_object())
             for (const auto& layer : layers.items())
                 if (layer.value().is_array())
+                {
+                    if (layer.value().size() > MaximumBoardOverlays - overlayCount)
+                        throw std::runtime_error("Trop d'overlays de plateau gameplay.");
+                    overlayCount += layer.value().size();
                     for (const auto& rawOverlay : layer.value())
                     {
                         if (!rawOverlay.is_object()) continue;
@@ -190,9 +211,11 @@ std::optional<domain::GameGridView> GameBoardCapabilitiesDecoder::Grid(
                         overlay.fromCellId = PrimitiveId(rawOverlay, "from");
                         overlay.toCellId = PrimitiveId(rawOverlay, "to");
                         overlay.ownerId = Integer(rawOverlay, "ownerId");
+                        if (overlay.ownerId == 0) overlay.ownerId.reset();
                         overlay.label = detail::ReadString(rawOverlay, "label");
                         board.overlays.push_back(std::move(overlay));
                     }
+                }
         result.boards.push_back(std::move(board));
     }
     return result;

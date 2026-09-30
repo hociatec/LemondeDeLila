@@ -11,5 +11,5 @@ namespace lila::modules::presence::infrastructure
 {
 [[nodiscard]] std::optional<std::vector<domain::PresencePlayer>> ReadPresenceUpdate(const std::string& rawJson);
 [[nodiscard]] std::string WritePresenceContext(std::string_view context);
-[[nodiscard]] std::string_view PresenceActivityMessage() noexcept;
+[[nodiscard]] std::string PresenceActivityMessage();
 }

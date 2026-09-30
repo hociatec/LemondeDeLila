@@ -2,7 +2,7 @@
 
 #include "shared/config/infrastructure/AppDataPaths.h"
 #include "shared/errors/catalog/CoreErrorMessages.h"
-#include "shared/errors/presentation/ErrorFormatting.h"
+#include "shared/errors/domain/ErrorFormatting.h"
 #include "shared/persistence/infrastructure/AtomicFileWriter.h"
 
 #include <filesystem>
@@ -55,9 +55,9 @@ bool JsonFileStorage::ReadIfExists(const std::filesystem::path& path, nlohmann::
     {
         content = nlohmann::json::parse(raw);
     }
-    catch (const nlohmann::json::exception& error)
+    catch (const nlohmann::json::exception&)
     {
-        throw std::runtime_error(lila::shared::errors::WithDetails(lila::shared::errors::CorruptedJsonFile, error.what()));
+        throw std::runtime_error(lila::shared::errors::CorruptedJsonFile);
     }
 
     return true;

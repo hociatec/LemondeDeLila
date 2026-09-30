@@ -6,7 +6,6 @@
 
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
-#include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -17,19 +16,13 @@ bool GamePlayPanel::HandleFocusedActivation()
         return ActivateSelectedHandCard();
     if (choicesList_->IsShown() && focused == choicesList_)
         return ActivateSelectedPendingChoice();
-    if (focused == workflowPanel_->NavigationTarget())
-    {
-        if (ActivateSelectedQuizAnswer()) return true;
-        UpdateStatus(wxString(L"Sélectionnez une réponse avant de valider."), false, true);
-        return true;
-    }
     if (focused == gridPanel_->NavigationTarget()) return ActivateSelectedGridCell();
     if (focused == linesList_ && linesList_->IsShown())
     {
         ActivateSelectedLine();
         return true;
     }
-    return ActivateDiceRoll();
+    return false;
 }
 
 void GamePlayPanel::ActivateSelectedLine()

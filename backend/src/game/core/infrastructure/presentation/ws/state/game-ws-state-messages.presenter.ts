@@ -8,6 +8,7 @@ import { genericGameEventMessage } from './game-ws-generic-event-message';
 import { gridPawnMessage } from './game-ws-grid-pawn-message';
 import { cardMessageLabel, scalarMessageText } from './game-ws-message-values';
 import { withoutRepeatedTurnAnnouncements } from './game-ws-turn-announcements';
+import { withSoundSemantics } from './game-ws-sound-semantics';
 import {
   decodeReceivedCardData,
   decodeScoreChangedData,
@@ -62,9 +63,14 @@ export class GameWsStateMessagesPresenter {
         recentEvents.map((event) => presentEvent(event)),
       ),
     );
+    const sounded = withSoundSemantics(recent, presented, viewerPlayerId);
     return {
       ...system,
-      events: { ...events, recent, latestByType: presented },
+      events: {
+        ...events,
+        recent: sounded.recent,
+        latestByType: sounded.latestByType,
+      },
     };
   }
 

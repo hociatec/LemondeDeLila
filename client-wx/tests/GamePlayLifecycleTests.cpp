@@ -6,6 +6,7 @@ int main()
 {
     using lila::modules::gameplay::application::GamePlayLifecycle;
     using lila::modules::gameplay::application::GamePlayLifecycleState;
+    using lila::modules::gameplay::domain::GameMatchStatus;
 
     GamePlayLifecycle lifecycle;
     assert(lifecycle.State() == GamePlayLifecycleState::Closed);
@@ -17,9 +18,9 @@ int main()
     lifecycle.SetRoomStarted(true, false, 42);
     assert(lifecycle.IsAwaitingStartedState());
     assert(!lifecycle.AllowsGameplayInput());
-    lifecycle.ObserveAuthoritativeState(41, "playing");
+    lifecycle.ObserveAuthoritativeState(41, GameMatchStatus::Playing);
     assert(lifecycle.IsAwaitingStartedState());
-    lifecycle.ObserveAuthoritativeState(42, "playing");
+    lifecycle.ObserveAuthoritativeState(42, GameMatchStatus::Playing);
     assert(lifecycle.State() == GamePlayLifecycleState::Active);
     assert(lifecycle.AllowsGameplayInput());
     lifecycle.MarkReconnecting();

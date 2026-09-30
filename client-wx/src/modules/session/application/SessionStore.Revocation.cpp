@@ -1,7 +1,7 @@
 #include "modules/session/application/SessionStore.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/logging/application/Logger.h"
-#include "shared/security/infrastructure/SecurityUtils.h"
+#include "shared/security/domain/SecureWipe.h"
 
 #include <stdexcept>
 #include <utility>
@@ -87,4 +87,3 @@ SessionStore::ScheduleRevocation(
         lila::shared::concurrency::BackgroundTaskPriority::High);
 }
 }
-

@@ -9,6 +9,11 @@
 
 namespace lila::modules::storybook::infrastructure
 {
+namespace
+{
+constexpr auto OwnStatsEvent = "stats.my";
+constexpr auto UserStatsEvent = "stats.user";
+}
 StoryBookApi::StoryBookApi(
     lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client,
     lila::modules::session::application::SessionStore& sessionStore) noexcept
@@ -18,12 +23,12 @@ StoryBookApi::StoryBookApi(
 
 std::vector<domain::StoryBookGame> StoryBookApi::LoadOwn(std::stop_token stopToken) const
 {
-    return Request("stats.my", nlohmann::json::object(), stopToken);
+    return Request(OwnStatsEvent, nlohmann::json::object(), stopToken);
 }
 
 std::vector<domain::StoryBookGame> StoryBookApi::LoadUser(int userId, std::stop_token stopToken) const
 {
-    return Request("stats.user", nlohmann::json{{"userId", userId}}, stopToken);
+    return Request(UserStatsEvent, nlohmann::json{{"userId", userId}}, stopToken);
 }
 
 std::vector<domain::StoryBookGame> StoryBookApi::Request(

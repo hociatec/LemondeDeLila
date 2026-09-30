@@ -128,4 +128,46 @@ describe('GameWsStateMessagesPresenter', () => {
       'La bonne réponse était « Paris ».',
     );
   });
+
+  it('publishes viewer-specific sound semantics without client-side inference', () => {
+    const reveal = {
+      id: 'quiz-reveal:0',
+      type: 'quiz.revealed',
+      data: {
+        sessionId: 'quiz-1',
+        correctAnswerIndex: 1,
+        answers: { '1': 1, '2': 0 },
+      },
+    };
+    const duplicate = {
+      id: 'quiz-message:0',
+      type: 'game.message',
+      data: {
+        key: 'game.quiz.answered',
+        params: { sessionId: 'quiz-1', playerId: 1, correct: true },
+      },
+    };
+    const wall = {
+      id: 'wall:0',
+      type: 'game.message',
+      data: { key: 'game.grid.wall.placed', params: { playerId: 1 } },
+    };
+    const state = new GameWsStateMessagesPresenter().withServerMessages(
+      {
+        match: { status: 'playing' },
+        players: { all: [{ id: 1, username: 'Lila' }] },
+        events: {
+          recent: [reveal, duplicate, wall],
+          latestByType: { 'quiz.revealed': reveal, 'game.message': wall },
+        },
+      },
+      1,
+      {} as never,
+    );
+    expect(
+      presentedEvents(state.events).recent.map(
+        (event) => event.soundSemantic,
+      ),
+    ).toEqual(['quiz.correct', undefined, 'wall.placed']);
+  });
 });

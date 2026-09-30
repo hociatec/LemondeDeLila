@@ -25,6 +25,7 @@ std::vector<domain::RoomMember> ReadMembers(
 {
     const auto values = room.find(field);
     if (values == room.end() || !values->is_array()) Invalid(std::string(field) + " must be an array.");
+    if (values->size() > 128) Invalid(std::string(field) + " has too many entries.");
     std::vector<domain::RoomMember> result;
     result.reserve(values->size());
     for (const auto& value : *values)
@@ -45,6 +46,7 @@ std::vector<domain::PublicRoom> ReadPublicRooms(const nlohmann::json& payload)
     if (!payload.is_object()) Invalid("Public rooms payload must be an object.");
     const auto items = payload.find("items");
     if (items == payload.end() || !items->is_array()) Invalid("Public room items must be an array.");
+    if (items->size() > 1'000) Invalid("Public room payload has too many items.");
     std::vector<domain::PublicRoom> result;
     result.reserve(items->size());
     for (const auto& value : *items)
@@ -109,6 +111,7 @@ domain::RoomState ReadRoomState(const nlohmann::json& payload)
     const auto actions = room.find("allowedActions");
     if (actions != room.end() && actions->is_array())
     {
+        if (actions->size() > 256) Invalid("Room has too many allowed actions.");
         for (const auto& action : *actions) if (action.is_string()) result.allowedActions.push_back(action.get<std::string>());
     }
     if (result.id <= 0 || result.name.empty() || result.gameType.empty() ||

@@ -7,6 +7,7 @@
 #include "modules/rooms/infrastructure/RoomPayloadCodec.h"
 #include "modules/rooms/infrastructure/RoomProtocol.h"
 #include "shared/errors/application/PresentedErrorPayload.h"
+#include "shared/data/json/JsonReaders.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
 
 namespace lila::modules::rooms::infrastructure
@@ -37,7 +38,8 @@ domain::RoomEvent RoomSessionGateway::ReceiveEvent(std::stop_token stopToken)
             return event;
         }
     }
-    return DecodeEvent(nlohmann::json::parse(client_.Receive()));
+    return DecodeEvent(lila::shared::data::json::ParseDocument(
+        client_.Receive(), "Événement de table invalide."));
 }
 
 void RoomSessionGateway::CompleteAcknowledgement(std::string_view traceId)

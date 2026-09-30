@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wx/string.h>
+#include "shared/accessibility/application/IScreenReaderAnnouncer.h"
 
 #ifdef __WXMSW__
 #include <windows.h>
@@ -8,7 +8,7 @@
 
 namespace lila::shared::accessibility
 {
-class NvdaScreenReaderAnnouncer final
+class NvdaScreenReaderAnnouncer final : public IScreenReaderAnnouncer
 {
 public:
     NvdaScreenReaderAnnouncer();
@@ -17,7 +17,7 @@ public:
     NvdaScreenReaderAnnouncer(const NvdaScreenReaderAnnouncer&) = delete;
     NvdaScreenReaderAnnouncer& operator=(const NvdaScreenReaderAnnouncer&) = delete;
 
-    [[nodiscard]] bool Speak(const wxString& message) const noexcept;
+    [[nodiscard]] bool Speak(std::wstring_view message) const noexcept override;
 
 private:
 #ifdef __WXMSW__

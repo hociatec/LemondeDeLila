@@ -5,8 +5,12 @@
 
 #include <nlohmann/json.hpp>
 
+#include "shared/data/json/JsonReaders.h"
+#include "generated/protocol/WsMessageTypes.generated.h"
+
 namespace lila::modules::presence::infrastructure
 {
+namespace ws = lila::shared::network::ws::types;
 namespace
 {
 std::string ReadString(const nlohmann::json& node, const char* key, std::string fallback = {})
@@ -18,13 +22,14 @@ std::string ReadString(const nlohmann::json& node, const char* key, std::string 
 
 std::optional<std::vector<domain::PresencePlayer>> ReadPresenceUpdate(const std::string& rawJson)
 {
-    if (rawJson.find("presence-update") == std::string::npos)
+    if (rawJson.find(ws::presence::Update) == std::string::npos)
     {
         return std::nullopt;
     }
 
-    const auto document = nlohmann::json::parse(rawJson);
-    if (document.value("type", std::string()) != "presence-update" || !document.contains("players") || !document["players"].is_array())
+    const auto document = lila::shared::data::json::ParseDocument(
+        rawJson, "Mise à jour de présence invalide.");
+    if (document.value("type", std::string()) != ws::presence::Update || !document.contains("players") || !document["players"].is_array())
     {
         return std::nullopt;
     }
@@ -66,11 +71,11 @@ std::optional<std::vector<domain::PresencePlayer>> ReadPresenceUpdate(const std:
 
 std::string WritePresenceContext(std::string_view context)
 {
-    return nlohmann::json{{"type", "presence-context"}, {"context", context}}.dump();
+    return nlohmann::json{{"type", ws::chat::PresenceContext}, {"context", context}}.dump();
 }
 
-std::string_view PresenceActivityMessage() noexcept
+std::string PresenceActivityMessage()
 {
-    return R"({"type":"presence-activity"})";
+    return nlohmann::json{{"type", ws::chat::PresenceActivity}}.dump();
 }
 }

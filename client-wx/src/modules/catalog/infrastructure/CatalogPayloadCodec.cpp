@@ -16,6 +16,10 @@ namespace lila::modules::catalog::infrastructure::codec
 namespace
 {
 constexpr std::size_t MaximumShelfDepth = 16;
+constexpr std::size_t MaximumShelfNodes = 2'048;
+constexpr std::size_t MaximumShelfChildren = 256;
+constexpr std::size_t MaximumCatalogGames = 1'024;
+constexpr std::size_t MaximumGameCategories = 64;
 
 [[noreturn]] void ThrowInvalidPayload(const std::string& details)
 {
@@ -25,7 +29,8 @@ constexpr std::size_t MaximumShelfDepth = 16;
             details));
 }
 
-domain::CatalogShelf ReadShelf(const nlohmann::json& source, std::size_t depth)
+domain::CatalogShelf ReadShelf(
+    const nlohmann::json& source, std::size_t depth, std::size_t& nodeCount)
 {
     if (!source.is_object())
     {
@@ -35,6 +40,8 @@ domain::CatalogShelf ReadShelf(const nlohmann::json& source, std::size_t depth)
     {
         ThrowInvalidPayload("Catalog shelf nesting is too deep.");
     }
+    if (++nodeCount > MaximumShelfNodes)
+        ThrowInvalidPayload("Catalog contains too many shelf nodes.");
 
     domain::CatalogShelf shelf;
     shelf.id = lila::shared::data::json::ReadRequiredString(source, "id");
@@ -53,11 +60,13 @@ domain::CatalogShelf ReadShelf(const nlohmann::json& source, std::size_t depth)
     {
         ThrowInvalidPayload("Catalog shelf children must be an array.");
     }
+    if (children->size() > MaximumShelfChildren)
+        ThrowInvalidPayload("Catalog shelf has too many children.");
 
     shelf.children.reserve(children->size());
     for (const auto& child : *children)
     {
-        shelf.children.push_back(ReadShelf(child, depth + 1));
+        shelf.children.push_back(ReadShelf(child, depth + 1, nodeCount));
     }
     return shelf;
 }
@@ -69,6 +78,8 @@ std::vector<domain::CatalogGame> ReadGames(const nlohmann::json& payload)
     {
         ThrowInvalidPayload("Catalog games must be an array.");
     }
+    if (games->size() > MaximumCatalogGames)
+        ThrowInvalidPayload("Catalog contains too many games.");
     std::vector<domain::CatalogGame> result;
     result.reserve(games->size());
     for (const auto& source : *games)
@@ -93,6 +104,8 @@ std::vector<domain::CatalogGame> ReadGames(const nlohmann::json& payload)
         {
             ThrowInvalidPayload("Catalog game fields are invalid.");
         }
+        if (categories->size() > MaximumGameCategories)
+            ThrowInvalidPayload("Catalog game has too many categories.");
         for (const auto& category : *categories)
         {
             if (!category.is_string() || category.get_ref<const std::string&>().empty())
@@ -134,13 +147,16 @@ domain::CatalogSnapshot ReadCatalogPayload(const nlohmann::json& payload)
     {
         ThrowInvalidPayload("Catalog categories must be an array.");
     }
+    if (categories->size() > MaximumShelfChildren)
+        ThrowInvalidPayload("Catalog contains too many root categories.");
 
     std::vector<domain::CatalogShelf> shelves;
     const auto games = ReadGames(payload);
+    std::size_t shelfNodeCount = 0;
     shelves.reserve(categories->size());
     for (const auto& category : *categories)
     {
-        auto shelf = ReadShelf(category, 0);
+        auto shelf = ReadShelf(category, 0, shelfNodeCount);
         AttachGames(shelf, games);
         shelves.push_back(std::move(shelf));
     }

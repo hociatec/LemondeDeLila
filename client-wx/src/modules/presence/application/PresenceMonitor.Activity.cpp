@@ -43,7 +43,7 @@ void PresenceMonitor::PublishActivity(std::stop_token stopToken)
             if (sendContext)
                 webSocketClient_.Send(infrastructure::WritePresenceContext(context));
             else if (sendActivity)
-                webSocketClient_.Send(std::string(infrastructure::PresenceActivityMessage()));
+                webSocketClient_.Send(infrastructure::PresenceActivityMessage());
         }
         catch (...)
         {
