@@ -2,10 +2,11 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${TMPDIR:-/tmp}/lila-portable-tests"
+CXX_BIN="${CXX:-c++}"
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 SOURCE_FINGERPRINT="$({
-  c++ --version | head -n 1
+  "$CXX_BIN" --version | head -n 1
   find "$ROOT/src" "$ROOT/tests" -type f -print0 | sort -z | xargs -0 sha256sum
 } | sha256sum | cut -d' ' -f1)"
 OBJECT_CACHE="$BUILD_DIR/objects-$SOURCE_FINGERPRINT"
@@ -40,7 +41,7 @@ cxx_build() {
   done
 
   if ((has_compile_only)) || ((${#sources[@]} <= 1)); then
-    c++ "${args[@]}"
+    "$CXX_BIN" "${args[@]}"
     return
   fi
 
@@ -55,7 +56,7 @@ cxx_build() {
     object="$OBJECT_CACHE/$cache_key.o"
     objects+=("$object")
     if [[ ! -f "$object" ]]; then
-      c++ "${flags[@]}" -c "$source" -o "$object" &
+      "$CXX_BIN" "${flags[@]}" -c "$source" -o "$object" &
       pids+=("$!")
       ((++index))
       if ((${#pids[@]} >= jobs)); then
@@ -67,7 +68,7 @@ cxx_build() {
   for pid in "${pids[@]}"; do
     wait "$pid"
   done
-  c++ "${flags[@]}" "${objects[@]}" -o "$output"
+  "$CXX_BIN" "${flags[@]}" "${objects[@]}" -o "$output"
 }
 
 cxx_build "${COMMON_FLAGS[@]}" "$ROOT/tests/GameSoundPolicyTests.cpp" \
@@ -106,7 +107,7 @@ JSON_INCLUDE="$OBJECT_CACHE/dependencies/nlohmann-json-3.12.0"
 mkdir -p "$JSON_INCLUDE/nlohmann"
 cp "$PINNED_JSON_INCLUDE/nlohmann/json.hpp" "$JSON_INCLUDE/nlohmann/json.hpp"
 cp "$PINNED_JSON_INCLUDE/nlohmann/json_fwd.hpp" "$JSON_INCLUDE/nlohmann/json_fwd.hpp"
-c++ "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" -x c++-header \
+"$CXX_BIN" "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" -x c++-header \
   "$JSON_INCLUDE/nlohmann/json.hpp" -o "$JSON_INCLUDE/nlohmann/json.hpp.gch"
 
 cxx_build "${COMMON_FLAGS[@]}" -DLILA_BASS_WRAPPER_ONLY_TEST -I"$ROOT/third_party/bass/include" \

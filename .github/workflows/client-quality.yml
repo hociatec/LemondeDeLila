@@ -44,6 +44,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Portable checks with ASan and UBSan
         env:
+          CXX: clang++
           LILA_SANITIZERS: address,undefined
         run: timeout 180s bash client-wx/tests/run_portable_checks.sh
 
