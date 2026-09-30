@@ -1,7 +1,8 @@
 #include "modules/admin/infrastructure/AdminGateway.h"
 
 #include <filesystem>
-#include <fstream>
+#include <iomanip>
+#include <random>
 #include <sstream>
 #include <stdexcept>
 
@@ -66,20 +67,14 @@ void AppendQuery(std::string& path, const nlohmann::json& values)
     }
 }
 
-std::string ReadFile(const std::string& filePath)
+std::string MultipartBoundary()
 {
-    std::ifstream input(std::filesystem::path(std::u8string(filePath.begin(), filePath.end())),
-        std::ios::binary | std::ios::ate);
-    if (!input) throw std::runtime_error("Fichier audio introuvable.");
-    const auto size = input.tellg();
-    constexpr std::streamoff Maximum = 250LL * 1024LL * 1024LL;
-    if (size < 0 || size > Maximum) throw std::runtime_error("Fichier audio trop volumineux (250 Mio maximum).");
-    std::string data(static_cast<std::size_t>(size), '\0');
-    input.seekg(0);
-    if (!data.empty() &&
-        !input.read(data.data(), static_cast<std::streamsize>(size)))
-        throw std::runtime_error("Lecture du fichier audio impossible.");
-    return data;
+    std::ostringstream output;
+    output << "----LilaAdminBoundary" << std::hex << std::setfill('0');
+    std::random_device random;
+    for (int index = 0; index < 4; ++index)
+        output << std::setw(8) << random();
+    return output.str();
 }
 
 void MakeMultipart(
@@ -93,13 +88,14 @@ void MakeMultipart(
     std::string filename(utf8Filename.begin(), utf8Filename.end());
     for (auto& character : filename)
         if (character == '"' || character == '\r' || character == '\n') character = '_';
-    const std::string boundary = "----LilaAdminBoundary7MA4YWxkTrZu0gW";
+    const std::string boundary = MultipartBoundary();
     request.contentType = "multipart/form-data; boundary=" + boundary;
-    request.body = "--" + boundary + "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"" +
+    request.uploadPrefix = "--" + boundary +
+        "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"" +
         filename + "\"\r\nContent-Type: application/octet-stream\r\n\r\n";
-    request.body += ReadFile(filePath);
-    request.body += "\r\n--" + boundary + "--\r\n";
-    request.headers.emplace("Content-Length", std::to_string(request.body.size()));
+    request.uploadFilePath = filePath;
+    request.uploadSuffix = "\r\n--" + boundary + "--\r\n";
+    request.maximumUploadBytes = 250U * 1024U * 1024U;
 }
 
 nlohmann::json ParseHttpPayload(const lila::shared::network::http::HttpResponse& response)
@@ -130,19 +126,31 @@ AdminGateway::AdminGateway(
     lila::modules::session::application::SessionStore& sessionStore) noexcept
     : apiClient_(apiClient), notificationClient_(notificationClient), sessionStore_(sessionStore) {}
 
-nlohmann::json AdminGateway::Execute(
+domain::AdminPayload AdminGateway::Execute(
     const domain::AdminCommand& command,
-    const nlohmann::json& payload,
+    const domain::AdminPayload& payload,
     const std::string& maintenanceToken,
     std::stop_token stopToken) const
 {
     if (!sessionStore_.Current().IsAdmin())
         throw lila::shared::errors::AppException(
             lila::shared::errors::ToAppError("Accès administrateur requis."));
-    return command.transport == AdminTransport::ApiWebSocket ||
+    nlohmann::json document;
+    try
+    {
+        document = nlohmann::json::parse(payload.Serialized());
+    }
+    catch (const nlohmann::json::exception& exception)
+    {
+        throw lila::shared::errors::AppException(
+            lila::shared::errors::ToAppError(
+                "Requête administrateur invalide.", exception.what()));
+    }
+    const auto result = command.transport == AdminTransport::ApiWebSocket ||
             command.transport == AdminTransport::NotificationWebSocket
-        ? ExecuteRealtime(command, payload, stopToken)
-        : ExecuteHttp(command, payload, maintenanceToken, stopToken);
+        ? ExecuteRealtime(command, document, stopToken)
+        : ExecuteHttp(command, document, maintenanceToken, stopToken);
+    return domain::AdminPayload(result.dump());
 }
 
 nlohmann::json AdminGateway::ExecuteRealtime(
@@ -190,26 +198,10 @@ nlohmann::json AdminGateway::ExecuteHttp(
     }
 
     lila::shared::network::http::HttpResponse response;
-    try
-    {
-        response = httpClient_.Send(request, sessionStore_.AccessToken(stopToken), stopToken);
-    }
-    catch (const std::exception& error)
-    {
-        if (command.transport != AdminTransport::HttpMultipart || stopToken.stop_requested()) throw;
-        try
-        {
-            response = httpClient_.Send(
-                request, sessionStore_.RefreshAccessToken(stopToken), stopToken);
-        }
-        catch (const std::exception& retryError)
-        {
-            throw lila::shared::errors::AppException(lila::shared::errors::ToAppError(
-                "Téléversement du son impossible. Vérifiez votre connexion et réessayez.",
-                std::string(error.what()) + " ; nouvelle tentative : " + retryError.what()));
-        }
-    }
-    if (response.statusCode == 401 && !stopToken.stop_requested())
+    response = httpClient_.Send(
+        request, sessionStore_.AccessToken(stopToken), stopToken);
+    if (response.statusCode == 401 && !stopToken.stop_requested() &&
+        command.transport != AdminTransport::HttpMultipart)
         response = httpClient_.Send(request, sessionStore_.RefreshAccessToken(stopToken), stopToken);
     return ValidateAndNormalizeAdminPayload(ParseHttpPayload(response));
 }

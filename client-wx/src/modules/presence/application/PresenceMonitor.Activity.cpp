@@ -1,6 +1,6 @@
 #include "modules/presence/application/PresenceMonitor.h"
 #include <chrono>
-#include <nlohmann/json.hpp>
+#include "modules/presence/infrastructure/PresencePayloadCodec.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
 
 namespace lila::modules::presence::application
@@ -41,9 +41,9 @@ void PresenceMonitor::PublishActivity(std::stop_token stopToken)
         try
         {
             if (sendContext)
-                webSocketClient_.Send(nlohmann::json{{"type", "presence-context"}, {"context", context}}.dump());
+                webSocketClient_.Send(infrastructure::WritePresenceContext(context));
             else if (sendActivity)
-                webSocketClient_.Send(R"({"type":"presence-activity"})");
+                webSocketClient_.Send(std::string(infrastructure::PresenceActivityMessage()));
         }
         catch (...)
         {

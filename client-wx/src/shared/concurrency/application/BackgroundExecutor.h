@@ -34,9 +34,12 @@ public:
     explicit BackgroundTaskHandle(std::shared_ptr<std::stop_source> stopSource);
     void RequestCancel();
     [[nodiscard]] bool IsCancellationRequested() const;
+    [[nodiscard]] bool WasAccepted() const noexcept;
+    void MarkAccepted() noexcept;
 
 private:
     std::shared_ptr<std::stop_source> stopSource_;
+    bool accepted_ = false;
 };
 
 class BackgroundExecutor final
@@ -48,7 +51,7 @@ public:
     BackgroundExecutor(const BackgroundExecutor&) = delete;
     BackgroundExecutor& operator=(const BackgroundExecutor&) = delete;
 
-    void Submit(
+    [[nodiscard]] bool Submit(
         std::shared_ptr<std::stop_source> stopSource,
         BackgroundTaskPriority priority,
         std::function<void()> work);
@@ -79,7 +82,7 @@ template <typename TResult>
     auto stopSource = std::make_shared<std::stop_source>();
     const auto handle = std::make_shared<BackgroundTaskHandle>(stopSource);
 
-    CurrentBackgroundExecutor().Submit(
+    const bool accepted = CurrentBackgroundExecutor().Submit(
         stopSource,
         priority,
         [worker = std::move(worker),
@@ -101,12 +104,19 @@ template <typename TResult>
             {
                 error = lila::shared::errors::ToAppError(exception, userMessageOnFailure);
             }
+            catch (...)
+            {
+                error = lila::shared::errors::ToAppError(
+                    userMessageOnFailure, "Erreur de tâche inconnue.");
+            }
 
             if (completion != nullptr && !stopSource->stop_requested())
             {
                 completion(std::move(error), std::move(result));
             }
         });
+
+    if (accepted) handle->MarkAccepted();
 
     return handle;
 }

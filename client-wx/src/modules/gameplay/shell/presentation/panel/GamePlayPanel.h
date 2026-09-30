@@ -13,7 +13,9 @@
 
 #include "modules/gameplay/actions/domain/GameAction.h"
 #include "modules/gameplay/actions/application/GameCommandSubmissionGuard.h"
+#include "modules/gameplay/events/application/GameEventIdentityWindow.h"
 #include "modules/gameplay/session/application/GameStartConfigurationFlow.h"
+#include "modules/gameplay/shell/application/GamePlayLifecycle.h"
 #include "modules/gameplay/session/domain/GameEvent.h"
 #include "modules/gameplay/session/domain/GameCommandEnvelope.h"
 #include "modules/gameplay/state/domain/GameLine.h"
@@ -173,16 +175,7 @@ private:
     std::string dismissedPromptActionType_;
     std::string submittedPromptActionType_;
     std::string rulesText_;
-    bool roomStarted_ = true;
-    bool hasAuthoritativeState_ = false;
-    // A room-start notification reaches the room channel before the game
-    // channel has supplied the new run's authoritative projection. Keep
-    // gameplay input disabled in that interval so actions cannot carry the
-    // preceding run's knownVersion.
-    bool awaitingStartedState_ = false;
-    int awaitingStartedRunId_ = 0;
-    bool roomStartFlowRequested_ = false;
-    bool roomStartPending_ = false;
+    application::GamePlayLifecycle lifecycle_;
     application::GameStartConfigurationFlow startConfigurationFlow_;
     history::GameLogCursor logCursor_;
     ZoneFocusRequestedHandler onZoneFocusRequested_;
@@ -197,7 +190,7 @@ private:
     lila::shared::concurrency::AsyncRequestSlot inputRequestSlot_;
     application::GameCommandSubmissionGuard inputSubmissionGuard_;
     std::unordered_set<std::string> announcedTimers_;
-    std::unordered_set<std::string> observedEventIdentities_;
+    application::GameEventIdentityWindow observedEvents_;
     std::vector<std::size_t> pendingChoiceIndexes_;
     std::vector<std::string> pendingChoiceSignatures_;
     std::vector<domain::GameValue> pendingChoiceValues_;

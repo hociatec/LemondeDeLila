@@ -1,6 +1,6 @@
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/chat/presentation/ChatFrame.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
 #include "modules/chat/presentation/ChatErrorResolver.h"
 #include "modules/chat/presentation/ChatFocusController.h"
 
@@ -13,7 +13,7 @@
 #include "shared/errors/presentation/ErrorFormatting.h"
 #include "shared/text/domain/StringUtils.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
-#include "shared/ui/application/BackgroundTask.h"
+#include "shared/ui/presentation/BackgroundTask.h"
 
 namespace lila::modules::chat::presentation
 {

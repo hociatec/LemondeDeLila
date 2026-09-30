@@ -33,14 +33,14 @@ domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
 {
     if (!message.is_object())
         return {domain::GameEventType::Ignored, std::nullopt, {}, false,
-            std::nullopt, {}, std::nullopt, {}};
+            std::nullopt, {}, std::nullopt, {}, std::nullopt};
     const auto type = ReadString(message, "type");
     const auto payload = message.value("payload", nlohmann::json::object());
     if (type == "game.state")
     {
         return {domain::GameEventType::StateUpdated,
             GameStatePayloadCodec::DecodeState(payload), {}, false,
-            std::nullopt, {}, std::nullopt, {}};
+            std::nullopt, {}, std::nullopt, {}, std::nullopt};
     }
     if (type == "game.ack")
     {
@@ -53,13 +53,13 @@ domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
         acknowledgement.message = ReadString(payload, "message");
         return {domain::GameEventType::Acknowledged, std::nullopt,
             acknowledgement.command, !acknowledgement.ok,
-            std::move(acknowledgement), {}, std::nullopt, {}};
+            std::move(acknowledgement), {}, std::nullopt, {}, std::nullopt};
     }
     if (type == "game.turn")
     {
         return {domain::GameEventType::TurnUpdated, std::nullopt,
             ReadString(payload, "currentPlayerUsername"), false,
-            std::nullopt, {}, std::nullopt, {}};
+            std::nullopt, {}, std::nullopt, {}, std::nullopt};
     }
     if (type == "game.action.candidates")
     {
@@ -87,6 +87,6 @@ domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
         return event;
     }
     return {domain::GameEventType::Ignored, std::nullopt, {}, false,
-        std::nullopt, {}, std::nullopt, {}};
+        std::nullopt, {}, std::nullopt, {}, std::nullopt};
 }
 }

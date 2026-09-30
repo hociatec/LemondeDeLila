@@ -10,7 +10,7 @@
 
 #include "modules/storybook/domain/StoryBookStats.h"
 #include "modules/storybook/presentation/StoryBookNavigator.h"
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
 

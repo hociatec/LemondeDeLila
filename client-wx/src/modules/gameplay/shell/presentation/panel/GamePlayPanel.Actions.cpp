@@ -22,7 +22,7 @@ const domain::GamePrompt* GamePlayPanel::ActivePrompt() const noexcept
 
 void GamePlayPanel::PrepareAndExecuteAction(domain::GameAction action)
 {
-    if (awaitingStartedState_) return;
+    if (lifecycle_.IsAwaitingStartedState()) return;
     if (action.confirm)
     {
         promptPanel_->HidePrompt();
@@ -89,7 +89,7 @@ void GamePlayPanel::SyncInlinePrompt()
         promptPanel_->HidePrompt(true);
         return;
     }
-    if (!roomStarted_ && !roomStartFlowRequested_)
+    if (!lifecycle_.IsRoomStarted() && !lifecycle_.IsStartFlowRequested())
     {
         promptPanel_->HidePrompt(false);
         return;

@@ -6,10 +6,10 @@
 #include <optional>
 #include <utility>
 
-#include "modules/messaging/infrastructure/MessagingProtocolFields.h"
+#include "generated/protocol/MessagingProtocolFields.generated.h"
 #include "modules/session/application/SessionStore.h"
 #include "modules/messaging/domain/MessagingErrorMessages.h"
-#include "shared/network/domain/WsMessageTypes.h"
+#include "generated/protocol/WsMessageTypes.generated.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 

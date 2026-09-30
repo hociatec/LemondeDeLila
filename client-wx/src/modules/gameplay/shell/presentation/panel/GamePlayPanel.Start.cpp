@@ -4,15 +4,14 @@
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/prompts/domain/GamePrompt.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 
 namespace lila::modules::gameplay::presentation
 {
 bool GamePlayPanel::BeginRoomStart()
 {
-    if (!IsOpen() || roomStarted_ || roomStartPending_) return false;
+    if (!IsOpen() || !lifecycle_.BeginRoomStart()) return false;
     startConfigurationFlow_.Reset();
-    roomStartFlowRequested_ = true;
     Show();
     if (state_.roomId <= 0)
     {
@@ -61,27 +60,18 @@ bool GamePlayPanel::BeginRoomStart()
 
 void GamePlayPanel::SetRoomStarted(bool started, int runId)
 {
-    const bool becameStarted = started && !roomStarted_;
-    const bool becameSetup = !started && roomStarted_;
-    roomStarted_ = started;
+    const bool becameStarted = started && !lifecycle_.IsRoomStarted();
+    const bool becameSetup = !started && lifecycle_.IsRoomStarted();
     if (started)
     {
+        bool activeProjection = false;
         if (becameStarted)
         {
-            const auto activeProjection = hasAuthoritativeState_ &&
+            activeProjection = lifecycle_.HasAuthoritativeState() &&
                 (state_.system.match.status == "started" ||
                  state_.system.match.status == "playing") &&
                 (runId <= 0 || state_.runId <= 0 || state_.runId == runId);
-            if (activeProjection)
-            {
-                // Game-state and room-state notifications are independent.
-                // The active projection may arrive first; keeping it avoids
-                // waiting forever for a second notification that will not
-                // necessarily be emitted.
-                awaitingStartedState_ = false;
-                awaitingStartedRunId_ = 0;
-            }
-            else
+            if (!activeProjection)
             {
                 // The room notification reaches the client before the game-state
                 // projection for the new run. Do not let a rapid Enter (or any
@@ -89,8 +79,6 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
                 // it has an obsolete version and can have no active turn yet.
                 // ApplyState releases this lock when the authoritative started
                 // projection arrives; F5 remains a recovery path if it is lost.
-                awaitingStartedState_ = true;
-                awaitingStartedRunId_ = runId;
                 inputRequestSlot_.Cancel();
                 inputSubmissionGuard_.Reset();
                 retryableActionCommand_.reset();
@@ -99,8 +87,7 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
                 RequestRefresh();
             }
         }
-        roomStartFlowRequested_ = false;
-        roomStartPending_ = false;
+        lifecycle_.SetRoomStarted(true, activeProjection || !becameStarted, runId);
         startConfigurationFlow_.Reset();
         // Setup already prepares the viewer's pawn choices. Reveal that
         // projection immediately when the room starts; the server rebases it
@@ -111,12 +98,9 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
     }
     else if (becameSetup)
     {
-        awaitingStartedState_ = false;
-        awaitingStartedRunId_ = 0;
+        lifecycle_.SetRoomStarted(false, false, 0);
         inputSubmissionGuard_.Reset();
         retryableActionCommand_.reset();
-        roomStartFlowRequested_ = false;
-        roomStartPending_ = false;
         startConfigurationFlow_.Reset();
         state_ = {};
         lines_.clear();
@@ -124,7 +108,7 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
         ClearView();
         RequestRefresh();
     }
-    Show(roomStarted_ || roomStartFlowRequested_ || roomStartPending_);
+    Show(lifecycle_.IsVisible());
     Layout();
     if (GetParent()) GetParent()->Layout();
     if (becameStarted && onZoneFocusRequested_) onZoneFocusRequested_();
@@ -132,14 +116,10 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
 
 void GamePlayPanel::ResetRoomSetup()
 {
-    roomStarted_ = false;
-    awaitingStartedState_ = false;
-    awaitingStartedRunId_ = 0;
+    lifecycle_.SetRoomStarted(false, false, 0);
     inputRequestSlot_.Cancel();
     inputSubmissionGuard_.Reset();
     retryableActionCommand_.reset();
-    roomStartFlowRequested_ = false;
-    roomStartPending_ = false;
     startConfigurationFlow_.Reset();
     state_ = {};
     lines_.clear();
@@ -152,9 +132,8 @@ void GamePlayPanel::ResetRoomSetup()
 
 void GamePlayPanel::NotifyRoomStartFailed(const wxString& message)
 {
-    if (roomStarted_) return;
-    roomStartPending_ = false;
-    roomStartFlowRequested_ = false;
+    if (lifecycle_.IsRoomStarted()) return;
+    lifecycle_.StartFailed();
     startConfigurationFlow_.Reset();
     submittedPromptActionType_.clear();
     dismissedPromptActionType_.clear();

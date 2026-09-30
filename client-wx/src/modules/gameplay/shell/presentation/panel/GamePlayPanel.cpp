@@ -48,14 +48,9 @@ void GamePlayPanel::Open(
     roomId_ = roomId;
     gameType_ = std::move(gameType);
     gameName_ = std::move(gameName);
-    roomStarted_ = roomStarted;
-    hasAuthoritativeState_ = false;
-    awaitingStartedState_ = false;
-    awaitingStartedRunId_ = 0;
-    roomStartFlowRequested_ = false;
-    roomStartPending_ = false;
+    lifecycle_.Open(roomStarted);
     startConfigurationFlow_.Reset();
-    Show(roomStarted_);
+    Show(lifecycle_.IsVisible());
     StartJoin();
 }
 
@@ -78,12 +73,7 @@ void GamePlayPanel::ResetSessionState()
     state_ = {};
     lines_.clear();
     pawnSelection_.reset();
-    roomStarted_ = true;
-    hasAuthoritativeState_ = false;
-    awaitingStartedState_ = false;
-    awaitingStartedRunId_ = 0;
-    roomStartFlowRequested_ = false;
-    roomStartPending_ = false;
+    lifecycle_.Close();
     startConfigurationFlow_.Reset();
     ClearView();
 }
@@ -144,7 +134,7 @@ wxWindow* GamePlayPanel::PreferredNavigationTarget() const
     // The game socket prepares the next run before the room starts. Those
     // controls must remain hidden from keyboard navigation until the room
     // confirms the transition; only the stable game-zone anchor is exposed.
-    if (!roomStarted_) return nullptr;
+    if (!lifecycle_.IsRoomStarted()) return nullptr;
     if (pawnSelectionPanel_ != nullptr)
     {
         if (auto* target = pawnSelectionPanel_->NavigationTarget()) return target;
@@ -203,7 +193,7 @@ wxWindow* GamePlayPanel::RequiredInteractionTarget() const
         const auto targets = promptPanel_->TabTargets();
         if (!targets.empty()) return targets.front();
     }
-    if (!roomStarted_) return nullptr;
+    if (!lifecycle_.IsRoomStarted()) return nullptr;
     if (pawnSelectionPanel_ != nullptr)
         if (auto* target = pawnSelectionPanel_->NavigationTarget()) return target;
     if (state_.pending && state_.pending->workflowKind == "pawn") return nullptr;

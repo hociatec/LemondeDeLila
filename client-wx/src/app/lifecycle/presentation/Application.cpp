@@ -19,7 +19,7 @@
 #include "shared/config/domain/AppConfig.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/encoding/Encoding.h"
-#include "modules/update/application/UpdateSignals.h"
+#include "modules/update/infrastructure/UpdateSignals.h"
 
 namespace lila::app
 {

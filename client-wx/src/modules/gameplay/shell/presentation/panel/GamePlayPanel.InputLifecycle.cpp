@@ -12,12 +12,12 @@ std::optional<bool> GamePlayPanel::HandleInputLifecycle(wxKeyEvent& event)
     const int keyCode = event.GetKeyCode();
     if (event.AltDown() && keyCode == WXK_F4) return false;
     if (!IsOpen() || IsFinished()) return false;
-    if (!hasAuthoritativeState_) return true;
+    if (!lifecycle_.HasAuthoritativeState()) return true;
     if (IsConfirmationVisible()) return confirmationPanel_->HandleKey(event);
     if (IsInlinePromptVisible()) return promptPanel_->HandleKey(event);
     const auto key = NormalizeKey(event);
-    if (key.empty() || !roomStarted_) return false;
-    if (!awaitingStartedState_) return std::nullopt;
+    if (key.empty() || !lifecycle_.IsRoomStarted()) return false;
+    if (!lifecycle_.IsAwaitingStartedState()) return std::nullopt;
     if (keyCode == WXK_F5)
     {
         RequestRefresh();

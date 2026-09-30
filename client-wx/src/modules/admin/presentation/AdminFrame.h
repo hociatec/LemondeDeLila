@@ -11,8 +11,9 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/admin/domain/AdminCommand.h"
+#include "modules/admin/domain/AdminPayload.h"
 #include "modules/admin/domain/AdminArea.h"
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
 #include "shared/errors/domain/AppError.h"
@@ -73,7 +74,7 @@ private:
         const domain::AdminCommand& command,
         bool announceLifecycle,
         std::optional<lila::shared::errors::AppError> error,
-        std::optional<nlohmann::json> result);
+        std::optional<domain::AdminPayload> result);
     void SetStatus(const wxString& message, bool isError = false);
     void ShowResult(const domain::AdminCommand& command, const nlohmann::json& result);
     void ShowResultDetails(std::size_t index);

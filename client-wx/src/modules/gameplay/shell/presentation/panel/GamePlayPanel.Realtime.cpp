@@ -102,12 +102,12 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
     }
     case domain::GameEventType::TurnUpdated:
     {
-        if (roomStarted_ &&
+        if (lifecycle_.IsRoomStarted() &&
             (state_.system.match.status == "started" ||
              state_.system.match.status == "playing") &&
             !event.message.empty() && onHistoryMessage_)
             onHistoryMessage_(FromUtf8(event.message), false);
-        if (roomStarted_ && hasAuthoritativeState_) RequestRefresh();
+        if (lifecycle_.IsRoomStarted() && lifecycle_.HasAuthoritativeState()) RequestRefresh();
         return;
     }
     case domain::GameEventType::ActionCandidates:
@@ -120,6 +120,10 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         if (onHistoryMessage_) onHistoryMessage_(FromUtf8(rulesText_), false);
         return;
     case domain::GameEventType::ConnectionStatus:
+        if (event.connectionState == domain::GameConnectionState::Reconnecting)
+            lifecycle_.MarkReconnecting();
+        else if (event.connectionState == domain::GameConnectionState::Connected)
+            lifecycle_.MarkConnected();
         UpdateStatus(FromUtf8(event.message), event.isError, true);
         return;
     case domain::GameEventType::Error:

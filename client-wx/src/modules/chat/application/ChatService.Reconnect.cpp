@@ -1,9 +1,7 @@
 #include "modules/chat/application/ChatService.h"
 
-#include <algorithm>
 #include <chrono>
 #include <string>
-#include <thread>
 
 #include "modules/session/application/SessionStore.h"
 #include "shared/config/domain/AppConfig.h"
@@ -11,42 +9,19 @@
 #include "shared/errors/presentation/ErrorFormatting.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
+#include "shared/network/application/realtime/ReconnectPolicy.h"
 
 namespace lila::modules::chat::application
 {
 namespace
 {
-std::chrono::milliseconds ResolveReconnectDelay(int reconnectAttempt)
+shared::network::realtime::ReconnectPolicyOptions ReconnectOptions()
 {
     const int initialDelayMs = std::max(1, lila::shared::config::AppConfig::ResolveChatReconnectInitialDelayMs());
     const int maxDelayMs = std::max(initialDelayMs, lila::shared::config::AppConfig::ResolveChatReconnectMaxDelayMs());
 
-    int delay = initialDelayMs;
-    for (int index = 0; index < reconnectAttempt; ++index)
-    {
-        delay = std::min(maxDelayMs, delay * 2);
-    }
-
-    return std::chrono::milliseconds(delay);
-}
-
-bool WaitForDelay(std::stop_token stopToken, std::chrono::milliseconds delay)
-{
-    constexpr auto PollStep = std::chrono::milliseconds(100);
-    auto remaining = delay;
-    while (remaining.count() > 0)
-    {
-        if (stopToken.stop_requested())
-        {
-            return true;
-        }
-
-        const auto sleepDuration = std::min(PollStep, remaining);
-        std::this_thread::sleep_for(sleepDuration);
-        remaining -= sleepDuration;
-    }
-
-    return stopToken.stop_requested();
+    return {std::chrono::milliseconds(initialDelayMs),
+            std::chrono::milliseconds(maxDelayMs), 0.2};
 }
 
 bool IsAuthenticationRejection(unsigned long statusCode)
@@ -71,6 +46,7 @@ void ChatService::ReceiveLoop(
     std::stop_token stopToken,
     std::uint64_t lifecycleGeneration)
 {
+    shared::network::realtime::ReconnectPolicy reconnectPolicy(ReconnectOptions());
     while (true)
     {
         if (stopToken.stop_requested() || !IsLifecycleCurrent(lifecycleGeneration))
@@ -81,7 +57,7 @@ void ChatService::ReceiveLoop(
         try
         {
             ProcessIncomingMessage(gateway_.Receive(), false);
-            reconnectAttempt_ = 0;
+            reconnectPolicy.Reset();
         }
         catch (const std::exception& receiveError)
         {
@@ -99,7 +75,8 @@ void ChatService::ReceiveLoop(
 
             while (!stopToken.stop_requested() && IsLifecycleCurrent(lifecycleGeneration))
             {
-                if (WaitForDelay(stopToken, ResolveReconnectDelay(reconnectAttempt_)))
+                if (shared::network::realtime::WaitForCancellation(
+                        stopToken, reconnectPolicy.NextDelay()))
                 {
                     return;
                 }
@@ -110,7 +87,7 @@ void ChatService::ReceiveLoop(
                     OpenGateway(stopToken);
                     SetState(domain::ChatState::Connected);
                     SetStatus(lila::shared::errors::ChatReconnected, false);
-                    reconnectAttempt_ = 0;
+                    reconnectPolicy.Reset();
                     break;
                 }
                 catch (const lila::shared::network::http::WsTicketRequestError& reconnectError)
@@ -128,7 +105,6 @@ void ChatService::ReceiveLoop(
                         return;
                     }
 
-                    ++reconnectAttempt_;
                     lila::shared::logging::LogWarning(
                         "Chat",
                         lila::shared::errors::WithDetails(
@@ -139,7 +115,6 @@ void ChatService::ReceiveLoop(
                 }
                 catch (const std::exception& reconnectError)
                 {
-                    ++reconnectAttempt_;
                     lila::shared::logging::LogWarning(
                         "Chat",
                         lila::shared::errors::WithDetails(

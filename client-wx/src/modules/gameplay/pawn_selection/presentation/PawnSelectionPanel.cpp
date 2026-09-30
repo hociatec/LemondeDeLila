@@ -9,7 +9,7 @@
 #include <wx/stattext.h>
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::gameplay::presentation::pawn_selection

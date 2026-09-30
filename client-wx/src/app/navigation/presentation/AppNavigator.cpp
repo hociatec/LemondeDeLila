@@ -15,7 +15,7 @@
 #include "shared/logging/application/Logger.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
-#include "modules/update/application/UpdateSignals.h"
+#include "modules/update/infrastructure/UpdateSignals.h"
 
 namespace lila::app::navigation
 {

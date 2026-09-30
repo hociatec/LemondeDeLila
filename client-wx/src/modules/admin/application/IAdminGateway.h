@@ -3,9 +3,8 @@
 #include <stop_token>
 #include <string>
 
-#include <nlohmann/json_fwd.hpp>
-
 #include "modules/admin/domain/AdminCommand.h"
+#include "modules/admin/domain/AdminPayload.h"
 
 namespace lila::modules::admin::application
 {
@@ -13,9 +12,9 @@ class IAdminGateway
 {
 public:
     virtual ~IAdminGateway() = default;
-    [[nodiscard]] virtual nlohmann::json Execute(
+    [[nodiscard]] virtual domain::AdminPayload Execute(
         const domain::AdminCommand& command,
-        const nlohmann::json& payload,
+        const domain::AdminPayload& payload,
         const std::string& maintenanceToken,
         std::stop_token stopToken) const = 0;
 };

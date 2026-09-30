@@ -8,7 +8,7 @@
 #include "modules/options/application/OptionsStore.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
-#include "shared/accessibility/application/FocusManager.h"
+#include "shared/accessibility/presentation/FocusManager.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 

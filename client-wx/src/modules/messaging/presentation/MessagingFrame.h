@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "modules/messaging/domain/MessagingBox.h"
 #include "modules/messaging/domain/MessagingMessage.h"

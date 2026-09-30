@@ -1,6 +1,6 @@
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/chat/presentation/ChatFrame.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
 #include "modules/chat/presentation/ChatFocusController.h"
 
 #include <wx/button.h>

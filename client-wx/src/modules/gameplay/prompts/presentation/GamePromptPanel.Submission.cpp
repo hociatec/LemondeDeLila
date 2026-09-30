@@ -12,7 +12,7 @@
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
 #include "modules/gameplay/state/application/GameValuePayloadCodec.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 
 namespace lila::modules::gameplay::presentation::prompt
 {

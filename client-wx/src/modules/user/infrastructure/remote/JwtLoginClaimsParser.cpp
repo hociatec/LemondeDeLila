@@ -1,6 +1,6 @@
 #include "modules/user/infrastructure/remote/JwtLoginClaimsParser.h"
 
-#include "modules/user/infrastructure/remote/UserAuthFields.h"
+#include "generated/protocol/UserAuthFields.generated.h"
 #include "shared/data/json/JsonReaders.h"
 #include "shared/security/domain/JwtPayload.h"
 

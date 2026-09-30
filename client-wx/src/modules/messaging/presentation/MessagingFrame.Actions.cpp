@@ -1,6 +1,6 @@
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/messaging/presentation/MessagingFrame.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
 #include "modules/messaging/presentation/MessagingActionController.h"
 #include "modules/messaging/presentation/MessagingComposeController.h"
 #include "modules/messaging/presentation/MessagingFocusController.h"

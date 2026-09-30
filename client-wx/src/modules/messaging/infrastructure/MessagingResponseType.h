@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <string_view>
-#include "shared/network/domain/WsMessageTypes.h"
+#include "generated/protocol/WsMessageTypes.generated.h"
 
 namespace lila::modules::messaging::infrastructure
 {

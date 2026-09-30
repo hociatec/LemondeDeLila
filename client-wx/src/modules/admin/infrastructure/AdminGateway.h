@@ -1,7 +1,9 @@
 #pragma once
 
+#include <nlohmann/json_fwd.hpp>
+
 #include "modules/admin/application/IAdminGateway.h"
-#include "shared/network/application/http/AuthenticatedHttpClient.h"
+#include "shared/network/infrastructure/http/AuthenticatedHttpClient.h"
 
 namespace lila::modules::session::application { class SessionStore; }
 namespace lila::shared::network::realtime { class AuthenticatedRealtimeApiClient; }
@@ -16,9 +18,9 @@ public:
         lila::shared::network::realtime::AuthenticatedRealtimeApiClient& notificationClient,
         lila::modules::session::application::SessionStore& sessionStore) noexcept;
 
-    [[nodiscard]] nlohmann::json Execute(
+    [[nodiscard]] domain::AdminPayload Execute(
         const domain::AdminCommand& command,
-        const nlohmann::json& payload,
+        const domain::AdminPayload& payload,
         const std::string& maintenanceToken,
         std::stop_token stopToken) const override;
 

@@ -5,7 +5,7 @@
 #include <wx/event.h>
 #include <wx/sizer.h>
 
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/ui/presentation/controls/VerticalMenuEntry.h"
 
 namespace lila::shared::ui::controls

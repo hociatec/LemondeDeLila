@@ -8,7 +8,7 @@
 #include <wx/weakref.h>
 #include <wx/window.h>
 
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 
 namespace lila::modules::chat::presentation

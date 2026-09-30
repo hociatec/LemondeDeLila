@@ -8,7 +8,7 @@
 
 #include "modules/vault/domain/VaultSnapshot.h"
 #include "modules/vault/presentation/VaultNavigator.h"
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
 

@@ -4,7 +4,7 @@
 
 #include <wx/frame.h>
 
-#include "shared/accessibility/application/FocusMemory.h"
+#include "shared/accessibility/presentation/FocusMemory.h"
 
 class wxBoxSizer;
 class wxWindow;

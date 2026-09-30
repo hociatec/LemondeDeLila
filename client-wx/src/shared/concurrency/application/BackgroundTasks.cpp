@@ -48,6 +48,16 @@ bool BackgroundTaskHandle::IsCancellationRequested() const
     return stopSource_ != nullptr && stopSource_->stop_requested();
 }
 
+bool BackgroundTaskHandle::WasAccepted() const noexcept
+{
+    return accepted_;
+}
+
+void BackgroundTaskHandle::MarkAccepted() noexcept
+{
+    accepted_ = true;
+}
+
 std::shared_ptr<BackgroundTaskHandle> RunAsync(
     std::function<void(std::stop_token)> worker,
     std::function<void(std::optional<lila::shared::errors::AppError>)> completion,

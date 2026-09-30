@@ -3,7 +3,7 @@
 #include <functional>
 #include <vector>
 #include "modules/main_menu/presentation/MainMenuContent.h"
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 
 class wxCommandEvent;

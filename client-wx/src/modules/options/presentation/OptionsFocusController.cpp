@@ -5,8 +5,8 @@
 #include <wx/window.h>
 
 #include "modules/options/presentation/OptionsView.h"
-#include "shared/accessibility/application/FocusManager.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/FocusManager.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 
 namespace lila::modules::options::presentation
 {

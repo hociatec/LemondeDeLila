@@ -1,6 +1,6 @@
 #include "modules/catalog/presentation/CatalogPanel.h"
 
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::catalog::presentation

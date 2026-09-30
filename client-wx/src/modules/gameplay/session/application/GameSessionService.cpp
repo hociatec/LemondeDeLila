@@ -1,44 +1,17 @@
 #include "modules/gameplay/session/application/GameSessionService.h"
 
-#include <algorithm>
 #include <chrono>
 #include <exception>
 #include <optional>
 #include <stdexcept>
-#include <thread>
 #include <utility>
 
 #include "modules/gameplay/session/application/IGameSessionGateway.h"
 #include "shared/logging/application/Logger.h"
+#include "shared/network/application/realtime/ReconnectPolicy.h"
 
 namespace lila::modules::gameplay::application
 {
-namespace
-{
-constexpr auto ReconnectInitialDelay = std::chrono::milliseconds(1'000);
-constexpr auto ReconnectMaximumDelay = std::chrono::milliseconds(30'000);
-
-bool WaitForDelay(std::stop_token stopToken, std::chrono::milliseconds delay)
-{
-    constexpr auto PollStep = std::chrono::milliseconds(100);
-    while (delay.count() > 0 && !stopToken.stop_requested())
-    {
-        const auto step = std::min(PollStep, delay);
-        std::this_thread::sleep_for(step);
-        delay -= step;
-    }
-    return stopToken.stop_requested();
-}
-
-std::chrono::milliseconds ReconnectDelay(int attempt)
-{
-    auto delay = ReconnectInitialDelay;
-    for (int index = 0; index < attempt; ++index)
-        delay = std::min(ReconnectMaximumDelay, delay * 2);
-    return delay;
-}
-}
-
 GameSessionService::GameSessionService(IGameSessionGateway& gateway) noexcept
     : gateway_(gateway)
 {
@@ -162,13 +135,15 @@ bool GameSessionService::ReconnectLoop(
 {
     NotifyEvent(
         {domain::GameEventType::ConnectionStatus, std::nullopt,
-         std::string("Reconnexion au jeu..."), false, std::nullopt, {}, std::nullopt, {}},
+         std::string("Reconnexion au jeu..."), false, std::nullopt, {}, std::nullopt, {},
+         domain::GameConnectionState::Reconnecting},
         generation);
 
-    int reconnectAttempt = 0;
+    lila::shared::network::realtime::ReconnectPolicy reconnectPolicy;
     while (!stopToken.stop_requested() && generation == sessionGeneration_.load())
     {
-        if (WaitForDelay(stopToken, ReconnectDelay(reconnectAttempt))) return false;
+        if (lila::shared::network::realtime::WaitForCancellation(
+                stopToken, reconnectPolicy.NextDelay())) return false;
         try
         {
             auto state = gateway_.Reconnect(stopToken);
@@ -177,23 +152,22 @@ bool GameSessionService::ReconnectLoop(
             NotifyEvent(
                 {domain::GameEventType::ConnectionStatus, std::nullopt,
                  std::string("Connexion au jeu r\xC3\xA9tablie."), false,
-                 std::nullopt, {}, std::nullopt, {}},
+                 std::nullopt, {}, std::nullopt, {},
+                 domain::GameConnectionState::Connected},
                 generation);
             NotifyEvent(
                 {domain::GameEventType::StateUpdated, std::move(state), {}, false,
-                 std::nullopt, {}, std::nullopt, {}},
+                 std::nullopt, {}, std::nullopt, {}, std::nullopt},
                 generation);
             return true;
         }
         catch (const std::exception& exception)
         {
-            ++reconnectAttempt;
             if (!stopToken.stop_requested())
                 lila::shared::logging::LogWarning("Game", exception.what());
         }
         catch (...)
         {
-            ++reconnectAttempt;
             if (!stopToken.stop_requested())
                 lila::shared::logging::LogWarning("Game", "Reconnexion au jeu impossible.");
         }

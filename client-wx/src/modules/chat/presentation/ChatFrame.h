@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "modules/chat/application/ChatService.h"
 #include "modules/chat/domain/ChatMessage.h"

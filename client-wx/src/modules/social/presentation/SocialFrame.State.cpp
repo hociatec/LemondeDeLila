@@ -6,11 +6,11 @@
 #include <wx/msgdlg.h>
 
 #include "modules/social/presentation/SocialView.h"
-#include "shared/accessibility/application/FocusManager.h"
+#include "shared/accessibility/presentation/FocusManager.h"
 #include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/encoding/Encoding.h"
-#include "shared/ui/application/BackgroundTask.h"
+#include "shared/ui/presentation/BackgroundTask.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::social::presentation

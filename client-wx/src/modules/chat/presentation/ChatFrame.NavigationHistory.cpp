@@ -4,7 +4,7 @@
 
 #include "modules/chat/presentation/ChatFocusController.h"
 #include "modules/options/application/OptionsStore.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 

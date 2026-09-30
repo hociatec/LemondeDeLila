@@ -3,7 +3,7 @@
 #include <functional>
 #include <wx/string.h>
 
-#include "shared/accessibility/application/FocusManager.h"
+#include "shared/accessibility/presentation/FocusManager.h"
 #include "shared/ui/presentation/navigation/NavigationStack.h"
 
 namespace lila::modules::session::application
