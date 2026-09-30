@@ -77,6 +77,7 @@ public:
         {
             std::scoped_lock lock(mutex_);
             started_ = true;
+            ++refreshCount_;
         }
         condition_.notify_all();
 
@@ -135,12 +136,76 @@ public:
             != revokedTokens_.end();
     }
 
+    [[nodiscard]] int RefreshCount() const
+    {
+        std::scoped_lock lock(mutex_);
+        return refreshCount_;
+    }
+
 private:
     mutable std::mutex mutex_;
     std::condition_variable condition_;
     bool started_ = false;
     bool released_ = false;
+    int refreshCount_ = 0;
     std::vector<std::string> revokedTokens_;
+};
+
+class BlockingRejectingSessionRefresher final
+    : public lila::modules::session::application::ISessionRefresher
+{
+public:
+    [[nodiscard]] lila::modules::session::application::SessionRefreshResult Refresh(
+        const std::string&,
+        std::stop_token = {}) override
+    {
+        {
+            std::scoped_lock lock(mutex_);
+            started_ = true;
+            ++refreshCount_;
+        }
+        condition_.notify_all();
+        std::unique_lock lock(mutex_);
+        condition_.wait(lock, [this] { return released_; });
+        lila::modules::session::application::SessionRefreshResult result;
+        result.rejected = true;
+        result.errorMessage = "Refresh token invalide ou expire";
+        return result;
+    }
+
+    [[nodiscard]] bool Revoke(const std::string&, std::stop_token = {}) override
+    {
+        return true;
+    }
+
+    void WaitUntilStarted()
+    {
+        std::unique_lock lock(mutex_);
+        if (!condition_.wait_for(lock, std::chrono::seconds(2), [this] { return started_; }))
+            throw std::runtime_error("Timed out waiting for rejected session refresh.");
+    }
+
+    void Release()
+    {
+        {
+            std::scoped_lock lock(mutex_);
+            released_ = true;
+        }
+        condition_.notify_all();
+    }
+
+    [[nodiscard]] int RefreshCount() const
+    {
+        std::scoped_lock lock(mutex_);
+        return refreshCount_;
+    }
+
+private:
+    mutable std::mutex mutex_;
+    std::condition_variable condition_;
+    bool started_ = false;
+    bool released_ = false;
+    int refreshCount_ = 0;
 };
 
 class RejectingSessionRefresher final

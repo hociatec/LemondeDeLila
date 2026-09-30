@@ -1,30 +1,37 @@
 #include "modules/gameplay/state/infrastructure/GameSystemDecoder.h"
 
 #include <algorithm>
+#include <stdexcept>
 
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
+#include "shared/data/application/IntegerText.h"
 #include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
-#include "shared/data/json/JsonCoercion.h"
+#include "modules/gameplay/session/domain/GameProtocol.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
 namespace
 {
-std::optional<int> OptionalInt(const nlohmann::json& value, const char* key)
+constexpr std::string_view ResourceTransferredEvent = "resource.transferred";
+domain::GameMatchStatus MatchStatus(const nlohmann::json& raw)
 {
-    return lila::shared::data::json::ReadOptionalIntegerCoerced(value, key);
+    const auto status = detail::ReadString(raw, "status");
+    if (status == "waiting") return domain::GameMatchStatus::Waiting;
+    if (status == "setup") return domain::GameMatchStatus::Setup;
+    if (status == "playing" || status == "started")
+        return domain::GameMatchStatus::Playing;
+    if (status == "finished") return domain::GameMatchStatus::Finished;
+    if (status == "cancelled") return domain::GameMatchStatus::Cancelled;
+    return domain::GameMatchStatus::Unknown;
 }
-
 std::optional<std::int64_t> OptionalInt64(const nlohmann::json& value, const char* key)
 {
     const auto found = value.find(key);
-    if (found == value.end() || found->is_null() || !found->is_number_integer())
-        return std::nullopt;
+    if (found == value.end() || found->is_null() || !found->is_number_integer()) return std::nullopt;
     return found->get<std::int64_t>();
 }
-
 std::string EventText(const nlohmann::json& data, const char* key)
 {
     const auto found = data.find(key);
@@ -34,7 +41,6 @@ std::string EventText(const nlohmann::json& data, const char* key)
     if (found->is_number_float()) return std::to_string(found->get<double>());
     return {};
 }
-
 std::string EventContent(const nlohmann::json& data, const char* key)
 {
     const auto found = data.find(key);
@@ -45,7 +51,6 @@ std::string EventContent(const nlohmann::json& data, const char* key)
         if (const auto value = EventText(*found, labelKey); !value.empty()) return value;
     return {};
 }
-
 domain::GameEngineEventData DecodeEventData(
     const std::string& eventType, const nlohmann::json& data)
 {
@@ -67,63 +72,53 @@ domain::GameEngineEventData DecodeEventData(
     result.position = EventText(data, "position");
     result.number = EventText(data, "number");
     result.count = EventText(data, "count");
-    result.playerId = OptionalInt(data, "playerId");
-    result.semanticKey = EventText(data, "key");
-    result.quizSessionId = EventText(data, "sessionId");
-    result.correctAnswerIndex = OptionalInt(data, "correctAnswerIndex");
-    if (eventType == "game.message")
+    result.playerId = detail::ReadOptionalPlayerId(data, "playerId");
+    if (eventType == protocol::Message)
     {
         const auto params = detail::ObjectOrEmpty(data.value("params", nlohmann::json::object()));
-        result.playerId = OptionalInt(params, "playerId");
-        result.quizSessionId = EventText(params, "sessionId");
-        const auto correct = params.find("correct");
-        if (correct != params.end() && correct->is_boolean()) result.correct = correct->get<bool>();
+        result.playerId = detail::ReadOptionalPlayerId(params, "playerId");
     }
-    if (eventType == "resource.transferred")
+    if (eventType == ResourceTransferredEvent)
     {
-        result.sourcePlayerId = OptionalInt(data, "from");
-        result.targetPlayerId = OptionalInt(data, "to");
+        result.sourcePlayerId = detail::ReadOptionalPlayerId(data, "from");
+        result.targetPlayerId = detail::ReadOptionalPlayerId(data, "to");
     }
     else
     {
-        result.sourcePlayerId = OptionalInt(data, "fromPlayerId");
-        result.targetPlayerId = OptionalInt(data, "toPlayerId");
+        result.sourcePlayerId = detail::ReadOptionalPlayerId(data, "fromPlayerId");
+        result.targetPlayerId = detail::ReadOptionalPlayerId(data, "toPlayerId");
     }
-    result.leftPlayerId = OptionalInt(data, "leftPlayerId");
-    result.rightPlayerId = OptionalInt(data, "rightPlayerId");
+    result.leftPlayerId = detail::ReadOptionalPlayerId(data, "leftPlayerId");
+    result.rightPlayerId = detail::ReadOptionalPlayerId(data, "rightPlayerId");
     return result;
 }
-
 std::vector<int> IntArray(const nlohmann::json& object, const char* key)
 {
     std::vector<int> result;
     const auto values = object.find(key);
     if (values == object.end() || !values->is_array()) return result;
     for (const auto& value : *values)
-        if (value.is_number_integer()) result.push_back(value.get<int>());
+        if (value.is_number_integer())
+        {
+            const auto id = value.get<int>();
+            if (id != 0) result.push_back(id);
+        }
     return result;
 }
-
 std::unordered_map<int, int> IntMap(const nlohmann::json& object, const char* key)
 {
     std::unordered_map<int, int> result;
     const auto values = object.find(key);
     if (values == object.end() || !values->is_object()) return result;
     for (const auto& item : values->items())
-    {
-        try
-        {
-            if (item.value().is_number_integer())
-                result.emplace(std::stoi(item.key()), item.value().get<int>());
-        }
-        catch (const std::exception&) {}
-    }
+        if (item.value().is_number_integer())
+            if (const auto id = lila::shared::data::ParseInteger(item.key()); id && *id != 0)
+                result.emplace(*id, item.value().get<int>());
     return result;
 }
-
 void DecodeMatch(const nlohmann::json& raw, domain::GameMatch& match)
 {
-    match.status = detail::ReadString(raw, "status");
+    match.status = MatchStatus(raw);
     match.startedAtMs = OptionalInt64(raw, "startedAtMs");
     match.finishedAtMs = OptionalInt64(raw, "finishedAtMs");
     const auto result = raw.find("result");
@@ -141,16 +136,15 @@ void DecodeMatch(const nlohmann::json& raw, domain::GameMatch& match)
     const auto statuses = raw.find("playerStatuses");
     if (statuses != raw.end() && statuses->is_object())
         for (const auto& item : statuses->items())
-            try { if (item.value().is_string()) match.playerStatuses.emplace(
-                std::stoi(item.key()), item.value().get<std::string>()); }
-            catch (const std::exception&) {}
+            if (item.value().is_string())
+                if (const auto id = lila::shared::data::ParseInteger(item.key()); id && *id != 0)
+                    match.playerStatuses.emplace(*id, item.value().get<std::string>());
 }
-
 void DecodeRound(const nlohmann::json& raw, domain::GameRound& round)
 {
     round.number = detail::ReadInt(raw, "number");
     round.status = detail::ReadString(raw, "status");
-    round.starterPlayerId = OptionalInt(raw, "starterPlayerId");
+    round.starterPlayerId = detail::ReadOptionalPlayerId(raw, "starterPlayerId");
     round.participantPlayerIds = IntArray(raw, "participantPlayerIds");
     round.leftPlayerIds = IntArray(raw, "leftPlayerIds");
     round.winnerPlayerIds = IntArray(raw, "winnerPlayerIds");
@@ -159,11 +153,11 @@ void DecodeRound(const nlohmann::json& raw, domain::GameRound& round)
 
 void DecodeTurn(const nlohmann::json& raw, domain::GameTurn& turn)
 {
-    turn.currentPlayerId = OptionalInt(raw, "currentPlayerId");
+    turn.currentPlayerId = detail::ReadOptionalPlayerId(raw, "currentPlayerId");
     turn.direction = detail::ReadInt(raw, "direction");
     if (turn.direction != -1) turn.direction = 1;
     turn.number = detail::ReadInt(raw, "number");
-    turn.actionPointsRemaining = OptionalInt(raw, "actionPointsRemaining");
+    turn.actionPointsRemaining = detail::ReadOptionalInt(raw, "actionPointsRemaining");
     turn.immediateExtraTurns = detail::ReadInt(raw, "immediateExtraTurns");
     turn.extraCount = detail::ReadInt(raw, "extraCount");
     turn.skipTurnsByPlayer = IntMap(raw, "skipTurnsByPlayer");
@@ -177,12 +171,15 @@ void DecodePlayers(const nlohmann::json& raw, std::vector<domain::GamePlayer>& p
 {
     const auto all = raw.find("all");
     if (all == raw.end() || !all->is_array()) return;
+    if (all->size() > 128) throw std::runtime_error("Trop de joueurs gameplay.");
     for (const auto& item : *all)
     {
         if (!item.is_object()) continue;
         domain::GamePlayer player;
         player.id = detail::ReadInt(item, "id");
         player.username = detail::ReadString(item, "username");
+        if (player.username.size() > 255)
+            throw std::runtime_error("Nom de joueur trop volumineux.");
         player.isBot = detail::ReadBool(item, "isBot");
         player.alive = !item.contains("alive") || detail::ReadBool(item, "alive");
         if (player.id != 0) players.push_back(std::move(player));
@@ -200,8 +197,10 @@ domain::GameSystem GameSystemDecoder::Decode(const nlohmann::json& system)
     DecodePlayers(detail::ObjectOrEmpty(system.value("players", nlohmann::json::object())), result.players);
     const auto setup = detail::ObjectOrEmpty(system.value("setup", nlohmann::json::object()));
     result.setup.complete = detail::ReadBool(setup, "complete");
-    result.setup.phase = detail::ReadString(setup, "phase");
-    result.setup.ownerPlayerId = OptionalInt(setup, "ownerPlayerId");
+    result.setup.phase.value = detail::ReadString(setup, "phase");
+    if (result.setup.phase.value.size() > 128)
+        throw std::runtime_error("Identifiant de phase trop volumineux.");
+    result.setup.ownerPlayerId = detail::ReadOptionalPlayerId(setup, "ownerPlayerId");
     const auto setupValues = setup.find("values");
     if (setupValues != setup.end() && setupValues->is_object())
         for (const auto& item : setupValues->items())
@@ -213,14 +212,12 @@ domain::GameSystem GameSystemDecoder::Decode(const nlohmann::json& system)
         domain::GameEngineEvent event;
         event.id = detail::ReadString(raw, "id");
         event.type = detail::ReadString(raw, "type");
+        event.soundSemantic = detail::ReadString(raw, "soundSemantic");
         const auto occurredAtMs = OptionalInt64(raw, "occurredAtMs");
         if (event.id.empty() || event.type.empty() || !occurredAtMs) return;
         event.details = DecodeEventData(event.type, detail::ObjectOrEmpty(
             raw.value("data", nlohmann::json::object())));
-        if (event.type == "quiz.revealed")
-            event.details.answers = IntMap(detail::ObjectOrEmpty(
-                raw.value("data", nlohmann::json::object())), "answers");
-        event.actorId = OptionalInt(raw, "actorId");
+        event.actorId = detail::ReadOptionalPlayerId(raw, "actorId");
         event.occurredAtMs = *occurredAtMs;
         event.sequence = OptionalInt64(raw, "sequence");
         result.events.push_back(std::move(event));
@@ -228,13 +225,19 @@ domain::GameSystem GameSystemDecoder::Decode(const nlohmann::json& system)
     const auto recent = events.find("recent");
     if (recent != events.end() && recent->is_array())
     {
+        if (recent->size() > 512)
+            throw std::runtime_error("Trop d'evenements gameplay.");
         for (const auto& raw : *recent) decodeEvent(raw);
     }
     else
     {
         const auto latest = events.find("latestByType");
         if (latest != events.end() && latest->is_object())
+        {
+            if (latest->size() > 512)
+                throw std::runtime_error("Trop d'evenements gameplay.");
             for (const auto& item : latest->items()) decodeEvent(item.value());
+        }
     }
     std::sort(result.events.begin(), result.events.end(), [](const auto& left, const auto& right)
         {

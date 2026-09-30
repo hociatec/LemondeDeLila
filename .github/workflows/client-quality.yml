@@ -22,3 +22,72 @@ jobs:
       - uses: actions/checkout@v4
       - name: Portable client checks (maximum two minutes)
         run: timeout 120s bash client-wx/tests/run_portable_checks.sh
+
+  protocol-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify generated backend/client contracts
+        shell: bash
+        run: |
+          generated_dir="$(mktemp -d)"
+          node client-wx/scripts/GenerateProtocolContracts.mjs \
+            --backend-root backend \
+            --output-root "$generated_dir"
+          diff -ru client-wx/src/generated/protocol "$generated_dir"
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Portable checks with ASan and UBSan
+        env:
+          LILA_SANITIZERS: address,undefined
+        run: timeout 180s bash client-wx/tests/run_portable_checks.sh
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [windows-vcpkg-debug, windows-vcpkg-release]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/client-wx/build
+            ${{ env.VCPKG_ROOT }}/installed
+          key: client-wx-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('client-wx/vcpkg.json', 'client-wx/CMakeLists.txt', 'client-wx/cmake/**') }}
+      - name: Configure ${{ matrix.preset }}
+        working-directory: client-wx
+        run: cmake --preset ${{ matrix.preset }}
+      - name: Build ${{ matrix.preset }}
+        working-directory: client-wx
+        run: cmake --build --preset ${{ matrix.preset }}
+      - name: Test ${{ matrix.preset }}
+        working-directory: client-wx
+        run: ctest --preset ${{ matrix.preset }}
+      - name: Install Inno Setup
+        if: matrix.preset == 'windows-vcpkg-release'
+        run: choco install innosetup --yes --no-progress
+      - name: Certify portable package and installer
+        if: matrix.preset == 'windows-vcpkg-release'
+        shell: pwsh
+        run: |
+          client-wx/tests/Test-WindowsRelease.ps1 `
+            -BuildDir client-wx/build/windows-vcpkg-release `
+            -WorkDir "${{ runner.temp }}/client release certification" `
+            -Version '1.2.651.0' | Tee-Object -FilePath "${{ runner.temp }}/client-release.json"
+      - name: Upload certified Windows artifacts
+        if: matrix.preset == 'windows-vcpkg-release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-windows-certified
+          path: |
+            ${{ runner.temp }}/client release certification/release output/*.zip
+            ${{ runner.temp }}/client release certification/release output/*.exe
+            ${{ runner.temp }}/client-release.json

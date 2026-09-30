@@ -91,7 +91,7 @@ private:
     MessagingSelectionMemory selectionMemory_;
     std::unique_ptr<MessagingActionController> actionController_;
     std::unique_ptr<MessagingComposeController> composeController_;
-    std::unique_ptr<MessagingMailboxController> mailboxController_;
+    std::shared_ptr<MessagingMailboxController> mailboxController_;
     std::unique_ptr<MessagingFocusController> focusController_;
     std::unique_ptr<MessagingScreenCoordinator> screenCoordinator_;
 };

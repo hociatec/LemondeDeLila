@@ -36,7 +36,9 @@ int lila::modules::update::RunUpdateLauncher()
         } catch (...) {
             // The user-facing error dialog remains available when logging fails.
         }
-        MessageBoxW(nullptr, Widen(error.what()).c_str(), L"Le Monde de Lila - Mise à jour",
+        MessageBoxW(nullptr,
+            L"La mise à jour a échoué. Consultez le journal de mise à jour pour les détails.",
+            L"Le Monde de Lila - Mise à jour",
             MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
         return 1;
     }

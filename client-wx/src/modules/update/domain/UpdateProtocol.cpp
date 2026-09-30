@@ -60,6 +60,40 @@ bool IsSafeArchivePath(std::string value)
     return true;
 }
 
+bool IsArchiveDirectoryLayoutSafe(
+    std::uint64_t archiveBytes,
+    std::uint64_t directoryOffset,
+    std::uint64_t directoryBytes,
+    std::uint64_t entries) noexcept
+{
+    return entries > 0 && entries <= MaximumArchiveEntries &&
+        directoryBytes <= 64ULL * 1024ULL * 1024ULL &&
+        directoryOffset <= archiveBytes && directoryBytes <= archiveBytes - directoryOffset;
+}
+
+bool IsArchiveExpansionSafe(
+    std::uint64_t compressedBytes,
+    std::uint64_t extractedBytes,
+    std::uint64_t entries) noexcept
+{
+    if (compressedBytes == 0 || entries == 0 || entries > MaximumArchiveEntries ||
+        extractedBytes == 0 || extractedBytes > MaximumExtractedBytes)
+        return false;
+    const auto ratioLimit = std::min<std::uint64_t>(MaximumExtractedBytes,
+        std::max<std::uint64_t>(512ULL * 1024ULL * 1024ULL,
+            compressedBytes > MaximumExtractedBytes / 25
+                ? MaximumExtractedBytes
+                : compressedBytes * 25));
+    return extractedBytes <= ratioLimit;
+}
+
+bool IsUpdateSequenceAllowed(
+    std::uint64_t candidate,
+    std::uint64_t highestAccepted) noexcept
+{
+    return candidate >= highestAccepted;
+}
+
 std::string BuildStagedUpdateArchiveFileName(const std::string& releaseId)
 {
     if (!IsSafeReleaseId(releaseId)) {
@@ -71,7 +105,10 @@ std::string BuildStagedUpdateArchiveFileName(const std::string& releaseId)
 
 UpdateManifest ParseUpdateManifest(const std::string& raw)
 {
+    if (raw.size() > MaximumUpdateManifestBytes)
+        throw std::runtime_error("Update manifest is too large.");
     const auto value = json::parse(raw);
+    if (!value.is_object()) throw std::runtime_error("Update manifest must be an object.");
     if (value.value("schemaVersion", 0) != 2 ||
         value.value("product", "") != "client-wx" ||
         value.value("platform", "") != "windows" ||
@@ -80,6 +117,7 @@ UpdateManifest ParseUpdateManifest(const std::string& raw)
         throw std::runtime_error("Update manifest targets another product.");
     }
     const auto& artifact = value.at("artifact");
+    if (!artifact.is_object()) throw std::runtime_error("Update artifact must be an object.");
     UpdateManifest result;
     result.releaseId = value.value("releaseId", "");
     result.version = value.value("version", "");

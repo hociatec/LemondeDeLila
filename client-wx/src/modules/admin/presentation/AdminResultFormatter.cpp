@@ -1,5 +1,4 @@
 #include "modules/admin/presentation/AdminResultFormatter.h"
-
 #include <cctype>
 #include <sstream>
 #include <string_view>
@@ -22,7 +21,7 @@ std::string Humanize(std::string_view key)
         {"users", "Utilisateurs"}, {"rooms", "Salles"}, {"messages", "Messages"},
         {"games", "Jeux"}, {"reports", "Rapports"}, {"categories", "Catégories"},
         {"questions", "Questions"}, {"definitions", "Définitions"},
-        {"roles", "Rôles"}, {"permissions", "Permissions"},
+        {"permissions", "Permissions"},
         {"events", "Événements"}, {"sounds", "Sons"}, {"sections", "Fils de contact"},
         {"names", "Noms de bots"}, {"page", "Page"}, {"limit", "Par page"},
         {"content", "Contenu"}, {"reason", "Motif"},
@@ -90,7 +89,6 @@ std::string Humanize(std::string_view key)
         static_cast<unsigned char>(result.front())));
     return result;
 }
-
 std::string Scalar(const nlohmann::json& value)
 {
     if (value.is_string()) return value.get<std::string>();
@@ -98,7 +96,6 @@ std::string Scalar(const nlohmann::json& value)
     if (value.is_null()) return "—";
     return value.dump();
 }
-
 std::string ScalarForKey(std::string_view key, const nlohmann::json& value)
 {
     if ((key == "status" || key == "state" || key == "activeState" ||
@@ -188,7 +185,6 @@ void AppendObject(std::ostringstream& output, const nlohmann::json& value, int d
         }
     }
 }
-
 void AppendArray(std::ostringstream& output, const nlohmann::json& value, int depth)
 {
     const std::string indentation(static_cast<std::size_t>(depth) * 2, ' ');
@@ -202,7 +198,6 @@ void AppendArray(std::ostringstream& output, const nlohmann::json& value, int de
         if (index + 1 != value.size()) output << '\n';
     }
 }
-
 void Append(std::ostringstream& output, const nlohmann::json& value, int depth)
 {
     if (value.is_object()) AppendObject(output, value, depth);
@@ -219,7 +214,6 @@ std::string FormatAdminResult(const nlohmann::json& payload)
     if (result.empty()) result = "Opération terminée sans contenu.";
     return result;
 }
-
 AdminResultPresentation BuildAdminResultPresentation(const nlohmann::json& payload)
 {
     AdminResultPresentation presentation;
@@ -232,6 +226,12 @@ AdminResultPresentation BuildAdminResultPresentation(const nlohmann::json& paylo
     }
 
     const auto label = key == "Résultats" ? std::string(key) : Humanize(key);
+    if (list->size() > 2'048)
+    {
+        presentation.summary = label + " : réponse trop volumineuse.";
+        presentation.details = "La réponse dépasse la limite de 2048 éléments.";
+        return presentation;
+    }
     presentation.summary = label + " : " + std::to_string(list->size()) + " élément" +
         (list->size() > 1 ? "s." : ".");
     presentation.entries.reserve(list->size());

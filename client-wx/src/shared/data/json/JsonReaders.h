@@ -9,9 +9,18 @@
 
 #include "shared/errors/domain/AppError.h"
 #include "shared/data/json/JsonErrorMessages.h"
-#include "shared/errors/presentation/ErrorFormatting.h"
+#include "shared/errors/domain/ErrorFormatting.h"
 
 namespace lila::shared::data::json {
+
+inline std::string JsonErrorTechnicalMessage(
+    const char* context,
+    const nlohmann::json::exception& error)
+{
+    // nlohmann::json::exception::what() may embed a fragment of the rejected
+    // input. Keep only the stable numeric diagnostic identifier.
+    return std::string(context) + " [json-error-" + std::to_string(error.id) + "]";
+}
 
 inline nlohmann::json ParseDocument(const std::string& raw, const char* context)
 {
@@ -24,7 +33,7 @@ inline nlohmann::json ParseDocument(const std::string& raw, const char* context)
         throw lila::shared::errors::AppException(
             lila::shared::errors::ToAppError(
                 context,
-                lila::shared::errors::WithDetails(context, error.what())));
+                JsonErrorTechnicalMessage(context, error)));
     }
 }
 

@@ -62,6 +62,17 @@ void TestTypedInputs()
     Expect(GamePromptInputCodec::Parse(boolean, "oui").value == true, "Oui doit produire true.");
     Expect(GamePromptInputCodec::Parse(boolean, "non").value == false, "Non doit produire false.");
     Expect(!GamePromptInputCodec::Parse(boolean, "peut-être").valid, "Une valeur booléenne ambiguë doit être refusée.");
+
+    lila::modules::gameplay::domain::GamePromptField json;
+    json.key = "configuration";
+    json.label = "Configuration";
+    json.kind = "json";
+    std::string nested = "0";
+    for (int depth = 0; depth < 40; ++depth) nested = "{\"next\":" + nested + "}";
+    Expect(!GamePromptInputCodec::Parse(json, nested).valid,
+        "Une saisie JSON trop profonde doit etre refusee sans exception UI.");
+    Expect(!GamePromptInputCodec::Parse(json, std::string(70U * 1024U, 'x')).valid,
+        "Une saisie JSON surdimensionnee doit etre refusee avant parsing.");
 }
 
 void TestActionCatalogBuildsTypedControls()

@@ -11,6 +11,12 @@ enum class GameShortcutKind
     Action,
 };
 
+enum class GameShortcutActivation
+{
+    Direct,
+    FocusOnly,
+};
+
 struct GameShortcut final
 {
     std::string rawKey;
@@ -19,5 +25,6 @@ struct GameShortcut final
     std::string id;
     std::string actionType;
     std::string label;
+    GameShortcutActivation activation = GameShortcutActivation::Direct;
 };
 }

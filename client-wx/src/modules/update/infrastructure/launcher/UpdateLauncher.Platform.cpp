@@ -1,3 +1,4 @@
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
@@ -7,23 +8,31 @@ namespace lila::modules::update::launcher
 std::wstring Widen(const std::string& value)
 {
     if (value.empty()) return {};
+    if (value.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("UTF-8 input is too long for Win32.");
+    const auto inputLength = static_cast<int>(value.size());
     const int count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, value.data(),
-        static_cast<int>(value.size()), nullptr, 0);
+        inputLength, nullptr, 0);
     if (count <= 0) throw std::runtime_error("Invalid UTF-8 string.");
     std::wstring result(static_cast<std::size_t>(count), L'\0');
     MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, value.data(),
-        static_cast<int>(value.size()), result.data(), count);
+        inputLength, result.data(), count);
     return result;
 }
 
 std::string Narrow(const std::wstring& value)
 {
     if (value.empty()) return {};
+    if (value.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("Wide input is too long for Win32.");
+    const auto inputLength = static_cast<int>(value.size());
     const int count = WideCharToMultiByte(CP_UTF8, 0, value.data(),
-        static_cast<int>(value.size()), nullptr, 0, nullptr, nullptr);
+        inputLength, nullptr, 0, nullptr, nullptr);
+    if (count <= 0) throw std::runtime_error("Unable to encode UTF-8 string.");
     std::string result(static_cast<std::size_t>(count), '\0');
-    WideCharToMultiByte(CP_UTF8, 0, value.data(), static_cast<int>(value.size()),
-        result.data(), count, nullptr, nullptr);
+    if (WideCharToMultiByte(CP_UTF8, 0, value.data(), inputLength,
+            result.data(), count, nullptr, nullptr) != count)
+        throw std::runtime_error("Unable to encode UTF-8 string.");
     return result;
 }
 
@@ -60,4 +69,3 @@ fs::path ExecutablePath()
     return fs::weakly_canonical(buffer);
 }
 }
-

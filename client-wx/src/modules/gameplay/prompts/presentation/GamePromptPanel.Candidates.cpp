@@ -69,7 +69,7 @@ void GamePromptPanel::RequestCandidates(bool reset)
     request.offset = reset ? 0 : nextCandidatesOffset_.value_or(0);
     const auto search = std::string(candidatesQuery_->GetValue().ToUTF8().data());
     if (!search.empty()) request.query.emplace("search", domain::GameValue{search});
-    request.query.emplace("context", application::DecodeGameValuePayload(action_->payload));
+    request.query.emplace("context", domain::GameValue{action_->payload});
     if (reset)
     {
         candidates_.clear();
@@ -92,15 +92,14 @@ void GamePromptPanel::ApplyCandidates(const domain::GameActionCandidatesResult& 
     }
     for (const auto& candidate : result.items)
     {
-        const auto identity = candidate.type + "|" + candidate.payload.dump();
         const auto duplicate = std::find_if(candidates_.begin(), candidates_.end(),
-            [&identity](const domain::GameAction& existing)
-            { return existing.type + "|" + existing.payload.dump() == identity; });
+            [&candidate](const domain::GameAction& existing)
+            { return existing.type == candidate.type && existing.payload == candidate.payload; });
         if (duplicate != candidates_.end()) continue;
         candidates_.push_back(candidate);
         candidatesList_->Append(FromUtf8(
             candidate.label.empty()
-                ? PanelJsonToDisplay(candidate.payload)
+                ? PanelGameValueToDisplay(domain::GameValue{candidate.payload})
                 : candidate.label));
     }
     nextCandidatesOffset_ = result.nextOffset;

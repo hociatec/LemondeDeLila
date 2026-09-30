@@ -8,13 +8,30 @@ add_test(
 )
 
 if(WIN32)
+    lila_add_test_executable(lemonde_de_lila_wx_bass_unavailable_tests
+        tests/BassUnavailableTests.cpp
+        src/modules/audio/infrastructure/BassApi.cpp
+        src/modules/audio/infrastructure/BassAudioBackend.cpp
+        src/modules/audio/infrastructure/BassAudioBackend.Assets.cpp
+        src/modules/audio/infrastructure/BassSampleCache.cpp
+        src/modules/audio/infrastructure/BassStreamCache.cpp
+        src/modules/audio/infrastructure/LocalSoundManifest.cpp
+        src/modules/audio/infrastructure/SoundAssetCacheCleanup.cpp
+        src/modules/audio/infrastructure/SoundAssetManifest.cpp
+        src/modules/audio/infrastructure/SoundAssetPath.cpp
+        src/modules/audio/domain/SoundCatalog.cpp
+        src/shared/logging/infrastructure/Logger.cpp
+    )
+    target_include_directories(lemonde_de_lila_wx_bass_unavailable_tests PRIVATE "${LILA_BASS_ROOT}/include")
+    target_link_libraries(lemonde_de_lila_wx_bass_unavailable_tests PRIVATE nlohmann_json::nlohmann_json)
+
     lila_add_test_executable(lemonde_de_lila_wx_bass_cache_tests
         tests/BassCacheTests.cpp
+        src/modules/audio/infrastructure/BassApi.cpp
         src/modules/audio/infrastructure/BassSampleCache.cpp
         src/modules/audio/infrastructure/BassStreamCache.cpp
     )
     target_include_directories(lemonde_de_lila_wx_bass_cache_tests PRIVATE "${LILA_BASS_ROOT}/include")
-    target_link_libraries(lemonde_de_lila_wx_bass_cache_tests PRIVATE "${LILA_BASS_IMPORT_LIBRARY}")
 endif()
 
 lila_add_test_executable(lemonde_de_lila_wx_audio_regression_tests
@@ -30,10 +47,26 @@ lila_add_test_executable(lemonde_de_lila_wx_audio_regression_tests
 )
 target_link_libraries(lemonde_de_lila_wx_audio_regression_tests PRIVATE nlohmann_json::nlohmann_json)
 
+lila_add_test_executable(lemonde_de_lila_wx_sound_asset_manifest_tests
+    tests/SoundAssetManifestTests.cpp
+    src/modules/audio/infrastructure/SoundAssetManifest.cpp
+)
+target_link_libraries(lemonde_de_lila_wx_sound_asset_manifest_tests PRIVATE nlohmann_json::nlohmann_json)
+
+lila_add_test_executable(lemonde_de_lila_wx_missing_audio_assets_tests
+    tests/MissingAudioAssetsTests.cpp
+    src/modules/audio/infrastructure/LocalSoundManifest.cpp
+)
+
 lila_add_test_executable(lemonde_de_lila_wx_game_sound_tests
     tests/GameSoundPolicyTests.cpp
     src/modules/audio/domain/SoundCatalog.cpp
     src/modules/audio/application/SoundVolumeResolver.cpp
+)
+
+lila_add_test_executable(lemonde_de_lila_wx_logger_sanitization_tests
+    tests/LoggerSanitizationTests.cpp
+    src/shared/logging/infrastructure/Logger.cpp
 )
 
 add_executable(lemonde_de_lila_wx_tests
@@ -133,14 +166,50 @@ lila_add_test_executable(lemonde_de_lila_wx_update_trust_tests
     src/modules/update/domain/UpdateTrustPolicy.cpp
 )
 
+lila_add_test_executable(lemonde_de_lila_wx_update_retry_policy_tests
+    tests/UpdateRetryPolicyTests.cpp
+)
+
+lila_add_test_executable(lemonde_de_lila_wx_update_recovery_tests
+    tests/UpdateRecoveryTests.cpp
+    src/modules/update/domain/UpdateInstallationState.cpp
+    src/modules/update/domain/UpdateProtocol.cpp
+    src/modules/update/infrastructure/launcher/UpdateStagingCleanup.cpp
+)
+target_link_libraries(lemonde_de_lila_wx_update_recovery_tests PRIVATE nlohmann_json::nlohmann_json)
+
+lila_add_test_executable(lemonde_de_lila_wx_session_persistence_policy_tests
+    tests/SessionPersistencePolicyTests.cpp
+    src/modules/session/infrastructure/SessionStorageMigration.cpp
+)
+
 lila_add_test_executable(lemonde_de_lila_wx_async_audio_tests
     tests/AsyncAudioBackendTests.cpp
     src/modules/audio/infrastructure/AsyncAudioBackend.cpp
+    src/shared/logging/infrastructure/Logger.cpp
 )
 
 lila_add_test_executable(lemonde_de_lila_wx_url_utils_tests
     tests/UrlUtilsTests.cpp
 )
+lila_add_test_executable(lemonde_de_lila_wx_websocket_policy_tests
+    tests/WebSocketPolicyTests.cpp
+)
+lila_add_test_executable(lemonde_de_lila_wx_websocket_operation_gate_tests
+    tests/WebSocketOperationGateTests.cpp
+)
+lila_add_test_executable(lemonde_de_lila_wx_game_event_mailbox_tests
+    tests/GameEventMailboxTests.cpp
+)
+lila_add_test_executable(lemonde_de_lila_wx_focus_memory_lifecycle_tests
+    tests/FocusMemoryLifecycleTests.cpp
+    src/shared/accessibility/presentation/FocusMemory.cpp
+    src/shared/accessibility/presentation/FocusCoordinator.cpp
+    src/shared/accessibility/presentation/FocusManager.cpp
+    src/shared/accessibility/presentation/NavigationController.cpp
+    src/shared/accessibility/presentation/NavigationScope.cpp
+)
+target_link_libraries(lemonde_de_lila_wx_focus_memory_lifecycle_tests PRIVATE ${wxWidgets_LIBRARIES})
 lila_add_test_executable(lemonde_de_lila_wx_background_executor_tests
     tests/BackgroundExecutorTests.cpp
     src/shared/concurrency/application/BackgroundExecutor.cpp
@@ -204,6 +273,7 @@ lila_add_test_executable(lemonde_de_lila_wx_messaging_selection_tests
 )
 lila_add_test_executable(lemonde_de_lila_wx_navigation_state_tests
     tests/NavigationStateTests.cpp
+    src/modules/social/presentation/SocialSelectionMemory.cpp
     src/modules/admin/domain/AdminArea.cpp
     src/modules/main_menu/presentation/MainMenuContent.cpp
     src/modules/admin/domain/AdminCommandCatalog.cpp
@@ -286,6 +356,7 @@ add_executable(lemonde_de_lila_wx_gameplay_tests
     src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp
     src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp
     src/modules/gameplay/prompts/application/GameActionPromptFactory.cpp
+    src/modules/gameplay/state/application/GameValuePayloadCodec.cpp
     src/modules/gameplay/history/presentation/GameLogCursor.cpp
     src/modules/gameplay/grid/application/GameGridActionResolver.cpp
     src/modules/gameplay/events/presentation/GameEventPresenter.cpp
@@ -309,7 +380,6 @@ add_executable(lemonde_de_lila_wx_gameplay_tests
     src/modules/gameplay/state/infrastructure/GameWorkflowCapabilitiesDecoder.cpp
     src/modules/gameplay/state/domain/GameKits.cpp
     src/modules/gameplay/state/domain/GameSystem.cpp
-    src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp
 )
 target_include_directories(lemonde_de_lila_wx_gameplay_tests PRIVATE src)
 target_link_libraries(lemonde_de_lila_wx_gameplay_tests PRIVATE nlohmann_json::nlohmann_json)
@@ -321,10 +391,32 @@ add_test(
 
 add_executable(lemonde_de_lila_wx_parser_robustness_tests
     tests/ParserRobustnessTests.cpp
+    src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp
     src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp
     src/modules/chat/infrastructure/ChatEventPayloadParser.cpp
     src/modules/chat/infrastructure/ChatCommandPayloadCodec.cpp
     src/modules/chat/infrastructure/ChatProtocol.cpp
+    src/modules/gameplay/actions/infrastructure/GameActionCatalogDecoder.cpp
+    src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp
+    src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameAssetCapabilitiesDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameBoardCapabilitiesDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp
+    src/modules/gameplay/state/infrastructure/GamePendingDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GamePlayerValuesDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp
+    src/modules/gameplay/state/infrastructure/GameSystemDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameValueDecoder.cpp
+    src/modules/gameplay/state/infrastructure/GameWorkflowCapabilitiesDecoder.cpp
+    src/modules/gameplay/state/domain/GameKits.cpp
+    src/modules/gameplay/state/domain/GameSystem.cpp
+    src/modules/messaging/infrastructure/MessagingPayloadCodec.cpp
+    src/modules/presence/infrastructure/PresencePayloadCodec.cpp
+    src/modules/rooms/infrastructure/RoomPayloadCodec.cpp
+    src/modules/social/infrastructure/SocialPayloadCodec.cpp
+    src/modules/storybook/infrastructure/StoryBookPayloadCodec.cpp
+    src/modules/vault/infrastructure/VaultPayloadCodec.cpp
     src/shared/config/domain/AppConfig.cpp
     src/shared/network/application/realtime/RealtimeProtocol.cpp
     src/shared/text/presentation/encoding/Encoding.cpp

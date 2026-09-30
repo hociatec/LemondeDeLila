@@ -4,11 +4,12 @@
 #include <utility>
 
 #include "modules/gameplay/session/application/GameSessionService.h"
+#include "modules/gameplay/session/domain/GameProtocol.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
-#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/realtime/RealtimeProtocol.h"
+#include "shared/ui/presentation/UiThreadGuard.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -18,11 +19,19 @@ void GamePlayPanel::AttachEventHandler()
         [weakThis = wxWeakRef<GamePlayPanel>(this)](domain::GameEvent event) mutable
         {
             if (!weakThis) return;
-            weakThis->CallAfter(
-                [weakThis, event = std::move(event)]() mutable
-                {
-                    if (weakThis) weakThis->HandleEvent(std::move(event));
-                });
+            if (!weakThis->eventMailbox_.Enqueue(std::move(event))) return;
+            weakThis->CallAfter([weakThis]() { if (weakThis) weakThis->DrainEventMailbox(); });
+        });
+}
+
+void GamePlayPanel::DrainEventMailbox()
+{
+    lila::shared::ui::AssertUiThread();
+    auto batch = eventMailbox_.Drain();
+    for (auto& event : batch.events) HandleEvent(std::move(event));
+    if (batch.morePending)
+        CallAfter([weakThis = wxWeakRef<GamePlayPanel>(this)]() {
+            if (weakThis) weakThis->DrainEventMailbox();
         });
 }
 
@@ -90,7 +99,7 @@ void GamePlayPanel::ExecuteAction(domain::GameAction action)
             state_.version, {std::move(action)}};
     retryableActionCommand_ = command;
     SubmitInputCommand(
-        "game.action",
+        std::string(protocol::Action),
         [service, command = std::move(command)](std::stop_token stopToken)
         {
             service->ExecuteAction(command, stopToken);
@@ -105,7 +114,7 @@ void GamePlayPanel::SendKey(std::string key)
     auto* service = &service_;
     const auto loggedKey = key;
     SubmitInputCommand(
-        "game.key",
+        std::string(protocol::Key),
         [service, key = std::move(key)](std::stop_token stopToken)
         {
             service->SendKey(key, stopToken);
@@ -150,7 +159,6 @@ void GamePlayPanel::SubmitInputCommand(
                     weakThis->inputSubmissionGuard_.Reset();
                     lila::shared::logging::LogError(
                         "GameInput", "Action task failed: " + error->UserMessage());
-                    weakThis->pawnSelectionPanel_->AllowRetry();
                     if (!weakThis->submittedPromptActionType_.empty())
                     {
                         weakThis->submittedPromptActionType_.clear();

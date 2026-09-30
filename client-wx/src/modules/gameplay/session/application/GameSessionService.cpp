@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "modules/gameplay/session/application/IGameSessionGateway.h"
+#include "modules/gameplay/session/domain/GameProtocolException.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/realtime/ReconnectPolicy.h"
 
@@ -113,6 +114,18 @@ void GameSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t gene
         {
             auto event = gateway_.ReceiveEvent(stopToken);
             NotifyEvent(std::move(event), generation);
+        }
+        catch (const domain::GameProtocolException& exception)
+        {
+            if (stopToken.stop_requested() || generation != sessionGeneration_.load()) return;
+            lila::shared::logging::LogWarning("GameProtocol", exception.what());
+            domain::GameEvent event;
+            event.type = domain::GameEventType::Error;
+            event.message = "Cette partie utilise un protocole plus récent. Mettez le client à jour.";
+            event.isError = true;
+            event.errorCode = "CLIENT_GAME_PROTOCOL_UPDATE_REQUIRED";
+            NotifyEvent(std::move(event), generation);
+            return;
         }
         catch (const std::exception& exception)
         {

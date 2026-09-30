@@ -6,7 +6,7 @@
 #include "modules/session/application/SessionStore.h"
 #include "shared/config/domain/AppConfig.h"
 #include "modules/chat/domain/ChatErrorMessages.h"
-#include "shared/errors/presentation/ErrorFormatting.h"
+#include "shared/errors/domain/ErrorFormatting.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/realtime/ReconnectPolicy.h"

@@ -90,6 +90,70 @@ void TestSecurityWipe()
     std::cout << "[TEST PASSED] SecurityWipe\n";
 }
 
+void TestPersistedSecretsRejectPlaintext()
+{
+    bool rejected = false;
+    try
+    {
+        static_cast<void>(lila::shared::security::UnprotectSecret(
+            "legacy-plaintext-token"));
+    }
+    catch (const std::runtime_error& error)
+    {
+        rejected = true;
+        Expect(
+            std::string(error.what()) == lila::shared::errors::SecretUnprotectionFailed,
+            "Erreur de dechiffrement attendue");
+    }
+    Expect(rejected, "Un secret persiste en clair devait etre refuse");
+
+    std::cout << "[TEST PASSED] PersistedSecretsRejectPlaintext\n";
+}
+
+void TestSecureDeleteFileRemovesContent()
+{
+    const auto path = std::filesystem::current_path() / "secure-delete-test.txt";
+    {
+        std::ofstream file(path, std::ios::binary | std::ios::trunc);
+        file << "refresh-token-that-must-not-remain";
+    }
+
+    lila::shared::security::SecureDeleteFile(path.string());
+    Expect(!std::filesystem::exists(path), "Le fichier sensible devait etre supprime");
+
+    std::cout << "[TEST PASSED] SecureDeleteFileRemovesContent\n";
+}
+
+void TestSensitiveFilePermissions()
+{
+    const auto path = std::filesystem::current_path() / "sensitive-permissions-test.txt";
+    {
+        std::ofstream file(path, std::ios::binary | std::ios::trunc);
+        file << "protected";
+    }
+
+    lila::shared::security::HardenFilePermissions(path.string());
+#ifndef _WIN32
+    const auto permissions = std::filesystem::status(path).permissions();
+    using Perms = std::filesystem::perms;
+    Expect((permissions & (Perms::group_all | Perms::others_all)) == Perms::none,
+        "Les permissions groupe/autres devaient etre retirees");
+#endif
+    std::filesystem::remove(path);
+
+    std::cout << "[TEST PASSED] SensitiveFilePermissions\n";
+}
+
+void TestSessionStorageSchemaVersion()
+{
+    using namespace lila::modules::session::infrastructure;
+    Expect(fields::CurrentSchemaVersion > fields::LegacySchemaVersion,
+        "La session persistante doit avoir une version de schema explicite");
+    Expect(!fields::SchemaVersion.empty(), "Le champ schemaVersion est requis");
+
+    std::cout << "[TEST PASSED] SessionStorageSchemaVersion\n";
+}
+
 void TestJsonFileStorageRejectsOversizedFiles()
 {
     const std::filesystem::path path = std::filesystem::current_path() / "oversized-test.json";
@@ -141,4 +205,26 @@ void TestJsonFileStorageRejectsCorruptedFiles()
     Expect(threw, "Lecture fichier corrompu devait echouer");
 
     std::cout << "[TEST PASSED] JsonFileStorageRejectsCorruptedFiles\n";
+}
+
+void TestJsonParseErrorsDoNotExposePayloads()
+{
+    const std::string secret = "access-token-that-must-stay-private";
+    bool rejected = false;
+    try
+    {
+        static_cast<void>(lila::shared::data::json::ParseDocument(
+            "{\"token\":\"" + secret + "\",",
+            "Payload réseau invalide."));
+    }
+    catch (const lila::shared::errors::AppException& error)
+    {
+        rejected = true;
+        Expect(std::string(error.what()).find(secret) == std::string::npos &&
+                error.Error().DiagnosticDetails().find(secret) == std::string::npos,
+            "Une erreur JSON ne doit jamais recopier le payload sensible");
+    }
+    Expect(rejected, "Le JSON malforme devait etre refuse");
+
+    std::cout << "[TEST PASSED] JsonParseErrorsDoNotExposePayloads\n";
 }

@@ -28,6 +28,14 @@ struct BackgroundExecutorOptions final
     std::size_t queueCapacity = 256;
 };
 
+struct BackgroundExecutorStats final
+{
+    std::size_t queued = 0;
+    std::size_t active = 0;
+    std::size_t rejected = 0;
+    std::size_t abandonedOnShutdown = 0;
+};
+
 class BackgroundTaskHandle final
 {
 public:
@@ -56,6 +64,7 @@ public:
         BackgroundTaskPriority priority,
         std::function<void()> work);
     void Shutdown();
+    [[nodiscard]] BackgroundExecutorStats Stats() const;
 
 private:
     struct Impl;
