@@ -1,3 +1,6 @@
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
 #include "modules/audio/application/SoundVolumeResolver.h"
 #include "modules/audio/domain/SoundCatalog.h"
