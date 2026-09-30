@@ -266,6 +266,8 @@ if(WIN32)
         src/modules/update/infrastructure/launcher/UpdateLauncher.Security.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.State.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Zip.cpp
+        src/modules/update/infrastructure/launcher/UpdateStagingCleanup.cpp
+        src/modules/update/domain/UpdateInstallationState.cpp
         src/modules/update/domain/UpdateProtocol.cpp
         src/modules/update/domain/UpdateTrustPolicy.cpp
     )
