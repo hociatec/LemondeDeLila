@@ -26,6 +26,8 @@ struct BackendState final
     std::mutex mutex;
     std::condition_variable ready;
     bool preloadStarted = false;
+    bool failPreload = false;
+    bool failNextPlay = false;
     bool releasePreload = false;
     bool callActive = false;
     bool concurrentCall = false;
@@ -78,6 +80,7 @@ public:
         std::unique_lock lock(state_->mutex);
         state_->preloadStarted = true;
         state_->ready.notify_all();
+        if (state_->failPreload) throw std::runtime_error("Simulated preload failure");
         state_->ready.wait(lock, [this]() { return state_->releasePreload; });
     }
 
@@ -85,7 +88,14 @@ public:
     {
         CallGuard call(*state_);
         std::scoped_lock lock(state_->mutex);
+        if (state_->failNextPlay)
+        {
+            state_->failNextPlay = false;
+            state_->ready.notify_all();
+            throw std::runtime_error("Simulated play failure");
+        }
         ++state_->playCount;
+        state_->ready.notify_all();
     }
     void RefreshAssets() override
     {
@@ -209,6 +219,8 @@ void TestGracefulShutdownDrainsPlayback()
         "Graceful shutdown must play the queued closing sound before interruption");
     Expect(!state->concurrentCall && state->shutdownCount == 1, "Audio worker teardown must be serialized");
 }
+
+#include "audio/AsyncAudioResilienceTests.inc"
 }
 
 int main()
@@ -218,6 +230,8 @@ int main()
         TestShutdownKeepsBackendOnWorkerThread();
         TestPreviewFailureKeepsWorkerAlive();
         TestGracefulShutdownDrainsPlayback();
+        TestCommandFailuresKeepWorkerAlive();
+        TestForegroundQueueIsBoundedAndObservable();
         std::cout << "Async audio backend tests passed.\n";
         return 0;
     }

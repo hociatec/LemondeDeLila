@@ -23,6 +23,7 @@ inline constexpr const char* JsonFileReadFailed = "Impossible de lire le fichier
 inline constexpr const char* JsonFileTooLarge = "Le fichier JSON dépasse la taille maximale autorisée.";
 inline constexpr const char* InvalidSessionSaveFailed = "Impossible de sauvegarder la session.";
 inline constexpr const char* SecretProtectionFailed = "Impossible de chiffrer les données sensibles de la session.";
+inline constexpr const char* SecretUnprotectionFailed = "Impossible de déchiffrer les données sensibles de la session.";
 inline constexpr const char* FileSessionDeleteFailed = "Impossible de supprimer le fichier de session.";
 inline constexpr const char* SessionExpiredMessage = "Session invalide. Veuillez vous reconnecter.";
 inline constexpr const char* NoActiveSession = "Aucune session active.";

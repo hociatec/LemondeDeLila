@@ -2,13 +2,12 @@
 
 #include "shared/errors/catalog/NetworkErrorMessages.h"
 #include "shared/network/domain/WebSocketConstants.h"
-#include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/text/infrastructure/Utf8ToWide.h"
 
 #include <array>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 namespace lila::shared::network::websocket::detail
 {
@@ -98,7 +97,7 @@ DWORD QueryResponseStatusCode(HINTERNET requestHandle)
 
 std::string ReceiveMessage(HINTERNET webSocketHandle)
 {
-    std::vector<char> payload;
+    std::string payload;
     payload.reserve(4096);
     std::array<std::uint8_t, 4096> buffer{};
 
@@ -120,13 +119,11 @@ std::string ReceiveMessage(HINTERNET webSocketHandle)
             return lila::shared::errors::WinHttpSocketClosed;
         }
 
-        if (reasonLength == 0)
-        {
-            return std::string(lila::shared::errors::WinHttpSocketClosed)
-                + " (close status " + std::to_string(closeStatus) + ").";
-        }
-
-        return std::string(closeReason.data(), reasonLength);
+        // A server-controlled close reason may contain echoed credentials or
+        // arbitrary payload data. Only the numeric protocol status is safe for
+        // diagnostics and logs.
+        return std::string(lila::shared::errors::WinHttpSocketClosed)
+            + " (close status " + std::to_string(closeStatus) + ").";
     };
 
     while (true)
@@ -151,7 +148,14 @@ std::string ReceiveMessage(HINTERNET webSocketHandle)
             throw std::runtime_error(buildCloseErrorMessage(webSocketHandle));
         }
 
-        payload.insert(payload.end(), buffer.begin(), buffer.begin() + bytesRead);
+        if (!lila::shared::network::ws::AppendWebSocketFragment(
+                payload,
+                std::string_view(
+                    reinterpret_cast<const char*>(buffer.data()),
+                    bytesRead)))
+        {
+            throw std::runtime_error("WebSocket message exceeds the configured size limit.");
+        }
 
         if (bufferType == WINHTTP_WEB_SOCKET_UTF8_MESSAGE_BUFFER_TYPE ||
             bufferType == WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE)
@@ -160,7 +164,7 @@ std::string ReceiveMessage(HINTERNET webSocketHandle)
         }
     }
 
-    return std::string(payload.begin(), payload.end());
+    return payload;
 }
 
 std::wstring BuildHeadersBlock(const WebSocketHeaders& headers)

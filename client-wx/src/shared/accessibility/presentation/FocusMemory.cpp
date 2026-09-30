@@ -1,5 +1,7 @@
 #include "shared/accessibility/presentation/FocusMemory.h"
 
+#include <algorithm>
+
 #include <wx/window.h>
 
 #include "shared/accessibility/presentation/FocusCoordinator.h"
@@ -10,6 +12,7 @@ namespace lila::shared::accessibility
 {
 void FocusMemory::Remember(wxWindow* scope)
 {
+    PruneExpired();
     if (scope == nullptr)
     {
         return;
@@ -20,19 +23,29 @@ void FocusMemory::Remember(wxWindow* scope)
         focused->AcceptsFocus() &&
         NavigationController::IsDescendantOf(focused, scope))
     {
-        targets_.insert_or_assign(scope, wxWeakRef<wxWindow>(focused));
+        const auto remembered = std::find_if(targets_.begin(), targets_.end(),
+            [scope](const Entry& entry) { return entry.scope.get() == scope; });
+        if (remembered == targets_.end())
+            targets_.emplace_back(scope, focused);
+        else
+        {
+            targets_.erase(remembered);
+            targets_.emplace_back(scope, focused);
+        }
     }
 }
 
 bool FocusMemory::Restore(wxWindow* scope)
 {
-    const auto remembered = targets_.find(scope);
+    PruneExpired();
+    const auto remembered = std::find_if(targets_.begin(), targets_.end(),
+        [scope](const Entry& entry) { return entry.scope.get() == scope; });
     if (remembered == targets_.end())
     {
         return false;
     }
 
-    wxWindow* target = remembered->second.get();
+    wxWindow* target = remembered->target.get();
     if (target == nullptr ||
         !NavigationController::IsDescendantOf(target, scope) ||
         !target->IsShownOnScreen() ||
@@ -49,14 +62,25 @@ bool FocusMemory::Restore(wxWindow* scope)
 
 void FocusMemory::Forget(wxWindow* scope)
 {
-    if (scope != nullptr)
-    {
-        targets_.erase(scope);
-    }
+    std::erase_if(targets_, [scope](const Entry& entry) {
+        return entry.scope.get() == nullptr || entry.scope.get() == scope;
+    });
 }
 
 void FocusMemory::Clear()
 {
     targets_.clear();
+}
+
+void FocusMemory::PruneExpired()
+{
+    std::erase_if(targets_, [](const Entry& entry) {
+        return entry.scope.get() == nullptr || entry.target.get() == nullptr;
+    });
+}
+
+std::size_t FocusMemory::RememberedScopeCount() const noexcept
+{
+    return targets_.size();
 }
 }

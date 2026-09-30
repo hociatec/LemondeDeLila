@@ -5,8 +5,11 @@
 
 #include <nlohmann/json.hpp>
 
+#include "shared/data/json/JsonReaders.h"
+
 #include "modules/gameplay/session/infrastructure/GameEventPayloadCodec.h"
 #include "modules/gameplay/session/infrastructure/GameCommandPayloadCodec.h"
+#include "modules/gameplay/session/domain/GameProtocol.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 #include "modules/session/application/SessionConnectionRetry.h"
 #include "modules/session/application/SessionStore.h"
@@ -66,7 +69,7 @@ domain::GameState GameSessionGateway::Join(
     gameType_ = std::string(gameType);
     Connect(stopToken);
     SendJson(nlohmann::json{
-        {"type", "game.join"},
+        {"type", protocol::Join},
         {"payload", {{"roomId", roomId}, {"gameType", gameType_}}}});
     return AwaitState(stopToken);
 }
@@ -81,7 +84,7 @@ domain::GameState GameSessionGateway::Reconnect(std::stop_token stopToken)
         throw std::runtime_error("Reconnexion au jeu interrompue.");
     Connect(stopToken);
     SendJson(nlohmann::json{
-        {"type", "game.join"},
+        {"type", protocol::Join},
         {"payload", {{"roomId", roomId}, {"gameType", gameType}}}});
     return AwaitState(stopToken);
 }
@@ -91,14 +94,14 @@ void GameSessionGateway::RequestState(std::stop_token)
     const auto roomId = roomId_.load();
     if (roomId <= 0 || gameType_.empty()) throw std::runtime_error("Aucune partie active.");
     SendJson(nlohmann::json{
-        {"type", "game.state"},
+        {"type", protocol::State},
         {"payload", {{"roomId", roomId}, {"gameType", gameType_}}}});
 }
 
 void GameSessionGateway::RequestRules(std::stop_token)
 {
     if (gameType_.empty()) throw std::runtime_error("Aucune partie active.");
-    SendJson(nlohmann::json{{"type", "game.rules"},
+    SendJson(nlohmann::json{{"type", protocol::Rules},
         {"payload", {{"gameType", gameType_}}}});
 }
 
@@ -109,7 +112,7 @@ void GameSessionGateway::SendKey(std::string_view key, std::stop_token)
     const auto normalized = GameStatePayloadCodec::NormalizeShortcutKey(std::string(key));
     if (normalized.empty()) throw std::invalid_argument("Touche de jeu invalide.");
     SendJson(nlohmann::json{
-        {"type", "game.key"},
+        {"type", protocol::Key},
         {"payload", {{"roomId", roomId}, {"gameType", gameType_}, {"key", normalized}}}});
 }
 
@@ -124,7 +127,7 @@ void GameSessionGateway::ExecuteAction(
     lila::shared::logging::LogInfo(
         "GameInput", "Sending command: id=" + command.commandId);
     SendJson(nlohmann::json{
-        {"type", "game.action"},
+        {"type", protocol::Action},
         {"payload", GameCommandPayloadCodec::EncodeAction(command)}});
     lila::shared::logging::LogInfo(
         "GameInput", "Command sent: id=" + command.commandId);
@@ -137,7 +140,7 @@ void GameSessionGateway::RequestActionCandidates(
     const auto roomId = roomId_.load();
     if (roomId <= 0 || gameType_.empty()) throw std::runtime_error("Aucune partie active.");
     SendJson(nlohmann::json{
-        {"type", "game.action.candidates"},
+        {"type", protocol::ActionCandidates},
         {"payload", GameCommandPayloadCodec::EncodeCandidatesRequest(
             roomId, gameType_, request)}});
 }
@@ -166,7 +169,8 @@ domain::GameState GameSessionGateway::AwaitState(std::stop_token stopToken)
 domain::GameEvent GameSessionGateway::ReceiveEvent(std::stop_token)
 {
     const auto raw = client_.Receive();
-    const auto message = nlohmann::json::parse(raw);
+    const auto message = lila::shared::data::json::ParseDocument(
+        raw, "Événement de jeu invalide.");
     return GameEventPayloadCodec::Decode(message);
 }
 

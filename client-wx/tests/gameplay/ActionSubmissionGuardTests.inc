@@ -90,6 +90,17 @@ void TestStructuredBackendErrorsAreReadable()
             conflict.message ==
                 "La partie a chang\xC3\xA9""; actualisez puis r\xC3\xA9""essayez.",
         "Une erreur codee du backend doit produire un message utilisateur precis");
+
+    const auto unknown = Codec::Decode(nlohmann::json{
+        {"type", "error"},
+        {"payload", {
+            {"code", "INTERNAL_DATABASE_FAILURE"},
+            {"message", "SELECT secret FROM users"},
+            {"error", "stack trace"},
+        }},
+    });
+    Expect(unknown.message == "Action de jeu impossible.",
+        "Une erreur technique inconnue ne doit jamais etre affichee directement");
 }
 
 void TestActionCandidatesContract()
@@ -110,10 +121,28 @@ void TestActionCandidatesContract()
     const auto decoded = Codec::DecodeCandidates({
         {"roomId", 7}, {"gameType", "cards"}, {"actionType", "card.choose"},
         {"items", nlohmann::json::array({
-            {{"type", "card.choose"}, {"payload", {{"cardId", "fox"}}}}})},
+            {{"type", "card.choose"}, {"payload", {{"cardId", "fox"},
+                {"meta", {{"count", 2},
+                    {"tags", nlohmann::json::array({"red", "fast"})}}}}}}})},
         {"offset", 50}, {"limit", 25}, {"nextOffset", 75}});
-    Expect(decoded.items.size() == 1 &&
-            decoded.items[0].payload.at("cardId") == "fox" &&
+    Expect(decoded.items.size() == 1, "Un candidat devait etre decode.");
+    const auto* metadata = decoded.items.front().payload.at("meta").ObjectValue();
+    Expect(decoded.items.front().payload.at("cardId") == "fox" &&
+            metadata != nullptr && metadata->at("count").Integer() == 2 &&
+            metadata->at("tags").ArrayValue() != nullptr &&
+            metadata->at("tags").ArrayValue()->size() == 2 &&
             decoded.nextOffset == 75,
         "La page de candidats doit conserver les valeurs originales et la suite.");
+
+    request.offset = -10;
+    request.limit = 50'000;
+    const auto boundedRequest = Codec::EncodeCandidatesRequest(7, "cards", request);
+    const auto boundedResponse = Codec::DecodeCandidates({
+        {"roomId", 7}, {"gameType", "cards"}, {"actionType", "card.choose"},
+        {"items", nlohmann::json::array()},
+        {"offset", 2'000'000}, {"limit", -4}, {"nextOffset", 2'000'001}});
+    Expect(boundedRequest.at("offset") == 0 && boundedRequest.at("limit") == 200 &&
+            boundedResponse.offset == 1'000'000 && boundedResponse.limit == 1 &&
+            boundedResponse.nextOffset == 1'000'000,
+        "Offsets et limites de candidats doivent rester dans les bornes réseau.");
 }

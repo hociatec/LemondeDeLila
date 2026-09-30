@@ -11,6 +11,17 @@
 
 namespace lila::modules::rooms::infrastructure
 {
+namespace
+{
+constexpr auto ListEvent = "room.lobby.list";
+constexpr auto ListedEvent = "room.lobby.listed";
+constexpr auto InvitePresenceListEvent = "room.lobby.invite.presence.list";
+constexpr auto InvitePresenceListedEvent = "room.lobby.invite.presence.listed";
+constexpr auto InviteSendEvent = "room.lobby.invite.send";
+constexpr auto InviteSentEvent = "room.lobby.invite.sent";
+constexpr auto InviteRespondEvent = "room.lobby.invite.respond";
+constexpr auto InviteRespondedEvent = "room.lobby.invite.responded";
+}
 RoomLobbyApi::RoomLobbyApi(
     lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client,
     lila::modules::session::application::SessionStore& sessionStore) noexcept
@@ -19,8 +30,8 @@ std::vector<domain::PublicRoom> RoomLobbyApi::ListPublic(std::stop_token stopTok
 {
     const auto response = lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_, sessionStore_, lila::shared::errors::NoActiveRoomSession,
-        "room.lobby.list", nlohmann::json::object(), lila::shared::errors::RoomLobbyLoadFailed,
-        stopToken, "room.lobby.listed");
+        ListEvent, nlohmann::json::object(), lila::shared::errors::RoomLobbyLoadFailed,
+        stopToken, ListedEvent);
     return codec::ReadPublicRooms(response.payload);
 }
 
@@ -29,9 +40,9 @@ std::vector<domain::RoomInviteCandidate> RoomLobbyApi::ListInviteCandidates(
 {
     const auto response = lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_, sessionStore_, lila::shared::errors::NoActiveRoomSession,
-        "room.lobby.invite.presence.list", {{"roomId", roomId}},
+        InvitePresenceListEvent, {{"roomId", roomId}},
         lila::shared::errors::RoomLobbyLoadFailed, stopToken,
-        "room.lobby.invite.presence.listed");
+        InvitePresenceListedEvent);
     std::vector<domain::RoomInviteCandidate> result;
     const auto players = response.payload.find("players");
     if (players == response.payload.end() || !players->is_array()) return result;
@@ -64,9 +75,9 @@ void RoomLobbyApi::SendInvite(int roomId, int userId, std::stop_token stopToken)
 {
     static_cast<void>(lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_, sessionStore_, lila::shared::errors::NoActiveRoomSession,
-        "room.lobby.invite.send", {{"roomId", roomId}, {"userId", userId}},
+        InviteSendEvent, {{"roomId", roomId}, {"userId", userId}},
         lila::shared::errors::RoomLobbyLoadFailed, stopToken,
-        "room.lobby.invite.sent"));
+        InviteSentEvent));
 }
 
 void RoomLobbyApi::RespondInvite(
@@ -74,9 +85,9 @@ void RoomLobbyApi::RespondInvite(
 {
     static_cast<void>(lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_, sessionStore_, lila::shared::errors::NoActiveRoomSession,
-        "room.lobby.invite.respond",
+        InviteRespondEvent,
         {{"invitationId", std::string(invitationId)}, {"accept", accept}},
         lila::shared::errors::RoomLobbyLoadFailed, stopToken,
-        "room.lobby.invite.responded"));
+        InviteRespondedEvent));
 }
 }

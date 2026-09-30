@@ -10,7 +10,7 @@
 #include "modules/chat/application/ChatService.h"
 #include "shared/errors/catalog/CoreErrorMessages.h"
 #include "modules/chat/domain/ChatErrorMessages.h"
-#include "shared/errors/presentation/ErrorFormatting.h"
+#include "shared/errors/domain/ErrorFormatting.h"
 #include "shared/text/domain/StringUtils.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/ui/presentation/BackgroundTask.h"

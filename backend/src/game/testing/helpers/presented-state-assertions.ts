@@ -10,7 +10,11 @@ export function presentedEvents(value: unknown) {
   if (!Array.isArray(events.recent)) throw new Error('Expected recent events');
   const event = (value: unknown) => {
     const record = testRecord(value);
-    return { ...record, data: testRecord(record.data) };
+    return {
+      ...record,
+      data: testRecord(record.data),
+      soundSemantic: record.soundSemantic,
+    };
   };
   const recent: unknown[] = events.recent;
   return {

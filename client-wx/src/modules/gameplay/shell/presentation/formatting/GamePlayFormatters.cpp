@@ -1,17 +1,18 @@
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 
-#include <nlohmann/json.hpp>
-
+#include "modules/gameplay/information/application/GameValueTextBuilder.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::gameplay::presentation
 {
 namespace
 {
-std::string ReadJsonString(const nlohmann::json& object, const char* field)
+std::string ObjectText(const domain::GameValue::Object& object, const char* field)
 {
     const auto found = object.find(field);
-    return found != object.end() && found->is_string() ? found->get<std::string>() : std::string{};
+    if (found == object.end()) return {};
+    const auto* text = found->second.Text();
+    return text == nullptr ? std::string{} : *text;
 }
 }
 
@@ -35,21 +36,19 @@ std::string TurnLabel(const domain::GameState& state)
     return player.empty() ? "Aucun tour actif" : "Tour de " + player;
 }
 
-std::string JsonToDisplay(const nlohmann::json& value)
+std::string GameValueToDisplay(const domain::GameValue& value)
 {
-    if (value.is_null()) return {};
-    if (value.is_string()) return value.get<std::string>();
-    if (value.is_number_integer()) return std::to_string(value.get<int>());
-    if (value.is_boolean()) return value.get<bool>() ? "oui" : "non";
-    return value.dump(2);
+    if (std::holds_alternative<std::monostate>(value.value)) return {};
+    return application::info::ValueLines(value);
 }
 
-std::string PanelJsonToDisplay(const nlohmann::json& value)
+std::string PanelGameValueToDisplay(const domain::GameValue& value)
 {
-    if (!value.is_object()) return JsonToDisplay(value);
-    const auto title = ReadJsonString(value, "title");
-    const auto message = ReadJsonString(value, "message");
-    if (title.empty() && message.empty()) return JsonToDisplay(value);
+    const auto* object = value.ObjectValue();
+    if (object == nullptr) return GameValueToDisplay(value);
+    const auto title = ObjectText(*object, "title");
+    const auto message = ObjectText(*object, "message");
+    if (title.empty() && message.empty()) return GameValueToDisplay(value);
     if (title.empty()) return message;
     if (message.empty()) return title;
     return title + "\n" + message;

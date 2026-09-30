@@ -10,7 +10,7 @@
 #include <wx/panel.h>
 
 #include "modules/audio/application/IAudioService.h"
-#include "shared/security/infrastructure/SecurityUtils.h"
+#include "shared/security/domain/SecureWipe.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::admin::presentation

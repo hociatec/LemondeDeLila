@@ -79,6 +79,8 @@ std::vector<domain::StoryBookGame> ReadStoryBookPayload(const nlohmann::json& pa
     {
         ThrowInvalidPayload("Story book games must be an array.");
     }
+    if (games->size() > 512)
+        ThrowInvalidPayload("Story book contains too many games.");
 
     std::vector<domain::StoryBookGame> result;
     result.reserve(games->size());

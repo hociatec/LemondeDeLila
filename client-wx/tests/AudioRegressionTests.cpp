@@ -3,7 +3,7 @@
 #include "modules/audio/application/AudioService.h"
 #include "modules/audio/application/IAudioBackend.h"
 #include "modules/audio/application/IAudioSettingsProvider.h"
-#include "modules/audio/infrastructure/NotificationAudioDecoder.h"
+#include "modules/audio/application/NotificationAudioDecoder.h"
 #include "modules/gameplay/state/infrastructure/GameSystemDecoder.h"
 #include "modules/gameplay/events/application/GameSoundEventPolicy.h"
 #include "modules/chat/application/ChatMessageStore.h"
@@ -32,7 +32,7 @@ struct Backend : audio::application::IAudioBackend
 
 void TestNotifications()
 {
-    audio::infrastructure::NotificationAudioDecoder decoder;
+    audio::application::NotificationAudioDecoder decoder;
     const auto decode = [&](std::string type, Json payload)
         { return decoder.Decode(Json{{"type", type}, {"payload", payload}}.dump(), 7); };
     assert(!decode("notify.counts", {{"messages", 42}}).cue);
@@ -61,33 +61,35 @@ void TestGameEvents()
 {
     const auto decode = [](const Json& events)
         { return gameplay::infrastructure::GameSystemDecoder::Decode({{"events", {{"recent", events}}}}).events; };
-    const auto event = [](std::string type, Json data, std::string id)
-        { return Json{{"id", id}, {"type", type}, {"occurredAtMs", 1}, {"data", data}}; };
-    const auto revealed = event("quiz.revealed", {{"sessionId", "q1"}, {"correctAnswerIndex", 1}, {"answers", {{"7", 1}, {"8", 0}}}}, "1");
+    const auto event = [](std::string type, Json data, std::string id,
+                           std::string soundSemantic = {})
+        { return Json{{"id", id}, {"type", type}, {"soundSemantic", soundSemantic},
+            {"occurredAtMs", 1}, {"data", data}}; };
+    const auto revealed = event("quiz.revealed", {{"sessionId", "q1"},
+        {"correctAnswerIndex", 1}, {"answers", {{"7", 1}, {"8", 0}}}},
+        "1", "quiz.correct");
     const auto semantic = event("game.message", {{"key", "game.quiz.answered"},
         {"params", {{"sessionId", "q1"}, {"playerId", 7}, {"correct", true}}}}, "2");
     auto batch = decode(Json::array({revealed, semantic}));
     using gameplay::application::GameSoundEventType;
-    assert(GameSoundEventType(batch[0], batch, 7) == "quiz.correct");
-    assert(GameSoundEventType(batch[0], batch, 8) == "quiz.wrong");
-    assert(GameSoundEventType(batch[0], batch, 9).empty());
-    assert(GameSoundEventType(batch[1], batch, 7).empty()); // No duplicate semantic sound.
+    assert(GameSoundEventType(batch[0]) == "quiz.correct");
+    assert(GameSoundEventType(batch[1]).empty());
     auto nextQuestion = semantic;
     nextQuestion["data"]["params"]["sessionId"] = "q2";
     batch = decode(Json::array({revealed, nextQuestion}));
-    assert(GameSoundEventType(batch[1], batch, 7) == "quiz.correct");
+    assert(GameSoundEventType(batch[1]).empty());
     batch = decode(Json::array({semantic}));
     assert(batch[0].details.playerId == 7);
-    assert(GameSoundEventType(batch[0], batch, 7) == "quiz.correct");
+    assert(GameSoundEventType(batch[0]).empty());
     batch = decode(Json::array({event("game.message", {{"key", "game.quiz.answered"},
         {"params", {{"playerId", 7}, {"correct", false}}}}, "3")}));
-    assert(GameSoundEventType(batch[0], batch, 7) == "quiz.wrong");
+    assert(GameSoundEventType(batch[0]).empty());
     batch = decode(Json::array({event("quiz.answered", {{"playerId", 7}}, "4")}));
-    assert(GameSoundEventType(batch[0], batch, 7) == "quiz.answered"); // Not mapped to correctness.
+    assert(GameSoundEventType(batch[0]).empty());
     batch = decode(Json::array({event("game.message", {{"key", "game.grid.wall.placed"},
-        {"params", {{"playerId", 8}}}}, "5")}));
+        {"params", {{"playerId", 8}}}}, "5", "wall.placed")}));
     assert(batch[0].details.playerId == 8);
-    assert(GameSoundEventType(batch[0], batch, 7) == "wall.placed");
+    assert(GameSoundEventType(batch[0]) == "wall.placed");
 }
 
 void TestAmbienceLifecycle()

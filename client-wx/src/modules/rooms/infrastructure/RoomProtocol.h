@@ -38,5 +38,6 @@ inline constexpr std::string_view Ack = "room.ack";
 inline constexpr std::string_view Pong = "room.pong";
 inline constexpr std::string_view Left = "room.left";
 inline constexpr std::string_view Deleted = "room.deleted";
+inline constexpr std::string_view LobbyInviteReceived = "room.lobby.invite.received";
 inline constexpr std::string_view Error = "error";
 }

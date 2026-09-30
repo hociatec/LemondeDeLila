@@ -36,12 +36,15 @@ struct ParsedUrl final
 std::wstring Utf8ToWide(std::string_view value)
 {
     if (value.empty()) return {};
+    if (value.size() > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+        throw std::length_error("Texte HTTP trop long pour Win32.");
+    const auto inputLength = static_cast<int>(value.size());
     const int size = ::MultiByteToWideChar(
-        CP_UTF8, MB_ERR_INVALID_CHARS, value.data(), static_cast<int>(value.size()), nullptr, 0);
+        CP_UTF8, MB_ERR_INVALID_CHARS, value.data(), inputLength, nullptr, 0);
     if (size <= 0) throw std::runtime_error("Texte UTF-8 HTTP invalide.");
     std::wstring result(static_cast<std::size_t>(size), L'\0');
     if (::MultiByteToWideChar(
-            CP_UTF8, MB_ERR_INVALID_CHARS, value.data(), static_cast<int>(value.size()),
+            CP_UTF8, MB_ERR_INVALID_CHARS, value.data(), inputLength,
             result.data(), size) != size)
         throw std::runtime_error("Conversion UTF-8 HTTP impossible.");
     return result;

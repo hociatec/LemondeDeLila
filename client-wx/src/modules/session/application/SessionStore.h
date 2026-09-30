@@ -1,6 +1,7 @@
 #pragma once
 
 #include <condition_variable>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -19,6 +20,12 @@ class BackgroundTaskHandle;
 
 namespace lila::modules::session::application
 {
+struct SessionRefreshStats final
+{
+    bool inProgress = false;
+    std::size_t waitingCallers = 0;
+};
+
 class SessionStore final
 {
 public:
@@ -43,6 +50,7 @@ public:
     [[nodiscard]] std::string RefreshAccessToken(std::stop_token stopToken = {});
     [[nodiscard]] domain::Session Current() const;
     [[nodiscard]] bool IsPersistent() const;
+    [[nodiscard]] SessionRefreshStats RefreshStats() const;
 
 private:
     [[nodiscard]] bool HasSessionLocked() const;
@@ -57,6 +65,7 @@ private:
     domain::Session current_;
     bool persisted_ = false;
     bool refreshInProgress_ = false;
+    std::size_t refreshWaiters_ = 0;
     std::uint64_t generation_ = 0;
     std::uint64_t lastSuccessfulRefreshGeneration_ = 0;
     std::function<void()> sessionExpiredHandler_;

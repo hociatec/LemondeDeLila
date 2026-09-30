@@ -134,7 +134,10 @@ std::string UnprotectSecret(const std::string& cipherTextOrBase64)
     }
 #endif
 
-    return cipherTextOrBase64;
+    // Persisted session secrets must never fall back to plaintext.  A failed
+    // DPAPI operation can mean corrupted data, a different Windows account,
+    // or a legacy raw token; all three require a fresh authentication.
+    throw std::runtime_error(lila::shared::errors::SecretUnprotectionFailed);
 }
 
 void HardenFilePermissions(const std::string& path)

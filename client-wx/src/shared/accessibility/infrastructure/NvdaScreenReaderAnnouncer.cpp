@@ -68,7 +68,7 @@ NvdaScreenReaderAnnouncer::~NvdaScreenReaderAnnouncer()
 #endif
 }
 
-bool NvdaScreenReaderAnnouncer::Speak(const wxString& message) const noexcept
+bool NvdaScreenReaderAnnouncer::Speak(std::wstring_view message) const noexcept
 {
 #ifdef __WXMSW__
     if (message.empty() || testIfRunning_ == nullptr || speakText_ == nullptr)
@@ -76,7 +76,8 @@ bool NvdaScreenReaderAnnouncer::Speak(const wxString& message) const noexcept
     try
     {
         if (testIfRunning_() != 0) return false;
-        return speakText_(message.wc_str()) == 0;
+        const std::wstring terminated(message);
+        return speakText_(terminated.c_str()) == 0;
     }
     catch (...)
     {
@@ -86,6 +87,11 @@ bool NvdaScreenReaderAnnouncer::Speak(const wxString& message) const noexcept
     static_cast<void>(message);
     return false;
 #endif
+}
+
+std::unique_ptr<IScreenReaderAnnouncer> CreateScreenReaderAnnouncer()
+{
+    return std::make_unique<NvdaScreenReaderAnnouncer>();
 }
 
 }

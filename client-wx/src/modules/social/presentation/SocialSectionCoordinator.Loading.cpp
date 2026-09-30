@@ -50,13 +50,14 @@ void RunSectionLoad(
 
 void SocialSectionCoordinator::LoadFriends()
 {
+    const auto loadController = loadController_;
     RunSectionLoad<SocialLoadController::FriendsSnapshot>(
         SocialSection::Friends,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadFriendsBusy),
         callbacks_,
-        [this]()
+        [loadController]()
         {
-            return loadController_.LoadFriends();
+            return loadController->LoadFriends();
         },
         [this](SocialLoadController::FriendsSnapshot snapshot)
         {
@@ -74,13 +75,14 @@ void SocialSectionCoordinator::LoadFriends()
 
 void SocialSectionCoordinator::LoadIncomingRequests()
 {
+    const auto loadController = loadController_;
     RunSectionLoad<SocialLoadController::RequestsSnapshot>(
         SocialSection::IncomingRequests,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadIncomingRequestsBusy),
         callbacks_,
-        [this]()
+        [loadController]()
         {
-            return loadController_.LoadIncomingRequests();
+            return loadController->LoadIncomingRequests();
         },
         [this](SocialLoadController::RequestsSnapshot snapshot)
         {
@@ -100,13 +102,14 @@ void SocialSectionCoordinator::LoadIncomingRequests()
 
 void SocialSectionCoordinator::LoadOutgoingRequests()
 {
+    const auto loadController = loadController_;
     RunSectionLoad<SocialLoadController::RequestsSnapshot>(
         SocialSection::OutgoingRequests,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadOutgoingRequestsBusy),
         callbacks_,
-        [this]()
+        [loadController]()
         {
-            return loadController_.LoadOutgoingRequests();
+            return loadController->LoadOutgoingRequests();
         },
         [this](SocialLoadController::RequestsSnapshot snapshot)
         {
@@ -126,13 +129,14 @@ void SocialSectionCoordinator::LoadOutgoingRequests()
 
 void SocialSectionCoordinator::LoadBlockedUsers()
 {
+    const auto loadController = loadController_;
     RunSectionLoad<std::vector<domain::SocialUser>>(
         SocialSection::Blocked,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadBlockedUsersBusy),
         callbacks_,
-        [this]()
+        [loadController]()
         {
-            return loadController_.LoadBlockedUsers();
+            return loadController->LoadBlockedUsers();
         },
         [this](std::vector<domain::SocialUser> results)
         {
@@ -152,11 +156,12 @@ void SocialSectionCoordinator::LoadProfile(std::optional<int> userId)
 {
     navigationState_.BeginProfile(userId);
     auto result = std::make_shared<std::optional<domain::SocialProfile>>();
+    const auto loadController = loadController_;
     callbacks_.runBackgroundTask(
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileLoading),
-        [this, result, userId]()
+        [loadController, result, userId]()
         {
-            *result = loadController_.LoadProfile(userId);
+            *result = loadController->LoadProfile(userId);
         },
         [this, result]()
         {

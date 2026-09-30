@@ -11,6 +11,12 @@ namespace lila::modules::vault::infrastructure
 {
 namespace
 {
+constexpr auto ListEvent = "vault.list";
+constexpr auto SaveEvent = "vault.save";
+constexpr auto RestoreEvent = "vault.restore";
+constexpr auto DeleteEvent = "vault.delete";
+constexpr auto AbandonEvent = "vault.abandon";
+
 auto Request(
     lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client,
     lila::modules::session::application::SessionStore& sessionStore,
@@ -37,30 +43,30 @@ VaultApi::VaultApi(
 std::vector<domain::VaultSnapshot> VaultApi::List(std::stop_token stopToken) const
 {
     return codec::ReadSnapshots(Request(
-        client_, sessionStore_, "vault.list", nlohmann::json::object(), stopToken).payload);
+        client_, sessionStore_, ListEvent, nlohmann::json::object(), stopToken).payload);
 }
 
 std::string VaultApi::Save(int roomId, std::stop_token stopToken) const
 {
     return codec::ReadSavedId(Request(
-        client_, sessionStore_, "vault.save", codec::BuildSaveRequest(roomId), stopToken).payload);
+        client_, sessionStore_, SaveEvent, codec::BuildSaveRequest(roomId), stopToken).payload);
 }
 
 int VaultApi::Restore(std::string_view snapshotId, std::stop_token stopToken) const
 {
     return codec::ReadRestoredRoomId(Request(
-        client_, sessionStore_, "vault.restore", {{"id", std::string(snapshotId)}}, stopToken).payload);
+        client_, sessionStore_, RestoreEvent, {{"id", std::string(snapshotId)}}, stopToken).payload);
 }
 
 void VaultApi::Delete(std::string_view snapshotId, std::stop_token stopToken) const
 {
     codec::ValidateDelete(Request(
-        client_, sessionStore_, "vault.delete", {{"id", std::string(snapshotId)}}, stopToken).payload);
+        client_, sessionStore_, DeleteEvent, {{"id", std::string(snapshotId)}}, stopToken).payload);
 }
 
 void VaultApi::Abandon(int roomId, std::stop_token stopToken) const
 {
     codec::ValidateAbandon(Request(
-        client_, sessionStore_, "vault.abandon", codec::BuildAbandonRequest(roomId), stopToken).payload);
+        client_, sessionStore_, AbandonEvent, codec::BuildAbandonRequest(roomId), stopToken).payload);
 }
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string_view>
+#include "modules/gameplay/state/domain/GameSystem.h"
 
 namespace lila::modules::gameplay::application
 {
@@ -25,7 +25,7 @@ public:
     [[nodiscard]] bool BeginRoomStart() noexcept;
     void MarkRoomStartPending() noexcept;
     void SetRoomStarted(bool started, bool activeProjection, int expectedRunId) noexcept;
-    void ObserveAuthoritativeState(int runId, std::string_view matchStatus) noexcept;
+    void ObserveAuthoritativeState(int runId, domain::GameMatchStatus matchStatus) noexcept;
     void MarkReconnecting() noexcept;
     void MarkConnected() noexcept;
     void MarkFinished() noexcept;
