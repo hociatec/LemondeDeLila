@@ -8,6 +8,7 @@ import { genericGameEventMessage } from './game-ws-generic-event-message';
 import { gridPawnMessage } from './game-ws-grid-pawn-message';
 import { cardMessageLabel, scalarMessageText } from './game-ws-message-values';
 import { withoutRepeatedTurnAnnouncements } from './game-ws-turn-announcements';
+import { withSoundSemantics } from './game-ws-sound-semantics';
 import {
   decodeReceivedCardData,
   decodeScoreChangedData,
@@ -62,74 +63,15 @@ export class GameWsStateMessagesPresenter {
         recentEvents.map((event) => presentEvent(event)),
       ),
     );
-    const revealedSessions = this.revealedQuizSessions(recent, viewerPlayerId);
+    const sounded = withSoundSemantics(recent, presented, viewerPlayerId);
     return {
       ...system,
       events: {
         ...events,
-        recent: recent.map((event) =>
-          this.withSoundSemantic(event, viewerPlayerId, revealedSessions),
-        ),
-        latestByType: Object.fromEntries(
-          Object.entries(presented).map(([key, event]) => [
-            key,
-            this.withSoundSemantic(event, viewerPlayerId, revealedSessions),
-          ]),
-        ),
+        recent: sounded.recent,
+        latestByType: sounded.latestByType,
       },
     };
-  }
-
-  private revealedQuizSessions(
-    events: readonly MessageViewEvent[],
-    viewerPlayerId: number | null,
-  ): ReadonlySet<string> {
-    const sessions = new Set<string>();
-    if (viewerPlayerId == null) return sessions;
-    for (const event of events) {
-      if (event.type !== 'quiz.revealed') continue;
-      const data = soundRecord(event.data);
-      const answers = soundRecord(data.answers);
-      if (typeof answers[String(viewerPlayerId)] !== 'number') continue;
-      const sessionId = soundText(data.sessionId);
-      if (sessionId) sessions.add(sessionId);
-    }
-    return sessions;
-  }
-
-  private withSoundSemantic(
-    event: MessageViewEvent,
-    viewerPlayerId: number | null,
-    revealedSessions: ReadonlySet<string>,
-  ): MessageViewEvent {
-    const semantic = this.soundSemantic(event, viewerPlayerId, revealedSessions);
-    return semantic ? { ...event, soundSemantic: semantic } : event;
-  }
-
-  private soundSemantic(
-    event: MessageViewEvent,
-    viewerPlayerId: number | null,
-    revealedSessions: ReadonlySet<string>,
-  ): string {
-    const data = soundRecord(event.data);
-    if (event.type === 'quiz.revealed') {
-      if (viewerPlayerId == null || typeof data.correctAnswerIndex !== 'number')
-        return '';
-      const answer = soundRecord(data.answers)[String(viewerPlayerId)];
-      if (typeof answer !== 'number') return '';
-      return answer === data.correctAnswerIndex ? 'quiz.correct' : 'quiz.wrong';
-    }
-    if (event.type !== 'game.message') return event.type;
-    const key = soundText(data.key);
-    const params = soundRecord(data.params);
-    if (key === 'game.grid.wall.placed') return 'wall.placed';
-    if (key === 'game.grid.pawn.moved' || key === 'game.grid.pawn.positioned')
-      return 'pawn.placed';
-    if (key !== 'game.quiz.answered' || typeof params.correct !== 'boolean')
-      return '';
-    const sessionId = soundText(params.sessionId);
-    if (sessionId && revealedSessions.has(sessionId)) return '';
-    return params.correct ? 'quiz.correct' : 'quiz.wrong';
   }
 
   private playerNames(system: MessageSystemView): Map<number, string> {
@@ -474,14 +416,4 @@ function turnAnnouncement(name: string): string {
 function isActiveMatchStatus(value: unknown): boolean {
   const status = typeof value === 'string' ? value.trim().toLowerCase() : '';
   return status === 'started' || status === 'playing';
-}
-
-function soundRecord(value: unknown): Record<string, unknown> {
-  return value !== null && typeof value === 'object'
-    ? (value as Record<string, unknown>)
-    : {};
-}
-
-function soundText(value: unknown): string {
-  return typeof value === 'string' ? value.trim().slice(0, 128) : '';
 }
