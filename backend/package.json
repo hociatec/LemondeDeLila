@@ -164,6 +164,8 @@
     "ws": "^8.22.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^10.0.1",
     "@nestjs/cli": "^11.0.0",
@@ -182,6 +184,8 @@
     "@types/node": "^26.6.3",
     "@types/supertest": "^7.2.1",
     "@types/ws": "^8.18.1",
+    "babel-jest": "^30.5.2",
+    "babel-plugin-transform-import-meta": "^2.3.3",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
@@ -208,13 +212,39 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": [
+      "^.+\\.ts$": [
         "ts-jest",
         {
           "tsconfig": "<rootDir>/../tsconfig.jest.json"
         }
+      ],
+      "^.+\\.js$": [
+        "babel-jest",
+        {
+          "presets": [
+            [
+              "@babel/preset-env",
+              {
+                "targets": {
+                  "node": "current"
+                }
+              }
+            ]
+          ],
+          "plugins": [
+            [
+              "babel-plugin-transform-import-meta",
+              {
+                "module": "ES6"
+              }
+            ]
+          ]
+        }
       ]
     },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!@nestjs/)"
+    ],
     "moduleNameMapper": {
       "^@modules/(.*)$": "<rootDir>/modules/$1",
       "^@game/(.*)$": "<rootDir>/game/$1",
