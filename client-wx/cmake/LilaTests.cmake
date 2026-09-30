@@ -210,6 +210,13 @@ lila_add_test_executable(lemonde_de_lila_wx_focus_memory_lifecycle_tests
     src/shared/accessibility/presentation/NavigationScope.cpp
 )
 target_link_libraries(lemonde_de_lila_wx_focus_memory_lifecycle_tests PRIVATE ${wxWidgets_LIBRARIES})
+lila_add_test_executable(lemonde_de_lila_wx_background_task_lifecycle_tests
+    tests/BackgroundTaskLifecycleTests.cpp
+    src/shared/concurrency/application/BackgroundExecutor.cpp
+    src/shared/concurrency/application/BackgroundTasks.cpp
+    src/shared/logging/infrastructure/Logger.cpp
+)
+target_link_libraries(lemonde_de_lila_wx_background_task_lifecycle_tests PRIVATE ${wxWidgets_LIBRARIES})
 lila_add_test_executable(lemonde_de_lila_wx_background_executor_tests
     tests/BackgroundExecutorTests.cpp
     src/shared/concurrency/application/BackgroundExecutor.cpp

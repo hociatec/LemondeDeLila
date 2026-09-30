@@ -3,6 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${TMPDIR:-/tmp}/lila-portable-tests"
 CXX_BIN="${CXX:-c++}"
+CHECK_SCOPE="${LILA_CHECK_SCOPE:-all}"
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 SOURCE_FINGERPRINT="$({
@@ -71,6 +72,10 @@ cxx_build() {
   "$CXX_BIN" "${flags[@]}" "${objects[@]}" -o "$output"
 }
 
+scope_enabled() {
+  [[ "$CHECK_SCOPE" == "all" || "$CHECK_SCOPE" == "$1" ]]
+}
+
 cxx_build "${COMMON_FLAGS[@]}" "$ROOT/tests/GameSoundPolicyTests.cpp" \
   "$ROOT/src/modules/audio/domain/SoundCatalog.cpp" \
   "$ROOT/src/modules/audio/application/SoundVolumeResolver.cpp" \
@@ -116,6 +121,7 @@ cxx_build "${COMMON_FLAGS[@]}" -DLILA_BASS_WRAPPER_ONLY_TEST -I"$ROOT/third_part
   -o "$BUILD_DIR/bass-unavailable-tests"
 "$BUILD_DIR/bass-unavailable-tests"
 
+if scope_enabled core; then
 cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
   "$ROOT/tests/AudioRegressionTests.cpp" \
   "$ROOT/src/modules/audio/application/AudioService.cpp" \
@@ -297,7 +303,9 @@ cxx_build "${COMMON_FLAGS[@]}" -pthread \
   cd "$BUILD_DIR"
   ./async-audio-tests
 )
+fi
 
+if scope_enabled gameplay; then
 cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
   "$ROOT/tests/GameplayContractTests.cpp" \
   "$ROOT/src/modules/gameplay/actions/application/GameActionPresentationPolicy.cpp" \
@@ -382,7 +390,9 @@ cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
   "$ROOT/src/modules/rooms/presentation/actions/RoomActionPolicy.cpp" \
   -o "$BUILD_DIR/room-contract-tests"
 "$BUILD_DIR/room-contract-tests"
+fi
 
+if scope_enabled services; then
 cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
   "$ROOT/tests/ServiceResilienceTests.cpp" \
   "$ROOT/src/modules/rooms/application/RoomInvitationMonitor.cpp" \
@@ -444,6 +454,7 @@ cxx_build "${COMMON_FLAGS[@]}" -c \
 cxx_build "${COMMON_FLAGS[@]}" -c \
   "$ROOT/src/modules/messaging/presentation/MessagingActionController.cpp" \
   -o "$BUILD_DIR/messaging-action-controller-compile-tests.o"
+fi
 
 if rg -n -i '\blama\b' "$ROOT/src"; then
   echo "Le client WX ne doit contenir aucune logique propre à LAMA." >&2

@@ -38,16 +38,27 @@ jobs:
             --output-root "$generated_dir"
           diff -ru client-wx/src/generated/protocol "$generated_dir"
 
-  sanitizers:
+  sanitizer-shards:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 3
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [core, gameplay, services]
     steps:
       - uses: actions/checkout@v4
-      - name: Portable checks with ASan and UBSan
+      - name: ${{ matrix.scope }} checks with ASan and UBSan (maximum two minutes)
         env:
           CXX: clang++
+          LILA_CHECK_SCOPE: ${{ matrix.scope }}
           LILA_SANITIZERS: address,undefined
-        run: timeout 180s bash client-wx/tests/run_portable_checks.sh
+        run: timeout 120s bash client-wx/tests/run_portable_checks.sh
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    needs: sanitizer-shards
+    steps:
+      - run: echo 'All sanitizer shards passed.'
 
   windows:
     runs-on: windows-latest
