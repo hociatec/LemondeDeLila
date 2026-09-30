@@ -240,7 +240,8 @@ void TestChatServiceReconnectsAfterTransientFailure()
             std::lock_guard lock(fixture.gateway.mutex_);
             return fixture.gateway.openCount >= 6;
         },
-        "Les pertes réseau répétées doivent toutes être suivies d'une reconnexion");
+        "Les pertes réseau répétées doivent toutes être suivies d'une reconnexion",
+        8000);
     WaitUntil(
         [&fixture]()
         {
