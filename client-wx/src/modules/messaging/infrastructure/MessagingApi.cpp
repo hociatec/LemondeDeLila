@@ -9,6 +9,7 @@
 #include "generated/protocol/MessagingProtocolFields.generated.h"
 #include "modules/session/application/SessionStore.h"
 #include "modules/messaging/domain/MessagingErrorMessages.h"
+#include "modules/messaging/domain/MessagingPagination.h"
 #include "generated/protocol/WsMessageTypes.generated.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
@@ -29,7 +30,8 @@ std::vector<domain::MessagingMessage> MessagingApi::GetBox(domain::MessagingBox 
         std::string(lila::shared::network::ws::types::messaging::Messages),
         {
             {std::string(lila::modules::messaging::infrastructure::fields::Box), codec::BoxToString(box)},
-            {std::string(lila::modules::messaging::infrastructure::fields::Limit), limit},
+            {std::string(lila::modules::messaging::infrastructure::fields::Limit),
+                domain::NormalizePageLimit(limit)},
         },
         lila::shared::errors::MessagingLoadBoxFailed);
     return codec::ReadMessagesPayload(response);

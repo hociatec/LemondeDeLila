@@ -69,7 +69,10 @@ void ExtractFile(mz_zip_archive& archive, mz_uint index, const fs::path& target)
     }
 }
 
-void ExtractEntries(const fs::path& archivePath, const fs::path& destination)
+void ExtractEntries(
+    const fs::path& archivePath,
+    const fs::path& destination,
+    const UpdateProgressDialog* progress)
 {
     ZipReader reader(archivePath);
     auto& archive = reader.Archive();
@@ -78,6 +81,7 @@ void ExtractEntries(const fs::path& archivePath, const fs::path& destination)
         throw std::runtime_error("ZIP entry count is invalid.");
     }
     for (mz_uint index = 0; index < count; ++index) {
+        if (progress) progress->ThrowIfCancelled();
         mz_zip_archive_file_stat info{};
         if (!mz_zip_reader_file_stat(&archive, index, &info) ||
             (info.m_bit_flag & 1U) != 0 ||
@@ -116,7 +120,7 @@ void VerifyExtractedPayload(
     if (!AllowUnsignedUpdates()) {
         for (const auto* executable : {AppExecutable, LauncherExecutable}) {
             std::string failure;
-            if (!VerifyAuthenticodeWithRetry(destination / executable, &failure)) {
+            if (!VerifyAuthenticodeWithRetry(destination / executable, &failure, progress)) {
                 throw std::runtime_error(
                     "Update executable " + Narrow(executable) +
                     " failed Authenticode verification (" + failure + ").");
@@ -126,6 +130,7 @@ void VerifyExtractedPayload(
     if (progress) progress->SetStage(L"Contrôle de l'installation…", 97);
     std::uint64_t actualExtractedBytes = 0;
     for (const auto& entry : fs::recursive_directory_iterator(destination)) {
+        if (progress) progress->ThrowIfCancelled();
         if (entry.is_symlink() || entry.status().permissions() == fs::perms::unknown) {
             throw std::runtime_error("Update contains an unsafe filesystem entry.");
         }
@@ -153,7 +158,7 @@ void ExtractArchive(
     fs::remove_all(destination);
     fs::create_directories(destination);
     try {
-        ExtractEntries(archive, destination);
+        ExtractEntries(archive, destination, progress);
         VerifyExtractedPayload(destination, expectedExtractedBytes, progress);
     } catch (...) {
         std::error_code ignored;

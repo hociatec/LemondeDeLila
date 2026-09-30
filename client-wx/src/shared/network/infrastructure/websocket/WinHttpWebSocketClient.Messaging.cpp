@@ -2,7 +2,8 @@
 #include "shared/network/infrastructure/websocket/WinHttpWebSocketClient.NativeState.h"
 #include "shared/network/infrastructure/websocket/WinHttpWebSocketInternals.h"
 #include "shared/errors/catalog/NetworkErrorMessages.h"
-#include "shared/errors/presentation/ErrorFormatting.h"
+#include "shared/errors/domain/ErrorFormatting.h"
+#include "shared/network/domain/WebSocketConstants.h"
 
 #include <stdexcept>
 #include <string>
@@ -19,7 +20,9 @@ namespace lila::shared::network::websocket
 void WinHttpWebSocketClient::Send(const std::string& payload)
 {
 #ifdef _WIN32
-    const auto operation = BeginOperation(false);
+    if (!lila::shared::network::ws::IsWebSocketPayloadSizeAllowed(payload.size()))
+        throw std::runtime_error("WebSocket message exceeds the configured size limit.");
+    auto operation = BeginOperation(false);
     if (operation.handle == nullptr)
     {
         throw std::runtime_error(lila::shared::errors::WinHttpNoActiveConnection);
@@ -48,7 +51,7 @@ void WinHttpWebSocketClient::Send(const std::string& payload)
 std::string WinHttpWebSocketClient::Receive()
 {
 #ifdef _WIN32
-    const auto operation = BeginOperation(true);
+    auto operation = BeginOperation(true);
     if (operation.handle == nullptr)
     {
         throw std::runtime_error(lila::shared::errors::WinHttpNoActiveConnection);

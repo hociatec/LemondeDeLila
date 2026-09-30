@@ -113,7 +113,7 @@ private:
     SocialDataStore dataStore_;
     bool suppressNextListActivation_ = false;
     std::unique_ptr<SocialActionController> actionController_;
-    std::unique_ptr<SocialLoadController> loadController_;
+    std::shared_ptr<SocialLoadController> loadController_;
     std::unique_ptr<SocialProfileCoordinator> profileCoordinator_;
     std::unique_ptr<SocialScreenCoordinator> screenCoordinator_;
     std::unique_ptr<SocialSectionCoordinator> sectionCoordinator_;

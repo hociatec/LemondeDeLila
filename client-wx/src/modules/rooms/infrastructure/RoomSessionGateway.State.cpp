@@ -13,6 +13,7 @@
 #include "modules/rooms/infrastructure/RoomProtocol.h"
 #include "modules/rooms/domain/RoomErrorMessages.h"
 #include "shared/errors/domain/AppError.h"
+#include "shared/data/json/JsonReaders.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
 
@@ -44,7 +45,8 @@ domain::RoomState RoomSessionGateway::AwaitState(
     {
         while (!stopToken.stop_requested())
         {
-            const auto message = nlohmann::json::parse(client_.Receive());
+            const auto message = lila::shared::data::json::ParseDocument(
+                client_.Receive(), "État de table invalide.");
             const auto messageType = message.value("type", std::string{});
             lila::shared::logging::LogInfo("Rooms", "RX " + messageType);
             auto event = DecodeEvent(message);
@@ -55,7 +57,7 @@ domain::RoomState RoomSessionGateway::AwaitState(
                     : event.message;
                 throw lila::shared::errors::AppException(
                     lila::shared::errors::ToAppError(
-                        userMessage, "Room handshake rejected: " + message.dump()));
+                        userMessage, "Room handshake rejected: " + messageType));
             }
             if (event.type == domain::RoomEventType::Closed)
                 throw std::runtime_error("La table n'est plus disponible.");

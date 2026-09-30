@@ -12,9 +12,7 @@ namespace
 bool IsUnsafeShortcut(const domain::GameShortcut& shortcut)
 {
     if (shortcut.normalizedKey == "ENTER") return true;
-    return shortcut.normalizedKey == "SPACE" &&
-        shortcut.kind == domain::GameShortcutKind::Action &&
-        shortcut.actionType == "roll";
+    return shortcut.activation == domain::GameShortcutActivation::FocusOnly;
 }
 
 const domain::GameShortcut* FindAvailableAction(

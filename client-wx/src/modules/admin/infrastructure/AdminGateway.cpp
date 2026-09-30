@@ -1,4 +1,5 @@
 #include "modules/admin/infrastructure/AdminGateway.h"
+#include "modules/session/application/SessionHttpRetry.h"
 
 #include <filesystem>
 #include <iomanip>
@@ -104,7 +105,10 @@ nlohmann::json ParseHttpPayload(const lila::shared::network::http::HttpResponse&
     if (!response.body.empty())
     {
         try { parsed = nlohmann::json::parse(response.body); }
-        catch (...) { throw std::runtime_error("Réponse HTTP admin invalide."); }
+        catch (const nlohmann::json::exception&)
+        {
+            throw std::runtime_error("Réponse HTTP admin invalide.");
+        }
     }
     if (response.IsSuccess()) return parsed;
     std::string message = "Requête administrateur refusée (HTTP " + std::to_string(response.statusCode) + ").";
@@ -140,11 +144,11 @@ domain::AdminPayload AdminGateway::Execute(
     {
         document = nlohmann::json::parse(payload.Serialized());
     }
-    catch (const nlohmann::json::exception& exception)
+    catch (const nlohmann::json::exception&)
     {
         throw lila::shared::errors::AppException(
             lila::shared::errors::ToAppError(
-                "Requête administrateur invalide.", exception.what()));
+                "Requête administrateur invalide.", "Invalid admin JSON payload."));
     }
     const auto result = command.transport == AdminTransport::ApiWebSocket ||
             command.transport == AdminTransport::NotificationWebSocket
@@ -197,12 +201,12 @@ nlohmann::json AdminGateway::ExecuteHttp(
         request.body = body.dump();
     }
 
-    lila::shared::network::http::HttpResponse response;
-    response = httpClient_.Send(
-        request, sessionStore_.AccessToken(stopToken), stopToken);
-    if (response.statusCode == 401 && !stopToken.stop_requested() &&
-        command.transport != AdminTransport::HttpMultipart)
-        response = httpClient_.Send(request, sessionStore_.RefreshAccessToken(stopToken), stopToken);
+    const auto response = lila::modules::session::application::SendHttpWithSessionRefresh(
+        sessionStore_, stopToken, command.transport != AdminTransport::HttpMultipart,
+        [this, &request, stopToken](const std::string& token)
+        {
+            return httpClient_.Send(request, token, stopToken);
+        });
     return ValidateAndNormalizeAdminPayload(ParseHttpPayload(response));
 }
 }

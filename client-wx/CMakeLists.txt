@@ -22,6 +22,7 @@ endif()
 include(cmake/LilaTargetOptions.cmake)
 
 set(LILA_MAX_IMPLEMENTATION_LINES 250)
+set(LILA_MAX_TEST_LINES 400)
 file(GLOB_RECURSE LILA_IMPLEMENTATION_FILES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
@@ -34,11 +35,7 @@ file(GLOB_RECURSE LILA_TEST_IMPLEMENTATION_FILES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.inc"
 )
-set(LILA_SIZE_GUARDED_FILES
-    ${LILA_IMPLEMENTATION_FILES}
-    ${LILA_HEADER_FILES}
-    ${LILA_TEST_IMPLEMENTATION_FILES}
-)
+set(LILA_SIZE_GUARDED_FILES ${LILA_IMPLEMENTATION_FILES} ${LILA_HEADER_FILES})
 foreach(implementation_file IN LISTS LILA_SIZE_GUARDED_FILES)
     file(READ "${implementation_file}" implementation_content)
     string(REGEX MATCHALL "\n" implementation_line_breaks "${implementation_content}")
@@ -51,6 +48,18 @@ foreach(implementation_file IN LISTS LILA_SIZE_GUARDED_FILES)
         )
     endif()
 endforeach()
+foreach(test_file IN LISTS LILA_TEST_IMPLEMENTATION_FILES)
+    file(READ "${test_file}" test_content)
+    string(REGEX MATCHALL "\n" test_line_breaks "${test_content}")
+    list(LENGTH test_line_breaks test_line_count)
+    math(EXPR test_line_count "${test_line_count} + 1")
+    if(test_line_count GREATER LILA_MAX_TEST_LINES)
+        message(FATAL_ERROR
+            "Fichier de test C++ trop volumineux (${test_line_count} lignes): "
+            "${test_file}. Decouper le fichier par scenario."
+        )
+    endif()
+endforeach()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -60,7 +69,11 @@ if(WIN32)
     enable_language(RC)
     # Les en-têtes MinGW n'exposent pas les API CNG/Vista+ sans cible Windows
     # explicite.
-    add_compile_definitions(_WIN32_WINNT=0x0601 NTDDI_VERSION=0x06010000)
+    add_compile_definitions(
+        _WIN32_WINNT=0x0601
+        NTDDI_VERSION=0x06010000
+        NOMINMAX
+    )
 
     set(
         LILA_WINDOWS_MANIFEST
@@ -130,23 +143,15 @@ if(WIN32)
         CACHE FILEPATH
         "DLL BASS x64 incluse avec le client"
     )
-    set(
-        LILA_BASS_IMPORT_LIBRARY
-        "${LILA_BASS_ROOT}/lib/x64/bass.lib"
-        CACHE FILEPATH
-        "Bibliothèque d'import BASS compatible avec le compilateur cible"
-    )
-    if(NOT EXISTS "${LILA_BASS_RUNTIME_DLL}")
-        message(FATAL_ERROR "DLL BASS absente: ${LILA_BASS_RUNTIME_DLL}")
+    if(EXISTS "${LILA_BASS_RUNTIME_DLL}")
+        configure_file(
+            "${LILA_BASS_RUNTIME_DLL}"
+            "${CMAKE_CURRENT_BINARY_DIR}/bass.dll"
+            COPYONLY
+        )
+    else()
+        message(STATUS "DLL BASS absente: le client fonctionnera sans audio.")
     endif()
-    if(NOT EXISTS "${LILA_BASS_IMPORT_LIBRARY}")
-        message(FATAL_ERROR "Bibliothèque BASS absente: ${LILA_BASS_IMPORT_LIBRARY}")
-    endif()
-    configure_file(
-        "${LILA_BASS_RUNTIME_DLL}"
-        "${CMAKE_CURRENT_BINARY_DIR}/bass.dll"
-        COPYONLY
-    )
 endif()
 
 set(
@@ -308,7 +313,6 @@ if(WIN32)
         winhttp
         bcrypt
         crypt32
-        "${LILA_BASS_IMPORT_LIBRARY}"
     )
 endif()
 

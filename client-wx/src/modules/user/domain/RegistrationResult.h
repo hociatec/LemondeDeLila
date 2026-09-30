@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include "shared/text/presentation/catalog/UiTexts.h"
-
 namespace lila::modules::user::domain
 {
 struct RegistrationResult
@@ -16,12 +14,11 @@ struct RegistrationResult
     {
         RegistrationResult result;
         result.success = true;
-        result.message = lila::shared::text::ui::RegistrationSuccessMessage.str();
         result.username = std::move(resolvedUsername);
         return result;
     }
 
-    [[nodiscard]] static RegistrationResult Fail(std::string error)
+    [[nodiscard]] static RegistrationResult Fail(std::string error = {})
     {
         RegistrationResult result;
         result.success = false;

@@ -59,6 +59,8 @@ export type GameEventPlayerView<TType extends string, TData> = {
   actorId: number | null;
   occurredAtMs: number;
   sequence: number;
+  /** Viewer-specific audio cue chosen by the authoritative projection. */
+  soundSemantic?: string;
 };
 
 export type GameEventsPlayerView<TEvents extends object = EngineEventMap> = {

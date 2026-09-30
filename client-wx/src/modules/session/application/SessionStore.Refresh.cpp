@@ -1,7 +1,7 @@
 #include "modules/session/application/SessionStore.h"
 #include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/logging/application/Logger.h"
-#include "shared/security/infrastructure/SecurityUtils.h"
+#include "shared/security/domain/SecureWipe.h"
 #include "shared/security/domain/JwtPayload.h"
 
 #include <ctime>
@@ -57,10 +57,12 @@ std::string SessionStore::RefreshAccessToken(std::stop_token stopToken)
         const auto requestedGeneration = generation_;
         if (refreshInProgress_)
         {
+            ++refreshWaiters_;
             const bool completed = refreshCondition_.wait(
                 lock,
                 stopToken,
                 [this]() { return !refreshInProgress_; });
+            --refreshWaiters_;
             if (!completed)
             {
                 throw std::runtime_error("Renouvellement de session interrompu.");

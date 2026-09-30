@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <list>
 
 #include <wx/weakref.h>
 
@@ -15,8 +15,19 @@ public:
     [[nodiscard]] bool Restore(wxWindow* scope);
     void Forget(wxWindow* scope);
     void Clear();
+    void PruneExpired();
+    [[nodiscard]] std::size_t RememberedScopeCount() const noexcept;
 
 private:
-    std::unordered_map<wxWindow*, wxWeakRef<wxWindow>> targets_;
+    struct Entry final
+    {
+        Entry(wxWindow* rememberedScope, wxWindow* rememberedTarget)
+            : scope(rememberedScope), target(rememberedTarget)
+        {
+        }
+        wxWeakRef<wxWindow> scope;
+        wxWeakRef<wxWindow> target;
+    };
+    std::list<Entry> targets_;
 };
 }

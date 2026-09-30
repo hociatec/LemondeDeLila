@@ -1,5 +1,6 @@
 #include "modules/audio/infrastructure/BassSampleCache.h"
 
+#include <algorithm>
 #include <string>
 
 #include "shared/logging/application/Logger.h"
@@ -12,15 +13,13 @@ HSAMPLE BassSampleCache::GetOrLoad(domain::SoundCue cue, const std::filesystem::
     if (paths_[cue] != path)
     {
         if (const auto old = samples_.find(cue); old != samples_.end())
-        {
-            BASS_SampleFree(old->second);
-            samples_.erase(old);
-        }
+            Erase(cue);
         failed_.erase(cue);
         paths_[cue] = path;
     }
     if (const auto cached = samples_.find(cue); cached != samples_.end())
     {
+        lastUsed_[cue] = std::chrono::steady_clock::now();
         return cached->second;
     }
     if (failed_.contains(cue) && std::chrono::steady_clock::now() < failed_.at(cue))
@@ -38,8 +37,55 @@ HSAMPLE BassSampleCache::GetOrLoad(domain::SoundCue cue, const std::filesystem::
                 " (error " + std::to_string(BASS_ErrorGetCode()) + ").");
         return 0;
     }
+    BASS_SAMPLE information{};
+    if (!BASS_SampleGetInfo(sample, &information) ||
+        information.length > limits_.maximumBytesPerEntry ||
+        !MakeRoom(information.length, cue))
+    {
+        BASS_SampleFree(sample);
+        failed_[cue] = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+        lila::shared::logging::LogWarning(
+            "Audio", "Decoded sample exceeds the configured audio cache budget.");
+        return 0;
+    }
     samples_.emplace(cue, sample);
+    sizes_[cue] = information.length;
+    cachedBytes_ += information.length;
+    lastUsed_[cue] = std::chrono::steady_clock::now();
     return sample;
+}
+
+bool BassSampleCache::MakeRoom(std::size_t bytes, domain::SoundCue incoming) noexcept
+{
+    while (samples_.size() >= limits_.maximumEntries ||
+        bytes > limits_.maximumBytes - std::min(cachedBytes_, limits_.maximumBytes))
+    {
+        auto oldest = lastUsed_.end();
+        for (auto candidate = lastUsed_.begin(); candidate != lastUsed_.end(); ++candidate)
+        {
+            if (candidate->first == incoming) continue;
+            if (oldest == lastUsed_.end() || candidate->second < oldest->second)
+                oldest = candidate;
+        }
+        if (oldest == lastUsed_.end()) return false;
+        Erase(oldest->first);
+    }
+    return true;
+}
+
+void BassSampleCache::Erase(domain::SoundCue cue) noexcept
+{
+    if (const auto sample = samples_.find(cue); sample != samples_.end())
+    {
+        BASS_SampleFree(sample->second);
+        samples_.erase(sample);
+    }
+    if (const auto size = sizes_.find(cue); size != sizes_.end())
+    {
+        cachedBytes_ -= std::min(cachedBytes_, size->second);
+        sizes_.erase(size);
+    }
+    lastUsed_.erase(cue);
 }
 
 void BassSampleCache::StopAll() noexcept
@@ -60,7 +106,10 @@ void BassSampleCache::Clear() noexcept
     }
     samples_.clear();
     paths_.clear();
+    sizes_.clear();
+    lastUsed_.clear();
     failed_.clear();
+    cachedBytes_ = 0;
 }
 
 bool BassSampleCache::IsPlaying() const noexcept

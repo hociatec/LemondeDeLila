@@ -4,7 +4,9 @@
 
 #include <wx/checkbox.h>
 #include <wx/msgdlg.h>
+#include <wx/weakref.h>
 
+#include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::admin::presentation
@@ -67,15 +69,17 @@ bool AdminCommandDialog::TransferDataFromWindow()
         }
         catch (const std::exception& error)
         {
+            lila::shared::logging::LogWarning(
+                "AdminForm", field.key + ": " + error.what());
             wxMessageBox(
-                field.metadata.label + wxString(L" : ") +
-                    lila::shared::text::FromUtf8(error.what()),
+                field.metadata.label + wxString(L" : valeur invalide."),
                 wxString(L"Paramètre invalide"), wxOK | wxICON_ERROR, this);
-            CallAfter([this, key = field.key]
+            CallAfter([weakThis = wxWeakRef<AdminCommandDialog>(this), key = field.key]
             {
-                const auto found = std::find_if(fields_.begin(), fields_.end(),
+                if (!weakThis) return;
+                const auto found = std::find_if(weakThis->fields_.begin(), weakThis->fields_.end(),
                     [&key](const FieldControl& candidate) { return candidate.key == key; });
-                if (found != fields_.end()) FocusField(*found);
+                if (found != weakThis->fields_.end()) weakThis->FocusField(*found);
             });
             return false;
         }
@@ -84,11 +88,12 @@ bool AdminCommandDialog::TransferDataFromWindow()
     {
         wxMessageBox(error->message, wxString(L"Paramètre invalide"),
             wxOK | wxICON_ERROR, this);
-        CallAfter([this, key = error->field]
+        CallAfter([weakThis = wxWeakRef<AdminCommandDialog>(this), key = error->field]
         {
-            const auto found = std::find_if(fields_.begin(), fields_.end(),
+            if (!weakThis) return;
+            const auto found = std::find_if(weakThis->fields_.begin(), weakThis->fields_.end(),
                 [&key](const FieldControl& candidate) { return candidate.key == key; });
-            if (found != fields_.end()) FocusField(*found);
+            if (found != weakThis->fields_.end()) weakThis->FocusField(*found);
         });
         return false;
     }

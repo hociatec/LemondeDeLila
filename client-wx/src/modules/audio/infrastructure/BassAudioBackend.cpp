@@ -23,6 +23,12 @@ namespace
 bool PinBassModule()
 {
 #ifdef _WIN32
+    if (!bass::Available())
+    {
+        lila::shared::logging::LogWarning(
+            "Audio", "BASS DLL is unavailable; audio is disabled.");
+        return false;
+    }
     HMODULE module = nullptr;
     if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, L"bass.dll", &module))
     {

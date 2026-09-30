@@ -65,7 +65,8 @@ std::string GameCapabilityTextBuilder::Build(
     }
     if (capability == "match")
     {
-        out << "État : " << HumanLabel(state.system.match.status);
+        out << "État : " << HumanLabel(std::string(
+            domain::MatchStatusId(state.system.match.status)));
         if (state.system.match.result)
         {
             out << "\nRésultat : " << HumanLabel(state.system.match.result->reason) << "\nGagnants : ";
@@ -102,7 +103,7 @@ std::string GameCapabilityTextBuilder::Build(
     if (capability == "setup")
     {
         out << (state.system.setup.complete ? "Configuration terminée" : "Configuration requise")
-            << "\nPhase : " << HumanLabel(state.system.setup.phase);
+            << "\nPhase : " << HumanLabel(state.system.setup.phase.value);
         if (state.system.setup.ownerPlayerId)
             out << "\nPropriétaire : " << Player(state, *state.system.setup.ownerPlayerId);
         if (!state.system.setup.values.empty())
@@ -131,7 +132,7 @@ std::string GameCapabilityTextBuilder::Build(
     }
     if (capability == "specific" || capability == "game") return ValueLines(state.game);
     if (const auto* unknown = state.kits.Unknown(capability)) return ValueLines(*unknown);
-    return {};
+    return "Information non disponible pour « " + HumanLabel(capability) + " ».";
 }
 
 }

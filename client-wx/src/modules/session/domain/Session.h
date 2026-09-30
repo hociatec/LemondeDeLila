@@ -1,7 +1,7 @@
 #pragma once
 
 #include "shared/domain/identifiers/DomainTypes.h"
-#include "shared/security/infrastructure/SecurityUtils.h"
+#include "shared/security/domain/SecureWipe.h"
 
 #include <cstdint>
 #include <ctime>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -30,13 +31,15 @@ public:
         std::function<void()> refreshOutbox;
     };
 
-    explicit MessagingComposeController(MessagingMailboxController& mailboxController, Callbacks callbacks);
+    explicit MessagingComposeController(
+        std::shared_ptr<MessagingMailboxController> mailboxController,
+        Callbacks callbacks);
 
     void Send(SendPayload payload) const;
     [[nodiscard]] static domain::MessagingUser ResolveReplyRecipient(const domain::MessagingMessage& message);
 
 private:
-    MessagingMailboxController& mailboxController_;
+    std::shared_ptr<MessagingMailboxController> mailboxController_;
     Callbacks callbacks_;
 };
 }

@@ -32,15 +32,17 @@ std::string ToUtf8(const wxString& value)
 void PresenceFrame::LoadSocialState(int userId)
 {
     auto result = std::make_shared<PresenceSocialState>();
+    const auto controller = actionController_;
+    const wxWeakRef<PresenceFrame> weakThis(this);
     activeTask_ = lila::shared::concurrency::RunAsync(
-        [this, userId, result]()
+        [controller, userId, result]()
         {
-            *result = actionController_->LoadSocialState(userId);
+            *result = controller->LoadSocialState(userId);
         },
-        [this, result](std::optional<lila::shared::errors::AppError> error)
+        [weakThis, result](std::optional<lila::shared::errors::AppError> error)
         {
-            wxWeakRef<PresenceFrame> weakThis(this);
-            CallAfter(
+            if (!weakThis) return;
+            weakThis->CallAfter(
                 [weakThis, result, error = std::move(error)]() mutable
                 {
                     if (!weakThis)
@@ -113,7 +115,8 @@ void PresenceFrame::RunSelectedAction()
         return;
     }
 
-    auto worker = [this, action, userId]() { actionController_->ExecuteSocialAction(action, userId); };
+    const auto controller = actionController_;
+    auto worker = [controller, action, userId]() { controller->ExecuteSocialAction(action, userId); };
     RunSocialMutation(wxString(L"Action sociale en cours..."), std::move(worker), [this, userId]() { LoadSocialState(userId); });
 }
 
@@ -121,12 +124,13 @@ void PresenceFrame::RunSocialMutation(const wxString& busyMessage, std::function
 {
     busy_ = true;
     UpdateStatus(busyMessage);
+    const wxWeakRef<PresenceFrame> weakThis(this);
     activeTask_ = lila::shared::concurrency::RunAsync(
         std::move(worker),
-        [this, onSuccess = std::move(onSuccess)](std::optional<lila::shared::errors::AppError> error)
+        [weakThis, onSuccess = std::move(onSuccess)](std::optional<lila::shared::errors::AppError> error)
         {
-            wxWeakRef<PresenceFrame> weakThis(this);
-            CallAfter(
+            if (!weakThis) return;
+            weakThis->CallAfter(
                 [weakThis, error = std::move(error), onSuccess]() mutable
                 {
                     if (!weakThis)
@@ -151,9 +155,10 @@ void PresenceFrame::RunSocialMutation(const wxString& busyMessage, std::function
 void PresenceFrame::ShowBio(int userId, const wxString& username)
 {
     auto profile = std::make_shared<std::optional<lila::modules::social::domain::SocialProfile>>();
+    const auto controller = actionController_;
     RunSocialMutation(
         wxString(L"Chargement de la bio..."),
-        [this, userId, profile]() { *profile = actionController_->LoadBio(userId); },
+        [controller, userId, profile]() { *profile = controller->LoadBio(userId); },
         [this, profile, username]()
         {
             if (!profile->has_value())
@@ -186,9 +191,10 @@ void PresenceFrame::SendPrivateMessage(int userId, const wxString& username)
     }
     const auto subject = ToUtf8(subjectDialog.GetValue());
     const auto body = ToUtf8(bodyDialog.GetValue());
+    const auto controller = actionController_;
     RunSocialMutation(
         wxString(L"Envoi du message..."),
-        [this, userId, subject, body]() { actionController_->SendPrivateMessage(userId, subject, body); },
+        [controller, userId, subject, body]() { controller->SendPrivateMessage(userId, subject, body); },
         [this]() { detailsLabel_->SetLabel(wxString(L"Message envoye.")); });
 }
 }

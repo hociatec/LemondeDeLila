@@ -49,7 +49,7 @@ std::string Describe(const domain::GameGridCellView& cell,
     const std::vector<domain::GamePlayer>& players,
     const domain::GamePawnsView* pawns)
 {
-    if (board.id == "morpion" || board.id == "pathWalls")
+    if (cell.ownerId)
     {
         auto text = application::grid::GridPlayerCellText(cell, players);
         for (const auto& overlay : board.overlays)

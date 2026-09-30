@@ -4,6 +4,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <deque>
+#include <future>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -21,12 +22,15 @@
 #include "modules/chat/infrastructure/ChatProtocol.h"
 #include "modules/gameplay/session/application/GameSessionService.h"
 #include "modules/gameplay/session/application/IGameSessionGateway.h"
+#include "modules/gameplay/session/domain/GameProtocolException.h"
 #include "modules/options/application/OptionsStore.h"
 #include "modules/options/domain/IOptionsRepository.h"
 #include "modules/options/domain/OptionsState.h"
 #include "modules/rooms/application/IRoomSessionGateway.h"
 #include "modules/rooms/application/RoomSessionService.h"
 #include "modules/session/application/SessionStore.h"
+#include "modules/session/application/SessionHttpRetry.h"
+#include "modules/session/application/SessionConnectionRetry.h"
 #include "modules/session/domain/ISessionRepository.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/domain/identifiers/DomainTypes.h"
@@ -39,6 +43,7 @@
 #include "network_protocol/Support.Audio.inc"
 #include "network_protocol/Support.RoomSession.inc"
 #include "network_protocol/Support.Chat.inc"
+#include "network_protocol/SessionConnectionRetryTests.inc"
 #include "network_protocol/ServiceResilienceTests.inc"
 #include "network_protocol/ChatTicketResilienceTests.inc"
 #include "network_protocol/GameSessionReconnectTests.inc"
@@ -52,14 +57,20 @@ int main()
     {
         TestPresenceActivityAndReconnect();
         TestNotificationMonitorReconnect();
+        TestAuthenticatedHttpClientRefreshesExpiredToken();
+        TestConcurrentSessionRefreshIsSingleFlight();
+        TestConcurrentRejectedRefreshExpiresOnce();
+        TestTicketRejectionRefreshesWebSocketConnection();
         TestEnsureSuccessOrThrowClearsExpiredSession();
         TestChatServiceCloseInterruptsReceiveLoop();
         TestChatServiceReconnectsAfterTransientFailure();
+        TestChatServiceRecoversAfterStartupOutage();
         TestChatServiceOpenIsIdempotent();
         TestChatServiceKeepsSessionOnTransientTicketFailure();
         TestChatServiceSendReportsTransportFailure();
         TestRoomSessionServiceReconnectsAndRepublishesState();
         TestGameSessionServiceReconnectsAndRepublishesState();
+        TestGameSessionServiceReportsRequiredClientUpdate();
         TestRoomSessionServiceSerializesOpenTransitions();
         std::cout << "Service resilience tests passed.\n";
         return 0;

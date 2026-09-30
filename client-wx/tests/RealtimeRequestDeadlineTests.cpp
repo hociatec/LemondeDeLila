@@ -2,6 +2,7 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <deque>
 #include <mutex>
 #include <stdexcept>
 #include <string>
@@ -107,6 +108,60 @@ private:
     std::condition_variable condition_;
 };
 
+class SequencedWebSocketClient final
+    : public lila::shared::network::websocket::IWebSocketClient
+{
+public:
+    using WebSocketHeaders = lila::shared::network::websocket::WebSocketHeaders;
+    void Connect(const std::string&, const WebSocketHeaders&, std::stop_token) override
+    {
+        connected_ = true;
+    }
+    void Close() override { connected_ = false; }
+    void CancelPendingOperation() noexcept override { connected_ = false; }
+    [[nodiscard]] bool IsConnected() const override { return connected_; }
+    [[nodiscard]] bool IsConnectedTo(const std::string&, const WebSocketHeaders&) const override
+    {
+        return connected_;
+    }
+    void Send(const std::string& payload) override
+    {
+        const auto request = nlohmann::json::parse(payload);
+        const auto requestId = request.at("requestId").get<std::string>();
+        if (sendCount_++ == 0)
+        {
+            responses_.push_back(R"({"type":"notify.unknown","payload":{}})");
+            responses_.push_back(nlohmann::json({
+                {"type", request.at("type")}, {"requestId", "late-request"},
+                {"payload", nlohmann::json::object()}}).dump());
+        }
+        const auto correlated = nlohmann::json({
+            {"type", request.at("type")}, {"requestId", requestId},
+            {"payload", {{"sequence", sendCount_}}}}).dump();
+        responses_.push_back(correlated);
+        if (sendCount_ == 1) responses_.push_back(correlated);
+    }
+    [[nodiscard]] std::string Receive() override
+    {
+        assert(!responses_.empty());
+        auto response = std::move(responses_.front());
+        responses_.pop_front();
+        ++receiveCount;
+        return response;
+    }
+    [[nodiscard]] std::string SendAndReceive(
+        const std::string&, const std::string&, const WebSocketHeaders&, std::stop_token) override
+    {
+        throw std::runtime_error("unexpected SendAndReceive call");
+    }
+
+    int receiveCount = 0;
+private:
+    bool connected_ = false;
+    int sendCount_ = 0;
+    std::deque<std::string> responses_;
+};
+
 void TestHungRequestTimesOut()
 {
     FakeWebSocketClient socket(true);
@@ -158,6 +213,21 @@ void TestCorrelatedTypedErrorIsReturnedAsServerError()
         lila::shared::network::realtime::RealtimeErrorKind::Server);
     assert(response.errorMessage == "Conversation introuvable.");
 }
+
+void TestUnrelatedLateAndDuplicateResponsesAreIgnored()
+{
+    SequencedWebSocketClient socket;
+    FakeTicketProvider tickets;
+    lila::shared::network::realtime::AuthenticatedRealtimeApiClient client(
+        "wss://example.test/ws/api", "1.2.58", socket, tickets, 250ms);
+
+    const auto first = client.Send({"catalog.all", nlohmann::json::object()}, "token");
+    const auto second = client.Send({"catalog.all", nlohmann::json::object()}, "token");
+
+    assert(first.success && first.payload.at("sequence") == 1);
+    assert(second.success && second.payload.at("sequence") == 2);
+    assert(socket.receiveCount == 5);
+}
 }
 
 int main()
@@ -165,5 +235,6 @@ int main()
     TestHungRequestTimesOut();
     TestCompletedRequestDisarmsDeadline();
     TestCorrelatedTypedErrorIsReturnedAsServerError();
+    TestUnrelatedLateAndDuplicateResponsesAreIgnored();
     return 0;
 }

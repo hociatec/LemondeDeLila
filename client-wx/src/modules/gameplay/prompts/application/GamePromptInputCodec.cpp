@@ -6,6 +6,10 @@
 #include <locale>
 #include <sstream>
 
+#include <nlohmann/json.hpp>
+
+#include "modules/gameplay/state/application/GameValuePayloadCodec.h"
+
 namespace lila::modules::gameplay::application
 {
 namespace
@@ -60,6 +64,8 @@ GamePromptInputResult GamePromptInputCodec::Parse(
 
     if (kind == "array" || kind == "object" || kind == "json")
     {
+        if (rawValue.size() > 64U * 1024U)
+            return Invalid("La valeur JSON est trop volumineuse.");
         auto value = nlohmann::json::parse(rawValue, nullptr, false);
         if (value.is_discarded()) return Invalid("Saisissez une valeur JSON valide.");
         if (kind == "array" && !value.is_array()) return Invalid("Une liste JSON est attendue.");
@@ -68,7 +74,14 @@ GamePromptInputResult GamePromptInputCodec::Parse(
             return Invalid("La liste est trop courte.");
         if (field.maximum && value.is_array() && value.size() > static_cast<std::size_t>(*field.maximum))
             return Invalid("La liste est trop longue.");
-        return {true, std::move(value), {}};
+        try
+        {
+            return {true, DecodeGameValuePayload(value), {}};
+        }
+        catch (const std::exception&)
+        {
+            return Invalid("La valeur JSON dépasse les limites autorisées.");
+        }
     }
 
     if (kind == "boolean")

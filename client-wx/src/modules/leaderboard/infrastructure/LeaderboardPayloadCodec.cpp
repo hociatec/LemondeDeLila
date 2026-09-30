@@ -71,6 +71,8 @@ std::vector<domain::LeaderboardGame> ReadGamesPayload(const nlohmann::json& payl
     {
         ThrowInvalidPayload("Leaderboard games must be an array.");
     }
+    if (games->size() > 512)
+        ThrowInvalidPayload("Leaderboard contains too many games.");
 
     std::vector<domain::LeaderboardGame> result;
     result.reserve(games->size());
@@ -94,6 +96,8 @@ domain::LeaderboardTop ReadTopPayload(const nlohmann::json& payload)
     {
         ThrowInvalidPayload("Leaderboard top identity or entries are invalid.");
     }
+    if (entries->size() > 1'000)
+        ThrowInvalidPayload("Leaderboard contains too many entries.");
     result.entries.reserve(entries->size());
     for (const auto& entry : *entries)
     {
