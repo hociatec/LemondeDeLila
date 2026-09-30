@@ -126,6 +126,7 @@
     "engine:mechanics": "node --test tools/game-mechanics-matrix.spec.cjs && node tools/game-mechanics-matrix.cjs"
   },
   "overrides": {
+    "@grpc/grpc-js": "1.14.5",
     "multer": "$multer"
   },
   "dependencies": {
