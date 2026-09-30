@@ -663,7 +663,7 @@
     },
     {
       "file": "src/game/shortcuts/domain/game-shortcuts.model.ts",
-      "sha256": "e486aee56e5307095df5dbebcaa99a29b21a1e72d3ce97e97fc4aa01e95975bf"
+      "sha256": "5bc4c26ce2eb472d920fe5f9ac8f1a5720be1e0341136a46efd2340032a1353d"
     },
     {
       "file": "src/game/shortcuts/public-api.ts",
