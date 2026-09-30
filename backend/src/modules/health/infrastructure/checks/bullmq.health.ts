@@ -1,10 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  HealthCheckError,
-  HealthIndicator,
-  HealthIndicatorResult,
-} from '@nestjs/terminus';
+import { HealthIndicatorResult } from '@nestjs/terminus';
 import { Queue } from 'bullmq';
 import type Redis from 'ioredis';
 import { RedisClientFactory } from '../../../../platform/redis/public-api';
@@ -15,31 +11,23 @@ import {
 } from './health-check-timeout';
 
 @Injectable()
-export class BullmqHealthIndicator extends HealthIndicator {
+export class BullmqHealthIndicator {
   private readonly logger = new Logger(BullmqHealthIndicator.name);
   constructor(
     private readonly config: ConfigService,
     private readonly redisFactory: RedisClientFactory,
-  ) {
-    super();
-  }
+  ) {}
 
   async check(key: string): Promise<HealthIndicatorResult> {
     if (typeof key !== 'string' || !key.trim() || key.length > 128) {
-      throw new HealthCheckError(
-        'Invalid health-check key',
-        this.getStatus('bullmq', false),
-      );
+      return this.status('bullmq', false);
     }
     const url =
       this.config.get<string>('GAME_TASK_REDIS_URL') ??
       this.config.get<string>('GAME_ENGINE_STATE_REDIS_URL') ??
       this.config.get<string>('SESSION_STORE_REDIS_URL');
     if (!url) {
-      throw new HealthCheckError(
-        'BullMQ Redis not configured',
-        this.getStatus(key, false),
-      );
+      return this.status(key, false);
     }
     let connection: Redis | null = null;
     let queue: Queue | null = null;
@@ -79,24 +67,16 @@ export class BullmqHealthIndicator extends HealthIndicator {
         queued / Math.max(1, queued + 100),
       );
       const maximumFailed = this.getMaximumFailedJobs();
-      const status = this.getStatus(key, counts.failed <= maximumFailed, {
+      return this.status(key, counts.failed <= maximumFailed, {
         ...counts,
         oldestJobAgeMs,
         maximumFailed,
       });
-      if (counts.failed > maximumFailed) {
-        throw new HealthCheckError('BullMQ failed-job limit exceeded', status);
-      }
-      return status;
-    } catch (error) {
+    } catch {
       prometheusMetrics.setDependencyUp('bullmq', false);
-      if (error instanceof HealthCheckError) throw error;
-      throw new HealthCheckError(
-        'BullMQ check failed',
-        this.getStatus(key, false, {
-          message: 'File de tâches indisponible',
-        }),
-      );
+      return this.status(key, false, {
+        message: 'File de tâches indisponible',
+      });
     } finally {
       await this.closeProbe(queue, connection);
     }
@@ -111,6 +91,14 @@ export class BullmqHealthIndicator extends HealthIndicator {
       configured <= 1_000_000
       ? configured
       : 100;
+  }
+
+  private status(
+    key: string,
+    healthy: boolean,
+    details: Record<string, unknown> = {},
+  ): HealthIndicatorResult {
+    return { [key]: { status: healthy ? 'up' : 'down', ...details } };
   }
 
   private async closeProbe(queue: Queue | null, connection: Redis | null) {
