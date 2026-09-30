@@ -7,7 +7,7 @@
 #include "modules/social/presentation/SocialSectionCoordinator.h"
 #include "modules/social/presentation/SocialSectionPresenter.h"
 #include "modules/social/presentation/SocialView.h"
-#include "shared/ui/application/BackgroundTask.h"
+#include "shared/ui/presentation/BackgroundTask.h"
 
 #include <memory>
 #include <stdexcept>
@@ -22,7 +22,7 @@
 #include <wx/weakref.h>
 
 #include "modules/social/application/SocialService.h"
-#include "shared/accessibility/application/FocusManager.h"
+#include "shared/accessibility/presentation/FocusManager.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/text/presentation/catalog/UiTexts.h"

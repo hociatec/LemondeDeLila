@@ -1,10 +1,10 @@
-#include "shared/accessibility/application/FocusMemory.h"
+#include "shared/accessibility/presentation/FocusMemory.h"
 
 #include <wx/window.h>
 
-#include "shared/accessibility/application/FocusCoordinator.h"
-#include "shared/accessibility/application/FocusManager.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusManager.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 
 namespace lila::shared::accessibility
 {

@@ -102,7 +102,7 @@ void GamePlayPanel::BindEvents()
     promptPanel_->SetSubmitHandler(
         [this](domain::GameAction action)
         {
-            if (!roomStarted_ && roomStartFlowRequested_ &&
+            if (!lifecycle_.IsRoomStarted() && lifecycle_.IsStartFlowRequested() &&
                 action.payload.contains("__tableAmbienceSoundId"))
             {
                 const auto& value = action.payload["__tableAmbienceSoundId"];
@@ -112,16 +112,16 @@ void GamePlayPanel::BindEvents()
                 if (onStartAmbiencePreview_) onStartAmbiencePreview_({});
                 promptPanel_->ClearStartAmbiences();
             }
-            if (!roomStarted_ && action.type == "__room-start__")
+            if (!lifecycle_.IsRoomStarted() && action.type == "__room-start__")
             {
-                roomStartFlowRequested_ = false;
-                roomStartPending_ = true;
+                lifecycle_.MarkRoomStartPending();
                 if (onRoomStartRequested_) onRoomStartRequested_();
                 return;
             }
             submittedPromptActionType_ = action.type;
             dismissedPromptActionType_.clear();
-            const bool startsRoomAfterSubmission = !roomStarted_ && roomStartFlowRequested_ &&
+            const bool startsRoomAfterSubmission = !lifecycle_.IsRoomStarted() &&
+                lifecycle_.IsStartFlowRequested() &&
                 !state_.system.setup.complete;
             if (startsRoomAfterSubmission &&
                 !startConfigurationFlow_.TryBeginSubmission(state_.system.setup))
@@ -136,10 +136,9 @@ void GamePlayPanel::BindEvents()
             if (onStartAmbiencePreview_) onStartAmbiencePreview_({});
             if (const auto* prompt = ActivePrompt())
                 dismissedPromptActionType_ = prompt->actionType;
-            roomStartFlowRequested_ = false;
-            roomStartPending_ = false;
+            lifecycle_.StartFailed();
             startConfigurationFlow_.Reset();
-            Show(roomStarted_);
+            Show(lifecycle_.IsVisible());
             if (GetParent()) GetParent()->Layout();
             if (onZoneFocusRequested_) onZoneFocusRequested_();
         });
@@ -147,9 +146,9 @@ void GamePlayPanel::BindEvents()
 bool GamePlayPanel::HandleZoneActivation()
 {
     if (!IsOpen()) return false;
-    if (!hasAuthoritativeState_) return true;
-    if (!roomStarted_)
-        return roomStartFlowRequested_ || roomStartPending_;
+    if (!lifecycle_.HasAuthoritativeState()) return true;
+    if (!lifecycle_.IsRoomStarted())
+        return lifecycle_.IsStartFlowRequested() || lifecycle_.IsRoomStartPending();
     if (IsFinished()) return false;
     if (IsConfirmationVisible() || IsInlinePromptVisible()) return true;
     if (pawnSelectionPanel_->IsActive()) return true;

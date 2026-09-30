@@ -1,5 +1,12 @@
 include_guard(GLOBAL)
 
+find_program(LILA_CLIENT_ARCHITECTURE_NODE_EXECUTABLE node REQUIRED)
+add_test(
+    NAME lemonde_de_lila_wx_architecture_tests
+    COMMAND "${LILA_CLIENT_ARCHITECTURE_NODE_EXECUTABLE}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/scripts/VerifyClientArchitecture.mjs"
+)
+
 if(WIN32)
     lila_add_test_executable(lemonde_de_lila_wx_bass_cache_tests
         tests/BassCacheTests.cpp
@@ -67,9 +74,9 @@ add_executable(lemonde_de_lila_wx_tests
     src/shared/concurrency/application/BackgroundExecutor.cpp
     src/shared/concurrency/application/BackgroundTasks.cpp
     src/shared/accessibility/presentation/ActionButton.cpp
-    src/shared/accessibility/application/NavigationController.cpp
-    src/shared/accessibility/application/NavigationScope.cpp
-    src/shared/accessibility/application/NavigationBindings.cpp
+    src/shared/accessibility/presentation/NavigationController.cpp
+    src/shared/accessibility/presentation/NavigationScope.cpp
+    src/shared/accessibility/presentation/NavigationBindings.cpp
     src/modules/audio/domain/SoundCatalog.cpp
     src/modules/audio/application/AudioService.cpp
     src/modules/audio/application/SoundVolumeResolver.cpp
@@ -81,6 +88,7 @@ add_executable(lemonde_de_lila_wx_tests
     src/shared/network/infrastructure/http/WsTicketTransport.cpp
     src/shared/network/application/realtime/AuthenticatedRealtimeApiClient.cpp
     src/shared/network/application/realtime/RealtimeProtocol.cpp
+    src/shared/network/application/realtime/ReconnectPolicy.cpp
     src/shared/security/infrastructure/SecurityUtils.cpp
     src/shared/security/domain/JwtPayload.cpp
     src/shared/text/presentation/encoding/Encoding.cpp
@@ -139,6 +147,18 @@ lila_add_test_executable(lemonde_de_lila_wx_background_executor_tests
     src/shared/concurrency/application/BackgroundTasks.cpp
     src/shared/logging/infrastructure/Logger.cpp
 )
+lila_add_test_executable(lemonde_de_lila_wx_reconnect_policy_tests
+    tests/ReconnectPolicyTests.cpp
+    src/shared/network/application/realtime/ReconnectPolicy.cpp
+)
+lila_add_test_executable(lemonde_de_lila_wx_gameplay_lifecycle_tests
+    tests/GamePlayLifecycleTests.cpp
+    src/modules/gameplay/shell/application/GamePlayLifecycle.cpp
+)
+lila_add_test_executable(lemonde_de_lila_wx_game_event_identity_tests
+    tests/GameEventIdentityWindowTests.cpp
+    src/modules/gameplay/events/application/GameEventIdentityWindow.cpp
+)
 lila_add_test_executable(lemonde_de_lila_wx_service_resilience_tests
     tests/ServiceResilienceTests.cpp
     src/modules/presence/application/PresenceMonitor.cpp
@@ -163,6 +183,7 @@ lila_add_test_executable(lemonde_de_lila_wx_service_resilience_tests
     src/shared/concurrency/application/BackgroundTasks.cpp
     src/shared/config/domain/AppConfig.cpp
     src/shared/logging/infrastructure/Logger.cpp
+    src/shared/network/application/realtime/ReconnectPolicy.cpp
     src/shared/security/domain/JwtPayload.cpp
     src/shared/security/infrastructure/SecurityUtils.cpp
 )
@@ -204,7 +225,7 @@ lila_add_test_executable(lemonde_de_lila_wx_admin_contract_tests
     src/modules/admin/domain/AdminFormMetadata.BugReports.cpp
     src/modules/admin/infrastructure/AdminPayloadValidator.cpp
     src/modules/admin/presentation/AdminResultFormatter.cpp
-    src/shared/network/application/http/AuthenticatedHttpClient.cpp
+    src/shared/network/infrastructure/http/AuthenticatedHttpClient.cpp
 )
 target_link_libraries(
     lemonde_de_lila_wx_admin_contract_tests
@@ -239,6 +260,7 @@ lila_add_test_executable(lemonde_de_lila_wx_realtime_deadline_tests
     src/shared/config/domain/AppConfig.cpp
     src/shared/network/application/realtime/AuthenticatedRealtimeApiClient.cpp
     src/shared/network/application/realtime/RealtimeProtocol.cpp
+    src/shared/network/application/realtime/ReconnectPolicy.cpp
 )
 target_link_libraries(
     lemonde_de_lila_wx_realtime_deadline_tests

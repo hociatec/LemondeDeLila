@@ -5,7 +5,7 @@
 #include <wx/window.h>
 
 #include "shared/accessibility/presentation/ActionButton.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 
 namespace lila::modules::home::presentation
 {

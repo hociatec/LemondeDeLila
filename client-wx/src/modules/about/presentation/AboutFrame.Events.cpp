@@ -4,7 +4,7 @@
 #include <wx/button.h>
 #include <wx/stattext.h>
 
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 

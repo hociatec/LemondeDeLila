@@ -14,8 +14,8 @@
 #include "modules/audio/application/IAudioService.h"
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/ui/presentation/theme/Theme.h"
 

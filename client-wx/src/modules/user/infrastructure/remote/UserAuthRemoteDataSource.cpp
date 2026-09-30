@@ -1,7 +1,7 @@
 ﻿#include "modules/user/infrastructure/remote/UserAuthRemoteDataSource.h"
 
-#include "modules/user/infrastructure/remote/UserAuthFields.h"
-#include "shared/network/domain/WsMessageTypes.h"
+#include "generated/protocol/UserAuthFields.generated.h"
+#include "generated/protocol/WsMessageTypes.generated.h"
 #include "shared/data/json/JsonReaders.h"
 #include "modules/user/domain/UserErrorMessages.h"
 

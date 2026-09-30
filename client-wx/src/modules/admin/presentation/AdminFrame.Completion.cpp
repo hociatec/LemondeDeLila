@@ -49,10 +49,23 @@ void AdminFrame::CompleteCommand(
     const domain::AdminCommand& command,
     bool announceLifecycle,
     std::optional<lila::shared::errors::AppError> error,
-    std::optional<nlohmann::json> result)
+    std::optional<domain::AdminPayload> resultPayload)
 {
     if (!requestSlot_.Complete(generation)) return;
     loading_ = false;
+    std::optional<nlohmann::json> result;
+    if (resultPayload)
+    {
+        try
+        {
+            result = nlohmann::json::parse(resultPayload->Serialized());
+        }
+        catch (const nlohmann::json::exception& exception)
+        {
+            error = lila::shared::errors::ToAppError(
+                "Réponse administrateur invalide.", exception.what());
+        }
+    }
     if (error.has_value() || !result.has_value())
     {
         const bool isAmbienceUpload = uploadingCreatedAmbience_ ||

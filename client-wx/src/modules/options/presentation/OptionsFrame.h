@@ -5,7 +5,7 @@
 
 #include <wx/string.h>
 
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 
 class wxWindow;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "shared/accessibility/application/FocusManager.h"
+#include "shared/accessibility/presentation/FocusManager.h"
 
 namespace lila::shared::accessibility
 {

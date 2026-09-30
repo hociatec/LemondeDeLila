@@ -22,7 +22,7 @@
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -90,31 +90,23 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     }
     retryableActionCommand_.reset();
     inputSubmissionGuard_.ObserveState(state.version, state.runId);
-    const bool receivedStartedState = awaitingStartedState_ &&
-        (awaitingStartedRunId_ <= 0 || state.runId <= 0 ||
-         state.runId == awaitingStartedRunId_) &&
-        (state.system.match.status == "started" || state.system.match.status == "playing");
     auto nextLines = application::GameActionPresentationPolicy::GenericLines(state);
     auto nextPawnSelection = application::PawnSelectionPolicy::FromPending(state.pending);
     auto nextLogMessages = EventMessages(state);
-    if (state_.runId != state.runId) observedEventIdentities_.clear();
+    if (state_.runId != state.runId) observedEvents_.Reset();
     state_ = std::move(state);
-    hasAuthoritativeState_ = true;
-    if (receivedStartedState)
-    {
-        awaitingStartedState_ = false;
-        awaitingStartedRunId_ = 0;
-    }
+    lifecycle_.ObserveAuthoritativeState(
+        state_.runId, state_.system.match.status);
     lines_ = std::move(nextLines);
     pawnSelection_ = std::move(nextPawnSelection);
     UpdateTimerAnnouncements();
     if (initialState)
         for (const auto& event : state_.system.events)
-            observedEventIdentities_.insert(event.Identity());
+            static_cast<void>(observedEvents_.Observe(event.Identity()));
     else if (onGameSoundEvent_)
     {
         for (const auto& event : state_.system.events)
-            if (observedEventIdentities_.insert(event.Identity()).second)
+            if (observedEvents_.Observe(event.Identity()))
                 onGameSoundEvent_(application::GameSoundEventType(
                     event, state_.system.events, state_.viewerPlayerId.value_or(0)),
                     event.details.playerId.value_or(event.actorId.value_or(0)),
@@ -135,7 +127,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         if (focusWasInsideGame && onZoneFocusRequested_) onZoneFocusRequested_();
         return;
     }
-    Show(roomStarted_ || roomStartFlowRequested_ || roomStartPending_);
+    Show(lifecycle_.IsVisible());
     headerLabel_->SetLabel(BuildHeaderText());
     stateSummaryLabel_->SetLabel(BuildStateSummaryText());
     stateSummaryLabel_->Show(!stateSummaryLabel_->GetLabel().empty());
@@ -201,7 +193,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     SyncInlinePrompt();
     const bool inlinePromptBecameActive =
         !hadInlinePrompt && IsInlinePromptVisible();
-    const auto visiblePawnSelection = (roomStarted_ || roomStartFlowRequested_ || roomStartPending_)
+    const auto visiblePawnSelection = lifecycle_.IsVisible()
         ? pawnSelection_
         : std::optional<domain::PawnSelection>{};
     const bool pawnSelectionCompleted =
@@ -231,13 +223,12 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     const bool waitingForPawns = state_.pending && state_.pending->workflowKind == "pawn";
     const bool setupProjectionCompleted = startConfigurationFlow_.ObserveSetup(
         state_.system.setup, waitingForPawns);
-    if (!roomStarted_ && roomStartFlowRequested_ &&
+    if (!lifecycle_.IsRoomStarted() && lifecycle_.IsStartFlowRequested() &&
         !startConfigurationFlow_.IsAwaitingActionAcknowledgement() &&
         (state_.system.setup.complete || waitingForPawns) &&
         (setupProjectionCompleted || ActivePrompt() == nullptr))
     {
-        roomStartFlowRequested_ = false;
-        roomStartPending_ = true;
+        lifecycle_.MarkRoomStartPending();
         if (onRoomStartRequested_) onRoomStartRequested_();
     }
 }

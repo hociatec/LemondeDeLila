@@ -8,8 +8,8 @@
 #include "modules/presence/presentation/PresenceActionController.h"
 #include "modules/session/application/SessionStore.h"
 #include "modules/social/application/SocialService.h"
-#include "shared/accessibility/application/FocusManager.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/FocusManager.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 

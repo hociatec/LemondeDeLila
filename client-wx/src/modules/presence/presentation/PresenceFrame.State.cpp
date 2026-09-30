@@ -5,7 +5,7 @@
 
 #include "modules/presence/application/PresenceMonitor.h"
 #include "modules/presence/presentation/PresencePresentationModel.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/ui/presentation/theme/Theme.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"

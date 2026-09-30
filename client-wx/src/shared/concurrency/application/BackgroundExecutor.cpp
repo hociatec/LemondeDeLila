@@ -23,8 +23,12 @@ std::size_t ResolveWorkerCount(std::size_t configuredCount)
         return configuredCount;
     }
 
+    constexpr std::size_t DefaultMaximumWorkers = 4;
     const unsigned int hardwareThreads = std::thread::hardware_concurrency();
-    return hardwareThreads == 0 ? 2U : static_cast<std::size_t>(hardwareThreads);
+    const auto detected = hardwareThreads == 0
+        ? std::size_t{2}
+        : static_cast<std::size_t>(hardwareThreads);
+    return std::clamp(detected, std::size_t{1}, DefaultMaximumWorkers);
 }
 
 std::size_t PriorityIndex(BackgroundTaskPriority priority)
@@ -67,14 +71,14 @@ struct BackgroundExecutor::Impl final
         Shutdown();
     }
 
-    void Submit(
+    [[nodiscard]] bool Submit(
         std::shared_ptr<std::stop_source> stopSource,
         BackgroundTaskPriority priority,
         std::function<void()> work)
     {
         if (stopSource == nullptr || work == nullptr)
         {
-            return;
+            return false;
         }
 
         {
@@ -82,20 +86,21 @@ struct BackgroundExecutor::Impl final
             if (stopping)
             {
                 stopSource->request_stop();
-                return;
+                return false;
             }
 
             if (QueueSizeUnsafe() >= queueCapacity)
             {
                 lila::shared::logging::LogWarning("BackgroundExecutor", "Queue capacity reached. Dropping job.");
                 stopSource->request_stop();
-                return;
+                return false;
             }
 
             queues[PriorityIndex(priority)].push_back(Job{std::move(stopSource), std::move(work)});
         }
 
         condition.notify_one();
+        return true;
     }
 
     void Shutdown()
@@ -158,7 +163,23 @@ struct BackgroundExecutor::Impl final
 
             if (!job.stopSource->stop_requested())
             {
-                job.work();
+                try
+                {
+                    job.work();
+                }
+                catch (const std::exception& exception)
+                {
+                    lila::shared::logging::LogError(
+                        "BackgroundExecutor",
+                        "Unhandled worker exception: " + std::string(exception.what()));
+                    job.stopSource->request_stop();
+                }
+                catch (...)
+                {
+                    lila::shared::logging::LogError(
+                        "BackgroundExecutor", "Unhandled unknown worker exception.");
+                    job.stopSource->request_stop();
+                }
             }
 
             {
@@ -208,12 +229,12 @@ BackgroundExecutor::BackgroundExecutor(BackgroundExecutorOptions options)
 
 BackgroundExecutor::~BackgroundExecutor() = default;
 
-void BackgroundExecutor::Submit(
+bool BackgroundExecutor::Submit(
     std::shared_ptr<std::stop_source> stopSource,
     BackgroundTaskPriority priority,
     std::function<void()> work)
 {
-    impl_->Submit(std::move(stopSource), priority, std::move(work));
+    return impl_->Submit(std::move(stopSource), priority, std::move(work));
 }
 
 void BackgroundExecutor::Shutdown()

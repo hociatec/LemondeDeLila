@@ -8,7 +8,7 @@
 #include "app/navigation/presentation/HostFrame.h"
 #include "modules/audio/application/IAudioService.h"
 #include "modules/presence/application/PresenceMonitor.h"
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/logging/application/Logger.h"
 
 namespace lila::app::navigation

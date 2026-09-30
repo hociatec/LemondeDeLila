@@ -1,4 +1,4 @@
-#include "shared/accessibility/application/FocusTransition.h"
+#include "shared/accessibility/presentation/FocusTransition.h"
 
 #include <cstddef>
 #include <utility>
@@ -6,8 +6,8 @@
 #include <wx/weakref.h>
 #include <wx/window.h>
 
-#include "shared/accessibility/application/FocusCoordinator.h"
-#include "shared/accessibility/application/FocusMemory.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusMemory.h"
 
 namespace lila::shared::accessibility
 {

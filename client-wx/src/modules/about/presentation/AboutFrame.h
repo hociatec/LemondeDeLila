@@ -3,9 +3,9 @@
 #include <functional>
 #include <memory>
 
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 
 class wxButton;
 namespace lila::shared::ui::controls

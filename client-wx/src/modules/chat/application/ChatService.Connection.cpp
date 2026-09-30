@@ -53,7 +53,6 @@ bool ChatService::Open()
         state_ = domain::ChatState::Connecting;
         messagesStore_.LoadHistory({}, lila::modules::chat::infrastructure::fields::DefaultHistoryLoadLimit);
         lastServerError_.reset();
-        reconnectAttempt_ = 0;
     }
 
     try

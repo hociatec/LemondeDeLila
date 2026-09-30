@@ -54,7 +54,7 @@
 #include "shared/cache/application/SingleFlightCache.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "modules/audio/domain/SoundCatalog.h"
 #include "modules/audio/infrastructure/LocalSoundManifest.h"
 #include "modules/audio/presentation/SoundOptionsCatalog.h"

@@ -4,9 +4,9 @@
 #include <utility>
 
 #include "modules/session/application/SessionStore.h"
-#include "modules/social/infrastructure/SocialProtocolFields.h"
+#include "generated/protocol/SocialProtocolFields.generated.h"
 #include "modules/social/domain/SocialErrorMessages.h"
-#include "shared/network/domain/WsMessageTypes.h"
+#include "generated/protocol/WsMessageTypes.generated.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
 

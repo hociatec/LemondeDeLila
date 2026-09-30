@@ -122,15 +122,16 @@ void AdminFrame::ExecuteCommand(
     const auto maintenanceToken =
         std::make_shared<lila::shared::security::SensitiveString>(maintenanceToken_);
     wxWeakRef<AdminFrame> weakThis(this);
-    requestSlot_.Track(lila::shared::concurrency::RunAsync<nlohmann::json>(
+    requestSlot_.Track(lila::shared::concurrency::RunAsync<domain::AdminPayload>(
         [service, commandPointer, payload = std::move(payload), maintenanceToken](std::stop_token stopToken)
         {
             return service->Execute(
-                *commandPointer, payload, maintenanceToken->Value(), stopToken);
+                *commandPointer, domain::AdminPayload(payload.dump()),
+                maintenanceToken->Value(), stopToken);
         },
         [weakThis, generation, commandPointer, announceLifecycle](
             std::optional<lila::shared::errors::AppError> error,
-            std::optional<nlohmann::json> result) mutable
+            std::optional<domain::AdminPayload> result) mutable
         {
             if (!weakThis) return;
             weakThis->CallAfter(

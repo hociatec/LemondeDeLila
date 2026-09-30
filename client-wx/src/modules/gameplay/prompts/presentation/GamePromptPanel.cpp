@@ -13,7 +13,7 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/accessibility/presentation/ModalNavigation.h"
 #include "shared/ui/presentation/theme/Theme.h"
 

@@ -1,5 +1,5 @@
 #include "modules/home/presentation/HomeFrame.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 #include <memory>
@@ -17,7 +17,7 @@
 #include "shared/errors/catalog/CoreErrorMessages.h"
 #include "modules/user/domain/UserErrorMessages.h"
 #include "shared/logging/application/Logger.h"
-#include "shared/ui/application/BackgroundTask.h"
+#include "shared/ui/presentation/BackgroundTask.h"
 
 namespace lila::modules::home::presentation
 {

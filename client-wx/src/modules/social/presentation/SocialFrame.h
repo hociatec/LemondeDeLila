@@ -10,8 +10,8 @@
 
 #include <wx/string.h>
 
-#include "shared/accessibility/application/FocusPlanView.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "modules/social/domain/SocialFriendRequest.h"
 #include "modules/social/domain/SocialProfile.h"

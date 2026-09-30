@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "modules/audio/application/IAudioService.h"
-#include "modules/presence/application/PresenceUpdateParser.h"
+#include "modules/presence/infrastructure/PresencePayloadCodec.h"
 #include "modules/session/application/SessionConnectionRetry.h"
 #include "modules/session/application/SessionStore.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
@@ -138,7 +138,7 @@ void PresenceMonitor::Connect(std::stop_token stopToken)
 
 void PresenceMonitor::ApplyUpdate(const std::string& rawJson)
 {
-    auto next = ParsePresenceUpdate(rawJson);
+    auto next = infrastructure::ReadPresenceUpdate(rawJson);
     if (!next.has_value())
     {
         return;

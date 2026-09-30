@@ -10,7 +10,7 @@
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
 #include "modules/rooms/presentation/model/RoomPresentationModel.h"
 #include "shared/accessibility/presentation/ActionButton.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::rooms::presentation

@@ -1,10 +1,10 @@
 #include "modules/chat/infrastructure/ChatEventPayloadParser.h"
 
-#include "modules/chat/infrastructure/ChatProtocolFields.h"
+#include "generated/protocol/ChatProtocolFields.generated.h"
 #include "shared/data/time/DateTime.h"
 #include "shared/data/json/JsonReaders.h"
 #include "modules/chat/domain/ChatErrorMessages.h"
-#include "shared/network/domain/WsMessageTypes.h"
+#include "generated/protocol/WsMessageTypes.generated.h"
 #include "shared/network/application/realtime/RealtimeProtocolFields.h"
 
 #include <optional>

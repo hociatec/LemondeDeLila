@@ -9,7 +9,7 @@
 #include <wx/toplevel.h>
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/accessibility/presentation/ModalNavigation.h"
 #include "shared/ui/presentation/theme/Theme.h"
 

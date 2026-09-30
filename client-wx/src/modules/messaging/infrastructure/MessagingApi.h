@@ -11,7 +11,7 @@
 #include "modules/messaging/domain/MessagingUser.h"
 #include "modules/messaging/application/IMessagingGateway.h"
 #include "shared/network/application/realtime/RealtimeApiClient.h"
-#include "modules/messaging/infrastructure/MessagingProtocolFields.h"
+#include "generated/protocol/MessagingProtocolFields.generated.h"
 
 namespace lila::modules::session::application
 {

@@ -4,7 +4,7 @@
 #include "modules/social/presentation/SocialScreenCoordinator.h"
 #include "modules/social/presentation/SocialView.h"
 #include "modules/social/presentation/SocialEventRouter.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 
 namespace lila::modules::social::presentation
 {

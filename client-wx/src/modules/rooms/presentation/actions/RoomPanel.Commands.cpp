@@ -12,7 +12,7 @@
 #include "modules/audio/application/IAudioService.h"
 #include "modules/rooms/presentation/model/RoomPresentationModel.h"
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "modules/rooms/domain/RoomErrorMessages.h"
 #include "shared/text/presentation/encoding/Encoding.h"

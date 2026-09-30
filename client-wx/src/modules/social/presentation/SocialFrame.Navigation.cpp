@@ -8,10 +8,10 @@
 #include <wx/choice.h>
 #include <wx/textctrl.h>
 
-#include "shared/accessibility/application/FocusManager.h"
+#include "shared/accessibility/presentation/FocusManager.h"
 #include "shared/ui/presentation/theme/Theme.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::social::presentation

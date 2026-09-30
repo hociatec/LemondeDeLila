@@ -6,7 +6,7 @@
 #include <wx/weakref.h>
 
 #include "modules/rooms/presentation/lobby/RoomLobbyPresentationModel.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 #include "shared/ui/presentation/layout/ListPagePresentation.h"

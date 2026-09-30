@@ -12,6 +12,10 @@ struct HttpRequest final
     std::string method = "GET";
     std::string url;
     std::string body;
+    std::string uploadFilePath;
+    std::string uploadPrefix;
+    std::string uploadSuffix;
+    std::size_t maximumUploadBytes = 0;
     std::string contentType;
     std::map<std::string, std::string> headers;
     int sendTimeoutMs = 0;

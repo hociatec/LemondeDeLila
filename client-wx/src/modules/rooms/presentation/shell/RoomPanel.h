@@ -10,7 +10,7 @@
 
 #include "modules/rooms/domain/Room.h"
 #include "modules/rooms/presentation/navigation/RoomOpenRequest.h"
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
 

@@ -1,6 +1,6 @@
 #include "modules/vault/presentation/VaultPanel.h"
 
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::vault::presentation

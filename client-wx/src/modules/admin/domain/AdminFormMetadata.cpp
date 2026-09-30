@@ -2,7 +2,6 @@
 #include "modules/admin/domain/AdminFormMetadata.BugReports.h"
 #include <array>
 #include <unordered_map>
-#include <nlohmann/json.hpp>
 namespace lila::modules::admin::domain
 {
 namespace
@@ -179,41 +178,49 @@ AdminFieldMetadata GetAdminFieldMetadata(
 
 std::optional<AdminFormValidationError> ValidateAdminFormPayload(
     std::string_view commandId,
-    const nlohmann::json& payload)
+    const std::vector<AdminFormValue>& payload)
 {
-    if (!payload.is_object()) return AdminFormValidationError{"", L"Formulaire invalide."};
-    for (const auto& field : payload.items())
+    for (const auto& field : payload)
     {
-        const auto metadata = GetAdminFieldMetadata(commandId, field.key());
-        if (!metadata.optional && field.key() != "filePath" && field.value().is_string() &&
-            field.value().get_ref<const std::string&>().find_first_not_of(" \t\r\n") ==
-                std::string::npos)
-            return AdminFormValidationError{field.key(), metadata.label + L" est requis."};
+        const auto metadata = GetAdminFieldMetadata(commandId, field.field);
+        if (!metadata.optional && field.field != "filePath" &&
+            field.kind == AdminFormValueKind::Text &&
+            field.text.find_first_not_of(" \t\r\n") == std::string::npos)
+            return AdminFormValidationError{field.field, metadata.label + L" est requis."};
     }
 
-    if (const auto answers = payload.find("answers"); answers != payload.end())
+    const auto find = [&payload](std::string_view name) -> const AdminFormValue*
     {
-        if (!answers->is_array() || answers->size() != 4)
+        const auto found = std::find_if(
+            payload.begin(), payload.end(),
+            [name](const AdminFormValue& value) { return value.field == name; });
+        return found == payload.end() ? nullptr : &*found;
+    };
+
+    if (const auto* answers = find("answers"))
+    {
+        if (answers->kind != AdminFormValueKind::TextList || answers->textList.size() != 4)
             return AdminFormValidationError{"answers", L"Saisissez exactement quatre réponses."};
-        for (const auto& answer : *answers)
-            if (!answer.is_string() ||
-                answer.get_ref<const std::string&>().find_first_not_of(" \t\r\n") ==
-                    std::string::npos)
+        for (const auto& answer : answers->textList)
+            if (answer.find_first_not_of(" \t\r\n") == std::string::npos)
                 return AdminFormValidationError{
                     "answers", L"Chaque réponse doit contenir du texte."};
     }
-    if (const auto index = payload.find("correctIndex"); index != payload.end() &&
-        (!index->is_number_integer() || index->get<long long>() < 0 ||
-         index->get<long long>() > 3))
+    if (const auto* index = find("correctIndex"); index != nullptr &&
+        (index->kind != AdminFormValueKind::Integer || index->number < 0 || index->number > 3))
         return AdminFormValidationError{
             "correctIndex", L"L’index de la bonne réponse doit être compris entre 0 et 3."};
 
-    const auto invalidRange = [&payload](std::string_view minimum, std::string_view maximum)
+    const auto invalidRange = [&find](std::string_view minimum, std::string_view maximum)
     {
-        const auto min = payload.find(minimum);
-        const auto max = payload.find(maximum);
-        return min != payload.end() && max != payload.end() && min->is_number() &&
-            max->is_number() && min->get<double>() > max->get<double>();
+        const auto* min = find(minimum);
+        const auto* max = find(maximum);
+        const auto isNumber = [](const AdminFormValue* value)
+        {
+            return value != nullptr && (value->kind == AdminFormValueKind::Integer ||
+                value->kind == AdminFormValueKind::Number);
+        };
+        return isNumber(min) && isNumber(max) && min->number > max->number;
     };
     if (invalidRange("minPlayers", "maxPlayers"))
         return AdminFormValidationError{

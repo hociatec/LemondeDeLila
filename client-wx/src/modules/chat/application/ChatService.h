@@ -99,7 +99,6 @@ private:
     std::weak_ptr<EventHandlers> eventHandlers_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> receiveTask_;
     std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> heartbeatTask_;
-    int reconnectAttempt_ = 0;
     std::uint64_t lifecycleGeneration_ = 0;
 };
 }

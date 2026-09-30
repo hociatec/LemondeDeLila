@@ -1,0 +1,24 @@
+name: Client quality
+
+on:
+  push:
+    paths:
+      - 'client-wx/**'
+      - '.github/workflows/client-quality.yml'
+  pull_request:
+    paths:
+      - 'client-wx/**'
+      - '.github/workflows/client-quality.yml'
+
+concurrency:
+  group: client-quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Portable client checks (maximum two minutes)
+        run: timeout 120s bash client-wx/tests/run_portable_checks.sh

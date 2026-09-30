@@ -1,6 +1,6 @@
 #include "modules/social/infrastructure/SocialPayloadCodec.h"
 
-#include "modules/social/infrastructure/SocialProtocolFields.h"
+#include "generated/protocol/SocialProtocolFields.generated.h"
 #include "shared/data/json/JsonApiHelpers.h"
 #include "shared/data/json/JsonReaders.h"
 #include "modules/social/domain/SocialErrorMessages.h"

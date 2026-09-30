@@ -8,7 +8,7 @@
 #include "modules/admin/domain/AdminPagination.h"
 #include "modules/admin/infrastructure/AdminPayloadValidator.h"
 #include "modules/admin/presentation/AdminResultFormatter.h"
-#include "shared/network/application/http/AuthenticatedHttpClient.h"
+#include "shared/network/infrastructure/http/AuthenticatedHttpClient.h"
 int main()
 {
     using lila::modules::admin::domain::GetAdminCommands;
@@ -154,24 +154,27 @@ int main()
         "mnemo.questions", "categoryId").optional);
     assert(lila::modules::admin::domain::GetAdminFieldMetadata(
         "mnemo.questions", "status").optional);
+    using FormValue = lila::modules::admin::domain::AdminFormValue;
     const auto missingUsername = lila::modules::admin::domain::ValidateAdminFormPayload(
-        "users.create", {{"email", "admin@example.test"}, {"username", "   "}});
-    assert(missingUsername.has_value());
-    assert(missingUsername->field == "username");
+        "users.create", {FormValue::Text("email", "admin@example.test"),
+            FormValue::Text("username", "   ")});
+    assert(missingUsername.has_value() && missingUsername->field == "username");
     const auto invalidAnswers = lila::modules::admin::domain::ValidateAdminFormPayload(
         "mnemo.question.create",
-        {{"categoryId", "general"}, {"question", "Question ?"},
-         {"answers", {"Une", "Deux", "Trois"}}, {"correctIndex", 0}});
-    assert(invalidAnswers.has_value());
-    assert(invalidAnswers->field == "answers");
+        {FormValue::Text("categoryId", "general"), FormValue::Text("question", "Question ?"),
+         FormValue::TextList("answers", {"Une", "Deux", "Trois"}),
+         FormValue::Integer("correctIndex", 0)});
+    assert(invalidAnswers.has_value() && invalidAnswers->field == "answers");
     const auto invalidPlayerRange = lila::modules::admin::domain::ValidateAdminFormPayload(
-        "games.update", {{"gameType", "jeu"}, {"minPlayers", 8}, {"maxPlayers", 2}});
-    assert(invalidPlayerRange.has_value());
-    assert(invalidPlayerRange->field == "maxPlayers");
+        "games.update", {FormValue::Text("gameType", "jeu"),
+            FormValue::Integer("minPlayers", 8), FormValue::Integer("maxPlayers", 2)});
+    assert(invalidPlayerRange.has_value() && invalidPlayerRange->field == "maxPlayers");
     assert(!lila::modules::admin::domain::ValidateAdminFormPayload(
-        "games.update", {{"gameType", "jeu"}, {"minPlayers", 2}, {"maxPlayers", 8}}));
+        "games.update", {FormValue::Text("gameType", "jeu"),
+            FormValue::Integer("minPlayers", 2), FormValue::Integer("maxPlayers", 8)}));
     assert(!lila::modules::admin::domain::ValidateAdminFormPayload(
-        "sounds.upload", {{"soundId", "ChatMessageSent"}, {"filePath", ""}}));
+        "sounds.upload", {FormValue::Text("soundId", "ChatMessageSent"),
+            FormValue::Text("filePath", "")}));
     const auto soundField = lila::modules::admin::domain::GetAdminFieldMetadata(
         "sounds.upload", "soundId");
     assert(soundField.kind ==
@@ -180,14 +183,12 @@ int main()
         "RoomMemberJoined") != soundField.choices.end());
     assert(std::find(soundField.choiceLabels.begin(), soundField.choiceLabels.end(),
         L"Table — un participant a rejoint") != soundField.choiceLabels.end());
-
     const auto formatted = lila::modules::admin::presentation::FormatAdminResult({
         {"users", {{{"id", 7}, {"username", "Lila"}, {"enabled", true}}}},
     });
     assert(formatted.find("Utilisateurs") != std::string::npos);
     assert(formatted.find("Lila") != std::string::npos);
     assert(formatted.find("Oui") != std::string::npos);
-
     const auto userPresentation =
         lila::modules::admin::presentation::BuildAdminResultPresentation({
             {"total", 2},

@@ -3,8 +3,8 @@
 #include <wx/msgdlg.h>
 
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
-#include "shared/accessibility/application/NavigationController.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
+#include "shared/accessibility/presentation/NavigationController.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
 
 namespace lila::modules::rooms::presentation
 {

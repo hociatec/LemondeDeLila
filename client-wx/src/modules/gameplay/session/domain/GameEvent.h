@@ -20,6 +20,13 @@ enum class GameEventType
     Ignored,
 };
 
+enum class GameConnectionState
+{
+    Reconnecting,
+    Connected,
+    Failed,
+};
+
 struct GameAcknowledgement final
 {
     std::string command;
@@ -40,5 +47,6 @@ struct GameEvent final
     std::string rules;
     std::optional<GameActionCandidatesResult> candidates;
     std::string errorCode;
+    std::optional<GameConnectionState> connectionState;
 };
 }

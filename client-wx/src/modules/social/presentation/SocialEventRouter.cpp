@@ -7,7 +7,7 @@
 #include <wx/window.h>
 
 #include "modules/social/presentation/SocialNavigationState.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/errors/catalog/CoreErrorMessages.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"

@@ -1,41 +1,18 @@
 #include "modules/rooms/application/RoomSessionService.h"
 
-#include <algorithm>
 #include <chrono>
 #include <string>
-#include <thread>
 #include <utility>
 
 #include "modules/rooms/application/IRoomSessionGateway.h"
 #include "shared/logging/application/Logger.h"
+#include "shared/network/application/realtime/ReconnectPolicy.h"
 
 namespace lila::modules::rooms::application
 {
 namespace
 {
 constexpr auto KeepAliveInterval = std::chrono::seconds(15);
-constexpr auto ReconnectInitialDelay = std::chrono::milliseconds(1'000);
-constexpr auto ReconnectMaximumDelay = std::chrono::milliseconds(30'000);
-
-bool WaitForDelay(std::stop_token stopToken, std::chrono::milliseconds delay)
-{
-    constexpr auto PollStep = std::chrono::milliseconds(100);
-    while (delay.count() > 0 && !stopToken.stop_requested())
-    {
-        const auto step = std::min(PollStep, delay);
-        std::this_thread::sleep_for(step);
-        delay -= step;
-    }
-    return stopToken.stop_requested();
-}
-
-std::chrono::milliseconds ReconnectDelay(int attempt)
-{
-    auto delay = ReconnectInitialDelay;
-    for (int index = 0; index < attempt; ++index)
-        delay = std::min(ReconnectMaximumDelay, delay * 2);
-    return delay;
-}
 }
 
 void RoomSessionService::Start()
@@ -66,13 +43,13 @@ void RoomSessionService::StopTasks(bool leaveRoom)
 
 void RoomSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t generation)
 {
-    int reconnectAttempt = 0;
+    lila::shared::network::realtime::ReconnectPolicy reconnectPolicy;
     while (!stopToken.stop_requested() && sessionGeneration_.load() == generation)
     {
         try
         {
             auto event = gateway_.ReceiveEvent(stopToken);
-            reconnectAttempt = 0;
+            reconnectPolicy.Reset();
             if (event.type == domain::RoomEventType::Ignored) continue;
             const bool closed = event.type == domain::RoomEventType::Closed;
             NotifyEvent(std::move(event), generation);
@@ -90,12 +67,13 @@ void RoomSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t gene
 
             while (!stopToken.stop_requested() && sessionGeneration_.load() == generation)
             {
-                if (WaitForDelay(stopToken, ReconnectDelay(reconnectAttempt))) return;
+                if (lila::shared::network::realtime::WaitForCancellation(
+                        stopToken, reconnectPolicy.NextDelay())) return;
                 try
                 {
                     auto room = gateway_.Reconnect(stopToken);
                     reconnecting_.store(false);
-                    reconnectAttempt = 0;
+                    reconnectPolicy.Reset();
                     NotifyEvent(
                         {domain::RoomEventType::StateUpdated,
                          std::move(room), {}, {}, false, {}},
@@ -109,7 +87,6 @@ void RoomSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t gene
                 }
                 catch (const std::exception& reconnectError)
                 {
-                    ++reconnectAttempt;
                     lila::shared::logging::LogWarning("Rooms", reconnectError.what());
                 }
             }
@@ -119,7 +96,7 @@ void RoomSessionService::ReceiveLoop(std::stop_token stopToken, std::size_t gene
 
 void RoomSessionService::KeepAliveLoop(std::stop_token stopToken, std::size_t generation)
 {
-    while (!WaitForDelay(
+    while (!lila::shared::network::realtime::WaitForCancellation(
         stopToken,
         std::chrono::duration_cast<std::chrono::milliseconds>(KeepAliveInterval)))
     {

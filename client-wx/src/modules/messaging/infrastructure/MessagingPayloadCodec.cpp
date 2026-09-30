@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-#include "modules/messaging/infrastructure/MessagingProtocolFields.h"
-#include "modules/user/infrastructure/remote/UserAuthFields.h"
+#include "generated/protocol/MessagingProtocolFields.generated.h"
+#include "generated/protocol/UserAuthFields.generated.h"
 #include "shared/data/time/DateTime.h"
 #include "shared/data/json/JsonApiHelpers.h"
 #include "shared/data/json/JsonReaders.h"

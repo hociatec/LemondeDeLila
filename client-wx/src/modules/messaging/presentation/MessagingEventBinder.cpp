@@ -12,7 +12,7 @@
 #include "modules/messaging/presentation/MessagingFocusController.h"
 #include "modules/messaging/presentation/MessagingNavigationState.h"
 #include "modules/messaging/presentation/MessagingView.h"
-#include "shared/accessibility/application/NavigationController.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 #include "shared/ui/presentation/navigation/MenuBlueprint.h"
 

@@ -63,4 +63,14 @@ std::optional<std::vector<domain::PresencePlayer>> ReadPresenceUpdate(const std:
         });
     return players;
 }
+
+std::string WritePresenceContext(std::string_view context)
+{
+    return nlohmann::json{{"type", "presence-context"}, {"context", context}}.dump();
+}
+
+std::string_view PresenceActivityMessage() noexcept
+{
+    return R"({"type":"presence-activity"})";
+}
 }

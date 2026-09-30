@@ -10,7 +10,7 @@
 #include "app/navigation/domain/ViewId.h"
 #include "app/navigation/presentation/NavigationDependencies.h"
 #include "app/navigation/presentation/ViewRegistry.h"
-#include "shared/accessibility/application/FocusTransition.h"
+#include "shared/accessibility/presentation/FocusTransition.h"
 #include "modules/rooms/domain/Room.h"
 
 class wxWindow;

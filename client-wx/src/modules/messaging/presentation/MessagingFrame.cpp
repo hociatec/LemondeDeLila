@@ -7,7 +7,7 @@
 #include "modules/messaging/presentation/MessagingMailboxController.h"
 #include "modules/messaging/presentation/MessagingFocusController.h"
 #include "modules/messaging/presentation/MessagingScreenCoordinator.h"
-#include "shared/ui/application/BackgroundTask.h"
+#include "shared/ui/presentation/BackgroundTask.h"
 
 #include <array>
 #include <memory>

@@ -7,9 +7,9 @@
 #include <wx/sizer.h>
 #include <wx/weakref.h>
 
-#include "shared/accessibility/application/NavigationController.h"
-#include "shared/accessibility/application/FocusCoordinator.h"
-#include "shared/accessibility/application/FocusPlanView.h"
+#include "shared/accessibility/presentation/NavigationController.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/config/domain/AppConfig.h"
 #include "shared/text/presentation/encoding/Encoding.h"

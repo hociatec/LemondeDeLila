@@ -68,7 +68,7 @@ void GamePlayPanel::ClearView()
     workflowPanel_->Clear();
     renderedLineIds_.clear();
     logCursor_.Reset();
-    observedEventIdentities_.clear();
+    observedEvents_.Reset();
     announcedTimers_.clear();
     shortcutsLabel_->SetLabel(wxString{});
     statusLabel_->SetLabel(wxString{});
