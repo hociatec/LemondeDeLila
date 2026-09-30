@@ -9,6 +9,7 @@ $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $releaseDir = Join-Path $WorkDir 'release output'
 $portableDir = Join-Path $WorkDir 'portable Épreuve'
 $installDir = Join-Path $WorkDir 'installation Épreuve'
+$upgradeDir = Join-Path $WorkDir 'mise à niveau Épreuve'
 
 $packageJson = & (Join-Path $root 'scripts\PackageWxRelease.ps1') `
     -BuildDir $BuildDir -OutputDir $releaseDir -Version $Version | ConvertFrom-Json
@@ -45,23 +46,47 @@ if ((Get-FileHash -LiteralPath $installerJson.InstallerExe -Algorithm SHA256).Ha
     throw 'Le hash déclaré de l installateur est invalide.'
 }
 
-$installArguments = @(
-    '/VERYSILENT',
-    '/SUPPRESSMSGBOXES',
-    '/NORESTART',
-    "/DIR=`"$installDir`""
-)
-foreach ($iteration in 1..2) {
-    $installed = Start-Process -FilePath $installerJson.InstallerExe `
-        -ArgumentList $installArguments -Wait -PassThru
+function Install-Release([string]$Installer, [string]$Destination, [string]$Label) {
+    $arguments = @(
+        '/VERYSILENT',
+        '/SUPPRESSMSGBOXES',
+        '/NORESTART',
+        "/DIR=`"$Destination`""
+    )
+    $installed = Start-Process -FilePath $Installer -ArgumentList $arguments -Wait -PassThru
     if ($installed.ExitCode -ne 0) {
-        throw "Installation/mise à niveau $iteration échouée: $($installed.ExitCode)."
+        throw "$Label échouée: $($installed.ExitCode)."
     }
-    if (!(Test-Path -LiteralPath (Join-Path $installDir 'lila_launcher.exe') -PathType Leaf) -or
-        !(Test-Path -LiteralPath (Join-Path $installDir 'app\lemonde_de_lila_wx.exe') -PathType Leaf)) {
-        throw "Installation/mise à niveau $iteration incomplète."
+    if (!(Test-Path -LiteralPath (Join-Path $Destination 'lila_launcher.exe') -PathType Leaf) -or
+        !(Test-Path -LiteralPath (Join-Path $Destination 'app\lemonde_de_lila_wx.exe') -PathType Leaf)) {
+        throw "$Label incomplète."
     }
 }
+
+Install-Release $installerJson.InstallerExe $installDir 'Installation propre'
+
+$previousManifest = Invoke-RestMethod `
+    -Uri 'https://api.lilas.hociatec.fr/api/client/releases/latest?platform=windows&arch=x64' `
+    -TimeoutSec 15
+if ([string]::IsNullOrWhiteSpace($previousManifest.version) -or
+    $previousManifest.version -eq $Version -or
+    $previousManifest.installer.url -notmatch '^https://' -or
+    $previousManifest.installer.sha256 -notmatch '^[a-fA-F0-9]{64}$') {
+    throw 'Le manifeste de la release précédente est absent ou invalide.'
+}
+$previousInstaller = Join-Path $WorkDir 'previous-release-setup.exe'
+Invoke-WebRequest -Uri $previousManifest.installer.url -OutFile $previousInstaller `
+    -TimeoutSec 120 | Out-Null
+if ((Get-FileHash -LiteralPath $previousInstaller -Algorithm SHA256).Hash.ToLowerInvariant() `
+    -ne $previousManifest.installer.sha256.ToLowerInvariant()) {
+    throw 'Le hash de l installateur précédent est invalide.'
+}
+$previousSignature = Get-AuthenticodeSignature -LiteralPath $previousInstaller
+if ($previousSignature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
+    throw "Signature Authenticode de la release précédente invalide: $($previousSignature.Status)."
+}
+Install-Release $previousInstaller $upgradeDir "Installation de la release $($previousManifest.version)"
+Install-Release $installerJson.InstallerExe $upgradeDir "Mise à niveau vers $Version"
 
 $userData = Join-Path $env:LOCALAPPDATA 'LeMondeDeLilaWX'
 New-Item -ItemType Directory -Force -Path $userData | Out-Null
@@ -82,4 +107,6 @@ Remove-Item -LiteralPath $sentinel -Force
     InstallerExe = $installerJson.InstallerExe
     PortableSha256 = $packageJson.Sha256
     InstallerSha256 = $installerJson.Sha256
+    PreviousVersion = $previousManifest.version
+    PreviousInstallerSha256 = $previousManifest.installer.sha256.ToLowerInvariant()
 } | ConvertTo-Json
