@@ -69,7 +69,11 @@ if(WIN32)
     enable_language(RC)
     # Les en-têtes MinGW n'exposent pas les API CNG/Vista+ sans cible Windows
     # explicite.
-    add_compile_definitions(_WIN32_WINNT=0x0601 NTDDI_VERSION=0x06010000)
+    add_compile_definitions(
+        _WIN32_WINNT=0x0601
+        NTDDI_VERSION=0x06010000
+        NOMINMAX
+    )
 
     set(
         LILA_WINDOWS_MANIFEST
