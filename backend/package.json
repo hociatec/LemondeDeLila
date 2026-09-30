@@ -126,6 +126,7 @@
     "engine:mechanics": "node --test tools/game-mechanics-matrix.spec.cjs && node tools/game-mechanics-matrix.cjs"
   },
   "overrides": {
+    "@grpc/grpc-js": "1.14.5",
     "multer": "$multer"
   },
   "dependencies": {
@@ -152,7 +153,7 @@
     "ffmpeg-static": "^5.3.0",
     "ffprobe-static": "^3.1.0",
     "helmet": "^8.1.0",
-    "ioredis": "^6.0.0",
+    "ioredis": "^5.11.1",
     "joi": "^18.2.9",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.4.0",

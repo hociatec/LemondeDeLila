@@ -23,6 +23,8 @@ void TestOptionsCodecRejectsObsoleteSchema()
 
 void TestSoundCatalogAndPerCueOptionsRoundTrip()
 {
+    using lila::modules::audio::domain::SoundFamily;
+
     const auto catalog = lila::modules::audio::domain::GetSoundCatalog();
     const auto options = lila::modules::audio::presentation::GetSoundOptions();
     Expect(
@@ -47,6 +49,14 @@ void TestSoundCatalogAndPerCueOptionsRoundTrip()
         Expect(
             std::filesystem::exists(std::filesystem::current_path() / "resources" / "sounds" / fileName),
             "Fichier sonore ou fichier de repli manquant");
+    }
+
+    for (const auto family : {SoundFamily::AppLaunch, SoundFamily::Ambience,
+             SoundFamily::Navigate, SoundFamily::Select, SoundFamily::Messages,
+             SoundFamily::TableAmbience, SoundFamily::Gameplay})
+    {
+        Expect(!lila::modules::audio::presentation::GetSoundFamilyLabel(family).empty(),
+            "Chaque famille audio doit avoir un libelle accessible");
     }
 
     lila::modules::options::domain::OptionsState state;

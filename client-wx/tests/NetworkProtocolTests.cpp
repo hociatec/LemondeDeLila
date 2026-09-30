@@ -56,6 +56,7 @@
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
 #include "shared/accessibility/presentation/NavigationController.h"
+#include "shared/data/json/JsonReaders.h"
 #include "modules/audio/domain/SoundCatalog.h"
 #include "modules/audio/infrastructure/LocalSoundManifest.h"
 #include "modules/audio/presentation/SoundOptionsCatalog.h"
@@ -70,6 +71,7 @@
 #include "shared/persistence/infrastructure/JsonFileStorage.h"
 #include "shared/security/domain/JwtPayload.h"
 #include "shared/security/infrastructure/SecurityUtils.h"
+#include "shared/text/infrastructure/Utf8ToWide.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 

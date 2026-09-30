@@ -79,6 +79,7 @@ scope_enabled() {
 cxx_build "${COMMON_FLAGS[@]}" "$ROOT/tests/GameSoundPolicyTests.cpp" \
   "$ROOT/src/modules/audio/domain/SoundCatalog.cpp" \
   "$ROOT/src/modules/audio/application/SoundVolumeResolver.cpp" \
+  "$ROOT/src/modules/audio/presentation/SoundOptionsCatalog.cpp" \
   -o "$BUILD_DIR/game-sound-policy-tests"
 "$BUILD_DIR/game-sound-policy-tests"
 JSON_INCLUDE="$BUILD_DIR/dependencies/nlohmann-json-3.12.0"
@@ -115,6 +116,15 @@ cp "$PINNED_JSON_INCLUDE/nlohmann/json_fwd.hpp" "$JSON_INCLUDE/nlohmann/json_fwd
 "$CXX_BIN" "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" -x c++-header \
   "$JSON_INCLUDE/nlohmann/json.hpp" -o "$JSON_INCLUDE/nlohmann/json.hpp.gch"
 
+# Every shard that compiles AppConfig needs the generated build metadata.
+sed \
+  -e 's/@PROJECT_VERSION@/portable-test/g' \
+  -e 's/@PROJECT_VERSION_MAJOR@/0/g' \
+  -e 's/@PROJECT_VERSION_MINOR@/0/g' \
+  -e 's/@PROJECT_VERSION_PATCH@/0/g' \
+  "$ROOT/src/shared/config/generated/AppBuildInfo.h.in" \
+  > "$BUILD_DIR/generated/AppBuildInfo.h"
+
 cxx_build "${COMMON_FLAGS[@]}" -DLILA_BASS_WRAPPER_ONLY_TEST -I"$ROOT/third_party/bass/include" \
   "$ROOT/tests/BassUnavailableTests.cpp" \
   "$ROOT/src/modules/audio/infrastructure/BassApi.cpp" \
@@ -146,14 +156,6 @@ cxx_build "${COMMON_FLAGS[@]}" \
   "$ROOT/src/modules/audio/infrastructure/LocalSoundManifest.cpp" \
   -o "$BUILD_DIR/missing-audio-assets-tests"
 "$BUILD_DIR/missing-audio-assets-tests"
-
-sed \
-  -e 's/@PROJECT_VERSION@/portable-test/g' \
-  -e 's/@PROJECT_VERSION_MAJOR@/0/g' \
-  -e 's/@PROJECT_VERSION_MINOR@/0/g' \
-  -e 's/@PROJECT_VERSION_PATCH@/0/g' \
-  "$ROOT/src/shared/config/generated/AppBuildInfo.h.in" \
-  > "$BUILD_DIR/generated/AppBuildInfo.h"
 
 cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
   "$ROOT/tests/MessagingProtocolTests.cpp" \

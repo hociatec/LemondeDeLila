@@ -2,8 +2,10 @@
 
 #ifdef __WXMSW__
 #include <array>
+#include <cstring>
 #include <filesystem>
 #include <string>
+#include <type_traits>
 #endif
 
 namespace lila::shared::accessibility
@@ -26,6 +28,16 @@ FARPROC FindExport(HMODULE module, const std::array<const char*, 2>& names)
     for (const auto* name : names)
         if (auto* found = GetProcAddress(module, name)) return found;
     return nullptr;
+}
+
+template<typename Function>
+Function ToFunctionPointer(FARPROC function) noexcept
+{
+    static_assert(std::is_trivially_copyable_v<Function>);
+    static_assert(sizeof(Function) == sizeof(function));
+    Function converted{};
+    std::memcpy(&converted, &function, sizeof(converted));
+    return converted;
 }
 }
 #endif
@@ -52,8 +64,8 @@ NvdaScreenReaderAnnouncer::NvdaScreenReaderAnnouncer()
         if (test != nullptr && speak != nullptr)
         {
             module_ = module;
-            testIfRunning_ = reinterpret_cast<TestIfRunning>(test);
-            speakText_ = reinterpret_cast<SpeakText>(speak);
+            testIfRunning_ = ToFunctionPointer<TestIfRunning>(test);
+            speakText_ = ToFunctionPointer<SpeakText>(speak);
             return;
         }
         FreeLibrary(module);
