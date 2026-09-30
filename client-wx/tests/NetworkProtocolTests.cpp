@@ -50,6 +50,7 @@
 #include "modules/session/application/SessionStore.h"
 #include "modules/session/domain/ISessionRepository.h"
 #include "modules/session/domain/Session.h"
+#include "modules/session/infrastructure/SessionStorageFields.h"
 #include "shared/accessibility/presentation/ActionButton.h"
 #include "shared/cache/application/SingleFlightCache.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
@@ -109,8 +110,13 @@ int main()
         run("OptionsStateNormalization", TestOptionsStateNormalization);
         run("DomainTypes", TestDomainTypes);
         run("SecurityWipe", TestSecurityWipe);
+        run("PersistedSecretsRejectPlaintext", TestPersistedSecretsRejectPlaintext);
+        run("SecureDeleteFileRemovesContent", TestSecureDeleteFileRemovesContent);
+        run("SensitiveFilePermissions", TestSensitiveFilePermissions);
+        run("SessionStorageSchemaVersion", TestSessionStorageSchemaVersion);
         run("JsonFileStorageRejectsOversizedFiles", TestJsonFileStorageRejectsOversizedFiles);
         run("JsonFileStorageRejectsCorruptedFiles", TestJsonFileStorageRejectsCorruptedFiles);
+        run("JsonParseErrorsDoNotExposePayloads", TestJsonParseErrorsDoNotExposePayloads);
         run("OptionsCodecRejectsObsoleteSchema", TestOptionsCodecRejectsObsoleteSchema);
         run("SoundCatalogAndPerCueOptionsRoundTrip", TestSoundCatalogAndPerCueOptionsRoundTrip);
         run("AudioSettingsAndServiceRouting", TestAudioSettingsAndServiceRouting);
@@ -143,6 +149,7 @@ int main()
         run("RoomAndVaultPresentationState", TestRoomAndVaultPresentationState);
         run("StoryBookPayloadAndNavigation", TestStoryBookPayloadAndNavigation);
         run("LeaderboardPayloadAndNavigation", TestLeaderboardPayloadAndNavigation);
+        run("NetworkCollectionLimits", TestNetworkCollectionLimits);
         std::cout << "All tests completed successfully!\n";
         return 0;
     }

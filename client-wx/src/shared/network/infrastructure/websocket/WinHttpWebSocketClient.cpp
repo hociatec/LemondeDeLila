@@ -1,6 +1,8 @@
 #include "shared/network/infrastructure/websocket/WinHttpWebSocketClient.h"
 #include "shared/network/infrastructure/websocket/WinHttpWebSocketClient.NativeState.h"
+#include "shared/network/domain/NetworkPolicy.h"
 
+#include <chrono>
 #include <stdexcept>
 
 #ifdef _WIN32
@@ -13,7 +15,7 @@
 namespace lila::shared::network::websocket
 {
 WinHttpWebSocketClient::WinHttpWebSocketClient()
-    : state_(std::make_unique<NativeState>())
+    : state_(std::make_shared<NativeState>())
 {
 }
 WinHttpWebSocketClient::~WinHttpWebSocketClient()
@@ -29,7 +31,9 @@ void WinHttpWebSocketClient::Close()
 bool WinHttpWebSocketClient::IsConnected() const
 {
 #ifdef _WIN32
-    return state_ != nullptr && state_->webSocket.Get() != nullptr;
+    return state_ != nullptr &&
+        state_->acceptingOperations.load(std::memory_order_acquire) &&
+        state_->webSocket.Get() != nullptr;
 #else
     return false;
 #endif
@@ -45,15 +49,14 @@ bool WinHttpWebSocketClient::IsConnectedTo(const std::string& endpoint, const We
 void WinHttpWebSocketClient::CancelPendingOperation() noexcept
 {
     if (state_ == nullptr) return;
-    ++state_->generation;
+    static_cast<void>(state_->operations.Cancel());
     ResetTransport();
 }
 
 void WinHttpWebSocketClient::CancelIfCurrent(std::uint64_t generation) noexcept
 {
     if (state_ == nullptr) return;
-    auto expected = generation;
-    if (!state_->generation.compare_exchange_strong(expected, generation + 1)) return;
+    if (!state_->operations.CancelIfCurrent(generation)) return;
     ResetTransport();
 }
 
@@ -61,64 +64,79 @@ WinHttpWebSocketClient::OperationTicket WinHttpWebSocketClient::BeginOperation(b
 {
     if (state_ == nullptr) return {};
     std::scoped_lock lock(state_->operationMutex);
+    if (!state_->acceptingOperations.load(std::memory_order_acquire)) return {};
     auto* handle = state_->webSocket.Get();
     if (handle == nullptr) return {};
-    if (receive) ++state_->activeReceives;
-    else ++state_->activeSends;
-    return {handle, state_->generation.load(), receive};
+    const auto phase = receive
+        ? WebSocketOperationPhase::Receive : WebSocketOperationPhase::Send;
+    auto gate = state_->operations.Begin(phase);
+    return {handle, gate.generation, state_, gate};
 }
 
-void WinHttpWebSocketClient::EndOperation(const OperationTicket& ticket) noexcept
+void WinHttpWebSocketClient::EndOperation(OperationTicket& ticket) noexcept
 {
-    if (state_ == nullptr || ticket.handle == nullptr) return;
-    {
-        std::scoped_lock lock(state_->operationMutex);
-        auto& count = ticket.receive ? state_->activeReceives : state_->activeSends;
-        if (count > 0) --count;
-    }
-    state_->operationFinished.notify_all();
+    if (ticket.state == nullptr || ticket.handle == nullptr) return;
+    const auto state = ticket.state;
+    state->operations.End(ticket.gate);
+    ticket.handle = nullptr;
+    if (state->closing.load(std::memory_order_acquire) &&
+        state->operations.WaitForIdle(std::chrono::milliseconds(0)))
+        ResetTransportState(state);
 }
 
 void WinHttpWebSocketClient::ResetTransport() noexcept
 {
+    ResetTransportState(state_);
+}
+
+void WinHttpWebSocketClient::ResetTransportState(
+    const std::shared_ptr<NativeState>& state) noexcept
+{
 #ifdef _WIN32
-    if (state_ == nullptr) return;
-    std::scoped_lock closeLock(state_->closeMutex);
+    if (state == nullptr) return;
+    const bool alreadyClosing = state->closing.exchange(true, std::memory_order_acq_rel);
+    state->acceptingOperations.store(false, std::memory_order_release);
+    if (alreadyClosing &&
+        !state->operations.WaitForIdle(std::chrono::milliseconds(0))) return;
+    std::scoped_lock closeLock(state->closeMutex);
 
     HINTERNET webSocket = nullptr;
     {
-        std::unique_lock lock(state_->operationMutex);
-        webSocket = state_->webSocket.Release();
-        state_->operationFinished.wait(lock, [this]()
-        {
-            return state_->activeSends == 0 && state_->activeHandshakes == 0;
-        });
+        std::scoped_lock lock(state->operationMutex);
+        webSocket = state->webSocket.Get();
     }
+    const auto timeout = std::chrono::milliseconds(
+        lila::shared::network::NetworkTimeouts::WebSocketCloseMs);
+    if (!state->operations.WaitForIdle(timeout, false)) return;
     if (webSocket != nullptr)
     {
-        // The close frame wakes a synchronous Receive. The native handle is
-        // released only after every API call using it has returned.
-        static_cast<void>(WinHttpWebSocketClose(
+        // Shutdown uses only the send side and is allowed concurrently with
+        // Receive. Full close and handle destruction wait for Receive to end.
+        static_cast<void>(WinHttpWebSocketShutdown(
             webSocket,
             WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS,
             nullptr,
             0));
+        if (!state->operations.WaitForIdle(timeout)) return;
+        std::scoped_lock lock(state->operationMutex);
+        if (state->webSocket.Get() == webSocket)
         {
-            std::unique_lock lock(state_->operationMutex);
-            state_->operationFinished.wait(lock, [this]() { return state_->activeReceives == 0; });
+            static_cast<void>(WinHttpWebSocketClose(
+                webSocket, WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS, nullptr, 0));
+            state->webSocket.Reset();
         }
-        WinHttpCloseHandle(webSocket);
     }
-    state_->request.Reset();
-    state_->connection.Reset();
-    state_->session.Reset();
+    state->request.Reset();
+    state->connection.Reset();
+    state->session.Reset();
 #endif
-    if (state_ != nullptr)
+    if (state != nullptr)
     {
-        std::scoped_lock lock(state_->metadataMutex);
-        state_->endpoint.clear();
-        state_->headers.clear();
+        std::scoped_lock lock(state->metadataMutex);
+        state->endpoint.clear();
+        state->headers.clear();
     }
+    if (state != nullptr) state->closing.store(false, std::memory_order_release);
 }
 
 void WinHttpWebSocketClient::ThrowIfCancelled(std::stop_token stopToken)

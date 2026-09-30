@@ -2,8 +2,20 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${TMPDIR:-/tmp}/lila-portable-tests"
+CXX_BIN="${CXX:-c++}"
+CHECK_SCOPE="${LILA_CHECK_SCOPE:-all}"
 mkdir -p "$BUILD_DIR"
-COMMON_FLAGS=(-std=c++20 -Wall -Wextra -Wpedantic -Werror -I"$ROOT/src")
+cd "$BUILD_DIR"
+SOURCE_FINGERPRINT="$({
+  "$CXX_BIN" --version | head -n 1
+  find "$ROOT/src" "$ROOT/tests" -type f -print0 | sort -z | xargs -0 sha256sum
+} | sha256sum | cut -d' ' -f1)"
+OBJECT_CACHE="$BUILD_DIR/objects-$SOURCE_FINGERPRINT"
+mkdir -p "$OBJECT_CACHE"
+COMMON_FLAGS=(-std=c++20 -pipe -Wall -Wextra -Wpedantic -Werror -I"$ROOT/src")
+if [[ -n "${LILA_SANITIZERS:-}" ]]; then
+  COMMON_FLAGS+=("-fsanitize=${LILA_SANITIZERS}" -fno-omit-frame-pointer)
+fi
 
 # Compile each translation unit concurrently. The former implementation passed
 # every source to a single compiler driver, which compiled them serially and
@@ -30,32 +42,38 @@ cxx_build() {
   done
 
   if ((has_compile_only)) || ((${#sources[@]} <= 1)); then
-    c++ "${args[@]}"
+    "$CXX_BIN" "${args[@]}"
     return
   fi
 
-  local object_dir="$BUILD_DIR/objects/$(basename "$output")"
-  mkdir -p "$object_dir"
   local jobs
   jobs="$(nproc)"
   ((jobs > 4)) && jobs=4
 
   index=0
   for source in "${sources[@]}"; do
-    local object="$object_dir/$index.o"
+    local cache_key object
+    cache_key="$(printf '%s\0' "$source" "${flags[@]}" | sha256sum | cut -d' ' -f1)"
+    object="$OBJECT_CACHE/$cache_key.o"
     objects+=("$object")
-    c++ "${flags[@]}" -c "$source" -o "$object" &
-    pids+=("$!")
-    ((++index))
-    if ((${#pids[@]} >= jobs)); then
-      wait "${pids[0]}"
-      pids=("${pids[@]:1}")
+    if [[ ! -f "$object" ]]; then
+      "$CXX_BIN" "${flags[@]}" -c "$source" -o "$object" &
+      pids+=("$!")
+      ((++index))
+      if ((${#pids[@]} >= jobs)); then
+        wait "${pids[0]}"
+        pids=("${pids[@]:1}")
+      fi
     fi
   done
   for pid in "${pids[@]}"; do
     wait "$pid"
   done
-  c++ "${flags[@]}" "${objects[@]}" -o "$output"
+  "$CXX_BIN" "${flags[@]}" "${objects[@]}" -o "$output"
+}
+
+scope_enabled() {
+  [[ "$CHECK_SCOPE" == "all" || "$CHECK_SCOPE" == "$1" ]]
 }
 
 cxx_build "${COMMON_FLAGS[@]}" "$ROOT/tests/GameSoundPolicyTests.cpp" \
@@ -86,6 +104,24 @@ fetch_json_header() {
 fetch_json_header json.hpp aaf127c04cb31c406e5b04a63f1ae89369fccde6d8fa7cdda1ed4f32dfc5de63
 fetch_json_header json_fwd.hpp fb6aa70cbece087f37ab4685c182b287c53be54f785f981b9db9d30d2d028b37
 
+# nlohmann/json.hpp dominates cold compilation time. A per-run precompiled
+# header keeps sanitizer/compiler flags coherent and is automatically reused
+# by every target that includes the pinned header below.
+PINNED_JSON_INCLUDE="$JSON_INCLUDE"
+JSON_INCLUDE="$OBJECT_CACHE/dependencies/nlohmann-json-3.12.0"
+mkdir -p "$JSON_INCLUDE/nlohmann"
+cp "$PINNED_JSON_INCLUDE/nlohmann/json.hpp" "$JSON_INCLUDE/nlohmann/json.hpp"
+cp "$PINNED_JSON_INCLUDE/nlohmann/json_fwd.hpp" "$JSON_INCLUDE/nlohmann/json_fwd.hpp"
+"$CXX_BIN" "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" -x c++-header \
+  "$JSON_INCLUDE/nlohmann/json.hpp" -o "$JSON_INCLUDE/nlohmann/json.hpp.gch"
+
+cxx_build "${COMMON_FLAGS[@]}" -DLILA_BASS_WRAPPER_ONLY_TEST -I"$ROOT/third_party/bass/include" \
+  "$ROOT/tests/BassUnavailableTests.cpp" \
+  "$ROOT/src/modules/audio/infrastructure/BassApi.cpp" \
+  -o "$BUILD_DIR/bass-unavailable-tests"
+"$BUILD_DIR/bass-unavailable-tests"
+
+if scope_enabled core; then
 cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
   "$ROOT/tests/AudioRegressionTests.cpp" \
   "$ROOT/src/modules/audio/application/AudioService.cpp" \
@@ -98,6 +134,18 @@ cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
   "$ROOT/src/modules/chat/application/ChatMessageStore.cpp" \
   -o "$BUILD_DIR/audio-regression-tests"
 "$BUILD_DIR/audio-regression-tests"
+
+cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
+  "$ROOT/tests/SoundAssetManifestTests.cpp" \
+  "$ROOT/src/modules/audio/infrastructure/SoundAssetManifest.cpp" \
+  -o "$BUILD_DIR/sound-asset-manifest-tests"
+"$BUILD_DIR/sound-asset-manifest-tests"
+
+cxx_build "${COMMON_FLAGS[@]}" \
+  "$ROOT/tests/MissingAudioAssetsTests.cpp" \
+  "$ROOT/src/modules/audio/infrastructure/LocalSoundManifest.cpp" \
+  -o "$BUILD_DIR/missing-audio-assets-tests"
+"$BUILD_DIR/missing-audio-assets-tests"
 
 sed \
   -e 's/@PROJECT_VERSION@/portable-test/g' \
@@ -121,6 +169,21 @@ cxx_build "${COMMON_FLAGS[@]}" \
   -o "$BUILD_DIR/url-utils-tests"
 "$BUILD_DIR/url-utils-tests"
 
+cxx_build "${COMMON_FLAGS[@]}" \
+  "$ROOT/tests/WebSocketPolicyTests.cpp" \
+  -o "$BUILD_DIR/websocket-policy-tests"
+"$BUILD_DIR/websocket-policy-tests"
+
+cxx_build "${COMMON_FLAGS[@]}" -pthread \
+  "$ROOT/tests/WebSocketOperationGateTests.cpp" \
+  -o "$BUILD_DIR/websocket-operation-gate-tests"
+"$BUILD_DIR/websocket-operation-gate-tests"
+
+cxx_build "${COMMON_FLAGS[@]}" -pthread \
+  "$ROOT/tests/GameEventMailboxTests.cpp" \
+  -o "$BUILD_DIR/game-event-mailbox-tests"
+"$BUILD_DIR/game-event-mailbox-tests"
+
 cxx_build "${COMMON_FLAGS[@]}" -pthread \
   "$ROOT/tests/BackgroundExecutorTests.cpp" \
   "$ROOT/src/shared/concurrency/application/BackgroundExecutor.cpp" \
@@ -131,6 +194,12 @@ cxx_build "${COMMON_FLAGS[@]}" -pthread \
   cd "$BUILD_DIR"
   ./background-executor-tests
 )
+
+cxx_build "${COMMON_FLAGS[@]}" -pthread \
+  "$ROOT/tests/LoggerSanitizationTests.cpp" \
+  "$ROOT/src/shared/logging/infrastructure/Logger.cpp" \
+  -o "$BUILD_DIR/logger-sanitization-tests"
+"$BUILD_DIR/logger-sanitization-tests"
 
 cxx_build "${COMMON_FLAGS[@]}" -pthread \
   "$ROOT/tests/ReconnectPolicyTests.cpp" \
@@ -164,6 +233,7 @@ cxx_build "${COMMON_FLAGS[@]}" \
 
 cxx_build "${COMMON_FLAGS[@]}" \
   "$ROOT/tests/NavigationStateTests.cpp" \
+  "$ROOT/src/modules/social/presentation/SocialSelectionMemory.cpp" \
   "$ROOT/src/modules/main_menu/presentation/MainMenuContent.cpp" \
   "$ROOT/src/modules/admin/domain/AdminCommandCatalog.cpp" \
   "$ROOT/src/modules/admin/domain/AdminCommandCatalog.Moderation.cpp" \
@@ -205,7 +275,38 @@ cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
   -o "$BUILD_DIR/update-protocol-tests"
 "$BUILD_DIR/update-protocol-tests"
 
-cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" \
+cxx_build "${COMMON_FLAGS[@]}" \
+  "$ROOT/tests/UpdateRetryPolicyTests.cpp" \
+  -o "$BUILD_DIR/update-retry-policy-tests"
+"$BUILD_DIR/update-retry-policy-tests"
+
+cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
+  "$ROOT/tests/UpdateRecoveryTests.cpp" \
+  "$ROOT/src/modules/update/domain/UpdateInstallationState.cpp" \
+  "$ROOT/src/modules/update/domain/UpdateProtocol.cpp" \
+  "$ROOT/src/modules/update/infrastructure/launcher/UpdateStagingCleanup.cpp" \
+  -o "$BUILD_DIR/update-recovery-tests"
+"$BUILD_DIR/update-recovery-tests"
+
+cxx_build "${COMMON_FLAGS[@]}" \
+  "$ROOT/tests/SessionPersistencePolicyTests.cpp" \
+  "$ROOT/src/modules/session/infrastructure/SessionStorageMigration.cpp" \
+  -o "$BUILD_DIR/session-persistence-policy-tests"
+"$BUILD_DIR/session-persistence-policy-tests"
+
+cxx_build "${COMMON_FLAGS[@]}" -pthread \
+  "$ROOT/tests/AsyncAudioBackendTests.cpp" \
+  "$ROOT/src/modules/audio/infrastructure/AsyncAudioBackend.cpp" \
+  "$ROOT/src/shared/logging/infrastructure/Logger.cpp" \
+  -o "$BUILD_DIR/async-audio-tests"
+(
+  cd "$BUILD_DIR"
+  ./async-audio-tests
+)
+fi
+
+if scope_enabled gameplay; then
+cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
   "$ROOT/tests/GameplayContractTests.cpp" \
   "$ROOT/src/modules/gameplay/actions/application/GameActionPresentationPolicy.cpp" \
   "$ROOT/src/modules/gameplay/actions/infrastructure/GameActionCatalogDecoder.cpp" \
@@ -217,6 +318,7 @@ cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" \
   "$ROOT/src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp" \
   "$ROOT/src/modules/gameplay/prompts/application/GamePromptInputCodec.cpp" \
   "$ROOT/src/modules/gameplay/prompts/application/GameActionPromptFactory.cpp" \
+  "$ROOT/src/modules/gameplay/state/application/GameValuePayloadCodec.cpp" \
   "$ROOT/src/modules/gameplay/session/infrastructure/GameCommandPayloadCodec.cpp" \
   "$ROOT/src/modules/gameplay/session/infrastructure/GameEventPayloadCodec.cpp" \
   "$ROOT/src/modules/gameplay/history/presentation/GameLogCursor.cpp" \
@@ -240,9 +342,45 @@ cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" \
   "$ROOT/src/modules/gameplay/state/infrastructure/GameWorkflowCapabilitiesDecoder.cpp" \
   "$ROOT/src/modules/gameplay/state/domain/GameKits.cpp" \
   "$ROOT/src/modules/gameplay/state/domain/GameSystem.cpp" \
-  "$ROOT/src/modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.cpp" \
   -o "$BUILD_DIR/gameplay-contract-tests"
 "$BUILD_DIR/gameplay-contract-tests"
+
+if [[ "${LILA_INCLUDE_STRESS:-0}" == "1" ]]; then
+cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
+  "$ROOT/tests/ParserRobustnessTests.cpp" \
+  "$ROOT/src/modules/catalog/infrastructure/CatalogPayloadCodec.cpp" \
+  "$ROOT/src/modules/chat/infrastructure/ChatEventPayloadCodec.cpp" \
+  "$ROOT/src/modules/chat/infrastructure/ChatEventPayloadParser.cpp" \
+  "$ROOT/src/modules/chat/infrastructure/ChatCommandPayloadCodec.cpp" \
+  "$ROOT/src/modules/chat/infrastructure/ChatProtocol.cpp" \
+  "$ROOT/src/modules/gameplay/actions/infrastructure/GameActionCatalogDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/cards/infrastructure/GameCardDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/dice/infrastructure/GameDiceDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GameAssetCapabilitiesDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GameBoardCapabilitiesDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GamePayloadJsonReader.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GamePendingDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GamePlayerValuesDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GameStateSectionsDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GameStatePayloadCodec.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GameSystemDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GameValueDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/infrastructure/GameWorkflowCapabilitiesDecoder.cpp" \
+  "$ROOT/src/modules/gameplay/state/domain/GameKits.cpp" \
+  "$ROOT/src/modules/gameplay/state/domain/GameSystem.cpp" \
+  "$ROOT/src/modules/messaging/infrastructure/MessagingPayloadCodec.cpp" \
+  "$ROOT/src/modules/presence/infrastructure/PresencePayloadCodec.cpp" \
+  "$ROOT/src/modules/rooms/infrastructure/RoomPayloadCodec.cpp" \
+  "$ROOT/src/modules/social/infrastructure/SocialPayloadCodec.cpp" \
+  "$ROOT/src/modules/storybook/infrastructure/StoryBookPayloadCodec.cpp" \
+  "$ROOT/src/modules/vault/infrastructure/VaultPayloadCodec.cpp" \
+  "$ROOT/src/shared/config/domain/AppConfig.cpp" \
+  "$ROOT/src/shared/network/application/realtime/RealtimeProtocol.cpp" \
+  "$ROOT/src/shared/logging/infrastructure/Logger.cpp" \
+  -o "$BUILD_DIR/parser-robustness-tests"
+"$BUILD_DIR/parser-robustness-tests" \
+  "$ROOT/tests/data/parser-robustness-corpus.txt"
+fi
 
 cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
   "$ROOT/tests/RoomContractTests.cpp" \
@@ -252,7 +390,9 @@ cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
   "$ROOT/src/modules/rooms/presentation/actions/RoomActionPolicy.cpp" \
   -o "$BUILD_DIR/room-contract-tests"
 "$BUILD_DIR/room-contract-tests"
+fi
 
+if scope_enabled services; then
 cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
   "$ROOT/tests/ServiceResilienceTests.cpp" \
   "$ROOT/src/modules/rooms/application/RoomInvitationMonitor.cpp" \
@@ -283,7 +423,9 @@ cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generate
   -o "$BUILD_DIR/service-resilience-tests"
 (
   cd "$BUILD_DIR"
-  ./service-resilience-tests
+  LILA_CHAT_RECONNECT_INITIAL_DELAY_MS=10 \
+    LILA_CHAT_RECONNECT_MAX_DELAY_MS=20 \
+    ./service-resilience-tests
 )
 
 cxx_build "${COMMON_FLAGS[@]}" \
@@ -312,6 +454,7 @@ cxx_build "${COMMON_FLAGS[@]}" -c \
 cxx_build "${COMMON_FLAGS[@]}" -c \
   "$ROOT/src/modules/messaging/presentation/MessagingActionController.cpp" \
   -o "$BUILD_DIR/messaging-action-controller-compile-tests.o"
+fi
 
 if rg -n -i '\blama\b' "$ROOT/src"; then
   echo "Le client WX ne doit contenir aucune logique propre à LAMA." >&2
@@ -333,6 +476,15 @@ if rg -n 'if \(!roomStarted_\) return true;' \
     "$ROOT/src/modules/gameplay/shell/presentation/panel/GamePlayPanel.Input.cpp"; then
   echo "La transition de demarrage WX ne doit pas avaler toutes les touches." >&2
   exit 1
+fi
+
+if [[ "${LILA_INCLUDE_STRESS:-0}" == "1" ]]; then
+  for iteration in $(seq 1 10); do
+    "$BUILD_DIR/background-executor-tests" >/dev/null 2>&1
+    "$BUILD_DIR/reconnect-policy-tests" >/dev/null 2>&1
+    "$BUILD_DIR/realtime-request-deadline-tests" >/dev/null 2>&1
+  done
+  echo "Network and concurrency repetition tests passed (10 iterations)."
 fi
 
 echo "Portable checks passed."

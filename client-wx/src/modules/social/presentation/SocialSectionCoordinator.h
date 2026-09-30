@@ -27,7 +27,7 @@ public:
     };
 
     SocialSectionCoordinator(
-        SocialLoadController& loadController,
+        std::shared_ptr<SocialLoadController> loadController,
         SocialDataStore& dataStore,
         SocialNavigationState& navigationState,
         SocialSectionPresenter& sectionPresenter,
@@ -49,7 +49,7 @@ private:
     void FocusSectionIfVisible(SocialSection section) const;
     void ApplyProfileTitle() const;
 
-    SocialLoadController& loadController_;
+    std::shared_ptr<SocialLoadController> loadController_;
     SocialDataStore& dataStore_;
     SocialNavigationState& navigationState_;
     SocialSectionPresenter& sectionPresenter_;

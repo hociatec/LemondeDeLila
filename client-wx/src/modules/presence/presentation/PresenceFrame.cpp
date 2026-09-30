@@ -29,7 +29,7 @@ PresenceFrame::PresenceFrame(
     : lila::shared::accessibility::NonFocusablePanel(parent, 0),
       presenceMonitor_(presenceMonitor),
       sessionStore_(sessionStore),
-      actionController_(std::make_unique<PresenceActionController>(socialService, messagingService)),
+      actionController_(std::make_shared<PresenceActionController>(socialService, messagingService)),
       onOpenStoryBookRequested_(std::move(onOpenStoryBookRequested)),
       onOpenSocialSectionRequested_(std::move(onOpenSocialSectionRequested)),
       onJoinRoomRequested_(std::move(onJoinRoomRequested)),

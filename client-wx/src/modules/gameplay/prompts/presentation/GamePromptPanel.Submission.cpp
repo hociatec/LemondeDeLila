@@ -10,7 +10,6 @@
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/prompts/application/GamePromptInputCodec.h"
-#include "modules/gameplay/state/application/GameValuePayloadCodec.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/accessibility/presentation/NavigationController.h"
 
@@ -39,30 +38,29 @@ void GamePromptPanel::Submit()
     {
         const int selection = startAmbienceChoice_->GetSelection();
         action.payload["__tableAmbienceSoundId"] = selection <= 0
-            ? nlohmann::json(nullptr)
-            : nlohmann::json(startAmbiences_[static_cast<std::size_t>(selection - 1)].first);
+            ? domain::GameValue{nullptr}
+            : domain::GameValue{startAmbiences_[static_cast<std::size_t>(selection - 1)].first};
     }
     for (const auto& control : fields_)
     {
         if (control.ordering != nullptr)
         {
-            auto values = nlohmann::json::array();
+            domain::GameValue::Array values;
             for (const int encodedIndex : control.ordering->GetList()->GetCurrentOrder())
             {
                 const int index = encodedIndex < 0 ? ~encodedIndex : encodedIndex;
                 if (index >= 0 && static_cast<std::size_t>(index) < control.field.choices.size())
-                    values.push_back(application::EncodeGameValuePayload(
-                        control.field.choices[static_cast<std::size_t>(index)]));
+                    values.push_back(control.field.choices[static_cast<std::size_t>(index)]);
             }
             action.payload[control.field.key] = std::move(values);
             continue;
         }
         if (control.multipleChoice != nullptr)
         {
-            auto values = nlohmann::json::array();
+            domain::GameValue::Array values;
             for (unsigned int index = 0; index < control.multipleChoice->GetCount(); ++index)
                 if (control.multipleChoice->IsChecked(index))
-                    values.push_back(application::EncodeGameValuePayload(control.field.choices[index]));
+                    values.push_back(control.field.choices[index]);
             const int count = static_cast<int>(values.size());
             if (count < control.field.minimumSelections ||
                 (control.field.maximumSelections > 0 && count > control.field.maximumSelections))
@@ -89,8 +87,8 @@ void GamePromptPanel::Submit()
                     FromUtf8(control.field.label), control.choice);
                 return;
             }
-            action.payload[control.field.key] = application::EncodeGameValuePayload(
-                control.field.choices[static_cast<std::size_t>(valueIndex)]);
+            action.payload[control.field.key] =
+                control.field.choices[static_cast<std::size_t>(valueIndex)];
             continue;
         }
         const std::string raw = control.checkbox != nullptr

@@ -11,12 +11,35 @@
 #include "modules/audio/application/IAudioService.h"
 #include "modules/admin/domain/AdminPagination.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
-#include "shared/security/infrastructure/SecurityUtils.h"
 #include "shared/security/domain/SensitiveString.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 namespace lila::modules::admin::presentation
 {
+namespace
+{
+void NormalizePaginationPayload(
+    const domain::AdminCommand& command,
+    nlohmann::json& payload)
+{
+    const auto spec = domain::GetAdminPaginationSpec(command.id);
+    if (spec.mode == domain::AdminPaginationMode::None || !payload.is_object()) return;
+    const auto integer = [&payload](const char* field, long long fallback)
+    {
+        const auto found = payload.find(field);
+        if (found == payload.end() || !found->is_number_integer()) return fallback;
+        try { return found->get<long long>(); }
+        catch (const nlohmann::json::exception&) { return fallback; }
+    };
+    payload["limit"] = domain::NormalizeAdminPageSize(
+        spec, integer("limit", spec.defaultPageSize));
+    if (spec.mode == domain::AdminPaginationMode::PageNumber)
+        payload["page"] = domain::NormalizeAdminPage(integer("page", 1));
+    if (spec.mode == domain::AdminPaginationMode::Offset)
+        payload["offset"] = domain::NormalizeAdminOffset(integer("offset", 0));
+}
+}
+
 void AdminFrame::ActivateCommand(std::size_t commandIndex)
 {
     if (loading_ || commandIndex >= visibleCommands_.size()) return;
@@ -35,7 +58,7 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
             for (const auto& item : botTimingPayload_.items())
                 payload[item.key()] = item.value();
     }
-    catch (...)
+    catch (const nlohmann::json::exception&)
     {
         SetStatus(wxString(L"Le modèle de requête est invalide."), true);
         return;
@@ -66,7 +89,7 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
             roomId = payload.value("roomId", 0);
             spectator = payload.value("spectator", false);
         }
-        catch (...)
+        catch (const nlohmann::json::exception&)
         {
             SetStatus(wxString(L"Les paramètres de salle ont un type invalide."), true);
             return;
@@ -109,6 +132,7 @@ void AdminFrame::ExecuteCommand(
     nlohmann::json payload,
     bool announceLifecycle)
 {
+    NormalizePaginationPayload(command, payload);
     if (command.id == "bugs.list" && !loadingReportCountsOnly_)
         bugReportListPayload_ = payload;
     ResetPagination(command, payload);

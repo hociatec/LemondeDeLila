@@ -1,61 +1,3 @@
-void TestServerDrivenPawnSelection()
-{
-    const auto payload = nlohmann::json{
-        {"roomId", 9},
-        {"gameType", "morpion"},
-        {"state", {
-            {"actions", nlohmann::json::array({
-                {{"type", "choose_pawn"}, {"payload", {{"pawnId", "flower"}}}},
-                {{"type", "choose_pawn"}, {"payload", {{"pawnId", "stone"}}}},
-            })},
-            {"pending", {
-                {"type", "choose_pawn"},
-                {"playerId", 7},
-                {"choices", nlohmann::json::array({"Une fleur", "Un caillou"})},
-                {"data", {
-                    {"kind", "pawn"},
-                    {"choiceActionsByIndex", nlohmann::json::array({
-                        {{"type", "choose_pawn"}, {"payload", {{"pawnId", "flower"}}}},
-                        {{"type", "choose_pawn"}, {"payload", {{"pawnId", "stone"}}}},
-                    })},
-                }},
-            }},
-        }},
-    };
-
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
-    const auto selection = lila::modules::gameplay::infrastructure::PawnSelectionDecoder::Decode(
-        state.pending);
-    Expect(selection.has_value(), "Le choix de pion actif doit etre decode.");
-    Expect(selection->label == "Choisissez votre pion.",
-        "Le libelle accessible du choix de pion est attendu.");
-    Expect(selection->choices.size() == 2, "Tous les pions serveur doivent etre proposes.");
-    Expect(selection->choices[1].label == "Un caillou", "Le libelle serveur doit rester intact.");
-    Expect(selection->choices[1].action.payload.at("pawnId") == "stone",
-        "Le choix doit renvoyer l'action explicitement associee par le serveur.");
-}
-
-void TestPawnSelectionHiddenForPassiveViewer()
-{
-    const auto payload = nlohmann::json{
-        {"roomId", 10},
-        {"gameType", "morpion"},
-        {"state", {
-            {"actions", nlohmann::json::array()},
-            {"pending", {
-                {"type", "choose_pawn"},
-                {"playerId", 8},
-                {"choices", nlohmann::json::array({"Une fleur"})},
-                {"data", {{"kind", "pawn"}}},
-            }},
-        }},
-    };
-
-    const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(BuildGameView(payload));
-    Expect(!lila::modules::gameplay::infrastructure::PawnSelectionDecoder::Decode(state.pending),
-        "Un spectateur ou joueur passif ne doit pas recevoir une liste interactive.");
-}
-
 void TestGameLogCursor()
 {
     using lila::modules::gameplay::presentation::history::BuildLogAnnouncement;
@@ -109,13 +51,15 @@ void TestOlderGameStateCannotRestoreSetupPrompt()
     roundState.gameType = "server-driven-game";
     roundState.version = 8;
     roundState.runId = 4;
-    roundState.system.setup.phase = "round";
-    roundState.system.match.status = "started";
+    roundState.system.setup.phase.value = "round";
+    roundState.system.match.status =
+        lila::modules::gameplay::domain::GameMatchStatus::Playing;
 
     auto staleSetupState = roundState;
     staleSetupState.version = 7;
-    staleSetupState.system.setup.phase = "setup";
-    staleSetupState.system.match.status = "setup";
+    staleSetupState.system.setup.phase.value = "setup";
+    staleSetupState.system.match.status =
+        lila::modules::gameplay::domain::GameMatchStatus::Setup;
     Expect(!GameStateUpdatePolicy::ShouldApply(roundState, staleSetupState),
         "Un ancien etat de configuration ne doit pas remplacer la manche courante.");
 
@@ -146,8 +90,9 @@ void TestOlderGameStateCannotRestoreSetupPrompt()
     auto newRunState = roundState;
     newRunState.runId = 5;
     newRunState.version = 1;
-    newRunState.system.match.status = "setup";
-    newRunState.system.setup.phase = "setup";
+    newRunState.system.match.status =
+        lila::modules::gameplay::domain::GameMatchStatus::Setup;
+    newRunState.system.setup.phase.value = "setup";
     Expect(GameStateUpdatePolicy::ShouldApply(roundState, newRunState),
         "Une nouvelle execution doit accepter une version remise a un.");
 
@@ -175,11 +120,12 @@ void TestCapabilityInformationIsInspectable()
     lila::modules::gameplay::domain::GameState state;
     state.system.players.push_back({7, "Lila", false, true});
     state.system.players.push_back({8, "Mina", false, true});
-    state.system.match.status = "playing";
+    state.system.match.status =
+        lila::modules::gameplay::domain::GameMatchStatus::Playing;
     state.system.round.number = 2;
     state.system.round.status = "playing";
     state.system.setup.complete = false;
-    state.system.setup.phase = "setup";
+    state.system.setup.phase.value = "setup";
     state.system.setup.ownerPlayerId = 7;
     lila::modules::gameplay::domain::GameResourcesView resources;
     resources.players.push_back({7, {{"coins", 3}}});

@@ -11,8 +11,6 @@
 #include <sstream>
 #include <vector>
 
-#include <nlohmann/json.hpp>
-
 #include "modules/audio/domain/SoundCatalog.h"
 #include "shared/config/domain/AppConfig.h"
 #include "shared/logging/application/Logger.h"
@@ -114,10 +112,7 @@ std::filesystem::path SoundAssetPathResolver::Resolve(domain::SoundCue cue)
         const auto remote = ResolveRemote(soundId, found->second);
         if (!remote.empty()) return remote;
     }
-    const auto file = GetLocalSoundFile(cue);
-    return file.empty()
-        ? std::filesystem::path{}
-        : soundDirectory_ / file;
+    return FindLocalSoundAsset(soundDirectory_, cue);
 }
 
 std::filesystem::path SoundAssetPathResolver::ResolvePreview(domain::SoundCue cue)
@@ -130,8 +125,7 @@ std::filesystem::path SoundAssetPathResolver::ResolvePreview(domain::SoundCue cu
     if (!soundId.empty()) soundId.front() = static_cast<char>(std::toupper(soundId.front()));
     if (const auto found = remoteSounds_.find(soundId); found != remoteSounds_.end())
         return ResolveRemote(soundId, found->second);
-    const auto file = GetLocalSoundFile(cue);
-    return file.empty() ? std::filesystem::path{} : soundDirectory_ / file;
+    return FindLocalSoundAsset(soundDirectory_, cue);
 }
 
 void SoundAssetPathResolver::LoadRemoteManifest()
@@ -145,26 +139,10 @@ void SoundAssetPathResolver::LoadRemoteManifest()
             lila::shared::config::AppConfig::ResolveBackendApiWs());
         const auto raw = lila::shared::network::http::RequestWsTicketResponse(
             origin + "/api/sounds/manifest", {});
-        const auto manifest = nlohmann::json::parse(raw);
-        if (!manifest.is_object() || !manifest.contains("sounds") || !manifest["sounds"].is_object())
-            return;
-        remoteSounds_.clear();
-        disabledSounds_.clear();
-        if (const auto disabled = manifest.find("disabled");
-            disabled != manifest.end() && disabled->is_array())
-            for (const auto& id : *disabled)
-                if (id.is_string()) disabledSounds_.insert(id.get<std::string>());
-        const auto sounds = manifest.find("sounds");
-        if (sounds == manifest.end() || !sounds->is_object()) return;
-        for (const auto& [id, value] : sounds->items())
-        {
-            if (!value.is_object()) continue;
-            const auto url = value.value("url", std::string{});
-            const auto sha = value.value("sha256", std::string{});
-            const auto bytes = value.value("bytes", std::size_t{});
-            if (!url.empty() && sha.size() == 64 && bytes <= 250U * 1024U * 1024U)
-                remoteSounds_[id] = {url, sha, bytes};
-        }
+        const auto manifest = ParseSoundAssetManifest(raw);
+        if (!manifest.has_value()) return;
+        remoteSounds_ = manifest->sounds;
+        disabledSounds_ = manifest->disabled;
         std::unordered_map<std::string, std::string> currentHashes;
         for (const auto& [id, sound] : remoteSounds_) currentHashes[id] = sound.sha256;
         CleanupRemoteSoundCache(cacheDirectory_, currentHashes);
@@ -187,7 +165,7 @@ void SoundAssetPathResolver::Invalidate()
 
 std::filesystem::path SoundAssetPathResolver::ResolveRemote(
     const std::string& soundId,
-    const RemoteSound& sound)
+    const RemoteSoundDescriptor& sound)
 {
 #ifdef _WIN32
     try

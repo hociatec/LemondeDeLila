@@ -2,8 +2,8 @@
 
 #include <utility>
 
-#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
+#include "modules/gameplay/session/domain/GameProtocol.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "shared/logging/application/Logger.h"
 
@@ -29,8 +29,9 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
             lila::shared::logging::LogInfo(
                 "GameInput",
                 "State received: version=" + std::to_string(event.state->version) +
-                    ", status=" + event.state->system.match.status +
-                    ", phase=" + event.state->system.setup.phase +
+                    ", status=" + std::string(domain::MatchStatusId(
+                        event.state->system.match.status)) +
+                    ", phase=" + event.state->system.setup.phase.value +
                     ", hand=" + std::to_string(event.state->kits.VisibleHand().size()) +
                     ", actions=" + std::to_string(event.state->actions.size()));
             ApplyState(std::move(*event.state));
@@ -46,7 +47,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         }
         const auto& acknowledgement = *event.acknowledgement;
         retryableActionCommand_.reset();
-        const bool acknowledgedAction = acknowledgement.command == "game.action";
+        const bool acknowledgedAction = acknowledgement.command == protocol::Action;
         lila::shared::logging::LogInfo(
             "GameInput", "Acknowledgement received: " + acknowledgement.command);
         static_cast<void>(inputSubmissionGuard_.Acknowledge(
@@ -60,7 +61,6 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
                 if (onHistoryMessage_)
                     onHistoryMessage_(FromUtf8(acknowledgement.message), false);
             }
-            pawnSelectionPanel_->AllowRetry();
             submittedPromptActionType_.clear();
             SyncInlinePrompt();
             startConfigurationFlow_.Reset();
@@ -68,8 +68,8 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
             // advanced the game without emitting a state event to this
             // client. Always recover its authoritative projection instead of
             // leaving the rejected action visible and trapping the player.
-            if (acknowledgement.command == "game.action" ||
-                acknowledgement.command == "game.key")
+            if (acknowledgement.command == protocol::Action ||
+                acknowledgement.command == protocol::Key)
                 RequestRefresh();
             return;
         }
@@ -96,15 +96,14 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         // State notifications and acknowledgements travel independently. A
         // refresh after every accepted gameplay command repairs a lost or
         // reordered realtime notification before the player can act again.
-        if (acknowledgedAction || acknowledgement.command == "game.key")
+        if (acknowledgedAction || acknowledgement.command == protocol::Key)
             RequestRefresh();
         return;
     }
     case domain::GameEventType::TurnUpdated:
     {
         if (lifecycle_.IsRoomStarted() &&
-            (state_.system.match.status == "started" ||
-             state_.system.match.status == "playing") &&
+            domain::IsActive(state_.system.match.status) &&
             !event.message.empty() && onHistoryMessage_)
             onHistoryMessage_(FromUtf8(event.message), false);
         if (lifecycle_.IsRoomStarted() && lifecycle_.HasAuthoritativeState()) RequestRefresh();
@@ -137,7 +136,6 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         if (RequiresStateRefreshAfterRejection(event.errorCode))
         {
             submittedPromptActionType_.clear();
-            pawnSelectionPanel_->AllowRetry();
             RequestRefresh();
         }
         if (startConfigurationFlow_.IsAwaitingActionAcknowledgement())

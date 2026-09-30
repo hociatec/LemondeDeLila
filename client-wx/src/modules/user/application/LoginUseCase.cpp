@@ -1,5 +1,4 @@
 ﻿#include "modules/user/application/LoginUseCase.h"
-#include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/text/domain/StringUtils.h"
 
 namespace lila::modules::user::application
@@ -21,12 +20,12 @@ domain::AuthenticationResult LoginUseCase::Execute(const domain::LoginCredential
 
     if (normalized.username.empty())
     {
-        return domain::AuthenticationResult::Fail(lila::shared::text::ui::LoginInputUsernameRequired);
+        return domain::AuthenticationResult::Fail();
     }
 
     if (normalized.password.empty())
     {
-        return domain::AuthenticationResult::Fail(lila::shared::text::ui::LoginInputPasswordRequired);
+        return domain::AuthenticationResult::Fail();
     }
 
     return authenticationService_.Login(normalized);

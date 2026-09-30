@@ -2,7 +2,6 @@
 #include <fstream>
 #include <limits>
 #include <stdexcept>
-#include <thread>
 #include <vector>
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
 
@@ -45,9 +44,8 @@ std::uint64_t InspectArchive(const fs::path& archive, std::uint64_t compressedBy
     const auto entryCount = ReadUInt16(tail, *eocd + 10);
     const auto directorySize = ReadUInt32(tail, *eocd + 12);
     const auto directoryOffset = ReadUInt32(tail, *eocd + 16);
-    if (entryCount == 0 || entryCount == 0xffff || entryCount > MaximumArchiveEntries ||
-        directorySize > 64ULL * 1024ULL * 1024ULL ||
-        static_cast<std::uint64_t>(directoryOffset) + directorySize > compressedBytes) {
+    if (entryCount == 0xffff || !IsArchiveDirectoryLayoutSafe(
+            compressedBytes, directoryOffset, directorySize, entryCount)) {
         throw std::runtime_error("ZIP directory limits are invalid.");
     }
     std::vector<unsigned char> directory(directorySize);
@@ -81,16 +79,16 @@ std::uint64_t InspectArchive(const fs::path& archive, std::uint64_t compressedBy
         if (!IsSafeArchivePath(name) || (unixMode & 0170000U) == 0120000U) {
             throw std::runtime_error("Unsafe ZIP filesystem entry.");
         }
+        if (unpacked > MaximumExtractedEntryBytes) {
+            throw std::runtime_error("ZIP entry exceeds its safety limit.");
+        }
         if (extractedBytes > MaximumExtractedBytes - unpacked) {
             throw std::runtime_error("Uncompressed update exceeds its safety limit.");
         }
         extractedBytes += unpacked;
         offset = static_cast<std::size_t>(next);
     }
-    const auto ratioLimit = std::min<std::uint64_t>(MaximumExtractedBytes,
-        std::max<std::uint64_t>(512ULL * 1024ULL * 1024ULL,
-            compressedBytes > MaximumExtractedBytes / 25 ? MaximumExtractedBytes : compressedBytes * 25));
-    if (extractedBytes == 0 || extractedBytes > ratioLimit) {
+    if (!IsArchiveExpansionSafe(compressedBytes, extractedBytes, entryCount)) {
         throw std::runtime_error("Update archive expansion ratio is unsafe.");
     }
     return extractedBytes;
@@ -105,14 +103,18 @@ void EnsureFreeSpace(const fs::path& root, std::uint64_t requiredBytes)
     }
 }
 
-void RenameWithRetry(const fs::path& source, const fs::path& destination)
+void RenameWithRetry(
+    const fs::path& source,
+    const fs::path& destination,
+    const UpdateProgressDialog* progress)
 {
     std::error_code last;
     for (int attempt = 0; attempt < 6; ++attempt) {
         last.clear();
         fs::rename(source, destination, last);
         if (!last) return;
-        std::this_thread::sleep_for(std::chrono::milliseconds(250 * (attempt + 1)));
+        if (!WaitForRetry(std::chrono::milliseconds(250 * (attempt + 1)), progress))
+            throw std::runtime_error("Update cancelled by user.");
     }
     throw fs::filesystem_error("Unable to commit extracted update", source, destination, last);
 }

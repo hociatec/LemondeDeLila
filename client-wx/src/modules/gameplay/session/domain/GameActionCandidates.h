@@ -9,6 +9,9 @@
 
 namespace lila::modules::gameplay::domain
 {
+inline constexpr int MaximumActionCandidatesOffset = 1'000'000;
+inline constexpr int MaximumActionCandidatesLimit = 200;
+
 struct GameActionCandidatesRequest final
 {
     std::string actionType;

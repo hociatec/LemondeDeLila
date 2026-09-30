@@ -27,7 +27,7 @@ std::optional<std::string> BuildValueCapabilityText(
     const domain::GameState& state, const std::string& capability)
 {
     std::ostringstream out;
-    if ((capability == "score" || capability == "scores") && state.kits.score)
+    if (capability == "score" && state.kits.score)
     {
         for (const auto& entry : state.kits.score->leaderboard)
         {

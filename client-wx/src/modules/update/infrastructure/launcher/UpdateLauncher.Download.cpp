@@ -6,7 +6,6 @@
 #include <array>
 #include <fstream>
 #include <stdexcept>
-#include <thread>
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
 
 namespace lila::modules::update::launcher
@@ -30,11 +29,6 @@ struct ParsedUrl
     const DWORD code = GetLastError();
     throw std::runtime_error(
         std::string(operation) + " (WinHTTP error " + std::to_string(code) + ").");
-}
-
-void WaitBeforeRetry(int attempt)
-{
-    std::this_thread::sleep_for(std::chrono::milliseconds(500 * attempt));
 }
 
 ParsedUrl ParseUrl(const std::wstring& raw)
@@ -126,7 +120,8 @@ std::string DownloadText(const std::string& url)
             return result;
         } catch (const std::exception& error) {
             lastFailure = error.what();
-            if (attempt < 3) WaitBeforeRetry(attempt);
+            if (attempt < 3) static_cast<void>(WaitForRetry(
+                std::chrono::milliseconds(500 * attempt)));
         }
     }
     throw std::runtime_error(
@@ -145,6 +140,7 @@ void DownloadFile(
     for (int attempt = 1; attempt <= 3; ++attempt) {
         fs::remove(partial);
         try {
+            if (progress) progress->ThrowIfCancelled();
             if (progress && attempt > 1) {
                 progress->SetStage(L"Nouvelle tentative de téléchargement…", 5);
             }
@@ -153,6 +149,7 @@ void DownloadFile(
             std::uint64_t written = 0;
             HttpGet(url, expectedBytes, [&output, &written, progress, expectedBytes](
                     const char* data, DWORD size) {
+                if (progress) progress->ThrowIfCancelled();
                 output.write(data, size);
                 if (!output) throw std::runtime_error("Unable to save update download.");
                 written += size;
@@ -172,8 +169,12 @@ void DownloadFile(
             return;
         } catch (const std::exception& error) {
             fs::remove(partial);
+            if (progress && progress->Cancelled())
+                throw std::runtime_error("Update cancelled by user.");
             lastFailure = error.what();
-            if (attempt < 3) WaitBeforeRetry(attempt);
+            if (attempt < 3 && !WaitForRetry(
+                    std::chrono::milliseconds(500 * attempt), progress))
+                throw std::runtime_error("Update cancelled by user.");
         }
     }
     throw std::runtime_error(

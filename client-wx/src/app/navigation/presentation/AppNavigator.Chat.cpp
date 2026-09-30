@@ -36,6 +36,7 @@ void AppNavigator::StartSessionChat()
     auto* service = &chatService_;
     auto* sessionStore = &sessionStore_;
     const wxWeakRef<HostFrame> weakFrame(hostFrame_);
+    const std::weak_ptr<int> lifetime(lifetimeToken_);
     chatStartupTask_ = lila::shared::concurrency::RunAsync(
         [service, sessionStore](std::stop_token stopToken)
         {
@@ -54,13 +55,13 @@ void AppNavigator::StartSessionChat()
                 retryDelay = std::min(retryDelay * 2, std::chrono::milliseconds(3000));
             }
         },
-        [this, weakFrame](std::optional<lila::shared::errors::AppError> error)
+        [this, weakFrame, lifetime](std::optional<lila::shared::errors::AppError> error)
         {
-            if (!weakFrame) return;
+            if (!weakFrame || lifetime.expired()) return;
             weakFrame->CallAfter(
-                [this, weakFrame, error = std::move(error)]()
+                [this, weakFrame, lifetime, error = std::move(error)]()
                 {
-                    if (!weakFrame) return;
+                    if (!weakFrame || lifetime.expired()) return;
                     chatStartupTask_.reset();
                     if (error.has_value())
                     {

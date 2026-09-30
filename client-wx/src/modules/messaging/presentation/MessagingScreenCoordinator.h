@@ -33,7 +33,7 @@ public:
     };
 
     MessagingScreenCoordinator(
-        MessagingMailboxController& mailboxController,
+        std::shared_ptr<MessagingMailboxController> mailboxController,
         MessagingNavigationState& navigationState,
         MessagingSelectionMemory& selectionMemory,
         std::vector<domain::MessagingMessage>& boxMessages,
@@ -50,7 +50,7 @@ public:
     [[nodiscard]] std::optional<domain::MessagingMessage> GetSelectedMessage() const;
 
 private:
-    MessagingMailboxController& mailboxController_;
+    std::shared_ptr<MessagingMailboxController> mailboxController_;
     MessagingNavigationState& navigationState_;
     MessagingSelectionMemory& selectionMemory_;
     std::vector<domain::MessagingMessage>& boxMessages_;

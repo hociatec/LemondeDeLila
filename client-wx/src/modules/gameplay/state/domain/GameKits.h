@@ -3,6 +3,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <set>
 
 #include "modules/gameplay/state/domain/GameAssetCapabilities.h"
 #include "modules/gameplay/state/domain/GameBoardCapabilities.h"
@@ -32,6 +33,7 @@ struct GameKits final
     std::optional<GameQuizView> quiz;
     std::optional<GameSubmissionsView> submissions;
     std::map<std::string, GameValue> unknownCapabilities;
+    std::set<std::string, std::less<>> availableCapabilities;
 
     [[nodiscard]] bool Has(const std::string& capability) const;
     [[nodiscard]] const GameValue* Unknown(const std::string& capability) const;

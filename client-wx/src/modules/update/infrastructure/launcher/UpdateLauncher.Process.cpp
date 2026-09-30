@@ -1,4 +1,3 @@
-#include <thread>
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
 
 namespace lila::modules::update::launcher
@@ -103,7 +102,7 @@ bool WaitForHealthy(const Process& process)
             CloseHandle(signal);
             if (healthy) return true;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        static_cast<void>(WaitForSingleObject(process.handle, 100));
     }
     return false;
 }
@@ -174,7 +173,7 @@ int ReplaceLauncher(DWORD parentProcessId, const fs::path& target)
             replaced = true;
             break;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(250 * (attempt + 1)));
+        static_cast<void>(WaitForRetry(std::chrono::milliseconds(250 * (attempt + 1))));
     }
     int resultCode = 0;
     if (!replaced) {

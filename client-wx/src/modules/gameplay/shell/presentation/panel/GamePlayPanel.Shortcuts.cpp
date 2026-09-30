@@ -39,13 +39,19 @@ bool GamePlayPanel::HandleShortcut(const std::string& normalizedKey)
         {
             if (candidate.disabled || candidate.type != action->type) continue;
             const auto& payload = candidate.payload;
-            if (!payload.contains("x") || !payload["x"].is_number_integer() ||
-                !payload.contains("y") || !payload["y"].is_number_integer() ||
-                !payload.contains("orientation") || !payload["orientation"].is_string()) continue;
-            const auto orientation = payload["orientation"].get<std::string>();
-            if (orientation != "h" && orientation != "v") continue;
+            const auto x = payload.find("x");
+            const auto y = payload.find("y");
+            const auto orientationValue = payload.find("orientation");
+            if (x == payload.end() || y == payload.end() ||
+                orientationValue == payload.end()) continue;
+            const auto xCoordinate = x->second.Integer();
+            const auto yCoordinate = y->second.Integer();
+            const auto* orientationText = orientationValue->second.Text();
+            if (!xCoordinate || !yCoordinate || orientationText == nullptr ||
+                (*orientationText != "h" && *orientationText != "v")) continue;
+            const auto& orientation = *orientationText;
             const auto coordinate = application::grid::GridCoordinate(
-                payload["x"].get<int>(), payload["y"].get<int>());
+                *xCoordinate, *yCoordinate);
             labels.Add(lila::shared::text::FromUtf8("Mur " + std::string(
                 orientation == "h" ? "horizontal sous " : "vertical à droite de ") + coordinate));
             candidates.push_back(candidate);

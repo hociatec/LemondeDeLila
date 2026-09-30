@@ -17,6 +17,15 @@ struct GamePendingChoice final
     std::optional<GameAction> action;
 };
 
+enum class GamePendingSelectionKind
+{
+    Single,
+    Multiple,
+    Players,
+    Ordering,
+    Unknown,
+};
+
 struct GamePending final
 {
     std::string type;
@@ -24,6 +33,7 @@ struct GamePending final
     std::string question;
     std::string choiceId;
     std::string workflowKind;
+    GamePendingSelectionKind selectionKind = GamePendingSelectionKind::Unknown;
     std::optional<int> playerId;
     std::optional<int> targetPlayerId;
     std::vector<int> playerIds;

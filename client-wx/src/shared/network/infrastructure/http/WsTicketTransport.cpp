@@ -7,7 +7,7 @@
 #include "shared/network/domain/WebSocketConstants.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
 #include "shared/network/application/realtime/RealtimeProtocolFields.h"
-#include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/text/infrastructure/Utf8ToWide.h"
 
 #include <array>
 #include <sstream>

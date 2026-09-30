@@ -76,7 +76,7 @@ private:
 
     lila::modules::presence::application::PresenceMonitor& presenceMonitor_;
     lila::modules::session::application::SessionStore& sessionStore_;
-    std::unique_ptr<class PresenceActionController> actionController_;
+    std::shared_ptr<class PresenceActionController> actionController_;
     OpenStoryBookRequestedHandler onOpenStoryBookRequested_;
     OpenSocialSectionRequestedHandler onOpenSocialSectionRequested_;
     JoinRoomRequestedHandler onJoinRoomRequested_;

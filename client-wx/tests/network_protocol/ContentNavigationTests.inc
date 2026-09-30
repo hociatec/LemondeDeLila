@@ -240,3 +240,40 @@ void TestLeaderboardPayloadAndNavigation()
 
     std::cout << "[TEST PASSED] LeaderboardPayloadAndNavigation\n";
 }
+
+void TestNetworkCollectionLimits()
+{
+    const auto rejects = [](auto&& operation)
+    {
+        try { operation(); }
+        catch (const std::exception&) { return true; }
+        return false;
+    };
+    Expect(rejects([]
+        {
+            static_cast<void>(lila::modules::catalog::infrastructure::codec::
+                ReadCatalogPayload({{"categories", nlohmann::json::array()},
+                    {"games", nlohmann::json::array(1'025)}}));
+        }), "Le catalogue doit refuser trop de jeux avant reserve().");
+    Expect(rejects([]
+        {
+            static_cast<void>(lila::modules::rooms::infrastructure::codec::
+                ReadPublicRooms({{"items", nlohmann::json::array(1'001)}}));
+        }), "Les salles doivent refuser trop d'items avant reserve().");
+    Expect(rejects([]
+        {
+            static_cast<void>(lila::modules::vault::infrastructure::codec::
+                ReadSnapshots({{"items", nlohmann::json::array(1'001)}}));
+        }), "Le coffre doit refuser trop d'items avant reserve().");
+    Expect(rejects([]
+        {
+            static_cast<void>(lila::modules::storybook::infrastructure::codec::
+                ReadStoryBookPayload({{"games", nlohmann::json::array(513)}}));
+        }), "Le livre doit refuser trop de jeux avant reserve().");
+    Expect(rejects([]
+        {
+            static_cast<void>(lila::modules::leaderboard::infrastructure::codec::
+                ReadTopPayload({{"gameType", "test"},
+                    {"entries", nlohmann::json::array(1'001)}}));
+        }), "Le classement doit refuser trop d'entrees avant reserve().");
+}

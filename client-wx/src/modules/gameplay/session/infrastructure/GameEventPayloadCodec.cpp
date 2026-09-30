@@ -6,6 +6,7 @@
 
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 #include "modules/gameplay/session/infrastructure/GameCommandPayloadCodec.h"
+#include "modules/gameplay/session/domain/GameProtocol.h"
 #include "shared/errors/application/PresentedErrorPayload.h"
 
 namespace lila::modules::gameplay::infrastructure
@@ -36,13 +37,13 @@ domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
             std::nullopt, {}, std::nullopt, {}, std::nullopt};
     const auto type = ReadString(message, "type");
     const auto payload = message.value("payload", nlohmann::json::object());
-    if (type == "game.state")
+    if (type == protocol::State)
     {
         return {domain::GameEventType::StateUpdated,
             GameStatePayloadCodec::DecodeState(payload), {}, false,
             std::nullopt, {}, std::nullopt, {}, std::nullopt};
     }
-    if (type == "game.ack")
+    if (type == protocol::Acknowledgement)
     {
         domain::GameAcknowledgement acknowledgement;
         acknowledgement.command = ReadString(payload, "action");
@@ -55,20 +56,20 @@ domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
             acknowledgement.command, !acknowledgement.ok,
             std::move(acknowledgement), {}, std::nullopt, {}, std::nullopt};
     }
-    if (type == "game.turn")
+    if (type == protocol::Turn)
     {
         return {domain::GameEventType::TurnUpdated, std::nullopt,
             ReadString(payload, "currentPlayerUsername"), false,
             std::nullopt, {}, std::nullopt, {}, std::nullopt};
     }
-    if (type == "game.action.candidates")
+    if (type == protocol::ActionCandidates)
     {
         domain::GameEvent event;
         event.type = domain::GameEventType::ActionCandidates;
         event.candidates = GameCommandPayloadCodec::DecodeCandidates(payload);
         return event;
     }
-    if (type == "game.rules")
+    if (type == protocol::Rules)
     {
         domain::GameEvent event;
         event.type = domain::GameEventType::Rules;

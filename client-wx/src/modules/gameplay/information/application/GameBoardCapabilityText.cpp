@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <sstream>
 
+#include "shared/data/application/IntegerText.h"
+
 namespace lila::modules::gameplay::application::info
 {
 namespace
@@ -23,8 +25,10 @@ void AppendPosition(
     bool includeTrack)
 {
     if (includeTrack) out << "Piste " << track.id << " — ";
-    try { out << Player(state, std::stoi(entity)); }
-    catch (const std::exception&) { out << entity; }
+    if (const auto playerId = lila::shared::data::ParseInteger(entity))
+        out << Player(state, *playerId);
+    else
+        out << entity;
     out << " : case " << position << ".\n";
 }
 }
@@ -137,8 +141,10 @@ std::optional<std::string> BuildBoardCapabilityText(
             out << '\n';
             for (const auto& [entity, position] : track.positions)
             {
-                try { out << "- " << Player(state, std::stoi(entity)); }
-                catch (const std::exception&) { out << "- " << entity; }
+                if (const auto playerId = lila::shared::data::ParseInteger(entity))
+                    out << "- " << Player(state, *playerId);
+                else
+                    out << "- " << entity;
                 out << " : case " << position;
                 if (track.spaces > 1)
                     out << ", progression " << (100 * position / (track.spaces - 1)) << " %";

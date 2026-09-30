@@ -10,6 +10,7 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/tokenzr.h>
+#include <wx/weakref.h>
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/admin/domain/AdminPagination.h"
 namespace lila::modules::admin::presentation
@@ -66,7 +67,9 @@ AdminCommandDialog::AdminCommandDialog(
     SetEscapeId(wxID_CANCEL);
     Bind(wxEVT_CHAR_HOOK, &AdminCommandDialog::HandleKey, this);
     CentreOnParent();
-    CallAfter([this] { FocusFirstField(); });
+    CallAfter([weakThis = wxWeakRef<AdminCommandDialog>(this)] {
+        if (weakThis) weakThis->FocusFirstField();
+    });
 }
 void AdminCommandDialog::BuildFields(
     const nlohmann::json& initialPayload,
