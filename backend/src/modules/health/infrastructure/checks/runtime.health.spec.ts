@@ -40,8 +40,9 @@ describe('RuntimeHealthIndicator', () => {
           return handle;
         });
       try {
-        await expect(indicator.checkStorage('storage')).rejects.toThrow(
-          'Storage check failed',
+        await expect(indicator.checkStorage('storage')).resolves.toHaveProperty(
+          'storage.status',
+          'down',
         );
         expect(remove).toHaveBeenCalledTimes(failure === 'open' ? 0 : 1);
         expect(await readdir(root)).toEqual([]);

@@ -1,5 +1,4 @@
 import { ConfigService } from '@nestjs/config';
-import { HealthCheckError } from '@nestjs/terminus';
 import type { RedisClientFactory } from '../../../../platform/redis/public-api';
 import { RedisHealthIndicator } from './redis.health';
 import { REDIS_READINESS_TIMEOUT_MS } from './health-check-timeout';
@@ -67,8 +66,9 @@ it.each([
       ].map((key) => [key, `redis://${key}`]),
     );
     const { health, create, clients } = fixture(values, values[failedKey]);
-    await expect(health.check('redis')).rejects.toBeInstanceOf(
-      HealthCheckError,
+    await expect(health.check('redis')).resolves.toHaveProperty(
+      'redis.status',
+      'down',
     );
     expect(create).toHaveBeenCalledTimes(5);
     expect(
@@ -96,7 +96,10 @@ it('does not gate readiness on an unused legacy URL or the room projection cache
 
 it('fails closed for missing required configuration', async () => {
   const { health, create } = fixture({});
-  await expect(health.check('redis')).rejects.toBeInstanceOf(HealthCheckError);
+  await expect(health.check('redis')).resolves.toHaveProperty(
+    'redis.status',
+    'down',
+  );
   expect(create).not.toHaveBeenCalled();
 });
 
@@ -110,8 +113,9 @@ it.each(['UPDATE_REDIS_URL', 'REDIS_URL'])(
       },
       'redis://leases',
     );
-    await expect(health.check('redis')).rejects.toBeInstanceOf(
-      HealthCheckError,
+    await expect(health.check('redis')).resolves.toHaveProperty(
+      'redis.status',
+      'down',
     );
   },
 );
@@ -137,8 +141,9 @@ it('does not expose connection secrets in a health response', async () => {
     { SESSION_STORE_REDIS_URL: 'redis://shared' },
     'redis://shared',
   );
-  const error = await health.check('redis').catch((error: unknown) => error);
-  expect(JSON.stringify(error)).not.toMatch(/secret|password|redis:\/\//);
+  const result = await health.check('redis');
+  expect(result).toHaveProperty('redis.status', 'down');
+  expect(JSON.stringify(result)).not.toMatch(/secret|password|redis:\/\//);
 });
 
 it('bounds a stuck connection and disconnects it after the deadline', async () => {
@@ -154,8 +159,9 @@ it('bounds a stuck connection and disconnects it after the deadline', async () =
       new ConfigService({ SESSION_STORE_REDIS_URL: 'redis://shared' }),
       { create } as unknown as RedisClientFactory,
     );
-    const check = expect(health.check('redis')).rejects.toBeInstanceOf(
-      HealthCheckError,
+    const check = expect(health.check('redis')).resolves.toHaveProperty(
+      'redis.status',
+      'down',
     );
     await jest.advanceTimersByTimeAsync(REDIS_READINESS_TIMEOUT_MS);
     await check;

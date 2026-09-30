@@ -1,5 +1,4 @@
 import { ConfigService } from '@nestjs/config';
-import { HealthCheckError } from '@nestjs/terminus';
 import { Queue } from 'bullmq';
 import type { RedisClientFactory } from '../../../../platform/redis/public-api';
 import { BullmqHealthIndicator } from './bullmq.health';
@@ -59,7 +58,10 @@ it('keeps failed-job readiness policy active', async () => {
     delayed: 0,
     failed: 101,
   });
-  await expect(health.check('bullmq')).rejects.toBeInstanceOf(HealthCheckError);
+  await expect(health.check('bullmq')).resolves.toHaveProperty(
+    'bullmq.status',
+    'down',
+  );
   expect(connection.disconnect).toHaveBeenCalledTimes(1);
 });
 
@@ -68,8 +70,9 @@ it('bounds a stalled queue read without waiting for automatic reconnection', asy
   try {
     const { health, queue, connection } = fixture();
     queue.getJobCounts.mockImplementation(() => new Promise(() => {}));
-    const checked = expect(health.check('bullmq')).rejects.toBeInstanceOf(
-      HealthCheckError,
+    const checked = expect(health.check('bullmq')).resolves.toHaveProperty(
+      'bullmq.status',
+      'down',
     );
     await jest.advanceTimersByTimeAsync(REDIS_READINESS_TIMEOUT_MS);
     await checked;
@@ -89,11 +92,11 @@ it('bounds a stalled close and preserves the dependency failure', async () => {
       new Error('redis://secret:password@host'),
     );
     queue.close.mockImplementation(() => new Promise(() => {}));
-    const checked = health.check('bullmq').catch((error: unknown) => error);
+    const checked = health.check('bullmq');
     await jest.advanceTimersByTimeAsync(REDIS_READINESS_TIMEOUT_MS);
-    const error = await checked;
-    expect(error).toBeInstanceOf(HealthCheckError);
-    expect(JSON.stringify(error)).not.toMatch(/password|secret/);
+    const result = await checked;
+    expect(result).toHaveProperty('bullmq.status', 'down');
+    expect(JSON.stringify(result)).not.toMatch(/password|secret/);
     expect(jest.getTimerCount()).toBe(0);
   } finally {
     jest.useRealTimers();

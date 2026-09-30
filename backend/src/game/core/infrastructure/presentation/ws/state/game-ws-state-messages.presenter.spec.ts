@@ -165,9 +165,7 @@ describe('GameWsStateMessagesPresenter', () => {
       {} as never,
     );
     expect(
-      presentedEvents(state.events).recent.map(
-        (event) => event.soundSemantic,
-      ),
+      presentedEvents(state.events).recent.map((event) => event.soundSemantic),
     ).toEqual(['quiz.correct', undefined, 'wall.placed']);
   });
 });

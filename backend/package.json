@@ -121,7 +121,7 @@
     "engine:evolution": "node tools/engine-evolution-report.cjs",
     "engine:merge-contracts": "jest --runInBand game/testing/architecture-tests/game/all-declarative-games.contract.spec.ts game/testing/architecture-tests/game/replay-progress.spec.ts game/testing/architecture-tests/game/replay-idle-timer.spec.ts game/testing/architecture-tests/game/hand-limit-replay.spec.ts game/testing/architecture-tests/game/generated-actions.property.spec.ts game/testing/architecture-tests/game/directional-hazard-primitives-parity.spec.ts game/testing/architecture-tests/game/primitive-json-sdk-parity.spec.ts game/testing/architecture-tests/game/directional-hazard-reuse.spec.ts game/testing/architecture-tests/game/simultaneous-quiz-json-parity.spec.ts game/testing/architecture-tests/game/independent-capabilities.spec.ts game/testing/architecture-tests/game/reference-replays.spec.ts game/testing/architecture-tests/game/generated-capability-models.property.spec.ts game/engine/runtime/definitions/json-game-compiler-factory.spec.ts game/engine/runtime/contracts/json-author-codec.spec.ts game/engine/runtime/definitions/json-language-budget.spec.ts game/testing/architecture-tests/game/declarative-triggers.spec.ts game/engine/runtime/effects/numeric-expression.spec.ts game/engine/runtime/kits/resource-bounds.spec.ts game/engine/runtime/kits/resource-payment.spec.ts game/engine/runtime/kits/status-modifiers.spec.ts game/engine/runtime/cards/cards-location.spec.ts game/engine/runtime/definitions/component-reference-validation.spec.ts game/engine/runtime/definitions/static-effect-references.spec.ts",
     "engine:codecs": "node tools/effect-pack-codec-contract.cjs",
-    "engine:authoring-contracts": "jest --runInBand --testPathPattern=\"(diagnostics|authoring|origin).*spec\"",
+    "engine:authoring-contracts": "jest --runInBand --testPathPatterns=\"(diagnostics|authoring|origin).*spec\"",
     "engine:promotion-contracts": "node tools/run-promotion-contracts.cjs",
     "engine:mechanics": "node --test tools/game-mechanics-matrix.spec.cjs && node tools/game-mechanics-matrix.cjs"
   },
@@ -129,16 +129,16 @@
     "multer": "$multer"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.1",
-    "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.0.1",
-    "@nestjs/platform-express": "^11.0.1",
-    "@nestjs/platform-ws": "^11.1.9",
-    "@nestjs/swagger": "^11.4.7",
-    "@nestjs/terminus": "^11.0.0",
+    "@nestjs/common": "^12.1.2",
+    "@nestjs/config": "^12.0.1",
+    "@nestjs/core": "^12.1.2",
+    "@nestjs/platform-express": "^12.1.2",
+    "@nestjs/platform-ws": "^12.1.2",
+    "@nestjs/swagger": "^12.0.2",
+    "@nestjs/terminus": "^12.1.0",
     "@nestjs/throttler": "^6.7.1",
-    "@nestjs/typeorm": "^11.0.0",
-    "@nestjs/websockets": "^11.1.9",
+    "@nestjs/typeorm": "^12.0.2",
+    "@nestjs/websockets": "^12.1.2",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/auto-instrumentations-node": "^0.80.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.222.0",
@@ -164,11 +164,13 @@
     "ws": "^8.22.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^10.0.1",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
-    "@nestjs/testing": "^11.0.1",
+    "@nestjs/testing": "^12.1.2",
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/jest-runner": "^10.0.0",
     "@swc/cli": "^0.8.1",
@@ -182,6 +184,8 @@
     "@types/node": "^26.6.3",
     "@types/supertest": "^7.2.1",
     "@types/ws": "^8.18.1",
+    "babel-jest": "^30.5.2",
+    "babel-plugin-transform-import-meta": "^2.3.3",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
@@ -208,13 +212,39 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": [
+      "^.+\\.ts$": [
         "ts-jest",
         {
           "tsconfig": "<rootDir>/../tsconfig.jest.json"
         }
+      ],
+      "^.+\\.js$": [
+        "babel-jest",
+        {
+          "presets": [
+            [
+              "@babel/preset-env",
+              {
+                "targets": {
+                  "node": "current"
+                }
+              }
+            ]
+          ],
+          "plugins": [
+            [
+              "babel-plugin-transform-import-meta",
+              {
+                "module": "ES6"
+              }
+            ]
+          ]
+        }
       ]
     },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!@nestjs/)"
+    ],
     "moduleNameMapper": {
       "^@modules/(.*)$": "<rootDir>/modules/$1",
       "^@game/(.*)$": "<rootDir>/game/$1",
