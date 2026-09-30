@@ -53,7 +53,11 @@ function Install-Release([string]$Installer, [string]$Destination, [string]$Labe
         '/NORESTART',
         "/DIR=`"$Destination`""
     )
-    $installed = Start-Process -FilePath $Installer -ArgumentList $arguments -Wait -PassThru
+    $installed = Start-Process -FilePath $Installer -ArgumentList $arguments -PassThru
+    if (!$installed.WaitForExit(120000)) {
+        $installed.Kill($true)
+        throw "$Label expirée après 120 secondes."
+    }
     if ($installed.ExitCode -ne 0) {
         throw "$Label échouée: $($installed.ExitCode)."
     }
@@ -91,6 +95,7 @@ if ($previousSignature.Status -eq [System.Management.Automation.SignatureStatus]
 } elseif ($previousSignature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
     throw "Signature Authenticode de la release précédente invalide: $($previousSignature.Status)."
 }
+Unblock-File -LiteralPath $previousInstaller
 Install-Release $previousInstaller $upgradeDir "Installation de la release $($previousManifest.version)"
 Install-Release $installerJson.InstallerExe $upgradeDir "Mise à niveau vers $Version"
 
@@ -101,7 +106,11 @@ Set-Content -LiteralPath $sentinel -Value 'must survive uninstall' -Encoding UTF
 $uninstaller = Join-Path $installDir 'unins000.exe'
 if (!(Test-Path -LiteralPath $uninstaller -PathType Leaf)) { throw 'Désinstalleur absent.' }
 $uninstalled = Start-Process -FilePath $uninstaller `
-    -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -Wait -PassThru
+    -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -PassThru
+if (!$uninstalled.WaitForExit(120000)) {
+    $uninstalled.Kill($true)
+    throw 'Désinstallation expirée après 120 secondes.'
+}
 if ($uninstalled.ExitCode -ne 0) { throw "Désinstallation échouée: $($uninstalled.ExitCode)." }
 if (!(Test-Path -LiteralPath $sentinel -PathType Leaf)) {
     throw 'La désinstallation a supprimé des données utilisateur.'
