@@ -1,30 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  HealthCheckError,
-  HealthIndicator,
-  HealthIndicatorResult,
-} from '@nestjs/terminus';
+import { HealthIndicatorResult } from '@nestjs/terminus';
 import { RedisClientFactory } from '../../../../platform/redis/public-api';
 import { prometheusMetrics } from '../../../../platform/observability/public-api';
 import { redisReadinessTargets } from './redis-readiness-targets';
 import { probeRedisReadiness } from './redis-readiness-probe';
 
 @Injectable()
-export class RedisHealthIndicator extends HealthIndicator {
+export class RedisHealthIndicator {
   constructor(
     private readonly config: ConfigService,
     private readonly redisFactory: RedisClientFactory,
-  ) {
-    super();
-  }
+  ) {}
 
   async check(key: string): Promise<HealthIndicatorResult> {
     if (typeof key !== 'string' || !key.trim() || key.length > 128) {
-      throw new HealthCheckError(
-        'Invalid health-check key',
-        this.getStatus('redis', false),
-      );
+      return this.status('redis', false);
     }
     const targets = redisReadinessTargets(this.config);
     const urls = [
@@ -36,10 +27,7 @@ export class RedisHealthIndicator extends HealthIndicator {
       ),
     ];
     if (urls.length > 16) {
-      throw new HealthCheckError(
-        'Too many Redis readiness targets',
-        this.getStatus(key, false, { capabilities: {} }),
-      );
+      return this.status(key, false, { capabilities: {} });
     }
     const probes = new Map(
       await Promise.all(
@@ -59,12 +47,14 @@ export class RedisHealthIndicator extends HealthIndicator {
       (status) => status === 'up',
     );
     prometheusMetrics.setDependencyUp('redis', healthy);
-    const result = this.getStatus(key, healthy, { capabilities });
-    if (!healthy)
-      throw new HealthCheckError(
-        'Required Redis capability unavailable',
-        result,
-      );
-    return result;
+    return this.status(key, healthy, { capabilities });
+  }
+
+  private status(
+    key: string,
+    healthy: boolean,
+    details: Record<string, unknown> = {},
+  ): HealthIndicatorResult {
+    return { [key]: { status: healthy ? 'up' : 'down', ...details } };
   }
 }

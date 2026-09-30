@@ -1,25 +1,17 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  HealthCheckError,
-  HealthIndicator,
-  HealthIndicatorResult,
-} from '@nestjs/terminus';
+import { HealthIndicatorResult } from '@nestjs/terminus';
 import { promises as fs } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 import path from 'node:path';
 
 @Injectable()
-export class RuntimeHealthIndicator
-  extends HealthIndicator
-  implements OnModuleDestroy
-{
+export class RuntimeHealthIndicator implements OnModuleDestroy {
   private readonly logger = new Logger(RuntimeHealthIndicator.name);
   private readonly eventLoop = monitorEventLoopDelay({ resolution: 20 });
 
   constructor(private readonly config: ConfigService) {
-    super();
     this.eventLoop.enable();
   }
 
@@ -38,14 +30,10 @@ export class RuntimeHealthIndicator
       Number.isSafeInteger(configuredMaximum) && configuredMaximum >= 0
         ? configuredMaximum
         : 250;
-    const status = this.getStatus(safeKey, lagMs <= maximum, {
+    return this.status(safeKey, lagMs <= maximum, {
       lagMs: Math.round(lagMs * 100) / 100,
       maximumLagMs: maximum,
     });
-    if (lagMs > maximum) {
-      throw new HealthCheckError('Event loop lag too high', status);
-    }
-    return status;
   }
 
   async checkStorage(key: string): Promise<HealthIndicatorResult> {
@@ -60,10 +48,7 @@ export class RuntimeHealthIndicator
       this.config.get<number>('STORAGE_MIN_FREE_BYTES', 104_857_600),
     );
     if (root.length > 4096) {
-      throw new HealthCheckError(
-        'Invalid storage health path',
-        this.getStatus(safeKey, false),
-      );
+      return this.status(safeKey, false);
     }
     const minimumFreeBytes =
       Number.isSafeInteger(configuredMinimum) && configuredMinimum >= 0
@@ -90,16 +75,12 @@ export class RuntimeHealthIndicator
         Number.isSafeInteger(stats.bavail) && Number.isSafeInteger(stats.bsize)
           ? Math.min(Number.MAX_SAFE_INTEGER, stats.bavail * stats.bsize)
           : 0;
-      const status = this.getStatus(safeKey, freeBytes >= minimumFreeBytes, {
+      return this.status(safeKey, freeBytes >= minimumFreeBytes, {
         path: root,
         freeBytes,
         minimumFreeBytes,
       });
-      if (freeBytes < minimumFreeBytes) {
-        throw new HealthCheckError('Storage free space too low', status);
-      }
-      return status;
-    } catch (error) {
+    } catch {
       try {
         if (probeCreated) await fs.rm(probe, { force: true });
       } catch (cleanupError) {
@@ -107,15 +88,19 @@ export class RuntimeHealthIndicator
           `storage_probe_cleanup_failed path=${probe} error=${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`,
         );
       }
-      if (error instanceof HealthCheckError) throw error;
-      throw new HealthCheckError(
-        'Storage check failed',
-        this.getStatus(safeKey, false, {
-          path: root,
-          message: error instanceof Error ? error.message : String(error),
-        }),
-      );
+      return this.status(safeKey, false, {
+        path: root,
+        message: 'Stockage indisponible',
+      });
     }
+  }
+
+  private status(
+    key: string,
+    healthy: boolean,
+    details: Record<string, unknown> = {},
+  ): HealthIndicatorResult {
+    return { [key]: { status: healthy ? 'up' : 'down', ...details } };
   }
 
   onModuleDestroy(): void {
