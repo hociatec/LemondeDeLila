@@ -148,7 +148,7 @@ export class UserInboxRedisService implements OnModuleDestroy {
       const idsToRemove = await this.redis.zrange(
         this.orderKey(userId),
         0,
-        extra - 1,
+        String(extra - 1),
       );
       if (!idsToRemove?.length) return;
 
