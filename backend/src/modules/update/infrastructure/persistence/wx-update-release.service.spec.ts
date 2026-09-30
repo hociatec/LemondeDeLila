@@ -1,4 +1,4 @@
-import { createHash, generateKeyPairSync, sign } from 'crypto';
+import { createHash, generateKeyPairSync, sign, type KeyObject } from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -45,7 +45,7 @@ describe('WxUpdateReleaseService', () => {
   let root: string;
   let releases: WxUpdateReleaseService;
   let now: number;
-  let privateKey: ReturnType<typeof generateKeyPairSync>['privateKey'];
+  let privateKey: KeyObject;
 
   beforeEach(async () => {
     root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'lila-wx-update-'));
