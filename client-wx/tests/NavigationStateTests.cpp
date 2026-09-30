@@ -2,6 +2,7 @@
 #include <set>
 
 #include "modules/social/presentation/SocialNavigationState.h"
+#include "modules/social/presentation/SocialSelectionMemory.h"
 #include "modules/messaging/presentation/MessagingNavigationState.h"
 #include "modules/options/presentation/OptionsEditSession.h"
 #include "modules/catalog/application/CatalogVisibilityPolicy.h"
@@ -80,6 +81,13 @@ int main()
     assert(social.lastMenuIndex == 3);
     assert(!social.GoBack());
 
+    lila::modules::social::presentation::SocialSelectionMemory socialSelection;
+    socialSelection.Store(SocialSection::Friends, 2);
+    assert(socialSelection.Restore(SocialSection::Friends, 4) == 2);
+    assert(socialSelection.Restore(SocialSection::Friends, 2) == 0);
+    assert(!socialSelection.Restore(SocialSection::Friends, 0).has_value());
+    assert(socialSelection.Restore(SocialSection::Blocked, 4) == 0);
+
     using lila::modules::messaging::presentation::MessagingNavigationState;
     using lila::modules::messaging::domain::MessagingBox;
     MessagingNavigationState messaging;
@@ -94,6 +102,33 @@ int main()
     assert(messaging.currentScreen == MessagingNavigationState::Screen::Detail);
     assert(messaging.currentBox == MessagingBox::Deleted);
     assert(!messaging.GoBack());
+
+    // A rapid screen churn must never leak history across independent flows
+    // or leave navigation in a state that cannot return to its menu.
+    for (int iteration = 0; iteration < 10'000; ++iteration)
+    {
+        SocialNavigationState stressedSocial(iteration % 6);
+        stressedSocial.PushCurrent();
+        stressedSocial.EnterSection(SocialSection::Friends, iteration % 6);
+        stressedSocial.PushCurrent();
+        stressedSocial.BeginProfile(iteration + 1);
+        assert(stressedSocial.GoBack());
+        assert(stressedSocial.GoBack());
+        assert(!stressedSocial.GoBack());
+        assert(stressedSocial.currentScreen == SocialNavigationState::Screen::Menu);
+
+        MessagingNavigationState stressedMessaging;
+        stressedMessaging.SelectBox(iteration % 2 == 0
+            ? MessagingBox::Inbox : MessagingBox::Outbox);
+        stressedMessaging.PushCurrent();
+        stressedMessaging.Enter(MessagingNavigationState::Screen::Detail);
+        stressedMessaging.PushCurrent();
+        stressedMessaging.Enter(MessagingNavigationState::Screen::Compose);
+        assert(stressedMessaging.GoBack());
+        assert(stressedMessaging.GoBack());
+        assert(!stressedMessaging.GoBack());
+        assert(stressedMessaging.currentScreen == MessagingNavigationState::Screen::Menu);
+    }
 
     for (const bool reply : {false, true})
     {

@@ -19,10 +19,10 @@
 #include "modules/gameplay/session/domain/GameEvent.h"
 #include "modules/gameplay/session/domain/GameCommandEnvelope.h"
 #include "modules/gameplay/state/domain/GameLine.h"
-#include "modules/gameplay/pawn_selection/domain/PawnSelection.h"
 #include "modules/gameplay/state/domain/GameState.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
 #include "shared/concurrency/application/AsyncRequestSlot.h"
+#include "modules/gameplay/events/application/GameEventMailbox.h"
 
 class wxKeyEvent;
 class wxListBox;
@@ -46,7 +46,6 @@ namespace lila::modules::gameplay::presentation::grid { class GameGridPanel; }
 namespace lila::modules::gameplay::presentation::movement { class GameMovementPanel; }
 namespace lila::modules::gameplay::presentation::workflows { class GameWorkflowPanel; }
 namespace lila::modules::gameplay::presentation::prompt { class GamePromptPanel; }
-namespace lila::modules::gameplay::presentation::pawn_selection { class PawnSelectionPanel; }
 
 namespace lila::modules::gameplay::presentation
 {
@@ -113,12 +112,11 @@ private:
             onFailure = {});
     void ApplyState(domain::GameState state);
     void HandleEvent(domain::GameEvent event);
+    void DrainEventMailbox();
     void ActivateSelectedLine();
-    bool ActivateSelectedQuizAnswer();
     bool ActivateSelectedPendingChoice();
     bool ActivateSelectedHandCard();
     bool AnnounceSelectedHandCard();
-    bool ActivateDiceRoll();
     bool ActivateSelectedGridCell();
     [[nodiscard]] std::optional<bool> HandleInputLifecycle(wxKeyEvent& event);
     [[nodiscard]] bool HandleFocusedActivation();
@@ -163,11 +161,9 @@ private:
     wxStaticText* statusLabel_ = nullptr;
     confirmation::GameActionConfirmationPanel* confirmationPanel_ = nullptr;
     prompt::GamePromptPanel* promptPanel_ = nullptr;
-    pawn_selection::PawnSelectionPanel* pawnSelectionPanel_ = nullptr;
     domain::GameState state_;
     std::vector<domain::GameLine> lines_;
     std::vector<std::string> renderedLineIds_;
-    std::optional<domain::PawnSelection> pawnSelection_;
     std::optional<domain::GameCommandEnvelope> retryableActionCommand_;
     int roomId_ = 0;
     std::string gameType_;
@@ -189,6 +185,7 @@ private:
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
     lila::shared::concurrency::AsyncRequestSlot inputRequestSlot_;
     application::GameCommandSubmissionGuard inputSubmissionGuard_;
+    application::GameEventMailbox eventMailbox_;
     std::unordered_set<std::string> announcedTimers_;
     application::GameEventIdentityWindow observedEvents_;
     std::vector<std::size_t> pendingChoiceIndexes_;

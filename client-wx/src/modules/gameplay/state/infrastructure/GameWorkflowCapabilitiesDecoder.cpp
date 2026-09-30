@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
+#include "shared/data/application/IntegerText.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -14,7 +15,11 @@ std::vector<int> Ids(const nlohmann::json& object, const char* key)
     const auto found = object.find(key);
     if (found == object.end() || !found->is_array()) return result;
     for (const auto& value : *found)
-        if (value.is_number_integer()) result.push_back(value.get<int>());
+        if (value.is_number_integer())
+        {
+            const auto id = value.get<int>();
+            if (id != 0) result.push_back(id);
+        }
     return result;
 }
 
@@ -23,6 +28,12 @@ std::optional<int> OptionalInt(const nlohmann::json& object, const char* key)
     const auto found = object.find(key);
     return found != object.end() && found->is_number_integer()
         ? std::optional<int>(found->get<int>()) : std::nullopt;
+}
+
+std::optional<int> OptionalPlayerId(const nlohmann::json& object, const char* key)
+{
+    const auto id = OptionalInt(object, key);
+    return id && *id != 0 ? id : std::nullopt;
 }
 
 std::optional<std::int64_t> OptionalInt64(const nlohmann::json& object, const char* key)
@@ -66,7 +77,7 @@ std::optional<domain::GameSubmissionValue> SubmissionValue(const nlohmann::json&
     result.label = detail::ReadString(raw, "label");
     result.text = detail::ReadString(raw, "text");
     if (result.text.empty()) result.text = detail::ReadString(raw, "value");
-    if (const auto playerId = OptionalInt(raw, "playerId"))
+    if (const auto playerId = OptionalPlayerId(raw, "playerId"))
     {
         result.kind = domain::GameSubmissionValueKind::Player;
         result.playerId = playerId;
@@ -148,12 +159,9 @@ std::optional<domain::GameSubmissionsView> GameWorkflowCapabilitiesDecoder::Subm
             const auto values = item.value().find("valuesByPlayerId");
             if (values != item.value().end() && values->is_object())
                 for (const auto& value : values->items())
-                    try
-                    {
+                    if (const auto id = lila::shared::data::ParseInteger(value.key()))
                         if (auto decoded = SubmissionValue(value.value()))
-                            session.visibleValues.emplace(std::stoi(value.key()), std::move(*decoded));
-                    }
-                    catch (const std::exception&) {}
+                            session.visibleValues.emplace(*id, std::move(*decoded));
             const auto own = item.value().find("ownValue");
             if (own != item.value().end()) session.ownValue = SubmissionValue(*own);
             result.sessions.push_back(std::move(session));
@@ -163,7 +171,7 @@ std::optional<domain::GameSubmissionsView> GameWorkflowCapabilitiesDecoder::Subm
         for (const auto& item : judges->items())
         {
             if (!item.value().is_object()) continue;
-            result.judges.push_back({item.key(), OptionalInt(item.value(), "playerId"),
+            result.judges.push_back({item.key(), OptionalPlayerId(item.value(), "playerId"),
                 Ids(item.value(), "playerIds"), detail::ReadInt(item.value(), "index")});
         }
     return result;
@@ -177,13 +185,13 @@ std::optional<domain::GameEffectView> GameWorkflowCapabilitiesDecoder::Effect(
     const auto source = raw.find("source");
     if (source != raw.end() && source->is_object())
     {
-        result.sourcePlayerId = OptionalInt(*source, "playerId");
+        result.sourcePlayerId = OptionalPlayerId(*source, "playerId");
         result.sourceCardId = PrimitiveId(*source, "cardId");
         result.sourceDeckId = PrimitiveId(*source, "deckId");
         result.sourceTileId = PrimitiveId(*source, "tileId");
     }
     result.status = detail::ReadString(raw, "status");
-    result.resolved = detail::ReadBool(raw, "resolved") || result.status == "resolved";
+    result.resolved = detail::ReadBool(raw, "resolved");
     return result;
 }
 

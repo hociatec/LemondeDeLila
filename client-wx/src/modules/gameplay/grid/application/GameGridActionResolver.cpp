@@ -7,23 +7,29 @@ namespace lila::modules::gameplay::application::grid
 bool GameGridActionResolver::Targets(
     const domain::GameAction& action, const GameGridTarget& target)
 {
-    if (action.disabled || !action.payload.is_object()) return false;
+    if (action.disabled) return false;
     // An oriented edge is a wall placement, not a move onto the cell.
     if (action.payload.contains("orientation")) return false;
     const auto board = action.payload.find("boardId");
-    if (board != action.payload.end() &&
-        (!board->is_string() || board->get<std::string>() != target.boardId)) return false;
+    if (board != action.payload.end())
+    {
+        const auto* boardId = board->second.Text();
+        if (boardId == nullptr || *boardId != target.boardId) return false;
+    }
     const auto cellId = action.payload.find("cellId");
     if (cellId != action.payload.end())
-        return cellId->is_string() && cellId->get<std::string>() == target.cellId;
+    {
+        const auto* id = cellId->second.Text();
+        return id != nullptr && *id == target.cellId;
+    }
     const auto position = action.payload.find("position");
-    const auto& coordinates = position != action.payload.end() && position->is_object()
-        ? *position : action.payload;
+    const auto* nested = position == action.payload.end()
+        ? nullptr : position->second.ObjectValue();
+    const auto& coordinates = nested == nullptr ? action.payload : *nested;
     const auto x = coordinates.find("x");
     const auto y = coordinates.find("y");
     return x != coordinates.end() && y != coordinates.end() &&
-        x->is_number_integer() && y->is_number_integer() &&
-        x->get<int>() == target.x && y->get<int>() == target.y;
+        x->second.Integer() == target.x && y->second.Integer() == target.y;
 }
 
 std::optional<domain::GameAction> GameGridActionResolver::Resolve(

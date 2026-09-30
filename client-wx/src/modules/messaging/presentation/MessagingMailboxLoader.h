@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <vector>
 
 #include <wx/string.h>
@@ -25,7 +26,7 @@ public:
     };
 
     MessagingMailboxLoader(
-        MessagingMailboxController& mailboxController,
+        std::shared_ptr<MessagingMailboxController> mailboxController,
         MessagingSelectionMemory& selectionMemory,
         std::vector<domain::MessagingMessage>& boxMessages,
         MessagingView& view,
@@ -36,7 +37,7 @@ public:
     void RestoreSelection(domain::MessagingBox box) const;
 
 private:
-    MessagingMailboxController& mailboxController_;
+    std::shared_ptr<MessagingMailboxController> mailboxController_;
     MessagingSelectionMemory& selectionMemory_;
     std::vector<domain::MessagingMessage>& boxMessages_;
     MessagingView& view_;

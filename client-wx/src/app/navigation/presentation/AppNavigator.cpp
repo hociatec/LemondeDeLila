@@ -15,7 +15,7 @@
 #include "shared/logging/application/Logger.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
-#include "modules/update/infrastructure/UpdateSignals.h"
+#include "modules/update/application/UpdateSignals.h"
 
 namespace lila::app::navigation
 {
@@ -49,7 +49,25 @@ AppNavigator::AppNavigator(
 
 AppNavigator::~AppNavigator()
 {
+    lifetimeToken_.reset();
     wxEvtHandler::RemoveFilter(this);
+    if (hostFrame_ != nullptr)
+    {
+        hostFrame_->Disconnect(
+            wxID_ANY,
+            lila::shared::ui::controls::wxEVT_LILA_MENU_NAVIGATED);
+        hostFrame_->Disconnect(
+            wxID_ANY,
+            lila::shared::ui::controls::wxEVT_LILA_MENU_ACTIVATED);
+        hostFrame_->SetPresenceRequestedHandler({});
+        hostFrame_->SetCloseRequestedHandler({});
+        if (closeRevocationTimeout_ != nullptr)
+        {
+            closeRevocationTimeout_->Stop();
+            hostFrame_->Disconnect(closeRevocationTimeout_->GetId(), wxEVT_TIMER);
+            closeRevocationTimeout_.reset();
+        }
+    }
     sessionStore_.SetSessionExpiredHandler({});
     roomInvitationMonitor_.SetInvitationHandler({});
     roomInvitationMonitor_.SetMessageHandler({});
@@ -89,25 +107,28 @@ bool AppNavigator::Start()
             });
         hostFrame_->SetPresenceRequestedHandler([this]() { ShowPresence(); });
         const wxWeakRef<HostFrame> weakFrame(hostFrame_);
+        const std::weak_ptr<int> lifetime(lifetimeToken_);
         sessionStore_.SetSessionExpiredHandler(
-            [this, weakFrame]()
+            [this, weakFrame, lifetime]()
             {
-                if (!weakFrame) return;
+                if (!weakFrame || lifetime.expired()) return;
                 weakFrame->CallAfter(
-                    [this, weakFrame]()
+                    [this, weakFrame, lifetime]()
                     {
-                        if (weakFrame) OnSessionExpired();
+                        if (weakFrame && !lifetime.expired()) OnSessionExpired();
                     });
             });
         roomInvitationMonitor_.SetInvitationHandler(
-            [this](modules::rooms::domain::RoomInvitation invitation)
+            [this, lifetime](modules::rooms::domain::RoomInvitation invitation)
             {
+                if (lifetime.expired()) return;
                 const wxWeakRef<HostFrame> weakFrame(hostFrame_);
                 if (!weakFrame) return;
                 weakFrame->CallAfter(
-                    [this, weakFrame, invitation = std::move(invitation)]() mutable
+                    [this, weakFrame, lifetime, invitation = std::move(invitation)]() mutable
                     {
-                        if (weakFrame) HandleRoomInvitation(std::move(invitation));
+                        if (weakFrame && !lifetime.expired())
+                            HandleRoomInvitation(std::move(invitation));
                     });
             });
         BindNotificationAudio();

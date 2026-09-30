@@ -13,13 +13,13 @@
 namespace lila::modules::messaging::presentation
 {
 MessagingScreenCoordinator::MessagingScreenCoordinator(
-    MessagingMailboxController& mailboxController,
+    std::shared_ptr<MessagingMailboxController> mailboxController,
     MessagingNavigationState& navigationState,
     MessagingSelectionMemory& selectionMemory,
     std::vector<domain::MessagingMessage>& boxMessages,
     MessagingView& view,
     Callbacks callbacks) noexcept
-    : mailboxController_(mailboxController),
+    : mailboxController_(std::move(mailboxController)),
       navigationState_(navigationState),
       selectionMemory_(selectionMemory),
       boxMessages_(boxMessages),

@@ -1,5 +1,4 @@
 #include "modules/audio/infrastructure/AsyncAudioBackend.h"
-
 #include <algorithm>
 #include <chrono>
 #include <condition_variable>
@@ -8,6 +7,8 @@
 #include <stdexcept>
 #include <thread>
 #include <utility>
+
+#include "shared/logging/application/Logger.h"
 
 namespace lila::modules::audio::infrastructure
 {
@@ -23,14 +24,13 @@ struct Command final
 };
 
 constexpr std::size_t MaximumForegroundCommands = 256;
+constexpr std::size_t MaximumBackgroundCommands = 256;
 
 std::unique_ptr<application::IAudioBackend> RequireBackend(
     std::unique_ptr<application::IAudioBackend> backend)
 {
     if (backend == nullptr)
-    {
         throw std::invalid_argument("Audio backend is required.");
-    }
     return backend;
 }
 }
@@ -43,16 +43,27 @@ public:
     {
     }
 
-    ~Impl()
-    {
-        Shutdown();
-    }
+    ~Impl() { Shutdown(); }
 
     void EnqueueBackground(Command command)
     {
         std::scoped_lock lock(mutex_);
         if (!stopping_)
         {
+            const auto duplicate = std::find_if(background_.begin(), background_.end(),
+                [&command](const Command& queued)
+                {
+                    return queued.type == command.type && queued.cue == command.cue;
+                });
+            if (duplicate != background_.end()) return;
+            if (background_.size() >= MaximumBackgroundCommands)
+            {
+                ++backgroundDropped_;
+                if (backgroundDropped_ == 1 || backgroundDropped_ % 64 == 0)
+                    lila::shared::logging::LogWarning(
+                        "AsyncAudio", "Background audio queue saturated; preload rejected.");
+                return;
+            }
             background_.push_back(command);
             ready_.notify_one();
         }
@@ -61,10 +72,7 @@ public:
     void EnqueueForeground(Command command)
     {
         std::scoped_lock lock(mutex_);
-        if (stopping_)
-        {
-            return;
-        }
+        if (stopping_) return;
         if (command.type == CommandType::SetLoop)
         {
             std::erase_if(foreground_, [](const Command& queued)
@@ -74,17 +82,24 @@ public:
         }
         if (foreground_.size() >= MaximumForegroundCommands)
         {
+            ++foregroundDropped_;
             foreground_.pop_front();
+            if (foregroundDropped_ == 1 || foregroundDropped_ % 64 == 0)
+                lila::shared::logging::LogWarning(
+                    "AsyncAudio", "Foreground audio queue saturated; oldest cue replaced.");
         }
         foreground_.push_back(command);
         ready_.notify_one();
     }
 
+    [[nodiscard]] AsyncAudioQueueStats Stats() const
+    {
+        std::scoped_lock lock(mutex_);
+        return {foreground_.size(), background_.size(), foregroundDropped_, backgroundDropped_};
+    }
+
     void Interrupt() noexcept
     {
-        // The wrapped backend belongs exclusively to the worker thread.  In
-        // particular, BASS must not be interrupted from the UI thread while
-        // the worker is preloading or starting another sound.
         Shutdown();
     }
 
@@ -145,15 +160,33 @@ private:
                 if (command.has_value()) Execute(*command);
                 pumpDeferredPlayback = backend_->PumpDeferredPlayback();
             }
+            catch (const std::exception& error)
+            {
+                auto detail = std::string(error.what()).substr(0, 256);
+                lila::shared::logging::LogWarning(
+                    "AsyncAudio", "Audio command failed: " + detail);
+            }
             catch (...)
             {
-                // An audio failure must never terminate the application or the worker.
+                lila::shared::logging::LogWarning(
+                    "AsyncAudio", "Audio command failed with an unknown error.");
             }
         }
         // All calls into the concrete backend, including teardown, stay on a
         // single thread. This avoids racing BASS_Free/BASS_Stop with a call in
         // progress.
-        if (graceful_) { try { backend_->FinishPlayback(); } catch (...) { backend_->InterruptPlayback(); } }
+        if (graceful_)
+        {
+            try { backend_->FinishPlayback(); }
+            catch (const std::exception& error)
+            {
+                lila::shared::logging::LogWarning("AsyncAudio",
+                    "Audio drain failed: " + std::string(error.what()).substr(0, 256));
+            }
+            catch (...)
+            { lila::shared::logging::LogWarning(
+                "AsyncAudio", "Audio drain failed with an unknown error."); }
+        }
         backend_->InterruptPlayback();
         backend_->Shutdown();
     }
@@ -174,76 +207,43 @@ private:
     }
 
     std::unique_ptr<application::IAudioBackend> backend_;
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     std::condition_variable ready_;
     std::deque<Command> foreground_;
     std::deque<Command> background_;
-    // This state must be constructed before worker_: a newly-created thread
-    // is allowed to run immediately from worker_'s constructor.
     bool stopping_ = false;
     bool graceful_ = false;
+    std::size_t foregroundDropped_ = 0;
+    std::size_t backgroundDropped_ = 0;
     std::thread worker_;
 };
 
 AsyncAudioBackend::AsyncAudioBackend(std::unique_ptr<application::IAudioBackend> backend)
-    : impl_(std::make_unique<Impl>(std::move(backend)))
-{
-}
-
+    : impl_(std::make_unique<Impl>(std::move(backend))) {}
 AsyncAudioBackend::~AsyncAudioBackend() = default;
-
 void AsyncAudioBackend::Preload(domain::SoundCue cue)
-{
-    impl_->EnqueueBackground({CommandType::Preload, cue});
-}
-
+{ impl_->EnqueueBackground({CommandType::Preload, cue}); }
 void AsyncAudioBackend::Play(domain::SoundCue cue, float volume)
-{
-    impl_->EnqueueForeground({CommandType::Play, cue, volume});
-}
-
+{ impl_->EnqueueForeground({CommandType::Play, cue, volume}); }
 void AsyncAudioBackend::SetLoop(std::optional<domain::SoundCue> cue, float volume)
-{
-    impl_->EnqueueForeground({CommandType::SetLoop, cue, volume});
-}
-
+{ impl_->EnqueueForeground({CommandType::SetLoop, cue, volume}); }
 void AsyncAudioBackend::Preview(std::optional<domain::SoundCue> cue) { Preview(cue, 1.0F); }
-
 void AsyncAudioBackend::Preview(std::optional<domain::SoundCue> cue, float volume)
-{
-    impl_->EnqueueForeground({CommandType::Preview, cue, volume});
-}
-
+{ impl_->EnqueueForeground({CommandType::Preview, cue, volume}); }
 void AsyncAudioBackend::SetPreviewVolume(float volume)
 { impl_->EnqueueForeground({CommandType::SetPreviewVolume, std::nullopt, volume}); }
-
 void AsyncAudioBackend::TogglePreviewPause()
-{
-    impl_->EnqueueForeground({CommandType::TogglePreviewPause, std::nullopt});
-}
-
+{ impl_->EnqueueForeground({CommandType::TogglePreviewPause, std::nullopt}); }
 void AsyncAudioBackend::StopAll()
-{
-    impl_->EnqueueForeground({CommandType::StopAll, std::nullopt});
-}
-
+{ impl_->EnqueueForeground({CommandType::StopAll, std::nullopt}); }
 void AsyncAudioBackend::RefreshAssets()
-{
-    impl_->EnqueueForeground({CommandType::RefreshAssets, std::nullopt});
-}
-
+{ impl_->EnqueueForeground({CommandType::RefreshAssets, std::nullopt}); }
 void AsyncAudioBackend::ShutdownGracefully() noexcept
-{
-    impl_->Shutdown(true);
-}
-
+{ impl_->Shutdown(true); }
 void AsyncAudioBackend::InterruptPlayback() noexcept
-{
-    impl_->Interrupt();
-}
-
+{ impl_->Interrupt(); }
 void AsyncAudioBackend::Shutdown() noexcept
-{
-    impl_->Shutdown();
-}
+{ impl_->Shutdown(); }
+AsyncAudioQueueStats AsyncAudioBackend::Stats() const
+{ return impl_->Stats(); }
 }

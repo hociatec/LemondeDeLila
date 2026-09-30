@@ -8,7 +8,6 @@
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
-#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
@@ -46,7 +45,6 @@ void GamePlayPanel::ClearView()
     rulesText_.clear();
     confirmationPanel_->HideConfirmation();
     promptPanel_->HidePrompt(true);
-    pawnSelectionPanel_->Clear();
     headerLabel_->SetLabel(wxString(L"Zone de jeu"));
     stateSummaryLabel_->SetLabel(wxString{});
     stateSummaryLabel_->Hide();

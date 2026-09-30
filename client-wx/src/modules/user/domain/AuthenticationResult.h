@@ -5,8 +5,6 @@
 #include <utility>
 #include <vector>
 
-#include "shared/text/presentation/catalog/UiTexts.h"
-
 namespace lila::modules::user::domain
 {
 struct AuthenticationResult
@@ -31,7 +29,6 @@ struct AuthenticationResult
     {
         AuthenticationResult result;
         result.success = true;
-        result.message = lila::shared::text::ui::AuthenticationSuccessMessage.str();
         result.token = std::move(resolvedToken);
         result.refreshToken = std::move(resolvedRefreshToken);
         result.userId = resolvedUserId;
@@ -41,7 +38,7 @@ struct AuthenticationResult
         return result;
     }
 
-    [[nodiscard]] static AuthenticationResult Fail(std::string error)
+    [[nodiscard]] static AuthenticationResult Fail(std::string error = {})
     {
         AuthenticationResult result;
         result.success = false;

@@ -17,6 +17,7 @@
 #include <wx/dialog.h>
 #include <wx/msgdlg.h>
 #include <wx/textctrl.h>
+#include <wx/weakref.h>
 #include <wx/window.h>
 
 namespace
@@ -60,26 +61,30 @@ ChatFrame::ChatFrame(
     BindEvents();
 
     eventHandlers_ = std::make_shared<application::ChatService::EventHandlers>();
+    const wxWeakRef<ChatFrame> weakThis(this);
     eventHandlers_->onStatusChanged =
-        [this](const std::string& message, bool isError)
+        [weakThis](const std::string& message, bool isError)
         {
-            CallAfter(
-                [this, message, isError]()
+            if (!weakThis) return;
+            weakThis->CallAfter(
+                [weakThis, message, isError]()
                 {
+                    if (!weakThis) return;
                     if (!IsStartupStatus(message))
                     {
-                        UpdateStatus(lila::shared::text::FromUtf8(message), isError);
+                        weakThis->UpdateStatus(lila::shared::text::FromUtf8(message), isError);
                     }
-                    SyncActionState();
+                    weakThis->SyncActionState();
                 });
         };
     eventHandlers_->onMessagesChanged =
-        [this]()
+        [weakThis]()
         {
-            CallAfter(
-                [this]()
+            if (!weakThis) return;
+            weakThis->CallAfter(
+                [weakThis]()
                 {
-                    RefreshHistory();
+                    if (weakThis) weakThis->RefreshHistory();
                 });
         };
     chatService_.AttachEventHandlers(eventHandlers_);

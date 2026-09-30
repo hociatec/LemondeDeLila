@@ -1,4 +1,6 @@
 #include "modules/admin/domain/AdminFormMetadata.h"
+
+#include <algorithm>
 #include "modules/admin/domain/AdminFormMetadata.BugReports.h"
 #include <array>
 #include <unordered_map>

@@ -71,6 +71,8 @@ std::vector<Value> ReadObjectArrayStrict(
     Parser&& parser)
 {
     const auto& items = EnsureArrayStrict(document, fieldName, arrayErrorMessage);
+    if (items.size() > 2'048)
+        throw std::runtime_error("JSON collection exceeds its safety limit.");
 
     std::vector<Value> values;
     values.reserve(items.size());

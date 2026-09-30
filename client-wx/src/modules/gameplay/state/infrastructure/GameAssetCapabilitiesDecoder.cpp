@@ -3,22 +3,22 @@
 #include <nlohmann/json.hpp>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
+#include "shared/data/application/IntegerText.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
 namespace
 {
-int PlayerId(const std::string& key)
-{
-    try { return std::stoi(key); } catch (const std::exception&) { return 0; }
-}
-
 std::vector<int> Ids(const nlohmann::json& raw)
 {
     std::vector<int> result;
     if (!raw.is_array()) return result;
     for (const auto& value : raw)
-        if (value.is_number_integer()) result.push_back(value.get<int>());
+        if (value.is_number_integer())
+        {
+            const auto id = value.get<int>();
+            if (id != 0) result.push_back(id);
+        }
     return result;
 }
 }
@@ -38,8 +38,10 @@ std::optional<domain::GameInventoryView> GameAssetCapabilitiesDecoder::Inventory
         if (byPlayer != item.value().end() && byPlayer->is_object())
             for (const auto& playerItem : byPlayer->items())
             {
+                const auto playerId = lila::shared::data::ParseInteger(playerItem.key());
+                if (!playerId || *playerId == 0) continue;
                 domain::GameInventoryPlayer player;
-                player.playerId = PlayerId(playerItem.key());
+                player.playerId = *playerId;
                 if (playerItem.value().is_array())
                 {
                     for (const auto& id : playerItem.value())
@@ -108,9 +110,11 @@ std::optional<domain::GameCollectionsView> GameAssetCapabilitiesDecoder::Collect
         for (const auto& playerItem : byPlayer->items())
         {
             if (!playerItem.value().is_object()) continue;
+            const auto playerId = lila::shared::data::ParseInteger(playerItem.key());
+            if (!playerId || *playerId == 0) continue;
             domain::GamePlayerCollection player;
             player.collectionId = collection.key();
-            player.playerId = PlayerId(playerItem.key());
+            player.playerId = *playerId;
             player.total = detail::ReadInt(playerItem.value(), "total");
             const auto groups = playerItem.value().find("groups");
             if (groups != playerItem.value().end() && groups->is_object())

@@ -18,11 +18,7 @@ namespace
 {
 std::size_t ResolveWorkerCount(std::size_t configuredCount)
 {
-    if (configuredCount > 0)
-    {
-        return configuredCount;
-    }
-
+    if (configuredCount > 0) return configuredCount;
     constexpr std::size_t DefaultMaximumWorkers = 4;
     const unsigned int hardwareThreads = std::thread::hardware_concurrency();
     const auto detected = hardwareThreads == 0
@@ -66,32 +62,29 @@ struct BackgroundExecutor::Impl final
         }
     }
 
-    ~Impl()
-    {
-        Shutdown();
-    }
+    ~Impl() { Shutdown(); }
 
     [[nodiscard]] bool Submit(
         std::shared_ptr<std::stop_source> stopSource,
         BackgroundTaskPriority priority,
         std::function<void()> work)
     {
-        if (stopSource == nullptr || work == nullptr)
-        {
-            return false;
-        }
+        if (stopSource == nullptr || work == nullptr) return false;
 
         {
             std::lock_guard lock(mutex);
-            if (stopping)
-            {
-                stopSource->request_stop();
-                return false;
-            }
+            if (stopping) { stopSource->request_stop(); return false; }
 
-            if (QueueSizeUnsafe() >= queueCapacity)
+            // High-priority work represents session/authentication commands
+            // that must never disappear silently. The capacity is a hard
+            // backpressure limit for normal/low work and a soft limit for
+            // critical work.
+            if (QueueSizeUnsafe() >= queueCapacity &&
+                priority != BackgroundTaskPriority::High)
             {
-                lila::shared::logging::LogWarning("BackgroundExecutor", "Queue capacity reached. Dropping job.");
+                ++rejected;
+                lila::shared::logging::LogWarning(
+                    "BackgroundExecutor", "Queue capacity reached. Job rejected.");
                 stopSource->request_stop();
                 return false;
             }
@@ -116,6 +109,7 @@ struct BackgroundExecutor::Impl final
             stopping = true;
             for (auto& queue : queues)
             {
+                abandonedOnShutdown += queue.size();
                 for (auto& job : queue)
                 {
                     job.stopSource->request_stop();
@@ -137,10 +131,7 @@ struct BackgroundExecutor::Impl final
         condition.notify_all();
         for (auto& worker : threadsToJoin)
         {
-            if (worker.joinable())
-            {
-                worker.join();
-            }
+            if (worker.joinable()) worker.join();
         }
     }
 
@@ -200,8 +191,13 @@ struct BackgroundExecutor::Impl final
 
     Job PopNextUnsafe()
     {
-        for (auto& queue : queues)
+        // Weighted round-robin: latency-sensitive work gets half the slots,
+        // while normal and low queues are guaranteed regular progress.
+        static constexpr std::array<std::size_t, 6> schedule{0, 1, 0, 2, 0, 1};
+        for (std::size_t attempt = 0; attempt < schedule.size(); ++attempt)
         {
+            auto& queue = queues[schedule[nextPrioritySlot]];
+            nextPrioritySlot = (nextPrioritySlot + 1) % schedule.size();
             if (!queue.empty())
             {
                 Job job = std::move(queue.front());
@@ -213,33 +209,39 @@ struct BackgroundExecutor::Impl final
         throw std::runtime_error("BackgroundExecutor queue unexpectedly empty.");
     }
 
+    [[nodiscard]] BackgroundExecutorStats Stats() const
+    {
+        std::lock_guard lock(mutex);
+        return {QueueSizeUnsafe(), activeStopSources.size(), rejected,
+            abandonedOnShutdown};
+    }
+
     const std::size_t queueCapacity;
-    std::mutex mutex;
+    mutable std::mutex mutex;
     std::condition_variable condition;
     std::array<std::deque<Job>, 3> queues;
     std::vector<std::shared_ptr<std::stop_source>> activeStopSources;
     std::vector<std::thread> workers;
     bool stopping = false;
+    std::size_t nextPrioritySlot = 0;
+    std::size_t rejected = 0;
+    std::size_t abandonedOnShutdown = 0;
 };
 
 BackgroundExecutor::BackgroundExecutor(BackgroundExecutorOptions options)
-    : impl_(std::make_unique<Impl>(options))
-{
-}
-
+    : impl_(std::make_unique<Impl>(options)) {}
 BackgroundExecutor::~BackgroundExecutor() = default;
 
 bool BackgroundExecutor::Submit(
     std::shared_ptr<std::stop_source> stopSource,
     BackgroundTaskPriority priority,
     std::function<void()> work)
-{
-    return impl_->Submit(std::move(stopSource), priority, std::move(work));
-}
+{ return impl_->Submit(std::move(stopSource), priority, std::move(work)); }
 
 void BackgroundExecutor::Shutdown()
-{
-    impl_->Shutdown();
-}
+{ impl_->Shutdown(); }
+
+BackgroundExecutorStats BackgroundExecutor::Stats() const
+{ return impl_->Stats(); }
 
 }

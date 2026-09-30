@@ -8,7 +8,7 @@
 #include "modules/session/application/SessionStore.h"
 #include "shared/errors/domain/AppError.h"
 #include "shared/errors/catalog/CoreErrorMessages.h"
-#include "shared/errors/presentation/ErrorFormatting.h"
+#include "shared/errors/domain/ErrorFormatting.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/application/realtime/RealtimeApiClient.h"
 

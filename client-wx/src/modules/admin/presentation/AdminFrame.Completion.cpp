@@ -11,7 +11,6 @@
 #include "modules/audio/application/IAudioService.h"
 #include "modules/admin/domain/AdminPagination.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
-#include "shared/security/infrastructure/SecurityUtils.h"
 #include "shared/security/domain/SensitiveString.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
@@ -60,10 +59,10 @@ void AdminFrame::CompleteCommand(
         {
             result = nlohmann::json::parse(resultPayload->Serialized());
         }
-        catch (const nlohmann::json::exception& exception)
+        catch (const nlohmann::json::exception&)
         {
             error = lila::shared::errors::ToAppError(
-                "Réponse administrateur invalide.", exception.what());
+                "Réponse administrateur invalide.", "Invalid admin JSON response.");
         }
     }
     if (error.has_value() || !result.has_value())

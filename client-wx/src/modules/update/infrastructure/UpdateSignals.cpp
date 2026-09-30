@@ -1,4 +1,4 @@
-#include "modules/update/infrastructure/UpdateSignals.h"
+#include "modules/update/application/UpdateSignals.h"
 
 #ifdef _WIN32
 #include <windows.h>

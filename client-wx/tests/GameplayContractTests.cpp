@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -18,23 +19,63 @@
 #include "modules/gameplay/session/infrastructure/GameEventPayloadCodec.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
+#include "modules/gameplay/state/application/GamePendingAccessibilityText.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 #include "modules/gameplay/session/infrastructure/GameCommandPayloadCodec.h"
 #include "modules/gameplay/history/presentation/GameLogCursor.h"
 #include "modules/gameplay/events/presentation/GameEventPresenter.h"
-#include "modules/gameplay/pawn_selection/infrastructure/PawnSelectionDecoder.h"
+#include "modules/gameplay/events/application/GameSoundEventPolicy.h"
 #include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
 #include "modules/gameplay/grid/application/GridPlayerCellText.h"
 #include "modules/gameplay/state/infrastructure/GameBoardCapabilitiesDecoder.h"
 #include "modules/gameplay/shortcuts/application/GameGenericShortcutPolicy.h"
+#include "shared/data/application/IntegerText.h"
 
 namespace
 {
 void Expect(bool condition, const char* message)
 {
     if (!condition) throw std::runtime_error(message);
+}
+
+nlohmann::json BuildGameView(const nlohmann::json& fixture);
+
+void TestLargeSnapshotParsingCost()
+{
+    auto payload = BuildGameView({{"roomId", 500}, {"gameType", "large-snapshot"}});
+    for (int id = 1; id <= 128; ++id)
+    {
+        payload["system"]["players"]["all"].push_back({
+            {"id", id}, {"username", "Player-" + std::to_string(id)}});
+        payload["actions"].push_back({
+            {"type", "opaque.action." + std::to_string(id)},
+            {"label", "Action " + std::to_string(id)},
+            {"payload", {{"playerId", id}, {"value", id}}}});
+    }
+    nlohmann::json cards = nlohmann::json::array();
+    for (int id = 0; id < 1'024; ++id)
+        cards.push_back({{"id", "card-" + std::to_string(id)}, {"label", "Card"}});
+    payload["kits"]["cards"] = {{"hands", {{"main", {
+        {"visibility", "public"}, {"byPlayer", {{"1", std::move(cards)}}}}}}}};
+
+    constexpr int Iterations = 20;
+    const auto startedAt = std::chrono::steady_clock::now();
+    for (int iteration = 0; iteration < Iterations; ++iteration)
+    {
+        const auto state = lila::modules::gameplay::infrastructure::
+            GameStatePayloadCodec::DecodeState(payload);
+        Expect(state.actions.size() == 128 && state.system.players.size() == 128 &&
+                state.kits.cards && state.kits.VisibleHand().size() == 1'024,
+            "Le gros snapshot doit être décodé entièrement.");
+    }
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - startedAt);
+    Expect(elapsed < std::chrono::seconds(5),
+        "Le parsing répété de gros snapshots dépasse cinq secondes.");
+    std::cout << "Large snapshot parsing: " << elapsed.count() / Iterations
+              << " ms/snapshot (" << Iterations << " iterations).\n";
 }
 
 nlohmann::json BuildGameView(const nlohmann::json& fixture)
@@ -69,7 +110,8 @@ nlohmann::json BuildGameView(const nlohmann::json& fixture)
     if (extras.contains("dice")) kits["dice"] = extras["dice"];
     nlohmann::json result{
         {"viewVersion", 1}, {"roomId", fixture.value("roomId", 1)},
-        {"viewerPlayerId", fixture.value("viewerPlayerId", 0)},
+        {"viewerPlayerId", fixture.contains("viewerPlayerId")
+            ? fixture["viewerPlayerId"] : nlohmann::json(nullptr)},
         {"runId", fixture.value("runId", 0)},
         {"version", fixture.value("version", 1)}, {"gameType", fixture.value("gameType", "test")},
         {"system", std::move(system)}, {"kits", std::move(kits)},
@@ -149,8 +191,6 @@ int main()
         TestPendingChoicesStayPassiveWithoutServerMapping();
         TestGenericDiceContract();
         TestClassicRollActionContract();
-        TestServerDrivenPawnSelection();
-        TestPawnSelectionHiddenForPassiveViewer();
         TestGameLogCursor();
         TestOlderGameStateCannotRestoreSetupPrompt();
         TestStartConfigurationIsSubmittedOnlyOnce();
@@ -160,6 +200,13 @@ int main()
         TestActionCandidatesContract();
         TestCapabilityInformationIsInspectable();
         TestKnownCapabilitiesAreTyped();
+        TestProjectionCompatibilityAndLimits();
+        TestUnknownGameUsesOnlyPublicCapabilities();
+        TestUnknownWorkflowHasAccessibleFallback();
+        TestNumericNetworkKeysAreStrictlyValidated();
+        TestInvalidChoiceIndexesAndPlayerIdsAreRejected();
+        TestDisplayedTimersIgnoreSystemClockChanges();
+        TestLargeSnapshotParsingCost();
         TestBoardPositionShortcuts();
         TestEmptyV2KitsAndCapabilitiesRemainValid();
         TestPendingMultipleWorkflowsUseOneExplicitAction();

@@ -2,7 +2,7 @@
 #include "modules/options/infrastructure/OptionsJsonDocumentCodec.h"
 #include "shared/data/json/JsonReaders.h"
 #include "shared/errors/catalog/CoreErrorMessages.h"
-#include "shared/errors/presentation/ErrorFormatting.h"
+#include "shared/errors/domain/ErrorFormatting.h"
 #include "shared/persistence/infrastructure/JsonFileStorage.h"
 
 #include <nlohmann/json.hpp>

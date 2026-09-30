@@ -3,7 +3,6 @@
 #include "modules/gameplay/information/application/GameCapabilityTextBuilder.h"
 
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
-#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/application/GameGenericShortcutPolicy.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 namespace lila::modules::gameplay::presentation
@@ -30,10 +29,6 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
             RequestRefresh();
         }
         return true;
-    }
-    if (pawnSelectionPanel_->IsActive())
-    {
-        return pawnSelectionPanel_->HandleKey(event);
     }
     // Tab belongs to RoomPanel's two-zone navigation. Handling it here would
     // trap the keyboard inside the hand because this panel uses CHAR_HOOK.

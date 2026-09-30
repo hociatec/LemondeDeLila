@@ -17,11 +17,10 @@
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
-#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
-#include "modules/gameplay/pawn_selection/application/PawnSelectionPolicy.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
+#include "modules/gameplay/state/application/GameValuePayloadCodec.h"
 #include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/logging/application/Logger.h"
@@ -51,7 +50,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     const bool hadVisibleGrid = gridPanel_->IsShown();
     const bool hadVisibleHand = !state_.kits.VisibleHand().empty();
     const bool receivesVisibleHand = !state.kits.VisibleHand().empty();
-    const bool hadActivePawnSelection = pawnSelectionPanel_->IsActive();
     const bool hadInlinePrompt = IsInlinePromptVisible();
     const bool hadActionableChoices = state_.pending &&
         application::GamePendingSelectionPolicy::HasActionableChoices(*state_.pending);
@@ -84,21 +82,21 @@ void GamePlayPanel::ApplyState(domain::GameState state)
             "GameInput",
             "State rejected: currentVersion=" + std::to_string(state_.version) +
                 ", incomingVersion=" + std::to_string(state.version) +
-                ", currentStatus=" + state_.system.match.status +
-                ", incomingStatus=" + state.system.match.status);
+                ", currentStatus=" + std::string(domain::MatchStatusId(
+                    state_.system.match.status)) +
+                ", incomingStatus=" + std::string(domain::MatchStatusId(
+                    state.system.match.status)));
         return;
     }
     retryableActionCommand_.reset();
     inputSubmissionGuard_.ObserveState(state.version, state.runId);
     auto nextLines = application::GameActionPresentationPolicy::GenericLines(state);
-    auto nextPawnSelection = application::PawnSelectionPolicy::FromPending(state.pending);
     auto nextLogMessages = EventMessages(state);
     if (state_.runId != state.runId) observedEvents_.Reset();
     state_ = std::move(state);
     lifecycle_.ObserveAuthoritativeState(
         state_.runId, state_.system.match.status);
     lines_ = std::move(nextLines);
-    pawnSelection_ = std::move(nextPawnSelection);
     UpdateTimerAnnouncements();
     if (initialState)
         for (const auto& event : state_.system.events)
@@ -107,8 +105,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     {
         for (const auto& event : state_.system.events)
             if (observedEvents_.Observe(event.Identity()))
-                onGameSoundEvent_(application::GameSoundEventType(
-                    event, state_.system.events, state_.viewerPlayerId.value_or(0)),
+                onGameSoundEvent_(application::GameSoundEventType(event),
                     event.details.playerId.value_or(event.actorId.value_or(0)),
                     state_.system.match.result
                         ? state_.system.match.result->winnerPlayerIds : std::vector<int>{});
@@ -121,7 +118,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     {
         confirmationPanel_->HideConfirmation();
         promptPanel_->HidePrompt(true);
-        pawnSelectionPanel_->Clear();
         Hide();
         if (GetParent()) GetParent()->Layout();
         if (focusWasInsideGame && onZoneFocusRequested_) onZoneFocusRequested_();
@@ -152,7 +148,9 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         {
             std::string signature = choice.label;
             if (choice.action)
-                signature += "\n" + choice.action->type + "\n" + choice.action->payload.dump();
+                signature += "\n" + choice.action->type + "\n" +
+                    application::EncodeGameValuePayload(
+                        domain::GameValue{choice.action->payload}).dump();
             nextPendingSignatures.push_back(std::move(signature));
             nextPendingValues.push_back(choice.value);
         }
@@ -193,14 +191,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     SyncInlinePrompt();
     const bool inlinePromptBecameActive =
         !hadInlinePrompt && IsInlinePromptVisible();
-    const auto visiblePawnSelection = lifecycle_.IsVisible()
-        ? pawnSelection_
-        : std::optional<domain::PawnSelection>{};
-    const bool pawnSelectionCompleted =
-        pawnSelectionPanel_->IsActive() && !visiblePawnSelection.has_value();
-    pawnSelectionPanel_->Apply(visiblePawnSelection);
-    const bool pawnSelectionBecameActive =
-        !hadActivePawnSelection && pawnSelectionPanel_->IsActive();
     const bool actionableChoicesBecameActive =
         !hadActionableChoices && hasActionableChoices;
     SyncContentVisibility();
@@ -213,19 +203,19 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         (!focusPreserved && focusWasInsideGame) ||
         (!hadVisibleHand && receivesVisibleHand) ||
         (!hadVisibleGrid && gridPanel_->IsShown()) ||
-        pawnSelectionCompleted || pawnSelectionBecameActive ||
         inlinePromptBecameActive || actionableChoicesBecameActive;
     if (shouldRefreshZoneFocus && onZoneFocusRequested_)
         onZoneFocusRequested_();
-    // Pawn selection may itself keep setup incomplete (Corridor). Start the
-    // room once configuration has produced that workflow so every participant
-    // can reach their pawn controls, including the non-owner.
-    const bool waitingForPawns = state_.pending && state_.pending->workflowKind == "pawn";
+    // A setup workflow may intentionally remain incomplete while it exposes
+    // its next server-authorized interaction.  The start flow depends only on
+    // that protocol property, never on a concrete workflow identifier.
+    const bool waitingForInteraction = state_.pending &&
+        (state_.pending->viewerActionable || state_.pending->blocking);
     const bool setupProjectionCompleted = startConfigurationFlow_.ObserveSetup(
-        state_.system.setup, waitingForPawns);
+        state_.system.setup, waitingForInteraction);
     if (!lifecycle_.IsRoomStarted() && lifecycle_.IsStartFlowRequested() &&
         !startConfigurationFlow_.IsAwaitingActionAcknowledgement() &&
-        (state_.system.setup.complete || waitingForPawns) &&
+        (state_.system.setup.complete || waitingForInteraction) &&
         (setupProjectionCompleted || ActivePrompt() == nullptr))
     {
         lifecycle_.MarkRoomStartPending();

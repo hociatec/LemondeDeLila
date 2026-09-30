@@ -1,10 +1,9 @@
 #pragma once
 
 #include "shared/network/infrastructure/websocket/WinHttpWebSocketClient.h"
+#include "shared/network/application/websocket/WebSocketOperationGate.h"
 
 #include <atomic>
-#include <condition_variable>
-#include <cstdint>
 #include <mutex>
 
 #ifdef _WIN32
@@ -21,13 +20,11 @@ struct WinHttpWebSocketClient::NativeState
     lila::shared::network::winhttp::Handle request;
     lila::shared::network::winhttp::Handle webSocket;
 #endif
-    std::atomic<std::uint64_t> generation{0};
+    WebSocketOperationGate operations;
+    std::atomic_bool closing{false};
+    std::atomic_bool acceptingOperations{false};
     std::mutex closeMutex;
     std::mutex operationMutex;
-    std::condition_variable operationFinished;
-    std::size_t activeReceives = 0;
-    std::size_t activeSends = 0;
-    std::size_t activeHandshakes = 0;
     mutable std::mutex metadataMutex;
     std::string endpoint;
     WebSocketHeaders headers;

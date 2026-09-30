@@ -5,8 +5,11 @@
 #include <string_view>
 #include <vector>
 
+
 namespace lila::modules::admin::domain
 {
+inline constexpr int MaximumAdminOffset = 1'000'000;
+inline constexpr int MaximumAdminPage = 10'000;
 enum class AdminPaginationMode
 {
     None,
@@ -67,4 +70,24 @@ struct AdminPaginationSpec final
     }
     return result;
 }
+
+[[nodiscard]] inline int NormalizeAdminPageSize(
+    const AdminPaginationSpec& spec, long long value) noexcept
+{
+    return static_cast<int>(std::clamp(
+        value, 1LL, static_cast<long long>(spec.maximumPageSize)));
+}
+
+[[nodiscard]] inline int NormalizeAdminOffset(long long value) noexcept
+{
+    return static_cast<int>(std::clamp(
+        value, 0LL, static_cast<long long>(MaximumAdminOffset)));
+}
+
+[[nodiscard]] inline int NormalizeAdminPage(long long value) noexcept
+{
+    return static_cast<int>(std::clamp(
+        value, 1LL, static_cast<long long>(MaximumAdminPage)));
+}
+
 }
