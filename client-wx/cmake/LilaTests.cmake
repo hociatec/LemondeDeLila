@@ -23,6 +23,9 @@ if(WIN32)
         src/shared/logging/infrastructure/Logger.cpp
     )
     target_include_directories(lemonde_de_lila_wx_bass_unavailable_tests PRIVATE "${LILA_BASS_ROOT}/include")
+    target_compile_definitions(lemonde_de_lila_wx_bass_unavailable_tests PRIVATE
+        LILA_DISABLE_REMOTE_SOUND_ASSETS=1
+    )
     target_link_libraries(lemonde_de_lila_wx_bass_unavailable_tests PRIVATE nlohmann_json::nlohmann_json)
 
     lila_add_test_executable(lemonde_de_lila_wx_bass_cache_tests

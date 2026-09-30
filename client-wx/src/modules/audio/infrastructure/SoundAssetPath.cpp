@@ -57,7 +57,7 @@ std::filesystem::path SoundCacheDirectory()
     return {};
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(LILA_DISABLE_REMOTE_SOUND_ASSETS)
 std::string Sha256(const std::string& content)
 {
     BCRYPT_ALG_HANDLE algorithm = nullptr;
@@ -132,7 +132,7 @@ void SoundAssetPathResolver::LoadRemoteManifest()
 {
     if (manifestLoaded_ || std::chrono::steady_clock::now() < nextManifestAttempt_) return;
     nextManifestAttempt_ = std::chrono::steady_clock::now() + std::chrono::seconds(10);
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(LILA_DISABLE_REMOTE_SOUND_ASSETS)
     try
     {
         const auto origin = lila::shared::network::WebSocketOriginToHttp(
@@ -167,7 +167,7 @@ std::filesystem::path SoundAssetPathResolver::ResolveRemote(
     const std::string& soundId,
     const RemoteSoundDescriptor& sound)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(LILA_DISABLE_REMOTE_SOUND_ASSETS)
     try
     {
         if (cacheDirectory_.empty()) return {};
