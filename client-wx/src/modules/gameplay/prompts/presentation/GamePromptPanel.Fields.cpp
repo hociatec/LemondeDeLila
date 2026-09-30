@@ -192,8 +192,9 @@ void GamePromptPanel::RebuildFields(const domain::GamePrompt& prompt)
             {
                 control.checkbox = new wxCheckBox(this, wxID_ANY, FromUtf8(field.label));
                 const auto parsed = application::GamePromptInputCodec::Parse(field, field.initialText);
+                const auto* initialValue = std::get_if<bool>(&parsed.value.value);
                 control.checkbox->SetValue(
-                    parsed.valid && parsed.value.is_boolean() && parsed.value.get<bool>());
+                    parsed.valid && initialValue != nullptr && *initialValue);
                 if (const auto memory = previous.find(field.key);
                     memory != previous.end() && memory->second.hasChecked)
                     control.checkbox->SetValue(memory->second.checked);
