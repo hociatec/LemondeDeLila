@@ -12,6 +12,11 @@
 
 namespace lila::modules::leaderboard::infrastructure
 {
+namespace
+{
+constexpr auto GamesEvent = "leaderboard.games";
+constexpr auto TopEvent = "leaderboard.top";
+}
 LeaderboardApi::LeaderboardApi(
     lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client,
     lila::modules::session::application::SessionStore& sessionStore) noexcept
@@ -23,7 +28,7 @@ std::vector<domain::LeaderboardGame> LeaderboardApi::LoadGames(std::stop_token s
 {
     const auto response = lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_, sessionStore_, lila::shared::errors::NoActiveLeaderboardSession,
-        "leaderboard.games", nlohmann::json::object(), lila::shared::errors::LeaderboardLoadFailed,
+        GamesEvent, nlohmann::json::object(), lila::shared::errors::LeaderboardLoadFailed,
         stopToken);
     return codec::ReadGamesPayload(response.payload);
 }
@@ -35,7 +40,7 @@ domain::LeaderboardTop LeaderboardApi::LoadTop(
     const std::string requestedGameType(gameType);
     const auto response = lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_, sessionStore_, lila::shared::errors::NoActiveLeaderboardSession,
-        "leaderboard.top", nlohmann::json{{"gameType", requestedGameType}},
+        TopEvent, nlohmann::json{{"gameType", requestedGameType}},
         lila::shared::errors::LeaderboardLoadFailed, stopToken);
     auto result = codec::ReadTopPayload(response.payload);
     if (result.gameType != requestedGameType)

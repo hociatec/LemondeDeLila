@@ -11,7 +11,7 @@ void TestPendingChoicesUseOnlyExplicitServerMappings()
             {"pending", {
                 {"type", "opaque_choice"},
                 {"label", "Choisissez une option."},
-                {"playerId", "17"},
+                {"playerId", 17},
                 {"choices", nlohmann::json::array({"Alpha", "Beta"})},
                 {"data", {{"choiceActionsByIndex", nlohmann::json::array({
                     {{"type", "opaque_alpha"}, {"payload", {{"value", 1}}}},

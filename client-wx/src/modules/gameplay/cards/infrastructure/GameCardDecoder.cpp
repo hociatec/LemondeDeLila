@@ -2,16 +2,29 @@
 
 #include <algorithm>
 #include <optional>
+#include <stdexcept>
+#include <string>
 #include <string_view>
 
 #include <nlohmann/json.hpp>
 
 #include "shared/data/json/JsonCoercion.h"
+#include "shared/data/application/IntegerText.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
 namespace
 {
+constexpr std::size_t MaximumCardCollections = 64;
+constexpr std::size_t MaximumCardsPerCollection = 1'024;
+constexpr std::size_t MaximumVisibleCards = 4'096;
+
+void EnsureCollectionLimit(const nlohmann::json& value, const char* name)
+{
+    if (value.size() > MaximumCardCollections)
+        throw std::runtime_error(std::string("Trop de collections de cartes: ") + name + ".");
+}
+
 std::string FirstText(
     const nlohmann::json& value,
     std::initializer_list<std::string_view> keys)
@@ -61,6 +74,8 @@ std::vector<domain::GameCard> DecodeArray(const nlohmann::json& value)
 {
     std::vector<domain::GameCard> cards;
     if (!value.is_array()) return cards;
+    if (value.size() > MaximumCardsPerCollection)
+        throw std::runtime_error("Trop de cartes dans une collection gameplay.");
     cards.reserve(value.size());
     for (const auto& item : value)
     {
@@ -87,11 +102,16 @@ domain::GameCardsView GameCardDecoder::Decode(const nlohmann::json& cardsKit)
 
     const auto decks = cardsKit.find("decks");
     if (decks != cardsKit.end() && decks->is_object())
+    {
+        EnsureCollectionLimit(*decks, "decks");
         for (const auto& item : decks->items())
             result.decks.push_back({item.key(), Count(item.value())});
+    }
 
     const auto discards = cardsKit.find("discards");
     if (discards != cardsKit.end() && discards->is_object())
+    {
+        EnsureCollectionLimit(*discards, "discards");
         for (const auto& item : discards->items())
         {
             domain::GameDiscardView discard;
@@ -105,9 +125,12 @@ domain::GameCardsView GameCardDecoder::Decode(const nlohmann::json& cardsKit)
             if (discard.count == 0) discard.count = static_cast<int>(discard.cards.size());
             result.discards.push_back(std::move(discard));
         }
+    }
 
     const auto hands = cardsKit.find("hands");
     if (hands != cardsKit.end() && hands->is_object())
+    {
+        EnsureCollectionLimit(*hands, "hands");
         for (const auto& item : hands->items())
         {
             if (!item.value().is_object()) continue;
@@ -116,25 +139,37 @@ domain::GameCardsView GameCardDecoder::Decode(const nlohmann::json& cardsKit)
             hand.visibility = FirstText(item.value(), {"visibility"});
             const auto byPlayer = item.value().find("byPlayer");
             if (byPlayer != item.value().end() && byPlayer->is_object())
+            {
+                if (byPlayer->size() > 128)
+                    throw std::runtime_error("Trop de mains joueur gameplay.");
                 for (const auto& playerItem : byPlayer->items())
                 {
+                    const auto playerId = lila::shared::data::ParseInteger(playerItem.key());
+                    if (!playerId || *playerId == 0) continue;
                     domain::GameHandPlayerView player;
-                    try { player.playerId = std::stoi(playerItem.key()); }
-                    catch (const std::exception&) { continue; }
+                    player.playerId = *playerId;
                     player.cardsVisible = playerItem.value().is_array();
                     player.cards = DecodeArray(playerItem.value());
                     player.count = player.cardsVisible
                         ? static_cast<int>(player.cards.size()) : Count(playerItem.value());
                     if (player.cardsVisible)
+                    {
+                        if (result.visibleHand.size() + player.cards.size() > MaximumVisibleCards)
+                            throw std::runtime_error("Trop de cartes visibles gameplay.");
                         result.visibleHand.insert(result.visibleHand.end(),
                             player.cards.begin(), player.cards.end());
+                    }
                     hand.players.push_back(std::move(player));
                 }
+            }
             result.hands.push_back(std::move(hand));
         }
+    }
 
     const auto zones = cardsKit.find("zones");
     if (zones != cardsKit.end() && zones->is_object())
+    {
+        EnsureCollectionLimit(*zones, "zones");
         for (const auto& item : zones->items())
         {
             if (!item.value().is_object()) continue;
@@ -151,6 +186,7 @@ domain::GameCardsView GameCardDecoder::Decode(const nlohmann::json& cardsKit)
             }
             result.zones.push_back(std::move(zone));
         }
+    }
     return result;
 }
 

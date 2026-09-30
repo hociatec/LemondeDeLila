@@ -12,7 +12,6 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
-#include <thread>
 #include <vector>
 
 #include "UpdateBuildConfig.h"
@@ -21,7 +20,7 @@
 
 namespace lila::modules::update::launcher
 {
-std::string Sha256(const fs::path& path)
+std::string Sha256(const fs::path& path, const UpdateProgressDialog* progress)
 {
     BCRYPT_ALG_HANDLE algorithm = nullptr;
     BCRYPT_HASH_HANDLE hash = nullptr;
@@ -42,6 +41,7 @@ std::string Sha256(const fs::path& path)
     std::ifstream input(path, std::ios::binary);
     std::array<char, 64 * 1024> buffer{};
     while (input) {
+        if (progress) progress->ThrowIfCancelled();
         input.read(buffer.data(), buffer.size());
         const auto count = input.gcount();
         if (count > 0 && BCryptHashData(hash, reinterpret_cast<PUCHAR>(buffer.data()),
@@ -146,7 +146,10 @@ bool VerifyAuthenticode(const fs::path& executable, std::string* failureReason)
     return accepted;
 }
 
-bool VerifyAuthenticodeWithRetry(const fs::path& executable, std::string* failureReason)
+bool VerifyAuthenticodeWithRetry(
+    const fs::path& executable,
+    std::string* failureReason,
+    const UpdateProgressDialog* progress)
 {
     // Antivirus/indexing can briefly lock a freshly extracted PE and make
     // WinVerifyTrust return CRYPT_E_FILE_ERROR (0x80092003). Verification is
@@ -155,7 +158,8 @@ bool VerifyAuthenticodeWithRetry(const fs::path& executable, std::string* failur
         if (failureReason) failureReason->clear();
         if (VerifyAuthenticode(executable, failureReason)) return true;
         if (attempt < 7) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(300 * (attempt + 1)));
+            if (!WaitForRetry(std::chrono::milliseconds(300 * (attempt + 1)), progress))
+                throw std::runtime_error("Update cancelled by user.");
         }
     }
     return false;

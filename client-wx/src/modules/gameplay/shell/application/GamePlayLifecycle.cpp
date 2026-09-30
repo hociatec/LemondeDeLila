@@ -2,14 +2,6 @@
 
 namespace lila::modules::gameplay::application
 {
-namespace
-{
-bool IsActiveStatus(std::string_view status) noexcept
-{
-    return status == "started" || status == "playing";
-}
-}
-
 void GamePlayLifecycle::Open(bool roomStarted) noexcept
 {
     state_ = roomStarted ? GamePlayLifecycleState::Joining
@@ -54,10 +46,10 @@ void GamePlayLifecycle::SetRoomStarted(
 }
 
 void GamePlayLifecycle::ObserveAuthoritativeState(
-    int runId, std::string_view matchStatus) noexcept
+    int runId, domain::GameMatchStatus matchStatus) noexcept
 {
     hasAuthoritativeState_ = true;
-    if (matchStatus == "finished")
+    if (matchStatus == domain::GameMatchStatus::Finished)
     {
         state_ = GamePlayLifecycleState::Finished;
         return;
@@ -66,7 +58,7 @@ void GamePlayLifecycle::ObserveAuthoritativeState(
     if ((state_ == GamePlayLifecycleState::Joining ||
          state_ == GamePlayLifecycleState::Synchronizing ||
          state_ == GamePlayLifecycleState::Reconnecting) &&
-        expectedRun && IsActiveStatus(matchStatus))
+        expectedRun && domain::IsActive(matchStatus))
     {
         state_ = GamePlayLifecycleState::Active;
         expectedRunId_ = 0;

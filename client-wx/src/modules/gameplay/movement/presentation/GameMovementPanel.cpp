@@ -6,6 +6,7 @@
 #include <wx/sizer.h>
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
+#include "shared/data/application/IntegerText.h"
 
 namespace lila::modules::gameplay::presentation::movement
 {
@@ -41,7 +42,8 @@ void GameMovementPanel::Apply(
             for (const auto& [entity, position] : track.positions)
             {
                 std::string label = entity;
-                try { label = Player(players, std::stoi(entity)); } catch (const std::exception&) {}
+                if (const auto playerId = lila::shared::data::ParseInteger(entity))
+                    label = Player(players, *playerId);
                 label += ", piste " + track.id + ", case " + std::to_string(position);
                 if (track.spaces > 1)
                     label += ", progression " + std::to_string(100 * position / (track.spaces - 1)) + " %";

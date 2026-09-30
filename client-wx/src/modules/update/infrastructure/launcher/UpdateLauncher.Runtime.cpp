@@ -131,16 +131,10 @@ int RunLauncher(bool skipLauncherReplacement)
                 "Client health check failed for " + state.currentVersion +
                 " (exit code " + std::to_string(exitCode) + ").");
             PreserveFailedClientDiagnostics(root, state.currentReleaseId, state.currentVersion);
-            if (state.previousReleaseId.empty()) {
+            if (!lila::modules::update::RollbackFailedUpdate(state)) {
                 throw std::runtime_error(
                     "Client failed its startup health check. Diagnostic: state\\client.log");
             }
-            state.failedReleaseId = state.currentReleaseId;
-            state.failedVersion = state.currentVersion;
-            state.currentReleaseId = state.previousReleaseId;
-            state.currentVersion = state.previousVersion;
-            state.previousReleaseId.clear();
-            state.previousVersion.clear();
             SaveState(root, state);
             CleanupOldVersions(root, state);
             AppendLog(root, "ERROR", "Rolled back failed release " + state.failedReleaseId + ".");

@@ -4,6 +4,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -12,6 +13,35 @@
 
 namespace lila::modules::gameplay::domain
 {
+enum class GameMatchStatus
+{
+    Unknown,
+    Waiting,
+    Setup,
+    Playing,
+    Finished,
+    Cancelled,
+};
+
+[[nodiscard]] constexpr bool IsActive(GameMatchStatus status) noexcept
+{
+    return status == GameMatchStatus::Playing;
+}
+
+[[nodiscard]] constexpr std::string_view MatchStatusId(GameMatchStatus status) noexcept
+{
+    switch (status)
+    {
+    case GameMatchStatus::Waiting: return "waiting";
+    case GameMatchStatus::Setup: return "setup";
+    case GameMatchStatus::Playing: return "playing";
+    case GameMatchStatus::Finished: return "finished";
+    case GameMatchStatus::Cancelled: return "cancelled";
+    case GameMatchStatus::Unknown: return "unknown";
+    }
+    return "unknown";
+}
+
 struct GameMatchResult final
 {
     std::vector<int> winnerPlayerIds;
@@ -21,7 +51,7 @@ struct GameMatchResult final
 
 struct GameMatch final
 {
-    std::string status;
+    GameMatchStatus status = GameMatchStatus::Unknown;
     std::optional<std::int64_t> startedAtMs;
     std::optional<std::int64_t> finishedAtMs;
     std::optional<GameMatchResult> result;
@@ -62,21 +92,24 @@ struct GamePlayer final
     bool alive = true;
 };
 
+// Engine phases are declared by each game and therefore remain extensible.
+// Wrapping the identifier prevents presentation code from treating it as a
+// closed lifecycle state or branching on concrete phase literals.
+struct GamePhaseId final
+{
+    std::string value;
+};
+
 struct GameSetup final
 {
     bool complete = false;
-    std::string phase;
+    GamePhaseId phase;
     std::optional<int> ownerPlayerId;
     std::map<std::string, GameValue> values;
 };
 
 struct GameEngineEventData final
 {
-    std::string semanticKey;
-    std::string quizSessionId;
-    std::optional<bool> correct;
-    std::optional<int> correctAnswerIndex;
-    std::unordered_map<int, int> answers;
     bool announce = true;
     std::string message;
     std::string content;
@@ -103,6 +136,7 @@ struct GameEngineEvent final
 {
     std::string id;
     std::string type;
+    std::string soundSemantic;
     GameEngineEventData details;
     std::optional<int> actorId;
     std::int64_t occurredAtMs = 0;

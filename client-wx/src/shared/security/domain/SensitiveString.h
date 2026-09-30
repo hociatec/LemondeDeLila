@@ -3,7 +3,7 @@
 #include <string>
 #include <utility>
 
-#include "shared/security/infrastructure/SecurityUtils.h"
+#include "shared/security/domain/SecureWipe.h"
 
 namespace lila::shared::security
 {

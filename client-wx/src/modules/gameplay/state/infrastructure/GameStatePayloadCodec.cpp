@@ -1,5 +1,7 @@
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
 
+#include "modules/gameplay/session/domain/GameProtocolException.h"
+
 #include <algorithm>
 #include <stdexcept>
 #include <utility>
@@ -16,7 +18,7 @@
 #include "modules/gameplay/state/infrastructure/GameSystemDecoder.h"
 #include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
 #include "modules/gameplay/state/infrastructure/GameWorkflowCapabilitiesDecoder.h"
-#include "shared/data/json/JsonCoercion.h"
+#include "modules/gameplay/state/domain/GameCapabilityId.h"
 
 namespace lila::modules::gameplay::infrastructure
 {
@@ -41,6 +43,8 @@ const nlohmann::json* OptionalObject(const nlohmann::json& payload, const char* 
 
 void DecodeKits(const nlohmann::json& raw, domain::GameKits& kits)
 {
+    for (const auto& item : raw.items())
+        if (!item.value().is_null()) kits.availableCapabilities.insert(item.key());
     if (const auto* value = OptionalObject(raw, "cards"))
         kits.cards = GameCardDecoder::Decode(*value);
     if (const auto* value = OptionalObject(raw, "dice"))
@@ -71,12 +75,10 @@ void DecodeKits(const nlohmann::json& raw, domain::GameKits& kits)
         kits.quiz = GameWorkflowCapabilitiesDecoder::Quiz(*value);
     if (const auto* value = OptionalObject(raw, "submissions"))
         kits.submissions = GameWorkflowCapabilitiesDecoder::Submissions(*value);
-    static const std::vector<std::string> known{
-        "cards", "dice", "grid", "movement", "pawns", "score", "resources",
-        "counters", "status", "inventory", "economy", "ownership", "collections",
-        "quiz", "submissions"};
     for (const auto& item : raw.items())
-        if (std::find(known.begin(), known.end(), item.key()) == known.end() &&
+        if (std::find(domain::capability::Known.begin(),
+                domain::capability::Known.end(), item.key()) ==
+                domain::capability::Known.end() &&
             !item.value().is_null())
             kits.unknownCapabilities.emplace(item.key(), DecodeGameValue(item.value()));
 }
@@ -103,14 +105,15 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
     using namespace detail;
     if (!payload.is_object()) throw std::runtime_error("Etat de jeu invalide.");
     domain::GameState state;
-    state.roomId = ReadInt(payload, "roomId");
-    state.viewerPlayerId = lila::shared::data::json::ReadOptionalIntegerCoerced(
-        payload, "viewerPlayerId");
-    state.runId = ReadInt(payload, "runId");
-    state.version = ReadInt(payload, "version");
-    state.viewVersion = ReadInt(payload, "viewVersion");
+    state.roomId = ReadRequiredInt(payload, "roomId");
+    state.viewerPlayerId = ReadOptionalInt(payload, "viewerPlayerId");
+    if (state.viewerPlayerId && *state.viewerPlayerId <= 0)
+        throw std::runtime_error("Identifiant viewer gameplay invalide.");
+    state.runId = ReadRequiredInt(payload, "runId");
+    state.version = ReadRequiredInt(payload, "version");
+    state.viewVersion = ReadRequiredInt(payload, "viewVersion");
     if (state.viewVersion != domain::GameState::SupportedViewVersion)
-        throw std::runtime_error(
+        throw domain::GameProtocolException(
             "Version de vue de jeu non supportee: " + std::to_string(state.viewVersion) + ".");
     const auto& system = RequiredObject(payload, "system");
     const auto& kits = RequiredObject(payload, "kits");
@@ -133,7 +136,9 @@ domain::GameState GameStatePayloadCodec::DecodeState(const nlohmann::json& paylo
         state.pending = GamePendingDecoder::Decode(*pending, state.actions);
         if (state.pending) state.pending->prompt = DecodePrompt(payload);
     }
-    state.gameType = ReadString(payload, "gameType");
+    state.gameType = ReadRequiredString(payload, "gameType");
+    if (state.gameType.empty() || state.gameType.size() > 128)
+        throw std::runtime_error("Identite de jeu invalide.");
     if (state.roomId <= 0) throw std::runtime_error("Etat de jeu sans table.");
     return state;
 }

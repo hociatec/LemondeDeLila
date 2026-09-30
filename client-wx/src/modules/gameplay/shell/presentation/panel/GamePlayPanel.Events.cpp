@@ -11,13 +11,11 @@
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/cards/application/GameCardActionResolver.h"
-#include "modules/gameplay/dice/application/GameDiceActionResolver.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/session/application/GameSessionService.h"
-#include "modules/gameplay/pawn_selection/presentation/PawnSelectionPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "shared/logging/application/Logger.h"
 
@@ -52,17 +50,6 @@ void GamePlayPanel::BindEvents()
         {
             static_cast<void>(visible);
             SyncContentVisibility();
-        });
-    pawnSelectionPanel_->SetVisibilityChangedHandler(
-        [this](bool visible)
-        {
-            static_cast<void>(visible);
-            SyncContentVisibility();
-        });
-    pawnSelectionPanel_->SetSubmitHandler(
-        [this](domain::GameAction action)
-        {
-            ExecuteAction(std::move(action));
         });
     confirmationPanel_->SetConfirmedHandler(
         [this](domain::GameAction action)
@@ -107,7 +94,10 @@ void GamePlayPanel::BindEvents()
             {
                 const auto& value = action.payload["__tableAmbienceSoundId"];
                 if (onStartAmbienceSelected_)
-                    onStartAmbienceSelected_(value.is_string() ? value.get<std::string>() : std::string{});
+                {
+                    const auto* soundId = value.Text();
+                    onStartAmbienceSelected_(soundId == nullptr ? std::string{} : *soundId);
+                }
                 action.payload.erase("__tableAmbienceSoundId");
                 if (onStartAmbiencePreview_) onStartAmbiencePreview_({});
                 promptPanel_->ClearStartAmbiences();
@@ -151,7 +141,6 @@ bool GamePlayPanel::HandleZoneActivation()
         return lifecycle_.IsStartFlowRequested() || lifecycle_.IsRoomStartPending();
     if (IsFinished()) return false;
     if (IsConfirmationVisible() || IsInlinePromptVisible()) return true;
-    if (pawnSelectionPanel_->IsActive()) return true;
     if (const auto* prompt = ActivePrompt())
     {
         if (submittedPromptActionType_ != prompt->actionType)
@@ -208,17 +197,6 @@ bool GamePlayPanel::ActivateSelectedHandCard()
     }
     lila::shared::logging::LogInfo(
         "GameInput", "Card action resolved: " + action->type);
-    PrepareAndExecuteAction(std::move(*action));
-    return true;
-}
-
-bool GamePlayPanel::ActivateDiceRoll()
-{
-    const auto* dice = state_.kits.Dice();
-    if (dice == nullptr) return false;
-    auto action = application::dice::GameDiceActionResolver::Resolve(
-        *dice, state_.actions);
-    if (!action) return false;
     PrepareAndExecuteAction(std::move(*action));
     return true;
 }

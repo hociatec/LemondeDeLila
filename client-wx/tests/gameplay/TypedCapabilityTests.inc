@@ -89,7 +89,7 @@ void TestKnownCapabilitiesAreTyped()
     Expect(state.kits.Unknown("future-kit") != nullptr,
         "Une capacité future doit rester disponible dans l'extension typée générique.");
 }
-
+#include "ProjectionCompatibilityTests.inc"
 void TestEmptyV2KitsAndCapabilitiesRemainValid()
 {
     auto payload = BuildGameView({{"roomId", 79}, {"gameType", "empty-kits"}});
@@ -107,7 +107,6 @@ void TestEmptyV2KitsAndCapabilitiesRemainValid()
     Expect(present.kits.cards && present.kits.grid && present.kits.score && present.kits.quiz,
         "Une capability présente sous forme d'objet vide ne doit pas être confondue avec null.");
 }
-
 void TestPendingMultipleWorkflowsUseOneExplicitAction()
 {
     auto payload = BuildGameView({{"roomId", 72}, {"gameType", "choice-game"}, {"state", {
@@ -120,12 +119,14 @@ void TestPendingMultipleWorkflowsUseOneExplicitAction()
     const auto state = lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
     Expect(state.pending && state.pending->ordering && state.pending->multipleSelection,
         "Ordering doit rester distinct d'une simple sélection multiple.");
+    Expect(state.pending->selectionKind ==
+            lila::modules::gameplay::domain::GamePendingSelectionKind::Ordering,
+        "Les kinds connus doivent être décodés dans un enum fermé.");
     Expect(state.pending->selectionAction && state.pending->viewerActionable,
         "Le workflow multiple doit utiliser son action serveur explicite.");
     Expect(std::get<double>(state.pending->choices[1].value.value) == 20,
         "Les valeurs de choix ne doivent pas rester du JSON dans le domaine.");
 }
-
 void TestPendingSelectionPolicy()
 {
     using lila::modules::gameplay::application::GamePendingSelectionPolicy;
@@ -147,7 +148,7 @@ void TestPendingSelectionPolicy()
     GamePending passive;
     passive.viewerActionable = false;
     passive.selectionAction = lila::modules::gameplay::domain::GameAction{
-        "resolve", {}, {}, nlohmann::json::object(), false, false};
+        "resolve", {}, {}, {}, false, false};
     Expect(!GamePendingSelectionPolicy::HasActionableChoices(passive),
         "Un pending vide et passif ne doit jamais devenir une cible de focus.");
 
@@ -162,7 +163,6 @@ void TestPendingSelectionPolicy()
             GamePendingSelectionPolicy::RestoreChoiceIndex(choices, gamma) == 1,
         "La restauration doit ignorer les anciens choix disparus et conserver les choix présents.");
 }
-
 void TestEventsHaveStableIdentityAndAccessibleText()
 {
     auto payload = BuildGameView({{"roomId", 73}, {"gameType", "event-game"}});

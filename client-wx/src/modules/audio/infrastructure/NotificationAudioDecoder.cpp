@@ -1,8 +1,14 @@
-#include "modules/audio/infrastructure/NotificationAudioDecoder.h"
+#include "modules/audio/application/NotificationAudioDecoder.h"
 #include <nlohmann/json.hpp>
+#include "generated/protocol/WsMessageTypes.generated.h"
 
-namespace lila::modules::audio::infrastructure
+namespace lila::modules::audio::application
 {
+namespace
+{
+constexpr std::string_view SoundsUpdatedEvent = "sounds.updated";
+constexpr std::string_view BugReportCommentAddedEvent = "bugReports.comment.added";
+}
 NotificationAudioEvent NotificationAudioDecoder::Decode(const std::string& message, int selfId)
 {
     using domain::SoundCue;
@@ -14,7 +20,8 @@ NotificationAudioEvent NotificationAudioDecoder::Decode(const std::string& messa
         payloadField == root.end() || !payloadField->is_object()) return {};
     const auto& payload = *payloadField;
     const auto type = typeField->get<std::string>();
-    if (type == "notify.connected") return {std::nullopt, true};
+    namespace ws = lila::shared::network::ws::types;
+    if (type == ws::notify::Connected) return {std::nullopt, true};
     const auto text = [&payload](const char* key)
     {
         const auto value = payload.find(key);
@@ -28,35 +35,35 @@ NotificationAudioEvent NotificationAudioDecoder::Decode(const std::string& messa
     };
     NotificationAudioEvent result;
     std::string identity;
-    if (type == "sounds.updated")
+    if (type == SoundsUpdatedEvent)
     {
         result.refreshAssets = true;
         identity = text("updatedAt");
     }
-    else if (type == "messaging.message")
+    else if (type == ws::messaging::MessageSent)
     {
         result.cue = SoundCue::PrivateMessageReceived;
         identity = text("messageId");
     }
-    else if (type == "social.friend.requested" && !fromSelf("requesterId"))
+    else if (type == ws::social::FriendRequested && !fromSelf("requesterId"))
     {
         result.cue = SoundCue::FriendInvitationReceived;
         identity = text("requestId");
         if (identity.empty()) identity = text("requesterId");
     }
-    else if (type == "notify.inbox.item" && text("kind") == "\"admin_contact\"" &&
+    else if (type == ws::notify::inbox::Item && text("kind") == "\"admin_contact\"" &&
         !fromSelf("fromUserId"))
     {
         result.cue = SoundCue::AdminContactReceived;
         identity = text("id");
     }
-    else if (type == "bugReports.comment.added" && !fromSelf("createdByUserId"))
+    else if (type == BugReportCommentAddedEvent && !fromSelf("createdByUserId"))
     {
         result.cue = SoundCue::BugReportCommentReceived;
         identity = text("commentId");
     }
-    else if (type == "client.update.available" || type == "client.update.required" ||
-        type == "client.update.imminent")
+    else if (type == ws::clientUpdate::Available || type == ws::clientUpdate::Required ||
+        type == ws::clientUpdate::Imminent)
     {
         result.cue = SoundCue::ClientUpdateWarning;
         identity = payload.dump();

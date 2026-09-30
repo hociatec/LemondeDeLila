@@ -1,6 +1,6 @@
 namespace
 {
-class ReconnectingGameSessionGateway final
+class ReconnectingGameSessionGateway
     : public lila::modules::gameplay::application::IGameSessionGateway
 {
 public:
@@ -73,6 +73,17 @@ public:
     bool interrupted = false;
 };
 
+class IncompatibleGameSessionGateway final : public ReconnectingGameSessionGateway
+{
+public:
+    [[nodiscard]] lila::modules::gameplay::domain::GameEvent ReceiveEvent(
+        std::stop_token) override
+    {
+        throw lila::modules::gameplay::domain::GameProtocolException(
+            "Version de vue de jeu non supportee: 2.");
+    }
+};
+
 void TestGameSessionServiceReconnectsAndRepublishesState()
 {
     ReconnectingGameSessionGateway gateway;
@@ -120,5 +131,41 @@ void TestGameSessionServiceReconnectsAndRepublishesState()
 
     service.Close();
     std::cout << "[TEST PASSED] GameSessionServiceReconnectsAndRepublishesState\n";
+}
+
+void TestGameSessionServiceReportsRequiredClientUpdate()
+{
+    IncompatibleGameSessionGateway gateway;
+    lila::modules::gameplay::application::GameSessionService service(gateway);
+    std::mutex eventsMutex;
+    std::vector<lila::modules::gameplay::domain::GameEvent> events;
+    service.SetEventHandler([&](auto event)
+    {
+        std::scoped_lock lock(eventsMutex);
+        events.push_back(std::move(event));
+    });
+    service.Start();
+
+    WaitUntil(
+        [&]()
+        {
+            std::scoped_lock lock(eventsMutex);
+            return std::any_of(events.begin(), events.end(), [](const auto& event)
+            {
+                return event.type == lila::modules::gameplay::domain::GameEventType::Error &&
+                    event.errorCode == "CLIENT_GAME_PROTOCOL_UPDATE_REQUIRED" &&
+                    event.message.find("Mettez le client à jour") != std::string::npos;
+            });
+        },
+        "Une incompatibilite de protocole devait demander une mise a jour",
+        1'000);
+
+    {
+        std::scoped_lock lock(gateway.mutex);
+        Expect(gateway.reconnectCount == 0,
+            "Une incompatibilite permanente ne doit pas lancer de reconnexion");
+    }
+    service.Close();
+    std::cout << "[TEST PASSED] GameSessionServiceReportsRequiredClientUpdate\n";
 }
 }

@@ -4,7 +4,7 @@
 #include <wx/window.h>
 
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
-#include "shared/accessibility/infrastructure/NvdaScreenReaderAnnouncer.h"
+#include "shared/accessibility/application/IScreenReaderAnnouncer.h"
 
 namespace lila::modules::rooms::presentation::history
 {
@@ -17,8 +17,7 @@ const wxString AnnouncementAccessibleName(L"Annonces du jeu");
 HistoryAnnouncementQueue::HistoryAnnouncementQueue(wxWindow* parent)
     : liveRegion_(new wxStaticText(parent, wxID_ANY, wxString{})),
       timer_(this),
-      screenReader_(std::make_unique<
-          lila::shared::accessibility::NvdaScreenReaderAnnouncer>())
+      screenReader_(lila::shared::accessibility::CreateScreenReaderAnnouncer())
 {
     liveRegion_->SetName(AnnouncementAccessibleName);
     liveRegion_->SetMinSize(wxSize(1, 1));
@@ -54,7 +53,7 @@ void HistoryAnnouncementQueue::AnnounceNext()
     lastAnnounced_ = pending_.front();
     pending_.pop_front();
 
-    if (!screenReader_->Speak(lastAnnounced_))
+    if (!screenReader_->Speak(lastAnnounced_.ToStdWstring()))
         lila::shared::accessibility::AccessibilityUtils::AnnounceLiveRegion(
             *liveRegion_, lastAnnounced_);
     timer_.StartOnce(AnnouncementSpacingMs);

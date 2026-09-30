@@ -38,6 +38,7 @@ std::vector<domain::VaultSnapshot> ReadSnapshots(const nlohmann::json& payload)
     if (!payload.is_object()) Invalid("Vault payload must be an object.");
     const auto items = payload.find("items");
     if (items == payload.end() || !items->is_array()) Invalid("Vault items must be an array.");
+    if (items->size() > 1'000) Invalid("Vault contains too many items.");
 
     std::vector<domain::VaultSnapshot> result;
     result.reserve(items->size());

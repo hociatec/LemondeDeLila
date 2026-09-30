@@ -70,11 +70,11 @@ SocialFrame::SocialFrame(
     frameSizer->Add(view_, 1, wxEXPAND);
     SetSizer(frameSizer);
     view_->ApplyTheme();
-    loadController_ = std::make_unique<SocialLoadController>(socialService);
+    loadController_ = std::make_shared<SocialLoadController>(socialService);
     sectionPresenter_ = std::make_unique<SocialSectionPresenter>(
         *this, *view_, dataStore_, navigationState_, selectionMemory_);
     sectionCoordinator_ = std::make_unique<SocialSectionCoordinator>(
-        *loadController_,
+        loadController_,
         dataStore_,
         navigationState_,
         *sectionPresenter_,

@@ -11,6 +11,7 @@
 
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/logging/application/Logger.h"
+#include "shared/ui/presentation/UiThreadGuard.h"
 
 namespace lila::shared::ui
 {
@@ -30,6 +31,7 @@ inline void ScheduleOwnedUiCompletion(wxWeakRef<wxWindow> owner, Completion&& co
     wxTheApp->CallAfter(
         [owner, completion = std::forward<Completion>(completion)]() mutable
         {
+            AssertUiThread();
             if (owner) completion();
         });
 }

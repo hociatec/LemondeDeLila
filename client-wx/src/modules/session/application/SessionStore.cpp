@@ -162,6 +162,12 @@ bool SessionStore::IsPersistent() const
     return persisted_;
 }
 
+SessionRefreshStats SessionStore::RefreshStats() const
+{
+    std::scoped_lock lock(mutex_);
+    return {refreshInProgress_, refreshWaiters_};
+}
+
 bool SessionStore::HasSessionLocked() const
 {
     const bool hasIdentity = current_.userId.IsValid() && !current_.username.empty();

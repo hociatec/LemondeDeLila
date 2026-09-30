@@ -1,6 +1,7 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
+#include "modules/gameplay/state/application/GamePendingAccessibilityText.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -16,12 +17,8 @@ wxString GamePlayPanel::BuildStateSummaryText() const
 
 wxString GamePlayPanel::BuildPendingText() const
 {
-    if (state_.pending)
-    {
-        if (!state_.pending->label.empty()) return FromUtf8(state_.pending->label);
-        if (!state_.pending->question.empty()) return FromUtf8(state_.pending->question);
-    }
-
-    return {};
+    return state_.pending
+        ? FromUtf8(application::GamePendingAccessibilityText::Build(*state_.pending))
+        : wxString{};
 }
 }

@@ -1,18 +1,24 @@
 #include "modules/gameplay/state/infrastructure/GameStateSectionsDecoder.h"
 
 #include <utility>
+#include <stdexcept>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
 #include "modules/gameplay/state/infrastructure/GameValueDecoder.h"
-#include "shared/data/json/JsonCoercion.h"
 
 namespace lila::modules::gameplay::infrastructure::detail
 {
 namespace
 {
-nlohmann::json ActionPayload(const nlohmann::json& action)
+domain::GameValue::Object ActionPayload(const nlohmann::json& action)
 {
-    return ObjectOrEmpty(action.value("payload", nlohmann::json::object()));
+    const auto payload = action.find("payload");
+    if (payload == action.end()) return {};
+    auto decoded = DecodeGameValue(*payload);
+    auto* object = decoded.ObjectValue();
+    if (object == nullptr)
+        throw std::runtime_error("Payload d'action gameplay invalide.");
+    return std::move(*object);
 }
 
 }
@@ -22,6 +28,8 @@ std::vector<domain::GameAction> DecodeActions(const nlohmann::json& payload)
     std::vector<domain::GameAction> result;
     const auto actions = payload.find("actions");
     if (actions == payload.end() || !actions->is_array()) return result;
+    if (actions->size() > 128)
+        throw std::runtime_error("Trop d'actions gameplay.");
     for (const auto& raw : *actions)
     {
         if (!raw.is_object()) continue;
@@ -31,6 +39,8 @@ std::vector<domain::GameAction> DecodeActions(const nlohmann::json& payload)
         action.payload = ActionPayload(raw);
         action.disabled = ReadBool(raw, "disabled");
         action.confirm = ReadBool(raw, "confirm");
+        if (action.type.size() > 128 || action.label.size() > 255)
+            throw std::runtime_error("Action gameplay trop volumineuse.");
         if (!action.type.empty()) result.push_back(std::move(action));
     }
     return result;
@@ -50,6 +60,9 @@ std::vector<domain::GameShortcut> DecodeShortcuts(const nlohmann::json& system)
         const auto type = ToUpper(Trim(ReadString(raw, "type")));
         if (type == "INTERFACE") shortcut.kind = domain::GameShortcutKind::Interface;
         else if (type == "ACTION") shortcut.kind = domain::GameShortcutKind::Action;
+        const auto activation = ToUpper(Trim(ReadString(raw, "activation")));
+        if (activation == "FOCUS-ONLY")
+            shortcut.activation = domain::GameShortcutActivation::FocusOnly;
         shortcut.id = ReadString(raw, "id");
         shortcut.actionType = ReadString(raw, "actionType");
         shortcut.label = ReadString(raw, "label");
@@ -81,16 +94,14 @@ std::optional<domain::GamePrompt> DecodePrompt(const nlohmann::json& stateNode)
         field.label = ReadString(raw, "label");
         field.kind = ReadString(raw, "kind");
         field.initialText = ReadString(raw, "initialText");
-        field.minimum = lila::shared::data::json::ReadOptionalIntegerCoerced(raw, "min");
-        field.maximum = lila::shared::data::json::ReadOptionalIntegerCoerced(raw, "max");
+        field.minimum = ReadOptionalInt(raw, "min");
+        field.maximum = ReadOptionalInt(raw, "max");
         field.integer = ReadBool(raw, "integer");
         field.optional = ReadBool(raw, "optional");
         field.multiple = ReadBool(raw, "multiple");
         field.ordering = ReadBool(raw, "ordering");
-        field.minimumSelections = lila::shared::data::json::ReadOptionalIntegerCoerced(
-            raw, "minSelections").value_or(0);
-        field.maximumSelections = lila::shared::data::json::ReadOptionalIntegerCoerced(
-            raw, "maxSelections").value_or(0);
+        field.minimumSelections = ReadOptionalInt(raw, "minSelections").value_or(0);
+        field.maximumSelections = ReadOptionalInt(raw, "maxSelections").value_or(0);
         const auto choices = raw.find("choices");
         if (choices != raw.end() && choices->is_array())
             for (const auto& choice : *choices)

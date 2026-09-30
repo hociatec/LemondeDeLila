@@ -3,10 +3,13 @@
 #endif
 
 #include <algorithm>
+#include <stdexcept>
+#include <thread>
 #include <objbase.h>
 #include <shlobj.h>
 
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
+#include "modules/update/domain/UpdateRetryPolicy.h"
 
 namespace lila::modules::update::launcher
 {
@@ -42,11 +45,31 @@ void UpdateProgressDialog::Show(const std::string& version) noexcept
     dialog_ = dialog;
     dialog->SetTitle(L"Le Monde de Lila - Mise à jour");
     dialog->StartProgressDialog(nullptr, nullptr,
-        PROGDLG_AUTOTIME | PROGDLG_NOMINIMIZE | PROGDLG_NOCANCEL, nullptr);
+        PROGDLG_AUTOTIME | PROGDLG_NOMINIMIZE, nullptr);
     const std::wstring versionLine = L"Installation de la version " + Widen(version);
     dialog->SetLine(1, versionLine.c_str(), FALSE, nullptr);
     dialog->Timer(PDTIMER_RESET, nullptr);
     SetStage(L"Préparation de la mise à jour…", 1);
+}
+
+bool UpdateProgressDialog::Cancelled() const noexcept
+{
+    return dialog_ && NativeDialog(dialog_)->HasUserCancelled();
+}
+
+void UpdateProgressDialog::ThrowIfCancelled() const
+{
+    if (Cancelled()) throw std::runtime_error("Update cancelled by user.");
+}
+
+bool WaitForRetry(
+    std::chrono::milliseconds delay,
+    const UpdateProgressDialog* progress)
+{
+    return lila::modules::update::WaitForUpdateRetry(
+        delay,
+        [progress] { return progress && progress->Cancelled(); },
+        [](std::chrono::milliseconds slice) { std::this_thread::sleep_for(slice); });
 }
 
 void UpdateProgressDialog::SetStage(

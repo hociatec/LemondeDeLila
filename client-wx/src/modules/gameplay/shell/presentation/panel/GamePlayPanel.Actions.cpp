@@ -9,8 +9,6 @@
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
-#include "modules/gameplay/state/application/GameValuePayloadCodec.h"
-#include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -44,17 +42,6 @@ void GamePlayPanel::PrepareAndExecuteAction(domain::GameAction action)
         return;
     }
     ExecuteAction(std::move(action));
-}
-
-bool GamePlayPanel::ActivateSelectedQuizAnswer()
-{
-    const auto answerIndex = workflowPanel_->SelectedQuizAnswerIndex();
-    if (!answerIndex) return false;
-    auto action = ResolveShortcutAction("answer");
-    if (!action) return false;
-    action->payload["answerIndex"] = *answerIndex;
-    PrepareAndExecuteAction(std::move(*action));
-    return true;
 }
 
 bool GamePlayPanel::ShouldCaptureWhileAwaitingStartedState(
@@ -134,7 +121,9 @@ bool GamePlayPanel::ActivateSelectedPendingChoice()
     {
         if (!state_.pending->selectionAction) return false;
         auto action = *state_.pending->selectionAction;
-        action.payload["value"] = nlohmann::json::array();
+        action.payload["value"] = domain::GameValue::Array{};
+        auto* selectedValues = action.payload["value"].ArrayValue();
+        if (selectedValues == nullptr) return false;
         if (state_.pending->ordering)
         {
             for (const int encodedIndex : orderingChoices_->GetList()->GetCurrentOrder())
@@ -142,9 +131,8 @@ bool GamePlayPanel::ActivateSelectedPendingChoice()
                 const int index = encodedIndex < 0 ? ~encodedIndex : encodedIndex;
                 if (index >= 0 && static_cast<std::size_t>(index) < pendingChoiceIndexes_.size() &&
                     pendingChoiceIndexes_[static_cast<std::size_t>(index)] < state_.pending->choices.size())
-                    action.payload["value"].push_back(application::EncodeGameValuePayload(
-                        state_.pending->choices[
-                            pendingChoiceIndexes_[static_cast<std::size_t>(index)]].value));
+                    selectedValues->push_back(state_.pending->choices[
+                        pendingChoiceIndexes_[static_cast<std::size_t>(index)]].value);
             }
             PrepareAndExecuteAction(std::move(action));
             return true;
@@ -162,8 +150,8 @@ bool GamePlayPanel::ActivateSelectedPendingChoice()
         }
         for (const auto selected : selections)
             if (selected >= 0 && static_cast<std::size_t>(selected) < state_.pending->choices.size())
-                action.payload["value"].push_back(application::EncodeGameValuePayload(
-                    state_.pending->choices[static_cast<std::size_t>(selected)].value));
+                selectedValues->push_back(
+                    state_.pending->choices[static_cast<std::size_t>(selected)].value);
         PrepareAndExecuteAction(std::move(action));
         return true;
     }

@@ -1,11 +1,13 @@
 #pragma once
+
 #include <deque>
 #include <optional>
 #include <string>
 #include <unordered_set>
+
 #include "modules/audio/domain/SoundCue.h"
 
-namespace lila::modules::audio::infrastructure
+namespace lila::modules::audio::application
 {
 struct NotificationAudioEvent final
 {

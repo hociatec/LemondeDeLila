@@ -1,11 +1,20 @@
 #pragma once
 
 #include <memory>
+#include <cstddef>
 
 #include "modules/audio/application/IAudioBackend.h"
 
 namespace lila::modules::audio::infrastructure
 {
+struct AsyncAudioQueueStats final
+{
+    std::size_t foregroundQueued = 0;
+    std::size_t backgroundQueued = 0;
+    std::size_t foregroundDropped = 0;
+    std::size_t backgroundDropped = 0;
+};
+
 class AsyncAudioBackend final : public application::IAudioBackend
 {
 public:
@@ -24,6 +33,7 @@ public:
     void ShutdownGracefully() noexcept override;
     void InterruptPlayback() noexcept override;
     void Shutdown() noexcept override;
+    [[nodiscard]] AsyncAudioQueueStats Stats() const;
 
 private:
     class Impl;

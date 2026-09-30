@@ -5,7 +5,7 @@
 #include "modules/user/infrastructure/remote/JwtLoginClaimsParser.h"
 #include "modules/user/infrastructure/remote/UserAuthRemoteDataSource.h"
 #include "modules/user/domain/UserErrorMessages.h"
-#include "shared/errors/presentation/ErrorFormatting.h"
+#include "shared/logging/application/Logger.h"
 
 namespace lila::modules::user::infrastructure
 {
@@ -25,9 +25,8 @@ domain::AuthenticationResult WsAuthenticationService::Login(const domain::LoginC
 
     if (!response.success)
     {
-        return domain::AuthenticationResult::Fail(lila::shared::errors::WithDetails(
-            lila::shared::errors::AuthenticationFailed,
-            response.errorMessage));
+        lila::shared::logging::LogWarning("Authentication", response.errorMessage);
+        return domain::AuthenticationResult::Fail();
     }
 
     try
@@ -35,7 +34,7 @@ domain::AuthenticationResult WsAuthenticationService::Login(const domain::LoginC
         const auto payload = remote::UserAuthRemoteDataSource::ParseLoginPayload(response);
         if (payload.token.empty())
         {
-            return domain::AuthenticationResult::Fail(lila::shared::errors::AuthenticationMissingToken);
+            return domain::AuthenticationResult::Fail();
         }
 
         const auto claims = remote::JwtLoginClaimsParser::Parse(payload.token);
@@ -51,7 +50,8 @@ domain::AuthenticationResult WsAuthenticationService::Login(const domain::LoginC
     }
     catch (const std::exception& exception)
     {
-        return domain::AuthenticationResult::Fail(exception.what());
+        lila::shared::logging::LogWarning("Authentication", exception.what());
+        return domain::AuthenticationResult::Fail();
     }
 }
 
@@ -61,9 +61,8 @@ domain::RegistrationResult WsAuthenticationService::Register(const domain::Regis
 
     if (!response.success)
     {
-        return domain::RegistrationResult::Fail(lila::shared::errors::WithDetails(
-            lila::shared::errors::RegistrationFailed,
-            response.errorMessage));
+        lila::shared::logging::LogWarning("Registration", response.errorMessage);
+        return domain::RegistrationResult::Fail();
     }
 
     (void)remote::UserAuthRemoteDataSource::ParseRegisterPayload(response);

@@ -36,4 +36,16 @@ std::wstring_view GetLocalSoundFile(domain::SoundCue cue) noexcept
     const auto index = static_cast<std::size_t>(cue);
     return index < Files.size() ? Files[index] : std::wstring_view{};
 }
+
+std::filesystem::path FindLocalSoundAsset(
+    const std::filesystem::path& directory,
+    domain::SoundCue cue) noexcept
+{
+    const auto file = GetLocalSoundFile(cue);
+    if (file.empty()) return {};
+    const auto path = directory / file;
+    std::error_code error;
+    return std::filesystem::is_regular_file(path, error) && !error
+        ? path : std::filesystem::path{};
+}
 }
