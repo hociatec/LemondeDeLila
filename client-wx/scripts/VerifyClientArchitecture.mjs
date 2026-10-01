@@ -326,12 +326,28 @@ if (/gameZoneAnchor_->Show\s*\(\s*target\s*==\s*nullptr\s*\)/.test(roomPanelSour
 if (!roomPanelSource.includes('scope.Add(GameplayNavigationTarget());') ||
     !roomPanelSource.includes('plan.AddWindow(GameplayNavigationTarget());'))
   violations.push('RoomPanel: Tab et focus initial doivent partager l’abstraction Zone de jeu');
+if (!roomPanelSource.includes('gamePlayPanel_->RequiredInteractionTarget();') ||
+    !roomPanelSource.includes('target = weakThis->GameplayNavigationTarget();'))
+  violations.push('RoomPanel: une interaction prioritaire doit recevoir le focus avec repli sur Zone de jeu');
 
 const gameplayPanelSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.cpp'), 'utf8');
 for (const marker of ['IsShownOnScreen()', 'IsEnabled()', 'AcceptsFocus()'])
   if (!gameplayPanelSource.includes(marker))
     violations.push(`GamePlayPanel: validation de cible absente (${marker})`);
+const setupChoiceTarget = gameplayPanelSource.indexOf(
+  'if (choicesList_ != nullptr && choicesList_->GetCount() > 0)');
+const activeGameplayGate = gameplayPanelSource.indexOf(
+  'lifecycle_.Policy().focus != application::GamePlayFocusPolicy::GameplayTarget');
+if (setupChoiceTarget < 0 || activeGameplayGate < 0 || setupChoiceTarget > activeGameplayGate)
+  violations.push('GamePlayPanel: les choix de configuration doivent rester accessibles avant le démarrage de la Room');
+const quizInteractionTarget = gameplayPanelSource.indexOf(
+  'if (state_.kits.quiz && !state_.kits.quiz->sessions.empty())');
+const requiredInteractionFallback = gameplayPanelSource.indexOf(
+  'if (requiredOnly) return nullptr;');
+if (quizInteractionTarget < 0 || requiredInteractionFallback < 0 ||
+    quizInteractionTarget > requiredInteractionFallback)
+  violations.push('GamePlayPanel: une question de quiz visible doit rester une interaction prioritaire');
 
 const gameplayHeader = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.h'), 'utf8');

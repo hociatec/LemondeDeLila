@@ -123,7 +123,12 @@ void RoomPanel::ScheduleGameZoneFocus()
         weakThis->Layout();
         // Visibility and focusability can change during Layout; resolve again
         // only after the final geometry has been applied.
-        auto* target = weakThis->GameplayNavigationTarget();
+        // Keep the stable Room entry visible, but move focus to a newly
+        // authorized priority interaction.  Setup choices (such as pawn
+        // selection) and prompt fields must not require an extra Space/Enter
+        // merely to become discoverable by the screen reader.
+        auto* target = weakThis->gamePlayPanel_->RequiredInteractionTarget();
+        if (target == nullptr) target = weakThis->GameplayNavigationTarget();
         if (generation != weakThis->focusGeneration_) return;
         if (!insideGame) return; // Never steal focus from chat or history.
         static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
