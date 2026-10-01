@@ -156,17 +156,27 @@ wxWindow* GamePlayPanel::ResolveUsableNavigationTarget(bool requiredOnly) const
         for (auto* target : targets)
             if (auto* result = usable(target)) return result;
     }
-    if (lifecycle_.Policy().focus != application::GamePlayFocusPolicy::GameplayTarget)
-        return nullptr;
+    // A server-authorized pending choice can be part of the room start flow
+    // itself (notably pawn selection).  It must therefore remain reachable
+    // while the lifecycle is ConfiguringStart, before the Room is officially
+    // marked as started.
     if (choicesList_ != nullptr && choicesList_->GetCount() > 0)
         if (auto* result = usable(choicesList_)) return result;
     if (auto* result = usable(orderingChoices_)) return result;
+    if (lifecycle_.Policy().focus != application::GamePlayFocusPolicy::GameplayTarget)
+        return nullptr;
     if (state_.kits.VisibleHand().empty() &&
         !state_.system.round.leftPlayerIds.empty()) return nullptr;
     if (handPanel_ != nullptr)
         if (auto* result = usable(handPanel_->NavigationTarget())) return result;
     if (gridPanel_ != nullptr)
         if (auto* result = usable(gridPanel_->NavigationTarget())) return result;
+    // A quiz question is an active interaction even after this viewer has
+    // answered or while another participant is expected.  Keep its prompt as
+    // the priority target so a newly received question is announced without
+    // requiring an extra activation of the generic game-zone anchor.
+    if (state_.kits.quiz && !state_.kits.quiz->sessions.empty())
+        if (auto* result = usable(workflowPanel_->NavigationTarget())) return result;
     if (requiredOnly) return nullptr;
     if (movementPanel_ != nullptr)
         if (auto* result = usable(movementPanel_->NavigationTarget())) return result;
