@@ -292,6 +292,11 @@ if(WIN32)
         # remplace lui-même lors des mises à jour. Il doit donc pouvoir
         # démarrer sans les runtimes MinGW rangés dans app/ ou versions/*.
         target_link_options(lila_launcher PRIVATE -municode -static)
+    elseif(MSVC)
+        # The application manifest is already embedded by LeMondeDeLila.rc.
+        # Disable the linker's generated manifest to avoid a duplicate
+        # RT_MANIFEST resource with recent MSVC toolchains.
+        target_link_options(lila_launcher PRIVATE /MANIFEST:NO)
     endif()
     lila_configure_cpp_target(lila_launcher)
 endif()
@@ -316,6 +321,9 @@ if(WIN32)
         bcrypt
         crypt32
     )
+    if(MSVC)
+        target_link_options(lemonde_de_lila_wx PRIVATE /MANIFEST:NO)
+    endif()
 endif()
 
 if(MINGW)

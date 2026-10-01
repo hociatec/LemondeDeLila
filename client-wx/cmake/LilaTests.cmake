@@ -23,11 +23,14 @@ if(WIN32)
         src/shared/logging/infrastructure/Logger.cpp
     )
     target_include_directories(lemonde_de_lila_wx_bass_unavailable_tests PRIVATE "${LILA_BASS_ROOT}/include")
+    target_compile_definitions(lemonde_de_lila_wx_bass_unavailable_tests PRIVATE
+        LILA_DISABLE_REMOTE_SOUND_ASSETS=1
+    )
     target_link_libraries(lemonde_de_lila_wx_bass_unavailable_tests PRIVATE nlohmann_json::nlohmann_json)
 
     lila_add_test_executable(lemonde_de_lila_wx_bass_cache_tests
         tests/BassCacheTests.cpp
-        src/modules/audio/infrastructure/BassApi.cpp
+        tests/audio/FakeBassApi.cpp
         src/modules/audio/infrastructure/BassSampleCache.cpp
         src/modules/audio/infrastructure/BassStreamCache.cpp
     )
@@ -150,6 +153,7 @@ if(WIN32)
 endif()
 
 lila_configure_cpp_target(lemonde_de_lila_wx_tests)
+target_compile_options(lemonde_de_lila_wx_tests PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/UNDEBUG> $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-UNDEBUG>)
 
 add_test(
     NAME lemonde_de_lila_wx_tests
@@ -392,6 +396,7 @@ add_executable(lemonde_de_lila_wx_gameplay_tests
 target_include_directories(lemonde_de_lila_wx_gameplay_tests PRIVATE src)
 target_link_libraries(lemonde_de_lila_wx_gameplay_tests PRIVATE nlohmann_json::nlohmann_json)
 lila_configure_cpp_target(lemonde_de_lila_wx_gameplay_tests)
+target_compile_options(lemonde_de_lila_wx_gameplay_tests PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/UNDEBUG> $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-UNDEBUG>)
 add_test(
     NAME lemonde_de_lila_wx_gameplay_tests
     COMMAND lemonde_de_lila_wx_gameplay_tests
@@ -443,6 +448,7 @@ target_link_libraries(lemonde_de_lila_wx_parser_robustness_tests PRIVATE
     wx::base
 )
 lila_configure_cpp_target(lemonde_de_lila_wx_parser_robustness_tests)
+target_compile_options(lemonde_de_lila_wx_parser_robustness_tests PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/UNDEBUG> $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-UNDEBUG>)
 add_test(
     NAME lemonde_de_lila_wx_parser_robustness_tests
     COMMAND lemonde_de_lila_wx_parser_robustness_tests

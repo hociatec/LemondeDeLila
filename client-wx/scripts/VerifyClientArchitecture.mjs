@@ -1,10 +1,11 @@
 import { access, readdir, readFile } from 'node:fs/promises';
 import { basename, extname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = new URL('../src/', import.meta.url);
+const root = fileURLToPath(new URL('../src/', import.meta.url));
 const violations = [];
-const gameplayRoot = join(root.pathname, 'modules/gameplay');
-const backendGamesRoot = new URL('../../backend/src/game/games/', import.meta.url).pathname;
+const gameplayRoot = join(root, 'modules/gameplay');
+const backendGamesRoot = fileURLToPath(new URL('../../backend/src/game/games/', import.meta.url));
 
 async function sourceFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -17,7 +18,7 @@ async function sourceFiles(directory) {
 }
 
 function reject(path, source, pattern, message) {
-  if (pattern.test(source)) violations.push(`${relative(root.pathname, path)}: ${message}`);
+  if (pattern.test(source)) violations.push(`${relative(root, path)}: ${message}`);
 }
 
 async function concreteGameIds(directory) {
@@ -83,9 +84,9 @@ let asyncSlotTracks = 0;
 let asyncSlotTokens = 0;
 let asyncSlotCompletions = 0;
 
-for (const path of await sourceFiles(root.pathname)) {
+for (const path of await sourceFiles(root)) {
   const source = await readFile(path, 'utf8');
-  const name = relative(root.pathname, path).replaceAll('\\', '/');
+  const name = relative(root, path).replaceAll('\\', '/');
   const includes = [...source.matchAll(/#include\s*[<"]([^">]+)[">]/g)]
     .map((match) => match[1]);
   const sourceModule = name.match(/^modules\/([^/]+)\//)?.[1];
@@ -239,7 +240,7 @@ for (const name of catchAllAudit.keys()) {
 }
 
 async function requireOrderedMarkers(name, markers, message) {
-  const source = await readFile(join(root.pathname, name), 'utf8');
+  const source = await readFile(join(root, name), 'utf8');
   let previous = -1;
   for (const marker of markers) {
     const current = source.indexOf(marker, previous + 1);
@@ -252,7 +253,7 @@ async function requireOrderedMarkers(name, markers, message) {
 }
 
 async function requireMarkerCount(name, marker, minimum, message) {
-  const source = await readFile(join(root.pathname, name), 'utf8');
+  const source = await readFile(join(root, name), 'utf8');
   const count = source.split(marker).length - 1;
   if (count < minimum) violations.push(`${name}: ${message}`);
 }

@@ -53,7 +53,11 @@ function Install-Release([string]$Installer, [string]$Destination, [string]$Labe
         '/NORESTART',
         "/DIR=`"$Destination`""
     )
-    $installed = Start-Process -FilePath $Installer -ArgumentList $arguments -Wait -PassThru
+    $installed = Start-Process -FilePath $Installer -ArgumentList $arguments -PassThru
+    if (!$installed.WaitForExit(120000)) {
+        $installed.Kill($true)
+        throw "$Label expirée après 120 secondes."
+    }
     if ($installed.ExitCode -ne 0) {
         throw "$Label échouée: $($installed.ExitCode)."
     }
@@ -82,9 +86,23 @@ if ((Get-FileHash -LiteralPath $previousInstaller -Algorithm SHA256).Hash.ToLowe
     throw 'Le hash de l installateur précédent est invalide.'
 }
 $previousSignature = Get-AuthenticodeSignature -LiteralPath $previousInstaller
-if ($previousSignature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
+if ($previousSignature.Status -eq [System.Management.Automation.SignatureStatus]::UnknownError -and
+    $null -ne $previousSignature.SignerCertificate) {
+    # GitHub's fresh Windows images do not trust the private deployment CA.
+    # The HTTPS manifest hash and embedded signer were both verified above.
+    # Remove only the certificate table from the local test copy so Windows
+    # does not wait for an unavailable private chain before process creation.
+    $signTool = (Get-Command signtool.exe -ErrorAction Stop).Source
+    & $signTool remove /s $previousInstaller | Out-Host
+    if ($LASTEXITCODE -ne 0 -or
+        (Get-AuthenticodeSignature -LiteralPath $previousInstaller).Status -ne
+            [System.Management.Automation.SignatureStatus]::NotSigned) {
+        throw 'Impossible de préparer la copie locale de la release précédente.'
+    }
+} elseif ($previousSignature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
     throw "Signature Authenticode de la release précédente invalide: $($previousSignature.Status)."
 }
+Unblock-File -LiteralPath $previousInstaller
 Install-Release $previousInstaller $upgradeDir "Installation de la release $($previousManifest.version)"
 Install-Release $installerJson.InstallerExe $upgradeDir "Mise à niveau vers $Version"
 
@@ -95,7 +113,11 @@ Set-Content -LiteralPath $sentinel -Value 'must survive uninstall' -Encoding UTF
 $uninstaller = Join-Path $installDir 'unins000.exe'
 if (!(Test-Path -LiteralPath $uninstaller -PathType Leaf)) { throw 'Désinstalleur absent.' }
 $uninstalled = Start-Process -FilePath $uninstaller `
-    -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -Wait -PassThru
+    -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -PassThru
+if (!$uninstalled.WaitForExit(120000)) {
+    $uninstalled.Kill($true)
+    throw 'Désinstallation expirée après 120 secondes.'
+}
 if ($uninstalled.ExitCode -ne 0) { throw "Désinstallation échouée: $($uninstalled.ExitCode)." }
 if (!(Test-Path -LiteralPath $sentinel -PathType Leaf)) {
     throw 'La désinstallation a supprimé des données utilisateur.'
