@@ -66,13 +66,16 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
     const bool becameSetup = !started && lifecycle_.IsRoomStarted();
     if (started)
     {
+        const bool joiningStartedRoom =
+            lifecycle_.State() == application::GamePlayLifecycleState::Joining;
+        const bool requiresStartedSynchronization = becameStarted || joiningStartedRoom;
         bool activeProjection = false;
-        if (becameStarted)
+        if (requiresStartedSynchronization)
         {
             activeProjection = lifecycle_.HasAuthoritativeState() &&
                 domain::IsActive(state_.system.match.status) &&
                 (runId <= 0 || state_.runId <= 0 || state_.runId == runId);
-            if (!activeProjection)
+            if (becameStarted && !activeProjection)
             {
                 // The room notification reaches the client before the game-state
                 // projection for the new run. Do not let a rapid Enter (or any
@@ -88,7 +91,8 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
                 RequestRefresh();
             }
         }
-        lifecycle_.SetRoomStarted(true, activeProjection || !becameStarted, runId);
+        if (requiresStartedSynchronization)
+            lifecycle_.SetRoomStarted(true, activeProjection, runId);
         startConfigurationFlow_.Reset();
         SyncContentVisibility();
         if (becameStarted && state_.roomId <= 0) StartJoin();
@@ -105,6 +109,7 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
         RequestRefresh();
     }
     Show(lifecycle_.IsVisible());
+    SyncContentVisibility();
     Layout();
     if (GetParent()) GetParent()->Layout();
     if (becameStarted && onZoneFocusRequested_) onZoneFocusRequested_();
@@ -113,6 +118,10 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
 void GamePlayPanel::ResetRoomSetup()
 {
     lifecycle_.SetRoomStarted(false, false, 0);
+    joinRequestSlot_.Cancel();
+    refreshRequestSlot_.Cancel();
+    rulesRequestSlot_.Cancel();
+    candidatesRequestSlot_.Cancel();
     inputRequestSlot_.Cancel();
     inputSubmissionGuard_.Reset();
     retryableActionCommand_.reset();
@@ -121,6 +130,7 @@ void GamePlayPanel::ResetRoomSetup()
     lines_.clear();
     ClearView();
     Hide();
+    SyncContentVisibility();
     RequestRefresh();
     if (GetParent()) GetParent()->Layout();
 }
@@ -139,5 +149,6 @@ void GamePlayPanel::NotifyRoomStartFailed(const wxString& message)
     // and its error message, instead of opening an unrelated game panel.
     Hide();
     if (GetParent()) GetParent()->Layout();
+    if (onZoneFocusRequested_) onZoneFocusRequested_();
 }
 }

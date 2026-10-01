@@ -41,7 +41,7 @@ void RoomPanel::BindEvents()
             if (gamePlayPanel_->IsOpen())
             {
                 auto* target = gamePlayPanel_->PreferredNavigationTarget();
-                if (target != nullptr &&
+                if (target != nullptr && target != gameZoneAnchor_ &&
                     lila::shared::accessibility::NavigationController::Focus(target))
                     return;
                 if (gamePlayPanel_->HandleZoneActivation()) return;
@@ -94,10 +94,8 @@ void RoomPanel::BindEvents()
             // Promote the current interactive control (notably a visible
             // hand) into the table's main navigation. The stable zone anchor
             // remains the fallback when the game has nothing to interact with.
-            auto* gameTarget = gamePlayPanel_->RequiredInteractionTarget();
-            scope.Add(gameTarget != nullptr
-                ? gameTarget
-                : static_cast<wxWindow*>(gameZoneAnchor_));
+            EnsureGameplayNavigationInvariant();
+            scope.Add(GameplayNavigationTarget());
             if (chatInput_->IsShown()) scope.Add(chatInput_);
             scope.Add(history_);
             return scope;
@@ -109,9 +107,11 @@ void RoomPanel::ScheduleGameZoneFocus()
 {
     // Resolve after native show/layout and focus-restoration events, not while
     // the pawn overlay or the entire room is still being hidden/revealed.
-    CallAfter([weakThis = wxWeakRef<RoomPanel>(this)]()
+    const auto generation = ++focusGeneration_;
+    CallAfter([weakThis = wxWeakRef<RoomPanel>(this), generation]()
     {
-        if (!weakThis || !weakThis->IsShownOnScreen()) return;
+        if (!weakThis || generation != weakThis->focusGeneration_ ||
+            !weakThis->IsShownOnScreen()) return;
         auto* top = dynamic_cast<wxTopLevelWindow*>(wxGetTopLevelParent(weakThis.get()));
         if (top != nullptr && !top->IsActive()) return;
         auto* focused = wxWindow::FindFocus();
@@ -119,14 +119,15 @@ void RoomPanel::ScheduleGameZoneFocus()
             focused == weakThis->gameZoneAnchor_ ||
             lila::shared::accessibility::NavigationController::IsDescendantOf(
                 focused, weakThis->gamePlayPanel_);
-        auto* target = weakThis->gamePlayPanel_->RequiredInteractionTarget();
-        if (target != nullptr && !target->IsShownOnScreen()) target = nullptr;
-        // Only one game-zone entry: either the interaction or its fallback.
-        weakThis->gameZoneAnchor_->Show(target == nullptr);
+        weakThis->EnsureGameplayNavigationInvariant();
         weakThis->Layout();
+        // Visibility and focusability can change during Layout; resolve again
+        // only after the final geometry has been applied.
+        auto* target = weakThis->GameplayNavigationTarget();
+        if (generation != weakThis->focusGeneration_) return;
         if (!insideGame) return; // Never steal focus from chat or history.
         static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
-            target != nullptr ? target : static_cast<wxWindow*>(weakThis->gameZoneAnchor_)));
+            target));
     });
 }
 

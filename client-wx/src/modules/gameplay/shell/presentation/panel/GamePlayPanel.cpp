@@ -8,6 +8,7 @@
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
 #include "modules/gameplay/session/application/GameSessionService.h"
+#include "modules/gameplay/shell/application/GamePlayAccessPolicy.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
@@ -62,7 +63,10 @@ void GamePlayPanel::CloseSession()
 void GamePlayPanel::ResetSessionState()
 {
     eventMailbox_.Clear();
-    requestSlot_.Cancel();
+    joinRequestSlot_.Cancel();
+    refreshRequestSlot_.Cancel();
+    rulesRequestSlot_.Cancel();
+    candidatesRequestSlot_.Cancel();
     inputRequestSlot_.Cancel();
     inputSubmissionGuard_.Reset();
     retryableActionCommand_.reset();
@@ -117,80 +121,59 @@ void GamePlayPanel::SetRoomStartRequestedHandler(RoomStartRequestedHandler handl
     onRoomStartRequested_ = std::move(handler);
 }
 
+bool GamePlayPanel::IsUsableNavigationTarget(wxWindow* target)
+{
+    return target != nullptr && application::GamePlayAccessPolicy::IsUsableTarget(
+        target->IsShownOnScreen(), target->IsEnabled(), target->AcceptsFocus());
+}
+
 wxWindow* GamePlayPanel::PreferredNavigationTarget() const
 {
-    if (IsFinished()) return nullptr;
-    if (confirmationPanel_ != nullptr && confirmationPanel_->IsActive())
-    {
-        const auto targets = confirmationPanel_->TabTargets();
-        if (!targets.empty()) return targets.front();
-    }
-    if (promptPanel_ != nullptr && promptPanel_->IsActive())
-    {
-        const auto targets = promptPanel_->TabTargets();
-        if (!targets.empty()) return targets.front();
-    }
-    // The game socket prepares the next run before the room starts. Those
-    // controls must remain hidden from keyboard navigation until the room
-    // confirms the transition; only the stable game-zone anchor is exposed.
-    if (!lifecycle_.IsRoomStarted()) return nullptr;
-    // An authoritative pending choice always takes priority over read-only
-    // capability views, independently of the workflow that produced it.
-    if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
-        return choicesList_;
-    if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
-        return orderingChoices_;
-    // Leaving a round hides the viewer's hand. Do not then move focus to the
-    // read-only results list: screen readers would recite every score and empty
-    // capability section after the leave announcement. Returning no target
-    // keeps focus on the stable game-zone anchor.
-    if (state_.kits.VisibleHand().empty() &&
-        !state_.system.round.leftPlayerIds.empty()) return nullptr;
-    if (handPanel_ != nullptr)
-    {
-        if (auto* target = handPanel_->NavigationTarget()) return target;
-    }
-    if (gridPanel_ != nullptr)
-    {
-        if (auto* target = gridPanel_->NavigationTarget(); target && gridPanel_->IsShown())
-            return target;
-    }
-    if (movementPanel_ != nullptr)
-        if (auto* target = movementPanel_->NavigationTarget()) return target;
-    if (workflowPanel_ != nullptr)
-        if (auto* target = workflowPanel_->NavigationTarget()) return target;
-    if (linesList_ != nullptr && linesList_->IsShown() && linesList_->GetCount() > 0)
-        return linesList_;
-    return nullptr;
+    return ResolveUsableNavigationTarget(false);
 }
 
 wxWindow* GamePlayPanel::RequiredInteractionTarget() const
 {
+    return ResolveUsableNavigationTarget(true);
+}
+
+wxWindow* GamePlayPanel::ResolveUsableNavigationTarget(bool requiredOnly) const
+{
+    const auto usable = [](wxWindow* target) -> wxWindow*
+    {
+        return IsUsableNavigationTarget(target) ? target : nullptr;
+    };
     if (IsFinished()) return nullptr;
     if (confirmationPanel_ != nullptr && confirmationPanel_->IsActive())
     {
         const auto targets = confirmationPanel_->TabTargets();
-        if (!targets.empty()) return targets.front();
+        for (auto* target : targets)
+            if (auto* result = usable(target)) return result;
     }
     if (promptPanel_ != nullptr && promptPanel_->IsActive())
     {
         const auto targets = promptPanel_->TabTargets();
-        if (!targets.empty()) return targets.front();
+        for (auto* target : targets)
+            if (auto* result = usable(target)) return result;
     }
-    if (!lifecycle_.IsRoomStarted()) return nullptr;
-    if (choicesList_ != nullptr && choicesList_->IsShown() && choicesList_->GetCount() > 0)
-        return choicesList_;
-    if (orderingChoices_ != nullptr && orderingChoices_->IsShown())
-        return orderingChoices_;
-    // When the viewer receives a hand, promote it above the stable game-zone
-    // anchor. RoomPanel still guards this request so a realtime update cannot
-    // steal focus from chat or history.
+    if (lifecycle_.Policy().focus != application::GamePlayFocusPolicy::GameplayTarget)
+        return nullptr;
+    if (choicesList_ != nullptr && choicesList_->GetCount() > 0)
+        if (auto* result = usable(choicesList_)) return result;
+    if (auto* result = usable(orderingChoices_)) return result;
+    if (state_.kits.VisibleHand().empty() &&
+        !state_.system.round.leftPlayerIds.empty()) return nullptr;
     if (handPanel_ != nullptr)
-        if (auto* target = handPanel_->NavigationTarget()) return target;
-    // A board replaces the zone anchor even during the opponent's turn.
-    // Keep it directly navigable without an extra Enter to activate it.
-    if (gridPanel_ != nullptr && gridPanel_->IsShown())
-        if (auto* target = gridPanel_->NavigationTarget()) return target;
+        if (auto* result = usable(handPanel_->NavigationTarget())) return result;
+    if (gridPanel_ != nullptr)
+        if (auto* result = usable(gridPanel_->NavigationTarget())) return result;
+    if (requiredOnly) return nullptr;
+    if (movementPanel_ != nullptr)
+        if (auto* result = usable(movementPanel_->NavigationTarget())) return result;
+    if (workflowPanel_ != nullptr)
+        if (auto* result = usable(workflowPanel_->NavigationTarget())) return result;
+    if (linesList_ != nullptr && linesList_->GetCount() > 0)
+        if (auto* result = usable(linesList_)) return result;
     return nullptr;
 }
 }

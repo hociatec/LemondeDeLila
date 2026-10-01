@@ -1,0 +1,3 @@
+192. Exécuter les scénarios Gameplay sur Windows wxWidgets réel, pas uniquement dans les portable checks.
+
+193. Tester avec un lecteur d'écran ou au minimum l'API accessibility Windows pour vérifier la présence permanente de l'entrée Gameplay.

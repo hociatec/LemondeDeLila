@@ -8,6 +8,7 @@
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/shell/application/GamePlayAccessPolicy.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
@@ -104,9 +105,28 @@ void GamePlayPanel::BuildLayout()
 
 void GamePlayPanel::SyncContentVisibility()
 {
-    const bool overlayVisible =
-        confirmationPanel_->IsActive() || promptPanel_->IsActive();
-    contentPanel_->Show(!overlayVisible);
+    bool overlayVisible = false;
+    if (confirmationPanel_->IsActive())
+        for (auto* target : confirmationPanel_->TabTargets())
+            overlayVisible = overlayVisible || IsUsableNavigationTarget(target);
+    if (promptPanel_->IsActive())
+        for (auto* target : promptPanel_->TabTargets())
+            overlayVisible = overlayVisible || IsUsableNavigationTarget(target);
+    const bool replaceContent = application::GamePlayAccessPolicy::
+        ShouldReplaceContentWithOverlay(
+            confirmationPanel_->IsActive() || promptPanel_->IsActive(),
+            overlayVisible);
+    contentPanel_->Show(!replaceContent);
     Layout();
+    if (GetParent()) GetParent()->Layout();
+    NotifyNavigationTargetIfChanged();
+}
+
+void GamePlayPanel::NotifyNavigationTargetIfChanged()
+{
+    auto* target = RequiredInteractionTarget();
+    if (lastNavigationTarget_.get() == target) return;
+    lastNavigationTarget_ = target;
+    if (onZoneFocusRequested_) onZoneFocusRequested_();
 }
 }

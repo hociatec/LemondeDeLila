@@ -118,10 +118,6 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     {
         confirmationPanel_->HideConfirmation();
         promptPanel_->HidePrompt(true);
-        Hide();
-        if (GetParent()) GetParent()->Layout();
-        if (focusWasInsideGame && onZoneFocusRequested_) onZoneFocusRequested_();
-        return;
     }
     Show(lifecycle_.IsVisible());
     headerLabel_->SetLabel(BuildHeaderText());

@@ -88,7 +88,11 @@ public:
     void NotifyRoomStartFailed(const wxString& message);
     bool HandleZoneActivation();
     [[nodiscard]] bool HandleKey(wxKeyEvent& event);
+    // Preferred is used only after activating the stable Room game-zone entry.
     [[nodiscard]] wxWindow* PreferredNavigationTarget() const;
+    // Required reports a priority interaction so Room can restore focus when
+    // that concrete control appears or disappears; it never controls whether
+    // the stable game-zone entry exists.
     [[nodiscard]] wxWindow* RequiredInteractionTarget() const;
 
 private:
@@ -103,16 +107,18 @@ private:
     void SendKey(std::string key);
     void SubmitInputCommand(
         std::string protocolCommand,
+        std::string correlationId,
         std::function<void(std::stop_token)> command,
         std::string failureMessage);
     void RunCommand(
+        lila::shared::concurrency::AsyncRequestSlot& slot,
         std::function<void(std::stop_token)> command,
         std::string failureMessage,
         std::function<void(GamePlayPanel&, const lila::shared::errors::AppError&)>
             onFailure = {});
     void ApplyState(domain::GameState state);
     void HandleEvent(domain::GameEvent event);
-    void DrainEventMailbox();
+    void DrainEventMailbox(application::GameEventMailbox::SessionToken session);
     void ActivateSelectedLine();
     bool ActivateSelectedPendingChoice();
     bool ActivateSelectedHandCard();
@@ -127,6 +133,9 @@ private:
     void ShowInlinePrompt(domain::GameAction action);
     [[nodiscard]] const domain::GamePrompt* ActivePrompt() const noexcept;
     void SyncContentVisibility();
+    void NotifyNavigationTargetIfChanged();
+    [[nodiscard]] static bool IsUsableNavigationTarget(wxWindow* target);
+    [[nodiscard]] wxWindow* ResolveUsableNavigationTarget(bool requiredOnly) const;
     [[nodiscard]] bool IsInlinePromptVisible() const;
     [[nodiscard]] bool IsConfirmationVisible() const;
     bool HandleShortcut(const std::string& normalizedKey);
@@ -182,7 +191,10 @@ private:
     StartAmbienceSelectedHandler onStartAmbienceSelected_;
     StartAmbiencePreviewHandler onStartAmbiencePreview_;
     StartAmbienceVolumeHandler onStartAmbienceVolume_;
-    lila::shared::concurrency::AsyncRequestSlot requestSlot_;
+    lila::shared::concurrency::AsyncRequestSlot joinRequestSlot_;
+    lila::shared::concurrency::AsyncRequestSlot refreshRequestSlot_;
+    lila::shared::concurrency::AsyncRequestSlot rulesRequestSlot_;
+    lila::shared::concurrency::AsyncRequestSlot candidatesRequestSlot_;
     lila::shared::concurrency::AsyncRequestSlot inputRequestSlot_;
     application::GameCommandSubmissionGuard inputSubmissionGuard_;
     application::GameEventMailbox eventMailbox_;
@@ -192,5 +204,6 @@ private:
     std::vector<std::string> pendingChoiceSignatures_;
     std::vector<domain::GameValue> pendingChoiceValues_;
     bool renderedPendingOrdering_ = false;
+    wxWeakRef<wxWindow> lastNavigationTarget_;
 };
 }

@@ -22,6 +22,13 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
         if (!message.empty()) UpdateStatus(lila::shared::text::FromUtf8(message), false, true);
         return true;
     }
+    if (inputSubmissionGuard_.RecoverIfExpired())
+    {
+        // Recovery is deliberately synchronization-only: never replay an
+        // ambiguous mutating command after a lost acknowledgement.
+        RequestRefresh();
+        return true;
+    }
     if (inputSubmissionGuard_.IsInFlight())
     {
         if (keyCode == WXK_F5)

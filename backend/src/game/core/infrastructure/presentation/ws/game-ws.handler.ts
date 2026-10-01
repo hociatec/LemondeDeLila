@@ -160,6 +160,7 @@ export class GameWsHandler {
           payload: this.realtime.present(current, roomId, user.id),
         };
       }
+      const acknowledgedCommandId = actions.at(0)?.meta?.commandId;
       return {
         type: 'game.ack',
         payload: {
@@ -167,6 +168,9 @@ export class GameWsHandler {
           ok: true,
           roomId,
           gameType: resolved.gameType,
+          ...(typeof acknowledgedCommandId === 'string'
+            ? { commandId: acknowledgedCommandId }
+            : {}),
         },
       };
     });

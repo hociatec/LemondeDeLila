@@ -15,35 +15,44 @@ namespace lila::modules::gameplay::presentation
 {
 void GamePlayPanel::AttachEventHandler()
 {
+    const auto session = eventMailbox_.BeginSession();
     service_.SetEventHandler(
-        [weakThis = wxWeakRef<GamePlayPanel>(this)](domain::GameEvent event) mutable
+        [weakThis = wxWeakRef<GamePlayPanel>(this), session](domain::GameEvent event) mutable
         {
             if (!weakThis) return;
-            if (!weakThis->eventMailbox_.Enqueue(std::move(event))) return;
-            weakThis->CallAfter([weakThis]() { if (weakThis) weakThis->DrainEventMailbox(); });
+            const auto result = weakThis->eventMailbox_.Enqueue(std::move(event), session);
+            if (!result.accepted) return;
+            if (result.saturated)
+                lila::shared::logging::LogWarning(
+                    "GameEventMailbox", "Mailbox saturated; coalescing realtime events.");
+            if (!result.shouldSchedule) return;
+            weakThis->CallAfter([weakThis, session]() {
+                if (weakThis) weakThis->DrainEventMailbox(session);
+            });
         });
 }
 
-void GamePlayPanel::DrainEventMailbox()
+void GamePlayPanel::DrainEventMailbox(application::GameEventMailbox::SessionToken session)
 {
     lila::shared::ui::AssertUiThread();
-    auto batch = eventMailbox_.Drain();
+    auto batch = eventMailbox_.Drain(session);
     for (auto& event : batch.events) HandleEvent(std::move(event));
+    if (batch.resyncRequired) RequestRefresh();
     if (batch.morePending)
-        CallAfter([weakThis = wxWeakRef<GamePlayPanel>(this)]() {
-            if (weakThis) weakThis->DrainEventMailbox();
+        CallAfter([weakThis = wxWeakRef<GamePlayPanel>(this), session]() {
+            if (weakThis) weakThis->DrainEventMailbox(session);
         });
 }
 
 void GamePlayPanel::StartJoin()
 {
-    requestSlot_.Cancel();
-    const auto generation = requestSlot_.CurrentToken();
+    joinRequestSlot_.Cancel();
+    const auto generation = joinRequestSlot_.CurrentToken();
     auto* service = &service_;
     const int roomId = roomId_;
     const std::string gameType = gameType_;
     wxWeakRef<GamePlayPanel> weakThis(this);
-    requestSlot_.Track(lila::shared::concurrency::RunAsync<domain::GameState>(
+    joinRequestSlot_.Track(lila::shared::concurrency::RunAsync<domain::GameState>(
         [service, roomId, gameType](std::stop_token stopToken)
         {
             return service->Join(roomId, gameType, stopToken);
@@ -56,7 +65,7 @@ void GamePlayPanel::StartJoin()
             weakThis->CallAfter(
                 [weakThis, generation, error = std::move(error), state = std::move(state)]() mutable
                 {
-                    if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
+                    if (!weakThis || !weakThis->joinRequestSlot_.Complete(generation)) return;
                     if (error || !state)
                     {
                         if (error)
@@ -100,6 +109,7 @@ void GamePlayPanel::ExecuteAction(domain::GameAction action)
     retryableActionCommand_ = command;
     SubmitInputCommand(
         std::string(protocol::Action),
+        command.commandId,
         [service, command = std::move(command)](std::stop_token stopToken)
         {
             service->ExecuteAction(command, stopToken);
@@ -115,6 +125,7 @@ void GamePlayPanel::SendKey(std::string key)
     const auto loggedKey = key;
     SubmitInputCommand(
         std::string(protocol::Key),
+        {},
         [service, key = std::move(key)](std::stop_token stopToken)
         {
             service->SendKey(key, stopToken);
@@ -125,11 +136,13 @@ void GamePlayPanel::SendKey(std::string key)
 
 void GamePlayPanel::SubmitInputCommand(
     std::string protocolCommand,
+    std::string correlationId,
     std::function<void(std::stop_token)> command,
     std::string failureMessage)
 {
     if (!inputSubmissionGuard_.TryBegin(
-            protocolCommand, state_.version, state_.runId))
+            protocolCommand, state_.version, state_.runId,
+            application::GameCommandSubmissionGuard::Clock::now(), correlationId))
     {
         lila::shared::logging::LogInfo(
             "GameInput", "Input ignored while a server command is pending.");
@@ -177,6 +190,7 @@ void GamePlayPanel::RequestRefresh()
 {
     auto* service = &service_;
     RunCommand(
+        refreshRequestSlot_,
         [service](std::stop_token stopToken)
         {
             service->RequestState(stopToken);
@@ -187,34 +201,37 @@ void GamePlayPanel::RequestRefresh()
 void GamePlayPanel::ShowRules()
 {
     auto* service = &service_;
-    RunCommand([service](std::stop_token stopToken) { service->RequestRules(stopToken); },
+    RunCommand(rulesRequestSlot_,
+        [service](std::stop_token stopToken) { service->RequestRules(stopToken); },
         "Chargement des règles impossible.");
 }
 
 void GamePlayPanel::RunCommand(
+    lila::shared::concurrency::AsyncRequestSlot& slot,
     std::function<void(std::stop_token)> command,
     std::string failureMessage,
     std::function<void(GamePlayPanel&, const lila::shared::errors::AppError&)> onFailure)
 {
-    requestSlot_.Cancel();
-    const auto generation = requestSlot_.CurrentToken();
+    slot.Cancel();
+    const auto generation = slot.CurrentToken();
+    auto* trackedSlot = &slot;
     wxWeakRef<GamePlayPanel> weakThis(this);
-    requestSlot_.Track(lila::shared::concurrency::RunAsync<bool>(
+    slot.Track(lila::shared::concurrency::RunAsync<bool>(
         [command = std::move(command)](std::stop_token stopToken)
         {
             command(stopToken);
             return true;
         },
-        [weakThis, generation, onFailure = std::move(onFailure)](
+        [weakThis, trackedSlot, generation, onFailure = std::move(onFailure)](
             std::optional<lila::shared::errors::AppError> error,
             std::optional<bool>) mutable
         {
             if (!weakThis) return;
             weakThis->CallAfter(
-                [weakThis, generation, error = std::move(error),
+                [weakThis, trackedSlot, generation, error = std::move(error),
                  onFailure = std::move(onFailure)]() mutable
                 {
-                    if (!weakThis || !weakThis->requestSlot_.Complete(generation)) return;
+                    if (!weakThis || !trackedSlot->Complete(generation)) return;
                     if (!error) return;
                     if (onFailure)
                         onFailure(*weakThis, *error);

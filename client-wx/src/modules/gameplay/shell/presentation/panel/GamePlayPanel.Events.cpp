@@ -66,6 +66,7 @@ void GamePlayPanel::BindEvents()
         {
             auto* service = &service_;
             RunCommand(
+                candidatesRequestSlot_,
                 [service, request = std::move(request)](std::stop_token stopToken)
                 {
                     service->RequestActionCandidates(request, stopToken);
@@ -136,10 +137,14 @@ void GamePlayPanel::BindEvents()
 bool GamePlayPanel::HandleZoneActivation()
 {
     if (!IsOpen()) return false;
+    if (IsFinished())
+    {
+        UpdateStatus(wxString(L"Partie terminée. L’état final reste affiché."), false, true);
+        return true;
+    }
     if (!lifecycle_.HasAuthoritativeState()) return true;
     if (!lifecycle_.IsRoomStarted())
         return lifecycle_.IsStartFlowRequested() || lifecycle_.IsRoomStartPending();
-    if (IsFinished()) return false;
     if (IsConfirmationVisible() || IsInlinePromptVisible()) return true;
     if (const auto* prompt = ActivePrompt())
     {

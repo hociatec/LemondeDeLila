@@ -30,6 +30,7 @@ enum class GameConnectionState
 struct GameAcknowledgement final
 {
     std::string command;
+    std::string commandId;
     bool ok = false;
     std::string key;
     std::string panelId;

@@ -63,7 +63,10 @@ describe('GameWsHandler internal state refresh version', () => {
   it('accepts a pawn choice based on the state immediately before an internal roster refresh', async () => {
     const test = setup(1, 1);
 
-    await test.handler.action({ user: { id: 7 } } as never, {});
+    const acknowledgement = await test.handler.action(
+      { user: { id: 7 } } as never,
+      {},
+    );
 
     expect(test.executor.execute).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -76,6 +79,12 @@ describe('GameWsHandler internal state refresh version', () => {
       }),
     );
     expect(test.realtime.commit).toHaveBeenCalledTimes(1);
+    expect(acknowledgement).toEqual(
+      expect.objectContaining({
+        type: 'game.ack',
+        payload: expect.objectContaining({ commandId: 'configure-1' }),
+      }),
+    );
   });
 
   it('also rebases game configuration after the same internal refresh', async () => {
