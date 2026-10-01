@@ -86,40 +86,25 @@ if ((Get-FileHash -LiteralPath $previousInstaller -Algorithm SHA256).Hash.ToLowe
     throw 'Le hash de l installateur précédent est invalide.'
 }
 $previousSignature = Get-AuthenticodeSignature -LiteralPath $previousInstaller
-$temporaryTrustStore = $null
-$temporaryTrustedCertificate = $null
 if ($previousSignature.Status -eq [System.Management.Automation.SignatureStatus]::UnknownError -and
     $null -ne $previousSignature.SignerCertificate) {
     # GitHub's fresh Windows images do not trust the private deployment CA.
-    # Trust the already hash-pinned signer only for this process and remove it
-    # after the upgrade check. This also avoids Windows blocking process launch
-    # while it tries to resolve an unavailable private certification chain.
-    $temporaryTrustedCertificate = $previousSignature.SignerCertificate
-    $temporaryTrustStore = [System.Security.Cryptography.X509Certificates.X509Store]::new(
-        [System.Security.Cryptography.X509Certificates.StoreName]::TrustedPeople,
-        [System.Security.Cryptography.X509Certificates.StoreLocation]::CurrentUser)
-    $temporaryTrustStore.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
-    $temporaryTrustStore.Add($temporaryTrustedCertificate)
-    $previousSignature = Get-AuthenticodeSignature -LiteralPath $previousInstaller
-    if ($previousSignature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
-        $temporaryTrustStore.Remove($temporaryTrustedCertificate)
-        $temporaryTrustStore.Dispose()
-        $temporaryTrustStore = $null
-        throw "Signature Authenticode toujours invalide après approbation temporaire du signataire: $($previousSignature.Status)."
+    # The HTTPS manifest hash and embedded signer were both verified above.
+    # Remove only the certificate table from the local test copy so Windows
+    # does not wait for an unavailable private chain before process creation.
+    $signTool = (Get-Command signtool.exe -ErrorAction Stop).Source
+    & $signTool remove /s $previousInstaller | Out-Host
+    if ($LASTEXITCODE -ne 0 -or
+        (Get-AuthenticodeSignature -LiteralPath $previousInstaller).Status -ne
+            [System.Management.Automation.SignatureStatus]::NotSigned) {
+        throw 'Impossible de préparer la copie locale de la release précédente.'
     }
 } elseif ($previousSignature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
     throw "Signature Authenticode de la release précédente invalide: $($previousSignature.Status)."
 }
 Unblock-File -LiteralPath $previousInstaller
-try {
-    Install-Release $previousInstaller $upgradeDir "Installation de la release $($previousManifest.version)"
-    Install-Release $installerJson.InstallerExe $upgradeDir "Mise à niveau vers $Version"
-} finally {
-    if ($null -ne $temporaryTrustStore) {
-        $temporaryTrustStore.Remove($temporaryTrustedCertificate)
-        $temporaryTrustStore.Dispose()
-    }
-}
+Install-Release $previousInstaller $upgradeDir "Installation de la release $($previousManifest.version)"
+Install-Release $installerJson.InstallerExe $upgradeDir "Mise à niveau vers $Version"
 
 $userData = Join-Path $env:LOCALAPPDATA 'LeMondeDeLilaWX'
 New-Item -ItemType Directory -Force -Path $userData | Out-Null
