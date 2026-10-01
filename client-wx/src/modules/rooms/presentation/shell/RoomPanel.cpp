@@ -4,6 +4,7 @@
 
 #include "modules/rooms/application/RoomSessionService.h"
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
+#include "modules/gameplay/shell/application/GamePlayAccessPolicy.h"
 #include "modules/rooms/presentation/zone/RoomGameZoneAnchor.h"
 #include "modules/rooms/presentation/history/HistoryAnnouncementQueue.h"
 #include "shared/accessibility/presentation/ActionButton.h"
@@ -47,10 +48,24 @@ RoomPanel::~RoomPanel()
 lila::shared::accessibility::FocusManager::Plan RoomPanel::BuildFocusPlan()
 {
     lila::shared::accessibility::FocusManager::Plan plan;
-    if (auto* target = gamePlayPanel_->RequiredInteractionTarget())
-        plan.AddWindow(target);
-    plan.AddWindow(gameZoneAnchor_);
+    EnsureGameplayNavigationInvariant();
+    plan.AddWindow(GameplayNavigationTarget());
     return plan;
+}
+
+wxWindow* RoomPanel::GameplayNavigationTarget() const
+{
+    return gameZoneAnchor_;
+}
+
+void RoomPanel::EnsureGameplayNavigationInvariant()
+{
+    // The room always exposes a stable gameplay entry. Internal controls can
+    // become the preferred Tab target, but can never remove this fallback.
+    gameZoneAnchor_->Show(
+        lila::modules::gameplay::application::GamePlayAccessPolicy::
+            KeepStableEntryVisible());
+    gameZoneAnchor_->Enable(true);
 }
 
 void RoomPanel::CancelRequest()

@@ -47,6 +47,7 @@ domain::GameEvent GameEventPayloadCodec::Decode(const nlohmann::json& message)
     {
         domain::GameAcknowledgement acknowledgement;
         acknowledgement.command = ReadString(payload, "action");
+        acknowledgement.commandId = ReadString(payload, "commandId");
         acknowledgement.ok = ReadBoolean(payload, "ok");
         acknowledgement.key = ReadString(payload, "key");
         acknowledgement.panelId = ReadString(payload, "panelId");

@@ -91,9 +91,9 @@ for (const path of await sourceFiles(root)) {
     .map((match) => match[1]);
   const sourceModule = name.match(/^modules\/([^/]+)\//)?.[1];
   const catchAllCount = source.match(/catch\s*\(\s*\.\.\.\s*\)/g)?.length ?? 0;
-  asyncSlotTracks += source.match(/(?:requestSlot_|inputRequestSlot_)\.Track\s*\(/g)?.length ?? 0;
-  asyncSlotTokens += source.match(/(?:requestSlot_|inputRequestSlot_)\.CurrentToken\s*\(/g)?.length ?? 0;
-  asyncSlotCompletions += source.match(/(?:requestSlot_|inputRequestSlot_)\.Complete\s*\(/g)?.length ?? 0;
+  asyncSlotTracks += source.match(/\b(?:requestSlot_|\w+RequestSlot_|slot)\.Track\s*\(/g)?.length ?? 0;
+  asyncSlotTokens += source.match(/\b(?:requestSlot_|\w+RequestSlot_|slot)\.CurrentToken\s*\(/g)?.length ?? 0;
+  asyncSlotCompletions += source.match(/(?:\b(?:requestSlot_|\w+RequestSlot_)\.|trackedSlot->)Complete\s*\(/g)?.length ?? 0;
 
   reject(path, source, /\benum\s+(?!class\b|struct\b)[A-Za-z_]/,
     'les états fermés doivent utiliser enum class');
@@ -310,6 +310,35 @@ await requireMarkerCount(
   'modules/gameplay/actions/application/GameActionPresentationPolicy.cpp',
   'return {};', 1,
   'le client ne doit pas fabriquer une liste locale d’actions disponibles');
+
+const roomPanelSource = [
+  await readFile(join(root, 'modules/rooms/presentation/shell/RoomPanel.cpp'), 'utf8'),
+  await readFile(join(root, 'modules/rooms/presentation/shell/RoomPanel.Events.cpp'), 'utf8'),
+  await readFile(join(root, 'modules/rooms/presentation/shell/RoomPanel.State.cpp'), 'utf8'),
+].join('\n');
+const gameZoneVisibilityWrites = roomPanelSource.match(
+  /gameZoneAnchor_->(?:Hide|Show)\s*\(/g) ?? [];
+if (gameZoneVisibilityWrites.length !== 1 ||
+    !roomPanelSource.includes('KeepStableEntryVisible()'))
+  violations.push('RoomPanel: la visibilité de Zone de jeu doit être contrôlée uniquement par l’invariant stable');
+if (/gameZoneAnchor_->Show\s*\(\s*target\s*==\s*nullptr\s*\)/.test(roomPanelSource))
+  violations.push('RoomPanel: une interaction concrète ne doit jamais masquer Zone de jeu');
+if (!roomPanelSource.includes('scope.Add(GameplayNavigationTarget());') ||
+    !roomPanelSource.includes('plan.AddWindow(GameplayNavigationTarget());'))
+  violations.push('RoomPanel: Tab et focus initial doivent partager l’abstraction Zone de jeu');
+
+const gameplayPanelSource = await readFile(
+  join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.cpp'), 'utf8');
+for (const marker of ['IsShownOnScreen()', 'IsEnabled()', 'AcceptsFocus()'])
+  if (!gameplayPanelSource.includes(marker))
+    violations.push(`GamePlayPanel: validation de cible absente (${marker})`);
+
+const gameplayHeader = await readFile(
+  join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.h'), 'utf8');
+for (const slot of ['refreshRequestSlot_', 'rulesRequestSlot_', 'candidatesRequestSlot_',
+                    'inputRequestSlot_'])
+  if (!gameplayHeader.includes(slot))
+    violations.push(`GamePlayPanel: slot asynchrone indépendant absent (${slot})`);
 
 if (violations.length > 0) {
   console.error(`Frontières client invalides:\n${violations.join('\n')}`);

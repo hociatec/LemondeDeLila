@@ -33,8 +33,13 @@ void TestCommandSubmissionGuardSerializesGameplayCommands()
         "Une action doit partir sur la nouvelle execution");
     Expect(!guard.TryBegin("game.key", 1, 4, start + std::chrono::seconds(6)),
         "Une action sans réponse ne doit jamais être rejouée aveuglément");
+    Expect(!guard.RecoverIfExpired(start + std::chrono::seconds(14)),
+        "La récupération ne doit pas libérer une commande trop tôt");
+    Expect(guard.RecoverIfExpired(start + std::chrono::seconds(15)),
+        "Une commande sans ACK doit être libérée après un délai borné");
+    Expect(!guard.IsInFlight(),
+        "La récupération bornée doit rendre l'interface de nouveau interactive");
 
-    guard.Reset();
     Expect(guard.TryBegin("game.action", 12, 3, start),
         "Une nouvelle action doit être verrouillée");
     Expect(guard.Acknowledge("game.action", false),
@@ -44,6 +49,18 @@ void TestCommandSubmissionGuardSerializesGameplayCommands()
     guard.ObserveState(13, 3);
     Expect(guard.TryBegin("game.action", 13, 3, start),
         "Le nouvel état serveur doit libérer l'action validée");
+    guard.ObserveState(1, 9);
+    Expect(!guard.IsInFlight(),
+        "Une réponse tardive d'un ancien run ne doit pas verrouiller le nouveau run");
+
+    Expect(guard.TryBegin("game.action", 20, 9, start, "new-command"),
+        "Une action corrélée doit partir");
+    Expect(!guard.Acknowledge("game.action", true, "old-command"),
+        "Un ACK tardif d'une ancienne commande ne doit pas libérer la nouvelle");
+    Expect(guard.IsInFlight(),
+        "La nouvelle commande doit rester protégée après l'ancien ACK");
+    Expect(guard.Acknowledge("game.action", true, "new-command"),
+        "L'ACK corrélé doit libérer sa propre commande");
 }
 
 void TestStructuredGameAcknowledgements()
@@ -53,6 +70,7 @@ void TestStructuredGameAcknowledgements()
         {"type", "game.ack"},
         {"payload", {
             {"action", "game.key"},
+            {"commandId", "command-42"},
             {"ok", false},
             {"key", "SPACE"},
             {"panelId", "discard"},
@@ -64,6 +82,8 @@ void TestStructuredGameAcknowledgements()
         "Un acquittement de touche doit conserver sa structure");
     Expect(event.acknowledgement->command == "game.key",
         "La commande acquittee doit rester identifiable");
+    Expect(event.acknowledgement->commandId == "command-42",
+        "La corrélation de l'acquittement doit être conservée");
     Expect(!event.acknowledgement->ok && event.isError,
         "Un refus serveur doit etre expose comme tel");
     Expect(event.acknowledgement->key == "SPACE" &&

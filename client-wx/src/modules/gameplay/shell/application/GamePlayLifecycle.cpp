@@ -67,7 +67,11 @@ void GamePlayLifecycle::ObserveAuthoritativeState(
 
 void GamePlayLifecycle::MarkReconnecting() noexcept
 {
-    if (IsRoomStarted()) state_ = GamePlayLifecycleState::Reconnecting;
+    if (!IsRoomStarted()) return;
+    state_ = GamePlayLifecycleState::Reconnecting;
+    // The projection visible before transport loss is no longer authoritative.
+    // Keep it readable, but never activate it until the reconnect snapshot.
+    hasAuthoritativeState_ = false;
 }
 
 void GamePlayLifecycle::MarkConnected() noexcept
@@ -120,12 +124,38 @@ bool GamePlayLifecycle::IsRoomStartPending() const noexcept
 
 bool GamePlayLifecycle::IsVisible() const noexcept
 {
-    return state_ != GamePlayLifecycleState::Closed &&
-        state_ != GamePlayLifecycleState::WaitingStart;
+    return Policy().visible;
 }
 
 bool GamePlayLifecycle::AllowsGameplayInput() const noexcept
 {
-    return state_ == GamePlayLifecycleState::Active && hasAuthoritativeState_;
+    return Policy().acceptsInput && hasAuthoritativeState_;
+}
+
+GamePlayLifecyclePolicy GamePlayLifecycle::Policy() const noexcept
+{
+    return PolicyFor(state_);
+}
+
+GamePlayLifecyclePolicy GamePlayLifecycle::PolicyFor(
+    GamePlayLifecycleState state) noexcept
+{
+    switch (state)
+    {
+    case GamePlayLifecycleState::Closed:
+    case GamePlayLifecycleState::WaitingStart:
+        return {false, false, GamePlayFocusPolicy::RoomAnchor};
+    case GamePlayLifecycleState::Joining:
+    case GamePlayLifecycleState::ConfiguringStart:
+    case GamePlayLifecycleState::StartingRoom:
+    case GamePlayLifecycleState::Synchronizing:
+    case GamePlayLifecycleState::Reconnecting:
+        return {true, false, GamePlayFocusPolicy::RoomAnchor};
+    case GamePlayLifecycleState::Active:
+        return {true, true, GamePlayFocusPolicy::GameplayTarget};
+    case GamePlayLifecycleState::Finished:
+        return {true, false, GamePlayFocusPolicy::RoomAnchor};
+    }
+    return {};
 }
 }

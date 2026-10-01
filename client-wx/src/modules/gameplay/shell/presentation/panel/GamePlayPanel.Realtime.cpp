@@ -46,13 +46,21 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
             return;
         }
         const auto& acknowledgement = *event.acknowledgement;
-        retryableActionCommand_.reset();
         const bool acknowledgedAction = acknowledgement.command == protocol::Action;
         lila::shared::logging::LogInfo(
             "GameInput", "Acknowledgement received: " + acknowledgement.command);
-        static_cast<void>(inputSubmissionGuard_.Acknowledge(
+        const bool matchesPendingCommand = inputSubmissionGuard_.Acknowledge(
             acknowledgement.command,
-            !acknowledgement.ok || !acknowledgedAction));
+            !acknowledgement.ok || !acknowledgedAction,
+            acknowledgement.commandId);
+        if (acknowledgedAction && !matchesPendingCommand)
+        {
+            lila::shared::logging::LogWarning(
+                "GameInput", "Stale action acknowledgement ignored.");
+            RequestRefresh();
+            return;
+        }
+        retryableActionCommand_.reset();
         if (!acknowledgement.ok)
         {
             if (!acknowledgement.message.empty())
@@ -123,7 +131,11 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
             lifecycle_.MarkReconnecting();
         else if (event.connectionState == domain::GameConnectionState::Connected)
             lifecycle_.MarkConnected();
+        Show(lifecycle_.IsVisible());
+        SyncContentVisibility();
         UpdateStatus(FromUtf8(event.message), event.isError, true);
+        if (event.connectionState == domain::GameConnectionState::Connected)
+            RequestRefresh();
         return;
     case domain::GameEventType::Error:
         inputSubmissionGuard_.Reset();

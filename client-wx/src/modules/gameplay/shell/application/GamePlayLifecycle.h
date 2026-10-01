@@ -17,6 +17,19 @@ enum class GamePlayLifecycleState
     Finished,
 };
 
+enum class GamePlayFocusPolicy
+{
+    RoomAnchor,
+    GameplayTarget,
+};
+
+struct GamePlayLifecyclePolicy final
+{
+    bool visible = false;
+    bool acceptsInput = false;
+    GamePlayFocusPolicy focus = GamePlayFocusPolicy::RoomAnchor;
+};
+
 class GamePlayLifecycle final
 {
 public:
@@ -39,6 +52,9 @@ public:
     [[nodiscard]] bool IsRoomStartPending() const noexcept;
     [[nodiscard]] bool IsVisible() const noexcept;
     [[nodiscard]] bool AllowsGameplayInput() const noexcept;
+    [[nodiscard]] GamePlayLifecyclePolicy Policy() const noexcept;
+    [[nodiscard]] static GamePlayLifecyclePolicy PolicyFor(
+        GamePlayLifecycleState state) noexcept;
 
 private:
     GamePlayLifecycleState state_ = GamePlayLifecycleState::Closed;

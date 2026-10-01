@@ -77,6 +77,7 @@ void RoomPanel::SyncGamePlayPanel()
         gamePlayPanel_->Open(room_.id, room_.gameType, room_.gameName, isStarted);
     }
     gamePlayPanel_->SetRoomStarted(isStarted, room_.runId);
+    EnsureGameplayNavigationInvariant();
     ScheduleGameZoneFocus();
 }
 
@@ -85,7 +86,7 @@ void RoomPanel::ShowConnecting()
     state_ = State::Connecting;
     gamePlayPanel_->CloseSession();
     gamePlayPanel_->Hide();
-    gameZoneAnchor_->Show(true);
+    EnsureGameplayNavigationInvariant();
     gameZoneAnchor_->SetTitle(lila::shared::text::FromUtf8(room_.gameName));
     gameNameLabel_->SetLabel(lila::shared::text::FromUtf8(room_.gameName));
     detailsLabel_->Hide();
@@ -109,6 +110,7 @@ void RoomPanel::ShowRoom()
     chatInput_->Show(room_.chatEnabled);
     chatInput_->Enable(room_.chatEnabled && state_ == State::Ready);
     Layout();
+    EnsureGameplayNavigationInvariant();
     ApplyInitialFocusIfNeeded();
 }
 
@@ -117,7 +119,7 @@ void RoomPanel::ShowError(const wxString& message, PreparedHandler onPrepared)
     state_ = State::Error;
     gamePlayPanel_->CloseSession();
     gamePlayPanel_->Hide();
-    gameZoneAnchor_->Show(true);
+    EnsureGameplayNavigationInvariant();
     gameZoneAnchor_->SetTitle(wxString(L"R\u00E9essayer"));
     UpdateStatus(message, true);
     ApplyInitialFocusIfNeeded();

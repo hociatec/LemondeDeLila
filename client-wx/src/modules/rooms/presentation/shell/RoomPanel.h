@@ -106,6 +106,8 @@ private:
     void CloseSession();
     void ApplyInitialFocusIfNeeded();
     void ScheduleGameZoneFocus();
+    [[nodiscard]] wxWindow* GameplayNavigationTarget() const;
+    void EnsureGameplayNavigationInvariant();
 
     application::RoomSessionService& roomService_;
     application::RoomLobbyService& roomLobbyService_;
@@ -136,6 +138,7 @@ private:
     int ambienceVolume_ = 15;
     std::string previewedAmbienceSoundId_;
     bool ambiencePreviewPlaying_ = false;
+    std::size_t focusGeneration_ = 0;
     std::vector<wxString> pendingRoomAnnouncements_;
     std::unique_ptr<history::HistoryAnnouncementQueue> historyAnnouncements_;
 };

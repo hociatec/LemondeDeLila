@@ -3,35 +3,70 @@
 
 #include "modules/gameplay/events/application/GameEventMailbox.h"
 
+namespace
+{
+using lila::modules::gameplay::application::GameEventMailbox;
+using lila::modules::gameplay::domain::GameEvent;
+using lila::modules::gameplay::domain::GameEventType;
+
+GameEvent Event(GameEventType type)
+{
+    GameEvent event;
+    event.type = type;
+    return event;
+}
+}
+
 int main()
 {
-    using namespace lila::modules::gameplay;
-    application::GameEventMailbox mailbox(8);
+    GameEventMailbox mailbox(8);
+    const auto session = mailbox.BeginSession();
     for (int version = 1; version <= 1'000; ++version)
     {
-        domain::GameEvent event;
-        event.type = domain::GameEventType::StateUpdated;
+        auto event = Event(GameEventType::StateUpdated);
         event.state.emplace();
         event.state->version = version;
-        const bool shouldSchedule = mailbox.Enqueue(std::move(event));
-        assert(shouldSchedule == (version == 1));
+        const auto result = mailbox.Enqueue(std::move(event), session);
+        assert(result.accepted);
+        assert(result.shouldSchedule == (version == 1));
         assert(mailbox.Pending() <= 8);
     }
-    auto stateBatch = mailbox.Drain();
+    auto stateBatch = mailbox.Drain(session);
     assert(stateBatch.events.size() == 1);
     assert(stateBatch.events.front().state->version == 1'000);
-    assert(mailbox.Dropped() == 999);
+    assert(stateBatch.resyncRequired);
+    assert(mailbox.Dropped(GameEventType::StateUpdated) == 999);
 
-    for (int index = 0; index < 32; ++index)
-    {
-        domain::GameEvent event;
-        event.type = domain::GameEventType::Acknowledged;
-        static_cast<void>(mailbox.Enqueue(std::move(event)));
-    }
-    assert(mailbox.Pending() == 8);
-    assert(mailbox.Dropped() == 1'023);
-    const auto first = mailbox.Drain(3);
-    assert(first.events.size() == 3 && first.morePending);
-    const auto second = mailbox.Drain(32);
-    assert(second.events.size() == 5 && !second.morePending);
+    // Critical events have their own queue: neither saturation nor a snapshot
+    // storm may evict acknowledgements/errors needed to unlock input.
+    for (int index = 0; index < 8; ++index)
+        static_cast<void>(mailbox.Enqueue(Event(GameEventType::Ignored), session));
+    static_cast<void>(mailbox.Enqueue(Event(GameEventType::Acknowledged), session));
+    static_cast<void>(mailbox.Enqueue(Event(GameEventType::Error), session));
+    static_cast<void>(mailbox.Enqueue(Event(GameEventType::Acknowledged), session));
+    assert(mailbox.Pending() == 11);
+    const auto priority = mailbox.Drain(session, 3);
+    assert(priority.events.size() == 3);
+    assert(priority.events[0].type == GameEventType::Acknowledged);
+    assert(priority.events[1].type == GameEventType::Error);
+    assert(priority.events[2].type == GameEventType::Acknowledged);
+    assert(mailbox.Dropped(GameEventType::Acknowledged) == 0);
+    assert(mailbox.Dropped(GameEventType::Error) == 0);
+
+    mailbox.Clear();
+    const auto replacementSession = mailbox.BeginSession();
+    assert(!mailbox.Enqueue(Event(GameEventType::Error), session).accepted);
+    assert(mailbox.Drain(session).events.empty());
+    assert(mailbox.Enqueue(Event(GameEventType::ConnectionStatus), replacementSession).accepted);
+    for (int index = 0; index < 100; ++index)
+        static_cast<void>(mailbox.Enqueue(
+            Event(index % 2 == 0 ? GameEventType::TurnUpdated
+                                 : GameEventType::ConnectionStatus),
+            replacementSession));
+    static_cast<void>(mailbox.Enqueue(Event(GameEventType::Acknowledged), replacementSession));
+    const auto reconnectStorm = mailbox.Drain(replacementSession, 32);
+    assert(!reconnectStorm.events.empty());
+    assert(reconnectStorm.events.front().type == GameEventType::Acknowledged);
+    assert(mailbox.Dropped(GameEventType::TurnUpdated) > 0);
+    assert(mailbox.Dropped(GameEventType::ConnectionStatus) > 0);
 }

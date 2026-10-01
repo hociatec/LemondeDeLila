@@ -27,7 +27,7 @@ void GamePlayPanel::UpdateStatus(const wxString& message, bool isError, bool ann
         lila::shared::accessibility::AccessibilityUtils::AnnounceStatus(*statusLabel_, message);
     else
         lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*statusLabel_, message);
-    Layout();
+    SyncContentVisibility();
 }
 
 void GamePlayPanel::PublishLogMessages(const std::vector<std::string>& messages)
