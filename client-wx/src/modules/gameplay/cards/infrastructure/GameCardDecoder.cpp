@@ -98,7 +98,8 @@ int Count(const nlohmann::json& value)
 domain::GameCardsView GameCardDecoder::Decode(const nlohmann::json& cardsKit)
 {
     domain::GameCardsView result;
-    if (!cardsKit.is_object()) return result;
+    if (!cardsKit.is_object())
+        throw std::runtime_error("Capability cards invalide: objet attendu.");
 
     const auto decks = cardsKit.find("decks");
     if (decks != cardsKit.end() && decks->is_object())
@@ -128,16 +129,21 @@ domain::GameCardsView GameCardDecoder::Decode(const nlohmann::json& cardsKit)
     }
 
     const auto hands = cardsKit.find("hands");
+    if (hands != cardsKit.end() && !hands->is_object())
+        throw std::runtime_error("Capability cards invalide: hands doit etre un objet.");
     if (hands != cardsKit.end() && hands->is_object())
     {
         EnsureCollectionLimit(*hands, "hands");
         for (const auto& item : hands->items())
         {
-            if (!item.value().is_object()) continue;
+            if (!item.value().is_object())
+                throw std::runtime_error("Capability cards invalide: main non objet.");
             domain::GameHandView hand;
             hand.id = item.key();
             hand.visibility = FirstText(item.value(), {"visibility"});
             const auto byPlayer = item.value().find("byPlayer");
+            if (byPlayer != item.value().end() && !byPlayer->is_object())
+                throw std::runtime_error("Capability cards invalide: byPlayer doit etre un objet.");
             if (byPlayer != item.value().end() && byPlayer->is_object())
             {
                 if (byPlayer->size() > 128)
