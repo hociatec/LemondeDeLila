@@ -201,6 +201,7 @@ int main()
         TestCapabilityInformationIsInspectable();
         TestKnownCapabilitiesAreTyped();
         TestProjectionCompatibilityAndLimits();
+        TestMalformedKnownCapabilitiesAreRejected();
         TestUnknownGameUsesOnlyPublicCapabilities();
         TestUnknownWorkflowHasAccessibleFallback();
         TestNumericNetworkKeysAreStrictlyValidated();
