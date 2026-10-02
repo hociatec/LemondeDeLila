@@ -79,6 +79,21 @@ int main()
     static_cast<void>(duplicateCritical.Enqueue(std::move(firstError), duplicateSession));
     assert(duplicateCritical.Pending() == 1);
 
+
+    GameEventMailbox fairMailbox(16);
+    const auto fairSession = fairMailbox.BeginSession();
+    for (int index = 0; index < 12; ++index)
+    {
+        auto error = Event(GameEventType::Error);
+        error.errorCode = "fair-" + std::to_string(index);
+        error.message = "critical-" + std::to_string(index);
+        static_cast<void>(fairMailbox.Enqueue(std::move(error), fairSession));
+    }
+    static_cast<void>(fairMailbox.Enqueue(Event(GameEventType::StateUpdated), fairSession));
+    const auto fairBatch = fairMailbox.Drain(fairSession, 4);
+    assert(std::any_of(fairBatch.events.begin(), fairBatch.events.end(),
+        [](const auto& event) { return event.type == GameEventType::StateUpdated; }));
+
     mailbox.Clear();
     const auto replacementSession = mailbox.BeginSession();
     assert(!mailbox.Enqueue(Event(GameEventType::Error), session).accepted);
