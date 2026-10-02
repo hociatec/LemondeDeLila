@@ -165,23 +165,21 @@ wxWindow* GamePlayPanel::ResolveUsableNavigationTarget(bool requiredOnly) const
     if (auto* result = usable(orderingChoices_)) return result;
     if (lifecycle_.Policy().focus != application::GamePlayFocusPolicy::GameplayTarget)
         return nullptr;
-    if (state_.kits.VisibleHand().empty() &&
-        !state_.system.round.leftPlayerIds.empty()) return nullptr;
-    if (handPanel_ != nullptr)
-        if (auto* result = usable(handPanel_->NavigationTarget())) return result;
-    if (gridPanel_ != nullptr)
-        if (auto* result = usable(gridPanel_->NavigationTarget())) return result;
-    // A quiz question is an active interaction even after this viewer has
-    // answered or while another participant is expected.  Keep its prompt as
-    // the priority target so a newly received question is announced without
-    // requiring an extra activation of the generic game-zone anchor.
-    if (state_.kits.quiz && !state_.kits.quiz->sessions.empty())
-        if (auto* result = usable(workflowPanel_->NavigationTarget())) return result;
+
+    // Navigation is derived only from renderers that actually expose a usable
+    // control. GamePlayPanel must not infer interaction priority from concrete
+    // capabilities (cards, quiz, pawns, ...): those are presentation data and
+    // can legitimately be combined differently by any game.
+    const wxWindow* const preferred[] = {
+        handPanel_ != nullptr ? handPanel_->NavigationTarget() : nullptr,
+        gridPanel_ != nullptr ? gridPanel_->NavigationTarget() : nullptr,
+        movementPanel_ != nullptr ? movementPanel_->NavigationTarget() : nullptr,
+        workflowPanel_ != nullptr ? workflowPanel_->NavigationTarget() : nullptr,
+    };
+    for (auto* candidate : preferred)
+        if (auto* result = usable(const_cast<wxWindow*>(candidate))) return result;
+
     if (requiredOnly) return nullptr;
-    if (movementPanel_ != nullptr)
-        if (auto* result = usable(movementPanel_->NavigationTarget())) return result;
-    if (workflowPanel_ != nullptr)
-        if (auto* result = usable(workflowPanel_->NavigationTarget())) return result;
     if (linesList_ != nullptr && linesList_->GetCount() > 0)
         if (auto* result = usable(linesList_)) return result;
     return nullptr;
