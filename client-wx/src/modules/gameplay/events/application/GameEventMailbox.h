@@ -132,6 +132,21 @@ public:
         if (session != session_) return batch;
         const auto limit = std::max<std::size_t>(1, maximum);
         batch.events.reserve(std::min(limit, critical_.size() + regular_.size()));
+        // Critical acknowledgements/errors get priority, but never consume the
+        // whole batch while regular state is waiting: a fresh projection is
+        // itself part of recovery from errors and must not starve.
+        const auto criticalBudget = regular_.empty()
+            ? limit : std::max<std::size_t>(1, (limit * 3) / 4);
+        while (batch.events.size() < criticalBudget && !critical_.empty())
+        {
+            batch.events.push_back(std::move(critical_.front()));
+            critical_.pop_front();
+        }
+        if (batch.events.size() < limit && !regular_.empty())
+        {
+            batch.events.push_back(std::move(regular_.front()));
+            regular_.pop_front();
+        }
         while (batch.events.size() < limit && !critical_.empty())
         {
             batch.events.push_back(std::move(critical_.front()));
