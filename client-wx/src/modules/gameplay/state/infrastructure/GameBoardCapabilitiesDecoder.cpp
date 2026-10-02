@@ -64,10 +64,13 @@ std::optional<domain::GamePawnsView> GameBoardCapabilitiesDecoder::Pawns(
 {
     const auto sets = raw.find("sets");
     domain::GamePawnsView result;
-    if (sets == raw.end() || !sets->is_object()) return result;
+    if (sets == raw.end()) return result;
+    if (!sets->is_object())
+        throw std::runtime_error("Capability pawns invalide: sets doit etre un objet.");
     for (const auto& set : sets->items())
     {
-        if (!set.value().is_object()) continue;
+        if (!set.value().is_object())
+            throw std::runtime_error("Capability pawns invalide: set non objet.");
         const auto positions = Positions(set.value().value("positions", nlohmann::json::object()));
         const auto owners = set.value().value("owners", nlohmann::json::object());
         std::map<std::string, std::string> labels;
@@ -108,7 +111,9 @@ std::optional<domain::GameGridView> GameBoardCapabilitiesDecoder::Grid(
 {
     const auto boards = raw.find("boards");
     domain::GameGridView result;
-    if (boards == raw.end() || !boards->is_object()) return result;
+    if (boards == raw.end()) return result;
+    if (!boards->is_object())
+        throw std::runtime_error("Capability grid invalide: boards doit etre un objet.");
     if (boards->size() > 32) throw std::runtime_error("Trop de plateaux gameplay.");
     for (const auto& item : boards->items())
     {
