@@ -24,6 +24,14 @@ public:
             incoming.runId != current.runId)
             return incoming.runId > current.runId;
 
+        // Resetting a room reserves the following run identifier. Therefore a
+        // setup projection in the same run as an active game can only be a
+        // delayed or corrupted snapshot, even when it carries a newer storage
+        // version. Never let it erase the playable surface already displayed.
+        if (domain::IsActive(current.system.match.status) &&
+            incoming.system.match.status == domain::GameMatchStatus::Setup)
+            return false;
+
         if (current.version <= 0 || incoming.version <= 0) return true;
         return incoming.version > current.version;
     }

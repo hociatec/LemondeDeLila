@@ -78,8 +78,8 @@ void TestOlderGameStateCannotRestoreSetupPrompt()
 
     auto realResetState = staleSetupState;
     realResetState.version = 9;
-    Expect(GameStateUpdatePolicy::ShouldApply(roundState, realResetState),
-        "Une reinitialisation plus recente doit rester applicable.");
+    Expect(!GameStateUpdatePolicy::ShouldApply(roundState, realResetState),
+        "Un setup plus recent du meme run ne doit jamais effacer une partie active.");
 
     auto previousRunState = roundState;
     previousRunState.runId = 3;
@@ -94,7 +94,7 @@ void TestOlderGameStateCannotRestoreSetupPrompt()
         lila::modules::gameplay::domain::GameMatchStatus::Setup;
     newRunState.system.setup.phase.value = "setup";
     Expect(GameStateUpdatePolicy::ShouldApply(roundState, newRunState),
-        "Une nouvelle execution doit accepter une version remise a un.");
+        "Une vraie reinitialisation doit utiliser le run suivant et accepter une version remise a un.");
 
     auto unversionedActiveState = roundState;
     unversionedActiveState.version = 0;
