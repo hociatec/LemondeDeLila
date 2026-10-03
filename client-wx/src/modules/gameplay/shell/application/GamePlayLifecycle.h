@@ -52,6 +52,7 @@ public:
     [[nodiscard]] bool IsRoomStartPending() const noexcept;
     [[nodiscard]] bool IsVisible() const noexcept;
     [[nodiscard]] bool AllowsGameplayInput() const noexcept;
+    [[nodiscard]] bool AllowsProjectedContentFocus() const noexcept;
     [[nodiscard]] bool AllowsActionSubmission(
         bool startConfigurationSubmission) const noexcept;
     [[nodiscard]] GamePlayLifecyclePolicy Policy() const noexcept;
@@ -61,6 +62,7 @@ public:
 private:
     GamePlayLifecycleState state_ = GamePlayLifecycleState::Closed;
     bool hasAuthoritativeState_ = false;
+    bool hasActiveProjection_ = false;
     int expectedRunId_ = 0;
 };
 }

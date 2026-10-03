@@ -1788,6 +1788,1348 @@
         "runId": 1,
         "version": 3
       }
+    },
+    "afterSetup": {
+      "type": "game.state",
+      "payload": {
+        "viewVersion": 1,
+        "system": {
+          "match": {
+            "status": "playing",
+            "startedAtMs": 1700000000000,
+            "finishedAtMs": null,
+            "result": null,
+            "playerStatuses": {
+              "1": "active",
+              "2": "active"
+            }
+          },
+          "round": {
+            "number": 0,
+            "status": "idle",
+            "starterPlayerId": null,
+            "participantPlayerIds": [],
+            "leftPlayerIds": [],
+            "winnerPlayerIds": [],
+            "completedRounds": 0
+          },
+          "turn": {
+            "currentPlayerId": 1,
+            "direction": 1,
+            "number": 1,
+            "actionPointsRemaining": null,
+            "immediateExtraTurns": 0,
+            "extraCount": 0,
+            "skipTurnsByPlayer": {},
+            "extraTurnsByPlayer": {},
+            "replacementTurnsByPlayer": {},
+            "waitingSessionId": null,
+            "waitingPlayerIds": []
+          },
+          "setup": {
+            "complete": true,
+            "phase": "playing",
+            "ownerPlayerId": 1,
+            "values": {
+              "wallsPerPlayer": 10
+            }
+          },
+          "players": {
+            "all": [
+              {
+                "id": 1,
+                "username": "Lila",
+                "isBot": false,
+                "alive": true
+              },
+              {
+                "id": 2,
+                "username": "Mina",
+                "isBot": false,
+                "alive": true
+              }
+            ]
+          },
+          "events": {
+            "recent": [],
+            "latestByType": {}
+          },
+          "shortcuts": [
+            {
+              "key": "M",
+              "type": "action",
+              "actionType": "pathWalls_place_wall"
+            },
+            {
+              "key": "S",
+              "type": "interface",
+              "id": "score",
+              "label": "Scores"
+            }
+          ]
+        },
+        "kits": {
+          "cards": null,
+          "movement": null,
+          "pawns": {
+            "sets": {
+              "pathWalls": {
+                "definitions": [
+                  {
+                    "id": "vent",
+                    "label": "Le vent",
+                    "description": "Rapide et changeant, il traverse le pathWalls sans hésiter."
+                  },
+                  {
+                    "id": "eau",
+                    "label": "L’eau",
+                    "description": "Souple et patiente, elle contourne les obstacles avec précision."
+                  },
+                  {
+                    "id": "terre",
+                    "label": "La terre",
+                    "description": "Stable et solide, elle avance avec régularité."
+                  },
+                  {
+                    "id": "feu",
+                    "label": "Le feu",
+                    "description": "Direct et audacieux, il cherche la ligne d’arrivée."
+                  }
+                ],
+                "owners": {
+                  "vent": 1,
+                  "eau": 2
+                },
+                "assignments": {
+                  "1": [
+                    "vent"
+                  ],
+                  "2": [
+                    "eau"
+                  ]
+                },
+                "byPlayer": {
+                  "1": [
+                    "vent"
+                  ],
+                  "2": [
+                    "eau"
+                  ]
+                }
+              }
+            }
+          },
+          "grid": {
+            "boards": {
+              "pathWalls": {
+                "id": "pathWalls",
+                "width": 9,
+                "height": 9,
+                "component": "grid.board",
+                "cells": {
+                  "4,0": 1,
+                  "4,8": 2
+                },
+                "overlays": {
+                  "walls": []
+                }
+              }
+            }
+          },
+          "dice": null,
+          "score": {
+            "byPlayer": {
+              "1": 0,
+              "2": 0
+            },
+            "leaderboard": [
+              {
+                "playerId": 1,
+                "score": 0,
+                "rank": 1
+              },
+              {
+                "playerId": 2,
+                "score": 0,
+                "rank": 1
+              }
+            ],
+            "label": "Scores",
+            "unit": {
+              "singular": "point",
+              "plural": "points"
+            }
+          },
+          "resources": {
+            "board-path-walls.walls": {
+              "1": 10,
+              "2": 10
+            }
+          },
+          "counters": {},
+          "status": {
+            "byId": {}
+          },
+          "inventory": null,
+          "economy": null,
+          "ownership": null,
+          "quiz": null,
+          "submissions": {
+            "stage": "idle",
+            "sessions": {},
+            "judges": {}
+          },
+          "collections": {}
+        },
+        "effect": {
+          "source": null
+        },
+        "game": {},
+        "gameContract": {
+          "stateVersion": 1,
+          "rulesVersion": "4",
+          "contentVersion": "2"
+        },
+        "actions": [
+          {
+            "type": "pathWalls_move",
+            "payload": {
+              "x": 5,
+              "y": 0
+            }
+          },
+          {
+            "type": "pathWalls_move",
+            "payload": {
+              "x": 3,
+              "y": 0
+            }
+          },
+          {
+            "type": "pathWalls_move",
+            "payload": {
+              "x": 4,
+              "y": 1
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 0,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 0,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 0,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 0,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 0,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 0,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 0,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 0,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 1,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 1,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 1,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 1,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 1,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 1,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 1,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 1,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 2,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 2,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 2,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 2,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 2,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 2,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 2,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 2,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 3,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 3,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 3,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 3,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 3,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 3,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 3,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 3,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 4,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 4,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 4,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 4,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 4,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 4,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 4,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 4,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 5,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 5,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 5,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 5,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 5,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 5,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 5,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 5,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 6,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 6,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 6,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 6,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 6,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 6,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 6,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 6,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 7,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 7,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 7,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 7,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 7,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 7,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 7,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 7,
+              "orientation": "h"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 0,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 0,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 0,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 0,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 0,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 0,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 0,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 0,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 1,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 1,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 1,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 1,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 1,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 1,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 1,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 1,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 2,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 2,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 2,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 2,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 2,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 2,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 2,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 2,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 3,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 3,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 3,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 3,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 3,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 3,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 3,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 3,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 4,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 4,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 4,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 4,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 4,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 4,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 4,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 4,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 5,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 5,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 5,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 5,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 5,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 5,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 5,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 5,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 6,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 6,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 6,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 6,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 6,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 6,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 6,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 6,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 0,
+              "y": 7,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 1,
+              "y": 7,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 2,
+              "y": 7,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 3,
+              "y": 7,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 4,
+              "y": 7,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 5,
+              "y": 7,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 6,
+              "y": 7,
+              "orientation": "v"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "payload": {
+              "x": 7,
+              "y": 7,
+              "orientation": "v"
+            }
+          }
+        ],
+        "actionCatalog": [
+          {
+            "type": "game.configure",
+            "input": {
+              "type": "object",
+              "properties": {
+                "wallsPerPlayer": {
+                  "label": "Nombre de murs par joueur",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 20,
+                  "initialText": "10"
+                }
+              }
+            },
+            "documentation": "Configure la partie avant son démarrage.",
+            "ui": {
+              "label": "Choisir les pions",
+              "control": "form"
+            }
+          },
+          {
+            "type": "pathWalls_move",
+            "input": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "label": "X",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 8
+                },
+                "y": {
+                  "label": "Y",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 8
+                }
+              }
+            },
+            "documentation": "Déplace le pion sur une case légale, saut compris.",
+            "ui": {
+              "label": "PathWalls move",
+              "control": "form"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "input": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "label": "X",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 7
+                },
+                "y": {
+                  "label": "Y",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 7
+                },
+                "orientation": {
+                  "label": "Orientation",
+                  "type": "enum",
+                  "values": [
+                    "h",
+                    "v"
+                  ]
+                }
+              }
+            },
+            "documentation": "Place un mur sans chevauchement et sans fermer un chemin.",
+            "ui": {
+              "label": "PathWalls place wall",
+              "control": "form"
+            }
+          }
+        ],
+        "timers": {},
+        "pending": null,
+        "roomId": 1,
+        "gameType": "corridor",
+        "viewerPlayerId": 1,
+        "runId": 1,
+        "version": 4
+      }
     }
   },
   "arche": {

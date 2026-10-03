@@ -38,7 +38,7 @@ void TestProjectionCompatibilityAndLimits()
         "Une projection gameplay trop profonde doit être bornée.");
     auto numerous = payload;
     numerous["actions"] = nlohmann::json::array();
-    for (int index = 0; index < 129; ++index)
+    for (int index = 0; index < 4'097; ++index)
         numerous["actions"].push_back({{"type", "opaque"}});
     Expect(errorFor(numerous).find("Trop d'actions") != std::string::npos,
         "Le nombre d'actions projetées doit être borné.");

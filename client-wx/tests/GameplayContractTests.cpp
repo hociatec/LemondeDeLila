@@ -112,6 +112,10 @@ void TestPostConfigurationBackendClientContract()
                 ShouldApply(corridor, corridorAfterChoice) &&
             nextPending && nextPending->playerId && *nextPending->playerId == 2,
         "choice.resolve doit produire le prochain état Corridor correct.");
+    const auto corridorAfterSetup = decodeState("corridor", "afterSetup");
+    Expect(corridorAfterSetup.actions.size() > 128 &&
+            corridorAfterSetup.system.turn.currentPlayerId == 1,
+        "Le client doit accepter toutes les actions légales du premier tour Corridor.");
 
     const auto arche = decodeCycle("arche");
     const auto* quiz = lila::modules::gameplay::application::

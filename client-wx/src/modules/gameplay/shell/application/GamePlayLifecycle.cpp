@@ -7,6 +7,7 @@ void GamePlayLifecycle::Open(bool roomStarted) noexcept
     state_ = roomStarted ? GamePlayLifecycleState::Joining
                          : GamePlayLifecycleState::WaitingStart;
     hasAuthoritativeState_ = false;
+    hasActiveProjection_ = false;
     expectedRunId_ = 0;
 }
 
@@ -14,6 +15,7 @@ void GamePlayLifecycle::Close() noexcept
 {
     state_ = GamePlayLifecycleState::Closed;
     hasAuthoritativeState_ = false;
+    hasActiveProjection_ = false;
     expectedRunId_ = 0;
 }
 
@@ -38,6 +40,7 @@ void GamePlayLifecycle::SetRoomStarted(
     {
         state_ = GamePlayLifecycleState::WaitingStart;
         hasAuthoritativeState_ = false;
+        hasActiveProjection_ = false;
         return;
     }
     state_ = activeProjection ? GamePlayLifecycleState::Active
@@ -49,6 +52,7 @@ void GamePlayLifecycle::ObserveAuthoritativeState(
     int runId, domain::GameMatchStatus matchStatus) noexcept
 {
     hasAuthoritativeState_ = true;
+    hasActiveProjection_ = domain::IsActive(matchStatus);
     if (matchStatus == domain::GameMatchStatus::Finished)
     {
         state_ = GamePlayLifecycleState::Finished;
@@ -130,6 +134,14 @@ bool GamePlayLifecycle::IsVisible() const noexcept
 bool GamePlayLifecycle::AllowsGameplayInput() const noexcept
 {
     return Policy().acceptsInput && hasAuthoritativeState_;
+}
+
+bool GamePlayLifecycle::AllowsProjectedContentFocus() const noexcept
+{
+    return hasAuthoritativeState_ && hasActiveProjection_ &&
+        (state_ == GamePlayLifecycleState::ConfiguringStart ||
+         state_ == GamePlayLifecycleState::StartingRoom ||
+         state_ == GamePlayLifecycleState::Active);
 }
 
 bool GamePlayLifecycle::AllowsActionSubmission(

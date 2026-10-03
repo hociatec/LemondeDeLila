@@ -163,7 +163,8 @@ wxWindow* GamePlayPanel::ResolveUsableNavigationTarget(bool requiredOnly) const
     if (choicesList_ != nullptr && choicesList_->GetCount() > 0)
         if (auto* result = usable(choicesList_)) return result;
     if (auto* result = usable(orderingChoices_)) return result;
-    if (lifecycle_.Policy().focus != application::GamePlayFocusPolicy::GameplayTarget)
+    if (lifecycle_.Policy().focus != application::GamePlayFocusPolicy::GameplayTarget &&
+        !lifecycle_.AllowsProjectedContentFocus())
         return nullptr;
 
     // Navigation is derived only from renderers that actually expose a usable
