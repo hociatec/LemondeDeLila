@@ -47,10 +47,15 @@ int main()
     assert(lifecycle.State() == GamePlayLifecycleState::Closed);
     lifecycle.Open(false);
     assert(lifecycle.State() == GamePlayLifecycleState::WaitingStart);
+    lifecycle.ObserveAuthoritativeState(1, GameMatchStatus::Setup);
     assert(lifecycle.BeginRoomStart());
     assert(lifecycle.State() == GamePlayLifecycleState::ConfiguringStart);
+    assert(!lifecycle.AllowsGameplayInput());
+    assert(!lifecycle.AllowsActionSubmission(false));
+    assert(lifecycle.AllowsActionSubmission(true));
     lifecycle.MarkRoomStartPending();
     assert(lifecycle.State() == GamePlayLifecycleState::StartingRoom);
+    assert(!lifecycle.AllowsActionSubmission(true));
     lifecycle.SetRoomStarted(true, false, 42);
     assert(lifecycle.State() == GamePlayLifecycleState::Synchronizing);
     lifecycle.ObserveAuthoritativeState(41, GameMatchStatus::Playing);

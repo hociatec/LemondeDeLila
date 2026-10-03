@@ -52,6 +52,8 @@ public:
     [[nodiscard]] bool IsRoomStartPending() const noexcept;
     [[nodiscard]] bool IsVisible() const noexcept;
     [[nodiscard]] bool AllowsGameplayInput() const noexcept;
+    [[nodiscard]] bool AllowsActionSubmission(
+        bool startConfigurationSubmission) const noexcept;
     [[nodiscard]] GamePlayLifecyclePolicy Policy() const noexcept;
     [[nodiscard]] static GamePlayLifecyclePolicy PolicyFor(
         GamePlayLifecycleState state) noexcept;

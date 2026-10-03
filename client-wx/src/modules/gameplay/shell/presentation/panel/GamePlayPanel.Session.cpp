@@ -90,7 +90,11 @@ void GamePlayPanel::StartJoin()
 
 void GamePlayPanel::ExecuteAction(domain::GameAction action)
 {
-    if (!lifecycle_.AllowsGameplayInput() || action.type.empty() || action.disabled) return;
+    const bool startConfigurationSubmission =
+        startConfigurationFlow_.IsAwaitingActionAcknowledgement();
+    if (!lifecycle_.AllowsActionSubmission(startConfigurationSubmission) ||
+        action.type.empty() || action.disabled)
+        return;
     auto* service = &service_;
     const auto actionType = action.type;
     const bool retryingSameIntent = retryableActionCommand_ &&
