@@ -8,6 +8,7 @@
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/shell/application/GamePlayAccessPolicy.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
@@ -49,6 +50,9 @@ void GamePlayPanel::BuildLayout()
     contentPanel_->SetScrollRate(0, 12);
     contentPanel_->SetBackgroundColour(lila::shared::ui::Theme::PanelBackground());
     auto* content = new wxBoxSizer(wxVERTICAL);
+
+    dicePanel_ = new dice::GameDicePanel(contentPanel_);
+    content->Add(dicePanel_, 0, wxEXPAND | wxBOTTOM, 8);
 
     handPanel_ = new hand::GameHandPanel(contentPanel_);
     content->Add(handPanel_, 1, wxEXPAND | wxBOTTOM, 8);

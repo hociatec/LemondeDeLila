@@ -9,6 +9,7 @@ namespace lila::modules::gameplay::application
 struct GameSurfaceAvailability final
 {
     bool cards = false;
+    bool dice = false;
     bool quiz = false;
     bool pending = false;
     bool board = false;
@@ -45,6 +46,7 @@ public:
     {
         return {
             !VisibleHand(state).empty(),
+            state.kits.dice.has_value(),
             ActiveQuizSession(state) != nullptr,
             PendingDecision(state) != nullptr,
             state.kits.grid && !state.kits.grid->boards.empty(),
