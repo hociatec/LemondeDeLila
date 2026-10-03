@@ -12,11 +12,24 @@ const corpus = [
   ['race', 'a-fond-les-ballons', 53],
   ['spatial', 'morpion', 67],
 ] as const;
+const selectedIds = new Set(
+  (process.env.GAME_TEST_GAME_IDS ?? '').split(',').filter(Boolean),
+);
+const [shardIndex, shardCount] = (process.env.GAME_TEST_SHARD ?? '1/1')
+  .split('/')
+  .map(Number);
 const definitions = discoverGameDefinitions().sort((left, right) =>
   left.id.localeCompare(right.id),
 );
-const catalogueSeeds =
-  process.env.GAME_TEST_PROFILE === 'fast' ? [23] : [11, 23, 67];
+const selected = (id: string) => {
+  const index = definitions.findIndex((definition) => definition.id === id);
+  return (
+    index >= 0 &&
+    (selectedIds.size === 0 || selectedIds.has(id)) &&
+    index % shardCount === shardIndex - 1
+  );
+};
+const catalogueSeeds = [11, 23, 67] as const;
 const additionalCorpus = definitions.flatMap((definition) =>
   catalogueSeeds
     .filter(
@@ -34,17 +47,23 @@ beforeEach(() => {
 });
 afterEach(() => jest.restoreAllMocks());
 
-it.each(corpus)('%s reference replay: %s, seed %i', (_family, id, seed) => {
-  const definition = definitions.find((game) => game.id === id);
-  if (!definition) throw new Error(`Missing reference game ${id}`);
-  expect(runGameReplayCampaign(definition, seed, 64)).toMatchSnapshot();
-});
-
-it.each(additionalCorpus)(
-  'catalogue reference replay: %s, seed %i',
-  (id, seed) => {
+for (const [family, id, seed] of corpus) {
+  const testCase = selected(id) ? it : it.skip;
+  testCase(`${family} reference replay: ${id}, seed ${seed}`, () => {
     const definition = definitions.find((game) => game.id === id);
     if (!definition) throw new Error(`Missing reference game ${id}`);
     expect(runGameReplayCampaign(definition, seed, 64)).toMatchSnapshot();
-  },
-);
+  });
+}
+
+for (const [id, seed] of additionalCorpus) {
+  const testCase =
+    selected(id) && (process.env.GAME_TEST_PROFILE !== 'fast' || seed === 23)
+      ? it
+      : it.skip;
+  testCase(`catalogue reference replay: ${id}, seed ${seed}`, () => {
+    const definition = definitions.find((game) => game.id === id);
+    if (!definition) throw new Error(`Missing reference game ${id}`);
+    expect(runGameReplayCampaign(definition, seed, 64)).toMatchSnapshot();
+  });
+}

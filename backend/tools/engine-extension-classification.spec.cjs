@@ -2,15 +2,15 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const {
-  classifyEffectPack,
+  classifyEngineExtension,
   mechanicalFingerprint,
-} = require('./effect-pack-classification.cjs');
+} = require('./engine-extension-classification.cjs');
 
 const profile = {
-  scope: 'game-specific',
-  maturity: 'experimental',
+  scope: 'reusable',
+  maturity: 'reusable',
   classificationReason:
-    'Only one mechanical use case is present in the production catalogue. Configuration and renamed copies do not establish reusable behavior.',
+    'The extension is independent from every concrete game and its executable contract demonstrates reusable behavior through generic inputs.',
 };
 const consumers = [{ source: { world: 'one', setup: { scores: 0 } } }];
 
@@ -43,36 +43,38 @@ const evidence = {
   tests: ['src/game/testing/reuse.spec.ts'],
   test: 'src/game/testing/reuse.spec.ts',
   rationale:
-    'The test executes two independently designed mechanics using the same pack contract and checks their different initialization, legal actions and victory behavior without changing the implementation.',
+    'The test executes two independently designed mechanics using the same extension contract and checks their different initialization, legal actions and victory behavior without changing the implementation.',
 };
 
-test('a single consumer remains game-specific', () => {
+test('a single consumer requires an explicit independence proof', () => {
+  assert.throws(
+    () => classifyEngineExtension('extension', profile, consumers, readEvidence),
+    /independence review/,
+  );
   assert.equal(
-    classifyEffectPack('pack', profile, consumers, readEvidence).scope,
-    'game-specific',
+    classifyEngineExtension(
+      'extension',
+      {
+        ...profile,
+        reuseReview: { ...evidence, kind: 'independence-proof' },
+      },
+      consumers,
+      readEvidence,
+    ).scope,
+    'reusable',
   );
 });
 
 test('maturity cannot be promoted by changing a label alone', () => {
   assert.throws(
     () =>
-      classifyEffectPack(
-        'pack',
+      classifyEngineExtension(
+        'extension',
         { ...profile, maturity: undefined },
         consumers,
         readEvidence,
       ),
     /maturity required/,
-  );
-  assert.throws(
-    () =>
-      classifyEffectPack(
-        'pack',
-        { ...profile, maturity: 'stable' },
-        consumers,
-        readEvidence,
-      ),
-    /demonstrated reuse/,
   );
   const reusable = {
     ...profile,
@@ -81,13 +83,13 @@ test('maturity cannot be promoted by changing a label alone', () => {
     reuseReview: { ...evidence, kind: 'independence-proof' },
   };
   assert.equal(
-    classifyEffectPack('pack', reusable, consumers, readEvidence).maturity,
+    classifyEngineExtension('extension', reusable, consumers, readEvidence).maturity,
     'reusable',
   );
   assert.throws(
     () =>
-      classifyEffectPack(
-        'pack',
+      classifyEngineExtension(
+        'extension',
         { ...reusable, maturity: 'stable' },
         consumers,
         readEvidence,
@@ -104,13 +106,13 @@ test('maturity cannot be promoted by changing a label alone', () => {
     },
   };
   assert.equal(
-    classifyEffectPack('pack', stable, consumers, readEvidence).maturity,
+    classifyEngineExtension('extension', stable, consumers, readEvidence).maturity,
     'stable',
   );
   assert.throws(
     () =>
-      classifyEffectPack(
-        'pack',
+      classifyEngineExtension(
+        'extension',
         stable,
         consumers,
         (file) => file !== 'src/game/second.spec.ts' && readEvidence(file),
@@ -122,8 +124,8 @@ test('generic and missing classifications are rejected', () => {
   for (const scope of ['generic', undefined, 'stable'])
     assert.throws(
       () =>
-        classifyEffectPack(
-          'pack',
+        classifyEngineExtension(
+          'extension',
           { ...profile, scope },
           consumers,
           readEvidence,
@@ -134,8 +136,8 @@ test('generic and missing classifications are rejected', () => {
 test('a reusable claim requires an executable, precise review', () => {
   assert.throws(
     () =>
-      classifyEffectPack(
-        'pack',
+      classifyEngineExtension(
+        'extension',
         { ...profile, scope: 'reusable' },
         consumers,
         readEvidence,
@@ -144,8 +146,8 @@ test('a reusable claim requires an executable, precise review', () => {
   );
   assert.throws(
     () =>
-      classifyEffectPack(
-        'pack',
+      classifyEngineExtension(
+        'extension',
         { ...profile, scope: 'reusable', reuseReview: evidence },
         consumers,
         () => false,
@@ -154,8 +156,8 @@ test('a reusable claim requires an executable, precise review', () => {
   );
   assert.throws(
     () =>
-      classifyEffectPack(
-        'pack',
+      classifyEngineExtension(
+        'extension',
         {
           ...profile,
           scope: 'reusable',
@@ -179,8 +181,8 @@ test('renaming, formatting and reordering a document cannot count as distinct me
   );
   assert.throws(
     () =>
-      classifyEffectPack(
-        'pack',
+      classifyEngineExtension(
+        'extension',
         { ...profile, scope: 'reusable', reuseReview: evidence },
         [...consumers, { source: copy }],
         readEvidence,
@@ -190,13 +192,13 @@ test('renaming, formatting and reordering a document cannot count as distinct me
 });
 test('different mechanical consumers require explicit promotion with a review', () => {
   const games = [...consumers, { source: { setup: { scores: 10 } } }];
-  assert.equal(
-    classifyEffectPack('pack', profile, games, readEvidence).scope,
-    'game-specific',
+  assert.throws(
+    () => classifyEngineExtension('extension', profile, games, readEvidence),
+    /independence review/,
   );
   assert.equal(
-    classifyEffectPack(
-      'pack',
+    classifyEngineExtension(
+      'extension',
       { ...profile, scope: 'reusable', reuseReview: evidence },
       games,
       readEvidence,
@@ -211,14 +213,14 @@ test('single-consumer independence proof and engine primitive contract are expli
     reuseReview: { ...evidence, kind: 'independence-proof' },
   };
   assert.equal(
-    classifyEffectPack('pack', independent, consumers, readEvidence)
+    classifyEngineExtension('extension', independent, consumers, readEvidence)
       .reuseEvidence,
     'independence-proof',
   );
   assert.throws(
     () =>
-      classifyEffectPack(
-        'pack',
+      classifyEngineExtension(
+        'extension',
         { ...independent, scope: 'engine-primitive' },
         consumers,
         readEvidence,
@@ -234,5 +236,5 @@ function readEvidence(file) {
         'An executable fixture whose complete configuration is reviewed independently.',
       victory: { kind: file.includes('first') ? 'score' : 'survival' },
     });
-  return 'Status: accepted\nPack: pack\nsrc/game/testing/first.json\nsrc/game/testing/second.json\nThis review documents distinct objectives, interaction models and turn structures in an independently executable contract.';
+  return 'Status: accepted\nExtension: extension\nsrc/game/testing/first.json\nsrc/game/testing/second.json\nThis review documents distinct objectives, interaction models and turn structures in an independently executable contract.';
 }

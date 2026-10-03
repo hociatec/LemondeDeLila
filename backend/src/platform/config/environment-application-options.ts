@@ -6,6 +6,10 @@ const buildLabel = Joi.string()
   .optional();
 
 export const applicationEnvironment = {
+  ADMIN_MAINTENANCE_BACKEND_ROOT: Joi.string()
+    .pattern(/^\//)
+    .max(4096)
+    .optional(),
   ADMIN_MAINTENANCE_BACKEND_SERVICE: Joi.string()
     .pattern(/^[a-zA-Z0-9][a-zA-Z0-9@._-]{0,199}$/)
     .default('lila-backend.service'),

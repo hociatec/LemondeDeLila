@@ -2,7 +2,7 @@ import { defineGameContent } from './game-content';
 import { authoringPathOf } from '../contracts/authoring-origin';
 import { GameContentValidationError } from '../contracts/game-domain.errors';
 import { compileJsonGame } from '../definitions/json-game-compiler';
-import { defineJsonEffectPack } from '../contracts/json-effect-pack';
+import { defineJsonEngineExtension } from '../contracts/json-engine-extension';
 import { authorObject } from '../contracts/json-author-schema';
 import manifest from '../../../testing/fixtures/json-course/manifest.json';
 import document from '../../../testing/fixtures/json-course/game.json';
@@ -28,9 +28,8 @@ it.each([
 );
 
 it('maps a linked catalogue error back into its extension configuration', () => {
-  const pack = defineJsonEffectPack({
+  const extension = defineJsonEngineExtension({
     capabilities: [],
-    scope: 'game-specific',
     domain: 'board',
     documentKey: 'links',
     outputKey: 'links',
@@ -59,7 +58,7 @@ it('maps a linked catalogue error back into its extension configuration', () => 
       },
       undefined,
       {},
-      [pack],
+      [extension],
     ),
   ).toThrow(
     expect.objectContaining({

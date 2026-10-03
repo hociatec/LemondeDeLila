@@ -223,6 +223,18 @@ function audit() {
       /(?=[\s\S]*AUDIO_PROCESS_QUEUE_LIMIT)(?=[\s\S]*maxOutputBytes)(?=[\s\S]*setTimeout\()(?=[\s\S]*child\.kill\('SIGKILL'\))/,
     ],
     [
+      'modules/admin/application/ports/admin-maintenance-runtime.port.ts',
+      /MaintenanceOperation[\s\S]*ScheduledMaintenanceOperation[\s\S]*probeLoopback/,
+    ],
+    [
+      'modules/admin/infrastructure/system/admin-maintenance-runtime.service.ts',
+      /(?=[\s\S]*commandFor\(operation:)(?=[\s\S]*hostname: '127\.0\.0\.1')(?=[\s\S]*sanitizeOutput)/,
+    ],
+    [
+      'modules/admin/application/use-cases/admin-maintenance/start-admin-build-and-restart-backend.service.ts',
+      /kind: 'build-and-restart'/,
+    ],
+    [
       'modules/sounds/infrastructure/presentation/http/controllers/admin-sounds.controller.ts',
       /diskStorage\([\s\S]*limits: \{ fileSize: 250 \* 1024 \* 1024 \}/,
     ],
@@ -252,6 +264,16 @@ function audit() {
     if (!contract.test(source))
       violations.push(`${name}: garde de saturation/entrée absente`);
   }
+  const adminMaintenanceSources = walk(
+    path.join(root, 'modules/admin'),
+  )
+    .filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'))
+    .map((file) => fs.readFileSync(file, 'utf8'))
+    .join('\n');
+  if (/\b(?:runCommand|spawnDetached|httpGet|shQuote)\b/.test(adminMaintenanceSources))
+    violations.push('modules/admin: API de maintenance générique interdite');
+  if (/bash[\s\S]{0,20}-lc|process\.cwd\(\)/.test(adminMaintenanceSources))
+    violations.push('modules/admin: shell ou cwd ambiant interdit');
   const authoritativeReadContracts = [
     [
       'modules/room/application/services/state/room-payload.service.ts',

@@ -5,7 +5,7 @@ require('tsconfig-paths/register');
 const assert = require('node:assert/strict');
 const { randomUUID } = require('node:crypto');
 const { spawn } = require('node:child_process');
-const { mkdtemp, readFile, rm } = require('node:fs/promises');
+const { chmod, mkdtemp, readFile, rm, writeFile } = require('node:fs/promises');
 const { tmpdir } = require('node:os');
 const path = require('node:path');
 const mysql = require('mysql2/promise');
@@ -66,11 +66,20 @@ async function main() {
       // A separate maintenance process retains the row after the HTTP scope ends.
       const directory = await mkdtemp(path.join(tmpdir(), 'lila-maintenance-test-'));
       const marker = path.join(directory, 'started');
+      const fakeSudo = path.join(directory, 'sudo');
+      await writeFile(
+        fakeSudo,
+        '#!/bin/sh\nprintf started > "$MAINTENANCE_TEST_MARKER"\nsleep 2\n',
+        'utf8',
+      );
+      await chmod(fakeSudo, 0o700);
       const token = randomUUID();
       await first.query('INSERT INTO admin_maintenance_locks (lock_name, owner_token, operation) VALUES (?, ?, ?)', ['global', token, 'test-child']);
       const child = spawn(process.execPath, ['-r', 'ts-node/register', path.resolve('src/modules/admin/infrastructure/system/admin-maintenance-child.ts'), JSON.stringify({
-        token, delayMs: 0, argv: [process.execPath, '-e', `require('node:fs').writeFileSync(process.argv[1], 'started'); setTimeout(() => {}, 2000)`, marker],
-      })], { windowsHide: true, stdio: 'ignore', env: { ...process.env, DATABASE_URL: '', DB_HOST: connection.host, DB_PORT: String(port), DB_USER: connection.user, DB_PASSWORD: connection.password, DB_NAME: database } });
+        token,
+        delayMs: 0,
+        operation: { kind: 'start-unit', unit: 'integration-test.service' },
+      })], { windowsHide: true, stdio: 'ignore', env: { ...process.env, PATH: `${directory}:${process.env.PATH ?? ''}`, MAINTENANCE_TEST_MARKER: marker, DATABASE_URL: '', DB_HOST: connection.host, DB_PORT: String(port), DB_USER: connection.user, DB_PASSWORD: connection.password, DB_NAME: database } });
       const completed = new Promise((resolve, reject) => {
         child.once('error', reject);
         child.once('close', resolve);
@@ -91,6 +100,7 @@ async function main() {
         // Only the unique directory created above and its known marker are removed.
         await completed;
         await rm(marker, { force: true });
+        await rm(fakeSudo, { force: true });
         await require('node:fs/promises').rmdir(directory);
       }
 

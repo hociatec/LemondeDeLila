@@ -13,10 +13,10 @@ const {
 
 test('classifies development-only artifact entries without rejecting runtime files', () => {
   assert.equal(isForbiddenArtifactEntry('dist/game.spec.js', false), true);
-  assert.equal(isForbiddenArtifactEntry('node_modules/pkg/tests', true), true);
+  assert.equal(isForbiddenArtifactEntry('node_modules/pkg/tests', true), false);
   assert.equal(
     isForbiddenArtifactEntry('node_modules/pkg/fixtures', true),
-    true,
+    false,
   );
   assert.equal(isForbiddenArtifactEntry('dist/.env.production', false), true);
   assert.equal(
@@ -57,6 +57,16 @@ test('prunes development-only entries from staging and keeps runtime payloads', 
     assert.equal(
       fs.existsSync(
         path.join(root, 'node_modules/pkg/.github/workflows/ci.yml'),
+      ),
+      true,
+    );
+    assert.equal(
+      fs.existsSync(path.join(root, 'node_modules/pkg/fixtures/example.json')),
+      true,
+    );
+    assert.equal(
+      fs.existsSync(
+        path.join(root, 'node_modules/pkg/tests/example.test.js'),
       ),
       true,
     );

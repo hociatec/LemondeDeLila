@@ -171,9 +171,9 @@ export function audioToolExecutionError(
   hint?: string,
 ): InternalServerErrorException {
   const errorLike = toSoundErrorLike(error);
-  const code = stringOrEmpty(errorLike.code);
-  const message = stringOrEmpty(errorLike.message);
+  const rawCode = stringOrEmpty(errorLike.code).toUpperCase();
+  const code = ['ENOENT', 'EACCES', 'EPERM'].includes(rawCode) ? rawCode : '';
   return new InternalServerErrorException(
-    `Impossible d'exécuter ${tool}${code ? ` (${code})` : ''}${message ? `: ${message}` : ''}.${hint ? ` ${hint}` : ''}`.trim(),
+    `Impossible d'exécuter ${tool}${code ? ` (${code})` : ''}.${hint ? ` ${hint}` : ''}`.trim(),
   );
 }

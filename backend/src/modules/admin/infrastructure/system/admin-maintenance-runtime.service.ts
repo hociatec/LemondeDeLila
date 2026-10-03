@@ -4,11 +4,14 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { AdminMaintenanceOwnership } from './admin-maintenance-ownership';
 import * as http from 'node:http';
+import { isAbsolute } from 'node:path';
 import { getProcessEnvironment } from '../../../../platform/config/public-api';
 import { parseStrictInteger } from '../../../../shared/utils/public-api';
 import type {
   AdminMaintenanceRuntimePort,
   MaintenanceCommandResult,
+  MaintenanceOperation,
+  ScheduledMaintenanceOperation,
   MaintenanceSystemctlShow,
 } from '../../application/ports/admin-maintenance-runtime.port';
 
@@ -22,32 +25,26 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
     private readonly ownership: AdminMaintenanceOwnership = new AdminMaintenanceOwnership(),
   ) {}
 
-  runCommand(
-    argv: string[],
-    opts?: { cwd?: string; timeoutMs?: number },
-  ): MaintenanceCommandResult {
+  execute(operation: MaintenanceOperation): MaintenanceCommandResult {
+    const {
+      argv,
+      cwd,
+      timeoutMs: requestedTimeout,
+    } = this.commandFor(operation);
     const [cmd, ...args] = argv;
-    if (typeof cmd !== 'string' || !cmd.trim()) {
-      return {
-        status: 1,
-        stdout: '',
-        stderr: '',
-        error: 'Commande de maintenance absente',
-      };
-    }
     const timeoutMs =
-      typeof opts?.timeoutMs === 'number' &&
-      Number.isSafeInteger(opts.timeoutMs) &&
-      opts.timeoutMs >= 1 &&
-      opts.timeoutMs <= 10 * 60 * 1000
-        ? opts.timeoutMs
+      typeof requestedTimeout === 'number' &&
+      Number.isSafeInteger(requestedTimeout) &&
+      requestedTimeout >= 1 &&
+      requestedTimeout <= 10 * 60 * 1000
+        ? requestedTimeout
         : 60 * 1000;
     const result = spawnSync(cmd, args, {
       encoding: 'utf8',
       env: getProcessEnvironment(),
       windowsHide: true,
       maxBuffer: 10 * 1024 * 1024,
-      cwd: opts?.cwd,
+      cwd,
       timeout: timeoutMs,
     });
 
@@ -60,24 +57,22 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
 
     return {
       status: typeof result.status === 'number' ? result.status : 1,
-      stdout: String(result.stdout || ''),
-      stderr: String(result.stderr || ''),
-      error: result.error ? String(result.error.message || result.error) : null,
+      stdout: this.sanitizeOutput(result.stdout, cwd),
+      stderr: this.sanitizeOutput(result.stderr, cwd),
+      error: result.error
+        ? this.sanitizeOutput(result.error.message || result.error, cwd)
+        : null,
     };
   }
 
-  spawnDetached(
-    argv: string[],
-    opts?: { cwd?: string; delayMs?: number },
-  ): void {
-    const [cmd, ...args] = argv;
-    if (typeof cmd !== 'string' || !cmd.trim()) return;
+  schedule(operation: ScheduledMaintenanceOperation): void {
+    this.assertScheduledOperation(operation);
+    const delayCandidate = 'delayMs' in operation ? operation.delayMs : 0;
     const delayMs =
-      typeof opts?.delayMs === 'number' &&
-      Number.isSafeInteger(opts.delayMs) &&
-      opts.delayMs >= 0 &&
-      opts.delayMs <= 10 * 60 * 1000
-        ? opts.delayMs
+      Number.isSafeInteger(delayCandidate) &&
+      delayCandidate >= 0 &&
+      delayCandidate <= 10 * 60 * 1000
+        ? delayCandidate
         : 0;
     const owner = this.ownership.current();
     if (!owner) throw new Error('Durable maintenance ownership is required');
@@ -95,8 +90,7 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
         ...launch,
         JSON.stringify({
           token: owner.token,
-          argv: [cmd, ...args],
-          cwd: opts?.cwd,
+          operation,
           delayMs,
         }),
       ],
@@ -114,8 +108,8 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
     child.unref();
   }
 
-  async httpGet(
-    url: string,
+  async probeLoopback(
+    port: number,
     timeoutMs: number,
   ): Promise<{ statusCode: number; body: string }> {
     return new Promise((resolve) => {
@@ -132,28 +126,33 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
         resolve(result);
       };
       try {
-        const req = http.get(url, (res) => {
-          const statusCode =
-            typeof res.statusCode === 'number' ? res.statusCode : 0;
-          res.setEncoding('utf8');
-          let body = '';
-          res.on('data', (chunk) => {
-            body += chunk;
-            if (
-              Buffer.byteLength(body, 'utf8') >
-              AdminMaintenanceRuntimeService.MAX_HTTP_BODY_BYTES
-            ) {
-              res.destroy();
-              finish({ statusCode: 0, body: '' });
-            }
-          });
-          res.on('end', () => finish({ statusCode, body }));
-        });
+        if (!Number.isSafeInteger(port) || port < 1 || port > 65_535)
+          return finish({ statusCode: 0, body: '' });
+        const req = http.get(
+          { hostname: '127.0.0.1', port, path: '/health', method: 'GET' },
+          (res) => {
+            const statusCode =
+              typeof res.statusCode === 'number' ? res.statusCode : 0;
+            res.setEncoding('utf8');
+            let body = '';
+            res.on('data', (chunk) => {
+              body += chunk;
+              if (
+                Buffer.byteLength(body, 'utf8') >
+                AdminMaintenanceRuntimeService.MAX_HTTP_BODY_BYTES
+              ) {
+                res.destroy();
+                finish({ statusCode: 0, body: '' });
+              }
+            });
+            res.on('end', () => finish({ statusCode, body }));
+          },
+        );
         req.on('error', (error) => {
           this.logger.warn(
             JSON.stringify({
               event: 'admin.maintenance.http_probe_failed',
-              message: error.message,
+              message: this.sanitizeOutput(error.message),
             }),
           );
           finish({ statusCode: 0, body: '' });
@@ -165,7 +164,9 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
             this.logger.warn(
               JSON.stringify({
                 event: 'admin.maintenance.http_probe_destroy_failed',
-                message: error instanceof Error ? error.message : String(error),
+                message: this.sanitizeOutput(
+                  error instanceof Error ? error.message : String(error),
+                ),
               }),
             );
           }
@@ -175,7 +176,9 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
         this.logger.warn(
           JSON.stringify({
             event: 'admin.maintenance.http_probe_setup_failed',
-            message: error instanceof Error ? error.message : String(error),
+            message: this.sanitizeOutput(
+              error instanceof Error ? error.message : String(error),
+            ),
           }),
         );
         finish({ statusCode: 0, body: '' });
@@ -216,8 +219,112 @@ export class AdminMaintenanceRuntimeService implements AdminMaintenanceRuntimePo
     return Math.max(1, Math.min(2000, value));
   }
 
-  shQuote(value: string): string {
-    const raw = String(value ?? '');
-    return `'${raw.replaceAll("'", `'\\''`)}'`;
+  private commandFor(operation: MaintenanceOperation): {
+    argv: string[];
+    cwd?: string;
+    timeoutMs?: number;
+  } {
+    switch (operation.kind) {
+      case 'build':
+        this.assertBackendRoot(operation.cwd);
+        return {
+          argv: ['npm', 'run', 'build'],
+          cwd: operation.cwd,
+          timeoutMs: operation.timeoutMs,
+        };
+      case 'migrate':
+        this.assertBackendRoot(operation.cwd);
+        return {
+          argv: ['npm', 'run', 'migration:run'],
+          cwd: operation.cwd,
+          timeoutMs: operation.timeoutMs,
+        };
+      case 'daemon-reload':
+        return { argv: ['sudo', '-n', 'systemctl', 'daemon-reload'] };
+      case 'unit-status':
+        this.assertUnit(operation.unit);
+        return {
+          argv: [
+            'sudo',
+            '-n',
+            'systemctl',
+            'show',
+            operation.unit,
+            '--no-pager',
+            '--property=Id,ActiveState,SubState,Result,ExecMainStatus,ExecMainCode,ExecMainStartTimestamp,ExecMainExitTimestamp',
+          ],
+        };
+      case 'unit-logs':
+        this.assertUnit(operation.unit);
+        if (
+          !Number.isSafeInteger(operation.tail) ||
+          operation.tail < 1 ||
+          operation.tail > 2_000
+        )
+          throw new Error('Invalid maintenance log limit');
+        return {
+          argv: [
+            'sudo',
+            '-n',
+            'journalctl',
+            '-u',
+            operation.unit,
+            '--no-pager',
+            '-o',
+            'short-iso',
+            '-n',
+            String(operation.tail),
+          ],
+        };
+    }
+  }
+
+  private assertUnit(unit: string): void {
+    if (!/^[a-zA-Z0-9@._-]{1,128}$/.test(unit))
+      throw new Error('Invalid maintenance unit');
+  }
+
+  private assertBackendRoot(cwd: string): void {
+    if (typeof cwd !== 'string' || !isAbsolute(cwd))
+      throw new Error('Invalid maintenance backend root');
+  }
+
+  private assertScheduledOperation(
+    operation: ScheduledMaintenanceOperation,
+  ): void {
+    if (!operation || typeof operation !== 'object')
+      throw new Error('Invalid scheduled maintenance operation');
+    switch (operation.kind) {
+      case 'start-unit':
+      case 'restart-unit':
+        this.assertUnit(operation.unit);
+        return;
+      case 'build-and-restart':
+        this.assertUnit(operation.unit);
+        this.assertBackendRoot(operation.cwd);
+        return;
+      default:
+        throw new Error('Invalid scheduled maintenance operation');
+    }
+  }
+
+  private sanitizeOutput(value: unknown, cwd?: string): string {
+    let output = (
+      typeof value === 'string'
+        ? value
+        : Buffer.isBuffer(value)
+          ? value.toString('utf8')
+          : value instanceof Error
+            ? value.message
+            : ''
+    ).slice(0, 256 * 1024);
+    if (cwd) output = output.replaceAll(cwd, '[backend]');
+    return output
+      .replace(/Bearer\s+[^\s"']+/gi, 'Bearer [redacted]')
+      .replace(
+        /(authorization|token|password|secret)\s*[:=]\s*\S+/gi,
+        '$1=[redacted]',
+      )
+      .replace(/(?:\/[A-Za-z0-9._-]+){2,}/g, '[path]');
   }
 }

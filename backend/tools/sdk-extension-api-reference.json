@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "apiVersion": "2.0.0",
+  "apiVersion": "3.0.0",
   "typescript": "5.9.3",
   "entry": "src/game/engine/sdk/extension-api.ts",
   "external": [],
@@ -210,12 +210,12 @@
       "sha256": "218623c7fbe0e2f5bc9f910487164b502e9c4dd50b766e98cf00cf4a2e417bcc"
     },
     {
-      "file": "src/game/engine/runtime/contracts/json-effect-pack-catalog.ts",
-      "sha256": "ce1ec735cb1c4cfac0276237e8ff330b2d105e0fdcd034ec6fb02115c597ad78"
+      "file": "src/game/engine/runtime/contracts/json-engine-extension-catalog.ts",
+      "sha256": "de3307192cd062c8e8591ced2e038bb4ed49a2740757fc0e15b8a16cc2a6c5df"
     },
     {
-      "file": "src/game/engine/runtime/contracts/json-effect-pack.ts",
-      "sha256": "c74ee0f7f108529dc7e7adecb9db812b527895c8a1117bba549bea359d3d751e"
+      "file": "src/game/engine/runtime/contracts/json-engine-extension.ts",
+      "sha256": "02b7655e7ec58d6997f3ddeee0cb7c5054acc8855300521683f79d1d3e615329"
     },
     {
       "file": "src/game/engine/runtime/contracts/numeric-expression.ts",
@@ -283,11 +283,11 @@
     },
     {
       "file": "src/game/engine/runtime/definitions/json-game-compiler-factory.ts",
-      "sha256": "f5d3ad811e2efd336e4851ed61fee5c7935107d502b0ffee83ea5f2263ee3a85"
+      "sha256": "04f7634a8200bf40d8d889ff3d8867834885fe31f7d3772ce0eef9b241cfd0e5"
     },
     {
       "file": "src/game/engine/runtime/definitions/json-game-compiler.ts",
-      "sha256": "d66e018e928a956befdf4eb4e3d18b7f5998ebf1f2418feedc57b343cb195882"
+      "sha256": "03cf5cd33bf2a1393582ea6edb23a7e44be37aa07eb6b226a904b4d825eba0ea"
     },
     {
       "file": "src/game/engine/runtime/definitions/json-game-core-document.ts",
@@ -647,7 +647,7 @@
     },
     {
       "file": "src/game/engine/sdk/extension-api.ts",
-      "sha256": "2f84308890252f05841158e1a135994c86eea0e64a7bbd2f8af01759f127e09f"
+      "sha256": "e2ec0b35bd4aaab0652963259bc0cc172d5a16a906eb402a8878989394b55c8a"
     },
     {
       "file": "src/game/engine/sdk/extension-contracts.ts",

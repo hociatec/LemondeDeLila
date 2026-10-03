@@ -1,8 +1,8 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validatePromotion } = require('./effect-pack-promotion.cjs');
-const { assertPrimitiveSource } = require('./effect-pack-promotion.cjs');
+const { validatePromotion } = require('./engine-extension-promotion.cjs');
+const { assertPrimitiveSource } = require('./engine-extension-promotion.cjs');
 
 test('primitive implementation cannot hide game vocabulary behind a neutral contract', () => {
   for (const identifier of ['bananaCount', 'BananaCount', 'BANANA_COUNT'])
@@ -72,15 +72,15 @@ const read = (file) =>
         victory: { kind: file.endsWith('a.json') ? 'score' : 'survival' },
       })
     : file.endsWith('.md')
-      ? `Status: accepted\nPack: energy\n${consumers.map((c) => c.document).join('\n')}\nReview of independent gameplay and compatibility consequences.`
+      ? `Status: accepted\nExtension: energy\n${consumers.map((c) => c.document).join('\n')}\nReview of independent gameplay and compatibility consequences.`
       : '/* Standalone test or low-level contract, with reviewed composition invariants and no game vocabulary. */';
-test('a label change and unaccepted reviews cannot promote a pack', () => {
+test('a label change and unaccepted reviews cannot promote an extension', () => {
   assert.throws(
     () =>
       validatePromotion('energy', profile, (file) =>
-        read(file).replace('Pack: energy', 'Not-Pack: energy'),
+        read(file).replace('Extension: energy', 'Not-Extension: energy'),
       ),
-    /name this pack/,
+    /name this extension/,
   );
   assert.throws(
     () => validatePromotion('energy', { scope: 'reusable' }, read),

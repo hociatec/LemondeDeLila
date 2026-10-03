@@ -18,13 +18,10 @@ export class StartAdminDeployService {
   ) {}
 
   execute() {
-    this.runtime.spawnDetached([
-      'sudo',
-      '-n',
-      'systemctl',
-      'start',
-      this.config.deployUnit,
-    ]);
+    this.runtime.schedule({
+      kind: 'start-unit',
+      unit: this.config.deployUnit,
+    });
     return { ok: true, unit: this.config.deployUnit };
   }
 }

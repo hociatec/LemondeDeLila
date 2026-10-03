@@ -5,12 +5,12 @@
   "groups": [
     {
       "ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
-      "command": "npm run engine:boundary:audit && npm run engine:effects:audit && npm run architecture:test",
+      "command": "npm run engine:boundary:audit && npm run engine:extensions:audit && npm run architecture:test",
       "evidence": [
         "tools/engine-catalog-boundary.cjs",
-        "tools/engine-effect-pack-governance.cjs",
-        "tools/engine-effect-pack-governance.json",
-        "tools/engine-effect-pack-governance.spec.cjs"
+        "tools/engine-extension-governance.cjs",
+        "tools/engine-extension-governance.json",
+        "tools/engine-extension-governance.spec.cjs"
       ]
     },
     {

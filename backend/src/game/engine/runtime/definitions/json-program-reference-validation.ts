@@ -1,5 +1,5 @@
 import type { GamePattern } from '../contracts/pattern-definition';
-import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
+import type { JsonEngineExtensionCatalog } from '../contracts/json-engine-extension-catalog';
 import type { JsonGameManifest } from './json-game-manifest';
 import type { JsonGameDocument } from './json-game-schema';
 
@@ -11,10 +11,10 @@ export function assertProgramReferences(
   patterns: Patterns,
   manifest: JsonGameManifest,
   fail: JsonFailure,
-  jsonEffectPacks: JsonEffectPackCatalog = [],
+  jsonEngineExtensions: JsonEngineExtensionCatalog = [],
 ): void {
   const sources = new Map<string, unknown>(Object.entries(document));
-  const active = jsonEffectPacks.filter((extension) =>
+  const active = jsonEngineExtensions.filter((extension) =>
     sources.has(extension.documentKey),
   );
   const setupOwners = active.filter((extension) => extension.ownsSetup);
@@ -57,7 +57,7 @@ export function assertProgramReferences(
           (!winOnFinish || Boolean(pattern.winOnFinish)),
       ),
   };
-  for (const extension of jsonEffectPacks) {
+  for (const extension of jsonEngineExtensions) {
     const source = sources.get(extension.documentKey);
     const enabled = source !== undefined;
     if (

@@ -16,7 +16,7 @@ const policy: {
   >;
 } = JSON.parse(
   fs.readFileSync(
-    path.join(backend, 'tools/engine-effect-pack-governance.json'),
+    path.join(backend, 'tools/engine-extension-governance.json'),
     'utf8',
   ),
 );

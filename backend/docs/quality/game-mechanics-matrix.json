@@ -1,9 +1,9 @@
 {
-  "method": "Static evidence in game content and each installed pack. Empty cells mean no direct evidence; shared runtime services may still supply the capability.",
+  "method": "Static evidence in game content and each installed extension. Empty cells mean no direct evidence; shared runtime services may still supply the capability.",
   "games": [
     {
       "id": "a-fond-les-ballons",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json:23"
@@ -121,7 +121,7 @@
     },
     {
       "id": "arche-de-mnemosyne",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -147,7 +147,7 @@
     },
     {
       "id": "aventure-sauvage",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/aventure-sauvage/game.json:46",
@@ -215,7 +215,7 @@
     },
     {
       "id": "ca-derape",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/ca-derape/simultaneous-arrival.spec.ts:29"
@@ -249,7 +249,7 @@
     },
     {
       "id": "cat-pattes",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -321,7 +321,7 @@
     },
     {
       "id": "cercles-sacres",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -348,7 +348,7 @@
     },
     {
       "id": "contes-et-cacahuetes",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/contes-et-cacahuetes/reports.spec.ts:75",
@@ -508,7 +508,7 @@
     },
     {
       "id": "corridor",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -530,7 +530,7 @@
     },
     {
       "id": "course-des-etoiles",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/vents-sacres/course-des-etoiles/game.json:8"
@@ -557,7 +557,7 @@
     },
     {
       "id": "dame-nature",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -587,7 +587,7 @@
     },
     {
       "id": "en-attendant-minuit",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/en-attendant-minuit/game.json:37"
@@ -629,7 +629,7 @@
     },
     {
       "id": "entre-rites-et-lumieres",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -667,7 +667,7 @@
     },
     {
       "id": "foulees-fantastiques",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -694,7 +694,7 @@
     },
     {
       "id": "frousse-party",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/frousse-party/game.json:67",
@@ -801,7 +801,7 @@
     },
     {
       "id": "galopons-ensemble",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/galopons-ensemble/game.json:34"
@@ -855,7 +855,7 @@
     },
     {
       "id": "gerard-president",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -886,7 +886,7 @@
     },
     {
       "id": "jeu-oie",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/vents-sacres/jeu-oie/game.json:60"
@@ -910,7 +910,7 @@
     },
     {
       "id": "la-bande-a-banane",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -954,7 +954,7 @@
     },
     {
       "id": "la-grande-mine-de-barbak",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1008,7 +1008,7 @@
     },
     {
       "id": "la-parade-sucree",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1034,7 +1034,7 @@
     },
     {
       "id": "lama",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1056,7 +1056,7 @@
     },
     {
       "id": "le-marche-des-merveilles",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1080,7 +1080,7 @@
     },
     {
       "id": "les-absurdissimes",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1118,7 +1118,7 @@
     },
     {
       "id": "les-mains-de-la-terre",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1157,7 +1157,7 @@
     },
     {
       "id": "mission-galaxie",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/mission-galaxie/game.spec.ts:25"
@@ -1197,7 +1197,7 @@
     },
     {
       "id": "mon-village-mon-histoire",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1230,7 +1230,7 @@
     },
     {
       "id": "morpion",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/vents-sacres/morpion/game.json:43",
@@ -1260,7 +1260,7 @@
     },
     {
       "id": "nawak",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1301,7 +1301,7 @@
     },
     {
       "id": "odyssee-quatre-cieux",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1326,7 +1326,7 @@
     },
     {
       "id": "olympia",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1507,7 +1507,7 @@
     },
     {
       "id": "panier-express",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [
           "src/game/games/les-quatre-vents/panier-express/game.json:13",
@@ -1589,7 +1589,7 @@
     },
     {
       "id": "pimp-my-ride",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1614,7 +1614,7 @@
     },
     {
       "id": "pirates-en-vadrouille",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1671,7 +1671,7 @@
     },
     {
       "id": "primalis",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1693,7 +1693,7 @@
     },
     {
       "id": "sac-a-malices",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1736,7 +1736,7 @@
     },
     {
       "id": "taxi-express",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1770,7 +1770,7 @@
     },
     {
       "id": "tout-pres-de-maman",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1832,7 +1832,7 @@
     },
     {
       "id": "voyage-en-terre-de-brumes",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1898,7 +1898,7 @@
     },
     {
       "id": "zig-et-zag",
-      "packs": [],
+      "extensions": [],
       "mechanics": {
         "movement": [],
         "ownership": [],
@@ -1922,5 +1922,5 @@
       }
     }
   ],
-  "packs": []
+  "extensions": []
 }

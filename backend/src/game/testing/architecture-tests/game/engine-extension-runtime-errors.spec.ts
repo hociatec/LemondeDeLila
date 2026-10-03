@@ -4,7 +4,7 @@ import { createTestGameState } from '../../../core/testing/game-test-state';
 import { GameCorruptedStateError } from '../../../core/domain/errors/game-runtime.errors';
 
 it.each(['zig-et-zag', 'nawak'])(
-  '%s identifies a corrupted pack state before projecting it',
+  '%s identifies a corrupted extension state before projecting it',
   (id) => {
     const definition = discoverGameDefinitions().find((game) => game.id === id);
     if (!definition) throw new Error(`Missing definition ${id}`);

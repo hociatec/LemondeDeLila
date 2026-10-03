@@ -3,12 +3,12 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { inspectSources } = require('./game-structural-sequences.cjs');
-const { classifyEffectPack } = require('./effect-pack-classification.cjs');
-const { assertPrimitiveSource } = require('./effect-pack-promotion.cjs');
-const { effectPackDirectory: locatePack } = require('./effect-pack-layout.cjs');
+const { classifyEngineExtension } = require('./engine-extension-classification.cjs');
+const { assertPrimitiveSource } = require('./engine-extension-promotion.cjs');
+const { engineExtensionDirectory: locateExtension } = require('./engine-extension-layout.cjs');
 const ROOT = path.resolve(__dirname, '..');
-const EFFECT_PACKS = path.join(ROOT, 'src/game/rules');
-const REGISTRY = path.join(ROOT, 'src/game/rules/effect-packs');
+const ENGINE_EXTENSIONS = path.join(ROOT, 'src/game/rules');
+const REGISTRY = path.join(ROOT, 'src/game/rules/engine-extensions');
 const gamesRootIndex = process.argv.indexOf('--games-root');
 const GAMES =
   gamesRootIndex < 0
@@ -16,12 +16,12 @@ const GAMES =
     : path.resolve(process.argv[gamesRootIndex + 1]);
 const GAMEPLAY = path.join(ROOT, 'src/game/engine/runtime/recipes/gameplay');
 const ENGINE_RUNTIME = path.join(ROOT, 'src/game/engine/runtime');
-const GAME_SPECIFIC = path.join(EFFECT_PACKS, 'game-specific');
+const GAME_SPECIFIC = path.join(ENGINE_EXTENSIONS, 'game-specific');
 if (fs.existsSync(GAME_SPECIFIC))
   throw new Error('src/game/rules/game-specific must stay removed');
 const policy = JSON.parse(
   fs.readFileSync(
-    path.join(__dirname, 'engine-effect-pack-governance.json'),
+    path.join(__dirname, 'engine-extension-governance.json'),
     'utf8',
   ),
 );
@@ -42,7 +42,7 @@ function files(directory, name) {
   });
 }
 
-const programFiles = files(EFFECT_PACKS, 'program.ts');
+const programFiles = files(ENGINE_EXTENSIONS, 'program.ts');
 const discovered = programFiles
   .map((file) => path.basename(path.dirname(file)))
   .sort();
@@ -63,7 +63,7 @@ if (
   JSON.stringify(declared)
 )
   throw new Error(
-    'Every effect pack must belong to exactly one reviewed mechanic family',
+    'Every engine extension must belong to exactly one reviewed mechanic family',
   );
 
 const gameDocuments = files(GAMES, 'game.json').map((file) => ({
@@ -95,8 +95,8 @@ for (const name of declared) {
       `${name} must be named after its effect domain and mechanic`,
     );
 
-  const effectPackDirectory = locatePack(EFFECT_PACKS, name, profile);
-  const programFile = path.join(effectPackDirectory, 'program.ts');
+  const engineExtensionDirectory = locateExtension(ENGINE_EXTENSIONS, name, profile);
+  const programFile = path.join(engineExtensionDirectory, 'program.ts');
   const program = fs.readFileSync(programFile, 'utf8');
   if (
     /Single-consumer JSON authoring extension|Reusable JSON authoring extension/.test(
@@ -114,7 +114,7 @@ for (const name of declared) {
   const count = sourceLines(program);
   lines += count;
 
-  const profileLines = files(effectPackDirectory)
+  const profileLines = files(engineExtensionDirectory)
     .filter((file) => file.endsWith('.ts') && !file.endsWith('.spec.ts'))
     .reduce(
       (total, file) => total + sourceLines(fs.readFileSync(file, 'utf8')),
@@ -123,7 +123,7 @@ for (const name of declared) {
   productionLines += profileLines;
   const profileBehaviorLines = profileLines - (profile.property ? 2 : 0);
   behaviorLines += profileBehaviorLines;
-  for (const sourceFile of files(effectPackDirectory).filter((file) =>
+  for (const sourceFile of files(engineExtensionDirectory).filter((file) =>
     file.endsWith('.ts'),
   )) {
     const source = fs.readFileSync(sourceFile, 'utf8');
@@ -142,23 +142,23 @@ for (const name of declared) {
         policy.maximumFileBytes
     )
       throw new Error(
-        `${path.relative(EFFECT_PACKS, sourceFile)} exceeds the reviewed per-file size limit`,
+        `${path.relative(ENGINE_EXTENSIONS, sourceFile)} exceeds the reviewed per-file size limit`,
       );
     for (const match of source.matchAll(
       /\b(?:from\s+|import\s*\()(['"])([^'"]+)\1/g,
     )) {
       if (!match[2].startsWith('.')) continue;
       const target = path.resolve(path.dirname(sourceFile), match[2]);
-      const relativeTarget = path.relative(EFFECT_PACKS, target);
+      const relativeTarget = path.relative(ENGINE_EXTENSIONS, target);
       if (
         !relativeTarget.startsWith('..') &&
-        ['game-specific', 'reusable', 'primitives'].includes(
+        ['reusable', 'primitives'].includes(
           relativeTarget.split(path.sep)[0],
         ) &&
         relativeTarget.split(path.sep)[1] !== name
       )
         throw new Error(
-          `${path.relative(EFFECT_PACKS, sourceFile)} imports another effect-pack implementation: ${match[2]}`,
+          `${path.relative(ENGINE_EXTENSIONS, sourceFile)} imports another engine-extension implementation: ${match[2]}`,
         );
     }
     for (const gameCode of gameCodes) {
@@ -167,7 +167,7 @@ for (const name of declared) {
       );
       if (!sourceFile.endsWith('.spec.ts') && namespace.test(source))
         throw new Error(
-          `${path.relative(EFFECT_PACKS, sourceFile)} contains the game namespace ${gameCode}`,
+          `${path.relative(ENGINE_EXTENSIONS, sourceFile)} contains the game namespace ${gameCode}`,
         );
     }
   }
@@ -181,7 +181,7 @@ for (const name of declared) {
           ),
       )
     : [];
-  const classification = classifyEffectPack(
+  const classification = classifyEngineExtension(
     name,
     profile,
     consumers,
@@ -197,16 +197,16 @@ for (const name of declared) {
     throw new Error(`${name} must have at least one actual consumer`);
 
   if (profile.property) {
-    const effectPackFile = path.join(effectPackDirectory, 'effect-pack.ts');
-    if (!fs.existsSync(effectPackFile))
-      throw new Error(`${name}/effect-pack.ts is required`);
-    const effectPack = fs.readFileSync(effectPackFile, 'utf8');
-    if (!effectPack.includes(`scope: '${scope}'`))
-      throw new Error(`${name}/effect-pack.ts has the wrong structured scope`);
-    if (!effectPack.includes(`domain: '${profile.domain}'`))
-      throw new Error(`${name}/effect-pack.ts has the wrong effect domain`);
+    const engineExtensionFile = path.join(engineExtensionDirectory, 'engine-extension.ts');
+    if (!fs.existsSync(engineExtensionFile))
+      throw new Error(`${name}/engine-extension.ts is required`);
+    const engineExtension = fs.readFileSync(engineExtensionFile, 'utf8');
+    if (!engineExtension.includes(`scope: '${scope}'`))
+      throw new Error(`${name}/engine-extension.ts has the wrong structured scope`);
+    if (!engineExtension.includes(`domain: '${profile.domain}'`))
+      throw new Error(`${name}/engine-extension.ts has the wrong effect domain`);
     for (const contribution of [
-      'defineJsonEffectPack',
+      'defineJsonEngineExtension',
       'documentKey:',
       'schema:',
       'compile:',
@@ -214,10 +214,10 @@ for (const name of declared) {
       'actions:',
       'validate:',
     ])
-      if (!effectPack.includes(contribution))
-        throw new Error(`${name}/effect-pack.ts does not own ${contribution}`);
-    if (!effectPack.includes(`documentKey: '${profile.property}'`))
-      throw new Error(`${name}/effect-pack.ts has the wrong document key`);
+      if (!engineExtension.includes(contribution))
+        throw new Error(`${name}/engine-extension.ts does not own ${contribution}`);
+    if (!engineExtension.includes(`documentKey: '${profile.property}'`))
+      throw new Error(`${name}/engine-extension.ts has the wrong document key`);
   }
 
   report.push({
@@ -283,7 +283,7 @@ if (
   JSON.stringify(requiredLargeReviews) !== JSON.stringify(declaredLargeReviews)
 )
   throw new Error(
-    'Every large single-consumer effect pack must have exactly one current generalization review',
+    'Every large single-consumer engine extension must have exactly one current generalization review',
   );
 for (const name of requiredLargeReviews) {
   if (policy.largeSingleConsumerReviews[name].trim().length < 80)
@@ -291,11 +291,11 @@ for (const name of requiredLargeReviews) {
 }
 
 const structuralSources = declared.flatMap((name) =>
-  files(locatePack(EFFECT_PACKS, name, policy.profiles[name]))
+  files(locateExtension(ENGINE_EXTENSIONS, name, policy.profiles[name]))
     .filter((file) => file.endsWith('.ts') && !/\.(spec|test)\.ts$/.test(file))
     .map((file) => ({
       game: name,
-      file: path.relative(EFFECT_PACKS, file).replaceAll(path.sep, '/'),
+      file: path.relative(ENGINE_EXTENSIONS, file).replaceAll(path.sep, '/'),
       source: fs.readFileSync(file, 'utf8'),
     })),
 );
@@ -328,44 +328,44 @@ if (lines > policy.maximumProgramLines)
   );
 if (productionLines > policy.maximumProductionLines)
   throw new Error(
-    `Effect-pack production LOC grew: ${productionLines} > ${policy.maximumProductionLines}`,
+    `Engine-extension production LOC grew: ${productionLines} > ${policy.maximumProductionLines}`,
   );
 if (behaviorLines > policy.maximumBehaviorLines)
   throw new Error(
-    `Effect-pack behavior LOC grew: ${behaviorLines} > ${policy.maximumBehaviorLines}`,
+    `Engine-extension behavior LOC grew: ${behaviorLines} > ${policy.maximumBehaviorLines}`,
   );
 
 const registered = 0;
-if (fs.existsSync(path.join(REGISTRY, 'json-effect-pack-registry.ts')))
-  throw new Error('The obsolete production effect-pack registry must stay removed');
-if (registered > policy.maximumRegisteredEffectPacks)
+if (fs.existsSync(path.join(REGISTRY, 'json-engine-extension-registry.ts')))
+  throw new Error('The obsolete production engine-extension registry must stay removed');
+if (registered > policy.maximumRegisteredEngineExtensions)
   throw new Error(
-    `Registered effect-pack count grew: ${registered} > ${policy.maximumRegisteredEffectPacks}`,
+    `Registered engine-extension count grew: ${registered} > ${policy.maximumRegisteredEngineExtensions}`,
   );
 
 const centralFiles = [
-  'json-effect-pack-document-fields.ts',
-  'json-effect-pack-schemas.ts',
-  'json-effect-pack-compilers.ts',
+  'json-engine-extension-document-fields.ts',
+  'json-engine-extension-schemas.ts',
+  'json-engine-extension-compilers.ts',
   '../definitions/json-game-program-handlers.ts',
   '../definitions/json-game-action-compiler.ts',
   '../definitions/json-program-reference-validation.ts',
   '../definitions/json-program-initialization.ts',
 ];
-const effectPackProperties = Object.values(policy.profiles)
+const engineExtensionProperties = Object.values(policy.profiles)
   .filter(({ property }) => property)
   .map(({ property }) => property);
-for (const relative of effectPackProperties.length ? centralFiles : []) {
+for (const relative of engineExtensionProperties.length ? centralFiles : []) {
   const source = fs.readFileSync(
     path.resolve(
-      relative === 'json-effect-pack-document-fields.ts'
+      relative === 'json-engine-extension-document-fields.ts'
         ? REGISTRY
-        : path.join(ENGINE_RUNTIME, 'effect-packs'),
+        : path.join(ENGINE_RUNTIME, 'engine-extensions'),
       relative,
     ),
     'utf8',
   );
-  for (const property of effectPackProperties)
+  for (const property of engineExtensionProperties)
     if (new RegExp(`\\b${property}\\b`).test(source))
       throw new Error(
         `${relative} knows the profile-specific property ${property}`,
@@ -385,21 +385,21 @@ const document = fs.readFileSync(
   path.join(ROOT, 'src/game/engine/runtime/definitions/json-game-document.ts'),
   'utf8',
 );
-if ((document.match(/effect-packs\/.*\/program/g) ?? []).length !== 0)
+if ((document.match(/engine-extensions\/.*\/program/g) ?? []).length !== 0)
   throw new Error(
-    'The generic JSON document must depend only on the effect-pack contract catalog',
+    'The generic JSON document must depend only on the engine-extension contract catalog',
   );
 
 const audit = {
   summary: {
     programFiles: programFiles.length,
-    registeredEffectPacks: registered,
+    registeredEngineExtensions: registered,
     genericGameplayFiles: gameplayFiles.length,
     programLines: lines,
     productionLines,
     behaviorLines,
     scopes: Object.fromEntries(
-      ['game-specific', 'reusable', 'engine-primitive'].map((scope) => [
+      ['reusable', 'engine-primitive'].map((scope) => [
         scope,
         report.filter((item) => item.scope === scope).length,
       ]),
@@ -410,23 +410,23 @@ const audit = {
     structuralCandidates: structuralReport.candidates.length,
     exactGameCodeMatches: 0,
     forbiddenVocabularyMatches: 0,
-    crossPackImplementationImports: 0,
+    crossExtensionImplementationImports: 0,
   },
-  effectPacks: report,
+  engineExtensions: report,
   domains: Object.fromEntries(
     Object.keys(policy.effectDomains).map((domain) => {
-      const packs = report.filter((item) => item.domain === domain);
+      const extensions = report.filter((item) => item.domain === domain);
       return [
         domain,
         {
-          packs: packs.length,
-          productionLines: packs.reduce(
+          extensions: extensions.length,
+          productionLines: extensions.reduce(
             (total, item) => total + item.productionLines,
             0,
           ),
-          singleConsumerPacks: packs.filter((item) => item.consumerCount === 1)
+          singleConsumerExtensions: extensions.filter((item) => item.consumerCount === 1)
             .length,
-          reviewedPatterns: packs.map((item) => item.mechanic),
+          reviewedPatterns: extensions.map((item) => item.mechanic),
         },
       ];
     }),

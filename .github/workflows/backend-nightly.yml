@@ -1,0 +1,67 @@
+name: Backend full nightly certification
+
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: backend-full-nightly
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  exhaustive-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy: { fail-fast: false, matrix: { shard: [1, 2, 3, 4] } }
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: '24', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: npm ci --ignore-scripts --include=dev
+      - run: npm rebuild ffmpeg-static
+      - run: npm run test:exhaustive -- --maxWorkers=2 --shard=${{ matrix.shard }}/4
+
+  full-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: '24', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: npm ci --ignore-scripts --include=dev
+      - run: npm run quality:check && npm run typecheck && npm run typecheck:prod
+
+  real-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: '24', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: npm ci --ignore-scripts --include=dev
+      - run: npm run test:integration:real && npm run test:disaster-recovery
+
+  profiles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: '24', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: npm ci --ignore-scripts --include=dev
+      - run: npm run test:profile
+      - run: GAME_PROFILE_RUNS=10 npm run profile:game-replay
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-nightly-profiles-${{ github.sha }}
+          path: backend/logs
+          if-no-files-found: error
+          retention-days: 30

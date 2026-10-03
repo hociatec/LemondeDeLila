@@ -15,6 +15,7 @@ import { assertContentReferences } from './game-content-storage-auditor';
 import { assertSerializableState } from '../../../engine/runtime/state/assert-serializable-state';
 
 const PROPERTY_SEEDS = [0, 1, 2, 7, 17, 42, 255, 65_535] as const;
+const FAST_PROPERTY_SEEDS = [0, 42] as const;
 const FORBIDDEN_VIEW_KEYS = new Set([
   'engine',
   'rng',
@@ -40,9 +41,11 @@ export async function auditGameDefinition<
   TPlayerView extends object,
 >(
   definition: CompiledGameDefinition<TState, TActions, TPlayerView>,
+  options: { fast?: boolean } = {},
 ): Promise<GameContractViolation[]> {
   const violations: GameContractViolation[] = [];
-  for (const seed of PROPERTY_SEEDS) {
+  const seeds = options.fast ? FAST_PROPERTY_SEEDS : PROPERTY_SEEDS;
+  for (const seed of seeds) {
     try {
       await auditSeed(definition, seed);
     } catch (error) {

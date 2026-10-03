@@ -192,7 +192,7 @@ function main() {
     const contract = captureContract({
       directory: root,
       entry: path.join(root, 'src/game/engine/sdk', entryName + '.ts'),
-      apiVersion: entryName.startsWith('extension-') ? '2.0.0' : '10.0.0',
+      apiVersion: entryName.startsWith('extension-') ? '3.0.0' : '10.0.0',
       options: config.options,
     });
     if (process.argv.includes('--print')) {

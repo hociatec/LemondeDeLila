@@ -4,7 +4,7 @@ const test = require('node:test');
 const path = require('node:path');
 const ts = require('typescript');
 const { schemaType } = require('./author-schema-types.cjs');
-const { checkCodecContracts } = require('./effect-pack-codec-contract.cjs');
+const { checkCodecContracts } = require('./engine-extension-codec-contract.cjs');
 
 function accepts(schema, expected) {
   const file = path.resolve('__schema_type_test__.ts');

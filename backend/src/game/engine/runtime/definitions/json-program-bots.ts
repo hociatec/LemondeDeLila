@@ -1,7 +1,7 @@
 import type { GameActionMap } from '../contracts/author-rule-contracts';
 import type { GameBotDefinition } from './game-definition-contracts';
 import type { JsonGameDocument } from './json-game-schema';
-import type { JsonRecipeBotSelector } from '../contracts/json-effect-pack';
+import type { JsonRecipeBotSelector } from '../contracts/json-engine-extension';
 import type { JsonBotStrategy } from './json-game-core-document';
 
 export type JsonProgramBot = GameBotDefinition<

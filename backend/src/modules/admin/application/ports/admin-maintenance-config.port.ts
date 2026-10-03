@@ -3,6 +3,7 @@ export const ADMIN_MAINTENANCE_CONFIG = Symbol('ADMIN_MAINTENANCE_CONFIG');
 export type AdminMaintenanceConfig = {
   deployUnit: string;
   backendService: string;
+  backendRoot: string;
   healthPort: number;
 };
 

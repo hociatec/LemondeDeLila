@@ -6,9 +6,9 @@ const os = require('node:os');
 const path = require('node:path');
 const { inspectDuplicates } = require('./game-duplication-check.cjs');
 
-test('accepts a repository with no remaining effect-pack directory', () => {
+test('accepts a repository with no remaining engine-extension directory', () => {
   assert.deepEqual(
-    inspectDuplicates(path.join(os.tmpdir(), 'missing-effect-packs')),
+    inspectDuplicates(path.join(os.tmpdir(), 'missing-engine-extensions')),
     [],
   );
 });

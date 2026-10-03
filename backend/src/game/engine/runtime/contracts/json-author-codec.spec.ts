@@ -1,10 +1,10 @@
 import { createAuthorCodec } from './json-author-codec';
 import { authorObject, authorPositive } from './json-author-schema';
-import { defineJsonEffectPack } from './json-effect-pack';
+import { defineJsonEngineExtension } from './json-engine-extension';
 import type {
-  JsonEffectPackCapability,
-  JsonEffectPackHandlerContext,
-} from './json-effect-pack';
+  JsonEngineExtensionCapability,
+  JsonEngineExtensionHandlerContext,
+} from './json-engine-extension';
 
 it('validates before narrowing, clones input, and captures an immutable grammar', () => {
   const schema = authorObject({ points: authorPositive });
@@ -28,9 +28,8 @@ it('never passes malformed input to compilation, reference validation, or choice
   const choiceIds = jest.fn((program: { points: number }) => [
     String(program.points),
   ]);
-  const pack = defineJsonEffectPack({
+  const extension = defineJsonEngineExtension({
     capabilities: [],
-    scope: 'game-specific',
     domain: 'choice',
     documentKey: 'sample',
     outputKey: 'sample',
@@ -38,16 +37,16 @@ it('never passes malformed input to compilation, reference validation, or choice
     compile,
     choiceIds,
   });
-  expect(() => pack.compileContribution({ points: 'bad' })).toThrow(
+  expect(() => extension.compileContribution({ points: 'bad' })).toThrow(
     /sample.points/,
   );
-  expect(() => pack.collectChoiceIds({ points: 'bad' })).toThrow(
+  expect(() => extension.collectChoiceIds({ points: 'bad' })).toThrow(
     /sample.points/,
   );
   expect(compile).not.toHaveBeenCalled();
   expect(choiceIds).not.toHaveBeenCalled();
-  expect(pack.collectChoiceIds({ points: 2 })).toEqual(['2']);
-  const contribution = pack.compileContribution({ points: 2 });
+  expect(extension.collectChoiceIds({ points: 2 })).toEqual(['2']);
+  const contribution = extension.compileContribution({ points: 2 });
   expect(contribution).toEqual(
     expect.objectContaining({
       actions: {},
@@ -61,7 +60,6 @@ it('never passes malformed input to compilation, reference validation, or choice
 
 it('checks declared capabilities at registration and after handler construction', () => {
   const base = {
-    scope: 'game-specific' as const,
     domain: 'choice' as const,
     documentKey: 'sample',
     outputKey: 'sample',
@@ -69,19 +67,26 @@ it('checks declared capabilities at registration and after handler construction'
     compile: (program: { points: number }) => program.points,
   };
   expect(() =>
-    defineJsonEffectPack({ ...base, capabilities: [], actions: () => ({}) }),
+    defineJsonEngineExtension({
+      ...base,
+      capabilities: [],
+      actions: () => ({}),
+    }),
   ).toThrow(/sample.capabilities.actions/);
   expect(() =>
-    defineJsonEffectPack({ ...base, capabilities: ['actions', 'actions'] }),
+    defineJsonEngineExtension({
+      ...base,
+      capabilities: ['actions', 'actions'],
+    }),
   ).toThrow(/sample.capabilities/);
-  const context: JsonEffectPackHandlerContext = {
+  const context: JsonEngineExtensionHandlerContext = {
     selectedBot: jest.fn(),
     recipeBot: jest.fn(),
     fallbackRecipeBot: jest.fn(),
     publicStatuses: jest.fn(),
     actionFor: jest.fn(),
   };
-  const hidden = defineJsonEffectPack({
+  const hidden = defineJsonEngineExtension({
     ...base,
     capabilities: [],
     handlers: () => ({ resourceIds: ['energy'] }),
@@ -89,8 +94,8 @@ it('checks declared capabilities at registration and after handler construction'
   expect(() =>
     hidden.compileContribution({ points: 2 }).handlers(context),
   ).toThrow(/sample.capabilities.resourceIds/);
-  const capabilities: JsonEffectPackCapability[] = ['resourceIds'];
-  const valid = defineJsonEffectPack({
+  const capabilities: JsonEngineExtensionCapability[] = ['resourceIds'];
+  const valid = defineJsonEngineExtension({
     ...base,
     capabilities,
     handlers: () => ({ resourceIds: ['energy'] }),
@@ -104,7 +109,7 @@ it('checks declared capabilities at registration and after handler construction'
     value: 'invented',
     enumerable: true,
   });
-  expect(() => defineJsonEffectPack({ ...base, capabilities })).toThrow(
+  expect(() => defineJsonEngineExtension({ ...base, capabilities })).toThrow(
     /supported capability name/,
   );
 });

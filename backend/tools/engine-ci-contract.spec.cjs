@@ -5,7 +5,7 @@ const path = require('node:path');
 const test = require('node:test');
 const YAML = require('yaml');
 
-test('required quality context cannot succeed when a certification job fails or is skipped', () => {
+test('required quality context accepts intentional skips but rejects failures', () => {
   const root = path.resolve(__dirname, '../..');
   const workflow = YAML.parse(
     fs.readFileSync(
@@ -22,15 +22,19 @@ test('required quality context cannot succeed when a certification job fails or 
   assert.ok(checks.some((check) => check.context === 'quality'));
   for (const event of ['push', 'pull_request']) {
     assert.ok(Object.hasOwn(workflow.on, event));
-    assert.equal(workflow.on[event]?.paths, undefined);
+    assert.ok(workflow.on[event]?.paths.includes('backend/**'));
     assert.equal(workflow.on[event]?.['paths-ignore'], undefined);
   }
   const quality = workflow.jobs.quality;
-  assert.equal(quality.if, '${{ always() }}');
+  assert.equal(quality.if, 'always()');
   assert.deepEqual(quality.needs, [
+    'impact',
+    'changed-tests',
+    'static',
     'architecture',
+    'selected-games',
+    'all-games',
     'real-integration',
-    'regression',
     'release-artifact',
   ]);
   const step = quality.steps[0];
@@ -53,13 +57,14 @@ test('required quality context cannot succeed when a certification job fails or 
     quality.needs.map((name) => [name, { result: 'success' }]),
   );
   assert.equal(execute(success), false);
-  for (const name of quality.needs)
-    for (const result of ['failure', 'skipped', 'cancelled'])
+  for (const name of quality.needs) {
+    assert.equal(execute({ ...success, [name]: { result: 'skipped' } }), false);
+    for (const result of ['failure', 'cancelled'])
       assert.equal(execute({ ...success, [name]: { result } }), true);
+  }
   assert.ok(
-    workflow.jobs.architecture.steps.some(
-      (step) =>
-        step.run === 'npm run typecheck && npm run engine:merge-contracts',
+    workflow.jobs['changed-tests'].steps.some(
+      (step) => step.run === 'npm run test:changed -- --scope=unit',
     ),
   );
   const pkg = require('../package.json');
@@ -83,8 +88,11 @@ test('required quality context cannot succeed when a certification job fails or 
       pkg.scripts['engine:merge-contracts'].includes(`${suite}.spec.ts`),
     );
   assert.ok(
-    workflow.jobs.architecture.steps.some(
-      (step) => step.run === 'npm run engine:authoring-contracts',
+    workflow.jobs['all-games'].steps.some(
+      (step) =>
+        typeof step.run === 'string' &&
+        step.run.includes('all-declarative-games.contract.spec.ts') &&
+        step.run.includes('reference-replays.spec.ts'),
     ),
   );
   assert.match(

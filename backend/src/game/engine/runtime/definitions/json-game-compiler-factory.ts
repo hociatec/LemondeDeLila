@@ -1,4 +1,4 @@
-import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
+import type { JsonEngineExtensionCatalog } from '../contracts/json-engine-extension-catalog';
 import { freezeAuthorSchema } from '../contracts/json-author-schema';
 import { AuthoringError } from '../contracts/authoring-error';
 import { compileJsonGame } from './json-game-compiler';
@@ -7,9 +7,9 @@ import { createJsonGameSchema, jsonGameSchema } from './json-game-schema';
 
 /** A private, immutable catalogue per compiler; no process-wide registration. */
 export function createJsonGameCompiler<
-  const Catalog extends JsonEffectPackCatalog = readonly [],
->(extensions?: Catalog) {
-  const entries: readonly Catalog[number][] = extensions ?? [];
+  const Catalog extends JsonEngineExtensionCatalog = readonly [],
+>(candidateExtensions?: Catalog) {
+  const entries: readonly Catalog[number][] = candidateExtensions ?? [];
   const documentKeys = new Set(Object.keys(jsonGameSchema.properties ?? {}));
   documentKeys.add('extensions');
   const outputKeys = new Set(['actions', 'events', 'components', 'patterns']);
@@ -28,7 +28,7 @@ export function createJsonGameCompiler<
       );
     set.add(key);
   };
-  const packs = Object.freeze(
+  const extensions = Object.freeze(
     entries.map((extension, index) => {
       reserve(
         documentKeys,
@@ -56,8 +56,8 @@ export function createJsonGameCompiler<
       });
     }),
   );
-  const schema = createJsonGameSchema(packs);
-  const compatibilitySchema = createJsonGameSchema(packs, true);
+  const schema = createJsonGameSchema(extensions);
+  const compatibilitySchema = createJsonGameSchema(extensions, true);
   return Object.freeze({
     jsonGameSchema: schema,
     parseJsonGame: (value: unknown, path = 'game.json') =>
@@ -67,6 +67,6 @@ export function createJsonGameCompiler<
       source: unknown,
       assets?: Parameters<typeof compileJsonGame>[2],
       options?: Parameters<typeof compileJsonGame>[3],
-    ) => compileJsonGame(manifest, source, assets, options, packs),
+    ) => compileJsonGame(manifest, source, assets, options, extensions),
   });
 }

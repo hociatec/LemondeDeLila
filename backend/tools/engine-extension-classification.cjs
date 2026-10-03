@@ -1,9 +1,9 @@
 'use strict';
 
 const crypto = require('node:crypto');
-const { validatePromotion } = require('./effect-pack-promotion.cjs');
+const { validatePromotion } = require('./engine-extension-promotion.cjs');
 
-const scopes = Object.freeze(['game-specific', 'reusable', 'engine-primitive']);
+const scopes = Object.freeze(['reusable', 'engine-primitive']);
 const descriptive = new Set([
   'schemaVersion',
   'contentVersion',
@@ -46,10 +46,10 @@ function mechanicalFingerprint(document) {
     .digest('hex');
 }
 
-function classifyEffectPack(name, profile, consumers, readEvidence) {
+function classifyEngineExtension(name, profile, consumers, readEvidence) {
   if (!scopes.includes(profile.scope))
     throw new Error(
-      `${name}: explicit game-specific/reusable/engine-primitive scope required`,
+      `${name}: explicit reusable/engine-primitive scope required`,
     );
   if (
     typeof profile.classificationReason !== 'string' ||
@@ -60,13 +60,11 @@ function classifyEffectPack(name, profile, consumers, readEvidence) {
     throw new Error(
       `${name}: explicit experimental/reusable/stable maturity required`,
     );
-  if (profile.maturity !== 'experimental' && profile.scope === 'game-specific')
-    throw new Error(`${name}: maturity promotion requires demonstrated reuse`);
   const distinctMechanicalConsumers = new Set(
     consumers.map((consumer) => mechanicalFingerprint(consumer.source)),
   ).size;
-  if (profile.scope !== 'game-specific') {
-    // Evidence is reviewed and executable: counts alone never promote a pack.
+  {
+    // Evidence is reviewed and executable: counts alone never promote an extension.
     const evidence = profile.reuseReview;
     if (
       !evidence ||
@@ -126,11 +124,8 @@ function classifyEffectPack(name, profile, consumers, readEvidence) {
     maturity: profile.maturity,
     reason: profile.classificationReason,
     distinctMechanicalConsumers,
-    reuseEvidence:
-      profile.scope === 'game-specific'
-        ? 'not-demonstrated'
-        : profile.reuseReview.kind,
+    reuseEvidence: profile.reuseReview.kind,
   };
 }
 
-module.exports = { scopes, mechanicalFingerprint, classifyEffectPack };
+module.exports = { scopes, mechanicalFingerprint, classifyEngineExtension };

@@ -23,7 +23,11 @@ function fixture() {
     started();
     return child as never;
   });
-  const input = { token: randomUUID(), argv: ['command'], delayMs: 0 };
+  const input = {
+    token: randomUUID(),
+    operation: { kind: 'start-unit' as const, unit: 'test.service' },
+    delayMs: 0,
+  };
   return { database, child, launched, input };
 }
 
@@ -81,5 +85,22 @@ it('rejects malformed commands before connecting', async () => {
     runMaintenanceChild({ ...f.input, token: 'invalid' }),
   ).rejects.toThrow('Invalid');
   await expect(runMaintenanceChild(null as never)).rejects.toThrow('Invalid');
+  await expect(
+    runMaintenanceChild({
+      ...f.input,
+      operation: { kind: 'start-unit', unit: 'test.service;id' },
+    }),
+  ).rejects.toThrow('Invalid');
+  await expect(
+    runMaintenanceChild({
+      ...f.input,
+      operation: {
+        kind: 'build-and-restart',
+        cwd: 'relative/backend',
+        unit: 'test.service',
+        delayMs: 0,
+      },
+    }),
+  ).rejects.toThrow('Invalid');
   expect(f.database.initialize).not.toHaveBeenCalled();
 });

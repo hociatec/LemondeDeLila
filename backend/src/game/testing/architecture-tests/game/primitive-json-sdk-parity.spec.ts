@@ -10,7 +10,7 @@ import {
   gameEffects,
 } from '../../../engine/sdk/public-api';
 import { compileJsonGame } from '../../../engine/runtime/definitions/json-game-compiler';
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEngineExtension } from '../../../engine/runtime/contracts/json-engine-extension';
 import { authorObject } from '../../../engine/runtime/contracts/json-author-schema';
 import { DeclarativeGameRuntime } from '../../../engine/testing/public-api';
 import type { GameEffectInstruction } from '../../../engine/runtime/contracts/effect-ir';
@@ -135,9 +135,8 @@ function customEffects() {
     }),
   };
 }
-const parityExtension = defineJsonEffectPack({
+const parityExtension = defineJsonEngineExtension({
   capabilities: ['effects'],
-  scope: 'game-specific',
   domain: 'choice',
   documentKey: 'parity',
   outputKey: 'parity',
