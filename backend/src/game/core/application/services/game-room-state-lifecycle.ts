@@ -249,13 +249,16 @@ export class GameRoomStateLifecycle {
     left: NonNullable<GameState['players']>,
     right: NonNullable<GameState['players']>,
   ): boolean {
+    const leftIds = new Set(left.map((player) => player.id));
+    const rightIds = new Set(right.map((player) => player.id));
     return (
       left.length === right.length &&
-      left.every((player, index) => {
-        const candidate = right[index];
+      leftIds.size === left.length &&
+      rightIds.size === right.length &&
+      left.every((player) => {
+        const candidate = right.find((entry) => entry.id === player.id);
         return (
           candidate != null &&
-          player.id === candidate.id &&
           player.username === candidate.username &&
           Boolean(player.isBot) === Boolean(candidate.isBot)
         );

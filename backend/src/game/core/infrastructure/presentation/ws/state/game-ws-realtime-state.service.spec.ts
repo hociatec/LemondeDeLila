@@ -370,6 +370,72 @@ describe('GameWsRealtimeStateService run isolation', () => {
     expect(hydrateInitialState).toHaveBeenCalledTimes(1);
   });
 
+  it('does not rebuild a configured game when start only shuffles the roster', async () => {
+    const configured: GameState = {
+      status: 'playing',
+      phase: 'playing',
+      version: 3,
+      log: [],
+      players: [
+        { id: 1, username: 'Owner', isBot: false },
+        { id: -9, username: 'Bot Arche', isBot: true },
+      ],
+      metadata: { roomRunId: 3, roomStartedAt: null },
+      game: { configured: true },
+    };
+    const startedAt = new Date(0).toISOString();
+    const shuffledBase: GameState = {
+      ...configured,
+      status: 'started',
+      players: [...(configured.players ?? [])].reverse(),
+      metadata: { roomRunId: 3, roomStartedAt: startedAt },
+      game: {},
+    };
+    const hydrateInitialState = jest.fn((state) => state);
+    const engine = {
+      exportInternalState: jest.fn().mockResolvedValue(configured),
+      compareAndSetInternalState: jest.fn(
+        async (_roomId, _gameType, expectedVersion, state) => ({
+          committed: true,
+          version: expectedVersion + 1,
+          state: { ...state, version: expectedVersion + 1 },
+        }),
+      ),
+    };
+    const room = {
+      room: {
+        id: 4,
+        gameType: 'arche-de-mnemosyne',
+        status: 'started',
+        runId: 3,
+        startedAt,
+      },
+    };
+    const service = new GameWsRealtimeStateService(
+      { build: jest.fn().mockReturnValue(shuffledBase) } as never,
+      engine as never,
+      {
+        getHandler: jest.fn().mockReturnValue({ hydrateInitialState }),
+      } as never,
+      { clear: jest.fn() } as never,
+      {} as never,
+      {} as never,
+      {
+        buildPayload: jest.fn().mockResolvedValue(room),
+        refreshPayload: jest.fn().mockResolvedValue(room),
+      } as never,
+      execution() as never,
+    );
+
+    const resolved = await service.resolve(4);
+
+    expect(hydrateInitialState).not.toHaveBeenCalled();
+    expect(resolved.state.status).toBe('playing');
+    expect(resolved.state.game).toEqual({ configured: true });
+    expect(resolved.state.players).toEqual(configured.players);
+    expect(resolved.state.metadata?.roomStartedAt).toBe(startedAt);
+  });
+
   it('preserves the run marker when a game replaces metadata during hydration', async () => {
     const base = gameState({ roomRunId: 2 });
     const fresh = gameState({ generatedAt: 'setup-config' });
