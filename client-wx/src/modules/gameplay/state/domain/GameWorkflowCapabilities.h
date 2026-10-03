@@ -12,6 +12,7 @@ struct GameQuizBank final { std::string id; int count = 0; int cursor = 0; int r
 struct GameQuizSession final
 {
     std::string id;
+    std::string questionId;
     std::string bankId;
     std::string phase;
     std::string prompt;

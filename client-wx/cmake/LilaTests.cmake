@@ -393,6 +393,10 @@ add_executable(lemonde_de_lila_wx_gameplay_tests
     src/modules/gameplay/state/domain/GameKits.cpp
     src/modules/gameplay/state/domain/GameSystem.cpp
 )
+target_compile_definitions(
+    lemonde_de_lila_wx_gameplay_tests
+    PRIVATE LILA_CLIENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
 target_include_directories(lemonde_de_lila_wx_gameplay_tests PRIVATE src)
 target_link_libraries(lemonde_de_lila_wx_gameplay_tests PRIVATE nlohmann_json::nlohmann_json)
 lila_configure_cpp_target(lemonde_de_lila_wx_gameplay_tests)

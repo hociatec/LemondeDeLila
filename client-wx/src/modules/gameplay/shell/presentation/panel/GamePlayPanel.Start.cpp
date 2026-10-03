@@ -86,6 +86,11 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
                 inputRequestSlot_.Cancel();
                 inputSubmissionGuard_.Reset();
                 retryableActionCommand_.reset();
+                // The rendered view and its version identity must be
+                // invalidated together. A refresh may legitimately return
+                // the same authoritative version after the room event.
+                state_ = {};
+                lines_.clear();
                 ClearView();
                 UpdateStatus(wxString(L"Synchronisation de la partie..."));
                 RequestRefresh();

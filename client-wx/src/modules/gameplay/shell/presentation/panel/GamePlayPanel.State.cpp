@@ -19,6 +19,7 @@
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
+#include "modules/gameplay/state/application/GameSurfaceSelectors.h"
 #include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
 #include "modules/gameplay/state/application/GameValuePayloadCodec.h"
 #include "shared/accessibility/presentation/NavigationController.h"
@@ -48,8 +49,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     const wxWeakRef<wxWindow> focusedBefore(wxWindow::FindFocus());
     const wxWeakRef<wxWindow> interactionBefore(RequiredInteractionTarget());
     const bool hadVisibleGrid = gridPanel_->IsShown();
-    const bool hadVisibleHand = !state_.kits.VisibleHand().empty();
-    const bool receivesVisibleHand = !state.kits.VisibleHand().empty();
+    const auto previousSurfaces = application::GameSurfaceSelectors::Available(state_);
+    const auto incomingSurfaces = application::GameSurfaceSelectors::Available(state);
     const bool hadInlinePrompt = IsInlinePromptVisible();
     const bool hadActionableChoices = state_.pending &&
         application::GamePendingSelectionPolicy::HasActionableChoices(*state_.pending);
@@ -126,7 +127,8 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     pendingLabel_->SetLabel(BuildPendingText());
     pendingLabel_->Show(!pendingLabel_->GetLabel().empty());
     RebuildLines();
-    handPanel_->ApplyCards(state_.kits.VisibleHand(), state_.actions);
+    handPanel_->ApplyCards(
+        application::GameSurfaceSelectors::VisibleHand(state_), state_.actions);
     gridPanel_->Apply(state_.kits.grid ? &*state_.kits.grid : nullptr,
         state_.actions, state_.system.players,
         state_.kits.pawns ? &*state_.kits.pawns : nullptr);
@@ -197,7 +199,9 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     const bool shouldRefreshZoneFocus =
         interactionBefore.get() != RequiredInteractionTarget() ||
         (!focusPreserved && focusWasInsideGame) ||
-        (!hadVisibleHand && receivesVisibleHand) ||
+        (!previousSurfaces.cards && incomingSurfaces.cards) ||
+        (!previousSurfaces.quiz && incomingSurfaces.quiz) ||
+        (!previousSurfaces.pending && incomingSurfaces.pending) ||
         (!hadVisibleGrid && gridPanel_->IsShown()) ||
         inlinePromptBecameActive || actionableChoicesBecameActive;
     if (shouldRefreshZoneFocus && onZoneFocusRequested_)
