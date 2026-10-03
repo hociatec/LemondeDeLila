@@ -1,5 +1,4 @@
 #pragma once
-
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -8,9 +7,7 @@
 #include <mutex>
 #include <utility>
 #include <vector>
-
 #include "modules/gameplay/session/domain/GameEvent.h"
-
 namespace lila::modules::gameplay::application
 {
 class GameEventMailbox final
@@ -56,9 +53,6 @@ public:
         bool saturated = false;
         if (IsCritical(type))
         {
-            // Critical traffic must not be allowed to grow without bound.
-            // Prefer replacing an older event with the same correlation key;
-            // otherwise force a resynchronization rather than exhausting memory.
             const auto duplicate = std::find_if(
                 critical_.begin(), critical_.end(), [&event](const auto& queued) {
                     if (queued.type != event.type) return false;
@@ -132,9 +126,6 @@ public:
         if (session != session_) return batch;
         const auto limit = std::max<std::size_t>(1, maximum);
         batch.events.reserve(std::min(limit, critical_.size() + regular_.size()));
-        // Critical acknowledgements/errors get priority, but never consume the
-        // whole batch while regular state is waiting: a fresh projection is
-        // itself part of recovery from errors and must not starve.
         const auto criticalBudget = regular_.empty()
             ? limit : std::max<std::size_t>(1, (limit * 3) / 4);
         while (batch.events.size() < criticalBudget && !critical_.empty())
