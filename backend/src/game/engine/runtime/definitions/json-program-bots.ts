@@ -9,6 +9,39 @@ export type JsonProgramBot = GameBotDefinition<
   GameActionMap<Record<string, never>>
 >;
 
+/** Adapts pattern-owned recipe names to the public action ids declared by JSON games. */
+export function mappedPatternBot(
+  document: JsonGameDocument,
+  bot: JsonProgramBot,
+): JsonProgramBot {
+  return {
+    choose: (input) => {
+      const recipeByAction = new Map(
+        input.availableActions.map((actionId) => [
+          actionId,
+          recipeFor(document, actionId),
+        ]),
+      );
+      const availableActions = [
+        ...input.availableActions,
+        ...new Set(
+          [...recipeByAction.values()].filter(
+            (recipe) => !input.availableActions.includes(recipe),
+          ),
+        ),
+      ];
+      const selected = bot.choose({ ...input, availableActions });
+      if (!selected) return null;
+      const type = input.availableActions.find(
+        (actionId) =>
+          actionId === selected.type ||
+          recipeByAction.get(actionId) === selected.type,
+      );
+      return type ? { ...selected, type } : null;
+    },
+  };
+}
+
 /** Selects only server-validated legal actions and consumes the game RNG for every random choice. */
 export function declarativeBot(strategy: JsonBotStrategy): JsonProgramBot {
   return {
@@ -91,4 +124,9 @@ export function selectedRecipeBot(
       return type ? { type, payload: selected.payload } : null;
     },
   };
+}
+
+function recipeFor(document: JsonGameDocument, actionId: string): string {
+  const action = document.actions[actionId];
+  return action && 'recipe' in action ? action.recipe : actionId;
 }

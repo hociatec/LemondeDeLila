@@ -1,4 +1,5 @@
 import { programHandlers } from './json-game-program-handlers';
+import { mappedPatternBot } from './json-program-bots';
 import { cardSelectionRules } from '../recipes/gameplay/card-selection.recipes';
 import { assertCardSelectionReferences } from './json-card-selection-schema';
 import { defineGame } from './game-definition';
@@ -163,6 +164,11 @@ function compileResolvedJsonGame<Catalog extends JsonEngineExtensionCatalog>(
   const events = programs.events;
   const components = [...document.components, ...programs.components];
   const handlers = programHandlers(document, programs, jsonEngineExtensions);
+  const mappedPatterns = patterns.map((pattern) =>
+    pattern.bot
+      ? { ...pattern, bot: mappedPatternBot(document, pattern.bot) }
+      : pattern,
+  );
   const buildDefinition = () =>
     defineGame<Record<string, never>>()<
       typeof actions,
@@ -183,7 +189,7 @@ function compileResolvedJsonGame<Catalog extends JsonEngineExtensionCatalog>(
       content,
       events,
       rulesVersion: document.definitionVersion,
-      patterns,
+      patterns: mappedPatterns,
       shortcuts: document.shortcuts,
       components,
       initialization: jsonProgramInitialization(document, jsonEngineExtensions),
