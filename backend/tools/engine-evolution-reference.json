@@ -40,7 +40,7 @@
     "voyage-en-terre-de-brumes",
     "zig-et-zag"
   ],
-  "effectPacks": [
+  "engineExtensions": [
     "board-movement-landings",
     "board-path-walls",
     "board-property-economy",
@@ -128,7 +128,6 @@
     "definition": "Production game.json documents; not a measure of reusable implementation."
   },
   "reuse": {
-    "game-specific": 34,
     "reusable": 0,
     "engine-primitive": 0
   }

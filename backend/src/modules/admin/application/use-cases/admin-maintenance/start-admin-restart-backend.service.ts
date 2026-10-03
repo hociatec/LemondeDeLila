@@ -18,10 +18,11 @@ export class StartAdminRestartBackendService {
   ) {}
 
   execute() {
-    this.runtime.spawnDetached(
-      ['sudo', '-n', 'systemctl', 'restart', this.config.backendService],
-      { delayMs: 350 },
-    );
+    this.runtime.schedule({
+      kind: 'restart-unit',
+      unit: this.config.backendService,
+      delayMs: 350,
+    });
     return { ok: true, service: this.config.backendService, scheduled: true };
   }
 }

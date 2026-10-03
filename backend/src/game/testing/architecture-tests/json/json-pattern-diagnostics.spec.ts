@@ -72,7 +72,7 @@ it.each([
   },
 );
 
-it('does not invent provenance for an ambiguous component or a pack-generated component', () => {
+it('does not invent provenance for an ambiguous component or a extension-generated component', () => {
   expect(
     jsonPatternComponentPath(
       [race, race],

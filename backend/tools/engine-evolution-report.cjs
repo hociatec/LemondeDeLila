@@ -6,35 +6,24 @@ function compareEvolution(current, previous) {
   const added = (key) =>
     current[key].filter((id) => !previous[key].includes(id));
   const games = added('games'),
-    effectPacks = added('effectPacks'),
+    engineExtensions = added('engineExtensions'),
     primitives = added('primitives');
-  const specificPacks = (
-    current.gameSpecificPacks ?? current.effectPacks
-  ).filter(
-    (id) => !(previous.gameSpecificPacks ?? previous.effectPacks).includes(id),
-  );
   return {
     games,
-    effectPacks,
+    engineExtensions,
     primitives,
     counts: {
       newGames: games.length,
-      newEffectPacks: effectPacks.length,
-      newGameSpecificPacks: specificPacks.length,
-      gamesPerNewGameSpecificPack: specificPacks.length
-        ? games.length / specificPacks.length
-        : null,
+      newEngineExtensions: engineExtensions.length,
       newPrimitives: primitives.length,
-      gamesPerNewEffectPack: effectPacks.length
-        ? games.length / effectPacks.length
+      gamesPerNewEngineExtension: engineExtensions.length
+        ? games.length / engineExtensions.length
         : null,
       gamesPerNewPrimitive: primitives.length
         ? games.length / primitives.length
         : null,
     },
-    requiresReview: effectPacks.length > 0 || primitives.length > 0,
-    specificGrowthWarning:
-      specificPacks.length > 0 && games.length <= specificPacks.length,
+    requiresReview: engineExtensions.length > 0 || primitives.length > 0,
   };
 }
 
@@ -61,7 +50,7 @@ function captureEvolution(root = path.resolve(__dirname, '..')) {
   const documents = files.filter((file) => path.basename(file) === 'game.json');
   const policy = JSON.parse(
     fs.readFileSync(
-      path.join(root, 'tools/engine-effect-pack-governance.json'),
+      path.join(root, 'tools/engine-extension-governance.json'),
       'utf8',
     ),
   );
@@ -82,11 +71,7 @@ function captureEvolution(root = path.resolve(__dirname, '..')) {
     .sort();
   return {
     games,
-    effectPacks: Object.keys(policy.profiles).sort(),
-    gameSpecificPacks: Object.entries(policy.profiles)
-      .filter(([, profile]) => profile.scope === 'game-specific')
-      .map(([name]) => name)
-      .sort(),
+    engineExtensions: Object.keys(policy.profiles).sort(),
     primitives: [...new Set(primitives)].sort(),
     declarativity: {
       jsonGames: documents.length,
@@ -95,7 +80,7 @@ function captureEvolution(root = path.resolve(__dirname, '..')) {
         'Production game.json documents; not a measure of reusable implementation.',
     },
     reuse: Object.fromEntries(
-      ['game-specific', 'reusable', 'engine-primitive'].map((scope) => [
+      ['reusable', 'engine-primitive'].map((scope) => [
         scope,
         Object.values(policy.profiles).filter(
           (profile) => profile.scope === scope,
@@ -115,10 +100,6 @@ if (require.main === module) {
       : path.resolve(process.argv[index + 1]);
   const previous = JSON.parse(fs.readFileSync(file, 'utf8'));
   const evolution = compareEvolution(current, previous);
-  if (evolution.specificGrowthWarning)
-    console.error(
-      '::warning title=Game-specific pack growth::At least one new specific pack per new game. Review composition and reuse before extending the catalogue.',
-    );
   console.log(JSON.stringify({ ...current, evolution }, null, 2));
 }
 module.exports = { compareEvolution, captureEvolution };

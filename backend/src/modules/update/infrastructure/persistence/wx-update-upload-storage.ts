@@ -359,14 +359,14 @@ function isWxUploadMeta(value: unknown): value is WxUploadMeta {
     item.signature.length <= 4096 &&
     typeof item.totalBytes === 'number' &&
     Number.isSafeInteger(item.totalBytes) &&
-    item.totalBytes >= 0 &&
+    item.totalBytes > 0 &&
     (item.installerSha256 === null ||
       (typeof item.installerSha256 === 'string' &&
         /^[a-f0-9]{64}$/i.test(item.installerSha256))) &&
     (item.installerTotalBytes === null ||
       (typeof item.installerTotalBytes === 'number' &&
         Number.isSafeInteger(item.installerTotalBytes) &&
-        item.installerTotalBytes >= 0)) &&
+        item.installerTotalBytes > 0)) &&
     (item.completedAt === null ||
       (typeof item.completedAt === 'string' && item.completedAt.length <= 64))
   );

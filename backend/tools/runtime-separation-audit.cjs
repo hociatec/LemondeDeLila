@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { analyzeRuntime } = require('./runtime-dependency-graph.cjs');
-const { effectPackDirectory } = require('./effect-pack-layout.cjs');
+const { engineExtensionDirectory } = require('./engine-extension-layout.cjs');
 const { hasHigherLayerValueImport } = require('./runtime-contract-imports.cjs');
 
 const violations = [];
@@ -30,7 +30,7 @@ for (const file of files(path.join(runtime, 'contracts'))) {
     path.basename(file) !== 'game-rule-program.ts'
   )
     violations.push(
-      `${file}: single-consumer author program belongs in game/rules/effect-packs`,
+      `${file}: single-consumer author program belongs in game/rules/engine-extensions`,
     );
   const source = fs.readFileSync(file, 'utf8');
   if (hasHigherLayerValueImport(source))
@@ -38,43 +38,43 @@ for (const file of files(path.join(runtime, 'contracts'))) {
       `${file}: runtime contract has a value dependency on a higher layer`,
     );
 }
-const effectPacksRoot = path.resolve('src/game/rules');
-const effectPackPolicy = JSON.parse(
+const engineExtensionsRoot = path.resolve('src/game/rules');
+const engineExtensionPolicy = JSON.parse(
   fs.readFileSync(
-    path.resolve('tools/engine-effect-pack-governance.json'),
+    path.resolve('tools/engine-extension-governance.json'),
     'utf8',
   ),
 );
-const effectPacks = Object.keys(effectPackPolicy.profiles).map((name) => ({
+const engineExtensions = Object.keys(engineExtensionPolicy.profiles).map((name) => ({
   name,
 }));
-for (const effectPack of effectPacks) {
-  const directory = effectPackDirectory(
-    effectPacksRoot,
-    effectPack.name,
-    effectPackPolicy.profiles[effectPack.name],
+for (const engineExtension of engineExtensions) {
+  const directory = engineExtensionDirectory(
+    engineExtensionsRoot,
+    engineExtension.name,
+    engineExtensionPolicy.profiles[engineExtension.name],
   );
   const entries = files(directory);
   const program = path.join(directory, 'program.ts');
   if (!entries.includes(program))
     violations.push(`${directory}: program.ts is missing`);
-  const profile = effectPackPolicy.profiles[effectPack.name];
-  const implementation = path.join(directory, 'effect-pack.ts');
+  const profile = engineExtensionPolicy.profiles[engineExtension.name];
+  const implementation = path.join(directory, 'engine-extension.ts');
   if (profile?.property && !entries.includes(implementation))
-    violations.push(`${directory}: effect-pack.ts is missing`);
+    violations.push(`${directory}: engine-extension.ts is missing`);
   if (profile?.property && entries.includes(implementation)) {
     const implementationSource = fs.readFileSync(implementation, 'utf8');
     if (
-      !['game-specific', 'reusable', 'engine-primitive'].includes(
+      !['reusable', 'engine-primitive'].includes(
         profile.scope,
       ) ||
       !implementationSource.includes(`scope: '${profile.scope}'`)
     )
       violations.push(
-        `${implementation}: effect-pack scope must match its reviewed classification`,
+        `${implementation}: engine-extension scope must match its reviewed classification`,
       );
     if (!implementationSource.includes(`domain: '${profile.domain}'`))
-      violations.push(`${implementation}: effect-pack domain is incorrect`);
+      violations.push(`${implementation}: engine-extension domain is incorrect`);
   }
   if (!entries.includes(program)) continue;
   const source = fs.readFileSync(program, 'utf8');
@@ -89,7 +89,7 @@ for (const effectPack of effectPacks) {
     )
   )
     violations.push(
-      `${program}: effect-pack contract reaches outside low-level contracts`,
+      `${program}: engine-extension contract reaches outside low-level contracts`,
     );
 }
 for (const file of files(path.join(runtime, 'kits'))) {

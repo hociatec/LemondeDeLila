@@ -1,190 +1,190 @@
-name: Backend architecture
+name: Backend incremental certification
 
-"on":
+on:
   push:
     branches: [main]
+    paths: ['backend/**', 'client-wx/**', '.github/workflows/**']
   pull_request:
+    paths: ['backend/**', 'client-wx/**', '.github/workflows/**']
   workflow_dispatch:
 
 concurrency:
-  group: backend-architecture-${{ github.event.pull_request.number || github.ref }}
+  group: backend-certification-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
+env:
+  NODE_VERSION: '24'
+
 jobs:
-  quality:
-    if: ${{ always() }}
-    needs: [architecture, real-integration, regression, release-artifact]
+  impact:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    outputs:
+      backend: ${{ steps.plan.outputs.backend }}
+      architecture: ${{ steps.plan.outputs.architecture }}
+      integration: ${{ steps.plan.outputs.integration }}
+      release: ${{ steps.plan.outputs.release }}
+      all_games: ${{ steps.plan.outputs.all_games }}
+      game_ids: ${{ steps.plan.outputs.game_ids }}
+      has_games: ${{ steps.plan.outputs.has_games }}
     steps:
-      - name: Require all certification jobs to succeed
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: { fetch-depth: 0, persist-credentials: false }
+      - id: plan
+        name: Calculate impacted modules and games
+        working-directory: backend
         env:
-          JOB_RESULTS: ${{ toJSON(needs) }}
-        run: |
-          node -e "const jobs = JSON.parse(process.env.JOB_RESULTS); if (Object.values(jobs).some(job => job.result !== 'success')) process.exit(1)"
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node tools/changed-impact.cjs --base="$BASE_SHA" --head="$HEAD_SHA"
+
+  changed-tests:
+    needs: impact
+    if: needs.impact.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - uses: actions/cache@v4
+        with:
+          path: backend/.cache
+          key: backend-test-${{ runner.os }}-${{ hashFiles('backend/package-lock.json', 'backend/tsconfig*.json') }}
+      - run: npm ci --ignore-scripts --include=dev
+      - name: Prepare optional audio test binary
+        run: npm rebuild ffmpeg-static
+      - name: Run only related unit and architecture tests
+        env:
+          CHANGED_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CHANGED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run test:changed -- --scope=unit
+
+  static:
+    needs: impact
+    if: needs.impact.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - uses: actions/cache@v4
+        with:
+          path: backend/.cache
+          key: backend-static-${{ runner.os }}-${{ hashFiles('backend/package-lock.json', 'backend/tsconfig*.json') }}
+      - run: npm ci --ignore-scripts --include=dev
+      - run: npm run typecheck && npm run typecheck:prod && npm run lint
 
   architecture:
-    runs-on: ubuntu-latest
-    # The deterministic corpus now covers 120 cases across all 39 games.
-    timeout-minutes: 35
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-      - name: Install static analysis dependencies
-        run: npm ci --ignore-scripts --include=dev
-      - name: Create audit output directory
-        run: |
-          node -e "require('node:fs').mkdirSync('logs', { recursive: true })"
-      - name: Check quality and test regression guards
-        run: npm run quality:check
-      - name: Compile every game and exercise deterministic replays
-        run: npm run typecheck && npm run engine:merge-contracts
-      - name: Profile CPU, memory, event loop, commands and snapshots
-        run: GAME_PROFILE_RUNS=3 npm run profile:game-replay
-      - name: Preserve the final workload profile
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: backend-workload-profile-${{ github.sha }}
-          path: |
-            backend/logs/game-replay-profile.json
-            backend/logs/game-replay.cpuprofile
-          if-no-files-found: error
-          retention-days: 30
-      - name: Verify authoring diagnostics and source paths
-        run: npm run engine:authoring-contracts
-      - name: Check alert behavior with Prometheus
-        run: >-
-          docker run --rm
-          -v "${{ github.workspace }}/backend/observability/prometheus:/rules:ro"
-          --entrypoint=/bin/promtool prom/prometheus:v3.5.0
-          test rules /rules/lila-alerts.test.yml /rules/lila-slo.test.yml
-      - name: Verify alert delivery and resolution on loopback
-        run: |
-          prometheus_container=$(docker create prom/prometheus:v3.5.0)
-          alertmanager_container=$(docker create prom/alertmanager:v0.28.1)
-          trap 'docker rm "$prometheus_container" "$alertmanager_container" >/dev/null' EXIT
-          docker cp "$prometheus_container:/bin/prometheus" "$RUNNER_TEMP/prometheus"
-          docker cp "$alertmanager_container:/bin/alertmanager" "$RUNNER_TEMP/alertmanager"
-          chmod +x "$RUNNER_TEMP/prometheus" "$RUNNER_TEMP/alertmanager"
-          PROMETHEUS_BINARY="$RUNNER_TEMP/prometheus" ALERTMANAGER_BINARY="$RUNNER_TEMP/alertmanager" npm run test:observability:integration
-          PROMETHEUS_BINARY="$RUNNER_TEMP/prometheus" npm run test:metrics:integration
-      - name: Enforce zero TypeScript source cycles
-        run: npm run cycles:audit
-      - name: Check lint rules
-        run: npm run lint
-      - name: Check runtime cycles and compiler separation
-        run: npm run runtime:separation:audit
-      - name: Check source layout
-        run: npm run layout:audit
-      - name: Check application contract ownership
-        run: npm run application:contracts:audit
-      - name: Check updatecmd deployment contracts
-        run: ../tools/updatecmd/tests/main-sync.spec.sh && ../tools/updatecmd/tests/wx-signature-contract.spec.sh
-
-  real-integration:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-      - name: Install locked dependencies
-        run: npm ci --ignore-scripts --include=dev
-      - name: Exercise MySQL, Redis, BullMQ and two backend instances
-        run: npm run test:integration:real
-
-  regression:
+    needs: impact
+    if: github.event_name != 'pull_request' || needs.impact.outputs.architecture == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2]
-    defaults:
-      run:
-        working-directory: backend
+    defaults: { run: { working-directory: backend } }
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-      - name: Install locked dependencies
-        run: npm ci --ignore-scripts --include=dev
-      - name: Install the locked FFmpeg binary for audio integration tests
-        run: npm rebuild ffmpeg-static
-      - name: Exercise application and game regression shard ${{ matrix.shard }}/2
-        run: npm run test:exhaustive -- --maxWorkers=2 --shard=${{ matrix.shard }}/2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: npm ci --ignore-scripts --include=dev
+      - run: npm run quality:check
+
+  selected-games:
+    needs: impact
+    if: needs.impact.outputs.has_games == 'true' && needs.impact.outputs.all_games != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: npm ci --ignore-scripts --include=dev
+      - name: Certify impacted games and smoke replays
+        env:
+          CHANGED_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CHANGED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          GAME_TEST_GAME_IDS: ${{ needs.impact.outputs.game_ids }}
+          GAME_TEST_PROFILE: fast
+        run: npm run test:changed -- --scope=games
+
+  all-games:
+    needs: impact
+    if: github.event_name != 'pull_request' || needs.impact.outputs.all_games == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy: { fail-fast: false, matrix: { shard: [1, 2, 3, 4] } }
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: npm ci --ignore-scripts --include=dev
+      - name: Certify game shard ${{ matrix.shard }}/4
+        env: { GAME_TEST_SHARD: '${{ matrix.shard }}/4', GAME_TEST_PROFILE: exhaustive }
+        run: |
+          npx jest --maxWorkers=2 --shard=${{ matrix.shard }}/4 game/games
+          npx jest --runInBand game/testing/architecture-tests/game/all-declarative-games.contract.spec.ts game/testing/architecture-tests/game/reference-replays.spec.ts
+
+  real-integration:
+    needs: impact
+    if: github.event_name != 'pull_request' || needs.impact.outputs.integration == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: npm ci --ignore-scripts --include=dev
+      - run: npm run test:integration:real
 
   release-artifact:
-    needs: [real-integration]
+    needs: [impact, real-integration]
+    if: always() && (github.event_name != 'pull_request' || needs.impact.outputs.release == 'true') && contains(fromJSON('["success","skipped"]'), needs.real-integration.result)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: backend
+    defaults: { run: { working-directory: backend } }
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version: "24"
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-      - name: Install locked dependencies
-        run: npm ci --ignore-scripts --include=dev
-      - name: Reject high-severity production dependency vulnerabilities
-        run: npm audit --omit=dev --audit-level=high
-      - name: Typecheck and build production code
-        run: npm run typecheck:prod && npm run build && npm run verify:dist
-      - name: Record game and engine growth independently
-        run: |
-          mkdir -p logs
-          node tools/engine-evolution-report.cjs > logs/engine-evolution.json
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: npm ci --ignore-scripts --include=dev
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run typecheck:prod && npm run build && npm run verify:dist
       - name: Build the production-only deployment artifact
-        run: npm prune --omit=dev && npm rebuild ffmpeg-static && npm run artifact:create -- logs/backend-deployment.tar.gz
         env:
-          BACKEND_ARTIFACT_NODE_MAJOR: "24"
-      - name: Upload the certified Node 24 deployment artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+          BACKEND_ARTIFACT_NODE_MAJOR: '24'
+        run: |
+          npm prune --omit=dev
+          npm rebuild ffmpeg-static
+          npm run artifact:create -- logs/backend-deployment.tar.gz
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: backend-deployment-node24-${{ github.sha }}
           path: |
             backend/logs/backend-deployment.tar.gz
             backend/logs/backend-deployment.tar.gz.sha256
-            backend/logs/engine-evolution.json
           if-no-files-found: error
           compression-level: 0
           retention-days: 30
+
+  quality:
+    if: always()
+    needs: [impact, changed-tests, static, architecture, selected-games, all-games, real-integration, release-artifact]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every selected certification job to succeed
+        env: { JOB_RESULTS: '${{ toJSON(needs) }}' }
+        run: node -e "const jobs=JSON.parse(process.env.JOB_RESULTS);if(Object.values(jobs).some(({result})=>!['success','skipped'].includes(result)))process.exit(1)"

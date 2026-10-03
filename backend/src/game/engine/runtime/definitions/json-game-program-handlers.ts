@@ -15,21 +15,21 @@ import {
   selectedRecipeBot,
 } from './json-program-bots';
 import type {
-  JsonEffectPackCatalog,
+  JsonEngineExtensionCatalog,
   JsonGameViewAugmentation,
-} from '../contracts/json-effect-pack-catalog';
+} from '../contracts/json-engine-extension-catalog';
 import type {
-  JsonEffectPackHandlerContext,
-  JsonEffectPackHandlers,
-} from '../contracts/json-effect-pack';
+  JsonEngineExtensionHandlerContext,
+  JsonEngineExtensionHandlers,
+} from '../contracts/json-engine-extension';
 
-export function programHandlers<Catalog extends JsonEffectPackCatalog>(
+export function programHandlers<Catalog extends JsonEngineExtensionCatalog>(
   document: JsonDocument,
   programs: Programs,
-  jsonEffectPacks: Catalog,
-): JsonEffectPackHandlers<JsonGameViewAugmentation<Catalog>> {
+  jsonEngineExtensions: Catalog,
+): JsonEngineExtensionHandlers<JsonGameViewAugmentation<Catalog>> {
   const sources = new Map<string, unknown>(Object.entries(document));
-  const context: JsonEffectPackHandlerContext = {
+  const context: JsonEngineExtensionHandlerContext = {
     selectedBot: (select) => selectedRecipeBot(document, select),
     recipeBot: (recipe) => recipeBot(document, recipe),
     fallbackRecipeBot: (preferred) => fallbackRecipeBot(document, preferred),
@@ -46,26 +46,27 @@ export function programHandlers<Catalog extends JsonEffectPackCatalog>(
         );
       }),
   };
-  const result: JsonEffectPackHandlers<JsonGameViewAugmentation<Catalog>> = {
-    ...(document.bot ? { bot: declarativeBot(document.bot) } : {}),
-    ...(document.playerValuesVisibility
-      ? {
-          playerValuesVisibility: {
-            scores: mapVisibility(document.playerValuesVisibility.scores),
-            statuses: mapVisibility(document.playerValuesVisibility.statuses),
-            resources: mapVisibilityRecord(
-              document.playerValuesVisibility.resources,
-            ),
-            counters: mapVisibilityRecord(
-              document.playerValuesVisibility.counters,
-            ),
-          },
-        }
-      : {}),
-  };
+  const result: JsonEngineExtensionHandlers<JsonGameViewAugmentation<Catalog>> =
+    {
+      ...(document.bot ? { bot: declarativeBot(document.bot) } : {}),
+      ...(document.playerValuesVisibility
+        ? {
+            playerValuesVisibility: {
+              scores: mapVisibility(document.playerValuesVisibility.scores),
+              statuses: mapVisibility(document.playerValuesVisibility.statuses),
+              resources: mapVisibilityRecord(
+                document.playerValuesVisibility.resources,
+              ),
+              counters: mapVisibilityRecord(
+                document.playerValuesVisibility.counters,
+              ),
+            },
+          }
+        : {}),
+    };
   const owners = new Map<string, string>();
   if (document.bot) owners.set('bot', 'bot');
-  for (const extension of jsonEffectPacks) {
+  for (const extension of jsonEngineExtensions) {
     const source = sources.get(extension.documentKey);
     const contribution = programs.contributions.get(extension.outputKey);
     if (source === undefined || contribution === undefined) continue;

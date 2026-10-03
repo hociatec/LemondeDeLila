@@ -1,4 +1,4 @@
 export {
   compileJsonPrograms,
   type CompiledJsonPrograms,
-} from '../effect-packs/json-effect-pack-compilers';
+} from '../engine-extensions/json-engine-extension-compilers';

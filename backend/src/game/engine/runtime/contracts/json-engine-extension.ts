@@ -10,12 +10,10 @@ import type { GamePattern } from './pattern-definition';
 import { AuthoringError } from './authoring-error';
 
 type JsonState = Record<string, never>;
-export type JsonEffectPackScope =
-  'game-specific' | 'reusable' | 'engine-primitive';
-export type JsonEffectPackDomain =
+export type JsonEngineExtensionDomain =
   'board' | 'cards' | 'choice' | 'collection' | 'race' | 'spatial';
 type JsonActions = GameActionMap<JsonState>;
-export type JsonEffectPackHandlers<View extends object = object> = Partial<
+export type JsonEngineExtensionHandlers<View extends object = object> = Partial<
   Pick<
     GameRuleProgram<JsonState, JsonActions, View>,
     | 'setup'
@@ -33,8 +31,8 @@ export type JsonEffectPackHandlers<View extends object = object> = Partial<
   >
 >;
 
-export type JsonEffectPackCapability =
-  | keyof JsonEffectPackHandlers
+export type JsonEngineExtensionCapability =
+  | keyof JsonEngineExtensionHandlers
   | 'actions'
   | 'events'
   | 'components'
@@ -42,22 +40,22 @@ export type JsonEffectPackCapability =
 
 export type JsonRecipeBotSelector = (
   input: Parameters<
-    NonNullable<NonNullable<JsonEffectPackHandlers['bot']>['choose']>
+    NonNullable<NonNullable<JsonEngineExtensionHandlers['bot']>['choose']>
   >[0],
 ) => { recipe: string; payload: Record<string, unknown> } | null;
 
-export type JsonEffectPackHandlerContext = Readonly<{
+export type JsonEngineExtensionHandlerContext = Readonly<{
   selectedBot: (
     select: JsonRecipeBotSelector,
-  ) => NonNullable<JsonEffectPackHandlers['bot']>;
+  ) => NonNullable<JsonEngineExtensionHandlers['bot']>;
   recipeBot: (
     recipe: string | readonly string[],
-  ) => NonNullable<JsonEffectPackHandlers['bot']>;
+  ) => NonNullable<JsonEngineExtensionHandlers['bot']>;
   fallbackRecipeBot: (
     preferred: string,
-  ) => NonNullable<JsonEffectPackHandlers['bot']>;
+  ) => NonNullable<JsonEngineExtensionHandlers['bot']>;
   publicStatuses: () => NonNullable<
-    JsonEffectPackHandlers['playerValuesVisibility']
+    JsonEngineExtensionHandlers['playerValuesVisibility']
   >;
   actionFor: (
     availableActions: readonly string[],
@@ -65,7 +63,7 @@ export type JsonEffectPackHandlerContext = Readonly<{
   ) => string | undefined;
 }>;
 
-export type JsonEffectPackValidationContext = Readonly<{
+export type JsonEngineExtensionValidationContext = Readonly<{
   document: JsonGameCoreDocument;
   patterns: readonly GamePattern<JsonState>[];
   components: readonly GameComponentDefinition[];
@@ -78,56 +76,57 @@ export type JsonEffectPackValidationContext = Readonly<{
   hasRaceTrack: (trackId: string, winOnFinish?: boolean) => boolean;
 }>;
 
-/** Compiled values stay inside their pack; the runtime sees only typed contributions. */
-export type JsonEffectPackContribution<View extends object = object> =
+/** Compiled values stay inside their extension; the runtime sees only typed contributions. */
+export type JsonEngineExtensionContribution<View extends object = object> =
   Readonly<{
     actions: JsonActions;
     events: readonly GameEventDefinition<string, object>[];
     components: readonly GameComponentDefinition[];
     patterns: readonly GamePattern<JsonState>[];
     handlers: (
-      context: JsonEffectPackHandlerContext,
-    ) => JsonEffectPackHandlers<View>;
+      context: JsonEngineExtensionHandlerContext,
+    ) => JsonEngineExtensionHandlers<View>;
   }>;
 
-export type JsonEffectPackDefinition<
+export type JsonEngineExtensionDefinition<
   DocumentKey extends string,
   Program,
   OutputKey extends string,
   Compiled,
   View extends object = object,
 > = Readonly<{
-  scope: JsonEffectPackScope;
-  capabilities: readonly JsonEffectPackCapability[];
-  domain: JsonEffectPackDomain;
+  capabilities: readonly JsonEngineExtensionCapability[];
+  domain: JsonEngineExtensionDomain;
   documentKey: DocumentKey;
   outputKey: OutputKey;
   schema: AuthorSchema;
   compile: (program: Program) => Compiled;
   /** Validate internal references before factories construct components. */
   validateProgram?: (program: Program) => void;
-  compileContribution: (program: unknown) => JsonEffectPackContribution<View>;
+  compileContribution: (
+    program: unknown,
+  ) => JsonEngineExtensionContribution<View>;
   actions?: (compiled: Compiled) => JsonActions;
   events?: (
     compiled: Compiled,
   ) => readonly GameEventDefinition<string, object>[];
   components?: (compiled: Compiled) => readonly GameComponentDefinition[];
   handlers?: (
-    context: JsonEffectPackHandlerContext,
+    context: JsonEngineExtensionHandlerContext,
     compiled: Compiled,
     program: Program,
-  ) => JsonEffectPackHandlers<View>;
+  ) => JsonEngineExtensionHandlers<View>;
   victoryKind?: string;
-  /** Defaults to true; opt-out packs must validate their alternative victory modes. */
+  /** Defaults to true; opt-out extensions must validate their alternative victory modes. */
   victoryRequired?: boolean;
   victoryLabel?: string;
   ownsSetup?: boolean;
   validate?: (
-    context: JsonEffectPackValidationContext,
+    context: JsonEngineExtensionValidationContext,
     program: Program,
   ) => void;
   validateUnknown: (
-    context: JsonEffectPackValidationContext,
+    context: JsonEngineExtensionValidationContext,
     program: unknown,
   ) => void;
   choiceIds?: (program: Program) => readonly (string | undefined)[];
@@ -135,7 +134,7 @@ export type JsonEffectPackDefinition<
   patterns?: (compiled: Compiled) => readonly GamePattern<JsonState>[];
 }>;
 
-export function defineJsonEffectPack<
+export function defineJsonEngineExtension<
   const DocumentKey extends string,
   Program,
   const OutputKey extends string,
@@ -143,14 +142,26 @@ export function defineJsonEffectPack<
   View extends object = object,
 >(
   definition: Omit<
-    JsonEffectPackDefinition<DocumentKey, Program, OutputKey, Compiled, View>,
+    JsonEngineExtensionDefinition<
+      DocumentKey,
+      Program,
+      OutputKey,
+      Compiled,
+      View
+    >,
     'compileContribution' | 'validateUnknown' | 'collectChoiceIds'
   >,
-): JsonEffectPackDefinition<DocumentKey, Program, OutputKey, Compiled, View> {
+): JsonEngineExtensionDefinition<
+  DocumentKey,
+  Program,
+  OutputKey,
+  Compiled,
+  View
+> {
   const codec = createAuthorCodec<Program>(definition.schema);
   const capabilities = Object.freeze([...definition.capabilities]);
   const announced = new Set(capabilities);
-  const supported: readonly JsonEffectPackCapability[] = [
+  const supported: readonly JsonEngineExtensionCapability[] = [
     'actions',
     'events',
     'components',
@@ -206,7 +217,7 @@ export function defineJsonEffectPack<
     schema: codec.schema,
     compileContribution: (
       source: unknown,
-    ): JsonEffectPackContribution<View> => {
+    ): JsonEngineExtensionContribution<View> => {
       const program = codec.parse(source, definition.documentKey);
       definition.validateProgram?.(program);
       const compiled = definition.compile(program);
@@ -215,7 +226,7 @@ export function defineJsonEffectPack<
         events: definition.events?.(compiled) ?? [],
         components: definition.components?.(compiled) ?? [],
         patterns: definition.patterns?.(compiled) ?? [],
-        handlers: (context: JsonEffectPackHandlerContext) => {
+        handlers: (context: JsonEngineExtensionHandlerContext) => {
           const handlers =
             definition.handlers?.(context, compiled, program) ?? {};
           assertAnnounced(handlers);
@@ -224,7 +235,7 @@ export function defineJsonEffectPack<
       });
     },
     validateUnknown: (
-      context: JsonEffectPackValidationContext,
+      context: JsonEngineExtensionValidationContext,
       program: unknown,
     ) =>
       definition.validate?.(

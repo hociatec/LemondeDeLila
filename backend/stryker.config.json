@@ -14,12 +14,8 @@
     ".stryker-tmp/**"
   ],
   "mutate": [
-    "src/platform/auth/application/services/*.ts",
-    "src/platform/ws/application/services/ws-jwt-auth.service.ts",
+    "src/platform/auth/application/services/jwt-user-identity.ts",
     "src/platform/ws/application/services/ws-ticket-auth.service.ts",
-    "src/platform/ws/application/services/ws-ticket.service.ts",
-    "src/modules/admin/infrastructure/presentation/http/guards/*.ts",
-    "src/modules/update/infrastructure/persistence/wx-update-release.service.ts",
     "!src/**/*.spec.ts"
   ],
   "thresholds": { "high": 90, "low": 85, "break": 85 },

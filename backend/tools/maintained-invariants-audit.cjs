@@ -19,7 +19,7 @@ const contains = (file, expression) =>
 
 for (const file of [
   'tools/runtime-dependency-graph.spec.cjs',
-  'tools/engine-effect-pack-governance.spec.cjs',
+  'tools/engine-extension-governance.spec.cjs',
   'tools/game-engine-architecture-check.cjs',
   'tools/runtime-separation-audit.cjs',
   'tools/game-content-structure-audit.cjs',
@@ -55,28 +55,28 @@ contains(
   /complete production source tree has no TypeScript dependency cycle/,
 );
 contains(
-  'tools/engine-effect-pack-governance.cjs',
-  /Effect-pack production LOC grew/,
+  'tools/engine-extension-governance.cjs',
+  /Engine-extension production LOC grew/,
 );
-contains('tools/engine-effect-pack-governance.cjs', /classifyEffectPack/);
-contains('tools/engine-effect-pack-governance.cjs', /structuralReviews/);
-contains('tools/engine-effect-pack-governance.cjs', /linesPerConsumer/);
-contains('tools/effect-pack-classification.cjs', /reuseEvidence/);
+contains('tools/engine-extension-governance.cjs', /classifyEngineExtension/);
+contains('tools/engine-extension-governance.cjs', /structuralReviews/);
+contains('tools/engine-extension-governance.cjs', /linesPerConsumer/);
+contains('tools/engine-extension-classification.cjs', /reuseEvidence/);
 contains(
-  'tools/engine-effect-pack-governance.cjs',
-  /imports another effect-pack implementation/,
+  'tools/engine-extension-governance.cjs',
+  /imports another engine-extension implementation/,
 );
 contains(
-  'tools/engine-effect-pack-governance.json',
+  'tools/engine-extension-governance.json',
   /forbiddenEngineVocabulary/,
 );
 contains(
-  'tools/engine-effect-pack-governance.cjs',
+  'tools/engine-extension-governance.cjs',
   /name\.startsWith\(`\$\{profile\.domain\}-`\)/,
 );
 contains(
-  'src/game/engine/runtime/contracts/json-effect-pack.ts',
-  /scope: JsonEffectPackScope/,
+  'src/game/engine/runtime/contracts/json-engine-extension.ts',
+  /defineJsonEngineExtension/,
 );
 contains('tools/game-state-ownership-audit.cjs', /top-level let\/var/);
 contains(
@@ -89,8 +89,8 @@ contains(
   /freezeAuthorSchema/,
 );
 contains(
-  'src/game/engine/runtime/contracts/json-effect-pack.ts',
-  /defineJsonEffectPack/,
+  'src/game/engine/runtime/contracts/json-engine-extension.ts',
+  /defineJsonEngineExtension/,
 );
 contains(
   'src/game/engine/runtime/content/content-immutability.ts',
@@ -169,7 +169,7 @@ for (const command of [
   'architecture:test',
   'cycles:audit',
   'game-engine:audit',
-  'engine:effects:audit',
+  'engine:extensions:audit',
   'invariants:audit',
   'state-ownership:audit',
   'final:code-surface',

@@ -7,7 +7,7 @@ import type { AdminMaintenanceConfig } from '../ports/admin-maintenance-config.p
 describe('Admin maintenance use-cases', () => {
   it('uses runtime port to start deploy', () => {
     const runtime = createRuntime();
-    runtime.runCommand.mockReturnValue({
+    runtime.execute.mockReturnValue({
       status: 0,
       stdout: '',
       stderr: '',
@@ -21,18 +21,15 @@ describe('Admin maintenance use-cases', () => {
       ok: true,
       unit: config.deployUnit,
     });
-    expect(runtime.spawnDetached).toHaveBeenCalledWith([
-      'sudo',
-      '-n',
-      'systemctl',
-      'start',
-      config.deployUnit,
-    ]);
+    expect(runtime.schedule).toHaveBeenCalledWith({
+      kind: 'start-unit',
+      unit: config.deployUnit,
+    });
   });
 
   it('parses status through the runtime port', () => {
     const runtime = createRuntime();
-    runtime.runCommand.mockReturnValue({
+    runtime.execute.mockReturnValue({
       status: 0,
       stdout: 'Id=svc\nActiveState=active',
       stderr: '',
@@ -62,7 +59,7 @@ describe('Admin maintenance use-cases', () => {
 
   it('throws when runtime command fails', () => {
     const runtime = createRuntime();
-    runtime.runCommand.mockReturnValue({
+    runtime.execute.mockReturnValue({
       status: 1,
       stdout: '',
       stderr: 'boom',
@@ -77,12 +74,11 @@ describe('Admin maintenance use-cases', () => {
 
 function createRuntime() {
   return {
-    runCommand: jest.fn(),
-    spawnDetached: jest.fn(),
-    httpGet: jest.fn(),
+    execute: jest.fn(),
+    schedule: jest.fn(),
+    probeLoopback: jest.fn(),
     parseSystemctlShow: jest.fn(),
     parseTail: jest.fn(),
-    shQuote: jest.fn(),
   };
 }
 
@@ -90,6 +86,7 @@ function createConfig(): AdminMaintenanceConfig {
   return {
     deployUnit: 'lila-backend-deploy.service',
     backendService: 'lila-backend.service',
+    backendRoot: '/srv/lemonde-de-lila/backend',
     healthPort: 3000,
   };
 }

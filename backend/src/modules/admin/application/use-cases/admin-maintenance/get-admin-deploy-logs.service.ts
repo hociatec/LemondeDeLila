@@ -23,18 +23,11 @@ export class GetAdminDeployLogsService {
 
   execute(input: { tail?: string }) {
     const tail = this.runtime.parseTail(input.tail);
-    const res = this.runtime.runCommand([
-      'sudo',
-      '-n',
-      'journalctl',
-      '-u',
-      this.config.deployUnit,
-      '--no-pager',
-      '-o',
-      'short-iso',
-      '-n',
-      String(tail),
-    ]);
+    const res = this.runtime.execute({
+      kind: 'unit-logs',
+      unit: this.config.deployUnit,
+      tail,
+    });
     if (res.status !== 0) {
       throw new InternalServerErrorException({
         message: 'Impossible de lire les logs du deploiement',

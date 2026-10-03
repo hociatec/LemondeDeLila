@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "apiVersion": "2.0.0",
+  "apiVersion": "3.0.0",
   "typescript": "5.9.3",
   "entry": "src/game/engine/sdk/extension-contracts.ts",
   "external": [],

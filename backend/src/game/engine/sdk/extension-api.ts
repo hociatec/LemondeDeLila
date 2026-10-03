@@ -1,4 +1,4 @@
-/** Reviewed extension API; internal runtime paths are not part of the pack interface. */
+/** Reviewed extension API; internal runtime paths are not part of the extension interface. */
 export { assertUniqueAuthorIds } from '../runtime/contracts/authoring-diagnostics';
 export { assertUniqueAuthorValues } from '../runtime/contracts/authoring-diagnostics';
 export { authorArray } from '../runtime/contracts/json-author-schema';
@@ -27,7 +27,7 @@ export { defineChoice } from '../runtime/actions/action-builders';
 export { defineEffect } from '../runtime/effects/effects-core';
 export { defineEmptyAction } from '../runtime/actions/action-builders';
 export { defineEmptyEffect } from '../runtime/effects/effects-core';
-export { defineJsonEffectPack } from '../runtime/contracts/json-effect-pack';
+export { defineJsonEngineExtension } from '../runtime/contracts/json-engine-extension';
 export { effectJsonSchema } from '../runtime/contracts/effect-json-schema';
 export type { GameComponentDefinition } from '../runtime/definitions/component-kit';
 export type { GameEffectResolverShape } from '../runtime/contracts/effect-resolver';
@@ -38,12 +38,12 @@ export type { GridPosition } from '../runtime/kits/grid-kit';
 export { isEngineEventType } from '../runtime/events/engine-event-registry';
 export { isRecord } from '../runtime/content/content-guards';
 export type { JsonContentAssets } from '../runtime/content/json-content-bundle';
-export type { JsonEffectPackDomain } from '../runtime/contracts/json-effect-pack';
-export type { JsonEffectPackCapability } from '../runtime/contracts/json-effect-pack';
-export type { JsonEffectPackViews } from '../runtime/contracts/json-effect-pack-catalog';
+export type { JsonEngineExtensionDomain } from '../runtime/contracts/json-engine-extension';
+export type { JsonEngineExtensionCapability } from '../runtime/contracts/json-engine-extension';
+export type { JsonEngineExtensionViews } from '../runtime/contracts/json-engine-extension-catalog';
 export type { JsonGameCoreDocument } from '../runtime/definitions/json-game-core-document';
 export type { JsonGameManifest } from '../runtime/definitions/json-game-manifest';
-export type { JsonGameViewAugmentation } from '../runtime/contracts/json-effect-pack-catalog';
+export type { JsonGameViewAugmentation } from '../runtime/contracts/json-engine-extension-catalog';
 export { rejectRule } from '../runtime/contracts/game-domain.errors';
 export { resolveJsonContent } from '../runtime/content/json-content-bundle';
 export { scanGridWinner } from '../runtime/kits/grid-kit';

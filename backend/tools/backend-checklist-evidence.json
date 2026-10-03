@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "scope": "backend.txt closure 1-267 (2026-10-01)",
+  "range": { "from": 1, "to": 267 },
+  "groups": [
+    {
+      "range": { "from": 1, "to": 33 },
+      "command": "npm run quality:check && npm run test:exhaustive -- --maxWorkers=2",
+      "evidence": [
+        "tools/engine-catalog-boundary.cjs",
+        "tools/engine-extension-governance.cjs",
+        "tools/game-engine-architecture-check.cjs",
+        "src/game/testing/architecture-tests/game/all-declarative-games.contract.spec.ts"
+      ]
+    },
+    {
+      "range": { "from": 34, "to": 84 },
+      "command": "npm run scheduling:audit && npm run test:integration:real && npm run test:exhaustive -- --maxWorkers=2",
+      "evidence": [
+        "tools/local-timer-audit.cjs",
+        "tools/shutdown-worker-audit.cjs",
+        "tools/redis-bullmq-integration.cjs",
+        "tools/two-instance-real-e2e.cjs"
+      ]
+    },
+    {
+      "range": { "from": 85, "to": 107 },
+      "command": "npm run persistence:audit && npm run test:integration:real",
+      "evidence": [
+        "tools/persistence-audit.cjs",
+        "tools/mysql-migrations-integration.cjs",
+        "tools/mysql-pool-profile.cjs",
+        "tools/real-integration.compose.yml"
+      ]
+    },
+    {
+      "range": { "from": 108, "to": 147 },
+      "command": "npm run security:audit && npm run test:exhaustive -- --maxWorkers=2",
+      "evidence": [
+        "tools/security-boundary-audit.cjs",
+        "src/modules/admin/infrastructure/system/admin-maintenance-runtime.service.ts",
+        "src/modules/admin/infrastructure/system/admin-maintenance-runtime.service.spec.ts",
+        "src/modules/admin/infrastructure/system/admin-maintenance-child.spec.ts"
+      ]
+    },
+    {
+      "range": { "from": 148, "to": 161 },
+      "command": "npm run test:exhaustive -- --maxWorkers=2",
+      "evidence": [
+        "src/modules/sounds/infrastructure/storage/sounds-audio-process.ts",
+        "src/modules/sounds/infrastructure/storage/sounds-audio-admission.spec.ts",
+        "src/modules/sounds/infrastructure/storage/sounds-audio-process.spec.ts",
+        "src/modules/sounds/infrastructure/storage/sounds-media-validation.spec.ts"
+      ]
+    },
+    {
+      "range": { "from": 162, "to": 182 },
+      "command": "npm run test:exhaustive -- --maxWorkers=2",
+      "evidence": [
+        "src/modules/update/infrastructure/persistence/wx-update-upload-storage.ts",
+        "src/modules/update/infrastructure/persistence/wx-update-upload.service.spec.ts",
+        "src/modules/update/infrastructure/persistence/wx-update-release.service.spec.ts"
+      ]
+    },
+    {
+      "range": { "from": 183, "to": 196 },
+      "command": "npm run observability:audit && npm run test:integration:real && GAME_PROFILE_RUNS=3 npm run profile:game-replay",
+      "evidence": [
+        "tools/observability-contract-check.cjs",
+        "tools/game-replay-profile.cjs",
+        "tools/room-load-real.cjs",
+        "docs/quality/performance-baseline-2026-09-29.json"
+      ]
+    },
+    {
+      "range": { "from": 197, "to": 212 },
+      "command": "npm run quality:check && npm run typecheck && npm run typecheck:prod && npm run lint && npm run test:exhaustive -- --maxWorkers=2 && npm run test:integration:real && npm run build && npm run verify:dist && npm audit --omit=dev --audit-level=high",
+      "evidence": [
+        "commands/verify-app-load.cjs",
+        "commands/verify-dist-games.cjs",
+        "tools/create-deployment-artifact.cjs",
+        "tools/disaster-recovery-drill.cjs"
+      ]
+    },
+    {
+      "range": { "from": 213, "to": 247 },
+      "command": "npm run governance:audit && npm run quality:check",
+      "evidence": [
+        "tools/repository-governance-check.cjs",
+        "tools/maintained-invariants-audit.cjs",
+        "tools/runtime-separation-audit.cjs",
+        "tools/quality-check.cjs"
+      ]
+    },
+    {
+      "range": { "from": 248, "to": 267 },
+      "command": "npm run contracts:ws && npm run final:code-surface && npm run quality:check && npm run test:exhaustive -- --maxWorkers=2",
+      "evidence": [
+        "tools/generate-asyncapi-contract.cjs",
+        "tools/dead-code-audit.cjs",
+        "tools/runtime-dependency-graph.spec.cjs",
+        "tools/backend-checklist-evidence.cjs"
+      ]
+    }
+  ]
+}

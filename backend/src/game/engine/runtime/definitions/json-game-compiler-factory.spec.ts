@@ -1,5 +1,5 @@
 import { createJsonGameCompiler } from './json-game-compiler-factory';
-import { defineJsonEffectPack } from '../contracts/json-effect-pack';
+import { defineJsonEngineExtension } from '../contracts/json-engine-extension';
 import { authorObject, authorPositive } from '../contracts/json-author-schema';
 import { defineEmptyAction } from '../actions/action-builders';
 import { DeclarativeGameRuntime } from '../declarative-game.runtime';
@@ -13,9 +13,8 @@ import document from '../../../testing/fixtures/json-course/game.json';
 
 // A new rule unknown to the shipped catalogue. No production registration needed.
 const extension = (documentKey: string) =>
-  defineJsonEffectPack({
+  defineJsonEngineExtension({
     capabilities: ['actions', 'viewExtension'],
-    scope: 'game-specific',
     domain: 'choice',
     documentKey,
     outputKey: documentKey,
@@ -40,9 +39,8 @@ const source = (key: string, points: number) => ({
 
 describe('extension composition', () => {
   const objective = (key: string) =>
-    defineJsonEffectPack({
+    defineJsonEngineExtension({
       capabilities: ['victory'],
-      scope: 'game-specific',
       domain: 'choice',
       documentKey: key,
       outputKey: key,
@@ -116,9 +114,8 @@ describe('extension composition', () => {
         other: { points: 1 },
       }),
     ).toThrow(/unique extension action recipe/);
-    const other = defineJsonEffectPack({
+    const other = defineJsonEngineExtension({
       capabilities: ['viewExtension'],
-      scope: 'game-specific',
       domain: 'choice',
       documentKey: 'other',
       outputKey: 'other',
@@ -148,10 +145,13 @@ it('runs primitive JSON without loading any application catalogue', () => {
 });
 
 describe('optional extension victory', () => {
-  const pack = { ...extension('newRule'), victoryKind: 'by-example' };
+  const victoryExtension = {
+    ...extension('newRule'),
+    victoryKind: 'by-example',
+  };
   it('keeps coupled victory mandatory unless explicitly opted out', () => {
     expect(() =>
-      createJsonGameCompiler([pack]).compileJsonGame(
+      createJsonGameCompiler([victoryExtension]).compileJsonGame(
         manifest,
         source('newRule', 7),
       ),
@@ -160,7 +160,7 @@ describe('optional extension victory', () => {
   it('allows an opted-out extension with an independent objective', () => {
     expect(() =>
       createJsonGameCompiler([
-        { ...pack, victoryRequired: false },
+        { ...victoryExtension, victoryRequired: false },
       ]).compileJsonGame(manifest, source('newRule', 7)),
     ).not.toThrow();
   });
@@ -168,10 +168,12 @@ describe('optional extension victory', () => {
     'never accepts extension victory without its program (%s)',
     (victoryRequired) => {
       expect(() =>
-        createJsonGameCompiler([{ ...pack, victoryRequired }]).compileJsonGame(
-          manifest,
-          { ...document, victory: { kind: 'by-example' } },
-        ),
+        createJsonGameCompiler([
+          { ...victoryExtension, victoryRequired },
+        ]).compileJsonGame(manifest, {
+          ...document,
+          victory: { kind: 'by-example' },
+        }),
       ).toThrow('program and victory required together');
     },
   );
@@ -248,10 +250,10 @@ it.each([
 
 it('isolates catalogues and keeps their schema immutable after creation', () => {
   const schema = authorObject({ points: authorPositive });
-  const packs = [{ ...extension('firstRule'), schema }];
-  const first = createJsonGameCompiler(packs);
+  const extensions = [{ ...extension('firstRule'), schema }];
+  const first = createJsonGameCompiler(extensions);
   const second = createJsonGameCompiler([extension('secondRule')]);
-  packs.length = 0;
+  extensions.length = 0;
   schema.required = ['somethingElse'];
   expect(() =>
     first.compileJsonGame(manifest, source('firstRule', 4)),
@@ -290,25 +292,32 @@ it('rejects malformed extension data and unprovided recipes before play', () => 
 });
 
 it('rejects ambiguous or reserved catalogue keys', () => {
-  const pack = extension('newRule');
-  expect(() => createJsonGameCompiler([pack, pack])).toThrow(/Duplicate/);
+  const newRuleExtension = extension('newRule');
+  expect(() =>
+    createJsonGameCompiler([newRuleExtension, newRuleExtension]),
+  ).toThrow(/Duplicate/);
   for (const key of ['actions', 'schemaVersion', '__proto__', 'constructor'])
     expect(() => createJsonGameCompiler([extension(key)])).toThrow(/reserved/);
   expect(() =>
     createJsonGameCompiler([
-      pack,
-      { ...extension('secondRule'), outputKey: pack.outputKey },
+      newRuleExtension,
+      {
+        ...extension('secondRule'),
+        outputKey: newRuleExtension.outputKey,
+      },
     ]),
   ).toThrow(/outputKey/);
   expect(() =>
-    createJsonGameCompiler([{ ...pack, outputKey: 'patterns' }]),
+    createJsonGameCompiler([{ ...newRuleExtension, outputKey: 'patterns' }]),
   ).toThrow(/reserved/);
   expect(() =>
-    createJsonGameCompiler([{ ...pack, victoryKind: 'score-at-least' }]),
+    createJsonGameCompiler([
+      { ...newRuleExtension, victoryKind: 'score-at-least' },
+    ]),
   ).toThrow(/by-/);
   expect(() =>
     createJsonGameCompiler([
-      { ...pack, victoryKind: 'by-example' },
+      { ...newRuleExtension, victoryKind: 'by-example' },
       { ...extension('secondRule'), victoryKind: 'by-example' },
     ]),
   ).toThrow(/Duplicate/);

@@ -4,11 +4,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { buildMatrix } = require('./game-mechanics-matrix.cjs');
 
-test('maps every game and remaining specific pack', () => {
+test('maps every game and remaining specific extension', () => {
   const matrix = buildMatrix();
   assert.equal(matrix.games.length, 39);
-  assert.equal(matrix.packs.length, 0);
-  assert(matrix.packs.every((pack) => pack.consumers.length > 0));
+  assert.equal(matrix.extensions.length, 0);
+  assert(matrix.extensions.every((extension) => extension.consumers.length > 0));
   assert(
     matrix.games.every((game) => Object.keys(game.mechanics).length === 14),
   );
@@ -22,5 +22,5 @@ test('maps every game and remaining specific pack', () => {
     }),
   );
   assert.equal(consumers.length, 0);
-  assert.equal(new Set(consumers.flatMap((game) => game.packs)).size, 0);
+  assert.equal(new Set(consumers.flatMap((game) => game.extensions)).size, 0);
 });

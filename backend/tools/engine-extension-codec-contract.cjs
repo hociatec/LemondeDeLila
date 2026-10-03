@@ -23,7 +23,7 @@ function checkCodecContracts() {
     lines.push(`type ${references[name]} = ${schemaType(schema, references)};`);
   const file = path.join(
     root,
-    'src/game/rules/effect-packs/__codec-contracts__.ts',
+    'src/game/rules/engine-extensions/__codec-contracts__.ts',
   );
   const source = lines.join('\n');
   const config = ts.readConfigFile(

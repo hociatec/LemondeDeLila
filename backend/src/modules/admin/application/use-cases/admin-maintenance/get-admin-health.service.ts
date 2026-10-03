@@ -24,7 +24,7 @@ export class GetAdminHealthService {
     body: string;
   }> {
     const url = `http://127.0.0.1:${this.config.healthPort}/health`;
-    const res = await this.runtime.httpGet(url, 3500);
+    const res = await this.runtime.probeLoopback(this.config.healthPort, 3500);
     return { ok: true, url, statusCode: res.statusCode, body: res.body };
   }
 }

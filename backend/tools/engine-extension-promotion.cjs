@@ -52,7 +52,6 @@ function mechanicalShape(value) {
 }
 
 function validatePromotion(name, profile, readEvidence) {
-  if (profile.scope === 'game-specific') return;
   const review = profile.reuseReview;
   const fail = (reason) => {
     throw new Error(`${name}: ${reason}`);
@@ -77,9 +76,9 @@ function validatePromotion(name, profile, readEvidence) {
   );
   if (
     !/^Status: accepted\s*$/m.test(adr) ||
-    !adr.split('\n').includes(`Pack: ${name}`)
+    !adr.split('\n').includes(`Extension: ${name}`)
   )
-    fail('promotion ADR must be accepted and name this pack');
+    fail('promotion ADR must be accepted and name this extension');
   if (!Array.isArray(review.consumers) || review.consumers.length < 2)
     fail('promotion requires at least two independent consumers');
   const documents = new Set();

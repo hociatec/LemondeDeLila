@@ -36,15 +36,15 @@ function files(directory) {
 }
 
 function buildMatrix() {
-  const packRoot = path.join(root, 'src/game/rules/game-specific');
-  const packs = (fs.existsSync(packRoot) ? fs.readdirSync(packRoot) : [])
+  const extensionRoot = path.join(root, 'src/game/rules/game-specific');
+  const extensions = (fs.existsSync(extensionRoot) ? fs.readdirSync(extensionRoot) : [])
     .filter((name) =>
-      fs.existsSync(path.join(packRoot, name, 'effect-pack.ts')),
+      fs.existsSync(path.join(extensionRoot, name, 'engine-extension.ts')),
     )
     .map((name) => {
-      const directory = path.join(packRoot, name);
+      const directory = path.join(extensionRoot, name);
       const source = fs.readFileSync(
-        path.join(directory, 'effect-pack.ts'),
+        path.join(directory, 'engine-extension.ts'),
         'utf8',
       );
       const type = source.match(/documentKey:\s*'([^']+)'/)?.[1];
@@ -65,15 +65,15 @@ function buildMatrix() {
         fs.readFileSync(path.join(path.dirname(file), 'manifest.json'), 'utf8'),
       );
       const consumers = (document.extensions ?? []).map(({ type }) => {
-        const pack = packs.find((candidate) => candidate.type === type);
-        if (!pack) throw new Error(`Missing pack ${type} for ${manifest.code}`);
-        return pack;
+        const extension = extensions.find((candidate) => candidate.type === type);
+        if (!extension) throw new Error(`Missing extension ${type} for ${manifest.code}`);
+        return extension;
       });
       const sources = [
         ...files(path.dirname(file)).filter((entry) =>
           /\.(json|ts)$/.test(entry),
         ),
-        ...consumers.flatMap((pack) => pack.files),
+        ...consumers.flatMap((extension) => extension.files),
       ];
       const mechanics = Object.fromEntries(
         Object.entries(rules).map(([name, pattern]) => [
@@ -90,19 +90,19 @@ function buildMatrix() {
       );
       return {
         id: manifest.code,
-        packs: consumers.map((pack) => pack.name),
+        extensions: consumers.map((extension) => extension.name),
         mechanics,
       };
     })
     .sort((a, b) => a.id.localeCompare(b.id));
   return {
     method:
-      'Static evidence in game content and each installed pack. Empty cells mean no direct evidence; shared runtime services may still supply the capability.',
+      'Static evidence in game content and each installed extension. Empty cells mean no direct evidence; shared runtime services may still supply the capability.',
     games,
-    packs: packs.map((pack) => ({
-      name: pack.name,
+    extensions: extensions.map((extension) => ({
+      name: extension.name,
       consumers: games
-        .filter((game) => game.packs.includes(pack.name))
+        .filter((game) => game.extensions.includes(extension.name))
         .map((game) => game.id),
     })),
   };
@@ -117,7 +117,7 @@ if (require.main === module) {
   else if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== content)
     throw new Error(`Stale mechanics matrix: ${name}`);
   console.log(
-    `${matrix.games.length} games, ${matrix.packs.length} packs, ${Object.keys(rules).length} mechanics`,
+    `${matrix.games.length} games, ${matrix.extensions.length} extensions, ${Object.keys(rules).length} mechanics`,
   );
 }
 module.exports = { buildMatrix };

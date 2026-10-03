@@ -22,15 +22,10 @@ export class GetAdminDeployStatusService {
   ) {}
 
   execute() {
-    const res = this.runtime.runCommand([
-      'sudo',
-      '-n',
-      'systemctl',
-      'show',
-      this.config.deployUnit,
-      '--no-pager',
-      '--property=Id,ActiveState,SubState,Result,ExecMainStatus,ExecMainCode,ExecMainStartTimestamp,ExecMainExitTimestamp',
-    ]);
+    const res = this.runtime.execute({
+      kind: 'unit-status',
+      unit: this.config.deployUnit,
+    });
     if (res.status !== 0) {
       throw new InternalServerErrorException({
         message: `Impossible de lire le status systemd: ${this.config.deployUnit}`,

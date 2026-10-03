@@ -6,13 +6,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const ts = require('typescript');
 
-const effectPacksRoot = path.resolve(
+const engineExtensionsRoot = path.resolve(
   __dirname,
   '..',
   'src',
   'game',
   'rules',
-  'effect-packs',
+  'engine-extensions',
 );
 const minimumTokens = 160;
 const requiredGames = 2;
@@ -73,7 +73,7 @@ function signature(source) {
     : null;
 }
 
-function inspectDuplicates(root = effectPacksRoot) {
+function inspectDuplicates(root = engineExtensionsRoot) {
   const groups = new Map();
   for (const file of walk(root).filter(
     (candidate) => path.dirname(candidate) !== root,
@@ -126,7 +126,7 @@ function main() {
   const violations = inspectDuplicates();
   if (violations.length === 0) {
     console.log(
-      'effect-pack-duplication: OK (fonctions normalisées, seuil de deux packs)',
+      'engine-extension-duplication: OK (fonctions normalisées, seuil de deux packs)',
     );
     return;
   }

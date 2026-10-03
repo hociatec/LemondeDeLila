@@ -3,8 +3,8 @@ import { compileWithPatternDiagnostic } from '../definitions/json-pattern-diagno
 import type { JsonGameDocument } from '../definitions/json-game-schema';
 import type { GameComponentDefinition } from '../definitions/component-kit';
 import type { GameEventDefinition } from '../events/game-event-definition';
-import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
-import type { JsonEffectPackContribution } from '../contracts/json-effect-pack';
+import type { JsonEngineExtensionCatalog } from '../contracts/json-engine-extension-catalog';
+import type { JsonEngineExtensionContribution } from '../contracts/json-engine-extension';
 import type { GameActionShape } from '../contracts/author-rule-contracts';
 import type { ChoiceResolverShape } from '../contracts/author-rule-contracts';
 import { AuthoringError } from '../contracts/authoring-error';
@@ -12,7 +12,7 @@ import { AuthoringError } from '../contracts/authoring-error';
 type CompiledPattern = ReturnType<typeof compileJsonPattern>;
 
 export type CompiledJsonPrograms = {
-  readonly contributions: ReadonlyMap<string, JsonEffectPackContribution>;
+  readonly contributions: ReadonlyMap<string, JsonEngineExtensionContribution>;
   readonly actions: Readonly<
     Record<string, GameActionShape<Record<string, never>>>
   >;
@@ -26,10 +26,10 @@ export type CompiledJsonPrograms = {
 
 export function compileJsonPrograms(
   document: JsonGameDocument,
-  jsonEffectPacks: JsonEffectPackCatalog = [],
+  jsonEngineExtensions: JsonEngineExtensionCatalog = [],
 ): CompiledJsonPrograms {
   const sources = new Map<string, unknown>(Object.entries(document));
-  const contributions = new Map<string, JsonEffectPackContribution>();
+  const contributions = new Map<string, JsonEngineExtensionContribution>();
   const actions: Record<string, GameActionShape<Record<string, never>>> = {};
   const choices: Record<
     string,
@@ -54,7 +54,7 @@ export function compileJsonPrograms(
     choices: {},
     events: [],
   }));
-  for (const extension of jsonEffectPacks) {
+  for (const extension of jsonEngineExtensions) {
     const source = sources.get(extension.documentKey);
     if (source === undefined) {
       continue;

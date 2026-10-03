@@ -161,7 +161,7 @@ it.each([3, 17, 41, 97])(
   },
 );
 
-it('composes protection, cost and deficit policy without any game-specific pack', async () => {
+it('composes protection, cost and deficit policy without any game-specific extension', async () => {
   const game = testGame(expedition).players(2).seed(11);
   await game.start();
   await game.as(1).do('prepare', {});

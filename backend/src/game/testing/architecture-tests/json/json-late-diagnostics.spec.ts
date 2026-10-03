@@ -6,7 +6,7 @@ import {
   authoringValueAt,
 } from '../../../engine/runtime/contracts/authoring-error';
 import { compileJsonGame as compileCore } from '../../../engine/runtime/definitions/json-game-compiler';
-import { defineJsonEffectPack } from '../../../engine/runtime/contracts/json-effect-pack';
+import { defineJsonEngineExtension } from '../../../engine/runtime/contracts/json-engine-extension';
 import { authorObject } from '../../../engine/runtime/contracts/json-author-schema';
 import type { GameEffectInstruction } from '../../../engine/runtime/contracts/effect-ir';
 
@@ -282,9 +282,8 @@ it('locates a missing initial deal destination', () => {
 });
 
 it('keeps the original extension value when adapting a late diagnostic', () => {
-  const pack = defineJsonEffectPack({
+  const extension = defineJsonEngineExtension({
     capabilities: [],
-    scope: 'game-specific',
     domain: 'cards',
     documentKey: 'diagnostic',
     outputKey: 'diagnostic',
@@ -310,7 +309,9 @@ it('keeps the original extension value when adapting a late diagnostic', () => {
       },
     ],
   };
-  expect(() => compileCore(manifest, source, undefined, {}, [pack])).toThrow(
+  expect(() =>
+    compileCore(manifest, source, undefined, {}, [extension]),
+  ).toThrow(
     expect.objectContaining({
       code: 'GAME_AUTHORING_ERROR',
       path: 'game.json.extensions[0].config.cards[0].effects[0].effectId',

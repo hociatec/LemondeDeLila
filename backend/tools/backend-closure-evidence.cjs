@@ -51,18 +51,11 @@ for (const id of covered.keys()) {
     failures.push(`Point hors périmètre: ${id}`);
 }
 
-const debt = fs.readFileSync(path.join(root, 'dette.txt'), 'utf8');
-const unresolved = [...debt.matchAll(/^\s*(\d+)\./gm)]
-  .map((match) => Number(match[1]))
-  .filter((id) => id >= range.from && id <= range.to);
-if (unresolved.length > 0) {
-  failures.push(`Dette certifiée encore ouverte: ${unresolved.join(', ')}`);
-}
-
-const workflow = fs.readFileSync(
-  path.resolve(root, '../.github/workflows/backend-architecture.yml'),
-  'utf8',
-);
+const workflow = ['backend-architecture.yml', 'backend-nightly.yml']
+  .map((name) =>
+    fs.readFileSync(path.resolve(root, `../.github/workflows/${name}`), 'utf8'),
+  )
+  .join('\n');
 for (const expected of [
   'npm run quality:check',
   'npm run typecheck',

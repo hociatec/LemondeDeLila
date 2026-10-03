@@ -16,12 +16,7 @@ export class AdminDaemonReloadService {
   ) {}
 
   execute() {
-    const res = this.runtime.runCommand([
-      'sudo',
-      '-n',
-      'systemctl',
-      'daemon-reload',
-    ]);
+    const res = this.runtime.execute({ kind: 'daemon-reload' });
     if (res.status !== 0) {
       throw new InternalServerErrorException({
         message: 'Echec systemd daemon-reload',

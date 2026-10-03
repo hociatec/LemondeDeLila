@@ -2,8 +2,8 @@ import { jsonCardSelectionSchema } from './json-card-selection-schema';
 import { jsonCardValueSchema } from './json-card-value-schema';
 import { jsonComponent as component } from './json-component-schema-helper';
 import { createJsonVictorySchema } from './json-victory-schema';
-import type { JsonEffectPackCatalog } from '../contracts/json-effect-pack-catalog';
-import { effectPackSchemas } from '../effect-packs/json-effect-pack-schemas';
+import type { JsonEngineExtensionCatalog } from '../contracts/json-engine-extension-catalog';
+import { engineExtensionSchemas } from '../engine-extensions/json-engine-extension-schemas';
 import { jsonCollectionViewComponentSchema } from './json-collection-view-schema';
 import { jsonContentMigrationsSchema } from './json-content-migration-schema';
 import { effectJsonDefinitions } from '../contracts/effect-json-schema';
@@ -341,28 +341,30 @@ export const jsonGameSchema = freezeAuthorSchema({
 });
 
 export function createJsonGameSchema(
-  packs: JsonEffectPackCatalog = [],
+  extensions: JsonEngineExtensionCatalog = [],
   legacyRoots = false,
 ) {
   return freezeAuthorSchema({
     ...jsonGameSchema,
     properties: {
       ...jsonGameSchema.properties,
-      ...(legacyRoots ? effectPackSchemas(packs) : {}),
+      ...(legacyRoots ? engineExtensionSchemas(extensions) : {}),
       extensions: {
         type: 'array' as const,
-        maxItems: packs.length,
+        maxItems: extensions.length,
         items: {
-          oneOf: packs.map((pack) =>
+          oneOf: extensions.map((extension) =>
             object({
-              type: { const: pack.documentKey },
-              config: pack.schema,
+              type: { const: extension.documentKey },
+              config: extension.schema,
             }),
           ),
         },
       },
       victory: createJsonVictorySchema(
-        packs.flatMap((pack) => (pack.victoryKind ? [pack.victoryKind] : [])),
+        extensions.flatMap((extension) =>
+          extension.victoryKind ? [extension.victoryKind] : [],
+        ),
       ),
     },
   });

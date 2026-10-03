@@ -1,7 +1,7 @@
 {
   "version": 1,
   "reviewedAt": "2026-09-23",
-  "effectPacks": [],
+  "engineExtensions": [],
   "coreRootFields": [
     "actions",
     "category",

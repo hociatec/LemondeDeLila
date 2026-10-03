@@ -89,6 +89,14 @@ async function main() {
         maximumSteps,
         elapsedMs,
         result,
+        certificationCounters: {
+          compileJsonGame: discoverGameDefinitions().length,
+          sessions: runs * 2,
+          commands: samples.length * 2,
+          replays: runs,
+          simulations: runs,
+          seeds: runs,
+        },
         commands: {
           samples: commandTimes.length,
           p50Ms: percentile(commandTimes, 0.5),

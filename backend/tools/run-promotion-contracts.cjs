@@ -2,9 +2,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { validatePromotion } = require('./effect-pack-promotion.cjs');
+const { validatePromotion } = require('./engine-extension-promotion.cjs');
 const root = path.resolve(__dirname, '..');
-const policy = require('./engine-effect-pack-governance.json');
+const policy = require('./engine-extension-governance.json');
 const suites = [];
 for (const [name, profile] of Object.entries(policy.profiles)) {
   suites.push(
@@ -36,5 +36,5 @@ if (suites.length) {
   process.exitCode = result.status ?? 1;
 } else
   console.log(
-    'Promotion contracts: no pack currently claims reuse or primitive status',
+    'Promotion contracts: no extension currently claims reuse or primitive status',
   );

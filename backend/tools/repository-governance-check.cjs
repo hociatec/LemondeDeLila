@@ -9,6 +9,18 @@ const repositoryRoot = path.resolve(__dirname, '../..');
 const workflowsRoot = path.join(repositoryRoot, '.github/workflows');
 const violations = [];
 
+const packageJson = JSON.parse(
+  fs.readFileSync(path.join(repositoryRoot, 'backend/package.json'), 'utf8'),
+);
+for (const [name, command] of Object.entries(packageJson.scripts ?? {})) {
+  for (const match of String(command).matchAll(
+    /(?:^|\s)(tools\/[\w./-]+\.(?:cjs|mjs|js))(?=\s|$)/g,
+  )) {
+    if (!fs.existsSync(path.join(repositoryRoot, 'backend', match[1])))
+      violations.push(`package.json#${name}: script absent ${match[1]}`);
+  }
+}
+
 const workflowNames = fs.existsSync(workflowsRoot)
   ? fs.readdirSync(workflowsRoot)
   : [];

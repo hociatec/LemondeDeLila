@@ -69,11 +69,17 @@ function isForbiddenArtifactEntry(relative, isDirectory) {
   const normalized = relative.replaceAll(path.sep, '/');
   const parts = normalized.split('/');
   const basename = parts.at(-1) || '';
-  if (isDirectory && FORBIDDEN_ARTIFACT_DIRECTORY.test(basename)) return true;
-  return (
+  const containsSecret =
     /(?:^|\/)\.env(?:\.|$)/i.test(normalized) ||
-    /(?:^|\/)(?:id_rsa|id_ed25519|.*private.*key.*)$/i.test(normalized) ||
-    /(?:^|\/).+\.(?:spec|test)\.(?:[cm]?js|json|map|d\.ts)$/i.test(normalized)
+    /(?:^|\/)(?:id_rsa|id_ed25519|.*private.*key.*)$/i.test(normalized);
+  if (containsSecret) return true;
+  // Production dependencies are already selected by `npm prune --omit=dev`.
+  // Their internal fixtures/tests may be runtime imports (Nest Swagger does
+  // this), so only secret-like entries may be removed below node_modules.
+  if (parts[0] === 'node_modules') return false;
+  if (isDirectory && FORBIDDEN_ARTIFACT_DIRECTORY.test(basename)) return true;
+  return /(?:^|\/).+\.(?:spec|test)\.(?:[cm]?js|json|map|d\.ts)$/i.test(
+    normalized,
   );
 }
 

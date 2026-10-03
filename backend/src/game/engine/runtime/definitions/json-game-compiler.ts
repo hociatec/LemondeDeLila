@@ -30,9 +30,9 @@ import {
 import { assertGameManifestMatches } from '../../../core/application/helpers/game-manifest-validation';
 import type { JsonGameManifest } from './json-game-manifest';
 import type {
-  JsonEffectPackCatalog,
+  JsonEngineExtensionCatalog,
   JsonGameViewAugmentation,
-} from '../contracts/json-effect-pack-catalog';
+} from '../contracts/json-engine-extension-catalog';
 
 import { createJsonGameSchema } from './json-game-schema';
 import { assertJsonPatternReferences } from './json-pattern-reference-validation';
@@ -41,13 +41,13 @@ import { assertMigratedPatternSourceReferences } from './json-migrated-pattern-r
 export type { JsonGameManifest } from './json-game-manifest';
 
 export function compileJsonGame<
-  Catalog extends JsonEffectPackCatalog = readonly [],
+  Catalog extends JsonEngineExtensionCatalog = readonly [],
 >(
   manifest: JsonGameManifest,
   source: unknown,
   assets?: JsonContentAssets,
   options: { externalContent?: boolean } = {},
-  jsonEffectPacks?: Catalog,
+  jsonEngineExtensions?: Catalog,
 ) {
   const resolvedSource = resolveJsonContent(source, assets);
   try {
@@ -55,7 +55,7 @@ export function compileJsonGame<
       manifest,
       resolvedSource,
       options,
-      jsonEffectPacks ?? [],
+      jsonEngineExtensions ?? [],
     );
   } catch (caught) {
     let error: unknown = caught;
@@ -103,11 +103,11 @@ export function compileJsonGame<
   }
 }
 
-function compileResolvedJsonGame<Catalog extends JsonEffectPackCatalog>(
+function compileResolvedJsonGame<Catalog extends JsonEngineExtensionCatalog>(
   manifest: JsonGameManifest,
   resolvedSource: unknown,
   options: { externalContent?: boolean },
-  jsonEffectPacks: Catalog,
+  jsonEngineExtensions: Catalog,
 ) {
   assertGameManifestMatches(manifest, manifest, (field, received) => {
     throw new AuthoringError(
@@ -123,7 +123,7 @@ function compileResolvedJsonGame<Catalog extends JsonEffectPackCatalog>(
       manifest.code,
       'Empty JSON game identifier',
     );
-  const schema = createJsonGameSchema(jsonEffectPacks, true);
+  const schema = createJsonGameSchema(jsonEngineExtensions, true);
   const parse = (value: unknown) => parseJsonGame(value, 'game.json', schema);
   const metadata = parse(resolvedSource);
   const content = defineGameContent(manifest.code, resolvedSource, {
@@ -150,13 +150,19 @@ function compileResolvedJsonGame<Catalog extends JsonEffectPackCatalog>(
         .map((component) => component.id),
     ]),
   );
-  const programs = compileJsonPrograms(document, jsonEffectPacks);
+  const programs = compileJsonPrograms(document, jsonEngineExtensions);
   const { patterns } = programs;
-  assertDocumentReferences(document, patterns, manifest, fail, jsonEffectPacks);
+  assertDocumentReferences(
+    document,
+    patterns,
+    manifest,
+    fail,
+    jsonEngineExtensions,
+  );
   const actions = compileJsonActions(document, programs, fail);
   const events = programs.events;
   const components = [...document.components, ...programs.components];
-  const handlers = programHandlers(document, programs, jsonEffectPacks);
+  const handlers = programHandlers(document, programs, jsonEngineExtensions);
   const buildDefinition = () =>
     defineGame<Record<string, never>>()<
       typeof actions,
@@ -180,7 +186,7 @@ function compileResolvedJsonGame<Catalog extends JsonEffectPackCatalog>(
       patterns,
       shortcuts: document.shortcuts,
       components,
-      initialization: jsonProgramInitialization(document, jsonEffectPacks),
+      initialization: jsonProgramInitialization(document, jsonEngineExtensions),
       resourceIds: document.resourceIds,
       initialPhase: document.initialPhase,
       phases: document.phases,
@@ -231,7 +237,7 @@ function assertDocumentReferences(
   patterns: ReturnType<typeof compileJsonPattern>[] | undefined,
   manifest: JsonGameManifest,
   fail: JsonFailure,
-  jsonEffectPacks: JsonEffectPackCatalog,
+  extensions: JsonEngineExtensionCatalog,
 ): void {
   const resources = new Set([
     ...document.resourceIds,
@@ -249,7 +255,7 @@ function assertDocumentReferences(
     fail,
     new Set(Object.keys(document.phases ?? {})),
   );
-  assertProgramReferences(document, patterns, manifest, fail, jsonEffectPacks);
+  assertProgramReferences(document, patterns, manifest, fail, extensions);
   for (const pattern of document.patterns ?? []) {
     if (pattern.kind !== 'directional-hazard') continue;
     const external = pattern.config.victoryMode === 'external';
@@ -277,7 +283,7 @@ function assertDocumentReferences(
     manifest.maxPlayers,
     fail,
   );
-  assertSelections(document, patterns, fail, jsonEffectPacks);
+  assertSelections(document, patterns, fail, extensions);
   for (const [index, shortcut] of (document.shortcuts ?? []).entries()) {
     if (
       shortcut.type === 'action' &&
@@ -313,11 +319,11 @@ function assertSelections(
   document: JsonDocument,
   patterns: ReturnType<typeof compileJsonPattern>[] | undefined,
   fail: JsonFailure,
-  jsonEffectPacks: JsonEffectPackCatalog,
+  jsonEngineExtensions: JsonEngineExtensionCatalog,
 ): void {
   const sources = new Map<string, unknown>(Object.entries(document));
   const choices = new Set<string>();
-  for (const extension of jsonEffectPacks) {
+  for (const extension of jsonEngineExtensions) {
     const source = sources.get(extension.documentKey);
     if (source === undefined) continue;
     for (const choiceId of extension.collectChoiceIds(source))

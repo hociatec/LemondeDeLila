@@ -1,6 +1,6 @@
 import { compileJsonGame } from './json-game-compiler';
 import { AuthoringError } from '../contracts/authoring-error';
-import { defineJsonEffectPack } from '../contracts/json-effect-pack';
+import { defineJsonEngineExtension } from '../contracts/json-engine-extension';
 import { authorObject } from '../contracts/json-author-schema';
 import { defineAction } from './game-definition-builders';
 import { gameInput } from '../actions/game-input-schema';
@@ -71,9 +71,8 @@ it.each([
 );
 
 it('locates an action colliding with an extension-provided pattern', () => {
-  const pack = defineJsonEffectPack({
+  const extension = defineJsonEngineExtension({
     capabilities: ['patterns'],
-    scope: 'game-specific',
     domain: 'choice',
     documentKey: 'collision',
     outputKey: 'collision',
@@ -104,7 +103,7 @@ it('locates an action colliding with an extension-provided pattern', () => {
       },
       undefined,
       {},
-      [pack],
+      [extension],
     ),
   ).toThrow(
     expect.objectContaining({
