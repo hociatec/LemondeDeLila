@@ -309,6 +309,7 @@ fi
 
 if scope_enabled gameplay; then
 cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generated" \
+  "-DLILA_CLIENT_SOURCE_DIR=\"$ROOT\"" \
   "$ROOT/tests/GameplayContractTests.cpp" \
   "$ROOT/src/modules/gameplay/actions/application/GameActionPresentationPolicy.cpp" \
   "$ROOT/src/modules/gameplay/actions/infrastructure/GameActionCatalogDecoder.cpp" \

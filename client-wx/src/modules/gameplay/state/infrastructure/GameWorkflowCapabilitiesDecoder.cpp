@@ -130,6 +130,7 @@ std::optional<domain::GameQuizView> GameWorkflowCapabilitiesDecoder::Quiz(
             const auto question = item.value().find("question");
             if (question != item.value().end() && question->is_object())
             {
+                session.questionId = PrimitiveId(*question, "id");
                 session.prompt = detail::ReadString(*question, "prompt");
                 const auto choices = question->find("choices");
                 if (choices != question->end() && !choices->is_array())

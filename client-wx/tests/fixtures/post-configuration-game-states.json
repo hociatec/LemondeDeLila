@@ -1,0 +1,2562 @@
+{
+  "contractVersion": 1,
+  "lama": {
+    "before": {
+      "type": "game.state",
+      "payload": {
+        "viewVersion": 1,
+        "system": {
+          "match": {
+            "status": "setup",
+            "startedAtMs": 1700000000000,
+            "finishedAtMs": null,
+            "result": null,
+            "playerStatuses": {
+              "1": "active",
+              "2": "active"
+            }
+          },
+          "round": {
+            "number": 0,
+            "status": "idle",
+            "starterPlayerId": null,
+            "participantPlayerIds": [],
+            "leftPlayerIds": [],
+            "winnerPlayerIds": [],
+            "completedRounds": 0
+          },
+          "turn": {
+            "currentPlayerId": 1,
+            "direction": 1,
+            "number": 1,
+            "actionPointsRemaining": null,
+            "immediateExtraTurns": 0,
+            "extraCount": 0,
+            "skipTurnsByPlayer": {},
+            "extraTurnsByPlayer": {},
+            "replacementTurnsByPlayer": {},
+            "waitingSessionId": null,
+            "waitingPlayerIds": []
+          },
+          "setup": {
+            "complete": false,
+            "phase": "setup",
+            "ownerPlayerId": 1,
+            "values": {
+              "loseAtScore": 40,
+              "roundPauseSeconds": 0,
+              "allowPlayAfterDraw": false,
+              "startingHandSize": 6,
+              "copiesPerCardValue": 8,
+              "returnTokenFromRound": 2
+            }
+          },
+          "players": {
+            "all": [
+              {
+                "id": 1,
+                "username": "Lila",
+                "isBot": false,
+                "alive": true
+              },
+              {
+                "id": 2,
+                "username": "Mina",
+                "isBot": false,
+                "alive": true
+              }
+            ]
+          },
+          "events": {
+            "recent": [
+              {
+                "id": "1:0",
+                "type": "score.changed",
+                "data": {
+                  "actionType": "engine.setup",
+                  "playerId": 1,
+                  "previous": 0,
+                  "value": 0,
+                  "delta": 0
+                },
+                "actorId": null,
+                "occurredAtMs": 1700000000000,
+                "sequence": 0,
+                "soundSemantic": "score.changed"
+              },
+              {
+                "id": "1:1",
+                "type": "score.changed",
+                "data": {
+                  "actionType": "engine.setup",
+                  "playerId": 2,
+                  "previous": 0,
+                  "value": 0,
+                  "delta": 0
+                },
+                "actorId": null,
+                "occurredAtMs": 1700000000000,
+                "sequence": 1,
+                "soundSemantic": "score.changed"
+              },
+              {
+                "id": "1:2",
+                "type": "turn.started",
+                "data": {
+                  "actionType": "engine.setup",
+                  "playerId": 1,
+                  "turnNumber": 1,
+                  "announce": false
+                },
+                "actorId": null,
+                "occurredAtMs": 1700000000000,
+                "sequence": 2,
+                "soundSemantic": "turn.started"
+              }
+            ],
+            "latestByType": {
+              "score.changed": {
+                "id": "1:1",
+                "type": "score.changed",
+                "data": {
+                  "actionType": "engine.setup",
+                  "playerId": 2,
+                  "previous": 0,
+                  "value": 0,
+                  "delta": 0
+                },
+                "actorId": null,
+                "occurredAtMs": 1700000000000,
+                "sequence": 1,
+                "soundSemantic": "score.changed"
+              },
+              "turn.started": {
+                "id": "1:2",
+                "type": "turn.started",
+                "data": {
+                  "actionType": "engine.setup",
+                  "playerId": 1,
+                  "turnNumber": 1,
+                  "announce": false
+                },
+                "actorId": null,
+                "occurredAtMs": 1700000000000,
+                "sequence": 2,
+                "soundSemantic": "turn.started"
+              }
+            }
+          },
+          "shortcuts": [
+            {
+              "key": "S",
+              "type": "interface",
+              "id": "score",
+              "label": "Jetons"
+            },
+            {
+              "key": "C",
+              "type": "interface",
+              "id": "discard",
+              "label": "Carte au-dessus"
+            },
+            {
+              "key": "Shift+C",
+              "type": "interface",
+              "id": "hand-sort-ascending",
+              "label": "Trier ma main par ordre croissant"
+            },
+            {
+              "key": "Shift+D",
+              "type": "interface",
+              "id": "hand-sort-descending",
+              "label": "Trier ma main par ordre décroissant"
+            }
+          ]
+        },
+        "kits": {
+          "cards": {
+            "decks": {
+              "discardPenaltyCards": {
+                "count": 140
+              }
+            },
+            "discards": {
+              "discardPenaltyCards": {
+                "count": 0,
+                "cards": []
+              }
+            },
+            "hands": {
+              "cards-discard-penalty-hands": {
+                "visibility": "owner",
+                "byPlayer": {
+                  "1": [],
+                  "2": {
+                    "count": 0
+                  }
+                }
+              }
+            },
+            "zones": {},
+            "collections": {}
+          },
+          "movement": null,
+          "pawns": null,
+          "grid": null,
+          "dice": null,
+          "score": {
+            "byPlayer": {
+              "1": 0,
+              "2": 0
+            },
+            "leaderboard": [
+              {
+                "playerId": 1,
+                "score": 0,
+                "rank": 1
+              },
+              {
+                "playerId": 2,
+                "score": 0,
+                "rank": 1
+              }
+            ],
+            "label": "Jetons",
+            "unit": {
+              "singular": "jeton",
+              "plural": "jetons"
+            }
+          },
+          "resources": {},
+          "counters": {},
+          "status": {
+            "byId": {}
+          },
+          "inventory": null,
+          "economy": null,
+          "ownership": null,
+          "quiz": null,
+          "submissions": {
+            "stage": "idle",
+            "sessions": {},
+            "judges": {}
+          },
+          "collections": {}
+        },
+        "effect": {
+          "source": null
+        },
+        "game": {},
+        "gameContract": {
+          "stateVersion": 1,
+          "rulesVersion": "3",
+          "contentVersion": "2"
+        },
+        "actions": [
+          {
+            "type": "game.configure",
+            "payload": {}
+          }
+        ],
+        "actionCatalog": [
+          {
+            "type": "game.configure",
+            "input": {
+              "type": "object",
+              "properties": {
+                "loseAtScore": {
+                  "label": "Seuil de jetons d'élimination",
+                  "type": "number",
+                  "integer": true,
+                  "min": 5,
+                  "max": 200,
+                  "initialText": "40"
+                },
+                "roundPauseSeconds": {
+                  "label": "Pause entre les manches en secondes",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 120,
+                  "initialText": "0"
+                },
+                "allowPlayAfterDraw": {
+                  "label": "Autoriser à jouer après avoir pioché",
+                  "type": "boolean",
+                  "initialText": "false"
+                },
+                "startingHandSize": {
+                  "label": "Nombre de cartes initiales",
+                  "type": "number",
+                  "integer": true,
+                  "min": 1,
+                  "max": 20,
+                  "initialText": "6"
+                },
+                "copiesPerCardValue": {
+                  "label": "Exemplaires de chaque valeur",
+                  "type": "number",
+                  "integer": true,
+                  "min": 1,
+                  "max": 20,
+                  "initialText": "8"
+                },
+                "returnTokenFromRound": {
+                  "label": "Rendre un jeton à partir de la manche",
+                  "type": "number",
+                  "integer": true,
+                  "min": 1,
+                  "max": 50,
+                  "initialText": "2"
+                }
+              }
+            },
+            "documentation": "Configure la partie avant son démarrage.",
+            "ui": {
+              "label": "Démarrer la partie",
+              "control": "form"
+            }
+          },
+          {
+            "type": "cards-discard-penalty-play",
+            "input": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "label": "Value",
+                  "oneOf": [
+                    {
+                      "type": "number",
+                      "integer": true
+                    },
+                    {
+                      "type": "string",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                }
+              }
+            },
+            "documentation": "Joue une carte égale ou immédiatement supérieure à la défausse.",
+            "ui": {
+              "label": "Jouer une carte",
+              "control": "card"
+            }
+          },
+          {
+            "type": "draw",
+            "input": {
+              "type": "object",
+              "properties": {}
+            },
+            "documentation": "Pioche au plus une carte pendant le tour, tant qu'aucun joueur n'est sorti de la manche.",
+            "ui": {
+              "label": "Piocher",
+              "control": "button",
+              "shortcut": "Space"
+            }
+          },
+          {
+            "type": "cards-discard-penalty-pass",
+            "input": {
+              "type": "object",
+              "properties": {}
+            },
+            "documentation": "Termine le tour après une pioche lorsque cette option est active.",
+            "ui": {
+              "label": "Passer",
+              "control": "button"
+            }
+          },
+          {
+            "type": "cards-discard-penalty-quit",
+            "input": {
+              "type": "object",
+              "properties": {}
+            },
+            "documentation": "Se retire de la manche en conservant ses cartes pour le décompte.",
+            "ui": {
+              "label": "Sortir de la manche",
+              "control": "button",
+              "shortcut": "P"
+            }
+          }
+        ],
+        "timers": {},
+        "pending": null,
+        "roomId": 1,
+        "gameType": "lama",
+        "viewerPlayerId": 1,
+        "runId": 1,
+        "version": 1
+      }
+    },
+    "acknowledgement": {
+      "type": "game.ack",
+      "payload": {
+        "action": "game.action",
+        "commandId": "lama:configure",
+        "ok": true
+      }
+    },
+    "afterConfiguration": {
+      "type": "game.state",
+      "payload": {
+        "viewVersion": 1,
+        "system": {
+          "match": {
+            "status": "playing",
+            "startedAtMs": 1700000000000,
+            "finishedAtMs": null,
+            "result": null,
+            "playerStatuses": {
+              "1": "active",
+              "2": "active"
+            }
+          },
+          "round": {
+            "number": 1,
+            "status": "playing",
+            "starterPlayerId": 1,
+            "participantPlayerIds": [
+              1,
+              2
+            ],
+            "leftPlayerIds": [],
+            "winnerPlayerIds": [],
+            "completedRounds": 0
+          },
+          "turn": {
+            "currentPlayerId": 1,
+            "direction": 1,
+            "number": 1,
+            "actionPointsRemaining": null,
+            "immediateExtraTurns": 0,
+            "extraCount": 0,
+            "skipTurnsByPlayer": {},
+            "extraTurnsByPlayer": {},
+            "replacementTurnsByPlayer": {},
+            "waitingSessionId": null,
+            "waitingPlayerIds": []
+          },
+          "setup": {
+            "complete": true,
+            "phase": "turn",
+            "ownerPlayerId": 1,
+            "values": {
+              "loseAtScore": 40,
+              "roundPauseSeconds": 0,
+              "allowPlayAfterDraw": false,
+              "startingHandSize": 6,
+              "copiesPerCardValue": 8,
+              "returnTokenFromRound": 2
+            }
+          },
+          "players": {
+            "all": [
+              {
+                "id": 1,
+                "username": "Lila",
+                "isBot": false,
+                "alive": true
+              },
+              {
+                "id": 2,
+                "username": "Mina",
+                "isBot": false,
+                "alive": true
+              }
+            ]
+          },
+          "events": {
+            "recent": [],
+            "latestByType": {}
+          },
+          "shortcuts": [
+            {
+              "key": "Space",
+              "type": "action",
+              "actionType": "draw",
+              "label": "Piocher"
+            },
+            {
+              "key": "S",
+              "type": "interface",
+              "id": "score",
+              "label": "Jetons"
+            },
+            {
+              "key": "C",
+              "type": "interface",
+              "id": "discard",
+              "label": "Carte au-dessus"
+            },
+            {
+              "key": "Shift+C",
+              "type": "interface",
+              "id": "hand-sort-ascending",
+              "label": "Trier ma main par ordre croissant"
+            },
+            {
+              "key": "Shift+D",
+              "type": "interface",
+              "id": "hand-sort-descending",
+              "label": "Trier ma main par ordre décroissant"
+            },
+            {
+              "key": "P",
+              "type": "action",
+              "actionType": "cards-discard-penalty-quit",
+              "label": "Sortir de la manche"
+            }
+          ]
+        },
+        "kits": {
+          "cards": {
+            "decks": {
+              "discardPenaltyCards": {
+                "count": 43
+              }
+            },
+            "discards": {
+              "discardPenaltyCards": {
+                "count": 1,
+                "cards": [
+                  3
+                ]
+              }
+            },
+            "hands": {
+              "cards-discard-penalty-hands": {
+                "visibility": "owner",
+                "byPlayer": {
+                  "1": [
+                    "LAMA",
+                    4,
+                    5,
+                    1,
+                    "LAMA",
+                    1
+                  ],
+                  "2": {
+                    "count": 6
+                  }
+                }
+              }
+            },
+            "zones": {},
+            "collections": {}
+          },
+          "movement": null,
+          "pawns": null,
+          "grid": null,
+          "dice": null,
+          "score": {
+            "byPlayer": {
+              "1": 0,
+              "2": 0
+            },
+            "leaderboard": [
+              {
+                "playerId": 1,
+                "score": 0,
+                "rank": 1
+              },
+              {
+                "playerId": 2,
+                "score": 0,
+                "rank": 1
+              }
+            ],
+            "label": "Jetons",
+            "unit": {
+              "singular": "jeton",
+              "plural": "jetons"
+            }
+          },
+          "resources": {},
+          "counters": {},
+          "status": {
+            "byId": {}
+          },
+          "inventory": null,
+          "economy": null,
+          "ownership": null,
+          "quiz": null,
+          "submissions": {
+            "stage": "idle",
+            "sessions": {},
+            "judges": {}
+          },
+          "collections": {}
+        },
+        "effect": {
+          "source": null
+        },
+        "game": {},
+        "gameContract": {
+          "stateVersion": 1,
+          "rulesVersion": "3",
+          "contentVersion": "2"
+        },
+        "actions": [
+          {
+            "type": "cards-discard-penalty-play",
+            "payload": {
+              "value": 4
+            }
+          },
+          {
+            "type": "draw",
+            "payload": {}
+          },
+          {
+            "type": "cards-discard-penalty-quit",
+            "payload": {}
+          }
+        ],
+        "actionCatalog": [
+          {
+            "type": "game.configure",
+            "input": {
+              "type": "object",
+              "properties": {
+                "loseAtScore": {
+                  "label": "Seuil de jetons d'élimination",
+                  "type": "number",
+                  "integer": true,
+                  "min": 5,
+                  "max": 200,
+                  "initialText": "40"
+                },
+                "roundPauseSeconds": {
+                  "label": "Pause entre les manches en secondes",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 120,
+                  "initialText": "0"
+                },
+                "allowPlayAfterDraw": {
+                  "label": "Autoriser à jouer après avoir pioché",
+                  "type": "boolean",
+                  "initialText": "false"
+                },
+                "startingHandSize": {
+                  "label": "Nombre de cartes initiales",
+                  "type": "number",
+                  "integer": true,
+                  "min": 1,
+                  "max": 20,
+                  "initialText": "6"
+                },
+                "copiesPerCardValue": {
+                  "label": "Exemplaires de chaque valeur",
+                  "type": "number",
+                  "integer": true,
+                  "min": 1,
+                  "max": 20,
+                  "initialText": "8"
+                },
+                "returnTokenFromRound": {
+                  "label": "Rendre un jeton à partir de la manche",
+                  "type": "number",
+                  "integer": true,
+                  "min": 1,
+                  "max": 50,
+                  "initialText": "2"
+                }
+              }
+            },
+            "documentation": "Configure la partie avant son démarrage.",
+            "ui": {
+              "label": "Démarrer la partie",
+              "control": "form"
+            }
+          },
+          {
+            "type": "cards-discard-penalty-play",
+            "input": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "label": "Value",
+                  "oneOf": [
+                    {
+                      "type": "number",
+                      "integer": true
+                    },
+                    {
+                      "type": "string",
+                      "min": 1,
+                      "max": 128
+                    }
+                  ]
+                }
+              }
+            },
+            "documentation": "Joue une carte égale ou immédiatement supérieure à la défausse.",
+            "ui": {
+              "label": "Jouer une carte",
+              "control": "card"
+            }
+          },
+          {
+            "type": "draw",
+            "input": {
+              "type": "object",
+              "properties": {}
+            },
+            "documentation": "Pioche au plus une carte pendant le tour, tant qu'aucun joueur n'est sorti de la manche.",
+            "ui": {
+              "label": "Piocher",
+              "control": "button",
+              "shortcut": "Space"
+            }
+          },
+          {
+            "type": "cards-discard-penalty-pass",
+            "input": {
+              "type": "object",
+              "properties": {}
+            },
+            "documentation": "Termine le tour après une pioche lorsque cette option est active.",
+            "ui": {
+              "label": "Passer",
+              "control": "button"
+            }
+          },
+          {
+            "type": "cards-discard-penalty-quit",
+            "input": {
+              "type": "object",
+              "properties": {}
+            },
+            "documentation": "Se retire de la manche en conservant ses cartes pour le décompte.",
+            "ui": {
+              "label": "Sortir de la manche",
+              "control": "button",
+              "shortcut": "P"
+            }
+          }
+        ],
+        "timers": {},
+        "pending": null,
+        "roomId": 1,
+        "gameType": "lama",
+        "viewerPlayerId": 1,
+        "runId": 1,
+        "version": 2
+      }
+    }
+  },
+  "corridor": {
+    "before": {
+      "type": "game.state",
+      "payload": {
+        "viewVersion": 1,
+        "system": {
+          "match": {
+            "status": "setup",
+            "startedAtMs": 1700000000000,
+            "finishedAtMs": null,
+            "result": null,
+            "playerStatuses": {
+              "1": "active",
+              "2": "active"
+            }
+          },
+          "round": {
+            "number": 0,
+            "status": "idle",
+            "starterPlayerId": null,
+            "participantPlayerIds": [],
+            "leftPlayerIds": [],
+            "winnerPlayerIds": [],
+            "completedRounds": 0
+          },
+          "turn": {
+            "currentPlayerId": 1,
+            "direction": 1,
+            "number": 1,
+            "actionPointsRemaining": null,
+            "immediateExtraTurns": 0,
+            "extraCount": 0,
+            "skipTurnsByPlayer": {},
+            "extraTurnsByPlayer": {},
+            "replacementTurnsByPlayer": {},
+            "waitingSessionId": null,
+            "waitingPlayerIds": []
+          },
+          "setup": {
+            "complete": false,
+            "phase": "setup",
+            "ownerPlayerId": 1,
+            "values": {
+              "wallsPerPlayer": 10
+            }
+          },
+          "players": {
+            "all": [
+              {
+                "id": 1,
+                "username": "Lila",
+                "isBot": false,
+                "alive": true
+              },
+              {
+                "id": 2,
+                "username": "Mina",
+                "isBot": false,
+                "alive": true
+              }
+            ]
+          },
+          "events": {
+            "recent": [
+              {
+                "id": "1:0",
+                "type": "resource.changed",
+                "data": {
+                  "actionType": "engine.setup",
+                  "playerId": 1,
+                  "resource": "board-path-walls.walls",
+                  "previous": 0,
+                  "value": 10,
+                  "delta": 10,
+                  "message": "Vous : Board path walls walls vaut 10."
+                },
+                "actorId": null,
+                "occurredAtMs": 1700000000000,
+                "sequence": 0,
+                "soundSemantic": "resource.changed"
+              },
+              {
+                "id": "1:1",
+                "type": "resource.changed",
+                "data": {
+                  "actionType": "engine.setup",
+                  "playerId": 2,
+                  "resource": "board-path-walls.walls",
+                  "previous": 0,
+                  "value": 10,
+                  "delta": 10,
+                  "message": "Mina : Board path walls walls vaut 10."
+                },
+                "actorId": null,
+                "occurredAtMs": 1700000000000,
+                "sequence": 1,
+                "soundSemantic": "resource.changed"
+              },
+              {
+                "id": "1:2",
+                "type": "turn.started",
+                "data": {
+                  "actionType": "engine.setup",
+                  "playerId": 1,
+                  "turnNumber": 1,
+                  "announce": false
+                },
+                "actorId": null,
+                "occurredAtMs": 1700000000000,
+                "sequence": 2,
+                "soundSemantic": "turn.started"
+              }
+            ],
+            "latestByType": {
+              "resource.changed": {
+                "id": "1:1",
+                "type": "resource.changed",
+                "data": {
+                  "actionType": "engine.setup",
+                  "playerId": 2,
+                  "resource": "board-path-walls.walls",
+                  "previous": 0,
+                  "value": 10,
+                  "delta": 10,
+                  "message": "Mina : Board path walls walls vaut 10."
+                },
+                "actorId": null,
+                "occurredAtMs": 1700000000000,
+                "sequence": 1,
+                "soundSemantic": "resource.changed"
+              },
+              "turn.started": {
+                "id": "1:2",
+                "type": "turn.started",
+                "data": {
+                  "actionType": "engine.setup",
+                  "playerId": 1,
+                  "turnNumber": 1,
+                  "announce": false
+                },
+                "actorId": null,
+                "occurredAtMs": 1700000000000,
+                "sequence": 2,
+                "soundSemantic": "turn.started"
+              }
+            }
+          },
+          "shortcuts": [
+            {
+              "key": "S",
+              "type": "interface",
+              "id": "score",
+              "label": "Scores"
+            }
+          ]
+        },
+        "kits": {
+          "cards": null,
+          "movement": null,
+          "pawns": {
+            "sets": {
+              "pathWalls": {
+                "definitions": [
+                  {
+                    "id": "vent",
+                    "label": "Le vent",
+                    "description": "Rapide et changeant, il traverse le pathWalls sans hésiter."
+                  },
+                  {
+                    "id": "eau",
+                    "label": "L’eau",
+                    "description": "Souple et patiente, elle contourne les obstacles avec précision."
+                  },
+                  {
+                    "id": "terre",
+                    "label": "La terre",
+                    "description": "Stable et solide, elle avance avec régularité."
+                  },
+                  {
+                    "id": "feu",
+                    "label": "Le feu",
+                    "description": "Direct et audacieux, il cherche la ligne d’arrivée."
+                  }
+                ],
+                "owners": {},
+                "assignments": {
+                  "1": [],
+                  "2": []
+                },
+                "byPlayer": {
+                  "1": [],
+                  "2": []
+                }
+              }
+            }
+          },
+          "grid": {
+            "boards": {
+              "pathWalls": {
+                "id": "pathWalls",
+                "width": 9,
+                "height": 9,
+                "component": "grid.board",
+                "cells": {
+                  "4,0": 1,
+                  "4,8": 2
+                },
+                "overlays": {
+                  "walls": []
+                }
+              }
+            }
+          },
+          "dice": null,
+          "score": {
+            "byPlayer": {
+              "1": 0,
+              "2": 0
+            },
+            "leaderboard": [
+              {
+                "playerId": 1,
+                "score": 0,
+                "rank": 1
+              },
+              {
+                "playerId": 2,
+                "score": 0,
+                "rank": 1
+              }
+            ],
+            "label": "Scores",
+            "unit": {
+              "singular": "point",
+              "plural": "points"
+            }
+          },
+          "resources": {
+            "board-path-walls.walls": {
+              "1": 10,
+              "2": 10
+            }
+          },
+          "counters": {},
+          "status": {
+            "byId": {}
+          },
+          "inventory": null,
+          "economy": null,
+          "ownership": null,
+          "quiz": null,
+          "submissions": {
+            "stage": "idle",
+            "sessions": {},
+            "judges": {}
+          },
+          "collections": {}
+        },
+        "effect": {
+          "source": null
+        },
+        "game": {},
+        "gameContract": {
+          "stateVersion": 1,
+          "rulesVersion": "4",
+          "contentVersion": "2"
+        },
+        "actions": [
+          {
+            "type": "game.configure",
+            "payload": {}
+          }
+        ],
+        "actionCatalog": [
+          {
+            "type": "game.configure",
+            "input": {
+              "type": "object",
+              "properties": {
+                "wallsPerPlayer": {
+                  "label": "Nombre de murs par joueur",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 20,
+                  "initialText": "10"
+                }
+              }
+            },
+            "documentation": "Configure la partie avant son démarrage.",
+            "ui": {
+              "label": "Choisir les pions",
+              "control": "form"
+            }
+          },
+          {
+            "type": "pathWalls_move",
+            "input": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "label": "X",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 8
+                },
+                "y": {
+                  "label": "Y",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 8
+                }
+              }
+            },
+            "documentation": "Déplace le pion sur une case légale, saut compris.",
+            "ui": {
+              "label": "PathWalls move",
+              "control": "form"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "input": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "label": "X",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 7
+                },
+                "y": {
+                  "label": "Y",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 7
+                },
+                "orientation": {
+                  "label": "Orientation",
+                  "type": "enum",
+                  "values": [
+                    "h",
+                    "v"
+                  ]
+                }
+              }
+            },
+            "documentation": "Place un mur sans chevauchement et sans fermer un chemin.",
+            "ui": {
+              "label": "PathWalls place wall",
+              "control": "form"
+            }
+          }
+        ],
+        "timers": {},
+        "pending": null,
+        "roomId": 1,
+        "gameType": "corridor",
+        "viewerPlayerId": 1,
+        "runId": 1,
+        "version": 1
+      }
+    },
+    "acknowledgement": {
+      "type": "game.ack",
+      "payload": {
+        "action": "game.action",
+        "commandId": "corridor:configure",
+        "ok": true
+      }
+    },
+    "afterConfiguration": {
+      "type": "game.state",
+      "payload": {
+        "viewVersion": 1,
+        "system": {
+          "match": {
+            "status": "playing",
+            "startedAtMs": 1700000000000,
+            "finishedAtMs": null,
+            "result": null,
+            "playerStatuses": {
+              "1": "active",
+              "2": "active"
+            }
+          },
+          "round": {
+            "number": 0,
+            "status": "idle",
+            "starterPlayerId": null,
+            "participantPlayerIds": [],
+            "leftPlayerIds": [],
+            "winnerPlayerIds": [],
+            "completedRounds": 0
+          },
+          "turn": {
+            "currentPlayerId": 1,
+            "direction": 1,
+            "number": 1,
+            "actionPointsRemaining": null,
+            "immediateExtraTurns": 0,
+            "extraCount": 0,
+            "skipTurnsByPlayer": {},
+            "extraTurnsByPlayer": {},
+            "replacementTurnsByPlayer": {},
+            "waitingSessionId": null,
+            "waitingPlayerIds": []
+          },
+          "setup": {
+            "complete": false,
+            "phase": "setup",
+            "ownerPlayerId": 1,
+            "values": {
+              "wallsPerPlayer": 10
+            }
+          },
+          "players": {
+            "all": [
+              {
+                "id": 1,
+                "username": "Lila",
+                "isBot": false,
+                "alive": true
+              },
+              {
+                "id": 2,
+                "username": "Mina",
+                "isBot": false,
+                "alive": true
+              }
+            ]
+          },
+          "events": {
+            "recent": [],
+            "latestByType": {}
+          },
+          "shortcuts": [
+            {
+              "key": "S",
+              "type": "interface",
+              "id": "score",
+              "label": "Scores"
+            }
+          ]
+        },
+        "kits": {
+          "cards": null,
+          "movement": null,
+          "pawns": {
+            "sets": {
+              "pathWalls": {
+                "definitions": [
+                  {
+                    "id": "vent",
+                    "label": "Le vent",
+                    "description": "Rapide et changeant, il traverse le pathWalls sans hésiter."
+                  },
+                  {
+                    "id": "eau",
+                    "label": "L’eau",
+                    "description": "Souple et patiente, elle contourne les obstacles avec précision."
+                  },
+                  {
+                    "id": "terre",
+                    "label": "La terre",
+                    "description": "Stable et solide, elle avance avec régularité."
+                  },
+                  {
+                    "id": "feu",
+                    "label": "Le feu",
+                    "description": "Direct et audacieux, il cherche la ligne d’arrivée."
+                  }
+                ],
+                "owners": {},
+                "assignments": {
+                  "1": [],
+                  "2": []
+                },
+                "byPlayer": {
+                  "1": [],
+                  "2": []
+                }
+              }
+            }
+          },
+          "grid": {
+            "boards": {
+              "pathWalls": {
+                "id": "pathWalls",
+                "width": 9,
+                "height": 9,
+                "component": "grid.board",
+                "cells": {
+                  "4,0": 1,
+                  "4,8": 2
+                },
+                "overlays": {
+                  "walls": []
+                }
+              }
+            }
+          },
+          "dice": null,
+          "score": {
+            "byPlayer": {
+              "1": 0,
+              "2": 0
+            },
+            "leaderboard": [
+              {
+                "playerId": 1,
+                "score": 0,
+                "rank": 1
+              },
+              {
+                "playerId": 2,
+                "score": 0,
+                "rank": 1
+              }
+            ],
+            "label": "Scores",
+            "unit": {
+              "singular": "point",
+              "plural": "points"
+            }
+          },
+          "resources": {
+            "board-path-walls.walls": {
+              "1": 10,
+              "2": 10
+            }
+          },
+          "counters": {},
+          "status": {
+            "byId": {}
+          },
+          "inventory": null,
+          "economy": null,
+          "ownership": null,
+          "quiz": null,
+          "submissions": {
+            "stage": "idle",
+            "sessions": {},
+            "judges": {}
+          },
+          "collections": {}
+        },
+        "effect": {
+          "source": null
+        },
+        "game": {},
+        "gameContract": {
+          "stateVersion": 1,
+          "rulesVersion": "4",
+          "contentVersion": "2"
+        },
+        "actions": [
+          {
+            "type": "choice.resolve",
+            "payload": {
+              "value": "vent"
+            },
+            "meta": {
+              "actorId": 1
+            }
+          },
+          {
+            "type": "choice.resolve",
+            "payload": {
+              "value": "eau"
+            },
+            "meta": {
+              "actorId": 1
+            }
+          },
+          {
+            "type": "choice.resolve",
+            "payload": {
+              "value": "terre"
+            },
+            "meta": {
+              "actorId": 1
+            }
+          },
+          {
+            "type": "choice.resolve",
+            "payload": {
+              "value": "feu"
+            },
+            "meta": {
+              "actorId": 1
+            }
+          }
+        ],
+        "actionCatalog": [
+          {
+            "type": "game.configure",
+            "input": {
+              "type": "object",
+              "properties": {
+                "wallsPerPlayer": {
+                  "label": "Nombre de murs par joueur",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 20,
+                  "initialText": "10"
+                }
+              }
+            },
+            "documentation": "Configure la partie avant son démarrage.",
+            "ui": {
+              "label": "Choisir les pions",
+              "control": "form"
+            }
+          },
+          {
+            "type": "pathWalls_move",
+            "input": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "label": "X",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 8
+                },
+                "y": {
+                  "label": "Y",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 8
+                }
+              }
+            },
+            "documentation": "Déplace le pion sur une case légale, saut compris.",
+            "ui": {
+              "label": "PathWalls move",
+              "control": "form"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "input": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "label": "X",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 7
+                },
+                "y": {
+                  "label": "Y",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 7
+                },
+                "orientation": {
+                  "label": "Orientation",
+                  "type": "enum",
+                  "values": [
+                    "h",
+                    "v"
+                  ]
+                }
+              }
+            },
+            "documentation": "Place un mur sans chevauchement et sans fermer un chemin.",
+            "ui": {
+              "label": "PathWalls place wall",
+              "control": "form"
+            }
+          }
+        ],
+        "timers": {},
+        "pending": {
+          "type": "engine.choice.pawn",
+          "choiceId": "board-path-walls.pawn",
+          "workflowKind": "pawn",
+          "label": "Choisissez votre pion.",
+          "playerId": 1,
+          "blocking": true,
+          "choices": [
+            "Le vent",
+            "L’eau",
+            "La terre",
+            "Le feu"
+          ],
+          "data": {
+            "kind": "pawn",
+            "choiceId": "board-path-walls.pawn",
+            "options": [
+              "vent",
+              "eau",
+              "terre",
+              "feu"
+            ],
+            "min": 1,
+            "max": 1,
+            "timeoutStrategy": "first",
+            "deadlineMs": null,
+            "choiceActionsByIndex": [
+              {
+                "type": "choice.resolve",
+                "payload": {
+                  "value": "vent"
+                }
+              },
+              {
+                "type": "choice.resolve",
+                "payload": {
+                  "value": "eau"
+                }
+              },
+              {
+                "type": "choice.resolve",
+                "payload": {
+                  "value": "terre"
+                }
+              },
+              {
+                "type": "choice.resolve",
+                "payload": {
+                  "value": "feu"
+                }
+              }
+            ]
+          }
+        },
+        "roomId": 1,
+        "gameType": "corridor",
+        "viewerPlayerId": 1,
+        "runId": 1,
+        "version": 2
+      }
+    },
+    "afterChoice": {
+      "type": "game.state",
+      "payload": {
+        "viewVersion": 1,
+        "system": {
+          "match": {
+            "status": "playing",
+            "startedAtMs": 1700000000000,
+            "finishedAtMs": null,
+            "result": null,
+            "playerStatuses": {
+              "1": "active",
+              "2": "active"
+            }
+          },
+          "round": {
+            "number": 0,
+            "status": "idle",
+            "starterPlayerId": null,
+            "participantPlayerIds": [],
+            "leftPlayerIds": [],
+            "winnerPlayerIds": [],
+            "completedRounds": 0
+          },
+          "turn": {
+            "currentPlayerId": 2,
+            "direction": 1,
+            "number": 1,
+            "actionPointsRemaining": null,
+            "immediateExtraTurns": 0,
+            "extraCount": 0,
+            "skipTurnsByPlayer": {},
+            "extraTurnsByPlayer": {},
+            "replacementTurnsByPlayer": {},
+            "waitingSessionId": null,
+            "waitingPlayerIds": []
+          },
+          "setup": {
+            "complete": false,
+            "phase": "setup",
+            "ownerPlayerId": 1,
+            "values": {
+              "wallsPerPlayer": 10
+            }
+          },
+          "players": {
+            "all": [
+              {
+                "id": 1,
+                "username": "Lila",
+                "isBot": false,
+                "alive": true
+              },
+              {
+                "id": 2,
+                "username": "Mina",
+                "isBot": false,
+                "alive": true
+              }
+            ]
+          },
+          "events": {
+            "recent": [],
+            "latestByType": {}
+          },
+          "shortcuts": [
+            {
+              "key": "S",
+              "type": "interface",
+              "id": "score",
+              "label": "Scores"
+            }
+          ]
+        },
+        "kits": {
+          "cards": null,
+          "movement": null,
+          "pawns": {
+            "sets": {
+              "pathWalls": {
+                "definitions": [
+                  {
+                    "id": "vent",
+                    "label": "Le vent",
+                    "description": "Rapide et changeant, il traverse le pathWalls sans hésiter."
+                  },
+                  {
+                    "id": "eau",
+                    "label": "L’eau",
+                    "description": "Souple et patiente, elle contourne les obstacles avec précision."
+                  },
+                  {
+                    "id": "terre",
+                    "label": "La terre",
+                    "description": "Stable et solide, elle avance avec régularité."
+                  },
+                  {
+                    "id": "feu",
+                    "label": "Le feu",
+                    "description": "Direct et audacieux, il cherche la ligne d’arrivée."
+                  }
+                ],
+                "owners": {
+                  "vent": 1
+                },
+                "assignments": {
+                  "1": [
+                    "vent"
+                  ],
+                  "2": []
+                },
+                "byPlayer": {
+                  "1": [
+                    "vent"
+                  ],
+                  "2": []
+                }
+              }
+            }
+          },
+          "grid": {
+            "boards": {
+              "pathWalls": {
+                "id": "pathWalls",
+                "width": 9,
+                "height": 9,
+                "component": "grid.board",
+                "cells": {
+                  "4,0": 1,
+                  "4,8": 2
+                },
+                "overlays": {
+                  "walls": []
+                }
+              }
+            }
+          },
+          "dice": null,
+          "score": {
+            "byPlayer": {
+              "1": 0,
+              "2": 0
+            },
+            "leaderboard": [
+              {
+                "playerId": 1,
+                "score": 0,
+                "rank": 1
+              },
+              {
+                "playerId": 2,
+                "score": 0,
+                "rank": 1
+              }
+            ],
+            "label": "Scores",
+            "unit": {
+              "singular": "point",
+              "plural": "points"
+            }
+          },
+          "resources": {
+            "board-path-walls.walls": {
+              "1": 10,
+              "2": 10
+            }
+          },
+          "counters": {},
+          "status": {
+            "byId": {}
+          },
+          "inventory": null,
+          "economy": null,
+          "ownership": null,
+          "quiz": null,
+          "submissions": {
+            "stage": "idle",
+            "sessions": {},
+            "judges": {}
+          },
+          "collections": {}
+        },
+        "effect": {
+          "source": null
+        },
+        "game": {},
+        "gameContract": {
+          "stateVersion": 1,
+          "rulesVersion": "4",
+          "contentVersion": "2"
+        },
+        "actions": [],
+        "actionCatalog": [
+          {
+            "type": "game.configure",
+            "input": {
+              "type": "object",
+              "properties": {
+                "wallsPerPlayer": {
+                  "label": "Nombre de murs par joueur",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 20,
+                  "initialText": "10"
+                }
+              }
+            },
+            "documentation": "Configure la partie avant son démarrage.",
+            "ui": {
+              "label": "Choisir les pions",
+              "control": "form"
+            }
+          },
+          {
+            "type": "pathWalls_move",
+            "input": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "label": "X",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 8
+                },
+                "y": {
+                  "label": "Y",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 8
+                }
+              }
+            },
+            "documentation": "Déplace le pion sur une case légale, saut compris.",
+            "ui": {
+              "label": "PathWalls move",
+              "control": "form"
+            }
+          },
+          {
+            "type": "pathWalls_place_wall",
+            "input": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "label": "X",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 7
+                },
+                "y": {
+                  "label": "Y",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 7
+                },
+                "orientation": {
+                  "label": "Orientation",
+                  "type": "enum",
+                  "values": [
+                    "h",
+                    "v"
+                  ]
+                }
+              }
+            },
+            "documentation": "Place un mur sans chevauchement et sans fermer un chemin.",
+            "ui": {
+              "label": "PathWalls place wall",
+              "control": "form"
+            }
+          }
+        ],
+        "timers": {},
+        "pending": {
+          "type": "engine.choice.pawn",
+          "choiceId": "board-path-walls.pawn",
+          "workflowKind": "pawn",
+          "label": "Choisissez votre pion.",
+          "playerId": 2,
+          "blocking": true
+        },
+        "roomId": 1,
+        "gameType": "corridor",
+        "viewerPlayerId": 1,
+        "runId": 1,
+        "version": 3
+      }
+    }
+  },
+  "arche": {
+    "before": {
+      "type": "game.state",
+      "payload": {
+        "viewVersion": 1,
+        "system": {
+          "match": {
+            "status": "setup",
+            "startedAtMs": 1700000000000,
+            "finishedAtMs": null,
+            "result": null,
+            "playerStatuses": {
+              "1": "active",
+              "2": "active"
+            }
+          },
+          "round": {
+            "number": 0,
+            "status": "idle",
+            "starterPlayerId": null,
+            "participantPlayerIds": [],
+            "leftPlayerIds": [],
+            "winnerPlayerIds": [],
+            "completedRounds": 0
+          },
+          "turn": {
+            "currentPlayerId": null,
+            "direction": 1,
+            "number": 1,
+            "actionPointsRemaining": null,
+            "immediateExtraTurns": 0,
+            "extraCount": 0,
+            "skipTurnsByPlayer": {},
+            "extraTurnsByPlayer": {},
+            "replacementTurnsByPlayer": {},
+            "waitingSessionId": null,
+            "waitingPlayerIds": []
+          },
+          "setup": {
+            "complete": false,
+            "phase": "setup",
+            "ownerPlayerId": 1,
+            "values": {
+              "categoryId": "all",
+              "questionsPerRound": 5,
+              "targetPoints": 20,
+              "useTimer": true,
+              "timerSeconds": 30,
+              "interQuestionSeconds": 0,
+              "correctSoloPoints": 2,
+              "correctMultiPoints": 1,
+              "wrongPoints": 0,
+              "timeoutPoints": -1
+            }
+          },
+          "players": {
+            "all": [
+              {
+                "id": 1,
+                "username": "Lila",
+                "isBot": false,
+                "alive": true
+              },
+              {
+                "id": 2,
+                "username": "Mina",
+                "isBot": false,
+                "alive": true
+              }
+            ]
+          },
+          "events": {
+            "recent": [],
+            "latestByType": {}
+          },
+          "shortcuts": [
+            {
+              "key": "S",
+              "type": "interface",
+              "id": "score",
+              "label": "Scores"
+            }
+          ]
+        },
+        "kits": {
+          "cards": null,
+          "movement": null,
+          "pawns": null,
+          "grid": null,
+          "dice": null,
+          "score": {
+            "byPlayer": {
+              "1": 0,
+              "2": 0
+            },
+            "leaderboard": [
+              {
+                "playerId": 1,
+                "score": 0,
+                "rank": 1
+              },
+              {
+                "playerId": 2,
+                "score": 0,
+                "rank": 1
+              }
+            ],
+            "label": "Scores",
+            "unit": {
+              "singular": "point",
+              "plural": "points"
+            }
+          },
+          "resources": {},
+          "counters": {},
+          "status": {
+            "byId": {}
+          },
+          "inventory": null,
+          "economy": null,
+          "ownership": null,
+          "quiz": {
+            "banks": {
+              "all": {
+                "count": 469,
+                "cursor": 0,
+                "remaining": 469
+              },
+              "a-la-croisee-des-mondes": {
+                "count": 50,
+                "cursor": 0,
+                "remaining": 50
+              },
+              "accelere": {
+                "count": 30,
+                "cursor": 0,
+                "remaining": 30
+              },
+              "globe-trotter-gourmand": {
+                "count": 118,
+                "cursor": 0,
+                "remaining": 118
+              },
+              "harmonie-quiz": {
+                "count": 50,
+                "cursor": 0,
+                "remaining": 50
+              },
+              "l-esprit-nomade": {
+                "count": 50,
+                "cursor": 0,
+                "remaining": 50
+              },
+              "la-tete-de-sanglier": {
+                "count": 71,
+                "cursor": 0,
+                "remaining": 71
+              },
+              "le-tournoi-des-plumes": {
+                "count": 50,
+                "cursor": 0,
+                "remaining": 50
+              },
+              "seve-et-savoir": {
+                "count": 50,
+                "cursor": 0,
+                "remaining": 50
+              }
+            },
+            "sessions": {}
+          },
+          "submissions": {
+            "stage": "idle",
+            "sessions": {},
+            "judges": {}
+          },
+          "collections": {}
+        },
+        "effect": {
+          "source": null
+        },
+        "game": {},
+        "gameContract": {
+          "stateVersion": 1,
+          "rulesVersion": "3",
+          "contentVersion": "2"
+        },
+        "actions": [
+          {
+            "type": "game.configure",
+            "payload": {}
+          }
+        ],
+        "actionCatalog": [
+          {
+            "type": "game.configure",
+            "input": {
+              "type": "object",
+              "properties": {
+                "categoryId": {
+                  "label": "Catégorie de questions",
+                  "type": "enum",
+                  "values": [
+                    "all",
+                    "a-la-croisee-des-mondes",
+                    "accelere",
+                    "globe-trotter-gourmand",
+                    "harmonie-quiz",
+                    "l-esprit-nomade",
+                    "la-tete-de-sanglier",
+                    "le-tournoi-des-plumes",
+                    "seve-et-savoir"
+                  ],
+                  "choiceLabels": {
+                    "all": "Toutes les catégories",
+                    "a-la-croisee-des-mondes": "A la croisée des mondes",
+                    "accelere": "Accélère",
+                    "globe-trotter-gourmand": "Globe-trotter gourmand",
+                    "harmonie-quiz": "Harmonie quiz",
+                    "l-esprit-nomade": "L'esprit nomade",
+                    "la-tete-de-sanglier": "La Tête de sanglier",
+                    "le-tournoi-des-plumes": "Le tournoi des plumes",
+                    "seve-et-savoir": "Sève et savoir"
+                  },
+                  "initialText": "all"
+                },
+                "questionsPerRound": {
+                  "label": "Questions par manche",
+                  "type": "number",
+                  "integer": true,
+                  "min": 1,
+                  "max": 50,
+                  "initialText": "5"
+                },
+                "targetPoints": {
+                  "label": "Score à atteindre",
+                  "type": "number",
+                  "integer": true,
+                  "min": 1,
+                  "max": 200,
+                  "initialText": "20"
+                },
+                "useTimer": {
+                  "label": "Utiliser un chronomètre",
+                  "type": "boolean",
+                  "initialText": "true"
+                },
+                "timerSeconds": {
+                  "label": "Durée d’une question (secondes)",
+                  "type": "number",
+                  "integer": true,
+                  "min": 5,
+                  "max": 300,
+                  "initialText": "30"
+                },
+                "interQuestionSeconds": {
+                  "label": "Pause entre deux questions (secondes)",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 60,
+                  "initialText": "0"
+                },
+                "correctSoloPoints": {
+                  "label": "Points si une seule bonne réponse",
+                  "type": "number",
+                  "integer": true,
+                  "min": -50,
+                  "max": 50,
+                  "initialText": "2"
+                },
+                "correctMultiPoints": {
+                  "label": "Points si plusieurs bonnes réponses",
+                  "type": "number",
+                  "integer": true,
+                  "min": -50,
+                  "max": 50,
+                  "initialText": "1"
+                },
+                "wrongPoints": {
+                  "label": "Points en cas de mauvaise réponse",
+                  "type": "number",
+                  "integer": true,
+                  "min": -50,
+                  "max": 50,
+                  "initialText": "0"
+                },
+                "timeoutPoints": {
+                  "label": "Points en cas de temps écoulé",
+                  "type": "number",
+                  "integer": true,
+                  "min": -50,
+                  "max": 50,
+                  "initialText": "-1"
+                }
+              }
+            },
+            "documentation": "Configure la partie avant son démarrage.",
+            "ui": {
+              "label": "Démarrer le quiz",
+              "control": "form"
+            }
+          },
+          {
+            "type": "answer",
+            "input": {
+              "type": "object",
+              "properties": {
+                "answerIndex": {
+                  "label": "AnswerIndex",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 3
+                }
+              }
+            },
+            "documentation": "Répond une fois à la question en cours.",
+            "ui": {
+              "label": "Answer",
+              "control": "number"
+            }
+          },
+          {
+            "type": "timeout",
+            "input": {
+              "type": "object",
+              "properties": {}
+            },
+            "documentation": "Clôture une question dont le délai est dépassé.",
+            "ui": {
+              "label": "Timeout",
+              "control": "button"
+            }
+          },
+          {
+            "type": "ready",
+            "input": {
+              "type": "object",
+              "properties": {}
+            },
+            "documentation": "Affiche automatiquement la question suivante après la pause.",
+            "ui": {
+              "label": "Ready",
+              "control": "button"
+            }
+          }
+        ],
+        "timers": {},
+        "pending": null,
+        "roomId": 1,
+        "gameType": "arche-de-mnemosyne",
+        "viewerPlayerId": 1,
+        "runId": 1,
+        "version": 1
+      }
+    },
+    "acknowledgement": {
+      "type": "game.ack",
+      "payload": {
+        "action": "game.action",
+        "commandId": "arche-de-mnemosyne:configure",
+        "ok": true
+      }
+    },
+    "afterConfiguration": {
+      "type": "game.state",
+      "payload": {
+        "viewVersion": 1,
+        "system": {
+          "match": {
+            "status": "playing",
+            "startedAtMs": 1700000000000,
+            "finishedAtMs": null,
+            "result": null,
+            "playerStatuses": {
+              "1": "active",
+              "2": "active"
+            }
+          },
+          "round": {
+            "number": 1,
+            "status": "playing",
+            "starterPlayerId": 1,
+            "participantPlayerIds": [
+              1,
+              2
+            ],
+            "leftPlayerIds": [],
+            "winnerPlayerIds": [],
+            "completedRounds": 0
+          },
+          "turn": {
+            "currentPlayerId": 1,
+            "direction": 1,
+            "number": 1,
+            "actionPointsRemaining": null,
+            "immediateExtraTurns": 0,
+            "extraCount": 0,
+            "skipTurnsByPlayer": {},
+            "extraTurnsByPlayer": {},
+            "replacementTurnsByPlayer": {},
+            "waitingSessionId": null,
+            "waitingPlayerIds": []
+          },
+          "setup": {
+            "complete": true,
+            "phase": "playing",
+            "ownerPlayerId": 1,
+            "values": {
+              "categoryId": "all",
+              "questionsPerRound": 5,
+              "targetPoints": 20,
+              "useTimer": false,
+              "timerSeconds": 30,
+              "interQuestionSeconds": 0,
+              "correctSoloPoints": 2,
+              "correctMultiPoints": 1,
+              "wrongPoints": 0,
+              "timeoutPoints": -1
+            }
+          },
+          "players": {
+            "all": [
+              {
+                "id": 1,
+                "username": "Lila",
+                "isBot": false,
+                "alive": true
+              },
+              {
+                "id": 2,
+                "username": "Mina",
+                "isBot": false,
+                "alive": true
+              }
+            ]
+          },
+          "events": {
+            "recent": [],
+            "latestByType": {}
+          },
+          "shortcuts": [
+            {
+              "key": "S",
+              "type": "interface",
+              "id": "score",
+              "label": "Scores"
+            }
+          ]
+        },
+        "kits": {
+          "cards": null,
+          "movement": null,
+          "pawns": null,
+          "grid": null,
+          "dice": null,
+          "score": {
+            "byPlayer": {
+              "1": 0,
+              "2": 0
+            },
+            "leaderboard": [
+              {
+                "playerId": 1,
+                "score": 0,
+                "rank": 1
+              },
+              {
+                "playerId": 2,
+                "score": 0,
+                "rank": 1
+              }
+            ],
+            "label": "Scores",
+            "unit": {
+              "singular": "point",
+              "plural": "points"
+            }
+          },
+          "resources": {},
+          "counters": {
+            "choice-simultaneous-quiz.questions-in-round": 1
+          },
+          "status": {
+            "byId": {}
+          },
+          "inventory": null,
+          "economy": null,
+          "ownership": null,
+          "quiz": {
+            "banks": {
+              "all": {
+                "count": 469,
+                "cursor": 1,
+                "remaining": 468
+              },
+              "a-la-croisee-des-mondes": {
+                "count": 50,
+                "cursor": 0,
+                "remaining": 50
+              },
+              "accelere": {
+                "count": 30,
+                "cursor": 0,
+                "remaining": 30
+              },
+              "globe-trotter-gourmand": {
+                "count": 118,
+                "cursor": 0,
+                "remaining": 118
+              },
+              "harmonie-quiz": {
+                "count": 50,
+                "cursor": 0,
+                "remaining": 50
+              },
+              "l-esprit-nomade": {
+                "count": 50,
+                "cursor": 0,
+                "remaining": 50
+              },
+              "la-tete-de-sanglier": {
+                "count": 71,
+                "cursor": 0,
+                "remaining": 71
+              },
+              "le-tournoi-des-plumes": {
+                "count": 50,
+                "cursor": 0,
+                "remaining": 50
+              },
+              "seve-et-savoir": {
+                "count": 50,
+                "cursor": 0,
+                "remaining": 50
+              }
+            },
+            "sessions": {
+              "choice-simultaneous-quiz.current": {
+                "id": "choice-simultaneous-quiz.current",
+                "bankId": "all",
+                "question": {
+                  "id": "7122e921-9607-4a5e-a588-8c4b31bd89c3",
+                  "prompt": "Quel violoniste italien du XIXe siècle était surnommé \"le violoniste du diable\" ?",
+                  "choices": [
+                    "Paganini",
+                    "Corelli",
+                    "Vivaldi",
+                    "Sivori"
+                  ]
+                },
+                "participantPlayerIds": [
+                  1,
+                  2
+                ],
+                "answeredPlayerIds": [],
+                "phase": "answering",
+                "scored": false
+              }
+            }
+          },
+          "submissions": {
+            "stage": "idle",
+            "sessions": {},
+            "judges": {}
+          },
+          "collections": {}
+        },
+        "effect": {
+          "source": null
+        },
+        "game": {},
+        "gameContract": {
+          "stateVersion": 1,
+          "rulesVersion": "3",
+          "contentVersion": "2"
+        },
+        "actions": [
+          {
+            "type": "answer",
+            "payload": {
+              "answerIndex": 0
+            }
+          },
+          {
+            "type": "answer",
+            "payload": {
+              "answerIndex": 1
+            }
+          },
+          {
+            "type": "answer",
+            "payload": {
+              "answerIndex": 2
+            }
+          },
+          {
+            "type": "answer",
+            "payload": {
+              "answerIndex": 3
+            }
+          }
+        ],
+        "actionCatalog": [
+          {
+            "type": "game.configure",
+            "input": {
+              "type": "object",
+              "properties": {
+                "categoryId": {
+                  "label": "Catégorie de questions",
+                  "type": "enum",
+                  "values": [
+                    "all",
+                    "a-la-croisee-des-mondes",
+                    "accelere",
+                    "globe-trotter-gourmand",
+                    "harmonie-quiz",
+                    "l-esprit-nomade",
+                    "la-tete-de-sanglier",
+                    "le-tournoi-des-plumes",
+                    "seve-et-savoir"
+                  ],
+                  "choiceLabels": {
+                    "all": "Toutes les catégories",
+                    "a-la-croisee-des-mondes": "A la croisée des mondes",
+                    "accelere": "Accélère",
+                    "globe-trotter-gourmand": "Globe-trotter gourmand",
+                    "harmonie-quiz": "Harmonie quiz",
+                    "l-esprit-nomade": "L'esprit nomade",
+                    "la-tete-de-sanglier": "La Tête de sanglier",
+                    "le-tournoi-des-plumes": "Le tournoi des plumes",
+                    "seve-et-savoir": "Sève et savoir"
+                  },
+                  "initialText": "all"
+                },
+                "questionsPerRound": {
+                  "label": "Questions par manche",
+                  "type": "number",
+                  "integer": true,
+                  "min": 1,
+                  "max": 50,
+                  "initialText": "5"
+                },
+                "targetPoints": {
+                  "label": "Score à atteindre",
+                  "type": "number",
+                  "integer": true,
+                  "min": 1,
+                  "max": 200,
+                  "initialText": "20"
+                },
+                "useTimer": {
+                  "label": "Utiliser un chronomètre",
+                  "type": "boolean",
+                  "initialText": "true"
+                },
+                "timerSeconds": {
+                  "label": "Durée d’une question (secondes)",
+                  "type": "number",
+                  "integer": true,
+                  "min": 5,
+                  "max": 300,
+                  "initialText": "30"
+                },
+                "interQuestionSeconds": {
+                  "label": "Pause entre deux questions (secondes)",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 60,
+                  "initialText": "0"
+                },
+                "correctSoloPoints": {
+                  "label": "Points si une seule bonne réponse",
+                  "type": "number",
+                  "integer": true,
+                  "min": -50,
+                  "max": 50,
+                  "initialText": "2"
+                },
+                "correctMultiPoints": {
+                  "label": "Points si plusieurs bonnes réponses",
+                  "type": "number",
+                  "integer": true,
+                  "min": -50,
+                  "max": 50,
+                  "initialText": "1"
+                },
+                "wrongPoints": {
+                  "label": "Points en cas de mauvaise réponse",
+                  "type": "number",
+                  "integer": true,
+                  "min": -50,
+                  "max": 50,
+                  "initialText": "0"
+                },
+                "timeoutPoints": {
+                  "label": "Points en cas de temps écoulé",
+                  "type": "number",
+                  "integer": true,
+                  "min": -50,
+                  "max": 50,
+                  "initialText": "-1"
+                }
+              }
+            },
+            "documentation": "Configure la partie avant son démarrage.",
+            "ui": {
+              "label": "Démarrer le quiz",
+              "control": "form"
+            }
+          },
+          {
+            "type": "answer",
+            "input": {
+              "type": "object",
+              "properties": {
+                "answerIndex": {
+                  "label": "AnswerIndex",
+                  "type": "number",
+                  "integer": true,
+                  "min": 0,
+                  "max": 3
+                }
+              }
+            },
+            "documentation": "Répond une fois à la question en cours.",
+            "ui": {
+              "label": "Answer",
+              "control": "number"
+            }
+          },
+          {
+            "type": "timeout",
+            "input": {
+              "type": "object",
+              "properties": {}
+            },
+            "documentation": "Clôture une question dont le délai est dépassé.",
+            "ui": {
+              "label": "Timeout",
+              "control": "button"
+            }
+          },
+          {
+            "type": "ready",
+            "input": {
+              "type": "object",
+              "properties": {}
+            },
+            "documentation": "Affiche automatiquement la question suivante après la pause.",
+            "ui": {
+              "label": "Ready",
+              "control": "button"
+            }
+          }
+        ],
+        "timers": {},
+        "pending": null,
+        "roomId": 1,
+        "gameType": "arche-de-mnemosyne",
+        "viewerPlayerId": 1,
+        "runId": 1,
+        "version": 2
+      }
+    }
+  }
+}

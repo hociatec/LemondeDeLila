@@ -126,7 +126,7 @@ public:
         if (session != session_) return batch;
         const auto limit = std::max<std::size_t>(1, maximum);
         batch.events.reserve(std::min(limit, critical_.size() + regular_.size()));
-        const auto criticalBudget = regular_.empty()
+        const auto criticalBudget = regular_.empty() || critical_.size() <= limit
             ? limit : std::max<std::size_t>(1, (limit * 3) / 4);
         while (batch.events.size() < criticalBudget && !critical_.empty())
         {

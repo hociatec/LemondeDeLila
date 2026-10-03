@@ -1,4 +1,6 @@
 #include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -18,6 +20,7 @@
 #include "modules/gameplay/session/application/GameStartConfigurationFlow.h"
 #include "modules/gameplay/session/infrastructure/GameEventPayloadCodec.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
+#include "modules/gameplay/state/application/GameSurfaceSelectors.h"
 #include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
 #include "modules/gameplay/state/application/GamePendingAccessibilityText.h"
 #include "modules/gameplay/state/infrastructure/GameStatePayloadCodec.h"
@@ -41,6 +44,91 @@ void Expect(bool condition, const char* message)
 }
 
 nlohmann::json BuildGameView(const nlohmann::json& fixture);
+
+void TestPostConfigurationBackendClientContract()
+{
+#ifndef LILA_CLIENT_SOURCE_DIR
+#define LILA_CLIENT_SOURCE_DIR "."
+#endif
+    const auto fixturePath = std::filesystem::path(LILA_CLIENT_SOURCE_DIR) /
+        "tests/fixtures/post-configuration-game-states.json";
+    std::ifstream input(fixturePath, std::ios::binary);
+    Expect(input.good(), "Le contrat backend/client post-configuration est introuvable.");
+    const auto contract = nlohmann::json::parse(input);
+    Expect(contract.value("contractVersion", 0) == 1,
+        "La version du contrat post-configuration est invalide.");
+
+    const auto decodeState = [&contract](const char* game, const char* step)
+    {
+        const auto event = lila::modules::gameplay::infrastructure::
+            GameEventPayloadCodec::Decode(contract.at(game).at(step));
+        Expect(event.type == lila::modules::gameplay::domain::GameEventType::StateUpdated &&
+                event.state.has_value(),
+            "Le fixture backend doit transporter un véritable game.state.");
+        return *event.state;
+    };
+    const auto decodeCycle = [&contract, &decodeState](const char* game)
+    {
+        const auto before = decodeState(game, "before");
+        const auto acknowledgement = lila::modules::gameplay::infrastructure::
+            GameEventPayloadCodec::Decode(contract.at(game).at("acknowledgement"));
+        Expect(acknowledgement.type ==
+                    lila::modules::gameplay::domain::GameEventType::Acknowledged &&
+                acknowledgement.acknowledgement &&
+                acknowledgement.acknowledgement->ok && !acknowledgement.state,
+            "game.ack ne doit jamais remplacer le game.state autoritaire.");
+        const auto after = decodeState(game, "afterConfiguration");
+        Expect(after.runId == before.runId && after.version == before.version + 1 &&
+                lila::modules::gameplay::application::GameStateUpdatePolicy::
+                    ShouldApply(before, after),
+            "Le client doit accepter la version N+1 après game.configure et game.ack.");
+        lila::modules::gameplay::domain::GameState invalidated;
+        Expect(lila::modules::gameplay::application::GameStateUpdatePolicy::
+                ShouldApply(invalidated, after),
+            "Une vue effacée doit accepter à nouveau le snapshot autoritaire.");
+        return after;
+    };
+
+    const auto lama = decodeCycle("lama");
+    const auto lamaSurfaces = lila::modules::gameplay::application::
+        GameSurfaceSelectors::Available(lama);
+    Expect(lamaSurfaces.cards &&
+            lila::modules::gameplay::application::GameSurfaceSelectors::
+                VisibleHand(lama).size() == 6,
+        "LAMA doit afficher immédiatement la main issue de kits.cards.hands.");
+
+    const auto corridor = decodeCycle("corridor");
+    const auto* pending = lila::modules::gameplay::application::
+        GameSurfaceSelectors::PendingDecision(corridor);
+    Expect(pending && pending->viewerActionable && pending->choices.size() == 4 &&
+            pending->choices.front().action &&
+            pending->choices.front().action->type == "choice.resolve",
+        "Corridor doit afficher le choix de pion générique et son action serveur.");
+    const auto corridorAfterChoice = decodeState("corridor", "afterChoice");
+    const auto* nextPending = lila::modules::gameplay::application::
+        GameSurfaceSelectors::PendingDecision(corridorAfterChoice);
+    Expect(lila::modules::gameplay::application::GameStateUpdatePolicy::
+                ShouldApply(corridor, corridorAfterChoice) &&
+            nextPending && nextPending->playerId && *nextPending->playerId == 2,
+        "choice.resolve doit produire le prochain état Corridor correct.");
+
+    const auto arche = decodeCycle("arche");
+    const auto* quiz = lila::modules::gameplay::application::
+        GameSurfaceSelectors::ActiveQuizSession(arche);
+    Expect(quiz && !quiz->questionId.empty() && !quiz->prompt.empty() &&
+            quiz->choices.size() == 4,
+        "Arche doit afficher immédiatement la question et ses réponses depuis kits.quiz.sessions.");
+
+    // Reconnexion/reprise : le même snapshot complet doit reconstruire toutes
+    // les surfaces sans dépendre d'un état client antérieur.
+    const auto resumedLama = decodeState("lama", "afterConfiguration");
+    const auto resumedArche = decodeState("arche", "afterConfiguration");
+    Expect(lila::modules::gameplay::application::GameSurfaceSelectors::
+                Available(resumedLama).cards &&
+            lila::modules::gameplay::application::GameSurfaceSelectors::
+                Available(resumedArche).quiz,
+        "Une reprise doit reconstruire les surfaces à partir du seul game.state.");
+}
 
 void TestLargeSnapshotParsingCost()
 {
@@ -208,6 +296,7 @@ int main()
         TestInvalidChoiceIndexesAndPlayerIdsAreRejected();
         TestDisplayedTimersIgnoreSystemClockChanges();
         TestLargeSnapshotParsingCost();
+        TestPostConfigurationBackendClientContract();
         TestBoardPositionShortcuts();
         TestEmptyV2KitsAndCapabilitiesRemainValid();
         TestPendingMultipleWorkflowsUseOneExplicitAction();
