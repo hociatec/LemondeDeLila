@@ -67,6 +67,41 @@ void TestProjectionCompatibilityAndLimits()
         "L'identifiant de phase doit être borné au décodage.");
 }
 
+void TestMalformedKnownCapabilitiesAreRejected()
+{
+    const auto errorFor = [](nlohmann::json payload)
+    {
+        try
+        {
+            static_cast<void>(lila::modules::gameplay::infrastructure::
+                GameStatePayloadCodec::DecodeState(payload));
+        }
+        catch (const std::exception& error) { return std::string(error.what()); }
+        return std::string{};
+    };
+
+    auto cards = BuildGameView({{"roomId", 97}, {"gameType", "synthetic-contract"}});
+    cards["kits"]["cards"] = {{"hands", nlohmann::json::array({"invalid"})}};
+    Expect(errorFor(cards).find("cards invalide") != std::string::npos,
+        "Une capability cards presente mais invalide ne doit pas devenir une main vide.");
+
+    auto quiz = BuildGameView({{"roomId", 98}, {"gameType", "synthetic-contract"}});
+    quiz["kits"]["quiz"] = {{"sessions", {{"s1", {{"phase", "question"},
+        {"question", {{"choices", nlohmann::json::array({"A", "B"})}}}}}}}};
+    Expect(errorFor(quiz).find("question sans prompt") != std::string::npos,
+        "Une question quiz invalide ne doit pas disparaitre silencieusement.");
+
+    auto pawns = BuildGameView({{"roomId", 99}, {"gameType", "synthetic-contract"}});
+    pawns["kits"]["pawns"] = {{"sets", nlohmann::json::array()}};
+    Expect(errorFor(pawns).find("pawns invalide") != std::string::npos,
+        "Une capability pawns invalide ne doit pas devenir zero pion.");
+
+    auto grid = BuildGameView({{"roomId", 100}, {"gameType", "synthetic-contract"}});
+    grid["kits"]["grid"] = {{"boards", nlohmann::json::array()}};
+    Expect(errorFor(grid).find("grid invalide") != std::string::npos,
+        "Une capability grid invalide ne doit pas devenir zero plateau.");
+}
+
 void TestUnknownGameUsesOnlyPublicCapabilities()
 {
     auto payload = BuildGameView({{"roomId", 91},

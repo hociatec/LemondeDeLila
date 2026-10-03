@@ -53,6 +53,47 @@ int main()
     assert(mailbox.Dropped(GameEventType::Acknowledged) == 0);
     assert(mailbox.Dropped(GameEventType::Error) == 0);
 
+
+    // Critical traffic is bounded too. Duplicate critical events are replaced,
+    // while an abnormal storm requests authoritative resynchronization instead
+    // of growing memory without limit.
+    GameEventMailbox boundedCritical(8);
+    const auto criticalSession = boundedCritical.BeginSession();
+    for (int index = 0; index < 100; ++index)
+    {
+        auto error = Event(GameEventType::Error);
+        error.errorCode = "E" + std::to_string(index);
+        error.message = "error-" + std::to_string(index);
+        static_cast<void>(boundedCritical.Enqueue(std::move(error), criticalSession));
+    }
+    assert(boundedCritical.Pending() <= 8);
+    const auto criticalBatch = boundedCritical.Drain(criticalSession, 8);
+    assert(criticalBatch.resyncRequired);
+
+    GameEventMailbox duplicateCritical(8);
+    const auto duplicateSession = duplicateCritical.BeginSession();
+    auto firstError = Event(GameEventType::Error);
+    firstError.errorCode = "SAME";
+    firstError.message = "same";
+    static_cast<void>(duplicateCritical.Enqueue(firstError, duplicateSession));
+    static_cast<void>(duplicateCritical.Enqueue(std::move(firstError), duplicateSession));
+    assert(duplicateCritical.Pending() == 1);
+
+
+    GameEventMailbox fairMailbox(16);
+    const auto fairSession = fairMailbox.BeginSession();
+    for (int index = 0; index < 12; ++index)
+    {
+        auto error = Event(GameEventType::Error);
+        error.errorCode = "fair-" + std::to_string(index);
+        error.message = "critical-" + std::to_string(index);
+        static_cast<void>(fairMailbox.Enqueue(std::move(error), fairSession));
+    }
+    static_cast<void>(fairMailbox.Enqueue(Event(GameEventType::StateUpdated), fairSession));
+    const auto fairBatch = fairMailbox.Drain(fairSession, 4);
+    assert(std::any_of(fairBatch.events.begin(), fairBatch.events.end(),
+        [](const auto& event) { return event.type == GameEventType::StateUpdated; }));
+
     mailbox.Clear();
     const auto replacementSession = mailbox.BeginSession();
     assert(!mailbox.Enqueue(Event(GameEventType::Error), session).accepted);

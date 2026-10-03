@@ -1,6 +1,7 @@
 #include "modules/gameplay/state/infrastructure/GameWorkflowCapabilitiesDecoder.h"
 
 #include <nlohmann/json.hpp>
+#include <stdexcept>
 
 #include "modules/gameplay/state/infrastructure/GamePayloadJsonReader.h"
 #include "shared/data/application/IntegerText.h"
@@ -109,10 +110,13 @@ std::optional<domain::GameQuizView> GameWorkflowCapabilitiesDecoder::Quiz(
                     detail::ReadInt(item.value(), "cursor"),
                     detail::ReadInt(item.value(), "remaining")});
     const auto sessions = raw.find("sessions");
+    if (sessions != raw.end() && !sessions->is_object())
+        throw std::runtime_error("Capability quiz invalide: sessions doit etre un objet.");
     if (sessions != raw.end() && sessions->is_object())
         for (const auto& item : sessions->items())
         {
-            if (!item.value().is_object()) continue;
+            if (!item.value().is_object())
+                throw std::runtime_error("Capability quiz invalide: session non objet.");
             domain::GameQuizSession session;
             session.id = detail::ReadString(item.value(), "id");
             if (session.id.empty()) session.id = item.key();
@@ -128,10 +132,18 @@ std::optional<domain::GameQuizView> GameWorkflowCapabilitiesDecoder::Quiz(
             {
                 session.prompt = detail::ReadString(*question, "prompt");
                 const auto choices = question->find("choices");
+                if (choices != question->end() && !choices->is_array())
+                    throw std::runtime_error("Capability quiz invalide: choices doit etre un tableau.");
                 if (choices != question->end() && choices->is_array())
                     for (const auto& choice : *choices)
-                        if (choice.is_string()) session.choices.push_back(choice.get<std::string>());
+                    {
+                        if (!choice.is_string())
+                            throw std::runtime_error("Capability quiz invalide: choix non textuel.");
+                        session.choices.push_back(choice.get<std::string>());
+                    }
             }
+            if (session.phase == "question" && session.prompt.empty())
+                throw std::runtime_error("Capability quiz invalide: question sans prompt.");
             result.sessions.push_back(std::move(session));
         }
     return result;

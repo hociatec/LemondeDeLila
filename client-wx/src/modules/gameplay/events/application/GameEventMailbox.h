@@ -34,7 +34,8 @@ public:
     };
 
     explicit GameEventMailbox(std::size_t capacity = 256)
-        : capacity_(std::max<std::size_t>(1, capacity))
+        : capacity_(std::max<std::size_t>(1, capacity)),
+          criticalCapacity_(std::max<std::size_t>(8, capacity_ / 4))
     {
     }
 
@@ -55,7 +56,37 @@ public:
         bool saturated = false;
         if (IsCritical(type))
         {
-            critical_.push_back(std::move(event));
+            // Critical traffic must not be allowed to grow without bound.
+            // Prefer replacing an older event with the same correlation key;
+            // otherwise force a resynchronization rather than exhausting memory.
+            const auto duplicate = std::find_if(
+                critical_.begin(), critical_.end(), [&event](const auto& queued) {
+                    if (queued.type != event.type) return false;
+                    if (queued.acknowledgement && event.acknowledgement)
+                        return queued.acknowledgement->commandId ==
+                            event.acknowledgement->commandId &&
+                            queued.acknowledgement->command ==
+                            event.acknowledgement->command;
+                    return event.type == domain::GameEventType::Error &&
+                        queued.errorCode == event.errorCode &&
+                        queued.message == event.message;
+                });
+            if (duplicate != critical_.end())
+            {
+                *duplicate = std::move(event);
+            }
+            else
+            {
+                if (critical_.size() >= criticalCapacity_)
+                {
+                    saturated = !saturationReported_;
+                    saturationReported_ = true;
+                    RecordDroppedLocked(critical_.front().type, 1);
+                    critical_.pop_front();
+                    resyncRequired_ = true;
+                }
+                critical_.push_back(std::move(event));
+            }
         }
         else
         {
@@ -101,6 +132,21 @@ public:
         if (session != session_) return batch;
         const auto limit = std::max<std::size_t>(1, maximum);
         batch.events.reserve(std::min(limit, critical_.size() + regular_.size()));
+        // Critical acknowledgements/errors get priority, but never consume the
+        // whole batch while regular state is waiting: a fresh projection is
+        // itself part of recovery from errors and must not starve.
+        const auto criticalBudget = regular_.empty()
+            ? limit : std::max<std::size_t>(1, (limit * 3) / 4);
+        while (batch.events.size() < criticalBudget && !critical_.empty())
+        {
+            batch.events.push_back(std::move(critical_.front()));
+            critical_.pop_front();
+        }
+        if (batch.events.size() < limit && !regular_.empty())
+        {
+            batch.events.push_back(std::move(regular_.front()));
+            regular_.pop_front();
+        }
         while (batch.events.size() < limit && !critical_.empty())
         {
             batch.events.push_back(std::move(critical_.front()));
@@ -199,6 +245,7 @@ private:
     }
 
     const std::size_t capacity_;
+    const std::size_t criticalCapacity_;
     mutable std::mutex mutex_;
     std::deque<domain::GameEvent> critical_;
     std::deque<domain::GameEvent> regular_;

@@ -341,13 +341,21 @@ const activeGameplayGate = gameplayPanelSource.indexOf(
   'lifecycle_.Policy().focus != application::GamePlayFocusPolicy::GameplayTarget');
 if (setupChoiceTarget < 0 || activeGameplayGate < 0 || setupChoiceTarget > activeGameplayGate)
   violations.push('GamePlayPanel: les choix de configuration doivent rester accessibles avant le démarrage de la Room');
-const quizInteractionTarget = gameplayPanelSource.indexOf(
-  'if (state_.kits.quiz && !state_.kits.quiz->sessions.empty())');
-const requiredInteractionFallback = gameplayPanelSource.indexOf(
-  'if (requiredOnly) return nullptr;');
-if (quizInteractionTarget < 0 || requiredInteractionFallback < 0 ||
-    quizInteractionTarget > requiredInteractionFallback)
-  violations.push('GamePlayPanel: une question de quiz visible doit rester une interaction prioritaire');
+for (const forbiddenCapability of [
+  'state_.kits.quiz',
+  'state_.kits.cards',
+  'state_.kits.pawns',
+  'state_.kits.dice',
+]) {
+  if (gameplayPanelSource.includes(forbiddenCapability))
+    violations.push(
+      `GamePlayPanel: la navigation centrale ne doit pas dépendre directement de ${forbiddenCapability}`);
+}
+if (!gameplayPanelSource.includes('handPanel_->NavigationTarget()') ||
+    !gameplayPanelSource.includes('gridPanel_->NavigationTarget()') ||
+    !gameplayPanelSource.includes('movementPanel_->NavigationTarget()') ||
+    !gameplayPanelSource.includes('workflowPanel_->NavigationTarget()'))
+  violations.push('GamePlayPanel: la navigation doit être dérivée des renderers génériques');
 
 const gameplayHeader = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.h'), 'utf8');
