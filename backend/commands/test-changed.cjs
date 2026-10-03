@@ -66,7 +66,7 @@ if (scope !== 'games' && sourceFiles.length)
   runJest([
     '--maxWorkers=4',
     '--passWithNoTests',
-    '--testPathIgnorePatterns=game/games|game/testing/architecture-tests/game',
+    '--testPathIgnorePatterns=game/games|game/testing/architecture-tests/game|all-games\\.scenario-coverage|reference-replays',
     '--findRelatedTests',
     ...sourceFiles,
   ]);

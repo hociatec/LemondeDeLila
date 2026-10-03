@@ -56,6 +56,8 @@ jobs:
           path: backend/.cache
           key: backend-test-${{ runner.os }}-${{ hashFiles('backend/package-lock.json', 'backend/tsconfig*.json') }}
       - run: npm ci --ignore-scripts --include=dev
+      - name: Prepare optional audio test binary
+        run: npm rebuild ffmpeg-static
       - name: Run only related unit and architecture tests
         env:
           CHANGED_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
