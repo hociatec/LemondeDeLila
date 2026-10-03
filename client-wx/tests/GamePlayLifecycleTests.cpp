@@ -51,11 +51,15 @@ int main()
     assert(lifecycle.BeginRoomStart());
     assert(lifecycle.State() == GamePlayLifecycleState::ConfiguringStart);
     assert(!lifecycle.AllowsGameplayInput());
+    assert(!lifecycle.AllowsProjectedContentFocus());
     assert(!lifecycle.AllowsActionSubmission(false));
     assert(lifecycle.AllowsActionSubmission(true));
     lifecycle.MarkRoomStartPending();
     assert(lifecycle.State() == GamePlayLifecycleState::StartingRoom);
     assert(!lifecycle.AllowsActionSubmission(true));
+    lifecycle.ObserveAuthoritativeState(42, GameMatchStatus::Playing);
+    assert(lifecycle.AllowsProjectedContentFocus());
+    assert(!lifecycle.AllowsGameplayInput());
     lifecycle.SetRoomStarted(true, false, 42);
     assert(lifecycle.State() == GamePlayLifecycleState::Synchronizing);
     lifecycle.ObserveAuthoritativeState(41, GameMatchStatus::Playing);

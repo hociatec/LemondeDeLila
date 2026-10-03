@@ -10,6 +10,11 @@ namespace lila::modules::gameplay::infrastructure::detail
 {
 namespace
 {
+// Projected actions enumerate every legal target. Board games can legitimately
+// exceed the command-batch limit of 128, while a high finite cap still protects
+// allocations.
+constexpr std::size_t MaxProjectedActions = 4'096;
+
 domain::GameValue::Object ActionPayload(const nlohmann::json& action)
 {
     const auto payload = action.find("payload");
@@ -28,7 +33,7 @@ std::vector<domain::GameAction> DecodeActions(const nlohmann::json& payload)
     std::vector<domain::GameAction> result;
     const auto actions = payload.find("actions");
     if (actions == payload.end() || !actions->is_array()) return result;
-    if (actions->size() > 128)
+    if (actions->size() > MaxProjectedActions)
         throw std::runtime_error("Trop d'actions gameplay.");
     for (const auto& raw : *actions)
     {

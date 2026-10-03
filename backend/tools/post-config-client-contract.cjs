@@ -102,6 +102,12 @@ async function buildContract() {
     corridor.game.state(),
     'corridor',
   );
+  await corridor.game.choose(2, 'eau');
+  const corridorAfterSetup = stateEvent(
+    corridorDefinition,
+    corridor.game.state(),
+    'corridor',
+  );
   const arche = await configuredCycle(
     'arche-de-mnemosyne',
     archeDefinition,
@@ -122,7 +128,11 @@ async function buildContract() {
   return {
     contractVersion: 1,
     lama: lama.cycle,
-    corridor: { ...corridor.cycle, afterChoice: corridorAfterChoice },
+    corridor: {
+      ...corridor.cycle,
+      afterChoice: corridorAfterChoice,
+      afterSetup: corridorAfterSetup,
+    },
     arche: arche.cycle,
   };
 }
