@@ -5,6 +5,7 @@
 #include <wx/stattext.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/movement/presentation/GameMovementPanel.h"
@@ -60,6 +61,7 @@ void GamePlayPanel::ClearView()
     choicesLabel_->Hide();
     choicesList_->Hide();
     orderingChoices_->Hide();
+    dicePanel_->Clear();
     handPanel_->ClearHand();
     gridPanel_->Clear();
     movementPanel_->Clear();

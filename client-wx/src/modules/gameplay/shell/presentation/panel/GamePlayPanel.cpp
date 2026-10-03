@@ -7,6 +7,7 @@
 #include <wx/choice.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/session/application/GameSessionService.h"
 #include "modules/gameplay/shell/application/GamePlayAccessPolicy.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
@@ -24,6 +25,11 @@ GamePlayPanel::GamePlayPanel(
       service_(service)
 {
     BuildLayout();
+    dicePanel_->SetActivateHandler(
+        [this](domain::GameAction action)
+        {
+            PrepareAndExecuteAction(std::move(action));
+        });
     BindEvents();
 }
 
@@ -172,6 +178,7 @@ wxWindow* GamePlayPanel::ResolveUsableNavigationTarget(bool requiredOnly) const
     // capabilities (cards, quiz, pawns, ...): those are presentation data and
     // can legitimately be combined differently by any game.
     const wxWindow* const preferred[] = {
+        dicePanel_ != nullptr ? dicePanel_->NavigationTarget() : nullptr,
         handPanel_ != nullptr ? handPanel_->NavigationTarget() : nullptr,
         gridPanel_ != nullptr ? gridPanel_->NavigationTarget() : nullptr,
         movementPanel_ != nullptr ? movementPanel_->NavigationTarget() : nullptr,

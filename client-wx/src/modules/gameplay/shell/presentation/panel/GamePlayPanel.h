@@ -41,6 +41,7 @@ class AppError;
 }
 
 namespace lila::modules::gameplay::presentation::confirmation { class GameActionConfirmationPanel; }
+namespace lila::modules::gameplay::presentation::dice { class GameDicePanel; }
 namespace lila::modules::gameplay::presentation::hand { class GameHandPanel; }
 namespace lila::modules::gameplay::presentation::grid { class GameGridPanel; }
 namespace lila::modules::gameplay::presentation::movement { class GameMovementPanel; }
@@ -157,6 +158,7 @@ private:
     wxStaticText* stateSummaryLabel_ = nullptr;
     wxStaticText* pendingLabel_ = nullptr;
     wxScrolledWindow* contentPanel_ = nullptr;
+    dice::GameDicePanel* dicePanel_ = nullptr;
     hand::GameHandPanel* handPanel_ = nullptr;
     grid::GameGridPanel* gridPanel_ = nullptr;
     movement::GameMovementPanel* movementPanel_ = nullptr;

@@ -10,6 +10,7 @@
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/application/GameActionPresentationPolicy.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
+#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/events/presentation/GameEventPresenter.h"
 #include "modules/gameplay/events/application/GameSoundEventPolicy.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
@@ -129,6 +130,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     RebuildLines();
     handPanel_->ApplyCards(
         application::GameSurfaceSelectors::VisibleHand(state_), state_.actions);
+    dicePanel_->Apply(state_.kits.dice ? &*state_.kits.dice : nullptr, state_.actions);
     gridPanel_->Apply(state_.kits.grid ? &*state_.kits.grid : nullptr,
         state_.actions, state_.system.players,
         state_.kits.pawns ? &*state_.kits.pawns : nullptr);
@@ -200,6 +202,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
         interactionBefore.get() != RequiredInteractionTarget() ||
         (!focusPreserved && focusWasInsideGame) ||
         (!previousSurfaces.cards && incomingSurfaces.cards) ||
+        (!previousSurfaces.dice && incomingSurfaces.dice) ||
         (!previousSurfaces.quiz && incomingSurfaces.quiz) ||
         (!previousSurfaces.pending && incomingSurfaces.pending) ||
         (!hadVisibleGrid && gridPanel_->IsShown()) ||
