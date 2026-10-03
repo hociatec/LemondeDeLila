@@ -371,6 +371,7 @@ add_executable(lemonde_de_lila_wx_gameplay_tests
     src/modules/gameplay/state/application/GameValuePayloadCodec.cpp
     src/modules/gameplay/history/presentation/GameLogCursor.cpp
     src/modules/gameplay/grid/application/GameGridActionResolver.cpp
+    src/modules/gameplay/workflows/application/GameQuizActionResolver.cpp
     src/modules/gameplay/events/presentation/GameEventPresenter.cpp
     src/modules/gameplay/information/application/GameAssetCapabilityText.cpp
     src/modules/gameplay/information/application/GameBoardCapabilityText.cpp

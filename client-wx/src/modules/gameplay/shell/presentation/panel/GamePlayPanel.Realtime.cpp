@@ -84,17 +84,9 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         if (startConfigurationFlow_.Acknowledge(acknowledgement.command))
         {
             submittedPromptActionType_.clear();
-            // A successful acknowledgement proves that the configuration was
-            // committed. Do not make room start depend on the following state
-            // notification: it can arrive late or be lost independently and
-            // would otherwise leave the start flow stuck after validation.
-            if (!lifecycle_.IsRoomStarted() && lifecycle_.IsStartFlowRequested())
-            {
-                lifecycle_.MarkRoomStartPending();
-                if (onRoomStartRequested_) onRoomStartRequested_();
-            }
-            // Refresh independently so the first interaction is available as
-            // soon as the room-start notification activates the game panel.
+            // The acknowledgement confirms the command, not the resulting
+            // setup projection. Recover the authoritative state before asking
+            // the room to start so its first interaction cannot be discarded.
             RequestRefresh();
             return;
         }

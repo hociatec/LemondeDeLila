@@ -8,6 +8,7 @@
 
 #include "modules/gameplay/information/application/GameValueTextBuilder.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
+#include "modules/gameplay/workflows/application/GameQuizActionResolver.h"
 
 namespace lila::modules::gameplay::presentation::workflows
 {
@@ -180,6 +181,15 @@ std::string GameWorkflowPanel::SelectedKey() const
 wxWindow* GameWorkflowPanel::NavigationTarget() const
 {
     return IsShown() && rows_->GetCount() > 0 ? rows_ : nullptr;
+}
+
+std::optional<domain::GameAction> GameWorkflowPanel::ResolveSelectedAction(
+    const std::vector<domain::GameAction>& actions) const
+{
+    const auto answerIndex = SelectedQuizAnswerIndex();
+    return answerIndex
+        ? application::workflows::GameQuizActionResolver::Resolve(actions, *answerIndex)
+        : std::nullopt;
 }
 
 std::optional<int> GameWorkflowPanel::SelectedQuizAnswerIndex() const
