@@ -132,6 +132,15 @@ bool GamePlayLifecycle::AllowsGameplayInput() const noexcept
     return Policy().acceptsInput && hasAuthoritativeState_;
 }
 
+bool GamePlayLifecycle::AllowsActionSubmission(
+    bool startConfigurationSubmission) const noexcept
+{
+    return AllowsGameplayInput() ||
+        (startConfigurationSubmission &&
+         state_ == GamePlayLifecycleState::ConfiguringStart &&
+         hasAuthoritativeState_);
+}
+
 GamePlayLifecyclePolicy GamePlayLifecycle::Policy() const noexcept
 {
     return PolicyFor(state_);
