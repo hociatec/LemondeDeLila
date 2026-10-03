@@ -55,6 +55,12 @@ lila::shared::accessibility::FocusManager::Plan RoomPanel::BuildFocusPlan()
 
 wxWindow* RoomPanel::GameplayNavigationTarget() const
 {
+    // Tab navigation must name the control that actually owns focus inside
+    // the game.  Otherwise NavigationController treats that control as being
+    // outside the room scope: forward Tab falls back to the zone anchor,
+    // whose focus handler immediately sends focus back into the game.
+    if (auto* target = gamePlayPanel_->PreferredNavigationTarget())
+        return target;
     return gameZoneAnchor_;
 }
 
