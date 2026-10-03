@@ -6,6 +6,7 @@
 
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
+#include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 
 namespace lila::modules::gameplay::presentation
 {
@@ -17,6 +18,17 @@ bool GamePlayPanel::HandleFocusedActivation()
     if (choicesList_->IsShown() && focused == choicesList_)
         return ActivateSelectedPendingChoice();
     if (focused == gridPanel_->NavigationTarget()) return ActivateSelectedGridCell();
+    if (focused == workflowPanel_->NavigationTarget())
+    {
+        const auto action = workflowPanel_->ResolveSelectedAction(state_.actions);
+        if (!action)
+        {
+            UpdateStatus(wxString(L"Cette ligne ne propose aucune action."), false, true);
+            return true;
+        }
+        PrepareAndExecuteAction(*action);
+        return true;
+    }
     if (focused == linesList_ && linesList_->IsShown())
     {
         ActivateSelectedLine();

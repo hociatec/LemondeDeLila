@@ -326,6 +326,7 @@ cxx_build "${COMMON_FLAGS[@]}" -pthread -I"$JSON_INCLUDE" -I"$BUILD_DIR/generate
   "$ROOT/src/modules/gameplay/session/infrastructure/GameEventPayloadCodec.cpp" \
   "$ROOT/src/modules/gameplay/history/presentation/GameLogCursor.cpp" \
   "$ROOT/src/modules/gameplay/grid/application/GameGridActionResolver.cpp" \
+  "$ROOT/src/modules/gameplay/workflows/application/GameQuizActionResolver.cpp" \
   "$ROOT/src/modules/gameplay/information/application/GameCapabilityTextBuilder.cpp" \
   "$ROOT/src/modules/gameplay/information/application/GameAssetCapabilityText.cpp" \
   "$ROOT/src/modules/gameplay/information/application/GameBoardCapabilityText.cpp" \

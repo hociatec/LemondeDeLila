@@ -19,9 +19,11 @@ public:
     void Apply(const domain::GameState& state);
     void Clear();
     [[nodiscard]] wxWindow* NavigationTarget() const;
-    [[nodiscard]] std::optional<int> SelectedQuizAnswerIndex() const;
+    [[nodiscard]] std::optional<domain::GameAction> ResolveSelectedAction(
+        const std::vector<domain::GameAction>& actions) const;
 private:
     [[nodiscard]] std::string SelectedKey() const;
+    [[nodiscard]] std::optional<int> SelectedQuizAnswerIndex() const;
     wxListBox* rows_ = nullptr;
     std::vector<std::string> rowKeys_;
     std::vector<std::string> rowLabels_;

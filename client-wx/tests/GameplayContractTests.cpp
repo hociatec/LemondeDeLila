@@ -32,6 +32,7 @@
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
 #include "modules/gameplay/grid/application/GridPlayerCellText.h"
+#include "modules/gameplay/workflows/application/GameQuizActionResolver.h"
 #include "modules/gameplay/state/infrastructure/GameBoardCapabilitiesDecoder.h"
 #include "modules/gameplay/shortcuts/application/GameGenericShortcutPolicy.h"
 #include "shared/data/application/IntegerText.h"
@@ -118,6 +119,15 @@ void TestPostConfigurationBackendClientContract()
     Expect(quiz && !quiz->questionId.empty() && !quiz->prompt.empty() &&
             quiz->choices.size() == 4,
         "Arche doit afficher immédiatement la question et ses réponses depuis kits.quiz.sessions.");
+    const auto answer = lila::modules::gameplay::application::workflows::
+        GameQuizActionResolver::Resolve(arche.actions, 2);
+    Expect(answer && answer->payload.at("answerIndex").Integer() == 2,
+        "Entrée sur une réponse de quiz doit résoudre l'action serveur correspondante.");
+    auto disabledAnswers = arche.actions;
+    disabledAnswers[2].disabled = true;
+    Expect(!lila::modules::gameplay::application::workflows::
+            GameQuizActionResolver::Resolve(disabledAnswers, 2),
+        "Une réponse de quiz désactivée ne doit pas être envoyée au serveur.");
 
     // Reconnexion/reprise : le même snapshot complet doit reconstruire toutes
     // les surfaces sans dépendre d'un état client antérieur.
