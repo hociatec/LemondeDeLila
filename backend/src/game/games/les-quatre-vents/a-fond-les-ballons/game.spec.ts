@@ -177,6 +177,29 @@ describe('À fond les ballons declarative game', () => {
     expect(await game.replay()).toEqual(game.state());
   });
 
+  it('maps the dice recipe to the roll action for bots', async () => {
+    const game = testGame(gameDefinition)
+      .players([
+        { username: 'Baloo', isBot: true },
+        { username: 'Mina', isBot: true },
+      ])
+      .seed(83);
+    await game.start();
+    await game.choose(-1, 'capitaine-cacahuete');
+    await game.choose(-2, 'professeur-gribouille');
+
+    const actorId = game.state().turn?.currentPlayerId;
+    if (actorId == null) throw new Error('Le tour du bot doit être actif.');
+    const action = new DeclarativeGameRuntime(gameDefinition).getBotActions(
+      game.state(),
+      actorId,
+    );
+
+    expect(action).toEqual([
+      expect.objectContaining({ type: 'roll', payload: {} }),
+    ]);
+  });
+
   it('continues a legacy snapshot waiting for a card draw', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(83);
     await game.start();

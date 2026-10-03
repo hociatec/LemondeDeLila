@@ -14,7 +14,8 @@ namespace lila::modules::gameplay::presentation
 bool GamePlayPanel::HandleFocusedActivation()
 {
     auto* focused = wxWindow::FindFocus();
-    if (focused == dicePanel_->NavigationTarget())
+    auto* diceTarget = dicePanel_->NavigationTarget();
+    if (diceTarget != nullptr && focused == diceTarget)
     {
         const auto action = dicePanel_->ResolveAction();
         if (!action) return true;

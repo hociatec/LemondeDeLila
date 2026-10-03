@@ -1,5 +1,6 @@
 import {
   declarativeBot,
+  mappedPatternBot,
   recipeBot,
   selectedRecipeBot,
 } from './json-program-bots';
@@ -39,6 +40,36 @@ it('keeps available action ordering and the selected payload', () => {
   expect(bot.choose?.(input as never)).toEqual({ type: 'second', payload });
   expect(select).toHaveBeenCalledWith(input);
   expect(input.availableActions).toEqual(['pass', 'second', 'first']);
+});
+
+it('maps pattern recipe names to public JSON action ids', () => {
+  const choose = jest.fn(({ availableActions }) =>
+    availableActions.includes('play')
+      ? { type: 'play', payload: { cardId: 'card-42' } }
+      : null,
+  );
+  const bot = mappedPatternBot(document as never, { choose } as never);
+
+  expect(bot.choose(input as never)).toEqual({
+    type: 'second',
+    payload: { cardId: 'card-42' },
+  });
+  expect(choose).toHaveBeenCalledWith(
+    expect.objectContaining({
+      availableActions: ['pass', 'second', 'first', 'play'],
+    }),
+  );
+});
+
+it('preserves pattern bots which already select a public action id', () => {
+  const bot = mappedPatternBot(
+    document as never,
+    {
+      choose: () => ({ type: 'pass', payload: {} }),
+    } as never,
+  );
+
+  expect(bot.choose(input as never)).toEqual({ type: 'pass', payload: {} });
 });
 
 it.each([null, { recipe: 'missing', payload: {} }])(
