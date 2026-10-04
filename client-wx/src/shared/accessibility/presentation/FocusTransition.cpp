@@ -31,7 +31,11 @@ bool FocusTransition::Restore(wxWindow* scope)
     return state_->memory.Restore(scope);
 }
 
-void FocusTransition::Schedule(wxWindow& owner, wxWindow* scope, PlanBuilder buildFallbackPlan)
+void FocusTransition::Schedule(
+    wxWindow& owner,
+    wxWindow* scope,
+    PlanBuilder buildFallbackPlan,
+    FocusManager::BeforeFocus beforeFocus)
 {
     if (scope == nullptr || !buildFallbackPlan)
     {
@@ -43,7 +47,11 @@ void FocusTransition::Schedule(wxWindow& owner, wxWindow* scope, PlanBuilder bui
     wxWeakRef<wxWindow> weakScope(scope);
     FocusCoordinator::ScheduleAction(
         owner,
-        [weakState, weakScope, requestId, buildFallbackPlan = std::move(buildFallbackPlan)]() mutable
+        [weakState,
+         weakScope,
+         requestId,
+         buildFallbackPlan = std::move(buildFallbackPlan),
+         beforeFocus = std::move(beforeFocus)]() mutable
         {
             const auto state = weakState.lock();
             wxWindow* resolvedScope = weakScope.get();
@@ -52,9 +60,10 @@ void FocusTransition::Schedule(wxWindow& owner, wxWindow* scope, PlanBuilder bui
                 return;
             }
 
-            if (!state->memory.Restore(resolvedScope))
+            if (!state->memory.Restore(resolvedScope, beforeFocus))
             {
-                static_cast<void>(FocusCoordinator::Apply(buildFallbackPlan()));
+                static_cast<void>(FocusCoordinator::Apply(
+                    buildFallbackPlan(), beforeFocus));
             }
         });
 }

@@ -4,6 +4,8 @@
 
 #include <wx/weakref.h>
 
+#include "shared/accessibility/presentation/FocusManager.h"
+
 class wxWindow;
 
 namespace lila::shared::accessibility
@@ -12,7 +14,9 @@ class FocusMemory final
 {
 public:
     void Remember(wxWindow* scope);
-    [[nodiscard]] bool Restore(wxWindow* scope);
+    [[nodiscard]] bool Restore(
+        wxWindow* scope,
+        const FocusManager::BeforeFocus& beforeFocus = {});
     void Forget(wxWindow* scope);
     void Clear();
     void PruneExpired();

@@ -35,7 +35,9 @@ void FocusMemory::Remember(wxWindow* scope)
     }
 }
 
-bool FocusMemory::Restore(wxWindow* scope)
+bool FocusMemory::Restore(
+    wxWindow* scope,
+    const FocusManager::BeforeFocus& beforeFocus)
 {
     PruneExpired();
     const auto remembered = std::find_if(targets_.begin(), targets_.end(),
@@ -57,7 +59,7 @@ bool FocusMemory::Restore(wxWindow* scope)
 
     FocusManager::Plan plan;
     plan.AddWindow(target);
-    return FocusCoordinator::Apply(plan);
+    return FocusCoordinator::Apply(plan, beforeFocus);
 }
 
 void FocusMemory::Forget(wxWindow* scope)

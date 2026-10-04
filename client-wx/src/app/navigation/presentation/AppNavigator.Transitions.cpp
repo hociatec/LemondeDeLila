@@ -95,6 +95,7 @@ void AppNavigator::ApplyViewFocus(wxWindow* view)
     }
 
     wxWeakRef<wxWindow> weakView(view);
+    wxWeakRef<HostFrame> weakHost(hostFrame_);
     focusTransition_.Schedule(
         *hostFrame_,
         view,
@@ -105,6 +106,11 @@ void AppNavigator::ApplyViewFocus(wxWindow* view)
             return focusView != nullptr
                 ? focusView->BuildFocusPlan()
                 : lila::shared::accessibility::FocusManager::Plan{};
+        },
+        [weakHost](wxWindow* target)
+        {
+            if (auto* host = weakHost.get())
+                host->PrepareActivationFocusContext(target);
         });
 }
 

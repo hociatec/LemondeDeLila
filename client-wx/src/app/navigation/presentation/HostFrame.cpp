@@ -127,6 +127,15 @@ void HostFrame::ClearActivationFocusContext()
 #endif
 }
 
+void HostFrame::PrepareActivationFocusContext(wxWindow* target)
+{
+#ifdef __WXMSW__
+    activationFocusContext_.Prepare(target, GetTitle());
+#else
+    static_cast<void>(target);
+#endif
+}
+
 void HostFrame::SetContent(wxWindow* content)
 {
     ClearActivationFocusContext();
