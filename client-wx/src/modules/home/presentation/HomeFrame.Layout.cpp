@@ -10,6 +10,7 @@
 #include <wx/textctrl.h>
 
 #include "shared/accessibility/presentation/ActionButton.h"
+#include "shared/accessibility/presentation/ActivationFocusContext.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/config/domain/AppConfig.h"
@@ -38,7 +39,8 @@ public:
     {
         if (childId != wxACC_SELF || name == nullptr || checkbox_ == nullptr)
             return wxACC_INVALID_ARG;
-        *name = checkbox_->GetLabel();
+        *name = lila::shared::accessibility::ActivationFocusContext::AccessibleNameFor(
+            *checkbox_, checkbox_->GetLabel());
         return name->empty() ? wxACC_NOT_SUPPORTED : wxACC_OK;
     }
 

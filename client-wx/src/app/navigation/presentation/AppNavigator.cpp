@@ -79,10 +79,13 @@ AppNavigator::~AppNavigator()
 
 int AppNavigator::FilterEvent(wxEvent& event)
 {
-    if (event.GetEventType() == wxEVT_KEY_DOWN || event.GetEventType() == wxEVT_CHAR_HOOK ||
+    const bool userInteraction =
+        event.GetEventType() == wxEVT_KEY_DOWN || event.GetEventType() == wxEVT_CHAR_HOOK ||
         event.GetEventType() == wxEVT_LEFT_DOWN ||
-        event.GetEventType() == wxEVT_RIGHT_DOWN || event.GetEventType() == wxEVT_MOUSEWHEEL ||
-        event.GetEventType() == wxEVT_MOTION)
+        event.GetEventType() == wxEVT_RIGHT_DOWN || event.GetEventType() == wxEVT_MOUSEWHEEL;
+    if (userInteraction && hostFrame_ != nullptr)
+        hostFrame_->ClearActivationFocusContext();
+    if (userInteraction || event.GetEventType() == wxEVT_MOTION)
         presenceMonitor_.ReportInteraction();
     return Event_Skip;
 }

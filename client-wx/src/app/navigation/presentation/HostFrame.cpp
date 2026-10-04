@@ -7,8 +7,7 @@
 #include <wx/sizer.h>
 
 #ifdef __WXMSW__
-#include <windows.h>
-#include <wx/weakref.h>
+#include "shared/accessibility/presentation/NavigationController.h"
 #endif
 
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
@@ -36,6 +35,7 @@ HostFrame::HostFrame()
     Bind(wxEVT_CHAR_HOOK, &HostFrame::OnCharHook, this);
 #ifdef __WXMSW__
     Bind(wxEVT_ACTIVATE, &HostFrame::OnActivate, this);
+    Bind(wxEVT_CHILD_FOCUS, &HostFrame::OnChildFocus, this);
 #endif
     contentRoot_ = new lila::shared::accessibility::NonFocusablePanel(this);
     auto* rootSizer = new wxBoxSizer(wxVERTICAL);
@@ -81,6 +81,7 @@ void HostFrame::SetCloseRequestedHandler(CloseRequestedHandler handler)
 
 void HostFrame::OnCharHook(wxKeyEvent& event)
 {
+    ClearActivationFocusContext();
     const int key = event.GetKeyCode();
     if (event.ControlDown() && (key == 'U' || key == 'u'))
     {
@@ -97,37 +98,38 @@ void HostFrame::OnCharHook(wxKeyEvent& event)
 #ifdef __WXMSW__
 void HostFrame::OnActivate(wxActivateEvent& event)
 {
-    const std::size_t generation = ++activationGeneration_;
-    if (event.GetActive())
+    if (!event.GetActive())
     {
-        wxWeakRef<HostFrame> weakThis(this);
-        CallAfter([weakThis, generation]()
-        {
-            if (weakThis)
-                weakThis->ReannounceWindowTitle(generation);
-        });
+        auto* target = wxWindow::FindFocus();
+        if (!lila::shared::accessibility::NavigationController::IsDescendantOf(
+                target, currentContent_))
+            target = lastFocusedChild_.get();
+        activationFocusContext_.Prepare(target, GetTitle());
     }
     event.Skip();
 }
 
-void HostFrame::ReannounceWindowTitle(std::size_t activationGeneration)
+void HostFrame::OnChildFocus(wxChildFocusEvent& event)
 {
-    if (activationGeneration != activationGeneration_ || !IsActive())
-        return;
-
-    // Windows restores the child focus while NVDA is still reading the native
-    // window title. Re-emit the already complete title after that activation
-    // sequence, without moving focus or waiting for an arbitrary duration.
-    SetTitle(GetTitle());
-    const auto nativeWindow = reinterpret_cast<HWND>(GetHandle());
-    if (nativeWindow != nullptr)
-        ::NotifyWinEvent(
-            EVENT_OBJECT_NAMECHANGE, nativeWindow, OBJID_WINDOW, CHILDID_SELF);
+    auto* focused = event.GetWindow();
+    if (IsActive() && focused != nullptr &&
+        lila::shared::accessibility::NavigationController::IsDescendantOf(
+            focused, currentContent_))
+        lastFocusedChild_ = focused;
+    event.Skip();
 }
 #endif
 
+void HostFrame::ClearActivationFocusContext()
+{
+#ifdef __WXMSW__
+    activationFocusContext_.Clear();
+#endif
+}
+
 void HostFrame::SetContent(wxWindow* content)
 {
+    ClearActivationFocusContext();
     if (contentRoot_ == nullptr)
     {
         return;
@@ -157,6 +159,7 @@ void HostFrame::SetContent(wxWindow* content)
 
 void HostFrame::RemoveContent(wxWindow* content)
 {
+    ClearActivationFocusContext();
     if (contentRoot_ == nullptr || content == nullptr)
     {
         return;
