@@ -515,11 +515,12 @@ exports[`catalogue reference replay: frousse-party, seed 11 1`] = `
 {
   "actionTypes": [
     "choice.resolve",
+    "draw_card",
     "roll",
   ],
-  "finished": true,
-  "steps": 43,
-  "traceDigest": "3f22cf9edd8e2f38dd71545efa46ea8f849e769e8c89af3d516b867fc5af4048",
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "86a36cf6570c27c5c9d482ee51d06d2adce907e30dca6e37987bce4db2a38afd",
 }
 `;
 
@@ -527,11 +528,12 @@ exports[`catalogue reference replay: frousse-party, seed 23 1`] = `
 {
   "actionTypes": [
     "choice.resolve",
+    "draw_card",
     "roll",
   ],
   "finished": true,
-  "steps": 39,
-  "traceDigest": "529c7a84a6511fb2b2a241cf8101c67b21ce4849fd308976a3e1ae57d767367f",
+  "steps": 62,
+  "traceDigest": "d678b132656110ae68dcc8eafcab4addd86133cec8c7e3ba5f4a43527e0179d7",
 }
 `;
 
@@ -539,11 +541,12 @@ exports[`catalogue reference replay: frousse-party, seed 67 1`] = `
 {
   "actionTypes": [
     "choice.resolve",
+    "draw_card",
     "roll",
   ],
   "finished": true,
-  "steps": 35,
-  "traceDigest": "ef674232e3fbfca113ae0bef6100bfcd953804b6ca8223011bc12af6edc1c97d",
+  "steps": 52,
+  "traceDigest": "b1c4d374df0ad74ea829f72596a0a14e85b2b8613931e38a832abe00d8092fc9",
 }
 `;
 

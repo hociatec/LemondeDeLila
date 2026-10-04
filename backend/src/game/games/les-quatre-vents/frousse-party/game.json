@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "contentVersion": "3",
-  "definitionVersion": "3",
+  "definitionVersion": "4",
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
   "patterns": [
@@ -14,6 +14,8 @@
     {
       "kind": "protected-haunted-race",
       "rollRecipe": "race-protected-haunted-track-roll",
+      "drawRecipe": "race-protected-haunted-track-draw",
+      "pendingDrawFlag": "protectedHaunted.pending-draw",
       "trackId": "manor",
       "diceId": "main",
       "deckId": "frights",
@@ -91,6 +93,12 @@
       "key": "D",
       "type": "action",
       "actionType": "roll"
+    },
+    {
+      "key": "Space",
+      "type": "action",
+      "actionType": "draw_card",
+      "label": "Piocher"
     }
   ],
   "initialPhase": "setup",
@@ -100,13 +108,16 @@
       "transitions": ["playing"]
     },
     "playing": {
-      "actions": ["roll"],
+      "actions": ["roll", "draw_card"],
       "terminal": true
     }
   },
   "actions": {
     "roll": {
       "recipe": "race-protected-haunted-track-roll"
+    },
+    "draw_card": {
+      "recipe": "race-protected-haunted-track-draw"
     }
   },
   "victory": {
@@ -120,6 +131,10 @@
     {
       "fromVersion": "2",
       "toVersion": "3"
+    },
+    {
+      "fromVersion": "3",
+      "toVersion": "4"
     }
   ],
   "extensions": [],

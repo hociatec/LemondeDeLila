@@ -34,10 +34,19 @@ describe('Frousse Party declarative game', () => {
       8,
       ...deck.filter((id: number) => id !== 8),
     ];
-    const next = new DeclarativeGameRuntime(gameDefinition).applyActions(
-      state,
-      [{ type: 'roll', payload: {}, meta: { actorId } }],
+    const runtime = new DeclarativeGameRuntime(gameDefinition);
+    const pending = runtime.applyActions(state, [
+      { type: 'roll', payload: {}, meta: { actorId } },
+    ]);
+    expect(pending.log.some((entry) => entry.key === 'game.card.drawn')).toBe(
+      false,
     );
+    expect(
+      pending.log.some((entry) => entry.key === 'game.card.draw-required'),
+    ).toBe(true);
+    const next = runtime.applyActions(pending, [
+      { type: 'draw_card', payload: {}, meta: { actorId } },
+    ]);
     const drawn = next.log.find(
       (entry) => entry.key === 'game.card.drawn' && entry.params.cardId === 8,
     );
@@ -54,6 +63,10 @@ describe('Frousse Party declarative game', () => {
     await game.choose(2, 'fantome-peureux');
     const actor = game.state().turn?.currentPlayerId ?? 1;
     await game.as(actor).do('roll', {});
+    expect(game.inspect.deckCount()).toBe(catalogue.cards.length);
+    expect(game.availableActions(actor)).toContain('draw_card');
+    expect(game.availableActions(actor)).not.toContain('roll');
+    await game.as(actor).do('draw_card', {});
     expect(game.inspect.deckCount()).toBe(catalogue.cards.length - 1);
     expect('pendingSwap' in game.view(actor)).toBe(false);
     expect(await game.replay()).toEqual(game.state());
@@ -86,8 +99,12 @@ describe('Frousse Party declarative game', () => {
     ];
 
     const runtime = new DeclarativeGameRuntime(gameDefinition);
-    const pending: any = runtime.applyActions(state, [
+    const awaitingDraw: any = runtime.applyActions(state, [
       { type: 'roll', payload: {}, meta: { actorId } },
+    ]);
+    expect(awaitingDraw.pending).toBeNull();
+    const pending: any = runtime.applyActions(awaitingDraw, [
+      { type: 'draw_card', payload: {}, meta: { actorId } },
     ]);
     expect(pending.pending?.data.choiceId).toBe('protectedHaunted.swap');
     const swapped: any = runtime.applyActions(pending, [
