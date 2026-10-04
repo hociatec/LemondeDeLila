@@ -10,12 +10,10 @@
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/actions/application/GameActionPresentationPolicy.h"
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/events/presentation/GameEventPresenter.h"
 #include "modules/gameplay/events/application/GameSoundEventPolicy.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
-#include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
@@ -130,11 +128,9 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     RebuildLines();
     handPanel_->ApplyCards(
         application::GameSurfaceSelectors::VisibleHand(state_), state_.actions);
-    dicePanel_->Apply(state_.kits.dice ? &*state_.kits.dice : nullptr, state_.actions);
     gridPanel_->Apply(state_.kits.grid ? &*state_.kits.grid : nullptr,
         state_.actions, state_.system.players,
         state_.kits.pawns ? &*state_.kits.pawns : nullptr);
-    movementPanel_->Apply(state_.kits, state_.system.players);
     workflowPanel_->Apply(state_);
     actionsLabel_->Hide();
     linesList_->Hide();

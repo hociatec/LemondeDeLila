@@ -16,6 +16,7 @@
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "modules/gameplay/session/application/GameSessionService.h"
+#include "modules/gameplay/shell/application/GameZoneActionResolver.h"
 #include "modules/gameplay/shortcuts/presentation/GameShortcutResolver.h"
 #include "shared/logging/application/Logger.h"
 
@@ -156,6 +157,7 @@ bool GamePlayPanel::HandleZoneActivation()
         }
         return true;
     }
+    if (ActivateZoneAction()) return true;
     // A started game may temporarily have no actionable control: for example
     // just after an answer has been sent, while another player is choosing,
     // or while the next state is arriving.  The room's zone anchor used to
@@ -165,6 +167,14 @@ bool GamePlayPanel::HandleZoneActivation()
     // keyboard users outside the game workflow.  Once this panel owns an
     // open, started room, Enter belongs to the game zone even when it has
     // nothing to activate yet.
+    return true;
+}
+
+bool GamePlayPanel::ActivateZoneAction()
+{
+    auto action = application::GameZoneActionResolver::Resolve(state_);
+    if (!action) return false;
+    PrepareAndExecuteAction(std::move(*action));
     return true;
 }
 

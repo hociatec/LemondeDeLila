@@ -41,10 +41,8 @@ class AppError;
 }
 
 namespace lila::modules::gameplay::presentation::confirmation { class GameActionConfirmationPanel; }
-namespace lila::modules::gameplay::presentation::dice { class GameDicePanel; }
 namespace lila::modules::gameplay::presentation::hand { class GameHandPanel; }
 namespace lila::modules::gameplay::presentation::grid { class GameGridPanel; }
-namespace lila::modules::gameplay::presentation::movement { class GameMovementPanel; }
 namespace lila::modules::gameplay::presentation::workflows { class GameWorkflowPanel; }
 namespace lila::modules::gameplay::presentation::prompt { class GamePromptPanel; }
 
@@ -123,6 +121,7 @@ private:
     void ActivateSelectedLine();
     bool ActivateSelectedPendingChoice();
     bool ActivateSelectedHandCard();
+    bool ActivateZoneAction();
     bool AnnounceSelectedHandCard();
     bool ActivateSelectedGridCell();
     [[nodiscard]] std::optional<bool> HandleInputLifecycle(wxKeyEvent& event);
@@ -158,10 +157,8 @@ private:
     wxStaticText* stateSummaryLabel_ = nullptr;
     wxStaticText* pendingLabel_ = nullptr;
     wxScrolledWindow* contentPanel_ = nullptr;
-    dice::GameDicePanel* dicePanel_ = nullptr;
     hand::GameHandPanel* handPanel_ = nullptr;
     grid::GameGridPanel* gridPanel_ = nullptr;
-    movement::GameMovementPanel* movementPanel_ = nullptr;
     workflows::GameWorkflowPanel* workflowPanel_ = nullptr;
     wxStaticText* actionsLabel_ = nullptr;
     wxListBox* linesList_ = nullptr;

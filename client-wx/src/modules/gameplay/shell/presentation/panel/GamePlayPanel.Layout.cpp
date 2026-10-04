@@ -8,11 +8,9 @@
 #include <wx/textctrl.h>
 
 #include "modules/gameplay/actions/presentation/confirmation/GameActionConfirmationPanel.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/shell/application/GamePlayAccessPolicy.h"
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
-#include "modules/gameplay/movement/presentation/GameMovementPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -51,17 +49,11 @@ void GamePlayPanel::BuildLayout()
     contentPanel_->SetBackgroundColour(lila::shared::ui::Theme::PanelBackground());
     auto* content = new wxBoxSizer(wxVERTICAL);
 
-    dicePanel_ = new dice::GameDicePanel(contentPanel_);
-    content->Add(dicePanel_, 0, wxEXPAND | wxBOTTOM, 8);
-
     handPanel_ = new hand::GameHandPanel(contentPanel_);
     content->Add(handPanel_, 1, wxEXPAND | wxBOTTOM, 8);
 
     gridPanel_ = new grid::GameGridPanel(contentPanel_);
     content->Add(gridPanel_, 1, wxEXPAND | wxBOTTOM, 8);
-
-    movementPanel_ = new movement::GameMovementPanel(contentPanel_);
-    content->Add(movementPanel_, 1, wxEXPAND | wxBOTTOM, 8);
 
     workflowPanel_ = new workflows::GameWorkflowPanel(contentPanel_);
     content->Add(workflowPanel_, 1, wxEXPAND | wxBOTTOM, 8);
