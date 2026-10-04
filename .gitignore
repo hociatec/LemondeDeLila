@@ -12,6 +12,8 @@ client-wx/build/
 
 # Generated quality reports
 backend/docs/quality/
+backend/tools/quality-report.json
+backend/tools/game-metrics-report.json
 
 # Local env
 backend/.env

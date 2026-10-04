@@ -1,0 +1,12 @@
+# Autorise uniquement le déclenchement et la consultation du déploiement
+# depuis l'utilisateur qui exécute le backend.
+#
+# Copier vers /etc/sudoers.d/lila-backend-maintenance avec visudo -f et
+# remplacer `www-data` par l'utilisateur réel du service backend.
+
+Cmnd_Alias LILA_MAINTENANCE = /bin/systemctl start --no-block lila-backend-deploy.service, \
+  /bin/systemctl show lila-backend-deploy.service *, \
+  /bin/systemctl show lila-backend.service *, \
+  /bin/journalctl -u lila-backend-deploy.service *
+
+www-data ALL=(root) NOPASSWD: LILA_MAINTENANCE
