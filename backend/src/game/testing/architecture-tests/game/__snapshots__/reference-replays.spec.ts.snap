@@ -112,7 +112,7 @@ exports[`catalogue reference replay: aventure-sauvage, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 27,
-  "traceDigest": "0b5bdae00b7a48c7f4b262f58bbaf07bbc80d8b3a52920b4f35248ebf42ae873",
+  "traceDigest": "13a3caf0570159196a3b7e6138e5fc6a5da5aaa2d3c64d1ac1ed09822908b3f4",
 }
 `;
 
@@ -125,7 +125,7 @@ exports[`catalogue reference replay: aventure-sauvage, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 28,
-  "traceDigest": "b1b2bb73b5434b087b5028fa0ae3d0410c71ca812219a763788a4911d0229991",
+  "traceDigest": "31fa2d9145a21a0c2bd81fa7246d7bd31344244a16f10cab345cdf5c61c989a3",
 }
 `;
 
@@ -138,7 +138,7 @@ exports[`catalogue reference replay: aventure-sauvage, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 33,
-  "traceDigest": "ad01f748efa813fe2e9d747ed8e346129d0e8a1e20c84196ebf1c7c2a7a10d52",
+  "traceDigest": "feb04b58ec72eafb42455bbace3b8168855f88463d787e9df8d1f95c76f0081f",
 }
 `;
 
