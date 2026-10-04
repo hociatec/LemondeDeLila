@@ -4,6 +4,10 @@ void TestKnownCapabilitiesAreTyped()
     payload["system"]["setup"]["values"] = {
         {"targetScore", 25},
         {"teams", nlohmann::json::array({"red", "blue"})}};
+    payload["viewerPlayerId"] = 7;
+    payload["system"]["players"]["all"] = nlohmann::json::array({
+        {{"id", 7}, {"username", "Lila"}},
+        {{"id", 8}, {"username", "Nounours"}}});
     payload["kits"] = {
         {"cards", {
             {"decks", {{"draw", {{"count", 12}}}}},
@@ -21,7 +25,8 @@ void TestKnownCapabilitiesAreTyped()
         {"score", {{"label", "Prestige"}, {"unit", {{"singular", "étoile"}, {"plural", "étoiles"}}},
             {"byPlayer", {{"7", 12}}},
             {"leaderboard", nlohmann::json::array({{{"playerId", 7}, {"score", 12}, {"rank", 1}}})}}},
-        {"resources", {{"coins", {{"7", 3}}}}},
+        {"resources", {{"apple", {{"7", 3}, {"8", 2}}},
+            {"bidirectionalCollision.iou.8", {{"7", 1}}}}},
         {"counters", {{"rounds", 2}}},
         {"status", {{"byId", {{"protected", {{"7", {{"remaining", 1}}}}}}}}},
         {"inventory", {{"bags", {{"visibility", "public"},
@@ -77,6 +82,12 @@ void TestKnownCapabilitiesAreTyped()
     Expect(state.kits.inventory && state.kits.economy && state.kits.ownership &&
             state.kits.collections,
         "Les capacités d'objets connues doivent être typées.");
+    Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
+            state, "resources-self") == "Vous\n- Apple : 3\n",
+        "E doit annoncer uniquement les ressources visibles du joueur.");
+    Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
+            state, "resources-others") == "Nounours\n- Apple : 2\n",
+        "Maj E doit annoncer uniquement les ressources visibles des autres joueurs.");
     Expect(state.kits.quiz && state.kits.submissions,
         "Quiz et soumissions doivent être typés.");
     Expect(state.kits.submissions->sessions[0].visibleValues.at(7).kind ==

@@ -206,23 +206,34 @@ const instructions = {
     inventoryId: id,
     count: positive,
   }),
-  'gain-resource': targeted('gain-resource', {
-    resource: id,
-    amount: {
-      oneOf: [
-        { type: 'number', minimum: 0 },
-        ...numericExpressionSchema.oneOf.slice(1),
-      ],
+  'gain-resource': targeted(
+    'gain-resource',
+    {
+      resource: id,
+      announce: boolean,
+      amount: {
+        oneOf: [
+          { type: 'number', minimum: 0 },
+          ...numericExpressionSchema.oneOf.slice(1),
+        ],
+      },
     },
-  }),
-  'set-resource': targeted('set-resource', {
-    resource: id,
-    value: ref('numeric-expression'),
-  }),
+    ['resource', 'amount'],
+  ),
+  'set-resource': targeted(
+    'set-resource',
+    {
+      resource: id,
+      announce: boolean,
+      value: ref('numeric-expression'),
+    },
+    ['resource', 'value'],
+  ),
   'lose-resource': targeted(
     'lose-resource',
     {
       resource: id,
+      announce: boolean,
       amount: {
         oneOf: [
           { type: 'number', minimum: 0 },

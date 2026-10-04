@@ -201,18 +201,21 @@ export type GameEffectInstruction =
       kind: 'gain-resource';
       resource: string;
       amount: NumericExpression;
+      announce?: boolean;
       target?: EffectTarget;
     }
   | {
       kind: 'set-resource';
       resource: string;
       value: NumericExpression;
+      announce?: boolean;
       target?: EffectTarget;
     }
   | {
       kind: 'lose-resource';
       resource: string;
       amount: NumericExpression;
+      announce?: boolean;
       allowPartial?: boolean;
       insufficient?: InsufficientResourcePolicy;
       target?: EffectTarget;
