@@ -11,6 +11,8 @@ const text = { type: 'string', minLength: 1, maxLength: 10000 } as const;
 export const bounceQuizRacePatternSchema = object({
   kind: { const: 'bounce-quiz-race' },
   rollRecipe: id,
+  drawRecipe: id,
+  pendingDrawFlag: id,
   trackId: id,
   diceId: id,
   deckId: id,

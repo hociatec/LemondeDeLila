@@ -11,7 +11,7 @@
     {
       "n": 2,
       "title": "Chemin enneigé",
-      "description": "Vous traversez une forêt silencieuse et parfumée. Rien ne se passe.",
+      "description": "Vous traversez une forêt silencieuse et parfumée.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -35,7 +35,7 @@
     {
       "n": 5,
       "title": "Chemin enneigé",
-      "description": "Une délicieuse odeur de biscuits flotte dans l'air. Rien ne se passe.",
+      "description": "Une délicieuse odeur de biscuits flotte dans l'air.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -67,7 +67,7 @@
     {
       "n": 9,
       "title": "Chemin enneigé",
-      "description": "Vous flânez parmi les étals illuminés. Rien ne se passe.",
+      "description": "Vous flânez parmi les étals illuminés.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -91,7 +91,7 @@
     {
       "n": 12,
       "title": "Chemin enneigé",
-      "description": "Vous admirez les guirlandes scintillantes. Rien ne se passe.",
+      "description": "Vous admirez les guirlandes scintillantes.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -123,7 +123,7 @@
     {
       "n": 16,
       "title": "Chemin enneigé",
-      "description": "Une aurore boréale illumine le ciel. Rien ne se passe.",
+      "description": "Une aurore boréale illumine le ciel.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -163,7 +163,7 @@
     {
       "n": 21,
       "title": "Chemin enneigé",
-      "description": "Vous vous grattez la tête, pensif. Rien ne se passe.",
+      "description": "Vous vous grattez la tête, pensif.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -347,7 +347,7 @@
     {
       "n": 44,
       "title": "Chemin enneigé",
-      "description": "Le cadeau tombe à vos pieds. Rien ne se passe.",
+      "description": "Le cadeau tombe à vos pieds.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0
@@ -985,24 +985,24 @@
       "title": "Petit Papa Noël",
       "effects": [],
       "quiz": {
-        "prompt": "Quelle est la deuxième phrase ?",
+        "prompt": "Quelle est la deuxième phrase de la chanson Petit Papa Noël ?",
         "choices": [
-          "Il me tarde tant",
+          "Il me tarde tant que le jour se lève",
           "Quand tu descendras du ciel",
-          "Avec des jouets"
+          "Avec des jouets par milliers"
         ],
         "correctIndex": 1,
         "successDelta": 2,
         "failureDelta": 0
       },
-      "description": "Petit Papa Noël Quelle est la deuxième phrase de la chanson Petit Papa Noël ? a) “Il me tarde tant que le jour se lève” *b) “Quand tu descendras du ciel” c) “Avec des jouets par milliers” remarque : Si le joueur choisi la bonne réponse, il avance de deux cases, sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 38,
       "title": "Vive le vent",
       "effects": [],
       "quiz": {
-        "prompt": "Quel est le titre original ?",
+        "prompt": "La chanson Vive le vent est la version française d'un célèbre chant de Noël anglophone. Quel est le titre original de cette chanson ?",
         "choices": [
           "Winter Wonderland",
           "Silent Night",
@@ -1012,14 +1012,14 @@
         "successDelta": 3,
         "failureDelta": 0
       },
-      "description": "Vive le vent La chanson Vive le vent est la version française d'un célèbre chant de Noël anglophone. Quel est le titre original de cette chanson ? a) Winter Wonderland b) Silent Night *c) Jingle Bells Remarque : Si le joueur a la bonne réponse, il avance de trois cases sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 39,
       "title": "Douce nuit",
       "effects": [],
       "quiz": {
-        "prompt": "En quelle année fut-elle composée ?",
+        "prompt": "En quelle année la chanson Douce nuit, sainte nuit a-t-elle été composée à partir du poème allemand Stille Nacht, heilige Nacht ?",
         "choices": [
           "1808",
           "1818",
@@ -1029,14 +1029,14 @@
         "successDelta": 2,
         "failureDelta": 0
       },
-      "description": "Douce nuit En quelle année la chanson “Douce nuit, sainte nuit” a-t-elle été composée à partir du poème allemand Stille Nacht, heilige Nacht ? a) 1808 *b) 1818 c) 1828 remarque : Si le joueur a la bonne réponse, il avance de deux cases, sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 40,
       "title": "Mon beau sapin",
       "effects": [],
       "quiz": {
-        "prompt": "De quel pays vient la chanson ?",
+        "prompt": "Mon beau sapin est l'adaptation française d'une chanson traditionnelle d'un autre pays. De quel pays vient-elle à l'origine ?",
         "choices": [
           "Allemagne",
           "Suède",
@@ -1046,31 +1046,31 @@
         "successDelta": 2,
         "failureDelta": 0
       },
-      "description": "Mon beau sapin Mon beau sapin est l'adaptation française d'une chanson traditionnelle d'un autre pays. De quel pays vient-elle à l'origine ? *a) Allemagne b) Suède c) Italie remarque : Si le joueur a la bonne réponse, il avance de deux cases, sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 41,
       "title": "Minuit, chrétiens",
       "effects": [],
       "quiz": {
-        "prompt": "Qui en est le compositeur ?",
+        "prompt": "Le cantique Minuit, chrétiens, aussi connu sous le nom O Holy Night, a été composé en 1847. Qui en est le compositeur original ?",
         "choices": [
-          "Schubert",
-          "Beethoven",
+          "Franz Schubert",
+          "Ludwig van Beethoven",
           "Adolphe Adam"
         ],
         "correctIndex": 2,
         "successDelta": 3,
         "failureDelta": 0
       },
-      "description": "Minuit, chrétiens Le cantique Minuit, chrétiens, aussi connu sous le nom O Holy Night, a été composé en 1847. Qui en est le compositeur original ? a) Franz Schubert b) Ludwig van Beethoven *c) Adolphe Adam remarque : Si le joueur a la bonne réponse, il avance de trois cases, sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 42,
       "title": "Petit renne",
       "effects": [],
       "quiz": {
-        "prompt": "En quelle année fut-elle publiée ?",
+        "prompt": "La chanson Le petit renne au nez rouge fut écrite pour un film radiophonique avant de devenir un classique. En quelle année cette chanson a-t-elle été publiée ?",
         "choices": [
           "1939",
           "1949",
@@ -1080,14 +1080,14 @@
         "successDelta": 1,
         "failureDelta": 0
       },
-      "description": "Petit renne au nez rouge La chanson Le petit renne au nez rouge (Rudolph the Red‑Nosed Reindeer) fut écrite pour un film radiophonique avant de devenir un classique. En quelle année cette chanson a‑t‑elle été publiée ? a) 1939 *b) 1949 c) 1955 remarque : Si le joueur a la bonne réponse, il avance d'une case, sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 43,
       "title": "Noël blanc",
       "effects": [],
       "quiz": {
-        "prompt": "Qui popularisa White Christmas ?",
+        "prompt": "Quelle célébrité américaine a popularisé pour la première fois la chanson White Christmas dans les années 1940 ?",
         "choices": [
           "Frank Sinatra",
           "Bing Crosby",
@@ -1097,14 +1097,14 @@
         "successDelta": 2,
         "failureDelta": 0
       },
-      "description": "Noël blanc Quelle célébrité américaine a popularisé pour la première fois la chanson “White Christmas” dans les années 1940 ? a) Frank Sinatra *b) Bing Crosby c) Dean Martin remarque : Si le joueur a la bonne réponse, il avance de 2 cases, sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 44,
       "title": "Les anges",
       "effects": [],
       "quiz": {
-        "prompt": "Dans quelle langue était l’original ?",
+        "prompt": "La chanson Les anges dans nos campagnes, connue aussi en anglais sous le nom Angels We Have Heard on High, est traditionnellement chantée autour du monde. Dans quelle langue était chantée l'original ?",
         "choices": [
           "Français",
           "Italien",
@@ -1114,24 +1114,24 @@
         "successDelta": 1,
         "failureDelta": 0
       },
-      "description": "Les anges dans nos campagnes Cette chanson, connue aussi en anglais sous le nom Angels We Have Heard on High, est traditionnellement chantée autour du monde. Dans quelle langue était chantée l'original ? *a) Français b) Italien c) Espagnol remarque : Si le joueur a la bonne réponse, il avance d'une case sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 45,
       "title": "Divin enfant",
       "effects": [],
       "quiz": {
-        "prompt": "De quel siècle date le chant ?",
+        "prompt": "La chanson Il est né le divin enfant est l'une des plus anciennes du répertoire. De quel siècle date ce chant ?",
         "choices": [
-          "19e",
-          "18e",
-          "17e"
+          "Du 19e siècle",
+          "Du 18e siècle",
+          "Du 17e siècle"
         ],
         "correctIndex": 1,
         "successDelta": 2,
         "failureDelta": 0
       },
-      "description": "Il est né le divin enfant La chanson Il est né le divin enfant est l'une des plus anciennes du répertoire. Elle date d'une période bien antérieure au XXᵉ siècle. Est‑elle plutôt : a) Du 19ᵉ siècle *b) Du 18ᵉ siècle c) Du 17ᵉ siècle remarque : Si le joueur a la bonne réponse, il avance de deux cases, sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 46,
@@ -1141,21 +1141,21 @@
         "prompt": "Que signifie Gloria in excelsis Deo ?",
         "choices": [
           "Gloire au monde",
-          "Chantons",
-          "Gloire à Dieu"
+          "Chantons en cette nuit",
+          "Gloire à Dieu au plus haut des cieux"
         ],
         "correctIndex": 2,
         "successDelta": 3,
         "failureDelta": 0
       },
-      "description": "Gloria La célèbre mélodie « Gloria in excelsis Deo » est souvent chantée à Noël. Cette expression signifie : a) « Gloire au monde » b) « Chantons en cette nuit » *c) « Gloire à Dieu au plus haut des cieux » remarque : Si le joueur a la bonne réponse, il avance de trois cases, sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 47,
       "title": "Tambourin",
       "effects": [],
       "quiz": {
-        "prompt": "Quel instrument accompagne les bergers ?",
+        "prompt": "Dans cette chanson de Noël française traditionnelle, les bergers accompagnent leur chant avec un instrument de percussion. Lequel est-ce ?",
         "choices": [
           "Claves",
           "Triangle",
@@ -1165,14 +1165,14 @@
         "successDelta": 2,
         "failureDelta": 0
       },
-      "description": "Guillaume, prends 🟥🟥🟥 Dans cette chanson de Noël française traditionnelle, les bergers accompagnent leur chant avec un instrument de percussion. Lequel est-ce ? a) claves b) Triangle *c) Tambourin remarque : Si le joueur a la bonne réponse, il avance de deux cases, sinon rien ne se passe."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 48,
       "title": "All I Want",
       "effects": [],
       "quiz": {
-        "prompt": "Qui interprète ce tube ?",
+        "prompt": "La chanson All I Want for Christmas Is You est devenue un tube international. Qui en est l'interprète principale ?",
         "choices": [
           "Mariah Carey",
           "Whitney Houston",
@@ -1182,14 +1182,14 @@
         "successDelta": 1,
         "failureDelta": 0
       },
-      "description": "All I Want for Christmas Is You Cette chanson moderne de Noël est devenue un tube international. Qui en est l'interprète principale ? *a) Mariah Carey b) Whitney Houston c) Céline Dion remarque : Si le joueur a la bonne réponse, il avance d'une case, sinon rien ne se passe. Cartes Défis Express (12)"
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 49,
       "title": "Renne guide",
       "effects": [],
       "quiz": {
-        "prompt": "Quel est son nom ?",
+        "prompt": "Le renne a un compagnon très célèbre qui guide le traîneau. Quel est son nom ?",
         "choices": [
           "Rudolph",
           "Dasher",
@@ -1199,31 +1199,31 @@
         "successDelta": 1,
         "failureDelta": -2
       },
-      "description": "Devinette du renne Le renne a un compagnon très célèbre qui guide le traîneau. Quel est son nom ? *a) Rudolph b) Dasher c) Comet remarque : Si le joueur a la bonne réponse, il avance d'une case, sinon il recule de deux cases."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 50,
       "title": "Partage",
       "effects": [],
       "quiz": {
-        "prompt": "Quelle action est généreuse ?",
+        "prompt": "Vous êtes dans le village du Père Noël et devez apporter de l'aide à quelqu'un dans le besoin. Que faites-vous ?",
         "choices": [
-          "Garder",
-          "Offrir",
-          "Cacher"
+          "Vous gardez le cadeau pour vous",
+          "Vous offrez le cadeau avec générosité",
+          "Vous le cachez"
         ],
         "correctIndex": 1,
         "successDelta": 1,
         "failureDelta": -1
       },
-      "description": "Voeu de partage Vous êtes dans le village du Père Noël et devez apporter de l'aide à quelqu'un dans le besoin. Que faites-vous ? a) Vous gardez le cadeau pour vous *b) Vous offrez le cadeau avec générosité c) Vous le cachez remarque : Si le joueur a la bonne réponse, il avance d'une case, sinon il recule d'une case."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 51,
       "title": "Sapin",
       "effects": [],
       "quiz": {
-        "prompt": "Quelle couleur n’est pas citée ?",
+        "prompt": "Le sapin de Noël est décoré de boules, guirlandes et lumières rouges et bleues. Quelle couleur de décoration n'est pas mentionnée ici ?",
         "choices": [
           "Rouge",
           "Argent",
@@ -1233,14 +1233,14 @@
         "successDelta": 1,
         "failureDelta": -1
       },
-      "description": "Question du sapin Le sapin de Noël est décoré de boules, guirlandes et lumières rouges et bleues. Quelle couleur de décoration n'est pas mentionnée ici ? a) Rouge *b) Argent c) Bleu remarque : Si le joueur a la bonne réponse, il avance d'une case, sinon il recule d'une case."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 52,
       "title": "Rennes",
       "effects": [],
       "quiz": {
-        "prompt": "Lequel n’est pas un renne ?",
+        "prompt": "Parmi ces noms, lequel n'est pas un des rennes traditionnels du Père Noël ?",
         "choices": [
           "Fringant",
           "Comète",
@@ -1250,144 +1250,144 @@
         "successDelta": 2,
         "failureDelta": -2
       },
-      "description": "Devine le renne Parmi ces noms, lequel n'est pas un des rennes traditionnels du Père Noël ? a) Fringant b) Comète *c) Frosty remarque : Si le joueur a la bonne réponse, il avance de deux cases, sinon il recule de deux cases."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 53,
       "title": "Couleurs",
       "effects": [],
       "quiz": {
-        "prompt": "Quel objet n’est pas rouge ?",
+        "prompt": "Parmi ces objets de Noël, lequel n'est généralement pas rouge ?",
         "choices": [
-          "Flocon",
-          "Houx",
-          "Boule"
+          "Le flocon de neige",
+          "Le houx",
+          "La boule du sapin"
         ],
         "correctIndex": 0,
         "successDelta": 1,
         "failureDelta": -1
       },
-      "description": "Couleurs de Noël Parmi ces objets de Noël, lequel n'est généralement pas rouge ? *a) Le flocon de neige b) Le houx c) La boule du sapin remarque : Si le joueur a la bonne réponse, il avance d'une case, sinon il recule d'une case."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 54,
       "title": "Dessert",
       "effects": [],
       "quiz": {
-        "prompt": "Quel dessert français ?",
+        "prompt": "Quel dessert est traditionnellement dégusté à Noël en France ?",
         "choices": [
-          "Bûche",
+          "Bûche de Noël",
           "Tarte Tatin",
-          "Crêpe"
+          "Crêpe Suzette"
         ],
         "correctIndex": 0,
         "successDelta": 1,
         "failureDelta": -2
       },
-      "description": "Dessert de Noël Quel dessert est traditionnellement dégusté à Noël en France ? *a) Bûche de Noël b) Tarte Tatin c) Crêpe Suzette remarque : Si le joueur a la bonne réponse, il avance d'une case, sinon il recule de deux cases."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 55,
       "title": "Pied du sapin",
       "effects": [],
       "quiz": {
-        "prompt": "Quel objet ne s’y trouve pas ?",
+        "prompt": "Lequel de ces objets ne se trouve généralement pas au pied du sapin ?",
         "choices": [
-          "Cadeau",
+          "Cadeau emballé",
           "Bougie allumée",
-          "Carte"
+          "Carte de voeux"
         ],
         "correctIndex": 1,
         "successDelta": 2,
         "failureDelta": -3
       },
-      "description": "Objets du sapin Lequel de ces objets ne se trouve généralement pas au pied du sapin ? a) Cadeau emballé *b) Bougie allumée c) Carte de voeux remarque : Si le joueur a la bonne réponse, il avance de deux cases, sinon il recule de trois cases."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 56,
       "title": "Cloche",
       "effects": [],
       "quiz": {
-        "prompt": "Quel est son rôle ?",
+        "prompt": "Quel est le rôle traditionnel de la cloche à Noël ?",
         "choices": [
-          "Appeler les enfants",
-          "Décorer",
-          "Mesurer"
+          "Appeler les enfants pour ouvrir les cadeaux",
+          "Décorer le sapin",
+          "Mesurer le temps"
         ],
         "correctIndex": 0,
         "successDelta": 1,
         "failureDelta": -1
       },
-      "description": "Cloche de Noël Quel est le rôle traditionnel de la cloche à Noël ? *a) Appeler les enfants pour ouvrir les cadeaux b) Décorer le sapin c) Mesurer le temps remarque : Si le joueur a la bonne réponse, il avance d'une case, sinon il recule d'une case."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 57,
       "title": "Magie",
       "effects": [],
       "quiz": {
-        "prompt": "Quel élément crée la magie ?",
+        "prompt": "Parmi ces éléments, lequel contribue le plus à l'ambiance magique de Noël ?",
         "choices": [
-          "Guirlandes",
-          "Chocolat",
-          "Bottes"
+          "Les guirlandes et les lumières",
+          "La tasse de chocolat chaud",
+          "Les bottes de neige"
         ],
         "correctIndex": 0,
         "successDelta": 1,
         "failureDelta": -1
       },
-      "description": "Magie de Noël Parmi ces éléments, lequel contribue le plus à l'ambiance magique de Noël ? *a) Les guirlandes et les lumières b) La tasse de chocolat chaud c) Les bottes de neige remarque : Si le joueur a la bonne réponse, il avance d'une case, sinon il recule d'une case."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 58,
       "title": "Bonne action",
       "effects": [],
       "quiz": {
-        "prompt": "Quelle action est généreuse ?",
+        "prompt": "Quelle action est considérée comme généreuse à Noël ?",
         "choices": [
-          "Partager",
-          "Aider",
-          "Sourire"
+          "Partager ses jouets avec quelqu'un",
+          "Aider un voisin à décorer sa maison",
+          "Offrir un sourire ou un mot gentil à quelqu'un"
         ],
         "correctIndex": 0,
         "successDelta": 3,
         "failureDelta": 0,
         "anyCorrect": true
       },
-      "description": "Bonne action Quelle action est considérée comme généreuse à Noël ? a) Partager ses jouets avec quelqu'un b) Aider un voisin à décorer sa maison c) Offrir un sourire ou un mot gentil à quelqu'un remarque : Les trois réponses sont juste, peut importe laquelle, le joueur avance de trois cases."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 59,
       "title": "Cadeau au Père Noël",
       "effects": [],
       "quiz": {
-        "prompt": "Quel cadeau choisir ?",
+        "prompt": "Si le Père Noël venait chez vous, quel cadeau serait le plus approprié ?",
         "choices": [
-          "Un poème",
-          "Une chaussette",
-          "Du lait"
+          "Un poème écrit avec le coeur",
+          "Une chaussette sale",
+          "Une tasse de lait chaud"
         ],
         "correctIndex": 0,
         "successDelta": 2,
         "failureDelta": -2
       },
-      "description": "Cadeau au Père Noël Si le Père Noël venait chez vous, quel cadeau serait le plus approprié ? *a) Un poème écrit avec le coeur b) Une chaussette sale c) Une tasse de lait chaud remarque : Si le joueur a la bonne réponse, il avance de deux cases, sinon il recule de deux cases."
+      "description": "Question et réponses présentées séparément."
     },
     {
       "id": 60,
       "title": "Moment préféré",
       "effects": [],
       "quiz": {
-        "prompt": "Quel moment attendent les enfants ?",
+        "prompt": "Parmi ces moments de Noël, lequel est le plus attendu par les enfants ?",
         "choices": [
-          "Cadeaux",
-          "Dîner",
-          "Dormir"
+          "L'ouverture des cadeaux",
+          "Le dîner du réveillon",
+          "Aller dormir tôt"
         ],
         "correctIndex": 0,
         "successDelta": 1,
         "failureDelta": -1
       },
-      "description": "Moment préféré de Noël Parmi ces moments de Noël, lequel est le plus attendu par les enfants ? *a) L'ouverture des cadeaux b) Le dîner du réveillon c) Aller dormir tôt remarque : Si le joueur a la bonne réponse, il avance d'une case, sinon il recule d'une case."
+      "description": "Question et réponses présentées séparément."
     }
   ]
 }

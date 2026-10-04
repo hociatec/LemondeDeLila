@@ -15,8 +15,11 @@ type State = Record<string, never>;
 type Context = GameContext<State>;
 type Card = BounceQuizRaceOptions['cards'][number];
 type Pending = { kind: 'quiz'; actorId: number; cardId: number };
+type PendingDraw = { playerId: number; depth: number };
 export type BounceQuizRaceOptions = {
   rollRecipe: string;
+  drawRecipe: string;
+  pendingDrawFlag: string;
   trackId: string;
   diceId: string;
   deckId: string;
@@ -94,17 +97,41 @@ export function bounceQuizRace(source: BounceQuizRaceOptions) {
       onLand: () => applyTile(playerId, depth, ctx),
     });
   };
+  const pendingDraws = (ctx: Context): PendingDraw[] => {
+    const value = ctx.turn.flags.get(program.pendingDrawFlag);
+    if (!Array.isArray(value)) return [];
+    const draws: unknown[] = value;
+    return draws.filter(
+      (draw): draw is PendingDraw =>
+        draw != null &&
+        typeof draw === 'object' &&
+        'playerId' in draw &&
+        typeof draw.playerId === 'number' &&
+        'depth' in draw &&
+        typeof draw.depth === 'number',
+    );
+  };
+  const awaitDraw = (playerId: number, depth: number, ctx: Context): void => {
+    ctx.turn.flags.set(program.pendingDrawFlag, [
+      ...pendingDraws(ctx),
+      { playerId, depth },
+    ]);
+    ctx.events.message('game.card.draw-required', { playerId });
+  };
   const drawCard = (playerId: number, depth: number, ctx: Context): void => {
     if (depth > program.maxDepth || ctx.choice.current()) return;
     drawAndResolve<State, Card>(ctx, {
       deckId: program.deckId,
       playerId,
+      automatic: false,
+      eventData: () => ({ effectDescription: '' }),
       resolve: (card) => {
         if (!card.quiz) return ctx.effects.schedule(...card.effects);
         ctx.choice.one({
           id: program.answerChoiceId,
           player: playerId,
           options: card.quiz.choices.map((_choice, index) => index),
+          question: card.quiz.prompt,
           data: {
             kind: 'quiz',
             actorId: playerId,
@@ -138,7 +165,7 @@ export function bounceQuizRace(source: BounceQuizRaceOptions) {
     } else if (tile.type === 'skip') {
       if (!ctx.status.consume(playerId, program.statuses.ignoreNextSkip))
         ctx.turn.skip(playerId, tile.skipTurns);
-    } else if (tile.type === 'card') drawCard(playerId, depth, ctx);
+    } else if (tile.type === 'card') awaitDraw(playerId, depth, ctx);
   };
   const resolveAnswer = (value: number, ctx: Context): void => {
     const pending = ctx.choice.consumeContinuation<Pending>();
@@ -158,17 +185,18 @@ export function bounceQuizRace(source: BounceQuizRaceOptions) {
       0,
       ctx,
     );
-    ctx.turn.complete();
+    ctx.turn.complete({ waiting: pendingDraws(ctx).length > 0 });
   };
   return definePattern({
     id: `bounce-quiz-race:${program.trackId}`,
     mechanics: ['race', 'quiz', 'cards', 'pawns', 'effects'],
     actions: {
       [program.rollRecipe]: defineEmptyAction<State>({
-        available: ({ ctx }) => ctx.phase.current() === 'playing',
+        available: ({ ctx }) =>
+          ctx.phase.current() === 'playing' && pendingDraws(ctx).length === 0,
         execute: ({ actor, ctx }) => {
           if (ctx.status.consume(actor.id, program.statuses.forceDrawNextTurn))
-            drawCard(actor.id, 0, ctx);
+            awaitDraw(actor.id, 0, ctx);
           else {
             const value = ctx.dice.roll(program.diceId).total;
             ctx.events.message('game.dice.rolled', {
@@ -178,9 +206,29 @@ export function bounceQuizRace(source: BounceQuizRaceOptions) {
             });
             moveAndResolve(actor.id, value, 0, ctx);
           }
-          ctx.turn.complete();
+          ctx.turn.complete({ waiting: pendingDraws(ctx).length > 0 });
         },
         documentation: 'Lance le dé ou applique la pioche forcée.',
+      }),
+      [program.drawRecipe]: defineEmptyAction<State>({
+        ui: { label: 'Piocher', control: 'button', shortcut: 'Space' },
+        available: ({ actor, ctx }) =>
+          ctx.phase.current() === 'playing' &&
+          ctx.players.current()?.id === actor.id &&
+          pendingDraws(ctx)[0]?.playerId === actor.id,
+        execute: ({ ctx }) => {
+          const [pending, ...remaining] = pendingDraws(ctx);
+          if (!pending) return ctx.reject('RACE_BOUNCE_QUIZ_DRAW_NOT_PENDING');
+          if (remaining.length > 0)
+            ctx.turn.flags.set(program.pendingDrawFlag, remaining);
+          else ctx.turn.flags.consume(program.pendingDrawFlag);
+          drawCard(pending.playerId, pending.depth, ctx);
+          ctx.turn.complete({
+            waiting:
+              ctx.choice.current() != null || pendingDraws(ctx).length > 0,
+          });
+        },
+        documentation: 'Pioche et résout la carte demandée par la case.',
       }),
     },
     setup: pawns.setup(() => ({})),
@@ -190,6 +238,14 @@ export function bounceQuizRace(source: BounceQuizRaceOptions) {
         input: gameInput.number({ integer: true }),
         resolve: ({ value, ctx }) => resolveAnswer(value, ctx),
       }),
+    },
+    bot: {
+      choose: ({ availableActions }) => {
+        const type = [program.drawRecipe, program.rollRecipe].find((recipe) =>
+          availableActions.includes(recipe),
+        );
+        return type ? { type, payload: {} } : null;
+      },
     },
     effects: {
       'race-bounce-quiz.move': defineEffect<State, { delta: number }>({
