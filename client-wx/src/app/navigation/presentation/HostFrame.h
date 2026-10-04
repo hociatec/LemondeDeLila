@@ -1,10 +1,14 @@
 #pragma once
 
-#include <cstddef>
 #include <functional>
 #include <string_view>
 
 #include <wx/frame.h>
+#ifdef __WXMSW__
+#include <wx/weakref.h>
+#endif
+
+#include "shared/accessibility/presentation/ActivationFocusContext.h"
 
 class wxBoxSizer;
 class wxWindow;
@@ -23,6 +27,7 @@ public:
     void SetInterfaceTitle(std::string_view interfaceTitle);
     void SetContent(wxWindow* content);
     void RemoveContent(wxWindow* content);
+    void ClearActivationFocusContext();
     void SetPresenceRequestedHandler(PresenceRequestedHandler handler);
     void SetCloseRequestedHandler(CloseRequestedHandler handler);
 
@@ -31,7 +36,7 @@ private:
     void OnCharHook(wxKeyEvent& event);
 #ifdef __WXMSW__
     void OnActivate(wxActivateEvent& event);
-    void ReannounceWindowTitle(std::size_t activationGeneration);
+    void OnChildFocus(wxChildFocusEvent& event);
 #endif
 
     wxWindow* contentRoot_ = nullptr;
@@ -39,7 +44,8 @@ private:
     PresenceRequestedHandler onPresenceRequested_;
     CloseRequestedHandler onCloseRequested_;
 #ifdef __WXMSW__
-    std::size_t activationGeneration_ = 0;
+    wxWeakRef<wxWindow> lastFocusedChild_;
+    lila::shared::accessibility::ActivationFocusContext activationFocusContext_;
 #endif
 };
 }

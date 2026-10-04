@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include "shared/accessibility/presentation/ActivationFocusContext.h"
+
 #if wxUSE_ACCESSIBILITY
 namespace lila::shared::accessibility
 {
@@ -53,7 +55,8 @@ wxAccStatus AccessibleListBox::GetName(int childId, wxString* name)
         return wxACC_INVALID_ARG;
     }
 
-    *name = list->GetString(static_cast<unsigned int>(childId - 1));
+    *name = ActivationFocusContext::AccessibleNameFor(
+        *list, list->GetString(static_cast<unsigned int>(childId - 1)));
     return wxACC_OK;
 }
 
