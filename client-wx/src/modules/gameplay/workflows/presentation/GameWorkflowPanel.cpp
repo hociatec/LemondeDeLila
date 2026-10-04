@@ -42,7 +42,7 @@ GameWorkflowPanel::GameWorkflowPanel(wxWindow* parent) : wxPanel(parent)
     rows_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
     lila::shared::accessibility::ConfigureListBoxAsAccessibleList(
-        *rows_, wxString(L"Quiz, collections et soumissions. Consultation navigable."), {});
+        *rows_, wxString{}, {});
     layout->Add(rows_, 1, wxEXPAND);
     SetSizer(layout);
     Hide();

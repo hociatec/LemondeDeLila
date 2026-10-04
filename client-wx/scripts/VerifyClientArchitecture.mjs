@@ -360,6 +360,13 @@ if (interfaceTitleUpdate < 0 || contentUpdate < 0 || interfaceTitleUpdate > cont
 
 const gameplayPanelSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.cpp'), 'utf8');
+const workflowPanelSource = await readFile(
+  join(root, 'modules/gameplay/workflows/presentation/GameWorkflowPanel.cpp'), 'utf8');
+if (workflowPanelSource.includes('Quiz, collections et soumissions') ||
+    workflowPanelSource.includes('Consultation navigable'))
+  violations.push('GameWorkflowPanel: le nom générique de la liste ne doit pas précéder la question du quiz');
+if (!workflowPanelSource.includes('*rows_, wxString{}, {});'))
+  violations.push('GameWorkflowPanel: la liste doit exposer directement la question sélectionnée');
 const gameplayLayoutSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.Layout.cpp'), 'utf8');
 const gameplayEventsSource = await readFile(
