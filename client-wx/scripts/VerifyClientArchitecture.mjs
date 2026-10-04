@@ -342,6 +342,10 @@ if (!hostFrameSource.includes('void HostFrame::SetInterfaceTitle') ||
 if (hostFrameSource.includes('ActivationFocusDelayMs') ||
     hostFrameSource.includes('activationFocusTimer_'))
   violations.push('HostFrame: l’annonce du titre ne doit dépendre d’aucune temporisation');
+if (!hostFrameSource.includes('CallAfter([weakThis, generation]()') ||
+    !hostFrameSource.includes('EVENT_OBJECT_NAMECHANGE') ||
+    !hostFrameSource.includes('SetTitle(GetTitle());'))
+  violations.push('HostFrame: le titre complet doit être réannoncé après le focus natif sans délai fixe');
 const appTransitionsSource = await readFile(
   join(root, 'app/navigation/presentation/AppNavigator.Transitions.cpp'), 'utf8');
 const interfaceTitleUpdate = appTransitionsSource.indexOf(

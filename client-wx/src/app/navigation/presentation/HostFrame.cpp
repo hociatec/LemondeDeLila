@@ -6,6 +6,11 @@
 #include <wx/panel.h>
 #include <wx/sizer.h>
 
+#ifdef __WXMSW__
+#include <windows.h>
+#include <wx/weakref.h>
+#endif
+
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/config/domain/AppConfig.h"
 #include "shared/text/presentation/encoding/Encoding.h"
@@ -29,6 +34,9 @@ HostFrame::HostFrame()
 {
     Bind(wxEVT_CLOSE_WINDOW, &HostFrame::OnClose, this);
     Bind(wxEVT_CHAR_HOOK, &HostFrame::OnCharHook, this);
+#ifdef __WXMSW__
+    Bind(wxEVT_ACTIVATE, &HostFrame::OnActivate, this);
+#endif
     contentRoot_ = new lila::shared::accessibility::NonFocusablePanel(this);
     auto* rootSizer = new wxBoxSizer(wxVERTICAL);
     rootSizer->Add(contentRoot_, 1, wxEXPAND);
@@ -85,6 +93,38 @@ void HostFrame::OnCharHook(wxKeyEvent& event)
     }
     event.Skip();
 }
+
+#ifdef __WXMSW__
+void HostFrame::OnActivate(wxActivateEvent& event)
+{
+    const std::size_t generation = ++activationGeneration_;
+    if (event.GetActive())
+    {
+        wxWeakRef<HostFrame> weakThis(this);
+        CallAfter([weakThis, generation]()
+        {
+            if (weakThis)
+                weakThis->ReannounceWindowTitle(generation);
+        });
+    }
+    event.Skip();
+}
+
+void HostFrame::ReannounceWindowTitle(std::size_t activationGeneration)
+{
+    if (activationGeneration != activationGeneration_ || !IsActive())
+        return;
+
+    // Windows restores the child focus while NVDA is still reading the native
+    // window title. Re-emit the already complete title after that activation
+    // sequence, without moving focus or waiting for an arbitrary duration.
+    SetTitle(GetTitle());
+    const auto nativeWindow = reinterpret_cast<HWND>(GetHandle());
+    if (nativeWindow != nullptr)
+        ::NotifyWinEvent(
+            EVENT_OBJECT_NAMECHANGE, nativeWindow, OBJID_WINDOW, CHILDID_SELF);
+}
+#endif
 
 void HostFrame::SetContent(wxWindow* content)
 {
