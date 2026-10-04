@@ -5,7 +5,6 @@
 #include <wx/event.h>
 #include <wx/panel.h>
 #include <wx/sizer.h>
-#include <wx/weakref.h>
 
 #include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/accessibility/presentation/FocusCoordinator.h"
@@ -18,6 +17,9 @@ namespace
 {
 constexpr int HostWindowWidth = 1280;
 constexpr int HostWindowHeight = 800;
+// Let the screen reader finish the window title before a restored child focus
+// produces its own announcement after Alt+Tab.
+constexpr int ActivationFocusDelayMs = 600;
 }
 
 namespace lila::app::navigation
@@ -29,11 +31,14 @@ HostFrame::HostFrame()
           lila::shared::text::FromUtf8(lila::shared::config::AppConfig::AppTitle.data()),
           wxDefaultPosition,
           wxSize(HostWindowWidth, HostWindowHeight),
-          wxDEFAULT_FRAME_STYLE)
+          wxDEFAULT_FRAME_STYLE),
+      activationFocusTimer_(this)
 {
     Bind(wxEVT_CLOSE_WINDOW, &HostFrame::OnClose, this);
     Bind(wxEVT_CHAR_HOOK, &HostFrame::OnCharHook, this);
     Bind(wxEVT_ACTIVATE, &HostFrame::OnActivate, this);
+    Bind(wxEVT_TIMER, &HostFrame::OnActivationFocusTimer, this,
+        activationFocusTimer_.GetId());
     Bind(wxEVT_CHILD_FOCUS, &HostFrame::OnChildFocus, this);
     contentRoot_ = new lila::shared::accessibility::NonFocusablePanel(this);
     auto* rootSizer = new wxBoxSizer(wxVERTICAL);
@@ -70,6 +75,9 @@ void HostFrame::SetCloseRequestedHandler(CloseRequestedHandler handler)
 
 void HostFrame::OnCharHook(wxKeyEvent& event)
 {
+    // A key pressed after activation is an explicit user focus decision.  A
+    // delayed restoration must never move focus again underneath that input.
+    CancelActivationFocusRestore();
     const int key = event.GetKeyCode();
     if (event.ControlDown() && (key == 'U' || key == 'u'))
     {
@@ -87,28 +95,27 @@ void HostFrame::OnActivate(wxActivateEvent& event)
 {
     if (!event.GetActive())
     {
+        activationFocusTimer_.Stop();
         focusMemory_.Remember(currentContent_);
         restoreFocusAfterActivation_ = true;
         event.Skip();
         return;
     }
 
-    wxWeakRef<HostFrame> weakThis(this);
-    CallAfter(
-        [weakThis]()
-        {
-            if (auto* frame = weakThis.get())
-            {
-                frame->RestoreContentFocusAfterActivation();
-                frame->CallAfter(
-                    [weakThis]()
-                    {
-                        if (auto* activeFrame = weakThis.get())
-                            activeFrame->RestoreContentFocusAfterActivation();
-                    });
-            }
-        });
+    if (restoreFocusAfterActivation_)
+        activationFocusTimer_.StartOnce(ActivationFocusDelayMs);
     event.Skip();
+}
+
+void HostFrame::OnActivationFocusTimer(wxTimerEvent&)
+{
+    RestoreContentFocusAfterActivation();
+}
+
+void HostFrame::CancelActivationFocusRestore()
+{
+    activationFocusTimer_.Stop();
+    restoreFocusAfterActivation_ = false;
 }
 
 void HostFrame::OnChildFocus(wxChildFocusEvent& event)

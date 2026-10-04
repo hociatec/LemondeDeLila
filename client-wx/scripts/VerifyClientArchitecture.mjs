@@ -329,6 +329,17 @@ if (!roomPanelSource.includes('scope.Add(GameplayNavigationTarget());') ||
 if (!roomPanelSource.includes('gamePlayPanel_->RequiredInteractionTarget();') ||
     !roomPanelSource.includes('target = weakThis->GameplayNavigationTarget();'))
   violations.push('RoomPanel: une interaction prioritaire doit recevoir le focus avec repli sur Zone de jeu');
+if (!roomPanelSource.includes('CancelScheduledGameZoneFocus();') ||
+    !roomPanelSource.includes('++focusGeneration_;'))
+  violations.push('RoomPanel: Tab doit annuler une restauration de focus gameplay devenue obsolète');
+
+const hostFrameSource = await readFile(
+  join(root, 'app/navigation/presentation/HostFrame.cpp'), 'utf8');
+if (!hostFrameSource.includes('activationFocusTimer_.StartOnce(ActivationFocusDelayMs)') ||
+    !hostFrameSource.includes('constexpr int ActivationFocusDelayMs = 600;'))
+  violations.push('HostFrame: la restauration du focus doit laisser annoncer le titre après Alt+Tab');
+if (!hostFrameSource.includes('CancelActivationFocusRestore();'))
+  violations.push('HostFrame: une saisie utilisateur doit annuler la restauration différée du focus');
 
 const gameplayPanelSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.cpp'), 'utf8');
