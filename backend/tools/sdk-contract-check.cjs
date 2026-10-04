@@ -8,6 +8,28 @@ const { assertSdkCapabilities } = require('./sdk-capability-contract.cjs');
 
 const root = path.resolve(__dirname, '..');
 const normalize = (value) => value.replaceAll('\\', '/');
+const SDK_ENTRYPOINTS = [
+  {
+    name: 'public-api',
+    baseline: 'tools/sdk-contract-reference.json',
+    apiVersion: '10.0.0',
+  },
+  {
+    name: 'author-api',
+    baseline: 'tools/sdk-author-api-reference.json',
+    apiVersion: '10.0.0',
+  },
+  {
+    name: 'extension-api',
+    baseline: 'tools/sdk-extension-api-reference.json',
+    apiVersion: '3.0.0',
+  },
+  {
+    name: 'extension-contracts',
+    baseline: 'tools/sdk-extension-contracts-reference.json',
+    apiVersion: '3.0.0',
+  },
+];
 
 /** Follow declarations, including nested import types, rather than runtime imports. */
 function declarationImports(source) {
@@ -177,22 +199,12 @@ function main() {
       ts.flattenDiagnosticMessageText(configFile.error.messageText, '\n'),
     );
   const config = ts.parseJsonConfigFileContent(configFile.config, ts.sys, root);
-  for (const entryName of [
-    'public-api',
-    'author-api',
-    'extension-api',
-    'extension-contracts',
-  ]) {
-    const baselineFile = path.join(
-      root,
-      entryName === 'public-api'
-        ? 'tools/sdk-contract-reference.json'
-        : 'tools/sdk-' + entryName + '-reference.json',
-    );
+  for (const entrypoint of SDK_ENTRYPOINTS) {
+    const baselineFile = path.join(root, entrypoint.baseline);
     const contract = captureContract({
       directory: root,
-      entry: path.join(root, 'src/game/engine/sdk', entryName + '.ts'),
-      apiVersion: entryName.startsWith('extension-') ? '3.0.0' : '10.0.0',
+      entry: path.join(root, 'src/game/engine/sdk', entrypoint.name + '.ts'),
+      apiVersion: entrypoint.apiVersion,
       options: config.options,
     });
     if (process.argv.includes('--print')) {
@@ -217,7 +229,7 @@ function main() {
         `SDK declaration contract changed:\n${changes.join('\n')}\nReview the API change and its version/migration before updating the reference.`,
       );
     console.log(
-      `SDK ${entryName} contract unchanged: ${contract.snapshot.files.length} declaration files`,
+      `SDK ${entrypoint.name} contract unchanged: ${contract.snapshot.files.length} declaration files`,
     );
   }
 }
