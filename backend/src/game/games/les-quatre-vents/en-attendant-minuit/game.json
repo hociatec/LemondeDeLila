@@ -1,8 +1,11 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
-  "definitionVersion": "2",
-  "snapshotMigrations": [{ "fromVersion": "1", "toVersion": "2" }],
+  "contentVersion": "3",
+  "definitionVersion": "3",
+  "snapshotMigrations": [
+    { "fromVersion": "1", "toVersion": "2" },
+    { "fromVersion": "2", "toVersion": "3" }
+  ],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
   "patterns": [
@@ -15,6 +18,8 @@
     {
       "kind": "bounce-quiz-race",
       "rollRecipe": "race-bounce-quiz-roll",
+      "drawRecipe": "race-bounce-quiz-draw",
+      "pendingDrawFlag": "race-bounce-quiz.pending-draw",
       "trackId": "minuit",
       "diceId": "main",
       "deckId": "noel",
@@ -61,6 +66,12 @@
       "key": "D",
       "type": "action",
       "actionType": "roll"
+    },
+    {
+      "key": "Space",
+      "type": "action",
+      "actionType": "draw_card",
+      "label": "Piocher"
     }
   ],
   "initialPhase": "setup",
@@ -70,13 +81,16 @@
       "transitions": ["playing"]
     },
     "playing": {
-      "actions": ["roll"],
+      "actions": ["roll", "draw_card"],
       "terminal": true
     }
   },
   "actions": {
     "roll": {
       "recipe": "race-bounce-quiz-roll"
+    },
+    "draw_card": {
+      "recipe": "race-bounce-quiz-draw"
     }
   },
   "victory": {

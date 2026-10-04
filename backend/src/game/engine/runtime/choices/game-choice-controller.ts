@@ -15,6 +15,8 @@ export type ChoiceOptions<TValue, TResult = TValue> = {
   id: string;
   player: number;
   options: readonly TValue[];
+  /** Question announced separately from the selectable answers. */
+  question?: string;
   timeout?: ChoiceTimeout<TResult>;
   label?: (value: TValue) => string;
   data?: Readonly<object>;
@@ -266,12 +268,15 @@ export class GameChoiceController {
     const pending: PendingState = {
       schemaVersion: 1,
       type: `engine.choice.${kind}`,
-      label: kind === 'pawn' ? 'Choisissez votre pion.' : 'Choix requis',
+      label:
+        options.question ??
+        (kind === 'pawn' ? 'Choisissez votre pion.' : 'Choix requis'),
       playerId: options.player,
       ...(mode.playerIds
         ? { playerIds: [...mode.playerIds], resolvedPlayerIds: [] }
         : {}),
       blocking: true,
+      ...(options.question ? { question: options.question } : {}),
       choices: values.map((value) => options.label?.(value) ?? String(value)),
       data: {
         continuationData: structuredClone(options.data ?? {}),

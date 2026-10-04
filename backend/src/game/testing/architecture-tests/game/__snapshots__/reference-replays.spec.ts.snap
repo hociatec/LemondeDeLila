@@ -404,11 +404,13 @@ exports[`catalogue reference replay: en-attendant-minuit, seed 11 1`] = `
 {
   "actionTypes": [
     "choice.resolve",
+    "choice.timeout",
+    "draw_card",
     "roll",
   ],
   "finished": true,
-  "steps": 45,
-  "traceDigest": "3f8bbf5eb589a48652d1bff2226e636cfe60a5724896d7457fbb8ce60b0b00b2",
+  "steps": 62,
+  "traceDigest": "2bd03cbda3ba74fb553af6feec163abcbeec88c053dfda66335334b26550be27",
 }
 `;
 
@@ -416,11 +418,12 @@ exports[`catalogue reference replay: en-attendant-minuit, seed 23 1`] = `
 {
   "actionTypes": [
     "choice.resolve",
+    "draw_card",
     "roll",
   ],
-  "finished": true,
-  "steps": 61,
-  "traceDigest": "8943a9120b27e70cb3d27e51bcb8e72131102658f0a26ab8a5eb4f30eaff36d6",
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "ed45a8d70bd0708a880b95b8643d53397adeeb48acd5c90cfe0da5f7feb03a3d",
 }
 `;
 
@@ -428,11 +431,12 @@ exports[`catalogue reference replay: en-attendant-minuit, seed 67 1`] = `
 {
   "actionTypes": [
     "choice.resolve",
+    "draw_card",
     "roll",
   ],
-  "finished": true,
-  "steps": 48,
-  "traceDigest": "cf3ba7422f68750d21dbc98b30e9d0e32a7089dfd5e7bafe5b691eea51695454",
+  "finished": false,
+  "steps": 64,
+  "traceDigest": "d9086d57ec4289480f377f5fd57653f4f9a51647f2f5f2b404cefb5c1944722b",
 }
 `;
 
