@@ -77,8 +77,18 @@ export class GameResourcesController<TResourceId extends string = string> {
     return value;
   }
 
-  add(playerId: number, resource: TResourceId, amount: number): number {
-    return this.set(playerId, resource, this.get(playerId, resource) + amount);
+  add(
+    playerId: number,
+    resource: TResourceId,
+    amount: number,
+    options: { announce?: boolean } = {},
+  ): number {
+    return this.set(
+      playerId,
+      resource,
+      this.get(playerId, resource) + amount,
+      options,
+    );
   }
 
   has(playerId: number, resource: TResourceId, amount: number): boolean {
@@ -120,10 +130,11 @@ export class GameResourcesController<TResourceId extends string = string> {
     resource: TResourceId,
     amount: number,
     policy: InsufficientResourcePolicy = 'cancel',
+    options: { announce?: boolean } = {},
   ): ResourcePayment {
     const payment = this.quote(playerId, resource, amount, policy);
     if (payment.accepted && payment.paid > 0)
-      this.set(playerId, resource, payment.balance);
+      this.set(playerId, resource, payment.balance, options);
     return payment;
   }
 
@@ -132,6 +143,7 @@ export class GameResourcesController<TResourceId extends string = string> {
     to: number,
     resource: TResourceId,
     amount: number,
+    options: { announce?: boolean } = {},
   ): void {
     const normalizedAmount = this.normalizePositiveAmount(amount);
     assertGamePlayerId(from);
@@ -175,6 +187,7 @@ export class GameResourcesController<TResourceId extends string = string> {
       previous: sourceAmount,
       value: resources[fromKey],
       delta: -normalizedAmount,
+      ...(options.announce === false ? { announce: false } : {}),
     });
     this.emit('resource.changed', {
       playerId: to,
@@ -182,12 +195,14 @@ export class GameResourcesController<TResourceId extends string = string> {
       previous: destinationAmount,
       value: resources[toKey],
       delta: normalizedAmount,
+      ...(options.announce === false ? { announce: false } : {}),
     });
     this.emit('resource.transferred', {
       from,
       to,
       resource,
       amount: normalizedAmount,
+      ...(options.announce === false ? { announce: false } : {}),
     });
   }
 

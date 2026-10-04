@@ -269,6 +269,7 @@ function createPlayerValueHandlers<TState extends object>({
           playerId,
           instruction.resource,
           evaluateResourceAmount(instruction.amount, context, playerId),
+          { announce: instruction.announce },
         ),
       ),
     'set-resource': (instruction) =>
@@ -277,6 +278,7 @@ function createPlayerValueHandlers<TState extends object>({
           playerId,
           instruction.resource,
           evaluateNumericExpression(instruction.value, context, playerId),
+          { announce: instruction.announce },
         ),
       ),
     'lose-resource': (instruction) =>
@@ -295,6 +297,7 @@ function createPlayerValueHandlers<TState extends object>({
           instruction.resource,
           requested,
           policy,
+          { announce: instruction.announce },
         );
         if (!payment.accepted && instruction.insufficient === undefined)
           throw new GameRuleViolationError('RESOURCE_INSUFFICIENT');

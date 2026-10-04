@@ -133,7 +133,9 @@ function resolveTile(
       if (!tile) return;
       ctx.events.message('game.pawn.landed', { playerId, tileId: position });
       if (tile.type === 'finish') {
-        const apples = ctx.resources.add(playerId, program.appleResource, 1);
+        const apples = ctx.resources.add(playerId, program.appleResource, 1, {
+          announce: false,
+        });
         if (apples >= program.applesToWin)
           ctx.match.finish({
             winners: [playerId],
@@ -150,7 +152,9 @@ function resolveTile(
         .find((id) => ctx.movement.position(program.trackId, id) === position);
       if (occupant !== undefined) moveHorse(program, occupant, -5, ctx);
       if (tile.type === 'bonus' && tile.apples)
-        ctx.resources.add(playerId, program.appleResource, tile.apples);
+        ctx.resources.add(playerId, program.appleResource, tile.apples, {
+          announce: false,
+        });
       else if (tile.type === 'skip' && tile.skipTurns)
         ctx.turn.skip(playerId, tile.skipTurns);
       else if (tile.type === 'card') drawCard(program, playerId, depth, ctx);
@@ -220,6 +224,7 @@ function effects(program: BidirectionalCollisionRaceOptions) {
               actorPlayerId,
               program.appleResource,
               1,
+              { announce: false },
             );
         }
       },
@@ -266,8 +271,10 @@ function giveApple(
   ctx: Context,
 ) {
   if (!ctx.resources.has(actorId, program.appleResource, 1)) return;
-  ctx.resources.transfer(actorId, targetId, program.appleResource, 1);
-  ctx.resources.add(targetId, iou(program, actorId), 1);
+  ctx.resources.transfer(actorId, targetId, program.appleResource, 1, {
+    announce: false,
+  });
+  ctx.resources.add(targetId, iou(program, actorId), 1, { announce: false });
 }
 
 function payIou(
@@ -284,8 +291,13 @@ function payIou(
     !ctx.resources.has(playerId, program.appleResource, 1)
   )
     return;
-  ctx.resources.transfer(playerId, creditor, program.appleResource, 1);
-  ctx.resources.remove(playerId, iou(program, creditor), 1);
+  ctx.resources.transfer(playerId, creditor, program.appleResource, 1, {
+    announce: false,
+  });
+  const debt = iou(program, creditor);
+  ctx.resources.set(playerId, debt, ctx.resources.get(playerId, debt) - 1, {
+    announce: false,
+  });
 }
 
 function iou(program: BidirectionalCollisionRaceOptions, creditorId: number) {

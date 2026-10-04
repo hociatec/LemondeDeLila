@@ -107,6 +107,7 @@ function boardAndPlayerMessage(
       : '';
   }
   if (type === 'resource.transferred') {
+    if (data.announce === false) return '';
     const from = player(data.from);
     const to = player(data.to);
     const rawResource = value('resource');

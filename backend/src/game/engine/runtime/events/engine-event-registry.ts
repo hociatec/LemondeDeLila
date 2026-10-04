@@ -123,6 +123,7 @@ export type EngineEventMap = {
     to: number;
     resource: string;
     amount: number;
+    announce?: boolean;
   };
   'resource.exchanged': {
     leftPlayerId: number;

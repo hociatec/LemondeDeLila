@@ -127,6 +127,25 @@ describe('genericGameEventMessage', () => {
     ).toBe('');
   });
 
+  it('keeps explicitly silent resource changes out of the history', () => {
+    expect(
+      message(
+        'resource.changed',
+        { playerId: 1, resource: 'apple', value: 2, announce: false },
+        1,
+        1,
+      ),
+    ).toBe('');
+    expect(
+      message(
+        'resource.transferred',
+        { from: 1, to: 2, resource: 'apple', amount: 1, announce: false },
+        1,
+        1,
+      ),
+    ).toBe('');
+  });
+
   it('describes the destination without repeating the technical movement', () => {
     expect(message('pawn.moved', { from: 0, to: 3 }, 1, 1)).toBe('');
     expect(message('pawn.landed', { playerId: 2, position: 6 }, 2, 1)).toBe(

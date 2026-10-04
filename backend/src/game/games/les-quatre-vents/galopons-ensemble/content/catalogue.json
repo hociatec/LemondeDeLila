@@ -30,6 +30,7 @@
         {
           "kind": "gain-resource",
           "resource": "apple",
+          "announce": false,
           "amount": 1,
           "target": {
             "kind": "self"
@@ -164,6 +165,7 @@
         {
           "kind": "gain-resource",
           "resource": "apple",
+          "announce": false,
           "amount": 1,
           "target": {
             "kind": "self"
@@ -191,6 +193,7 @@
         {
           "kind": "lose-resource",
           "resource": "apple",
+          "announce": false,
           "amount": 1,
           "target": {
             "kind": "self"
@@ -210,6 +213,7 @@
         {
           "kind": "gain-resource",
           "resource": "apple",
+          "announce": false,
           "amount": 2,
           "target": {
             "kind": "self"
@@ -320,6 +324,7 @@
         {
           "kind": "lose-resource",
           "resource": "apple",
+          "announce": false,
           "amount": 1,
           "target": {
             "kind": "self"
@@ -335,6 +340,7 @@
         {
           "kind": "gain-resource",
           "resource": "apple",
+          "announce": false,
           "amount": 2,
           "target": {
             "kind": "self"

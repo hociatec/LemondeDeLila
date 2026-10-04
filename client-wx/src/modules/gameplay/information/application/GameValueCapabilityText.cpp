@@ -21,12 +21,42 @@ void Amount(std::ostringstream& out, double value)
     if (std::trunc(value) == value) out << static_cast<long long>(value);
     else out << value;
 }
+
+bool IsPlayerFacingResource(const std::string& id)
+{
+    return id.find(".iou.") == std::string::npos;
+}
+
+std::string PlayerResources(
+    const domain::GameState& state, bool viewerResources)
+{
+    if (!state.kits.resources || !state.viewerPlayerId) return {};
+    std::ostringstream out;
+    for (const auto& player : state.kits.resources->players)
+    {
+        const bool isViewer = player.playerId == *state.viewerPlayerId;
+        if (isViewer != viewerResources) continue;
+        out << (isViewer ? "Vous" : Player(state, player.playerId)) << '\n';
+        for (const auto& value : player.values)
+        {
+            if (!IsPlayerFacingResource(value.id)) continue;
+            out << "- " << HumanLabel(value.id) << " : ";
+            Amount(out, value.value);
+            out << '\n';
+        }
+    }
+    return out.str();
+}
 }
 
 std::optional<std::string> BuildValueCapabilityText(
     const domain::GameState& state, const std::string& capability)
 {
     std::ostringstream out;
+    if (capability == "resources-self")
+        return PlayerResources(state, true);
+    if (capability == "resources-others")
+        return PlayerResources(state, false);
     if (capability == "score" && state.kits.score)
     {
         for (const auto& entry : state.kits.score->leaderboard)

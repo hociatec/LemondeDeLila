@@ -562,7 +562,7 @@ exports[`catalogue reference replay: galopons-ensemble, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "f584734cd135ea88e3959169b55c9c27abe9a664febd24457940c25d1dab27d4",
+  "traceDigest": "ff725f74971b3f5ffbc7215ad03273b1025ce49e9e4d45336fe4a9a45987d03f",
 }
 `;
 
@@ -574,7 +574,7 @@ exports[`catalogue reference replay: galopons-ensemble, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "47cfb79a1bcf32b2649d32a056731ce11f840f7d6892d1290e1347f5a2accbc0",
+  "traceDigest": "382c9b31655206cbf21d530346673d04abe593009d9a6c07bd70169549b9e3ea",
 }
 `;
 
@@ -586,7 +586,7 @@ exports[`catalogue reference replay: galopons-ensemble, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 20,
-  "traceDigest": "8c02b4284ce2f4217d4e5c65fc1d8dcde795736a2ed2b4a39924fdffe540537e",
+  "traceDigest": "33f3135b3246045e2a1ba12da929dc07f0c6a21bad1e8a650300ed55938842b0",
 }
 `;
 

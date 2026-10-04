@@ -1,8 +1,11 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
-  "definitionVersion": "3",
-  "snapshotMigrations": [{ "fromVersion": "1", "toVersion": "2" }],
+  "contentVersion": "3",
+  "definitionVersion": "4",
+  "snapshotMigrations": [
+    { "fromVersion": "1", "toVersion": "2" },
+    { "fromVersion": "2", "toVersion": "3" }
+  ],
   "category": "JeuxDePlateaux",
   "world": "LesQuatreVents",
   "patterns": [
@@ -58,6 +61,18 @@
       "key": "D",
       "type": "action",
       "actionType": "roll"
+    },
+    {
+      "key": "E",
+      "type": "interface",
+      "id": "resources-self",
+      "label": "Mes pommes"
+    },
+    {
+      "key": "Shift+E",
+      "type": "interface",
+      "id": "resources-others",
+      "label": "Pommes des autres joueurs"
     }
   ],
   "initialPhase": "setup",
