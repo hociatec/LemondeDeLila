@@ -26,6 +26,8 @@ export function createStoryChallengeChoices(program: StoryChallengeProgram) {
       player: actorId,
       options,
       data: pending,
+      label: (id) =>
+        program.optionRules[effect].find((rule) => rule.id === id)?.label ?? id,
     });
   }
   function requestLaughter(actorId: number, ctx: Context) {

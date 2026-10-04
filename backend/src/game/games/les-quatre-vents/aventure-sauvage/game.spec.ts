@@ -22,9 +22,7 @@ describe('Aventure Sauvage declarative game', () => {
     expect(neutralSpaces.every((tile) => tile.label === 'Case neutre')).toBe(
       true,
     );
-    expect(board.some((tile) => tile.label.startsWith('Sentier '))).toBe(
-      false,
-    );
+    expect(board.some((tile) => tile.label.startsWith('Sentier '))).toBe(false);
   });
 
   it('assigns unique pawns through generic choices', async () => {

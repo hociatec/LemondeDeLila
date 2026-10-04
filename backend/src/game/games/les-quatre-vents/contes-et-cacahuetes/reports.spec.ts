@@ -99,6 +99,52 @@ describe('Contes reports: chained cards and blocked turns', () => {
     expect(interrupted).toBeGreaterThan(0);
   });
 
+  it('offers and resolves every ephemeral wish with readable labels', async () => {
+    const state = await fixture();
+    state.engine.kits.movement.positions['story-road'] = {
+      '1': 20,
+      '2': 5,
+      '3': 0,
+    };
+    top(state, 'surprise', [13]);
+    top(state, 'bonus', [2]);
+    top(state, 'malus', [1]);
+    const wish = act(state, 1, 'roll');
+
+    expect(wish.pending?.data.choiceId).toBe('choice-story-challenge.option');
+    expect(wish.pending?.choices).toEqual([
+      'Avancer de 2 cases',
+      'Échanger votre pion avec un autre joueur',
+      'Tirer une carte Bonus',
+    ]);
+
+    const moved = act(structuredClone(wish), 1, 'choice.resolve', {
+      value: 'move-two',
+    });
+    expect(moved.engine.kits.movement.positions['story-road']['1']).toBe(23);
+
+    let swapped = act(structuredClone(wish), 1, 'choice.resolve', {
+      value: 'swap',
+    });
+    expect(swapped.pending?.data.choiceId).toBe(
+      'choice-story-challenge.wish-swap',
+    );
+    swapped = act(swapped, 1, 'choice.resolve', { value: 2 });
+    expect(swapped.engine.kits.movement.positions['story-road']).toMatchObject({
+      '1': 5,
+      '2': 21,
+    });
+
+    const drewBonus = act(structuredClone(wish), 1, 'choice.resolve', {
+      value: 'draw-bonus',
+    });
+    expect(
+      drewBonus.engine.playerValues.resources[
+        'choice-story-challenge.reroll-token'
+      ]['1'],
+    ).toBe(1);
+  });
+
   it('resolves both bridge cards across a target choice and keeps the reversed next turn', async () => {
     let state = await fixture();
     top(state, 'bonus', [9, 10]);

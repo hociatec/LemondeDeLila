@@ -306,12 +306,8 @@ export class GameWsStateMessagesPresenter {
       effectDescription && !card.includes(effectDescription)
         ? ` Effet : ${effectDescription.replace(/[.!?]+$/u, '')}.`
         : '';
-    const automatic =
-      input.params.automatic === true
-        ? ' Son effet est appliqué automatiquement.'
-        : '';
     return this.withNextTurn(
-      `${input.namedPlayer} ${input.namedPlayer === 'Vous' ? 'piochez' : 'pioche'} ${card}.${effectAnnouncement}${automatic}`,
+      `${input.namedPlayer} ${input.namedPlayer === 'Vous' ? 'piochez' : 'pioche'} ${card}.${effectAnnouncement}`,
       input.nextTurnData,
       input.players,
     );

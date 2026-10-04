@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "contentVersion": "3",
-  "definitionVersion": "4",
+  "definitionVersion": "5",
   "snapshotMigrations": [
     {
       "fromVersion": "contes-et-cacahuetes@content:32cd4133",
@@ -125,11 +125,13 @@
           "song": [
             {
               "id": "move-three",
+              "label": "Avancer de 3 cases",
               "kind": "move",
               "delta": 3
             },
             {
               "id": "steal-bonus",
+              "label": "Prendre une carte Bonus à un autre joueur",
               "kind": "target",
               "effect": "song-steal"
             }
@@ -137,16 +139,19 @@
           "wish": [
             {
               "id": "move-two",
+              "label": "Avancer de 2 cases",
               "kind": "move",
               "delta": 2
             },
             {
               "id": "swap",
+              "label": "Échanger votre pion avec un autre joueur",
               "kind": "target",
               "effect": "wish-swap"
             },
             {
               "id": "draw-bonus",
+              "label": "Tirer une carte Bonus",
               "kind": "draw",
               "deck": "bonus",
               "target": "actor"
@@ -155,6 +160,7 @@
           "gold-key-type": [
             {
               "id": "bonus",
+              "label": "Faire tirer une carte Bonus",
               "kind": "draw",
               "deck": "bonus",
               "target": "selected",
@@ -162,6 +168,7 @@
             },
             {
               "id": "malus",
+              "label": "Faire tirer une carte Malus",
               "kind": "draw",
               "deck": "malus",
               "target": "selected",

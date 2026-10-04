@@ -9,7 +9,7 @@ export type StoryTargetRule =
   | { kind: 'swap-turns' | 'swap-positions' | 'steal-token' }
   | { kind: 'give-card'; deck: string }
   | { kind: 'option'; optionId: string };
-export type StoryOptionRule = { id: string } & (
+export type StoryOptionRule = { id: string; label: string } & (
   | { kind: 'move'; delta: number }
   | { kind: 'target'; effect: string }
   | {
