@@ -15,6 +15,7 @@
 
 #include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/accessibility/presentation/ModalNavigation.h"
+#include "shared/accessibility/presentation/AccessibleMenu.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::gameplay::presentation::prompt
@@ -82,7 +83,8 @@ void GamePromptPanel::BuildLayout()
     candidateSearch->Add(candidatesSearchButton_);
     root->Add(candidateSearch, 0, wxEXPAND | wxBOTTOM, 4);
     candidatesList_ = new wxListBox(this, wxID_ANY);
-    candidatesList_->SetName(wxString(L"Candidats de l'action"));
+    lila::shared::accessibility::ConfigureListBoxAsAccessibleList(
+        *candidatesList_, wxString(L"Candidats de l'action"), {});
     root->Add(candidatesList_, 1, wxEXPAND | wxBOTTOM, 4);
     candidatesMoreButton_ = new wxButton(this, wxID_MORE, wxString(L"Charger la suite"));
     root->Add(candidatesMoreButton_, 0, wxALIGN_LEFT | wxBOTTOM, 8);

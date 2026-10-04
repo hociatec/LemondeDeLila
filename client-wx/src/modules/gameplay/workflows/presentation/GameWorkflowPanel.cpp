@@ -9,6 +9,7 @@
 #include "modules/gameplay/information/application/GameValueTextBuilder.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 #include "modules/gameplay/workflows/application/GameQuizActionResolver.h"
+#include "shared/accessibility/presentation/AccessibleMenu.h"
 
 namespace lila::modules::gameplay::presentation::workflows
 {
@@ -40,7 +41,8 @@ GameWorkflowPanel::GameWorkflowPanel(wxWindow* parent) : wxPanel(parent)
     auto* layout = new wxBoxSizer(wxVERTICAL);
     rows_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
-    rows_->SetName(wxString(L"Quiz, collections et soumissions. Consultation navigable."));
+    lila::shared::accessibility::ConfigureListBoxAsAccessibleList(
+        *rows_, wxString(L"Quiz, collections et soumissions. Consultation navigable."), {});
     layout->Add(rows_, 1, wxEXPAND);
     SetSizer(layout);
     Hide();

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -21,7 +22,8 @@ public:
     void Apply(const domain::GameGridView* grid,
         const std::vector<domain::GameAction>& actions,
         const std::vector<domain::GamePlayer>& players,
-        const domain::GamePawnsView* pawns);
+        const domain::GamePawnsView* pawns,
+        const std::optional<int>& viewerPlayerId);
     void Clear();
     [[nodiscard]] bool HandleKey(wxKeyEvent& event);
     [[nodiscard]] std::string SelectedCellId() const;

@@ -9,8 +9,10 @@
 
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
 #include "modules/gameplay/grid/application/GameGridActionResolver.h"
+#include "modules/gameplay/grid/application/GameGridViewerCellSelector.h"
 #include "modules/gameplay/grid/application/GridPlayerCellText.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
+#include "shared/accessibility/presentation/AccessibleMenu.h"
 
 namespace lila::modules::gameplay::presentation::grid
 {
@@ -92,8 +94,9 @@ GameGridPanel::GameGridPanel(wxWindow* parent) : wxPanel(parent)
     auto* layout = new wxBoxSizer(wxVERTICAL);
     cells_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
-    cells_->SetName(wxString(
-        L"Grille de jeu. Flèches pour naviguer, Page précédente ou suivante pour changer de plateau, Entrée pour activer."));
+    lila::shared::accessibility::ConfigureListBoxAsAccessibleList(
+        *cells_, wxString(
+            L"Grille de jeu. Flèches pour naviguer, Page précédente ou suivante pour changer de plateau, Entrée pour activer."), {});
     // A wxListBox normally treats Left/Right like Up/Down. Capture these keys
     // on the native control as well as on the gameplay CHAR_HOOK so reaching
     // C1 or A2 never wraps to the next or previous row.
@@ -109,10 +112,13 @@ GameGridPanel::GameGridPanel(wxWindow* parent) : wxPanel(parent)
 void GameGridPanel::Apply(const domain::GameGridView* grid,
     const std::vector<domain::GameAction>& actions,
     const std::vector<domain::GamePlayer>& players,
-    const domain::GamePawnsView* pawns)
+    const domain::GamePawnsView* pawns,
+    const std::optional<int>& viewerPlayerId)
 {
     const auto previousBoard = SelectedBoardId();
     const auto previousCell = SelectedCellId();
+    const auto viewerCell = application::grid::GameGridViewerCellSelector::Select(
+        grid, viewerPlayerId);
     std::vector<Cell> nextModel;
     if (grid != nullptr)
         for (const auto& board : grid->boards)
@@ -146,9 +152,16 @@ void GameGridPanel::Apply(const domain::GameGridView* grid,
     for (const auto& cell : model_) cells_->Append(FromUtf8(cell.description));
     if (!model_.empty())
     {
-        const auto found = std::find_if(model_.begin(), model_.end(),
+        auto found = std::find_if(model_.begin(), model_.end(),
             [&previousBoard, &previousCell](const Cell& cell)
             { return cell.boardId == previousBoard && cell.id == previousCell; });
+        if (found == model_.end() && viewerCell)
+            found = std::find_if(model_.begin(), model_.end(),
+                [&viewerCell](const Cell& cell)
+                {
+                    return cell.boardId == viewerCell->boardId &&
+                        cell.id == viewerCell->cellId;
+                });
         cells_->SetSelection(found == model_.end() ? 0 :
             static_cast<int>(std::distance(model_.begin(), found)));
     }

@@ -20,8 +20,9 @@ wxAccStatus AccessibleListBox::GetFocus(int* childId, wxAccessible** child)
         return wxACC_OK;
     }
 
-    const int selection = list->GetSelection();
-    *childId = selection == wxNOT_FOUND ? wxACC_SELF : selection + 1;
+    wxArrayInt selections;
+    list->GetSelections(selections);
+    *childId = selections.IsEmpty() ? wxACC_SELF : selections.Last() + 1;
     return wxACC_OK;
 }
 
@@ -52,10 +53,20 @@ wxAccStatus AccessibleListBox::Select(int childId, wxAccSelectionFlags selectFla
     }
 
     const int itemIndex = childId - 1;
-    if ((selectFlags & wxACC_SEL_TAKESELECTION) != 0 ||
-        (selectFlags & wxACC_SEL_TAKEFOCUS) != 0)
+    if ((selectFlags & wxACC_SEL_REMOVESELECTION) != 0)
     {
+        list->Deselect(itemIndex);
+    }
+    else if ((selectFlags & wxACC_SEL_TAKESELECTION) != 0 ||
+             (selectFlags & wxACC_SEL_TAKEFOCUS) != 0)
+    {
+        if (list->HasMultipleSelection()) list->DeselectAll(itemIndex);
         list->SetSelection(itemIndex);
+    }
+    else if ((selectFlags & wxACC_SEL_ADDSELECTION) != 0 ||
+             (selectFlags & wxACC_SEL_EXTENDSELECTION) != 0)
+    {
+        list->SetSelection(itemIndex, true);
     }
     if ((selectFlags & wxACC_SEL_TAKEFOCUS) != 0)
     {

@@ -29,6 +29,7 @@ public:
 
     wxAccStatus GetRole(int childId, wxAccRole* role) override;
     wxAccStatus GetName(int childId, wxString* name) override;
+    wxAccStatus GetValue(int childId, wxString* value) override;
     wxAccStatus GetChild(int childId, wxAccessible** child) override;
     wxAccStatus GetChildCount(int* childCount) override;
     wxAccStatus GetState(int childId, long* state) override;

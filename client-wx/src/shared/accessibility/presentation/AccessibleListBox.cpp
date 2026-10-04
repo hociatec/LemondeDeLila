@@ -57,6 +57,24 @@ wxAccStatus AccessibleListBox::GetName(int childId, wxString* name)
     return wxACC_OK;
 }
 
+wxAccStatus AccessibleListBox::GetValue(int childId, wxString* value)
+{
+    if (value == nullptr)
+    {
+        return wxACC_INVALID_ARG;
+    }
+    if (childId != wxACC_SELF && !IsValidChild(childId))
+    {
+        return wxACC_INVALID_ARG;
+    }
+
+    // The selected item's text is its accessible name. Exposing the same text
+    // as the list value makes NVDA announce it twice whenever focus enters the
+    // control ("A1, joueur; A1, joueur").
+    value->clear();
+    return wxACC_OK;
+}
+
 wxAccStatus AccessibleListBox::GetChild(int childId, wxAccessible** child)
 {
     if (child == nullptr || !IsValidChild(childId))
@@ -106,6 +124,11 @@ wxAccStatus AccessibleListBox::GetState(int childId, long* state)
         {
             *state |= wxACC_STATE_SYSTEM_FOCUSED;
         }
+        if (list->HasMultipleSelection())
+        {
+            *state |= wxACC_STATE_SYSTEM_MULTISELECTABLE |
+                wxACC_STATE_SYSTEM_EXTSELECTABLE;
+        }
         return wxACC_OK;
     }
 
@@ -122,7 +145,7 @@ wxAccStatus AccessibleListBox::GetState(int childId, long* state)
     {
         *state |= wxACC_STATE_SYSTEM_INVISIBLE;
     }
-    if (list->GetSelection() == childId - 1)
+    if (list->IsSelected(childId - 1))
     {
         *state |= wxACC_STATE_SYSTEM_SELECTED;
         if (list->HasFocus())

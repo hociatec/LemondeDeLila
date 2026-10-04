@@ -13,6 +13,7 @@
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 #include "modules/gameplay/prompts/presentation/GamePromptPanel.h"
+#include "shared/accessibility/presentation/AccessibleMenu.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::modules::gameplay::presentation
@@ -62,7 +63,8 @@ void GamePlayPanel::BuildLayout()
     actionsLabel_->SetForegroundColour(lila::shared::ui::Theme::Accent());
     content->Add(actionsLabel_, 0, wxEXPAND | wxBOTTOM, 4);
     linesList_ = new wxListBox(contentPanel_, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxLB_SINGLE | wxWANTS_CHARS);
-    linesList_->SetName(wxString(L"Actions de jeu"));
+    lila::shared::accessibility::ConfigureListBoxAsAccessibleList(
+        *linesList_, wxString(L"Actions de jeu"), {});
     linesList_->SetMinSize(wxSize(260, 90));
     content->Add(linesList_, 1, wxEXPAND | wxBOTTOM, 8);
     actionsLabel_->Hide();
@@ -74,7 +76,8 @@ void GamePlayPanel::BuildLayout()
     choicesList_ = new wxListBox(
         contentPanel_, wxID_ANY, wxDefaultPosition, wxDefaultSize,
         0, nullptr, wxLB_EXTENDED | wxWANTS_CHARS);
-    choicesList_->SetName(wxString(L"Choix de jeu"));
+    lila::shared::accessibility::ConfigureListBoxAsAccessibleList(
+        *choicesList_, wxString(L"Choix de jeu"), {});
     choicesList_->SetMinSize(wxSize(260, 90));
     content->Add(choicesList_, 1, wxEXPAND | wxBOTTOM, 8);
     orderingChoices_ = new wxRearrangeCtrl(
