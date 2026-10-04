@@ -90,9 +90,15 @@ void AdminFrame::OpenResultActions(std::size_t index)
     else if (kind == domain::AdminItemKind::BugReport)
     {
         add("bugs.get", L"Consulter", {}, true);
+        add("bugs.comments", L"Commentaires", {}, true);
         add("bugs.delete", L"Supprimer", {}, true);
         add("bugs.update", L"Modifier");
         add("bugs.status", L"Changer le statut");
+    }
+    else if (kind == domain::AdminItemKind::BugReportComment)
+    {
+        add("bugs.comment.view", L"Consulter", {}, true);
+        add("bugs.comment.delete", L"Supprimer", {}, true);
     }
     else if (kind == domain::AdminItemKind::Room)
     {
@@ -170,6 +176,7 @@ void AdminFrame::OpenResultActions(std::size_t index)
     }
     commandsMenu_->SetItems(items);
     commandsMenu_->SetSelectedIndexSilently(0);
+    commandsMenu_->Show();
     showingItemActions_ = true;
     titleLabel_->SetLabel(wxString(domain::GetAdminAreas()[selectedSection_].label.data()) +
         L" — " + lila::shared::text::FromUtf8(ItemName(contextItem_)));
@@ -194,6 +201,7 @@ void AdminFrame::RestoreAreaFromItem()
             items.push_back({command->id, wxString(command->label)});
         }
     commandsMenu_->SetItems(items);
+    commandsMenu_->Show(area.id != "reports");
     titleLabel_->SetLabel(wxString(L"Administration — ") + wxString(area.label.data()));
     Layout();
     FocusResult();

@@ -5,6 +5,7 @@ import {
   CreateBugReportService,
   CountBugReportsByStatusService,
   DeleteBugReportService,
+  DeleteBugReportCommentService,
   GetBugReportService,
   ListBugReportCommentsService,
   ListBugReportsService,
@@ -30,6 +31,7 @@ export class AppAdminBugReportsAdapter implements AdminBugReportsPort {
     private readonly deleteReport: DeleteBugReportService,
     private readonly listCommentsService: ListBugReportCommentsService,
     private readonly addCommentService: AddBugReportCommentService,
+    private readonly deleteCommentService: DeleteBugReportCommentService,
     private readonly countCommentsService: CountBugReportCommentsService,
   ) {}
 
@@ -91,6 +93,10 @@ export class AppAdminBugReportsAdapter implements AdminBugReportsPort {
     createdByUsername: string;
   }): Promise<BugReportCommentRecord | null> {
     return this.addCommentService.execute(input);
+  }
+
+  deleteComment(reportId: string, commentId: string): Promise<boolean> {
+    return this.deleteCommentService.execute(reportId, commentId);
   }
 
   countComments(reportIds: string[]): Promise<Record<string, number>> {

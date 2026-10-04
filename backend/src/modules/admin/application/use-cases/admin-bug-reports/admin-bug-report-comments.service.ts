@@ -83,6 +83,23 @@ export class AdminBugReportCommentsService {
       commentsCount: counts[reportId] ?? 0,
     };
   }
+
+  async delete(reportIdInput: string, commentIdInput: string) {
+    const reportId = reportIdInput.trim();
+    const commentId = commentIdInput.trim();
+    assertReportId(reportId);
+    assertCommentId(commentId);
+    if (!(await this.bugReports.deleteComment(reportId, commentId))) {
+      throw new BadRequestException('Commentaire introuvable');
+    }
+    const counts = await this.bugReports.countComments([reportId]);
+    return {
+      removed: true,
+      reportId,
+      commentId,
+      commentsCount: counts[reportId] ?? 0,
+    };
+  }
 }
 
 function serializeComment<T extends { createdAt: unknown }>(comment: T) {
@@ -95,6 +112,15 @@ function assertReportId(value: unknown): asserts value is string {
     !/^[A-Za-z0-9_-]{1,64}$/.test(value.trim())
   ) {
     throw new BadRequestException('Identifiant de rapport invalide');
+  }
+}
+
+function assertCommentId(value: unknown): asserts value is string {
+  if (
+    typeof value !== 'string' ||
+    !/^[A-Za-z0-9_-]{1,64}$/.test(value.trim())
+  ) {
+    throw new BadRequestException('Identifiant de commentaire invalide');
   }
 }
 

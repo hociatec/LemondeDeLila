@@ -184,6 +184,7 @@ inline constexpr std::string_view UpdateStatus = "admin.bugReports.updateStatus"
 inline constexpr std::string_view Delete = "admin.bugReports.delete";
 inline constexpr std::string_view CommentsList = "admin.bugReports.comments.list";
 inline constexpr std::string_view CommentsAdd = "admin.bugReports.comments.add";
+inline constexpr std::string_view CommentsDelete = "admin.bugReports.comments.delete";
 }
 
 namespace quiz

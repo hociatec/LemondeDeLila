@@ -40,6 +40,8 @@ void AppendModerationCommands(std::vector<AdminCommand>& c)
         {"bugs.status", L"Changer le statut", L"Choisissez le nouveau statut du rapport.", T::ApiWebSocket, std::string(ws::admin::bugReports::UpdateStatus), {}, R"({"id":"","status":"in_progress"})"},
         {"bugs.comments", L"Lister les commentaires", L"Commentaires paginés.", T::ApiWebSocket, std::string(ws::admin::bugReports::CommentsList), {}, R"({"reportId":"","offset":0,"limit":50})"},
         {"bugs.comment", L"Ajouter un commentaire", L"Commentaire de suivi.", T::ApiWebSocket, std::string(ws::admin::bugReports::CommentsAdd), {}, R"({"reportId":"","content":""})"},
+        {"bugs.comment.view", L"Consulter un commentaire", L"Afficher le commentaire complet.", T::LocalAction, "view-comment", {}, "{}"},
+        {"bugs.comment.delete", L"Supprimer un commentaire", L"Suppression définitive.", T::ApiWebSocket, std::string(ws::admin::bugReports::CommentsDelete), {}, R"({"reportId":"","commentId":""})", true},
         {"bugs.delete", L"Supprimer un rapport", L"Suppression définitive.", T::ApiWebSocket, std::string(ws::admin::bugReports::Delete), {}, R"({"id":""})", true},
     });
 }

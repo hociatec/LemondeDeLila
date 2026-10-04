@@ -40,3 +40,19 @@ export class AdminBugReportCommentAddWsDto extends AdminBugReportCommentsListWsD
   @MaxLength(20000)
   content!: string;
 }
+
+export class AdminBugReportCommentDeleteWsDto {
+  @IsString()
+  @MinLength(1)
+  @Matches(/\S/, { message: 'reportId must not be blank' })
+  @MaxLength(64)
+  @Matches(/^[A-Za-z0-9_-]+$/)
+  reportId!: string;
+
+  @IsString()
+  @MinLength(1)
+  @Matches(/\S/, { message: 'commentId must not be blank' })
+  @MaxLength(64)
+  @Matches(/^[A-Za-z0-9_-]+$/)
+  commentId!: string;
+}

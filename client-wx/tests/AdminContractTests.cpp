@@ -69,6 +69,7 @@ int main()
     assert(commandIds.size() == GetAdminCommands().size());
     for (const auto& id : {
              "users.delete", "chat.clear", "contacts.delete", "bugs.delete",
+             "bugs.comment.delete",
              "rooms.destroy", "rooms.cleanup", "games.reset", "categories.delete",
              "bots.delete", "mnemo.category.delete", "mnemo.question.delete",
              "roles.delete", "settings.stats.reset", "sounds.cleanup",
@@ -93,6 +94,10 @@ int main()
         {L"En attente", L"En cours", L"À tester", L"Terminé", L"Refusé"}));
     const auto newBugReport = nlohmann::ordered_json::parse(findCommand("bugs.create").payloadTemplate);
     assert(newBugReport.begin().key() == "subject" && std::next(newBugReport.begin()).key() == "content");
+    const auto deleteComment = nlohmann::json::parse(
+        findCommand("bugs.comment.delete").payloadTemplate);
+    assert(deleteComment.contains("reportId"));
+    assert(deleteComment.contains("commentId"));
     const auto mnemoStatus = lila::modules::admin::domain::GetAdminFieldMetadata(
         "mnemo.question.update", "status");
     assert(mnemoStatus.choices ==

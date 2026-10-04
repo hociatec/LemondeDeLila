@@ -142,6 +142,7 @@ export const WS_EVENTS = {
       delete: 'admin.bugReports.delete',
       commentsList: 'admin.bugReports.comments.list',
       commentsAdd: 'admin.bugReports.comments.add',
+      commentsDelete: 'admin.bugReports.comments.delete',
     },
     quiz: {
       mnemo: {

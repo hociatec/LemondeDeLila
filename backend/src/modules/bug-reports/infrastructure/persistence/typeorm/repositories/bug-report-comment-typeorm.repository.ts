@@ -63,6 +63,11 @@ export class BugReportCommentTypeormRepository implements BugReportCommentReposi
     return this.toRecord(saved);
   }
 
+  async delete(reportId: string, commentId: string): Promise<boolean> {
+    const result = await this.repo.delete({ id: commentId, reportId });
+    return (result.affected ?? 0) > 0;
+  }
+
   private toRecord(entity: BugReportCommentEntity): BugReportCommentRecord {
     return {
       id: entity.id,

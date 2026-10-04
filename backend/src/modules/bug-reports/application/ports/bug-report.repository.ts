@@ -49,6 +49,7 @@ export interface BugReportCommentRepository {
   save(
     comment: CreateBugReportCommentRecordInput | BugReportCommentRecord,
   ): Promise<BugReportCommentRecord>;
+  delete(reportId: string, commentId: string): Promise<boolean>;
 }
 
 export const BUG_REPORT_REPOSITORY = Symbol('BUG_REPORT_REPOSITORY');

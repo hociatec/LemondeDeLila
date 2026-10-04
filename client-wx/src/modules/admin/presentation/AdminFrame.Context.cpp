@@ -45,6 +45,7 @@ void AdminFrame::ApplyContextToPayload(
     CopyAlias(payload, contextItem_, "toUserId", {"userId", "createdByUserId", "authorId", "id"});
     CopyAlias(payload, contextItem_, "messageId", {"messageId", "id"});
     CopyAlias(payload, contextItem_, "reportId", {"reportId", "id"});
+    CopyAlias(payload, contextItem_, "commentId", {"commentId", "id"});
     CopyAlias(payload, contextItem_, "contactId", {"contactId", "id"});
     CopyAlias(payload, contextItem_, "roomId", {"roomId", "id"});
     CopyAlias(payload, contextItem_, "gameType", {"gameType", "type", "id"});

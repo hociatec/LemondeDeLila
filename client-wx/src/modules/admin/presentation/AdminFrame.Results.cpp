@@ -21,7 +21,7 @@ const nlohmann::json* FindList(const nlohmann::json& result)
     if (!result.is_object()) return nullptr;
     constexpr std::string_view keys[]{
         "items", "users", "rooms", "messages", "games", "categories",
-        "questions", "definitions", "roles", "events", "sounds", "sections", "names", "reports"};
+        "questions", "definitions", "roles", "events", "sounds", "sections", "names", "reports", "comments"};
     for (const auto key : keys)
     {
         const auto found = result.find(key);
@@ -54,7 +54,9 @@ void AdminFrame::ShowResult(
     const nlohmann::json& result)
 {
     const auto displayResult = command.id == "sounds.catalog"
-        ? FlattenSoundCatalog(result) : result;
+        ? FlattenSoundCatalog(result)
+        : command.id == "bugs.comments" && result.is_object() && result.contains("items")
+            ? nlohmann::json{{"comments", result["items"]}} : result;
     auto presentation = BuildAdminResultPresentation(displayResult);
     if (command.id == "bugs.get")
     {
@@ -116,7 +118,8 @@ void AdminFrame::ShowResult(
     resultItems_.clear();
     selectedResultIndex_.reset();
     currentResultItemKind_ = domain::GetAdminAreas()[selectedSection_].itemKind;
-    if (command.id == "bugs.comments") currentResultItemKind_ = domain::AdminItemKind::None;
+    if (command.id == "bugs.comments")
+        currentResultItemKind_ = domain::AdminItemKind::BugReportComment;
     else if (command.id == "mnemo.categories")
         currentResultItemKind_ = domain::AdminItemKind::MnemoCategory;
     else if (command.id == "mnemo.questions")

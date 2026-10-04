@@ -12,6 +12,7 @@ enum class AdminItemKind
     ChatMessage,
     Contact,
     BugReport,
+    BugReportComment,
     Room,
     Game,
     Category,
