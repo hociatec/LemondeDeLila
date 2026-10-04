@@ -87,10 +87,18 @@ const reportActions = itemActions.match(
 )?.[0] ?? '';
 const reportCommands = matches(reportActions, /add\("([^"]+)"/g,
   (match) => match[1]);
+const commentActions = itemActions.match(
+  /kind == domain::AdminItemKind::BugReportComment\)[\s\S]*?(?=else if)/,
+)?.[0] ?? '';
+const commentCommands = matches(commentActions, /add\("([^"]+)"/g,
+  (match) => match[1]);
 
 const failures = [
   ['actions accessibles des rapports', difference(
-    new Set(['bugs.get', 'bugs.delete', 'bugs.update', 'bugs.status']), reportCommands)],
+    new Set(['bugs.get', 'bugs.comments', 'bugs.comment', 'bugs.delete',
+      'bugs.update', 'bugs.status']), reportCommands)],
+  ['actions accessibles des commentaires', difference(
+    new Set(['bugs.comment.view', 'bugs.comment.delete']), commentCommands)],
   ['routes HTTP admin', difference(backendHttp, clientHttp)],
   ['événements WebSocket admin', difference(backendWs, clientWs)],
   ['workflow de contacts staff', difference(backendStaffNotify, clientStaffNotify)],

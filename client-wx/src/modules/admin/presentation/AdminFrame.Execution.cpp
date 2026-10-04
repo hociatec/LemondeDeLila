@@ -139,7 +139,7 @@ void AdminFrame::ExecuteCommand(
     bool announceLifecycle)
 {
     NormalizePaginationPayload(command, payload);
-    if (command.id == "bugs.comments")
+    if (command.id == "bugs.comments" || command.id == "bugs.comment")
     {
         const auto reportId = payload.value("reportId", std::string{});
         activeCommentsReportId_ = reportId.empty()
