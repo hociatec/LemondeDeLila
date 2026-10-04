@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <functional>
 #include <string_view>
 
@@ -28,10 +29,17 @@ public:
 private:
     void OnClose(wxCloseEvent& event);
     void OnCharHook(wxKeyEvent& event);
+#ifdef __WXMSW__
+    void OnActivate(wxActivateEvent& event);
+    void ReannounceWindowTitle(std::size_t activationGeneration);
+#endif
 
     wxWindow* contentRoot_ = nullptr;
     wxWindow* currentContent_ = nullptr;
     PresenceRequestedHandler onPresenceRequested_;
     CloseRequestedHandler onCloseRequested_;
+#ifdef __WXMSW__
+    std::size_t activationGeneration_ = 0;
+#endif
 };
 }
