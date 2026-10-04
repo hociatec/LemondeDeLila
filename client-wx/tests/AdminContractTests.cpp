@@ -7,6 +7,7 @@
 #include "modules/admin/domain/AdminFormMetadata.h"
 #include "modules/admin/domain/AdminPagination.h"
 #include "modules/admin/infrastructure/AdminPayloadValidator.h"
+#include "modules/admin/presentation/AdminContextPolicy.h"
 #include "modules/admin/presentation/AdminResultFormatter.h"
 #include "shared/network/infrastructure/http/AuthenticatedHttpClient.h"
 int main()
@@ -98,6 +99,14 @@ int main()
         findCommand("bugs.comment.delete").payloadTemplate);
     assert(deleteComment.contains("reportId"));
     assert(deleteComment.contains("commentId"));
+    assert(!lila::modules::admin::presentation::ShouldCopyContextValue(
+        "bugs.comment", "content"));
+    assert(lila::modules::admin::presentation::ShouldCopyContextValue(
+        "bugs.comment", "reportId"));
+    assert(lila::modules::admin::presentation::ShouldCopyContextValue(
+        "bugs.update", "content"));
+    assert(lila::modules::admin::domain::GetAdminFieldMetadata(
+        "bugs.comment", "content").label == L"Commentaire");
     const auto mnemoStatus = lila::modules::admin::domain::GetAdminFieldMetadata(
         "mnemo.question.update", "status");
     assert(mnemoStatus.choices ==

@@ -2,6 +2,8 @@
 
 #include <array>
 
+#include "modules/admin/presentation/AdminContextPolicy.h"
+
 namespace lila::modules::admin::presentation
 {
 namespace
@@ -33,10 +35,10 @@ void AdminFrame::ApplyContextToPayload(
     const domain::AdminCommand& command,
     nlohmann::json& payload) const
 {
-    (void)command;
     if (!contextItem_.is_object()) return;
     for (auto& item : payload.items())
     {
+        if (!ShouldCopyContextValue(command.id, item.key())) continue;
         const auto value = contextItem_.find(item.key());
         if (value != contextItem_.end() && !value->is_null()) item.value() = *value;
     }
