@@ -106,6 +106,7 @@ private:
     void CloseSession();
     void ApplyInitialFocusIfNeeded();
     void ScheduleGameZoneFocus();
+    void CancelScheduledGameZoneFocus();
     [[nodiscard]] wxWindow* GameplayNavigationTarget() const;
     void EnsureGameplayNavigationInvariant();
 

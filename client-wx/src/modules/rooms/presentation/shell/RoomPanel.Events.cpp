@@ -90,6 +90,10 @@ void RoomPanel::BindEvents()
         *this,
         [this]()
         {
+            // Tab is an explicit focus decision.  Invalidate any delayed
+            // gameplay focus requested by a simultaneous realtime refresh so
+            // the same list item cannot receive a second focus notification.
+            CancelScheduledGameZoneFocus();
             lila::shared::accessibility::NavigationController::Scope scope;
             // Promote the current interactive control (notably a visible
             // hand) into the table's main navigation. The stable zone anchor
@@ -101,6 +105,11 @@ void RoomPanel::BindEvents()
             return scope;
         });
     Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event) { HandleShortcut(event); });
+}
+
+void RoomPanel::CancelScheduledGameZoneFocus()
+{
+    ++focusGeneration_;
 }
 
 void RoomPanel::ScheduleGameZoneFocus()
