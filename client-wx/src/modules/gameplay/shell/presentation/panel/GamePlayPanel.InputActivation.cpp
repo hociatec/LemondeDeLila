@@ -5,7 +5,6 @@
 #include <wx/window.h>
 
 #include "modules/gameplay/hand/presentation/GameHandPanel.h"
-#include "modules/gameplay/dice/presentation/GameDicePanel.h"
 #include "modules/gameplay/grid/presentation/GameGridPanel.h"
 #include "modules/gameplay/workflows/presentation/GameWorkflowPanel.h"
 
@@ -14,14 +13,6 @@ namespace lila::modules::gameplay::presentation
 bool GamePlayPanel::HandleFocusedActivation()
 {
     auto* focused = wxWindow::FindFocus();
-    auto* diceTarget = dicePanel_->NavigationTarget();
-    if (diceTarget != nullptr && focused == diceTarget)
-    {
-        const auto action = dicePanel_->ResolveAction();
-        if (!action) return true;
-        PrepareAndExecuteAction(*action);
-        return true;
-    }
     if (handPanel_->IsShown() && focused == handPanel_->NavigationTarget())
         return ActivateSelectedHandCard();
     if (choicesList_->IsShown() && focused == choicesList_)

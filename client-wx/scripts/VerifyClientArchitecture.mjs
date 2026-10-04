@@ -332,6 +332,15 @@ if (!roomPanelSource.includes('gamePlayPanel_->RequiredInteractionTarget();') ||
 
 const gameplayPanelSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.cpp'), 'utf8');
+const gameplayLayoutSource = await readFile(
+  join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.Layout.cpp'), 'utf8');
+const gameplayEventsSource = await readFile(
+  join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.Events.cpp'), 'utf8');
+if (gameplayLayoutSource.includes('GameDicePanel') ||
+    gameplayLayoutSource.includes('GameMovementPanel'))
+  violations.push('GamePlayPanel: les dés et la progression restent pilotés par Zone de jeu et les raccourcis');
+if (!gameplayEventsSource.includes('if (ActivateZoneAction()) return true;'))
+  violations.push('GamePlayPanel: Entrée sur Zone de jeu doit lancer les dés autorisés');
 for (const marker of ['IsShownOnScreen()', 'IsEnabled()', 'AcceptsFocus()'])
   if (!gameplayPanelSource.includes(marker))
     violations.push(`GamePlayPanel: validation de cible absente (${marker})`);
@@ -353,7 +362,6 @@ for (const forbiddenCapability of [
 }
 if (!gameplayPanelSource.includes('handPanel_->NavigationTarget()') ||
     !gameplayPanelSource.includes('gridPanel_->NavigationTarget()') ||
-    !gameplayPanelSource.includes('movementPanel_->NavigationTarget()') ||
     !gameplayPanelSource.includes('workflowPanel_->NavigationTarget()'))
   violations.push('GamePlayPanel: la navigation doit être dérivée des renderers génériques');
 

@@ -18,6 +18,7 @@
 #include "modules/gameplay/prompts/application/GameActionPromptFactory.h"
 #include "modules/gameplay/actions/infrastructure/GameActionCatalogDecoder.h"
 #include "modules/gameplay/session/application/GameStartConfigurationFlow.h"
+#include "modules/gameplay/shell/application/GameZoneActionResolver.h"
 #include "modules/gameplay/session/infrastructure/GameEventPayloadCodec.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/application/GameSurfaceSelectors.h"

@@ -89,9 +89,13 @@ void TestGenericDiceContract()
     const auto action = GameDiceActionResolver::Resolve(*state.kits.dice, state.actions);
     Expect(action.has_value() && action->type == "server-specific-roll",
         "Le lancer doit utiliser l'index serveur sans connaitre le nom de l'action.");
+    const auto zoneAction = lila::modules::gameplay::application::
+        GameZoneActionResolver::Resolve(state);
+    Expect(zoneAction.has_value() && zoneAction->type == "server-specific-roll",
+        "Entree sur Zone de jeu doit executer le lancer fourni par le serveur.");
     Expect(lila::modules::gameplay::application::GameSurfaceSelectors::
             Available(state).dice,
-        "Une projection de des doit activer son controle de jeu dedie.");
+        "Une projection de des doit signaler l'action disponible dans Zone de jeu.");
     Expect(lila::modules::gameplay::application::dice::GameDiceTextBuilder::DieText(
             state.kits.dice->dice[0]) == "Dé rouge : 3 sur 8",
         "La valeur et le nombre de faces doivent former un texte accessible.");

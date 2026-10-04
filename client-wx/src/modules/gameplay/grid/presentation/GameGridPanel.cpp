@@ -8,6 +8,7 @@
 #include <wx/sizer.h>
 
 #include "modules/gameplay/grid/application/GameGridCoordinate.h"
+#include "modules/gameplay/grid/application/GameGridActionResolver.h"
 #include "modules/gameplay/grid/application/GridPlayerCellText.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
 
@@ -106,7 +107,7 @@ GameGridPanel::GameGridPanel(wxWindow* parent) : wxPanel(parent)
 }
 
 void GameGridPanel::Apply(const domain::GameGridView* grid,
-    const std::vector<domain::GameAction>&,
+    const std::vector<domain::GameAction>& actions,
     const std::vector<domain::GamePlayer>& players,
     const domain::GamePawnsView* pawns)
 {
@@ -118,6 +119,13 @@ void GameGridPanel::Apply(const domain::GameGridView* grid,
             for (const auto& cell : board.cells)
                 nextModel.push_back({board.id, cell.id,
                 Describe(cell, board, players, pawns), cell.x, cell.y});
+    const bool hasGridAction = std::ranges::any_of(nextModel,
+        [&actions](const Cell& cell)
+        {
+            return application::grid::GameGridActionResolver::Resolve(
+                actions, {cell.boardId, cell.id, cell.x, cell.y}).has_value();
+        });
+    if (!hasGridAction) nextModel.clear();
     if (nextModel == model_) return;
     // Updating a move must not destroy the focused list or its selected cell.
     const bool sameCells = nextModel.size() == model_.size() &&
