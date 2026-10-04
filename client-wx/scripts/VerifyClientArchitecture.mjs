@@ -336,10 +336,14 @@ if (!roomPanelSource.includes('CancelScheduledGameZoneFocus();') ||
 const hostFrameSource = await readFile(
   join(root, 'app/navigation/presentation/HostFrame.cpp'), 'utf8');
 if (!hostFrameSource.includes('activationFocusTimer_.StartOnce(ActivationFocusDelayMs)') ||
-    !hostFrameSource.includes('constexpr int ActivationFocusDelayMs = 600;'))
+    !hostFrameSource.includes('constexpr int ActivationFocusDelayMs = 1500;'))
   violations.push('HostFrame: la restauration du focus doit laisser annoncer le titre après Alt+Tab');
 if (!hostFrameSource.includes('CancelActivationFocusRestore();'))
   violations.push('HostFrame: une saisie utilisateur doit annuler la restauration différée du focus');
+const validFocusCheck = hostFrameSource.indexOf('focused->IsShownOnScreen()');
+const rememberedFocusRestore = hostFrameSource.indexOf('focusMemory_.Restore(currentContent_)');
+if (validFocusCheck < 0 || rememberedFocusRestore < 0 || validFocusCheck > rememberedFocusRestore)
+  violations.push('HostFrame: un focus enfant Windows valide ne doit pas être réémis après Alt+Tab');
 
 const gameplayPanelSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.cpp'), 'utf8');
