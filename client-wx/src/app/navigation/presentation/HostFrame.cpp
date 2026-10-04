@@ -19,7 +19,7 @@ constexpr int HostWindowWidth = 1280;
 constexpr int HostWindowHeight = 800;
 // Let the screen reader finish the window title before a restored child focus
 // produces its own announcement after Alt+Tab.
-constexpr int ActivationFocusDelayMs = 600;
+constexpr int ActivationFocusDelayMs = 1500;
 }
 
 namespace lila::app::navigation
@@ -140,18 +140,26 @@ void HostFrame::RestoreContentFocusAfterActivation()
 
     auto* focused = wxWindow::FindFocus();
 
+    // Windows usually keeps the child focus across Alt+Tab. Reapplying the
+    // same logical focus (or replacing another valid child focus) generates a
+    // fresh accessibility event that interrupts NVDA while it reads the window
+    // title. Only restore our remembered target when Windows left no usable
+    // focus inside the active view.
+    if (focused != nullptr && focused->IsShownOnScreen() &&
+        focused->IsEnabled() && focused->AcceptsFocus() &&
+        lila::shared::accessibility::NavigationController::IsDescendantOf(
+            focused, currentContent_))
+    {
+        restoreFocusAfterActivation_ = false;
+        return;
+    }
+
     if (restoreFocusAfterActivation_)
     {
         restoreFocusAfterActivation_ = false;
         if (focusMemory_.Restore(currentContent_))
             return;
     }
-
-    if (focused != nullptr && focused->IsShownOnScreen() &&
-        focused->IsEnabled() && focused->AcceptsFocus() &&
-        lila::shared::accessibility::NavigationController::IsDescendantOf(
-            focused, currentContent_))
-        return;
 
     if (focusMemory_.Restore(currentContent_))
         return;
