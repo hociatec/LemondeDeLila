@@ -16,7 +16,7 @@ void ApplyBugReportFieldMetadata(
     }
     else if (fieldName == "content")
     {
-        metadata.label = L"Contenu";
+        metadata.label = commandId == "bugs.comment" ? L"Commentaire" : L"Contenu";
     }
     else if (fieldName == "status" && commandId == "bugs.list")
     {
