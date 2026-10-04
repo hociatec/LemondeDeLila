@@ -336,6 +336,22 @@ const gameplayLayoutSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.Layout.cpp'), 'utf8');
 const gameplayEventsSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.Events.cpp'), 'utf8');
+for (const relativePath of [
+  'modules/gameplay/grid/presentation/GameGridPanel.cpp',
+  'modules/gameplay/hand/presentation/GameHandPanel.cpp',
+  'modules/gameplay/prompts/presentation/GamePromptPanel.cpp',
+  'modules/gameplay/workflows/presentation/GameWorkflowPanel.cpp',
+  'modules/gameplay/shell/presentation/panel/GamePlayPanel.Layout.cpp',
+]) {
+  const source = await readFile(join(root, relativePath), 'utf8');
+  if (!source.includes('ConfigureListBoxAsAccessibleList('))
+    violations.push(`${relativePath}: les listes de jeu doivent éviter de répéter leur élément sélectionné`);
+}
+const accessibleListSource = await readFile(
+  join(root, 'shared/accessibility/presentation/AccessibleListBox.cpp'), 'utf8');
+if (!accessibleListSource.includes('AccessibleListBox::GetValue(') ||
+    !accessibleListSource.includes('value->clear();'))
+  violations.push('AccessibleListBox: la valeur accessible doit rester vide pour ne pas doubler le nom sélectionné');
 if (gameplayLayoutSource.includes('GameDicePanel') ||
     gameplayLayoutSource.includes('GameMovementPanel'))
   violations.push('GamePlayPanel: les dés et la progression restent pilotés par Zone de jeu et les raccourcis');

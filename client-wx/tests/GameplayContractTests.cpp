@@ -19,6 +19,7 @@
 #include "modules/gameplay/actions/infrastructure/GameActionCatalogDecoder.h"
 #include "modules/gameplay/session/application/GameStartConfigurationFlow.h"
 #include "modules/gameplay/shell/application/GameZoneActionResolver.h"
+#include "modules/gameplay/grid/application/GameGridViewerCellSelector.h"
 #include "modules/gameplay/session/infrastructure/GameEventPayloadCodec.h"
 #include "modules/gameplay/state/application/GameStateUpdatePolicy.h"
 #include "modules/gameplay/state/application/GameSurfaceSelectors.h"
@@ -256,6 +257,15 @@ int main()
         Expect(GridPlayerCellText(cells[1], players) == "B1" &&
             GridPlayerCellText(cells[8], players) == "C3",
             "Empty Morpion cells must announce only their coordinate");
+        const auto viewerCell = lila::modules::gameplay::application::grid::
+            GameGridViewerCellSelector::Select(&*morpion, 1);
+        Expect(viewerCell && viewerCell->boardId == "morpion" &&
+                viewerCell->cellId == "0,0",
+            "Morpion must initially select the viewer's occupied cell");
+        const auto botCell = lila::modules::gameplay::application::grid::
+            GameGridViewerCellSelector::Select(&*morpion, -2);
+        Expect(botCell && botCell->cellId == "1,1",
+            "Grid focus selection must use ownership rather than the first cell");
         const auto corridor = lila::modules::gameplay::infrastructure::GameBoardCapabilitiesDecoder::Grid(
             {{"boards", {{"pathWalls", {{"width", 9}, {"height", 9},
                 {"cells", {{"4,0", 1}, {"4,8", -2}}}}}}}});

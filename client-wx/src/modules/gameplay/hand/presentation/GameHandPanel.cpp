@@ -13,6 +13,7 @@
 #include "modules/gameplay/cards/application/GameCardTextBuilder.h"
 #include "modules/gameplay/cards/application/GameCardActionResolver.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
+#include "shared/accessibility/presentation/AccessibleMenu.h"
 #include "shared/ui/presentation/controls/ListBoxNavigation.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
@@ -73,7 +74,8 @@ GameHandPanel::GameHandPanel(wxWindow* parent)
     root->Add(label, 0, wxEXPAND | wxBOTTOM, 4);
     list_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr,
         wxLB_SINGLE | wxWANTS_CHARS);
-    list_->SetName(wxString(L"Votre main"));
+    lila::shared::accessibility::ConfigureListBoxAsAccessibleList(
+        *list_, wxString(L"Votre main"), {});
     list_->SetMinSize(wxSize(260, 90));
     root->Add(list_, 1, wxEXPAND);
     SetSizer(root);
