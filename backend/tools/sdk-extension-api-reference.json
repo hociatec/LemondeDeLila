@@ -83,7 +83,7 @@
     },
     {
       "file": "src/game/engine/runtime/choices/game-choice-controller.ts",
-      "sha256": "2cc282a3e00517443a5ee3e842d4a47a651c3c8563e9ac40ba4b14d839fb3d24"
+      "sha256": "1324b9fb865bbdc0e7739d0b6af02bfba90fb4401f3ba321bcd45ef4635ac230"
     },
     {
       "file": "src/game/engine/runtime/configuration/configuration-kit.ts",
@@ -187,7 +187,7 @@
     },
     {
       "file": "src/game/engine/runtime/contracts/effect-ir.ts",
-      "sha256": "d4511a59fed67f23a20ffbe0d02497148968f46271cb3ef42eff98040000d4ad"
+      "sha256": "ec62c4d507fbdc24d80053b6bbcd056532b4531ac229eee588f15a433191fdc6"
     },
     {
       "file": "src/game/engine/runtime/contracts/effect-json-schema.ts",
@@ -327,7 +327,7 @@
     },
     {
       "file": "src/game/engine/runtime/events/engine-event-registry.ts",
-      "sha256": "3d4be92ddd4a2c56ba848c50413fb68f8f10a5ad285a8bccb24e6eca75fc723d"
+      "sha256": "d77099f4da3e47e532c7d8a3c376a58be53a51c5c766253a00dcd7f02279409b"
     },
     {
       "file": "src/game/engine/runtime/events/game-context-events.ts",
@@ -399,7 +399,7 @@
     },
     {
       "file": "src/game/engine/runtime/kits/resource-controller.ts",
-      "sha256": "731e5a971002f8749aea5130b1061f9c0028cf28c802c9362a631f9768a2d2b7"
+      "sha256": "280ea6cf130b0f2af24d4d7c0e1b5f3aeedc90a9a7dad9bd0d009b3caa012bed"
     },
     {
       "file": "src/game/engine/runtime/kits/round-kit.ts",
@@ -439,7 +439,7 @@
     },
     {
       "file": "src/game/engine/runtime/patterns/bounce-quiz-race-pattern.ts",
-      "sha256": "82a0cce265793fa807a6fcf269ef7bda472e2ed0b589614e4315b3517a78b5d8"
+      "sha256": "b9f1e52bbc49a7a20c1b2256cc7b736ddf4496424e0e9f25fc90bb7dfabfb4d6"
     },
     {
       "file": "src/game/engine/runtime/patterns/card-battle-pattern.ts",
@@ -475,7 +475,7 @@
     },
     {
       "file": "src/game/engine/runtime/patterns/choice-story-challenge/program.ts",
-      "sha256": "d40c15c64807e3fd78cf3da25b4e13ae531edd7e937231b698506ef1e7c438d3"
+      "sha256": "b53769a17f8d29e727a54475e645e9f8d2b251f43e0661ba49c5e276fd239cd0"
     },
     {
       "file": "src/game/engine/runtime/patterns/delivery-race-pattern.ts",
@@ -535,7 +535,7 @@
     },
     {
       "file": "src/game/engine/runtime/patterns/protected-haunted-race-pattern.ts",
-      "sha256": "e69d108af890593a5479ab33e963177e191f1a67aa97d1fbf67f7fde1ff78cdf"
+      "sha256": "45b4372d06cfbfde8ab595d8abcd73d3a8cbc6a6cb467524b34315eed1ddbd10"
     },
     {
       "file": "src/game/engine/runtime/patterns/public-domain-cards-pattern.ts",
