@@ -17,10 +17,14 @@ export function battleWonNarration(
   const text = (viewerId?: number) => {
     const winner = playerName(winnerId, viewerId);
     const cards = `carte${cardsWon === 1 ? '' : 's'}`;
-    const result =
-      winner === 'Vous'
-        ? `Vous remportez la bataille et gagnez ${cardsWon} ${cards}.`
-        : `${winner} remporte la bataille et gagne ${cardsWon} ${cards}.`;
+    const wasBattle = plays.some((play) => play.cardNames.length > 1);
+    const result = wasBattle
+      ? winner === 'Vous'
+        ? `Vous gagnez la bataille et remportez ${cardsWon} ${cards}.`
+        : `${winner} gagne la bataille et remporte ${cardsWon} ${cards}.`
+      : winner === 'Vous'
+        ? `Vous remportez le pli et gagnez ${cardsWon} ${cards}.`
+        : `${winner} remporte le pli et gagne ${cardsWon} ${cards}.`;
     const revealed = plays
       .filter((play) => play.cardNames.length > 0)
       .map((play) => {

@@ -1402,7 +1402,7 @@ exports[`catalogue reference replay: zig-et-zag, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "49d1086f3ec584eecef5083722b56f6854666e826faa5f713d8f4a022b8519ee",
+  "traceDigest": "65b537f5ff751811dd50e82270c332bc61befff388638578a630525498290b5d",
 }
 `;
 
@@ -1413,7 +1413,7 @@ exports[`catalogue reference replay: zig-et-zag, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "2aae5a9e839bb15ab093503b68dd1f6e6332bce0811117b6639bedb666f2f9cc",
+  "traceDigest": "1c2099484db0d3ce8f7dcd9b59b4627817d646a36dd4739b0306d781a9d37eff",
 }
 `;
 
@@ -1424,7 +1424,7 @@ exports[`catalogue reference replay: zig-et-zag, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "9d6e3eda7afe2e24531e7ac01b3500a25b64ed7f97b8b6e394751a322eecbc93",
+  "traceDigest": "06bd279d60092dd45cd70b0369931307685dbba3fab1866adbe0a63b65588962",
 }
 `;
 
