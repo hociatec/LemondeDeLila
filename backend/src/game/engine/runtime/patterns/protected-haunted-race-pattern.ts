@@ -16,6 +16,8 @@ export type ProtectedHauntedBlock =
   | { kind: 'even' };
 export type ProtectedHauntedRaceProgram = {
   rollRecipe: string;
+  drawRecipe: string;
+  pendingDrawFlag: string;
   trackId: string;
   diceId: string;
   finishReason: string;
@@ -76,10 +78,21 @@ export function protectedHauntedRace(source: ProtectedHauntedRaceProgram) {
     actions: {
       [program.rollRecipe]: defineEmptyAction<State>({
         available: ({ ctx }) =>
-          ctx.phase.current() === 'playing' && !pendingSwap(program, ctx),
+          ctx.phase.current() === 'playing' &&
+          !pendingSwap(program, ctx) &&
+          !pendingDraw(program, ctx),
         execute: ({ actor, ctx }) => executeRoll(program, actor.id, ctx),
         documentation:
           'Lance le dé, applique les altérations puis résout la case.',
+      }),
+      [program.drawRecipe]: defineEmptyAction<State>({
+        ui: { label: 'Piocher', control: 'button', shortcut: 'Space' },
+        available: ({ actor, ctx }) =>
+          ctx.phase.current() === 'playing' &&
+          ctx.players.current()?.id === actor.id &&
+          pendingDraw(program, ctx) != null,
+        execute: ({ ctx }) => executeDraw(program, ctx),
+        documentation: 'Pioche et résout la carte demandée par la case.',
       }),
     },
     setup: pawns.setup(() => ({})),
@@ -88,10 +101,12 @@ export function protectedHauntedRace(source: ProtectedHauntedRaceProgram) {
     },
     effects: protectedHauntedEffects(program),
     bot: {
-      choose: ({ availableActions }) =>
-        availableActions.includes(program.rollRecipe)
-          ? { type: program.rollRecipe, payload: {} }
-          : null,
+      choose: ({ availableActions }) => {
+        const type = [program.drawRecipe, program.rollRecipe].find((recipe) =>
+          availableActions.includes(recipe),
+        );
+        return type ? { type, payload: {} } : null;
+      },
     },
   });
 }
@@ -142,7 +157,24 @@ function executeRoll(
       ctx,
     );
   }
-  ctx.turn.complete({ waiting: pendingSwap(program, ctx) });
+  ctx.turn.complete({
+    waiting: pendingSwap(program, ctx) || pendingDraw(program, ctx) != null,
+  });
+}
+
+function executeDraw(
+  program: ProtectedHauntedRaceProgram,
+  ctx: Context,
+) {
+  const pending = pendingDraw(program, ctx);
+  if (!pending) return ctx.reject('PROTECTED_HAUNTED_DRAW_NOT_PENDING');
+  const remaining = pendingDraws(program, ctx).slice(1);
+  if (remaining.length === 0) ctx.turn.flags.consume(program.pendingDrawFlag);
+  else ctx.turn.flags.set(program.pendingDrawFlag, { draws: remaining });
+  drawCard(program, pending.playerId, pending.depth, ctx);
+  ctx.turn.complete({
+    waiting: pendingSwap(program, ctx) || pendingDraw(program, ctx) != null,
+  });
 }
 
 function modifiedRoll(
@@ -203,7 +235,19 @@ function applyTile(
   ctx.events.message('game.pawn.landed', { playerId, tileId: position });
   if (tile.type === 'finish')
     ctx.match.finish({ winners: [playerId], reason: program.finishReason });
-  else if (tile.type === 'card') drawCard(program, playerId, depth, ctx);
+  else if (tile.type === 'card') awaitDraw(program, playerId, depth, ctx);
+}
+
+function awaitDraw(
+  program: ProtectedHauntedRaceProgram,
+  playerId: number,
+  depth: number,
+  ctx: Context,
+) {
+  ctx.turn.flags.set(program.pendingDrawFlag, {
+    draws: [...pendingDraws(program, ctx), { playerId, depth }],
+  });
+  ctx.events.message('game.card.draw-required', { playerId });
 }
 
 function drawCard(
@@ -291,6 +335,30 @@ function protectedHauntedEffects(program: ProtectedHauntedRaceProgram) {
 
 function pendingSwap(program: ProtectedHauntedRaceProgram, ctx: Context) {
   return ctx.choice.current()?.data?.choiceId === program.swapChoiceId;
+}
+
+function pendingDraw(program: ProtectedHauntedRaceProgram, ctx: Context) {
+  return pendingDraws(program, ctx)[0] ?? null;
+}
+
+function pendingDraws(program: ProtectedHauntedRaceProgram, ctx: Context) {
+  const value = ctx.turn.flags.get(program.pendingDrawFlag);
+  if (
+    value == null ||
+    typeof value !== 'object' ||
+    !('draws' in value) ||
+    !Array.isArray(value.draws)
+  )
+    return [];
+  return value.draws.filter(
+    (draw): draw is { playerId: number; depth: number } =>
+      draw != null &&
+      typeof draw === 'object' &&
+      'playerId' in draw &&
+      typeof draw.playerId === 'number' &&
+      'depth' in draw &&
+      typeof draw.depth === 'number',
+  );
 }
 
 function blockedRule(

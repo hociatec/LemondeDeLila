@@ -23,6 +23,8 @@ const statuses = object({
 export const protectedHauntedRacePatternSchema = object({
   kind: { const: 'protected-haunted-race' },
   rollRecipe: id,
+  drawRecipe: id,
+  pendingDrawFlag: id,
   conditionalMove: object({
     equals: { type: 'integer' },
     delta: { type: 'integer' },
