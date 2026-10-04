@@ -48,17 +48,23 @@ export const jsonStoryChallengeSchema: AuthorSchema = object({
     array(
       {
         oneOf: [
-          object({ id, kind: { const: 'move' }, delta: { type: 'integer' } }),
-          object({ id, kind: { const: 'target' }, effect: id }),
+          object({
+            id,
+            label: text,
+            kind: { const: 'move' },
+            delta: { type: 'integer' },
+          }),
+          object({ id, label: text, kind: { const: 'target' }, effect: id }),
           object(
             {
               id,
+              label: text,
               kind: { const: 'draw' },
               deck: id,
               target: { enum: ['actor', 'selected'] },
               consumeStatus: id,
             },
-            ['id', 'kind', 'deck', 'target'],
+            ['id', 'label', 'kind', 'deck', 'target'],
           ),
         ],
       },

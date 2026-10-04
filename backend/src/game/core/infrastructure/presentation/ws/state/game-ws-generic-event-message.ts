@@ -99,7 +99,9 @@ function boardAndPlayerMessage(
   if (type === 'resource.changed') {
     if (data.announce === false) return '';
     const name = player(data.playerId);
-    const resource = humanLabel(value('resource'));
+    const rawResource = value('resource');
+    if (isInternalStoryChallengeResource(rawResource)) return '';
+    const resource = humanLabel(rawResource);
     return name && resource && value('value')
       ? `${name} : ${resource} vaut ${value('value')}.`
       : '';
@@ -107,7 +109,9 @@ function boardAndPlayerMessage(
   if (type === 'resource.transferred') {
     const from = player(data.from);
     const to = player(data.to);
-    const resource = humanLabel(value('resource'));
+    const rawResource = value('resource');
+    if (isInternalStoryChallengeResource(rawResource)) return '';
+    const resource = humanLabel(rawResource);
     return from && to && resource && value('amount')
       ? `${from} transfère ${value('amount')} ${resource} à ${to}.`
       : '';
@@ -141,6 +145,10 @@ function boardAndPlayerMessage(
       : '';
   }
   return '';
+}
+
+function isInternalStoryChallengeResource(resource: string): boolean {
+  return resource.startsWith('choice-story-challenge.');
 }
 
 function tileLabel(value: string): string {

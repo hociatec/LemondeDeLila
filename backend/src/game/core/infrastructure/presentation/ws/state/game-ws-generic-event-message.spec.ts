@@ -99,6 +99,34 @@ describe('genericGameEventMessage', () => {
     );
   });
 
+  it('does not expose internal story challenge resource identifiers', () => {
+    expect(
+      message(
+        'resource.changed',
+        {
+          playerId: 1,
+          resource: 'choice-story-challenge.reroll-token',
+          value: 1,
+        },
+        1,
+        1,
+      ),
+    ).toBe('');
+    expect(
+      message(
+        'resource.transferred',
+        {
+          from: 1,
+          to: 2,
+          resource: 'choice-story-challenge.malus-shield',
+          amount: 1,
+        },
+        1,
+        1,
+      ),
+    ).toBe('');
+  });
+
   it('describes the destination without repeating the technical movement', () => {
     expect(message('pawn.moved', { from: 0, to: 3 }, 1, 1)).toBe('');
     expect(message('pawn.landed', { playerId: 2, position: 6 }, 2, 1)).toBe(

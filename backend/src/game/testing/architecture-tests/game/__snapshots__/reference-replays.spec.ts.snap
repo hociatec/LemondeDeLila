@@ -261,7 +261,7 @@ exports[`catalogue reference replay: contes-et-cacahuetes, seed 11 1`] = `
   ],
   "finished": true,
   "steps": 40,
-  "traceDigest": "957c4579985d3f9f910a138c1db9b4ab97ffd0fdd9b91802205553b9091d676a",
+  "traceDigest": "8e9ee6bc45f6aa09773dd3cff064108d8944ed407c3188dc38ef08362f8a1797",
 }
 `;
 
@@ -273,7 +273,7 @@ exports[`catalogue reference replay: contes-et-cacahuetes, seed 23 1`] = `
   ],
   "finished": true,
   "steps": 37,
-  "traceDigest": "d4d3108cdf144156a3eed4a164fb936b17cb32b2834635e1c59428a4bd5c756f",
+  "traceDigest": "dc1106125ed2c1ba5f0ed5e6daa23f22cee1e5e95f3a89f9aa9a1dbf102a6707",
 }
 `;
 
@@ -285,7 +285,7 @@ exports[`catalogue reference replay: contes-et-cacahuetes, seed 67 1`] = `
   ],
   "finished": true,
   "steps": 62,
-  "traceDigest": "a65d20b1360946cc7f3eb4584d336b39f5f2527a33ffd9333b34eccfd22acd3c",
+  "traceDigest": "09676210a73c4d94ce603572fb21bafe448cc38263233301782d2858d4a43634",
 }
 `;
 

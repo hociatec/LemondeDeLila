@@ -789,11 +789,7 @@ describe('GameWsStatePresenter', () => {
   });
   it.each([
     ['game.player.passed', 'Vous passez votre tour.', false],
-    [
-      'game.card.drawn',
-      'Vous piochez une carte. Son effet est appliqué automatiquement.',
-      true,
-    ],
+    ['game.card.drawn', 'Vous piochez une carte.', true],
   ])(
     'announces the next player in the same utterance after %s',
     (messageKey, actionMessage, automatic) => {

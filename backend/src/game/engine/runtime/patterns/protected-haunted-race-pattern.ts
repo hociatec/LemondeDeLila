@@ -162,10 +162,7 @@ function executeRoll(
   });
 }
 
-function executeDraw(
-  program: ProtectedHauntedRaceProgram,
-  ctx: Context,
-) {
+function executeDraw(program: ProtectedHauntedRaceProgram, ctx: Context) {
   const pending = pendingDraw(program, ctx);
   if (!pending) return ctx.reject('PROTECTED_HAUNTED_DRAW_NOT_PENDING');
   const remaining = pendingDraws(program, ctx).slice(1);
@@ -350,7 +347,8 @@ function pendingDraws(program: ProtectedHauntedRaceProgram, ctx: Context) {
     !Array.isArray(value.draws)
   )
     return [];
-  return value.draws.filter(
+  const draws: unknown[] = value.draws;
+  return draws.filter(
     (draw): draw is { playerId: number; depth: number } =>
       draw != null &&
       typeof draw === 'object' &&
