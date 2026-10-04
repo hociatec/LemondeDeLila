@@ -150,6 +150,7 @@ private:
     std::vector<int> pageSizeChoices_;
     std::optional<std::size_t> selectedResultIndex_;
     std::optional<std::string> reportIdToRestore_;
+    std::optional<std::string> activeCommentsReportId_;
     std::optional<std::string> soundIdToRestore_;
     std::optional<std::string> pendingAmbienceUploadPath_;
     bool ambiencePreviewPlaying_ = false;

@@ -202,6 +202,10 @@ const ADMIN_WS_ROUTES: AdminRouteDefinition[] = [
     bind: (h) => (s, p) => h.bugReportComments.add(s, p),
   },
   {
+    event: WS_EVENTS.admin.bugReports.commentsDelete,
+    bind: (h) => (s, p) => h.bugReportComments.delete(s, p),
+  },
+  {
     event: WS_EVENTS.admin.bots.namesList,
     bind: (h) => (s, p) => h.bots.botsNamesList(s, p),
   },

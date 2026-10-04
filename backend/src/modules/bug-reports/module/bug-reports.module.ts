@@ -13,6 +13,7 @@ import {
 } from '../application/ports/bug-report.repository';
 import { AddBugReportCommentService } from '../application/use-cases/bug-report-comments/add-bug-report-comment.service';
 import { CountBugReportCommentsService } from '../application/use-cases/bug-report-comments/count-bug-report-comments.service';
+import { DeleteBugReportCommentService } from '../application/use-cases/bug-report-comments/delete-bug-report-comment.service';
 import { ListBugReportCommentsService } from '../application/use-cases/bug-report-comments/list-bug-report-comments.service';
 import { BugReportStatusNormalizerService } from '../application/use-cases/bug-reports/bug-report-status-normalizer.service';
 import { CreateBugReportService } from '../application/use-cases/bug-reports/create-bug-report.service';
@@ -115,6 +116,12 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
       inject: [BUG_REPORT_COMMENT_REPOSITORY],
     },
     {
+      provide: DeleteBugReportCommentService,
+      useFactory: (repo: BugReportCommentRepository) =>
+        new DeleteBugReportCommentService(repo),
+      inject: [BUG_REPORT_COMMENT_REPOSITORY],
+    },
+    {
       provide: AddBugReportCommentService,
       useFactory: (
         repo: BugReportCommentRepository,
@@ -138,6 +145,7 @@ import { BugReportTypeormRepository } from '../infrastructure/persistence/typeor
     CountBugReportsByStatusService,
     CountBugReportCommentsService,
     ListBugReportCommentsService,
+    DeleteBugReportCommentService,
     AddBugReportCommentService,
   ],
 })

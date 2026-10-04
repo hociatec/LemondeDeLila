@@ -41,6 +41,7 @@ void AdminFrame::ShowSections()
     resultItems_.clear();
     selectedResultIndex_.reset();
     reportIdToRestore_.reset();
+    activeCommentsReportId_.reset();
     refreshBugReportsAfterCommand_ = false;
     refreshAreaAfterCommand_ = false;
     keepFocusAfterCommand_ = false;

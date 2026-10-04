@@ -40,5 +40,6 @@ export interface AdminBugReportsPort {
     createdByUserId: number;
     createdByUsername: string;
   }): Promise<BugReportCommentRecord | null>;
+  deleteComment(reportId: string, commentId: string): Promise<boolean>;
   countComments(reportIds: string[]): Promise<Record<string, number>>;
 }

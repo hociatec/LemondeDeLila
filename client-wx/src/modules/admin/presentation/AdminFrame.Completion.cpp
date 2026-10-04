@@ -115,6 +115,19 @@ void AdminFrame::CompleteCommand(
         audioService_.RefreshAssets();
         refreshAreaAfterCommand_ = true;
     }
+    if (command.id == "bugs.comment.delete" && activeCommentsReportId_)
+    {
+        refreshAreaAfterCommand_ = false;
+        RestoreAreaFromItem();
+        SetStatus(L"Commentaire supprimé. Actualisation de la liste…");
+        if (const auto* comments = domain::FindAdminCommand("bugs.comments"))
+        {
+            ExecuteCommand(*comments,
+                {{"reportId", *activeCommentsReportId_}, {"offset", 0}, {"limit", 50}},
+                false);
+            return;
+        }
+    }
     if (refreshAreaAfterCommand_)
     {
         refreshAreaAfterCommand_ = false;

@@ -2,13 +2,10 @@
 #include <cctype>
 #include <sstream>
 #include <string_view>
-
 #include <nlohmann/json.hpp>
-
 namespace lila::modules::admin::presentation
 {
-namespace
-{
+namespace {
 std::string Humanize(std::string_view key)
 {
     static const std::pair<std::string_view, std::string_view> Known[]{
@@ -19,7 +16,7 @@ std::string Humanize(std::string_view key)
         {"updatedAt", "Modifié le"}, {"roles", "Rôles"}, {"total", "Total"},
         {"ok", "Succès"}, {"error", "Erreur"}, {"items", "Éléments"},
         {"users", "Utilisateurs"}, {"rooms", "Salles"}, {"messages", "Messages"},
-        {"games", "Jeux"}, {"reports", "Rapports"}, {"categories", "Catégories"},
+        {"games", "Jeux"}, {"reports", "Rapports"}, {"comments", "Commentaires"}, {"categories", "Catégories"},
         {"questions", "Questions"}, {"definitions", "Définitions"},
         {"permissions", "Permissions"},
         {"events", "Événements"}, {"sounds", "Sons"}, {"sections", "Fils de contact"},
@@ -36,7 +33,7 @@ std::string Humanize(std::string_view key)
         {"bots", "Bots"}, {"matched", "Salles trouvées"},
         {"deleted", "Éléments supprimés"}, {"delivered", "Destinataires atteints"},
         {"userId", "Identifiant utilisateur"}, {"messageId", "Identifiant du message"},
-        {"reportId", "Identifiant du rapport"}, {"contactId", "Identifiant du contact"},
+        {"reportId", "Identifiant du rapport"}, {"commentId", "Identifiant du commentaire"}, {"contactId", "Identifiant du contact"},
         {"categoryId", "Identifiant de catégorie"}, {"parentId", "Catégorie parente"},
         {"chatEnabled", "Tchat activé"}, {"chatSoundsEnabled", "Sons du tchat activés"},
         {"minPlayers", "Nombre minimal de joueurs"}, {"rules", "Règles"},
@@ -121,10 +118,18 @@ std::string ScalarForKey(std::string_view key, const nlohmann::json& value)
     }
     return Scalar(value);
 }
-
 std::string ItemTitle(const nlohmann::json& value, std::size_t index) {
     constexpr std::string_view Keys[]{"username", "name", "title", "subject", "id", "type"};
     if (value.is_object()) {
+        const auto content = value.find("content");
+        const auto commentAuthor = value.find("createdByUsername");
+        if (content != value.end() && content->is_string() && value.contains("reportId") &&
+            commentAuthor != value.end() && commentAuthor->is_string())
+        {
+            auto preview = content->get<std::string>();
+            if (preview.size() > 80) preview = preview.substr(0, 77) + "…";
+            return commentAuthor->get<std::string>() + " — " + preview;
+        }
         const auto subject = value.find("subject");
         const auto status = value.find("status");
         if (subject != value.end() && subject->is_string() &&
@@ -152,14 +157,13 @@ std::string ItemTitle(const nlohmann::json& value, std::size_t index) {
     if (value.is_primitive()) return Scalar(value);
     return "Élément " + std::to_string(index + 1);
 }
-std::pair<std::string_view, const nlohmann::json*> FindPrimaryList(
-    const nlohmann::json& payload)
+std::pair<std::string_view, const nlohmann::json*> FindPrimaryList(const nlohmann::json& payload)
 {
     if (payload.is_array()) return {"Résultats", &payload};
     if (!payload.is_object()) return {{}, nullptr};
     constexpr std::string_view Keys[]{
         "items", "users", "rooms", "messages", "games", "categories",
-        "questions", "definitions", "roles", "events", "sounds", "sections", "names", "reports"};
+        "questions", "definitions", "roles", "events", "sounds", "sections", "names", "reports", "comments"};
     for (const auto key : Keys)
     {
         const auto found = payload.find(key);
@@ -167,9 +171,7 @@ std::pair<std::string_view, const nlohmann::json*> FindPrimaryList(
     }
     return {{}, nullptr};
 }
-
 void Append(std::ostringstream& output, const nlohmann::json& value, int depth);
-
 void AppendObject(std::ostringstream& output, const nlohmann::json& value, int depth)
 {
     const std::string indentation(static_cast<std::size_t>(depth) * 2, ' ');
@@ -205,7 +207,6 @@ void Append(std::ostringstream& output, const nlohmann::json& value, int depth)
     else output << Scalar(value) << '\n';
 }
 }
-
 std::string FormatAdminResult(const nlohmann::json& payload)
 {
     std::ostringstream output;
@@ -224,7 +225,6 @@ AdminResultPresentation BuildAdminResultPresentation(const nlohmann::json& paylo
         presentation.summary = "Résultat disponible en lecture seule.";
         return presentation;
     }
-
     const auto label = key == "Résultats" ? std::string(key) : Humanize(key);
     if (list->size() > 2'048)
     {

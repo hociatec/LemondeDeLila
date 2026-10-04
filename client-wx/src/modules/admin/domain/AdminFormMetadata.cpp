@@ -12,6 +12,7 @@ const std::unordered_map<std::string_view, std::wstring_view> Labels{
     {"id", L"Identifiant"}, {"userId", L"Identifiant utilisateur"},
     {"toUserId", L"Destinataire"}, {"roomId", L"Identifiant de salle"},
     {"messageId", L"Identifiant du message"}, {"reportId", L"Identifiant du rapport"},
+    {"commentId", L"Identifiant du commentaire"},
     {"contactId", L"Identifiant du contact"}, {"gameType", L"Type de jeu"},
     {"categoryId", L"Catégorie"}, {"parentId", L"Catégorie parente"},
     {"soundId", L"Identifiant du son"}, {"filePath", L"Fichier audio"},

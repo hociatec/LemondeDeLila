@@ -10,6 +10,7 @@ import type { BugReportRecord } from '../../read-models/bug-report.record';
 import { AddBugReportCommentService } from '../bug-report-comments/add-bug-report-comment.service';
 import { CountBugReportCommentsService } from '../bug-report-comments/count-bug-report-comments.service';
 import { ListBugReportCommentsService } from '../bug-report-comments/list-bug-report-comments.service';
+import { DeleteBugReportCommentService } from '../bug-report-comments/delete-bug-report-comment.service';
 import type { BugReportCommentRepository } from '../../ports/bug-report.repository';
 
 type RepoStub = {
@@ -72,6 +73,7 @@ describe('Bug report use cases', () => {
       save: jest.fn(async (record) => record),
       listByReportId: jest.fn().mockResolvedValue([]),
       countByReportIds: jest.fn().mockResolvedValue({ report: 2 }),
+      delete: jest.fn().mockResolvedValue(true),
     };
     const commentRepo = comments as unknown as BugReportCommentRepository;
 
@@ -105,6 +107,14 @@ describe('Bug report use cases', () => {
       '',
     ]);
     expect(comments.countByReportIds).toHaveBeenCalledWith(['report']);
+
+    await expect(
+      new DeleteBugReportCommentService(commentRepo).execute(
+        'report',
+        'comment',
+      ),
+    ).resolves.toBe(true);
+    expect(comments.delete).toHaveBeenCalledWith('report', 'comment');
   });
 
   it('keeps concurrent comments distinct on the same visible report', async () => {

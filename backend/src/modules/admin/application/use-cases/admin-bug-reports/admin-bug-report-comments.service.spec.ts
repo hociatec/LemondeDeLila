@@ -125,4 +125,28 @@ describe('AdminBugReportCommentsService', () => {
     });
     expect(notifications.notifyUser).not.toHaveBeenCalled();
   });
+
+  it('deletes only the selected report comment and returns the new count', async () => {
+    const bugReports = {
+      deleteComment: jest.fn().mockResolvedValue(true),
+      countComments: jest.fn().mockResolvedValue({ r1: 2 }),
+    };
+    const service = new AdminBugReportCommentsService(
+      bugReports as any,
+      notifications,
+    );
+
+    await expect(service.delete(' r1 ', ' c1 ')).resolves.toEqual({
+      removed: true,
+      reportId: 'r1',
+      commentId: 'c1',
+      commentsCount: 2,
+    });
+    expect(bugReports.deleteComment).toHaveBeenCalledWith('r1', 'c1');
+
+    bugReports.deleteComment.mockResolvedValueOnce(false);
+    await expect(service.delete('r1', 'missing')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
 });

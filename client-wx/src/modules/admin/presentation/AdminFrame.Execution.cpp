@@ -75,6 +75,12 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
     if ((!direct && !PreparePayload(command, payload)) || !ConfirmDangerous(command)) return;
     if (command.transport == domain::AdminTransport::LocalAction)
     {
+        if (command.operation == "view-comment")
+        {
+            RestoreAreaFromItem();
+            FocusResultDetails();
+            return;
+        }
         if (command.operation == "preview-sound")
         {
             const auto soundId = payload.value("soundId", std::string{});
@@ -133,6 +139,12 @@ void AdminFrame::ExecuteCommand(
     bool announceLifecycle)
 {
     NormalizePaginationPayload(command, payload);
+    if (command.id == "bugs.comments")
+    {
+        const auto reportId = payload.value("reportId", std::string{});
+        activeCommentsReportId_ = reportId.empty()
+            ? std::nullopt : std::optional<std::string>(reportId);
+    }
     if (command.id == "bugs.list" && !loadingReportCountsOnly_)
         bugReportListPayload_ = payload;
     ResetPagination(command, payload);

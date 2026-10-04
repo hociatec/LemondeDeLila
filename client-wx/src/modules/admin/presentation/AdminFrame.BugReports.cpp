@@ -75,6 +75,7 @@ void AdminFrame::RefreshBugReports(
 void AdminFrame::UpdateBugReportActions()
 {
     const bool available = selectedResultIndex_.has_value() &&
+        currentResultItemKind_ == domain::AdminItemKind::BugReport &&
         *selectedResultIndex_ < resultItems_.size() &&
         resultItems_[*selectedResultIndex_].is_object() &&
         resultItems_[*selectedResultIndex_].contains("id");

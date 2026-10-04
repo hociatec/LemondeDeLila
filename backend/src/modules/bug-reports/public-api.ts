@@ -1,5 +1,6 @@
 export { AddBugReportCommentService } from './application/use-cases/bug-report-comments/add-bug-report-comment.service';
 export { CountBugReportCommentsService } from './application/use-cases/bug-report-comments/count-bug-report-comments.service';
+export { DeleteBugReportCommentService } from './application/use-cases/bug-report-comments/delete-bug-report-comment.service';
 export { ListBugReportCommentsService } from './application/use-cases/bug-report-comments/list-bug-report-comments.service';
 export { CreateBugReportService } from './application/use-cases/bug-reports/create-bug-report.service';
 export { CountBugReportsByStatusService } from './application/use-cases/bug-reports/count-bug-reports-by-status.service';

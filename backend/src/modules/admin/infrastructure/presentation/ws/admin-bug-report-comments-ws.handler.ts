@@ -6,6 +6,7 @@ import { AdminBugReportCommentsService } from '../../../application/use-cases/ad
 import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
 import {
   AdminBugReportCommentAddWsDto,
+  AdminBugReportCommentDeleteWsDto,
   AdminBugReportCommentsListWsDto,
 } from './dto/admin-bug-report-comments.ws.dto';
 
@@ -40,6 +41,19 @@ export class AdminBugReportCommentsWsHandler {
     });
     return {
       type: WS_EVENTS.admin.bugReports.commentsAdd,
+      payload: result,
+    };
+  }
+
+  async delete(session: WsSession, payload: unknown) {
+    requireAdmin(session);
+    const dto = this.validator.validate(
+      AdminBugReportCommentDeleteWsDto,
+      payload,
+    );
+    const result = await this.comments.delete(dto.reportId, dto.commentId);
+    return {
+      type: WS_EVENTS.admin.bugReports.commentsDelete,
       payload: result,
     };
   }
