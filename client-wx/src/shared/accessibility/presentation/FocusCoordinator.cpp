@@ -7,9 +7,11 @@
 
 namespace lila::shared::accessibility
 {
-bool FocusCoordinator::Apply(const FocusManager::Plan& plan)
+bool FocusCoordinator::Apply(
+    const FocusManager::Plan& plan,
+    const FocusManager::BeforeFocus& beforeFocus)
 {
-    return FocusManager::Focus(plan);
+    return FocusManager::Focus(plan, beforeFocus);
 }
 
 void FocusCoordinator::Schedule(wxWindow& owner, PlanBuilder buildPlan)

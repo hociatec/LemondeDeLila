@@ -22,7 +22,11 @@ public:
 
     void Remember(wxWindow* scope);
     [[nodiscard]] bool Restore(wxWindow* scope);
-    void Schedule(wxWindow& owner, wxWindow* scope, PlanBuilder buildFallbackPlan);
+    void Schedule(
+        wxWindow& owner,
+        wxWindow* scope,
+        PlanBuilder buildFallbackPlan,
+        FocusManager::BeforeFocus beforeFocus = {});
     void Forget(wxWindow* scope);
     void Clear();
 

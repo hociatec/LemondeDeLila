@@ -29,7 +29,7 @@ FocusManager::Plan& FocusManager::Plan::AddScope(ScopeProvider scopeProvider, Sc
     return *this;
 }
 
-bool FocusManager::Focus(const Plan& plan)
+bool FocusManager::Focus(const Plan& plan, const BeforeFocus& beforeFocus)
 {
     for (const auto& resolver : plan.resolvers_)
     {
@@ -38,7 +38,16 @@ bool FocusManager::Focus(const Plan& plan)
             continue;
         }
 
-        if (NavigationController::Focus(resolver()))
+        auto* target = resolver();
+        if (!NavigationController::IsFocusable(target))
+        {
+            continue;
+        }
+        if (beforeFocus)
+        {
+            beforeFocus(target);
+        }
+        if (NavigationController::Focus(target))
         {
             return true;
         }

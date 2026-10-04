@@ -28,6 +28,7 @@ public:
     void SetContent(wxWindow* content);
     void RemoveContent(wxWindow* content);
     void ClearActivationFocusContext();
+    void PrepareActivationFocusContext(wxWindow* target);
     void SetPresenceRequestedHandler(PresenceRequestedHandler handler);
     void SetCloseRequestedHandler(CloseRequestedHandler handler);
 

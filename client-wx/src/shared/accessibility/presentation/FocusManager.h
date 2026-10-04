@@ -19,6 +19,7 @@ class FocusManager final
 public:
     using Resolver = std::function<wxWindow*()>;
     using ScopeProvider = std::function<NavigationController::Scope()>;
+    using BeforeFocus = std::function<void(wxWindow*)>;
 
     enum class ScopeEdge
     {
@@ -40,6 +41,7 @@ public:
 
 private:
     friend class FocusCoordinator;
-    [[nodiscard]] static bool Focus(const Plan& plan);
+    [[nodiscard]] static bool Focus(
+        const Plan& plan, const BeforeFocus& beforeFocus = {});
 };
 }

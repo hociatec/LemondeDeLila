@@ -22,6 +22,7 @@ int main(int argc, char** argv)
     auto* frame = new wxFrame(nullptr, wxID_ANY, "focus-memory-test");
     auto* scope = new wxPanel(frame);
     auto* target = new wxTextCtrl(scope, wxID_ANY);
+    auto* alternate = new wxTextCtrl(frame, wxID_ANY);
     frame->Show();
     target->SetFocus();
     wxYield();
@@ -29,6 +30,22 @@ int main(int argc, char** argv)
     lila::shared::accessibility::FocusMemory memory;
     memory.Remember(scope);
     assert(memory.RememberedScopeCount() == 1);
+    alternate->SetFocus();
+    wxYield();
+    bool preparedBeforeFocus = false;
+    assert(memory.Restore(
+        scope,
+        [target, &preparedBeforeFocus](wxWindow* restored)
+        {
+            assert(restored == target);
+            preparedBeforeFocus = wxWindow::FindFocus() != target;
+            restored->SetName(
+                wxString(L"Le Monde de Lila - Accueil — Entrée dans la taverne"));
+        }));
+    assert(preparedBeforeFocus);
+    assert(wxWindow::FindFocus() == target);
+    assert(target->GetName() ==
+        wxString(L"Le Monde de Lila - Accueil — Entrée dans la taverne"));
 
     scope->Destroy();
     wxYield();
