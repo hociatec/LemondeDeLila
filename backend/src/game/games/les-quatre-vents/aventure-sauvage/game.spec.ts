@@ -15,6 +15,18 @@ const gameDefinition = compileJsonGame(manifest, document, {
 });
 
 describe('Aventure Sauvage declarative game', () => {
+  it('labels every non-event trail space as a neutral space', () => {
+    const neutralSpaces = board.slice(1, -1).filter((tile) => !tile.deckId);
+
+    expect(neutralSpaces).toHaveLength(8);
+    expect(neutralSpaces.every((tile) => tile.label === 'Case neutre')).toBe(
+      true,
+    );
+    expect(board.some((tile) => tile.label.startsWith('Sentier '))).toBe(
+      false,
+    );
+  });
+
   it('assigns unique pawns through generic choices', async () => {
     const game = testGame(gameDefinition).players(['Anne', 'Bob']).seed(51);
     await game.start();

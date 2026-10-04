@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "2",
+  "contentVersion": "3",
   "definitionVersion": "4",
   "snapshotMigrations": [
     {
@@ -10,6 +10,10 @@
     {
       "fromVersion": "aventure-sauvage@content:f577dff1",
       "toVersion": "1"
+    },
+    {
+      "fromVersion": "2",
+      "toVersion": "3"
     }
   ],
   "category": "JeuxDePlateaux",
