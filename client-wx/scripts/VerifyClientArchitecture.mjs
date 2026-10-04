@@ -335,15 +335,21 @@ if (!roomPanelSource.includes('CancelScheduledGameZoneFocus();') ||
 
 const hostFrameSource = await readFile(
   join(root, 'app/navigation/presentation/HostFrame.cpp'), 'utf8');
-if (!hostFrameSource.includes('activationFocusTimer_.StartOnce(ActivationFocusDelayMs)') ||
-    !hostFrameSource.includes('constexpr int ActivationFocusDelayMs = 1500;'))
-  violations.push('HostFrame: la restauration du focus doit laisser annoncer le titre après Alt+Tab');
-if (!hostFrameSource.includes('CancelActivationFocusRestore();'))
-  violations.push('HostFrame: une saisie utilisateur doit annuler la restauration différée du focus');
-const validFocusCheck = hostFrameSource.indexOf('focused->IsShownOnScreen()');
-const rememberedFocusRestore = hostFrameSource.indexOf('focusMemory_.Restore(currentContent_)');
-if (validFocusCheck < 0 || rememberedFocusRestore < 0 || validFocusCheck > rememberedFocusRestore)
-  violations.push('HostFrame: un focus enfant Windows valide ne doit pas être réémis après Alt+Tab');
+if (!hostFrameSource.includes('void HostFrame::SetInterfaceTitle') ||
+    !hostFrameSource.includes('AppConfig::AppTitle.data()') ||
+    !hostFrameSource.includes('SetTitle(title);'))
+  violations.push('HostFrame: le titre natif doit combiner application et interface');
+if (hostFrameSource.includes('ActivationFocusDelayMs') ||
+    hostFrameSource.includes('activationFocusTimer_'))
+  violations.push('HostFrame: l’annonce du titre ne doit dépendre d’aucune temporisation');
+const appTransitionsSource = await readFile(
+  join(root, 'app/navigation/presentation/AppNavigator.Transitions.cpp'), 'utf8');
+const interfaceTitleUpdate = appTransitionsSource.indexOf(
+  'hostFrame_->SetInterfaceTitle(InterfaceTitle(nextViewId));');
+const contentUpdate = appTransitionsSource.indexOf(
+  'hostFrame_->SetContent(currentView_);');
+if (interfaceTitleUpdate < 0 || contentUpdate < 0 || interfaceTitleUpdate > contentUpdate)
+  violations.push('AppNavigator: le titre complet doit être défini avant le changement d’interface');
 
 const gameplayPanelSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.cpp'), 'utf8');
