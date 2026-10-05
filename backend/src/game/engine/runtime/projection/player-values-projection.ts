@@ -28,10 +28,12 @@ export function projectPlayerValues(
     scoring: projectScores(scores),
     resources: Object.fromEntries(
       Object.entries(state.resources).flatMap(([resource, values]) => {
-        const projected = projectNumericByPlayer(
-          values,
+        const rule = visibility.resources?.[resource];
+        const projected = completeVisibleValues(
+          projectNumericByPlayer(values, viewerPlayerId, rule),
+          playerIds,
           viewerPlayerId,
-          visibility.resources?.[resource],
+          rule,
         );
         return Object.keys(projected).length > 0 ? [[resource, projected]] : [];
       }),
@@ -43,6 +45,29 @@ export function projectPlayerValues(
       visibility.statuses,
     ),
   };
+}
+
+function completeVisibleValues(
+  values: Record<string, number>,
+  playerIds: readonly number[],
+  viewerPlayerId: number | null,
+  visibility: VisibilityRule | undefined,
+): Record<string, number> {
+  if (
+    visibility?.kind === 'hidden' ||
+    (visibility?.kind === 'hidden-until' && !visibility.revealed)
+  ) {
+    return values;
+  }
+  const completed = { ...values };
+  if (visibility?.kind === 'private-by-player') {
+    if (viewerPlayerId != null && playerIds.includes(viewerPlayerId)) {
+      completed[String(viewerPlayerId)] ??= 0;
+    }
+    return completed;
+  }
+  for (const playerId of playerIds) completed[String(playerId)] ??= 0;
+  return completed;
 }
 
 function completePublicScores(

@@ -287,6 +287,12 @@ function validateInventoryInstruction({
     );
     if (instruction.count != null)
       requirePositiveInteger(instruction.count, `${path}.count`, fail);
+    if (instruction.skipSourceIfEmpty != null)
+      requirePositiveInteger(
+        instruction.skipSourceIfEmpty,
+        `${path}.skipSourceIfEmpty`,
+        fail,
+      );
     return true;
   }
   if (

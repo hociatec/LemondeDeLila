@@ -294,11 +294,11 @@
     {
       "file": "src/game/games/les-quatre-vents/panier-express/game.json",
       "fromSha256": "b2366ae817762423f460796d2a606cc3cdb3dffb4b8e273f6682dd489ab0ad02",
-      "toSha256": "08818675e9e78e7caccc94c159630735d744346f2bef53f51a5d0e35b1a1e57e",
-      "justification": "Le pattern de plateau natif remplace l'adaptateur effect-pack en conservant déplacements, cases, inventaire, échanges et choix.",
+      "toSha256": "2b0a4c6e9efa5411d52926c771f0caa71cd1f76efcebbe9351f650c79b60f1b5",
+      "justification": "Les listes passent à trois articles, les échanges exigent un adversaire explicite et pénalisent la cible sans inventaire.",
       "tests": [
         "src/game/games/les-quatre-vents/panier-express/game.spec.ts",
-        "src/game/testing/architecture-tests/game/reference-replays.spec.ts"
+        "src/game/testing/architecture-tests/game/all-declarative-games.contract.spec.ts"
       ]
     },
     {

@@ -297,7 +297,13 @@ const instructions = {
   }),
   'steal-random-inventory': variant(
     'steal-random-inventory',
-    { inventoryId: id, count: positive, from: target, to: target },
+    {
+      inventoryId: id,
+      count: positive,
+      skipSourceIfEmpty: positive,
+      from: target,
+      to: target,
+    },
     ['inventoryId', 'from'],
   ),
   'swap-inventories': variant('swap-inventories', {

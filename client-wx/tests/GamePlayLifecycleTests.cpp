@@ -56,7 +56,9 @@ int main()
     assert(lifecycle.BeginRoomStart());
     assert(lifecycle.State() == GamePlayLifecycleState::ConfiguringStart);
     assert(!lifecycle.AllowsGameplayInput());
-    assert(!lifecycle.AllowsProjectedContentFocus());
+    // The authoritative setup projection stays keyboard-focusable while the
+    // owner configures the next run.
+    assert(lifecycle.AllowsProjectedContentFocus());
     assert(!lifecycle.AllowsActionSubmission(false));
     assert(lifecycle.AllowsActionSubmission(true));
     lifecycle.MarkRoomStartPending();

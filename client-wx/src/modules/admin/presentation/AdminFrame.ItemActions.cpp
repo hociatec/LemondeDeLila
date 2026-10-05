@@ -114,7 +114,11 @@ void AdminFrame::OpenResultActions(std::size_t index)
         add("games.update", L"Modifier les informations et paramètres");
         add("categories.assign", L"Attribuer une catégorie");
         if (contextItem_.value("gameType", std::string{}).find("mnemo") != std::string::npos)
+        {
             add("mnemo.categories", L"Gérer le quiz Mnémosyne", {}, true);
+            add("mnemo.category.create", L"Ajouter une catégorie");
+            add("mnemo.questions", L"Voir toutes les questions", {}, true);
+        }
         add("games.reset", L"Réinitialiser les paramètres", {}, true);
     }
     else if (kind == domain::AdminItemKind::Category)
@@ -135,8 +139,9 @@ void AdminFrame::OpenResultActions(std::size_t index)
     }
     else if (kind == domain::AdminItemKind::MnemoCategory)
     {
-        add("mnemo.questions", L"Questions", {{"status", "pending"}}, true);
+        add("mnemo.questions", L"Toutes les questions", {}, true);
         add("mnemo.question.create", L"Ajouter une question");
+        add("mnemo.category.create", L"Ajouter une catégorie");
         add("mnemo.category.update", L"Renommer");
         add("mnemo.category.delete", L"Supprimer", {}, true);
     }

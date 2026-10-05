@@ -36,6 +36,7 @@ std::unordered_set<int> HumanMemberIds(const domain::RoomState& room)
 void RoomPanel::ApplyRoom(domain::RoomState room)
 {
     if (!application::RoomStateUpdatePolicy::ShouldApply(room_, room)) return;
+    const bool isInitialJoin = room_.id == 0 && room.id > 0;
     const bool isRealtimeUpdate = room_.id != 0 && room_.id == room.id;
     const bool wasStarted = room_.started || room_.status == "started";
     const bool willBeStarted = room.started || room.status == "started";
@@ -65,6 +66,8 @@ void RoomPanel::ApplyRoom(domain::RoomState room)
         audioService_.Play(lila::modules::audio::domain::SoundCue::RoomMemberLeft);
     state_ = State::Ready;
     ShowRoom();
+    if (isInitialJoin)
+        AppendRoomAnnouncement(wxString(L"Vous avez rejoint la table."));
     if (ownerChanged)
     {
         const auto owner = nextOwnerName.empty()

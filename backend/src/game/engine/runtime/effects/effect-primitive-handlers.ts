@@ -218,12 +218,16 @@ function createInventoryHandlers<TState extends object>({
         instruction.from,
         instruction.to,
         (from, to) => {
+          let stolen = false;
           for (let count = 0; count < (instruction.count ?? 1); count += 1) {
             if (
               !context.inventory.stealRandom(instruction.inventoryId, from, to)
             )
               break;
+            stolen = true;
           }
+          if (!stolen && instruction.skipSourceIfEmpty)
+            context.turn.skip(from, instruction.skipSourceIfEmpty);
         },
       ),
     'swap-inventories': (instruction) =>
