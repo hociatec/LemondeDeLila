@@ -22,6 +22,7 @@ export type ChainedTileRule = { description: string } & (
 export type ChainedTileCard = {
   id: number;
   text: string;
+  description: string;
   retreatScore: number;
   effects: readonly GameEffectInstruction[];
 };
@@ -235,6 +236,7 @@ function land(
           kind: 'chosen-opponent',
           choiceId: 'race-chained-tile-cards.swap',
           optional: false,
+          requireExplicitChoice: true,
         },
       },
       { kind: 'complete-turn' },
@@ -269,12 +271,12 @@ function drawCard(
 
 function announcement(card: Card): Record<string, unknown> {
   const separator = card.text.indexOf(':');
+  const label = (
+    separator >= 0 ? card.text.slice(0, separator) : card.text
+  ).trim();
   return {
     revealed: true,
-    cardLabel: (separator >= 0
-      ? card.text.slice(0, separator)
-      : card.text
-    ).trim(),
+    cardLabel: `${label} : ${card.description.trim()}`,
     effectDescription: (separator >= 0
       ? card.text.slice(separator + 1)
       : card.text

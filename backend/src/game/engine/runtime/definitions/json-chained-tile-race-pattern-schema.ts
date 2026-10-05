@@ -55,6 +55,7 @@ const chainedTileRaceConfigSchema: AuthorSchema = object({
     object({
       id: positive,
       text: { type: 'string', minLength: 1, maxLength: 4000 },
+      description: { type: 'string', minLength: 1, maxLength: 4000 },
       retreatScore: { type: 'integer', minimum: -1000000, maximum: 1000000 },
       effects: effectJsonSchema,
     }),

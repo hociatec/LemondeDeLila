@@ -46,8 +46,8 @@ exports[`catalogue reference replay: a-fond-les-ballons, seed 23 1`] = `
     "roll",
   ],
   "finished": true,
-  "steps": 34,
-  "traceDigest": "40031fbe080123cfbd3d81875d9b869d74fa4aff345a4ccc1e7a4065801172e0",
+  "steps": 36,
+  "traceDigest": "5bdaa821271f7a405746a6d56ab390bdfd1e4d0547a231d59fe2a91098b86fe1",
 }
 `;
 
@@ -1467,8 +1467,8 @@ exports[`race reference replay: a-fond-les-ballons, seed 53 1`] = `
     "roll",
   ],
   "finished": true,
-  "steps": 50,
-  "traceDigest": "ae06ed5001bf9a39202add27dc5fc7404378d791edf1af0a0d1370ad36cc1226",
+  "steps": 53,
+  "traceDigest": "eec0e5b0fd8fc8cf8ab2746b63beac6d5870b9852eadb718d8cad40048b14d8c",
 }
 `;
 

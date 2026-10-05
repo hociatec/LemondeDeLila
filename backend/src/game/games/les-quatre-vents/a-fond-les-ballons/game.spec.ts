@@ -13,6 +13,15 @@ const gameDefinition = compileJsonGame(manifest, document, {
 const A_FOND_CARD_COUNT = catalogue.cards.length;
 
 describe('À fond les ballons declarative game', () => {
+  it('provides a narrative description for every card', () => {
+    expect(
+      catalogue.cards.every((card) => card.description.trim().length > 0),
+    ).toBe(true);
+    expect(catalogue.cards.find((card) => card.id === 31)?.description).toBe(
+      'Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d’une case... un peu étourdi.',
+    );
+  });
+
   it('requires every participant to choose a pawn in roster order', async () => {
     const game = testGame(gameDefinition)
       .players(['Hacene', { username: 'Baloo', isBot: true }])
@@ -221,7 +230,7 @@ describe('À fond les ballons declarative game', () => {
     expect(restored.engine.contentVersion).toBe(document.contentVersion);
   });
 
-  it('completes a tornado turn only once when its target is automatic', async () => {
+  it('asks who to swap with before completing a tornado turn', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(83);
     await game.start();
     await game.choose(1, 'capitaine-cacahuete');
@@ -235,13 +244,27 @@ describe('À fond les ballons declarative game', () => {
       };
     };
     const actorId = source.turn!.currentPlayerId!;
-    const opponentId = source.players!.find(({ id }) => id !== actorId)!.id;
+    const opponent = source.players!.find(({ id }) => id !== actorId)!;
+    const opponentId = opponent.id;
     source.engine!.kits!.movement!.positions.balloons[String(actorId)] = 2;
 
-    const resolved = new DeclarativeGameRuntime(gameDefinition).applyActions(
-      source,
-      [{ type: 'roll', payload: {}, meta: { actorId } }],
-    );
+    const runtime = new DeclarativeGameRuntime(gameDefinition);
+    const waitingForTarget = runtime.applyActions(source, [
+      { type: 'roll', payload: {}, meta: { actorId } },
+    ]);
+    expect(waitingForTarget.pending).toMatchObject({
+      playerId: actorId,
+      choices: [opponent.username],
+    });
+    expect(waitingForTarget.turn?.currentPlayerId).toBe(actorId);
+
+    const resolved = runtime.applyActions(waitingForTarget, [
+      {
+        type: 'choice.resolve',
+        payload: { value: opponentId },
+        meta: { actorId },
+      },
+    ]);
     const resolvedEngine = (
       resolved as unknown as {
         engine?: {
