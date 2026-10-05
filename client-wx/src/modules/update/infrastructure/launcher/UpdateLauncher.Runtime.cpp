@@ -7,6 +7,52 @@ namespace lila::modules::update::launcher
 {
 namespace
 {
+class ScopedHandle final
+{
+public:
+    explicit ScopedHandle(HANDLE handle) noexcept : handle_(handle) {}
+    ~ScopedHandle() { if (handle_) CloseHandle(handle_); }
+    ScopedHandle(const ScopedHandle&) = delete;
+    ScopedHandle& operator=(const ScopedHandle&) = delete;
+
+private:
+    HANDLE handle_ = nullptr;
+};
+
+bool SecondaryLaunchersActive()
+{
+    HANDLE signal = OpenEventW(SYNCHRONIZE, FALSE, SecondaryLaunchersSignalName);
+    if (!signal) return false;
+    CloseHandle(signal);
+    return true;
+}
+
+int RunSecondaryLauncher(const fs::path& root)
+{
+    HANDLE signal = CreateEventW(nullptr, TRUE, TRUE, SecondaryLaunchersSignalName);
+    if (!signal) throw std::runtime_error("Unable to register secondary launcher.");
+    ScopedHandle activeSignal(signal);
+    State state = ReadState(root);
+    if (state.currentReleaseId.empty() || !LocalVersionIsAllowed(state)) {
+        throw std::runtime_error("No allowed client version is installed.");
+    }
+
+    Process process = LaunchClient(
+        ReleasePath(root, state.currentReleaseId), false);
+    if (!WaitForHealthy(process)) {
+        DWORD exitCode = STILL_ACTIVE;
+        static_cast<void>(GetExitCodeProcess(process.handle, &exitCode));
+        if (exitCode == STILL_ACTIVE) {
+            TerminateProcess(process.handle, 0x4C494C41);
+            WaitForSingleObject(process.handle, 5000);
+        }
+        throw std::runtime_error("Secondary client failed its startup health check.");
+    }
+    AppendLog(root, "INFO", "Secondary client instance started successfully.");
+    WaitForSingleObject(process.handle, INFINITE);
+    return 0;
+}
+
 bool IsOldClientDiagnostic(const fs::path& path)
 {
     const auto name = path.filename().wstring();
@@ -68,23 +114,33 @@ void PreserveFailedClientDiagnostics(
 
 int RunLauncher(bool skipLauncherReplacement)
 {
-    HANDLE mutex = CreateMutexW(nullptr, TRUE, LauncherMutex);
-    if (!mutex || GetLastError() == ERROR_ALREADY_EXISTS) {
-        if (mutex) CloseHandle(mutex);
-        return 0;
-    }
+    HANDLE mutex = CreateMutexW(nullptr, TRUE, LauncherCoordinationMutexName);
+    const bool launcherAlreadyActive = mutex && GetLastError() == ERROR_ALREADY_EXISTS;
     const fs::path root = ExecutablePath().parent_path();
+    if (!mutex) throw std::runtime_error("Unable to create launcher coordination mutex.");
+    if (launcherAlreadyActive) {
+        CloseHandle(mutex);
+        return RunSecondaryLauncher(root);
+    }
+    ScopedHandle launcherMutex(mutex);
     ClearPreservedClientDiagnostics(root);
     State state = ReadState(root);
-    AdoptBundledVersion(root, state);
-    CleanupStaging(root);
-    CleanupOldVersions(root, state);
-    if (!skipLauncherReplacement && RestartForLauncherUpdate(root, state)) return 0;
+    const bool secondaryLaunchersAtStartup = SecondaryLaunchersActive();
+    if (!secondaryLaunchersAtStartup) {
+        AdoptBundledVersion(root, state);
+        CleanupStaging(root);
+        CleanupOldVersions(root, state);
+        if (!skipLauncherReplacement && RestartForLauncherUpdate(root, state)) return 0;
+    }
 
     std::optional<Manifest> pending;
     std::string startupUpdateFailure;
     UpdateProgressDialog startupProgress;
     try {
+        if (secondaryLaunchersAtStartup) {
+            throw std::runtime_error(
+                "Update deferred while secondary client instances are active.");
+        }
         auto manifest = ParseManifest(DownloadText(ManifestUrl(state.currentVersion)));
         RecordSignedPolicy(root, state, manifest);
         if (manifest.releaseId != state.failedReleaseId &&
@@ -153,6 +209,7 @@ int RunLauncher(bool skipLauncherReplacement)
         bool restartingForUpdate = false;
         while (WaitForSingleObject(process.handle, static_cast<DWORD>(PollInterval.count() * 1000)) == WAIT_TIMEOUT) {
             try {
+                if (SecondaryLaunchersActive()) continue;
                 auto manifest = ParseManifest(DownloadText(ManifestUrl(state.currentVersion)));
                 RecordSignedPolicy(root, state, manifest);
                 if (manifest.releaseId == state.failedReleaseId ||

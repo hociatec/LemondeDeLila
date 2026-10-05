@@ -20,7 +20,7 @@ inline void WriteTextAtomically(
     // breaks writes for some Windows profile names containing non-ASCII text.
     std::filesystem::path temporaryPath = path;
 #ifdef _WIN32
-    temporaryPath += L".tmp";
+    temporaryPath += L".tmp." + std::to_wstring(GetCurrentProcessId());
 #else
     temporaryPath += ".tmp";
 #endif
