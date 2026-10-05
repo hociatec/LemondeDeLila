@@ -52,7 +52,7 @@ void GamePlayLifecycle::ObserveAuthoritativeState(
     int runId, domain::GameMatchStatus matchStatus) noexcept
 {
     hasAuthoritativeState_ = true;
-    hasActiveProjection_ = domain::IsActive(matchStatus);
+    hasActiveProjection_ = domain::IsInteractive(matchStatus);
     if (matchStatus == domain::GameMatchStatus::Finished)
     {
         state_ = GamePlayLifecycleState::Finished;
@@ -62,7 +62,7 @@ void GamePlayLifecycle::ObserveAuthoritativeState(
     if ((state_ == GamePlayLifecycleState::Joining ||
          state_ == GamePlayLifecycleState::Synchronizing ||
          state_ == GamePlayLifecycleState::Reconnecting) &&
-        expectedRun && domain::IsActive(matchStatus))
+        expectedRun && domain::IsInteractive(matchStatus))
     {
         state_ = GamePlayLifecycleState::Active;
         expectedRunId_ = 0;

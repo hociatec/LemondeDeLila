@@ -28,6 +28,14 @@ enum class GameMatchStatus
     return status == GameMatchStatus::Playing;
 }
 
+// Once the room has started, setup can still contain required player
+// interactions (for example sequential pawn selection).  Such a projection
+// is authoritative and must be usable even though normal play has not begun.
+[[nodiscard]] constexpr bool IsInteractive(GameMatchStatus status) noexcept
+{
+    return status == GameMatchStatus::Setup || IsActive(status);
+}
+
 [[nodiscard]] constexpr std::string_view MatchStatusId(GameMatchStatus status) noexcept
 {
     switch (status)
