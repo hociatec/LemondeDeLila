@@ -25,7 +25,7 @@ bool GamePlayPanel::AnnounceSelectedHandCard()
         return true;
     }
     UpdateStatus(lila::shared::text::FromUtf8(
-        application::cards::GameCardTextBuilder::AccessibleText(*selected)), false, true);
+        application::cards::GameCardTextBuilder::DescriptionText(*selected)), false, true);
     return true;
 }
 }

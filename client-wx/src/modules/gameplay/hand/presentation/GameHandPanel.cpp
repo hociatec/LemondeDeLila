@@ -97,7 +97,7 @@ void GameHandPanel::ApplyCards(
     {
         const auto& card = cards[index];
         nextKeys.push_back(card.id);
-        nextLabels.push_back(application::cards::GameCardTextBuilder::AccessibleText(card));
+        nextLabels.push_back(application::cards::GameCardTextBuilder::ListText(card));
         nextActionable.push_back(
             application::cards::GameCardActionResolver::Resolve(
                 cards, actions, index).has_value());

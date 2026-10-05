@@ -19,9 +19,15 @@ void TestGenericCardsContract()
         "Une carte doit recevoir le libelle riche correspondant a son identifiant.");
     Expect(hand[1].description == "Carte nocturne",
         "La description generique d'une carte doit etre conservee.");
-    Expect(lila::modules::gameplay::application::cards::GameCardTextBuilder::AccessibleText(hand[1]) ==
-            "La lune. Carte nocturne",
-        "La description d'une carte doit etre disponible au lecteur d'ecran.");
+    Expect(lila::modules::gameplay::application::cards::GameCardTextBuilder::ListText(hand[1]) ==
+            "La lune",
+        "La liste de la main ne doit pas répéter la description de la carte.");
+    Expect(lila::modules::gameplay::application::cards::GameCardTextBuilder::DescriptionText(hand[1]) ==
+            "Carte nocturne",
+        "D doit annoncer séparément la description de la carte.");
+    Expect(lila::modules::gameplay::application::cards::GameCardTextBuilder::DescriptionText(hand[0]) ==
+            "Aucune description disponible pour cette carte.",
+        "D doit expliquer clairement qu'une carte n'a pas de description.");
     Expect(hand[2].label == "unknown",
         "Une carte inconnue doit rester utilisable avec son identifiant comme libelle.");
     using lila::modules::gameplay::application::shortcuts::GameGenericShortcutPolicy;
@@ -34,6 +40,9 @@ void TestGenericCardsContract()
     Expect(GameGenericShortcutPolicy::ResolveInterface(state, "SHIFT+E") == "hands",
         "Maj+E doit annoncer le nombre de cartes de chaque joueur.");
     state.kits.movement = lila::modules::gameplay::domain::GameMovementView{};
+    Expect(GameGenericShortcutPolicy::ResolveInterface(state, "P").empty() &&
+            GameGenericShortcutPolicy::ResolveInterface(state, "SHIFT+P").empty(),
+        "P et Maj+P ne doivent pas annoncer de positions dans un jeu de cartes.");
     Expect(GameGenericShortcutPolicy::ResolveInterface(state, "E").empty(),
         "E ne doit pas être actif dans un jeu de plateau, même s'il comporte des cartes.");
     Expect(GameGenericShortcutPolicy::ResolveInterface(state, "SHIFT+E").empty(),
