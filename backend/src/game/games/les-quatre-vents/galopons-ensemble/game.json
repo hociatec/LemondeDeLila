@@ -17,6 +17,8 @@
     {
       "kind": "bidirectional-collision-race",
       "rollRecipe": "race-bidirectional-collision-roll",
+      "drawRecipe": "race-bidirectional-collision-draw",
+      "pendingDrawFlag": "bidirectionalCollision.pendingDraw",
       "trackId": "bidirectionalCollision",
       "diceId": "main",
       "deckId": "adventure",
@@ -63,6 +65,11 @@
       "actionType": "roll"
     },
     {
+      "key": "Space",
+      "type": "action",
+      "actionType": "draw_card"
+    },
+    {
       "key": "E",
       "type": "interface",
       "id": "resources-self",
@@ -82,18 +89,24 @@
       "transitions": ["playing"]
     },
     "playing": {
-      "actions": ["roll"],
+      "actions": ["roll", "draw_card"],
       "terminal": true
     }
   },
   "actions": {
     "roll": {
       "recipe": "race-bidirectional-collision-roll"
+    },
+    "draw_card": {
+      "recipe": "race-bidirectional-collision-draw"
     }
   },
   "victory": {
     "kind": "manual"
   },
   "extensions": [],
-  "playerValuesVisibility": { "statuses": "public" }
+  "playerValuesVisibility": {
+    "statuses": "public",
+    "resources": { "apple": "public" }
+  }
 }

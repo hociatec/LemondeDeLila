@@ -27,7 +27,16 @@ describe('Galopons ensemble declarative game', () => {
     const next: any = runtime.applyActions(state, [
       { type: 'roll', payload: {}, meta: { actorId: 1 } },
     ]);
-    const resourceEvents = next.engine.pendingEvents.filter(
+    expect(next.engine.kits.cards.decks.adventure).toHaveLength(deck.length);
+    expect(
+      runtime
+        .getAvailableActions(next, 1)
+        .some((action) => action.type === 'draw_card'),
+    ).toBe(true);
+    const drawn: any = runtime.applyActions(next, [
+      { type: 'draw_card', payload: {}, meta: { actorId: 1 } },
+    ]);
+    const resourceEvents = drawn.engine.pendingEvents.filter(
       (event: any) => event.type === 'resource.changed',
     );
     expect(resourceEvents).not.toHaveLength(0);
@@ -41,6 +50,7 @@ describe('Galopons ensemble declarative game', () => {
       ]),
     );
     await game.as(1).do('roll', {});
+    await game.as(1).do('draw_card', {});
     expect(game.inspect.setupComplete()).toBe(true);
     expect(game.inspect.deckCount()).toBe(catalogue.cards.length - 1);
     expect(await game.replay()).toEqual(game.state());

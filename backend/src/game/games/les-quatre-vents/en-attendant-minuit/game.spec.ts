@@ -70,4 +70,41 @@ describe('En Attendant Minuit declarative game', () => {
     expect(drawn?.params.effectDescription).toBe('');
     expect(JSON.stringify(pending)).not.toContain('remarque :');
   });
+
+  it('moves every opponent, but not the active player, for Chapeau de clown', async () => {
+    const game = await testGame(gameDefinition)
+      .players(['Lila', 'Mina', 'Noé'])
+      .seed(112)
+      .start();
+    await game.choose(1, 'lutin');
+    await game.choose(2, 'renne');
+    await game.choose(3, 'fee-des-flocons');
+    const state: any = game.state();
+    const actorId = state.turn.currentPlayerId;
+    state.engine.playerValues.statuses[actorId] = [
+      {
+        id: 'race-bounce-quiz.force-draw-next-turn',
+        remaining: null,
+        scope: 'until-used',
+        data: {},
+      },
+    ];
+    const deck = state.engine.kits.cards.decks.noel;
+    state.engine.kits.cards.decks.noel = [
+      34,
+      ...deck.filter((id: number) => id !== 34),
+    ];
+    const runtime = new DeclarativeGameRuntime(gameDefinition);
+    const awaitingDraw: any = runtime.applyActions(state, [
+      { type: 'roll', payload: {}, meta: { actorId } },
+    ]);
+    const resolved: any = runtime.applyActions(awaitingDraw, [
+      { type: 'draw_card', payload: {}, meta: { actorId } },
+    ]);
+    const positions = resolved.engine.kits.movement.positions.minuit;
+
+    expect(positions[String(actorId)] ?? 0).toBe(0);
+    for (const playerId of [1, 2, 3].filter((id) => id !== actorId))
+      expect(positions[String(playerId)]).toBe(1);
+  });
 });

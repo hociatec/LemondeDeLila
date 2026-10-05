@@ -18,6 +18,7 @@ std::string HumanLabel(std::string id)
         {"phase", "Phase"}, {"status", "État"}, {"remaining", "Restant"},
         {"playing", "En cours"}, {"started", "Démarrée"}, {"finished", "Terminée"},
         {"coins", "Pièces"}, {"points", "Points"}, {"cards", "Cartes"},
+        {"apple", "Pomme"},
         {"board-path-walls.walls", "Murs disponibles"}};
     if (const auto found = labels.find(id); found != labels.end()) return found->second;
     std::string result;

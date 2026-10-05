@@ -36,6 +36,7 @@ export function storyChallengeRules(source: StoryChallengeProgram) {
     available: ({ ctx }) =>
       phases.is(ctx, 'playing') &&
       ctx.choice.current() == null &&
+      resolution.pendingDraw(ctx) == null &&
       ctx.match.lifecycle() !== 'finished',
     execute: ({ state, actor, ctx }) => {
       ctx.turn.flags.set(program.resolutionFlag, {
@@ -72,6 +73,18 @@ export function storyChallengeRules(source: StoryChallengeProgram) {
         return;
       }
       resolution.applyRoll(state, actor.id, value, ctx);
+      resolution.drainResolution(state, ctx);
+    },
+  });
+  const draw = defineEmptyAction<State>({
+    ui: { label: 'Piocher', control: 'button', shortcut: 'Space' },
+    documentation: 'Pioche et résout la prochaine carte demandée.',
+    available: ({ actor, ctx }) =>
+      phases.is(ctx, 'playing') &&
+      ctx.choice.current() == null &&
+      resolution.pendingDraw(ctx)?.playerId === actor.id,
+    execute: ({ state, ctx }) => {
+      resolution.drawPending(state, ctx);
       resolution.drainResolution(state, ctx);
     },
   });
@@ -235,6 +248,7 @@ export function storyChallengeRules(source: StoryChallengeProgram) {
   ];
   return {
     roll,
+    draw,
     choices,
     setup: pawnSelection.setup(() => ({})),
     effects: createStoryChallengeEffects(program, resolution),

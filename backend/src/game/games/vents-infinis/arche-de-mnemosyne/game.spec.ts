@@ -1,4 +1,8 @@
-import { testGame } from '../../../engine/testing/public-api';
+import {
+  DeclarativeGameRuntime,
+  GameSimulator,
+  testGame,
+} from '../../../engine/testing/public-api';
 import { compileJsonGame } from '../../../rules/public-api';
 import document from './game.json';
 import manifest from './manifest.json';
@@ -30,5 +34,33 @@ describe("L'Arche de Mnémosyne declarative game", () => {
 
     expect(game.availableActions(1)).toContain('answer');
     expect(await game.replay()).toEqual(game.state());
+  });
+
+  it('lets bots play without deadlock through a complete quiz match', async () => {
+    const game = await testGame(definition)
+      .players(['Lila', 'Mina'])
+      .seed(128)
+      .start();
+    await game.as(1).do('game.configure', {
+      categoryId: 'all',
+      questionsPerRound: 5,
+      targetPoints: 5,
+      useTimer: false,
+      timerSeconds: 30,
+      interQuestionSeconds: 0,
+      correctSoloPoints: 2,
+      correctMultiPoints: 1,
+      wrongPoints: 0,
+      timeoutPoints: -1,
+    });
+
+    const result = new GameSimulator().run(
+      new DeclarativeGameRuntime(definition),
+      game.state(),
+      { maxCommands: 500 },
+    );
+
+    expect(result.status).toBe('finished');
+    expect(result.error).toBeUndefined();
   });
 });

@@ -4,7 +4,9 @@ import {
   projectCardsKitState,
   type CardsPlayerView,
   type CardSetsDefinition,
+  type CardValue,
   type CardZoneDefinition,
+  type DeckDefinition,
   type HandsDefinition,
 } from '../cards/cards-kit';
 import type { GameComponentDefinition } from '../definitions/component-kit';
@@ -364,11 +366,21 @@ function projectQuizKit(
 
 function cardProjectionDefinitions(
   components: readonly GameComponentDefinition[],
-): Array<HandsDefinition | CardSetsDefinition | CardZoneDefinition> {
+): Array<
+  | DeckDefinition<CardValue>
+  | HandsDefinition
+  | CardSetsDefinition
+  | CardZoneDefinition
+> {
   return components.filter(
     (
       component,
-    ): component is HandsDefinition | CardSetsDefinition | CardZoneDefinition =>
+    ): component is
+      | DeckDefinition<CardValue>
+      | HandsDefinition
+      | CardSetsDefinition
+      | CardZoneDefinition =>
+      component.component === 'cards.deck' ||
       component.component === 'cards.hands' ||
       component.component === 'cards.sets' ||
       component.component === 'cards.zone',

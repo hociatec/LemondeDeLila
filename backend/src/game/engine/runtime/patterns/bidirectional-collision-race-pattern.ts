@@ -1,4 +1,5 @@
 import { gameInput } from '../actions/game-input-schema';
+import { defineEmptyAction } from '../actions/action-builders';
 import type { GameEffectInstruction } from '../contracts/effect-ir';
 import type { GameContext } from '../definitions/game-author-context';
 import {
@@ -13,6 +14,8 @@ import { definePattern } from './gameplay-pattern-core';
 export type BidirectionalCollisionRegion = string;
 export type BidirectionalCollisionRaceOptions = {
   rollRecipe: string;
+  drawRecipe: string;
+  pendingDrawFlag: string;
   trackId: string;
   diceId: string;
   deckId: string;
@@ -42,6 +45,7 @@ export type BidirectionalCollisionRaceOptions = {
 type State = Record<string, never>;
 type Context = GameContext<State>;
 type Card = BidirectionalCollisionRaceOptions['cards'][number];
+type PendingDraw = { playerId: number; depth: number };
 
 export function bidirectionalCollisionRace(
   source: BidirectionalCollisionRaceOptions,
@@ -58,14 +62,39 @@ export function bidirectionalCollisionRace(
     actions: {
       [program.rollRecipe]: rollDice<State>({
         diceId: program.diceId,
-        available: ({ ctx }) => ctx.phase.current() === 'playing',
+        available: ({ ctx }) =>
+          ctx.phase.current() === 'playing' &&
+          pendingDraws(program, ctx).length === 0,
         execute: ({ playerId, total, ctx }) => {
           payIou(program, playerId, ctx);
           moveAndResolve(program, playerId, total, 0, ctx);
-          ctx.turn.complete();
+          ctx.turn.complete({ waiting: pendingDraws(program, ctx).length > 0 });
         },
         documentation:
           'Paie les dettes, lance le dé et résout la case équestre.',
+      }),
+      [program.drawRecipe]: defineEmptyAction<State>({
+        ui: { label: 'Piocher', control: 'button', shortcut: 'Space' },
+        available: ({ actor, ctx }) =>
+          ctx.phase.current() === 'playing' &&
+          ctx.players.current()?.id === actor.id &&
+          pendingDraws(program, ctx)[0]?.playerId === actor.id,
+        execute: ({ ctx }) => {
+          const [pending, ...remaining] = pendingDraws(program, ctx);
+          if (!pending)
+            return ctx.reject('BIDIRECTIONAL_RACE_DRAW_NOT_PENDING');
+          if (remaining.length > 0)
+            ctx.turn.flags.set(program.pendingDrawFlag, remaining);
+          else ctx.turn.flags.consume(program.pendingDrawFlag);
+          drawCard(program, pending.playerId, pending.depth, ctx);
+          ctx.turn.complete({
+            waiting:
+              ctx.choice.current() != null ||
+              pendingDraws(program, ctx).length > 0,
+          });
+        },
+        documentation:
+          'Pioche et résout manuellement la carte demandée par la case.',
       }),
     },
     setup: pawns.setup(() => ({})),
@@ -73,6 +102,14 @@ export function bidirectionalCollisionRace(
       [program.pawnChoiceId]: pawns.choice,
     },
     effects: effects(program),
+    bot: {
+      choose: ({ availableActions }) => {
+        const type = [program.drawRecipe, program.rollRecipe].find((recipe) =>
+          availableActions.includes(recipe),
+        );
+        return type ? { type, payload: {} } : null;
+      },
+    },
   });
 }
 function moveAndResolve(
@@ -157,9 +194,40 @@ function resolveTile(
         });
       else if (tile.type === 'skip' && tile.skipTurns)
         ctx.turn.skip(playerId, tile.skipTurns);
-      else if (tile.type === 'card') drawCard(program, playerId, depth, ctx);
+      else if (tile.type === 'card') awaitDraw(program, playerId, depth, ctx);
     },
   });
+}
+
+function pendingDraws(
+  program: BidirectionalCollisionRaceOptions,
+  ctx: Context,
+): PendingDraw[] {
+  const value = ctx.turn.flags.get(program.pendingDrawFlag);
+  if (!Array.isArray(value)) return [];
+  const draws: unknown[] = value;
+  return draws.filter(
+    (draw): draw is PendingDraw =>
+      draw != null &&
+      typeof draw === 'object' &&
+      'playerId' in draw &&
+      typeof (draw as Record<string, unknown>).playerId === 'number' &&
+      'depth' in draw &&
+      typeof (draw as Record<string, unknown>).depth === 'number',
+  );
+}
+
+function awaitDraw(
+  program: BidirectionalCollisionRaceOptions,
+  playerId: number,
+  depth: number,
+  ctx: Context,
+) {
+  ctx.turn.flags.set(program.pendingDrawFlag, [
+    ...pendingDraws(program, ctx),
+    { playerId, depth },
+  ]);
+  ctx.events.message('game.card.draw-required', { playerId });
 }
 
 function drawCard(
@@ -172,6 +240,7 @@ function drawCard(
   drawAndResolve<State, Card>(ctx, {
     deckId: program.deckId,
     playerId,
+    automatic: false,
     resolve: (card) => ctx.effects.schedule(...card.effects),
   });
 }

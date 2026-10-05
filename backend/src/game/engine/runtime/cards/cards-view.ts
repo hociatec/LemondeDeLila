@@ -2,9 +2,11 @@ import { copyState } from '../contracts/state-copy';
 import type { ReadonlyState } from '../contracts/state-copy';
 import type {
   CardSetsDefinition,
+  CardValue,
   CardZoneDefinition,
   CardsKitState,
   CardsPlayerView,
+  DeckDefinition,
   HandsDefinition,
 } from './cards-contracts';
 
@@ -23,11 +25,15 @@ export function projectCardsKitState(
   state: ReadonlyState<CardsKitState>,
   viewerPlayerId: number | null,
   definitions: readonly (
-    HandsDefinition | CardSetsDefinition | CardZoneDefinition
+    | DeckDefinition<CardValue>
+    | HandsDefinition
+    | CardSetsDefinition
+    | CardZoneDefinition
   )[] = [],
   roundInactivePlayerIds: readonly number[] = [],
 ): CardsPlayerView {
   const handDefinitions = indexHands(definitions);
+  const deckDefinitions = indexDecks(definitions);
   const setDefinitions = indexCardSets(definitions);
   const zoneDefinitions = indexCardZones(definitions);
   const inactiveRoundPlayers = new Set(roundInactivePlayerIds);
@@ -41,7 +47,10 @@ export function projectCardsKitState(
     discards: Object.fromEntries(
       Object.entries(state.discards).map(([id, cards]) => [
         id,
-        { count: cards.length, cards: copyState(cards) },
+        {
+          count: cards.length,
+          cards: projectCards(cards, deckDefinitions.get(id)),
+        },
       ]),
     ),
     hands: Object.fromEntries(
@@ -59,7 +68,10 @@ export function projectCardsKitState(
                 (Number(playerId) === viewerPlayerId &&
                   (definition?.ownerVisibility !== 'active-round' ||
                     !inactiveRoundPlayers.has(Number(playerId))))
-                  ? copyState(cards)
+                  ? projectCards(
+                      cards,
+                      deckDefinitions.get(definition?.deck ?? ''),
+                    )
                   : { count: cards.length },
               ]),
             ),
@@ -67,7 +79,7 @@ export function projectCardsKitState(
         ];
       }),
     ),
-    zones: projectCardZones(state.zones, zoneDefinitions),
+    zones: projectCardZones(state.zones, zoneDefinitions, deckDefinitions),
     collections: Object.fromEntries(
       Object.entries(state.completedSets).map(([id, byPlayer]) => {
         const visibility = setDefinitions.get(id)?.visibility ?? 'public';
@@ -90,9 +102,50 @@ export function projectCardsKitState(
   };
 }
 
+function indexDecks(
+  definitions: readonly (
+    | DeckDefinition<CardValue>
+    | HandsDefinition
+    | CardSetsDefinition
+    | CardZoneDefinition
+  )[],
+): Map<string, DeckDefinition<CardValue>> {
+  return new Map(
+    definitions
+      .filter(
+        (definition): definition is DeckDefinition<CardValue> =>
+          definition.component === 'cards.deck',
+      )
+      .map((definition) => [definition.id, definition]),
+  );
+}
+
+function projectCards(
+  cards: ReadonlyState<CardsKitState['decks'][string]>,
+  definition: DeckDefinition<CardValue> | undefined,
+) {
+  const catalog = definition?.catalog ?? definition?.cards ?? [];
+  const byId = new Map(
+    catalog
+      .filter(
+        (card): card is { id: string | number } =>
+          typeof card === 'object' && card != null && 'id' in card,
+      )
+      .map((card) => [String(card.id), card]),
+  );
+  return cards.map((card) =>
+    typeof card === 'string' || typeof card === 'number'
+      ? copyState(byId.get(String(card)) ?? card)
+      : copyState(card),
+  );
+}
+
 function indexHands(
   definitions: readonly (
-    HandsDefinition | CardSetsDefinition | CardZoneDefinition
+    | DeckDefinition<CardValue>
+    | HandsDefinition
+    | CardSetsDefinition
+    | CardZoneDefinition
   )[],
 ): Map<string, HandsDefinition> {
   return new Map(
@@ -107,7 +160,10 @@ function indexHands(
 
 function indexCardSets(
   definitions: readonly (
-    HandsDefinition | CardSetsDefinition | CardZoneDefinition
+    | DeckDefinition<CardValue>
+    | HandsDefinition
+    | CardSetsDefinition
+    | CardZoneDefinition
   )[],
 ): Map<string, CardSetsDefinition> {
   return new Map(
@@ -122,7 +178,10 @@ function indexCardSets(
 
 function indexCardZones(
   definitions: readonly (
-    HandsDefinition | CardSetsDefinition | CardZoneDefinition
+    | DeckDefinition<CardValue>
+    | HandsDefinition
+    | CardSetsDefinition
+    | CardZoneDefinition
   )[],
 ): Map<string, CardZoneDefinition> {
   return new Map(
@@ -138,6 +197,7 @@ function indexCardZones(
 function projectCardZones(
   zones: ReadonlyState<CardsKitState['zones']>,
   definitions: ReadonlyMap<string, CardZoneDefinition>,
+  decks: ReadonlyMap<string, DeckDefinition<CardValue>>,
 ): CardsPlayerView['zones'] {
   return Object.fromEntries(
     Object.entries(zones).map(([id, cards]) => {
@@ -148,7 +208,7 @@ function projectCardZones(
           visibility,
           cards:
             visibility === 'public'
-              ? copyState(cards)
+              ? projectCards(cards, decks.get(definitions.get(id)?.deck ?? ''))
               : { count: cards.length },
         },
       ];

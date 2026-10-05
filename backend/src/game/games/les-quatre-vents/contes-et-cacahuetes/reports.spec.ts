@@ -44,6 +44,20 @@ function top(state: any, deck: string, ids: number[]) {
     ...cards.filter((id: number) => !ids.includes(id)),
   ];
 }
+function drawPending(state: any) {
+  let next = state;
+  for (let count = 0; count < 12; count++) {
+    const actorId = [1, 2, 3].find((id) =>
+      runtime
+        .getAvailableActions(next, id)
+        .some((action) => action.type === 'draw_card'),
+    );
+    if (actorId == null) break;
+    next = act(next, actorId, 'draw_card');
+    if (next.pending) break;
+  }
+  return next;
+}
 
 describe('Contes reports: chained cards and blocked turns', () => {
   it('declares separate position and race-ranking shortcuts', () => {
@@ -81,12 +95,14 @@ describe('Contes reports: chained cards and blocked turns', () => {
       top(state, 'bonus', [3, 4]);
       top(state, 'malus', [1]);
       state = act(state, 1, 'roll');
+      state = drawPending(state);
       if (state.pending) interrupted++;
       for (let choices = 0; state.pending && choices < 8; choices++) {
         const actor = state.pending.playerId;
         state = act(state, actor, 'choice.resolve', {
           value: actor === 1 ? 3 : 1,
         });
+        state = drawPending(state);
       }
       expect(state.pending).toBeNull();
       const drawn = ['bonus', 'malus', 'surprise'].reduce(
@@ -109,7 +125,7 @@ describe('Contes reports: chained cards and blocked turns', () => {
     top(state, 'surprise', [13]);
     top(state, 'bonus', [2]);
     top(state, 'malus', [1]);
-    const wish = act(state, 1, 'roll');
+    const wish = drawPending(act(state, 1, 'roll'));
 
     expect(wish.pending?.data.choiceId).toBe('choice-story-challenge.option');
     expect(wish.pending?.choices).toEqual([
@@ -135,9 +151,11 @@ describe('Contes reports: chained cards and blocked turns', () => {
       '2': 21,
     });
 
-    const drewBonus = act(structuredClone(wish), 1, 'choice.resolve', {
-      value: 'draw-bonus',
-    });
+    const drewBonus = drawPending(
+      act(structuredClone(wish), 1, 'choice.resolve', {
+        value: 'draw-bonus',
+      }),
+    );
     expect(
       drewBonus.engine.playerValues.resources[
         'choice-story-challenge.reroll-token'
@@ -150,8 +168,10 @@ describe('Contes reports: chained cards and blocked turns', () => {
     top(state, 'bonus', [9, 10]);
     top(state, 'surprise', [8]);
     state = act(state, 1, 'roll');
+    state = drawPending(state);
     expect(state.pending?.playerId).toBe(1);
     state = act(state, 1, 'choice.resolve', { value: 2 });
+    state = drawPending(state);
     expect(state.pending).toBeNull();
     expect(state.engine.kits.cards.discards.bonus).toEqual(
       expect.arrayContaining([9, 10]),
@@ -164,6 +184,7 @@ describe('Contes reports: chained cards and blocked turns', () => {
     ).toBe(true);
     expect(state.turn.currentPlayerId).toBe(1); // Alice plays Bob's next slot.
     state = act(state, 1, 'roll');
+    state = drawPending(state);
     expect(state.engine.kits.movement.positions['story-road']['1']).toBe(0);
   });
 
@@ -177,9 +198,12 @@ describe('Contes reports: chained cards and blocked turns', () => {
     top(state, 'malus', [5]);
     top(state, 'bonus', [3, 4]);
     state = act(state, 1, 'roll');
+    state = drawPending(state);
     expect(state.turn.currentPlayerId).toBe(2);
     state = act(state, 2, 'roll');
+    state = drawPending(state);
     state = act(state, 3, 'roll');
+    state = drawPending(state);
     expect(state.turn.currentPlayerId).toBe(2);
     expect(
       runtime.getAvailableActions(state, 2).some((a) => a.type === 'roll'),

@@ -132,12 +132,10 @@ void GameGridPanel::Apply(const domain::GameGridView* grid,
             [](const Cell& a, const Cell& b) { return a.boardId == b.boardId && a.id == b.id; });
     if (sameCells)
     {
-        const int selected = cells_->GetSelection();
         for (std::size_t i = 0; i < nextModel.size(); ++i)
             if (nextModel[i].description != model_[i].description)
                 cells_->SetString(static_cast<unsigned int>(i), FromUtf8(nextModel[i].description));
         model_ = std::move(nextModel);
-        if (selected != wxNOT_FOUND) cells_->SetSelection(selected);
         return;
     }
     cells_->Clear();

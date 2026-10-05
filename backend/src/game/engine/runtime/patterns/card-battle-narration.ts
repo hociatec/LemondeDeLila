@@ -33,7 +33,7 @@ export function battleWonNarration(
           ? `Vous avez posé : ${play.cardNames.join(', ')}.`
           : `${name} a posé : ${play.cardNames.join(', ')}.`;
       });
-    return [result, ...revealed].join(' ');
+    return [...revealed, result].join(' ');
   };
   return {
     default: text(),
