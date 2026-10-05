@@ -73,6 +73,18 @@ lila_add_test_executable(lemonde_de_lila_wx_logger_sanitization_tests
     src/shared/logging/infrastructure/Logger.cpp
 )
 
+lila_add_test_executable(lemonde_de_lila_wx_presence_presentation_tests
+    tests/PresencePresentationModelTests.cpp
+    src/modules/presence/presentation/PresencePresentationModel.cpp
+    src/shared/logging/infrastructure/Logger.cpp
+    src/shared/text/presentation/catalog/UiTextCatalog.cpp
+    src/shared/text/presentation/encoding/Encoding.cpp
+)
+target_link_libraries(
+    lemonde_de_lila_wx_presence_presentation_tests
+    PRIVATE ${wxWidgets_LIBRARIES} nlohmann_json::nlohmann_json
+)
+
 add_executable(lemonde_de_lila_wx_tests
     tests/NetworkProtocolTests.cpp
     src/modules/catalog/infrastructure/CatalogApi.cpp

@@ -31,6 +31,7 @@ std::string ToUtf8(const wxString& value)
 
 void PresenceFrame::LoadSocialState(int userId)
 {
+    ShowLoadingActions();
     auto result = std::make_shared<PresenceSocialState>();
     const auto controller = actionController_;
     const wxWeakRef<PresenceFrame> weakThis(this);
@@ -64,6 +65,15 @@ void PresenceFrame::LoadSocialState(int userId)
                     weakThis->RebuildActions();
                 });
         });
+    if (!activeTask_->WasAccepted())
+    {
+        busy_ = false;
+        socialState_ = PresenceSocialState{.relationshipAvailable = false};
+        RebuildActions();
+        UpdateStatus(
+            wxString(L"Le chargement des actions n'a pas pu démarrer. Réessayez."),
+            true);
+    }
 }
 
 void PresenceFrame::RunSelectedAction()
@@ -150,6 +160,13 @@ void PresenceFrame::RunSocialMutation(const wxString& busyMessage, std::function
                     }
                 });
         });
+    if (!activeTask_->WasAccepted())
+    {
+        busy_ = false;
+        UpdateStatus(
+            wxString(L"L'action n'a pas pu démarrer. Réessayez."),
+            true);
+    }
 }
 
 void PresenceFrame::ShowBio(int userId, const wxString& username)

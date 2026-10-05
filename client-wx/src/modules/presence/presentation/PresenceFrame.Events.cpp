@@ -49,10 +49,15 @@ void PresenceFrame::ActivatePlayer()
         socialState_.reset();
         page_ = Page::Actions;
         titleLabel_->SetLabel(PresencePresentationModel::BuildPlayerLabel(*player));
-        menu_->SetItems(PresencePresentationModel::BuildSelfActionItems());
+        const auto actions = PresencePresentationModel::BuildSelfActionItems();
+        menu_->SetItems(actions);
         menu_->SetSelectedIndexSilently(0);
         detailsLabel_->SetLabel(wxEmptyString);
-        UpdateStatus(wxString(L"Flèches : naviguer. Entrée : sélectionner. Échap : retour."));
+        UpdateStatus(
+            wxString(L"Actions pour votre profil. ") + actions.front().label +
+                wxString(L". Flèches : naviguer. Entrée : sélectionner. Échap : retour."),
+            false,
+            true);
         static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
         return;
     }
@@ -60,7 +65,6 @@ void PresenceFrame::ActivatePlayer()
     socialState_.reset();
     page_ = Page::Actions;
     titleLabel_->SetLabel(PresencePresentationModel::BuildPlayerLabel(*player));
-    ShowLoadingActions();
     LoadSocialState(player->id);
 }
 

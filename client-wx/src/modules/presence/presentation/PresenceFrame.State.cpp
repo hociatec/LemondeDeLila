@@ -5,6 +5,7 @@
 
 #include "modules/presence/application/PresenceMonitor.h"
 #include "modules/presence/presentation/PresencePresentationModel.h"
+#include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/accessibility/presentation/FocusCoordinator.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -97,7 +98,13 @@ void PresenceFrame::RebuildActions()
     menu_->SetItems(items);
     menu_->SetSelectedIndexSilently(0);
     detailsLabel_->SetLabel(wxEmptyString);
-    UpdateStatus(wxString(L"Flèches : naviguer. Entrée : sélectionner. Échap : retour."));
+    const auto username = FromUtf8(selectedPlayer_->username);
+    UpdateStatus(
+        wxString(L"Actions pour ") + username + wxString(L". ") +
+            items.front().label +
+            wxString(L". Flèches : naviguer. Entrée : sélectionner. Échap : retour."),
+        false,
+        true);
     static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
 }
 
@@ -105,13 +112,22 @@ void PresenceFrame::ShowLoadingActions()
 {
     busy_ = true;
     detailsLabel_->SetLabel(wxEmptyString);
-    UpdateStatus(wxString(L"Chargement des actions."));
+    UpdateStatus(wxString(L"Chargement des actions."), false, true);
 }
 
-void PresenceFrame::UpdateStatus(const wxString& message, bool isError)
+void PresenceFrame::UpdateStatus(
+    const wxString& message,
+    bool isError,
+    bool announce)
 {
     if (statusLabel_->GetLabel() != message) statusLabel_->SetLabel(message);
     statusLabel_->SetForegroundColour(isError ? wxColour(240, 130, 130) : lila::shared::ui::Theme::Accent());
+    if (isError || announce)
+        lila::shared::accessibility::AccessibilityUtils::AnnounceStatus(
+            *statusLabel_, message);
+    else
+        lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(
+            *statusLabel_, message);
     Layout();
 }
 }
