@@ -162,6 +162,9 @@ void TestPendingSelectionPolicy()
         "resolve", {}, {}, {}, false, false};
     Expect(!GamePendingSelectionPolicy::HasActionableChoices(passive),
         "Un pending vide et passif ne doit jamais devenir une cible de focus.");
+    Expect(!GamePendingSelectionPolicy::AuthorizesAction(
+            passive, *passive.selectionAction),
+        "Un pending passif ne doit jamais autoriser une action pendant le démarrage.");
 
     const GameValue alpha{std::string("alpha")};
     const GameValue beta{std::string("beta")};
@@ -173,6 +176,32 @@ void TestPendingSelectionPolicy()
             GamePendingSelectionPolicy::RestoreChoiceIndex(choices, alpha) == 0 &&
             GamePendingSelectionPolicy::RestoreChoiceIndex(choices, gamma) == 1,
         "La restauration doit ignorer les anciens choix disparus et conserver les choix présents.");
+
+    GamePending pawnChoice;
+    pawnChoice.viewerActionable = true;
+    pawnChoice.choices.push_back({"Rouge", GameValue{std::string("red")},
+        lila::modules::gameplay::domain::GameAction{
+            "choice.resolve", {}, {}, {{"value", GameValue{std::string("red")}}}, false, false}});
+    Expect(GamePendingSelectionPolicy::AuthorizesAction(
+            pawnChoice, *pawnChoice.choices[0].action),
+        "Le choix de pion fourni par le serveur doit rester autorisé pendant le démarrage.");
+    auto forgedPawnAction = *pawnChoice.choices[0].action;
+    forgedPawnAction.payload["value"] = GameValue{std::string("blue")};
+    Expect(!GamePendingSelectionPolicy::AuthorizesAction(pawnChoice, forgedPawnAction),
+        "Une action différente du choix de pion serveur doit rester refusée.");
+
+    GamePending ordering;
+    ordering.viewerActionable = true;
+    ordering.selectionAction = lila::modules::gameplay::domain::GameAction{
+        "choice.resolve", {}, {}, {{"value", GameValue{GameValue::Array{}}},
+            {"choiceId", GameValue{std::string("pawns")}}}, false, false};
+    auto orderedAction = *ordering.selectionAction;
+    orderedAction.payload["value"] = GameValue{GameValue::Array{alpha, beta}};
+    Expect(GamePendingSelectionPolicy::AuthorizesAction(ordering, orderedAction),
+        "Une sélection multiple doit pouvoir remplir l'action serveur autorisée.");
+    orderedAction.payload["choiceId"] = GameValue{std::string("other")};
+    Expect(!GamePendingSelectionPolicy::AuthorizesAction(ordering, orderedAction),
+        "Les champs fixes de l'action serveur ne doivent pas pouvoir être modifiés.");
 }
 void TestEventsHaveStableIdentityAndAccessibleText()
 {

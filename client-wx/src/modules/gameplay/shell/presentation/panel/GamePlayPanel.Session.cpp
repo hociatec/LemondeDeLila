@@ -1,11 +1,10 @@
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
-
 #include <optional>
 #include <utility>
-
 #include "modules/gameplay/session/application/GameSessionService.h"
 #include "modules/gameplay/session/domain/GameProtocol.h"
 #include "modules/gameplay/shell/presentation/formatting/GamePlayFormatters.h"
+#include "modules/gameplay/state/application/GamePendingSelectionPolicy.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/realtime/RealtimeProtocol.h"
@@ -87,12 +86,13 @@ void GamePlayPanel::StartJoin()
         lila::shared::concurrency::BackgroundTaskPriority::Normal,
         "Connexion au jeu impossible."));
 }
-
 void GamePlayPanel::ExecuteAction(domain::GameAction action)
 {
-    const bool startConfigurationSubmission =
-        startConfigurationFlow_.IsAwaitingActionAcknowledgement();
-    if (!lifecycle_.AllowsActionSubmission(startConfigurationSubmission) ||
+    const bool startConfigurationSubmission = startConfigurationFlow_.IsAwaitingActionAcknowledgement();
+    const bool serverAuthorizedPendingSubmission = state_.pending &&
+        application::GamePendingSelectionPolicy::AuthorizesAction(*state_.pending, action);
+    if (!lifecycle_.AllowsActionSubmission(
+        startConfigurationSubmission, serverAuthorizedPendingSubmission) ||
         action.type.empty() || action.disabled)
         return;
     auto* service = &service_;

@@ -145,11 +145,16 @@ bool GamePlayLifecycle::AllowsProjectedContentFocus() const noexcept
 }
 
 bool GamePlayLifecycle::AllowsActionSubmission(
-    bool startConfigurationSubmission) const noexcept
+    bool startConfigurationSubmission,
+    bool serverAuthorizedPendingSubmission) const noexcept
 {
     return AllowsGameplayInput() ||
         (startConfigurationSubmission &&
          state_ == GamePlayLifecycleState::ConfiguringStart &&
+         hasAuthoritativeState_) ||
+        (serverAuthorizedPendingSubmission &&
+         (state_ == GamePlayLifecycleState::ConfiguringStart ||
+          state_ == GamePlayLifecycleState::StartingRoom) &&
          hasAuthoritativeState_);
 }
 

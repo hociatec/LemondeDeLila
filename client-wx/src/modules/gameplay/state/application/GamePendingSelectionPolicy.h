@@ -20,6 +20,28 @@ public:
         return false;
     }
 
+    [[nodiscard]] static bool AuthorizesAction(
+        const domain::GamePending& pending,
+        const domain::GameAction& action)
+    {
+        if (!pending.viewerActionable || action.type.empty()) return false;
+        for (const auto& choice : pending.choices)
+            if (choice.action && choice.action->type == action.type &&
+                choice.action->payload == action.payload)
+                return true;
+        if (!pending.selectionAction || pending.selectionAction->type != action.type)
+            return false;
+
+        // Multiple and ordering workflows fill their server-provided
+        // selection action with the values chosen in the UI.  Every other
+        // payload field must still match the authoritative template.
+        auto expected = pending.selectionAction->payload;
+        auto submitted = action.payload;
+        expected.erase("value");
+        submitted.erase("value");
+        return action.payload.contains("value") && expected == submitted;
+    }
+
     [[nodiscard]] static std::size_t RestoreChoiceIndex(
         const std::vector<domain::GamePendingChoice>& choices,
         const std::optional<domain::GameValue>& previous)
