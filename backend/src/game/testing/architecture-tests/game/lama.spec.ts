@@ -1,5 +1,6 @@
 import { compileJsonGame } from '../../../rules/public-api';
 import type { DeclarativeState } from '../../../engine/runtime/state/declarative-state';
+import { DeclarativeGameRuntime } from '../../../engine/runtime/declarative-game.runtime';
 import { testGame } from '../../../engine/testing/public-api';
 
 import documentExtensionSource from '../../../games/vents-sacres/lama/game.json';
@@ -212,6 +213,35 @@ describe('LAMA declarative game', () => {
     expect(nextPlayer).toBeDefined();
     expect(game.availableActions(nextPlayer!)).not.toContain('draw');
     await expect(game.as(nextPlayer!).do('draw', {})).rejects.toThrow();
+  });
+
+  it('makes the bot draw instead of leaving when it cannot play', async () => {
+    let exercised = false;
+    for (let seed = 1; seed <= 200; seed += 1) {
+      const game = testGame(gameDefinition)
+        .players([{ username: 'Bot', isBot: true }, 'Lila'])
+        .seed(seed);
+      await game.start();
+      await game.as(2).do('game.configure', {});
+
+      if (
+        game.state().turn?.currentPlayerId !== -1 ||
+        game.availableActions(-1).includes('cards-discard-penalty-play')
+      )
+        continue;
+
+      expect(game.availableActions(-1)).toContain('draw');
+      expect(
+        new DeclarativeGameRuntime(gameDefinition).getBotActions(
+          game.state(),
+          -1,
+        ),
+      ).toEqual([expect.objectContaining({ type: 'draw' })]);
+      exercised = true;
+      break;
+    }
+
+    expect(exercised).toBe(true);
   });
 
   it('never exposes the drawn card value in the public narrative', async () => {
