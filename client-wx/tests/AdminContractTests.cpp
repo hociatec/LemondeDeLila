@@ -105,6 +105,14 @@ int main()
         "bugs.comment", "reportId"));
     assert(lila::modules::admin::presentation::ShouldCopyContextValue(
         "bugs.update", "content"));
+    assert(lila::modules::admin::presentation::AdminGameType(
+        nlohmann::json{{"id", "arche-de-mnemosyne"}}) == "arche-de-mnemosyne");
+    assert(lila::modules::admin::presentation::IsMnemoQuizGame(
+        nlohmann::json{{"id", "arche-de-mnemosyne"}}));
+    assert(lila::modules::admin::presentation::IsMnemoQuizGame(
+        nlohmann::json{{"gameType", "arche-de-mnemosyne"}}));
+    assert(!lila::modules::admin::presentation::IsMnemoQuizGame(
+        nlohmann::json{{"id", "morpion"}}));
     assert(lila::modules::admin::domain::GetAdminFieldMetadata(
         "bugs.comment", "content").label == L"Commentaire");
     const auto mnemoStatus = lila::modules::admin::domain::GetAdminFieldMetadata(
