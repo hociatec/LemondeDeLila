@@ -28,25 +28,26 @@ export function createPawScoringCardRules(program: PawScoringProgram) {
   function playable(actorId: number, ctx: Context): CardInput[] {
     if (ctx.effects.sourcePlayerId() !== actorId) return [];
     const blocked = isBlocked(actorId, ctx);
-    return ctx.cards.hand<string>(program.handId, actorId).flatMap((cardId) => {
-      const card = cardById.get(cardId);
-      if (!card || (blocked && card.type !== 'parade' && card.type !== 'bot'))
-        return [];
-      if (card.type === 'pattes')
-        return canPlayPattes(actorId, card.value, ctx) ? [{ cardId }] : [];
-      if (card.type === 'obstacle')
-        return ctx.players
-          .all()
-          .filter(
-            (player) =>
-              player.id !== actorId &&
-              canReceiveObstacle(player.id, card.obstacle, ctx),
-          )
-          .map((player) => ({ cardId, targetPlayerId: player.id }));
-      if (card.type === 'parade')
-        return canPlayParade(actorId, card.parade, ctx) ? [{ cardId }] : [];
-      return canPlayPower(actorId, card.bot, ctx) ? [{ cardId }] : [];
-    });
+    return ctx.cards
+      .hand<PawScoringCard>(program.handId, actorId)
+      .flatMap((card) => {
+        const cardId = card.id;
+        if (blocked && card.type !== 'parade' && card.type !== 'bot') return [];
+        if (card.type === 'pattes')
+          return canPlayPattes(actorId, card.value, ctx) ? [{ cardId }] : [];
+        if (card.type === 'obstacle')
+          return ctx.players
+            .all()
+            .filter(
+              (player) =>
+                player.id !== actorId &&
+                canReceiveObstacle(player.id, card.obstacle, ctx),
+            )
+            .map((player) => ({ cardId, targetPlayerId: player.id }));
+        if (card.type === 'parade')
+          return canPlayParade(actorId, card.parade, ctx) ? [{ cardId }] : [];
+        return canPlayPower(actorId, card.bot, ctx) ? [{ cardId }] : [];
+      });
   }
   function effectsForPlay(card: PawScoringCard, targetId: number | null) {
     if (card.type !== 'obstacle' || targetId == null) return card.effects;

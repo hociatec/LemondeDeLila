@@ -1,18 +1,17 @@
 import type { GameContext } from '../../internal-pattern-api';
-import type { PawScoringProgram } from './program';
+import type { PawScoringCard, PawScoringProgram } from './program';
 
 type State = Record<string, never>;
 type Context = GameContext<State>;
 
 export function resetPawScoringRound(program: PawScoringProgram, ctx: Context) {
   for (const player of ctx.players.all()) {
-    const hand = [...ctx.cards.hand<string>(program.handId, player.id)];
-    for (const cardId of hand)
-      ctx.cards.take(program.handId, player.id, cardId);
+    const hand = [...ctx.cards.hand<PawScoringCard>(program.handId, player.id)];
+    for (const card of hand) ctx.cards.take(program.handId, player.id, card);
     ctx.cards.putOnTop(program.deckId, hand);
   }
-  const discarded = ctx.cards.discardPile<string>(program.deckId);
-  for (const cardId of discarded) ctx.cards.takeDiscard(program.deckId, cardId);
+  const discarded = ctx.cards.discardPile<PawScoringCard>(program.deckId);
+  for (const card of discarded) ctx.cards.takeDiscard(program.deckId, card);
   ctx.cards.putOnTop(program.deckId, discarded);
   ctx.cards.shuffle(program.deckId);
   for (const player of ctx.players.all()) {
