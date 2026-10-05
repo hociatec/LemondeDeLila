@@ -87,6 +87,7 @@ add_executable(lemonde_de_lila_wx_tests
     src/modules/rooms/infrastructure/RoomSessionGateway.State.cpp
     src/modules/rooms/presentation/navigation/RoomLobbyNavigator.cpp
     src/modules/rooms/presentation/navigation/RoomOpenRequest.cpp
+    src/modules/rooms/presentation/lobby/RoomLobbyPresentationModel.cpp
     src/modules/rooms/presentation/model/RoomPresentationModel.cpp
     src/modules/rooms/presentation/actions/RoomActionPolicy.cpp
     src/modules/rooms/presentation/shortcuts/RoomShortcutPolicy.cpp

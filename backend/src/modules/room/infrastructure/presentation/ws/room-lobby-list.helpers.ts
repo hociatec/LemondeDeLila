@@ -23,6 +23,7 @@ type RoomLobbyRecord = {
   startedAt?: Date | null;
   isPrivate: boolean;
   maxPlayers: number;
+  createdAt: Date;
   owner?: RoomLobbyUser | null;
   participants?: RoomLobbyParticipant[];
   bots?: RoomLobbyBot[];
@@ -40,6 +41,9 @@ export type PublicRoomListItem = {
   playersCount: number;
   botsCount: number;
   owner: { id: number; username: string } | null;
+  gameName: string;
+  playersLabel: string;
+  createdAt: string;
 };
 
 function isRoomOpenStatus(status: unknown): boolean {
@@ -61,9 +65,25 @@ function countActiveParticipants(room: RoomLobbyRecord): number {
   return ownerAlreadyCounted ? activeCount : activeCount + 1;
 }
 
+function activePlayersLabel(room: RoomLobbyRecord): string {
+  const players = new Map<number, string>();
+  if (room.owner?.id && room.owner.username.trim()) {
+    players.set(room.owner.id, room.owner.username.trim());
+  }
+  for (const participant of (room.participants || []).slice(0, 1_000)) {
+    if (participant.leftAt || !participant.user?.id) continue;
+    const username = participant.user.username.trim();
+    if (username) players.set(participant.user.id, username);
+  }
+  return Array.from(players.values()).join(', ').slice(0, 255);
+}
+
 export function buildPublicRoomList(
   rooms: RoomLobbyRecord[],
-  opts?: { allowedGameTypes?: ReadonlySet<string> },
+  opts?: {
+    allowedGameTypes?: ReadonlySet<string>;
+    gameNamesByType?: ReadonlyMap<string, string>;
+  },
 ): {
   items: PublicRoomListItem[];
   groups: { gameType: string; rooms: PublicRoomListItem[] }[];
@@ -106,6 +126,9 @@ export function buildPublicRoomList(
         owner: room.owner
           ? { id: room.owner.id, username: room.owner.username }
           : null,
+        gameName: opts?.gameNamesByType?.get(room.gameType) ?? room.gameType,
+        playersLabel: activePlayersLabel(room),
+        createdAt: room.createdAt.toISOString(),
       };
     });
 

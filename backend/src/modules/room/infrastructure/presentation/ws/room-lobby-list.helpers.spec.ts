@@ -91,4 +91,26 @@ describe('buildPublicRoomList', () => {
     const { items } = buildPublicRoomList([full, joinable]);
     expect(items.map((i) => i.id)).toEqual([1, 2]);
   });
+
+  it('exposes the display information used by the join-room list', () => {
+    const owner = makeUser(1, 'anian');
+    const createdAt = new Date('2026-10-05T16:35:00.000Z');
+    const room = makeRoom({
+      id: 3,
+      gameType: 'mille-bornes',
+      owner,
+      createdAt,
+      participants: [],
+    });
+
+    const { items } = buildPublicRoomList([room], {
+      gameNamesByType: new Map([['mille-bornes', '1000 miles']]),
+    });
+
+    expect(items[0]).toMatchObject({
+      gameName: '1000 miles',
+      playersLabel: 'anian',
+      createdAt: '2026-10-05T16:35:00.000Z',
+    });
+  });
 });

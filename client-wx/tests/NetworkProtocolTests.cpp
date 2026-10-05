@@ -38,6 +38,7 @@
 #include "modules/rooms/infrastructure/RoomSessionGateway.h"
 #include "modules/rooms/presentation/navigation/RoomLobbyNavigator.h"
 #include "modules/rooms/presentation/navigation/RoomOpenRequest.h"
+#include "modules/rooms/presentation/lobby/RoomLobbyPresentationModel.h"
 #include "modules/rooms/presentation/model/RoomPresentationModel.h"
 #include "modules/rooms/presentation/shortcuts/RoomShortcutPolicy.h"
 #include "modules/vault/infrastructure/VaultPayloadCodec.h"

@@ -42,6 +42,9 @@ export class RoomLobbyPublicService {
       return status !== 'construction' || isAdmin;
     });
     const allowed = new Set(allowedGames.map((game) => game.id));
+    const gameNamesByType = new Map(
+      allowedGames.map((game) => [game.id, game.name || game.id]),
+    );
     if (!this.policy.ensureGameTypeAllowed(dto.gameType, allowed)) {
       return this.presenter.presentPublicList({
         items: [],
@@ -56,7 +59,7 @@ export class RoomLobbyPublicService {
     );
     const built = buildPublicRoomList(
       rooms.slice(0, 10_000).filter((room) => activeRoomIds.has(room.id)),
-      { allowedGameTypes: allowed },
+      { allowedGameTypes: allowed, gameNamesByType },
     );
     const withBan = <T extends { id: number }>(room: T) => ({
       ...room,
