@@ -257,6 +257,7 @@ cxx_build "${COMMON_FLAGS[@]}" -I"$JSON_INCLUDE" \
   "$ROOT/src/modules/admin/infrastructure/AdminPayloadValidator.cpp" \
   "$ROOT/src/modules/admin/presentation/AdminBugReportListFormatter.cpp" \
   "$ROOT/src/modules/admin/presentation/AdminResultFormatter.cpp" \
+  "$ROOT/src/modules/admin/presentation/AdminMnemoQuestionFormatter.cpp" \
   "$ROOT/src/shared/network/infrastructure/http/AuthenticatedHttpClient.cpp" \
   -o "$BUILD_DIR/admin-contract-tests"
 "$BUILD_DIR/admin-contract-tests"

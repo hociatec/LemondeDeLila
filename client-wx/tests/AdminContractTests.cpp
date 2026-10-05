@@ -203,6 +203,21 @@ int main()
     assert(!lila::modules::admin::domain::ValidateAdminFormPayload(
         "sounds.upload", {FormValue::Text("soundId", "ChatMessageSent"),
             FormValue::Text("filePath", "")}));
+    const auto mnemoQuestions =
+        lila::modules::admin::presentation::BuildAdminResultPresentation({
+            {"questions", {{{"id", "q-1"}, {"categoryId", "musique"},
+                {"question", "Qui a popularisé White Christmas ?"},
+                {"answers", {"Bing Crosby", "Frank Sinatra", "Dean Martin", "Elvis Presley"}},
+                {"correctIndex", 0}, {"status", "validated"}}}}});
+    assert(mnemoQuestions.entries.size() == 1);
+    assert(mnemoQuestions.entries.front().label ==
+        "1. Qui a popularisé White Christmas ?");
+    assert(mnemoQuestions.entries.front().details.find(
+        "Bonne réponse : Bing Crosby") != std::string::npos);
+    assert(mnemoQuestions.entries.front().details.find(
+        "Mauvaise réponse : Frank Sinatra") != std::string::npos);
+    assert(mnemoQuestions.entries.front().details.find(
+        "Identifiant : q-1") != std::string::npos);
     const auto soundField = lila::modules::admin::domain::GetAdminFieldMetadata(
         "sounds.upload", "soundId");
     assert(soundField.kind ==

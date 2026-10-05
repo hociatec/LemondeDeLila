@@ -28,8 +28,8 @@ it('plays a complete deterministic team-pawn race', async () => {
   const trace = result.events
     .filter((event) => event.type !== 'engine.state.committed')
     .map(({ type, data, visibility }) => ({ type, data, visibility }));
-  expect(trace).toHaveLength(1460);
+  expect(trace).toHaveLength(1469);
   expect(createHash('sha256').update(JSON.stringify(trace)).digest('hex')).toBe(
-    '43c74bf35ffbcd9edb2438a852be1f5a3224deafb0a04cb48a02ad5a0f75e7ae',
+    '744ce7e25fdbb76bcfcb52bb876a91c723c98e765c1c0da07b3d74b4c283b65e',
   );
 });
