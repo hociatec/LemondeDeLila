@@ -7,6 +7,7 @@
 #include <wx/sizer.h>
 
 #ifdef __WXMSW__
+#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NavigationController.h"
 #endif
 
@@ -101,6 +102,14 @@ void HostFrame::OnActivate(wxActivateEvent& event)
     if (!event.GetActive())
     {
         auto* target = wxWindow::FindFocus();
+        if (auto* focusView =
+                dynamic_cast<lila::shared::accessibility::FocusPlanView*>(currentContent_))
+        {
+            auto* activationTarget = focusView->ActivationFocusTarget();
+            if (lila::shared::accessibility::NavigationController::IsFocusable(
+                    activationTarget))
+                target = activationTarget;
+        }
         if (!lila::shared::accessibility::NavigationController::IsDescendantOf(
                 target, currentContent_))
             target = lastFocusedChild_.get();

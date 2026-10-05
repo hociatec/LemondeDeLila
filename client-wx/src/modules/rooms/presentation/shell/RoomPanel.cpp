@@ -53,6 +53,18 @@ lila::shared::accessibility::FocusManager::Plan RoomPanel::BuildFocusPlan()
     return plan;
 }
 
+wxWindow* RoomPanel::ActivationFocusTarget()
+{
+    // Returning from the Windows desktop or another application must always
+    // re-enter a table through its stable "Zone de jeu" landmark. Without
+    // this override HostFrame restores whichever transient cell happened to
+    // own focus before deactivation, making the result position-dependent.
+    keepZoneFocusOnActivation_ = true;
+    CancelScheduledGameZoneFocus();
+    EnsureGameplayNavigationInvariant();
+    return gameZoneAnchor_;
+}
+
 wxWindow* RoomPanel::GameplayNavigationTarget() const
 {
     // Tab navigation must name the control that actually owns focus inside

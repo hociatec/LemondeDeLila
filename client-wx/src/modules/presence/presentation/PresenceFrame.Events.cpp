@@ -55,7 +55,7 @@ void PresenceFrame::ActivatePlayer()
         detailsLabel_->SetLabel(wxEmptyString);
         UpdateStatus(
             wxString(L"Actions pour votre profil. ") + actions.front().label +
-                wxString(L". Flèches : naviguer. Entrée : sélectionner. Échap : retour."),
+                wxString(L"."),
             false,
             true);
         static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));

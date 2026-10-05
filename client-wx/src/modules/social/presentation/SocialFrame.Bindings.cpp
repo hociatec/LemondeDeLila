@@ -109,10 +109,6 @@ void SocialFrame::BindSectionEvents(SocialSection section)
             RunUiAction(
                 [this]()
                 {
-                    if (ConsumePendingListActivationSuppression())
-                    {
-                        return;
-                    }
                     if (screenCoordinator_ != nullptr)
                     {
                         screenCoordinator_->OpenCurrentSectionActionMenu();

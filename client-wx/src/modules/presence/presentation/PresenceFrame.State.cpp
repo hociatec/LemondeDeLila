@@ -66,7 +66,7 @@ void PresenceFrame::RebuildPlayers(std::optional<int> preferredPlayerId, bool fo
     detailsLabel_->SetLabel(hasSnapshot
         ? FromUtf8(presenceMonitor_.Status())
         : wxString(L"Chargement de la présence..."));
-    UpdateStatus(wxString(L"Flèches : naviguer. Entrée : sélectionner. Échap : fermer."));
+    UpdateStatus(wxEmptyString);
     if (focusSelection)
     {
         static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
@@ -101,8 +101,7 @@ void PresenceFrame::RebuildActions()
     const auto username = FromUtf8(selectedPlayer_->username);
     UpdateStatus(
         wxString(L"Actions pour ") + username + wxString(L". ") +
-            items.front().label +
-            wxString(L". Flèches : naviguer. Entrée : sélectionner. Échap : retour."),
+            items.front().label + wxString(L"."),
         false,
         true);
     static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
@@ -112,7 +111,8 @@ void PresenceFrame::ShowLoadingActions()
 {
     busy_ = true;
     detailsLabel_->SetLabel(wxEmptyString);
-    UpdateStatus(wxString(L"Chargement des actions."), false, true);
+    menu_->SetItems({});
+    UpdateStatus(wxEmptyString);
 }
 
 void PresenceFrame::UpdateStatus(
