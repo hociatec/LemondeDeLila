@@ -139,6 +139,14 @@ std::string ItemTitle(const nlohmann::json& value, std::size_t index) {
             const auto author = value.find("createdByUsername");
             if (author != value.end() && author->is_string())
                 title += " — " + Scalar(*author);
+            const auto commentsCount = value.find("commentsCount");
+            if (commentsCount != value.end() && commentsCount->is_number_integer())
+            {
+                const auto count = commentsCount->dump();
+                if (!count.starts_with('-'))
+                    title += " — " + count +
+                        (count == "1" ? " commentaire" : " commentaires");
+            }
             return title;
         }
         for (const auto key : Keys)
