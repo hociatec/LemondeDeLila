@@ -13,6 +13,11 @@ int main()
     using application::GamePlayLifecycleState;
     using domain::GameMatchStatus;
 
+    static_assert(!domain::IsInteractive(GameMatchStatus::Waiting));
+    static_assert(domain::IsInteractive(GameMatchStatus::Setup));
+    static_assert(domain::IsInteractive(GameMatchStatus::Playing));
+    static_assert(!domain::IsInteractive(GameMatchStatus::Finished));
+
     static_assert(GamePlayAccessPolicy::KeepStableEntryVisible());
     static_assert(GamePlayAccessPolicy::IsUsableTarget(true, true, true));
     static_assert(!GamePlayAccessPolicy::IsUsableTarget(false, true, true));
@@ -63,9 +68,9 @@ int main()
     assert(!lifecycle.AllowsGameplayInput());
     lifecycle.SetRoomStarted(true, false, 42);
     assert(lifecycle.State() == GamePlayLifecycleState::Synchronizing);
-    lifecycle.ObserveAuthoritativeState(41, GameMatchStatus::Playing);
+    lifecycle.ObserveAuthoritativeState(41, GameMatchStatus::Setup);
     assert(lifecycle.State() == GamePlayLifecycleState::Synchronizing);
-    lifecycle.ObserveAuthoritativeState(42, GameMatchStatus::Playing);
+    lifecycle.ObserveAuthoritativeState(42, GameMatchStatus::Setup);
     assert(lifecycle.State() == GamePlayLifecycleState::Active);
     assert(lifecycle.AllowsGameplayInput());
     lifecycle.MarkReconnecting();

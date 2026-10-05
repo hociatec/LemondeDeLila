@@ -73,7 +73,7 @@ void GamePlayPanel::SetRoomStarted(bool started, int runId)
         if (requiresStartedSynchronization)
         {
             activeProjection = lifecycle_.HasAuthoritativeState() &&
-                domain::IsActive(state_.system.match.status) &&
+                domain::IsInteractive(state_.system.match.status) &&
                 (runId <= 0 || state_.runId <= 0 || state_.runId == runId);
             if (becameStarted && !activeProjection)
             {
