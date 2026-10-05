@@ -223,11 +223,21 @@ int main()
     assert(userPresentation.entries[1].details.find("Milo") != std::string::npos);
     assert(userPresentation.details == userPresentation.entries[0].details);
     const auto reportPresentation = lila::modules::admin::presentation::
-        BuildAdminResultPresentation({{"reports", {{
-            {"id", "r1"}, {"subject", "Son coupé"}, {"status", "pending"},
-            {"createdByUsername", "Lila"}}}}});
-    assert(reportPresentation.summary == "Rapports : 1 élément.");
-    assert(reportPresentation.entries[0].label == "1. Son coupé — En attente — Lila");
+        BuildAdminResultPresentation({{"reports", {
+            {{"id", "r1"}, {"subject", "Son coupé"}, {"status", "pending"},
+             {"createdByUsername", "Lila"}, {"commentsCount", 0}},
+            {{"id", "r2"}, {"subject", "Jeu figé"}, {"status", "in_progress"},
+             {"createdByUsername", "Milo"}, {"commentsCount", 1}},
+            {{"id", "r3"}, {"subject", "Tour bloqué"}, {"status", "to_test"},
+             {"createdByUsername", "Lila"}, {"commentsCount", 3}},
+        }}});
+    assert(reportPresentation.summary == "Rapports : 3 éléments.");
+    assert(reportPresentation.entries[0].label ==
+        "1. Son coupé — En attente — Lila — 0 commentaires");
+    assert(reportPresentation.entries[1].label ==
+        "2. Jeu figé — En cours — Milo — 1 commentaire");
+    assert(reportPresentation.entries[2].label ==
+        "3. Tour bloqué — À tester — Lila — 3 commentaires");
 
     const auto emptyPresentation =
         lila::modules::admin::presentation::BuildAdminResultPresentation({
