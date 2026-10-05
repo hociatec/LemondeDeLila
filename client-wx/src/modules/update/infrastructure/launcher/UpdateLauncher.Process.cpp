@@ -70,12 +70,12 @@ Process& Process::operator=(Process&& other) noexcept
     return *this;
 }
 
-Process LaunchClient(const fs::path& directory)
+Process LaunchClient(const fs::path& directory, bool clearDiagnostics)
 {
     // Keep diagnostics for one launch only, including across retained and
     // rolled-back releases. The launcher has stopped the previous client
     // before reaching this point.
-    ClearReleaseDiagnostics(directory.parent_path());
+    if (clearDiagnostics) ClearReleaseDiagnostics(directory.parent_path());
     const fs::path executable = directory / AppExecutable;
     std::wstring command = L"\"" + executable.wstring() + L"\"";
     PROCESS_INFORMATION information{};

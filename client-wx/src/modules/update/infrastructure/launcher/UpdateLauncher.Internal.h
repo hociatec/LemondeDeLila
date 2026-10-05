@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <string>
 
+#include "modules/update/application/UpdateSignals.h"
 #include "modules/update/domain/UpdateProtocol.h"
 #include "modules/update/domain/UpdateInstallationState.h"
 
@@ -26,7 +27,6 @@ using lila::modules::update::ParseUpdateVersion;
 
 inline constexpr wchar_t AppExecutable[] = L"lemonde_de_lila_wx.exe";
 inline constexpr wchar_t LauncherExecutable[] = L"lila_launcher.exe";
-inline constexpr wchar_t LauncherMutex[] = L"Local\\LeMondeDeLilaWX.Launcher";
 inline constexpr auto PollInterval = std::chrono::seconds(120);
 inline constexpr std::uint64_t MinimumFreeSpaceReserve = 128ULL * 1024ULL * 1024ULL;
 using lila::modules::update::MaximumArchiveEntries;
@@ -108,7 +108,7 @@ void RenameWithRetry(const fs::path& source, const fs::path& destination,
     const UpdateProgressDialog* progress = nullptr);
 fs::path PrepareRelease(const fs::path& root, const Manifest& manifest,
     UpdateProgressDialog* progress = nullptr);
-Process LaunchClient(const fs::path& directory);
+Process LaunchClient(const fs::path& directory, bool clearDiagnostics = true);
 bool WaitForHealthy(const Process& process);
 void StopForUpdate(Process& process);
 LauncherReplacement SpawnLauncherReplacement(const fs::path& candidate, const fs::path& target);

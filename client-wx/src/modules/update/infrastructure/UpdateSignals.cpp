@@ -36,9 +36,15 @@ bool IsLauncherActive()
 {
 #if defined(_WIN32) && defined(NDEBUG)
     HANDLE mutex = ::OpenMutexW(SYNCHRONIZE, FALSE,
-        L"Local\\LeMondeDeLilaWX.Launcher");
-    if (mutex == nullptr) return false;
-    ::CloseHandle(mutex);
+        LauncherCoordinationMutexName);
+    if (mutex != nullptr) {
+        ::CloseHandle(mutex);
+        return true;
+    }
+    HANDLE secondaryLaunchers = ::OpenEventW(SYNCHRONIZE, FALSE,
+        SecondaryLaunchersSignalName);
+    if (secondaryLaunchers == nullptr) return false;
+    ::CloseHandle(secondaryLaunchers);
     return true;
 #else
     return true;
