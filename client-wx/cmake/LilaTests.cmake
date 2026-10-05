@@ -306,6 +306,7 @@ lila_add_test_executable(lemonde_de_lila_wx_admin_contract_tests
     src/modules/admin/domain/AdminFormMetadata.cpp
     src/modules/admin/domain/AdminFormMetadata.BugReports.cpp
     src/modules/admin/infrastructure/AdminPayloadValidator.cpp
+    src/modules/admin/presentation/AdminBugReportListFormatter.cpp
     src/modules/admin/presentation/AdminResultFormatter.cpp
     src/shared/network/infrastructure/http/AuthenticatedHttpClient.cpp
 )
