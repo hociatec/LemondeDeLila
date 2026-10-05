@@ -58,25 +58,6 @@ void SocialFrame::ShowActionFeedback(const wxString& message, const wxString& ti
     wxMessageBox(message, title, wxOK | wxICON_INFORMATION, this);
 }
 
-void SocialFrame::ArmInitialListActivationSuppression() noexcept
-{
-    if (navigationState_.currentScreen == Screen::Section && !navigationState_.sectionActionMenuActive)
-    {
-        suppressNextListActivation_ = true;
-    }
-}
-
-bool SocialFrame::ConsumePendingListActivationSuppression() noexcept
-{
-    if (!suppressNextListActivation_)
-    {
-        return false;
-    }
-
-    suppressNextListActivation_ = false;
-    return true;
-}
-
 void SocialFrame::RunBackgroundTask(
     const wxString& busyMessage,
     const std::function<void()>& worker,

@@ -99,8 +99,6 @@ private:
     [[nodiscard]] bool IsExplicitTabNavigationContext() const noexcept;
     [[nodiscard]] wxWindow* ResolveMenuFocusTarget();
     [[nodiscard]] wxWindow* ResolveCurrentSectionTarget();
-    void ArmInitialListActivationSuppression() noexcept;
-    [[nodiscard]] bool ConsumePendingListActivationSuppression() noexcept;
 
     OpenMessagingRequestedHandler onOpenMessagingRequested_;
     OpenStoryBookRequestedHandler onOpenStoryBookRequested_;
@@ -111,7 +109,6 @@ private:
     std::atomic<bool> isClosing_ = false;
     SocialSelectionMemory selectionMemory_;
     SocialDataStore dataStore_;
-    bool suppressNextListActivation_ = false;
     std::unique_ptr<SocialActionController> actionController_;
     std::shared_ptr<SocialLoadController> loadController_;
     std::unique_ptr<SocialProfileCoordinator> profileCoordinator_;

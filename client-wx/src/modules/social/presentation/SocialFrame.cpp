@@ -90,7 +90,6 @@ SocialFrame::SocialFrame(
             },
             [this]()
             {
-                ArmInitialListActivationSuppression();
                 ScheduleFocusCurrentScreen();
             }});
     screenCoordinator_ = std::make_unique<SocialScreenCoordinator>(
