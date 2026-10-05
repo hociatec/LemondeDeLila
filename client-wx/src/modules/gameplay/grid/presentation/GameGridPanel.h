@@ -6,7 +6,6 @@
 
 #include <wx/panel.h>
 
-#include "modules/gameplay/actions/domain/GameAction.h"
 #include "modules/gameplay/state/domain/GameBoardCapabilities.h"
 #include "modules/gameplay/state/domain/GameSystem.h"
 
@@ -20,7 +19,6 @@ class GameGridPanel final : public wxPanel
 public:
     explicit GameGridPanel(wxWindow* parent);
     void Apply(const domain::GameGridView* grid,
-        const std::vector<domain::GameAction>& actions,
         const std::vector<domain::GamePlayer>& players,
         const domain::GamePawnsView* pawns,
         const std::optional<int>& viewerPlayerId);

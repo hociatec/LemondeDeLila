@@ -337,6 +337,9 @@ lila_add_test_executable(lemonde_de_lila_wx_social_profile_mapper_tests
 lila_add_test_executable(lemonde_de_lila_wx_chat_error_resolver_tests
     tests/ChatErrorResolverTests.cpp
 )
+lila_add_test_executable(lemonde_de_lila_wx_grid_accessibility_text_tests
+    tests/GameGridAccessibilityTextTests.cpp
+)
 lila_add_test_executable(lemonde_de_lila_wx_realtime_deadline_tests
     tests/RealtimeRequestDeadlineTests.cpp
     src/shared/config/domain/AppConfig.cpp
