@@ -189,7 +189,8 @@
         "protectionAdvance": 1
       },
       "actionIds": {
-        "roll": "roll"
+        "roll": "roll",
+        "draw": "draw_card"
       }
     }
   ],
@@ -219,6 +220,11 @@
       "key": "D",
       "type": "action",
       "actionType": "roll"
+    },
+    {
+      "key": "Space",
+      "type": "action",
+      "actionType": "draw_card"
     }
   ],
   "initialPhase": "setup",
@@ -228,13 +234,16 @@
       "transitions": ["playing"]
     },
     "playing": {
-      "actions": ["roll"],
+      "actions": ["roll", "draw_card"],
       "terminal": true
     }
   },
   "actions": {
     "roll": {
       "recipe": "choice-story-challenge-roll"
+    },
+    "draw_card": {
+      "recipe": "choice-story-challenge-draw"
     }
   },
   "victory": {

@@ -17,14 +17,12 @@ describe('card battle result narration', () => {
       { playerId: 2, cardNames: ['Souris'] },
     ]);
 
-    expect(
-      narration.default.startsWith('Lilas remporte le pli et gagne 2 cartes.'),
-    ).toBe(true);
-    expect(
-      narration.byPlayerId[1].startsWith(
-        'Vous remportez le pli et gagnez 2 cartes.',
-      ),
-    ).toBe(true);
+    expect(narration.default).toBe(
+      'Lilas a posé : Chat. Mina a posé : Souris. Lilas remporte le pli et gagne 2 cartes.',
+    );
+    expect(narration.byPlayerId[1]).toBe(
+      'Vous avez posé : Chat. Mina a posé : Souris. Vous remportez le pli et gagnez 2 cartes.',
+    );
   });
 
   it('reserves battle vocabulary for a win after a tie', () => {
@@ -34,12 +32,12 @@ describe('card battle result narration', () => {
     ]);
 
     expect(
-      narration.default.startsWith(
+      narration.default.endsWith(
         'Lilas gagne la bataille et remporte 6 cartes.',
       ),
     ).toBe(true);
     expect(
-      narration.byPlayerId[1].startsWith(
+      narration.byPlayerId[1].endsWith(
         'Vous gagnez la bataille et remportez 6 cartes.',
       ),
     ).toBe(true);

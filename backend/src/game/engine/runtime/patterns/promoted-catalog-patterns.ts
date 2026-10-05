@@ -383,7 +383,7 @@ export function simultaneousQuizPattern(input: {
 
 export function storyChallengePattern(input: {
   config: StoryChallengeProgram;
-  actionIds: ActionIds<'roll'>;
+  actionIds: ActionIds<'roll' | 'draw'>;
 }) {
   const compiled = storyChallengeRules(input.config);
   return withNestedPatterns(
@@ -391,7 +391,10 @@ export function storyChallengePattern(input: {
     'story-challenge',
     compiled.patterns,
     {
-      actions: { 'choice-story-challenge-roll': compiled.roll },
+      actions: {
+        'choice-story-challenge-roll': compiled.roll,
+        'choice-story-challenge-draw': compiled.draw,
+      },
       choices: compiled.choices,
       setup: compiled.setup,
       effects: compiled.effects,
@@ -399,6 +402,7 @@ export function storyChallengePattern(input: {
       components: compiled.components,
       bot: {
         choose: ({ availableActions }) =>
+          mappedAction(availableActions, input.actionIds, 'draw') ??
           mappedAction(availableActions, input.actionIds, 'roll'),
       },
     },

@@ -60,23 +60,23 @@ export function cardBattle(source: CardBattleOptions) {
       waiting(runtime(state).battle, ctx, phases)[0] === actor.id &&
       (input.cardId == null ||
         ctx.cards
-          .hand<string>(program.handId, actor.id)
-          .includes(input.cardId)),
+          .hand<CardBattleCard>(program.handId, actor.id)
+          .some((card) => card.id === input.cardId)),
     enumerate: ({ actor, ctx }) =>
       ctx.cards
-        .hand<string>(program.handId, actor.id)
-        .map((cardId) => ({ cardId })),
+        .hand<CardBattleCard>(program.handId, actor.id)
+        .map((card) => ({ cardId: card.id })),
     execute: ({ state, actor, input, ctx }) => {
       const current = runtime(state);
       if (waiting(current.battle, ctx, phases)[0] !== actor.id)
         rejectRule('Ce joueur ne doit pas encore retourner de carte');
-      const hand = ctx.cards.hand<string>(program.handId, actor.id);
+      const hand = ctx.cards.hand<CardBattleCard>(program.handId, actor.id);
       // Card actions enumerate every card in the private hand so Enter on a
       // selected card plays that card. The optional fallback preserves the
       // historical Space shortcut, which selects a card at random.
-      const cardId = input.cardId ?? ctx.random.pick(hand);
+      const cardId = input.cardId ?? ctx.random.pick(hand)?.id;
       if (!cardId) rejectRule('Pile de cartes de bataille vide');
-      if (!hand.includes(cardId))
+      if (!hand.some((card) => card.id === cardId))
         rejectRule('Cette carte ne fait pas partie de votre pile');
       ctx.cards.take(program.handId, actor.id, cardId);
       const play = current.battle.plays.find(
@@ -117,7 +117,8 @@ export function cardBattle(source: CardBattleOptions) {
     const winners = highestPlayers(round.plays);
     if (winners.length <= 1) return complete(state, winners[0] ?? null, ctx);
     const pending = winners.filter(
-      (playerId) => ctx.cards.hand<string>(program.handId, playerId).length > 0,
+      (playerId) =>
+        ctx.cards.hand<CardBattleCard>(program.handId, playerId).length > 0,
     );
     round.tiedPlayers = pending;
     phases.transition(ctx, 'battle-face-down');
@@ -134,7 +135,8 @@ export function cardBattle(source: CardBattleOptions) {
 
   function promoteFaceUp(state: RuntimeState, ctx: Context): void {
     const pending = state.battle.tiedPlayers.filter(
-      (playerId) => ctx.cards.hand<string>(program.handId, playerId).length > 0,
+      (playerId) =>
+        ctx.cards.hand<CardBattleCard>(program.handId, playerId).length > 0,
     );
     if (pending.length < 2)
       return complete(
@@ -157,7 +159,8 @@ export function cardBattle(source: CardBattleOptions) {
     const winners = highestPlayers(eligible);
     if (winners.length <= 1) return complete(state, winners[0] ?? null, ctx);
     const pending = winners.filter(
-      (playerId) => ctx.cards.hand<string>(program.handId, playerId).length > 0,
+      (playerId) =>
+        ctx.cards.hand<CardBattleCard>(program.handId, playerId).length > 0,
     );
     if (pending.length < 2)
       return complete(state, pending[0] ?? winners[0] ?? null, ctx);
@@ -212,11 +215,11 @@ export function cardBattle(source: CardBattleOptions) {
       .all()
       .filter(
         (player) =>
-          ctx.cards.hand<string>(program.handId, player.id).length > 0,
+          ctx.cards.hand<CardBattleCard>(program.handId, player.id).length > 0,
       );
     const owner = alive.find(
       (player) =>
-        ctx.cards.hand<string>(program.handId, player.id).length ===
+        ctx.cards.hand<CardBattleCard>(program.handId, player.id).length ===
         program.totalCards,
     );
     completeRound(ctx, {
@@ -252,8 +255,9 @@ export function cardBattle(source: CardBattleOptions) {
     const count =
       round.plays.find((play) => play.playerId === winnerId)?.playedCards
         .length ?? 0;
-    const loserHand = ctx.cards.hand<string>(program.handId, loser.id);
-    for (const cardId of loserHand.slice(0, count)) {
+    const loserHand = ctx.cards.hand<CardBattleCard>(program.handId, loser.id);
+    for (const card of loserHand.slice(0, count)) {
+      const cardId = card.id;
       ctx.cards.take(program.handId, loser.id, cardId);
       ctx.cards.give(program.handId, winnerId, cardId);
     }
@@ -341,7 +345,7 @@ export function cardBattle(source: CardBattleOptions) {
       .all()
       .filter(
         (player) =>
-          ctx.cards.hand<string>(program.handId, player.id).length > 0,
+          ctx.cards.hand<CardBattleCard>(program.handId, player.id).length > 0,
       )
       .map((player) => player.id);
     return {

@@ -19,6 +19,27 @@ describe('Le Corridor declarative game', () => {
 
     expect(game.availableActions(1)).toContain('pathWalls_move');
     expect(game.availableActions(2)).toEqual([]);
+
+    await game.as(1).do('pathWalls_place_wall', {
+      x: 0,
+      y: 0,
+      orientation: 'h',
+    });
+    const resourceEvents = (await game.events()).filter(
+      (event) => event.type === 'resource.changed',
+    );
+    expect(resourceEvents).not.toHaveLength(0);
+    expect(resourceEvents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          data: expect.objectContaining({
+            resource: 'board-path-walls.walls',
+            value: 9,
+            announce: false,
+          }),
+        }),
+      ]),
+    );
     expect(await game.replay()).toEqual(game.state());
   });
 });

@@ -36,6 +36,9 @@ describe('Zig et Zag declarative game', () => {
       playerId: 1,
       playedCards: [selected],
     });
+    const ownHand = game.view(1).kits.cards?.hands.players.byPlayer['1'];
+    expect(JSON.stringify(ownHand)).toContain('name');
+    expect(JSON.stringify(ownHand)).not.toContain('dentifrice-chat');
   });
 
   it('captures distinct bonus cards after a tied battle', async () => {

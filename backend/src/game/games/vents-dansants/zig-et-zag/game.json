@@ -22,10 +22,10 @@
       "component": "cards.deck",
       "id": "battle",
       "cards": {
-        "$content": "content/catalogue.json#/cardIds"
+        "$content": "content/catalogue.json#/cards"
       },
       "catalog": {
-        "$content": "content/catalogue.json#/cardIds"
+        "$content": "content/catalogue.json#/cards"
       },
       "shuffle": true,
       "empty": "recycle"

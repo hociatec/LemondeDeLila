@@ -84,7 +84,14 @@ export function pathWallsRules(source: PathWallsProgram) {
       if (!legalWalls(actor.id, ctx).some((wall) => sameWall(wall, input)))
         rejectRule('Placement de mur PathWalls illégal');
       ctx.grid.appendOverlay(program.boardId, program.wallsOverlayId, input);
-      ctx.resources.remove(actor.id, program.wallsResourceId, 1);
+      ctx.resources.set(
+        actor.id,
+        program.wallsResourceId,
+        ctx.resources.get(actor.id, program.wallsResourceId) - 1,
+        {
+          announce: false,
+        },
+      );
       ctx.events.message('game.grid.wall.placed', {
         playerId: actor.id,
         ...input,

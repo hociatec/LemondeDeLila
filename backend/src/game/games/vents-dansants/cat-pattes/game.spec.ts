@@ -1,6 +1,7 @@
 import { compileJsonGame } from '../../../rules/public-api';
 import {
   DeclarativeGameRuntime,
+  GameSimulator,
   testGame,
 } from '../../../engine/testing/public-api';
 import documentExtensionSource from './game.json';
@@ -34,6 +35,21 @@ describe('Cat Pattes declarative game', () => {
     expect(game.inspect.hand(1)).toHaveLength(6);
     expect(game.state().turn?.currentPlayerId).toBe(2);
     expect(await game.replay()).toEqual(game.state());
+  });
+
+  it('lets two bots complete a configured match without deadlock', async () => {
+    const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(74);
+    await game.start();
+    await game.as(1).do('game.configure', { roundsToPlay: 1 });
+
+    const result = new GameSimulator().run(
+      new DeclarativeGameRuntime(gameDefinition),
+      game.state(),
+      { maxCommands: 500 },
+    );
+
+    expect(result.status).toBe('finished');
+    expect(result.error).toBeUndefined();
   });
 
   it.each(['cat-pattes@content:b15666ae', '1', '2'])(

@@ -57,6 +57,11 @@ export const jsonCardValueSchema: AuthorSchema = {
         effect: { type: 'string', maxLength: 10000 },
         description: { type: 'string', maxLength: 10000 },
         name: { type: 'string', maxLength: 10000 },
+        type: { type: 'string', minLength: 1, maxLength: 128 },
+        color: { type: 'string', minLength: 1, maxLength: 128 },
+        family: { type: 'string', minLength: 1, maxLength: 128 },
+        value: { type: 'integer', minimum: -1000000, maximum: 1000000 },
+        allowedFamilies: array(id),
         effectDescription: { type: 'string' },
         collectionGain: {
           oneOf: [

@@ -87,15 +87,15 @@ export function createStoryChallengeResolution(program: StoryChallengeProgram) {
     if (tile.type === 'finish')
       ctx.match.finish({ winners: [playerId], reason: program.finishReason });
     else if (tile.type === program.deckRoles.story)
-      drawCard(state, playerId, program.deckRoles.story, depth, ctx);
+      queueDraws(playerId, [program.deckRoles.story], ctx);
     else if (tile.type === program.deckRoles.reward) {
       if (!ctx.status.has(playerId, statuses.noBonus))
-        drawCard(state, playerId, program.deckRoles.reward, depth, ctx);
+        queueDraws(playerId, [program.deckRoles.reward], ctx);
     } else if (tile.type === program.deckRoles.penalty) {
       if (!consumeMalusProtection(state, playerId, depth, ctx))
-        drawCard(state, playerId, program.deckRoles.penalty, depth, ctx);
+        queueDraws(playerId, [program.deckRoles.penalty], ctx);
     } else if (tile.type === program.deckRoles.event)
-      drawCard(state, playerId, program.deckRoles.event, depth, ctx);
+      queueDraws(playerId, [program.deckRoles.event], ctx);
   }
   function drawCard(
     state: State,
@@ -176,6 +176,9 @@ export function createStoryChallengeResolution(program: StoryChallengeProgram) {
       moveAndResolve(state, targetId, rule.delta, 0, ctx);
     } else if (rule.kind === 'option')
       requestOption(actorId, rule.optionId, ctx, targetId);
+    ctx.turn.complete({
+      waiting: ctx.choice.current() != null || pendingDraw(ctx) != null,
+    });
   }
   function scheduleTarget(
     actorId: number,
@@ -194,7 +197,6 @@ export function createStoryChallengeResolution(program: StoryChallengeProgram) {
           actorId,
         ),
       ),
-      gameEffects.completeTurn(),
     );
   }
   function drawBonusGift(_state: State, actorId: number, ctx: Context) {
@@ -216,26 +218,23 @@ export function createStoryChallengeResolution(program: StoryChallengeProgram) {
       playerId,
       types: [...(resolution?.types ?? []), ...types],
     });
+    ctx.events.message('game.card.draw-required', { playerId });
+    ctx.turn.complete({ waiting: true });
   }
-  function drainDraws(state: State, ctx: Context) {
-    let depth = 0;
-    let resolution = readFlag(ctx, program.resolutionFlag);
-    while (
-      ctx.choice.current() == null &&
-      resolution &&
-      depth < program.maxChainDepth
-    ) {
-      const [type, ...remainingTypes] = resolution.types;
-      const playerId = resolution.playerId;
-      if (!type || playerId == null) break;
-      ctx.turn.flags.set(program.resolutionFlag, {
-        playerId,
-        types: remainingTypes,
-      });
-      drawCard(state, playerId, type, depth, ctx);
-      resolution = readFlag(ctx, program.resolutionFlag);
-      depth += 1;
-    }
+  function pendingDraw(ctx: Context): Resolution | null {
+    const pending = readFlag(ctx, program.resolutionFlag);
+    return pending && pending.types.length > 0 ? pending : null;
+  }
+  function drawPending(state: State, ctx: Context) {
+    const pending = pendingDraw(ctx);
+    const [type, ...remainingTypes] = pending?.types ?? [];
+    if (!pending || !type)
+      return rejectRule('Aucune carte en attente de pioche');
+    ctx.turn.flags.set(program.resolutionFlag, {
+      playerId: pending.playerId,
+      types: remainingTypes,
+    });
+    drawCard(state, pending.playerId, type, 0, ctx);
   }
   function consumeMalusProtection(
     state: State,
@@ -297,9 +296,13 @@ export function createStoryChallengeResolution(program: StoryChallengeProgram) {
     const value = ctx.status.get(playerId, statuses.blocked)?.data.position;
     return typeof value === 'number' ? value : null;
   }
-  function drainResolution(state: State, ctx: Context) {
-    drainDraws(state, ctx);
+  function drainResolution(_state: State, ctx: Context) {
     if (ctx.choice.current()) return;
+    const pending = pendingDraw(ctx);
+    if (pending) {
+      ctx.turn.complete({ waiting: true });
+      return;
+    }
     ctx.turn.flags.consume(program.resolutionFlag);
     ctx.turn.complete();
   }
@@ -328,6 +331,8 @@ export function createStoryChallengeResolution(program: StoryChallengeProgram) {
     requestAbundance,
     drawBonusGift,
     queueDraws,
+    pendingDraw,
+    drawPending,
     drainResolution,
     extendTurnStatus,
     previousMalus,

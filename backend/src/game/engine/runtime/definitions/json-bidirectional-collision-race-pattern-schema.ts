@@ -9,6 +9,8 @@ import {
 export const bidirectionalCollisionRacePatternSchema = object({
   kind: { const: 'bidirectional-collision-race' },
   rollRecipe: id,
+  drawRecipe: id,
+  pendingDrawFlag: id,
   trackId: id,
   diceId: id,
   deckId: id,

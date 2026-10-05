@@ -81,7 +81,7 @@ export type PromotedJsonGamePattern =
       PawScoringProgram,
       'draw' | 'play' | 'discard'
     >
-  | PromotedPattern<'story-challenge', StoryChallengeProgram, 'roll'>
+  | PromotedPattern<'story-challenge', StoryChallengeProgram, 'roll' | 'draw'>
   | PromotedPattern<'directional-hazard', DirectionalHazardRaceProgram, 'roll'>
   | { kind: 'simultaneous-quiz'; config: SimultaneousQuizProgram };
 
@@ -130,7 +130,7 @@ export const promotedJsonPatternSchemas: readonly AuthorSchema[] = [
   ]),
   schema('chapter-encounter', jsonChapterEncounterSchema, ['roll']),
   schema('paw-scoring', jsonPawScoringSchema, ['draw', 'play', 'discard']),
-  schema('story-challenge', jsonStoryChallengeSchema, ['roll']),
+  schema('story-challenge', jsonStoryChallengeSchema, ['roll', 'draw']),
   schema('directional-hazard', jsonDirectionalHazardRaceSchema, ['roll']),
   object(
     {
