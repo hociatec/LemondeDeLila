@@ -57,6 +57,7 @@ int main()
     lifecycle.MarkRoomStartPending();
     assert(lifecycle.State() == GamePlayLifecycleState::StartingRoom);
     assert(!lifecycle.AllowsActionSubmission(true));
+    assert(lifecycle.AllowsActionSubmission(false, true));
     lifecycle.ObserveAuthoritativeState(42, GameMatchStatus::Playing);
     assert(lifecycle.AllowsProjectedContentFocus());
     assert(!lifecycle.AllowsGameplayInput());
