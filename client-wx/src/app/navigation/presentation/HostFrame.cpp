@@ -104,7 +104,25 @@ void HostFrame::OnActivate(wxActivateEvent& event)
         if (!lila::shared::accessibility::NavigationController::IsDescendantOf(
                 target, currentContent_))
             target = lastFocusedChild_.get();
+        if (lila::shared::accessibility::NavigationController::IsDescendantOf(
+                target, currentContent_))
+            lastFocusedChild_ = target;
         activationFocusContext_.Prepare(target, GetTitle());
+    }
+    else
+    {
+        const wxWeakRef<HostFrame> weakFrame(this);
+        const wxWeakRef<wxWindow> weakTarget(lastFocusedChild_.get());
+        CallAfter([weakFrame, weakTarget]()
+        {
+            auto* frame = weakFrame.get();
+            auto* target = weakTarget.get();
+            if (frame == nullptr || target == nullptr || !frame->IsActive() ||
+                !lila::shared::accessibility::NavigationController::IsDescendantOf(
+                    target, frame->currentContent_)) return;
+            static_cast<void>(
+                lila::shared::accessibility::NavigationController::Focus(target));
+        });
     }
     event.Skip();
 }

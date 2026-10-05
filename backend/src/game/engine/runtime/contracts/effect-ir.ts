@@ -26,6 +26,7 @@ export type EffectTarget =
       kind: 'chosen-opponent';
       choiceId?: string;
       optional?: boolean;
+      requireExplicitChoice?: boolean;
       chooserPlayerId?: number;
     }
   | {
@@ -33,6 +34,7 @@ export type EffectTarget =
       playerIds: readonly number[];
       choiceId?: string;
       optional?: boolean;
+      requireExplicitChoice?: boolean;
       chooserPlayerId?: number;
     };
 

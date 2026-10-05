@@ -9,6 +9,7 @@
 
 #include "modules/gameplay/shell/presentation/panel/GamePlayPanel.h"
 #include "modules/rooms/application/RoomStateUpdatePolicy.h"
+#include "modules/rooms/presentation/actions/RoomActionPolicy.h"
 #include "modules/rooms/presentation/model/RoomPresentationModel.h"
 #include "modules/rooms/presentation/history/HistoryAnnouncementQueue.h"
 #include "modules/audio/application/IAudioService.h"
@@ -38,6 +39,10 @@ void RoomPanel::ApplyRoom(domain::RoomState room)
     const bool isRealtimeUpdate = room_.id != 0 && room_.id == room.id;
     const bool wasStarted = room_.started || room_.status == "started";
     const bool willBeStarted = room.started || room.status == "started";
+    const int previousOwnerId = room_.ownerId;
+    const bool ownerChanged = isRealtimeUpdate && previousOwnerId > 0 &&
+        room.ownerId > 0 && previousOwnerId != room.ownerId;
+    const auto nextOwnerName = room.ownerName;
     const auto previousMembers = isRealtimeUpdate
         ? HumanMemberIds(room_)
         : std::unordered_set<int>{};
@@ -60,6 +65,25 @@ void RoomPanel::ApplyRoom(domain::RoomState room)
         audioService_.Play(lila::modules::audio::domain::SoundCue::RoomMemberLeft);
     state_ = State::Ready;
     ShowRoom();
+    if (ownerChanged)
+    {
+        const auto owner = nextOwnerName.empty()
+            ? wxString(L"Un autre joueur")
+            : lila::shared::text::FromUtf8(nextOwnerName);
+        AppendRoomAnnouncement(owner + wxString(L" devient propriétaire de la table."));
+    }
+    if (isRealtimeUpdate && wasStarted && !willBeStarted)
+    {
+        if (RoomActionPolicy::AllowsServer(room_, RoomServerAction::Start))
+            AppendRoomAnnouncement(wxString(
+                L"Partie terminée. Appuyez sur Entrée pour relancer la table."));
+        else
+            AppendRoomAnnouncement(wxString(
+                L"Partie terminée. Appuyez sur Q pour quitter la table. "
+                L"Utilisez Tab pour accéder au chat et à l’historique."));
+        static_cast<void>(
+            lila::shared::accessibility::NavigationController::Focus(gameZoneAnchor_));
+    }
     if (resetCompleted)
     {
         AppendRoomAnnouncement(wxString(L"Table réinitialisée. Vous pouvez de nouveau "

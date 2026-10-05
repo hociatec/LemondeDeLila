@@ -3,6 +3,7 @@
     {
       "id": 1,
       "text": "Peau de banane : reculez de 2 cases.",
+      "description": "Une peau de banane traîne sur le sentier et vous envoie glisser dans la mauvaise direction.",
       "retreatScore": -2,
       "effects": [
         {
@@ -20,6 +21,7 @@
     {
       "id": 2,
       "text": "Cookie géant : passez un tour.",
+      "description": "Un cookie gigantesque bloque le passage. Vous vous arrêtez pour en grignoter chaque miette.",
       "retreatScore": 0,
       "effects": [
         {
@@ -34,6 +36,7 @@
     {
       "id": 3,
       "text": "Confiture : avancez d’une case.",
+      "description": "Une cuillerée de confiture vous donne un petit regain d’énergie.",
       "retreatScore": 0,
       "effects": [
         {
@@ -51,6 +54,7 @@
     {
       "id": 4,
       "text": "Noix étrange : tous passent un tour.",
+      "description": "Une noix aux reflets hypnotiques plonge tous les rongeurs dans une drôle de torpeur.",
       "retreatScore": 0,
       "effects": [
         {
@@ -72,6 +76,7 @@
     {
       "id": 5,
       "text": "Écureuil volant : avancez de 4 cases.",
+      "description": "Un écureuil volant vous attrape au passage et vous emporte au-dessus du sentier.",
       "retreatScore": 0,
       "effects": [
         {
@@ -89,6 +94,7 @@
     {
       "id": 6,
       "text": "Sirop magique : tous reculent d’une case.",
+      "description": "Une vague de sirop magique rend le chemin collant sous les pattes de tout le monde.",
       "retreatScore": -1,
       "effects": [
         {
@@ -116,6 +122,7 @@
     {
       "id": 7,
       "text": "Réglisse : avancez de 2 cases.",
+      "description": "Un lacet de réglisse se tend comme un ressort et vous propulse vers l’avant.",
       "retreatScore": 0,
       "effects": [
         {
@@ -133,6 +140,7 @@
     {
       "id": 8,
       "text": "Éternuement du Chaton : reculez d’une case.",
+      "description": "Le Grand Chaton éternue si fort que le souffle vous repousse.",
       "retreatScore": -1,
       "effects": [
         {
@@ -150,6 +158,7 @@
     {
       "id": 9,
       "text": "Chewing-gum : passez un tour.",
+      "description": "Vos pattes restent collées dans un énorme chewing-gum rose.",
       "retreatScore": 0,
       "effects": [
         {
@@ -164,6 +173,7 @@
     {
       "id": 10,
       "text": "Noisette turbo : prochaine case Bonus.",
+      "description": "Une noisette vrombissante vous guide jusqu’au prochain raccourci.",
       "retreatScore": 0,
       "effects": [
         {
@@ -178,6 +188,7 @@
     {
       "id": 11,
       "text": "Mal au ventre : passez un tour.",
+      "description": "Trop de friandises vous obligent à reprendre votre souffle.",
       "retreatScore": 0,
       "effects": [
         {
@@ -192,6 +203,7 @@
     {
       "id": 12,
       "text": "Museau qui démange : reculez d’une case.",
+      "description": "Une poudre de pollen vous chatouille le museau et vous fait perdre l’équilibre.",
       "retreatScore": -1,
       "effects": [
         {
@@ -209,6 +221,7 @@
     {
       "id": 13,
       "text": "Gerboise : avancez de 2 cases.",
+      "description": "Une gerboise bondissante vous montre un raccourci entre les racines.",
       "retreatScore": 0,
       "effects": [
         {
@@ -226,6 +239,7 @@
     {
       "id": 14,
       "text": "Trottinette : avancez de 3 cases.",
+      "description": "Une minuscule trottinette abandonnée vous fait filer sur le sentier.",
       "retreatScore": 0,
       "effects": [
         {
@@ -243,6 +257,7 @@
     {
       "id": 15,
       "text": "Cacahuètes : reculez d’une case.",
+      "description": "Une pluie de cacahuètes roule sous vos pattes et vous fait trébucher.",
       "retreatScore": -1,
       "effects": [
         {
@@ -260,6 +275,7 @@
     {
       "id": 16,
       "text": "Bulle géante : prochaine case Folie.",
+      "description": "Une bulle géante vous soulève et vous dépose près de la prochaine folie.",
       "retreatScore": 0,
       "effects": [
         {
@@ -274,6 +290,7 @@
     {
       "id": 17,
       "text": "Sieste : passez un tour.",
+      "description": "Un hamac de feuilles semble bien trop confortable pour continuer tout de suite.",
       "retreatScore": 0,
       "effects": [
         {
@@ -288,6 +305,7 @@
     {
       "id": 18,
       "text": "Souris malicieuse : avancez de 2 cases.",
+      "description": "Une souris malicieuse connaît un passage secret et vous invite à la suivre.",
       "retreatScore": 0,
       "effects": [
         {
@@ -305,6 +323,7 @@
     {
       "id": 19,
       "text": "Loir guide : avancez d’une case.",
+      "description": "Un loir serviable vous indique le chemin le plus court.",
       "retreatScore": 0,
       "effects": [
         {
@@ -322,6 +341,7 @@
     {
       "id": 20,
       "text": "Chaussette-bonnet : passez un tour.",
+      "description": "Une chaussette douillette vous tombe sur la tête et vous décidez d’en faire un bonnet.",
       "retreatScore": 0,
       "effects": [
         {
@@ -336,6 +356,7 @@
     {
       "id": 21,
       "text": "Peinture fluo : tous avancent d’une case.",
+      "description": "Des traces de peinture fluo illuminent un raccourci que tous les joueurs peuvent emprunter.",
       "retreatScore": 0,
       "effects": [
         {
@@ -363,6 +384,7 @@
     {
       "id": 22,
       "text": "Fromage magique : passez deux tours.",
+      "description": "Un fromage ensorcelé vous plonge dans un rêve parfumé qui dure deux tours.",
       "retreatScore": 0,
       "effects": [
         {
@@ -377,6 +399,7 @@
     {
       "id": 23,
       "text": "Trampoline : avancez de 4 cases.",
+      "description": "Un trampoline caché sous les feuilles vous projette loin devant.",
       "retreatScore": 0,
       "effects": [
         {
@@ -394,6 +417,7 @@
     {
       "id": 24,
       "text": "Agouti philosophe : passez un tour.",
+      "description": "Un agouti philosophe vous retient pour partager une pensée étonnamment profonde.",
       "retreatScore": 0,
       "effects": [
         {
@@ -408,6 +432,7 @@
     {
       "id": 25,
       "text": "Cabane en biscuits : rejouez.",
+      "description": "Une cabane en biscuits vous offre juste assez de sucre pour repartir immédiatement.",
       "retreatScore": 0,
       "effects": [
         {
@@ -419,6 +444,7 @@
     {
       "id": 26,
       "text": "Confettis : tous avancent du dernier lancer.",
+      "description": "Une explosion de confettis pousse tous les rongeurs avec la force du dernier lancer.",
       "retreatScore": 0,
       "effects": [
         {
@@ -442,6 +468,7 @@
     {
       "id": 27,
       "text": "Avion en carton : reculez d’une case.",
+      "description": "Un avion en carton vous percute doucement et vous fait reculer.",
       "retreatScore": -1,
       "effects": [
         {
@@ -459,6 +486,7 @@
     {
       "id": 28,
       "text": "Grimoire : échangez votre position.",
+      "description": "Un grimoire tourbillonnant échange magiquement votre place avec celle d’un autre joueur.",
       "retreatScore": 0,
       "effects": [
         {
@@ -468,7 +496,8 @@
           "target": {
             "kind": "chosen-opponent",
             "choiceId": "race-chained-tile-cards.swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -479,6 +508,7 @@
     {
       "id": 29,
       "text": "Catapulte : allez en case 13.",
+      "description": "Une catapulte bricolée vous expédie directement au milieu du parcours.",
       "retreatScore": -100,
       "effects": [
         {
@@ -493,6 +523,7 @@
     {
       "id": 30,
       "text": "Mousse épaisse : passez un tour.",
+      "description": "Une mousse épaisse engloutit vos pattes et vous immobilise.",
       "retreatScore": 0,
       "effects": [
         {
@@ -507,6 +538,7 @@
     {
       "id": 31,
       "text": "Hutia : avancez d’une case.",
+      "description": "Un hutia curieux bondit sur votre chemin et vous bouscule gentiment. Avancez d’une case... un peu étourdi.",
       "retreatScore": 0,
       "effects": [
         {
@@ -524,6 +556,7 @@
     {
       "id": 32,
       "text": "Fromage bavard : avancez de 2 cases.",
+      "description": "Un fromage bavard vous révèle un raccourci entre deux bouchées de conversation.",
       "retreatScore": 0,
       "effects": [
         {
@@ -541,6 +574,7 @@
     {
       "id": 33,
       "text": "Saute-rongeur : avancez de 3 cases.",
+      "description": "Un saute-rongeur à ressort vous fait franchir plusieurs obstacles d’un seul bond.",
       "retreatScore": 0,
       "effects": [
         {
@@ -558,6 +592,7 @@
     {
       "id": 34,
       "text": "Boutique : appliquez la plus reculante de deux cartes.",
+      "description": "Une boutique loufoque vous propose deux cartes et vous impose la moins avantageuse.",
       "retreatScore": 0,
       "effects": [
         {
@@ -570,6 +605,7 @@
     {
       "id": 35,
       "text": "Tunnel défectueux : retour au départ.",
+      "description": "Un tunnel mal indiqué tourne en rond avant de vous ramener au départ.",
       "retreatScore": -200,
       "effects": [
         {
@@ -584,6 +620,7 @@
     {
       "id": 36,
       "text": "Invisibilité : ignorez les pièges deux tours.",
+      "description": "Une poussière d’invisibilité vous dissimule aux pièges pendant deux tours.",
       "retreatScore": 0,
       "effects": [
         {
@@ -598,6 +635,7 @@
     {
       "id": 37,
       "text": "Piment : reculez de 5 cases.",
+      "description": "Un piment beaucoup trop fort vous fait courir dans la mauvaise direction.",
       "retreatScore": -5,
       "effects": [
         {
@@ -615,6 +653,7 @@
     {
       "id": 38,
       "text": "Biscuit explosif : tous bougent au hasard.",
+      "description": "Un biscuit explose en miettes et fait bondir tous les rongeurs au hasard.",
       "retreatScore": 0,
       "effects": [
         {
@@ -638,6 +677,7 @@
     {
       "id": 39,
       "text": "Pluie de bonbons : avancez de 2 cases.",
+      "description": "Une pluie de bonbons vous entraîne joyeusement vers l’avant.",
       "retreatScore": 0,
       "effects": [
         {
@@ -655,6 +695,7 @@
     {
       "id": 40,
       "text": "Reine des Rongeurs : terminez depuis une Glissade.",
+      "description": "La Reine des Rongeurs vous accorde la victoire si vous avez su maîtriser une Glissade.",
       "retreatScore": 0,
       "effects": [
         {

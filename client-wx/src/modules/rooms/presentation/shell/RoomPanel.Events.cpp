@@ -38,6 +38,15 @@ void RoomPanel::BindEvents()
                 StartRequest();
                 return;
             }
+            const auto actions = RoomPresentationModel::BuildItems(room_);
+            // Once a run is over, the gameplay projection can still expose its
+            // final screen. Give the freshly-authorized table restart priority
+            // over that stale projection.
+            if (!actions.empty() && actions.front().id == "room:start")
+            {
+                HandleAction(actions.front().id);
+                return;
+            }
             if (gamePlayPanel_->IsOpen())
             {
                 auto* target = gamePlayPanel_->PreferredNavigationTarget();
@@ -46,7 +55,6 @@ void RoomPanel::BindEvents()
                     return;
                 if (gamePlayPanel_->HandleZoneActivation()) return;
             }
-            const auto actions = RoomPresentationModel::BuildItems(room_);
             if (!actions.empty()) HandleAction(actions.front().id);
         });
     gameZoneAnchor_->SetKeyHandler(

@@ -65,7 +65,12 @@ const targets = {
   'co-located': variant('co-located', { trackId: id }),
   'chosen-opponent': variant(
     'chosen-opponent',
-    { choiceId: id, optional: boolean, chooserPlayerId: integer },
+    {
+      choiceId: id,
+      optional: boolean,
+      requireExplicitChoice: boolean,
+      chooserPlayerId: integer,
+    },
     [],
   ),
   'chosen-player': variant(
@@ -74,6 +79,7 @@ const targets = {
       playerIds: array(integer, 1),
       choiceId: id,
       optional: boolean,
+      requireExplicitChoice: boolean,
       chooserPlayerId: integer,
     },
     ['playerIds'],

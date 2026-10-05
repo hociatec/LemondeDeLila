@@ -196,6 +196,7 @@ export class EffectTargetResolver<TState extends object> {
       selector.optional === true,
       selector.kind === 'chosen-player' ? selector.playerIds : undefined,
       selector.chooserPlayerId,
+      selector.requireExplicitChoice === true,
     );
     if (resolvedImmediately) {
       return this.state.chosenPlayerId == null
@@ -243,6 +244,7 @@ export class EffectTargetResolver<TState extends object> {
     optional = false,
     candidatePlayerIds?: readonly number[],
     chooserPlayerId?: number,
+    requireExplicitChoice = false,
   ): boolean {
     const actorId = chooserPlayerId ?? this.state.actorPlayerId;
     const allowed = candidatePlayerIds && new Set(candidatePlayerIds);
@@ -261,7 +263,7 @@ export class EffectTargetResolver<TState extends object> {
       );
     }
     if (
-      (!optional && options.length === 1) ||
+      (!requireExplicitChoice && !optional && options.length === 1) ||
       (optional && options.length === 0)
     ) {
       this.state.chosenPlayerId = options[0] ?? null;

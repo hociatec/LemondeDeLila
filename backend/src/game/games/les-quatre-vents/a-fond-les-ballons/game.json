@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "3",
+  "contentVersion": "4",
   "definitionVersion": "3",
   "snapshotMigrations": [
     {
@@ -14,6 +14,10 @@
     {
       "fromVersion": "2",
       "toVersion": "3"
+    },
+    {
+      "fromVersion": "3",
+      "toVersion": "4"
     }
   ],
   "category": "JeuxDePlateaux",
