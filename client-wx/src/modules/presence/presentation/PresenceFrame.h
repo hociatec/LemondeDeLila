@@ -69,7 +69,10 @@ private:
     void ShowBio(int userId, const wxString& username);
     void SendPrivateMessage(int userId, const wxString& username);
     void HandleEscape();
-    void UpdateStatus(const wxString& message, bool isError = false);
+    void UpdateStatus(
+        const wxString& message,
+        bool isError = false,
+        bool announce = false);
     [[nodiscard]] std::optional<domain::PresencePlayer> SelectedPlayer() const;
     [[nodiscard]] bool IsSelf(const domain::PresencePlayer& player) const;
     [[nodiscard]] std::string SelectedActionId() const;

@@ -118,7 +118,6 @@ std::vector<MenuItem> PresencePresentationModel::BuildActionItems(const Presence
     std::vector<MenuItem> items;
     if (socialState.relationshipAvailable)
     {
-        items.push_back(socialState.isBlocked ? MenuItem{"unblock", wxString(L"Débloquer")} : MenuItem{"block", wxString(L"Bloquer")});
         if (socialState.isFriend)
         {
             items.push_back({"friend.remove", wxString(L"Retirer de mes amis")});
@@ -136,6 +135,9 @@ std::vector<MenuItem> PresencePresentationModel::BuildActionItems(const Presence
         {
             items.push_back({"friend.add", wxString(L"Ajouter en ami")});
         }
+        items.push_back(socialState.isBlocked
+            ? MenuItem{"unblock", wxString(L"Débloquer")}
+            : MenuItem{"block", wxString(L"Bloquer")});
     }
     items.push_back({"storybook", wxString(L"Voir son livre des contes")});
     items.push_back({"bio", wxString(L"Voir sa bio")});
