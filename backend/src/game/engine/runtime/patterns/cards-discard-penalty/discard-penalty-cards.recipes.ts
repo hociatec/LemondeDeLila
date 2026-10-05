@@ -370,7 +370,7 @@ export function discardPenaltyCardsRules(source: DiscardPenaltyCardsProgram) {
         if (value != null)
           return { recipe: 'cards-discard-penalty-play', payload: { value } };
       }
-      if (available.includes('draw'))
+      if (available.includes('cards-discard-penalty-draw'))
         return { recipe: 'cards-discard-penalty-draw', payload: {} };
       if (hasDrawn(ctx) && available.includes('cards-discard-penalty-pass'))
         return { recipe: 'cards-discard-penalty-pass', payload: {} };
