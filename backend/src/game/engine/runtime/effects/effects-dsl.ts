@@ -200,6 +200,7 @@ export const gameEffects = {
     from: EffectTarget;
     to?: EffectTarget;
     count?: number;
+    skipSourceIfEmpty?: number;
   }): GameEffectInstruction => ({ kind: 'steal-card', ...options }),
   swapHands: (
     handId: string,

@@ -32,4 +32,28 @@ describe('player values projection', () => {
 
     expect(view.scoring).toEqual({ byPlayer: {}, leaderboard: [] });
   });
+
+  it('publishes zero for visible resources that have not been initialized', () => {
+    const state = createPlayerValuesKitState();
+    state.resources.apple = {};
+
+    expect(projectPlayerValues(state, 1, {}, [1, 2]).resources.apple).toEqual({
+      '1': 0,
+      '2': 0,
+    });
+  });
+
+  it('completes a private resource only for its viewer', () => {
+    const state = createPlayerValuesKitState();
+    state.resources.secret = {};
+
+    expect(
+      projectPlayerValues(
+        state,
+        2,
+        { resources: { secret: { kind: 'private-by-player' } } },
+        [1, 2],
+      ).resources.secret,
+    ).toEqual({ '2': 0 });
+  });
 });

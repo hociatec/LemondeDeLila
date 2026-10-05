@@ -297,13 +297,34 @@ function capture(
   if (safeTiles(program, ctx).has(destination)) return;
   for (const player of ctx.players.others(playerId)) {
     const offset = playerOffset(program, player.id, ctx);
-    for (const pawn of pawns(program, player.id, ctx))
+    for (const pawn of pawns(program, player.id, ctx)) {
       if (
         pawn.progress >= 0 &&
         pawn.progress < program.trackLength &&
         (offset + pawn.progress) % program.trackLength === destination
-      )
+      ) {
         ctx.pawns.moveTo(program.setId, pawn.pawnId, -1);
+        const label = pawnLabel(program, pawn.pawnId) || 'pion';
+        const attacker = playerName(ctx, playerId);
+        const target = playerName(ctx, player.id);
+        ctx.events.message(
+          'game.team-pawn.captured',
+          {
+            playerId,
+            targetPlayerId: player.id,
+            pawnLabel: label,
+            position: destination + 1,
+          },
+          {
+            default: `${attacker} capture le ${label} de ${target}, qui retourne dans sa réserve.`,
+            byPlayerId: {
+              [playerId]: `Vous capturez le ${label} de ${target}, qui retourne dans sa réserve.`,
+              [player.id]: `Votre ${label} est capturé par ${attacker} et retourne dans votre réserve.`,
+            },
+          },
+        );
+      }
+    }
   }
 }
 

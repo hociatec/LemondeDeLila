@@ -302,6 +302,16 @@
       ]
     },
     {
+      "file": "src/game/games/les-quatre-vents/panier-express/game.json",
+      "fromSha256": "b2366ae817762423f460796d2a606cc3cdb3dffb4b8e273f6682dd489ab0ad02",
+      "toSha256": "2b0a4c6e9efa5411d52926c771f0caa71cd1f76efcebbe9351f650c79b60f1b5",
+      "justification": "Les listes passent à trois articles, les échanges exigent un adversaire explicite et pénalisent la cible sans inventaire.",
+      "tests": [
+        "src/game/games/les-quatre-vents/panier-express/game.spec.ts",
+        "src/game/testing/architecture-tests/game/all-declarative-games.contract.spec.ts"
+      ]
+    },
+    {
       "file": "src/game/games/les-quatre-vents/sac-a-malices/game.json",
       "fromSha256": "20ebfd79ea4e5fb462010dfb426340a11cd691acd21d04f3e4d7775798ac2dce",
       "toSha256": "cbf4e344ae697d3aacb4649f0f0dff43a42ea9ed072123968f4e299554e40ec8",

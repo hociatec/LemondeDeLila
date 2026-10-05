@@ -102,156 +102,112 @@
     [
       "pomme",
       "concombre",
-      "abricot",
-      "fleur-de-courgette",
-      "mangue"
+      "abricot"
     ],
     [
       "betterave",
       "salade",
-      "fraise",
-      "pois-chiche",
-      "oignon"
+      "fraise"
     ],
     [
       "celeri-branche",
       "orange",
-      "amande",
-      "tomate",
-      "kaki"
+      "amande"
     ],
     [
       "patate-douce",
       "cepe",
-      "chou",
-      "figue",
-      "poire"
+      "chou"
     ],
     [
       "mais",
       "nashi",
-      "fane-de-radis",
-      "papaye",
-      "radis"
+      "fane-de-radis"
     ],
     [
       "epinard",
       "framboise",
-      "lentille",
-      "laitue",
-      "fenouil"
+      "lentille"
     ],
     [
       "citron",
       "noisette",
-      "aubergine",
-      "coing",
-      "igname"
+      "aubergine"
     ],
     [
       "champignon-de-paris",
       "navet",
-      "prune",
-      "peche",
-      "asperge"
+      "prune"
     ],
     [
       "kiwano",
       "pousse-de-bambou",
-      "kiwi",
-      "pomme-de-terre",
-      "mache"
+      "kiwi"
     ],
     [
       "cerise",
       "haricot-sec",
-      "courgette",
-      "roquette",
-      "pamplemousse"
+      "courgette"
     ],
     [
       "noix",
       "poivron",
-      "mandarine",
-      "amarante",
-      "pleurote"
+      "mandarine"
     ],
     [
       "topinambour",
       "raisin",
-      "banane",
-      "feve",
-      "nefle"
+      "banane"
     ],
     [
       "feuille-de-basilic",
       "ananas",
-      "carotte",
-      "cresson",
-      "mure"
+      "carotte"
     ],
     [
       "pois-casse",
       "ail",
-      "panais",
-      "bergamote",
-      "noix-de-coco"
+      "panais"
     ],
     [
       "patisson",
       "clementine",
-      "gombo",
-      "shiitake",
-      "salsifis"
+      "gombo"
     ],
     [
       "jujube",
       "melon",
-      "pois-gourmand",
-      "nectarine",
-      "jeune-pousse-d-ortie"
+      "pois-gourmand"
     ],
     [
       "litchi",
       "rutabaga",
-      "blette",
-      "cassis",
-      "lupin"
+      "blette"
     ],
     [
       "echalote",
       "feuille-de-moutarde",
-      "cumquat",
-      "chataigne",
-      "haricot-vert"
+      "cumquat"
     ],
     [
       "physalis",
       "taro",
-      "girolle",
-      "poireau",
-      "sorbe"
+      "girolle"
     ],
     [
       "pomme",
       "mais",
-      "kiwano",
-      "feuille-de-basilic",
-      "litchi"
+      "kiwano"
     ],
     [
       "betterave",
       "epinard",
-      "cerise",
-      "pois-casse",
-      "echalote"
+      "cerise"
     ],
     [
       "celeri-branche",
       "citron",
-      "noix",
-      "poivron",
-      "clementine"
+      "noix"
     ]
   ],
   "sources": {

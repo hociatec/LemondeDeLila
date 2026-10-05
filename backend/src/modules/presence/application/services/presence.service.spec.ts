@@ -60,7 +60,7 @@ describe('PresenceService', () => {
       roomHint: null,
     });
     expect(service.isUserInTavern(1)).toBe(true);
-    expect(service.isUserInTavern(2)).toBe(true);
+    expect(service.isUserInTavern(2)).toBe(false);
     expect(service.isUserInTavern(0)).toBe(false);
     expect(service.isUserInTavern(Number.NaN)).toBe(false);
 
@@ -338,6 +338,16 @@ describe('PresenceService', () => {
     expect(service.isUserInTavern(2)).toBe(true);
   });
 
+  it('does not mistake a remote chat user for a player at the shelves', () => {
+    externalHandler({
+      origin: 'remote',
+      at: now,
+      players: [publicPlayer(2, 'Remote', 'chat')],
+    });
+
+    expect(service.isUserInTavern(2)).toBe(false);
+  });
+
   it('disconnects its transport during shutdown', async () => {
     await service.onModuleDestroy();
     expect(transport.disconnect).toHaveBeenCalled();
@@ -378,7 +388,7 @@ function socket() {
 function publicPlayer(
   id: number,
   username: string,
-  activity: 'home' | 'table' | 'tavern',
+  activity: 'home' | 'chat' | 'table' | 'tavern',
 ) {
   return {
     id,

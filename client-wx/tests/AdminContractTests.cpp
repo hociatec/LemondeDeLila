@@ -162,8 +162,8 @@ int main()
     assert(rolesUpdate.contains("newName"));
     const auto questionFilters = nlohmann::json::parse(
         findCommand("mnemo.questions").payloadTemplate);
-    assert(questionFilters.contains("categoryId"));
-    assert(questionFilters.contains("status"));
+    assert(!questionFilters.contains("categoryId"));
+    assert(!questionFilters.contains("status"));
     assert(questionFilters["offset"] == 0);
     assert(questionFilters["limit"] == 50);
     const auto mnemoPagination =

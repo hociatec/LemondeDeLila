@@ -153,8 +153,12 @@ export class VaultSnapshotRestoreService {
         ? [{ id: owner, username: 'proprietaire' }]
         : []),
     ]);
+    // The owner is necessarily online: this method is running their restore
+    // command from the vault. Every other human must still be visible at the
+    // tavern shelves, not merely connected in chat or on another screen.
     const absent = roster.filter(
-      (player) => !this.presence.isUserInTavern(player.id),
+      (player) =>
+        player.id !== ownerUserId && !this.presence.isUserInTavern(player.id),
     );
     if (absent.length > 0) {
       throw new BadRequestException(

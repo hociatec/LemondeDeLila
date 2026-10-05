@@ -188,20 +188,17 @@ export class PresenceService implements OnModuleDestroy {
     );
   }
 
-  /**
-   * Best-effort check: true if the user is connected and not currently at a table.
-   * A player can restore a saved table from any tavern screen, including Vault.
-   */
+  /** Best-effort check: true only while the user is at the tavern shelves. */
   isUserInTavern(userId: number): boolean {
     if (!Number.isSafeInteger(userId) || userId <= 0) return false;
     for (const client of this.clients.values()) {
       if (client?.user?.id !== userId) continue;
-      if (client.context !== 'table') return true;
+      if (client.context === 'tavern') return true;
     }
     for (const origin of this.origins.snapshot().values()) {
       if (
         origin.players.some(
-          (player) => player.id === userId && player.activity !== 'table',
+          (player) => player.id === userId && player.activity === 'tavern',
         )
       )
         return true;

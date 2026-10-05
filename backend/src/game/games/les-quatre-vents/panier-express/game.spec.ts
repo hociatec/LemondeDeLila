@@ -61,6 +61,18 @@ describe('Panier Express declarative game', () => {
     expect(PANIER_EVENTS).toHaveLength(40);
     expect(PANIER_EXCHANGES).toHaveLength(18);
     expect(PANIER_QUIZZES).toHaveLength(30);
+    expect(products.groups.every((group) => group.length === 3)).toBe(true);
+    const authoredCards = cards as unknown as {
+      events: { effects: Record<string, unknown>[] }[];
+      exchanges: { effects: Record<string, unknown>[] }[];
+    };
+    const stealEffects = [...authoredCards.events, ...authoredCards.exchanges]
+      .flatMap((card) => card.effects)
+      .filter((effect) => effect.kind === 'steal-random-inventory');
+    expect(stealEffects).toHaveLength(7);
+    expect(stealEffects.every((effect) => effect.skipSourceIfEmpty === 1)).toBe(
+      true,
+    );
 
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(131);
     await game.start();
@@ -192,11 +204,48 @@ describe('Panier Express declarative game', () => {
       cardLabel: expect.any(String),
       effectDescription: expect.any(String),
     });
-    // The sole opponent is selected automatically and has no items to swap.
+    // Even with a sole opponent, the target remains an explicit choice.
     expect(drawMessage?.data.params).toHaveProperty('cardId', 'echange-masque');
-    expect(game.state().pending).toBeNull();
+    expect(game.state().pending).toMatchObject({
+      playerId: actor,
+      data: { choiceId: 'panier.strategic-swap' },
+    });
+    await game.choose(actor, actor === 1 ? 2 : 1);
     expect(game.state().turn?.currentPlayerId).toBe(actor === 1 ? 2 : 1);
     expect(game.availableActions(actor)).not.toContain('draw_card');
+  });
+
+  it('makes an explicitly selected opponent skip when there is nothing to steal', async () => {
+    const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(5);
+    await game.start();
+    await game.choose(1, PANIER_PAWNS[0].id);
+    await game.choose(2, PANIER_PAWNS[1].id);
+    const state: any = structuredClone(game.state());
+    const actorId = state.turn.currentPlayerId;
+    const opponentId = actorId === 1 ? 2 : 1;
+    const deck = state.engine.kits.cards.decks.exchanges;
+    state.engine.kits.cards.decks.exchanges = [
+      'vol-discret',
+      ...deck.filter((id: string) => id !== 'vol-discret'),
+    ];
+    const runtime = new DeclarativeGameRuntime(gameDefinition);
+    const awaitingDraw: any = runtime.applyActions(state, [
+      { type: 'roll', payload: {}, meta: { actorId } },
+    ]);
+    const pending: any = runtime.applyActions(awaitingDraw, [
+      { type: 'draw_card', payload: {}, meta: { actorId } },
+    ]);
+
+    expect(pending.pending?.data?.choiceId).toBe('panier.steal');
+    const resolved: any = runtime.applyActions(pending, [
+      {
+        type: 'choice.resolve',
+        payload: { value: opponentId },
+        meta: { actorId },
+      },
+    ]);
+    expect(resolved.turn.currentPlayerId).toBe(actorId);
+    expect(resolved.engine.playerValues.scheduledSkips[opponentId]).toBe(0);
   });
 
   it('keeps bots playing through automatic cards and intermediate choices', async () => {

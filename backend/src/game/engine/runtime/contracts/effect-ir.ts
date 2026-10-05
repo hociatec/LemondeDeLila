@@ -266,6 +266,7 @@ export type GameEffectInstruction =
       kind: 'steal-random-inventory';
       inventoryId: string;
       count?: number;
+      skipSourceIfEmpty?: number;
       from: EffectTarget;
       to?: EffectTarget;
     }

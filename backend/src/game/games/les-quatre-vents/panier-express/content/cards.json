@@ -46,7 +46,7 @@
     },
     {
       "id": "fidelite-recompensee",
-      "label": "Fidelite recompensee",
+      "label": "Fidélité récompensée",
       "effectDescription": "Rejouez immédiatement",
       "effects": [
         {
@@ -63,10 +63,12 @@
         {
           "kind": "steal-random-inventory",
           "inventoryId": "market-items",
+          "skipSourceIfEmpty": 1,
           "from": {
             "kind": "chosen-opponent",
             "choiceId": "panier.steal",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -91,7 +93,7 @@
     },
     {
       "id": "don-du-maraicher",
-      "label": "Don du maraicher",
+      "label": "Don du maraîcher",
       "effectDescription": "Piochez 1 carte Courses",
       "effects": [
         {
@@ -106,7 +108,7 @@
     },
     {
       "id": "journee-bio",
-      "label": "Journee bio",
+      "label": "Journée bio",
       "effectDescription": "Tout le monde pioche 1 carte Courses",
       "effects": [
         {
@@ -133,16 +135,18 @@
     },
     {
       "id": "echange-spontane",
-      "label": "Echange spontane",
+      "label": "Échange spontané",
       "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
       "effects": [
         {
           "kind": "steal-random-inventory",
           "inventoryId": "market-items",
+          "skipSourceIfEmpty": 1,
           "from": {
             "kind": "chosen-opponent",
             "choiceId": "panier.steal",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -152,7 +156,7 @@
     },
     {
       "id": "marche-anime",
-      "label": "Marche anime",
+      "label": "Marché animé",
       "effectDescription": "Tout le monde pioche 1 carte Courses",
       "effects": [
         {
@@ -167,7 +171,7 @@
     },
     {
       "id": "producteur-genereux",
-      "label": "Producteur genereux",
+      "label": "Producteur généreux",
       "effectDescription": "Piochez 2 cartes Courses",
       "effects": [
         {
@@ -197,7 +201,7 @@
     },
     {
       "id": "stand-en-fete",
-      "label": "Stand en fete",
+      "label": "Stand en fête",
       "effectDescription": "Tout le monde pioche 1 carte Courses",
       "effects": [
         {
@@ -224,7 +228,7 @@
     },
     {
       "id": "stand-ferme",
-      "label": "Stand ferme",
+      "label": "Stand fermé",
       "effectDescription": "Passez 1 tour",
       "effects": [
         {
@@ -238,7 +242,7 @@
     },
     {
       "id": "emballage-defectueux",
-      "label": "Emballage defectueux",
+      "label": "Emballage défectueux",
       "effectDescription": "Perdez 1 légume de votre inventaire",
       "effects": [
         {
@@ -250,7 +254,7 @@
     },
     {
       "id": "retour-en-arriere",
-      "label": "Retour en arriere",
+      "label": "Retour en arrière",
       "effectDescription": "Reculez de 3 cases",
       "effects": [
         {
@@ -264,7 +268,7 @@
     },
     {
       "id": "marche-bonde",
-      "label": "Marche bonde",
+      "label": "Marché bondé",
       "effectDescription": "Passez 1 tour",
       "effects": [
         {
@@ -278,7 +282,7 @@
     },
     {
       "id": "stand-detrempe",
-      "label": "Stand detrempe",
+      "label": "Stand détrempé",
       "effectDescription": "Passez 1 tour",
       "effects": [
         {
@@ -292,7 +296,7 @@
     },
     {
       "id": "file-attente-interminable",
-      "label": "File attente interminable",
+      "label": "File d’attente interminable",
       "effectDescription": "Passez 2 tours",
       "effects": [
         {
@@ -318,7 +322,7 @@
     },
     {
       "id": "produit-avarie",
-      "label": "Produit avarie",
+      "label": "Produit avarié",
       "effectDescription": "Perdez 1 légume de votre inventaire",
       "effects": [
         {
@@ -330,7 +334,7 @@
     },
     {
       "id": "emballage-oublie",
-      "label": "Emballage oublie",
+      "label": "Emballage oublié",
       "effectDescription": "Perdez 1 légume de votre inventaire",
       "effects": [
         {
@@ -342,7 +346,7 @@
     },
     {
       "id": "intemperie-au-marche",
-      "label": "Intemperie au marche",
+      "label": "Intempérie au marché",
       "effectDescription": "Reculez de 2 cases",
       "effects": [
         {
@@ -383,7 +387,7 @@
     },
     {
       "id": "chariot-perce",
-      "label": "Chariot perce",
+      "label": "Chariot percé",
       "effectDescription": "Perdez 2 légumes de votre inventaire",
       "effects": [
         {
@@ -395,16 +399,18 @@
     },
     {
       "id": "echange-obligatoire",
-      "label": "Echange obligatoire",
+      "label": "Échange obligatoire",
       "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
       "effects": [
         {
           "kind": "steal-random-inventory",
           "inventoryId": "market-items",
+          "skipSourceIfEmpty": 1,
           "from": {
             "kind": "chosen-opponent",
             "choiceId": "panier.steal",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -426,7 +432,8 @@
           "right": {
             "kind": "chosen-opponent",
             "choiceId": "panier.swap-inventories",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -436,16 +443,18 @@
     },
     {
       "id": "troc-improvise",
-      "label": "Troc improvise",
+      "label": "Troc improvisé",
       "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
       "effects": [
         {
           "kind": "steal-random-inventory",
           "inventoryId": "market-items",
+          "skipSourceIfEmpty": 1,
           "from": {
             "kind": "chosen-opponent",
             "choiceId": "panier.steal",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -475,7 +484,7 @@
     },
     {
       "id": "produit-oublie",
-      "label": "Produit oublie",
+      "label": "Produit oublié",
       "effectDescription": "Perdez 1 légume de votre inventaire",
       "effects": [
         {
@@ -487,7 +496,7 @@
     },
     {
       "id": "offre-ephemere",
-      "label": "Offre ephemere",
+      "label": "Offre éphémère",
       "effectDescription": "Rejouez immédiatement",
       "effects": [
         {
@@ -516,10 +525,12 @@
         {
           "kind": "steal-random-inventory",
           "inventoryId": "market-items",
+          "skipSourceIfEmpty": 1,
           "from": {
             "kind": "chosen-opponent",
             "choiceId": "panier.steal",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -529,7 +540,7 @@
     },
     {
       "id": "controle-des-inventaires",
-      "label": "Controle des inventaires",
+      "label": "Contrôle des inventaires",
       "effectDescription": "Révélez votre inventaire pendant un tour",
       "effects": [
         {
@@ -542,7 +553,7 @@
     },
     {
       "id": "carton-abime",
-      "label": "Carton abime",
+      "label": "Carton abîmé",
       "effectDescription": "Perdez 1 légume de votre inventaire",
       "effects": [
         {
@@ -554,7 +565,7 @@
     },
     {
       "id": "file-inversee",
-      "label": "File inversee",
+      "label": "File inversée",
       "effectDescription": "Inversez le sens du jeu",
       "effects": [
         {
@@ -585,7 +596,7 @@
   "exchanges": [
     {
       "id": "echange-amiable",
-      "label": "Echange amiable",
+      "label": "Échange amiable",
       "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
       "effects": [
         {
@@ -595,7 +606,8 @@
           "target": {
             "kind": "chosen-opponent",
             "choiceId": "panier.strategic-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -605,7 +617,7 @@
     },
     {
       "id": "troc-fruit-legume",
-      "label": "Troc fruit legume",
+      "label": "Troc fruit-légume",
       "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
       "effects": [
         {
@@ -615,7 +627,8 @@
           "target": {
             "kind": "chosen-opponent",
             "choiceId": "panier.strategic-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -625,7 +638,7 @@
     },
     {
       "id": "echange-devant",
-      "label": "Echange devant",
+      "label": "Échange devant",
       "effectDescription": "Échangez un légume au hasard avec un adversaire",
       "effects": [
         {
@@ -637,7 +650,8 @@
           "right": {
             "kind": "chosen-opponent",
             "choiceId": "panier.random-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -647,7 +661,7 @@
     },
     {
       "id": "echange-derriere",
-      "label": "Echange derriere",
+      "label": "Échange derrière",
       "effectDescription": "Échangez un légume au hasard avec un adversaire",
       "effects": [
         {
@@ -659,7 +673,8 @@
           "right": {
             "kind": "chosen-opponent",
             "choiceId": "panier.random-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -669,7 +684,7 @@
     },
     {
       "id": "echange-force",
-      "label": "Echange force",
+      "label": "Échange forcé",
       "effectDescription": "Échangez un légume au hasard avec un adversaire",
       "effects": [
         {
@@ -681,7 +696,8 @@
           "right": {
             "kind": "chosen-opponent",
             "choiceId": "panier.random-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -703,7 +719,8 @@
           "right": {
             "kind": "chosen-opponent",
             "choiceId": "panier.random-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -713,7 +730,7 @@
     },
     {
       "id": "panier-mixe",
-      "label": "Panier mixe",
+      "label": "Panier mixé",
       "effectDescription": "Choisissez un adversaire et échangez vos inventaires",
       "effects": [
         {
@@ -725,7 +742,8 @@
           "right": {
             "kind": "chosen-opponent",
             "choiceId": "panier.swap-inventories",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -735,7 +753,7 @@
     },
     {
       "id": "echange-strategique",
-      "label": "Echange strategique",
+      "label": "Échange stratégique",
       "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
       "effects": [
         {
@@ -745,7 +763,8 @@
           "target": {
             "kind": "chosen-opponent",
             "choiceId": "panier.strategic-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -755,7 +774,7 @@
     },
     {
       "id": "chariot-echange",
-      "label": "Chariot echange",
+      "label": "Chariot échangé",
       "effectDescription": "Choisissez un adversaire et échangez vos inventaires",
       "effects": [
         {
@@ -767,7 +786,8 @@
           "right": {
             "kind": "chosen-opponent",
             "choiceId": "panier.swap-inventories",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -777,7 +797,7 @@
     },
     {
       "id": "echange-masque",
-      "label": "Echange masque",
+      "label": "Échange masqué",
       "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
       "effects": [
         {
@@ -787,7 +807,8 @@
           "target": {
             "kind": "chosen-opponent",
             "choiceId": "panier.strategic-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -803,10 +824,12 @@
         {
           "kind": "steal-random-inventory",
           "inventoryId": "market-items",
+          "skipSourceIfEmpty": 1,
           "from": {
             "kind": "chosen-opponent",
             "choiceId": "panier.steal",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -828,7 +851,8 @@
           "right": {
             "kind": "chosen-opponent",
             "choiceId": "panier.random-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -838,7 +862,7 @@
     },
     {
       "id": "echange-impose",
-      "label": "Echange impose",
+      "label": "Échange imposé",
       "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
       "effects": [
         {
@@ -848,7 +872,8 @@
           "target": {
             "kind": "chosen-opponent",
             "choiceId": "panier.strategic-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -858,7 +883,7 @@
     },
     {
       "id": "defausse-aleatoire",
-      "label": "Defausse aleatoire",
+      "label": "Défausse aléatoire",
       "effectDescription": "Perdez un légume de votre inventaire",
       "effects": [
         {
@@ -870,7 +895,7 @@
     },
     {
       "id": "echange-simultane",
-      "label": "Echange simultane",
+      "label": "Échange simultané",
       "effectDescription": "Échangez un légume au hasard avec un adversaire",
       "effects": [
         {
@@ -882,7 +907,8 @@
           "right": {
             "kind": "chosen-opponent",
             "choiceId": "panier.random-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -892,16 +918,18 @@
     },
     {
       "id": "marche-noir",
-      "label": "Marche noir",
+      "label": "Marché noir",
       "effectDescription": "Choisissez un adversaire et prenez-lui un légume",
       "effects": [
         {
           "kind": "steal-random-inventory",
           "inventoryId": "market-items",
+          "skipSourceIfEmpty": 1,
           "from": {
             "kind": "chosen-opponent",
             "choiceId": "panier.steal",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -911,7 +939,7 @@
     },
     {
       "id": "troc-equitable",
-      "label": "Troc equitable",
+      "label": "Troc équitable",
       "effectDescription": "Choisissez un adversaire puis les légumes à échanger",
       "effects": [
         {
@@ -921,7 +949,8 @@
           "target": {
             "kind": "chosen-opponent",
             "choiceId": "panier.strategic-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {
@@ -931,7 +960,7 @@
     },
     {
       "id": "echange-saison",
-      "label": "Echange saison",
+      "label": "Échange saisonnier",
       "effectDescription": "Échangez un légume au hasard avec un adversaire",
       "effects": [
         {
@@ -943,7 +972,8 @@
           "right": {
             "kind": "chosen-opponent",
             "choiceId": "panier.random-swap",
-            "optional": false
+            "optional": false,
+            "requireExplicitChoice": true
           }
         },
         {

@@ -131,6 +131,7 @@ void RoomPanel::Leave()
     }
 
     CancelRequest();
+    UpdateStatus(wxString(L"Vous avez quitté la table."), false, true);
     roomService_.Leave();
     audioService_.Play(lila::modules::audio::domain::SoundCue::RoomExit);
     room_ = {};
