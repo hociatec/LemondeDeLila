@@ -6,6 +6,7 @@
 
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
+#include "modules/admin/presentation/AdminContextPolicy.h"
 
 namespace lila::modules::admin::presentation
 {
@@ -113,7 +114,7 @@ void AdminFrame::OpenResultActions(std::size_t index)
             {{"enabled", !enabled}}, true);
         add("games.update", L"Modifier les informations et paramètres");
         add("categories.assign", L"Attribuer une catégorie");
-        if (contextItem_.value("gameType", std::string{}).find("mnemo") != std::string::npos)
+        if (IsMnemoQuizGame(contextItem_))
         {
             add("mnemo.categories", L"Gérer le quiz Mnémosyne", {}, true);
             add("mnemo.category.create", L"Ajouter une catégorie");
