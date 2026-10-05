@@ -36,6 +36,14 @@ void TestBoardPositionShortcuts()
             allPositions.find("Mina : case 9.") != std::string::npos,
         "Maj+P doit annoncer la position de tous les joueurs.");
 
+    auto cardGameWithTrack = state;
+    lila::modules::gameplay::domain::GameCardsView cardGameCards;
+    cardGameCards.hands.push_back({"players", "owner", {}});
+    cardGameWithTrack.kits.cards = cardGameCards;
+    Expect(GameGenericShortcutPolicy::ResolveInterface(cardGameWithTrack, "P").empty() &&
+            GameGenericShortcutPolicy::ResolveInterface(cardGameWithTrack, "SHIFT+P").empty(),
+        "P et Maj+P doivent rester silencieux lorsqu'un jeu de cartes utilise aussi une piste.");
+
     auto stateWithEmptyPawns = state;
     stateWithEmptyPawns.kits.pawns = lila::modules::gameplay::domain::GamePawnsView{};
     Expect(GameCapabilityTextBuilder::Build(stateWithEmptyPawns, "position") ==

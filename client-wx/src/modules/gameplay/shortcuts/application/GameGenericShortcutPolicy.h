@@ -15,8 +15,9 @@ public:
     {
         // Reserved client-wide gameplay keys: their availability must not
         // depend on shortcuts declared by an individual game.
-        const bool isBoardGame = state.kits.movement || state.kits.pawns || state.kits.grid;
-        if (isBoardGame)
+        const bool hasBoard = state.kits.movement || state.kits.pawns || state.kits.grid;
+        const bool hasCardHand = state.kits.cards && !state.kits.cards->hands.empty();
+        if (hasBoard && !hasCardHand)
         {
             if (normalizedKey == "P") return "position";
             if (normalizedKey == "SHIFT+P") return "positions";
@@ -26,8 +27,8 @@ public:
             return "score";
         // Card-hand information has no shortcut in board games: E must not
         // compete with the board's own keyboard surface.
-        if (!isBoardGame && normalizedKey == "E" && state.kits.cards) return "hand";
-        if (!isBoardGame && normalizedKey == "SHIFT+E" && state.kits.cards)
+        if (!hasBoard && normalizedKey == "E" && state.kits.cards) return "hand";
+        if (!hasBoard && normalizedKey == "SHIFT+E" && state.kits.cards)
             return "hands";
         return {};
     }

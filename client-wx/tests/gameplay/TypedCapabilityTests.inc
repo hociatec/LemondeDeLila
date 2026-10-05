@@ -83,10 +83,10 @@ void TestKnownCapabilitiesAreTyped()
             state.kits.collections,
         "Les capacités d'objets connues doivent être typées.");
     Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
-            state, "resources-self") == "Vous\n- Apple : 3\n",
+            state, "resources-self") == "Vous\n- Pomme : 3\n",
         "E doit annoncer uniquement les ressources visibles du joueur.");
     Expect(lila::modules::gameplay::application::info::GameCapabilityTextBuilder::Build(
-            state, "resources-others") == "Nounours\n- Apple : 2\n",
+            state, "resources-others") == "Nounours\n- Pomme : 2\n",
         "Maj E doit annoncer uniquement les ressources visibles des autres joueurs.");
     Expect(state.kits.quiz && state.kits.submissions,
         "Quiz et soumissions doivent être typés.");
