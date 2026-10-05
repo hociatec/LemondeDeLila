@@ -145,15 +145,24 @@ export function discardPenaltyCardsRules(source: DiscardPenaltyCardsProgram) {
       },
     });
     const quit = defineEmptyAction<State>({
-      ui: { label: 'Sortir de la manche', control: 'button', shortcut: 'P' },
+      ui: {
+        label: 'Passer ou sortir de la manche',
+        control: 'button',
+        shortcut: 'P',
+      },
       documentation:
-        'Se retire de la manche en conservant ses cartes pour le décompte.',
+        'Passe le tour après une pioche, sinon se retire de la manche en conservant ses cartes pour le décompte.',
       available: ({ actor, ctx }) =>
         current(actor.id, ctx) &&
         phases.is(ctx, 'turn') &&
         ctx.round.activePlayers().some((player) => player.id === actor.id),
       execute: ({ actor, ctx }) => {
         ctx.turn.requireCurrent(actor.id);
+        if (hasDrawn(ctx)) {
+          ctx.events.message('game.player.passed', { playerId: actor.id });
+          ctx.turn.end();
+          return;
+        }
         ctx.round.leave(actor.id);
         if (ctx.round.activePlayers().length === 0) endRound(null, ctx);
         else ctx.turn.end();

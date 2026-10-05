@@ -24,12 +24,12 @@ describe('LAMA declarative game', () => {
     expect(scoreLamaHand(['LAMA', 'LAMA'])).toBe(10);
   });
 
-  it('publishes P for the available leave-round action', async () => {
+  it('publishes P for the contextual pass-or-leave action', async () => {
     expect(
       gameDefinition.actions['cards-discard-penalty-quit'].ui,
     ).toMatchObject({
       shortcut: 'P',
-      label: 'Sortir de la manche',
+      label: 'Passer ou sortir de la manche',
     });
 
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(137);
@@ -51,6 +51,72 @@ describe('LAMA declarative game', () => {
       ],
       { count: game.inspect.hand(actor).length },
     );
+  });
+
+  it('uses P to pass without leaving after a draw', async () => {
+    let exercised = false;
+    for (let seed = 1; seed <= 200; seed += 1) {
+      const game = testGame(gameDefinition)
+        .players(['Lila', 'Mina'])
+        .seed(seed);
+      await game.start();
+      await game.as(1).do('game.configure', { allowPlayAfterDraw: true });
+      const actor = game.state().turn?.currentPlayerId;
+      if (actor == null) continue;
+
+      await game.as(actor).do('draw', {});
+      if (game.state().turn?.currentPlayerId !== actor) continue;
+
+      await game.as(actor).do('cards-discard-penalty-quit', {});
+      const state = game.state() as DeclarativeState<Record<string, never>>;
+      expect(state.engine.round.leftPlayerIds).not.toContain(actor);
+      expect(state.turn?.currentPlayerId).not.toBe(actor);
+      expect(state.log.at(-1)).toMatchObject({
+        key: 'game.player.passed',
+        params: { playerId: actor },
+      });
+      exercised = true;
+      break;
+    }
+
+    expect(exercised).toBe(true);
+  });
+
+  it('ends the round immediately when the last card is played', async () => {
+    let exercised = false;
+    for (let seed = 1; seed <= 200; seed += 1) {
+      const game = testGame(gameDefinition)
+        .players(['Lila', 'Mina'])
+        .seed(seed);
+      await game.start();
+      await game.as(1).do('game.configure', { startingHandSize: 1 });
+      const actor = game.state().turn?.currentPlayerId;
+      if (
+        actor == null ||
+        !game.availableActions(actor).includes('cards-discard-penalty-play')
+      )
+        continue;
+
+      const [value] = game.inspect.hand<LamaCard>(actor);
+      expect(value).toBeDefined();
+      await game.as(actor).do('cards-discard-penalty-play', { value });
+
+      const state = game.state() as DeclarativeState<Record<string, never>>;
+      expect(state.engine.round.completedRounds).toBe(1);
+      expect(state.engine.round.number).toBe(2);
+      expect(state.log).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            key: 'game.round.ended',
+            params: { round: 1 },
+          }),
+        ]),
+      );
+      exercised = true;
+      break;
+    }
+
+    expect(exercised).toBe(true);
   });
 
   it('keeps hands private and replays a configured round', async () => {
