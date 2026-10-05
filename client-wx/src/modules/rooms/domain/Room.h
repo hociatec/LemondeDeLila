@@ -19,6 +19,9 @@ struct PublicRoom
     int playersCount = 0;
     int botsCount = 0;
     std::string ownerUsername;
+    std::string gameName;
+    std::string playersLabel;
+    std::string createdAt;
 };
 
 struct RoomMember

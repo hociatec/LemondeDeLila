@@ -62,9 +62,15 @@ void TestRoomAndVaultPresentationState()
 
     lila::modules::rooms::presentation::RoomLobbyNavigator lobby;
     lobby.Reset({lila::modules::rooms::domain::PublicRoom{
-        42, "Table", "game", "waiting", false, false, 4, 2, 0, "alice"}});
+        42, "Table", "game", "waiting", false, false, 4, 2, 0, "alice",
+        "1000 miles", "anian", "2026-10-05T16:35:00.000Z"}});
     Expect(lobby.SelectedRoom() != nullptr, "Table publique selectionnee attendue");
     Expect(lobby.SelectedRoom()->id == 42, "Identifiant de table publique attendu");
+    const auto lobbyItems =
+        lila::modules::rooms::presentation::RoomLobbyPresentationModel::BuildItems(lobby, false);
+    Expect(
+        lobbyItems.front().label == wxString::FromUTF8("1000 miles avec anian, 05.10.2026 16:35"),
+        "Libelle de table publique aligne sur le coffre-fort attendu");
     lobby.Reset({
         lila::modules::rooms::domain::PublicRoom{
             42, "Table", "game", "waiting", false, false, 4, 2, 0, "alice"},

@@ -120,12 +120,17 @@ void TestRoomPayloadCodecs()
             {"runId", "7"},
             {"status", "waiting"}, {"started", false}, {"spectatorOnly", false},
             {"maxPlayers", 4}, {"playersCount", 2}, {"botsCount", 1},
+            {"gameName", "1000 miles"}, {"playersLabel", "anian"},
+            {"createdAt", "2026-10-05T16:35:00.000Z"},
             {"owner", {{"username", "alice"}}},
         }})},
     });
     Expect(publicRooms.size() == 1, "Une table publique attendue");
     Expect(publicRooms[0].ownerUsername == "alice", "Proprietaire de table attendu");
     Expect(publicRooms[0].playersCount == 2, "Nombre de joueurs attendu");
+    Expect(publicRooms[0].gameName == "1000 miles", "Nom affiche du jeu attendu");
+    Expect(publicRooms[0].playersLabel == "anian", "Libelle des joueurs attendu");
+    Expect(publicRooms[0].createdAt == "2026-10-05T16:35:00.000Z", "Date de creation attendue");
 
     const nlohmann::json roomPayload = {
         {"manifest", {

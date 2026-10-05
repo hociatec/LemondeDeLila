@@ -64,6 +64,9 @@ std::vector<domain::PublicRoom> ReadPublicRooms(const nlohmann::json& payload)
         room.botsCount = lila::shared::data::json::ReadRequiredInteger(value, "botsCount");
         const auto owner = value.find("owner");
         if (owner != value.end() && owner->is_object()) room.ownerUsername = owner->value("username", std::string{});
+        room.gameName = lila::shared::data::json::ReadOptionalString(value, "gameName");
+        room.playersLabel = lila::shared::data::json::ReadOptionalString(value, "playersLabel");
+        room.createdAt = lila::shared::data::json::ReadOptionalString(value, "createdAt");
         if (room.id <= 0 || room.name.empty() || room.gameType.empty() || room.maxPlayers <= 0 ||
             room.playersCount < 0 || room.botsCount < 0) Invalid("Public room values are invalid.");
         result.push_back(std::move(room));
