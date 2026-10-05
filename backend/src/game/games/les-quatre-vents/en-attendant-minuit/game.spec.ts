@@ -14,6 +14,14 @@ const gameDefinition = compileJsonGame(manifest, document, {
 });
 
 describe('En Attendant Minuit declarative game', () => {
+  it('keeps the fast sleigh movement aligned with its announced distance', () => {
+    expect(catalogue.tiles.find((tile) => tile.n === 4)).toMatchObject({
+      type: 'move',
+      delta: 2,
+      description: expect.stringContaining('Avancez de 2 cases'),
+    });
+  });
+
   it('waits for a manual draw and exposes a complete, separate quiz', async () => {
     const game = await testGame(gameDefinition)
       .players(['Lila', 'Mina'])

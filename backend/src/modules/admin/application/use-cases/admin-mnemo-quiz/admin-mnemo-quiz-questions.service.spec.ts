@@ -67,4 +67,22 @@ describe('AdminMnemoQuizQuestionsService', () => {
       }),
     );
   });
+
+  it('lists and deletes the selected question', () => {
+    const store = createStoreMock();
+    const questions = [{ id: 'q1' }];
+    store.listQuestions.mockReturnValue(questions);
+    const service = new AdminMnemoQuizQuestionsService(store);
+
+    expect(service.list({ categoryId: 'c1', status: 'validated' })).toEqual(
+      questions,
+    );
+    service.delete('q1');
+
+    expect(store.listQuestions).toHaveBeenCalledWith({
+      categoryId: 'c1',
+      status: 'validated',
+    });
+    expect(store.deleteQuestion).toHaveBeenCalledWith('q1');
+  });
 });

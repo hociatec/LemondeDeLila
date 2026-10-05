@@ -23,12 +23,12 @@ it('plays a complete deterministic bounce-quiz race', async () => {
   );
   expect(result.error).toBeUndefined();
   expect(result.status).toBe('finished');
-  expect(result.commands).toBe(42);
+  expect(result.commands).toBe(48);
   const trace = result.events
     .filter((event) => event.type !== 'engine.state.committed')
     .map(({ type, data, visibility }) => ({ type, data, visibility }));
-  expect(trace).toHaveLength(357);
+  expect(trace).toHaveLength(421);
   expect(createHash('sha256').update(JSON.stringify(trace)).digest('hex')).toBe(
-    '65a763e3660e196d4484bec2558383ad2fbce262bb2ed062e5f039fd6c378186',
+    '4b7612654a176d573a71329f0d6ce4da4753fddebe149fd2240366e6f0877481',
   );
 });

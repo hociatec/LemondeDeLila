@@ -4,6 +4,7 @@
 #include <string_view>
 #include <nlohmann/json.hpp>
 #include "modules/admin/presentation/AdminBugReportListFormatter.h"
+#include "modules/admin/presentation/AdminMnemoQuestionFormatter.h"
 namespace lila::modules::admin::presentation
 {
 namespace {
@@ -120,7 +121,8 @@ std::string ScalarForKey(std::string_view key, const nlohmann::json& value)
     return Scalar(value);
 }
 std::string ItemTitle(const nlohmann::json& value, std::size_t index) {
-    constexpr std::string_view Keys[]{"username", "name", "title", "subject", "id", "type"};
+    constexpr std::string_view Keys[]{
+        "username", "name", "title", "subject", "question", "id", "type"};
     if (value.is_object()) {
         const auto content = value.find("content");
         const auto commentAuthor = value.find("createdByUsername");
@@ -229,9 +231,10 @@ AdminResultPresentation BuildAdminResultPresentation(const nlohmann::json& paylo
     presentation.entries.reserve(list->size());
     for (std::size_t index = 0; index < list->size(); ++index)
     {
+        const auto mnemoQuestion = FormatAdminMnemoQuestion((*list)[index]);
         presentation.entries.push_back({
             std::to_string(index + 1) + ". " + ItemTitle((*list)[index], index),
-            FormatAdminResult((*list)[index]),
+            mnemoQuestion ? *mnemoQuestion : FormatAdminResult((*list)[index]),
         });
     }
     presentation.details = presentation.entries.empty()
