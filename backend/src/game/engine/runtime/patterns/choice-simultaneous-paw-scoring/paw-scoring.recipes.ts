@@ -16,6 +16,7 @@ import type { GameContext } from '../../internal-pattern-api';
 import { includesInput } from './paw-scoring-input';
 import { defineAction, defineEmptyAction } from '../../internal-pattern-api';
 import type {
+  PawScoringCard,
   PawScoringParade,
   PawScoringPower,
   PawScoringProgram,
@@ -44,9 +45,10 @@ export function pawScoringRules(source: PawScoringProgram) {
   } = createPawScoringCardRules(program);
   const cardSchema = defineCardsSchema({
     decks: {
-      [program.deckId]: cards.deck({
+      [program.deckId]: cards.deck<string | PawScoringCard>({
         id: program.deckId,
         cards: program.cards.map((card) => card.id),
+        catalog: program.cards,
         shuffle: true,
         empty: 'recycle',
       }),
@@ -68,17 +70,18 @@ export function pawScoringRules(source: PawScoringProgram) {
       execute: ({ actor, ctx }) => {
         if (ctx.effects.sourcePlayerId() === actor.id)
           rejectRule('Pioche déjà faite');
-        const cardId = drawForPlayer<State, string>(ctx, {
+        const card = drawForPlayer<State, PawScoringCard>(ctx, {
           deckId: program.deckId,
           handId: program.handId,
           playerId: actor.id,
           recycle: true,
         })[0];
-        if (cardId) {
+        if (card) {
           ctx.events.message('game.card.drawn', {
             playerId: actor.id,
             deckId: program.deckId,
-            cardId,
+            cardId: card.id,
+            cardLabel: card.name,
           });
           return;
         }
@@ -114,6 +117,7 @@ export function pawScoringRules(source: PawScoringProgram) {
         ctx.events.message('game.card.played', {
           playerId: actor.id,
           cardId: card.id,
+          cardLabel: card.name,
         });
         ctx.effects.schedule(
           ...effectsForPlay(card, input.targetPlayerId ?? null),
@@ -135,10 +139,10 @@ export function pawScoringRules(source: PawScoringProgram) {
           mustCounter(actor.id, ctx)
         )
           return false;
-        const hand = ctx.cards.hand<string>(program.handId, actor.id);
+        const hand = ctx.cards.hand<PawScoringCard>(program.handId, actor.id);
         return hand.length === 0
           ? input.cardId == null
-          : hand.includes(input.cardId ?? '');
+          : hand.some((card) => card.id === input.cardId);
       },
       enumerate: ({ actor, ctx }) => {
         if (
@@ -146,8 +150,10 @@ export function pawScoringRules(source: PawScoringProgram) {
           mustCounter(actor.id, ctx)
         )
           return [];
-        const hand = ctx.cards.hand<string>(program.handId, actor.id);
-        return hand.length === 0 ? [{}] : hand.map((cardId) => ({ cardId }));
+        const hand = ctx.cards.hand<PawScoringCard>(program.handId, actor.id);
+        return hand.length === 0
+          ? [{}]
+          : hand.map((card) => ({ cardId: card.id }));
       },
       execute: ({ actor, input, ctx }) => {
         if (
@@ -155,8 +161,8 @@ export function pawScoringRules(source: PawScoringProgram) {
           mustCounter(actor.id, ctx)
         )
           rejectRule('Défausse paw-scoring card interdite');
-        const hand = ctx.cards.hand<string>(program.handId, actor.id);
-        const cardId = input.cardId ?? hand[0];
+        const hand = ctx.cards.hand<PawScoringCard>(program.handId, actor.id);
+        const cardId = input.cardId ?? hand[0]?.id;
         if (cardId)
           ctx.cards.play(program.handId, program.deckId, actor.id, cardId);
         ctx.effects.clearSource();
@@ -176,7 +182,8 @@ export function pawScoringRules(source: PawScoringProgram) {
         recipe: 'paw-round-play' as const,
         payload: { ...input },
       };
-    const cardId = ctx.cards.hand<string>(program.handId, actorId)[0];
+    const cardId = ctx.cards.hand<PawScoringCard>(program.handId, actorId)[0]
+      ?.id;
     return {
       recipe: 'paw-round-discard' as const,
       payload: cardId ? { cardId } : {},

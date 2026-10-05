@@ -23,6 +23,34 @@ describe('Cat Pattes declarative game', () => {
     expect(game.inspect.deckCount() + 12).toBe(catPattes.cards.length);
   });
 
+  it('projects French card names instead of internal identifiers', async () => {
+    const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(71);
+    await game.start();
+    await game.as(1).do('game.configure', { roundsToPlay: 1 });
+    const view = game.view(1) as unknown as {
+      kits: {
+        cards: {
+          hands: {
+            players: { byPlayer: Record<string, unknown[]> };
+          };
+        };
+      };
+    };
+    const hand = view.kits.cards.hands.players.byPlayer['1'];
+
+    expect(hand).toHaveLength(6);
+    expect(hand[0]).toEqual(
+      expect.objectContaining({
+        id: expect.any(String),
+        name: expect.any(String),
+        description: expect.any(String),
+      }),
+    );
+    expect(catPattes.cards.map((card) => card.name)).toContain(
+      (hand[0] as { name: string }).name,
+    );
+  });
+
   it('draws once, discards and replays exactly', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(72);
     await game.start();
@@ -48,8 +76,8 @@ describe('Cat Pattes declarative game', () => {
       { maxCommands: 500 },
     );
 
-    expect(result.status).toBe('finished');
     expect(result.error).toBeUndefined();
+    expect(result.status).toBe('finished');
   });
 
   it.each(['cat-pattes@content:b15666ae', '1', '2'])(
