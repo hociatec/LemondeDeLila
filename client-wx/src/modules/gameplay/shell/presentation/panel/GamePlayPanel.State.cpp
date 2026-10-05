@@ -129,7 +129,7 @@ void GamePlayPanel::ApplyState(domain::GameState state)
     handPanel_->ApplyCards(
         application::GameSurfaceSelectors::VisibleHand(state_), state_.actions);
     gridPanel_->Apply(state_.kits.grid ? &*state_.kits.grid : nullptr,
-        state_.actions, state_.system.players,
+        state_.system.players,
         state_.kits.pawns ? &*state_.kits.pawns : nullptr,
         state_.viewerPlayerId);
     workflowPanel_->Apply(state_);

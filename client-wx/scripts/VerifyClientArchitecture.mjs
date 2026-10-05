@@ -371,6 +371,12 @@ const gameplayLayoutSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.Layout.cpp'), 'utf8');
 const gameplayEventsSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.Events.cpp'), 'utf8');
+const gridPanelSource = await readFile(
+  join(root, 'modules/gameplay/grid/presentation/GameGridPanel.cpp'), 'utf8');
+if (!gridPanelSource.includes('GameGridAccessibilityText('))
+  violations.push('GameGridPanel: l’aide clavier doit dépendre du nombre de plateaux');
+if (gridPanelSource.includes('hasGridAction'))
+  violations.push('GameGridPanel: la grille doit rester visible en lecture seule entre les tours');
 for (const relativePath of [
   'modules/gameplay/grid/presentation/GameGridPanel.cpp',
   'modules/gameplay/hand/presentation/GameHandPanel.cpp',
