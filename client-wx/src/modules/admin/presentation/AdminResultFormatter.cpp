@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string_view>
 #include <nlohmann/json.hpp>
+#include "modules/admin/presentation/AdminBugReportListFormatter.h"
 namespace lila::modules::admin::presentation
 {
 namespace {
@@ -130,25 +131,8 @@ std::string ItemTitle(const nlohmann::json& value, std::size_t index) {
             if (preview.size() > 80) preview = preview.substr(0, 77) + "…";
             return commentAuthor->get<std::string>() + " — " + preview;
         }
-        const auto subject = value.find("subject");
-        const auto status = value.find("status");
-        if (subject != value.end() && subject->is_string() &&
-            status != value.end() && status->is_string())
-        {
-            auto title = Scalar(*subject) + " — " + ScalarForKey("status", *status);
-            const auto author = value.find("createdByUsername");
-            if (author != value.end() && author->is_string())
-                title += " — " + Scalar(*author);
-            const auto commentsCount = value.find("commentsCount");
-            if (commentsCount != value.end() && commentsCount->is_number_integer())
-            {
-                const auto count = commentsCount->dump();
-                if (!count.starts_with('-'))
-                    title += " — " + count +
-                        (count == "1" ? " commentaire" : " commentaires");
-            }
-            return title;
-        }
+        if (const auto reportTitle = FormatAdminBugReportListTitle(value))
+            return *reportTitle;
         for (const auto key : Keys)
         {
             const auto found = value.find(key);
