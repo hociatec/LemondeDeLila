@@ -1,6 +1,7 @@
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 
 #include <wx/string.h>
+#include <wx/textctrl.h>
 #include <wx/window.h>
 
 #ifdef __WXMSW__
@@ -52,20 +53,18 @@ void AccessibilityUtils::SetSecondaryActionAvailability(wxWindow* control, bool 
 
 void AccessibilityUtils::SetAccessibleStatus(wxWindow& control, const wxString& message)
 {
-    if (message.empty())
-    {
-        SetAccessibleName(control, wxString(L"État"), wxString(L"État"));
-        return;
-    }
-
-    SetAccessibleName(control, message, wxString(L"État : ") + message);
+    // A text control already exposes the message as its value. Static status
+    // labels expose it as their name. Neither needs a repeated description.
+    const auto name = wxDynamicCast(&control, wxTextCtrl) != nullptr
+        ? wxString(L"État") : message;
+    SetAccessibleName(control, name);
 }
 
 void AccessibilityUtils::AnnounceStatus(wxWindow& control, const wxString& message)
 {
     SetAccessibleStatus(control, message);
 #ifdef __WXMSW__
-    if (control.GetHandle() != nullptr)
+    if (!message.empty() && control.IsShownOnScreen() && control.GetHandle() != nullptr)
     {
         NotifyWinEvent(
             WinEventObjectLiveRegionChanged,
@@ -114,6 +113,6 @@ void AccessibilityUtils::NotifyFocus(wxWindow& control)
 void AccessibilityUtils::SetAccessibleName(wxWindow& control, const wxString& name, const wxString& description)
 {
     control.SetName(name);
-    control.SetHelpText(description);
+    control.SetHelpText(description == name ? wxString{} : description);
 }
 }

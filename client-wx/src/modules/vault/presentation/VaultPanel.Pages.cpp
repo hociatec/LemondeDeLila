@@ -24,8 +24,7 @@ void VaultPanel::ShowCurrentPage()
 {
     const auto items = VaultPresentationModel::BuildItems(
         navigator_, state_ == State::InitialError);
-    menu_->SetItems(items);
-    menu_->SetSelectedIndexSilently(std::min(navigator_.SelectedIndex(), items.size() - 1));
+    menu_->SetItemsForNavigation(items, navigator_.SelectedIndex());
     lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, wxString{}, false);
     FocusMenuIfVisible();
 }

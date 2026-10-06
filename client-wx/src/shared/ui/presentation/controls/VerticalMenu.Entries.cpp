@@ -20,8 +20,7 @@ void VerticalMenu::SetItemsForNavigation(
     std::size_t selectedIndex, bool quiet)
 {
     (void)quiet;
-    SetItems(items);
-    if (!items.empty()) SetSelectedIndexSilently(std::min(selectedIndex, items.size() - 1));
+    ReplaceItems(items, selectedIndex);
 }
 
 void VerticalMenu::SetEntryItems(std::span<const VerticalMenuItem> items)

@@ -72,10 +72,7 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
     items.reserve(visibleCommands_.size());
     for (const auto* command : visibleCommands_)
         items.push_back({command->id, wxString(command->label)});
-    commandsMenu_->SetItems(items);
-    if (!items.empty())
-        commandsMenu_->SetSelectedIndexSilently(
-            std::min(commandSelections_[sectionIndex], items.size() - 1));
+    commandsMenu_->SetItemsForNavigation(items, commandSelections_[sectionIndex]);
     sectionsMenu_->Hide();
     // Les rapports s'ouvrent directement sur leur liste : il n'y a pas
     // d'étape intermédiaire « opérations » à traverser au clavier.

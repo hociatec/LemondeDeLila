@@ -10,6 +10,7 @@
 #include <wx/textctrl.h>
 
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
+#include "shared/accessibility/presentation/AccessibleMenu.h"
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 #include "shared/ui/presentation/navigation/MenuBlueprint.h"
@@ -30,7 +31,7 @@ void MessagingView::BuildMenuScreen()
         menuPanel,
         lila::shared::ui::navigation::BuildMenuItems(menuItems),
         lila::shared::ui::controls::VerticalMenuRole::List);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu, wxString(L"Messages"));
+    menu->SetAccessibleName(wxString(L"Messages"));
     sizer->Add(menu, 1, wxEXPAND);
     menuPanel->SetSizer(sizer);
 }
@@ -48,8 +49,9 @@ void MessagingView::BuildListScreen()
     sizer->Add(messagesList, 1, wxEXPAND | wxBOTTOM, 12);
     sizer->Add(emptyMessagesCtrl, 0, wxEXPAND);
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*listTitleLabel, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingListHeader));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*messagesList, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingListHeader));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyMessagesCtrl, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingNoMessage));
+    lila::shared::accessibility::ConfigureListBoxAsAccessibleList(
+        *messagesList, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingListHeader), {});
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*emptyMessagesCtrl, lila::shared::text::FromUtf8(lila::shared::text::ui::MessagingListHeader));
     lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder({listTitleLabel, messagesList, emptyMessagesCtrl});
     listPanel->SetSizer(sizer);
 }

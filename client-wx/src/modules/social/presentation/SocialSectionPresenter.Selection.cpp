@@ -42,11 +42,7 @@ void SetActionMenuItems(
     }
 
     const auto selected = menu->GetSelectedIndex();
-    menu->SetItems(items);
-    if (selected < menu->GetItemCount())
-    {
-        menu->SetSelectedIndexSilently(selected);
-    }
+    menu->SetItemsForNavigation(items, selected);
     menu->Enable(true);
     menu->Show(true);
 }

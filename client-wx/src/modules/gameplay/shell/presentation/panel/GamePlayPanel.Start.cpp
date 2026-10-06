@@ -148,7 +148,8 @@ void GamePlayPanel::NotifyRoomStartFailed(const wxString& message)
     submittedPromptActionType_.clear();
     dismissedPromptActionType_.clear();
     promptPanel_->HidePrompt(true);
-    UpdateStatus(message, true, true);
+    // RoomPanel owns the announcement of the same start failure.
+    UpdateStatus(message, true, false);
     // A rejected room start belongs to the table view. Do not reveal the
     // gameplay panel again: pressing Enter must keep the user on the table
     // and its error message, instead of opening an unrelated game panel.

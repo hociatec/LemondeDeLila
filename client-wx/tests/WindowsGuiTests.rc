@@ -1,0 +1,3 @@
+// Exercise the same native common-controls version as the application.
+#define wxUSE_RC_MANIFEST 1
+#include <wx/msw/wx.rc>

@@ -54,8 +54,8 @@ private:
     void RestoreSnapshot(const NavigationSnapshot& snapshot);
     void SyncPageVisibility(Page page) const;
     void ApplyPageContent(Page page, int restoreSelection);
-    void BuildRootMenuItems() const;
-    void BuildInfoItems() const;
+    void BuildRootMenuItems(int selection = 0) const;
+    void BuildInfoItems(int selection = 0) const;
 
     AboutFrame& frame_;
     lila::modules::session::application::SessionStore& sessionStore_;

@@ -44,18 +44,7 @@ void ChatEventBinder::Bind(wxWindow& owner, Widgets widgets, Handlers handlers)
             history.ShowPosition(history.GetLastPosition());
             InvokeChatHandler(focused);
             InvokeChatHandler(changed);
-            // Windows can restore the native focus without sending a usable
-            // accessibility focus event after the application is reactivated.
-            // Re-announce the named history control once that restoration has
-            // settled, so screen readers do not report an unknown focus.
-            const wxWeakRef<wxTextCtrl> weakHistory(&history);
-            history.CallAfter(
-                [weakHistory]()
-                {
-                    auto* restoredHistory = weakHistory.get();
-                    if (restoredHistory != nullptr && wxWindow::FindFocus() == restoredHistory)
-                        lila::shared::accessibility::AccessibilityUtils::NotifyFocus(*restoredHistory);
-                });
+            // The native focus event is sufficient; do not send a second one.
             event.Skip();
         });
     widgets.history.Bind(

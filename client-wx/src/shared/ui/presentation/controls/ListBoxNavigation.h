@@ -18,7 +18,7 @@ namespace lila::shared::ui::controls::list_box
     else if (!backwards && static_cast<unsigned int>(selected + 1) < count)
         ++selected;
 
-    list.SetSelection(selected);
+    if (list.GetSelection() != selected) list.SetSelection(selected);
     return true;
 }
 

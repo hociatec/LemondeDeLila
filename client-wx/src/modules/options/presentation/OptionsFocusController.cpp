@@ -159,7 +159,7 @@ void OptionsFocusController::BindNavigation(wxWindow& owner)
             if (target >= 0 && target < pageCount)
             {
                 book->SetSelection(target);
-                book->SetFocus();
+                static_cast<void>(Navigator::Focus(book));
             }
             event.Skip(false);
         });

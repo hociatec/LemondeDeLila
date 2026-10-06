@@ -67,6 +67,7 @@ public:
     void ApplyTheme();
 
 private:
+    void ReplaceItems(std::span<const VerticalMenuItem> items, std::optional<std::size_t> selection);
     void BuildLayout(std::span<const VerticalMenuItem> items);
     void BindListEvents();
     void OnListSelectionChanged(wxCommandEvent& event);

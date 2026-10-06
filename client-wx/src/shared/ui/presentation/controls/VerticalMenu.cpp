@@ -1,6 +1,7 @@
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
 #include <stdexcept>
+#include <algorithm>
 #include <utility>
 
 #include <wx/event.h>
@@ -65,6 +66,12 @@ void VerticalMenu::SetSelectedIndexSilently(std::size_t index)
 
 void VerticalMenu::SetItems(std::span<const VerticalMenuItem> items)
 {
+    ReplaceItems(items, std::nullopt);
+}
+
+void VerticalMenu::ReplaceItems(
+    std::span<const VerticalMenuItem> items, std::optional<std::size_t> selection)
+{
     if (listBox_ == nullptr)
     {
         return;
@@ -78,6 +85,23 @@ void VerticalMenu::SetItems(std::span<const VerticalMenuItem> items)
     }
     if (unchanged)
     {
+        if (selection && !items.empty())
+            SetSelectedIndexSilently(std::min(*selection, items.size() - 1));
+        return;
+    }
+
+    const bool sameIds = items.size() == itemIds_.size() &&
+        std::equal(items.begin(), items.end(), itemIds_.begin(),
+            [](const VerticalMenuItem& item, const std::string& id) { return item.id == id; });
+    const auto targetIndex = items.empty() ? 0 : std::min(selection.value_or(0), items.size() - 1);
+    if (sameIds && selectedIndex_ == targetIndex)
+    {
+        // A count or presence change on another row must not reset the focus.
+        for (std::size_t index = 0; index < items.size(); ++index)
+            if (listBox_->GetString(static_cast<unsigned int>(index)) != items[index].label)
+                listBox_->SetString(static_cast<unsigned int>(index), items[index].label);
+        if (!items.empty())
+            SetSelectedIndexSilently(targetIndex);
         return;
     }
 
@@ -91,10 +115,11 @@ void VerticalMenu::SetItems(std::span<const VerticalMenuItem> items)
     }
 
     itemCount_ = items.size();
-    selectedIndex_ = 0;
+    selectedIndex_ = targetIndex;
     if (itemCount_ > 0)
     {
-        listBox_->SetSelection(0);
+        // Select the final target once, without briefly announcing item zero.
+        listBox_->SetSelection(static_cast<int>(selectedIndex_));
     }
     UpdateVisualSelection();
 }

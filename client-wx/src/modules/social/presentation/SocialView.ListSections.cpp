@@ -62,7 +62,7 @@ SocialListSectionControls BuildSocialListSection(
     sizer->Add(controls.actions, 0, wxEXPAND);
 
     controls.list->SetAccessibleName(titleText);
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*controls.emptyState, emptyText);
+    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*controls.emptyState, titleText);
     controls.actions->SetAccessibleName(actionsAccessibleName);
     lila::shared::accessibility::AccessibilityUtils::ConfigureLinearTabOrder(
         {controls.list,
