@@ -92,7 +92,7 @@ void SocialProfileCoordinator::StartEdit(ProfileEditorMode mode)
     navigationState_.PushCurrent();
     navigationState_.profileEditorMode = mode;
     sectionPresenter_.SyncProfileControls();
-    callbacks_.scheduleFocusCurrentScreen();
+    callbacks_.focusCurrentScreen();
 }
 
 void SocialProfileCoordinator::SaveProfile()
@@ -120,11 +120,11 @@ void SocialProfileCoordinator::SaveProfile()
             dataStore_.ReplaceProfile(std::move(savedProfile));
             navigationState_.profileEditorMode = ProfileEditorMode::Menu;
             sectionPresenter_.SyncProfileControls();
-            callbacks_.showFeedback(lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileUpdated));
             if (navigationState_.currentSection == SocialSection::Profile)
             {
-                callbacks_.scheduleFocusCurrentScreen();
+                callbacks_.focusCurrentScreen();
             }
+            callbacks_.showFeedback(lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileUpdated));
         });
 }
 }

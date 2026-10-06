@@ -22,7 +22,7 @@ public:
         std::function<void(std::size_t)> openMessagingRequested;
         std::function<void()> closeRequested;
         std::function<void()> syncPanels;
-        std::function<void()> scheduleFocusCurrentScreen;
+        std::function<void()> focusCurrentScreen;
     };
 
     SocialScreenCoordinator(

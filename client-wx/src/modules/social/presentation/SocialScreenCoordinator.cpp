@@ -41,7 +41,7 @@ void SocialScreenCoordinator::SetScreen(Screen screen)
     }
 
     callbacks_.syncPanels();
-    callbacks_.scheduleFocusCurrentScreen();
+    callbacks_.focusCurrentScreen();
 }
 
 void SocialScreenCoordinator::ApplyNavigationState()
@@ -58,7 +58,7 @@ void SocialScreenCoordinator::ApplyNavigationState()
     }
 
     callbacks_.syncPanels();
-    callbacks_.scheduleFocusCurrentScreen();
+    callbacks_.focusCurrentScreen();
 }
 
 void SocialScreenCoordinator::ActivateMenuIndex(std::size_t index)
@@ -102,7 +102,7 @@ void SocialScreenCoordinator::OpenCurrentSectionActionMenu()
 
     navigationState_.sectionActionMenuActive = true;
     sectionPresenter_.SyncSelectionState();
-    callbacks_.scheduleFocusCurrentScreen();
+    callbacks_.focusCurrentScreen();
 }
 
 void SocialScreenCoordinator::CloseCurrentSectionActionMenu()
@@ -113,8 +113,10 @@ void SocialScreenCoordinator::CloseCurrentSectionActionMenu()
     }
 
     navigationState_.sectionActionMenuActive = false;
+    // The list remains visible while the action menu is still present. Focus
+    // it first so hiding the action menu never exposes an unavailable control.
+    callbacks_.focusCurrentScreen();
     sectionPresenter_.SyncSelectionState();
-    callbacks_.scheduleFocusCurrentScreen();
 }
 
 void SocialScreenCoordinator::HandleEscape()

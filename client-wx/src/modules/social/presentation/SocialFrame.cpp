@@ -90,7 +90,7 @@ SocialFrame::SocialFrame(
             },
             [this]()
             {
-                ScheduleFocusCurrentScreen();
+                FocusCurrentScreen();
             }});
     screenCoordinator_ = std::make_unique<SocialScreenCoordinator>(
         navigationState_,
@@ -118,7 +118,7 @@ SocialFrame::SocialFrame(
             },
             [this]()
             {
-                ScheduleFocusCurrentScreen();
+                FocusCurrentScreen();
             }});
     actionController_ = std::make_unique<SocialActionController>(
         socialService,
@@ -160,7 +160,7 @@ SocialFrame::SocialFrame(
             },
             [this]()
             {
-                ScheduleFocusCurrentScreen();
+                FocusCurrentScreen();
             },
             [this](int userId, std::string username)
             {
