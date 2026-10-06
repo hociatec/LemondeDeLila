@@ -19,7 +19,6 @@ namespace lila::modules::social::presentation
 {
 namespace
 {
-using FocusManager = lila::shared::accessibility::FocusManager;
 using Navigator = lila::shared::accessibility::NavigationController;
 }
 
@@ -98,20 +97,21 @@ void SocialFrame::RefreshSection(SocialSection section)
     sectionCoordinator_->RefreshSection(section);
 }
 
-void SocialFrame::ScheduleFocusCurrentScreen()
+void SocialFrame::FocusCurrentScreen()
 {
-    lila::shared::accessibility::FocusCoordinator::Schedule(
-        *this,
-        [this]()
+    if (!IsShownOnScreen())
+    {
+        return;
+    }
+    if (auto* window = wxDynamicCast(wxGetTopLevelParent(this), wxTopLevelWindow))
+    {
+        const auto title = NavigationTitle();
+        if (window->GetTitle() != title)
         {
-            if (!IsShownOnScreen()) return FocusManager::Plan{};
-            if (auto* window = wxDynamicCast(wxGetTopLevelParent(this), wxTopLevelWindow))
-            {
-                const auto title = NavigationTitle();
-                if (window->GetTitle() != title) window->SetTitle(title);
-            }
-            return BuildFocusPlan();
-        });
+            window->SetTitle(title);
+        }
+    }
+    static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
 }
 
 wxString SocialFrame::NavigationTitle() const

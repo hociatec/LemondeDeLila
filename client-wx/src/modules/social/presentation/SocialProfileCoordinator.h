@@ -23,7 +23,7 @@ public:
     {
         std::function<void(const wxString&, bool)> updateStatus;
         std::function<void(const wxString&)> showFeedback;
-        std::function<void()> scheduleFocusCurrentScreen;
+        std::function<void()> focusCurrentScreen;
         std::function<void(int, std::string)> openStoryBook;
     };
 

@@ -96,6 +96,10 @@ void SocialFrame::HandleSectionAction(SocialSection section, std::string_view ac
         return;
     }
     const bool isBlocked = userId.has_value() && dataStore_.IsBlocked(*userId);
+    if (screenCoordinator_ != nullptr)
+    {
+        screenCoordinator_->CloseCurrentSectionActionMenu();
+    }
     actionController_->ActivateSectionAction(section, *parsedAction, userId, isBlocked);
 }
 

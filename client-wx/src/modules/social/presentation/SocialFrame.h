@@ -94,7 +94,7 @@ private:
     void ApplyBusyState();
     void RunUiAction(const std::function<void()>& action);
     void UpdateStatus(const wxString& message, bool isError = false, bool announce = true);
-    void ScheduleFocusCurrentScreen();
+    void FocusCurrentScreen();
     void RefreshCurrentSection();
     [[nodiscard]] lila::shared::accessibility::NavigationController::Scope BuildFocusScope() const;
     [[nodiscard]] bool IsExplicitTabNavigationContext() const noexcept;

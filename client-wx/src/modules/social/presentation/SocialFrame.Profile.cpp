@@ -7,5 +7,7 @@ namespace lila::modules::social::presentation
 void SocialFrame::OpenProfile(int userId)
 {
     sectionCoordinator_->OpenProfile(userId);
+    SyncPanels();
+    FocusCurrentScreen();
 }
 }
