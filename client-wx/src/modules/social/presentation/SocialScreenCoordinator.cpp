@@ -82,11 +82,14 @@ void SocialScreenCoordinator::ActivateMenuIndex(std::size_t index)
     if (*section == SocialSection::Profile)
     {
         sectionCoordinator_.OpenOwnProfile();
-        return;
+    }
+    else
+    {
+        navigationState_.PushCurrent();
+        sectionCoordinator_.ActivateSection(*section);
     }
 
-    navigationState_.PushCurrent();
-    sectionCoordinator_.ActivateSection(*section);
+    ApplyNavigationState();
 }
 
 void SocialScreenCoordinator::OpenCurrentSectionActionMenu()
