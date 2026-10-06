@@ -1,0 +1,41 @@
+Audit des repetitions d'annonces - 6 octobre 2026
+
+Portee
+Revue des chemins de focus, de selection et d'annonce du client wxWidgets,
+avec corrections dans les composants communs et leurs consommateurs :
+presence (Ctrl+U), social/amis, messagerie, chat, salons, interface de jeu,
+livre des contes, coffre, classements, options, aide et administration.
+Cette revue de code ne constitue pas une ecoute exhaustive avec NVDA de
+chaque ecran, de chaque jeu et de chaque combinaison de preferences NVDA.
+
+Causes corrigees
+- Notification synthetique de focus ajoutee apres le focus natif du chat
+  et des salons.
+- Selection provisoire du premier element avant restauration de la ligne
+  souhaitee dans plusieurs menus.
+- Reconstruction ou reselection inutile de listes deja positionnees.
+- Message de jeu annonce a la fois comme statut et par l'historique vocal.
+- Meme texte expose comme nom, valeur ou description accessible.
+- Focus possible vers un enfant dont un parent est masque.
+- Plusieurs lignes exposees comme ayant le focus dans une multiselection.
+
+Validation effectuee
+- Compilation du client Windows reussie.
+- CTest : 39 tests sur 39 reussis, aucun echec (20,10 secondes).
+- Verification d'architecture reussie.
+- git diff --check sans erreur.
+- Nouveau test natif AccessibilityAnnouncementTests.cpp : observation des
+  evenements Windows de focus et d'annonce, selection finale sans passage
+  par la premiere ligne, mise a jour sans reselection, noms et valeurs
+  accessibles, controles masques et focus de multiselection.
+- Les executables de tests GUI utilisent le manifeste Common Controls v6
+  pour eviter les dialogues d'avertissement bloquant leur execution.
+
+Validation auditive restant a realiser
+Avec NVDA et le client compile, parcourir les ecrans ci-dessus : ouverture,
+fleches (y compris les limites), validation, retour, actualisation de liste,
+changement de fenetre et restauration du focus. Verifier notamment Ctrl+U,
+Mes amis et les actions de profil. Dans chaque jeu, essayer les annonces
+de debut, tour, minuterie, erreur et fin, ainsi que les reconnexions.
+L'absence d'evenements redondants dans les tests ne garantit pas a elle
+seule l'absence de repetition vocale dans tous ces scenarios reels.

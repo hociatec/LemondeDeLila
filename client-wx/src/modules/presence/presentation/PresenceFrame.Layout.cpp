@@ -35,6 +35,6 @@ void PresenceFrame::BuildLayout()
     detailsLabel_->SetForegroundColour(lila::shared::ui::Theme::TextMuted());
     statusLabel_->SetBackgroundColour(lila::shared::ui::Theme::Background());
     statusLabel_->SetForegroundColour(lila::shared::ui::Theme::Accent());
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu_, wxString(L"Présence"));
+    menu_->SetAccessibleName(wxString{});
 }
 }

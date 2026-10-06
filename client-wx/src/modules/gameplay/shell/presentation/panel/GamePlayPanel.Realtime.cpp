@@ -65,7 +65,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         {
             if (!acknowledgement.message.empty())
             {
-                UpdateStatus(FromUtf8(acknowledgement.message), true, true);
+                UpdateStatus(FromUtf8(acknowledgement.message), true, !onHistoryMessage_);
                 if (onHistoryMessage_)
                     onHistoryMessage_(FromUtf8(acknowledgement.message), false);
             }
@@ -94,7 +94,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
             HandleInterfaceShortcut(acknowledgement.panelId);
         if (!acknowledgement.message.empty())
         {
-            UpdateStatus(FromUtf8(acknowledgement.message), false, true);
+            UpdateStatus(FromUtf8(acknowledgement.message), false, openedPanel || !onHistoryMessage_);
             if (!openedPanel && onHistoryMessage_)
                 onHistoryMessage_(FromUtf8(acknowledgement.message), false);
         }
@@ -142,7 +142,7 @@ void GamePlayPanel::HandleEvent(domain::GameEvent event)
         promptPanel_->RejectCandidatesRequest();
         if (!event.errorCode.empty()) retryableActionCommand_.reset();
         lila::shared::logging::LogError("GameInput", "Server error: " + event.message);
-        UpdateStatus(FromUtf8(event.message), true, true);
+        UpdateStatus(FromUtf8(event.message), true, !onHistoryMessage_);
         if (onHistoryMessage_ && !event.message.empty())
             onHistoryMessage_(FromUtf8(event.message), false);
         if (RequiresStateRefreshAfterRejection(event.errorCode))

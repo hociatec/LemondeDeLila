@@ -91,9 +91,7 @@ void AdminFrame::ShowResult(
                 wxString::Format(L" (%d)", count)});
         }
         const auto selected = reportStatusMenu_->GetSelectedIndex();
-        reportStatusMenu_->SetItems(statusItems);
-        reportStatusMenu_->SetSelectedIndexSilently(
-            std::min(selected, statusItems.size() - 1));
+        reportStatusMenu_->SetItemsForNavigation(statusItems, selected);
         if (loadingReportCountsOnly_)
         {
             loadingReportCountsOnly_ = false;
@@ -140,7 +138,6 @@ void AdminFrame::ShowResult(
         resultDetails_.push_back(presentation.entries[index].details);
     }
 
-    resultsMenu_->SetItems(items);
     resultsMenu_->Show(!items.empty());
     resultText_->SetValue(lila::shared::text::FromUtf8(presentation.details));
     if (!items.empty())
@@ -160,8 +157,12 @@ void AdminFrame::ShowResult(
                     selectedIndex = index;
                     break;
                 }
-        resultsMenu_->SetSelectedIndexSilently(selectedIndex);
+        resultsMenu_->SetItemsForNavigation(items, selectedIndex);
         ShowResultDetails(selectedIndex);
+    }
+    else
+    {
+        resultsMenu_->SetItems({});
     }
     reportIdToRestore_.reset();
     soundIdToRestore_.reset();

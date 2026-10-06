@@ -154,7 +154,7 @@ void AboutPageCoordinator::ApplyPageContent(Page page, int restoreSelection)
     {
     case Page::Root:
         content = AboutPageContentBuilder::BuildRoot();
-        BuildRootMenuItems();
+        BuildRootMenuItems(restoreSelection);
         break;
     case Page::Shortcuts:
         content = AboutPageContentBuilder::BuildShortcuts();
@@ -162,7 +162,7 @@ void AboutPageCoordinator::ApplyPageContent(Page page, int restoreSelection)
         break;
     case Page::Info:
         content = AboutPageContentBuilder::BuildInfo(sessionStore_);
-        BuildInfoItems();
+        BuildInfoItems(restoreSelection);
         break;
     case Page::ContactAdmin:
         content = AboutPageContentBuilder::BuildContactAdmin();
@@ -173,38 +173,24 @@ void AboutPageCoordinator::ApplyPageContent(Page page, int restoreSelection)
     frame_.titleLabel_->SetLabel(content.title);
     callbacks_.updateStatus(content.statusMessage);
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*frame_.titleLabel_, content.accessibleTitle);
-    if (frame_.itemsList_->IsShown() &&
-        restoreSelection != wxNOT_FOUND &&
-        restoreSelection < static_cast<int>(frame_.itemsList_->GetItemCount()))
-    {
-        frame_.itemsList_->SetSelectedIndexSilently(static_cast<std::size_t>(restoreSelection));
-    }
 }
 
-void AboutPageCoordinator::BuildRootMenuItems() const
+void AboutPageCoordinator::BuildRootMenuItems(int selection) const
 {
     const lila::shared::ui::controls::VerticalMenuItem rootItems[] = {
         {"shortcuts", wxString(L"Raccourcis")},
         {"info", wxString(L"Informations sur l'application")},
         {"contact", wxString(L"Contacter un administrateur")}};
-    frame_.itemsList_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>(rootItems, 3));
-    if (frame_.itemsList_->GetItemCount() > 0)
-    {
-        frame_.itemsList_->SetSelectedIndexSilently(0);
-    }
+    frame_.itemsList_->SetItemsForNavigation(rootItems, selection >= 0 && selection < 3 ? selection : 0);
 }
 
-void AboutPageCoordinator::BuildInfoItems() const
+void AboutPageCoordinator::BuildInfoItems(int selection) const
 {
     const lila::shared::ui::controls::VerticalMenuItem infoItems[] = {
         {"name", wxString::Format(L"Nom : %s", lila::shared::text::FromUtf8(shared::config::AppConfig::AppTitle.data()))},
         {"version", wxString::Format(L"Version actuelle : %s", lila::shared::text::FromUtf8(shared::config::AppConfig::ResolveClientVersion()))},
         {"updated", wxString::Format(L"Derniere mise a jour locale : %s", AboutPageContentBuilder::ResolveLocalUpdatedAt())},
         {"user", wxString::Format(L"Connecte en tant que : %s", lila::shared::text::FromUtf8(sessionStore_.Current().username))}};
-    frame_.itemsList_->SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>(infoItems, 4));
-    if (frame_.itemsList_->GetItemCount() > 0)
-    {
-        frame_.itemsList_->SetSelectedIndexSilently(0);
-    }
+    frame_.itemsList_->SetItemsForNavigation(infoItems, selection >= 0 && selection < 4 ? selection : 0);
 }
 }

@@ -24,7 +24,8 @@ void GamePlayPanel::UpdateTimerAnnouncements()
         if (label.empty()) label = application::info::HumanLabel(timer.id);
         const auto message = FromUtf8(
             label + " : " + std::to_string(seconds) + " seconde(s) restantes.");
-        UpdateStatus(message, false, true);
+        // The room history speaks this message when a handler is installed.
+        UpdateStatus(message, false, !onHistoryMessage_);
         if (onHistoryMessage_) onHistoryMessage_(message, false);
     }
 }

@@ -30,8 +30,7 @@ void JoinRoomsPanel::ShowLoading()
 void JoinRoomsPanel::ShowRooms()
 {
     const auto items = RoomLobbyPresentationModel::BuildItems(navigator_, state_ == State::Error);
-    menu_->SetItems(items);
-    menu_->SetSelectedIndexSilently(std::min(navigator_.SelectedIndex(), items.size() - 1));
+    menu_->SetItemsForNavigation(items, navigator_.SelectedIndex());
     lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, wxString{}, false);
     FocusMenuIfVisible();
 }
@@ -57,12 +56,7 @@ void JoinRoomsPanel::FocusMenuIfVisible()
                 return;
 
             const auto plan = weakThis->BuildFocusPlan();
-            if (!lila::shared::accessibility::FocusCoordinator::Apply(plan))
-                return;
-
-            auto* focusedItem = weakThis->menu_->GetSelectedControl();
-            if (focusedItem != nullptr && focusedItem->HasFocus())
-                lila::shared::accessibility::AccessibilityUtils::NotifyFocus(*focusedItem);
+            static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(plan));
         });
 }
 }

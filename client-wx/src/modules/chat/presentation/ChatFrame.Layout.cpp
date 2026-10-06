@@ -148,8 +148,11 @@ void ChatFrame::ApplyTheme()
 
 void ChatFrame::UpdateStatus(const wxString& message, bool isError)
 {
-    statusLabel_->SetValue(message);
-    statusLabel_->SetInsertionPointEnd();
+    if (statusLabel_->GetValue() != message)
+    {
+        statusLabel_->ChangeValue(message);
+        statusLabel_->SetInsertionPointEnd();
+    }
     statusLabel_->SetForegroundColour(
         isError ? lila::shared::ui::Theme::Error() : lila::shared::ui::Theme::Accent());
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleStatus(*statusLabel_, message);

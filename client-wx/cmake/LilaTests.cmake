@@ -228,6 +228,33 @@ lila_add_test_executable(lemonde_de_lila_wx_focus_memory_lifecycle_tests
     src/shared/accessibility/presentation/NavigationScope.cpp
 )
 target_link_libraries(lemonde_de_lila_wx_focus_memory_lifecycle_tests PRIVATE ${wxWidgets_LIBRARIES})
+lila_add_test_executable(lemonde_de_lila_wx_accessibility_announcement_tests
+    tests/AccessibilityAnnouncementTests.cpp
+    src/modules/chat/presentation/ChatEventBinder.cpp
+    src/shared/accessibility/presentation/AccessibilityUtils.cpp
+    src/shared/accessibility/presentation/AccessibleListBox.cpp
+    src/shared/accessibility/presentation/AccessibleListBox.Actions.cpp
+    src/shared/accessibility/presentation/ActivationFocusContext.cpp
+    src/shared/accessibility/presentation/NavigationController.cpp
+    src/shared/accessibility/presentation/NavigationScope.cpp
+    src/shared/accessibility/presentation/NavigationBindings.cpp
+    src/shared/ui/presentation/controls/VerticalMenu.cpp
+    src/shared/ui/presentation/controls/VerticalMenu.Layout.cpp
+    src/shared/ui/presentation/controls/VerticalMenu.Events.cpp
+    src/shared/ui/presentation/controls/VerticalMenu.Navigation.cpp
+    src/shared/ui/presentation/controls/VerticalMenu.Entries.cpp
+    src/shared/ui/presentation/controls/VerticalMenuEntry.cpp
+    src/shared/ui/presentation/theme/Theme.cpp
+    src/shared/text/presentation/catalog/UiTextCatalog.cpp
+    src/shared/text/presentation/encoding/Encoding.cpp
+    src/shared/logging/infrastructure/Logger.cpp
+)
+target_link_libraries(lemonde_de_lila_wx_accessibility_announcement_tests
+    PRIVATE ${wxWidgets_LIBRARIES} nlohmann_json::nlohmann_json)
+if(WIN32)
+    target_sources(lemonde_de_lila_wx_accessibility_announcement_tests PRIVATE tests/WindowsGuiTests.rc)
+    target_sources(lemonde_de_lila_wx_focus_memory_lifecycle_tests PRIVATE tests/WindowsGuiTests.rc)
+endif()
 lila_add_test_executable(lemonde_de_lila_wx_background_task_lifecycle_tests
     tests/BackgroundTaskLifecycleTests.cpp
     src/shared/concurrency/application/BackgroundExecutor.cpp
@@ -235,6 +262,9 @@ lila_add_test_executable(lemonde_de_lila_wx_background_task_lifecycle_tests
     src/shared/logging/infrastructure/Logger.cpp
 )
 target_link_libraries(lemonde_de_lila_wx_background_task_lifecycle_tests PRIVATE ${wxWidgets_LIBRARIES})
+if(WIN32)
+    target_sources(lemonde_de_lila_wx_background_task_lifecycle_tests PRIVATE tests/WindowsGuiTests.rc)
+endif()
 lila_add_test_executable(lemonde_de_lila_wx_background_executor_tests
     tests/BackgroundExecutorTests.cpp
     src/shared/concurrency/application/BackgroundExecutor.cpp

@@ -151,11 +151,9 @@ wxAccStatus AccessibleListBox::GetState(int childId, long* state)
     if (list->IsSelected(childId - 1))
     {
         *state |= wxACC_STATE_SYSTEM_SELECTED;
-        if (list->HasFocus())
-        {
-            *state |= wxACC_STATE_SYSTEM_FOCUSED;
-        }
     }
+    if (FocusedItem() == childId - 1)
+        *state |= wxACC_STATE_SYSTEM_FOCUSED;
     return wxACC_OK;
 }
 }

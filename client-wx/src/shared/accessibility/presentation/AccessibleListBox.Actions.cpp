@@ -1,6 +1,9 @@
 #include "shared/accessibility/presentation/AccessibleMenu.h"
 
 #include <utility>
+#ifdef __WXMSW__
+#include <windows.h>
+#endif
 
 namespace lila::shared::accessibility
 {
@@ -20,10 +23,29 @@ wxAccStatus AccessibleListBox::GetFocus(int* childId, wxAccessible** child)
         return wxACC_OK;
     }
 
+    const int focused = FocusedItem();
+    *childId = focused == wxNOT_FOUND ? wxACC_SELF : focused + 1;
+    if (focused == wxNOT_FOUND) *child = this;
+    return wxACC_OK;
+}
+
+int AccessibleListBox::FocusedItem() const
+{
+    const auto* list = List();
+    if (list == nullptr || !list->HasFocus() || list->GetCount() == 0)
+        return wxNOT_FOUND;
+    if (!list->HasMultipleSelection()) return list->GetSelection();
+#ifdef __WXMSW__
+    // The caret, not the last selected row, owns focus in an extended list.
+    const auto caret = static_cast<int>(SendMessage(
+        reinterpret_cast<HWND>(list->GetHandle()), LB_GETCARETINDEX, 0, 0));
+    return caret >= 0 && static_cast<unsigned int>(caret) < list->GetCount()
+        ? caret : wxNOT_FOUND;
+#else
     wxArrayInt selections;
     list->GetSelections(selections);
-    *childId = selections.IsEmpty() ? wxACC_SELF : selections.Last() + 1;
-    return wxACC_OK;
+    return selections.IsEmpty() ? wxNOT_FOUND : selections.Last();
+#endif
 }
 
 wxAccStatus AccessibleListBox::DoDefaultAction(int childId)
@@ -35,8 +57,8 @@ wxAccStatus AccessibleListBox::DoDefaultAction(int childId)
     }
 
     const int itemIndex = childId - 1;
-    list->SetSelection(itemIndex);
-    list->SetFocus();
+    if (!list->IsSelected(itemIndex)) list->SetSelection(itemIndex);
+    if (!list->HasFocus()) list->SetFocus();
     if (onActivated_)
     {
         onActivated_(static_cast<std::size_t>(itemIndex));
@@ -61,16 +83,21 @@ wxAccStatus AccessibleListBox::Select(int childId, wxAccSelectionFlags selectFla
              (selectFlags & wxACC_SEL_TAKEFOCUS) != 0)
     {
         if (list->HasMultipleSelection()) list->DeselectAll(itemIndex);
-        list->SetSelection(itemIndex);
+        if (!list->IsSelected(itemIndex)) list->SetSelection(itemIndex);
     }
     else if ((selectFlags & wxACC_SEL_ADDSELECTION) != 0 ||
              (selectFlags & wxACC_SEL_EXTENDSELECTION) != 0)
     {
-        list->SetSelection(itemIndex, true);
+        if (!list->IsSelected(itemIndex)) list->SetSelection(itemIndex, true);
     }
     if ((selectFlags & wxACC_SEL_TAKEFOCUS) != 0)
     {
-        list->SetFocus();
+#ifdef __WXMSW__
+        if (list->HasMultipleSelection())
+            SendMessage(reinterpret_cast<HWND>(list->GetHandle()),
+                LB_SETCARETINDEX, static_cast<WPARAM>(itemIndex), FALSE);
+#endif
+        if (!list->HasFocus()) list->SetFocus();
     }
     return wxACC_OK;
 }

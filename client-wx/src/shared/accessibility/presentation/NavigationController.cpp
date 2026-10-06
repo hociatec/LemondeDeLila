@@ -49,7 +49,7 @@ std::size_t NavigationController::ComputeTargetIndex(
 
 bool NavigationController::IsFocusable(const wxWindow* window)
 {
-    return window != nullptr && window->IsShown() && window->IsEnabled() && window->AcceptsFocus();
+    return window != nullptr && window->IsShownOnScreen() && window->IsEnabled() && window->AcceptsFocus();
 }
 
 bool NavigationController::IsDescendantOf(const wxWindow* window, const wxWindow* ancestor)

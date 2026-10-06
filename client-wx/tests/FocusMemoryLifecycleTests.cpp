@@ -2,6 +2,7 @@
 
 #include <wx/app.h>
 #include <wx/frame.h>
+#include <wx/log.h>
 #include <wx/panel.h>
 #include <wx/textctrl.h>
 
@@ -16,6 +17,7 @@ wxIMPLEMENT_APP_NO_MAIN(FocusMemoryTestApp);
 
 int main(int argc, char** argv)
 {
+    delete wxLog::SetActiveTarget(new wxLogStderr());
     assert(wxEntryStart(argc, argv));
     assert(wxTheApp->CallOnInit());
 

@@ -41,6 +41,7 @@ public:
 private:
     [[nodiscard]] wxListBox* List() const noexcept;
     [[nodiscard]] bool IsValidChild(int childId) const noexcept;
+    [[nodiscard]] int FocusedItem() const;
 
     wxWeakRef<wxListBox> list_;
     AccessibleListActivatedHandler onActivated_;

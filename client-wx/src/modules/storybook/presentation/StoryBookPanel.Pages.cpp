@@ -58,8 +58,7 @@ void StoryBookPanel::ShowCurrentPage()
     }
 
     titleLabel_->SetLabel(title);
-    menu_->SetItems(items);
-    menu_->SetSelectedIndexSilently(navigator_.SelectedIndex());
+    menu_->SetItemsForNavigation(items, navigator_.SelectedIndex());
     UpdateStatus(wxString{});
     FocusMenuIfVisible();
 }

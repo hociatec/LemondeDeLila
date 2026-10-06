@@ -22,7 +22,8 @@ namespace lila::modules::social::presentation
 namespace
 {
 template <typename T, typename Formatter>
-void PopulateMenu(lila::shared::ui::controls::VerticalMenu& list, const std::vector<T>& items, Formatter formatter)
+void PopulateMenu(lila::shared::ui::controls::VerticalMenu& list, const std::vector<T>& items,
+    std::optional<std::size_t> selection, Formatter formatter)
 {
     std::vector<lila::shared::ui::controls::VerticalMenuItem> menuItems;
     menuItems.reserve(items.size());
@@ -30,7 +31,8 @@ void PopulateMenu(lila::shared::ui::controls::VerticalMenu& list, const std::vec
     {
         menuItems.push_back({std::to_string(index), formatter(items[index])});
     }
-    list.SetItems(std::span<const lila::shared::ui::controls::VerticalMenuItem>{menuItems.data(), menuItems.size()});
+    const auto index = selection && *selection < items.size() ? *selection : 0;
+    list.SetItemsForNavigation(menuItems, index);
 }
 }
 
@@ -59,32 +61,28 @@ void SocialSectionPresenter::PopulateSection(SocialSection section)
     switch (section)
     {
     case SocialSection::Friends:
-        PopulateMenu(*controls.list, dataStore_.Friends(), [](const domain::SocialUser& user)
+        PopulateMenu(*controls.list, dataStore_.Friends(), selectionMemory_.Get(section), [](const domain::SocialUser& user)
         {
             return SocialPresentationModel::BuildUserLabel(user);
         });
-        RestoreSelection(*controls.list, section);
         break;
     case SocialSection::IncomingRequests:
-        PopulateMenu(*controls.list, dataStore_.IncomingRequests(), [](const domain::SocialFriendRequest& request)
+        PopulateMenu(*controls.list, dataStore_.IncomingRequests(), selectionMemory_.Get(section), [](const domain::SocialFriendRequest& request)
         {
             return SocialPresentationModel::BuildRequestLabel(request, true);
         });
-        RestoreSelection(*controls.list, section);
         break;
     case SocialSection::OutgoingRequests:
-        PopulateMenu(*controls.list, dataStore_.OutgoingRequests(), [](const domain::SocialFriendRequest& request)
+        PopulateMenu(*controls.list, dataStore_.OutgoingRequests(), selectionMemory_.Get(section), [](const domain::SocialFriendRequest& request)
         {
             return SocialPresentationModel::BuildRequestLabel(request, false);
         });
-        RestoreSelection(*controls.list, section);
         break;
     case SocialSection::Blocked:
-        PopulateMenu(*controls.list, dataStore_.BlockedUsers(), [](const domain::SocialUser& user)
+        PopulateMenu(*controls.list, dataStore_.BlockedUsers(), selectionMemory_.Get(section), [](const domain::SocialUser& user)
         {
             return SocialPresentationModel::BuildUserLabel(user);
         });
-        RestoreSelection(*controls.list, section);
         break;
     case SocialSection::Profile:
         break;

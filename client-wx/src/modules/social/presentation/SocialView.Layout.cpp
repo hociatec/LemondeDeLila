@@ -49,7 +49,7 @@ void SocialView::BuildLayout()
         lila::shared::ui::navigation::BuildMenuItems(MenuItems),
         lila::shared::ui::controls::VerticalMenuRole::Entries);
     menu->SetMinSize(wxSize(260, -1));
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*menu, wxString(L"Social"));
+    menu->SetAccessibleName(wxString(L"Social"));
 
     sectionBook = new wxSimplebook(contentPanel, wxID_ANY);
     BuildFriendsSection(sectionBook);

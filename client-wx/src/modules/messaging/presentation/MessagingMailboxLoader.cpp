@@ -89,7 +89,7 @@ void MessagingMailboxLoader::SaveSelection(domain::MessagingBox box) const
 void MessagingMailboxLoader::RestoreSelection(domain::MessagingBox box) const
 {
     const auto index = selectionMemory_.ResolveIndex(box, boxMessages_);
-    if (index.has_value())
+    if (index.has_value() && view_.List().messagesList->GetSelection() != static_cast<int>(*index))
     {
         view_.List().messagesList->SetSelection(static_cast<int>(*index));
     }

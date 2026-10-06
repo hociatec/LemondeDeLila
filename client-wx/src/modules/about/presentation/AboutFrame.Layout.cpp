@@ -104,7 +104,7 @@ void AboutFrame::BuildLayout()
     frameSizer->Add(root, 1, wxEXPAND);
     SetSizer(frameSizer);
 
-    lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*itemsList_, wxString(L"Rubriques"));
+    itemsList_->SetAccessibleName(wxString(L"Rubriques"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*detailsLabel_, wxString(L"Détails"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*shortcutsTextCtrl_, wxString(L"Liste des raccourcis"));
     lila::shared::accessibility::AccessibilityUtils::SetAccessibleName(*contactMessageCtrl_, wxString(L"Message au staff"));
