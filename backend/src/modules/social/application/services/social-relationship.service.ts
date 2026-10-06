@@ -301,6 +301,29 @@ export class SocialRelationshipService {
       };
     }
 
+    const accepted = existing.find((r) => r.status === 'accepted');
+    if (accepted) {
+      const requester =
+        accepted.requester.id === userId
+          ? accepted.requester
+          : accepted.addressee;
+      const addressee =
+        accepted.requester.id === userId
+          ? accepted.addressee
+          : accepted.requester;
+      const saved = await this.relationships.save({
+        ...accepted,
+        requester,
+        addressee,
+        status: 'blocked',
+      });
+      return {
+        id: saved.id,
+        status: saved.status,
+        updatedAt: serializeDate(saved.updatedAt),
+      };
+    }
+
     const pending = existing.filter((r) => r.status === 'pending');
     if (pending.length > 0) {
       await this.relationships.removeMany(pending);

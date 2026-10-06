@@ -78,8 +78,8 @@ namespace lila::modules::social::presentation
 void SocialView::BuildFriendsSection(wxWindow* parent)
 {
     const std::vector<lila::shared::ui::navigation::MenuBlueprintItem> actions = {
-        {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
         {"remove-friend", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionRemoveFriend)},
+        {"storybook", wxString(L"Voir son livre des contes")},
         {"block-friend", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionBlock)},
     };
     const auto controls = BuildSocialListSection(

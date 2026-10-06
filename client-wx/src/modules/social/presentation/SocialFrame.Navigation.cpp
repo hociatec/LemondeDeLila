@@ -32,6 +32,17 @@ void SocialFrame::SyncPanels()
     }
 
     const bool showSections = navigationState_.currentScreen == Screen::Section;
+    if (!showSections)
+    {
+        auto* focused = wxWindow::FindFocus();
+        if (Navigator::IsDescendantOf(focused, shell.sectionBook))
+        {
+            // Move focus out of the section before hiding it. Otherwise NVDA
+            // observes the focused control becoming invisible/disabled and
+            // announces "indisponible" before the deferred focus restoration.
+            static_cast<void>(Navigator::Focus(ResolveMenuFocusTarget()));
+        }
+    }
     shell.sectionBook->Show(showSections);
 
     if (showSections)
