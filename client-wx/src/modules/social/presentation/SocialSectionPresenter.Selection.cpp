@@ -37,6 +37,7 @@ void SetActionMenuItems(
     {
         menu->SetItems({});
         menu->Show(false);
+        menu->Enable(false);
         return;
     }
 
@@ -46,6 +47,7 @@ void SetActionMenuItems(
     {
         menu->SetSelectedIndexSilently(selected);
     }
+    menu->Enable(true);
     menu->Show(true);
 }
 
@@ -72,8 +74,9 @@ std::vector<MenuItem> BuildActionItems(
         const std::size_t selection = controls.list != nullptr ? controls.list->GetSelectedIndex() : 0;
         const bool blocked = selection < friends.size() && dataStore.IsBlocked(friends[selection].id);
         return {
-            {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
             {"remove-friend", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionRemoveFriend)},
+            {"storybook", wxString(L"Voir son livre des contes")},
+            {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
             BuildToggleBlockItem("block-friend", blocked),
         };
     }

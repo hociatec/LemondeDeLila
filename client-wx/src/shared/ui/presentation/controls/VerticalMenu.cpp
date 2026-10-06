@@ -141,7 +141,8 @@ wxWindow* VerticalMenu::GetFirstButton() const
 
 void VerticalMenu::SetAccessibleName(const wxString& name)
 {
-    SetName(name);
+    // Only the focused list carries the name; its containing panel is silent.
+    SetName(wxEmptyString);
     if (listBox_ != nullptr) listBox_->SetName(name);
 }
 

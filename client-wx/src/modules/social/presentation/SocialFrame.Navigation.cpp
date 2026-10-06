@@ -7,6 +7,7 @@
 #include <wx/stattext.h>
 #include <wx/choice.h>
 #include <wx/textctrl.h>
+#include <wx/toplevel.h>
 
 #include "shared/accessibility/presentation/FocusManager.h"
 #include "shared/ui/presentation/theme/Theme.h"
@@ -92,8 +93,28 @@ void SocialFrame::ScheduleFocusCurrentScreen()
         *this,
         [this]()
         {
+            if (!IsShownOnScreen()) return FocusManager::Plan{};
+            if (auto* window = wxDynamicCast(wxGetTopLevelParent(this), wxTopLevelWindow))
+            {
+                const auto title = NavigationTitle();
+                if (window->GetTitle() != title) window->SetTitle(title);
+            }
             return BuildFocusPlan();
         });
+}
+
+wxString SocialFrame::NavigationTitle() const
+{
+    if (navigationState_.currentScreen == Screen::Menu) return wxString(L"Social");
+    switch (navigationState_.currentSection)
+    {
+    case SocialSection::Friends: return wxString(L"Mes amis");
+    case SocialSection::IncomingRequests: return wxString(L"Mes demandes reçues");
+    case SocialSection::OutgoingRequests: return wxString(L"Mes demandes envoyées");
+    case SocialSection::Blocked: return wxString(L"Mes utilisateurs bloqués");
+    case SocialSection::Profile: return wxString(L"Profil");
+    }
+    return wxString(L"Social");
 }
 
 Navigator::Scope SocialFrame::BuildFocusScope() const

@@ -53,11 +53,7 @@ void PresenceFrame::ActivatePlayer()
         menu_->SetItems(actions);
         menu_->SetSelectedIndexSilently(0);
         detailsLabel_->SetLabel(wxEmptyString);
-        UpdateStatus(
-            wxString(L"Actions pour votre profil. ") + actions.front().label +
-                wxString(L"."),
-            false,
-            true);
+        UpdateStatus(wxEmptyString);
         static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
         return;
     }
