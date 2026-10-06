@@ -27,10 +27,13 @@ int main()
 
     const auto selfActions = PresencePresentationModel::BuildSelfActionItems();
     assert(selfActions.front().id == "storybook");
+    assert(selfActions.front().label == wxString(L"Mon livre des contes"));
     assert(std::any_of(selfActions.begin(), selfActions.end(),
         [](const auto& item) { return item.id == "social.friends"; }));
     assert(std::none_of(selfActions.begin(), selfActions.end(),
         [](const auto& item) { return item.id.starts_with("friend."); }));
+    assert(std::none_of(selfActions.begin(), selfActions.end(),
+        [](const auto& item) { return item.label.StartsWith(L"Voir"); }));
 
     const auto unavailableActions = PresencePresentationModel::BuildActionItems({
         .relationshipAvailable = false,

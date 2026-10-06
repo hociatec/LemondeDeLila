@@ -43,6 +43,18 @@ void FocusTransition::Schedule(
     }
 
     const std::size_t requestId = ++state_->requestId;
+
+    // When the destination is already visible, move focus before returning to
+    // the native event loop. Otherwise Windows can briefly focus the host
+    // container and screen readers announce it as an unnamed "panel".
+    if (state_->memory.Restore(scope, beforeFocus) ||
+        FocusCoordinator::Apply(buildFallbackPlan(), beforeFocus))
+    {
+        return;
+    }
+
+    // Some controls only become focusable after layout. Keep the deferred
+    // attempt as a fallback for those views.
     std::weak_ptr<State> weakState(state_);
     wxWeakRef<wxWindow> weakScope(scope);
     FocusCoordinator::ScheduleAction(

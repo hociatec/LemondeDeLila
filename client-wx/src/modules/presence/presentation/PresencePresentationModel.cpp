@@ -148,12 +148,12 @@ std::vector<MenuItem> PresencePresentationModel::BuildActionItems(const Presence
 std::vector<MenuItem> PresencePresentationModel::BuildSelfActionItems()
 {
     return {
-        {"storybook", wxString(L"Voir mon livre des contes")},
-        {"social.friends", wxString(L"Voir mes amis")},
-        {"social.incoming", wxString(L"Voir mes demandes reçues")},
-        {"social.outgoing", wxString(L"Voir mes demandes envoyées")},
-        {"social.blocked", wxString(L"Voir mes utilisateurs bloqués")},
-        {"social.profile", wxString(L"Voir ou modifier mon profil")},
+        {"storybook", wxString(L"Mon livre des contes")},
+        {"social.friends", wxString(L"Mes amis")},
+        {"social.incoming", wxString(L"Mes demandes reçues")},
+        {"social.outgoing", wxString(L"Mes demandes envoyées")},
+        {"social.blocked", wxString(L"Mes utilisateurs bloqués")},
+        {"social.profile", wxString(L"Modifier mon profil")},
     };
 }
 
