@@ -16,6 +16,7 @@
 #include <vector>
 
 #include <wx/init.h>
+#include <wx/datetime.h>
 #include "modules/audio/application/AudioService.h"
 #include "modules/audio/application/IAudioBackend.h"
 #include "modules/audio/application/IAudioService.h"

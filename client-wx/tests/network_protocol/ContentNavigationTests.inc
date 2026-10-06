@@ -68,8 +68,11 @@ void TestRoomAndVaultPresentationState()
     Expect(lobby.SelectedRoom()->id == 42, "Identifiant de table publique attendu");
     const auto lobbyItems =
         lila::modules::rooms::presentation::RoomLobbyPresentationModel::BuildItems(lobby, false);
+    // 2026-10-05T16:35:00Z is displayed in the user's local time zone.
+    const wxDateTime createdAt(static_cast<time_t>(1791218100));
     Expect(
-        lobbyItems.front().label == wxString::FromUTF8("1000 miles avec anian, 05.10.2026 16:35"),
+        lobbyItems.front().label == wxString::FromUTF8("1000 miles avec anian, ") +
+            createdAt.Format(wxString(L"%d.%m.%Y %H:%M")),
         "Libelle de table publique aligne sur le coffre-fort attendu");
     lobby.Reset({
         lila::modules::rooms::domain::PublicRoom{
