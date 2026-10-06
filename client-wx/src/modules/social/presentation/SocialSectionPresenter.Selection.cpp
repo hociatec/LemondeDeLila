@@ -72,7 +72,6 @@ std::vector<MenuItem> BuildActionItems(
         return {
             {"remove-friend", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionRemoveFriend)},
             {"storybook", wxString(L"Voir son livre des contes")},
-            {"view-profile", lila::shared::text::FromUtf8(lila::shared::text::ui::SocialProfileActionView)},
             BuildToggleBlockItem("block-friend", blocked),
         };
     }

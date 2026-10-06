@@ -113,4 +113,28 @@ describe('SocialRelationshipService', () => {
     await service.blockUser(1, 2);
     expect(relationships.removeMany).toHaveBeenCalledWith([pending]);
   });
+
+  it('converts an existing friendship into a block owned by the blocker', async () => {
+    const { service, relationships } = setup();
+    const accepted = {
+      ...pending,
+      requester: bob,
+      addressee: alice,
+      status: 'accepted' as const,
+    };
+    relationships.findRelationsBetween.mockResolvedValue([accepted]);
+
+    await expect(service.blockUser(1, 2)).resolves.toEqual(
+      expect.objectContaining({ status: 'blocked' }),
+    );
+    expect(relationships.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: accepted.id,
+        requester: alice,
+        addressee: bob,
+        status: 'blocked',
+      }),
+    );
+    expect(relationships.create).not.toHaveBeenCalled();
+  });
 });
