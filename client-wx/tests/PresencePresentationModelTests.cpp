@@ -1,4 +1,5 @@
 #include <cassert>
+#include <algorithm>
 #include <string>
 
 #include "modules/presence/presentation/PresencePresentationModel.h"
@@ -15,6 +16,21 @@ int main()
     assert(!friendActions.empty());
     assert(friendActions.front().id == "friend.remove");
     assert(friendActions.front().label == wxString(L"Retirer de mes amis"));
+    assert(std::any_of(friendActions.begin(), friendActions.end(),
+        [](const auto& item) { return item.id == "storybook"; }));
+
+    const auto otherPlayerActions = PresencePresentationModel::BuildActionItems({
+        .relationshipAvailable = true,
+        .isFriend = false,
+    });
+    assert(otherPlayerActions.front().id == "friend.add");
+
+    const auto selfActions = PresencePresentationModel::BuildSelfActionItems();
+    assert(selfActions.front().id == "storybook");
+    assert(std::any_of(selfActions.begin(), selfActions.end(),
+        [](const auto& item) { return item.id == "social.friends"; }));
+    assert(std::none_of(selfActions.begin(), selfActions.end(),
+        [](const auto& item) { return item.id.starts_with("friend."); }));
 
     const auto unavailableActions = PresencePresentationModel::BuildActionItems({
         .relationshipAvailable = false,

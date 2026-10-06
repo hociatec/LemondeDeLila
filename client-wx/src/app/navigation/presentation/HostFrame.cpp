@@ -116,7 +116,9 @@ void HostFrame::OnActivate(wxActivateEvent& event)
         if (lila::shared::accessibility::NavigationController::IsDescendantOf(
                 target, currentContent_))
             lastFocusedChild_ = target;
-        activationFocusContext_.Prepare(target, GetTitle());
+        // Windows announces the window title separately from the focused item.
+        // Prefixing both the list and its item repeats that context in NVDA.
+        ClearActivationFocusContext();
     }
     else
     {

@@ -9,6 +9,7 @@
 #include "app/navigation/presentation/InterfaceTitle.h"
 #include "modules/audio/application/IAudioService.h"
 #include "modules/presence/application/PresenceMonitor.h"
+#include "modules/social/presentation/SocialFrame.h"
 #include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/logging/application/Logger.h"
 
@@ -50,7 +51,10 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
         return;
     }
 
-    hostFrame_->SetInterfaceTitle(InterfaceTitle(nextViewId));
+    if (auto* social = dynamic_cast<modules::social::presentation::SocialFrame*>(nextView))
+        hostFrame_->SetTitle(social->NavigationTitle());
+    else
+        hostFrame_->SetInterfaceTitle(InterfaceTitle(nextViewId));
     hostFrame_->SetContent(currentView_);
     if (previousViewId != ViewId::None && previousViewId != nextViewId)
     {
@@ -95,7 +99,6 @@ void AppNavigator::ApplyViewFocus(wxWindow* view)
     }
 
     wxWeakRef<wxWindow> weakView(view);
-    wxWeakRef<HostFrame> weakHost(hostFrame_);
     focusTransition_.Schedule(
         *hostFrame_,
         view,
@@ -106,11 +109,6 @@ void AppNavigator::ApplyViewFocus(wxWindow* view)
             return focusView != nullptr
                 ? focusView->BuildFocusPlan()
                 : lila::shared::accessibility::FocusManager::Plan{};
-        },
-        [weakHost](wxWindow* target)
-        {
-            if (auto* host = weakHost.get())
-                host->PrepareActivationFocusContext(target);
         });
 }
 

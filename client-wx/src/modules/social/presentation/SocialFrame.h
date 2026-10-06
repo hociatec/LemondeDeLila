@@ -70,6 +70,7 @@ public:
     ~SocialFrame() override;
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
     void OpenMenuIndex(std::size_t menuIndex);
+    [[nodiscard]] wxString NavigationTitle() const;
 
 private:
     using Screen = SocialNavigationState::Screen;

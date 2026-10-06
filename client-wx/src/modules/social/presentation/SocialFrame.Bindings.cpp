@@ -82,6 +82,19 @@ void SocialFrame::HandleSectionAction(SocialSection section, std::string_view ac
     }
 
     const auto userId = sectionPresenter_->GetSelectedUserId();
+    if (*parsedAction == SocialActionId::OpenStoryBook && userId.has_value())
+    {
+        const auto& friends = dataStore_.Friends();
+        for (const auto& user : friends)
+        {
+            if (user.id.value == *userId && onOpenStoryBookRequested_)
+            {
+                onOpenStoryBookRequested_(*userId, user.username);
+                return;
+            }
+        }
+        return;
+    }
     const bool isBlocked = userId.has_value() && dataStore_.IsBlocked(*userId);
     actionController_->ActivateSectionAction(section, *parsedAction, userId, isBlocked);
 }

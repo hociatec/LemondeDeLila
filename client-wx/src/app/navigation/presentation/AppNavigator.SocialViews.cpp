@@ -70,6 +70,7 @@ wxWindow* AppNavigator::CreateSocialView(ViewId viewId)
             {
                 lastSocialMenuSelection_ = menuIndex;
                 auto* view = GetOrCreateView(ViewId::Social);
+                focusTransition_.Forget(view);
                 if (auto* social = dynamic_cast<modules::social::presentation::SocialFrame*>(view))
                 {
                     social->OpenMenuIndex(menuIndex);

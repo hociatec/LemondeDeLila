@@ -98,12 +98,7 @@ void PresenceFrame::RebuildActions()
     menu_->SetItems(items);
     menu_->SetSelectedIndexSilently(0);
     detailsLabel_->SetLabel(wxEmptyString);
-    const auto username = FromUtf8(selectedPlayer_->username);
-    UpdateStatus(
-        wxString(L"Actions pour ") + username + wxString(L". ") +
-            items.front().label + wxString(L"."),
-        false,
-        true);
+    UpdateStatus(wxEmptyString);
     static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(BuildFocusPlan()));
 }
 
