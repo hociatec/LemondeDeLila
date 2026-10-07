@@ -315,6 +315,7 @@ const roomPanelSource = [
   await readFile(join(root, 'modules/rooms/presentation/shell/RoomPanel.cpp'), 'utf8'),
   await readFile(join(root, 'modules/rooms/presentation/shell/RoomPanel.Events.cpp'), 'utf8'),
   await readFile(join(root, 'modules/rooms/presentation/shell/RoomPanel.State.cpp'), 'utf8'),
+  await readFile(join(root, 'modules/rooms/presentation/actions/RoomPanel.Commands.cpp'), 'utf8'),
 ].join('\n');
 const gameZoneVisibilityWrites = roomPanelSource.match(
   /gameZoneAnchor_->(?:Hide|Show)\s*\(/g) ?? [];
@@ -332,13 +333,16 @@ if (!roomPanelSource.includes('gamePlayPanel_->RequiredInteractionTarget();') ||
 if (!roomPanelSource.includes('CancelScheduledGameZoneFocus();') ||
     !roomPanelSource.includes('++focusGeneration_;'))
   violations.push('RoomPanel: Tab doit annuler une restauration de focus gameplay devenue obsolète');
+if (roomPanelSource.includes('NavigationController::Focus(gameZoneAnchor_)'))
+  violations.push('RoomPanel: une mise à jour temps réel ne doit jamais voler le focus au chat ou à l’historique');
 
 const hostFrameSource = await readFile(
   join(root, 'app/navigation/presentation/HostFrame.cpp'), 'utf8');
-if (!hostFrameSource.includes('void HostFrame::SetInterfaceTitle') ||
-    !hostFrameSource.includes('AppConfig::AppTitle.data()') ||
-    !hostFrameSource.includes('SetTitle(title);'))
-  violations.push('HostFrame: le titre natif doit combiner application et interface');
+if (!hostFrameSource.includes('void HostFrame::SetApplicationTitle') ||
+    !hostFrameSource.includes('SetTitle(lila::shared::text::FromUtf8(ApplicationTitle(username)));'))
+  violations.push('HostFrame: le titre natif doit combiner uniquement application et utilisateur');
+if (hostFrameSource.includes('ActivationFocusTarget'))
+  violations.push('HostFrame: la réactivation doit restaurer le contrôle réellement focalisé');
 if (hostFrameSource.includes('ActivationFocusDelayMs') ||
     hostFrameSource.includes('activationFocusTimer_'))
   violations.push('HostFrame: l’annonce du titre ne doit dépendre d’aucune temporisation');
@@ -351,12 +355,25 @@ if (hostFrameSource.includes('EVENT_OBJECT_NAMECHANGE') ||
   violations.push('HostFrame: le retour dans l’application ne doit plus dépendre d’une réannonce du titre');
 const appTransitionsSource = await readFile(
   join(root, 'app/navigation/presentation/AppNavigator.Transitions.cpp'), 'utf8');
-const interfaceTitleUpdate = appTransitionsSource.indexOf(
-  'hostFrame_->SetInterfaceTitle(InterfaceTitle(nextViewId));');
-const contentUpdate = appTransitionsSource.indexOf(
-  'hostFrame_->SetContent(currentView_);');
-if (interfaceTitleUpdate < 0 || contentUpdate < 0 || interfaceTitleUpdate > contentUpdate)
-  violations.push('AppNavigator: le titre complet doit être défini avant le changement d’interface');
+if (appTransitionsSource.includes('SetTitle(') ||
+    appTransitionsSource.includes('SetInterfaceTitle(') ||
+    appTransitionsSource.includes('InterfaceTitle('))
+  violations.push('AppNavigator: un changement d’interface ne doit jamais modifier le titre natif');
+const appAuthenticationSource = await readFile(
+  join(root, 'app/navigation/presentation/AppNavigator.Authentication.cpp'), 'utf8');
+if (!appAuthenticationSource.includes('SetApplicationTitle(result.username);') ||
+    !appAuthenticationSource.includes('SetApplicationTitle();'))
+  violations.push('AppNavigator: connexion et déconnexion doivent synchroniser l’identité du titre');
+const appNavigatorSource = await readFile(
+  join(root, 'app/navigation/presentation/AppNavigator.cpp'), 'utf8');
+if (!appNavigatorSource.includes(
+    'SetApplicationTitle(sessionStore_.Current().username);'))
+  violations.push('AppNavigator: une session restaurée doit afficher l’utilisateur dans le titre');
+const socialNavigationSource = await readFile(
+  join(root, 'modules/social/presentation/SocialFrame.Navigation.cpp'), 'utf8');
+if (socialNavigationSource.includes('SetTitle(') ||
+    socialNavigationSource.includes('NavigationTitle('))
+  violations.push('SocialFrame: une sous-interface sociale ne doit jamais modifier le titre natif');
 
 const gameplayPanelSource = await readFile(
   join(root, 'modules/gameplay/shell/presentation/panel/GamePlayPanel.cpp'), 'utf8');

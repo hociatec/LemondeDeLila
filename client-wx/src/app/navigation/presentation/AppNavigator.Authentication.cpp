@@ -76,6 +76,10 @@ void AppNavigator::OnLoginSucceeded(const modules::user::domain::AuthenticationR
     const bool rememberRequested = result.rememberSession &&
         optionsStore_.Current().general.restoreSessionOnStartup;
     const bool persisted = sessionStore_.Open(std::move(session), rememberRequested);
+    if (hostFrame_ != nullptr)
+    {
+        hostFrame_->SetApplicationTitle(result.username);
+    }
     if (rememberRequested && !persisted)
     {
         lila::shared::logging::LogWarning(
@@ -116,6 +120,10 @@ void AppNavigator::OnLogoutRequested(std::size_t)
                     });
             }
         });
+    if (hostFrame_ != nullptr)
+    {
+        hostFrame_->SetApplicationTitle();
+    }
     auto* home = dynamic_cast<modules::home::presentation::HomeFrame*>(GetOrCreateView(ViewId::Home));
     if (home != nullptr)
     {
@@ -147,6 +155,10 @@ void AppNavigator::OnSessionExpired()
         invitationResponseTask_.reset();
     }
     pendingInvitations_.clear();
+    if (hostFrame_ != nullptr)
+    {
+        hostFrame_->SetApplicationTitle();
+    }
     ResetSessionViews();
     ShowHome();
 }

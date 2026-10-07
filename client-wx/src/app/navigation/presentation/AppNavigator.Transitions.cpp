@@ -6,10 +6,8 @@
 #include <wx/window.h>
 
 #include "app/navigation/presentation/HostFrame.h"
-#include "app/navigation/presentation/InterfaceTitle.h"
 #include "modules/audio/application/IAudioService.h"
 #include "modules/presence/application/PresenceMonitor.h"
-#include "modules/social/presentation/SocialFrame.h"
 #include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/logging/application/Logger.h"
 
@@ -51,10 +49,6 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
         return;
     }
 
-    if (auto* social = dynamic_cast<modules::social::presentation::SocialFrame*>(nextView))
-        hostFrame_->SetTitle(social->NavigationTitle());
-    else
-        hostFrame_->SetInterfaceTitle(InterfaceTitle(nextViewId));
     hostFrame_->SetContent(currentView_);
     if (previousViewId != ViewId::None && previousViewId != nextViewId)
     {

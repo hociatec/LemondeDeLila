@@ -22,12 +22,6 @@ void RoomPanel::BindEvents()
     gameZoneAnchor_->Bind(wxEVT_SET_FOCUS, [this](wxFocusEvent& event)
     {
         event.Skip();
-        if (keepZoneFocusOnActivation_)
-        {
-            keepZoneFocusOnActivation_ = false;
-            CancelScheduledGameZoneFocus();
-            return;
-        }
         ScheduleGameZoneFocus();
     });
     Bind(wxEVT_SHOW, [this](wxShowEvent& event)

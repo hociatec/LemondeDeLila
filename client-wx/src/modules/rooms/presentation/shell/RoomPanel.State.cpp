@@ -84,15 +84,13 @@ void RoomPanel::ApplyRoom(domain::RoomState room)
             AppendRoomAnnouncement(wxString(
                 L"Partie terminée. Appuyez sur Q pour quitter la table. "
                 L"Utilisez Tab pour accéder au chat et à l’historique."));
-        static_cast<void>(
-            lila::shared::accessibility::NavigationController::Focus(gameZoneAnchor_));
+        ScheduleGameZoneFocus();
     }
     if (resetCompleted)
     {
         AppendRoomAnnouncement(wxString(L"Table réinitialisée. Vous pouvez de nouveau "
                                         L"ajouter ou retirer des bots puis configurer la partie."));
-        static_cast<void>(
-            lila::shared::accessibility::NavigationController::Focus(gameZoneAnchor_));
+        ScheduleGameZoneFocus();
     }
 }
 

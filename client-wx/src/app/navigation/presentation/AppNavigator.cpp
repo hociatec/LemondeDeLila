@@ -174,6 +174,7 @@ bool AppNavigator::Start()
             if (sessionStore_.Restore())
             {
                 lila::shared::logging::LogInfo("Navigator", "Stored session restored. Opening main menu.");
+                hostFrame_->SetApplicationTitle(sessionStore_.Current().username);
                 ShowSession(0, true);
                 return true;
             }

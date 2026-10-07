@@ -140,6 +140,30 @@ int main(int argc, char** argv)
     Check(!NavigationController::IsFocusable(hiddenChild));
     Check(!NavigationController::Focus(hiddenChild));
 
+    auto* disabledTabOwner = new wxPanel(frame);
+    NavigationController::BindTabNavigation(
+        *disabledTabOwner,
+        [text]()
+        {
+            NavigationController::Scope scope;
+            scope.Add(text);
+            return scope;
+        },
+        []() { return false; });
+    wxKeyEvent disabledTab(wxEVT_CHAR_HOOK);
+    disabledTab.m_keyCode = WXK_TAB;
+    disabledTabOwner->GetEventHandler()->ProcessEvent(disabledTab);
+    Check(disabledTab.GetSkipped());
+
+    auto* emptyTabOwner = new wxPanel(frame);
+    NavigationController::BindTabNavigation(
+        *emptyTabOwner,
+        []() { return NavigationController::Scope{}; });
+    wxKeyEvent emptyTab(wxEVT_CHAR_HOOK);
+    emptyTab.m_keyCode = WXK_TAB;
+    emptyTabOwner->GetEventHandler()->ProcessEvent(emptyTab);
+    Check(emptyTab.GetSkipped());
+
 #ifdef __WXMSW__
 #if wxUSE_ACCESSIBILITY
     auto* multiple = new wxListBox(frame, wxID_ANY, wxDefaultPosition,

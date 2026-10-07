@@ -134,9 +134,7 @@ void RoomPanel::ExecuteCommand(domain::RoomCommandRequest request)
                     weakThis->ShowRoom();
                     if (command == domain::RoomCommand::Reset)
                     {
-                        static_cast<void>(
-                            lila::shared::accessibility::NavigationController::Focus(
-                                weakThis->gameZoneAnchor_));
+                        weakThis->ScheduleGameZoneFocus();
                     }
                 });
         },
