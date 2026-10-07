@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AppMessagingContactPolicyModule } from './app-messaging-contact-policy.module';
 import { AppGameRoomPortsModule } from './app-game-room-ports.module';
 import { AppBotPortsModule } from './app-bot-ports.module';
 import { AppAdminBotPortsModule } from './app-admin-bot-ports.module';
@@ -30,6 +31,7 @@ import { RealtimeModule } from '../../platform/realtime/public-api';
 
 @Module({
   imports: [
+    AppMessagingContactPolicyModule,
     AppGameRoomPortsModule,
     AppNotificationReadersModule,
     AppPresenceReadersModule,

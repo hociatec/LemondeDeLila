@@ -78,11 +78,18 @@ export class SoundsUploadManager {
         this.dependencies.warn(
           `Nettoyage après remplacement de ${soundId}: ${String(error)}`,
         );
+        await bestEffort(
+          this.dependencies.notifyUpdated(entry, entry.uploadedAt),
+          'notification du nouveau son après nettoyage incomplet',
+        );
         throw new InternalServerErrorException(
           'Le nouveau son est enregistré, mais la suppression des anciens fichiers a échoué. Réessayez le remplacement.',
         );
       }
-      await this.dependencies.notifyUpdated(entry, entry.uploadedAt);
+      await bestEffort(
+        this.dependencies.notifyUpdated(entry, entry.uploadedAt),
+        'notification du nouveau son',
+      );
       return entry;
     } finally {
       if (encoded?.cleanupDir) {

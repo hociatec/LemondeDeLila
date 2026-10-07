@@ -6,6 +6,7 @@ import * as path from 'path';
 import { canonicalizeWxUpdateSignature } from '../../domain/wx-update-manifest';
 import { WxUpdateArtifactValidatorService } from './wx-update-artifact-validator.service';
 import { WxUpdateReleaseService } from './wx-update-release.service';
+import { acquireExclusiveFileLock } from '../../../../platform/filesystem/public-api';
 
 function validZipPayload(label: string): Buffer {
   const name = Buffer.from('payload.txt');
@@ -97,17 +98,38 @@ describe('WxUpdateReleaseService', () => {
     const lockPath = path.join(releases.getTargetDir(), '.publish.lock');
     await fs.promises.writeFile(lockPath, 'suspended-owner');
     await fs.promises.utimes(lockPath, new Date(0), new Date(0));
-    await expect(
-      publishRelease({
-        releaseId: 'blocked',
-        version: '1.2.3',
-        sequence: 1,
-        content: validZipPayload('blocked'),
-      }),
-    ).rejects.toThrow('publication');
+    const owner = await acquireExclusiveFileLock(lockPath, 0);
+    try {
+      await expect(
+        publishRelease({
+          releaseId: 'blocked',
+          version: '1.2.3',
+          sequence: 1,
+          content: validZipPayload('blocked'),
+        }),
+      ).rejects.toThrow('publication');
+    } finally {
+      await owner.release();
+    }
     expect(await fs.promises.readFile(lockPath, 'utf8')).toBe(
       'suspended-owner',
     );
+  });
+
+  it('publishes when only an abandoned lock file remains', async () => {
+    await fs.promises.mkdir(releases.getTargetDir(), { recursive: true });
+    await fs.promises.writeFile(
+      path.join(releases.getTargetDir(), '.publish.lock'),
+      'crashed-owner',
+    );
+    await expect(
+      publishRelease({
+        releaseId: 'recovered',
+        version: '1.2.3',
+        sequence: 1,
+        content: validZipPayload('recovered'),
+      }),
+    ).resolves.toMatchObject({ releaseId: 'recovered' });
   });
 
   const publishRelease = async (input: {

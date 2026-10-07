@@ -1,7 +1,45 @@
 import { BadRequestException } from '@nestjs/common';
 import { AdminSoundsController } from './admin-sounds.controller';
+import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
 
 describe('AdminSoundsController', () => {
+  it.each([false, true])(
+    'cleans the multipart upload after atomic creation (failure=%s)',
+    async (failure) => {
+      const root = await fs.mkdtemp(
+        path.join(os.tmpdir(), 'lila-admin-upload-'),
+      );
+      const file = path.join(root, 'upload.wav');
+      const createTableAmbienceWithSound = failure
+        ? jest.fn().mockRejectedValue(new Error('invalid audio'))
+        : jest.fn().mockResolvedValue({ soundId: 'TableAmbience1' });
+      const controller = new AdminSoundsController({
+        createTableAmbienceWithSound,
+      } as any);
+      try {
+        await fs.writeFile(file, 'audio');
+        const result = controller.createTableAmbienceWithSound(
+          { name: 'Forest' },
+          { path: file, originalname: 'forest.wav', mimetype: 'audio/wav' },
+        );
+        if (failure) await expect(result).rejects.toThrow('invalid audio');
+        else
+          await expect(result).resolves.toEqual({ soundId: 'TableAmbience1' });
+        expect(createTableAmbienceWithSound).toHaveBeenCalledWith(
+          'Forest',
+          file,
+          'forest.wav',
+          'audio/wav',
+        );
+        await expect(fs.stat(file)).rejects.toMatchObject({ code: 'ENOENT' });
+      } finally {
+        await fs.rm(root, { recursive: true, force: true });
+      }
+    },
+  );
+
   it('returns the categorized sound catalog', async () => {
     const sounds: any = {
       getAdminCatalog: jest.fn().mockResolvedValue({ categories: [] }),

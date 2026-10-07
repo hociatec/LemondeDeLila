@@ -25,6 +25,7 @@ export type HttpJwtPayload = {
   roles?: string[];
   email?: string;
   id?: number;
+  credentialVersion?: string;
 };
 
 type VerifiedWsPayload = WsAuthPayload & {
@@ -66,6 +67,10 @@ export class JwtPayloadVerifierService {
       ...(isStringArray(payload.roles) ? { roles: payload.roles } : {}),
       ...(isBoundedString(payload.email, 320) ? { email: payload.email } : {}),
       id,
+      ...(typeof payload.credentialVersion === 'string' &&
+      /^[a-f0-9]{64}$/.test(payload.credentialVersion)
+        ? { credentialVersion: payload.credentialVersion }
+        : {}),
     };
   }
 
@@ -97,6 +102,9 @@ export class JwtPayloadVerifierService {
       exp: payload.exp,
       iat: payload.iat,
       ...(isBoundedString(payload.email, 320) ? { email: payload.email } : {}),
+      ...(typeof payload.credentialVersion === 'string'
+        ? { credentialVersion: payload.credentialVersion }
+        : {}),
       ...(isStringArray(payload.roles) ? { roles: payload.roles } : {}),
     };
     return verified;

@@ -14,11 +14,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { randomUUID } from 'crypto';
-import * as os from 'os';
-import * as path from 'path';
+import { SoundUploadInterceptor } from '../interceptors/sound-upload.interceptor';
+import { promises as fs } from 'node:fs';
 import { bestEffort } from '../../../../../../platform/observability/public-api';
 import {
   AdminRoleGuard,
@@ -113,6 +110,31 @@ export class AdminSoundsController {
     );
   }
 
+  @Post('table-ambiences/with-sound')
+  @UseFilters(MulterErrorFilter)
+  @UseInterceptors(SoundUploadInterceptor)
+  async createTableAmbienceWithSound(
+    @Body() body: TableAmbienceNameBody,
+    @UploadedFile() file?: UploadedFileLike,
+  ) {
+    if (!file?.path)
+      throw new BadRequestException('Fichier manquant (champ "file").');
+    try {
+      this.requireExactBody(body, ['name']);
+      return await this.sounds.createTableAmbienceWithSound(
+        typeof body?.name === 'string' ? body.name : '',
+        file.path,
+        file.originalname,
+        file.mimetype,
+      );
+    } finally {
+      await bestEffort(
+        fs.rm(file.path, { force: true }),
+        'suppression de l’upload audio temporaire',
+      );
+    }
+  }
+
   @Delete('table-ambiences/:soundId')
   async deleteTableAmbience(@Param('soundId') soundId: string) {
     return this.sounds.deleteTableAmbience(soundId);
@@ -132,20 +154,7 @@ export class AdminSoundsController {
 
   @Post(':soundId')
   @UseFilters(MulterErrorFilter)
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: (_req, _file, cb) => cb(null, os.tmpdir()),
-        filename: (_req, file, cb) =>
-          cb(
-            null,
-            `lila-sound-${randomUUID()}-${AdminSoundsController.sanitizeFilename(file.originalname)}`,
-          ),
-      }),
-      // WAV files are much larger than MP3. Keep this generous; only admins can upload.
-      limits: { fileSize: 250 * 1024 * 1024 },
-    }),
-  )
+  @UseInterceptors(SoundUploadInterceptor)
   async upload(
     @Param('soundId') soundId: string,
     @UploadedFile() file?: UploadedFileLike,
@@ -194,18 +203,6 @@ export class AdminSoundsController {
   @Delete(':soundId')
   async clear(@Param('soundId') soundId: string) {
     return this.sounds.clearSound(soundId);
-  }
-
-  private static sanitizeFilename(originalName: string): string {
-    const base = path.basename(String(originalName || 'sound'));
-    const sanitizedControls = Array.from(base, (char) =>
-      char.charCodeAt(0) < 32 ? '_' : char,
-    ).join('');
-    return sanitizedControls
-      .replace(/[\\/:*?"<>|]/g, '_')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 120);
   }
 
   private requireExactBody(value: unknown, keys: readonly string[]): void {

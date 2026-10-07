@@ -5,6 +5,7 @@ import { sign as jwtSign } from 'jsonwebtoken';
 import type { AuthRuntimeConfig } from './application/ports/auth-runtime-config.port';
 import { JwtPayloadVerifierService } from './application/services/jwt-payload-verifier.service';
 import { HttpJwtGuard } from './infrastructure/presentation/http/http-jwt.guard';
+import { credentialVersion } from './application/services/credential-version';
 
 type HttpRequestLike = {
   headers: Record<string, string>;
@@ -38,21 +39,79 @@ describe('Auth guards', () => {
     jwtClockToleranceSeconds: 10,
   };
 
-  it('attaches a verified RS256 payload to the HTTP request', () => {
-    const guard = new HttpJwtGuard(new JwtPayloadVerifierService(config));
-    const token = jwtSign({ username: 'lila' }, privateKeyPem, {
-      algorithm: 'RS256',
-      issuer,
-      subject: '1',
-      expiresIn: '1h',
+  it('attaches a verified RS256 payload with current account roles to the HTTP request', async () => {
+    const guard = new HttpJwtGuard(new JwtPayloadVerifierService(config), {
+      findById: async () => ({
+        id: 1,
+        username: 'lila',
+        email: '',
+        roles: ['ROLE_USER'],
+        bannedUntil: null,
+        password: 'stored-hash',
+      }),
     });
+    const token = jwtSign(
+      {
+        username: 'lila',
+        roles: ['ROLE_ADMIN'],
+        credentialVersion: credentialVersion('stored-hash'),
+      },
+      privateKeyPem,
+      {
+        algorithm: 'RS256',
+        issuer,
+        subject: '1',
+        expiresIn: '1h',
+      },
+    );
     const request: HttpRequestLike = {
       headers: { authorization: `Bearer ${token}` },
     };
 
-    expect(guard.canActivate(createHttpContext(request))).toBe(true);
-    expect(request.user).toMatchObject({ id: 1, username: 'lila' });
+    await expect(guard.canActivate(createHttpContext(request))).resolves.toBe(
+      true,
+    );
+    expect(request.user).toMatchObject({
+      id: 1,
+      username: 'lila',
+      roles: ['ROLE_USER'],
+    });
   });
+
+  it.each(['deleted', 'banned', 'password-changed', 'legacy'])(
+    'rejects a still-signed token for a %s session',
+    async (scenario) => {
+      const account = {
+        id: 1,
+        username: 'lila',
+        email: '',
+        roles: ['ROLE_ADMIN'],
+        bannedUntil:
+          scenario === 'banned' ? new Date(Date.now() + 60000) : null,
+        password: scenario === 'password-changed' ? 'new-hash' : 'stored-hash',
+      };
+      const guard = new HttpJwtGuard(new JwtPayloadVerifierService(config), {
+        findById: async () => (scenario === 'deleted' ? null : account),
+      });
+      const token = jwtSign(
+        {
+          username: 'lila',
+          roles: ['ROLE_ADMIN'],
+          credentialVersion:
+            scenario === 'legacy'
+              ? undefined
+              : credentialVersion('stored-hash'),
+        },
+        privateKeyPem,
+        { algorithm: 'RS256', issuer, subject: '1', expiresIn: '1h' },
+      );
+      await expect(
+        guard.canActivate(
+          createHttpContext({ headers: { authorization: `Bearer ${token}` } }),
+        ),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+    },
+  );
 
   it.each([
     ['01', 1],

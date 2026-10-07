@@ -1,5 +1,6 @@
 include_guard(GLOBAL)
 include(${CMAKE_CURRENT_LIST_DIR}/LilaAdminQuizTests.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/LilaAudioRecoveryTests.cmake)
 
 find_program(LILA_CLIENT_ARCHITECTURE_NODE_EXECUTABLE node REQUIRED)
 add_test(
@@ -50,6 +51,7 @@ lila_add_test_executable(lemonde_de_lila_wx_audio_regression_tests
     src/modules/chat/application/ChatMessageStore.cpp
 )
 target_link_libraries(lemonde_de_lila_wx_audio_regression_tests PRIVATE nlohmann_json::nlohmann_json)
+add_dependencies(lemonde_de_lila_wx_audio_regression_tests generate_protocol_contracts)
 
 lila_add_test_executable(lemonde_de_lila_wx_sound_asset_manifest_tests
     tests/SoundAssetManifestTests.cpp

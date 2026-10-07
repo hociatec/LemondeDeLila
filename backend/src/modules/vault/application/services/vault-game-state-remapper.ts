@@ -2,6 +2,7 @@ import {
   isVaultGameState,
   type VaultGameState,
 } from '../models/vault-game-state.model';
+import { remapPlayerReferences } from './vault-player-reference-remapper';
 
 export type VaultGameStateRemapOptions = {
   roomId: number;
@@ -12,50 +13,11 @@ export type VaultGameStateRemapOptions = {
   botNamesByNewId: Map<number, string>;
 };
 
-function remapValue(
-  value: unknown,
-  botIdMap: Map<number, number>,
-  depth = 0,
-): unknown {
-  if (depth > 32) return null;
-  if (
-    value == null ||
-    typeof value === 'string' ||
-    typeof value === 'boolean'
-  ) {
-    return value;
-  }
-  if (typeof value === 'number') {
-    return botIdMap.get(value) ?? value;
-  }
-  if (Array.isArray(value)) {
-    return value
-      .slice(0, 10_000)
-      .map((item) => remapValue(item, botIdMap, depth + 1));
-  }
-  if (typeof value !== 'object') {
-    return value;
-  }
-  const remapped: Record<string, unknown> = {};
-  for (const [key, item] of Object.entries(value).slice(0, 2_000)) {
-    if (key.length > 256) continue;
-    const numericKey = Number(key);
-    const nextKey =
-      Number.isFinite(numericKey) && botIdMap.has(numericKey)
-        ? String(botIdMap.get(numericKey))
-        : key;
-    remapped[nextKey] = remapValue(item, botIdMap, depth + 1);
-  }
-  return remapped;
-}
-
 export function remapVaultGameState(
   state: VaultGameState,
   options: VaultGameStateRemapOptions,
 ): VaultGameState {
-  const replaceId = (value: number): number =>
-    options.botIdMap.get(value) ?? value;
-  const remapped = remapValue(state, options.botIdMap);
+  const remapped = remapPlayerReferences(state, options.botIdMap);
   if (!isVaultGameState(remapped)) {
     throw new Error('État de jeu Vault invalide après remappage.');
   }
@@ -69,20 +31,13 @@ export function remapVaultGameState(
   };
   if (Array.isArray(remapped.players)) {
     remapped.players = remapped.players.map((player) => {
-      const id =
-        typeof player?.id === 'number' ? replaceId(player.id) : player?.id;
+      const id = player.id;
       const username =
         typeof id === 'number' && id < 0 && options.botNamesByNewId.has(id)
           ? options.botNamesByNewId.get(id)
           : player?.username;
       return { ...player, id, username };
     });
-  }
-  if (remapped.turn && typeof remapped.turn.currentPlayerId === 'number') {
-    remapped.turn = {
-      ...remapped.turn,
-      currentPlayerId: replaceId(remapped.turn.currentPlayerId),
-    };
   }
   return remapped;
 }

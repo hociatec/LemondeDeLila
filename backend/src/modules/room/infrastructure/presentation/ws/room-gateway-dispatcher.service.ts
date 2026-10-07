@@ -95,6 +95,12 @@ export class RoomGatewayDispatcherService {
       }
       try {
         const payload = decodeRoomMessage(raw);
+        if (
+          !(await this.connection.revalidate(client, meta, (roles) =>
+            this.runtime.isAdmin(roles),
+          ))
+        )
+          return;
         await this.commands.handleCommand(
           this.commandContext(),
           client,

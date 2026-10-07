@@ -5,6 +5,7 @@ import type { WsRuntimeConfig } from '../ports/ws-runtime-config.port';
 import { WsJwtAuthService } from './ws-jwt-auth.service';
 import { WsTicketAuthService } from './ws-ticket-auth.service';
 import { WsTicketService } from './ws-ticket.service';
+import { credentialVersion } from '../../../auth/public-api';
 
 const secret = 'unit-test-secret-with-at-least-32-characters';
 const { publicKey, privateKey } = generateKeyPairSync('rsa', {
@@ -35,7 +36,44 @@ const runtimeConfig = (
 });
 
 describe('WsJwtAuthService', () => {
-  const service = new WsJwtAuthService(runtimeConfig());
+  const service = new WsJwtAuthService(runtimeConfig(), {
+    findById: jest.fn(),
+  });
+
+  it('uses current roles and rejects password changes on an already verified websocket session', async () => {
+    const account = {
+      id: 7,
+      username: 'lila',
+      email: '',
+      roles: ['ROLE_USER'],
+      bannedUntil: null,
+      password: 'salted-hash',
+    };
+    const auth = new WsJwtAuthService(runtimeConfig(), {
+      findById: async () => account,
+    });
+    const signed = sign(
+      {
+        id: 7,
+        username: 'lila',
+        roles: ['ROLE_ADMIN'],
+        credentialVersion: credentialVersion(account.password),
+      },
+      privateKeyPem,
+      {
+        algorithm: 'RS256',
+        issuer: 'le-monde-de-lila',
+        subject: '7',
+        expiresIn: '5m',
+      },
+    );
+    const session = auth.verify(signed);
+    expect((await auth.revalidate(session)).roles).toEqual(['ROLE_USER']);
+    account.password = 'changed-hash';
+    await expect(auth.revalidate(session)).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+  });
 
   it.each([
     ['01', 1],

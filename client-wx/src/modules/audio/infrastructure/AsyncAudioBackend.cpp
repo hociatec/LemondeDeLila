@@ -1,4 +1,5 @@
 #include "modules/audio/infrastructure/AsyncAudioBackend.h"
+#include "modules/audio/infrastructure/AudioCommand.h"
 #include <algorithm>
 #include <chrono>
 #include <condition_variable>
@@ -14,25 +15,11 @@ namespace lila::modules::audio::infrastructure
 {
 namespace
 {
-enum class CommandType { Preload, Play, Preview, SetPreviewVolume, TogglePreviewPause, SetLoop, StopAll, RefreshAssets };
-
-struct Command final
-{
-    CommandType type;
-    std::optional<domain::SoundCue> cue;
-    float volume = 0.0F;
-};
+using detail::Command, detail::CommandType, detail::RequireBackend;
 
 constexpr std::size_t MaximumForegroundCommands = 256;
 constexpr std::size_t MaximumBackgroundCommands = 256;
 
-std::unique_ptr<application::IAudioBackend> RequireBackend(
-    std::unique_ptr<application::IAudioBackend> backend)
-{
-    if (backend == nullptr)
-        throw std::invalid_argument("Audio backend is required.");
-    return backend;
-}
 }
 
 class AsyncAudioBackend::Impl final
@@ -73,11 +60,13 @@ public:
     {
         std::scoped_lock lock(mutex_);
         if (stopping_) return;
-        if (command.type == CommandType::SetLoop)
+        if (command.type == CommandType::SetLoop || command.type == CommandType::Preview || command.type == CommandType::StopAll)
+            operationStop_.request_stop();
+        if (command.type == CommandType::SetLoop || command.type == CommandType::Preview || command.type == CommandType::RefreshAssets)
         {
-            std::erase_if(foreground_, [](const Command& queued)
+            std::erase_if(foreground_, [&command](const Command& queued)
             {
-                return queued.type == CommandType::SetLoop;
+                return queued.type == command.type;
             });
         }
         if (foreground_.size() >= MaximumForegroundCommands)
@@ -112,6 +101,7 @@ public:
                 return;
             }
             stopping_ = true;
+            operationStop_.request_stop();
             graceful_ = graceful;
             if (!graceful) foreground_.clear();
             background_.clear();
@@ -153,6 +143,8 @@ private:
                     auto& queue = foreground_.empty() ? background_ : foreground_;
                     command = queue.front();
                     queue.pop_front();
+                    operationStop_ = std::stop_source{};
+                    if (stopping_) operationStop_.request_stop();
                 }
             }
             try
@@ -193,6 +185,7 @@ private:
 
     void Execute(const Command& command)
     {
+        backend_->SetOperationStopToken(operationStop_.get_token());
         switch (command.type)
         {
         case CommandType::Preload: backend_->Preload(*command.cue); break;
@@ -215,6 +208,7 @@ private:
     bool graceful_ = false;
     std::size_t foregroundDropped_ = 0;
     std::size_t backgroundDropped_ = 0;
+    std::stop_source operationStop_;
     std::thread worker_;
 };
 

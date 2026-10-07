@@ -1,5 +1,6 @@
 ﻿import { Injectable } from '@nestjs/common';
 import { WebSocket } from 'ws';
+import { UnauthorizedException } from '@nestjs/common';
 import { ClientUpdateQueryService } from '../../../../update/public-api';
 import { WsJwtAuthService } from '../../../../../platform/realtime/public-api';
 import {
@@ -72,12 +73,21 @@ export class RoomGatewayConnectionService {
       client,
       args,
     );
-    const payload = this.auth.tryVerify(token);
+    let payload = this.auth.tryVerify(token);
     if (!payload?.id) {
       client.close(4001, 'auth required');
       return null;
     }
 
+    try {
+      payload = await this.auth.revalidate(payload);
+    } catch (error) {
+      client.close(
+        error instanceof UnauthorizedException ? 4401 : 1013,
+        'authentication unavailable',
+      );
+      return null;
+    }
     const userIsAdmin = isAdmin(payload.roles);
     let targetRoomId = roomId && roomId > 0 ? roomId : 0;
 
@@ -112,8 +122,32 @@ export class RoomGatewayConnectionService {
       ctx.clients.set(client, meta);
     }
 
+    meta.credentialVersion = payload.credentialVersion;
     await this.finalizeConnection(ctx, client, meta, targetRoomId);
     return meta;
+  }
+
+  async revalidate(
+    client: WebSocket,
+    meta: ClientMeta,
+    isAdmin: (roles?: string[]) => boolean,
+  ): Promise<boolean> {
+    try {
+      const user = await this.auth.revalidate({
+        id: meta.userId,
+        username: meta.username,
+        credentialVersion: meta.credentialVersion,
+      });
+      meta.username = user.username;
+      meta.isAdmin = isAdmin(user.roles);
+      return true;
+    } catch (error) {
+      client.close(
+        error instanceof UnauthorizedException ? 4401 : 1013,
+        'authentication unavailable',
+      );
+      return false;
+    }
   }
 
   private async acceptsClientVersion(

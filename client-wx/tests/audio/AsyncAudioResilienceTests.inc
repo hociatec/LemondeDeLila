@@ -38,3 +38,26 @@ void TestForegroundQueueIsBoundedAndObservable()
     state->ready.notify_all();
     backend.Shutdown();
 }
+
+void TestShutdownCancelsActiveIo()
+{
+    auto state = std::make_shared<BackendState>();
+    state->cancellablePreload = true;
+    AsyncAudioBackend backend(std::make_unique<BlockingBackend>(state));
+    backend.Preload(SoundCue::ClientOpened);
+    {
+        std::unique_lock lock(state->mutex);
+        Expect(state->ready.wait_for(lock, std::chrono::seconds(2),
+            [&] { return state->preloadStarted; }), "Preload did not start.");
+    }
+    auto stopped = std::async(std::launch::async, [&] { backend.Shutdown(); });
+    const bool cancelled = stopped.wait_for(std::chrono::seconds(1)) == std::future_status::ready;
+    if (!cancelled)
+    {
+        { std::scoped_lock lock(state->mutex); state->releasePreload = true; }
+        state->ready.notify_all();
+    }
+    stopped.get();
+    Expect(cancelled, "Shutdown must cancel active audio I/O without waiting for the network timeout.");
+    Expect(!state->concurrentCall, "Cancellation must not call BASS from the caller thread.");
+}

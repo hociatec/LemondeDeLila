@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <stop_token>
 
 #include "modules/audio/domain/SoundCue.h"
 #include "modules/audio/infrastructure/SoundAssetManifest.h"
@@ -18,6 +19,8 @@ public:
     [[nodiscard]] std::filesystem::path Resolve(domain::SoundCue cue);
     [[nodiscard]] std::filesystem::path ResolvePreview(domain::SoundCue cue);
     void Invalidate();
+    void SetStopToken(std::stop_token token) { stopToken_ = token; }
+    void CleanupObsoleteAssets();
 
 private:
     void LoadRemoteManifest();
@@ -32,5 +35,6 @@ private:
     bool manifestLoaded_ = false;
     std::chrono::steady_clock::time_point nextManifestAttempt_{};
     std::unordered_set<std::string> verifiedAssets_;
+    std::stop_token stopToken_;
 };
 }

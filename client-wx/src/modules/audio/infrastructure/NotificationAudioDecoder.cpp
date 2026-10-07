@@ -35,10 +35,10 @@ NotificationAudioEvent NotificationAudioDecoder::Decode(const std::string& messa
     };
     NotificationAudioEvent result;
     std::string identity;
-    if (type == SoundsUpdatedEvent)
+    if (type == SoundsUpdatedEvent || type == "sounds.tableAmbiences.updated")
     {
-        result.refreshAssets = true;
-        identity = text("updatedAt");
+        // Distinct commits can share the same millisecond timestamp.
+        return {std::nullopt, true};
     }
     else if (type == ws::messaging::MessageSent)
     {

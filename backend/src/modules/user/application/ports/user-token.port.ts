@@ -3,6 +3,7 @@ export type UserTokenPayload = {
   email: string;
   roles: string[];
   username: string;
+  credentialVersion?: string;
 };
 
 export interface UserTokenServicePort {

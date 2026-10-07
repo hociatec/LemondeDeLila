@@ -96,6 +96,7 @@ export class JwtUserTokenService implements UserTokenServicePort {
         roles,
         email: payload.email,
         id: payload.id,
+        credentialVersion: payload.credentialVersion,
       },
       this.jwtSigningKey,
       (() => {

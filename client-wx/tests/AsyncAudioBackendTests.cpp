@@ -29,6 +29,7 @@ struct BackendState final
     bool failPreload = false;
     bool failNextPlay = false;
     bool releasePreload = false;
+    bool cancellablePreload = false;
     bool callActive = false;
     bool concurrentCall = false;
     std::thread::id workerThread;
@@ -73,6 +74,7 @@ class BlockingBackend final : public IAudioBackend
 {
 public:
     explicit BlockingBackend(std::shared_ptr<BackendState> state) : state_(std::move(state)) {}
+    void SetOperationStopToken(std::stop_token token) override { stop_ = token; }
 
     void Preload(SoundCue) override
     {
@@ -81,7 +83,9 @@ public:
         state_->preloadStarted = true;
         state_->ready.notify_all();
         if (state_->failPreload) throw std::runtime_error("Simulated preload failure");
-        state_->ready.wait(lock, [this]() { return state_->releasePreload; });
+        std::stop_callback wake(stop_, [this] { state_->ready.notify_all(); });
+        state_->ready.wait(lock, [this]() { return state_->releasePreload ||
+            (state_->cancellablePreload && stop_.stop_requested()); });
     }
 
     void Play(SoundCue, float) override
@@ -137,6 +141,7 @@ public:
 
 private:
     std::shared_ptr<BackendState> state_;
+    std::stop_token stop_;
 };
 
 void TestShutdownKeepsBackendOnWorkerThread()
@@ -183,6 +188,11 @@ void TestPreviewFailureKeepsWorkerAlive()
     auto state = std::make_shared<BackendState>();
     AsyncAudioBackend backend(std::make_unique<BlockingBackend>(state));
     backend.Preview(SoundCue::MainMenuMusic);
+    {
+        std::unique_lock lock(state->mutex);
+        Expect(state->ready.wait_for(lock, std::chrono::seconds(2),
+            [&state] { return state->previewCount == 1; }), "The first preview did not execute.");
+    }
     backend.Preview(std::nullopt);
     {
         std::unique_lock lock(state->mutex);
@@ -232,6 +242,7 @@ int main()
         TestGracefulShutdownDrainsPlayback();
         TestCommandFailuresKeepWorkerAlive();
         TestForegroundQueueIsBoundedAndObservable();
+        TestShutdownCancelsActiveIo();
         std::cout << "Async audio backend tests passed.\n";
         return 0;
     }

@@ -1,6 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import {
   type CreatePrivateMessageInput,
   type PrivateMessageRepository,
@@ -36,14 +36,34 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
   }
 
   async save(message: PrivateMessageRecord): Promise<PrivateMessageRecord> {
-    await this.messages.save(this.toEntity(message));
+    // A stale reader must never reinsert a row physically purged in the meantime.
+    const entity = this.toEntity(message);
+    const { id, ...changes } = entity;
+    await this.messages.update(id, changes);
     return this.getByIdOrThrow(message.id);
   }
 
   async findByMessageId(
     messageId: string,
+    viewerId?: number,
   ): Promise<PrivateMessageRecord | null> {
-    const message = await this.messages.findOne({ where: { messageId } });
+    const message = await this.messages.findOne({
+      where:
+        viewerId === undefined
+          ? { messageId }
+          : [
+              {
+                messageId,
+                sender: { id: viewerId },
+                purgedBySenderAt: IsNull(),
+              },
+              {
+                messageId,
+                recipient: { id: viewerId },
+                purgedByRecipientAt: IsNull(),
+              },
+            ],
+    });
     return message ? this.toModel(message) : null;
   }
 
@@ -57,7 +77,7 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.recipient', 'recipient')
       .where(
-        '(m.sender_id = :current AND m.recipient_id = :other AND m.deleted_by_sender_at IS NULL) OR (m.sender_id = :other AND m.recipient_id = :current AND m.deleted_by_recipient_at IS NULL)',
+        '(m.sender_id = :current AND m.recipient_id = :other AND m.deleted_by_sender_at IS NULL AND m.purged_by_sender_at IS NULL) OR (m.sender_id = :other AND m.recipient_id = :current AND m.deleted_by_recipient_at IS NULL AND m.purged_by_recipient_at IS NULL)',
       )
       .setParameters({ current: currentUserId, other: otherUserId })
       .orderBy('m.created_at', 'ASC')
@@ -75,9 +95,12 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.recipient', 'recipient')
-      .where('m.recipient_id = :userId AND m.deleted_by_recipient_at IS NULL', {
-        userId,
-      })
+      .where(
+        'm.recipient_id = :userId AND m.deleted_by_recipient_at IS NULL AND m.purged_by_recipient_at IS NULL',
+        {
+          userId,
+        },
+      )
       .orderBy('m.created_at', 'DESC')
       .addOrderBy('m.id', 'DESC')
       .limit(this.normalizeLimit(limit))
@@ -93,9 +116,12 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.recipient', 'recipient')
-      .where('m.sender_id = :userId AND m.deleted_by_sender_at IS NULL', {
-        userId,
-      })
+      .where(
+        'm.sender_id = :userId AND m.deleted_by_sender_at IS NULL AND m.purged_by_sender_at IS NULL',
+        {
+          userId,
+        },
+      )
       .orderBy('m.created_at', 'DESC')
       .addOrderBy('m.id', 'DESC')
       .limit(this.normalizeLimit(limit))
@@ -116,7 +142,7 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
         'deletionDate',
       )
       .where(
-        '(m.sender_id = :userId AND m.deleted_by_sender_at IS NOT NULL) OR (m.recipient_id = :userId AND m.deleted_by_recipient_at IS NOT NULL)',
+        '(m.sender_id = :userId AND m.deleted_by_sender_at IS NOT NULL AND m.purged_by_sender_at IS NULL) OR (m.recipient_id = :userId AND m.deleted_by_recipient_at IS NOT NULL AND m.purged_by_recipient_at IS NULL)',
         { userId },
       )
       .orderBy('deletionDate', 'DESC')
@@ -126,8 +152,36 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
     return items.map((item) => this.toModel(item));
   }
 
-  async remove(messageId: string): Promise<void> {
-    await this.messages.delete({ messageId });
+  async purgeForUser(messageId: string, userId: number): Promise<void> {
+    await this.messages.manager.transaction(async (manager) => {
+      const updated = await manager
+        .createQueryBuilder()
+        .update(PrivateMessageEntity)
+        .set({
+          purgedBySenderAt: () =>
+            'CASE WHEN sender_id = :userId THEN CURRENT_TIMESTAMP ELSE purged_by_sender_at END',
+          purgedByRecipientAt: () =>
+            'CASE WHEN recipient_id = :userId THEN CURRENT_TIMESTAMP ELSE purged_by_recipient_at END',
+        })
+        .where(
+          `message_id = :messageId AND (
+        (sender_id = :userId AND deleted_by_sender_at IS NOT NULL AND purged_by_sender_at IS NULL) OR
+        (recipient_id = :userId AND deleted_by_recipient_at IS NOT NULL AND purged_by_recipient_at IS NULL))`,
+          { userId, messageId },
+        )
+        .execute();
+      if (updated.affected !== 1)
+        throw new PrivateMessageNotFoundError('Message absent de la corbeille');
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(PrivateMessageEntity)
+        .where(
+          'message_id = :messageId AND purged_by_sender_at IS NOT NULL AND purged_by_recipient_at IS NOT NULL',
+          { messageId },
+        )
+        .execute();
+    });
   }
 
   async countUnreadForRecipient(userId: number): Promise<number> {
@@ -135,6 +189,7 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
       .createQueryBuilder('m')
       .where('m.recipient_id = :userId', { userId })
       .andWhere('m.deleted_by_recipient_at IS NULL')
+      .andWhere('m.purged_by_recipient_at IS NULL')
       .andWhere('m.read_by_recipient_at IS NULL')
       .getCount();
   }

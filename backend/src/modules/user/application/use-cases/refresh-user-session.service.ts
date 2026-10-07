@@ -5,6 +5,7 @@ import {
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { bestEffort } from '../../../../platform/observability/public-api';
 import { userBanStatus } from '../../domain/policies/user-ban.policy';
+import { credentialVersion } from '../../../../platform/auth/public-api';
 import {
   REFRESH_TOKEN_SERVICE,
   type RefreshTokenServicePort,
@@ -32,14 +33,17 @@ export class RefreshUserSessionService {
     userId: number;
     username: string;
   }> {
-    const rotation = await this.refreshTokens.rotate(refreshToken);
-    if (!rotation) {
+    const session = await this.refreshTokens.inspect(refreshToken);
+    if (!session) {
       throw new UnauthorizedException('Refresh token invalide ou expire');
     }
 
-    const user = await this.users.findById(rotation.userId);
-    if (!user) {
-      await this.refreshTokens.revoke(rotation.refreshToken);
+    const user = await this.users.findById(session.userId);
+    if (
+      !user?.password ||
+      session.credentialVersion !== credentialVersion(user.password)
+    ) {
+      await this.refreshTokens.revoke(refreshToken);
       throw new UnauthorizedException('Session invalide');
     }
 
@@ -53,7 +57,7 @@ export class RefreshUserSessionService {
       );
     }
     if (banStatus === 'active' || banStatus === 'invalid') {
-      await this.refreshTokens.revoke(rotation.refreshToken);
+      await this.refreshTokens.revoke(refreshToken);
       throw new UnauthorizedException('Compte banni');
     }
 
@@ -62,7 +66,17 @@ export class RefreshUserSessionService {
       email: user.email,
       roles: user.roles?.length ? user.roles : ['ROLE_USER'],
       username: user.username,
+      credentialVersion: session.credentialVersion,
     });
+    // Do not consume the client's token until account lookup and signing succeed.
+    const rotation = await this.refreshTokens.rotate(refreshToken);
+    if (
+      !rotation ||
+      rotation.userId !== user.id ||
+      rotation.credentialVersion !== session.credentialVersion
+    ) {
+      throw new UnauthorizedException('Refresh token invalide ou expire');
+    }
     return {
       token,
       refreshToken: rotation.refreshToken,

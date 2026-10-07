@@ -99,6 +99,6 @@ describe('uploading a replacement ambience', () => {
     await expect(replace('sound B')).rejects.toThrow(
       'suppression des anciens fichiers a échoué',
     );
-    expect(notifyUpdated).not.toHaveBeenCalled();
+    expect(notifyUpdated).toHaveBeenCalledTimes(1);
   });
 });

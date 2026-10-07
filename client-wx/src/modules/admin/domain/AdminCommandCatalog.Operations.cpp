@@ -23,7 +23,7 @@ void AppendOperationsCommands(std::vector<AdminCommand>& c)
         {"sounds.diagnostic", L"Diagnostiquer les sons", L"Manifest, fichiers présents et manquants.", T::HttpJson, "GET /api/admin/sounds/diagnostic"},
         {"sounds.catalog", L"Sons par catégorie et écran", L"Affiche chaque événement, son actif et source utilisée.", T::HttpJson, "GET /api/admin/sounds/catalog"},
         {"sounds.ambiences", L"Lister les ambiances", L"Inclut les ambiances désactivées.", T::HttpJson, "GET /api/admin/sounds/table-ambiences"},
-        {"sounds.ambience.create", L"Créer une ambiance", L"Une des vingt places disponibles sera affectée.", T::HttpJson, "POST /api/admin/sounds/table-ambiences", {}, R"({"name":""})"},
+        {"sounds.ambience.create", L"Créer une ambiance", L"L’ambiance sera créée avec son fichier audio.", T::HttpMultipart, "POST /api/admin/sounds/table-ambiences/with-sound", {}, R"({"name":"","filePath":""})"},
         {"sounds.ambience.rename", L"Renommer une ambiance", L"Identifiant TableAmbience et nom.", T::HttpJson, "PUT /api/admin/sounds/table-ambiences/{soundId}", {}, R"({"soundId":"TableAmbience1","name":""})"},
         {"sounds.ambience.enable", L"Activer ou désactiver une ambiance", L"Visibilité publique de l'ambiance.", T::HttpJson, "PUT /api/admin/sounds/table-ambiences/{soundId}/enabled", {}, R"({"soundId":"TableAmbience1","enabled":true})"},
         {"sounds.ambience.delete", L"Supprimer une ambiance", L"Supprime aussi le son associé.", T::HttpJson, "DELETE /api/admin/sounds/table-ambiences/{soundId}", {}, R"({"soundId":"TableAmbience1"})", true},

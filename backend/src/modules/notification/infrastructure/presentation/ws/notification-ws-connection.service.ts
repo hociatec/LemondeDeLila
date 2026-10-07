@@ -1,6 +1,6 @@
 ﻿import { Inject } from '@nestjs/common';
 import { WsWorkService } from '../../../../../platform/ws/public-api';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { WsRequestRateLimitService } from '../../../../../platform/ws/public-api';
 import { isVersionLower } from '../../../../../shared/utils/public-api';
@@ -37,7 +37,7 @@ export class NotificationWsConnectionService {
     args: unknown[],
   ): Promise<void> {
     const token = this.auth.extractToken(client, args);
-    const user = this.auth.tryVerify(token);
+    let user = this.auth.tryVerify(token);
     if (!user?.id) {
       client.close(4001, 'auth required');
       return;
@@ -47,6 +47,15 @@ export class NotificationWsConnectionService {
       return;
     }
 
+    try {
+      user = await this.auth.revalidate(user);
+    } catch (error) {
+      client.close(
+        error instanceof UnauthorizedException ? 4401 : 1013,
+        'authentication unavailable',
+      );
+      return;
+    }
     try {
       const clientVersion = this.auth.extractClientVersion(client, args);
       const clientProduct = this.auth.extractClientProduct(client, args);
@@ -86,6 +95,7 @@ export class NotificationWsConnectionService {
       userId: user.id,
       username: String(user.username || '').trim() || `user#${user.id}`,
       roles: Array.isArray(user.roles) ? user.roles : [],
+      credentialVersion: user.credentialVersion,
       socket: client,
       origin: this.extractOriginFromWsArgs(args),
       product: this.auth.extractClientProduct(client, args),
@@ -118,6 +128,21 @@ export class NotificationWsConnectionService {
       return;
     }
 
+    try {
+      const user = await this.auth.revalidate({
+        id: meta.userId,
+        username: meta.username,
+        credentialVersion: meta.credentialVersion,
+      });
+      meta.roles = user.roles ?? [];
+      meta.username = user.username;
+    } catch (error) {
+      client.close(
+        error instanceof UnauthorizedException ? 4401 : 1013,
+        'authentication unavailable',
+      );
+      return;
+    }
     const raw =
       typeof data === 'string'
         ? data
