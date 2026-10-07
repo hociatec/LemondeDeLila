@@ -8,6 +8,7 @@
 
 #include "modules/admin/presentation/AdminResultFormatter.h"
 #include "modules/admin/presentation/AdminBugReportFormatter.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
@@ -110,7 +111,8 @@ void AdminFrame::ShowResult(
             resultText_->Hide();
             resultText_->SetValue(wxString{});
             Layout();
-            reportStatusMenu_->GetSelectedControl()->SetFocus();
+            static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
+                reportStatusMenu_->GetSelectedControl()));
             return;
         }
     }

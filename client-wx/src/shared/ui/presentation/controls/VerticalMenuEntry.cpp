@@ -6,6 +6,7 @@
 #include <wx/event.h>
 #include <wx/weakref.h>
 
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/ui/presentation/theme/Theme.h"
 
 namespace lila::shared::ui::controls
@@ -104,7 +105,8 @@ public:
         }
         if ((selectFlags & wxACC_SEL_TAKEFOCUS) != 0)
         {
-            entry->SetFocus();
+            static_cast<void>(
+                lila::shared::accessibility::NavigationController::Focus(entry));
         }
         return wxACC_OK;
     }

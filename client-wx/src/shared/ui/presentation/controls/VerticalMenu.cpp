@@ -105,21 +105,34 @@ void VerticalMenu::ReplaceItems(
         return;
     }
 
-    listBox_->Clear();
+    // Treat the native list rows as stable presentation slots. Clearing and
+    // rebuilding a focused wxListBox makes Windows emit a new selection event,
+    // so screen readers announce the unchanged focused item a second time.
+    // Update labels in place and resize only at the tail instead.
+    const auto retainedCount = std::min<std::size_t>(
+        listBox_->GetCount(), items.size());
+    for (std::size_t index = 0; index < retainedCount; ++index)
+    {
+        if (listBox_->GetString(static_cast<unsigned int>(index)) != items[index].label)
+            listBox_->SetString(static_cast<unsigned int>(index), items[index].label);
+    }
+    while (listBox_->GetCount() > items.size())
+        listBox_->Delete(listBox_->GetCount() - 1);
+    for (std::size_t index = retainedCount; index < items.size(); ++index)
+        listBox_->Append(items[index].label);
+
     itemIds_.clear();
     itemIds_.reserve(items.size());
-    for (const auto& item : items)
-    {
-        listBox_->Append(item.label);
-        itemIds_.push_back(item.id);
-    }
+    for (const auto& item : items) itemIds_.push_back(item.id);
 
     itemCount_ = items.size();
     selectedIndex_ = targetIndex;
     if (itemCount_ > 0)
     {
-        // Select the final target once, without briefly announcing item zero.
-        listBox_->SetSelection(static_cast<int>(selectedIndex_));
+        // Preserve the native selection when the logical target did not move.
+        // Reapplying it produces a redundant accessibility announcement.
+        if (listBox_->GetSelection() != static_cast<int>(selectedIndex_))
+            listBox_->SetSelection(static_cast<int>(selectedIndex_));
     }
     UpdateVisualSelection();
 }

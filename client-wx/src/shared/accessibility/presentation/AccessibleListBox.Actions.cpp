@@ -1,4 +1,5 @@
 #include "shared/accessibility/presentation/AccessibleMenu.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 
 #include <utility>
 #ifdef __WXMSW__
@@ -58,7 +59,7 @@ wxAccStatus AccessibleListBox::DoDefaultAction(int childId)
 
     const int itemIndex = childId - 1;
     if (!list->IsSelected(itemIndex)) list->SetSelection(itemIndex);
-    if (!list->HasFocus()) list->SetFocus();
+    static_cast<void>(NavigationController::Focus(list));
     if (onActivated_)
     {
         onActivated_(static_cast<std::size_t>(itemIndex));
@@ -97,7 +98,7 @@ wxAccStatus AccessibleListBox::Select(int childId, wxAccSelectionFlags selectFla
             SendMessage(reinterpret_cast<HWND>(list->GetHandle()),
                 LB_SETCARETINDEX, static_cast<WPARAM>(itemIndex), FALSE);
 #endif
-        if (!list->HasFocus()) list->SetFocus();
+        static_cast<void>(NavigationController::Focus(list));
     }
     return wxACC_OK;
 }

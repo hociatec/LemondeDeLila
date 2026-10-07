@@ -10,11 +10,14 @@
 #include <wx/panel.h>
 
 #include "modules/audio/application/IAudioService.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/security/domain/SecureWipe.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::admin::presentation
 {
+using FocusController = lila::shared::accessibility::NavigationController;
+
 void AdminFrame::ShowSections()
 {
     gameNavigation_.clear();
@@ -117,7 +120,8 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         wxString(visibleCommands_[commandsMenu_->GetSelectedIndex()]->description));
     Layout();
     LoadAutomaticAreaContent();
-    if (bugReports) reportStatusMenu_->GetSelectedControl()->SetFocus();
+    if (bugReports)
+        static_cast<void>(FocusController::Focus(reportStatusMenu_->GetSelectedControl()));
     else FocusCurrentMenu();
 }
 
@@ -203,7 +207,7 @@ void AdminFrame::FocusCurrentMenu()
     if (showingCommands_ && !showingItemActions_ && reportSearchPanel_->IsShown())
         menu = reportStatusMenu_;
     if (menu != nullptr && menu->GetSelectedControl() != nullptr)
-        menu->GetSelectedControl()->SetFocus();
+        static_cast<void>(FocusController::Focus(menu->GetSelectedControl()));
 }
 
 void AdminFrame::FocusResult()
@@ -211,7 +215,7 @@ void AdminFrame::FocusResult()
     if (resultsMenu_ != nullptr && resultsMenu_->IsShown() &&
         resultsMenu_->GetSelectedControl() != nullptr)
     {
-        resultsMenu_->GetSelectedControl()->SetFocus();
+        static_cast<void>(FocusController::Focus(resultsMenu_->GetSelectedControl()));
         return;
     }
     FocusResultDetails();
@@ -221,16 +225,16 @@ void AdminFrame::FocusResultDetails()
 {
     if (resultText_ == nullptr) return;
     resultText_->SetInsertionPoint(0);
-    resultText_->SetFocus();
+    static_cast<void>(FocusController::Focus(resultText_));
 }
 
 void AdminFrame::FocusPagination()
 {
     if (previousPageButton_ != nullptr && previousPageButton_->IsShown() &&
         previousPageButton_->IsEnabled())
-        previousPageButton_->SetFocus();
+        static_cast<void>(FocusController::Focus(previousPageButton_));
     else if (pageSizeChoice_ != nullptr && pageSizeChoice_->IsShown())
-        pageSizeChoice_->SetFocus();
+        static_cast<void>(FocusController::Focus(pageSizeChoice_));
 }
 
 void AdminFrame::SetStatus(const wxString& message, bool isError)
