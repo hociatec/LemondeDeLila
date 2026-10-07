@@ -72,7 +72,16 @@ export class SoundsUploadManager {
       );
       encoded = await this.encodeAndValidate(safeTempFilePath, isWavInput);
       const entry = await this.persist(soundId, encoded);
-      await this.dependencies.removeUnusedFiles(soundId, encoded.sha256);
+      try {
+        await this.dependencies.removeUnusedFiles(soundId, encoded.sha256);
+      } catch (error) {
+        this.dependencies.warn(
+          `Nettoyage après remplacement de ${soundId}: ${String(error)}`,
+        );
+        throw new InternalServerErrorException(
+          'Le nouveau son est enregistré, mais la suppression des anciens fichiers a échoué. Réessayez le remplacement.',
+        );
+      }
       await this.dependencies.notifyUpdated(entry, entry.uploadedAt);
       return entry;
     } finally {

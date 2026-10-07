@@ -23,8 +23,8 @@ struct SoundAssetManifest final
 };
 
 inline constexpr std::size_t MaximumSoundManifestBytes = 1024U * 1024U;
-inline constexpr std::size_t MaximumRemoteSoundBytes = 32U * 1024U * 1024U;
-inline constexpr std::size_t MaximumRemoteSoundTotalBytes = 128U * 1024U * 1024U;
+// Match the server's upload and encoded WAV limit. Assets are fetched on demand.
+inline constexpr std::size_t MaximumRemoteSoundBytes = 250U * 1024U * 1024U;
 inline constexpr std::size_t MaximumRemoteSoundEntries = 256;
 
 [[nodiscard]] std::optional<SoundAssetManifest> ParseSoundAssetManifest(

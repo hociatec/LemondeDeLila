@@ -45,6 +45,11 @@ void TestSoundCatalogAndPerCueOptionsRoundTrip()
         Expect(options[index].cue == descriptor.cue, "Ordre du catalogue d'options invalide");
         Expect(!options[index].label.empty(), "Libelle de son requis");
         const auto fileName = lila::modules::audio::infrastructure::GetLocalSoundFile(descriptor.cue);
+        if (descriptor.family == SoundFamily::TableAmbience)
+        {
+            Expect(fileName.empty(), "Une ambiance personnalisee ne doit pas jouer un autre son de repli");
+            continue;
+        }
         Expect(!fileName.empty(), "Fichier sonore de repli requis");
         Expect(
             std::filesystem::exists(std::filesystem::current_path() / "resources" / "sounds" / fileName),

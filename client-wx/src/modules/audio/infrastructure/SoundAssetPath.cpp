@@ -138,9 +138,13 @@ void SoundAssetPathResolver::LoadRemoteManifest()
         const auto origin = lila::shared::network::WebSocketOriginToHttp(
             lila::shared::config::AppConfig::ResolveBackendApiWs());
         const auto raw = lila::shared::network::http::RequestWsTicketResponse(
-            origin + "/api/sounds/manifest", {});
+            origin + "/api/sounds/manifest", {}, MaximumSoundManifestBytes);
         const auto manifest = ParseSoundAssetManifest(raw);
-        if (!manifest.has_value()) return;
+        if (!manifest.has_value())
+        {
+            lila::shared::logging::LogWarning("Audio", "Manifest audio distant invalide.");
+            return;
+        }
         remoteSounds_ = manifest->sounds;
         disabledSounds_ = manifest->disabled;
         std::unordered_map<std::string, std::string> currentHashes;
