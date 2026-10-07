@@ -52,6 +52,7 @@ public:
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:
+    friend struct AdminQuizNavigationTest;
     void BuildLayout();
     void BindEvents();
     void ShowSections();
@@ -80,6 +81,8 @@ private:
     void ShowResultDetails(std::size_t index);
     void OpenResultActions(std::size_t index);
     void RestoreAreaFromItem();
+    void SaveGameNavigation();
+    bool RestoreGameNavigation();
     void ApplyContextToPayload(const domain::AdminCommand& command, nlohmann::json& payload) const;
     [[nodiscard]] bool ContextCommandMutates(const domain::AdminCommand& command) const;
     void SearchBugReports();
@@ -162,6 +165,24 @@ private:
     bool showingItemActions_ = false;
     domain::AdminItemKind currentResultItemKind_ = domain::AdminItemKind::None;
     nlohmann::json contextItem_ = nlohmann::json::object();
+    struct GameNavigationEntry
+    {
+        const domain::AdminCommand* command;
+        nlohmann::json result;
+        nlohmann::json payload;
+        std::size_t resultIndex;
+        std::size_t actionIndex;
+        bool itemActions;
+    };
+    std::vector<GameNavigationEntry> gameNavigation_;
+    const domain::AdminCommand* gameResultCommand_ = nullptr;
+    nlohmann::json gameResult_;
+    nlohmann::json gameResultPayload_;
+    nlohmann::json activeRequestPayload_;
+    bool restoringGameNavigation_ = false;
+    std::optional<std::size_t> pendingQuestionEditor_;
+    nlohmann::json questionCategories_;
+    bool questionCategoriesReady_ = false;
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
 };
 }

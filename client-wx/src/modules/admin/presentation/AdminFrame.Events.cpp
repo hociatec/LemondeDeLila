@@ -50,6 +50,8 @@ void AdminFrame::BindEvents()
     {
         if (keyCode == WXK_ESCAPE)
         {
+            if (domain::GetAdminAreas()[selectedSection_].id == "games")
+                return HandleKey(keyCode);
             if (showingItemActions_ && commandsMenu_->IsShown()) FocusCurrentMenu();
             else if (reportSearchPanel_->IsShown()) reportStatusMenu_->GetSelectedControl()->SetFocus();
             else if (commandsMenu_->IsShown()) FocusCurrentMenu();
@@ -143,6 +145,11 @@ void AdminFrame::BindEvents()
             return;
         if (keyCode == WXK_ESCAPE)
         {
+            if (domain::GetAdminAreas()[selectedSection_].id == "games")
+            {
+                HandleKey(keyCode);
+                return;
+            }
             if (resultsMenu_->IsShown() && resultsMenu_->GetSelectedControl() != nullptr)
                 resultsMenu_->GetSelectedControl()->SetFocus();
             else if (showingItemActions_ && commandsMenu_->IsShown())

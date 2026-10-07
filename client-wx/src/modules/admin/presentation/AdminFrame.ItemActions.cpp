@@ -33,6 +33,10 @@ void AdminFrame::OpenResultActions(std::size_t index)
         FocusResultDetails();
         return;
     }
+    selectedResultIndex_ = index;
+    if (domain::GetAdminAreas()[selectedSection_].id == "games" &&
+        !restoringGameNavigation_ && !showingItemActions_)
+        SaveGameNavigation();
     contextItem_ = resultItems_[index];
     const auto& area = domain::GetAdminAreas()[selectedSection_];
     if (area.id == "storybook")
@@ -140,7 +144,8 @@ void AdminFrame::OpenResultActions(std::size_t index)
     }
     else if (kind == domain::AdminItemKind::MnemoCategory)
     {
-        add("mnemo.questions", L"Toutes les questions", {}, true);
+        add("mnemo.questions", L"Voir les questions de cette catégorie",
+            {{"categoryId", contextItem_.at("id")}}, true);
         add("mnemo.question.create", L"Ajouter une question");
         add("mnemo.category.create", L"Ajouter une catégorie");
         add("mnemo.category.update", L"Renommer");

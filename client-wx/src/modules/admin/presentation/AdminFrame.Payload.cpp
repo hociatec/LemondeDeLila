@@ -22,7 +22,7 @@ bool IsContextIdentifier(const domain::AdminCommand& command, std::string_view k
     for (const auto identifier : identifiers)
         if (key == identifier) return true;
     return (command.id.starts_with("games.") && key == "gameType") ||
-        (command.id.starts_with("mnemo.") && key == "categoryId") ||
+        (command.id.starts_with("mnemo.") && command.id != "mnemo.question.update" && key == "categoryId") ||
         (command.id.starts_with("roles.") && key == "name");
 }
 }
@@ -64,7 +64,7 @@ bool AdminFrame::PreparePayload(
     if (needsInput)
     {
         AdminCommandDialog dialog(this, dialogCommand, payload,
-            [this](std::string_view soundId) { PreviewSound(soundId); });
+            [this](std::string_view soundId) { PreviewSound(soundId); }, questionCategories_);
         if (dialog.ShowModal() != wxID_OK) return false;
         auto businessPayload = dialog.Payload();
         for (const auto& item : payload.items())
