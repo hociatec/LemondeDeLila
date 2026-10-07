@@ -73,7 +73,13 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
     {
         hostFrame_->Show(true);
     }
-    ApplyViewFocus(currentView_);
+    // At startup Application restores the initial view focus after Windows has
+    // finished activating the host window. Focusing here as well interrupts
+    // the screen reader while it is still announcing the application title.
+    if (previousViewId != ViewId::None)
+    {
+        ApplyViewFocus(currentView_);
+    }
 
     const auto transitionElapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now() - transitionStartedAt);
