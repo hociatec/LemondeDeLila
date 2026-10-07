@@ -92,6 +92,14 @@ bool AdminFrame::PreparePayload(
         if (picker.ShowModal() != wxID_OK) return false;
         payload["filePath"] = lila::shared::text::ToUtf8(picker.GetPath());
     }
+    if (command.id == "sounds.ambience.create")
+    {
+        wxFileDialog picker(this, wxString(L"Choisir le son de l’ambiance"), wxString{}, wxString{},
+            wxString(L"Fichiers audio (*.wav;*.wave;*.ogg;*.mp3)|*.wav;*.wave;*.ogg;*.mp3|Tous les fichiers|*.*"),
+            wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        if (picker.ShowModal() != wxID_OK) return false;
+        pendingAmbienceUploadPath_ = lila::shared::text::ToUtf8(picker.GetPath());
+    }
     return true;
 }
 

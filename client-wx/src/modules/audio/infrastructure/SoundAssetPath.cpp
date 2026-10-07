@@ -111,14 +111,6 @@ std::filesystem::path SoundAssetPathResolver::Resolve(domain::SoundCue cue)
     {
         const auto remote = ResolveRemote(soundId, found->second);
         if (!remote.empty()) return remote;
-        const auto previousHash = found->second.sha256;
-        if (stopToken_.stop_requested()) return {};
-        Invalidate();
-        LoadRemoteManifest();
-        if (disabledSounds_.contains(soundId)) return {};
-        const auto current = remoteSounds_.find(soundId);
-        if (current != remoteSounds_.end() && current->second.sha256 != previousHash)
-            return ResolveRemote(soundId, current->second);
     }
     return FindLocalSoundAsset(soundDirectory_, cue);
 }
@@ -138,7 +130,7 @@ std::filesystem::path SoundAssetPathResolver::ResolvePreview(domain::SoundCue cu
 
 void SoundAssetPathResolver::LoadRemoteManifest()
 {
-    if (stopToken_.stop_requested() || manifestLoaded_ || std::chrono::steady_clock::now() < nextManifestAttempt_) return;
+    if (manifestLoaded_ || std::chrono::steady_clock::now() < nextManifestAttempt_) return;
     nextManifestAttempt_ = std::chrono::steady_clock::now() + std::chrono::seconds(10);
 #if defined(_WIN32) && !defined(LILA_DISABLE_REMOTE_SOUND_ASSETS)
     try
@@ -146,7 +138,7 @@ void SoundAssetPathResolver::LoadRemoteManifest()
         const auto origin = lila::shared::network::WebSocketOriginToHttp(
             lila::shared::config::AppConfig::ResolveBackendApiWs());
         const auto raw = lila::shared::network::http::RequestWsTicketResponse(
-            origin + "/api/sounds/manifest", {}, MaximumSoundManifestBytes, stopToken_);
+            origin + "/api/sounds/manifest", {}, MaximumSoundManifestBytes);
         const auto manifest = ParseSoundAssetManifest(raw);
         if (!manifest.has_value())
         {
@@ -155,8 +147,10 @@ void SoundAssetPathResolver::LoadRemoteManifest()
         }
         remoteSounds_ = manifest->sounds;
         disabledSounds_ = manifest->disabled;
+        std::unordered_map<std::string, std::string> currentHashes;
+        for (const auto& [id, sound] : remoteSounds_) currentHashes[id] = sound.sha256;
+        CleanupRemoteSoundCache(cacheDirectory_, currentHashes);
         manifestLoaded_ = true;
-        CleanupObsoleteAssets();
     }
     catch (const std::exception& error)
     {
@@ -171,14 +165,6 @@ void SoundAssetPathResolver::Invalidate()
     manifestLoaded_ = false;
     nextManifestAttempt_ = {};
     verifiedAssets_.clear();
-}
-
-void SoundAssetPathResolver::CleanupObsoleteAssets()
-{
-    if (!manifestLoaded_) return;
-    std::unordered_map<std::string, std::string> hashes;
-    for (const auto& [id, sound] : remoteSounds_) hashes[id] = sound.sha256;
-    CleanupRemoteSoundCache(cacheDirectory_, hashes);
 }
 
 std::filesystem::path SoundAssetPathResolver::ResolveRemote(
@@ -208,7 +194,7 @@ std::filesystem::path SoundAssetPathResolver::ResolveRemote(
             url = lila::shared::network::WebSocketOriginToHttp(
                 lila::shared::config::AppConfig::ResolveBackendApiWs()) + url;
         const auto content = lila::shared::network::http::RequestWsTicketResponse(
-            url, {}, sound.bytes, stopToken_);
+            url, {}, sound.bytes);
         if (content.size() != sound.bytes || Sha256(content) != sound.sha256) return {};
         std::filesystem::create_directories(directory);
         auto temporary = target;

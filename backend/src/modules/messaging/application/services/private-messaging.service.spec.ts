@@ -28,7 +28,7 @@ describe('PrivateMessagingService', () => {
       findInbox: jest.fn().mockResolvedValue([]),
       findOutbox: jest.fn().mockResolvedValue([]),
       findDeleted: jest.fn().mockResolvedValue([]),
-      purgeForUser: jest.fn(),
+      remove: jest.fn(),
       countUnreadForRecipient: jest.fn(),
     };
     const users = {
@@ -37,17 +37,14 @@ describe('PrivateMessagingService', () => {
       ),
       findByUsername: jest.fn(),
     };
-    const contacts = { canSend: jest.fn().mockResolvedValue(true) };
     return {
       service: new PrivateMessagingService(
         messages as any,
         users as any,
         new MessageValidatorService(),
         { now: () => Date.now() },
-        contacts,
       ),
       messages,
-      contacts,
     };
   };
 
@@ -58,16 +55,6 @@ describe('PrivateMessagingService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
     await service.inbox(1, 50_000);
     expect(messages.findInbox).toHaveBeenCalledWith(1, 500);
-  });
-
-  it('does not persist a private message when either participant has blocked contact', async () => {
-    const { service, messages, contacts } = setup();
-    contacts.canSend.mockResolvedValue(false);
-    await expect(
-      service.send(1, { recipientId: 2, text: 'test' }),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-    expect(contacts.canSend).toHaveBeenCalledWith(1, 2);
-    expect(messages.create).not.toHaveBeenCalled();
   });
 
   it('enforces IDOR protection for deletion and read state', async () => {
@@ -94,7 +81,7 @@ describe('PrivateMessagingService', () => {
 
     await service.delete(2, row.messageId);
     await service.purge(2, row.messageId);
-    expect(messages.purgeForUser).toHaveBeenCalledWith(row.messageId, 2);
+    expect(messages.remove).toHaveBeenCalledWith(row.messageId);
   });
 
   it('does not overwrite read timestamps or save messages already read', async () => {

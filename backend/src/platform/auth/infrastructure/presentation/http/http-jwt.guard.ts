@@ -2,7 +2,6 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  Inject,
   UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
@@ -10,34 +9,16 @@ import {
   HttpJwtPayload,
   JwtPayloadVerifierService,
 } from '../../../application/services/jwt-payload-verifier.service';
-import {
-  AUTH_ACCOUNT_READER,
-  type AuthAccountReader,
-} from '../../../application/ports/auth-account-reader.port';
-import { validateAccountSession } from '../../../application/services/validate-account-session';
 
 @Injectable()
 export class HttpJwtGuard implements CanActivate {
-  constructor(
-    private readonly verifier: JwtPayloadVerifierService,
-    @Inject(AUTH_ACCOUNT_READER) private readonly accounts: AuthAccountReader,
-  ) {}
+  constructor(private readonly verifier: JwtPayloadVerifierService) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<RequestWithUser>();
     const token = this.extractBearer(request.headers);
     const payload = this.verifier.verifyHttpToken(token);
-    const account = await validateAccountSession(
-      this.accounts,
-      Number(payload.sub),
-      payload.credentialVersion,
-    );
-    request.user = {
-      ...payload,
-      roles: account.roles,
-      username: account.username,
-      email: account.email,
-    };
+    request.user = payload;
     return true;
   }
 

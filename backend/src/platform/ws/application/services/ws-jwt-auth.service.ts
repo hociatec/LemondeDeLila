@@ -12,13 +12,7 @@ import {
   WS_RUNTIME_CONFIG,
   type WsRuntimeConfig,
 } from '../ports/ws-runtime-config.port';
-import {
-  jwtUserId,
-  requireJwtVerifyKey,
-  AUTH_ACCOUNT_READER,
-  type AuthAccountReader,
-  validateAccountSession,
-} from '../../../auth/public-api';
+import { jwtUserId, requireJwtVerifyKey } from '../../../auth/public-api';
 
 export type WsRequestLike = IncomingMessage & {
   url?: string;
@@ -45,19 +39,7 @@ export class WsJwtAuthService {
   constructor(
     @Inject(WS_RUNTIME_CONFIG)
     private readonly config: WsRuntimeConfig,
-    @Inject(AUTH_ACCOUNT_READER) private readonly accounts: AuthAccountReader,
   ) {}
-
-  async revalidate(payload: WsAuthPayload): Promise<WsAuthPayload> {
-    return {
-      ...payload,
-      ...(await validateAccountSession(
-        this.accounts,
-        payload.id,
-        payload.credentialVersion,
-      )),
-    };
-  }
 
   extractToken(client: WsClientLike, args: unknown[]): string | null {
     const firstArg = args[0];
@@ -255,10 +237,6 @@ export class WsJwtAuthService {
       username,
       email: WsJwtAuthService.getOptionalString(record, 'email'),
       roles: WsJwtAuthService.getStringArray(record, 'roles'),
-      credentialVersion: WsJwtAuthService.getOptionalString(
-        record,
-        'credentialVersion',
-      ),
       sub,
       exp,
       iat,

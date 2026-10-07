@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -38,7 +35,7 @@ describe('SoundsService table ambiences', () => {
     return { service, notifications };
   }
 
-  it('rejects malformed persisted entries instead of silently dropping them', async () => {
+  it('rejects entries without enabled and filters disabled in public list', async () => {
     const tableAmbiencesPath = path.join(tempRoot, 'table-ambiences.json');
     fs.writeFileSync(
       tableAmbiencesPath,
@@ -58,14 +55,19 @@ describe('SoundsService table ambiences', () => {
 
     const { service } = createService();
 
-    const before = fs.readFileSync(tableAmbiencesPath, 'utf8');
-    await expect(
-      service.listTableAmbiencesWithFilter({ includeDisabled: true }),
-    ).rejects.toBeInstanceOf(InternalServerErrorException);
-    await expect(
-      service.createTableAmbience('New ambience'),
-    ).rejects.toBeInstanceOf(InternalServerErrorException);
-    expect(fs.readFileSync(tableAmbiencesPath, 'utf8')).toBe(before);
+    const all = await service.listTableAmbiencesWithFilter({
+      includeDisabled: true,
+    });
+    expect(all.items).toEqual([
+      {
+        soundId: 'TableAmbience2',
+        name: 'Ambiance inactive',
+        enabled: false,
+      },
+    ]);
+
+    const publicList = await service.listTableAmbiencesWithFilter();
+    expect(publicList.items).toEqual([]);
   });
 
   it('keeps enabled flag when renaming and allows enable/disable toggles', async () => {

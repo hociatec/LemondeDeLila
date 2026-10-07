@@ -42,6 +42,5 @@
   "1771100000000-PersistRoomInvites.ts": "c785322c75cef4daf339def126135b458a4636b5d5a34c1b7ee179a52913960c",
   "1771200000000-MergeDoneBugReportsIntoToTest.ts": "3355f0e119dc6d1181881a143d02f6335b60f532fd8ff6f0c1f6dc504fa414da",
   "1790035200000-AddAdminMaintenanceLocks.ts": "e9a42e1800f34e94fa8df3fd62c5c31d60ea34a9d8522284e61e16fa3538a09f",
-  "1790035300000-IndexRecoverableGameSessions.ts": "ac0e8ff7f6211e3cec562e43e5033a9c41cae7344f21e820c1ef63d7c0c37f58",
-  "1791367200000-AddIndependentMessagePurge.ts": "3a5d8209d7dc6bc9785c7ee8903719a6991cde9392e0306251bf9bb50d56cca7"
+  "1790035300000-IndexRecoverableGameSessions.ts": "ac0e8ff7f6211e3cec562e43e5033a9c41cae7344f21e820c1ef63d7c0c37f58"
 }

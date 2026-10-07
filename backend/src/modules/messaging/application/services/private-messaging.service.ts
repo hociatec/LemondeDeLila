@@ -23,10 +23,6 @@ import {
   type PrivateMessageRepository,
 } from '../ports/private-message.repository';
 import { MessageValidatorService } from './message-validator.service';
-import {
-  MESSAGE_CONTACT_POLICY,
-  type MessageContactPolicy,
-} from '../ports/message-contact-policy.port';
 
 @Injectable()
 export class PrivateMessagingService {
@@ -39,8 +35,6 @@ export class PrivateMessagingService {
     private readonly users: MessagingUserReader,
     private readonly validator: MessageValidatorService,
     @Inject(BUSINESS_CLOCK) private readonly clock: BusinessClock,
-    @Inject(MESSAGE_CONTACT_POLICY)
-    private readonly contacts: MessageContactPolicy,
   ) {}
 
   async send(
@@ -61,11 +55,6 @@ export class PrivateMessagingService {
       throw new NotFoundException('Destinataire introuvable');
     }
 
-    if (!(await this.contacts.canSend(sender.id, recipient.id))) {
-      throw new ForbiddenException(
-        'Envoi de message impossible pour ce contact',
-      );
-    }
     const sanitized = this.validator.validate(payload.text);
     const subject = this.validator.validateSubject(payload.subject);
     const message = await this.messages.create({
@@ -135,7 +124,7 @@ export class PrivateMessagingService {
     ) {
       throw new BadRequestException('Message invalide');
     }
-    const message = await this.messages.findByMessageId(messageId, userId);
+    const message = await this.messages.findByMessageId(messageId);
     if (!message) {
       throw new NotFoundException('Message introuvable');
     }
@@ -171,7 +160,7 @@ export class PrivateMessagingService {
     ) {
       throw new BadRequestException('Message invalide');
     }
-    const message = await this.messages.findByMessageId(messageId, userId);
+    const message = await this.messages.findByMessageId(messageId);
     if (!message) {
       throw new NotFoundException('Message introuvable');
     }
@@ -208,7 +197,7 @@ export class PrivateMessagingService {
     ) {
       throw new BadRequestException('Message invalide');
     }
-    const message = await this.messages.findByMessageId(messageId, userId);
+    const message = await this.messages.findByMessageId(messageId);
     if (!message) {
       throw new NotFoundException('Message introuvable');
     }
@@ -223,7 +212,7 @@ export class PrivateMessagingService {
     if (isRecipient && !message.deletedByRecipientAt) {
       throw new BadRequestException('Message pas dans la corbeille');
     }
-    await this.messages.purgeForUser(message.messageId, userId);
+    await this.messages.remove(message.messageId);
     return message;
   }
 
@@ -232,7 +221,7 @@ export class PrivateMessagingService {
     if (!id || id.length > 128 || !Number.isSafeInteger(userId) || userId <= 0)
       return;
 
-    const message = await this.messages.findByMessageId(id, userId);
+    const message = await this.messages.findByMessageId(id);
     if (!message) {
       throw new NotFoundException('Message introuvable');
     }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <optional>
-#include <stop_token>
 
 #include "modules/audio/domain/SoundCue.h"
 
@@ -31,8 +30,6 @@ public:
     // The asynchronous wrapper polls it on its audio worker only.
     virtual bool PumpDeferredPlayback() { return false; }
     virtual void RefreshAssets() {}
-    // Only I/O is cancellable from another thread; BASS remains on its worker.
-    virtual void SetOperationStopToken(std::stop_token token) { static_cast<void>(token); }
     virtual void FinishPlayback() {}
     virtual void ShutdownGracefully() noexcept { Shutdown(); }
     virtual void InterruptPlayback() noexcept = 0;

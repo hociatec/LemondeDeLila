@@ -1,5 +1,4 @@
 #include "shared/network/infrastructure/http/WsTicketTransport.h"
-#include "shared/network/infrastructure/http/WsTicketResponseReader.h"
 
 #include "shared/data/json/JsonReaders.h"
 #include "shared/errors/catalog/NetworkErrorMessages.h"
@@ -16,7 +15,6 @@
 
 #ifdef _WIN32
 #include "shared/network/infrastructure/winhttp/WinHttpHandle.h"
-#include "shared/network/infrastructure/winhttp/HttpRequestDeadline.h"
 
 #include <windows.h>
 #include <winhttp.h>
@@ -57,6 +55,37 @@ ParsedUrl ParseUrl(const std::string& url)
     parsed.port = components.nPort;
     parsed.secure = components.nScheme == INTERNET_SCHEME_HTTPS;
     return parsed;
+}
+
+std::string ReadResponseBody(HINTERNET request, std::size_t maximumBytes)
+{
+    std::string body;
+    std::array<char, 4096> buffer{};
+
+    while (true)
+    {
+        DWORD available = 0;
+        if (!WinHttpQueryDataAvailable(request, &available))
+        {
+            throw std::runtime_error(lila::shared::errors::HttpResponseReadFailed);
+        }
+
+        if (available == 0)
+        {
+            break;
+        }
+        if (body.size() + available > maximumBytes)
+            throw std::runtime_error("Réponse HTTP trop volumineuse.");
+
+        DWORD read = 0;
+        if (!WinHttpReadData(request, buffer.data(), std::min<DWORD>(available, static_cast<DWORD>(buffer.size())), &read))
+        {
+            throw std::runtime_error(lila::shared::errors::HttpResponseReadFailed);
+        }
+
+        body.append(buffer.data(), buffer.data() + read);
+    }
+    return body;
 }
 
 std::string ReadTicketErrorMessage(const std::string& responseBody)
@@ -120,7 +149,7 @@ std::string BuildTicketRequestError(
 namespace lila::shared::network::http
 {
 std::string RequestWsTicketResponse(const std::string& url,
-    const std::string& bearerToken, std::size_t maximumResponseBytes, std::stop_token stopToken)
+    const std::string& bearerToken, std::size_t maximumResponseBytes)
 {
 #ifdef _WIN32
     const ParsedUrl parsed = ParseUrl(url);
@@ -167,8 +196,6 @@ std::string RequestWsTicketResponse(const std::string& url,
         throw std::runtime_error(lila::shared::errors::HttpRequestCreationFailed);
     }
 
-    std::stop_callback cancel(stopToken, [&request] { request.Reset(); });
-    lila::shared::network::winhttp::HttpRequestDeadline deadline(request, std::chrono::minutes(2));
     const std::wstring authorization =
         lila::shared::text::Utf8ToWide(std::string(lila::shared::network::ws::AuthorizationHeader))
         + L": "
@@ -205,18 +232,17 @@ std::string RequestWsTicketResponse(const std::string& url,
 
     if (statusCode < 200 || statusCode >= 300)
     {
-        const auto responseBody = detail::ReadResponseBody(request.Get(), 1024U * 1024U);
+        const auto responseBody = ReadResponseBody(request.Get(), 1024U * 1024U);
         throw WsTicketRequestError(
             BuildTicketRequestError(statusCode, responseBody),
             statusCode);
     }
 
-    return detail::ReadResponseBody(request.Get(), maximumResponseBytes);
+    return ReadResponseBody(request.Get(), maximumResponseBytes);
 #else
     (void)url;
     (void)bearerToken;
     (void)maximumResponseBytes;
-    (void)stopToken;
     throw std::runtime_error(lila::shared::errors::WsTicketUnsupportedTransport);
 #endif
 }

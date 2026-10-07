@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as fs from 'fs';
-import { bestEffort } from '../../../../platform/observability/public-api';
 import { writeFileAtomic } from '../../../../platform/filesystem/public-api';
 import {
   SOUND_KEYS,
@@ -44,10 +43,7 @@ export class SoundsTableAmbiencesManager {
     };
   }
 
-  async create(
-    nameRaw: string,
-    enabled = true,
-  ): Promise<TableAmbienceDefinition> {
+  async create(nameRaw: string): Promise<TableAmbienceDefinition> {
     const name = String(nameRaw ?? '').trim();
     if (!name) {
       throw new BadRequestException("Nom d'ambiance requis.");
@@ -71,7 +67,7 @@ export class SoundsTableAmbiencesManager {
     const created: TableAmbienceDefinition = {
       soundId: available,
       name,
-      enabled,
+      enabled: true,
     };
     await this.writeAndNotify({
       updatedAt: this.deps.now(),
@@ -167,31 +163,25 @@ export class SoundsTableAmbiencesManager {
       }
       const raw = await fs.promises.readFile(filePath, 'utf-8');
       const parsed: unknown = JSON.parse(raw.replace(/^\uFEFF/, ''));
-      if (
-        !isRecord(parsed) ||
-        !Array.isArray(parsed.items) ||
-        parsed.items.length > 64
-      )
-        throw new BadRequestException('Configuration des ambiances invalide.');
-      const record = parsed;
-      const itemsRaw = parsed.items;
-      const decoded = itemsRaw.map((value) =>
-        toTableAmbienceDefinition(value, (input) =>
-          this.normalizeTableAmbienceKey(input),
-        ),
-      );
-      if (decoded.some((item) => item === null))
-        throw new BadRequestException(
-          'Ambiance invalide dans la configuration.',
-        );
-      const items = decoded as TableAmbienceDefinition[];
+      const record = isRecord(parsed) ? parsed : {};
+      const itemsRaw =
+        Array.isArray(record.items) && record.items.length <= 64
+          ? record.items
+          : [];
+      const items: TableAmbienceDefinition[] = itemsRaw
+        .map((value) =>
+          toTableAmbienceDefinition(value, (input) =>
+            this.normalizeTableAmbienceKey(input),
+          ),
+        )
+        .filter((item): item is TableAmbienceDefinition => item !== null);
 
       const seen = new Set<string>();
       const deduped: TableAmbienceDefinition[] = [];
       for (const item of items) {
         const key = item.soundId.toLowerCase();
         if (seen.has(key)) {
-          throw new BadRequestException('Identifiant d’ambiance dupliqué.');
+          continue;
         }
         seen.add(key);
         deduped.push(item);
@@ -204,10 +194,8 @@ export class SoundsTableAmbiencesManager {
             : this.deps.now(),
         items: deduped,
       };
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException)?.code === 'ENOENT')
-        return { updatedAt: this.deps.now(), items: [] };
-      throw this.deps.storageIoError('lecture table-ambiances.json', error);
+    } catch {
+      return { updatedAt: this.deps.now(), items: [] };
     }
   }
 
@@ -230,10 +218,7 @@ export class SoundsTableAmbiencesManager {
     next: TableAmbienceDefinitionsFile,
   ): Promise<void> {
     await this.write(next);
-    await bestEffort(
-      this.deps.notifyUpdated(next.updatedAt),
-      'notification des ambiances',
-    );
+    await this.deps.notifyUpdated(next.updatedAt);
   }
 }
 

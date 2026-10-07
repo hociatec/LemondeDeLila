@@ -52,10 +52,4 @@ export class PrivateMessageEntity {
 
   @Column({ name: 'read_by_recipient_at', type: 'datetime', nullable: true })
   readByRecipientAt?: Date | null;
-
-  @Column({ name: 'purged_by_sender_at', type: 'datetime', nullable: true })
-  purgedBySenderAt?: Date | null;
-
-  @Column({ name: 'purged_by_recipient_at', type: 'datetime', nullable: true })
-  purgedByRecipientAt?: Date | null;
 }
