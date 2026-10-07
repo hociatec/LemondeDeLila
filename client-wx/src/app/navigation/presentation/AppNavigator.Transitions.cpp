@@ -70,7 +70,7 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
     {
         audioService_.Play(lila::modules::audio::domain::SoundCue::TavernClosed);
     }
-    if (!hostFrame_->IsShown())
+    if (!hostFrame_->IsShown() && previousViewId != ViewId::None)
     {
         hostFrame_->Show(true);
     }
@@ -92,7 +92,7 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
     }
 }
 
-void AppNavigator::ApplyViewFocus(wxWindow* view, bool includeApplicationContext)
+void AppNavigator::ApplyViewFocus(wxWindow* view)
 {
     if (view == nullptr || hostFrame_ == nullptr)
     {
@@ -100,18 +100,6 @@ void AppNavigator::ApplyViewFocus(wxWindow* view, bool includeApplicationContext
     }
 
     wxWeakRef<wxWindow> weakView(view);
-    wxWeakRef<HostFrame> weakHost(hostFrame_);
-    lila::shared::accessibility::FocusManager::BeforeFocus beforeFocus;
-    if (includeApplicationContext)
-    {
-        beforeFocus = [weakHost](wxWindow* target)
-        {
-            if (auto* host = weakHost.get())
-            {
-                host->PrepareActivationFocusContext(target);
-            }
-        };
-    }
     focusTransition_.Schedule(
         *hostFrame_,
         view,
@@ -122,13 +110,12 @@ void AppNavigator::ApplyViewFocus(wxWindow* view, bool includeApplicationContext
             return focusView != nullptr
                 ? focusView->BuildFocusPlan()
                 : lila::shared::accessibility::FocusManager::Plan{};
-        },
-        std::move(beforeFocus));
+        });
 }
 
 void AppNavigator::FocusCurrentView()
 {
-    ApplyViewFocus(currentView_, true);
+    ApplyViewFocus(currentView_);
 }
 
 wxWindow* AppNavigator::GetOrCreateView(ViewId viewId)

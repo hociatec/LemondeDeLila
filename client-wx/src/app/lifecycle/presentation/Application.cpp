@@ -1,11 +1,8 @@
 #include "app/lifecycle/presentation/Application.h"
 
-#include <functional>
 #include <string>
-#include <utility>
 
 #include <wx/msgdlg.h>
-#include <wx/weakref.h>
 #include <wx/window.h>
 
 #ifdef __WXMSW__
@@ -25,6 +22,10 @@ namespace lila::app
 {
 namespace
 {
+#ifdef __WXMSW__
+constexpr int StartupFocusDelayMs = 1800;
+#endif
+
 void ActivateMainWindow(wxWindow& window)
 {
     window.Show(true);
@@ -54,34 +55,17 @@ void ActivateMainWindow(wxWindow& window)
     window.Raise();
 }
 
-void RevealMainWindowAfterEventLoop(wxApp& application, std::function<void()> restoreViewFocus)
+wxWindow* RevealMainWindow(wxApp& application)
 {
     auto* window = application.GetTopWindow();
     if (window == nullptr)
     {
         lila::shared::logging::LogError("Startup", "Fenêtre principale absente après le bootstrap.");
-        return;
+        return nullptr;
     }
 
     ActivateMainWindow(*window);
-    wxWeakRef<wxWindow> weakWindow(window);
-    application.CallAfter(
-        [weakWindow, restoreViewFocus = std::move(restoreViewFocus)]()
-        {
-            auto* resolved = weakWindow.get();
-            if (resolved == nullptr)
-            {
-                return;
-            }
-            ActivateMainWindow(*resolved);
-            if (restoreViewFocus)
-            {
-                restoreViewFocus();
-            }
-            lila::shared::logging::LogInfo(
-                "Startup",
-                "Fenêtre principale activée et focus de la vue restauré.");
-        });
+    return window;
 }
 }
 
@@ -131,21 +115,40 @@ bool Application::OnInit()
             wxOK | wxICON_ERROR);
         return false;
     }
-    RevealMainWindowAfterEventLoop(
-        *this,
-        [this]()
-        {
-            if (bootstrap_ != nullptr)
+    auto* mainWindow = GetTopWindow();
+#ifdef __WXMSW__
+    if (mainWindow != nullptr)
+        for (auto* child : mainWindow->GetChildren()) child->Disable();
+#endif
+    mainWindow = RevealMainWindow(*this);
+    if (mainWindow != nullptr)
+    {
+#ifdef __WXMSW__
+        startupFocusTimer_ = std::make_unique<wxTimer>(this);
+        Bind(
+            wxEVT_TIMER,
+            [this](wxTimerEvent&)
             {
-                bootstrap_->FocusCurrentView();
-            }
-        });
+                auto* window = GetTopWindow();
+                if (window != nullptr)
+                    for (auto* child : window->GetChildren()) child->Enable();
+                if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
+                lila::shared::logging::LogInfo(
+                    "Startup", "Titre annoncé et focus initial restauré.");
+            },
+            startupFocusTimer_->GetId());
+        startupFocusTimer_->StartOnce(StartupFocusDelayMs);
+#else
+        if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
+#endif
+    }
     healthySignal_ = lila::modules::update::CreateHealthySignal();
     return true;
 }
 
 int Application::OnExit()
 {
+    startupFocusTimer_.reset();
     lila::modules::update::CloseSignal(healthySignal_);
     healthySignal_ = nullptr;
     if (backgroundExecutor_ != nullptr)
