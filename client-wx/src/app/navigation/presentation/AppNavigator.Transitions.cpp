@@ -1,6 +1,7 @@
 #include "app/navigation/presentation/AppNavigator.h"
 
 #include <chrono>
+#include <utility>
 
 #include <wx/weakref.h>
 #include <wx/window.h>
@@ -91,7 +92,7 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
     }
 }
 
-void AppNavigator::ApplyViewFocus(wxWindow* view)
+void AppNavigator::ApplyViewFocus(wxWindow* view, bool includeApplicationContext)
 {
     if (view == nullptr || hostFrame_ == nullptr)
     {
@@ -99,6 +100,18 @@ void AppNavigator::ApplyViewFocus(wxWindow* view)
     }
 
     wxWeakRef<wxWindow> weakView(view);
+    wxWeakRef<HostFrame> weakHost(hostFrame_);
+    lila::shared::accessibility::FocusManager::BeforeFocus beforeFocus;
+    if (includeApplicationContext)
+    {
+        beforeFocus = [weakHost](wxWindow* target)
+        {
+            if (auto* host = weakHost.get())
+            {
+                host->PrepareActivationFocusContext(target);
+            }
+        };
+    }
     focusTransition_.Schedule(
         *hostFrame_,
         view,
@@ -109,12 +122,13 @@ void AppNavigator::ApplyViewFocus(wxWindow* view)
             return focusView != nullptr
                 ? focusView->BuildFocusPlan()
                 : lila::shared::accessibility::FocusManager::Plan{};
-        });
+        },
+        std::move(beforeFocus));
 }
 
 void AppNavigator::FocusCurrentView()
 {
-    ApplyViewFocus(currentView_);
+    ApplyViewFocus(currentView_, true);
 }
 
 wxWindow* AppNavigator::GetOrCreateView(ViewId viewId)
