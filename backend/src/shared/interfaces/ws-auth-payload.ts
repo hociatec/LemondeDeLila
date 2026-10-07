@@ -3,4 +3,5 @@ export interface WsAuthPayload {
   username: string;
   email?: string;
   roles?: string[];
+  credentialVersion?: string;
 }

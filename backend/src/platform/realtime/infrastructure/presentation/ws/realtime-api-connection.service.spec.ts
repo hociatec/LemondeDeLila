@@ -1,4 +1,5 @@
 import type { WebSocket } from 'ws';
+import { UnauthorizedException } from '@nestjs/common';
 import { PerfMetricsService } from '../../../../observability/public-api';
 import {
   WsApiHubService,
@@ -23,6 +24,7 @@ describe('RealtimeApiConnectionService', () => {
       extractClientProduct: jest.fn(() => 'desktop'),
       extractToken: jest.fn(() => 'token'),
       verify: jest.fn(() => ({ id: 7, username: 'lila', roles: ['user'] })),
+      revalidate: jest.fn(async (user: unknown) => user),
     } as unknown as WsJwtAuthService;
     const wsTickets = {
       validateIfTokenPresentDetailed: jest.fn(() => ({
@@ -149,16 +151,18 @@ describe('RealtimeApiConnectionService', () => {
     );
   });
 
-  it('keeps unauthenticated sessions when token verification fails', async () => {
+  it('rejects an invalid token instead of silently opening an anonymous session', async () => {
     const { service, client, auth, sessions } = setup();
     (auth.verify as jest.Mock).mockImplementation(() => {
-      throw new Error('expired');
+      throw new UnauthorizedException('expired');
     });
 
     await service.handleConnection(client, [], 'api');
 
-    expect(sessions.persistSession).toHaveBeenCalledWith(
-      expect.objectContaining({ user: null }),
+    expect(sessions.persistSession).not.toHaveBeenCalled();
+    expect(client.close).toHaveBeenCalledWith(
+      4401,
+      'authentication unavailable',
     );
   });
 });

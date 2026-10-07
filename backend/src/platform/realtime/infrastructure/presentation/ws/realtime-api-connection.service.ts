@@ -1,5 +1,5 @@
 import { RealtimeSessionPersistenceService } from './realtime-session-persistence.service';
-import { Inject } from '@nestjs/common';
+import { Inject, UnauthorizedException } from '@nestjs/common';
 import { WsWorkService } from '../../../../ws/public-api';
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
@@ -81,9 +81,11 @@ export class RealtimeApiConnectionService {
 
     const gameContext =
       scope === 'game' ? this.extractGameContext(client, args) : {};
+    const user = await this.resolveCurrentUser(client, token);
+    if (user === undefined) return;
     const session: RealtimeClientSession = {
       socket: client,
-      user: this.resolveUser(token),
+      user,
       connectionId,
       clientVersion,
       clientProduct,
@@ -140,6 +142,22 @@ export class RealtimeApiConnectionService {
     this.hub.unregister(session.connectionId);
   }
 
+  private async resolveCurrentUser(
+    client: WebSocket,
+    token: string | null,
+  ): Promise<WsAuthPayload | null | undefined> {
+    if (!token) return null;
+    try {
+      return await this.auth.revalidate(this.auth.verify(token));
+    } catch (error) {
+      client.close(
+        error instanceof UnauthorizedException ? 4401 : 1013,
+        'authentication unavailable',
+      );
+      return undefined;
+    }
+  }
+
   private peerAddress(args: unknown[]): string {
     const request = args[0];
     if (!request || typeof request !== 'object' || !('socket' in request))
@@ -150,21 +168,6 @@ export class RealtimeApiConnectionService {
     return typeof socket.remoteAddress === 'string'
       ? socket.remoteAddress.slice(0, 128)
       : 'unknown';
-  }
-
-  private resolveUser(token: string | null): WsAuthPayload | null {
-    if (!token) {
-      return null;
-    }
-
-    try {
-      return this.auth.verify(token);
-    } catch (err) {
-      this.logger.warn(
-        `Connexion WS sans auth valide: ${getErrorMessage(err)}`,
-      );
-      return null;
-    }
   }
 
   private async sendInitialGameStateIfRequested(

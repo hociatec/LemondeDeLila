@@ -1,4 +1,9 @@
 import { numericExpressionSchema } from './numeric-expression-schema';
+import {
+  effectVariant as variant,
+  targetedEffectVariant as targeted,
+  cardLocationSchema as cardLocation,
+} from './effect-schema-builders';
 import type {
   EffectCondition,
   EffectTarget,
@@ -22,25 +27,6 @@ import {
 
 const target = ref('target');
 const effects = array(ref('effect'));
-const variant = (
-  kind: string,
-  fields: Record<string, AuthorSchema> = {},
-  required = Object.keys(fields),
-) => object({ kind: { const: kind }, ...fields }, ['kind', ...required]);
-const targeted = (
-  kind: string,
-  fields: Record<string, AuthorSchema>,
-  required = Object.keys(fields),
-) => variant(kind, { ...fields, target }, required);
-
-const cardLocation: AuthorSchema = {
-  oneOf: [
-    variant('deck', { deckId: id }),
-    variant('discard', { deckId: id }),
-    variant('hand', { handId: id, playerId: integer }),
-    variant('zone', { zoneId: id }),
-  ],
-};
 
 const targets = {
   self: variant('self'),

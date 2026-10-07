@@ -24,7 +24,7 @@ std::optional<wxString> AmbienceSuccessMessage(
 {
     const auto name = lila::shared::text::FromUtf8(result.value("name", std::string{}));
     if (command.id == "sounds.ambience.create")
-        return name.empty() ? wxString(L"Ambiance créée.") : L"Ambiance « " + name + L" » créée.";
+        return name.empty() ? wxString(L"Ambiance créée et son enregistré.") : L"Ambiance « " + name + L" » créée et son enregistré.";
     if (command.id == "sounds.ambience.rename")
         return name.empty() ? wxString(L"Ambiance renommée.") : L"Ambiance renommée : « " + name + L" ».";
     if (command.id == "sounds.ambience.enable")
@@ -72,12 +72,10 @@ void AdminFrame::CompleteCommand(
             !gameNavigation_.empty() && gameNavigation_.back().itemActions)
             RestoreGameNavigation();
         pendingQuestionEditor_.reset();
-        const bool isAmbienceUpload = uploadingCreatedAmbience_ ||
+        const bool isAmbienceUpload =
             (command.id == "sounds.upload" &&
              currentResultItemKind_ == domain::AdminItemKind::Ambience);
         const bool isAmbienceCommand = IsAmbienceCommand(command, isAmbienceUpload);
-        pendingAmbienceUploadPath_.reset();
-        uploadingCreatedAmbience_ = false;
         if (command.id == "bots.settings.get")
             openBotTimingEditorAfterRead_ = false;
         loadingReportCountsOnly_ = false;
@@ -121,21 +119,6 @@ void AdminFrame::CompleteCommand(
         ExecuteCommand(*gameResultCommand_, gameResultPayload_, false);
         return;
     }
-    if (command.id == "sounds.ambience.create" && pendingAmbienceUploadPath_)
-    {
-        const auto soundId = result->value("soundId", std::string{});
-        const auto* upload = domain::FindAdminCommand("sounds.upload");
-        if (!soundId.empty() && upload != nullptr)
-        {
-            uploadingCreatedAmbience_ = true;
-            auto payload = nlohmann::json{{"soundId", soundId},
-                {"filePath", std::move(*pendingAmbienceUploadPath_)}};
-            pendingAmbienceUploadPath_.reset();
-            ExecuteCommand(*upload, std::move(payload), false);
-            return;
-        }
-        pendingAmbienceUploadPath_.reset();
-    }
     if (command.id == "contacts.reply")
         audioService_.Play(lila::modules::audio::domain::SoundCue::AdminContactSent);
     if (ConfirmSoundChange(command))
@@ -162,15 +145,10 @@ void AdminFrame::CompleteCommand(
     if (refreshAreaAfterCommand_)
     {
         refreshAreaAfterCommand_ = false;
-        const bool isAmbienceUpload = uploadingCreatedAmbience_ ||
+        const bool isAmbienceUpload =
             (command.id == "sounds.upload" &&
              currentResultItemKind_ == domain::AdminItemKind::Ambience);
         auto successMessage = AmbienceSuccessMessage(command, *result, isAmbienceUpload);
-        if (uploadingCreatedAmbience_)
-        {
-            uploadingCreatedAmbience_ = false;
-            successMessage = wxString(L"Ambiance créée et son enregistré.");
-        }
         RestoreAreaFromItem();
         SetStatus(successMessage.value_or(
             wxString(L"Modification enregistrée. Actualisation de la liste…")));

@@ -1,6 +1,11 @@
 import { RealtimeApiTransportService } from './realtime-api-transport.service';
 import { WS_EVENTS } from './ws-events';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { WebSocket } from 'ws';
 import {
   CLIENT_VERSION_READER,
@@ -14,6 +19,7 @@ import { getErrorPayload } from '../../../../serialization/public-api';
 import {
   WsRouteRegistry,
   WsRequestRateLimitService,
+  WsJwtAuthService,
 } from '../../../../ws/public-api';
 import {
   inSpan,
@@ -43,6 +49,7 @@ export class RealtimeApiHandlerService {
     private readonly replay: RealtimeRequestReplayService,
     private readonly perf: PerfMetricsService,
     private readonly rateLimit: WsRequestRateLimitService,
+    private readonly auth: WsJwtAuthService,
   ) {}
 
   async handleIncoming(
@@ -84,6 +91,21 @@ export class RealtimeApiHandlerService {
       return;
     }
     const correlationId = normalizeCorrelationId(decoded.requestId);
+    if (session.user) {
+      try {
+        session.user = await this.auth.revalidate(session.user);
+      } catch (error) {
+        this.transport.error(
+          client,
+          getErrorPayload(error),
+          decoded.type,
+          decoded.requestId,
+        );
+        if (error instanceof UnauthorizedException)
+          client.close(4401, 'session expired');
+        return;
+      }
+    }
     await runWithCorrelationId(correlationId, () =>
       this.handleDecoded(client, session, decoded),
     );

@@ -36,7 +36,13 @@ describe('Zig et Zag declarative game', () => {
       playerId: 1,
       playedCards: [selected],
     });
-    const ownHand = game.view(1).kits.cards?.hands.players.byPlayer['1'];
+    const ownHand = (
+      game.view(1) as {
+        kits: {
+          cards: { hands: { players: { byPlayer: Record<string, unknown> } } };
+        };
+      }
+    ).kits.cards.hands.players.byPlayer['1'];
     expect(JSON.stringify(ownHand)).toContain('name');
     expect(JSON.stringify(ownHand)).not.toContain('dentifrice-chat');
   });

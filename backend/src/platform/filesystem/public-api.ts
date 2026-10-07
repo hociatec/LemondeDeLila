@@ -9,3 +9,8 @@ export {
   StorageCapacityError,
   type StorageCapacityPolicy,
 } from './infrastructure/storage-capacity';
+export {
+  acquireExclusiveFileLock,
+  withExclusiveFileLock,
+  FileLockBusyError,
+} from './infrastructure/exclusive-file-lock';

@@ -105,8 +105,8 @@ const cases: Case[] = [
       p.optionRules = {
         ...p.optionRules,
         ['a["b"]']: [
-          { id: 'same', kind: 'move', delta: 1 },
-          { id: 'same', kind: 'move', delta: 2 },
+          { id: 'same', label: 'Avancer', kind: 'move', delta: 1 },
+          { id: 'same', label: 'Avancer encore', kind: 'move', delta: 2 },
         ],
       };
     },
@@ -118,7 +118,13 @@ const cases: Case[] = [
       p.optionRules = {
         ...p.optionRules,
         ['rule.with.dot']: [
-          { id: 'draw', kind: 'draw', deck: 'absent', target: 'actor' },
+          {
+            id: 'draw',
+            label: 'Piocher',
+            kind: 'draw',
+            deck: 'absent',
+            target: 'actor',
+          },
         ],
       };
     },
@@ -129,7 +135,9 @@ const cases: Case[] = [
     change: (p) => {
       p.optionRules = {
         ...p.optionRules,
-        ['rule.with.dot']: [{ id: 'select', kind: 'target', effect: 'absent' }],
+        ['rule.with.dot']: [
+          { id: 'select', label: 'Choisir', kind: 'target', effect: 'absent' },
+        ],
       };
     },
     field: 'optionRules["rule.with.dot"][0].effect',

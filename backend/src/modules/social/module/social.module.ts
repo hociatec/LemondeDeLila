@@ -3,6 +3,7 @@ import { ACCEPTED_FRIENDS_READER } from '../application/ports/accepted-friends-r
 import { SOCIAL_PROFILE_REPOSITORY } from '../application/ports/social-profile.repository';
 import { SocialProfileSettingsService } from '../application/services/social-profile-settings.service';
 import { SocialProfileService } from '../application/services/social-profile.service';
+import { SocialRelationshipService } from '../application/services/social-relationship.service';
 import { SOCIAL_MODULE_IMPORTS } from './social.module.imports';
 import { SOCIAL_CORE_PROVIDERS } from './social.module.providers.core';
 import { SOCIAL_PRESENTATION_PROVIDERS } from './social.module.providers.presentation';
@@ -14,6 +15,7 @@ import { SOCIAL_PRESENTATION_PROVIDERS } from './social.module.providers.present
     ACCEPTED_FRIENDS_READER,
     SocialProfileSettingsService,
     SocialProfileService,
+    SocialRelationshipService,
     SOCIAL_PROFILE_REPOSITORY,
   ],
 })

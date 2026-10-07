@@ -1,11 +1,7 @@
 import { removeUnusedFilesForSoundId } from './sounds-storage-maintenance';
-import { readEnvironment } from '../../../../platform/config/public-api';
+import { SoundsManifestStore } from './sounds-manifest.store';
+import { withExclusiveFileLock } from '../../../../platform/filesystem/public-api';
 import {
-  assertStorageCapacity,
-  StorageCapacityError,
-} from '../../../../platform/filesystem/public-api';
-import {
-  HttpException,
   BadRequestException,
   Inject,
   Injectable,
@@ -15,7 +11,6 @@ import {
 } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import { writeFileAtomic } from '../../../../platform/filesystem/public-api';
 import {
   SOUND_KEYS,
   SoundKey,
@@ -28,7 +23,6 @@ import {
 } from '../../../notification/public-api';
 import {
   buildStorageIoError,
-  decodeSoundManifest,
   resolveSoundsDataRoot,
 } from './sounds-storage.utils';
 import {
@@ -49,6 +43,7 @@ import { SoundsUploadManager } from './sounds-upload.manager';
 export class SoundsService {
   private readonly logger = new Logger(SoundsService.name);
   private readonly storageRoot: string;
+  private readonly manifests: SoundsManifestStore;
   private readonly reencoder: SoundsReencoder;
   private readonly maintenanceDeps: SoundsMaintenanceDeps;
   private readonly tableAmbiences: SoundsTableAmbiencesManager;
@@ -59,10 +54,16 @@ export class SoundsService {
     private readonly notifications: NotificationDispatcher,
   ) {
     this.storageRoot = resolveSoundsDataRoot();
+    this.manifests = new SoundsManifestStore(
+      this.storageRoot,
+      this.notifications,
+      this.logger,
+      normalizeSoundKey,
+    );
     this.maintenanceDeps = {
       dataRoot: () => this.storageRoot,
-      readManifest: () => this.readManifest(),
-      writeManifest: (manifest) => this.writeManifest(manifest),
+      readManifest: () => this.manifests.readManifest(),
+      writeManifest: (manifest) => this.manifests.writeManifest(manifest),
       transcodeToStableWav: (inputPath) =>
         transcodeSoundToStableWav(inputPath, (message) =>
           this.logger.warn(message),
@@ -104,8 +105,8 @@ export class SoundsService {
     this.uploads = new SoundsUploadManager({
       dataRoot: this.storageRoot,
       normalizeSoundKey,
-      readManifest: () => this.readManifest(),
-      writeManifest: (manifest) => this.writeManifest(manifest),
+      readManifest: () => this.manifests.readManifest(),
+      writeManifest: (manifest) => this.manifests.writeManifest(manifest),
       removeUnusedFiles: (soundId, keepSha256) =>
         removeUnusedFilesForSoundId(
           this.storageRoot,
@@ -124,69 +125,9 @@ export class SoundsService {
       storageError: (action, error) =>
         storageIoError(this.logger, action, error),
       ensureStorageCapacity: (incomingBytes) =>
-        this.ensureStorageCapacity(incomingBytes),
+        this.manifests.ensureStorageCapacity(incomingBytes),
       warn: (message) => this.logger.warn(message),
     });
-  }
-
-  private async ensureStorageCapacity(incomingBytes: number): Promise<void> {
-    const quota = environmentBytes(
-      'SOUNDS_STORAGE_QUOTA_BYTES',
-      2 * 1024 * 1024 * 1024,
-    );
-    const reserve = environmentBytes(
-      'STORAGE_MIN_FREE_BYTES',
-      512 * 1024 * 1024,
-    );
-    try {
-      await assertStorageCapacity({
-        root: this.storageRoot,
-        incomingBytes,
-        maxTotalBytes: quota,
-        minFreeBytes: reserve,
-      });
-    } catch (error) {
-      if (error instanceof StorageCapacityError) {
-        throw new HttpException(error.message, 507);
-      }
-      throw error;
-    }
-  }
-
-  private async readManifest(): Promise<SoundManifest> {
-    const file = path.join(this.storageRoot, 'manifest.json');
-    try {
-      const stat = await fs.promises.stat(file);
-      if (!stat.isFile() || stat.size > 1 * 1024 * 1024) {
-        throw new BadRequestException('manifest audio trop volumineux');
-      }
-      const raw = await fs.promises.readFile(file, 'utf-8');
-      const parsed = decodeSoundManifest(
-        JSON.parse(raw.replace(/^\uFEFF/, '')),
-      );
-      if (!parsed) {
-        throw new BadRequestException('manifest invalide');
-      }
-      return parsed;
-    } catch (error) {
-      this.logger.warn(
-        `Manifest audio absent ou invalide, utilisation d'un manifest vide: ${errorMessage(error)}`,
-      );
-      return { updatedAt: new Date().toISOString(), sounds: {}, disabled: [] };
-    }
-  }
-
-  private async writeManifest(next: SoundManifest): Promise<void> {
-    const root = this.storageRoot;
-    try {
-      await fs.promises.mkdir(root, { recursive: true });
-      await writeFileAtomic(
-        path.join(this.storageRoot, 'manifest.json'),
-        JSON.stringify(next, null, 2),
-      );
-    } catch (err) {
-      throw storageIoError(this.logger, 'écriture manifest.json', err);
-    }
   }
 
   async listTableAmbiences() {
@@ -198,23 +139,34 @@ export class SoundsService {
   }
 
   async createTableAmbience(nameRaw: string) {
-    return this.tableAmbiences.create(nameRaw);
+    return this.mutate(() => this.tableAmbiences.create(nameRaw));
   }
 
   async renameTableAmbience(soundIdRaw: string, nameRaw: string) {
-    return this.tableAmbiences.rename(soundIdRaw, nameRaw);
+    return this.mutate(() => this.tableAmbiences.rename(soundIdRaw, nameRaw));
   }
 
   async deleteTableAmbience(soundIdRaw: string): Promise<{ ok: true }> {
-    return this.tableAmbiences.delete(soundIdRaw);
+    return this.mutate(() => this.tableAmbiences.delete(soundIdRaw));
   }
 
   async setTableAmbienceEnabled(soundIdRaw: string, enabled: boolean) {
-    return this.tableAmbiences.setEnabled(soundIdRaw, enabled);
+    return this.mutate(() =>
+      this.tableAmbiences.setEnabled(soundIdRaw, enabled),
+    );
   }
 
   async getPublicManifest(origin?: string | null): Promise<SoundManifest> {
-    const manifest = await this.readManifest();
+    const manifest = await this.manifests.readManifest();
+    const ambiences = await this.tableAmbiences.list({ includeDisabled: true });
+    const disabled = [
+      ...new Set([
+        ...(manifest.disabled ?? []),
+        ...ambiences.items
+          .filter((item) => !item.enabled)
+          .map((item) => item.soundId),
+      ]),
+    ];
 
     // Always filter to known keys and only publish entries that have an on-disk file.
     // This prevents the client from trying to download sounds that were removed from disk
@@ -235,7 +187,7 @@ export class SoundsService {
       sounds[key] = origin ? { ...entry, url: `${origin}${entry.url}` } : entry;
     }
 
-    return { ...manifest, sounds };
+    return { ...manifest, sounds, disabled };
   }
 
   async getAdminCatalog() {
@@ -278,13 +230,40 @@ export class SoundsService {
   }
 
   async setSoundEnabled(soundIdRaw: string, enabled: boolean) {
+    return this.mutate(() => this.setSoundEnabledLocked(soundIdRaw, enabled));
+  }
+
+  async createTableAmbienceWithSound(
+    name: string,
+    file: string,
+    originalName?: string,
+    mimeType?: string,
+  ) {
+    return this.mutate(async () => {
+      const created = await this.tableAmbiences.create(name, false);
+      try {
+        await this.uploads.setSound(
+          created.soundId,
+          file,
+          originalName,
+          mimeType,
+        );
+        return await this.tableAmbiences.setEnabled(created.soundId, true);
+      } catch (error) {
+        await this.tableAmbiences.delete(created.soundId);
+        throw error;
+      }
+    });
+  }
+
+  private async setSoundEnabledLocked(soundIdRaw: string, enabled: boolean) {
     const soundId = normalizeSoundKey(soundIdRaw);
-    const manifest = await this.readManifest();
+    const manifest = await this.manifests.readManifest();
     const disabled = new Set(manifest.disabled ?? []);
     if (enabled) disabled.delete(soundId);
     else disabled.add(soundId);
     const updatedAt = new Date().toISOString();
-    await this.writeManifest({
+    await this.manifests.writeManifest({
       ...manifest,
       updatedAt,
       disabled: [...disabled],
@@ -305,55 +284,21 @@ export class SoundsService {
     originalName?: string,
     mimeType?: string,
   ) {
-    return this.uploads.setSound(
-      soundIdRaw,
-      tempFilePath,
-      originalName,
-      mimeType,
+    return this.mutate(() =>
+      this.uploads.setSound(soundIdRaw, tempFilePath, originalName, mimeType),
     );
   }
 
   async clearSound(soundIdRaw: string): Promise<{ ok: true }> {
-    const soundId = normalizeSoundKey(soundIdRaw);
-    const manifest = await this.readManifest();
-    if (!manifest.sounds?.[soundId]) {
-      return { ok: true as const };
-    }
-    const next = {
-      updatedAt: new Date().toISOString(),
-      sounds: { ...(manifest.sounds || {}) },
-      disabled: [...(manifest.disabled ?? [])],
-    };
-    delete next.sounds[soundId];
-    await this.writeManifest(next);
-
-    // Nettoyage best-effort: si le son est supprimé du manifest, supprimer aussi les fichiers associés.
-    try {
-      await fs.promises.rm(path.join(this.storageRoot, soundId), {
-        recursive: true,
-        force: true,
-      });
-    } catch (error) {
-      this.logger.warn(
-        `Nettoyage du son ${soundId} non terminé: ${errorMessage(error)}`,
-      );
-    }
-
-    await this.notifications.notifyAll('sounds.updated', {
-      soundId,
-      sha256: null,
-      url: null,
-      updatedAt: next.updatedAt,
-    });
-    return { ok: true as const };
+    return this.mutate(() => this.manifests.clearSound(soundIdRaw));
   }
 
   async reencodeAllSounds() {
-    return this.reencoder.reencodeAll();
+    return this.mutate(() => this.reencoder.reencodeAll());
   }
 
   async reencodeInvalidSounds() {
-    return this.reencoder.reencodeInvalid();
+    return this.mutate(() => this.reencoder.reencodeInvalid());
   }
 
   async diagnoseSounds() {
@@ -361,12 +306,19 @@ export class SoundsService {
   }
 
   async cleanupUnusedSounds() {
-    return cleanupUnusedSounds(this.maintenanceDeps);
+    return this.mutate(() => cleanupUnusedSounds(this.maintenanceDeps));
+  }
+
+  private mutate<T>(operation: () => Promise<T>): Promise<T> {
+    return withExclusiveFileLock(
+      path.join(this.storageRoot, '.sounds.lock'),
+      operation,
+    );
   }
 
   async resolveSoundFile(soundIdRaw: string, shaFromUrl?: string | null) {
     const soundId = normalizeSoundKey(soundIdRaw);
-    const manifest = await this.readManifest();
+    const manifest = await this.manifests.readManifest();
     const entry = manifest.sounds?.[soundId];
     if (!entry) {
       throw new NotFoundException('Son non configuré.');
@@ -400,10 +352,6 @@ function normalizeSoundKey(input: string): SoundKey {
   return found;
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
-
 function storageIoError(
   logger: Logger,
   action: string,
@@ -412,14 +360,4 @@ function storageIoError(
   return buildStorageIoError(action, err, (message, stack) =>
     logger.error(message, stack),
   );
-}
-
-function environmentBytes(
-  key: 'SOUNDS_STORAGE_QUOTA_BYTES' | 'STORAGE_MIN_FREE_BYTES',
-  fallback: number,
-): number {
-  const raw = readEnvironment(key).trim();
-  if (!raw) return fallback;
-  const parsed = Number(raw);
-  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : fallback;
 }

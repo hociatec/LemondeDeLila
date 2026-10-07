@@ -4,6 +4,7 @@ export {
 } from './application/ports/accepted-friends-reader.port';
 export { SocialProfileSettingsService } from './application/services/social-profile-settings.service';
 export { SocialProfileService } from './application/services/social-profile.service';
+export { SocialRelationshipService } from './application/services/social-relationship.service';
 export {
   SOCIAL_RELATIONSHIP_NOTIFIER,
   type SocialRelationshipNotifier,

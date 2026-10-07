@@ -13,6 +13,7 @@ export type ClientMeta = AuthedClient & {
   role: ClientRole;
   silent: boolean;
   isAdmin: boolean;
+  credentialVersion?: string;
 };
 
 export type IncomingPayload = {
