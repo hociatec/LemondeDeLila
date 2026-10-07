@@ -1,7 +1,7 @@
 #include <cassert>
 #include <set>
 
-#include "app/navigation/presentation/InterfaceTitle.h"
+#include "app/navigation/presentation/ApplicationTitle.h"
 #include "modules/social/presentation/SocialNavigationState.h"
 #include "modules/social/presentation/SocialSelectionMemory.h"
 #include "modules/messaging/presentation/MessagingNavigationState.h"
@@ -57,15 +57,9 @@ int main()
     assert(adminAreas[4].group == L"UTILISATEURS");
     assert(adminAreas[7].group == L"COMMUNICATION");
     assert(adminAreas[10].group == L"OUTILS");
-    using lila::app::navigation::domain::ViewId;
-    using lila::app::navigation::InterfaceTitle;
-    assert(InterfaceTitle(ViewId::Home) == "Accueil");
-    assert(InterfaceTitle(ViewId::MainMenu) == "Menu principal");
-    assert(InterfaceTitle(ViewId::Options) == "Options");
-    assert(InterfaceTitle(ViewId::Admin) == "Administration");
-    for (int value = static_cast<int>(ViewId::Home);
-         value < static_cast<int>(ViewId::Count); ++value)
-        assert(!InterfaceTitle(static_cast<ViewId>(value)).empty());
+    using lila::app::navigation::ApplicationTitle;
+    assert(ApplicationTitle() == "Le Monde de Lila");
+    assert(ApplicationTitle("Lila") == "Le Monde de Lila - Lila");
 
     using lila::modules::social::presentation::SocialNavigationState;
     using lila::modules::social::presentation::SocialSection;

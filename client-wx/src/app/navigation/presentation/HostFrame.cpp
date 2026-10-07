@@ -1,4 +1,5 @@
 #include "app/navigation/presentation/HostFrame.h"
+#include "app/navigation/presentation/ApplicationTitle.h"
 
 #include <utility>
 
@@ -7,12 +8,10 @@
 #include <wx/sizer.h>
 
 #ifdef __WXMSW__
-#include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NavigationController.h"
 #endif
 
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
-#include "shared/config/domain/AppConfig.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
 namespace
@@ -27,7 +26,7 @@ HostFrame::HostFrame()
     : wxFrame(
           nullptr,
           wxID_ANY,
-          lila::shared::text::FromUtf8(lila::shared::config::AppConfig::AppTitle.data()),
+          lila::shared::text::FromUtf8(ApplicationTitle()),
           wxDefaultPosition,
           wxSize(HostWindowWidth, HostWindowHeight),
           wxDEFAULT_FRAME_STYLE)
@@ -61,13 +60,9 @@ wxWindow* HostFrame::ContentParent() const noexcept
     return contentRoot_;
 }
 
-void HostFrame::SetInterfaceTitle(std::string_view interfaceTitle)
+void HostFrame::SetApplicationTitle(std::string_view username)
 {
-    auto title = lila::shared::text::FromUtf8(
-        lila::shared::config::AppConfig::AppTitle.data());
-    if (!interfaceTitle.empty())
-        title += wxString(L" - ") + lila::shared::text::FromUtf8(interfaceTitle);
-    SetTitle(title);
+    SetTitle(lila::shared::text::FromUtf8(ApplicationTitle(username)));
 }
 
 void HostFrame::SetPresenceRequestedHandler(PresenceRequestedHandler handler)
@@ -102,14 +97,6 @@ void HostFrame::OnActivate(wxActivateEvent& event)
     if (!event.GetActive())
     {
         auto* target = wxWindow::FindFocus();
-        if (auto* focusView =
-                dynamic_cast<lila::shared::accessibility::FocusPlanView*>(currentContent_))
-        {
-            auto* activationTarget = focusView->ActivationFocusTarget();
-            if (lila::shared::accessibility::NavigationController::IsFocusable(
-                    activationTarget))
-                target = activationTarget;
-        }
         if (!lila::shared::accessibility::NavigationController::IsDescendantOf(
                 target, currentContent_))
             target = lastFocusedChild_.get();

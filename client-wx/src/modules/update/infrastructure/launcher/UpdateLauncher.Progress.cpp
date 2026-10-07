@@ -10,6 +10,7 @@
 
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
 #include "modules/update/domain/UpdateRetryPolicy.h"
+#include "shared/config/domain/AppConfig.h"
 
 namespace lila::modules::update::launcher
 {
@@ -43,7 +44,8 @@ void UpdateProgressDialog::Show(const std::string& version) noexcept
     }
 
     dialog_ = dialog;
-    dialog->SetTitle(L"Le Monde de Lila - Mise à jour");
+    const auto dialogTitle = Widen(std::string(lila::shared::config::AppConfig::AppTitle));
+    dialog->SetTitle(dialogTitle.c_str());
     dialog->StartProgressDialog(nullptr, nullptr,
         PROGDLG_AUTOTIME | PROGDLG_NOMINIMIZE, nullptr);
     const std::wstring versionLine = L"Installation de la version " + Widen(version);

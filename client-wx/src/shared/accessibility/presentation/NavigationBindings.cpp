@@ -21,13 +21,13 @@ void NavigationController::BindTabNavigation(
             }
             if (enabled && !enabled())
             {
-                event.Skip(false);
+                event.Skip();
                 return;
             }
             Scope scope = scopeProvider ? scopeProvider() : Scope{};
             if (!Move(scope, event.ShiftDown() ? Direction::Backward : Direction::Forward, boundary))
             {
-                event.Skip(false);
+                event.Skip();
             }
         });
 }

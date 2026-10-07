@@ -24,7 +24,7 @@ public:
     HostFrame();
 
     [[nodiscard]] wxWindow* ContentParent() const noexcept;
-    void SetInterfaceTitle(std::string_view interfaceTitle);
+    void SetApplicationTitle(std::string_view username = {});
     void SetContent(wxWindow* content);
     void RemoveContent(wxWindow* content);
     void ClearActivationFocusContext();

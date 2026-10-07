@@ -10,6 +10,5 @@ public:
     virtual ~FocusPlanView() = default;
 
     [[nodiscard]] virtual FocusManager::Plan BuildFocusPlan() = 0;
-    [[nodiscard]] virtual wxWindow* ActivationFocusTarget() { return nullptr; }
 };
 }

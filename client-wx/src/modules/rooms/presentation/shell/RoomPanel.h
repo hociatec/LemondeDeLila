@@ -66,7 +66,6 @@ public:
         PreparedHandler onPrepared);
     void PrepareRestore(int roomId, PreparedHandler onPrepared);
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
-    [[nodiscard]] wxWindow* ActivationFocusTarget() override;
 
 private:
     enum class State { Connecting, Ready, Busy, Error };
@@ -141,7 +140,6 @@ private:
     std::string previewedAmbienceSoundId_;
     bool ambiencePreviewPlaying_ = false;
     std::size_t focusGeneration_ = 0;
-    bool keepZoneFocusOnActivation_ = false;
     std::vector<wxString> pendingRoomAnnouncements_;
     std::unique_ptr<history::HistoryAnnouncementQueue> historyAnnouncements_;
 };
