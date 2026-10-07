@@ -25,12 +25,17 @@
 namespace
 {
 std::vector<int> selections;
+std::vector<bool> selectionVisibilities;
 WNDPROC originalListProc = nullptr;
 HWND observedWindow = nullptr;
 std::vector<DWORD> events;
 LRESULT CALLBACK ObserveSelection(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    if (message == LB_SETCURSEL) selections.push_back(static_cast<int>(wParam));
+    if (message == LB_SETCURSEL)
+    {
+        selections.push_back(static_cast<int>(wParam));
+        selectionVisibilities.push_back(IsWindowVisible(window) != FALSE);
+    }
     return CallWindowProc(originalListProc, window, message, wParam, lParam);
 }
 void CALLBACK ObserveEvent(HWINEVENTHOOK, DWORD event, HWND window, LONG, LONG, DWORD, DWORD)
@@ -139,6 +144,28 @@ int main(int argc, char** argv)
 #endif
         delete menu;
     }
+
+#ifdef __WXMSW__
+    const std::vector<VerticalMenuItem> emptyMenuItems;
+    auto* initiallyEmptyMenu = new VerticalMenu(
+        frame, emptyMenuItems, VerticalMenuRole::Menu);
+    auto* initiallyEmptyList = wxDynamicCast(
+        initiallyEmptyMenu->GetSelectedControl(), wxListBox);
+    Check(initiallyEmptyList != nullptr && initiallyEmptyList->IsShownOnScreen());
+    originalListProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
+        reinterpret_cast<HWND>(initiallyEmptyList->GetHandle()), GWLP_WNDPROC,
+        reinterpret_cast<LONG_PTR>(&ObserveSelection)));
+    selections.clear();
+    selectionVisibilities.clear();
+    const std::vector<VerticalMenuItem> initialReportItems{
+        {"new", "Nouveau rapport"}};
+    initiallyEmptyMenu->SetItems(initialReportItems);
+    Check(selections == std::vector<int>{0});
+    Check(selectionVisibilities == std::vector<bool>{false});
+    SetWindowLongPtr(reinterpret_cast<HWND>(initiallyEmptyList->GetHandle()),
+        GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(originalListProc));
+    delete initiallyEmptyMenu;
+#endif
 
     auto* hidden = new wxPanel(frame);
     auto* hiddenChild = new wxTextCtrl(hidden, wxID_ANY);

@@ -105,6 +105,16 @@ void VerticalMenu::ReplaceItems(
         return;
     }
 
+    // A native list announces LB_SETCURSEL even before it owns keyboard focus.
+    // When a visible empty menu is populated for the first time, that selection
+    // announcement is immediately followed by the real focus announcement.
+    // Prepare the initial selection while the native control is hidden from the
+    // accessibility tree, then expose the fully initialized list once.
+    const bool prepareInitialSelectionHidden =
+        itemCount_ == 0 && !items.empty() && listBox_->IsShownOnScreen() &&
+        !listBox_->HasFocus();
+    if (prepareInitialSelectionHidden) listBox_->Hide();
+
     // Treat the native list rows as stable presentation slots. Clearing and
     // rebuilding a focused wxListBox makes Windows emit a new selection event,
     // so screen readers announce the unchanged focused item a second time.
@@ -134,6 +144,7 @@ void VerticalMenu::ReplaceItems(
         if (listBox_->GetSelection() != static_cast<int>(selectedIndex_))
             listBox_->SetSelection(static_cast<int>(selectedIndex_));
     }
+    if (prepareInitialSelectionHidden) listBox_->Show();
     UpdateVisualSelection();
 }
 
