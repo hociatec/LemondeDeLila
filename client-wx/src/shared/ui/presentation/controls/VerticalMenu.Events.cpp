@@ -187,7 +187,8 @@ void VerticalMenu::FocusIndex(std::size_t index, bool notify)
     selectedIndex_ = index;
     if (listBox_->GetSelection() != static_cast<int>(index))
         listBox_->SetSelection(static_cast<int>(index));
-    static_cast<void>(Navigator::Focus(listBox_));
+    static_cast<void>(
+        lila::shared::accessibility::NavigationController::Focus(listBox_));
     UpdateVisualSelection();
     if (notify)
     {
