@@ -3,6 +3,7 @@
 #include <functional>
 #include <mutex>
 #include <memory>
+#include <optional>
 #include <stop_token>
 #include <string>
 #include <vector>
@@ -49,6 +50,10 @@ private:
     void ApplyUpdate(const std::string& rawJson);
     void SetStatus(std::string status);
     void NotifyChanged(const PlayersChangedHandler& handler) const;
+    static bool ApplyLocalContext(
+        std::vector<domain::PresencePlayer>& players,
+        int currentUserId,
+        std::string_view context);
 
     std::string endpoint_;
     lila::shared::network::websocket::IWebSocketClient& webSocketClient_;
@@ -61,6 +66,7 @@ private:
     std::string status_ = "Présence déconnectée.";
     bool hasSnapshot_ = false;
     std::string context_ = "home";
+    std::optional<std::string> contextAwaitingConfirmation_;
     bool contextDirty_ = true;
     bool interactionDirty_ = false;
     std::jthread activityThread_;

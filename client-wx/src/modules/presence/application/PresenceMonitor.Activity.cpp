@@ -1,16 +1,44 @@
 #include "modules/presence/application/PresenceMonitor.h"
+#include <algorithm>
 #include <chrono>
+#include "modules/session/application/SessionStore.h"
 #include "modules/presence/infrastructure/PresencePayloadCodec.h"
 #include "shared/network/application/websocket/IWebSocketClient.h"
 
 namespace lila::modules::presence::application
 {
+bool PresenceMonitor::ApplyLocalContext(
+    std::vector<domain::PresencePlayer>& players,
+    int currentUserId,
+    std::string_view context)
+{
+    const auto current = std::ranges::find_if(
+        players, [currentUserId](const domain::PresencePlayer& player)
+        {
+            return player.id == currentUserId;
+        });
+    if (current == players.end() || current->activity == context) return false;
+    current->activity = context;
+    current->location.clear();
+    current->currentRoomId.reset();
+    current->currentRoomName.clear();
+    return true;
+}
+
 void PresenceMonitor::SetContext(std::string context)
 {
-    std::scoped_lock lock(mutex_);
-    if (context_ == context) return;
-    context_ = std::move(context);
-    contextDirty_ = true;
+    const int currentUserId = static_cast<int>(sessionStore_.Current().userId.value);
+    PlayersChangedHandler handler;
+    {
+        std::scoped_lock lock(mutex_);
+        if (context_ == context) return;
+        context_ = std::move(context);
+        contextAwaitingConfirmation_ = context_;
+        contextDirty_ = true;
+        if (ApplyLocalContext(players_, currentUserId, context_))
+            handler = onPlayersChanged_;
+    }
+    NotifyChanged(handler);
 }
 
 void PresenceMonitor::ReportInteraction()

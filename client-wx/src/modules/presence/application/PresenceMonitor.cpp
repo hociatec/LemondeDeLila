@@ -68,6 +68,7 @@ void PresenceMonitor::Stop()
     status_ = "Présence déconnectée.";
     hasSnapshot_ = false;
     context_ = "home";
+    contextAwaitingConfirmation_.reset();
     contextDirty_ = true;
     interactionDirty_ = false;
 }
@@ -144,11 +145,26 @@ void PresenceMonitor::ApplyUpdate(const std::string& rawJson)
         return;
     }
 
+    const int currentUserId = static_cast<int>(sessionStore_.Current().userId.value);
     PlayersChangedHandler handler;
     std::vector<int> connected;
     std::vector<int> disconnected;
     {
         std::scoped_lock lock(mutex_);
+        if (contextAwaitingConfirmation_)
+        {
+            const auto current = std::ranges::find_if(
+                *next, [currentUserId](const domain::PresencePlayer& player)
+                {
+                    return player.id == currentUserId;
+                });
+            if (current != next->end() &&
+                current->activity == *contextAwaitingConfirmation_)
+                contextAwaitingConfirmation_.reset();
+            else
+                ApplyLocalContext(
+                    *next, currentUserId, *contextAwaitingConfirmation_);
+        }
         if (hasSnapshot_)
         {
             if (players_ == *next) return;
