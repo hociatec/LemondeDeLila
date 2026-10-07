@@ -95,10 +95,6 @@ void MakeMultipart(
         "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"" +
         filename + "\"\r\nContent-Type: application/octet-stream\r\n\r\n";
     request.uploadFilePath = filePath;
-    if (payload.contains("name"))
-        request.uploadPrefix = "--" + boundary +
-            "\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n" +
-            payload.at("name").get<std::string>() + "\r\n" + request.uploadPrefix;
     request.uploadSuffix = "\r\n--" + boundary + "--\r\n";
     request.maximumUploadBytes = 250U * 1024U * 1024U;
 }

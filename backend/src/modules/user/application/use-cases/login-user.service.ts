@@ -27,7 +27,6 @@ import {
   USERNAME_MAX_LENGTH,
 } from '../../domain/policies/user-credentials.policy';
 import { userBanStatus } from '../../domain/policies/user-ban.policy';
-import { credentialVersion } from '../../../../platform/auth/public-api';
 
 @Injectable()
 export class LoginUserService {
@@ -106,15 +105,13 @@ export class LoginUserService {
       );
     }
 
-    const version = credentialVersion(hash);
     const token = this.tokenService.sign({
       id: user.id,
       email: user.email,
       roles: user.roles?.length ? user.roles : ['ROLE_USER'],
       username: user.username,
-      credentialVersion: version,
     });
-    const refreshToken = await this.refreshTokens.issue(user.id, version);
+    const refreshToken = await this.refreshTokens.issue(user.id);
     return { token, refreshToken, userId: user.id, username: user.username };
   }
 

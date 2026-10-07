@@ -13,10 +13,7 @@ export type CreatePrivateMessageInput = {
 export interface PrivateMessageRepository {
   create(input: CreatePrivateMessageInput): Promise<PrivateMessageRecord>;
   save(message: PrivateMessageRecord): Promise<PrivateMessageRecord>;
-  findByMessageId(
-    messageId: string,
-    viewerId?: number,
-  ): Promise<PrivateMessageRecord | null>;
+  findByMessageId(messageId: string): Promise<PrivateMessageRecord | null>;
   findConversation(
     currentUserId: number,
     otherUserId: number,
@@ -25,6 +22,6 @@ export interface PrivateMessageRepository {
   findInbox(userId: number, limit: number): Promise<PrivateMessageRecord[]>;
   findOutbox(userId: number, limit: number): Promise<PrivateMessageRecord[]>;
   findDeleted(userId: number, limit: number): Promise<PrivateMessageRecord[]>;
-  purgeForUser(messageId: string, userId: number): Promise<void>;
+  remove(messageId: string): Promise<void>;
   countUnreadForRecipient(userId: number): Promise<number>;
 }

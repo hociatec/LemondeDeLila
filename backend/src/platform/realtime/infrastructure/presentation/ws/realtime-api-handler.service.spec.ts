@@ -2,8 +2,6 @@ import type { ConfigService } from '@nestjs/config';
 import type { WebSocket } from 'ws';
 import { RealtimeApiTransportService } from './realtime-api-transport.service';
 import { WsRouteRegistry } from '../../../../ws/public-api';
-import { WsJwtAuthService } from '../../../../ws/public-api';
-import { UnauthorizedException } from '@nestjs/common';
 import { WsRequestRateLimitService } from '../../../../ws/public-api';
 import { operationalSettings } from '../../../../config/public-api';
 import type { ClientVersionReader } from '../../../application/ports/client-version-reader.port';
@@ -44,7 +42,6 @@ describe('RealtimeApiHandlerService', () => {
         },
       ),
     };
-    const auth = { revalidate: jest.fn(async (user: unknown) => user) };
     const service = new RealtimeApiHandlerService(
       registry,
       updates,
@@ -55,7 +52,6 @@ describe('RealtimeApiHandlerService', () => {
         wsRateLimitWindowMs: overrides.WS_RATE_LIMIT_WINDOW_MS ?? 10_000,
         wsRateLimitCount: overrides.WS_RATE_LIMIT_COUNT ?? 20,
       }),
-      auth as unknown as WsJwtAuthService,
     );
     const send = jest.fn();
     const close = jest.fn();
@@ -67,37 +63,8 @@ describe('RealtimeApiHandlerService', () => {
       clientVersion: null,
       clientProduct: null,
     };
-    return {
-      service,
-      registry,
-      client,
-      session,
-      send,
-      close,
-      perf,
-      updates,
-      auth,
-    };
+    return { service, registry, client, session, send, close, perf, updates };
   };
-
-  it('refreshes roles before dispatch and rejects a revoked session before replay', async () => {
-    const { service, registry, client, session, auth, close } = setup();
-    session.user = { id: 7, username: 'lila', roles: ['admin'] };
-    auth.revalidate.mockResolvedValue({
-      id: 7,
-      username: 'lila',
-      roles: ['user'],
-    });
-    const handler = jest.fn().mockResolvedValue({ type: 'ok' });
-    registry.register('admin.test', handler);
-    const command = JSON.stringify({ type: 'admin.test', requestId: 'same' });
-    await service.handleIncoming(client, session, command);
-    expect(session.user.roles).toEqual(['user']);
-    auth.revalidate.mockRejectedValue(new UnauthorizedException());
-    await service.handleIncoming(client, session, command);
-    expect(handler).toHaveBeenCalledTimes(1);
-    expect(close).toHaveBeenCalledWith(4401, 'session expired');
-  });
 
   it.each(['auth.login', 'auth.register', 'auth.refresh'])(
     'checks the authentication budget before dispatching %s',

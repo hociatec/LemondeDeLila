@@ -50,8 +50,7 @@ void TestNotifications()
     assert(!decode("bugReports.comment.added", {{"commentId", "d"}, {"createdByUserId", 7}}).cue);
     assert(decode("client.update.required", {{"version", "2"}}).cue == Cue::ClientUpdateWarning);
     assert(decode("sounds.updated", {{"updatedAt", "now"}}).refreshAssets);
-    assert(decode("sounds.updated", {{"updatedAt", "now"}}).refreshAssets);
-    assert(decode("sounds.tableAmbiences.updated", {{"updatedAt", "now"}}).refreshAssets);
+    assert(!decode("sounds.updated", {{"updatedAt", "now"}}).refreshAssets);
     assert(!decoder.Decode("broken", 7).cue);
     assert(!decoder.Decode(R"({"type":42,"payload":{}})", 7).cue);
     decoder.Reset();

@@ -25,7 +25,6 @@ public:
     void StopAll() override;
     bool PumpDeferredPlayback() override;
     void RefreshAssets() override;
-    void SetOperationStopToken(std::stop_token token) override { assetPaths_.SetStopToken(token); }
     void FinishPlayback() override;
     void InterruptPlayback() noexcept override;
     void Shutdown() noexcept override;

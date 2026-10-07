@@ -9,11 +9,6 @@ import type {
   RefreshTokenRotation,
   RefreshTokenServicePort,
 } from '../../application/ports/refresh-token.port';
-import {
-  decodeRefreshRecord,
-  refreshSuccessor,
-  ROTATE_REFRESH_SCRIPT,
-} from './refresh-token-rotation';
 
 @Injectable()
 export class RedisRefreshTokenService
@@ -49,7 +44,7 @@ export class RedisRefreshTokenService
     });
   }
 
-  async issue(userId: number, credentialVersion?: string): Promise<string> {
+  async issue(userId: number): Promise<string> {
     if (!Number.isSafeInteger(userId) || userId <= 0)
       throw new RangeError('Identifiant utilisateur invalide');
     const refreshToken = randomBytes(48).toString('base64url');
@@ -70,66 +65,54 @@ export class RedisRefreshTokenService
       2,
       this.userIndex(userId),
       this.key(refreshToken),
-      JSON.stringify({
-        userId,
-        credentialVersion,
-        nonce: randomBytes(32).toString('hex'),
-      }),
+      JSON.stringify({ userId }),
       RedisRefreshTokenService.MAX_TOKENS_PER_USER,
       this.ttlSeconds,
     );
     return refreshToken;
   }
 
-  async inspect(refreshToken: string) {
-    if (!this.validToken(refreshToken)) return null;
-    const record = decodeRefreshRecord(
-      await this.redis.get(this.key(refreshToken)),
-    );
-    return record
-      ? { userId: record.userId, credentialVersion: record.credentialVersion }
-      : null;
-  }
-
   async rotate(refreshToken: string): Promise<RefreshTokenRotation | null> {
-    if (!this.validToken(refreshToken)) return null;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const raw = await this.redis.get(this.key(refreshToken));
-      const record = decodeRefreshRecord(raw);
-      if (!record || raw === null) return null;
-      const successor = refreshSuccessor(refreshToken, record.nonce);
-      const result = await this.redis.eval(
-        ROTATE_REFRESH_SCRIPT,
-        3,
-        this.key(refreshToken),
-        this.key(successor),
-        this.userIndex(record.userId),
-        raw,
-        JSON.stringify({
-          userId: record.userId,
-          credentialVersion: record.credentialVersion,
-          nonce: randomBytes(32).toString('hex'),
-        }),
-        this.ttlSeconds,
-      );
-      if (result === -1) continue;
-      return result === 1
-        ? {
-            userId: record.userId,
-            credentialVersion: record.credentialVersion,
-            refreshToken: successor,
-          }
-        : null;
-    }
-    return null;
-  }
+    if (
+      typeof refreshToken !== 'string' ||
+      !refreshToken ||
+      refreshToken.length > RedisRefreshTokenService.MAX_TOKEN_INPUT_LENGTH
+    )
+      return null;
 
-  private validToken(value: string): boolean {
-    return (
-      typeof value === 'string' &&
-      value.length > 0 &&
-      value.length <= RedisRefreshTokenService.MAX_TOKEN_INPUT_LENGTH
+    const consumeScript = `
+      local value = redis.call('GET', KEYS[1])
+      if value then redis.call('DEL', KEYS[1]) end
+      return value
+    `;
+    const raw: unknown = await this.redis.eval(
+      consumeScript,
+      1,
+      this.key(refreshToken),
     );
+    if (typeof raw !== 'string' || !raw) return null;
+    if (
+      Buffer.byteLength(raw, 'utf8') > RedisRefreshTokenService.MAX_RECORD_BYTES
+    )
+      return null;
+
+    let userId: number;
+    try {
+      const decoded: unknown = JSON.parse(raw);
+      if (!isRecord(decoded)) return null;
+      if (typeof decoded.userId !== 'number') return null;
+      userId = decoded.userId;
+    } catch {
+      return null;
+    }
+    if (!Number.isSafeInteger(userId) || userId <= 0) return null;
+
+    await this.redis.srem?.(this.userIndex(userId), this.key(refreshToken));
+
+    return {
+      userId,
+      refreshToken: await this.issue(userId),
+    };
   }
 
   async revoke(refreshToken: string): Promise<void> {

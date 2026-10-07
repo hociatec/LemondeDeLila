@@ -2,11 +2,7 @@ import { BadRequestException, ConflictException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { bestEffort } from '../../../../platform/observability/public-api';
-import {
-  acquireExclusiveFileLock,
-  FileLockBusyError,
-  writeFileAtomic,
-} from '../../../../platform/filesystem/public-api';
+import { writeFileAtomic } from '../../../../platform/filesystem/public-api';
 import {
   canonicalizeWxUpdateSignature,
   WX_UPDATE_ARCHITECTURE,
@@ -69,13 +65,13 @@ export class WxUpdatePublicationManager {
       const files = await this.prepareReleaseFiles(params);
       const manifest = this.buildManifest(params, files);
       await assertHeld();
-      lock.assertHeld();
       await writeFileAtomic(this.metaPath, JSON.stringify(manifest, null, 2));
       this.updateCache(manifest);
       await this.cleanupStaging();
       return manifest;
     } finally {
-      await bestEffort(lock.release(), 'fermeture du verrou de publication WX');
+      await bestEffort(lock.close(), 'fermeture du verrou de publication WX');
+      await fs.promises.rm(this.publicationLockPath(), { force: true });
     }
   }
 
@@ -239,13 +235,14 @@ export class WxUpdatePublicationManager {
     return path.join(this.updatesDir, '.publish.lock');
   }
 
-  private async acquirePublicationLock() {
+  private async acquirePublicationLock(): Promise<fs.promises.FileHandle> {
+    await fs.promises.mkdir(this.updatesDir, { recursive: true });
     try {
-      return await acquireExclusiveFileLock(this.publicationLockPath(), 0);
-    } catch (error) {
-      if (error instanceof FileLockBusyError)
-        throw new ConflictException('Une publication WX est déjà en cours.');
-      throw error;
+      return await fs.promises.open(this.publicationLockPath(), 'wx');
+    } catch {
+      // Age cannot prove that an owner has stopped. A suspended writer must
+      // retain the resource lock even after its Redis lease expires.
+      throw new ConflictException('Une publication WX est déjà en cours.');
     }
   }
 

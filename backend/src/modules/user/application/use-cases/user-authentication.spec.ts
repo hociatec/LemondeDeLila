@@ -11,7 +11,6 @@ import type { UserRepository } from '../ports/user.repository';
 import { LoginUserService } from './login-user.service';
 import { RefreshUserSessionService } from './refresh-user-session.service';
 import { RegisterUserService } from './register-user.service';
-import { credentialVersion } from '../../../../platform/auth/public-api';
 
 const user = (overrides: Partial<UserModel> = {}): UserModel => ({
   id: 1,
@@ -52,51 +51,13 @@ const tokens = (): jest.Mocked<UserTokenServicePort> => ({
 
 const refreshTokens = (): jest.Mocked<RefreshTokenServicePort> => ({
   issue: jest.fn().mockResolvedValue('refresh-token'),
-  inspect: jest.fn().mockResolvedValue({
-    userId: 1,
-    credentialVersion: credentialVersion('$2b$hash'),
-  }),
-  rotate: jest.fn().mockResolvedValue({
-    userId: 1,
-    refreshToken: 'rotated-token',
-    credentialVersion: credentialVersion('$2b$hash'),
-  }),
+  rotate: jest
+    .fn()
+    .mockResolvedValue({ userId: 1, refreshToken: 'rotated-token' }),
   revoke: jest.fn().mockResolvedValue(undefined),
 });
 
 describe('user authentication use cases', () => {
-  it('keeps a refresh token retryable when account lookup fails before rotation', async () => {
-    const users = repository();
-    users.findById
-      .mockRejectedValueOnce(new Error('DB unavailable'))
-      .mockResolvedValue(user());
-    const refresh = refreshTokens();
-    const service = new RefreshUserSessionService(users, tokens(), refresh, {
-      now: Date.now,
-    });
-    await expect(service.execute('old-token')).rejects.toThrow(
-      'DB unavailable',
-    );
-    expect(refresh.rotate).not.toHaveBeenCalled();
-    await expect(service.execute('old-token')).resolves.toMatchObject({
-      refreshToken: 'rotated-token',
-    });
-  });
-
-  it('rejects renewal after a password change without issuing another access token', async () => {
-    const users = repository();
-    users.findById.mockResolvedValue(user({ password: 'new hash' }));
-    const refresh = refreshTokens();
-    const signer = tokens();
-    await expect(
-      new RefreshUserSessionService(users, signer, refresh, {
-        now: Date.now,
-      }).execute('old-token'),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
-    expect(signer.sign).not.toHaveBeenCalled();
-    expect(refresh.rotate).not.toHaveBeenCalled();
-    expect(refresh.revoke).toHaveBeenCalledWith('old-token');
-  });
   it.each(['login', 'refresh'] as const)(
     'uses the injected ban deadline for %s',
     async (operation) => {
@@ -155,7 +116,7 @@ describe('user authentication use cases', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
     expect(signer.sign).not.toHaveBeenCalled();
     expect(refresh.issue).not.toHaveBeenCalled();
-    expect(refresh.revoke).toHaveBeenCalledWith('old-token');
+    expect(refresh.revoke).toHaveBeenCalledWith('rotated-token');
   });
   it('normalizes registration identity and hashes a policy-compliant password', async () => {
     const users = repository();
@@ -238,7 +199,7 @@ describe('user authentication use cases', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('rejects refresh-token reuse and revokes the old token for a deleted user', async () => {
+  it('rejects refresh-token reuse and revokes a rotated token for a deleted user', async () => {
     const users = repository();
     users.findById.mockResolvedValue(null);
     const refresh = refreshTokens();
@@ -249,9 +210,9 @@ describe('user authentication use cases', () => {
     await expect(service.execute('old-token')).rejects.toBeInstanceOf(
       UnauthorizedException,
     );
-    expect(refresh.revoke).toHaveBeenCalledWith('old-token');
+    expect(refresh.revoke).toHaveBeenCalledWith('rotated-token');
 
-    refresh.inspect.mockResolvedValueOnce(null);
+    refresh.rotate.mockResolvedValueOnce(null);
     await expect(service.execute('reused-token')).rejects.toBeInstanceOf(
       UnauthorizedException,
     );

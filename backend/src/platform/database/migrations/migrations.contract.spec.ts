@@ -23,7 +23,7 @@ describe('database migrations contract', () => {
 
   it('places the newest migrations after the game-session baseline', () => {
     expect(basename(files.at(-1) ?? '')).toBe(
-      '1791367200000-AddIndependentMessagePurge.ts',
+      '1790035300000-IndexRecoverableGameSessions.ts',
     );
   });
 

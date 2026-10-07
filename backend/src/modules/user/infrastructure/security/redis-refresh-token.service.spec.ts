@@ -6,7 +6,6 @@ import { RedisRefreshTokenService } from './redis-refresh-token.service';
 function setup() {
   const redis = {
     eval: jest.fn(),
-    get: jest.fn(),
     del: jest.fn().mockResolvedValue(1),
     quit: jest.fn().mockResolvedValue('OK'),
   };
@@ -33,7 +32,7 @@ it('stores only a token digest with expiry and revokes that digest', async () =>
     2,
     'auth:refresh:user:42',
     key,
-    expect.stringMatching(/"nonce":"[a-f0-9]{64}"/),
+    '{"userId":42}',
     256,
     3600,
   );
@@ -42,39 +41,14 @@ it('stores only a token digest with expiry and revokes that digest', async () =>
   expect(redis.del).toHaveBeenCalledWith(key);
 });
 
-it('returns the same successor on a retry without storing its bearer value', async () => {
+it('consumes the old token with one atomic Redis script before issuing a replacement', async () => {
   const { service, redis } = setup();
-  const record = {
-    userId: 42,
-    nonce: 'a'.repeat(64),
-    credentialVersion: 'b'.repeat(64),
-  };
-  redis.get.mockResolvedValue(JSON.stringify(record));
-  redis.eval.mockResolvedValue(1);
+  redis.eval.mockResolvedValueOnce('{"userId":42}').mockResolvedValue(null);
   const rotated = await service.rotate('old-token');
   expect(rotated?.userId).toBe(42);
-  redis.get.mockResolvedValue(JSON.stringify({ ...record, rotated: true }));
-  expect(await service.rotate('old-token')).toEqual(rotated);
-  expect(rotated?.credentialVersion).toBe(record.credentialVersion);
-  expect(JSON.stringify(redis.eval.mock.calls)).not.toContain(
-    rotated?.refreshToken,
-  );
-  expect(redis.eval.mock.calls.every((call) => call[1] === 3)).toBe(true);
-  redis.eval.mockResolvedValue(0);
+  expect(redis.eval.mock.calls[0][0]).toContain("redis.call('DEL', KEYS[1])");
   expect(await service.rotate('old-token')).toBeNull();
-});
-
-it('retries an atomic compare failure and preserves the original record on a Redis failure', async () => {
-  const { service, redis } = setup();
-  redis.get.mockResolvedValue(
-    JSON.stringify({ userId: 42, nonce: 'a'.repeat(64) }),
-  );
-  redis.eval.mockResolvedValueOnce(-1).mockResolvedValueOnce(1);
-  expect((await service.rotate('old-token'))?.userId).toBe(42);
-  expect(redis.get).toHaveBeenCalledTimes(2);
-  redis.eval.mockRejectedValueOnce(new Error('unavailable'));
-  await expect(service.rotate('old-token')).rejects.toThrow('unavailable');
-  expect(redis.del).not.toHaveBeenCalled();
+  expect(redis.eval.mock.calls.filter((call) => call[1] === 2)).toHaveLength(1);
 });
 
 it('does not coerce corrupt persisted identity values into a valid user', async () => {
@@ -89,11 +63,9 @@ it('does not coerce corrupt persisted identity values into a valid user', async 
     1.5,
     Number.MAX_SAFE_INTEGER + 1,
   ]) {
-    redis.get.mockResolvedValueOnce(
-      JSON.stringify({ userId, nonce: 'a'.repeat(64) }),
-    );
+    redis.eval.mockResolvedValueOnce(JSON.stringify({ userId }));
     expect(await service.rotate('token')).toBeNull();
   }
-  expect(redis.eval).not.toHaveBeenCalled();
+  expect(redis.eval.mock.calls.every((call) => call[1] === 1)).toBe(true);
   await expect(service.issue(0)).rejects.toThrow(RangeError);
 });
