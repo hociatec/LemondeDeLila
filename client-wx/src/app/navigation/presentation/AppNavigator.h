@@ -83,7 +83,7 @@ private:
     void OnSessionExpired();
     void ResetView(domain::ViewId viewId);
     void ResetSessionViews();
-    void ApplyViewFocus(wxWindow* view, bool includeApplicationContext = false);
+    void ApplyViewFocus(wxWindow* view);
     void ReturnToCatalogAfterRoomClose(bool resetVaultFocus, bool resetCatalogFocus);
     [[nodiscard]] wxWindow* CreateView(domain::ViewId viewId);
     [[nodiscard]] wxWindow* CreateCoreView(domain::ViewId viewId);
