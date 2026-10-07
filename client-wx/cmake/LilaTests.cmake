@@ -1,4 +1,5 @@
 include_guard(GLOBAL)
+include(${CMAKE_CURRENT_LIST_DIR}/LilaAdminQuizTests.cmake)
 
 find_program(LILA_CLIENT_ARCHITECTURE_NODE_EXECUTABLE node REQUIRED)
 add_test(

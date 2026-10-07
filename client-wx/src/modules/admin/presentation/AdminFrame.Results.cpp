@@ -53,6 +53,12 @@ void AdminFrame::ShowResult(
     const domain::AdminCommand& command,
     const nlohmann::json& result)
 {
+    if (domain::GetAdminAreas()[selectedSection_].id == "games")
+    {
+        gameResultCommand_ = &command;
+        gameResult_ = result;
+        gameResultPayload_ = activeRequestPayload_;
+    }
     const auto displayResult = command.id == "sounds.catalog"
         ? FlattenSoundCatalog(result)
         : command.id == "bugs.comments" && result.is_object() && result.contains("items")

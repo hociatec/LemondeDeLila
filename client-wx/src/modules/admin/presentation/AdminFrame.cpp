@@ -42,6 +42,7 @@ lila::shared::accessibility::FocusManager::Plan AdminFrame::BuildFocusPlan()
 {
     lila::shared::accessibility::FocusManager::Plan plan;
     auto* menu = showingCommands_ ? commandsMenu_ : sectionsMenu_;
+    if (showingCommands_ && !menu->IsShown() && resultsMenu_->IsShown()) menu = resultsMenu_;
     if (menu != nullptr && menu->GetItemCount() > 0)
         plan.AddWindow(menu->GetSelectedControl());
     return plan;

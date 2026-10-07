@@ -13,6 +13,7 @@
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/security/domain/SensitiveString.h"
 #include "shared/text/presentation/encoding/Encoding.h"
+#include "shared/ui/presentation/controls/VerticalMenu.h"
 
 namespace lila::modules::admin::presentation
 {
@@ -44,6 +45,12 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
 {
     if (loading_ || commandIndex >= visibleCommands_.size()) return;
     const auto& command = *visibleCommands_[commandIndex];
+    if (command.id == "mnemo.question.update" && !questionCategoriesReady_)
+    {
+        pendingQuestionEditor_ = commandIndex;
+        ExecuteCommand(*domain::FindAdminCommand("mnemo.categories"), nlohmann::json::object());
+        return;
+    }
     if (command.id == "bugs.list")
     {
         RefreshBugReports(false);
@@ -117,6 +124,13 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
     }
     if (command.id.starts_with("sounds.") && ContextCommandMutates(command))
         soundIdToRestore_ = payload.value("soundId", std::string{});
+    if (showingItemActions_ &&
+        (command.id == "mnemo.categories" || command.id == "mnemo.questions"))
+    {
+        SaveGameNavigation();
+        RestoreAreaFromItem();
+        commandsMenu_->Hide();
+    }
     ExecuteCommand(command, std::move(payload));
 }
 
@@ -139,6 +153,8 @@ void AdminFrame::ExecuteCommand(
     bool announceLifecycle)
 {
     NormalizePaginationPayload(command, payload);
+    const bool loadingQuestionCategories = command.id == "mnemo.categories" && pendingQuestionEditor_;
+    if (!loadingQuestionCategories) activeRequestPayload_ = payload;
     if (command.id == "bugs.comments" || command.id == "bugs.comment")
     {
         const auto reportId = payload.value("reportId", std::string{});
@@ -147,7 +163,7 @@ void AdminFrame::ExecuteCommand(
     }
     if (command.id == "bugs.list" && !loadingReportCountsOnly_)
         bugReportListPayload_ = payload;
-    ResetPagination(command, payload);
+    if (!loadingQuestionCategories) ResetPagination(command, payload);
     requestSlot_.Cancel();
     const auto generation = requestSlot_.CurrentToken();
     loading_ = true;

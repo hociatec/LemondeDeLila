@@ -17,6 +17,9 @@ namespace lila::modules::admin::presentation
 {
 void AdminFrame::ShowSections()
 {
+    gameNavigation_.clear();
+    gameResultCommand_ = nullptr;
+    pendingQuestionEditor_.reset();
     requestSlot_.Cancel();
     loading_ = false;
     loadingReportCountsOnly_ = false;
@@ -171,6 +174,9 @@ bool AdminFrame::HandleKey(int keyCode)
     }
     if (loading_) requestSlot_.Cancel();
     loading_ = false;
+    pendingQuestionEditor_.reset();
+    refreshAreaAfterCommand_ = false;
+    if (RestoreGameNavigation()) return true;
     if (showingItemActions_)
     {
         RestoreAreaFromItem();
@@ -187,6 +193,12 @@ bool AdminFrame::HandleKey(int keyCode)
 
 void AdminFrame::FocusCurrentMenu()
 {
+    if (showingCommands_ && !commandsMenu_->IsShown() &&
+        domain::GetAdminAreas()[selectedSection_].id == "games")
+    {
+        FocusResult();
+        return;
+    }
     auto* menu = showingCommands_ ? commandsMenu_ : sectionsMenu_;
     if (showingCommands_ && !showingItemActions_ && reportSearchPanel_->IsShown())
         menu = reportStatusMenu_;

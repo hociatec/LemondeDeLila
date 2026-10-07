@@ -67,6 +67,11 @@ void AdminFrame::CompleteCommand(
     }
     if (error.has_value() || !result.has_value())
     {
+        if (!pendingQuestionEditor_ && !showingItemActions_ &&
+            (command.id == "mnemo.categories" || command.id == "mnemo.questions") &&
+            !gameNavigation_.empty() && gameNavigation_.back().itemActions)
+            RestoreGameNavigation();
+        pendingQuestionEditor_.reset();
         const bool isAmbienceUpload = uploadingCreatedAmbience_ ||
             (command.id == "sounds.upload" &&
              currentResultItemKind_ == domain::AdminItemKind::Ambience);
@@ -91,6 +96,29 @@ void AdminFrame::CompleteCommand(
                 wxOK | wxICON_ERROR, this);
         }
         FocusCurrentMenu();
+        return;
+    }
+    if (command.id == "mnemo.categories" && pendingQuestionEditor_)
+    {
+        const auto index = *pendingQuestionEditor_;
+        pendingQuestionEditor_.reset();
+        questionCategories_ = result->value("categories", nlohmann::json::array());
+        if (!questionCategories_.is_array() || questionCategories_.empty())
+        {
+            SetStatus(L"Aucune catégorie disponible pour modifier cette question.", true);
+            return;
+        }
+        questionCategoriesReady_ = true;
+        ActivateCommand(index);
+        questionCategoriesReady_ = false;
+        return;
+    }
+    if (refreshAreaAfterCommand_ &&
+        domain::GetAdminAreas()[selectedSection_].id == "games" &&
+        RestoreGameNavigation())
+    {
+        refreshAreaAfterCommand_ = false;
+        ExecuteCommand(*gameResultCommand_, gameResultPayload_, false);
         return;
     }
     if (command.id == "sounds.ambience.create" && pendingAmbienceUploadPath_)

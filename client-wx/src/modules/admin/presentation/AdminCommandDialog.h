@@ -26,7 +26,8 @@ public:
         wxWindow* parent,
         const domain::AdminCommand& command,
         const nlohmann::json& initialPayload,
-        SoundPreviewHandler onSoundPreview = {});
+        SoundPreviewHandler onSoundPreview = {},
+        const nlohmann::json& questionCategories = nlohmann::json::array());
 
     [[nodiscard]] const nlohmann::json& Payload() const noexcept { return payload_; }
 
@@ -40,7 +41,8 @@ private:
         wxWindow* editor = nullptr;
     };
 
-    void BuildFields(const nlohmann::json& initialPayload, wxFlexGridSizer& fieldsSizer);
+    void BuildFields(const nlohmann::json& initialPayload, wxFlexGridSizer& fieldsSizer,
+        const nlohmann::json& questionCategories);
     void FocusFirstField();
     void FocusField(const FieldControl& field);
     [[nodiscard]] nlohmann::json ReadValue(const FieldControl& field) const;

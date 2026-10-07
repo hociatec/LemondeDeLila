@@ -1,6 +1,5 @@
 #include "modules/admin/presentation/AdminCommandDialog.h"
 #include <algorithm>
-#include <stdexcept>
 #include <wx/checkbox.h>
 #include <wx/button.h>
 #include <wx/choice.h>
@@ -9,7 +8,6 @@
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
-#include <wx/tokenzr.h>
 #include <wx/weakref.h>
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/admin/domain/AdminPagination.h"
@@ -39,7 +37,8 @@ AdminCommandDialog::AdminCommandDialog(
     wxWindow* parent,
     const domain::AdminCommand& command,
     const nlohmann::json& initialPayload,
-    SoundPreviewHandler onSoundPreview)
+    SoundPreviewHandler onSoundPreview,
+    const nlohmann::json& questionCategories)
     : wxDialog(parent, wxID_ANY, wxString(command.label), wxDefaultPosition,
           wxSize(720, 620), wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
       command_(command), onSoundPreview_(std::move(onSoundPreview))
@@ -56,7 +55,7 @@ AdminCommandDialog::AdminCommandDialog(
     fieldsSizer->AddGrowableCol(1, 1);
     scroll->SetSizer(fieldsSizer);
     root->Add(scroll, 1, wxEXPAND | wxLEFT | wxRIGHT, 16);
-    BuildFields(initialPayload, *fieldsSizer);
+    BuildFields(initialPayload, *fieldsSizer, questionCategories);
     auto* buttons = CreateSeparatedButtonSizer(wxOK | wxCANCEL);
     if (auto* validate = wxDynamicCast(FindWindow(wxID_OK), wxButton))
         validate->SetLabel(command_.id == "bugs.create" ? wxString(L"Envoyer") : wxString(L"Valider"));
@@ -73,7 +72,8 @@ AdminCommandDialog::AdminCommandDialog(
 }
 void AdminCommandDialog::BuildFields(
     const nlohmann::json& initialPayload,
-    wxFlexGridSizer& fieldsSizer)
+    wxFlexGridSizer& fieldsSizer,
+    const nlohmann::json& questionCategories)
 {
     auto* scroll = fieldsParent_;
     auto orderedPayload = nlohmann::ordered_json::parse(command_.payloadTemplate);
@@ -88,6 +88,17 @@ void AdminCommandDialog::BuildFields(
         field.initialValue = initial == initialPayload.end()
             ? nlohmann::json(item.value()) : *initial;
         field.metadata = domain::GetAdminFieldMetadata(command_.id, item.key());
+        if (command_.id == "mnemo.question.update" && item.key() == "categoryId" &&
+            questionCategories.is_array() && !questionCategories.empty())
+        {
+            field.metadata.kind = domain::AdminFieldKind::Choice;
+            for (const auto& category : questionCategories)
+            {
+                field.metadata.choices.push_back(category.at("id").get<std::string>());
+                field.metadata.choiceLabels.push_back(lila::shared::text::FromUtf8(
+                    category.at("name").get<std::string>()).ToStdWstring());
+            }
+        }
         // Windows associates an edit control with the preceding native label.
         if (field.initialValue.is_boolean()) fieldsSizer.AddSpacer(1);
         else
@@ -160,44 +171,6 @@ void AdminCommandDialog::FocusField(const FieldControl& field)
     auto* target = field.include != nullptr && !field.include->GetValue()
         ? static_cast<wxWindow*>(field.include) : field.editor;
     if (target != nullptr) target->SetFocus();
-}
-nlohmann::json AdminCommandDialog::ReadValue(const FieldControl& field) const
-{
-    if (const auto* checkbox = dynamic_cast<wxCheckBox*>(field.editor))
-        return checkbox->GetValue();
-    if (const auto* choice = dynamic_cast<wxChoice*>(field.editor))
-    {
-        const auto selected = choice->GetSelection();
-        if (selected == wxNOT_FOUND ||
-            static_cast<std::size_t>(selected) >= field.metadata.choices.size())
-            throw std::runtime_error("Une valeur de la liste est attendue.");
-        return field.metadata.choices[static_cast<std::size_t>(selected)];
-    }
-    const auto* text = dynamic_cast<wxTextCtrl*>(field.editor);
-    if (text == nullptr) throw std::runtime_error("Contrôle de formulaire inconnu.");
-    const auto raw = lila::shared::text::ToUtf8(text->GetValue());
-    if (field.metadata.kind == domain::AdminFieldKind::StringList)
-    {
-        nlohmann::json result = nlohmann::json::array();
-        wxStringTokenizer lines(text->GetValue(), L"\n", wxTOKEN_STRTOK);
-        while (lines.HasMoreTokens())
-        {
-            auto line = lines.GetNextToken();
-            line.Trim(true).Trim(false);
-            if (!line.empty()) result.push_back(lila::shared::text::ToUtf8(line));
-        }
-        return result;
-    }
-    if (field.initialValue.is_number())
-    {
-        const auto parsed = nlohmann::json::parse(raw);
-        if (!parsed.is_number()) throw std::runtime_error("Un nombre est attendu.");
-        return parsed;
-    }
-    if (field.initialValue.is_array() || field.initialValue.is_object())
-        return nlohmann::json::parse(raw);
-    if (field.initialValue.is_null()) return raw.empty() ? nlohmann::json(nullptr) : nlohmann::json(raw);
-    return raw;
 }
 void AdminCommandDialog::HandleKey(wxKeyEvent& event)
 {

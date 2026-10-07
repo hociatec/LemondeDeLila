@@ -174,6 +174,9 @@ int main()
     assert(!questionFilters.contains("status"));
     assert(questionFilters["offset"] == 0);
     assert(questionFilters["limit"] == 50);
+    const auto questionUpdate = nlohmann::json::parse(
+        findCommand("mnemo.question.update").payloadTemplate);
+    assert(questionUpdate.contains("categoryId"));
     const auto mnemoPagination =
         lila::modules::admin::domain::GetAdminPaginationSpec("mnemo.questions");
     assert(mnemoPagination.mode == AdminPaginationMode::Offset);
