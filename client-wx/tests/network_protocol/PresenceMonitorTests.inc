@@ -92,20 +92,27 @@ void TestPresenceActivityAndReconnect()
     WaitUntil([&] { return socket.Sent("presence-activity"); }, "Real interaction must be reported");
     monitor.SetContext("social");
     WaitUntil([&] { return socket.Sent("social"); }, "Screen changes must be reported");
-    const std::string snapshot = R"({"type":"presence-update","players":[{"id":2,"username":"Bob","availability":"available"},{"id":1,"username":"Alice","availability":"absent"}]})";
+    const std::string snapshot = R"({"type":"presence-update","players":[{"id":2,"username":"Bob","availability":"available"},{"id":42,"username":"Alice","availability":"absent","activity":"social"}]})";
     socket.Push(snapshot);
     WaitUntil([&] { return monitor.HasSnapshot(); }, "Presence snapshot expected");
     Expect(monitor.Players()[0].username == "Alice", "Presence ordering must not depend on availability");
+    monitor.SetContext("stats");
+    Expect(monitor.Players()[0].activity == "stats",
+        "A local context change must immediately replace the stale presence activity");
+    socket.Push(snapshot);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    Expect(monitor.Players()[0].activity == "stats",
+        "A delayed snapshot must not restore the previous presence activity");
     const auto sentBeforeReconnect = socket.Count();
     socket.Close();
     WaitUntil([&] { return socket.Connections() >= 2; }, "Presence must reconnect");
     WaitUntil([&] { return socket.Count() > sentBeforeReconnect; }, "Reconnect must restore context");
-    socket.Push(R"({"type":"presence-update","players":[{"id":1,"username":"Alice"}]})");
+    socket.Push(R"({"type":"presence-update","players":[{"id":42,"username":"Alice","activity":"stats"}]})");
     WaitUntil([&] { return monitor.HasSnapshot() && monitor.Players().size() == 1; }, "New baseline expected");
     Expect(audio.joined.load() == 0 && audio.left.load() == 0, "Reconnection baseline must be silent");
     socket.Push(snapshot);
     WaitUntil([&] { return audio.joined.load() == 1; }, "Live friend arrival must sound");
-    socket.Push(R"({"type":"presence-update","players":[{"id":1,"username":"Alice"}]})");
+    socket.Push(R"({"type":"presence-update","players":[{"id":42,"username":"Alice","activity":"stats"}]})");
     WaitUntil([&] { return audio.left.load() == 1; }, "Live friend departure must sound");
     monitor.Stop();
     Expect(!monitor.HasSnapshot(), "Stopping must clear presence");

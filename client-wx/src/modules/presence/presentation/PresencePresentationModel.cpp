@@ -74,6 +74,10 @@ wxString ActivityLocation(const domain::PresencePlayer& player)
     {
         return wxString(L"social");
     }
+    if (activity == "table")
+    {
+        return wxString(L"table");
+    }
     return wxString(L"accueil");
 }
 }
