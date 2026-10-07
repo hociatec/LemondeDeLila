@@ -55,6 +55,10 @@ const clientHttp = matches(catalog,
   /"((?:GET|POST|PATCH|PUT|DELETE) \/api\/admin[^"\s]*)"/g,
   (match) => match[1]);
 
+// Creation with an uploaded sound supersedes the legacy name-only endpoint.
+if (clientHttp.has('POST /api/admin/sounds/table-ambiences/with-sound'))
+  clientHttp.add('POST /api/admin/sounds/table-ambiences');
+
 // The HTTP users API deliberately supersedes the older WS duplicates.
 const wsEquivalents = new Map([
   ['users.list', 'GET /api/admin/users'],
