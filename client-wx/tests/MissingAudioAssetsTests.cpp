@@ -16,4 +16,9 @@ int main()
     for (std::size_t index = 0; index < static_cast<std::size_t>(SoundCue::Count); ++index)
         assert(FindLocalSoundAsset(absentDirectory, static_cast<SoundCue>(index)).empty());
     assert(FindLocalSoundAsset(absentDirectory, SoundCue::Count).empty());
+    using lila::modules::audio::infrastructure::GetLocalSoundFile;
+    for (auto index = static_cast<std::size_t>(SoundCue::TableAmbience1);
+        index <= static_cast<std::size_t>(SoundCue::TableAmbience20); ++index)
+        assert(GetLocalSoundFile(static_cast<SoundCue>(index)).empty());
+    assert(GetLocalSoundFile(SoundCue::TavernAmbience) == L"TavernAmbience.wav");
 }

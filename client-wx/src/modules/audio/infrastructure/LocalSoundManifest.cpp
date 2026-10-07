@@ -20,11 +20,10 @@ constexpr std::array Files{
     L"RoomJoined.wav", L"RoomExit.wav", L"RoomJoined.wav", L"RoomExit.wav",
     L"RoomOpened.wav", L"DiceRolled.wav",
     L"DiceRolled.wav", L"DiceRolled.wav", L"DiceRolled.wav", L"DiceRolled.wav",
-    L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav",
-    L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav",
-    L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav",
-    L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav",
-    L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav", L"TavernAmbience.wav",
+    // Custom table ambiences have no bundled equivalent. A missing upload
+    // must not play the same tavern recording under twenty different names.
+    L"", L"", L"", L"", L"", L"", L"", L"", L"", L"",
+    L"", L"", L"", L"", L"", L"", L"", L"", L"", L"",
     L"ClientDisconnected.wav", L"InvitationSent.wav",
 };
 

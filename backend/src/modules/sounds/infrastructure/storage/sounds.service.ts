@@ -112,6 +112,7 @@ export class SoundsService {
           (message) => this.logger.warn(message),
           soundId,
           keepSha256,
+          { strict: true },
         ),
       notifyUpdated: (entry, updatedAt) =>
         this.notifications.notifyAll('sounds.updated', {

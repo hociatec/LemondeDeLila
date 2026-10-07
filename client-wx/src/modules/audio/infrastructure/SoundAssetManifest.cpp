@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <limits>
 
 #include <nlohmann/json.hpp>
 
@@ -47,7 +46,8 @@ std::optional<SoundAssetManifest> ParseSoundAssetManifest(std::string_view paylo
             return std::nullopt;
 
         SoundAssetManifest result;
-        std::size_t totalBytes = 0;
+        // This is metadata, not a preload request: the catalogue's total audio
+        // size must not be constrained by an in-memory playback cache budget.
         for (const auto& [id, value] : sounds->items())
         {
             if (!IsSafeId(id) || !value.is_object()) return std::nullopt;
@@ -62,10 +62,8 @@ std::optional<SoundAssetManifest> ParseSoundAssetManifest(std::string_view paylo
             const auto parsedSha256 = sha256->get<std::string>();
             const auto parsedBytes = bytes->get<std::uint64_t>();
             if (!IsSupportedUrl(parsedUrl) || !IsSha256(parsedSha256) ||
-                parsedBytes == 0 || parsedBytes > MaximumRemoteSoundBytes ||
-                parsedBytes > MaximumRemoteSoundTotalBytes - totalBytes)
+                parsedBytes == 0 || parsedBytes > MaximumRemoteSoundBytes)
                 return std::nullopt;
-            totalBytes += static_cast<std::size_t>(parsedBytes);
             result.sounds.emplace(id, RemoteSoundDescriptor{
                 std::move(parsedUrl), std::move(parsedSha256),
                 static_cast<std::size_t>(parsedBytes)});

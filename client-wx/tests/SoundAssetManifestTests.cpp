@@ -34,6 +34,23 @@ int main()
         Expect(valid.has_value() && valid->sounds.size() == 1 &&
             valid->disabled.contains("selection"), "A valid audio manifest was rejected.");
 
+        // Production catalogue: long table ambiences exceed the old 32 MiB
+        // per-file and 128 MiB aggregate limits, without being preloaded.
+        nlohmann::json largeCatalogue = nlohmann::json::object();
+        for (int index = 1; index <= 20; ++index)
+            largeCatalogue["TableAmbience" + std::to_string(index)] = Sound(25U * 1024U * 1024U);
+        largeCatalogue["TableAmbience13"] = Sound(67'401'482);
+        largeCatalogue["TableAmbience17"] = Sound(47'902'730);
+        largeCatalogue["ClientOpened"] = Sound(1024);
+        const auto large = ParseSoundAssetManifest(nlohmann::json{{"sounds", largeCatalogue}}.dump());
+        Expect(large.has_value() && large->sounds.size() == 21 &&
+            large->sounds.at("TableAmbience13").bytes == 67'401'482 &&
+            large->sounds.contains("ClientOpened"),
+            "Long ambiences must not disable the entire remote sound catalogue.");
+        Expect(ParseSoundAssetManifest(nlohmann::json{{"sounds", {
+            {"TableAmbience1", Sound(250U * 1024U * 1024U)}}}}.dump()).has_value(),
+            "A WAV accepted at the server upload limit must be playable by the client.");
+
         Expect(!ParseSoundAssetManifest("{broken").has_value(),
             "A corrupted audio manifest was accepted.");
         Expect(!ParseSoundAssetManifest(nlohmann::json{{"sounds", {

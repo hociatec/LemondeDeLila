@@ -52,6 +52,25 @@ int main()
     streams.StartOrUpdate(domain::SoundCue::MainMenuMusic, {}, 1.0F, cancelled);
     streams.Clear();
     assert(streams.Usage().entries == 0 && streams.Usage().bytes == 0);
+    const auto longAmbience = std::filesystem::path("long-table-ambience.wav");
+    const auto nextAmbience = std::filesystem::path("next-table-ambience.wav");
+    {
+        std::ofstream firstFile(longAmbience, std::ios::binary | std::ios::trunc);
+        std::ofstream secondFile(nextAmbience, std::ios::binary | std::ios::trunc);
+    }
+    // FakeBassApi accepts files without decoding: exercise the real stream
+    // cache's file-size admission and switching with production-sized assets.
+    std::filesystem::resize_file(longAmbience, 67'401'482);
+    std::filesystem::resize_file(nextAmbience, 47'902'730);
+    infrastructure::BassStreamCache tableStreams;
+    tableStreams.StartOrUpdate(domain::SoundCue::TableAmbience13, longAmbience, 1.0F, cancelled);
+    assert(tableStreams.Usage().entries == 1);
+    tableStreams.StartOrUpdate(domain::SoundCue::TableAmbience17, nextAmbience, 1.0F, cancelled);
+    assert(tableStreams.Usage().entries == 2);
+    assert(tableStreams.Usage().bytes == 67'401'482 + 47'902'730);
+    tableStreams.Clear();
+    std::filesystem::remove(longAmbience);
+    std::filesystem::remove(nextAmbience);
     samples.Clear();
     BASS_Free();
 }

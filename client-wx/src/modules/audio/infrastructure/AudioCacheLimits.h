@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include "modules/audio/infrastructure/SoundAssetManifest.h"
 
 namespace lila::modules::audio::infrastructure
 {
@@ -25,7 +26,9 @@ inline constexpr AudioCacheLimits SampleCacheLimits{
 
 inline constexpr AudioCacheLimits StreamCacheLimits{
     4,
-    64U * 1024U * 1024U,
-    32U * 1024U * 1024U,
+    // File streams do not load the entire source into RAM. Allow an active
+    // stream and its replacement at the server's maximum file size.
+    2U * MaximumRemoteSoundBytes,
+    MaximumRemoteSoundBytes,
 };
 }
