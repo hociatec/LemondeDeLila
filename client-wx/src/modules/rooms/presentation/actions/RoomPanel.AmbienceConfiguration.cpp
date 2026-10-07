@@ -14,6 +14,7 @@
 #include "modules/audio/application/IAudioService.h"
 #include "modules/audio/domain/SoundCatalog.h"
 #include "modules/rooms/application/RoomLobbyService.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
@@ -107,7 +108,8 @@ void RoomPanel::ConfigureAmbience()
                         : (*result)[static_cast<std::size_t>(choice - 1)].soundId);
                 };
                 choices->Bind(wxEVT_CHAR_HOOK, key);
-                choices->SetFocus();
+                static_cast<void>(
+                    lila::shared::accessibility::NavigationController::Focus(choices));
                 const int accepted = dialog.ShowModal(); weakThis->ToggleAmbiencePreview({});
                 if (accepted != wxID_OK) return;
                 const int choice = choices->GetSelection();

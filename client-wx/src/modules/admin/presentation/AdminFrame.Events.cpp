@@ -9,6 +9,7 @@
 #include <wx/panel.h>
 #include <wx/textctrl.h>
 
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/ui/presentation/controls/VerticalMenu.h"
 #include "shared/ui/presentation/navigation/MenuBlueprint.h"
 
@@ -53,7 +54,9 @@ void AdminFrame::BindEvents()
             if (domain::GetAdminAreas()[selectedSection_].id == "games")
                 return HandleKey(keyCode);
             if (showingItemActions_ && commandsMenu_->IsShown()) FocusCurrentMenu();
-            else if (reportSearchPanel_->IsShown()) reportStatusMenu_->GetSelectedControl()->SetFocus();
+            else if (reportSearchPanel_->IsShown())
+                static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
+                    reportStatusMenu_->GetSelectedControl()));
             else if (commandsMenu_->IsShown()) FocusCurrentMenu();
             else ShowSections();
             return true;
@@ -97,9 +100,11 @@ void AdminFrame::BindEvents()
                 {
                     const auto index = static_cast<std::size_t>(std::distance(buttons.begin(), found));
                     if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) && index > 0)
-                        buttons[index - 1]->SetFocus();
+                        static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
+                            buttons[index - 1]));
                     if ((keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN) && index + 1 < buttons.size())
-                        buttons[index + 1]->SetFocus();
+                        static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
+                            buttons[index + 1]));
                     if ((keyCode == WXK_UP || keyCode == WXK_NUMPAD_UP) && index == 0)
                         FocusResult();
                     return;
@@ -129,9 +134,11 @@ void AdminFrame::BindEvents()
                     const auto index = static_cast<std::size_t>(std::distance(controls.begin(), found));
                     const bool forward = keyCode == WXK_DOWN || keyCode == WXK_NUMPAD_DOWN;
                     if (forward && index + 1 < controls.size() && controls[index + 1]->IsEnabled())
-                        controls[index + 1]->SetFocus();
+                        static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
+                            controls[index + 1]));
                     else if (!forward && index > 0 && controls[index - 1]->IsEnabled())
-                        controls[index - 1]->SetFocus();
+                        static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
+                            controls[index - 1]));
                     else if (forward) FocusResult();
                     return;
                 }
@@ -151,11 +158,13 @@ void AdminFrame::BindEvents()
                 return;
             }
             if (resultsMenu_->IsShown() && resultsMenu_->GetSelectedControl() != nullptr)
-                resultsMenu_->GetSelectedControl()->SetFocus();
+                static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
+                    resultsMenu_->GetSelectedControl()));
             else if (showingItemActions_ && commandsMenu_->IsShown())
                 FocusCurrentMenu();
             else if (reportSearchPanel_->IsShown())
-                reportStatusMenu_->GetSelectedControl()->SetFocus();
+                static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
+                    reportStatusMenu_->GetSelectedControl()));
             else if (commandsMenu_->IsShown())
                 FocusCurrentMenu();
             else ShowSections();

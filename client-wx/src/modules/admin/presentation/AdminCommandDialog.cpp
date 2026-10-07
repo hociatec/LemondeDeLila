@@ -9,6 +9,7 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/weakref.h>
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 #include "modules/admin/domain/AdminPagination.h"
 namespace lila::modules::admin::presentation
@@ -170,7 +171,8 @@ void AdminCommandDialog::FocusField(const FieldControl& field)
 {
     auto* target = field.include != nullptr && !field.include->GetValue()
         ? static_cast<wxWindow*>(field.include) : field.editor;
-    if (target != nullptr) target->SetFocus();
+    static_cast<void>(
+        lila::shared::accessibility::NavigationController::Focus(target));
 }
 void AdminCommandDialog::HandleKey(wxKeyEvent& event)
 {

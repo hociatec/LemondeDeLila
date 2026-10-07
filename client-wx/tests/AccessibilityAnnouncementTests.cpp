@@ -126,6 +126,14 @@ int main(int argc, char** argv)
         Check(list->GetSelection() == 2);
 #ifdef __WXMSW__
         Check(selections.empty());
+        updated.push_back({"fourth", "Diane"});
+        menu->SetItemsForNavigation(updated, 2, true);
+        Check(list->GetSelection() == 2);
+        Check(selections.empty());
+        updated.pop_back();
+        menu->SetItemsForNavigation(updated, 2, true);
+        Check(list->GetSelection() == 2);
+        Check(selections.empty());
         SetWindowLongPtr(reinterpret_cast<HWND>(list->GetHandle()), GWLP_WNDPROC,
             reinterpret_cast<LONG_PTR>(originalListProc));
 #endif

@@ -11,6 +11,7 @@
 #include "modules/audio/application/IAudioService.h"
 #include "modules/rooms/application/RoomLobbyService.h"
 #include "modules/rooms/domain/Room.h"
+#include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
@@ -20,8 +21,9 @@ namespace
 {
 void RestoreInvitationFocus(const wxWeakRef<wxWindow>& target)
 {
-    if (target && target->IsShownOnScreen() && target->IsEnabled() && target->AcceptsFocus())
-        target->SetFocus();
+    if (target)
+        static_cast<void>(
+            lila::shared::accessibility::NavigationController::Focus(target.get()));
 }
 }
 

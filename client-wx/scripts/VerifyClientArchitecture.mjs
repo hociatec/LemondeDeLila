@@ -196,6 +196,9 @@ for (const path of await sourceFiles(root)) {
   if (!name.startsWith('app/navigation/presentation/AppNavigator') &&
       /CallAfter\s*\(\s*\[this\b/s.test(source))
     violations.push(`${name}: un callback différé vers un widget doit utiliser wxWeakRef`);
+  if (name !== 'shared/accessibility/presentation/NavigationController.cpp')
+    reject(path, source, /(?:->|\.)SetFocus\s*\(/,
+      'les déplacements de focus doivent passer par NavigationController');
   if (name.startsWith('modules/update/infrastructure/launcher/') &&
       name !== 'modules/update/infrastructure/launcher/UpdateLauncher.Progress.cpp')
     reject(path, source, /std::this_thread::sleep_for\s*\(/,

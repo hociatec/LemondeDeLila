@@ -187,8 +187,7 @@ void VerticalMenu::FocusIndex(std::size_t index, bool notify)
     selectedIndex_ = index;
     if (listBox_->GetSelection() != static_cast<int>(index))
         listBox_->SetSelection(static_cast<int>(index));
-    if (!listBox_->HasFocus())
-        listBox_->SetFocus();
+    static_cast<void>(Navigator::Focus(listBox_));
     UpdateVisualSelection();
     if (notify)
     {
