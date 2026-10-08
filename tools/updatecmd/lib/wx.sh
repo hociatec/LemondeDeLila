@@ -301,6 +301,9 @@ package_wx_release() {
   verify_common_controls_manifest "$payload/lila_launcher.exe"
   find "$WX_BUILD_DIR" -maxdepth 1 -type f -iname '*.dll' -exec install -m 0644 '{}' "$payload/" \;
   install -m 0644 "$WX_BASS_ROOT/bass.dll" "$payload/bass.dll"
+  mkdir -p "$payload/libs/x64"
+  install -m 0644 "$WX_NVDA_CONTROLLER_DLL" \
+    "$payload/libs/x64/nvdaControllerClient64.dll"
   copy_mingw_runtime "$payload"
   copy_vcpkg_runtime_closure "$payload"
   if [[ -d "$WX_BUILD_DIR/resources" ]]; then
@@ -434,6 +437,11 @@ build_and_publish_wx() {
   require_nonempty_file "$WX_VCPKG_ROOT/vcpkg" "vcpkg absent"
   require_nonempty_file "$WX_BASS_ROOT/bass.dll" "Runtime BASS absent"
   require_nonempty_file "$WX_BASS_ROOT/libbass.dll.a" "Bibliothèque d'import BASS MinGW absente"
+  require_nonempty_file "$WX_NVDA_CONTROLLER_DLL" "Contrôleur NVDA x64 absent"
+  [[ "$WX_NVDA_CONTROLLER_SHA256" =~ ^[a-fA-F0-9]{64}$ ]] \
+    || die "Empreinte du contrôleur NVDA invalide."
+  [[ "$(sha256_file "$WX_NVDA_CONTROLLER_DLL")" == "${WX_NVDA_CONTROLLER_SHA256,,}" ]] \
+    || die "Empreinte du contrôleur NVDA inattendue."
   ensure_wx_mingw_wrapper_compatibility
   ensure_wx_native_dependencies
 

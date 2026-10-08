@@ -81,6 +81,11 @@ void ActivationFocusContext::Clear()
     state_->prefix.clear();
 }
 
+wxString ActivationFocusContext::Announcement() const
+{
+    return state_->announcedName;
+}
+
 wxString ActivationFocusContext::AccessibleNameFor(
     const wxWindow& window,
     const wxString& name)

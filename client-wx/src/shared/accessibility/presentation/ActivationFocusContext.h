@@ -19,6 +19,7 @@ public:
 
     void Prepare(wxWindow* target, const wxString& windowContext);
     void Clear();
+    [[nodiscard]] wxString Announcement() const;
 
     [[nodiscard]] static wxString AccessibleNameFor(
         const wxWindow& window,

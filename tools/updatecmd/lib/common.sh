@@ -206,6 +206,8 @@ load_updatecmd_config() {
   WX_VCPKG_ROOT="${WX_VCPKG_ROOT:-$CACHE_ROOT/toolchains/vcpkg}"
   WX_VCPKG_TRIPLET="${WX_VCPKG_TRIPLET:-x64-mingw-lila-dynamic}"
   WX_BASS_ROOT="${WX_BASS_ROOT:-$CACHE_ROOT/toolchains/bass}"
+  WX_NVDA_CONTROLLER_DLL="${WX_NVDA_CONTROLLER_DLL:-/var/lib/lemonde-de-lila/client-updates/client-win/libs/x64/nvdaControllerClient64.dll}"
+  WX_NVDA_CONTROLLER_SHA256="${WX_NVDA_CONTROLLER_SHA256:-724530fc4c022b18ef8b2a8df32b6ffb7199ec9480cf3ea253b9a71b87e2ebcd}"
   WX_BUILD_DIR="${WX_BUILD_DIR:-$CACHE_ROOT/client-wx-build}"
   WX_BINARY_CACHE="${WX_BINARY_CACHE:-$CACHE_ROOT/vcpkg-binary-cache}"
 
