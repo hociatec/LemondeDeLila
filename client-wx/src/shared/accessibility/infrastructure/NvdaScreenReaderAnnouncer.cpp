@@ -82,12 +82,15 @@ NvdaScreenReaderAnnouncer::NvdaScreenReaderAnnouncer()
             "nvdaControllerClient_speakText", "nvdaController_speakText"});
         const auto speakSsml = FindExport(module, {
             "nvdaControllerClient_speakSsml", "nvdaController_speakSsml"});
-        if (test != nullptr && speak != nullptr && speakSsml != nullptr)
+        const auto cancel = FindExport(module, {
+            "nvdaControllerClient_cancelSpeech", "nvdaController_cancelSpeech"});
+        if (test != nullptr && speak != nullptr && speakSsml != nullptr && cancel != nullptr)
         {
             module_ = module;
             testIfRunning_ = ToFunctionPointer<TestIfRunning>(test);
             speakText_ = ToFunctionPointer<SpeakText>(speak);
             speakSsml_ = ToFunctionPointer<SpeakSsml>(speakSsml);
+            cancelSpeech_ = ToFunctionPointer<CancelSpeech>(cancel);
             return;
         }
         FreeLibrary(module);
@@ -126,11 +129,15 @@ bool NvdaScreenReaderAnnouncer::Speak(std::wstring_view message) const noexcept
 bool NvdaScreenReaderAnnouncer::SpeakAndWait(std::wstring_view message) const noexcept
 {
 #ifdef __WXMSW__
-    if (message.empty() || testIfRunning_ == nullptr || speakSsml_ == nullptr)
+    if (message.empty() || testIfRunning_ == nullptr || speakSsml_ == nullptr ||
+        cancelSpeech_ == nullptr)
         return false;
     try
     {
         if (testIfRunning_() != 0) return false;
+        // Clear the automatic window-title utterance before replacing it with
+        // the controlled, synchronous announcement below.
+        if (cancelSpeech_() != 0) return false;
         const std::wstring ssml = EscapeSsml(message);
         return speakSsml_(ssml.c_str(), -1, 0, false) == 0;
     }
