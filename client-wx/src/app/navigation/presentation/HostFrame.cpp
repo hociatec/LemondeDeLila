@@ -3,8 +3,6 @@
 
 #include <utility>
 
-#include <utility>
-
 #include <wx/event.h>
 #include <wx/panel.h>
 #include <wx/sizer.h>
@@ -33,6 +31,9 @@ HostFrame::HostFrame()
           wxSize(HostWindowWidth, HostWindowHeight),
           wxDEFAULT_FRAME_STYLE)
 {
+#ifdef __WXMSW__
+    screenReader_ = lila::shared::accessibility::CreateScreenReaderAnnouncer();
+#endif
     Bind(wxEVT_CLOSE_WINDOW, &HostFrame::OnClose, this);
     Bind(wxEVT_CHAR_HOOK, &HostFrame::OnCharHook, this);
 #ifdef __WXMSW__
@@ -141,6 +142,7 @@ void HostFrame::OnChildFocus(wxChildFocusEvent& event)
 void HostFrame::ClearActivationFocusContext()
 {
 #ifdef __WXMSW__
+    initialFocusSpeech_.clear();
     activationFocusContext_.Clear();
 #endif
 }
@@ -152,7 +154,6 @@ void HostFrame::BeginInitialFocusAnnouncement()
     if (!initialFocusTitle_.empty()) SetTitle(wxString());
 #endif
 }
-
 void HostFrame::CompleteInitialFocusAnnouncement()
 {
 #ifdef __WXMSW__
@@ -161,8 +162,20 @@ void HostFrame::CompleteInitialFocusAnnouncement()
     const wxWeakRef<HostFrame> weakFrame(this);
     CallAfter([weakFrame, title]()
     {
-        if (auto* frame = weakFrame.get(); frame != nullptr && frame->GetTitle().empty())
-            frame->SetTitle(title);
+        auto* frame = weakFrame.get();
+        if (frame == nullptr) return;
+        if (frame->GetTitle().empty()) frame->SetTitle(title);
+        frame->CallAfter([weakFrame]()
+        {
+            auto* resolved = weakFrame.get();
+            if (resolved == nullptr || resolved->initialFocusSpeech_.empty() ||
+                resolved->screenReader_ == nullptr)
+                return;
+            const wxString announcement =
+                std::exchange(resolved->initialFocusSpeech_, wxString());
+            if (resolved->screenReader_->Speak(announcement.ToStdWstring()))
+                resolved->activationFocusContext_.Clear();
+        });
     });
 #endif
 }
@@ -172,6 +185,8 @@ void HostFrame::PrepareActivationFocusContext(wxWindow* target)
 #ifdef __WXMSW__
     activationFocusContext_.Prepare(
         target, initialFocusTitle_.empty() ? GetTitle() : initialFocusTitle_);
+    if (!initialFocusTitle_.empty())
+        initialFocusSpeech_ = activationFocusContext_.Announcement();
 #else
     static_cast<void>(target);
 #endif

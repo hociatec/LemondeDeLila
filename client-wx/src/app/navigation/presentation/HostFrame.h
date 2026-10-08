@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <string_view>
 
 #include <wx/frame.h>
@@ -9,6 +10,7 @@
 #endif
 
 #include "shared/accessibility/presentation/ActivationFocusContext.h"
+#include "shared/accessibility/application/IScreenReaderAnnouncer.h"
 
 class wxBoxSizer;
 class wxWindow;
@@ -49,6 +51,8 @@ private:
 #ifdef __WXMSW__
     wxWeakRef<wxWindow> lastFocusedChild_;
     wxString initialFocusTitle_;
+    wxString initialFocusSpeech_;
+    std::unique_ptr<lila::shared::accessibility::IScreenReaderAnnouncer> screenReader_;
     lila::shared::accessibility::ActivationFocusContext activationFocusContext_;
 #endif
 };

@@ -112,6 +112,7 @@ int main(int argc, char** argv)
         Check(accessible->GetValue(wxACC_SELF, &value) == wxACC_OK && value.empty());
         ActivationFocusContext startupContext;
         startupContext.Prepare(list, "Le Monde de Lila - Hacene");
+        Check(startupContext.Announcement().StartsWith("Le Monde de Lila - Hacene"));
         Check(accessible->GetName(1, &name) == wxACC_OK &&
             name == "Le Monde de Lila - Hacene — Alice");
         startupContext.Clear();
