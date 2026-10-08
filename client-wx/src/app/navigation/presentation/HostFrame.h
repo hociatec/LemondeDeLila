@@ -29,7 +29,7 @@ class HostFrame final : public wxFrame
 public:
     using PresenceRequestedHandler = std::function<void()>;
     using CloseRequestedHandler = std::function<bool()>;
-    using InitialFocusHandler = std::function<void()>;
+    using InitialFocusHandler = std::function<void(bool includeWindowContext)>;
 
     HostFrame();
 
@@ -50,6 +50,7 @@ private:
 #ifdef __WXMSW__
     void OnActivate(wxActivateEvent& event);
     void OnChildFocus(wxChildFocusEvent& event);
+    void FinishInitialFocus(InitialFocusHandler focus, bool speakFallback);
 #endif
 
     wxWindow* contentRoot_ = nullptr;
