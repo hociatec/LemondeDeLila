@@ -16,7 +16,6 @@ namespace lila::app::navigation
 void HostFrame::BeginInitialFocusAnnouncement()
 {
     initialFocusTitle_ = GetTitle();
-    if (!initialFocusTitle_.empty()) SetTitle(wxString());
 }
 
 void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFinished)
@@ -28,12 +27,11 @@ void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFi
     }
 
     const wxString title = std::exchange(initialFocusTitle_, wxString());
+    // Restore the real window title before speech starts so it remains exposed
+    // to Windows, Alt+Tab and screen-reader window navigation at all times.
+    SetTitle(title);
     const auto announcer = screenReader_;
-    if (announcer == nullptr)
-    {
-        SetTitle(title);
-        return;
-    }
+    if (announcer == nullptr) return;
 
     const wxWeakRef<HostFrame> weakFrame(this);
     initialAnnouncementTask_ = lila::shared::ui::RunBackgroundTaskWithResult<bool>(
@@ -42,13 +40,12 @@ void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFi
         {
             return announcer->SpeakAndWait(speech);
         },
-        [weakFrame, title, focus = std::move(focusWhenFinished)](
+        [weakFrame, focus = std::move(focusWhenFinished)](
             std::string error, std::optional<bool> spoken) mutable
         {
             auto* frame = weakFrame.get();
             if (frame == nullptr) return;
             frame->initialAnnouncementTask_.reset();
-            frame->SetTitle(title);
             if (!error.empty() || !spoken.value_or(false))
             {
                 lila::shared::logging::LogWarning(
@@ -64,7 +61,6 @@ void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFi
     if (!initialAnnouncementTask_->WasAccepted())
     {
         initialAnnouncementTask_.reset();
-        SetTitle(title);
         lila::shared::logging::LogWarning(
             "Startup", "La tâche d'annonce initiale n'a pas pu démarrer.");
     }
