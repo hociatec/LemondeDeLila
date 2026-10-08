@@ -81,6 +81,20 @@ int main(int argc, char** argv)
     assert(lila::shared::accessibility::ActivationFocusContext::AccessibleNameFor(
         *menu, "Second item") == "Second item");
     assert(menu->HasFocus() && menu->GetSelection() == 1);
+    wxActivateEvent deactivate(wxEVT_ACTIVATE, false, frame->GetId());
+    frame->GetEventHandler()->ProcessEvent(deactivate);
+    wxActivateEvent activate(wxEVT_ACTIVATE, true, frame->GetId());
+    frame->GetEventHandler()->ProcessEvent(activate);
+    // Reactivation must restore the title before any deferred callback runs.
+    assert(lila::shared::accessibility::ActivationFocusContext::AccessibleNameFor(
+        *menu, "Second item").StartsWith(frame->GetTitle()));
+    assert(menu->HasFocus() && menu->GetSelection() == 1);
+    // Interaction before the activation callback must not reintroduce the title.
+    frame->GetEventHandler()->ProcessEvent(navigation);
+    wxYield();
+    assert(lila::shared::accessibility::ActivationFocusContext::AccessibleNameFor(
+        *menu, "Second item") == "Second item");
+    assert(announcements == 0 && synchronousCalls == 0);
     frame->Destroy();
     wxTheApp->ProcessPendingEvents();
     wxTheApp->OnExit();

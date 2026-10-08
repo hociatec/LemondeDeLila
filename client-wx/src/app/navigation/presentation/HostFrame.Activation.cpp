@@ -32,6 +32,15 @@ void HostFrame::OnActivate(wxActivateEvent& event)
     }
     else
     {
+        // Prepare before Windows/NVDA consumes the activation focus event.
+        // Deactivation clears this context, so startup preparation alone is
+        // insufficient for Alt+Tab or a delayed first foreground activation.
+        activationContextPending_ = true;
+        auto* initialTarget = wxWindow::FindFocus();
+        if (!IsContentFocus(initialTarget, currentContent_))
+            initialTarget = lastFocusedChild_.get();
+        if (IsContentFocus(initialTarget, currentContent_))
+            PrepareActivationFocusContext(initialTarget);
         const wxWeakRef<HostFrame> weakFrame(this);
         const wxWeakRef<wxWindow> weakTarget(lastFocusedChild_.get());
         CallAfter([weakFrame, weakTarget]()
@@ -46,16 +55,28 @@ void HostFrame::OnActivate(wxActivateEvent& event)
             auto* focused = wxWindow::FindFocus();
             if (IsContentFocus(focused, frame->currentContent_))
             {
+                if (frame->activationContextPending_)
+                    frame->PrepareActivationFocusContext(focused);
+                frame->activationContextPending_ = false;
                 frame->lastFocusedChild_ = focused;
                 return;
             }
-            if (IsContentFocus(target, frame->currentContent_) &&
-                lila::shared::accessibility::NavigationController::Focus(target)) return;
+            if (IsContentFocus(target, frame->currentContent_))
+            {
+                if (frame->activationContextPending_)
+                    frame->PrepareActivationFocusContext(target);
+                if (lila::shared::accessibility::NavigationController::Focus(target)) return;
+            }
             // Initial activation can occur before any valid child was remembered.
             // A container is not an accessible menu item: use the view's focus plan.
             if (auto* view = dynamic_cast<lila::shared::accessibility::FocusPlanView*>(
                     frame->currentContent_))
-                static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(view->BuildFocusPlan()));
+                static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(
+                    view->BuildFocusPlan(), [frame](wxWindow* resolvedTarget)
+                    {
+                        if (frame->activationContextPending_)
+                            frame->PrepareActivationFocusContext(resolvedTarget);
+                    }));
         });
     }
     event.Skip();
@@ -66,7 +87,13 @@ void HostFrame::OnChildFocus(wxChildFocusEvent& event)
     auto* focused = event.GetWindow();
     if (IsContentFocus(focused, currentContent_))
     {
-        activationFocusContext_.ClearIfFocusChanged(focused);
+        if (activationContextPending_)
+        {
+            PrepareActivationFocusContext(focused);
+            activationContextPending_ = false;
+        }
+        else
+            activationFocusContext_.ClearIfFocusChanged(focused);
         lastFocusedChild_ = focused;
     }
     event.Skip();
