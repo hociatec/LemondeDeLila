@@ -15,15 +15,8 @@
 class wxBoxSizer;
 class wxWindow;
 
-namespace lila::shared::concurrency
-{
-class BackgroundTaskHandle;
-}
-
 namespace lila::app::navigation
 {
-namespace concurrency = lila::shared::concurrency;
-
 class HostFrame final : public wxFrame
 {
 public:
@@ -61,7 +54,6 @@ private:
     wxWeakRef<wxWindow> lastFocusedChild_;
     wxString initialFocusTitle_;
     std::shared_ptr<lila::shared::accessibility::IScreenReaderAnnouncer> screenReader_;
-    std::shared_ptr<concurrency::BackgroundTaskHandle> initialAnnouncementTask_;
     lila::shared::accessibility::ActivationFocusContext activationFocusContext_;
 #endif
 };

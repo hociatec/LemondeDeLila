@@ -19,6 +19,25 @@ add_test(
 )
 
 if(WIN32)
+    lila_add_test_executable(lemonde_de_lila_wx_startup_focus_tests
+        tests/StartupFocusTests.cpp
+        src/app/navigation/presentation/HostFrame.cpp
+        src/app/navigation/presentation/HostFrame.Startup.cpp
+        src/app/navigation/presentation/HostFrame.Activation.cpp
+        src/shared/accessibility/presentation/FocusManager.cpp
+        src/shared/accessibility/presentation/FocusCoordinator.cpp
+        src/shared/accessibility/presentation/ActivationFocusContext.cpp
+        src/shared/accessibility/presentation/NavigationController.cpp
+        src/shared/accessibility/presentation/NavigationScope.cpp
+        src/shared/text/presentation/encoding/Encoding.cpp
+        src/shared/text/presentation/catalog/UiTextCatalog.cpp
+        src/shared/logging/infrastructure/Logger.cpp
+        tests/WindowsGuiTests.rc
+    )
+    target_link_libraries(lemonde_de_lila_wx_startup_focus_tests PRIVATE ${wxWidgets_LIBRARIES})
+    if(MSVC)
+        target_link_options(lemonde_de_lila_wx_startup_focus_tests PRIVATE /MANIFEST:NO)
+    endif()
     lila_add_test_executable(lemonde_de_lila_wx_bass_unavailable_tests
         tests/BassUnavailableTests.cpp
         src/modules/audio/infrastructure/BassApi.cpp

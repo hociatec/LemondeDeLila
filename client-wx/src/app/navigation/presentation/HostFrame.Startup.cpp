@@ -2,14 +2,9 @@
 
 #ifdef __WXMSW__
 
-#include <optional>
 #include <utility>
 
 #include <wx/weakref.h>
-
-#include "shared/concurrency/application/BackgroundExecutor.h"
-#include "shared/logging/application/Logger.h"
-#include "shared/ui/presentation/BackgroundTask.h"
 
 namespace lila::app::navigation
 {
@@ -48,47 +43,9 @@ void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFi
     // Restore the real window title before speech starts so it remains exposed
     // to Windows, Alt+Tab and screen-reader window navigation at all times.
     SetTitle(title);
-    const auto announcer = screenReader_;
-    if (announcer == nullptr)
-    {
-        FinishInitialFocus(std::move(focusWhenFinished), true);
-        return;
-    }
-
-    const wxWeakRef<HostFrame> weakFrame(this);
-    initialAnnouncementTask_ = lila::shared::ui::RunBackgroundTaskWithResult<bool>(
-        this,
-        [announcer, speech = title.ToStdWstring()]()
-        {
-            return announcer->SpeakAndWait(speech);
-        },
-        [weakFrame, focus = focusWhenFinished](
-            std::string error, std::optional<bool> spoken) mutable
-        {
-            auto* frame = weakFrame.get();
-            if (frame == nullptr) return;
-            frame->initialAnnouncementTask_.reset();
-            const bool synchronousAnnouncementCompleted =
-                error.empty() && spoken.value_or(false);
-            if (!synchronousAnnouncementCompleted)
-            {
-                lila::shared::logging::LogWarning(
-                    "Startup",
-                    "Annonce NVDA synchrone indisponible; utilisation du focus accessible.");
-            }
-            frame->FinishInitialFocus(
-                std::move(focus), !synchronousAnnouncementCompleted);
-        },
-        "L'annonce initiale par NVDA a échoué.",
-        concurrency::BackgroundTaskPriority::High);
-
-    if (!initialAnnouncementTask_->WasAccepted())
-    {
-        initialAnnouncementTask_.reset();
-        lila::shared::logging::LogWarning(
-            "Startup", "La tâche d'annonce initiale n'a pas pu démarrer.");
-        FinishInitialFocus(std::move(focusWhenFinished), true);
-    }
+    // Keyboard and accessibility focus must never depend on NVDA finishing speech.
+    // Expose the title together with the focused item, then announce without waiting.
+    FinishInitialFocus(std::move(focusWhenFinished), true);
 }
 }
 
