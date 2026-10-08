@@ -81,6 +81,11 @@ void ActivationFocusContext::Clear()
     state_->prefix.clear();
 }
 
+void ActivationFocusContext::ClearIfFocusChanged(wxWindow* target)
+{
+    if (state_->target.get() != target) Clear();
+}
+
 wxString ActivationFocusContext::Announcement() const
 {
     return state_->announcedName;
