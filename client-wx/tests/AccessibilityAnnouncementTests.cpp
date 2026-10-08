@@ -117,6 +117,11 @@ int main(int argc, char** argv)
         Check(startupContext.Announcement().StartsWith("Le Monde de Lila - Hacene"));
         Check(accessible->GetName(1, &name) == wxACC_OK &&
             name == wxString(L"Le Monde de Lila - Hacene — Alice"));
+        const auto originalAnnouncement = startupContext.Announcement();
+        startupContext.Prepare(list, "Le Monde de Lila - Hacene");
+        Check(startupContext.Announcement() == originalAnnouncement);
+        Check(accessible->GetName(1, &name) == wxACC_OK &&
+            name == wxString(L"Le Monde de Lila - Hacene — Alice"));
         startupContext.ClearIfFocusChanged(list);
         wxYield();
         Check(accessible->GetName(1, &name) == wxACC_OK &&

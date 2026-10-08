@@ -55,6 +55,12 @@ ActivationFocusContext::~ActivationFocusContext()
 
 void ActivationFocusContext::Prepare(wxWindow* target, const wxString& windowContext)
 {
+    // Startup, child-focus and activation callbacks can prepare the same target.
+    // Do not remove/reapply its name while a screen reader is reading it.
+    if (target != nullptr && ActiveState == state_.get() &&
+        state_->target.get() == target && state_->prefix == windowContext &&
+        target->GetName() == state_->announcedName)
+        return;
     Clear();
     if (target == nullptr || windowContext.empty()) return;
 
