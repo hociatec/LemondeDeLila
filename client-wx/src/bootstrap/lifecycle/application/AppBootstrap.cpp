@@ -12,6 +12,22 @@ AppBootstrap::AppBootstrap() = default;
 
 AppBootstrap::~AppBootstrap() = default;
 
+void AppBootstrap::PrepareInitialViewAnnouncement() const
+{
+    if (runtime_ != nullptr)
+    {
+        runtime_->PrepareInitialViewAnnouncement();
+    }
+}
+
+void AppBootstrap::FocusInitialView() const
+{
+    if (runtime_ != nullptr)
+    {
+        runtime_->FocusInitialView();
+    }
+}
+
 void AppBootstrap::FocusCurrentView() const
 {
     if (runtime_ != nullptr)

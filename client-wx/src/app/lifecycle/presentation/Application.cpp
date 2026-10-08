@@ -113,6 +113,7 @@ bool Application::OnInit()
     }
     auto* mainWindow = GetTopWindow();
 #ifdef __WXMSW__
+    if (bootstrap_ != nullptr) bootstrap_->PrepareInitialViewAnnouncement();
     if (mainWindow != nullptr)
         for (auto* child : mainWindow->GetChildren()) child->Disable();
 #endif
@@ -121,9 +122,9 @@ bool Application::OnInit()
     {
 #ifdef __WXMSW__
         for (auto* child : mainWindow->GetChildren()) child->Enable();
-        if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
+        if (bootstrap_ != nullptr) bootstrap_->FocusInitialView();
         lila::shared::logging::LogInfo(
-            "Startup", "Focus initial restauré sans temporisation.");
+            "Startup", "Titre et focus initial exposés sans doublon ni temporisation.");
 #else
         if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
 #endif

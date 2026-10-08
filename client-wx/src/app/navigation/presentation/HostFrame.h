@@ -27,6 +27,8 @@ public:
     void SetApplicationTitle(std::string_view username = {});
     void SetContent(wxWindow* content);
     void RemoveContent(wxWindow* content);
+    void BeginInitialFocusAnnouncement();
+    void CompleteInitialFocusAnnouncement();
     void ClearActivationFocusContext();
     void PrepareActivationFocusContext(wxWindow* target);
     void SetPresenceRequestedHandler(PresenceRequestedHandler handler);
@@ -46,6 +48,7 @@ private:
     CloseRequestedHandler onCloseRequested_;
 #ifdef __WXMSW__
     wxWeakRef<wxWindow> lastFocusedChild_;
+    wxString initialFocusTitle_;
     lila::shared::accessibility::ActivationFocusContext activationFocusContext_;
 #endif
 };

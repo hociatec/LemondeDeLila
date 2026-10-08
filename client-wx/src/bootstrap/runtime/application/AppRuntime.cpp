@@ -31,6 +31,22 @@ bool AppRuntime::StartNavigator() const
     return navigator_ != nullptr && navigator_->Start();
 }
 
+void AppRuntime::PrepareInitialViewAnnouncement() const
+{
+    if (navigator_ != nullptr)
+    {
+        navigator_->PrepareInitialViewAnnouncement();
+    }
+}
+
+void AppRuntime::FocusInitialView() const
+{
+    if (navigator_ != nullptr)
+    {
+        navigator_->FocusInitialView();
+    }
+}
+
 void AppRuntime::FocusCurrentView() const
 {
     if (navigator_ != nullptr)
