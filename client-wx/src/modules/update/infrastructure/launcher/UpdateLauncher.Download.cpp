@@ -6,6 +6,7 @@
 #include <array>
 #include <fstream>
 #include <stdexcept>
+#include "modules/update/application/UpdateManifestDownload.h"
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
 
 namespace lila::modules::update::launcher
@@ -110,22 +111,15 @@ void HttpGet(const std::string& url, std::uint64_t maximumBytes, Consumer&& cons
 
 std::string DownloadText(const std::string& url)
 {
-    std::string lastFailure;
-    for (int attempt = 1; attempt <= 3; ++attempt) {
-        try {
+    return DownloadUpdateManifestWithRetry(
+        [&url] {
             std::string result;
             HttpGet(url, 1024 * 1024, [&result](const char* data, DWORD size) {
                 result.append(data, size);
             });
             return result;
-        } catch (const std::exception& error) {
-            lastFailure = error.what();
-            if (attempt < 3) static_cast<void>(WaitForRetry(
-                std::chrono::milliseconds(500 * attempt)));
-        }
-    }
-    throw std::runtime_error(
-        "Update manifest download failed after 3 attempts. Last error: " + lastFailure);
+        },
+        [](std::chrono::milliseconds delay) { static_cast<void>(WaitForRetry(delay)); });
 }
 
 void DownloadFile(

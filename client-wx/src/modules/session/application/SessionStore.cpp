@@ -156,6 +156,13 @@ domain::Session SessionStore::Current() const
     return current_;
 }
 
+std::optional<domain::Session> SessionStore::TryCurrent() const
+{
+    std::scoped_lock lock(mutex_);
+    if (!HasSessionLocked()) return std::nullopt;
+    return current_;
+}
+
 bool SessionStore::IsPersistent() const
 {
     std::scoped_lock lock(mutex_);
