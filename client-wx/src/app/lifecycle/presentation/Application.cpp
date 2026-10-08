@@ -22,10 +22,6 @@ namespace lila::app
 {
 namespace
 {
-#ifdef __WXMSW__
-constexpr int StartupFocusDelayMs = 1800;
-#endif
-
 void ActivateMainWindow(wxWindow& window)
 {
     window.Show(true);
@@ -124,20 +120,10 @@ bool Application::OnInit()
     if (mainWindow != nullptr)
     {
 #ifdef __WXMSW__
-        startupFocusTimer_ = std::make_unique<wxTimer>(this);
-        Bind(
-            wxEVT_TIMER,
-            [this](wxTimerEvent&)
-            {
-                auto* window = GetTopWindow();
-                if (window != nullptr)
-                    for (auto* child : window->GetChildren()) child->Enable();
-                if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
-                lila::shared::logging::LogInfo(
-                    "Startup", "Titre annoncé et focus initial restauré.");
-            },
-            startupFocusTimer_->GetId());
-        startupFocusTimer_->StartOnce(StartupFocusDelayMs);
+        for (auto* child : mainWindow->GetChildren()) child->Enable();
+        if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView(true);
+        lila::shared::logging::LogInfo(
+            "Startup", "Titre et focus initial exposés dans une annonce unique.");
 #else
         if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
 #endif
@@ -148,7 +134,6 @@ bool Application::OnInit()
 
 int Application::OnExit()
 {
-    startupFocusTimer_.reset();
     lila::modules::update::CloseSignal(healthySignal_);
     healthySignal_ = nullptr;
     if (backgroundExecutor_ != nullptr)

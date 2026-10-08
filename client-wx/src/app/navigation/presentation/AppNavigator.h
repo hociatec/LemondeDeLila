@@ -46,7 +46,7 @@ public:
     ~AppNavigator();
 
     bool Start();
-    void FocusCurrentView();
+    void FocusCurrentView(bool includeWindowContext = false);
 
 private:
     int FilterEvent(wxEvent& event) override;
@@ -83,7 +83,7 @@ private:
     void OnSessionExpired();
     void ResetView(domain::ViewId viewId);
     void ResetSessionViews();
-    void ApplyViewFocus(wxWindow* view);
+    void ApplyViewFocus(wxWindow* view, bool includeWindowContext = false);
     void ReturnToCatalogAfterRoomClose(bool resetVaultFocus, bool resetCatalogFocus);
     [[nodiscard]] wxWindow* CreateView(domain::ViewId viewId);
     [[nodiscard]] wxWindow* CreateCoreView(domain::ViewId viewId);
