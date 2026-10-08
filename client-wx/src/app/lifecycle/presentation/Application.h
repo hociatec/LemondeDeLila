@@ -3,7 +3,6 @@
 #include <memory>
 
 #include <wx/app.h>
-#include <wx/timer.h>
 
 namespace lila::bootstrap
 {
@@ -29,7 +28,6 @@ public:
 private:
     std::unique_ptr<lila::shared::concurrency::BackgroundExecutor> backgroundExecutor_;
     std::unique_ptr<lila::bootstrap::AppBootstrap> bootstrap_;
-    std::unique_ptr<wxTimer> startupFocusTimer_;
     void* healthySignal_ = nullptr;
 };
 }
