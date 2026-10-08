@@ -51,6 +51,7 @@ private:
 #ifdef __WXMSW__
     wxWeakRef<wxWindow> lastFocusedChild_;
     wxString initialFocusTitle_;
+    bool activationContextPending_ = false;
     lila::shared::accessibility::ActivationFocusContext activationFocusContext_;
 #endif
 };

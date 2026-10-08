@@ -90,6 +90,7 @@ void HostFrame::OnCharHook(wxKeyEvent& event)
 void HostFrame::ClearActivationFocusContext()
 {
 #ifdef __WXMSW__
+    activationContextPending_ = false;
     activationFocusContext_.Clear();
 #endif
 }
