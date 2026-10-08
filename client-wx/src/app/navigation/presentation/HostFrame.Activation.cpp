@@ -65,7 +65,10 @@ void HostFrame::OnChildFocus(wxChildFocusEvent& event)
 {
     auto* focused = event.GetWindow();
     if (IsContentFocus(focused, currentContent_))
+    {
+        activationFocusContext_.ClearIfFocusChanged(focused);
         lastFocusedChild_ = focused;
+    }
     event.Skip();
 }
 }

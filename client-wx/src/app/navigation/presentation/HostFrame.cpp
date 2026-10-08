@@ -27,9 +27,6 @@ HostFrame::HostFrame()
           wxSize(HostWindowWidth, HostWindowHeight),
           wxDEFAULT_FRAME_STYLE)
 {
-#ifdef __WXMSW__
-    screenReader_ = lila::shared::accessibility::CreateScreenReaderAnnouncer();
-#endif
     Bind(wxEVT_CLOSE_WINDOW, &HostFrame::OnClose, this);
     Bind(wxEVT_CHAR_HOOK, &HostFrame::OnCharHook, this);
 #ifdef __WXMSW__

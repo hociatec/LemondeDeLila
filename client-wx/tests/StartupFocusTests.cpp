@@ -3,6 +3,7 @@
 #include <wx/listbox.h>
 #include <wx/log.h>
 #include "app/navigation/presentation/HostFrame.h"
+#include "shared/accessibility/application/IScreenReaderAnnouncer.h"
 
 namespace
 {
@@ -63,9 +64,22 @@ int main(int argc, char** argv)
     });
     assert(focused); // No background executor or speech completion is needed.
     assert(synchronousCalls == 0);
-    menu->SetSelection(1); // A delayed announcement must not reset navigation.
-    wxYield();
-    assert(announcements == 1);
+    // Delayed accessibility reads must still include the complete title.
+    for (int turn = 0; turn < 10; ++turn)
+    {
+        frame->CallAfter([] {});
+        wxYield();
+        const auto name = lila::shared::accessibility::ActivationFocusContext::AccessibleNameFor(
+            *menu, "First item");
+        assert(name.StartsWith(frame->GetTitle()) && name.EndsWith("First item"));
+    }
+    assert(announcements == 0 && synchronousCalls == 0);
+    wxKeyEvent navigation(wxEVT_CHAR_HOOK);
+    navigation.m_keyCode = WXK_DOWN;
+    frame->GetEventHandler()->ProcessEvent(navigation);
+    menu->SetSelection(1);
+    assert(lila::shared::accessibility::ActivationFocusContext::AccessibleNameFor(
+        *menu, "Second item") == "Second item");
     assert(menu->HasFocus() && menu->GetSelection() == 1);
     frame->Destroy();
     wxTheApp->ProcessPendingEvents();
