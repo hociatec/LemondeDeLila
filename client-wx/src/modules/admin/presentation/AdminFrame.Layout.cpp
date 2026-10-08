@@ -25,9 +25,9 @@ void AdminFrame::BuildLayout()
     auto* contentSizer = new wxBoxSizer(wxHORIZONTAL);
     const std::span<const lila::shared::ui::controls::VerticalMenuItem> empty;
     sectionsMenu_ = new lila::shared::ui::controls::VerticalMenu(
-        content, empty, lila::shared::ui::controls::VerticalMenuRole::Menu);
+        content, empty, lila::shared::ui::controls::VerticalMenuRole::Entries);
     commandsMenu_ = new lila::shared::ui::controls::VerticalMenu(
-        content, empty, lila::shared::ui::controls::VerticalMenuRole::Menu);
+        content, empty, lila::shared::ui::controls::VerticalMenuRole::Entries);
     sectionsMenu_->SetMinSize(wxSize(360, -1));
     commandsMenu_->SetMinSize(wxSize(420, -1));
 
@@ -40,7 +40,7 @@ void AdminFrame::BuildLayout()
     reportSearchPanel_ = new wxPanel(resultPanel, wxID_ANY);
     auto* reportSearchSizer = new wxBoxSizer(wxVERTICAL);
     reportStatusMenu_ = new lila::shared::ui::controls::VerticalMenu(
-        reportSearchPanel_, empty, lila::shared::ui::controls::VerticalMenuRole::Menu);
+        reportSearchPanel_, empty, lila::shared::ui::controls::VerticalMenuRole::Entries);
     reportSearchSizer->Add(reportStatusMenu_, 0, wxEXPAND);
     reportSearchPanel_->SetSizer(reportSearchSizer);
     reportSearchPanel_->Hide();
