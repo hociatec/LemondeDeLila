@@ -121,9 +121,9 @@ bool Application::OnInit()
     {
 #ifdef __WXMSW__
         for (auto* child : mainWindow->GetChildren()) child->Enable();
-        if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView(true);
+        if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
         lila::shared::logging::LogInfo(
-            "Startup", "Titre et focus initial exposés dans une annonce unique.");
+            "Startup", "Focus initial restauré sans temporisation.");
 #else
         if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
 #endif

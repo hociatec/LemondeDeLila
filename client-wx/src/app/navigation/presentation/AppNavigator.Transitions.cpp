@@ -92,7 +92,7 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
     }
 }
 
-void AppNavigator::ApplyViewFocus(wxWindow* view, bool includeWindowContext)
+void AppNavigator::ApplyViewFocus(wxWindow* view)
 {
     if (view == nullptr || hostFrame_ == nullptr)
     {
@@ -100,7 +100,6 @@ void AppNavigator::ApplyViewFocus(wxWindow* view, bool includeWindowContext)
     }
 
     wxWeakRef<wxWindow> weakView(view);
-    wxWeakRef<HostFrame> weakHost(hostFrame_);
     focusTransition_.Schedule(
         *hostFrame_,
         view,
@@ -111,20 +110,12 @@ void AppNavigator::ApplyViewFocus(wxWindow* view, bool includeWindowContext)
             return focusView != nullptr
                 ? focusView->BuildFocusPlan()
                 : lila::shared::accessibility::FocusManager::Plan{};
-        },
-        includeWindowContext
-            ? lila::shared::accessibility::FocusManager::BeforeFocus(
-                  [weakHost](wxWindow* target)
-                  {
-                      if (auto* host = weakHost.get())
-                          host->PrepareActivationFocusContext(target);
-                  })
-            : lila::shared::accessibility::FocusManager::BeforeFocus{});
+        });
 }
 
-void AppNavigator::FocusCurrentView(bool includeWindowContext)
+void AppNavigator::FocusCurrentView()
 {
-    ApplyViewFocus(currentView_, includeWindowContext);
+    ApplyViewFocus(currentView_);
 }
 
 wxWindow* AppNavigator::GetOrCreateView(ViewId viewId)

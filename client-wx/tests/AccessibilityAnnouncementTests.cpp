@@ -14,7 +14,6 @@
 #include <wx/utils.h>
 
 #include "modules/chat/presentation/ChatEventBinder.h"
-#include "shared/accessibility/presentation/ActivationFocusContext.h"
 #include "shared/accessibility/presentation/AccessibilityUtils.h"
 #include "shared/accessibility/presentation/AccessibleMenu.h"
 #include "shared/accessibility/presentation/NavigationController.h"
@@ -110,12 +109,6 @@ int main(int argc, char** argv)
         Check(accessible->GetName(2, &name) == wxACC_OK && name == "Bob");
         Check(accessible->GetValue(2, &value) == wxACC_OK && value.empty());
         Check(accessible->GetValue(wxACC_SELF, &value) == wxACC_OK && value.empty());
-        ActivationFocusContext startupContext;
-        startupContext.Prepare(list, "Le Monde de Lila - Hacene");
-        Check(accessible->GetName(1, &name) == wxACC_OK &&
-            name == "Le Monde de Lila - Hacene — Alice");
-        startupContext.Clear();
-        Check(accessible->GetName(1, &name) == wxACC_OK && name == "Alice");
 #endif
 #ifdef __WXMSW__
         originalListProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
