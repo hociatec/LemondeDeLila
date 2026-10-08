@@ -124,7 +124,7 @@ bool Application::OnInit()
         for (auto* child : mainWindow->GetChildren()) child->Enable();
         if (bootstrap_ != nullptr) bootstrap_->FocusInitialView();
         lila::shared::logging::LogInfo(
-            "Startup", "Annonce NVDA du titre lancée avant le focus du menu initial.");
+            "Startup", "Focus du menu initial demandé sans attendre la parole NVDA.");
 #else
         if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
 #endif

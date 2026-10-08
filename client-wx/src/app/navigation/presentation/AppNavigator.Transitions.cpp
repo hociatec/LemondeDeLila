@@ -74,9 +74,8 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
     {
         hostFrame_->Show(true);
     }
-    // At startup Application restores the initial view focus after Windows has
-    // finished activating the host window. Focusing here as well interrupts
-    // the screen reader while it is still announcing the application title.
+    // At startup Application applies the initial focus after showing and
+    // activating the host, when its controls can accept keyboard focus.
     if (previousViewId != ViewId::None)
     {
         ApplyViewFocus(currentView_);

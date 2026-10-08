@@ -5,19 +5,28 @@
 #include <wx/window.h>
 
 #include "shared/accessibility/presentation/NavigationController.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
+#include "shared/accessibility/presentation/FocusCoordinator.h"
 
 namespace lila::app::navigation
 {
+namespace
+{
+bool IsContentFocus(wxWindow* target, wxWindow* content)
+{
+    return lila::shared::accessibility::NavigationController::IsFocusable(target) &&
+        lila::shared::accessibility::NavigationController::IsDescendantOf(target, content);
+}
+}
+
 void HostFrame::OnActivate(wxActivateEvent& event)
 {
     if (!event.GetActive())
     {
         auto* target = wxWindow::FindFocus();
-        if (!lila::shared::accessibility::NavigationController::IsDescendantOf(
-                target, currentContent_))
+        if (!IsContentFocus(target, currentContent_))
             target = lastFocusedChild_.get();
-        if (lila::shared::accessibility::NavigationController::IsDescendantOf(
-                target, currentContent_))
+        if (IsContentFocus(target, currentContent_))
             lastFocusedChild_ = target;
         ClearActivationFocusContext();
     }
@@ -29,22 +38,24 @@ void HostFrame::OnActivate(wxActivateEvent& event)
         {
             auto* frame = weakFrame.get();
             auto* target = weakTarget.get();
-            if (frame == nullptr || target == nullptr || !frame->IsActive() ||
-                !lila::shared::accessibility::NavigationController::IsDescendantOf(
-                    target, frame->currentContent_)) return;
+            if (frame == nullptr || !frame->IsActive()) return;
 
             // Windows normally restores the child focus while activating the
             // window. Re-focusing it emits a second accessibility event which
             // interrupts NVDA while it is still announcing the window title.
             auto* focused = wxWindow::FindFocus();
-            if (lila::shared::accessibility::NavigationController::IsDescendantOf(
-                    focused, frame->currentContent_))
+            if (IsContentFocus(focused, frame->currentContent_))
             {
                 frame->lastFocusedChild_ = focused;
                 return;
             }
-            static_cast<void>(
-                lila::shared::accessibility::NavigationController::Focus(target));
+            if (IsContentFocus(target, frame->currentContent_) &&
+                lila::shared::accessibility::NavigationController::Focus(target)) return;
+            // Initial activation can occur before any valid child was remembered.
+            // A container is not an accessible menu item: use the view's focus plan.
+            if (auto* view = dynamic_cast<lila::shared::accessibility::FocusPlanView*>(
+                    frame->currentContent_))
+                static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(view->BuildFocusPlan()));
         });
     }
     event.Skip();
@@ -53,9 +64,7 @@ void HostFrame::OnActivate(wxActivateEvent& event)
 void HostFrame::OnChildFocus(wxChildFocusEvent& event)
 {
     auto* focused = event.GetWindow();
-    if (IsActive() && focused != nullptr &&
-        lila::shared::accessibility::NavigationController::IsDescendantOf(
-            focused, currentContent_))
+    if (IsContentFocus(focused, currentContent_))
         lastFocusedChild_ = focused;
     event.Skip();
 }
