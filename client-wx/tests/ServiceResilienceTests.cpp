@@ -55,6 +55,7 @@ int main()
 {
     try
     {
+        TestPresenceContextWithoutSession();
         TestPresenceActivityAndReconnect();
         TestNotificationMonitorReconnect();
         TestAuthenticatedHttpClientRefreshesExpiredToken();

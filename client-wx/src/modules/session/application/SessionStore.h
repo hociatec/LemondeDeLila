@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <stop_token>
 #include <string>
 
@@ -49,6 +50,7 @@ public:
     [[nodiscard]] std::string AccessToken(std::stop_token stopToken = {});
     [[nodiscard]] std::string RefreshAccessToken(std::stop_token stopToken = {});
     [[nodiscard]] domain::Session Current() const;
+    [[nodiscard]] std::optional<domain::Session> TryCurrent() const;
     [[nodiscard]] bool IsPersistent() const;
     [[nodiscard]] SessionRefreshStats RefreshStats() const;
 

@@ -65,6 +65,7 @@ const catchAllAudit = new Map([
   ['modules/rooms/infrastructure/RoomSessionGateway.Commands.cpp', { count: 1, reason: 'command boundary completes pending acknowledgement after any failure' }],
   ['modules/rooms/infrastructure/RoomSessionGateway.cpp', { count: 1, reason: 'leave notification is best-effort before mandatory close' }],
   ['modules/session/application/SessionStore.Refresh.cpp', { count: 4, reason: 'single-flight refresh, secret cleanup and local revocation must run after any failure' }],
+  ['modules/update/infrastructure/launcher/UpdateLauncher.Coordination.cpp', { count: 1, reason: 'secondary launch falls back to the installed client when the optional update probe fails' }],
   ['modules/update/infrastructure/launcher/UpdateLauncher.Lifecycle.cpp', { count: 2, reason: 'version cleanup is best-effort and cannot invalidate a selected release' }],
   ['modules/update/infrastructure/launcher/UpdateLauncher.Prepare.cpp', { count: 1, reason: 'archive probe treats every filesystem or hashing failure as a cache miss' }],
   ['modules/update/infrastructure/launcher/UpdateLauncher.Process.cpp', { count: 2, reason: 'diagnostic cleanup and launcher comparison are non-fatal boundaries' }],
@@ -72,7 +73,7 @@ const catchAllAudit = new Map([
   ['modules/update/infrastructure/launcher/UpdateLauncher.State.cpp', { count: 3, reason: 'no-throw logging and state-backup recovery boundaries' }],
   ['modules/update/infrastructure/launcher/UpdateLauncher.Zip.cpp', { count: 1, reason: 'transactional extraction removes partial output before rethrowing' }],
   ['modules/update/infrastructure/launcher/UpdateLauncher.cpp', { count: 1, reason: 'emergency logging cannot hide the user-facing launcher error' }],
-  ['shared/accessibility/infrastructure/NvdaScreenReaderAnnouncer.cpp', { count: 1, reason: 'optional third-party screen-reader callback must remain non-fatal' }],
+  ['shared/accessibility/infrastructure/NvdaScreenReaderAnnouncer.cpp', { count: 2, reason: 'optional third-party text and synchronous SSML screen-reader callbacks must remain non-fatal' }],
   ['shared/cache/application/SingleFlightCache.h', { count: 1, reason: 'promise propagation must retain arbitrary exception types' }],
   ['shared/concurrency/application/BackgroundExecutor.cpp', { count: 1, reason: 'worker boundary logs unknown job failures and remains alive' }],
   ['shared/concurrency/application/BackgroundExecutor.h', { count: 1, reason: 'async completion converts unknown failures to AppError' }],
@@ -349,7 +350,7 @@ if (hostFrameSource.includes('ActivationFocusTarget'))
 if (hostFrameSource.includes('ActivationFocusDelayMs') ||
     hostFrameSource.includes('activationFocusTimer_'))
   violations.push('HostFrame: l’annonce du titre ne doit dépendre d’aucune temporisation');
-if (!hostFrameSource.includes('activationFocusContext_.Prepare(target, GetTitle());') ||
+if (!/activationFocusContext_\.Prepare\(\s*target,\s*initialFocusTitle_\.empty\(\)\s*\?\s*GetTitle\(\)\s*:\s*initialFocusTitle_\);/.test(hostFrameSource) ||
     !hostFrameSource.includes('ClearActivationFocusContext();') ||
     !hostFrameSource.includes('wxEVT_CHILD_FOCUS'))
   violations.push('HostFrame: le contrôle focalisé doit porter temporairement le contexte de fenêtre');

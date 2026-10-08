@@ -70,6 +70,44 @@ class PresenceTickets final : public lila::shared::network::http::IWsTicketProvi
     std::string GetTicket(const std::string&, const std::string&) const override { return "test"; }
 };
 
+void TestPresenceContextWithoutSession()
+{
+    lila::modules::session::application::SessionStore sessions(std::make_unique<InMemorySessionRepository>());
+    PresenceSocket socket;
+    PresenceTickets tickets;
+    CountingPresenceAudio audio;
+    lila::modules::presence::application::PresenceMonitor monitor(
+        "test", socket, tickets, sessions, audio, {});
+    int notifications = 0;
+    monitor.SetPlayersChangedHandler([&] { ++notifications; });
+    Expect(!sessions.TryCurrent(), "An empty store must return no session");
+    monitor.SetContext("home");
+    monitor.SetContext("other");
+    monitor.Start();
+    Expect(socket.Connections() == 0, "Logged-out navigation must not connect presence");
+    Expect(notifications == 0, "Logged-out navigation must not notify player changes");
+
+    lila::modules::session::domain::Session session;
+    session.userId = lila::shared::domain::UserId{42};
+    session.username = "alice";
+    session.token = "header.payload.signature";
+    session.expiresAt = 4102444800LL;
+    sessions.Open(session, false);
+    Expect(sessions.TryCurrent()->userId.value == 42, "An active session must be readable");
+    monitor.Start();
+    WaitUntil([&] { return socket.Sent("other"); },
+        "Login must publish the context selected before authentication");
+    monitor.Stop();
+    sessions.Clear();
+    Expect(!sessions.TryCurrent(), "A cleared store must return no session");
+    monitor.SetContext("home");
+    monitor.SetContext("other");
+    monitor.SetContext("home");
+    Expect(!monitor.HasSnapshot() && monitor.Players().empty(),
+        "Returning home after logout must leave presence empty");
+    std::cout << "[TEST PASSED] PresenceContextWithoutSession\n";
+}
+
 void TestPresenceActivityAndReconnect()
 {
     lila::modules::session::application::SessionStore sessions(std::make_unique<InMemorySessionRepository>());

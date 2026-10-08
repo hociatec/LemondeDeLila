@@ -27,15 +27,19 @@ bool PresenceMonitor::ApplyLocalContext(
 
 void PresenceMonitor::SetContext(std::string context)
 {
-    const int currentUserId = static_cast<int>(sessionStore_.Current().userId.value);
+    // Navigation also reports context before login and after session expiry.
+    // Read the optional session atomically so a concurrent logout is harmless.
+    const auto session = sessionStore_.TryCurrent();
     PlayersChangedHandler handler;
     {
         std::scoped_lock lock(mutex_);
         if (context_ == context) return;
         context_ = std::move(context);
-        contextAwaitingConfirmation_ = context_;
+        contextAwaitingConfirmation_ = session
+            ? std::optional<std::string>(context_) : std::nullopt;
         contextDirty_ = true;
-        if (ApplyLocalContext(players_, currentUserId, context_))
+        if (session && ApplyLocalContext(
+                players_, static_cast<int>(session->userId.value), context_))
             handler = onPlayersChanged_;
     }
     NotifyChanged(handler);
