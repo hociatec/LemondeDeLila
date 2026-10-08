@@ -19,40 +19,6 @@ private:
     HANDLE handle_ = nullptr;
 };
 
-bool SecondaryLaunchersActive()
-{
-    HANDLE signal = OpenEventW(SYNCHRONIZE, FALSE, SecondaryLaunchersSignalName);
-    if (!signal) return false;
-    CloseHandle(signal);
-    return true;
-}
-
-int RunSecondaryLauncher(const fs::path& root)
-{
-    HANDLE signal = CreateEventW(nullptr, TRUE, TRUE, SecondaryLaunchersSignalName);
-    if (!signal) throw std::runtime_error("Unable to register secondary launcher.");
-    ScopedHandle activeSignal(signal);
-    State state = ReadState(root);
-    if (state.currentReleaseId.empty() || !LocalVersionIsAllowed(state)) {
-        throw std::runtime_error("No allowed client version is installed.");
-    }
-
-    Process process = LaunchClient(
-        ReleasePath(root, state.currentReleaseId), false);
-    if (!WaitForHealthy(process)) {
-        DWORD exitCode = STILL_ACTIVE;
-        static_cast<void>(GetExitCodeProcess(process.handle, &exitCode));
-        if (exitCode == STILL_ACTIVE) {
-            TerminateProcess(process.handle, 0x4C494C41);
-            WaitForSingleObject(process.handle, 5000);
-        }
-        throw std::runtime_error("Secondary client failed its startup health check.");
-    }
-    AppendLog(root, "INFO", "Secondary client instance started successfully.");
-    WaitForSingleObject(process.handle, INFINITE);
-    return 0;
-}
-
 bool IsOldClientDiagnostic(const fs::path& path)
 {
     const auto name = path.filename().wstring();
@@ -118,9 +84,12 @@ int RunLauncher(bool skipLauncherReplacement)
     const bool launcherAlreadyActive = mutex && GetLastError() == ERROR_ALREADY_EXISTS;
     const fs::path root = ExecutablePath().parent_path();
     if (!mutex) throw std::runtime_error("Unable to create launcher coordination mutex.");
+    HANDLE updateCheckSignal = CreateEventW(nullptr, FALSE, FALSE, UpdateCheckSignalName);
+    if (!updateCheckSignal) throw std::runtime_error("Unable to create update check signal.");
+    ScopedHandle updateSignal(updateCheckSignal);
     if (launcherAlreadyActive) {
         CloseHandle(mutex);
-        return RunSecondaryLauncher(root);
+        return RunSecondaryLauncher(root, updateCheckSignal);
     }
     ScopedHandle launcherMutex(mutex);
     ClearPreservedClientDiagnostics(root);
@@ -207,12 +176,17 @@ int RunLauncher(bool skipLauncherReplacement)
         ClearPreservedClientDiagnostics(root);
 
         bool restartingForUpdate = false;
-        while (WaitForSingleObject(process.handle, static_cast<DWORD>(PollInterval.count() * 1000)) == WAIT_TIMEOUT) {
+        const HANDLE watched[] = {process.handle, updateCheckSignal};
+        while (true) {
+            const DWORD waitResult = WaitForMultipleObjects(
+                2, watched, FALSE, static_cast<DWORD>(PollInterval.count() * 1000));
+            if (waitResult == WAIT_OBJECT_0) return 0;
+            const bool explicitlyRequested = waitResult == WAIT_OBJECT_0 + 1;
             try {
                 if (SecondaryLaunchersActive()) continue;
                 auto manifest = ParseManifest(DownloadText(ManifestUrl(state.currentVersion)));
                 RecordSignedPolicy(root, state, manifest);
-                if (manifest.releaseId == state.failedReleaseId ||
+                if ((!explicitlyRequested && manifest.releaseId == state.failedReleaseId) ||
                     !IsUpdateNewer(manifest.version, state.currentVersion)) continue;
                 PrepareRelease(root, manifest);
                 StopForUpdate(process);
@@ -225,7 +199,7 @@ int RunLauncher(bool skipLauncherReplacement)
                 AppendLog(root, "WARN", std::string("Live update check failed: ") + error.what());
             }
         }
-        if (!restartingForUpdate && WaitForSingleObject(process.handle, 0) == WAIT_OBJECT_0) return 0;
+        if (!restartingForUpdate) return 0;
     }
 }
 

@@ -120,5 +120,7 @@ bool RestartForLauncherUpdate(const fs::path& root, const State& state);
 void RecordSignedPolicy(const fs::path& root, State& state, const Manifest& manifest);
 bool LocalVersionIsAllowed(const State& state);
 void ActivateRelease(const fs::path& root, State& state, const Manifest& manifest);
+bool SecondaryLaunchersActive();
+int RunSecondaryLauncher(const fs::path& root, HANDLE updateCheckSignal);
 int RunLauncher(bool skipLauncherReplacement);
 }

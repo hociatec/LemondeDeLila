@@ -256,6 +256,7 @@ if(WIN32)
         src/modules/update/infrastructure/launcher/LauncherMain.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Archive.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Coordination.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Download.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Lifecycle.cpp
         src/modules/update/infrastructure/launcher/UpdateLauncher.Platform.cpp
