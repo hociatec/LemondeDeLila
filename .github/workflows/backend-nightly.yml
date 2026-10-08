@@ -59,7 +59,7 @@ jobs:
       - run: npm ci --ignore-scripts --include=dev
       - run: npm run test:profile
       - run: GAME_PROFILE_RUNS=10 npm run profile:game-replay
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: backend-nightly-profiles-${{ github.sha }}
           path: backend/logs
