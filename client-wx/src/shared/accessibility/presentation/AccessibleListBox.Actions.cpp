@@ -113,7 +113,7 @@ wxAccStatus AccessibleListBox::GetDefaultAction(int childId, wxString* actionNam
     {
         return childId == wxACC_SELF ? wxACC_NOT_SUPPORTED : wxACC_INVALID_ARG;
     }
-    if (roleMode_ == RoleMode::List)
+    if (roleMode_ == RoleMode::List && !onActivated_)
     {
         return wxACC_NOT_SUPPORTED;
     }

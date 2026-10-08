@@ -63,6 +63,14 @@ void ActivationFocusContext::Prepare(wxWindow* target, const wxString& windowCon
         return;
     Clear();
     if (target == nullptr || windowContext.empty()) return;
+#if wxUSE_ACCESSIBILITY
+    if (auto* accessible = target->GetAccessible())
+    {
+        wxAccRole role;
+        if (accessible->GetRole(wxACC_SELF, &role) == wxACC_OK && role == wxROLE_SYSTEM_LIST)
+            return; // Native list focus queues after the window title; do not repeat it.
+    }
+#endif
 
     state_->target = target;
     state_->originalName = target->GetName();

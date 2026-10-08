@@ -5,6 +5,7 @@
 #include <windows.h>
 #include "app/navigation/presentation/HostFrame.h"
 #include "shared/accessibility/application/IScreenReaderAnnouncer.h"
+#include "shared/accessibility/presentation/AccessibleMenu.h"
 
 namespace
 {
@@ -61,6 +62,7 @@ int main(int argc, char** argv)
     menu->Append("First item");
     menu->Append("Second item");
     menu->SetSelection(0);
+    lila::shared::accessibility::ConfigureListBoxAsAccessibleList(*menu, "Main menu", {});
     frame->SetContent(menu);
     frame->BeginInitialFocusAnnouncement();
     frame->Show();
@@ -76,14 +78,14 @@ int main(int argc, char** argv)
     assert(focused); // No background executor or speech completion is needed.
     assert(titleChanges == 0); // Showing/focusing must not re-emit the existing title.
     assert(synchronousCalls == 0);
-    // Delayed accessibility reads must still include the complete title.
+    // Lists rely on native ancestor speech; items must not repeat the title.
     for (int turn = 0; turn < 10; ++turn)
     {
         frame->CallAfter([] {});
         wxYield();
         const auto name = lila::shared::accessibility::ActivationFocusContext::AccessibleNameFor(
             *menu, "First item");
-        assert(name.StartsWith(frame->GetTitle()) && name.EndsWith("First item"));
+        assert(name == "First item" && menu->GetName() == "Main menu");
     }
     assert(announcements == 0 && synchronousCalls == 0);
     wxKeyEvent navigation(wxEVT_CHAR_HOOK);
@@ -97,9 +99,9 @@ int main(int argc, char** argv)
     frame->GetEventHandler()->ProcessEvent(deactivate);
     wxActivateEvent activate(wxEVT_ACTIVATE, true, frame->GetId());
     frame->GetEventHandler()->ProcessEvent(activate);
-    // Reactivation must restore the title before any deferred callback runs.
+    // Reactivation must not duplicate the title on the list item either.
     assert(lila::shared::accessibility::ActivationFocusContext::AccessibleNameFor(
-        *menu, "Second item").StartsWith(frame->GetTitle()));
+        *menu, "Second item") == "Second item");
     assert(menu->HasFocus() && menu->GetSelection() == 1);
     // Interaction before the activation callback must not reintroduce the title.
     frame->GetEventHandler()->ProcessEvent(navigation);
