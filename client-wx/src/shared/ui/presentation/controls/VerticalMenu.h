@@ -48,7 +48,7 @@ public:
     VerticalMenu(
         wxWindow* parent,
         std::span<const VerticalMenuItem> items,
-        VerticalMenuRole role = VerticalMenuRole::Menu);
+        VerticalMenuRole role = VerticalMenuRole::Entries);
     ~VerticalMenu() override;
 
     void SetSelectionChangedHandler(SelectionChangedHandler handler);
@@ -94,7 +94,7 @@ private:
     std::size_t itemCount_ = 0;
     std::size_t selectedIndex_ = 0;
     std::vector<std::string> itemIds_;
-    VerticalMenuRole role_ = VerticalMenuRole::Menu;
+    VerticalMenuRole role_ = VerticalMenuRole::Entries;
     SelectionChangedHandler onSelectionChanged_;
     ActivatedHandler onActivated_;
     KeyHandler onKey_;

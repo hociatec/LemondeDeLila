@@ -9,6 +9,8 @@
 #include <wx/choice.h>
 #include <wx/log.h>
 #include <wx/textctrl.h>
+#include <wx/access.h>
+#include <wx/listbox.h>
 #include "modules/admin/application/AdminService.h"
 #include "modules/admin/application/IAdminGateway.h"
 #include "modules/admin/presentation/AdminFrame.h"
@@ -69,6 +71,29 @@ namespace lila::modules::admin::presentation
 {
 struct AdminQuizNavigationTest
 {
+    static void CheckNavigationRoles(AdminFrame& frame)
+    {
+#if wxUSE_ACCESSIBILITY
+        for (auto* menu : {frame.sectionsMenu_, frame.commandsMenu_,
+                          frame.reportStatusMenu_, frame.resultsMenu_})
+        {
+            auto* control = menu->GetSelectedControl();
+            auto* accessible = control->GetAccessible();
+            assert(accessible != nullptr);
+            wxAccRole role;
+            assert(accessible->GetRole(wxACC_SELF, &role) == wxACC_OK);
+            assert(role == wxROLE_SYSTEM_LIST);
+            if (menu->GetItemCount() > 0)
+            {
+                assert(accessible->GetRole(1, &role) == wxACC_OK);
+                assert(role == wxROLE_SYSTEM_LISTITEM);
+                wxString action;
+                assert(accessible->GetDefaultAction(1, &action) == wxACC_OK);
+                assert(action == "Ouvrir");
+            }
+        }
+#endif
+    }
     static void Wait(AdminFrame& frame)
     {
         const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
@@ -93,6 +118,7 @@ struct AdminQuizNavigationTest
     }
     static void Run(AdminFrame& frame, QuizGateway& gateway)
     {
+        CheckNavigationRoles(frame);
         const auto& areas = domain::GetAdminAreas();
         for (std::size_t index = 0; index < areas.size(); ++index)
             if (areas[index].id == "games") frame.ShowCommands(index);
@@ -150,6 +176,7 @@ struct AdminQuizNavigationTest
         frame.HandleKey(WXK_ESCAPE);
         assert(frame.currentResultItemKind_ == domain::AdminItemKind::Game);
         assert(frame.gameNavigation_.empty());
+        CheckNavigationRoles(frame);
     }
 };
 }

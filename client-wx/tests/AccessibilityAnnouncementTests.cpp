@@ -100,6 +100,15 @@ int main(int argc, char** argv)
 
     const std::vector<VerticalMenuItem> items{
         {"first", "Alice"}, {"second", "Bob"}, {"third", "Charlie"}};
+    // An omitted role must not silently turn persistent navigation into a popup.
+    auto* defaultMenu = new VerticalMenu(frame, items);
+#if wxUSE_ACCESSIBILITY
+    wxAccRole defaultRole;
+    auto* defaultAccessible = defaultMenu->GetSelectedControl()->GetAccessible();
+    Check(defaultAccessible->GetRole(wxACC_SELF, &defaultRole) == wxACC_OK);
+    Check(defaultRole == wxROLE_SYSTEM_LIST);
+#endif
+    delete defaultMenu;
     for (const auto role : {VerticalMenuRole::Menu, VerticalMenuRole::List, VerticalMenuRole::Entries})
     {
         auto* menu = new VerticalMenu(frame, items, role);
