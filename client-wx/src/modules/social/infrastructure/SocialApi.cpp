@@ -27,6 +27,29 @@ std::vector<domain::SocialUser> SocialApi::GetFriends() const
     return codec::ReadUsersPayload(event, response.payload);
 }
 
+domain::SocialFriendsSnapshot SocialApi::GetFriendsSnapshot() const
+{
+    namespace fields = lila::modules::social::infrastructure::fields;
+    const std::string event(lila::shared::network::ws::types::social::FriendsList);
+    const auto response = Send(event, {{std::string(fields::IncludeBlocked), true}},
+        lila::shared::errors::SocialLoadFriendsFailed);
+    return {codec::ReadUsersPayload(event, response.payload),
+        codec::ReadUsersPayload(event,
+            {{std::string(fields::Items), response.payload.at(std::string(fields::BlockedUsers))}})};
+}
+
+domain::SocialRequestsSnapshot SocialApi::GetRequestsSnapshot(const std::string& direction) const
+{
+    namespace fields = lila::modules::social::infrastructure::fields;
+    const std::string event(lila::shared::network::ws::types::social::FriendsRequests);
+    const auto response = Send(event,
+        {{std::string(fields::Direction), direction}, {std::string(fields::IncludeBlocked), true}},
+        lila::shared::errors::SocialLoadRequestsFailed);
+    return {codec::ReadRequestsPayload(event, response.payload),
+        codec::ReadUsersPayload(event,
+            {{std::string(fields::Items), response.payload.at(std::string(fields::BlockedUsers))}})};
+}
+
 std::vector<domain::SocialFriendRequest> SocialApi::GetRequests(const std::string& direction) const
 {
     const std::string event = std::string(lila::shared::network::ws::types::social::FriendsRequests);

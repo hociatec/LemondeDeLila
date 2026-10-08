@@ -6,6 +6,7 @@ import { SocialProfileService } from '../../../application/services/social-profi
 import { SocialRelationshipService } from '../../../application/services/social-relationship.service';
 import { WS_EVENTS } from '../../../../../platform/realtime/public-api';
 import {
+  SocialListDto,
   SocialProfileGetDto,
   SocialProfileUpdateDto,
   SocialRequestListDto,
@@ -21,10 +22,17 @@ export class SocialWsHandler {
     private readonly validator: PayloadValidationService,
   ) {}
 
-  async listFriends(session: WsSession) {
+  async listFriends(session: WsSession, payload: unknown = {}) {
     const user = requireUser(session);
-    const items = await this.relationships.listFriends(user.id);
-    return { type: WS_EVENTS.social.friendsList, payload: { items } };
+    const dto = this.validator.validate(SocialListDto, payload ?? {});
+    const [items, blockedUsers] = await Promise.all([
+      this.relationships.listFriends(user.id),
+      dto.includeBlocked ? this.relationships.listBlocked(user.id) : undefined,
+    ]);
+    return {
+      type: WS_EVENTS.social.friendsList,
+      payload: { items, ...(blockedUsers !== undefined ? { blockedUsers } : {}) },
+    };
   }
 
   async getRelationshipState(session: WsSession, payload: unknown) {
@@ -42,8 +50,14 @@ export class SocialWsHandler {
     const dto = this.validator.validate(SocialRequestListDto, payload);
     const direction = (dto.direction ?? 'incoming') as
       'incoming' | 'outgoing' | 'all';
-    const items = await this.relationships.listRequests(user.id, direction);
-    return { type: WS_EVENTS.social.friendsRequests, payload: { items } };
+    const [items, blockedUsers] = await Promise.all([
+      this.relationships.listRequests(user.id, direction),
+      dto.includeBlocked ? this.relationships.listBlocked(user.id) : undefined,
+    ]);
+    return {
+      type: WS_EVENTS.social.friendsRequests,
+      payload: { items, ...(blockedUsers !== undefined ? { blockedUsers } : {}) },
+    };
   }
 
   async listBlocked(session: WsSession) {

@@ -90,4 +90,34 @@ describe('AdminBugReportsService', () => {
       BadRequestException,
     );
   });
+
+  it('loads only status counts for the opening menu', async () => {
+    const deps = createDeps();
+    const statusCounts = {
+      pending: 12,
+      in_progress: 3,
+      to_test: 1,
+      done: 9,
+      refused: 2,
+    };
+    deps.countByStatus.mockResolvedValue(statusCounts);
+    const service = new AdminBugReportsService(deps as any);
+    await expect(service.list({ countsOnly: true })).resolves.toEqual({
+      items: [],
+      statusCounts,
+    });
+    expect(deps.list).not.toHaveBeenCalled();
+    expect(deps.countComments).not.toHaveBeenCalled();
+    expect(deps.countByStatus).toHaveBeenCalledTimes(1);
+  });
+
+  it('propagates a counter failure instead of returning zero counts', async () => {
+    const deps = createDeps();
+    deps.countByStatus.mockRejectedValue(new Error('database unavailable'));
+    const service = new AdminBugReportsService(deps as any);
+    await expect(service.list({ countsOnly: true })).rejects.toThrow(
+      'database unavailable',
+    );
+    expect(deps.list).not.toHaveBeenCalled();
+  });
 });

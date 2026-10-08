@@ -13,6 +13,9 @@ const session: WsSession = {
 async function fixture() {
   const profiles = { getProfile: jest.fn(), updateProfile: jest.fn() };
   const relationships = {
+    listFriends: jest.fn().mockResolvedValue([{ id: 8, username: 'Bob' }]),
+    listRequests: jest.fn().mockResolvedValue([]),
+    listBlocked: jest.fn().mockResolvedValue([{ id: 9, username: 'Charles' }]),
     requestFriend: jest.fn(),
     getRelationshipState: jest.fn().mockResolvedValue({
       isFriend: true,
@@ -62,4 +65,59 @@ it('rejects an injected profile owner and anonymous writes', async () => {
   ).rejects.toThrow();
   expect(profiles.updateProfile).not.toHaveBeenCalled();
   expect(relationships.requestFriend).not.toHaveBeenCalled();
+});
+
+it.each(['friends', 'incoming', 'outgoing'])(
+  'bundles blocked users with %s in one response and starts both reads together',
+  async (section) => {
+    const { handler, relationships } = await fixture();
+    let resolveItems!: (items: never[]) => void;
+    const primary =
+      section === 'friends'
+        ? relationships.listFriends
+        : relationships.listRequests;
+    primary.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveItems = resolve;
+        }),
+    );
+    const pending =
+      section === 'friends'
+        ? handler.listFriends(session, { includeBlocked: true })
+        : handler.listRequests(session, {
+            direction: section,
+            includeBlocked: true,
+          });
+    expect(primary).toHaveBeenCalledTimes(1);
+    expect(relationships.listBlocked).toHaveBeenCalledWith(7);
+    resolveItems([]);
+    expect((await pending).payload).toEqual({
+      items: [],
+      blockedUsers: [{ id: 9, username: 'Charles' }],
+    });
+  },
+);
+
+it('keeps unbundled responses compatible and validates the new option', async () => {
+  const { handler, relationships } = await fixture();
+  expect((await handler.listFriends(session)).payload).toEqual({
+    items: [{ id: 8, username: 'Bob' }],
+  });
+  expect((await handler.listRequests(session, {})).payload).toEqual({
+    items: [],
+  });
+  expect(relationships.listBlocked).not.toHaveBeenCalled();
+  await expect(
+    handler.listFriends(session, { includeBlocked: 'true' }),
+  ).rejects.toThrow();
+  await expect(
+    handler.listRequests(session, {
+      includeBlocked: true,
+      direction: 'invalid',
+    }),
+  ).rejects.toThrow();
+  await expect(
+    handler.listFriends({ ...session, user: null }, { includeBlocked: true }),
+  ).rejects.toThrow();
 });

@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include <wx/msgdlg.h>
+#include <wx/textctrl.h>
 
 #include "modules/social/presentation/SocialView.h"
 #include "shared/accessibility/presentation/FocusManager.h"
@@ -85,8 +86,21 @@ void SocialFrame::RunBackgroundTask(
 void SocialFrame::SetBusyState(bool busy, const wxString& message, bool announce)
 {
     isBusy_ = busy;
+    if (!busy && loadingPlaceholder_ != nullptr)
+    {
+        loadingPlaceholder_->ChangeValue(loadingPlaceholderText_);
+        loadingPlaceholder_ = nullptr;
+    }
     if (busy && !message.empty())
     {
+        const auto controls = view_->SectionFor(navigationState_.currentSection);
+        if (navigationState_.currentScreen == Screen::Section && controls.list != nullptr &&
+            controls.list->GetItemCount() == 0 && controls.emptyControl != nullptr)
+        {
+            loadingPlaceholder_ = controls.emptyControl;
+            loadingPlaceholderText_ = loadingPlaceholder_->GetValue();
+            loadingPlaceholder_->ChangeValue(message);
+        }
         UpdateStatus(message, false, announce);
     }
 

@@ -1,5 +1,6 @@
 include_guard(GLOBAL)
 include(${CMAKE_CURRENT_LIST_DIR}/LilaAdminQuizTests.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/LilaSocialLoadingTests.cmake)
 
 lila_add_test_executable(lemonde_de_lila_wx_screen_reader_shutdown_tests
     tests/ScreenReaderShutdownTests.cpp

@@ -27,11 +27,16 @@ public:
     mutable json lastPayload;
     mutable std::string lastCommand;
     mutable std::string category = "music";
+    bool failCounts = false;
     admin::domain::AdminPayload Execute(const admin::domain::AdminCommand& command,
         const admin::domain::AdminPayload& raw, const std::string&, std::stop_token) const override
     {
         lastCommand = command.id;
         lastPayload = json::parse(raw.Serialized());
+        if (command.id == "bugs.list" && failCounts) throw std::runtime_error("Counters unavailable");
+        if (command.id == "bugs.list")
+            return admin::domain::AdminPayload(json{{"items", json::array()},
+                {"statusCounts", {{"pending", 12}, {"in_progress", 3}}}}.dump());
         if (command.id == "games.list")
             return admin::domain::AdminPayload(json{{"games", {{{"id", "arche-de-mnemosyne"}}}}}.dump());
         if (command.id == "mnemo.categories")
@@ -120,17 +125,43 @@ struct AdminQuizNavigationTest
     {
         CheckNavigationRoles(frame);
         const auto& areas = domain::GetAdminAreas();
+        auto* otherControl = new wxTextCtrl(&frame, wxID_ANY);
         assert(frame.commandSelections_.size() == areas.size());
         // Every area, including Maintenance, must have its own selection slot.
         for (std::size_t index = 0; index < areas.size(); ++index)
         {
             frame.ShowCommands(index);
+            if (areas[index].id == "reports")
+            {
+                frame.reportStatusMenu_->SetSelectedIndexSilently(2);
+                otherControl->SetFocus();
+            }
             Wait(frame);
+            if (areas[index].id == "reports")
+            {
+                assert(gateway.lastPayload.at("countsOnly") == true);
+                assert(frame.reportStatusMenu_->GetSelectedIndex() == 2);
+                assert(wxWindow::FindFocus() == otherControl);
+                assert(frame.resultItems_.empty());
+            }
             CheckNavigationRoles(frame);
             assert(frame.selectedSection_ == index);
             assert(frame.commandsMenu_->GetSelectedIndex() == 0);
             frame.ShowSections();
         }
+        gateway.failCounts = true;
+        for (std::size_t index = 0; index < areas.size(); ++index)
+            if (areas[index].id == "reports") frame.ShowCommands(index);
+        frame.reportStatusMenu_->SetSelectedIndexSilently(3);
+        otherControl->SetFocus();
+        Wait(frame);
+        assert(wxWindow::FindFocus() == otherControl);
+        assert(frame.reportStatusMenu_->GetSelectedIndex() == 3);
+        auto* statuses = dynamic_cast<wxListBox*>(frame.reportStatusMenu_->GetSelectedControl());
+        assert(statuses && statuses->GetString(3).Contains(L"compteur indisponible"));
+        gateway.failCounts = false;
+        frame.ShowSections();
+        delete otherControl;
         for (std::size_t index = 0; index < areas.size(); ++index)
             if (areas[index].id == "games") frame.ShowCommands(index);
         Wait(frame);

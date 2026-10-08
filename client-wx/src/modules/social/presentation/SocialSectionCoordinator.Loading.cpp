@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <wx/stattext.h>
+#include <wx/weakref.h>
 
 #include "modules/social/domain/SocialProfile.h"
 #include "modules/social/domain/SocialUser.h"
@@ -30,6 +31,7 @@ void RunSectionLoad(
     SocialSection section,
     const wxString& busyMessage,
     SocialSectionCoordinator::Callbacks& callbacks,
+    SocialView& view,
     Worker&& worker,
     Apply&& apply)
 {
@@ -40,9 +42,17 @@ void RunSectionLoad(
         {
             *result = worker();
         },
-        [section, result, callbacks = callbacks, apply = std::forward<Apply>(apply)]() mutable
+        [section, result, &view, callbacks = callbacks, apply = std::forward<Apply>(apply)]() mutable
         {
+            wxWeakRef<wxWindow> focused = wxWindow::FindFocus();
+            const auto panel = view.SectionFor(section).panel;
+            const bool hadFocus = focused && panel && panel->IsShownOnScreen() &&
+                panel->IsDescendant(focused.get());
             apply(std::move(*result));
+            // Only replace focus if its control disappeared (e.g. the loading
+            // placeholder became a populated list). Leave user navigation alone.
+            if (hadFocus && focused && !focused->IsShownOnScreen())
+                callbacks.focusCurrentScreen();
         },
         false);
 }
@@ -55,21 +65,23 @@ void SocialSectionCoordinator::LoadFriends()
         SocialSection::Friends,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadFriendsBusy),
         callbacks_,
+        view_,
         [loadController]()
         {
             return loadController->LoadFriends();
         },
         [this](SocialLoadController::FriendsSnapshot snapshot)
         {
+            sectionPresenter_.StoreSelection(SocialSection::Friends);
             dataStore_.ReplaceFriends(std::move(snapshot.friends), std::move(snapshot.blockedUsers));
             sectionPresenter_.PopulateSection(SocialSection::Friends);
-            sectionPresenter_.ShowCurrentSection();
+            if (navigationState_.currentScreen != SocialNavigationState::Screen::Section ||
+                navigationState_.currentSection != SocialSection::Friends) return;
             sectionPresenter_.SyncSelectionState();
             callbacks_.updateStatus(
                 SocialPresentationModel::BuildSectionStatus(SocialSection::Friends, dataStore_.Friends().size()),
                 false,
                 false);
-            FocusSectionIfVisible(SocialSection::Friends);
         });
 }
 
@@ -80,15 +92,18 @@ void SocialSectionCoordinator::LoadIncomingRequests()
         SocialSection::IncomingRequests,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadIncomingRequestsBusy),
         callbacks_,
+        view_,
         [loadController]()
         {
             return loadController->LoadIncomingRequests();
         },
         [this](SocialLoadController::RequestsSnapshot snapshot)
         {
+            sectionPresenter_.StoreSelection(SocialSection::IncomingRequests);
             dataStore_.ReplaceIncomingRequests(std::move(snapshot.requests), std::move(snapshot.blockedUsers));
             sectionPresenter_.PopulateSection(SocialSection::IncomingRequests);
-            sectionPresenter_.ShowCurrentSection();
+            if (navigationState_.currentScreen != SocialNavigationState::Screen::Section ||
+                navigationState_.currentSection != SocialSection::IncomingRequests) return;
             sectionPresenter_.SyncSelectionState();
             callbacks_.updateStatus(
                 SocialPresentationModel::BuildSectionStatus(
@@ -96,7 +111,6 @@ void SocialSectionCoordinator::LoadIncomingRequests()
                     dataStore_.IncomingRequests().size()),
                 false,
                 false);
-            FocusSectionIfVisible(SocialSection::IncomingRequests);
         });
 }
 
@@ -107,15 +121,18 @@ void SocialSectionCoordinator::LoadOutgoingRequests()
         SocialSection::OutgoingRequests,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadOutgoingRequestsBusy),
         callbacks_,
+        view_,
         [loadController]()
         {
             return loadController->LoadOutgoingRequests();
         },
         [this](SocialLoadController::RequestsSnapshot snapshot)
         {
+            sectionPresenter_.StoreSelection(SocialSection::OutgoingRequests);
             dataStore_.ReplaceOutgoingRequests(std::move(snapshot.requests), std::move(snapshot.blockedUsers));
             sectionPresenter_.PopulateSection(SocialSection::OutgoingRequests);
-            sectionPresenter_.ShowCurrentSection();
+            if (navigationState_.currentScreen != SocialNavigationState::Screen::Section ||
+                navigationState_.currentSection != SocialSection::OutgoingRequests) return;
             sectionPresenter_.SyncSelectionState();
             callbacks_.updateStatus(
                 SocialPresentationModel::BuildSectionStatus(
@@ -123,7 +140,6 @@ void SocialSectionCoordinator::LoadOutgoingRequests()
                     dataStore_.OutgoingRequests().size()),
                 false,
                 false);
-            FocusSectionIfVisible(SocialSection::OutgoingRequests);
         });
 }
 
@@ -134,21 +150,23 @@ void SocialSectionCoordinator::LoadBlockedUsers()
         SocialSection::Blocked,
         lila::shared::text::FromUtf8(lila::shared::text::ui::SocialLoadBlockedUsersBusy),
         callbacks_,
+        view_,
         [loadController]()
         {
             return loadController->LoadBlockedUsers();
         },
         [this](std::vector<domain::SocialUser> results)
         {
+            sectionPresenter_.StoreSelection(SocialSection::Blocked);
             dataStore_.ReplaceBlockedUsers(std::move(results));
             sectionPresenter_.PopulateSection(SocialSection::Blocked);
-            sectionPresenter_.ShowCurrentSection();
+            if (navigationState_.currentScreen != SocialNavigationState::Screen::Section ||
+                navigationState_.currentSection != SocialSection::Blocked) return;
             sectionPresenter_.SyncSelectionState();
             callbacks_.updateStatus(
                 SocialPresentationModel::BuildSectionStatus(SocialSection::Blocked, dataStore_.BlockedUsers().size()),
                 false,
                 false);
-            FocusSectionIfVisible(SocialSection::Blocked);
         });
 }
 

@@ -48,12 +48,16 @@ export class AdminBugReportsService {
 
   async list(
     options: {
+      countsOnly?: boolean;
       offset?: number;
       limit?: number;
       search?: string;
       status?: UpdateAdminBugReportStatusCommand['status'];
     } = {},
   ) {
+    if (options.countsOnly === true) {
+      return { items: [], statusCounts: await this.bugReports.countByStatus() };
+    }
     const offset = normalizeOffset(options.offset);
     const limit = normalizeLimit(options.limit);
     const search = normalizeSearch(options.search);

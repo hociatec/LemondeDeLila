@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsIn,
   IsInt,
   IsOptional,
@@ -16,7 +17,13 @@ export class SocialUserIdDto {
   userId!: number;
 }
 
-export class SocialRequestListDto {
+export class SocialListDto {
+  @IsOptional()
+  @IsBoolean()
+  includeBlocked?: boolean;
+}
+
+export class SocialRequestListDto extends SocialListDto {
   @IsOptional()
   @IsIn(['incoming', 'outgoing', 'all'])
   direction?: string;

@@ -105,6 +105,8 @@ private:
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
     bool isBusy_ = false;
+    wxTextCtrl* loadingPlaceholder_ = nullptr;
+    wxString loadingPlaceholderText_;
     SocialNavigationState navigationState_;
     std::atomic<bool> isClosing_ = false;
     SocialSelectionMemory selectionMemory_;

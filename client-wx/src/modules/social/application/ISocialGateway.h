@@ -8,6 +8,7 @@
 #include "modules/social/domain/SocialProfile.h"
 #include "modules/social/domain/SocialRelationshipState.h"
 #include "modules/social/domain/SocialUser.h"
+#include "modules/social/domain/SocialListSnapshot.h"
 
 namespace lila::modules::social::application
 {
@@ -15,6 +16,14 @@ class ISocialGateway
 {
 public:
     virtual ~ISocialGateway() = default;
+    [[nodiscard]] virtual domain::SocialFriendsSnapshot GetFriendsSnapshot() const
+    {
+        return {GetFriends(), GetBlockedUsers()};
+    }
+    [[nodiscard]] virtual domain::SocialRequestsSnapshot GetRequestsSnapshot(const std::string& direction) const
+    {
+        return {GetRequests(direction), GetBlockedUsers()};
+    }
     [[nodiscard]] virtual std::vector<domain::SocialUser> GetFriends() const = 0;
     [[nodiscard]] virtual std::vector<domain::SocialFriendRequest> GetRequests(const std::string& direction) const = 0;
     [[nodiscard]] virtual std::vector<domain::SocialUser> GetBlockedUsers() const = 0;

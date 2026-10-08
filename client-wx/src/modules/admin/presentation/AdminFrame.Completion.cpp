@@ -1,4 +1,5 @@
 #include "modules/admin/presentation/AdminFrame.h"
+#include "modules/admin/presentation/AdminBugReportStatusMenu.h"
 
 #include <utility>
 #include <memory>
@@ -80,6 +81,9 @@ void AdminFrame::CompleteCommand(
         uploadingCreatedAmbience_ = false;
         if (command.id == "bots.settings.get")
             openBotTimingEditorAfterRead_ = false;
+        const bool countsOnlyFailed = loadingReportCountsOnly_;
+        if (countsOnlyFailed) reportStatusMenu_->SetItemsForNavigation(
+            BuildBugReportStatusItems({}, L" (compteur indisponible)"), reportStatusMenu_->GetSelectedIndex());
         loadingReportCountsOnly_ = false;
         keepFocusAfterCommand_ = false;
         refreshBugReportsAfterCommand_ = false;
@@ -95,7 +99,7 @@ void AdminFrame::CompleteCommand(
                 isAmbienceCommand ? L"Gestion des ambiances" : L"Gestion des sons",
                 wxOK | wxICON_ERROR, this);
         }
-        FocusCurrentMenu();
+        if (!countsOnlyFailed) FocusCurrentMenu();
         return;
     }
     if (command.id == "mnemo.categories" && pendingQuestionEditor_)

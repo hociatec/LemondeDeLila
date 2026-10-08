@@ -17,30 +17,45 @@ SocialService::SocialService(
 
 std::vector<domain::SocialUser> SocialService::LoadFriends() const
 {
-    return friendsCache_.GetOrLoad({}, [this](std::stop_token) { return api_.GetFriends(); })
-        .value_or(std::vector<domain::SocialUser>{});
+    return LoadFriendsSnapshot().friends;
 }
 
 std::vector<domain::SocialFriendRequest> SocialService::LoadIncomingRequests() const
+{
+    return LoadIncomingSnapshot().requests;
+}
+
+std::vector<domain::SocialFriendRequest> SocialService::LoadOutgoingRequests() const
+{
+    return LoadOutgoingSnapshot().requests;
+}
+
+domain::SocialFriendsSnapshot SocialService::LoadFriendsSnapshot() const
+{
+    return friendsCache_.GetOrLoad({}, [this](std::stop_token) { return api_.GetFriendsSnapshot(); })
+        .value_or(domain::SocialFriendsSnapshot{});
+}
+
+domain::SocialRequestsSnapshot SocialService::LoadIncomingSnapshot() const
 {
     return incomingRequestsCache_.GetOrLoad(
         {},
         [this](std::stop_token)
         {
-            return api_.GetRequests(
+            return api_.GetRequestsSnapshot(
                 std::string(lila::modules::social::infrastructure::fields::DirectionIncoming));
-        }).value_or(std::vector<domain::SocialFriendRequest>{});
+        }).value_or(domain::SocialRequestsSnapshot{});
 }
 
-std::vector<domain::SocialFriendRequest> SocialService::LoadOutgoingRequests() const
+domain::SocialRequestsSnapshot SocialService::LoadOutgoingSnapshot() const
 {
     return outgoingRequestsCache_.GetOrLoad(
         {},
         [this](std::stop_token)
         {
-            return api_.GetRequests(
+            return api_.GetRequestsSnapshot(
                 std::string(lila::modules::social::infrastructure::fields::DirectionOutgoing));
-        }).value_or(std::vector<domain::SocialFriendRequest>{});
+        }).value_or(domain::SocialRequestsSnapshot{});
 }
 
 std::vector<domain::SocialUser> SocialService::LoadBlockedUsers() const
@@ -128,7 +143,7 @@ bool SocialService::IsFriendCached(int userId) const
 {
     const auto friends = friendsCache_.TryGet();
     return friends.has_value() && std::ranges::any_of(
-        *friends,
+        friends->friends,
         [userId](const domain::SocialUser& user) { return user.id.value == userId; });
 }
 
