@@ -74,6 +74,7 @@ const catchAllAudit = new Map([
   ['modules/update/infrastructure/launcher/UpdateLauncher.Zip.cpp', { count: 1, reason: 'transactional extraction removes partial output before rethrowing' }],
   ['modules/update/infrastructure/launcher/UpdateLauncher.cpp', { count: 1, reason: 'emergency logging cannot hide the user-facing launcher error' }],
   ['shared/accessibility/infrastructure/NvdaScreenReaderAnnouncer.cpp', { count: 2, reason: 'optional third-party text and synchronous SSML screen-reader callbacks must remain non-fatal' }],
+  ['shared/accessibility/infrastructure/ScreenReaderCallGate.h', { count: 1, reason: 'bounded third-party RPC isolates unknown failures without retaining the application shutdown worker' }],
   ['shared/cache/application/SingleFlightCache.h', { count: 1, reason: 'promise propagation must retain arbitrary exception types' }],
   ['shared/concurrency/application/BackgroundExecutor.cpp', { count: 1, reason: 'worker boundary logs unknown job failures and remains alive' }],
   ['shared/concurrency/application/BackgroundExecutor.h', { count: 1, reason: 'async completion converts unknown failures to AppError' }],

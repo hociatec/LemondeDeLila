@@ -1,6 +1,16 @@
 include_guard(GLOBAL)
 include(${CMAKE_CURRENT_LIST_DIR}/LilaAdminQuizTests.cmake)
 
+lila_add_test_executable(lemonde_de_lila_wx_screen_reader_shutdown_tests
+    tests/ScreenReaderShutdownTests.cpp
+    src/shared/concurrency/application/BackgroundExecutor.cpp
+    src/shared/logging/infrastructure/Logger.cpp
+)
+add_test(NAME lemonde_de_lila_wx_screen_reader_stuck_rpc_exit_tests
+    COMMAND lemonde_de_lila_wx_screen_reader_shutdown_tests --permanent-rpc)
+set_tests_properties(lemonde_de_lila_wx_screen_reader_shutdown_tests
+    lemonde_de_lila_wx_screen_reader_stuck_rpc_exit_tests PROPERTIES TIMEOUT 5)
+
 find_program(LILA_CLIENT_ARCHITECTURE_NODE_EXECUTABLE node REQUIRED)
 add_test(
     NAME lemonde_de_lila_wx_architecture_tests

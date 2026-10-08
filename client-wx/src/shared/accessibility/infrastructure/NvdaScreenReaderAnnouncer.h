@@ -1,6 +1,9 @@
 #pragma once
 
+#include <type_traits>
+
 #include "shared/accessibility/application/IScreenReaderAnnouncer.h"
+#include "shared/accessibility/infrastructure/ScreenReaderCallGate.h"
 
 #ifdef __WXMSW__
 #include <windows.h>
@@ -27,7 +30,8 @@ private:
     using SpeakSsml = long(__stdcall*)(const wchar_t*, int, int, unsigned char);
     using CancelSpeech = long(__stdcall*)();
 
-    HMODULE module_ = nullptr;
+    std::shared_ptr<std::remove_pointer_t<HMODULE>> module_;
+    ScreenReaderCallGate calls_;
     TestIfRunning testIfRunning_ = nullptr;
     SpeakText speakText_ = nullptr;
     SpeakSsml speakSsml_ = nullptr;
