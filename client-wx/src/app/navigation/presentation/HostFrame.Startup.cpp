@@ -13,6 +13,24 @@
 
 namespace lila::app::navigation
 {
+void HostFrame::FinishInitialFocus(InitialFocusHandler focus, bool speakFallback)
+{
+    if (focus) focus(speakFallback);
+    const wxWeakRef<HostFrame> weakFrame(this);
+    CallAfter([weakFrame, speakFallback]()
+    {
+        auto* frame = weakFrame.get();
+        if (frame == nullptr) return;
+        if (speakFallback && frame->screenReader_ != nullptr)
+        {
+            const wxString announcement = frame->activationFocusContext_.Announcement();
+            if (!announcement.empty())
+                static_cast<void>(frame->screenReader_->Speak(announcement.ToStdWstring()));
+        }
+        frame->activationFocusContext_.Clear();
+    });
+}
+
 void HostFrame::BeginInitialFocusAnnouncement()
 {
     initialFocusTitle_ = GetTitle();
@@ -22,7 +40,7 @@ void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFi
 {
     if (initialFocusTitle_.empty())
     {
-        if (focusWhenFinished) focusWhenFinished();
+        if (focusWhenFinished) focusWhenFinished(false);
         return;
     }
 
@@ -31,7 +49,11 @@ void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFi
     // to Windows, Alt+Tab and screen-reader window navigation at all times.
     SetTitle(title);
     const auto announcer = screenReader_;
-    if (announcer == nullptr) return;
+    if (announcer == nullptr)
+    {
+        FinishInitialFocus(std::move(focusWhenFinished), true);
+        return;
+    }
 
     const wxWeakRef<HostFrame> weakFrame(this);
     initialAnnouncementTask_ = lila::shared::ui::RunBackgroundTaskWithResult<bool>(
@@ -40,20 +62,22 @@ void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFi
         {
             return announcer->SpeakAndWait(speech);
         },
-        [weakFrame, focus = std::move(focusWhenFinished)](
+        [weakFrame, focus = focusWhenFinished](
             std::string error, std::optional<bool> spoken) mutable
         {
             auto* frame = weakFrame.get();
             if (frame == nullptr) return;
             frame->initialAnnouncementTask_.reset();
-            if (!error.empty() || !spoken.value_or(false))
+            const bool synchronousAnnouncementCompleted =
+                error.empty() && spoken.value_or(false);
+            if (!synchronousAnnouncementCompleted)
             {
                 lila::shared::logging::LogWarning(
-                    "Startup", "NVDA n'a pas confirmé la fin de l'annonce initiale.");
-                return;
+                    "Startup",
+                    "Annonce NVDA synchrone indisponible; utilisation du focus accessible.");
             }
-            frame->activationFocusContext_.Clear();
-            if (focus) focus();
+            frame->FinishInitialFocus(
+                std::move(focus), !synchronousAnnouncementCompleted);
         },
         "L'annonce initiale par NVDA a échoué.",
         concurrency::BackgroundTaskPriority::High);
@@ -63,6 +87,7 @@ void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFi
         initialAnnouncementTask_.reset();
         lila::shared::logging::LogWarning(
             "Startup", "La tâche d'annonce initiale n'a pas pu démarrer.");
+        FinishInitialFocus(std::move(focusWhenFinished), true);
     }
 }
 }
@@ -77,7 +102,7 @@ void HostFrame::BeginInitialFocusAnnouncement()
 
 void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFinished)
 {
-    if (focusWhenFinished) focusWhenFinished();
+    if (focusWhenFinished) focusWhenFinished(false);
 }
 }
 

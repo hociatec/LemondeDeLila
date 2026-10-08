@@ -138,10 +138,10 @@ void AppNavigator::FocusInitialView()
     const std::weak_ptr<int> weakLifetime = lifetimeToken_;
     const wxWeakRef<wxWindow> weakView(currentView_);
     hostFrame_->CompleteInitialFocusAnnouncement(
-        [this, weakLifetime, weakView]()
+        [this, weakLifetime, weakView](bool includeWindowContext)
         {
             if (weakLifetime.expired()) return;
-            ApplyViewFocus(weakView.get());
+            ApplyViewFocus(weakView.get(), includeWindowContext);
         });
 }
 
