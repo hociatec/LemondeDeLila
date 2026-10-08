@@ -2,6 +2,38 @@ import { GameWsStateMessagesPresenter } from './game-ws-state-messages.presenter
 import { presentedEvents } from '../../../../../testing/helpers/presented-state-assertions';
 
 describe('GameWsStateMessagesPresenter', () => {
+  it('announces a die result without an article before the value', () => {
+    const event = {
+      id: 'dice-roll:0',
+      type: 'game.message',
+      data: {
+        key: 'game.dice.rolled',
+        params: { playerId: 2, total: 1 },
+      },
+    };
+    const state = new GameWsStateMessagesPresenter().withServerMessages(
+      {
+        match: { status: 'playing' },
+        players: {
+          all: [
+            { id: 1, username: 'Lila' },
+            { id: 2, username: 'Noé' },
+          ],
+        },
+        events: {
+          recent: [event],
+          latestByType: { 'game.message': event },
+        },
+      },
+      1,
+      {} as never,
+    );
+
+    expect(presentedEvents(state.events).recent[0].data.message).toBe(
+      'Noé lance le dé et fait 1.',
+    );
+  });
+
   it('names played battle cards and announces a battle', () => {
     const presenter = new GameWsStateMessagesPresenter();
     const placed = {

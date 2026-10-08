@@ -162,6 +162,14 @@ describe('genericGameEventMessage', () => {
     expect(
       message(
         'pawn.landed',
+        { playerId: 2, position: 0, displayPosition: 0 },
+        2,
+        1,
+      ),
+    ).toBe('Baloo arrive sur la case 1.');
+    expect(
+      message(
+        'pawn.landed',
         {
           playerId: 1,
           position: 3,

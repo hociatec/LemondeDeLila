@@ -1468,7 +1468,7 @@ exports[`race reference replay: a-fond-les-ballons, seed 53 1`] = `
   ],
   "finished": true,
   "steps": 53,
-  "traceDigest": "eec0e5b0fd8fc8cf8ab2746b63beac6d5870b9852eadb718d8cad40048b14d8c",
+  "traceDigest": "f80455c19f6e4583733c9779b1ac6d25569f4bb537c2ce68541e9708557f77ee",
 }
 `;
 

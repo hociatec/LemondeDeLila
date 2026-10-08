@@ -279,8 +279,10 @@ function pawnLandedMessage(
   const internalPosition = numberValue(data.position);
   if (!name || internalPosition == null) return '';
   const verb = name === 'Vous' ? 'arrivez' : 'arrive';
-  const displayedPosition =
-    numberValue(data.displayPosition) ?? internalPosition + 1;
+  const displayedPosition = Math.max(
+    1,
+    numberValue(data.displayPosition) ?? internalPosition + 1,
+  );
   const label = tileLabel(value('tileLabel'));
   const description = value('tileDescription');
   return [
