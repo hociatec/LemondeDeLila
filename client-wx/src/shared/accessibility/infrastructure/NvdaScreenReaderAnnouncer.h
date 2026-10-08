@@ -18,15 +18,18 @@ public:
     NvdaScreenReaderAnnouncer& operator=(const NvdaScreenReaderAnnouncer&) = delete;
 
     [[nodiscard]] bool Speak(std::wstring_view message) const noexcept override;
+    [[nodiscard]] bool SpeakAndWait(std::wstring_view message) const noexcept override;
 
 private:
 #ifdef __WXMSW__
-    using TestIfRunning = int(__cdecl*)();
-    using SpeakText = int(__cdecl*)(const wchar_t*);
+    using TestIfRunning = long(__stdcall*)();
+    using SpeakText = long(__stdcall*)(const wchar_t*);
+    using SpeakSsml = long(__stdcall*)(const wchar_t*, int, int, unsigned char);
 
     HMODULE module_ = nullptr;
     TestIfRunning testIfRunning_ = nullptr;
     SpeakText speakText_ = nullptr;
+    SpeakSsml speakSsml_ = nullptr;
 #endif
 };
 }

@@ -113,6 +113,7 @@ bool Application::OnInit()
     }
     auto* mainWindow = GetTopWindow();
 #ifdef __WXMSW__
+    if (bootstrap_ != nullptr) bootstrap_->PrepareInitialViewAnnouncement();
     if (mainWindow != nullptr)
         for (auto* child : mainWindow->GetChildren()) child->Disable();
 #endif
@@ -121,8 +122,9 @@ bool Application::OnInit()
     {
 #ifdef __WXMSW__
         for (auto* child : mainWindow->GetChildren()) child->Enable();
+        if (bootstrap_ != nullptr) bootstrap_->FocusInitialView();
         lila::shared::logging::LogInfo(
-            "Startup", "Titre initial exposé sans déplacement automatique du focus.");
+            "Startup", "Annonce NVDA du titre lancée avant le focus du menu initial.");
 #else
         if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
 #endif

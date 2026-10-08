@@ -39,6 +39,25 @@ Function ToFunctionPointer(FARPROC function) noexcept
     std::memcpy(&converted, &function, sizeof(converted));
     return converted;
 }
+
+std::wstring EscapeSsml(std::wstring_view message)
+{
+    std::wstring escaped;
+    escaped.reserve(message.size() + 15);
+    for (const wchar_t character : message)
+    {
+        switch (character)
+        {
+        case L'&': escaped += L"&amp;"; break;
+        case L'<': escaped += L"&lt;"; break;
+        case L'>': escaped += L"&gt;"; break;
+        case L'\"': escaped += L"&quot;"; break;
+        case L'\'': escaped += L"&apos;"; break;
+        default: escaped += character; break;
+        }
+    }
+    return L"<speak>" + escaped + L"</speak>";
+}
 }
 #endif
 
@@ -61,11 +80,14 @@ NvdaScreenReaderAnnouncer::NvdaScreenReaderAnnouncer()
             "nvdaControllerClient_testIfRunning", "nvdaController_testIfRunning"});
         const auto speak = FindExport(module, {
             "nvdaControllerClient_speakText", "nvdaController_speakText"});
-        if (test != nullptr && speak != nullptr)
+        const auto speakSsml = FindExport(module, {
+            "nvdaControllerClient_speakSsml", "nvdaController_speakSsml"});
+        if (test != nullptr && speak != nullptr && speakSsml != nullptr)
         {
             module_ = module;
             testIfRunning_ = ToFunctionPointer<TestIfRunning>(test);
             speakText_ = ToFunctionPointer<SpeakText>(speak);
+            speakSsml_ = ToFunctionPointer<SpeakSsml>(speakSsml);
             return;
         }
         FreeLibrary(module);
@@ -90,6 +112,27 @@ bool NvdaScreenReaderAnnouncer::Speak(std::wstring_view message) const noexcept
         if (testIfRunning_() != 0) return false;
         const std::wstring terminated(message);
         return speakText_(terminated.c_str()) == 0;
+    }
+    catch (...)
+    {
+        return false;
+    }
+#else
+    static_cast<void>(message);
+    return false;
+#endif
+}
+
+bool NvdaScreenReaderAnnouncer::SpeakAndWait(std::wstring_view message) const noexcept
+{
+#ifdef __WXMSW__
+    if (message.empty() || testIfRunning_ == nullptr || speakSsml_ == nullptr)
+        return false;
+    try
+    {
+        if (testIfRunning_() != 0) return false;
+        const std::wstring ssml = EscapeSsml(message);
+        return speakSsml_(ssml.c_str(), -1, 0, false) == 0;
     }
     catch (...)
     {

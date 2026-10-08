@@ -15,13 +15,21 @@
 class wxBoxSizer;
 class wxWindow;
 
+namespace lila::shared::concurrency
+{
+class BackgroundTaskHandle;
+}
+
 namespace lila::app::navigation
 {
+namespace concurrency = lila::shared::concurrency;
+
 class HostFrame final : public wxFrame
 {
 public:
     using PresenceRequestedHandler = std::function<void()>;
     using CloseRequestedHandler = std::function<bool()>;
+    using InitialFocusHandler = std::function<void()>;
 
     HostFrame();
 
@@ -30,7 +38,7 @@ public:
     void SetContent(wxWindow* content);
     void RemoveContent(wxWindow* content);
     void BeginInitialFocusAnnouncement();
-    void CompleteInitialFocusAnnouncement();
+    void CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFinished);
     void ClearActivationFocusContext();
     void PrepareActivationFocusContext(wxWindow* target);
     void SetPresenceRequestedHandler(PresenceRequestedHandler handler);
@@ -51,8 +59,8 @@ private:
 #ifdef __WXMSW__
     wxWeakRef<wxWindow> lastFocusedChild_;
     wxString initialFocusTitle_;
-    wxString initialFocusSpeech_;
-    std::unique_ptr<lila::shared::accessibility::IScreenReaderAnnouncer> screenReader_;
+    std::shared_ptr<lila::shared::accessibility::IScreenReaderAnnouncer> screenReader_;
+    std::shared_ptr<concurrency::BackgroundTaskHandle> initialAnnouncementTask_;
     lila::shared::accessibility::ActivationFocusContext activationFocusContext_;
 #endif
 };
