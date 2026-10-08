@@ -18,14 +18,21 @@ public:
     static void Install(wxListBox& list)
     {
         const auto window = reinterpret_cast<HWND>(list.GetHandle());
-        DWORD_PTR existing = 0;
-        if (GetWindowSubclass(window, Procedure, 1, &existing)) return;
+        if (GetPropW(window, PropertyName) != nullptr) return;
         auto state = std::make_unique<std::shared_ptr<State>>(std::make_shared<State>(list));
-        if (SetWindowSubclass(window, Procedure, 1, reinterpret_cast<DWORD_PTR>(state.get())))
+        if (!SetWindowSubclass(window, Procedure, 1, reinterpret_cast<DWORD_PTR>(state.get())))
+            return;
+        if (SetPropW(window, PropertyName, reinterpret_cast<HANDLE>(state.get())))
+        {
             state.release(); // Released on WM_NCDESTROY, including pending callbacks.
+            return;
+        }
+        RemoveWindowSubclass(window, Procedure, 1);
     }
 
 private:
+    static constexpr wchar_t PropertyName[] = L"LeMondeDeLila.AccessibleListEvents";
+
     struct State
     {
         explicit State(wxListBox& window) : list(&window) {}
@@ -40,6 +47,7 @@ private:
         auto state = *holder;
         if (message == WM_NCDESTROY)
         {
+            RemovePropW(window, PropertyName);
             RemoveWindowSubclass(window, Procedure, id);
             delete holder;
             return DefSubclassProc(window, message, wParam, lParam);
