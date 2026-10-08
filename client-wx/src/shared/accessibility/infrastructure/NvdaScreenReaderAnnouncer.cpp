@@ -137,7 +137,9 @@ bool NvdaScreenReaderAnnouncer::SpeakAndWait(std::wstring_view message) const no
         if (testIfRunning_() != 0) return false;
         // Clear the automatic window-title utterance before replacing it with
         // the controlled, synchronous announcement below.
-        if (cancelSpeech_() != 0) return false;
+        // NVDA can report that there was no active utterance to cancel. That
+        // must not prevent the controlled title announcement from starting.
+        static_cast<void>(cancelSpeech_());
         const std::wstring ssml = EscapeSsml(message);
         return speakSsml_(ssml.c_str(), -1, 0, false) == 0;
     }
