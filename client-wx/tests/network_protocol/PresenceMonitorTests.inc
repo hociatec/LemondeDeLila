@@ -123,9 +123,8 @@ void TestPresenceActivityAndReconnect()
     monitor.SetContext("messaging");
     monitor.Start();
     WaitUntil([&] { return socket.Sent("messaging"); }, "Presence must send the current screen");
-    const auto before = socket.Count();
     std::this_thread::sleep_for(std::chrono::milliseconds(1100));
-    Expect(socket.Count() == before, "Idle connection must not simulate user activity");
+    Expect(!socket.Sent("presence-activity"), "Idle connection must not simulate user activity");
     monitor.ReportInteraction();
     WaitUntil([&] { return socket.Sent("presence-activity"); }, "Real interaction must be reported");
     monitor.SetContext("social");

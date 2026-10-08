@@ -86,7 +86,7 @@ NvdaScreenReaderAnnouncer::NvdaScreenReaderAnnouncer()
             "nvdaControllerClient_cancelSpeech", "nvdaController_cancelSpeech"});
         if (test != nullptr && speak != nullptr && speakSsml != nullptr && cancel != nullptr)
         {
-            module_ = module;
+            module_.reset(module, [](HMODULE loaded) { FreeLibrary(loaded); });
             testIfRunning_ = ToFunctionPointer<TestIfRunning>(test);
             speakText_ = ToFunctionPointer<SpeakText>(speak);
             speakSsml_ = ToFunctionPointer<SpeakSsml>(speakSsml);
@@ -98,12 +98,7 @@ NvdaScreenReaderAnnouncer::NvdaScreenReaderAnnouncer()
 #endif
 }
 
-NvdaScreenReaderAnnouncer::~NvdaScreenReaderAnnouncer()
-{
-#ifdef __WXMSW__
-    if (module_ != nullptr) FreeLibrary(module_);
-#endif
-}
+NvdaScreenReaderAnnouncer::~NvdaScreenReaderAnnouncer() = default;
 
 bool NvdaScreenReaderAnnouncer::Speak(std::wstring_view message) const noexcept
 {
@@ -112,9 +107,12 @@ bool NvdaScreenReaderAnnouncer::Speak(std::wstring_view message) const noexcept
         return false;
     try
     {
-        if (testIfRunning_() != 0) return false;
-        const std::wstring terminated(message);
-        return speakText_(terminated.c_str()) == 0;
+        return calls_.Invoke(std::chrono::milliseconds(500),
+            [module = module_, test = testIfRunning_, speak = speakText_,
+             text = std::wstring(message)]()
+            {
+                return test() == 0 && speak(text.c_str()) == 0;
+            });
     }
     catch (...)
     {
@@ -134,14 +132,16 @@ bool NvdaScreenReaderAnnouncer::SpeakAndWait(std::wstring_view message) const no
         return false;
     try
     {
-        if (testIfRunning_() != 0) return false;
-        // Clear the automatic window-title utterance before replacing it with
-        // the controlled, synchronous announcement below.
-        // NVDA can report that there was no active utterance to cancel. That
-        // must not prevent the controlled title announcement from starting.
-        static_cast<void>(cancelSpeech_());
-        const std::wstring ssml = EscapeSsml(message);
-        return speakSsml_(ssml.c_str(), -1, 0, false) == 0;
+        return calls_.Invoke(std::chrono::seconds(5),
+            [module = module_, test = testIfRunning_, speak = speakSsml_,
+             cancel = cancelSpeech_, ssml = EscapeSsml(message)]()
+            {
+                if (test() != 0) return false;
+                // Keep title-before-focus ordering when NVDA responds normally.
+                // Failure to cancel an absent utterance must not prevent speech.
+                static_cast<void>(cancel());
+                return speak(ssml.c_str(), -1, 0, false) == 0;
+            });
     }
     catch (...)
     {
