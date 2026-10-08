@@ -14,17 +14,8 @@ namespace lila::modules::social::presentation
 class SocialLoadController final
 {
 public:
-    struct FriendsSnapshot final
-    {
-        std::vector<domain::SocialUser> friends;
-        std::vector<domain::SocialUser> blockedUsers;
-    };
-
-    struct RequestsSnapshot final
-    {
-        std::vector<domain::SocialFriendRequest> requests;
-        std::vector<domain::SocialUser> blockedUsers;
-    };
+    using FriendsSnapshot = domain::SocialFriendsSnapshot;
+    using RequestsSnapshot = domain::SocialRequestsSnapshot;
 
     explicit SocialLoadController(application::SocialService& socialService) noexcept
         : socialService_(socialService)
@@ -33,17 +24,17 @@ public:
 
     [[nodiscard]] FriendsSnapshot LoadFriends() const
     {
-        return {socialService_.LoadFriends(), socialService_.LoadBlockedUsers()};
+        return socialService_.LoadFriendsSnapshot();
     }
 
     [[nodiscard]] RequestsSnapshot LoadIncomingRequests() const
     {
-        return {socialService_.LoadIncomingRequests(), socialService_.LoadBlockedUsers()};
+        return socialService_.LoadIncomingSnapshot();
     }
 
     [[nodiscard]] RequestsSnapshot LoadOutgoingRequests() const
     {
-        return {socialService_.LoadOutgoingRequests(), socialService_.LoadBlockedUsers()};
+        return socialService_.LoadOutgoingSnapshot();
     }
 
     [[nodiscard]] std::vector<domain::SocialUser> LoadBlockedUsers() const

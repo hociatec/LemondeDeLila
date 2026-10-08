@@ -1,4 +1,5 @@
 #include "modules/admin/presentation/AdminFrame.h"
+#include "modules/admin/presentation/AdminBugReportStatusMenu.h"
 
 #include <algorithm>
 #include <array>
@@ -83,20 +84,7 @@ void AdminFrame::ShowResult(
             presentation = BuildAdminResultPresentation(
                 nlohmann::json{{"reports", *reportItems}});
         const auto counts = result.value("statusCounts", nlohmann::json::object());
-        const std::array<std::pair<std::string_view, std::wstring_view>, 5> statuses{{
-            {"pending", L"En attente"}, {"in_progress", L"En cours"},
-            {"to_test", L"À tester"}, {"done", L"Terminés"}, {"refused", L"Refusés"},
-        }};
-        std::vector<lila::shared::ui::controls::VerticalMenuItem> statusItems;
-        statusItems.reserve(statuses.size() + 1);
-        statusItems.push_back({"new", wxString(L"Nouveau rapport")});
-        for (std::size_t index = 0; index < statuses.size(); ++index)
-        {
-            const auto count = counts.value(std::string(statuses[index].first), 0);
-            statusItems.push_back({std::to_string(index),
-                wxString(statuses[index].second.data(), statuses[index].second.size()) +
-                wxString::Format(L" (%d)", count)});
-        }
+        const auto statusItems = BuildBugReportStatusItems(counts, L" (compteur indisponible)");
         const auto selected = reportStatusMenu_->GetSelectedIndex();
         reportStatusMenu_->SetItemsForNavigation(statusItems, selected);
         if (loadingReportCountsOnly_)
@@ -111,8 +99,7 @@ void AdminFrame::ShowResult(
             resultText_->Hide();
             resultText_->SetValue(wxString{});
             Layout();
-            static_cast<void>(lila::shared::accessibility::NavigationController::Focus(
-                reportStatusMenu_->GetSelectedControl()));
+            SetStatus(wxString(L"Choisissez un statut ou créez un nouveau rapport."));
             return;
         }
     }

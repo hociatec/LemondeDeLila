@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsInt,
   IsIn,
   IsOptional,
@@ -35,6 +36,10 @@ export class AdminBugReportIdWsDto {
 }
 
 export class AdminBugReportsListWsDto {
+  @IsOptional()
+  @IsBoolean()
+  countsOnly?: boolean;
+
   @IsOptional()
   @IsString()
   @MaxLength(200)

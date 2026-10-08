@@ -33,6 +33,8 @@ public:
         lila::modules::session::application::SessionStore& sessionStore);
 
     [[nodiscard]] std::vector<domain::SocialUser> GetFriends() const override;
+    [[nodiscard]] domain::SocialFriendsSnapshot GetFriendsSnapshot() const override;
+    [[nodiscard]] domain::SocialRequestsSnapshot GetRequestsSnapshot(const std::string& direction) const override;
     [[nodiscard]] std::vector<domain::SocialFriendRequest> GetRequests(const std::string& direction) const override;
     [[nodiscard]] std::vector<domain::SocialUser> GetBlockedUsers() const override;
     [[nodiscard]] domain::SocialRelationshipState GetRelationshipState(int userId) const override;

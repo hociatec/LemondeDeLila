@@ -6,6 +6,8 @@
 namespace lila::modules::social::infrastructure::fields
 {
 inline constexpr std::string_view DirectionIncoming = "incoming";
+inline constexpr std::string_view IncludeBlocked = "includeBlocked";
+inline constexpr std::string_view BlockedUsers = "blockedUsers";
 inline constexpr std::string_view DirectionOutgoing = "outgoing";
 inline constexpr std::string_view DirectionAll = "all";
 inline constexpr std::string_view ProfileItems = "profile";

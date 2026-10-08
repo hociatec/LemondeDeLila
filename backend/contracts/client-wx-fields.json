@@ -22,6 +22,8 @@
       "includes": ["string_view"],
       "constants": [
         { "type": "std::string_view", "name": "DirectionIncoming", "value": "incoming" },
+        { "type": "std::string_view", "name": "IncludeBlocked", "value": "includeBlocked" },
+        { "type": "std::string_view", "name": "BlockedUsers", "value": "blockedUsers" },
         { "type": "std::string_view", "name": "DirectionOutgoing", "value": "outgoing" },
         { "type": "std::string_view", "name": "DirectionAll", "value": "all" },
         { "type": "std::string_view", "name": "ProfileItems", "value": "profile" },

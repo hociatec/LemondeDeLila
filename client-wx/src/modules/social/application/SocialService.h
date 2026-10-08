@@ -23,6 +23,9 @@ public:
         lila::modules::audio::application::IAudioService& audioService);
 
     [[nodiscard]] std::vector<domain::SocialUser> LoadFriends() const;
+    [[nodiscard]] domain::SocialFriendsSnapshot LoadFriendsSnapshot() const;
+    [[nodiscard]] domain::SocialRequestsSnapshot LoadIncomingSnapshot() const;
+    [[nodiscard]] domain::SocialRequestsSnapshot LoadOutgoingSnapshot() const;
     [[nodiscard]] std::vector<domain::SocialFriendRequest> LoadIncomingRequests() const;
     [[nodiscard]] std::vector<domain::SocialFriendRequest> LoadOutgoingRequests() const;
     [[nodiscard]] std::vector<domain::SocialUser> LoadBlockedUsers() const;
@@ -45,9 +48,9 @@ private:
 
     ISocialGateway& api_;
     lila::modules::audio::application::IAudioService& audioService_;
-    mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialUser>> friendsCache_;
-    mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialFriendRequest>> incomingRequestsCache_;
-    mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialFriendRequest>> outgoingRequestsCache_;
+    mutable lila::shared::cache::SingleFlightCache<domain::SocialFriendsSnapshot> friendsCache_;
+    mutable lila::shared::cache::SingleFlightCache<domain::SocialRequestsSnapshot> incomingRequestsCache_;
+    mutable lila::shared::cache::SingleFlightCache<domain::SocialRequestsSnapshot> outgoingRequestsCache_;
     mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialUser>> blockedUsersCache_;
     mutable lila::shared::cache::SingleFlightCache<std::optional<domain::SocialProfile>> ownProfileCache_;
 };
