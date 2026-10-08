@@ -4,8 +4,12 @@
 #include <winhttp.h>
 
 #include <array>
+#include <algorithm>
+#include <charconv>
 #include <fstream>
+#include <optional>
 #include <stdexcept>
+#include <nlohmann/json.hpp>
 #include "modules/update/application/UpdateManifestDownload.h"
 #include "modules/update/infrastructure/launcher/UpdateLauncher.Internal.h"
 
@@ -57,14 +61,21 @@ ParsedUrl ParseUrl(const std::wstring& raw)
 }
 
 template <typename Consumer>
-void HttpGet(const std::string& url, std::uint64_t maximumBytes, Consumer&& consume)
+void HttpGet(const std::string& url, std::uint64_t maximumBytes, Consumer&& consume,
+    bool manifestRequest = false)
 {
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
     const auto parsed = ParseUrl(Widen(url));
     InternetHandle session{WinHttpOpen(L"LeMondeDeLilaUpdater/1.0",
         WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME,
         WINHTTP_NO_PROXY_BYPASS, 0)};
     if (!session.value) ThrowWinHttpError("Unable to open HTTP session");
-    WinHttpSetTimeouts(session.value, 10000, 10000, 15000, 30000);
+    // A small manifest must not delay startup like a large update package.
+    if (!WinHttpSetTimeouts(session.value,
+            manifestRequest ? 2000 : 10000, manifestRequest ? 2000 : 10000,
+            manifestRequest ? 2000 : 15000, manifestRequest ? 3000 : 30000)) {
+        ThrowWinHttpError("Unable to configure update timeouts");
+    }
     InternetHandle connection{WinHttpConnect(session.value, parsed.host.c_str(), parsed.port, 0)};
     if (!connection.value) ThrowWinHttpError("Unable to connect to update server");
     InternetHandle request{WinHttpOpenRequest(connection.value, L"GET", parsed.path.c_str(),
@@ -85,19 +96,46 @@ void HttpGet(const std::string& url, std::uint64_t maximumBytes, Consumer&& cons
         throw std::runtime_error(
             "Update server returned HTTP status " + std::to_string(status) + ".");
     }
-    DWORD contentLength = 0;
-    size = sizeof(contentLength);
+    std::optional<std::uint64_t> contentLength;
+    std::array<wchar_t, 32> lengthHeader{};
+    size = sizeof(lengthHeader);
     if (WinHttpQueryHeaders(request.value,
-            WINHTTP_QUERY_CONTENT_LENGTH | WINHTTP_QUERY_FLAG_NUMBER,
-            WINHTTP_HEADER_NAME_BY_INDEX, &contentLength, &size,
-            WINHTTP_NO_HEADER_INDEX) && contentLength > maximumBytes) {
-        throw std::runtime_error("Update response exceeds its declared limit.");
+            WINHTTP_QUERY_CONTENT_LENGTH,
+            WINHTTP_HEADER_NAME_BY_INDEX, lengthHeader.data(), &size,
+            WINHTTP_NO_HEADER_INDEX)) {
+        const auto text = Narrow(lengthHeader.data());
+        std::uint64_t length = 0;
+        const auto parsedLength = std::from_chars(text.data(), text.data() + text.size(), length);
+        if (parsedLength.ec != std::errc{} || parsedLength.ptr != text.data() + text.size())
+            throw std::runtime_error("Invalid update response Content-Length.");
+        contentLength = length;
+        if (length > maximumBytes)
+            throw std::runtime_error("Update response exceeds its declared limit.");
+    } else if (GetLastError() != ERROR_WINHTTP_HEADER_NOT_FOUND) {
+        ThrowWinHttpError("Unable to read update response length");
     }
     std::array<char, 64 * 1024> buffer{};
     std::uint64_t total = 0;
     while (true) {
+        DWORD bytesToRead = static_cast<DWORD>(buffer.size());
+        if (manifestRequest) {
+            const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(
+                deadline - std::chrono::steady_clock::now()).count();
+            if (remaining <= 0)
+                throw std::runtime_error("Update manifest download exceeded its time limit.");
+            // Bound the whole body transfer, including a server sending a slow trickle.
+            if (!WinHttpSetTimeouts(request.value, 2000, 2000, 2000,
+                    static_cast<int>(std::min<std::int64_t>(remaining, 3000))))
+                ThrowWinHttpError("Unable to configure update read timeout");
+            // ReadData otherwise waits to fill the buffer, which a trickling
+            // response can keep open indefinitely despite an idle timeout.
+            DWORD available = 0;
+            if (!WinHttpQueryDataAvailable(request.value, &available))
+                ThrowWinHttpError("Update download was interrupted");
+            bytesToRead = available == 0 ? 1 : std::min(available, bytesToRead);
+        }
         DWORD read = 0;
-        if (!WinHttpReadData(request.value, buffer.data(), static_cast<DWORD>(buffer.size()), &read)) {
+        if (!WinHttpReadData(request.value, buffer.data(), bytesToRead, &read)) {
             ThrowWinHttpError("Update download was interrupted");
         }
         if (read == 0) break;
@@ -107,6 +145,8 @@ void HttpGet(const std::string& url, std::uint64_t maximumBytes, Consumer&& cons
         }
         consume(buffer.data(), read);
     }
+    if (contentLength && total != *contentLength)
+        throw std::runtime_error("Update response was truncated (Content-Length mismatch).");
 }
 
 std::string DownloadText(const std::string& url)
@@ -116,7 +156,12 @@ std::string DownloadText(const std::string& url)
             std::string result;
             HttpGet(url, 1024 * 1024, [&result](const char* data, DWORD size) {
                 result.append(data, size);
-            });
+            }, true);
+            // An interrupted response can also omit Content-Length entirely.
+            // Validate syntax inside the retry boundary; signature checks stay in ParseManifest.
+            if (result.find_first_not_of(" \t\r\n") != std::string::npos &&
+                !nlohmann::json::accept(result))
+                throw std::runtime_error("Update server returned an invalid JSON manifest.");
             return result;
         },
         [](std::chrono::milliseconds delay) { static_cast<void>(WaitForRetry(delay)); });

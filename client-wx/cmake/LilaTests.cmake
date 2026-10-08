@@ -189,6 +189,24 @@ lila_add_test_executable(lemonde_de_lila_wx_update_retry_policy_tests
     tests/UpdateRetryPolicyTests.cpp
 )
 
+if(WIN32)
+    add_executable(lemonde_de_lila_wx_update_network_probe
+        tests/UpdateNetworkProbe.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Download.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Platform.cpp
+        src/modules/update/infrastructure/launcher/UpdateLauncher.Progress.cpp
+    )
+    target_include_directories(lemonde_de_lila_wx_update_network_probe PRIVATE src)
+    target_link_libraries(lemonde_de_lila_wx_update_network_probe PRIVATE
+        nlohmann_json::nlohmann_json winhttp ole32 uuid shell32)
+    lila_configure_cpp_target(lemonde_de_lila_wx_update_network_probe)
+    add_test(NAME lemonde_de_lila_wx_update_network_tests
+        COMMAND "${LILA_CLIENT_ARCHITECTURE_NODE_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/UpdateNetworkTests.mjs"
+            "$<TARGET_FILE:lemonde_de_lila_wx_update_network_probe>")
+    set_tests_properties(lemonde_de_lila_wx_update_network_tests PROPERTIES TIMEOUT 90)
+endif()
+
 lila_add_test_executable(lemonde_de_lila_wx_update_recovery_tests
     tests/UpdateRecoveryTests.cpp
     src/modules/update/domain/UpdateInstallationState.cpp
