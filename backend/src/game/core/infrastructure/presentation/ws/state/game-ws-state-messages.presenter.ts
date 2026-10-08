@@ -234,10 +234,10 @@ export class GameWsStateMessagesPresenter {
     if (messageKey === 'game.dice.rolled' && namedPlayer) {
       const total = params.total;
       if (total == null) return '';
-      const value = frenchNumber(total);
+      const value = String(total);
       return namedPlayer === 'Vous'
-        ? `Vous lancez le dé et faites un ${value}.`
-        : `${namedPlayer} lance le dé et fait un ${value}.`;
+        ? `Vous lancez le dé et faites ${value}.`
+        : `${namedPlayer} lance le dé et fait ${value}.`;
     }
     if (messageKey === 'game.pawn.bonus-advance' && namedPlayer)
       return this.pawnBonusMessage(namedPlayer, params);
@@ -397,11 +397,6 @@ function scoreUnit(
     plural: 'points',
   };
   return Math.abs(value) === 1 ? unit.singular : unit.plural;
-}
-
-function frenchNumber(value: number): string {
-  const values = ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six'];
-  return values[value] ?? String(value);
 }
 
 function turnAnnouncement(name: string): string {

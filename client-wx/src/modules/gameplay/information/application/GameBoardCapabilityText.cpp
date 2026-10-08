@@ -16,6 +16,11 @@ std::string Player(const domain::GameState& state, int id)
     return "Joueur " + std::to_string(id);
 }
 
+int DisplayedBoardPosition(int position)
+{
+    return std::max(1, position);
+}
+
 void AppendPosition(
     std::ostringstream& out,
     const domain::GameState& state,
@@ -29,7 +34,7 @@ void AppendPosition(
         out << Player(state, *playerId);
     else
         out << entity;
-    out << " : case " << position << ".\n";
+    out << " : case " << DisplayedBoardPosition(position) << ".\n";
 }
 }
 
@@ -111,7 +116,9 @@ std::optional<std::string> BuildBoardCapabilityText(
             const auto found = track.positions.find(entity);
             if (includeTrack) out << "Piste " << track.id << " — ";
             out << "Votre position : case "
-                << (found == track.positions.end() ? 0 : found->second) << ".\n";
+                << DisplayedBoardPosition(
+                    found == track.positions.end() ? 0 : found->second)
+                << ".\n";
         }
         return out.str().empty() ? "Votre position est indisponible." : out.str();
     }
@@ -145,7 +152,7 @@ std::optional<std::string> BuildBoardCapabilityText(
                     out << "- " << Player(state, *playerId);
                 else
                     out << "- " << entity;
-                out << " : case " << position;
+                out << " : case " << DisplayedBoardPosition(position);
                 if (track.spaces > 1)
                     out << ", progression " << (100 * position / (track.spaces - 1)) << " %";
                 out << '\n';

@@ -265,8 +265,20 @@ function drawCard(
     deckId: program.deckId,
     playerId,
     eventData: (card) => announcement(card),
-    resolve: (card) => ctx.effects.schedule(...card.effects),
+    resolve: (card) => ctx.effects.schedule(...endOfTurnCardEffects(card)),
   });
+}
+
+function endOfTurnCardEffects(card: Card): readonly GameEffectInstruction[] {
+  // The draw action ends immediately after resolution, so its final tick must
+  // not consume one of the future turns promised by the card text.
+  return card.effects.map((effect) =>
+    effect.kind === 'add-status' &&
+    effect.scope === 'turn' &&
+    effect.turns != null
+      ? { ...effect, turns: effect.turns + 1 }
+      : effect,
+  );
 }
 
 function announcement(card: Card): Record<string, unknown> {
@@ -394,5 +406,5 @@ function boutique(
     playerId,
     cardId: selected.id,
   });
-  ctx.effects.schedule(...selected.effects);
+  ctx.effects.schedule(...endOfTurnCardEffects(selected));
 }

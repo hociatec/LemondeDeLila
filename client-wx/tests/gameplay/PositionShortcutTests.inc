@@ -56,15 +56,15 @@ void TestBoardPositionShortcuts()
     const auto initialState =
         lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(payload);
     Expect(GameCapabilityTextBuilder::Build(initialState, "position") ==
-            "Votre position : case 0.\n",
-        "p doit annoncer la case 0 avant le premier déplacement.");
+            "Votre position : case 1.\n",
+        "p doit annoncer la case 1 avant le premier déplacement.");
     const auto initialPositions = GameCapabilityTextBuilder::Build(initialState, "positions");
     const auto tiedRanking = GameCapabilityTextBuilder::Build(initialState, "race-ranking");
     Expect(tiedRanking.find("Rang 1 — Lila") != std::string::npos &&
             tiedRanking.find("Rang 1 — Mina") != std::string::npos &&
             tiedRanking.find("Rang 2") == std::string::npos,
         "Les joueurs à égalité doivent partager le même rang.");
-    Expect(initialPositions.find("Lila : case 0.") != std::string::npos &&
-            initialPositions.find("Mina : case 0.") != std::string::npos,
-        "Maj+P doit annoncer tous les joueurs en case 0 au départ.");
+    Expect(initialPositions.find("Lila : case 1.") != std::string::npos &&
+            initialPositions.find("Mina : case 1.") != std::string::npos,
+        "Maj+P doit annoncer tous les joueurs en case 1 au départ.");
 }

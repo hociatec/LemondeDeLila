@@ -24,12 +24,12 @@ it('plays a complete deterministic chained tile race', async () => {
   );
   expect(result.error).toBeUndefined();
   expect(result.status).toBe('finished');
-  expect(result.commands).toBe(40);
+  expect(result.commands).toBe(66);
   const trace = result.events
     .filter((event) => event.type !== 'engine.state.committed')
     .map(({ type, data, visibility }) => ({ type, data, visibility }));
-  expect(trace).toHaveLength(366);
+  expect(trace).toHaveLength(545);
   expect(createHash('sha256').update(JSON.stringify(trace)).digest('hex')).toBe(
-    '4f4cafe26221a2267e12d7fba14cf01212e0cb2621746b6965416a1455980eff',
+    '1a3e0cb3258c7dfb910bc3f4dd70db7f9658a12c1f1b3256c4f813411765fd3e',
   );
 });

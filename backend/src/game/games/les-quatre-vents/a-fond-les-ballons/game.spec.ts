@@ -209,6 +209,75 @@ describe('À fond les ballons declarative game', () => {
     ]);
   });
 
+  it('applies invisibility against traps for the next two turns', async () => {
+    const game = await testGame(gameDefinition)
+      .players(['Lila', 'Mina'])
+      .seed(83)
+      .start();
+    await game.choose(1, 'capitaine-cacahuete');
+    await game.choose(2, 'professeur-gribouille');
+
+    const state: any = structuredClone(game.state());
+    const actorId = state.turn.currentPlayerId;
+    state.engine.playerValues.statuses[String(actorId)] = [
+      {
+        id: 'race-chained-tile-cards.awaiting-card',
+        remaining: null,
+        scope: 'match',
+        data: {},
+      },
+    ];
+    const deck = state.engine.kits.cards.decks.loufoque;
+    state.engine.kits.cards.decks.loufoque = [
+      36,
+      ...deck.filter((id: number) => id !== 36),
+    ];
+
+    const runtime = new DeclarativeGameRuntime(gameDefinition);
+    let protectedState: any = runtime.applyActions(state, [
+      { type: 'draw_card', payload: {}, meta: { actorId } },
+    ]);
+    expect(
+      protectedState.engine.playerValues.statuses[String(actorId)],
+    ).toContainEqual(
+      expect.objectContaining({
+        id: 'race-chained-tile-cards.trap-immunity',
+        remaining: 2,
+      }),
+    );
+
+    for (const trapPosition of [11, 22]) {
+      protectedState.turn.currentPlayerId = actorId;
+      const probe: any = runtime.applyActions(structuredClone(protectedState), [
+        { type: 'roll', payload: {}, meta: { actorId } },
+      ]);
+      const roll = probe.engine.kits.dice.rolls.main.total;
+      protectedState.engine.kits.movement.positions.balloons[String(actorId)] =
+        trapPosition - roll;
+      protectedState = runtime.applyActions(protectedState, [
+        { type: 'roll', payload: {}, meta: { actorId } },
+      ]);
+
+      expect(
+        protectedState.engine.kits.movement.positions.balloons[String(actorId)],
+      ).toBe(trapPosition);
+      expect(
+        protectedState.log.some(
+          (entry: { key?: string }) =>
+            entry.key === 'race-chained-tile-cards.trap.ignored',
+        ),
+      ).toBe(true);
+    }
+
+    expect(
+      protectedState.engine.playerValues.statuses[String(actorId)] ?? [],
+    ).not.toContainEqual(
+      expect.objectContaining({
+        id: 'race-chained-tile-cards.trap-immunity',
+      }),
+    );
+  });
+
   it('continues a legacy snapshot waiting for a card draw', async () => {
     const game = testGame(gameDefinition).players(['Lila', 'Mina']).seed(83);
     await game.start();
