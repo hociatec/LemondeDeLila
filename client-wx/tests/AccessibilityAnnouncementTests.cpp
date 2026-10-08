@@ -116,6 +116,18 @@ int main(int argc, char** argv)
         menu->SetAccessibleName("Friends");
         auto* list = wxDynamicCast(menu->GetSelectedControl(), wxListBox);
         Check(list != nullptr && menu->GetName().empty() && list->GetName() == "Friends");
+        menu->SetSelectedIndexSilently(1);
+        for (const auto eventType : {wxEVT_CHAR_HOOK, wxEVT_KEY_DOWN})
+            for (const int key : {WXK_LEFT, WXK_RIGHT, WXK_NUMPAD_LEFT, WXK_NUMPAD_RIGHT})
+            {
+                wxKeyEvent arrow(eventType);
+                arrow.m_keyCode = key;
+                arrow.Skip();
+                list->GetEventHandler()->ProcessEvent(arrow);
+                Check(!arrow.GetSkipped()); // Must not reach native horizontal navigation.
+                Check(menu->GetSelectedIndex() == 1 && list->GetSelection() == 1);
+            }
+        menu->SetSelectedIndexSilently(0);
 #if wxUSE_ACCESSIBILITY
         auto* accessible = list->GetAccessible();
         wxString name, value;

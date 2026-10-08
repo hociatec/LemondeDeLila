@@ -139,6 +139,13 @@ void VerticalMenu::OnListKeyDown(wxKeyEvent& event)
 
     switch (key)
     {
+    case WXK_LEFT:
+    case WXK_RIGHT:
+    case WXK_NUMPAD_LEFT:
+    case WXK_NUMPAD_RIGHT:
+        // A native list also moves selection horizontally unless consumed here.
+        event.Skip(false);
+        return;
     case WXK_UP:
     case WXK_NUMPAD_UP:
         if (itemCount_ > 0 && selectedIndex_ > 0)
