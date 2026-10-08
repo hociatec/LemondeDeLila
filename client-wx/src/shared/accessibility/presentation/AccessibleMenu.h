@@ -2,6 +2,8 @@
 
 #include <cstddef>
 #include <functional>
+#include <memory>
+#include <unordered_map>
 
 #include <wx/access.h>
 #include <wx/listbox.h>
@@ -46,6 +48,8 @@ private:
     wxWeakRef<wxListBox> list_;
     AccessibleListActivatedHandler onActivated_;
     RoleMode roleMode_;
+    // Stable MSAA objects let readers identify repeated events for the same row.
+    std::unordered_map<int, std::unique_ptr<wxAccessible>> children_;
 };
 #endif
 

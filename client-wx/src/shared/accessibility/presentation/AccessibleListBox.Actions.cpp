@@ -1,5 +1,6 @@
 #include "shared/accessibility/presentation/AccessibleMenu.h"
 #include "shared/accessibility/presentation/NavigationController.h"
+#include "shared/accessibility/presentation/AccessibleListEvents.h"
 
 #include <utility>
 #ifdef __WXMSW__
@@ -25,9 +26,16 @@ wxAccStatus AccessibleListBox::GetFocus(int* childId, wxAccessible** child)
     }
 
     const int focused = FocusedItem();
-    *childId = focused == wxNOT_FOUND ? wxACC_SELF : focused + 1;
-    if (focused == wxNOT_FOUND) *child = this;
-    return wxACC_OK;
+    *childId = wxACC_SELF;
+    if (focused == wxNOT_FOUND)
+    {
+        *child = this;
+        return wxACC_OK;
+    }
+    // Return the actual accessible object, not a simple child ID. Otherwise
+    // NVDA redirects the container's native focus event to the row and then
+    // announces the row again when its own native focus event arrives.
+    return GetChild(focused + 1, child);
 }
 
 int AccessibleListBox::FocusedItem() const
@@ -142,6 +150,9 @@ void ConfigureListBoxAsAccessibleMenu(
     list.SetName(accessibleName);
 #if wxUSE_ACCESSIBILITY
     list.SetAccessible(new AccessibleListBox(list, std::move(onActivated), AccessibleListBox::RoleMode::Menu));
+#ifdef __WXMSW__
+    AccessibleListEvents::Install(list);
+#endif
 #else
     static_cast<void>(onActivated);
 #endif
@@ -155,6 +166,9 @@ void ConfigureListBoxAsAccessibleList(
     list.SetName(accessibleName);
 #if wxUSE_ACCESSIBILITY
     list.SetAccessible(new AccessibleListBox(list, std::move(onActivated), AccessibleListBox::RoleMode::List));
+#ifdef __WXMSW__
+    AccessibleListEvents::Install(list);
+#endif
 #else
     static_cast<void>(onActivated);
 #endif
