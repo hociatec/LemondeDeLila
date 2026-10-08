@@ -93,41 +93,7 @@ void HostFrame::OnCharHook(wxKeyEvent& event)
 void HostFrame::ClearActivationFocusContext()
 {
 #ifdef __WXMSW__
-    initialFocusSpeech_.clear();
     activationFocusContext_.Clear();
-#endif
-}
-
-void HostFrame::BeginInitialFocusAnnouncement()
-{
-#ifdef __WXMSW__
-    initialFocusTitle_ = GetTitle();
-    if (!initialFocusTitle_.empty()) SetTitle(wxString());
-#endif
-}
-void HostFrame::CompleteInitialFocusAnnouncement()
-{
-#ifdef __WXMSW__
-    if (initialFocusTitle_.empty()) return;
-    const wxString title = std::exchange(initialFocusTitle_, wxString());
-    const wxWeakRef<HostFrame> weakFrame(this);
-    CallAfter([weakFrame, title]()
-    {
-        auto* frame = weakFrame.get();
-        if (frame == nullptr) return;
-        if (frame->GetTitle().empty()) frame->SetTitle(title);
-        frame->CallAfter([weakFrame]()
-        {
-            auto* resolved = weakFrame.get();
-            if (resolved == nullptr || resolved->initialFocusSpeech_.empty() ||
-                resolved->screenReader_ == nullptr)
-                return;
-            const wxString announcement =
-                std::exchange(resolved->initialFocusSpeech_, wxString());
-            if (resolved->screenReader_->Speak(announcement.ToStdWstring()))
-                resolved->activationFocusContext_.Clear();
-        });
-    });
 #endif
 }
 
@@ -136,8 +102,6 @@ void HostFrame::PrepareActivationFocusContext(wxWindow* target)
 #ifdef __WXMSW__
     activationFocusContext_.Prepare(
         target, initialFocusTitle_.empty() ? GetTitle() : initialFocusTitle_);
-    if (!initialFocusTitle_.empty())
-        initialFocusSpeech_ = activationFocusContext_.Announcement();
 #else
     static_cast<void>(target);
 #endif

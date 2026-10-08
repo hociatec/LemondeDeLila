@@ -129,8 +129,20 @@ void AppNavigator::PrepareInitialViewAnnouncement()
 
 void AppNavigator::FocusInitialView()
 {
-    ApplyViewFocus(currentView_, true);
-    if (hostFrame_ != nullptr) hostFrame_->CompleteInitialFocusAnnouncement();
+    if (hostFrame_ == nullptr)
+    {
+        ApplyViewFocus(currentView_);
+        return;
+    }
+
+    const std::weak_ptr<int> weakLifetime = lifetimeToken_;
+    const wxWeakRef<wxWindow> weakView(currentView_);
+    hostFrame_->CompleteInitialFocusAnnouncement(
+        [this, weakLifetime, weakView]()
+        {
+            if (weakLifetime.expired()) return;
+            ApplyViewFocus(weakView.get());
+        });
 }
 
 void AppNavigator::FocusCurrentView()
