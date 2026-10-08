@@ -12,11 +12,11 @@ AppBootstrap::AppBootstrap() = default;
 
 AppBootstrap::~AppBootstrap() = default;
 
-void AppBootstrap::FocusCurrentView(bool includeWindowContext) const
+void AppBootstrap::FocusCurrentView() const
 {
     if (runtime_ != nullptr)
     {
-        runtime_->FocusCurrentView(includeWindowContext);
+        runtime_->FocusCurrentView();
     }
 }
 

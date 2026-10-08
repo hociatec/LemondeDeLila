@@ -31,11 +31,11 @@ bool AppRuntime::StartNavigator() const
     return navigator_ != nullptr && navigator_->Start();
 }
 
-void AppRuntime::FocusCurrentView(bool includeWindowContext) const
+void AppRuntime::FocusCurrentView() const
 {
     if (navigator_ != nullptr)
     {
-        navigator_->FocusCurrentView(includeWindowContext);
+        navigator_->FocusCurrentView();
     }
 }
 
