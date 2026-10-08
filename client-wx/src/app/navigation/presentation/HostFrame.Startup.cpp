@@ -2,8 +2,6 @@
 
 #ifdef __WXMSW__
 
-#include <utility>
-
 namespace lila::app::navigation
 {
 void HostFrame::BeginInitialFocusAnnouncement()
@@ -19,10 +17,9 @@ void HostFrame::CompleteInitialFocusAnnouncement(InitialFocusHandler focusWhenFi
         return;
     }
 
-    const wxString title = std::exchange(initialFocusTitle_, wxString());
-    // Restore the real window title before speech starts so it remains exposed
-    // to Windows, Alt+Tab and screen-reader window navigation at all times.
-    SetTitle(title);
+    // The real title was never hidden. Reapplying it after activation emits
+    // another native title-change event while NVDA is already announcing it.
+    initialFocusTitle_.clear();
     // Let the native focus announcement carry both title and item. A separate
     // controller utterance races with NVDA's processing of the focus event.
     // Keep this context until interaction, a focus change or deactivation:

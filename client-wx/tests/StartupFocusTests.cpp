@@ -2,6 +2,7 @@
 #include <wx/app.h>
 #include <wx/listbox.h>
 #include <wx/log.h>
+#include <windows.h>
 #include "app/navigation/presentation/HostFrame.h"
 #include "shared/accessibility/application/IScreenReaderAnnouncer.h"
 
@@ -10,6 +11,13 @@ namespace
 bool focused = false;
 int synchronousCalls = 0;
 int announcements = 0;
+int titleChanges = 0;
+WNDPROC originalFrameProc = nullptr;
+LRESULT CALLBACK ObserveFrameTitle(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (message == WM_SETTEXT) ++titleChanges;
+    return CallWindowProc(originalFrameProc, window, message, wParam, lParam);
+}
 class UnavailableReader final : public lila::shared::accessibility::IScreenReaderAnnouncer
 {
 public:
@@ -46,6 +54,9 @@ int main(int argc, char** argv)
     assert(wxEntryStart(argc, argv));
     assert(wxTheApp->CallOnInit());
     auto* frame = new lila::app::navigation::HostFrame();
+    const auto nativeFrame = reinterpret_cast<HWND>(frame->GetHandle());
+    originalFrameProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
+        nativeFrame, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&ObserveFrameTitle)));
     auto* menu = new wxListBox(frame->ContentParent(), wxID_ANY);
     menu->Append("First item");
     menu->Append("Second item");
@@ -63,6 +74,7 @@ int main(int argc, char** argv)
         focused = menu->HasFocus();
     });
     assert(focused); // No background executor or speech completion is needed.
+    assert(titleChanges == 0); // Showing/focusing must not re-emit the existing title.
     assert(synchronousCalls == 0);
     // Delayed accessibility reads must still include the complete title.
     for (int turn = 0; turn < 10; ++turn)
@@ -95,6 +107,7 @@ int main(int argc, char** argv)
     assert(lila::shared::accessibility::ActivationFocusContext::AccessibleNameFor(
         *menu, "Second item") == "Second item");
     assert(announcements == 0 && synchronousCalls == 0);
+    SetWindowLongPtr(nativeFrame, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(originalFrameProc));
     frame->Destroy();
     wxTheApp->ProcessPendingEvents();
     wxTheApp->OnExit();
