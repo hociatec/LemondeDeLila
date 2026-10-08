@@ -95,6 +95,8 @@ int main(int argc, char** argv)
     Check(text->GetHelpText().empty());
     AccessibilityUtils::SetAccessibleName(*text, "Label", "Useful instructions");
     Check(text->GetHelpText() == "Useful instructions");
+    frame->Show();
+    wxYield();
 
     const std::vector<VerticalMenuItem> items{
         {"first", "Alice"}, {"second", "Bob"}, {"third", "Charlie"}};
@@ -114,7 +116,7 @@ int main(int argc, char** argv)
         startupContext.Prepare(list, "Le Monde de Lila - Hacene");
         Check(startupContext.Announcement().StartsWith("Le Monde de Lila - Hacene"));
         Check(accessible->GetName(1, &name) == wxACC_OK &&
-            name == "Le Monde de Lila - Hacene — Alice");
+            name == wxString(L"Le Monde de Lila - Hacene — Alice"));
         startupContext.Clear();
         Check(accessible->GetName(1, &name) == wxACC_OK && name == "Alice");
 #endif
@@ -147,6 +149,23 @@ int main(int argc, char** argv)
         menu->SetItemsForNavigation(updated, 2, true);
         Check(list->GetSelection() == 2);
         Check(selections.empty());
+        // Updating both labels while navigating must announce only the destination.
+        updated[2].label = "Charlie (busy)";
+        updated[0].label = "Alice (away)";
+        menu->SetItemsForNavigation(updated, 0, true);
+        Check(list->GetSelection() == 0 && selections == std::vector<int>{0});
+        Check(list->GetString(2) == "Charlie (busy)");
+        selections.clear();
+        // The destination may not exist until the list has been extended.
+        updated[0].label = "Alice (available)";
+        updated.push_back({"fourth", "Diane"});
+        menu->SetItemsForNavigation(updated, 3, true);
+        Check(list->GetSelection() == 3 && selections == std::vector<int>{3});
+        Check(list->GetString(0) == "Alice (available)");
+        selections.clear();
+        updated.resize(2);
+        menu->SetItemsForNavigation(updated, 1, true);
+        Check(list->GetSelection() == 1 && selections == std::vector<int>{1});
         SetWindowLongPtr(reinterpret_cast<HWND>(list->GetHandle()), GWLP_WNDPROC,
             reinterpret_cast<LONG_PTR>(originalListProc));
 #endif
