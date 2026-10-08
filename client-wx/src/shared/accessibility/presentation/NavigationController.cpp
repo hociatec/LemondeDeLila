@@ -110,9 +110,26 @@ bool NavigationController::Focus(wxWindow* window)
     {
         return false;
     }
-    if (wxWindow::FindFocus() != window)
+
+    auto ownsFocus = [window]()
     {
-        window->SetFocus();
+        auto* focused = wxWindow::FindFocus();
+        return focused == window || IsDescendantOf(focused, window);
+    };
+    if (ownsFocus())
+    {
+        return true;
+    }
+
+    window->SetFocus();
+    // SetFocus() has no return value. In particular while a top-level window
+    // is still being activated, Windows can reject it even though wxWidgets
+    // already reports the control as visible and enabled. Report the actual
+    // result so FocusTransition can keep its deferred retry instead of leaving
+    // the application without a keyboard or screen-reader focus target.
+    if (!ownsFocus())
+    {
+        return false;
     }
     return true;
 }

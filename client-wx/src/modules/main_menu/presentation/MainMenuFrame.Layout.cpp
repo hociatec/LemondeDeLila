@@ -50,6 +50,7 @@ void MainMenuFrame::BuildLayout()
         navigationPanel,
         std::span<const lila::shared::ui::controls::VerticalMenuItem>(menuItems.data(), menuItems.size()),
         lila::shared::ui::controls::VerticalMenuRole::Entries);
+    menu_->SetAccessibleName(wxString(L"Menu principal"));
     menu_->SetMinSize(wxSize(320, -1));
     navigationSizer->Add(menu_, 1, wxEXPAND);
     navigationSizer->AddStretchSpacer();
