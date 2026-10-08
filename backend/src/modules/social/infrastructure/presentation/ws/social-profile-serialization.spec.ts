@@ -76,9 +76,12 @@ it('serializes stored dates for profile reads, edits and session preloading', as
     const frames = [
       read,
       await handler.updateProfile(session, { bio: 'Bonjour' }),
-      await handler.listFriends(session),
+      await handler.listFriends(session, { includeBlocked: true }),
       await handler.listBlocked(session),
-      await handler.listRequests(session, { direction: 'incoming' }),
+      await handler.listRequests(session, {
+        direction: 'incoming',
+        includeBlocked: true,
+      }),
     ];
     for (const frame of frames) {
       expect(() => stringifyExternalJson(frame)).not.toThrow();

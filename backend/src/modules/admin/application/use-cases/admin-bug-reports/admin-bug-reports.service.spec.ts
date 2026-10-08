@@ -43,6 +43,7 @@ describe('AdminBugReportsService', () => {
     const service = new AdminBugReportsService(deps as any);
 
     const result = await service.list({
+      countsOnly: false,
       search: '  audio  ',
       status: 'pending',
     });

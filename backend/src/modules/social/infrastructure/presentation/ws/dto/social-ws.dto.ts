@@ -1,4 +1,6 @@
 import {
+  Equals,
+  IsDefined,
   IsBoolean,
   IsIn,
   IsInt,
@@ -18,9 +20,10 @@ export class SocialUserIdDto {
 }
 
 export class SocialListDto {
-  @IsOptional()
+  @IsDefined()
   @IsBoolean()
-  includeBlocked?: boolean;
+  @Equals(true)
+  includeBlocked!: true;
 }
 
 export class SocialRequestListDto extends SocialListDto {
