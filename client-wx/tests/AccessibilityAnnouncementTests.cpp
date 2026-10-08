@@ -114,18 +114,27 @@ int main(int argc, char** argv)
         Check(accessible->GetValue(wxACC_SELF, &value) == wxACC_OK && value.empty());
         ActivationFocusContext startupContext;
         startupContext.Prepare(list, "Le Monde de Lila - Hacene");
-        Check(startupContext.Announcement().StartsWith("Le Monde de Lila - Hacene"));
+        const bool popup = role == VerticalMenuRole::Menu;
+        Check(popup ? startupContext.Announcement().StartsWith("Le Monde de Lila - Hacene") : startupContext.Announcement().empty());
+        const wxString expectedName = popup ? wxString(L"Le Monde de Lila - Hacene — Alice") : wxString("Alice");
+        wxAccRole exposedRole;
+        Check(accessible->GetRole(wxACC_SELF, &exposedRole) == wxACC_OK);
+        Check(exposedRole == (popup ? wxROLE_SYSTEM_MENUPOPUP : wxROLE_SYSTEM_LIST));
+        Check(accessible->GetRole(1, &exposedRole) == wxACC_OK);
+        Check(exposedRole == (popup ? wxROLE_SYSTEM_MENUITEM : wxROLE_SYSTEM_LISTITEM));
+        wxString defaultAction;
+        Check(accessible->GetDefaultAction(1, &defaultAction) == wxACC_OK && defaultAction == "Ouvrir");
         Check(accessible->GetName(1, &name) == wxACC_OK &&
-            name == wxString(L"Le Monde de Lila - Hacene — Alice"));
+            name == expectedName);
         const auto originalAnnouncement = startupContext.Announcement();
         startupContext.Prepare(list, "Le Monde de Lila - Hacene");
         Check(startupContext.Announcement() == originalAnnouncement);
         Check(accessible->GetName(1, &name) == wxACC_OK &&
-            name == wxString(L"Le Monde de Lila - Hacene — Alice"));
+            name == expectedName);
         startupContext.ClearIfFocusChanged(list);
         wxYield();
         Check(accessible->GetName(1, &name) == wxACC_OK &&
-            name == wxString(L"Le Monde de Lila - Hacene — Alice"));
+            name == expectedName);
         startupContext.ClearIfFocusChanged(text);
         Check(accessible->GetName(1, &name) == wxACC_OK && name == "Alice");
 #endif

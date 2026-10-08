@@ -57,9 +57,9 @@ void VerticalMenu::BuildLayout(std::span<const VerticalMenuItem> items)
             onActivated);
         break;
     case VerticalMenuRole::Entries:
-        // Entries used to be individually painted custom controls. Keep the
-        // semantic menu role but use the native Windows list everywhere.
-        lila::shared::accessibility::ConfigureListBoxAsAccessibleMenu(
+        // Persistent navigation is a list of actions, not an opened popup.
+        // NVDA cancels ancestor speech when entering a POPUPMENU, cutting the title.
+        lila::shared::accessibility::ConfigureListBoxAsAccessibleList(
             *listBox_,
             wxEmptyString,
             onActivated);

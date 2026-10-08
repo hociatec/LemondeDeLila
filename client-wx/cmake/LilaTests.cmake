@@ -21,6 +21,8 @@ add_test(
 if(WIN32)
     lila_add_test_executable(lemonde_de_lila_wx_startup_focus_tests
         tests/StartupFocusTests.cpp
+        src/shared/accessibility/presentation/AccessibleListBox.cpp
+        src/shared/accessibility/presentation/AccessibleListBox.Actions.cpp
         src/app/navigation/presentation/HostFrame.cpp
         src/app/navigation/presentation/HostFrame.Startup.cpp
         src/app/navigation/presentation/HostFrame.Activation.cpp
