@@ -99,9 +99,11 @@ void SocialFrame::SetBusyState(bool busy, const wxString& message, bool announce
         {
             loadingPlaceholder_ = controls.emptyControl;
             loadingPlaceholderText_ = loadingPlaceholder_->GetValue();
-            loadingPlaceholder_->ChangeValue(message);
+            // Its accessible name already identifies the section. Keep the
+            // value neutral until the result is known, without a spoken wait.
+            loadingPlaceholder_->ChangeValue(wxEmptyString);
         }
-        UpdateStatus(message, false, announce);
+        UpdateStatus(announce ? message : wxString{}, false, announce);
     }
 
     ApplyBusyState();
