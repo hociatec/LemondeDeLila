@@ -90,20 +90,8 @@ void VerticalMenu::ReplaceItems(
         return;
     }
 
-    const bool sameIds = items.size() == itemIds_.size() &&
-        std::equal(items.begin(), items.end(), itemIds_.begin(),
-            [](const VerticalMenuItem& item, const std::string& id) { return item.id == id; });
     const auto targetIndex = items.empty() ? 0 : std::min(selection.value_or(0), items.size() - 1);
-    if (sameIds && selectedIndex_ == targetIndex)
-    {
-        // A count or presence change on another row must not reset the focus.
-        for (std::size_t index = 0; index < items.size(); ++index)
-            if (listBox_->GetString(static_cast<unsigned int>(index)) != items[index].label)
-                listBox_->SetString(static_cast<unsigned int>(index), items[index].label);
-        if (!items.empty())
-            SetSelectedIndexSilently(targetIndex);
-        return;
-    }
+    const int previousSelection = listBox_->GetSelection();
 
     // A native list announces LB_SETCURSEL even before it owns keyboard focus.
     // When a visible empty menu is populated for the first time, that selection
@@ -121,8 +109,15 @@ void VerticalMenu::ReplaceItems(
     // Update labels in place and resize only at the tail instead.
     const auto retainedCount = std::min<std::size_t>(
         listBox_->GetCount(), items.size());
+    // SetString restores selection for the row it replaces. Defer the old
+    // selected label until the destination (including newly appended rows)
+    // exists and is selected, so Windows never announces the old selection.
+    const bool deferPreviousLabel = previousSelection != wxNOT_FOUND &&
+        static_cast<std::size_t>(previousSelection) < retainedCount &&
+        static_cast<std::size_t>(previousSelection) != targetIndex;
     for (std::size_t index = 0; index < retainedCount; ++index)
     {
+        if (deferPreviousLabel && index == static_cast<std::size_t>(previousSelection)) continue;
         if (listBox_->GetString(static_cast<unsigned int>(index)) != items[index].label)
             listBox_->SetString(static_cast<unsigned int>(index), items[index].label);
     }
@@ -144,6 +139,9 @@ void VerticalMenu::ReplaceItems(
         if (listBox_->GetSelection() != static_cast<int>(selectedIndex_))
             listBox_->SetSelection(static_cast<int>(selectedIndex_));
     }
+    if (deferPreviousLabel &&
+        listBox_->GetString(previousSelection) != items[previousSelection].label)
+        listBox_->SetString(previousSelection, items[previousSelection].label);
     if (prepareInitialSelectionHidden) listBox_->Show();
     UpdateVisualSelection();
 }
