@@ -23,6 +23,7 @@
 
 #ifdef __WXMSW__
 #include <windows.h>
+#include <oleacc.h>
 namespace
 {
 std::vector<int> selections;
@@ -270,7 +271,32 @@ int main(int argc, char** argv)
     int childId = 0;
     wxAccessible* child = nullptr;
     Check(multipleAccessible->GetFocus(&childId, &child) == wxACC_OK);
-    Check(childId == 2 && child == nullptr);
+    Check(childId == wxACC_SELF && child != nullptr);
+    wxAccessible* caretChild = nullptr;
+    Check(multipleAccessible->GetChild(2, &caretChild) == wxACC_OK && child == caretChild);
+    wxString caretName;
+    Check(child->GetName(wxACC_SELF, &caretName) == wxACC_OK && caretName == "Caret");
+    long containerState = 0;
+    Check(multipleAccessible->GetState(wxACC_SELF, &containerState) == wxACC_OK);
+    Check((containerState & wxACC_STATE_SYSTEM_FOCUSED) == 0);
+    // Exercise the COM interface used by readers, not only the wx adapter.
+    IAccessible* nativeAccessible = nullptr;
+    observedWindow = reinterpret_cast<HWND>(multiple->GetHandle());
+    Check(AccessibleObjectFromWindow(observedWindow, static_cast<DWORD>(OBJID_CLIENT), IID_IAccessible,
+        reinterpret_cast<void**>(&nativeAccessible)) == S_OK);
+    VARIANT focusValue;
+    VariantInit(&focusValue);
+    Check(nativeAccessible->get_accFocus(&focusValue) == S_OK);
+    Check(focusValue.vt == VT_DISPATCH && focusValue.pdispVal != nullptr);
+    IAccessible* nativeChild = nullptr;
+    Check(focusValue.pdispVal->QueryInterface(IID_IAccessible,
+        reinterpret_cast<void**>(&nativeChild)) == S_OK);
+    HWND childWindow = nullptr;
+    Check(WindowFromAccessibleObject(nativeChild, &childWindow) == S_OK);
+    Check(childWindow == observedWindow);
+    nativeChild->Release();
+    VariantClear(&focusValue);
+    nativeAccessible->Release();
     for (int row = 1; row <= 3; ++row)
     {
         long state = 0;
@@ -278,6 +304,29 @@ int main(int argc, char** argv)
         Check(((state & wxACC_STATE_SYSTEM_FOCUSED) != 0) == (row == 2));
     }
     delete multiple;
+    auto* changingList = new wxListBox(frame, wxID_ANY);
+    changingList->Append("Old page first item");
+    ConfigureListBoxAsAccessibleList(*changingList, "Changing page", {});
+    changingList->SetSelection(0);
+    changingList->SetFocus();
+    DrainEvents();
+    Check(changingList->HasFocus());
+    observedWindow = reinterpret_cast<HWND>(changingList->GetHandle());
+    const auto namesHook = SetWinEventHook(EVENT_OBJECT_NAMECHANGE, EVENT_OBJECT_NAMECHANGE,
+        nullptr, ObserveEvent, GetCurrentProcessId(), 0, WINEVENT_OUTOFCONTEXT);
+    Check(namesHook != nullptr);
+    events.clear();
+    changingList->SetString(0, "New page first item");
+    DrainEvents();
+    Check(events.size() == 1); // Same row, different content must still be spoken.
+    events.clear();
+    changingList->SetString(0, "New page first item");
+    DrainEvents();
+    Check(events.empty()); // Refreshing unchanged content must stay silent.
+    UnhookWinEvent(namesHook);
+    changingList->SetString(0, "Destroyed before the notification");
+    delete changingList;
+    DrainEvents();
 #endif
     auto* input = new wxTextCtrl(frame, wxID_ANY, wxString{}, wxDefaultPosition,
         wxDefaultSize, wxTE_PROCESS_ENTER);

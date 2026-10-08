@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "shared/accessibility/presentation/ActivationFocusContext.h"
+#include "shared/accessibility/presentation/AccessibleListItem.h"
 
 #if wxUSE_ACCESSIBILITY
 namespace lila::shared::accessibility
@@ -84,7 +85,9 @@ wxAccStatus AccessibleListBox::GetChild(int childId, wxAccessible** child)
     {
         return wxACC_INVALID_ARG;
     }
-    *child = nullptr;
+    auto& item = children_[childId];
+    if (!item) item = std::make_unique<AccessibleListItem>(*this, *List(), childId);
+    *child = item.get();
     return wxACC_OK;
 }
 
@@ -123,7 +126,9 @@ wxAccStatus AccessibleListBox::GetState(int childId, long* state)
         {
             *state |= wxACC_STATE_SYSTEM_INVISIBLE;
         }
-        if (list->HasFocus())
+        // The container owns accessible focus only when it has no focused row.
+        // Windows emits focus for both the native list and its selected row.
+        if (list->HasFocus() && FocusedItem() == wxNOT_FOUND)
         {
             *state |= wxACC_STATE_SYSTEM_FOCUSED;
         }

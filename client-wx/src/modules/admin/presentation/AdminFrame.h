@@ -138,7 +138,8 @@ private:
     std::vector<const domain::AdminCommand*> visibleCommands_;
     std::vector<nlohmann::json> contextActionPayloads_;
     std::vector<bool> contextActionDirect_;
-    std::array<std::size_t, 16> commandSelections_{};
+    std::vector<std::size_t> commandSelections_ =
+        std::vector<std::size_t>(domain::GetAdminAreas().size());
     std::size_t selectedSection_ = 0;
     bool showingCommands_ = false;
     bool loading_ = false;

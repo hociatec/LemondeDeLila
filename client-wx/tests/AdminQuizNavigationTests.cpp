@@ -120,6 +120,17 @@ struct AdminQuizNavigationTest
     {
         CheckNavigationRoles(frame);
         const auto& areas = domain::GetAdminAreas();
+        assert(frame.commandSelections_.size() == areas.size());
+        // Every area, including Maintenance, must have its own selection slot.
+        for (std::size_t index = 0; index < areas.size(); ++index)
+        {
+            frame.ShowCommands(index);
+            Wait(frame);
+            CheckNavigationRoles(frame);
+            assert(frame.selectedSection_ == index);
+            assert(frame.commandsMenu_->GetSelectedIndex() == 0);
+            frame.ShowSections();
+        }
         for (std::size_t index = 0; index < areas.size(); ++index)
             if (areas[index].id == "games") frame.ShowCommands(index);
         Wait(frame);
