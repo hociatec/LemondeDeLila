@@ -3,6 +3,8 @@
 
 #include <utility>
 
+#include <utility>
+
 #include <wx/event.h>
 #include <wx/panel.h>
 #include <wx/sizer.h>
@@ -143,10 +145,33 @@ void HostFrame::ClearActivationFocusContext()
 #endif
 }
 
+void HostFrame::BeginInitialFocusAnnouncement()
+{
+#ifdef __WXMSW__
+    initialFocusTitle_ = GetTitle();
+    if (!initialFocusTitle_.empty()) SetTitle(wxString());
+#endif
+}
+
+void HostFrame::CompleteInitialFocusAnnouncement()
+{
+#ifdef __WXMSW__
+    if (initialFocusTitle_.empty()) return;
+    const wxString title = std::exchange(initialFocusTitle_, wxString());
+    const wxWeakRef<HostFrame> weakFrame(this);
+    CallAfter([weakFrame, title]()
+    {
+        if (auto* frame = weakFrame.get(); frame != nullptr && frame->GetTitle().empty())
+            frame->SetTitle(title);
+    });
+#endif
+}
+
 void HostFrame::PrepareActivationFocusContext(wxWindow* target)
 {
 #ifdef __WXMSW__
-    activationFocusContext_.Prepare(target, GetTitle());
+    activationFocusContext_.Prepare(
+        target, initialFocusTitle_.empty() ? GetTitle() : initialFocusTitle_);
 #else
     static_cast<void>(target);
 #endif
