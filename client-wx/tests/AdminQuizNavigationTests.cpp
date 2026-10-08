@@ -143,6 +143,9 @@ struct AdminQuizNavigationTest
                 assert(frame.reportStatusMenu_->GetSelectedIndex() == 2);
                 assert(wxWindow::FindFocus() == otherControl);
                 assert(frame.resultItems_.empty());
+                frame.RefreshBugReports(true, false);
+                Wait(frame);
+                assert(gateway.lastPayload.at("countsOnly") == false);
             }
             CheckNavigationRoles(frame);
             assert(frame.selectedSection_ == index);

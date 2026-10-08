@@ -22,9 +22,7 @@ SocialApi::SocialApi(
 
 std::vector<domain::SocialUser> SocialApi::GetFriends() const
 {
-    const std::string event = std::string(lila::shared::network::ws::types::social::FriendsList);
-    const auto response = Send(event, nlohmann::json::object(), lila::shared::errors::SocialLoadFriendsFailed);
-    return codec::ReadUsersPayload(event, response.payload);
+    return GetFriendsSnapshot().friends;
 }
 
 domain::SocialFriendsSnapshot SocialApi::GetFriendsSnapshot() const
@@ -52,12 +50,7 @@ domain::SocialRequestsSnapshot SocialApi::GetRequestsSnapshot(const std::string&
 
 std::vector<domain::SocialFriendRequest> SocialApi::GetRequests(const std::string& direction) const
 {
-    const std::string event = std::string(lila::shared::network::ws::types::social::FriendsRequests);
-    const auto response = Send(
-        event,
-        {{std::string(lila::modules::social::infrastructure::fields::Direction), direction}},
-        lila::shared::errors::SocialLoadRequestsFailed);
-    return codec::ReadRequestsPayload(event, response.payload);
+    return GetRequestsSnapshot(direction).requests;
 }
 
 std::vector<domain::SocialUser> SocialApi::GetBlockedUsers() const

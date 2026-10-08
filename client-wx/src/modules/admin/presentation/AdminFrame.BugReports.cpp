@@ -69,6 +69,7 @@ void AdminFrame::RefreshBugReports(
     if (selection > 0 && selection < std::size(ReportStatuses))
         bugReportListPayload_["status"] = ReportStatuses[selection];
     keepFocusAfterCommand_ = keepCurrentFocus;
+    bugReportListPayload_["countsOnly"] = false;
     ExecuteCommand(*command, bugReportListPayload_, announceLifecycle);
 }
 

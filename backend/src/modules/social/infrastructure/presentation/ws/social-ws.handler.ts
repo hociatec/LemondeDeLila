@@ -22,16 +22,16 @@ export class SocialWsHandler {
     private readonly validator: PayloadValidationService,
   ) {}
 
-  async listFriends(session: WsSession, payload: unknown = {}) {
+  async listFriends(session: WsSession, payload: unknown) {
     const user = requireUser(session);
-    const dto = this.validator.validate(SocialListDto, payload ?? {});
+    this.validator.validate(SocialListDto, payload);
     const [items, blockedUsers] = await Promise.all([
       this.relationships.listFriends(user.id),
-      dto.includeBlocked ? this.relationships.listBlocked(user.id) : undefined,
+      this.relationships.listBlocked(user.id),
     ]);
     return {
       type: WS_EVENTS.social.friendsList,
-      payload: { items, ...(blockedUsers !== undefined ? { blockedUsers } : {}) },
+      payload: { items, blockedUsers },
     };
   }
 
@@ -52,11 +52,11 @@ export class SocialWsHandler {
       'incoming' | 'outgoing' | 'all';
     const [items, blockedUsers] = await Promise.all([
       this.relationships.listRequests(user.id, direction),
-      dto.includeBlocked ? this.relationships.listBlocked(user.id) : undefined,
+      this.relationships.listBlocked(user.id),
     ]);
     return {
       type: WS_EVENTS.social.friendsRequests,
-      payload: { items, ...(blockedUsers !== undefined ? { blockedUsers } : {}) },
+      payload: { items, blockedUsers },
     };
   }
 

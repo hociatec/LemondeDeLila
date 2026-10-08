@@ -12,13 +12,36 @@ const lists: Array<{
 }> = [
   { name: 'users', dto: UserListDto, seed: {} },
   { name: 'admin users', dto: AdminListUsersDto, seed: {} },
-  { name: 'bug reports', dto: AdminBugReportsListWsDto, seed: {} },
+  {
+    name: 'bug reports',
+    dto: AdminBugReportsListWsDto,
+    seed: { countsOnly: false },
+  },
   {
     name: 'bug comments',
     dto: AdminBugReportCommentsListWsDto,
     seed: { reportId: 'report-1' },
   },
 ];
+
+it('requires an explicit boolean countsOnly for bug report lists', () => {
+  for (const payload of [
+    {},
+    { countsOnly: undefined },
+    { countsOnly: null },
+    { countsOnly: 'true' },
+    { countsOnly: 0 },
+  ]) {
+    expect(
+      validateSync(plainToInstance(AdminBugReportsListWsDto, payload)).length,
+    ).toBeGreaterThan(0);
+  }
+  for (const countsOnly of [true, false]) {
+    expect(
+      validateSync(plainToInstance(AdminBugReportsListWsDto, { countsOnly })),
+    ).toEqual([]);
+  }
+});
 
 it.each(lists)(
   '$name accepts decimal query limits and rejects coercion or overflow',

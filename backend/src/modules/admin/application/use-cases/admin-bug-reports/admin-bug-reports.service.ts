@@ -48,12 +48,12 @@ export class AdminBugReportsService {
 
   async list(
     options: {
-      countsOnly?: boolean;
+      countsOnly: boolean;
       offset?: number;
       limit?: number;
       search?: string;
       status?: UpdateAdminBugReportStatusCommand['status'];
-    } = {},
+    },
   ) {
     if (options.countsOnly === true) {
       return { items: [], statusCounts: await this.bugReports.countByStatus() };

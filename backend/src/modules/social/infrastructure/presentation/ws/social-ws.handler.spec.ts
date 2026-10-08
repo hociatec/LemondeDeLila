@@ -99,14 +99,21 @@ it.each(['friends', 'incoming', 'outgoing'])(
   },
 );
 
-it('keeps unbundled responses compatible and validates the new option', async () => {
+it('rejects missing, disabled and malformed bundled options before reading data', async () => {
   const { handler, relationships } = await fixture();
-  expect((await handler.listFriends(session)).payload).toEqual({
-    items: [{ id: 8, username: 'Bob' }],
-  });
-  expect((await handler.listRequests(session, {})).payload).toEqual({
-    items: [],
-  });
+  for (const payload of [
+    undefined,
+    null,
+    {},
+    { includeBlocked: false },
+    { includeBlocked: null },
+    { includeBlocked: 'true' },
+  ]) {
+    await expect(handler.listFriends(session, payload)).rejects.toThrow();
+    await expect(handler.listRequests(session, payload)).rejects.toThrow();
+  }
+  expect(relationships.listFriends).not.toHaveBeenCalled();
+  expect(relationships.listRequests).not.toHaveBeenCalled();
   expect(relationships.listBlocked).not.toHaveBeenCalled();
   await expect(
     handler.listFriends(session, { includeBlocked: 'true' }),
