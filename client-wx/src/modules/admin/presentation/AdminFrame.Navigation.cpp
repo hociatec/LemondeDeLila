@@ -89,7 +89,7 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
         wxString(L"Administration — ") +
         wxString(area.label.data()));
     resultText_->SetValue(bugReports
-        ? wxString(L"Chargement de la liste des rapports…")
+        ? wxString{}
         : wxString(area.description.data()) +
             wxString(L"\n\nChoisissez une opération dans la liste. Son formulaire métier s’ouvrira avec les champs adaptés."));
     resultSummaryLabel_->SetLabel(wxString(L"Résultat"));
@@ -98,7 +98,7 @@ void AdminFrame::ShowCommands(std::size_t sectionIndex)
     reportSearchPanel_->Show(bugReports);
     if (bugReports)
     {
-        const auto statuses = BuildBugReportStatusItems({}, L" (chargement…)");
+        const auto statuses = BuildBugReportStatusItems({}, wxEmptyString);
         reportStatusMenu_->SetItems(statuses);
         reportStatusMenu_->SetSelectedIndexSilently(0);
     }
@@ -131,7 +131,7 @@ void AdminFrame::LoadAutomaticAreaContent()
         if (command != nullptr)
         {
             loadingReportCountsOnly_ = true;
-            SetStatus(wxString(L"Chargement des compteurs de rapports…"));
+            SetStatus(wxString(L"Choisissez un statut ou créez un nouveau rapport."));
             ExecuteCommand(*command, {{"countsOnly", true}, {"offset", 0}, {"limit", 1}}, false);
         }
         return;
