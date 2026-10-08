@@ -7,10 +7,6 @@
 #include <wx/panel.h>
 #include <wx/sizer.h>
 
-#ifdef __WXMSW__
-#include "shared/accessibility/presentation/NavigationController.h"
-#endif
-
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
@@ -93,51 +89,6 @@ void HostFrame::OnCharHook(wxKeyEvent& event)
     }
     event.Skip();
 }
-
-#ifdef __WXMSW__
-void HostFrame::OnActivate(wxActivateEvent& event)
-{
-    if (!event.GetActive())
-    {
-        auto* target = wxWindow::FindFocus();
-        if (!lila::shared::accessibility::NavigationController::IsDescendantOf(
-                target, currentContent_))
-            target = lastFocusedChild_.get();
-        if (lila::shared::accessibility::NavigationController::IsDescendantOf(
-                target, currentContent_))
-            lastFocusedChild_ = target;
-        // Windows announces the window title separately from the focused item.
-        // Prefixing both the list and its item repeats that context in NVDA.
-        ClearActivationFocusContext();
-    }
-    else
-    {
-        const wxWeakRef<HostFrame> weakFrame(this);
-        const wxWeakRef<wxWindow> weakTarget(lastFocusedChild_.get());
-        CallAfter([weakFrame, weakTarget]()
-        {
-            auto* frame = weakFrame.get();
-            auto* target = weakTarget.get();
-            if (frame == nullptr || target == nullptr || !frame->IsActive() ||
-                !lila::shared::accessibility::NavigationController::IsDescendantOf(
-                    target, frame->currentContent_)) return;
-            static_cast<void>(
-                lila::shared::accessibility::NavigationController::Focus(target));
-        });
-    }
-    event.Skip();
-}
-
-void HostFrame::OnChildFocus(wxChildFocusEvent& event)
-{
-    auto* focused = event.GetWindow();
-    if (IsActive() && focused != nullptr &&
-        lila::shared::accessibility::NavigationController::IsDescendantOf(
-            focused, currentContent_))
-        lastFocusedChild_ = focused;
-    event.Skip();
-}
-#endif
 
 void HostFrame::ClearActivationFocusContext()
 {
