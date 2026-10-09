@@ -7,6 +7,7 @@
 #include <wx/event.h>
 #include <wx/listbox.h>
 #include <wx/window.h>
+#include <wx/wupdlock.h>
 
 #include "shared/text/presentation/catalog/UiTexts.h"
 #include "shared/ui/presentation/controls/VerticalMenuEntry.h"
@@ -103,6 +104,9 @@ void VerticalMenu::ReplaceItems(
         !listBox_->HasFocus();
     if (prepareInitialSelectionHidden) listBox_->Hide();
 
+    // Batch native redraw instead of repainting after every row mutation.
+    std::optional<wxWindowUpdateLocker> updates(std::in_place, listBox_);
+
     // Treat the native list rows as stable presentation slots. Clearing and
     // rebuilding a focused wxListBox makes Windows emit a new selection event,
     // so screen readers announce the unchanged focused item a second time.
@@ -142,6 +146,7 @@ void VerticalMenu::ReplaceItems(
     if (deferPreviousLabel &&
         listBox_->GetString(previousSelection) != items[previousSelection].label)
         listBox_->SetString(previousSelection, items[previousSelection].label);
+    updates.reset();
     if (prepareInitialSelectionHidden) listBox_->Show();
     UpdateVisualSelection();
 }

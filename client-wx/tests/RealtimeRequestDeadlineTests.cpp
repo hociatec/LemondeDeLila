@@ -26,8 +26,9 @@ public:
         const std::string&,
         const std::string&) const override
     {
-        return "ticket";
+        return "ticket-" + std::to_string(++calls);
     }
+    mutable int calls = 0;
 };
 
 class FakeWebSocketClient final
@@ -41,6 +42,7 @@ public:
         const lila::shared::network::websocket::WebSocketHeaders& headers,
         std::stop_token) override
     {
+        ++connections;
         endpoint_ = endpoint;
         headers_ = headers;
         connected_ = true;
@@ -67,10 +69,15 @@ public:
         return connected_.load() && endpoint_ == endpoint && headers_ == headers;
     }
 
-    void Send(const std::string& payload) override { sentPayload_ = payload; }
+    void Send(const std::string& payload) override { ++sends; sentPayload_ = payload; }
 
     [[nodiscard]] std::string Receive() override
     {
+        if (failNextReceive)
+        {
+            failNextReceive = false;
+            throw std::runtime_error("connection dropped after send");
+        }
         if (blockReceive_)
         {
             std::unique_lock lock(mutex_);
@@ -96,6 +103,9 @@ public:
     }
 
     [[nodiscard]] bool WasCancelled() const { return cancelled_.load(); }
+    int connections = 0;
+    int sends = 0;
+    bool failNextReceive = false;
 
 private:
     bool blockReceive_;
@@ -194,6 +204,42 @@ void TestCompletedRequestDisarmsDeadline()
     assert(!socket.WasCancelled());
 }
 
+void TestConnectionReuseAndCredentialChanges()
+{
+    FakeWebSocketClient socket(false);
+    FakeTicketProvider tickets;
+    lila::shared::network::realtime::AuthenticatedRealtimeApiClient client(
+        "wss://example.test/ws/api", "1.2.58", socket, tickets, 250ms);
+    const lila::shared::network::realtime::RealtimeApiRequest request{
+        "catalog.all", nlohmann::json::object()};
+    assert(client.Send(request, "token").success);
+    assert(client.Send(request, "token").success);
+    assert(tickets.calls == 1 && socket.connections == 1);
+    assert(client.Send(request, "refreshed-token").success);
+    assert(tickets.calls == 2 && socket.connections == 2);
+    socket.Close();
+    assert(client.Send(request, "refreshed-token").success);
+    assert(tickets.calls == 3 && socket.connections == 3);
+    std::stop_source cancelled;
+    cancelled.request_stop();
+    const auto response = client.Send(request, "another-token", cancelled.get_token());
+    assert(response.errorKind == lila::shared::network::realtime::RealtimeErrorKind::Cancelled);
+    assert(tickets.calls == 3 && socket.connections == 3);
+    assert(client.Send(request, "").success);
+    assert(tickets.calls == 3 && socket.connections == 4);
+    assert(client.Send(request, "").success);
+    assert(socket.connections == 4);
+
+    // A failed receive may follow an already committed command: do not replay
+    // it automatically. Only the next caller establishes a fresh connection.
+    socket.failNextReceive = true;
+    const auto sendsBeforeFailure = socket.sends;
+    assert(!client.Send(request, "").success);
+    assert(socket.sends == sendsBeforeFailure + 1);
+    assert(client.Send(request, "").success);
+    assert(socket.connections == 5);
+}
+
 void TestCorrelatedTypedErrorIsReturnedAsServerError()
 {
     constexpr auto RequestId = "contact-request-1";
@@ -234,6 +280,7 @@ int main()
 {
     TestHungRequestTimesOut();
     TestCompletedRequestDisarmsDeadline();
+    TestConnectionReuseAndCredentialChanges();
     TestCorrelatedTypedErrorIsReturnedAsServerError();
     TestUnrelatedLateAndDuplicateResponsesAreIgnored();
     return 0;

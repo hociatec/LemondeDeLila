@@ -39,5 +39,8 @@ private:
     std::string ticketScope_;
     std::chrono::milliseconds requestTimeout_;
     mutable std::timed_mutex requestMutex_;
+    // Protected by requestMutex_. Tickets belong to a live connection and must
+    // never be replayed when reconnecting (they are single-use credentials).
+    mutable websocket::WebSocketHeaders connectedHeaders_;
 };
 }

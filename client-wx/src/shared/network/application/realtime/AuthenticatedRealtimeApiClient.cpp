@@ -32,11 +32,15 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
     const std::string& bearerToken,
     std::stop_token stopToken) const
 {
+    // Disarm/join the deadline before releasing the socket to the next caller.
+    std::unique_lock<std::timed_mutex> requestLock(requestMutex_, std::defer_lock);
     std::optional<detail::RealtimeRequestDeadline> deadline;
     try
     {
-        std::unique_lock<std::timed_mutex> requestLock(requestMutex_, std::defer_lock);
         if (!detail::AcquireRequestLock(requestLock, stopToken))
+            return detail::ErrorResponse(
+                request.type, RealtimeErrorKind::Cancelled, detail::OperationCancelled);
+        if (stopToken.stop_requested())
             return detail::ErrorResponse(
                 request.type, RealtimeErrorKind::Cancelled, detail::OperationCancelled);
         websocket::WebSocketHeaders headers;
@@ -55,11 +59,19 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
             headers.emplace(
                 std::string(lila::shared::network::ws::AuthorizationHeader),
                 std::string(lila::shared::network::ws::AuthorizationScheme) + bearerToken);
-            headers.emplace(
-                std::string(lila::shared::network::ws::WsTicketHeader),
-                wsTicketProvider_.GetTicket(
-                    ticketScope_,
-                    bearerToken));
+        }
+
+        auto previousIdentity = connectedHeaders_;
+        previousIdentity.erase(std::string(lila::shared::network::ws::WsTicketHeader));
+        const bool reuseConnection = previousIdentity == headers &&
+            webSocketClient_.IsConnectedTo(endpoint_, connectedHeaders_);
+        if (!reuseConnection)
+        {
+            connectedHeaders_.clear();
+            if (!bearerToken.empty())
+                headers.emplace(
+                    std::string(lila::shared::network::ws::WsTicketHeader),
+                    wsTicketProvider_.GetTicket(ticketScope_, bearerToken));
         }
 
         const std::string requestId = protocol::GenerateRequestId();
@@ -68,7 +80,11 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
         std::stop_callback cancelOperation(
             stopToken,
             [this]() { webSocketClient_.CancelPendingOperation(); });
-        webSocketClient_.Connect(endpoint_, headers, stopToken);
+        if (!reuseConnection)
+        {
+            webSocketClient_.Connect(endpoint_, headers, stopToken);
+            connectedHeaders_ = std::move(headers);
+        }
         if (stopToken.stop_requested()) throw std::runtime_error("WebSocket operation cancelled.");
         webSocketClient_.Send(envelope);
         while (!stopToken.stop_requested())
@@ -79,21 +95,26 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
                     requestId,
                     request.type,
                     request.expectedResponseType)) continue;
-            return protocol::ParseResponse(
+            auto response = protocol::ParseResponse(
                 rawJson,
                 requestId,
                 request.type,
                 request.expectedResponseType);
+            if (response.statusCode == 401 || response.statusCode == 403)
+                connectedHeaders_.clear();
+            return response;
         }
         throw std::runtime_error("WebSocket operation cancelled.");
     }
     catch (const protocol::RealtimeProtocolError& exception)
     {
+        connectedHeaders_.clear();
         return detail::ErrorResponse(
             request.type, RealtimeErrorKind::Protocol, exception.what());
     }
     catch (const http::WsTicketRequestError& exception)
     {
+        connectedHeaders_.clear();
         return detail::ErrorResponse(
             request.type,
             RealtimeErrorKind::Authentication,
@@ -102,6 +123,7 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
     }
     catch (const std::exception& exception)
     {
+        if (requestLock.owns_lock()) connectedHeaders_.clear();
         return detail::DeadlineErrorResponse(
             request.type,
             stopToken,

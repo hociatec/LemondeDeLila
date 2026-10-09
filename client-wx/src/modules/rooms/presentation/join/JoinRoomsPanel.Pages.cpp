@@ -24,6 +24,9 @@ void JoinRoomsPanel::ApplyRooms(std::vector<domain::PublicRoom> rooms, PreparedH
 void JoinRoomsPanel::ShowLoading()
 {
     state_ = State::Loading;
+    const lila::shared::ui::controls::VerticalMenuItem loading{
+        "loading", wxString(L"Chargement des parties en cours...")};
+    menu_->SetItemsForNavigation(std::span(&loading, 1), 0);
     lila::shared::ui::layout::UpdateListPageStatus(*this, *statusLabel_, wxString{}, false);
 }
 
