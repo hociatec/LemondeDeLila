@@ -28,20 +28,13 @@ void AppNavigator::ShowCatalog(std::size_t selectedIndex)
 
 void AppNavigator::ShowJoinRooms()
 {
-    const ViewId sourceViewId = currentViewId_;
     auto* view = GetOrCreateView(ViewId::JoinRooms);
     if (auto* panel = dynamic_cast<modules::rooms::presentation::JoinRoomsPanel*>(view))
     {
         focusTransition_.Forget(view);
         view->Hide();
         panel->ResetForNextPrepare();
-        panel->Prepare(
-            [this, sourceViewId, view]()
-            {
-                if (currentViewId_ == sourceViewId)
-                    ReplaceView(ViewId::JoinRooms, view);
-            });
-        return;
+        panel->Prepare({});
     }
     ReplaceView(ViewId::JoinRooms, view);
 }
@@ -139,17 +132,12 @@ void AppNavigator::ShowUserStoryBook(int userId, std::string username, ViewId re
 void AppNavigator::ShowLeaderboard()
 {
     auto* view = GetOrCreateView(ViewId::Leaderboard);
+    view->Hide();
     if (auto* panel = dynamic_cast<modules::leaderboard::presentation::LeaderboardPanel*>(view))
     {
-        panel->Prepare(
-            [this, view]()
-            {
-                if (currentViewId_ == ViewId::StoryBook)
-                {
-                    ReplaceView(ViewId::Leaderboard, view);
-                }
-            });
+        panel->Prepare({});
     }
+    ReplaceView(ViewId::Leaderboard, view);
 }
 
 void AppNavigator::ReturnToCatalogAfterRoomClose(bool resetVaultFocus, bool resetCatalogFocus)

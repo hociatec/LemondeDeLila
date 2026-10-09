@@ -1,5 +1,8 @@
 #include <cassert>
 #include <functional>
+#include <chrono>
+#include <iostream>
+#include <wx/listbox.h>
 #include <stdexcept>
 #ifdef _MSC_VER
 #include <crtdbg.h>
@@ -90,6 +93,33 @@ int main(int argc, char** argv)
     delete wxLog::SetActiveTarget(new wxLogStderr());
     assert(wxEntryStart(argc, argv));
     assert(wxTheApp->CallOnInit());
+    if (argc > 1 && std::string(argv[1]) == "--benchmark")
+    {
+        using namespace lila::shared::ui::controls;
+        auto* frame = new wxFrame(nullptr, wxID_ANY, "Native list performance", wxDefaultPosition, wxSize(800, 600));
+        auto* menu = new VerticalMenu(frame, {}, VerticalMenuRole::List);
+        menu->SetSize(800, 600);
+        frame->Show();
+        wxTheApp->Yield();
+        for (int pass = 0; pass < 4; ++pass)
+        {
+            std::vector<VerticalMenuItem> items;
+            for (int i = 0; i < 3000; ++i)
+                items.push_back({std::to_string(i), wxString::Format("Player %d - status %d", i, pass)});
+            const auto start = std::chrono::steady_clock::now();
+            menu->SetItemsForNavigation(items, 1500);
+            menu->GetSelectedControl()->SetFocus();
+            wxTheApp->Yield();
+            std::cout << "list_pass_" << pass << "_ms=" << std::chrono::duration<double, std::milli>(
+                std::chrono::steady_clock::now() - start).count() << '\n';
+            assert(menu->GetItemCount() == 3000 && menu->GetSelectedIndex() == 1500);
+            assert(static_cast<wxListBox*>(menu->GetSelectedControl())->GetString(1500) == items[1500].label);
+        }
+        delete frame;
+        wxTheApp->OnExit();
+        wxEntryCleanup();
+        return 0;
+    }
     Gateway gateway;
     Audio audio;
     application::SocialService service(gateway, audio);

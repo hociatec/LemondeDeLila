@@ -1,6 +1,27 @@
 include_guard(GLOBAL)
+if(WIN32)
+    add_executable(lemonde_de_lila_wx_realtime_performance_probe
+        tests/RealtimePerformanceProbe.cpp
+        src/shared/config/domain/AppConfig.cpp
+        src/shared/network/application/realtime/AuthenticatedRealtimeApiClient.cpp
+        src/shared/network/application/realtime/RealtimeProtocol.cpp
+        src/shared/network/infrastructure/http/WsTicketProvider.cpp
+        src/shared/network/infrastructure/http/WsTicketTransport.cpp
+        src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.cpp
+        src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Connection.cpp
+        src/shared/network/infrastructure/websocket/WinHttpWebSocketClient.Messaging.cpp
+        src/shared/network/infrastructure/websocket/WinHttpWebSocketInternals.cpp
+        src/shared/network/infrastructure/websocket/WinHttpWebSocketRequest.cpp
+        src/shared/logging/infrastructure/Logger.cpp
+    )
+    target_include_directories(lemonde_de_lila_wx_realtime_performance_probe PRIVATE src "${CMAKE_CURRENT_BINARY_DIR}/generated")
+    lila_configure_cpp_target(lemonde_de_lila_wx_realtime_performance_probe)
+    target_compile_features(lemonde_de_lila_wx_realtime_performance_probe PRIVATE cxx_std_20)
+    target_link_libraries(lemonde_de_lila_wx_realtime_performance_probe PRIVATE nlohmann_json::nlohmann_json winhttp)
+endif()
 include(${CMAKE_CURRENT_LIST_DIR}/LilaAdminQuizTests.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/LilaSocialLoadingTests.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/LilaTransitionLoadingTests.cmake)
 
 lila_add_test_executable(lemonde_de_lila_wx_screen_reader_shutdown_tests
     tests/ScreenReaderShutdownTests.cpp
@@ -13,6 +34,13 @@ set_tests_properties(lemonde_de_lila_wx_screen_reader_shutdown_tests
     lemonde_de_lila_wx_screen_reader_stuck_rpc_exit_tests PROPERTIES TIMEOUT 5)
 
 find_program(LILA_CLIENT_ARCHITECTURE_NODE_EXECUTABLE node REQUIRED)
+if(WIN32 AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../backend/node_modules/ws/package.json")
+    add_test(NAME lemonde_de_lila_wx_realtime_transport_performance_tests
+        COMMAND "${LILA_CLIENT_ARCHITECTURE_NODE_EXECUTABLE}"
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/RealtimePerformanceTests.cjs"
+            "$<TARGET_FILE:lemonde_de_lila_wx_realtime_performance_probe>")
+    set_tests_properties(lemonde_de_lila_wx_realtime_transport_performance_tests PROPERTIES TIMEOUT 40)
+endif()
 add_test(
     NAME lemonde_de_lila_wx_architecture_tests
     COMMAND "${LILA_CLIENT_ARCHITECTURE_NODE_EXECUTABLE}"
