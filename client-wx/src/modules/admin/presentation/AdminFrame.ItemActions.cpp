@@ -28,6 +28,7 @@ std::string ItemName(const nlohmann::json& item)
 
 void AdminFrame::OpenResultActions(std::size_t index)
 {
+    if (loading_) return;
     if (index >= resultItems_.size())
     {
         FocusResultDetails();

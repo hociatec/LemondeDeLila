@@ -168,6 +168,8 @@ void SocialFrame::BindProfileEvents()
         {
             if (screenCoordinator_ != nullptr)
             {
+                ++readGeneration_;
+                pendingRead_ = {};
                 screenCoordinator_->HandleEscape();
             }
         });

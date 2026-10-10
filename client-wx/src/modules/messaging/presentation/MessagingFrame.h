@@ -46,6 +46,7 @@ public:
         CloseRequestedHandler onCloseRequested,
         ExitRequestedHandler onExitRequested);
     ~MessagingFrame() override;
+    void RefreshForNavigation();
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:
@@ -58,7 +59,8 @@ private:
     void RunBackgroundTask(
         const wxString& busyMessage,
         const std::function<void()>& worker,
-        const std::function<void()>& onSuccess = {});
+        const std::function<void()>& onSuccess = {},
+        bool readOnly = false);
     void SetBusyState(bool busy, const wxString& message = wxEmptyString);
     void SyncBusyState();
     void SyncPanels();
@@ -83,6 +85,8 @@ private:
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
     bool isBusy_ = false;
+    std::size_t readGeneration_ = 0;
+    std::function<void()> pendingRead_;
     MessagingNavigationState navigationState_;
     std::vector<domain::MessagingMessage> boxMessages_;
 

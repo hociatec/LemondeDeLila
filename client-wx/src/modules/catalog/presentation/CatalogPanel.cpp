@@ -46,13 +46,8 @@ void CatalogPanel::ResetToRootForNextShow()
     {
         return;
     }
-    CancelCatalogLoad();
     rootSelectedIndex_ = 0;
-    RebuildFilteredShelves();
-    if (state_ == State::Ready)
-    {
-        ShowCurrentShelves();
-    }
+    LoadShelves();
 }
 
 lila::shared::accessibility::FocusManager::Plan CatalogPanel::BuildFocusPlan()

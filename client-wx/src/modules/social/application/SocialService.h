@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -9,7 +10,6 @@
 #include "modules/social/domain/SocialRelationshipState.h"
 #include "modules/social/domain/SocialUser.h"
 #include "modules/social/application/ISocialGateway.h"
-#include "shared/cache/application/SingleFlightCache.h"
 
 namespace lila::modules::audio::application { class IAudioService; }
 
@@ -48,10 +48,8 @@ private:
 
     ISocialGateway& api_;
     lila::modules::audio::application::IAudioService& audioService_;
-    mutable lila::shared::cache::SingleFlightCache<domain::SocialFriendsSnapshot> friendsCache_;
-    mutable lila::shared::cache::SingleFlightCache<domain::SocialRequestsSnapshot> incomingRequestsCache_;
-    mutable lila::shared::cache::SingleFlightCache<domain::SocialRequestsSnapshot> outgoingRequestsCache_;
-    mutable lila::shared::cache::SingleFlightCache<std::vector<domain::SocialUser>> blockedUsersCache_;
-    mutable lila::shared::cache::SingleFlightCache<std::optional<domain::SocialProfile>> ownProfileCache_;
+    mutable std::mutex friendsMutex_;
+    mutable std::size_t friendsGeneration_ = 0;
+    mutable std::optional<domain::SocialFriendsSnapshot> friendsHint_;
 };
 }

@@ -8,6 +8,9 @@
 
 #include "app/navigation/presentation/HostFrame.h"
 #include "modules/audio/application/IAudioService.h"
+#include "modules/admin/presentation/AdminFrame.h"
+#include "modules/messaging/presentation/MessagingFrame.h"
+#include "modules/social/presentation/SocialFrame.h"
 #include "modules/presence/application/PresenceMonitor.h"
 #include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/logging/application/Logger.h"
@@ -50,6 +53,15 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
         return;
     }
 
+    if (previousViewId != nextViewId)
+    {
+        if (auto* admin = dynamic_cast<modules::admin::presentation::AdminFrame*>(nextView))
+            admin->RefreshForNavigation();
+        if (auto* social = dynamic_cast<modules::social::presentation::SocialFrame*>(nextView))
+            social->RefreshForNavigation();
+        if (auto* messaging = dynamic_cast<modules::messaging::presentation::MessagingFrame*>(nextView))
+            messaging->RefreshForNavigation();
+    }
     hostFrame_->SetContent(currentView_);
     if (previousViewId != ViewId::None && previousViewId != nextViewId)
     {

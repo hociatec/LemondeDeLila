@@ -20,9 +20,12 @@ void LeaderboardPanel::LoadGames(PreparedHandler onPrepared)
     const auto generation = requestSlot_.CurrentToken();
     state_ = State::Loading;
     pendingRequest_ = Request::Games;
-    const lila::shared::ui::controls::VerticalMenuItem loading{
-        "loading", wxString(L"Chargement du classement...")};
-    menu_->SetItemsForNavigation(std::span(&loading, 1), 0);
+    if (navigator_.Games().empty())
+    {
+        const lila::shared::ui::controls::VerticalMenuItem loading{
+            "loading", wxString(L"Chargement du classement...")};
+        menu_->SetItemsForNavigation(std::span(&loading, 1), 0);
+    }
     UpdateStatus(wxString{});
 
     auto* service = &service_;
@@ -119,7 +122,6 @@ void LeaderboardPanel::ApplyGames(
     PreparedHandler onPrepared)
 {
     navigator_.ResetGames(std::move(games));
-    gamesLoaded_ = true;
     state_ = State::Ready;
     ShowCurrentPage();
     if (onPrepared)

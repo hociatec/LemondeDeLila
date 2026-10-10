@@ -1,6 +1,11 @@
 #include <cassert>
+#include <atomic>
+#include <condition_variable>
+#include <mutex>
 #include <chrono>
 #include <thread>
+#include <iostream>
+#include <cstdlib>
 #ifdef _MSC_VER
 #include <crtdbg.h>
 #endif
@@ -28,15 +33,34 @@ public:
     mutable std::string lastCommand;
     mutable std::string category = "music";
     bool failCounts = false;
+    mutable std::mutex reportMutex;
+    mutable std::condition_variable_any reportWake;
+    bool holdReports = false;
+    mutable std::atomic<int> reportReads = 0;
+    int reportVersion = 0;
+    void HoldReports(bool hold)
+    {
+        { std::lock_guard lock(reportMutex); holdReports = hold; }
+        reportWake.notify_all();
+    }
     admin::domain::AdminPayload Execute(const admin::domain::AdminCommand& command,
-        const admin::domain::AdminPayload& raw, const std::string&, std::stop_token) const override
+        const admin::domain::AdminPayload& raw, const std::string&, std::stop_token stop) const override
     {
         lastCommand = command.id;
         lastPayload = json::parse(raw.Serialized());
         if (command.id == "bugs.list" && failCounts) throw std::runtime_error("Counters unavailable");
         if (command.id == "bugs.list")
-            return admin::domain::AdminPayload(json{{"items", json::array()},
+        {
+            ++reportReads;
+            std::unique_lock lock(reportMutex);
+            reportWake.wait(lock, stop, [this] { return !holdReports; });
+            auto reports = json::array();
+            if (reportVersion > 0 && !lastPayload.value("countsOnly", false))
+                reports.push_back({{"id", std::to_string(reportVersion)}, {"subject", "Fresh report"},
+                    {"content", "Updated"}, {"status", lastPayload.value("status", "pending")}});
+            return admin::domain::AdminPayload(json{{"items", reports},
                 {"statusCounts", {{"pending", 12}, {"in_progress", 3}}}}.dump());
+        }
         if (command.id == "games.list")
             return admin::domain::AdminPayload(json{{"games", {{{"id", "arche-de-mnemosyne"}}}}}.dump());
         if (command.id == "mnemo.categories")
@@ -121,8 +145,69 @@ struct AdminQuizNavigationTest
             }
         assert(false);
     }
+    static void CheckReportRefresh(AdminFrame& frame, QuizGateway& gateway)
+    {
+        const auto& areas = domain::GetAdminAreas();
+        gateway.HoldReports(true);
+        for (std::size_t index = 0; index < areas.size(); ++index)
+            if (areas[index].id == "reports") frame.ShowCommands(index);
+        // Selecting a filter before the initial counters arrive must not be lost.
+        frame.reportStatusMenu_->SetSelectedIndexSilently(1);
+        frame.ChangeBugReportFilter();
+        frame.reportStatusMenu_->SetSelectedIndexSilently(2);
+        frame.ChangeBugReportFilter();
+        assert(frame.pendingBugReportRefresh_);
+        gateway.HoldReports(false);
+        Wait(frame);
+        assert(gateway.lastPayload.at("countsOnly") == false);
+        assert(gateway.lastPayload.at("status") == "in_progress");
+        assert(!frame.pendingBugReportRefresh_ && !frame.loadingReportCountsOnly_);
+
+        gateway.reportVersion = 1;
+        frame.RefreshBugReports();
+        Wait(frame);
+        assert(frame.resultItems_.at(0).at("id") == "1");
+        gateway.reportVersion = 2;
+        gateway.HoldReports(true);
+        frame.RefreshBugReports();
+        assert(frame.resultItems_.at(0).at("id") == "1");
+        frame.OpenResultActions(0);
+        assert(!frame.showingItemActions_); // Retained rows cannot race the refresh.
+        gateway.HoldReports(false);
+        Wait(frame);
+        assert(frame.resultItems_.at(0).at("id") == "2");
+
+        frame.OpenResultActions(0);
+        gateway.reportVersion = 3;
+        frame.HandleKey(WXK_ESCAPE);
+        Wait(frame);
+        assert(frame.resultItems_.at(0).at("id") == "3");
+
+        gateway.HoldReports(true);
+        const int readsBefore = gateway.reportReads.load();
+        frame.RefreshBugReports();
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+        while (gateway.reportReads == readsBefore && std::chrono::steady_clock::now() < deadline)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        assert(gateway.reportReads > readsBefore);
+        frame.ChangeBugReportFilter();
+        frame.ShowSections(); // Cancel pending reads when leaving the screen.
+        gateway.HoldReports(false);
+        wxYield();
+        assert(!frame.pendingBugReportRefresh_ && !frame.showingCommands_);
+        // Drain the canceled worker before reusing the fake gateway.
+        const auto drainDeadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+        while (lila::shared::concurrency::CurrentBackgroundExecutor().Stats().active != 0 &&
+               std::chrono::steady_clock::now() < drainDeadline)
+        { wxYield(); std::this_thread::sleep_for(std::chrono::milliseconds(1)); }
+        wxYield();
+        assert(!frame.showingCommands_ && frame.resultItems_.empty());
+        gateway.reportVersion = 0;
+    }
+
     static void Run(AdminFrame& frame, QuizGateway& gateway)
     {
+        CheckReportRefresh(frame, gateway);
         CheckNavigationRoles(frame);
         const auto& areas = domain::GetAdminAreas();
         auto* otherControl = new wxTextCtrl(&frame, wxID_ANY);
@@ -240,6 +325,14 @@ class AdminTestApp final : public wxApp
 {
 public:
     bool OnInit() override { return true; }
+    void OnUnhandledException() override
+    {
+        try { throw; }
+        catch (const std::exception& error) { std::cerr << "Unhandled test exception: " << error.what() << std::endl; }
+        catch (...) { std::cerr << "Unknown test exception" << std::endl; }
+        std::_Exit(1);
+    }
+    bool OnExceptionInMainLoop() override { OnUnhandledException(); return false; }
 };
 wxIMPLEMENT_APP_NO_MAIN(AdminTestApp);
 int main(int argc, char** argv)

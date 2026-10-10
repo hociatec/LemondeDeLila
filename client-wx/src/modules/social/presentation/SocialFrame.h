@@ -70,8 +70,10 @@ public:
     ~SocialFrame() override;
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
     void OpenMenuIndex(std::size_t menuIndex);
+    void RefreshForNavigation();
 
 private:
+    friend struct SocialReadSchedulingTest;
     using Screen = SocialNavigationState::Screen;
     using ProfileEditorMode = SocialNavigationState::ProfileEditorMode;
 
@@ -88,7 +90,8 @@ private:
         const wxString& busyMessage,
         const std::function<void()>& worker,
         const std::function<void()>& onSuccess = {},
-        bool announceBusy = true);
+        bool announceBusy = true,
+        bool readOnly = false);
     void SetBusyState(bool busy, const wxString& message = wxEmptyString, bool announce = true);
     void ApplyBusyState();
     void RunUiAction(const std::function<void()>& action);
@@ -105,6 +108,8 @@ private:
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
     bool isBusy_ = false;
+    std::size_t readGeneration_ = 0;
+    std::function<void()> pendingRead_;
     wxTextCtrl* loadingPlaceholder_ = nullptr;
     wxString loadingPlaceholderText_;
     SocialNavigationState navigationState_;

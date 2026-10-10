@@ -167,6 +167,8 @@ void AdminFrame::ExecuteCommand(
     requestSlot_.Cancel();
     const auto generation = requestSlot_.CurrentToken();
     loading_ = true;
+    reportMutationInFlight_ = command.id.starts_with("bugs.") &&
+        command.id != "bugs.list" && command.id != "bugs.get" && command.id != "bugs.comments";
     if (announceLifecycle)
         SetStatus(wxString(L"Opération en cours…"));
     auto* service = &service_;
