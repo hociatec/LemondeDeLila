@@ -62,7 +62,7 @@ public:
     std::vector<rooms::domain::RoomInviteCandidate> ListInviteCandidates(int, std::stop_token) const override { return {}; }
     std::vector<rooms::domain::TableAmbience> ListTableAmbiences(std::stop_token) const override { return {}; }
     void SendInvite(int, int, std::stop_token) const override {}
-    void RespondInvite(std::string_view, bool, std::stop_token) const override {}
+    lila::modules::rooms::domain::RoomInvitationResponse RespondInvite(std::string_view, bool, std::stop_token) const override { return {}; }
 };
 class RankingGateway final : public leaderboard::application::ILeaderboardGateway
 {

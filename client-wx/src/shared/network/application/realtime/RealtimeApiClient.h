@@ -6,6 +6,7 @@
 #include <stop_token>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "shared/network/application/websocket/IWebSocketClient.h"
 #include "shared/network/domain/NetworkPolicy.h"
@@ -21,16 +22,19 @@ struct RealtimeApiRequest
     RealtimeApiRequest(
         std::string requestType,
         nlohmann::json requestPayload,
-        std::string responseType = {})
+        std::string responseType = {},
+        std::vector<std::string> alternateResponseTypes = {})
         : type(std::move(requestType)),
           payload(std::move(requestPayload)),
-          expectedResponseType(std::move(responseType))
+          expectedResponseType(std::move(responseType)),
+          alternateResponseTypes(std::move(alternateResponseTypes))
     {
     }
 
     std::string type;
     nlohmann::json payload;
     std::string expectedResponseType;
+    std::vector<std::string> alternateResponseTypes;
 };
 
 enum class RealtimeErrorKind

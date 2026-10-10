@@ -1,6 +1,7 @@
 #include "modules/rooms/infrastructure/RoomLobbyApi.h"
 #include <nlohmann/json.hpp>
 #include "modules/rooms/infrastructure/RoomPayloadCodec.h"
+#include "modules/rooms/infrastructure/RoomInvitationPayloadCodec.h"
 #include "modules/session/application/SessionStore.h"
 #include "modules/rooms/domain/RoomErrorMessages.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiHelpers.h"
@@ -80,14 +81,15 @@ void RoomLobbyApi::SendInvite(int roomId, int userId, std::stop_token stopToken)
         InviteSentEvent));
 }
 
-void RoomLobbyApi::RespondInvite(
+domain::RoomInvitationResponse RoomLobbyApi::RespondInvite(
     std::string_view invitationId, bool accept, std::stop_token stopToken) const
 {
-    static_cast<void>(lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
+    const auto response = lila::shared::network::realtime::helpers::SendAuthenticatedRequest(
         client_, sessionStore_, lila::shared::errors::NoActiveRoomSession,
         InviteRespondEvent,
         {{"invitationId", std::string(invitationId)}, {"accept", accept}},
         lila::shared::errors::RoomLobbyLoadFailed, stopToken,
-        InviteRespondedEvent));
+        InviteRespondedEvent, {"room.lobby.invite.accepted"});
+    return ReadRoomInvitationResponse(response.type, response.payload, accept);
 }
 }

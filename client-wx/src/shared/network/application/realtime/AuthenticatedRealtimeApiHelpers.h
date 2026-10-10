@@ -23,14 +23,15 @@ inline RealtimeApiResponse SendAndCheckAuth(
     const std::string& type,
     nlohmann::json payload,
     std::stop_token stopToken = {},
-    const std::string& expectedResponseType = {})
+    const std::string& expectedResponseType = {},
+    const std::vector<std::string>& alternateResponseTypes = {})
 {
     if (!sessionStore.HasActiveSession())
     {
         throw std::runtime_error(noActiveSessionMessage);
     }
 
-    const RealtimeApiRequest request(type, std::move(payload), expectedResponseType);
+    const RealtimeApiRequest request(type, std::move(payload), expectedResponseType, alternateResponseTypes);
     auto response = client.Send(request, sessionStore.AccessToken(stopToken), stopToken);
     if ((response.statusCode == 401 || response.statusCode == 403)
         && !stopToken.stop_requested())
@@ -80,7 +81,8 @@ inline RealtimeApiResponse SendAuthenticatedRequest(
     nlohmann::json payload,
     const std::string& fallbackMessage,
     std::stop_token stopToken = {},
-    const std::string& expectedResponseType = {})
+    const std::string& expectedResponseType = {},
+    const std::vector<std::string>& alternateResponseTypes = {})
 {
     auto response = SendAndCheckAuth(
         client,
@@ -89,7 +91,7 @@ inline RealtimeApiResponse SendAuthenticatedRequest(
         type,
         std::move(payload),
         stopToken,
-        expectedResponseType);
+        expectedResponseType, alternateResponseTypes);
     EnsureSuccessOrThrow(response, sessionStore, fallbackMessage);
     return response;
 }

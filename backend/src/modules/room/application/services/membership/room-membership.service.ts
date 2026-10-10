@@ -170,9 +170,6 @@ export class RoomMembershipService {
       );
     }
     const room = await context.requireRoom(roomId);
-    if (room.isPrivate && !opts?.allowPrivate) {
-      throw new BadRequestException('Table privée');
-    }
     const user = await context.requireUser(userId);
 
     const manifest = await this.catalog.getGame(room.gameType);
@@ -185,6 +182,11 @@ export class RoomMembershipService {
       room.id,
       user.id,
     );
+
+    // Accepting an invitation already creates the participant before the socket joins.
+    if (room.isPrivate && !opts?.allowPrivate && existing?.role !== 'player') {
+      throw new BadRequestException('Table privée');
+    }
 
     if (!isOpenRoom(room) && !existing) {
       throw new BadRequestException('Table déjà démarrée');

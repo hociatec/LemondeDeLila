@@ -23,11 +23,13 @@ public:
     const std::string& rawJson,
     const std::string& expectedRequestId,
     const std::string& expectedRequestType,
-    const std::string& expectedResponseType = {});
+    const std::string& expectedResponseType = {},
+    const std::vector<std::string>& alternateResponseTypes = {});
 [[nodiscard]] RealtimeApiResponse ParseResponse(
     const std::string& rawJson,
     const std::string& expectedRequestId,
     const std::string& expectedRequestType,
-    const std::string& expectedResponseType = {});
+    const std::string& expectedResponseType = {},
+    const std::vector<std::string>& alternateResponseTypes = {});
 }
 }

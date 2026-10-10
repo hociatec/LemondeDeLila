@@ -4,6 +4,7 @@
 #include "shared/data/json/JsonReaders.h"
 #include "shared/errors/catalog/CoreErrorMessages.h"
 
+#include <algorithm>
 #include <random>
 #include <stdexcept>
 #include <string>
@@ -61,7 +62,8 @@ bool IsResponseForRequest(
     const std::string& rawJson,
     const std::string& expectedRequestId,
     const std::string& expectedRequestType,
-    const std::string& expectedResponseType)
+    const std::string& expectedResponseType,
+    const std::vector<std::string>& alternateResponseTypes)
 {
     nlohmann::json decoded;
     try
@@ -83,7 +85,8 @@ bool IsResponseForRequest(
     const auto context = lila::shared::data::json::ReadOptionalString(
         decoded, lila::shared::network::realtime::fields::Context.data());
     const bool matchingType = !expectedRequestType.empty()
-        && type == ResolveExpectedResponseType(expectedRequestType, expectedResponseType);
+        && (type == ResolveExpectedResponseType(expectedRequestType, expectedResponseType) ||
+            std::find(alternateResponseTypes.begin(), alternateResponseTypes.end(), type) != alternateResponseTypes.end());
     const bool matchingError =
         (type == lila::shared::network::realtime::fields::ErrorType &&
          context == expectedRequestType) ||
@@ -96,7 +99,8 @@ RealtimeApiResponse ParseResponse(
     const std::string& rawJson,
     const std::string& expectedRequestId,
     const std::string& expectedRequestType,
-    const std::string& expectedResponseType)
+    const std::string& expectedResponseType,
+    const std::vector<std::string>& alternateResponseTypes)
 {
     nlohmann::json decoded;
     try
@@ -118,7 +122,8 @@ RealtimeApiResponse ParseResponse(
     const auto context = lila::shared::data::json::ReadOptionalString(
         decoded, lila::shared::network::realtime::fields::Context.data());
     const bool matchingType = !expectedRequestType.empty()
-        && response.type == ResolveExpectedResponseType(expectedRequestType, expectedResponseType);
+        && (response.type == ResolveExpectedResponseType(expectedRequestType, expectedResponseType) ||
+            std::find(alternateResponseTypes.begin(), alternateResponseTypes.end(), response.type) != alternateResponseTypes.end());
     const bool matchingError =
         (response.type == lila::shared::network::realtime::fields::ErrorType &&
          context == expectedRequestType) ||

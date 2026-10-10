@@ -94,12 +94,12 @@ RealtimeApiResponse AuthenticatedRealtimeApiClient::Send(
                     rawJson,
                     requestId,
                     request.type,
-                    request.expectedResponseType)) continue;
+                    request.expectedResponseType, request.alternateResponseTypes)) continue;
             auto response = protocol::ParseResponse(
                 rawJson,
                 requestId,
                 request.type,
-                request.expectedResponseType);
+                request.expectedResponseType, request.alternateResponseTypes);
             if (response.statusCode == 401 || response.statusCode == 403)
                 connectedHeaders_.clear();
             return response;

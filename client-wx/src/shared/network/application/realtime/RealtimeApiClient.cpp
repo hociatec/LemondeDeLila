@@ -50,7 +50,7 @@ RealtimeApiResponse RealtimeApiClient::Send(
             rawJson,
             requestId,
             request.type,
-            request.expectedResponseType);
+            request.expectedResponseType, request.alternateResponseTypes);
     }
     catch (const protocol::RealtimeProtocolError& exception)
     {
