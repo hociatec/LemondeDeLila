@@ -15,7 +15,7 @@ public:
     [[nodiscard]] std::vector<domain::TableAmbience> ListTableAmbiences(
         std::stop_token stopToken) const override;
     void SendInvite(int roomId, int userId, std::stop_token stopToken) const override;
-    void RespondInvite(std::string_view invitationId, bool accept, std::stop_token stopToken) const override;
+    domain::RoomInvitationResponse RespondInvite(std::string_view invitationId, bool accept, std::stop_token stopToken) const override;
 private:
     lila::shared::network::realtime::AuthenticatedRealtimeApiClient& client_;
     lila::modules::session::application::SessionStore& sessionStore_;

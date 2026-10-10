@@ -18,7 +18,7 @@ public:
     [[nodiscard]] virtual std::vector<domain::TableAmbience> ListTableAmbiences(
         std::stop_token stopToken) const = 0;
     virtual void SendInvite(int roomId, int userId, std::stop_token stopToken) const = 0;
-    virtual void RespondInvite(
+    virtual domain::RoomInvitationResponse RespondInvite(
         std::string_view invitationId, bool accept, std::stop_token stopToken) const = 0;
 };
 }

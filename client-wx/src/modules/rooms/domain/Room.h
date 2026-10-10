@@ -53,6 +53,12 @@ struct RoomInvitation final
     std::string fromUsername;
 };
 
+struct RoomInvitationResponse final
+{
+    int roomId = 0;
+    bool spectator = false;
+};
+
 struct RoomState
 {
     int id = 0;

@@ -54,16 +54,17 @@ void AppNavigator::HandleRoomInvitation(modules::rooms::domain::RoomInvitation i
     auto* service = &roomLobbyService_;
     const wxWeakRef<HostFrame> weakFrame(hostFrame_);
     const std::weak_ptr<int> lifetime(lifetimeToken_);
-    invitationResponseTask_ = lila::shared::concurrency::RunAsync(
+    invitationResponseTask_ = lila::shared::concurrency::RunAsync<modules::rooms::domain::RoomInvitationResponse>(
         [service, id = invitation.invitationId, accept](std::stop_token stopToken)
         {
-            service->RespondInvite(id, accept, stopToken);
+            return service->RespondInvite(id, accept, stopToken);
         },
-        [this, weakFrame, lifetime, accept, roomId = invitation.roomId](
-            std::optional<lila::shared::errors::AppError> error)
+        [this, weakFrame, lifetime, accept](
+            std::optional<lila::shared::errors::AppError> error,
+            std::optional<modules::rooms::domain::RoomInvitationResponse> response)
         {
             if (!weakFrame || lifetime.expired()) return;
-            weakFrame->CallAfter([this, weakFrame, lifetime, accept, roomId, error = std::move(error)]() mutable
+            weakFrame->CallAfter([this, weakFrame, lifetime, accept, response, error = std::move(error)]() mutable
             {
                 if (!weakFrame || lifetime.expired()) return;
                 invitationResponseTask_.reset();
@@ -74,7 +75,7 @@ void AppNavigator::HandleRoomInvitation(modules::rooms::domain::RoomInvitation i
                         wxString(L"Invitation"), wxOK | wxICON_ERROR, weakFrame);
                     RestoreInvitationFocus(focusedBeforeError);
                 }
-                else if (accept) JoinRoom(roomId, false);
+                else if (accept && response) JoinRoom(response->roomId, response->spectator);
                 if (!pendingInvitations_.empty())
                 {
                     auto next = std::move(pendingInvitations_.front());

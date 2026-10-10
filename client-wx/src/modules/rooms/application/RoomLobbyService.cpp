@@ -26,9 +26,9 @@ void RoomLobbyService::SendInvite(int roomId, int userId, std::stop_token stopTo
     gateway_.SendInvite(roomId, userId, stopToken);
 }
 
-void RoomLobbyService::RespondInvite(
+domain::RoomInvitationResponse RoomLobbyService::RespondInvite(
     std::string_view invitationId, bool accept, std::stop_token stopToken) const
 {
-    gateway_.RespondInvite(invitationId, accept, stopToken);
+    return gateway_.RespondInvite(invitationId, accept, stopToken);
 }
 }

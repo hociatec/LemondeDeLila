@@ -19,7 +19,7 @@ public:
     [[nodiscard]] std::vector<domain::TableAmbience> ListTableAmbiences(
         std::stop_token stopToken) const;
     void SendInvite(int roomId, int userId, std::stop_token stopToken) const;
-    void RespondInvite(std::string_view invitationId, bool accept, std::stop_token stopToken) const;
+    domain::RoomInvitationResponse RespondInvite(std::string_view invitationId, bool accept, std::stop_token stopToken) const;
 private:
     IRoomLobbyGateway& gateway_;
 };

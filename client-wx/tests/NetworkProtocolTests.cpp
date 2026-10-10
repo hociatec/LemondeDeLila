@@ -65,6 +65,7 @@
 #include "shared/domain/identifiers/DomainTypes.h"
 #include "shared/logging/application/Logger.h"
 #include "shared/network/application/realtime/RealtimeProtocol.h"
+#include "modules/rooms/infrastructure/RoomInvitationPayloadCodec.h"
 #include "shared/network/application/realtime/AuthenticatedRealtimeApiClient.h"
 #include "shared/network/domain/WebSocketConstants.h"
 #include "shared/network/application/http/IWsTicketProvider.h"
@@ -84,6 +85,7 @@
 #include "network_protocol/OptionsAudioTests.inc"
 #include "network_protocol/SessionStorageTextTests.inc"
 #include "network_protocol/RealtimeChatAccessibilityTests.inc"
+#include "network_protocol/RoomInvitationResponseTests.inc"
 #include "network_protocol/CatalogRoomCodecTests.inc"
 #include "network_protocol/RoomGatewayTests.inc"
 #include "network_protocol/RoomPresentationTests.inc"
@@ -135,6 +137,7 @@ int main()
         run("EncodingRejectsInvalidUtf8", TestEncodingRejectsInvalidUtf8);
         run("BrokenAccentRepairCanBeToggled", TestBrokenAccentRepairCanBeToggled);
         run("RealtimeProtocolStrictCorrelationAndPayloadValidation", TestRealtimeProtocolStrictCorrelationAndPayloadValidation);
+        run("RoomInvitationResponses", TestRoomInvitationResponses);
         run("ChatProtocolHandlesMalformedAndUnknownEvents", TestChatProtocolHandlesMalformedAndUnknownEvents);
         run("ChatMessageStoreEnforcesLimits", TestChatMessageStoreEnforcesLimits);
         run("ChatMessageActionRights", TestChatMessageActionRights);
