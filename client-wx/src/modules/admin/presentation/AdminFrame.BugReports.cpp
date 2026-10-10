@@ -8,6 +8,7 @@
 #include <wx/msgdlg.h>
 #include <wx/panel.h>
 #include <wx/textctrl.h>
+#include <wx/weakref.h>
 
 #include "modules/admin/presentation/AdminCommandDialog.h"
 #include "shared/text/presentation/encoding/Encoding.h"
@@ -23,7 +24,7 @@ constexpr std::string_view ReportStatuses[]{
 
 void AdminFrame::SearchBugReports()
 {
-    if (loading_) return;
+    if (reportSearchCtrl_ == nullptr) return;
     if (!bugReportListPayload_.is_object()) bugReportListPayload_ = nlohmann::json::object();
     bugReportListPayload_["search"] =
         lila::shared::text::ToUtf8(reportSearchCtrl_->GetValue());
@@ -33,7 +34,6 @@ void AdminFrame::SearchBugReports()
 
 void AdminFrame::ChangeBugReportFilter()
 {
-    if (loading_) return;
     const auto selection = reportStatusMenu_->GetSelectedIndex();
     if (selection == 0 || selection >= std::size(ReportStatuses)) return;
     bugReportListPayload_["status"] = ReportStatuses[selection];
@@ -68,9 +68,35 @@ void AdminFrame::RefreshBugReports(
     const auto selection = reportStatusMenu_->GetSelectedIndex();
     if (selection > 0 && selection < std::size(ReportStatuses))
         bugReportListPayload_["status"] = ReportStatuses[selection];
+    if (loading_)
+    {
+        // Remember the latest filter/search, including during a mutation.
+        // Never cancel a write just because the user requested a newer list.
+        pendingBugReportRefresh_ = true;
+        return;
+    }
+    pendingBugReportRefresh_ = false;
+    loadingReportCountsOnly_ = false;
     keepFocusAfterCommand_ = keepCurrentFocus;
     bugReportListPayload_["countsOnly"] = false;
     ExecuteCommand(*command, bugReportListPayload_, announceLifecycle);
+}
+
+bool AdminFrame::ResumePendingReportRead(const domain::AdminCommand& command)
+{
+    if (!pendingBugReportRefresh_) return false;
+    if (command.id == "bugs.list")
+    {
+        RefreshBugReports();
+        return true;
+    }
+    // Process write success/errors before starting the queued read.
+    CallAfter([weakThis = wxWeakRef<AdminFrame>(this)]()
+    {
+        if (weakThis && !weakThis->loading_ && weakThis->pendingBugReportRefresh_)
+            weakThis->RefreshBugReports();
+    });
+    return false;
 }
 
 void AdminFrame::UpdateBugReportActions()

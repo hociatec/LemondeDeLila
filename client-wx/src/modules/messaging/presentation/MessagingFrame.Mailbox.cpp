@@ -5,6 +5,12 @@
 
 namespace lila::modules::messaging::presentation
 {
+void MessagingFrame::RefreshForNavigation()
+{
+    if (navigationState_.currentScreen == Screen::List)
+        RefreshCurrentBox(true);
+}
+
 void MessagingFrame::RefreshCurrentBox(bool preserveSelection)
 {
     screenCoordinator_->RefreshCurrentBox(preserveSelection);
@@ -12,11 +18,17 @@ void MessagingFrame::RefreshCurrentBox(bool preserveSelection)
 
 void MessagingFrame::OpenSelectedMenu(std::size_t selectedMenuIndex)
 {
+    if (selectedMenuIndex == 0)
+    {
+        ++readGeneration_;
+        pendingRead_ = {};
+    }
     screenCoordinator_->OpenSelectedMenu(selectedMenuIndex);
 }
 
 void MessagingFrame::OpenDetail()
 {
+    if (isBusy_) return;
     const auto message = screenCoordinator_->GetSelectedMessage();
     if (!message.has_value())
     {
@@ -32,6 +44,8 @@ void MessagingFrame::OpenDetail()
 
 void MessagingFrame::OpenCompose(std::optional<domain::MessagingUser> recipient, Screen returnScreen)
 {
+    ++readGeneration_;
+    pendingRead_ = {};
     screenCoordinator_->OpenCompose(std::move(recipient), returnScreen);
 }
 

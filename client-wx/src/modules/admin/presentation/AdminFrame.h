@@ -48,6 +48,7 @@ public:
         OpenStoryBookRequestedHandler onOpenStoryBookRequested,
         std::size_t initialSection = 0);
     ~AdminFrame() override;
+    void RefreshForNavigation();
 
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
@@ -96,6 +97,7 @@ private:
         bool keepCurrentFocus = false,
         bool announceLifecycle = true);
     void UpdateBugReportActions();
+    bool ResumePendingReportRead(const domain::AdminCommand& command);
     void FocusCurrentMenu();
     void FocusResult();
     void FocusResultDetails();
@@ -143,6 +145,7 @@ private:
     std::size_t selectedSection_ = 0;
     bool showingCommands_ = false;
     bool loading_ = false;
+    bool reportMutationInFlight_ = false;
     std::string maintenanceToken_;
     bool maintenanceTokenInitialized_ = false;
     const domain::AdminCommand* paginationCommand_ = nullptr;
@@ -151,6 +154,7 @@ private:
     nlohmann::json botTimingPayload_ = nlohmann::json::object();
     bool openBotTimingEditorAfterRead_ = false;
     bool loadingReportCountsOnly_ = false;
+    bool pendingBugReportRefresh_ = false;
     std::vector<int> pageSizeChoices_;
     std::optional<std::size_t> selectedResultIndex_;
     std::optional<std::string> reportIdToRestore_;

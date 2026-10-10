@@ -173,6 +173,8 @@ void SocialSectionCoordinator::LoadBlockedUsers()
 void SocialSectionCoordinator::LoadProfile(std::optional<int> userId)
 {
     navigationState_.BeginProfile(userId);
+    dataStore_.ReplaceProfile(std::nullopt);
+    sectionPresenter_.SyncProfileControls();
     auto result = std::make_shared<std::optional<domain::SocialProfile>>();
     const auto loadController = loadController_;
     callbacks_.runBackgroundTask(

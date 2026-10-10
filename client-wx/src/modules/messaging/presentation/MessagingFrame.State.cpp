@@ -18,6 +18,7 @@
 #include <wx/simplebook.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
+#include <utility>
 
 namespace lila::modules::messaging::presentation
 {
@@ -39,24 +40,42 @@ void MessagingFrame::UpdateStatus(const wxString& message, bool isError)
 void MessagingFrame::RunBackgroundTask(
     const wxString& busyMessage,
     const std::function<void()>& worker,
-    const std::function<void()>& onSuccess)
+    const std::function<void()>& onSuccess,
+    bool readOnly)
 {
+    const auto generation = readOnly ? ++readGeneration_ : readGeneration_;
     if (isBusy_)
     {
+        if (readOnly)
+        {
+            pendingRead_ = [this, busyMessage, worker, onSuccess]()
+            { RunBackgroundTask(busyMessage, worker, onSuccess, true); };
+            return;
+        }
         UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ActionInProgress), true);
         return;
     }
 
+    if (readOnly) pendingRead_ = {};
     SetBusyState(true, busyMessage);
-    lila::shared::ui::RunManagedBackgroundTask(
-        *this,
+    lila::shared::ui::RunBackgroundTask(
+        this,
         worker,
-        [](MessagingFrame& frame) { frame.SetBusyState(false); },
-        [](MessagingFrame& frame, std::string errorMessage)
+        [this, weakThis = wxWeakRef<MessagingFrame>(this), generation, readOnly, onSuccess](std::string errorMessage)
         {
-            frame.UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
-        },
-        [onSuccess](MessagingFrame&) { if (onSuccess) onSuccess(); });
+            SetBusyState(false);
+            if (!readOnly || generation == readGeneration_)
+            {
+                if (!errorMessage.empty())
+                    UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
+                else if (onSuccess) onSuccess();
+            }
+            if (weakThis && !isBusy_ && pendingRead_)
+            {
+                auto next = std::exchange(pendingRead_, {});
+                next();
+            }
+        });
 }
 
 void MessagingFrame::SetBusyState(bool busy, const wxString& message)
@@ -194,6 +213,8 @@ void MessagingFrame::ScheduleFocusCurrentScreen()
 
 bool MessagingFrame::NavigateBack(bool preserveCurrentBox)
 {
+    ++readGeneration_;
+    pendingRead_ = {};
     const Screen previousScreen = navigationState_.currentScreen;
     if (!navigationState_.GoBack(preserveCurrentBox))
     {
@@ -201,6 +222,8 @@ bool MessagingFrame::NavigateBack(bool preserveCurrentBox)
     }
 
     SetScreen(navigationState_.currentScreen, previousScreen);
+    if (navigationState_.currentScreen == Screen::List)
+        RefreshCurrentBox(true);
     return true;
 }
 }

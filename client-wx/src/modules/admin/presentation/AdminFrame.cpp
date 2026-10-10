@@ -38,6 +38,22 @@ AdminFrame::~AdminFrame()
     lila::shared::security::SecureWipeString(maintenanceToken_);
 }
 
+void AdminFrame::RefreshForNavigation()
+{
+    if (!showingCommands_ || showingItemActions_) return;
+    if (domain::GetAdminAreas()[selectedSection_].id == "reports")
+    {
+        if (reportStatusMenu_->GetSelectedIndex() > 0) RefreshBugReports(true, false);
+        else if (!loading_) LoadAutomaticAreaContent();
+    }
+    else if (!loading_)
+    {
+        if (paginationCommand_ != nullptr)
+            ExecuteCommand(*paginationCommand_, paginationPayload_, false);
+        else LoadAutomaticAreaContent();
+    }
+}
+
 lila::shared::accessibility::FocusManager::Plan AdminFrame::BuildFocusPlan()
 {
     lila::shared::accessibility::FocusManager::Plan plan;

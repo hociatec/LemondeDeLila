@@ -70,7 +70,7 @@ MessagingFrame::MessagingFrame(
         MessagingScreenCoordinator::Callbacks{
             [this](const wxString& busyMessage, const std::function<void()>& worker, const std::function<void()>& onSuccess)
             {
-                RunBackgroundTask(busyMessage, worker, onSuccess);
+                RunBackgroundTask(busyMessage, worker, onSuccess, true);
             },
             [this](const wxString& message, bool isError)
             {

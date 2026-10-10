@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <stdexcept>
+#include <utility>
 
 #include <wx/msgdlg.h>
 #include <wx/textctrl.h>
@@ -16,6 +17,14 @@
 
 namespace lila::modules::social::presentation
 {
+void SocialFrame::RefreshForNavigation()
+{
+    // Do not overwrite a profile the user is editing after visiting an overlay.
+    if (navigationState_.currentScreen == Screen::Section &&
+        navigationState_.currentSection != SocialSection::Profile)
+        RefreshCurrentSection();
+}
+
 lila::shared::accessibility::FocusManager::Plan SocialFrame::BuildFocusPlan()
 {
     lila::shared::accessibility::FocusManager::Plan plan;
@@ -63,24 +72,42 @@ void SocialFrame::RunBackgroundTask(
     const wxString& busyMessage,
     const std::function<void()>& worker,
     const std::function<void()>& onSuccess,
-    bool announceBusy)
+    bool announceBusy,
+    bool readOnly)
 {
+    const auto generation = readOnly ? ++readGeneration_ : readGeneration_;
     if (isBusy_)
     {
+        if (readOnly)
+        {
+            pendingRead_ = [this, busyMessage, worker, onSuccess, announceBusy]()
+            { RunBackgroundTask(busyMessage, worker, onSuccess, announceBusy, true); };
+            return;
+        }
         UpdateStatus(lila::shared::text::FromUtf8(lila::shared::errors::ActionInProgress), true);
         return;
     }
 
+    if (readOnly) pendingRead_ = {};
     SetBusyState(true, busyMessage, announceBusy);
-    lila::shared::ui::RunManagedBackgroundTask(
-        *this,
+    lila::shared::ui::RunBackgroundTask(
+        this,
         worker,
-        [](SocialFrame& frame) { frame.SetBusyState(false); },
-        [](SocialFrame& frame, std::string errorMessage)
+        [this, weakThis = wxWeakRef<SocialFrame>(this), generation, readOnly, onSuccess](std::string errorMessage)
         {
-            frame.UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
-        },
-        [onSuccess](SocialFrame& frame) { if (onSuccess) frame.RunUiAction(onSuccess); });
+            SetBusyState(false);
+            if (!readOnly || generation == readGeneration_)
+            {
+                if (!errorMessage.empty())
+                    UpdateStatus(lila::shared::text::FromUtf8(errorMessage), true);
+                else if (onSuccess) RunUiAction(onSuccess);
+            }
+            if (weakThis && !isBusy_ && pendingRead_)
+            {
+                auto next = std::exchange(pendingRead_, {});
+                next();
+            }
+        });
 }
 
 void SocialFrame::SetBusyState(bool busy, const wxString& message, bool announce)

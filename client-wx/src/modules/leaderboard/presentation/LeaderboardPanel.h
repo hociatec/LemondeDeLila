@@ -74,6 +74,5 @@ private:
     std::size_t pendingGameIndex_ = 0;
     State state_ = State::Loading;
     Request pendingRequest_ = Request::Games;
-    bool gamesLoaded_ = false;
 };
 }

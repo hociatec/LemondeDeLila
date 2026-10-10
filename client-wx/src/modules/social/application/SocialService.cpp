@@ -32,36 +32,35 @@ std::vector<domain::SocialFriendRequest> SocialService::LoadOutgoingRequests() c
 
 domain::SocialFriendsSnapshot SocialService::LoadFriendsSnapshot() const
 {
-    return friendsCache_.GetOrLoad({}, [this](std::stop_token) { return api_.GetFriendsSnapshot(); })
-        .value_or(domain::SocialFriendsSnapshot{});
+    std::size_t generation;
+    {
+        std::scoped_lock lock(friendsMutex_);
+        generation = ++friendsGeneration_;
+    }
+    auto snapshot = api_.GetFriendsSnapshot();
+    // Keep a hint for presence notifications, never use it to serve a screen.
+    {
+        std::scoped_lock lock(friendsMutex_);
+        if (generation == friendsGeneration_) friendsHint_ = snapshot;
+    }
+    return snapshot;
 }
 
 domain::SocialRequestsSnapshot SocialService::LoadIncomingSnapshot() const
 {
-    return incomingRequestsCache_.GetOrLoad(
-        {},
-        [this](std::stop_token)
-        {
-            return api_.GetRequestsSnapshot(
-                std::string(lila::modules::social::infrastructure::fields::DirectionIncoming));
-        }).value_or(domain::SocialRequestsSnapshot{});
+    return api_.GetRequestsSnapshot(
+        std::string(lila::modules::social::infrastructure::fields::DirectionIncoming));
 }
 
 domain::SocialRequestsSnapshot SocialService::LoadOutgoingSnapshot() const
 {
-    return outgoingRequestsCache_.GetOrLoad(
-        {},
-        [this](std::stop_token)
-        {
-            return api_.GetRequestsSnapshot(
-                std::string(lila::modules::social::infrastructure::fields::DirectionOutgoing));
-        }).value_or(domain::SocialRequestsSnapshot{});
+    return api_.GetRequestsSnapshot(
+        std::string(lila::modules::social::infrastructure::fields::DirectionOutgoing));
 }
 
 std::vector<domain::SocialUser> SocialService::LoadBlockedUsers() const
 {
-    return blockedUsersCache_.GetOrLoad({}, [this](std::stop_token) { return api_.GetBlockedUsers(); })
-        .value_or(std::vector<domain::SocialUser>{});
+    return api_.GetBlockedUsers();
 }
 
 domain::SocialRelationshipState SocialService::LoadRelationshipState(int userId) const
@@ -83,9 +82,7 @@ std::optional<domain::SocialProfile> SocialService::LoadProfile(std::optional<in
 
 std::optional<domain::SocialProfile> SocialService::SaveProfile(const domain::SocialProfileUpdate& update) const
 {
-    auto profile = api_.UpdateProfile(update);
-    ownProfileCache_.Store(profile);
-    return profile;
+    return api_.UpdateProfile(update);
 }
 
 void SocialService::AcceptFriend(int userId) const
@@ -141,23 +138,21 @@ std::vector<domain::SocialUser> SocialService::SearchUsers(const std::string& qu
 
 bool SocialService::IsFriendCached(int userId) const
 {
-    const auto friends = friendsCache_.TryGet();
-    return friends.has_value() && std::ranges::any_of(
-        friends->friends,
+    std::scoped_lock lock(friendsMutex_);
+    return friendsHint_.has_value() && std::ranges::any_of(
+        friendsHint_->friends,
         [userId](const domain::SocialUser& user) { return user.id.value == userId; });
 }
 
 void SocialService::ClearCache()
 {
     ClearRelationshipCache();
-    ownProfileCache_.Clear();
 }
 
 void SocialService::ClearRelationshipCache() const
 {
-    friendsCache_.Clear();
-    incomingRequestsCache_.Clear();
-    outgoingRequestsCache_.Clear();
-    blockedUsersCache_.Clear();
+    std::scoped_lock lock(friendsMutex_);
+    ++friendsGeneration_;
+    friendsHint_.reset();
 }
 }

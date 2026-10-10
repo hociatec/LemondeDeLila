@@ -172,7 +172,6 @@ void AppNavigator::ResetSessionViews()
         catalogPrewarmTask_->RequestCancel();
         catalogPrewarmTask_.reset();
     }
-    catalogService_.ClearCache();
     socialService_.ClearCache();
 
     constexpr ViewId sessionViews[] = {

@@ -47,8 +47,10 @@ void SocialSectionCoordinator::ActivateSection(SocialSection section)
         return;
     }
 
+    // Keep the current list readable while fetching a fresh snapshot.
+    sectionPresenter_.StoreSelection(section);
     sectionPresenter_.ShowCurrentSection();
-    sectionPresenter_.SyncSectionActionVisibility();
+    sectionPresenter_.SyncSelectionState();
     RefreshSection(section);
 }
 

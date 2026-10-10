@@ -42,6 +42,11 @@ struct SlowResponse
         { std::lock_guard lock(mutex); released = true; }
         wake.notify_all();
     }
+    void Reset()
+    {
+        std::lock_guard lock(mutex);
+        released = false;
+    }
 };
 class RoomGateway final : public rooms::application::IRoomLobbyGateway
 {
@@ -120,6 +125,24 @@ void CheckTransitions(Factory create, SlowResponse& response, bool cancel)
         assert(completed && list->GetCount() == 1);
         assert(list->GetString(0).StartsWith("Loaded"));
         assert(list->HasFocus());
+        // Reopening must issue a new read, even after a successful first load.
+        response.Reset();
+        completed = false;
+        panel->Prepare([&] { completed = true; });
+        wxTheApp->Yield();
+        assert(!completed);
+        const bool retainsSnapshot = dynamic_cast<
+            lila::modules::leaderboard::presentation::LeaderboardPanel*>(panel) != nullptr;
+        assert(list->GetString(0).StartsWith(retainsSnapshot ? "Loaded" : "Chargement"));
+        assert(list->HasFocus());
+        response.Release();
+        const auto reopenTimeout = std::chrono::steady_clock::now() + 3s;
+        while (!completed && std::chrono::steady_clock::now() < reopenTimeout)
+        {
+            wxTheApp->Yield();
+            std::this_thread::sleep_for(1ms);
+        }
+        assert(completed);
     }
     delete frame;
     wxTheApp->Yield();

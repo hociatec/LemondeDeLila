@@ -107,6 +107,9 @@ void AdminFrame::ShowResult(
     resultSummaryLabel_->SetLabel(
         wxString(command.label) + wxString(L" — ") +
         lila::shared::text::FromUtf8(presentation.summary));
+    if (command.id == "bugs.list" && !reportIdToRestore_ && selectedResultIndex_ &&
+        *selectedResultIndex_ < resultItems_.size())
+        reportIdToRestore_ = resultItems_[*selectedResultIndex_].value("id", std::string{});
     resultDetails_.clear();
     resultItems_.clear();
     selectedResultIndex_.reset();

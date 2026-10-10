@@ -1,6 +1,10 @@
 #include <cassert>
 #include <functional>
 #include <chrono>
+#include <atomic>
+#include <condition_variable>
+#include <mutex>
+#include <thread>
 #include <iostream>
 #include <wx/listbox.h>
 #include <stdexcept>
@@ -12,6 +16,8 @@
 #include <wx/log.h>
 #include "modules/audio/application/IAudioService.h"
 #include "modules/social/presentation/SocialLoadController.h"
+#include "modules/social/presentation/SocialFrame.h"
+#include "shared/concurrency/application/BackgroundExecutor.h"
 #include "modules/social/presentation/SocialDataStore.h"
 #include "modules/social/presentation/SocialNavigationState.h"
 #include "modules/social/presentation/SocialSectionCoordinator.h"
@@ -83,6 +89,7 @@ public:
     std::optional<domain::SocialProfile> UpdateProfile(const domain::SocialProfileUpdate&) const override { return {}; }
 };
 class TestApp final : public wxApp { public: bool OnInit() override { return true; } };
+#include "SocialReadSchedulingTests.inc"
 wxIMPLEMENT_APP_NO_MAIN(TestApp);
 int main(int argc, char** argv)
 {
@@ -123,13 +130,26 @@ int main(int argc, char** argv)
     Gateway gateway;
     Audio audio;
     application::SocialService service(gateway, audio);
+    SocialReadSchedulingTest::Run(service);
     auto controller = std::make_shared<SocialLoadController>(service);
     assert(controller->LoadFriends().friends.size() == 3);
-    assert(controller->LoadFriends().friends.size() == 3);
-    assert(gateway.snapshotReads == 1); // Reopening uses the complete cached snapshot.
-    service.ClearCache();
-    assert(controller->LoadFriends().friends.size() == 3);
+    const auto removedUser = gateway.users.back();
+    gateway.users.pop_back(); // A change made by another client must appear on reopening.
+    assert(controller->LoadFriends().friends.size() == 2);
+    assert(!service.IsFriendCached(removedUser.id.value));
     assert(gateway.snapshotReads == 2);
+    service.ClearCache();
+    gateway.users.push_back(removedUser);
+    assert(controller->LoadFriends().friends.size() == 3);
+    assert(gateway.snapshotReads == 3);
+    assert(controller->LoadIncomingRequests().requests.size() == 3);
+    assert(controller->LoadOutgoingRequests().requests.size() == 3);
+    assert(controller->LoadBlockedUsers().size() == 3);
+    gateway.users.pop_back();
+    assert(controller->LoadIncomingRequests().requests.size() == 2);
+    assert(controller->LoadOutgoingRequests().requests.size() == 2);
+    assert(controller->LoadBlockedUsers().size() == 2);
+    gateway.users.push_back(removedUser);
     auto* host = new wxFrame(nullptr, wxID_ANY, "social-loading-test");
     auto* view = new SocialView(host);
     SocialDataStore data;
@@ -173,6 +193,14 @@ int main(int argc, char** argv)
         assert(focusChanges == 0);
         assert(controls.list->GetSelectedIndex() == 2);
         assert(wxWindow::FindFocus() == controls.list->GetSelectedControl());
+
+        coordinator.ActivateSection(section);
+        assert(controls.list->GetItemCount() == 3);
+        assert(controls.list->GetSelectedIndex() == 2);
+        worker();
+        focusChanges = 0;
+        complete();
+        assert(focusChanges == 0 && controls.list->GetSelectedIndex() == 2);
 
         coordinator.RefreshSection(section);
         state.currentScreen = SocialNavigationState::Screen::Menu;

@@ -2,16 +2,12 @@
 #include "modules/admin/presentation/AdminBugReportStatusMenu.h"
 
 #include <utility>
-#include <memory>
 #include <nlohmann/json.hpp>
 #include <wx/msgdlg.h>
-#include <wx/textctrl.h>
 #include <wx/textdlg.h>
-#include <wx/weakref.h>
 #include "modules/admin/application/AdminService.h"
 #include "modules/audio/application/IAudioService.h"
 #include "modules/admin/domain/AdminPagination.h"
-#include "shared/concurrency/application/BackgroundExecutor.h"
 #include "shared/security/domain/SensitiveString.h"
 #include "shared/text/presentation/encoding/Encoding.h"
 
@@ -53,6 +49,8 @@ void AdminFrame::CompleteCommand(
 {
     if (!requestSlot_.Complete(generation)) return;
     loading_ = false;
+    reportMutationInFlight_ = false;
+    if (ResumePendingReportRead(command)) return;
     std::optional<nlohmann::json> result;
     if (resultPayload)
     {
@@ -229,8 +227,12 @@ void AdminFrame::CompleteCommand(
     const bool countsOnly = command.id == "bugs.list" && loadingReportCountsOnly_;
     CacheBotTimingSettings(*result);
     if (ResumeBotTimingEditorIfNeeded(command)) return;
+    auto* previousFocus = wxWindow::FindFocus();
+    const bool preserveFocus = !announceLifecycle && !resultItems_.empty();
     ShowResult(command, *result);
     if (countsOnly || command.id == "bugs.get") return;
+    if (preserveFocus && previousFocus == wxWindow::FindFocus() && previousFocus && previousFocus->IsShownOnScreen())
+    { keepFocusAfterCommand_ = false; return; }
     if (announceLifecycle)
         SetStatus(AmbienceSuccessMessage(command, *result).value_or(
             wxString(L"Opération terminée : ") + wxString(command.label)));

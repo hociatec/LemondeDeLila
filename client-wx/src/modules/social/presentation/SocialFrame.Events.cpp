@@ -30,6 +30,8 @@ void SocialFrame::BindEvents()
             {
                 if (screenCoordinator_ != nullptr)
                 {
+                    ++readGeneration_;
+                    pendingRead_ = {};
                     screenCoordinator_->HandleEscape();
                 }
             },

@@ -82,7 +82,7 @@ SocialFrame::SocialFrame(
         SocialSectionCoordinator::Callbacks{
             [this](const wxString& busyMessage, const std::function<void()>& worker, const std::function<void()>& onSuccess, bool announceBusy)
             {
-                RunBackgroundTask(busyMessage, worker, onSuccess, announceBusy);
+                RunBackgroundTask(busyMessage, worker, onSuccess, announceBusy, true);
             },
             [this](const wxString& message, bool isError, bool announce)
             {

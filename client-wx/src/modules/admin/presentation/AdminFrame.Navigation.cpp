@@ -21,12 +21,14 @@ using FocusController = lila::shared::accessibility::NavigationController;
 
 void AdminFrame::ShowSections()
 {
+    if (loading_ && reportMutationInFlight_) return;
     gameNavigation_.clear();
     gameResultCommand_ = nullptr;
     pendingQuestionEditor_.reset();
     requestSlot_.Cancel();
     loading_ = false;
     loadingReportCountsOnly_ = false;
+    pendingBugReportRefresh_ = false;
     std::vector<lila::shared::ui::controls::VerticalMenuItem> items;
     const auto& areas = domain::GetAdminAreas();
     items.reserve(areas.size());
@@ -163,6 +165,7 @@ bool AdminFrame::HandleKey(int keyCode)
         return true;
     }
     if (keyCode != WXK_ESCAPE) return false;
+    if (loading_ && reportMutationInFlight_) return true;
     if (ambiencePreviewPlaying_)
     {
         audioService_.Preview(std::nullopt);
@@ -173,12 +176,17 @@ bool AdminFrame::HandleKey(int keyCode)
     }
     if (loading_) requestSlot_.Cancel();
     loading_ = false;
+    loadingReportCountsOnly_ = false;
+    pendingBugReportRefresh_ = false;
     pendingQuestionEditor_.reset();
     refreshAreaAfterCommand_ = false;
     if (RestoreGameNavigation()) return true;
     if (showingItemActions_)
     {
         RestoreAreaFromItem();
+        if (domain::GetAdminAreas()[selectedSection_].id == "reports")
+            RefreshBugReports();
+        else LoadAutomaticAreaContent();
     }
     else if (showingCommands_) ShowSections();
     else

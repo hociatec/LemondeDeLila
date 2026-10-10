@@ -124,6 +124,9 @@ void SocialScreenCoordinator::HandleEscape()
     if (navigationState_.GoBack())
     {
         ApplyNavigationState();
+        if (navigationState_.currentScreen == Screen::Section &&
+            navigationState_.currentSection != SocialSection::Profile)
+            sectionCoordinator_.RefreshCurrentSection();
         return;
     }
 

@@ -28,17 +28,6 @@ LeaderboardPanel::~LeaderboardPanel()
 
 void LeaderboardPanel::Prepare(PreparedHandler onPrepared)
 {
-    if (gamesLoaded_)
-    {
-        navigator_.ShowGames();
-        state_ = State::Ready;
-        ShowCurrentPage();
-        if (onPrepared)
-        {
-            onPrepared();
-        }
-        return;
-    }
     LoadGames(std::move(onPrepared));
 }
 

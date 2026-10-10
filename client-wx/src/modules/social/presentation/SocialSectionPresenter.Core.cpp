@@ -93,7 +93,7 @@ void SocialSectionPresenter::StoreSelection(SocialSection section)
 {
     const auto controls = view_.SectionFor(section);
     auto* list = controls.list;
-    if (section == SocialSection::Profile)
+    if (section == SocialSection::Profile || list == nullptr || list->GetItemCount() == 0)
     {
         return;
     }
