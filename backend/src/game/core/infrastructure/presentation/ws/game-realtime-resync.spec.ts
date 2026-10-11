@@ -40,7 +40,9 @@ it('rebuilds an authorized full snapshot after a missed game version', async () 
     realtime as unknown as ConstructorParameters<typeof GameWsHandler>[4],
     rooms as unknown as ConstructorParameters<typeof GameWsHandler>[5],
     {} as ConstructorParameters<typeof GameWsHandler>[6],
-    {} as ConstructorParameters<typeof GameWsHandler>[7],
+    {
+      run: jest.fn((_roomId, operation) => operation()),
+    } as unknown as ConstructorParameters<typeof GameWsHandler>[7],
   );
 
   await expect(
