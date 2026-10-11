@@ -2,10 +2,13 @@
 #include <wx/app.h>
 #include <wx/listbox.h>
 #include <wx/log.h>
+#include <wx/panel.h>
+#include <wx/textctrl.h>
 #include <windows.h>
 #include "app/navigation/presentation/HostFrame.h"
 #include "shared/accessibility/application/IScreenReaderAnnouncer.h"
 #include "shared/accessibility/presentation/AccessibleMenu.h"
+#include "shared/accessibility/presentation/FocusPlanView.h"
 
 namespace
 {
@@ -34,6 +37,83 @@ public:
         return false;
     }
 };
+class UpdatingView final : public wxPanel,
+    public lila::shared::accessibility::FocusPlanView
+{
+public:
+    explicit UpdatingView(wxWindow* parent) : wxPanel(parent)
+    {
+        game = new wxTextCtrl(this, wxID_ANY, "Game", wxPoint(0, 0));
+        chat = new wxTextCtrl(this, wxID_ANY, "Chat", wxPoint(0, 40));
+    }
+    lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override
+    {
+        lila::shared::accessibility::FocusManager::Plan plan;
+        plan.AddWindow(game);
+        return plan;
+    }
+    wxTextCtrl* game;
+    wxTextCtrl* chat;
+};
+
+void CheckRealtimeFocusRecovery(lila::app::navigation::HostFrame& frame)
+{
+    auto* view = new UpdatingView(frame.ContentParent());
+    frame.SetContent(view);
+    view->chat->SetFocus();
+    wxYield();
+    assert(view->chat->HasFocus());
+    int focusEvents = 0;
+    view->chat->Bind(wxEVT_SET_FOCUS, [&focusEvents](wxFocusEvent& event)
+    {
+        ++focusEvents;
+        event.Skip();
+    });
+    const auto idle = [&frame]()
+    {
+        wxIdleEvent event;
+        frame.GetEventHandler()->ProcessEvent(event);
+    };
+    for (int i = 0; i < 10; ++i) idle();
+    assert(view->chat->HasFocus() && focusEvents == 0);
+
+    // Native restoration can land on a layout panel. It must neither replace
+    // the remembered chat control nor remain an unnamed keyboard destination.
+    ::SetFocus(reinterpret_cast<HWND>(view->GetHandle()));
+    assert(wxWindow::FindFocus() == view);
+    idle();
+    assert(view->chat->HasFocus() && focusEvents == 1);
+
+    // A realtime update removes the active control while the app stays open.
+    view->chat->Destroy();
+    wxYield();
+    ::SetFocus(reinterpret_cast<HWND>(view->GetHandle()));
+    idle();
+    assert(view->game->HasFocus());
+
+    auto* other = new wxFrame(nullptr, wxID_ANY, "Other application");
+    auto* otherInput = new wxTextCtrl(other, wxID_ANY);
+    other->Show();
+    other->Raise();
+    ::SetForegroundWindow(reinterpret_cast<HWND>(other->GetHandle()));
+    otherInput->SetFocus();
+    wxYield();
+    assert(!frame.IsActive() && otherInput->HasFocus());
+    view->game->Hide();
+    view->game = new wxTextCtrl(view, wxID_ANY, "Updated game", wxPoint(0, 80));
+    idle();
+    assert(otherInput->HasFocus());
+
+    frame.Raise();
+    ::SetForegroundWindow(reinterpret_cast<HWND>(frame.GetHandle()));
+    ::SetFocus(reinterpret_cast<HWND>(view->GetHandle()));
+    wxActivateEvent activate(wxEVT_ACTIVATE, true, frame.GetId());
+    frame.GetEventHandler()->ProcessEvent(activate);
+    wxYield();
+    assert(view->game->HasFocus());
+    other->Destroy();
+    wxYield();
+}
 }
 namespace lila::shared::accessibility
 {
@@ -110,6 +190,7 @@ int main(int argc, char** argv)
         *menu, "Second item") == "Second item");
     assert(announcements == 0 && synchronousCalls == 0);
     SetWindowLongPtr(nativeFrame, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(originalFrameProc));
+    CheckRealtimeFocusRecovery(*frame);
     frame->Destroy();
     wxTheApp->ProcessPendingEvents();
     wxTheApp->OnExit();

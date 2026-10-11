@@ -3,6 +3,7 @@
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 #include <wx/window.h>
+#include <wx/toplevel.h>
 
 #include <unordered_set>
 #include <algorithm>
@@ -166,6 +167,8 @@ void RoomPanel::UpdateStatus(const wxString& message, bool isError, bool announc
 
 void RoomPanel::ApplyInitialFocusIfNeeded()
 {
+    auto* top = dynamic_cast<wxTopLevelWindow*>(wxGetTopLevelParent(this));
+    if (top != nullptr && !top->IsActive()) return;
     auto* focused = wxWindow::FindFocus();
     const bool hasUsableFocusInsideRoom = focused != nullptr &&
         lila::shared::accessibility::NavigationController::IsDescendantOf(focused, this) &&

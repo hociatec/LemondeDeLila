@@ -32,6 +32,11 @@ HostFrame::HostFrame()
 #ifdef __WXMSW__
     Bind(wxEVT_ACTIVATE, &HostFrame::OnActivate, this);
     Bind(wxEVT_CHILD_FOCUS, &HostFrame::OnChildFocus, this);
+    Bind(wxEVT_IDLE, [this](wxIdleEvent& event)
+    {
+        RestoreContentFocus();
+        event.Skip();
+    });
 #endif
     contentRoot_ = new lila::shared::accessibility::NonFocusablePanel(this);
     auto* rootSizer = new wxBoxSizer(wxVERTICAL);

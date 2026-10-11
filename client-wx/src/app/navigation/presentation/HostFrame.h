@@ -42,6 +42,7 @@ private:
 #ifdef __WXMSW__
     void OnActivate(wxActivateEvent& event);
     void OnChildFocus(wxChildFocusEvent& event);
+    void RestoreContentFocus();
 #endif
 
     wxWindow* contentRoot_ = nullptr;
