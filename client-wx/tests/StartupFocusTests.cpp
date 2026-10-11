@@ -1,9 +1,14 @@
 #include <cassert>
+#include <chrono>
+#include <cstdio>
+#include <cstdlib>
+#include <thread>
 #include <wx/app.h>
 #include <wx/listbox.h>
 #include <wx/log.h>
 #include <wx/panel.h>
 #include <wx/textctrl.h>
+#include <wx/utils.h>
 #include <windows.h>
 #include "app/navigation/presentation/HostFrame.h"
 #include "shared/accessibility/application/IScreenReaderAnnouncer.h"
@@ -55,6 +60,70 @@ public:
     wxTextCtrl* game;
     wxTextCtrl* chat;
 };
+
+void CheckUnchangedScreenAfterInactivity(
+    lila::app::navigation::HostFrame& frame, wxListBox& menu)
+{
+    // Override for a real prolonged wait without changing the screen or
+    // injecting any keyboard input during the interval.
+    wxString duration;
+    long waitMs = 50;
+    if (wxGetEnv("LILA_FOCUS_WAIT_MS", &duration))
+    {
+        const bool valid = duration.ToLong(&waitMs) && waitMs >= 0;
+        assert(valid);
+    }
+    const auto wait = [waitMs]()
+    {
+        const auto until = std::chrono::steady_clock::now() +
+            std::chrono::milliseconds(waitMs);
+        while (std::chrono::steady_clock::now() < until)
+        {
+            wxYield();
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    };
+    const int selection = menu.GetSelection();
+    const auto assertMenuFocus = [&](const char* stage)
+    {
+        std::fprintf(stderr, "%s: active=%d, menuFocused=%d, selectionPreserved=%d\n",
+            stage, frame.IsActive(), menu.HasFocus(), menu.GetSelection() == selection);
+        assert(frame.IsActive());
+        assert(menu.HasFocus() && menu.GetSelection() == selection);
+#if wxUSE_ACCESSIBILITY
+        auto* accessible = menu.GetAccessible();
+        assert(accessible != nullptr);
+        int childId = wxACC_SELF;
+        wxAccessible* child = nullptr;
+        assert(accessible->GetFocus(&childId, &child) == wxACC_OK);
+        assert(child != nullptr);
+        wxString name;
+        assert(child->GetName(wxACC_SELF, &name) == wxACC_OK);
+        assert(name == menu.GetString(selection));
+        long state = 0;
+        assert(child->GetState(wxACC_SELF, &state) == wxACC_OK);
+        assert((state & wxACC_STATE_SYSTEM_FOCUSED) != 0);
+#endif
+    };
+    wait();
+    assertMenuFocus("After foreground wait");
+    auto* other = new wxFrame(nullptr, wxID_ANY, "Inactivity test - other window");
+    auto* field = new wxTextCtrl(other, wxID_ANY);
+    other->Show();
+    other->Raise();
+    ::SetForegroundWindow(reinterpret_cast<HWND>(other->GetHandle()));
+    field->SetFocus();
+    wxYield();
+    assert(field->HasFocus());
+    wait();
+    assert(field->HasFocus());
+    frame.Raise();
+    ::SetForegroundWindow(reinterpret_cast<HWND>(frame.GetHandle()));
+    wxYield();
+    assertMenuFocus("After return from background wait");
+    other->Destroy();
+    wxYield();
+}
 
 void CheckRealtimeFocusRecovery(lila::app::navigation::HostFrame& frame)
 {
@@ -131,6 +200,9 @@ wxIMPLEMENT_APP_NO_MAIN(StartupFocusApp);
 
 int main(int argc, char** argv)
 {
+#ifdef _MSC_VER
+    _set_error_mode(_OUT_TO_STDERR);
+#endif
     delete wxLog::SetActiveTarget(new wxLogStderr());
     assert(wxEntryStart(argc, argv));
     assert(wxTheApp->CallOnInit());
@@ -190,6 +262,7 @@ int main(int argc, char** argv)
         *menu, "Second item") == "Second item");
     assert(announcements == 0 && synchronousCalls == 0);
     SetWindowLongPtr(nativeFrame, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(originalFrameProc));
+    CheckUnchangedScreenAfterInactivity(*frame, *menu);
     CheckRealtimeFocusRecovery(*frame);
     frame->Destroy();
     wxTheApp->ProcessPendingEvents();
