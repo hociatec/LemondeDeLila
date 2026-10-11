@@ -10,6 +10,7 @@ import type { GameRegistryService } from './game-registry.service';
 import type { GameExecutionScopeService } from './game-execution-scope.service';
 import { GameNotFoundError } from '../../../engine/runtime/contracts/game-domain.errors';
 import { GameStateConflictError } from '../../domain/errors/game-domain.errors';
+import { replaceDepartedPlayersWithBots } from './game-player-bot-replacement';
 
 type VersionedGameState = GameState & { version?: number };
 export type ResolvedGameState = {
@@ -62,6 +63,19 @@ export class GameRoomStateLifecycle {
         : cachedRoom;
     if (existing && this.belongsToCurrentRun(existing, room.room)) {
       this.ensureVersion(existing);
+      const replacement = replaceDepartedPlayersWithBots(existing, room);
+      if (replacement !== existing) {
+        const result = await this.engine.compareAndSetInternalState(
+          roomId,
+          gameType,
+          this.ensureVersion(existing),
+          replacement,
+          existing.metadata?.restoreId ?? null,
+        );
+        if (!result.committed) throw new GameStateConflictError();
+        this.publish(roomId, gameType, result.state, handler, result.version);
+        return { gameType, handler, state: result.state };
+      }
       const refreshed = await this.refreshSetupRoster(
         roomId,
         gameType,
@@ -217,6 +231,9 @@ export class GameRoomStateLifecycle {
     const roomStatus = stringOrEmpty(room.room.status).toLowerCase();
     if (
       (roomStatus !== 'setup' && roomStatus !== 'started') ||
+      existing.players?.some(
+        (player) => player.replacementBotPlayerId != null,
+      ) ||
       !this.isRosterConfigurationState(existing)
     ) {
       return { state: existing };

@@ -25,6 +25,8 @@ export type PlayerState = {
   id: number;
   username: string;
   isBot?: boolean;
+  /** Bot controlling this stable seat after its human player left the run. */
+  replacementBotPlayerId?: number;
   alive?: boolean;
 };
 

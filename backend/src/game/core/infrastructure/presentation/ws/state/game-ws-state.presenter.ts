@@ -41,6 +41,14 @@ export class GameWsStatePresenter {
   constructor(private readonly visibility: GameVisibilityService) {}
 
   present(input: PresentStateInput): Record<string, unknown> {
+    if (
+      input.state.players?.some(
+        (player) =>
+          player.id === input.viewerPlayerId &&
+          player.replacementBotPlayerId != null,
+      )
+    )
+      input = { ...input, viewerPlayerId: null };
     const exposedByGame = this.expose(
       input.handler,
       input.state,
