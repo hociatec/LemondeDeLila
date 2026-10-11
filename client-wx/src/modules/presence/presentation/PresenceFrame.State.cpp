@@ -27,6 +27,21 @@ void PresenceFrame::RefreshPlayers()
 {
     if (page_ != Page::Players)
     {
+        if (!selectedPlayer_.has_value()) return;
+        const auto players = presenceMonitor_.Players();
+        const auto current = std::ranges::find_if(players, [this](const auto& player)
+            { return player.id == selectedPlayer_->id; });
+        if (current != players.end())
+            selectedPlayer_ = *current;
+        else
+        {
+            selectedPlayer_->currentRoomId.reset();
+            selectedPlayer_->currentRoomName.clear();
+        }
+        if (current != players.end())
+            titleLabel_->SetLabel(PresencePresentationModel::BuildPlayerLabel(*selectedPlayer_));
+        if (!IsSelf(*selectedPlayer_) && socialState_.has_value() && !busy_)
+            RebuildActions(true);
         return;
     }
     RebuildPlayers();
@@ -73,7 +88,7 @@ void PresenceFrame::RebuildPlayers(std::optional<int> preferredPlayerId, bool fo
     }
 }
 
-void PresenceFrame::RebuildActions()
+void PresenceFrame::RebuildActions(bool preserveSelection)
 {
     if (!selectedPlayer_.has_value())
     {
@@ -95,6 +110,15 @@ void PresenceFrame::RebuildActions()
         if (IsSelf(player) && player.currentRoomId == roomId) sameRoom = true;
     if (roomId.has_value() && *roomId > 0 && !sameRoom && onJoinRoomRequested_)
         items.insert(items.begin(), {"join", wxString(L"Rejoindre sa table")});
+    if (preserveSelection)
+    {
+        const auto selectedAction = SelectedActionId();
+        std::size_t selectedIndex = 0;
+        for (std::size_t index = 0; index < items.size(); ++index)
+            if (items[index].id == selectedAction) selectedIndex = index;
+        menu_->SetItemsForNavigation(items, selectedIndex, true);
+        return;
+    }
     menu_->SetItems(items);
     menu_->SetSelectedIndexSilently(0);
     detailsLabel_->SetLabel(wxEmptyString);

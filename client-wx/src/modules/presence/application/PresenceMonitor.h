@@ -36,7 +36,8 @@ public:
 
     void Start();
     void Stop();
-    void SetContext(std::string context);
+    void SetContext(std::string context, std::optional<int> roomId = std::nullopt,
+        std::string roomName = {});
     void ReportInteraction();
     void SetPlayersChangedHandler(PlayersChangedHandler handler);
     [[nodiscard]] std::vector<domain::PresencePlayer> Players() const;
@@ -53,7 +54,7 @@ private:
     static bool ApplyLocalContext(
         std::vector<domain::PresencePlayer>& players,
         int currentUserId,
-        std::string_view context);
+        std::string_view context, std::optional<int> roomId, std::string_view roomName);
 
     std::string endpoint_;
     lila::shared::network::websocket::IWebSocketClient& webSocketClient_;
@@ -66,6 +67,8 @@ private:
     std::string status_ = "Présence déconnectée.";
     bool hasSnapshot_ = false;
     std::string context_ = "home";
+    std::optional<int> roomId_;
+    std::string roomName_;
     std::optional<std::string> contextAwaitingConfirmation_;
     bool contextDirty_ = true;
     bool interactionDirty_ = false;

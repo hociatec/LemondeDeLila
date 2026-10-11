@@ -21,6 +21,7 @@ void RoomPanel::StartRequest()
     CancelRequest();
     const auto generation = requestSlot_.CurrentToken();
     state_ = State::Connecting;
+    if (onRoomChanged_) onRoomChanged_(0, {});
     auto* service = &roomService_;
     const auto request = request_;
     wxWeakRef<RoomPanel> weakThis(this);

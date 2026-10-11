@@ -54,6 +54,7 @@ void RoomPanel::ApplyRoom(domain::RoomState room)
     const bool resetCompleted =
         pendingRealtimeCommand_ == domain::RoomCommand::Reset;
     room_ = std::move(room);
+    if (onRoomChanged_) onRoomChanged_(room_.id, room_.name);
     pendingRealtimeCommand_.reset();
     if (resetCompleted) gamePlayPanel_->ResetRoomSetup();
     audioService_.StartTableAmbience(room_.tableAmbienceSoundId);

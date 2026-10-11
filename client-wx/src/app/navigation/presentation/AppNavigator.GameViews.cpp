@@ -7,6 +7,7 @@
 #include "modules/leaderboard/presentation/LeaderboardPanel.h"
 #include "modules/rooms/presentation/join/JoinRoomsPanel.h"
 #include "modules/rooms/presentation/shell/RoomPanel.h"
+#include "modules/presence/application/PresenceMonitor.h"
 #include "modules/session/application/SessionStore.h"
 #include "modules/session/domain/Session.h"
 #include "modules/storybook/presentation/StoryBookPanel.h"
@@ -46,7 +47,8 @@ wxWindow* AppNavigator::CreateGameView(ViewId viewId)
             [this](int roomId) { RestoreRoom(roomId); },
             [this]() { ReplaceView(ViewId::Catalog, GetOrCreateView(ViewId::Catalog)); });
     case ViewId::Room:
-        return new modules::rooms::presentation::RoomPanel(
+    {
+        auto* panel = new modules::rooms::presentation::RoomPanel(
             hostFrame_->ContentParent(),
             roomSessionService_,
             roomLobbyService_,
@@ -65,6 +67,14 @@ wxWindow* AppNavigator::CreateGameView(ViewId viewId)
                 vaultService_.Abandon(roomId, stopToken);
             },
             [this]() { ReturnToCatalogAfterRoomClose(true, true); });
+        panel->SetRoomChangedHandler([this](int roomId, const std::string& roomName)
+        {
+            if (currentViewId_ == ViewId::Room ||
+                (currentViewId_ == ViewId::Presence && previousViewBeforePresence_ == ViewId::Room))
+                presenceMonitor_.SetContext("table", roomId, roomName);
+        });
+        return panel;
+    }
     case ViewId::StoryBook:
         lila::shared::logging::LogInfo("Navigator", "CreateView(StoryBook): constructing StoryBookPanel view.");
         return new modules::storybook::presentation::StoryBookPanel(

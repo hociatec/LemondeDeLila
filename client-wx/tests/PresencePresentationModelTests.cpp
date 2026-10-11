@@ -9,6 +9,20 @@ int main()
     using lila::modules::presence::presentation::PresencePresentationModel;
     using lila::modules::presence::presentation::PresenceSocialState;
 
+    lila::modules::presence::domain::PresencePlayer player;
+    player.username = "hacene";
+    player.activity = "table";
+    player.availability = "available";
+    player.location = "Table";
+    player.currentRoomId = 7;
+    player.currentRoomName = "La table des amis";
+    assert(PresencePresentationModel::BuildPlayerLabel(player) ==
+        wxString(L"hacene (disponible), La table des amis"));
+    player.activity = "chat";
+    player.location = "tchat";
+    assert(PresencePresentationModel::BuildPlayerLabel(player) ==
+        wxString(L"hacene (disponible), tchat"));
+
     const auto friendActions = PresencePresentationModel::BuildActionItems({
         .relationshipAvailable = true,
         .isFriend = true,

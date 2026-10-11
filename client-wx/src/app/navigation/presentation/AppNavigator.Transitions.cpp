@@ -12,6 +12,7 @@
 #include "modules/messaging/presentation/MessagingFrame.h"
 #include "modules/social/presentation/SocialFrame.h"
 #include "modules/presence/application/PresenceMonitor.h"
+#include "modules/rooms/presentation/shell/RoomPanel.h"
 #include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/logging/application/Logger.h"
 
@@ -45,7 +46,11 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
         case ViewId::Admin: case ViewId::Options: case ViewId::Vault: context = "other"; break;
         default: break;
         }
-        presenceMonitor_.SetContext(std::move(context));
+        const auto* room = nextViewId == ViewId::Room
+            ? dynamic_cast<modules::rooms::presentation::RoomPanel*>(nextView) : nullptr;
+        presenceMonitor_.SetContext(std::move(context),
+            room && room->CurrentRoomId() > 0 ? std::optional<int>(room->CurrentRoomId()) : std::nullopt,
+            room ? room->CurrentRoomName() : std::string());
     }
 
     if (hostFrame_ == nullptr)

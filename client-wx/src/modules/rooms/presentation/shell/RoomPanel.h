@@ -65,6 +65,10 @@ public:
         bool spectator,
         PreparedHandler onPrepared);
     void PrepareRestore(int roomId, PreparedHandler onPrepared);
+    [[nodiscard]] int CurrentRoomId() const { return room_.id; }
+    [[nodiscard]] const std::string& CurrentRoomName() const { return room_.name; }
+    void SetRoomChangedHandler(std::function<void(int, const std::string&)> handler)
+    { onRoomChanged_ = std::move(handler); }
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:
@@ -127,6 +131,7 @@ private:
     wxTextCtrl* chatInput_ = nullptr;
     wxTextCtrl* history_ = nullptr;
     domain::RoomState room_;
+    std::function<void(int, const std::string&)> onRoomChanged_;
     lila::shared::concurrency::AsyncRequestSlot requestSlot_;
     RoomOpenRequest request_;
     State state_ = State::Connecting;

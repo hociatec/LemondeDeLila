@@ -59,7 +59,7 @@ private:
     void BindEvents();
     void RefreshPlayers();
     void RebuildPlayers(std::optional<int> preferredPlayerId = std::nullopt, bool focusSelection = false);
-    void RebuildActions();
+    void RebuildActions(bool preserveSelection = false);
     void ShowLoadingActions();
     void ActivateSelected();
     void ActivatePlayer();

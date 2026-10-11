@@ -88,8 +88,11 @@ void PresenceFrame::RunSelectedAction()
 
     if (action == "join")
     {
+        RefreshPlayers();
         if (selectedPlayer_->currentRoomId.has_value() && onJoinRoomRequested_)
             onJoinRoomRequested_(*selectedPlayer_->currentRoomId);
+        else
+            UpdateStatus(wxString(L"Ce joueur n'est plus sur une table."), true);
         return;
     }
 
