@@ -42,6 +42,10 @@ wxString AvailabilityLabel(const std::string& availability)
 
 wxString ActivityLocation(const domain::PresencePlayer& player)
 {
+    if (Normalize(player.activity) == "table" && !player.currentRoomName.empty())
+    {
+        return FromUtf8(player.currentRoomName);
+    }
     if (!player.location.empty())
     {
         return FromUtf8(player.location);

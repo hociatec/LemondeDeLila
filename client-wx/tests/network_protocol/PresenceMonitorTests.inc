@@ -147,6 +147,18 @@ void TestPresenceActivityAndReconnect()
     socket.Push(R"({"type":"presence-update","players":[{"id":42,"username":"Alice","activity":"stats"}]})");
     WaitUntil([&] { return monitor.HasSnapshot() && monitor.Players().size() == 1; }, "New baseline expected");
     Expect(audio.joined.load() == 0 && audio.left.load() == 0, "Reconnection baseline must be silent");
+    monitor.SetContext("table", 7, "La table des amis");
+    WaitUntil([&] { return socket.Sent("\"roomId\":7") && socket.Sent("La table des amis"); },
+        "Table presence must publish its ID and name");
+    Expect(monitor.Players()[0].currentRoomId == 7 &&
+        monitor.Players()[0].currentRoomName == "La table des amis",
+        "Local table presence must retain its name and join target");
+    monitor.SetContext("table", 8, "Autre table");
+    WaitUntil([&] { return socket.Sent("\"roomId\":8"); },
+        "Changing tables without changing activity must publish the new table");
+    monitor.SetContext("stats");
+    Expect(!monitor.Players()[0].currentRoomId.has_value(),
+        "Leaving table context must clear the local table hint");
     socket.Push(snapshot);
     WaitUntil([&] { return audio.joined.load() == 1; }, "Live friend arrival must sound");
     socket.Push(R"({"type":"presence-update","players":[{"id":42,"username":"Alice","activity":"stats"}]})");

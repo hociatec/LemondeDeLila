@@ -68,6 +68,8 @@ void PresenceMonitor::Stop()
     status_ = "Présence déconnectée.";
     hasSnapshot_ = false;
     context_ = "home";
+    roomId_.reset();
+    roomName_.clear();
     contextAwaitingConfirmation_.reset();
     contextDirty_ = true;
     interactionDirty_ = false;
@@ -159,11 +161,13 @@ void PresenceMonitor::ApplyUpdate(const std::string& rawJson)
                     return player.id == currentUserId;
                 });
             if (current != next->end() &&
-                current->activity == *contextAwaitingConfirmation_)
+                current->activity == *contextAwaitingConfirmation_ &&
+                (!roomId_.has_value() || (current->currentRoomId == roomId_ &&
+                    (roomName_.empty() || current->currentRoomName == roomName_))))
                 contextAwaitingConfirmation_.reset();
             else
                 ApplyLocalContext(
-                    *next, currentUserId, *contextAwaitingConfirmation_);
+                    *next, currentUserId, *contextAwaitingConfirmation_, roomId_, roomName_);
         }
         if (hasSnapshot_)
         {

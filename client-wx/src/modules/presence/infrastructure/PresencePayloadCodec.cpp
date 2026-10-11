@@ -69,9 +69,16 @@ std::optional<std::vector<domain::PresencePlayer>> ReadPresenceUpdate(const std:
     return players;
 }
 
-std::string WritePresenceContext(std::string_view context)
+std::string WritePresenceContext(std::string_view context,
+    std::optional<int> roomId, std::string_view roomName)
 {
-    return nlohmann::json{{"type", ws::chat::PresenceContext}, {"context", context}}.dump();
+    nlohmann::json payload{{"type", ws::chat::PresenceContext}, {"context", context}};
+    if (context == "table" && roomId.has_value() && *roomId > 0)
+    {
+        payload["roomId"] = *roomId;
+        payload["roomName"] = roomName;
+    }
+    return payload.dump();
 }
 
 std::string PresenceActivityMessage()
