@@ -16,6 +16,7 @@ bool GamePlayPanel::BeginRoomStart()
     Show();
     if (state_.roomId <= 0)
     {
+        RequestRefresh();
         UpdateStatus(wxString(L"Chargement de la configuration..."));
         if (GetParent()) GetParent()->Layout();
         return true;

@@ -96,14 +96,18 @@ export class GameWsHandler {
   async state(session: WsSession, payload: unknown) {
     const user = requireUser(session);
     const roomId = this.commands.resolveRoomId(payload);
-    await this.rooms.ensureReadable(roomId, user.id);
-    const resolved = await this.realtime.resolve(roomId);
-    this.realtime.bind(session, roomId, resolved.gameType);
-    this.realtime.schedule(roomId, resolved);
-    return {
-      type: 'game.state',
-      payload: this.realtime.present(resolved, roomId, user.id),
-    };
+    // Resolving a snapshot can initialize the next run. Serialize it with
+    // the finishing action and other players' simultaneous refreshes.
+    return this.queue.run(roomId, async () => {
+      await this.rooms.ensureReadable(roomId, user.id);
+      const resolved = await this.realtime.resolve(roomId);
+      this.realtime.bind(session, roomId, resolved.gameType);
+      this.realtime.schedule(roomId, resolved);
+      return {
+        type: 'game.state',
+        payload: this.realtime.present(resolved, roomId, user.id),
+      };
+    });
   }
 
   async candidates(session: WsSession, payload: unknown) {

@@ -86,6 +86,15 @@ int main()
     assert(lifecycle.State() == GamePlayLifecycleState::Finished);
     lifecycle.SetRoomStarted(false, false, 0);
     assert(lifecycle.State() == GamePlayLifecycleState::WaitingStart);
+    // Both humans refresh after the final state. A missing/failed refresh
+    // leaves no projection, but the hidden panel must release table input.
+    assert(!lifecycle.HasAuthoritativeState());
+    assert(!lifecycle.IsVisible());
+    assert(lifecycle.BeginRoomStart());
+    assert(lifecycle.IsVisible());
+    assert(!lifecycle.AllowsActionSubmission(true));
+    lifecycle.ObserveAuthoritativeState(43, GameMatchStatus::Setup);
+    assert(lifecycle.AllowsActionSubmission(true));
 
     // Room-start and projection notifications are valid in either order.
     lifecycle.Open(false);
