@@ -3,6 +3,7 @@
 #ifdef __WXMSW__
 
 #include <wx/window.h>
+#include <wx/panel.h>
 
 #include "shared/accessibility/presentation/NavigationController.h"
 #include "shared/accessibility/presentation/FocusPlanView.h"
@@ -14,7 +15,10 @@ namespace
 {
 bool IsContentFocus(wxWindow* target, wxWindow* content)
 {
-    return lila::shared::accessibility::NavigationController::IsFocusable(target) &&
+    // Layout panels can accept native focus after their focused child is
+    // hidden. They are not an interactive destination for keyboard users.
+    return dynamic_cast<wxPanel*>(target) == nullptr &&
+        lila::shared::accessibility::NavigationController::IsFocusable(target) &&
         lila::shared::accessibility::NavigationController::IsDescendantOf(target, content);
 }
 }
@@ -42,50 +46,47 @@ void HostFrame::OnActivate(wxActivateEvent& event)
         if (IsContentFocus(initialTarget, currentContent_))
             PrepareActivationFocusContext(initialTarget);
         const wxWeakRef<HostFrame> weakFrame(this);
-        const wxWeakRef<wxWindow> weakTarget(lastFocusedChild_.get());
-        CallAfter([weakFrame, weakTarget]()
+        CallAfter([weakFrame]()
         {
-            auto* frame = weakFrame.get();
-            auto* target = weakTarget.get();
-            if (frame == nullptr || !frame->IsActive()) return;
-
-            // Windows normally restores the child focus while activating the
-            // window. Re-focusing it emits a second accessibility event which
-            // interrupts NVDA while it is still announcing the window title.
-            auto* focused = wxWindow::FindFocus();
-            if (IsContentFocus(focused, frame->currentContent_))
-            {
-                if (frame->activationContextPending_)
-                    frame->PrepareActivationFocusContext(focused);
-                frame->activationContextPending_ = false;
-                frame->lastFocusedChild_ = focused;
-                return;
-            }
-            if (IsContentFocus(target, frame->currentContent_))
-            {
-                if (frame->activationContextPending_)
-                    frame->PrepareActivationFocusContext(target);
-                if (lila::shared::accessibility::NavigationController::Focus(target)) return;
-            }
-            // Initial activation can occur before any valid child was remembered.
-            // A container is not an accessible menu item: use the view's focus plan.
-            if (auto* view = dynamic_cast<lila::shared::accessibility::FocusPlanView*>(
-                    frame->currentContent_))
-                static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(
-                    view->BuildFocusPlan(), [frame](wxWindow* resolvedTarget)
-                    {
-                        if (frame->activationContextPending_)
-                            frame->PrepareActivationFocusContext(resolvedTarget);
-                    }));
+            if (weakFrame) weakFrame->RestoreContentFocus();
         });
     }
     event.Skip();
 }
 
+void HostFrame::RestoreContentFocus()
+{
+    if (!IsActive() || !IsEnabled() || !IsShownOnScreen()) return;
+    auto* focused = wxWindow::FindFocus();
+    // A dialog or another top-level window owns its own focus lifecycle.
+    if (focused != nullptr && wxGetTopLevelParent(focused) != this) return;
+    if (IsContentFocus(focused, currentContent_))
+    {
+        if (activationContextPending_) PrepareActivationFocusContext(focused);
+        activationContextPending_ = false;
+        lastFocusedChild_ = focused;
+        return; // No duplicate focus event or speech for an unchanged control.
+    }
+    auto* target = lastFocusedChild_.get();
+    if (IsContentFocus(target, currentContent_))
+    {
+        if (activationContextPending_) PrepareActivationFocusContext(target);
+        if (lila::shared::accessibility::NavigationController::Focus(target)) return;
+    }
+    // Resolve against the current view: realtime updates may have destroyed
+    // or hidden the remembered control while this window was in the background.
+    if (auto* view = dynamic_cast<lila::shared::accessibility::FocusPlanView*>(currentContent_))
+        static_cast<void>(lila::shared::accessibility::FocusCoordinator::Apply(
+            view->BuildFocusPlan(), [this](wxWindow* resolvedTarget)
+            {
+                if (activationContextPending_) PrepareActivationFocusContext(resolvedTarget);
+            }));
+}
+
 void HostFrame::OnChildFocus(wxChildFocusEvent& event)
 {
     auto* focused = event.GetWindow();
-    if (IsContentFocus(focused, currentContent_))
+    if (IsActive() && IsContentFocus(focused, currentContent_))
     {
         if (activationContextPending_)
         {
