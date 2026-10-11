@@ -60,9 +60,11 @@ void RoomPanel::BuildLayout()
     auto* historyTitle = new wxStaticText(this, wxID_ANY, wxString(L"Historique"));
     historyTitle->SetName(wxString(L"Historique"));
     historyTitle->SetForegroundColour(lila::shared::ui::Theme::TextPrimary());
+    // Plain text keeps the native edit accessibility and focus restoration.
+    // History has no rich formatting and does not need a RichEdit provider.
     history_ = new wxTextCtrl(
         this, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
-        wxTE_MULTILINE | wxTE_READONLY | wxTE_RICH2 | wxTE_DONTWRAP);
+        wxTE_MULTILINE | wxTE_READONLY | wxTE_DONTWRAP);
     history_->SetName(wxString(L"Historique"));
     // Keep the native control order aligned with the visual order. On Windows,
     // assistive technologies may use the preceding static control as an inferred
