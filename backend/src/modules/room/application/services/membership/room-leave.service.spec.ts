@@ -1,7 +1,7 @@
 import { RoomLeaveService } from './room-leave.service';
 
 describe('RoomLeaveService', () => {
-  it('replaces a departing player and makes the table relaunchable', async () => {
+  it('replaces a departing player without ending the running match', async () => {
     const departing = { id: 1, username: 'Lila', roles: [] };
     const remaining = { id: 2, username: 'Mina', roles: [] };
     const participant = {
@@ -69,11 +69,13 @@ describe('RoomLeaveService', () => {
     expect(botOperations.addSystemBot).toHaveBeenCalledWith(room.id);
     expect(room).toMatchObject({
       owner: remaining,
-      status: 'setup',
-      startedAt: null,
+      status: 'started',
+      startedAt: new Date(1),
+      runId: 1,
     });
     expect(events.publishRoomStateUpdated).toHaveBeenCalledWith(room.id);
-    expect(stats.endMatchOnReset).toHaveBeenCalledWith(room.id);
+    expect(stats.endMatchOnReset).not.toHaveBeenCalled();
+    expect(stats.markQuit).toHaveBeenCalledWith(room.id, departing.id);
     expect(events.publishLobbyChanged).toHaveBeenCalledWith(room.id, 'left');
   });
 });

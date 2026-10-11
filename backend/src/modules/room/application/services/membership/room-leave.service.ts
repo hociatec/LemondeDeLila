@@ -99,26 +99,12 @@ export class RoomLeaveService {
     }
     await this.recordQuit(room, user.id, Boolean(participant));
     await this.transferOwnership(context, room, userId, options);
-    const replacedByBot = await this.replacePlayerWithBot(
+    await this.replacePlayerWithBot(
       context,
       room,
       Boolean(participant),
       options,
     );
-    if (replacedByBot) {
-      // A running engine cannot safely adopt a new roster mid-turn. Return the
-      // room to setup so the replacement bot is part of a fresh run and the
-      // new owner can immediately relaunch instead of being left in a dead turn.
-      room.status = 'setup';
-      room.startedAt = null;
-      await bestEffort(
-        this.stats.endMatchOnReset(room.id),
-        `finalisation après remplacement room=${room.id}`,
-      );
-      await this.rooms.save(room);
-      await context.invalidateRoomPayloadCache(room.id);
-      await this.events.publishRoomStateUpdated(room.id);
-    }
     if (options?.preserveRoom) {
       await this.notifyLeft(room.id);
       return room;
@@ -187,6 +173,7 @@ export class RoomLeaveService {
 
   private async notifyLeft(roomId: number): Promise<void> {
     this.presence.broadcastPresence();
+    await this.events.publishRoomStateUpdated(roomId);
     await this.events.publishLobbyChanged(roomId, 'left');
   }
 }

@@ -3,6 +3,7 @@ import type { RoomPayload } from '../../../application/models/room-payload.model
 import { RoomGatewayStatePresenter } from './room-gateway-state.presenter';
 import { RoomGatewayRuntimeStateService } from './room-gateway-runtime-state.service';
 import { RoomGatewayStateService } from './room-gateway-state.service';
+import { buildRoomSnapshot } from './room-announcement.helpers';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -61,6 +62,35 @@ function context() {
     }),
   };
 }
+
+it('announces a departure and replacement on refresh, without waiting for a restart', async () => {
+  const before = payload('running');
+  before.room.status = 'started';
+  before.room.players = [
+    { id: 1, username: 'administrateur' },
+    { id: 2, username: 'Lila' },
+  ];
+  const after = structuredClone(before);
+  after.room.players = [before.room.players[1]];
+  after.room.bots = [{ id: 9, name: 'Snorky' }];
+  const ctx = context();
+  ctx.lastRoomStatusByRoomId.set(4, 'started');
+  ctx.lastRoomSnapshotByRoomId.set(4, buildRoomSnapshot(before));
+  const service = new RoomGatewayStateService(
+    { getRoomPayload: jest.fn().mockResolvedValue(after) } as never,
+    {} as never,
+    new RoomGatewayStatePresenter(),
+    { broadcast: jest.fn().mockResolvedValue(undefined) } as never,
+  );
+  await service.sendRoomState(ctx, 4);
+  const messages = JSON.stringify(ctx.broadcast.mock.calls);
+  expect(messages).toContain('administrateur a quitté la table.');
+  expect(messages).toContain('Snorky a rejoint la table.');
+  expect(messages).not.toContain('terminée');
+  ctx.broadcast.mockClear();
+  await service.sendRoomState(ctx, 4);
+  expect(ctx.broadcast).not.toHaveBeenCalled();
+});
 
 it('serializes room reads and emits monotone snapshot sequences', async () => {
   const first = deferred<RoomPayload>();

@@ -85,16 +85,9 @@ export class RoomGatewayStateService {
         await this.roomState.invalidateRoomPayloadCache(roomId);
         payload = await this.roomState.getRoomPayload(roomId);
       }
-      this.ensureRoomTrackingCapacity(ctx, roomId);
-      ctx.lastRoomStatusByRoomId.set(roomId, nextStatus);
-
-      payload = projectRoomRoster(payload, ctx.clients.values(), roomId);
-      await this.broadcaster.broadcast(
-        ctx,
-        roomId,
-        payload,
-        ctx.nextRoomRealtimeVersion(roomId),
-      );
+      // State refreshes must emit roster announcements and advance their
+      // baseline immediately, just like explicit room commands.
+      await this.publishRoomPayload(ctx, roomId, payload);
     } catch {
       // la table a peut-etre ete supprimee, on ignore
     }
