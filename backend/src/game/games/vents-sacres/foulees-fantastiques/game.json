@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "3",
+  "contentVersion": "4",
   "definitionVersion": "2",
   "category": "JeuxDePlateaux",
   "world": "VentsSacres",
@@ -30,7 +30,7 @@
       "finishReason": "four-pawns-home",
       "entryRolls": [6],
       "extraTurnRolls": [6],
-      "startPositions": [0, 26, 13, 39],
+      "startPositions": [0, 13, 26, 39],
       "homeRolls": [2, 3, 4]
     }
   ],
@@ -71,6 +71,10 @@
     {
       "fromVersion": "2",
       "toVersion": "3"
+    },
+    {
+      "fromVersion": "3",
+      "toVersion": "4"
     }
   ],
   "extensions": []

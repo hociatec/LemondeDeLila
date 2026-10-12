@@ -225,7 +225,7 @@
       "family": "Equidés",
       "habitat": "écurie",
       "pawns": [
-        "Akhal-teke",
+        "Akhal-teké",
         "Andalou",
         "Frison",
         "Pur-sang"
@@ -268,7 +268,7 @@
   "pawns": [
     {
       "id": "equides:0",
-      "label": "Akhal-teke"
+      "label": "Akhal-teké"
     },
     {
       "id": "equides:1",

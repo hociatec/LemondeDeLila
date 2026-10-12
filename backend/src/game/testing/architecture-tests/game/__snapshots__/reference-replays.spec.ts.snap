@@ -487,7 +487,7 @@ exports[`catalogue reference replay: foulees-fantastiques, seed 11 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "2eac08acce9d67672d254e070ce4d8f5102a3b7c5e4a6c91b7fd83169535ed78",
+  "traceDigest": "47a3b20aef937e2d2bc3fe0626af9f8ea53bd805a5db74c9947ea021625e83ef",
 }
 `;
 
@@ -499,7 +499,7 @@ exports[`catalogue reference replay: foulees-fantastiques, seed 23 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "8d5fcb8cfd9e7dbaf95789fa110988d1ee58a4066b291dc33b87470f1aaf54dc",
+  "traceDigest": "2634b84ffbe6c05745b65fc8fbeae67bf7c7cba9b488281a7e0b32901990081a",
 }
 `;
 
@@ -511,7 +511,7 @@ exports[`catalogue reference replay: foulees-fantastiques, seed 67 1`] = `
   ],
   "finished": false,
   "steps": 64,
-  "traceDigest": "1b4a40ecb0cd3addc578fb31f9d9fdbbbbc30e6f6e40ca54a2db839baf00f19f",
+  "traceDigest": "53545739dad4cb75a8f503d5b140fa130cab3616633311fc317a218d31d512bd",
 }
 `;
 

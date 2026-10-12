@@ -49,7 +49,7 @@ export function teamPawnRace(source: TeamPawnRaceOptions) {
     })),
     complete: ({ ctx }) => {
       ctx.phase.transitionTo('turn');
-      const first = ctx.players.all()[0];
+      const first = seatedPlayers(ctx)[0];
       if (first) ctx.turn.to(first.id);
     },
     assigned: ({ playerId, pawnId, ctx }) => {
@@ -80,12 +80,21 @@ export function teamPawnRace(source: TeamPawnRaceOptions) {
   const roll = rollDice<State>({
     diceId: program.diceId,
     available: ({ ctx }) => ctx.phase.current() === 'turn',
-    message: ({ playerId, total }) => ({
-      key: 'game.dice.rolled',
-      params: { playerId, total },
-    }),
+    message: false,
     execute: ({ playerId, total, ctx }) => {
       const moves = legalMoves(program, playerId, total, ctx);
+      const replay = program.extraTurnRolls.includes(total);
+      const name = playerName(ctx, playerId);
+      ctx.events.message(
+        'game.dice.rolled',
+        { playerId, total },
+        {
+          default: `${name} lance le dé et fait ${total}.${moves.length ? '' : ` ${name} ne peut pas avancer.`}${replay ? ` ${name} rejoue.` : ''}`,
+          byPlayerId: {
+            [playerId]: `Vous lancez le dé et faites ${total}.${moves.length ? '' : ' Vous ne pouvez pas avancer.'}${replay ? ' Rejouez.' : ''}`,
+          },
+        },
+      );
       if (moves.length === 0) return finishTurn(total, ctx);
       if (moves.length === 1) {
         move(program, playerId, moves[0], ctx);
@@ -106,7 +115,13 @@ export function teamPawnRace(source: TeamPawnRaceOptions) {
     id: `team-pawn-race:${program.setId}`,
     mechanics: ['race', 'pawns', 'capture'],
     actions: { [program.rollRecipe]: roll },
-    setup: selection.setup(() => ({})),
+    setup: ({ ctx }) => {
+      selection.requestAll(
+        seatedPlayers(ctx).map((player) => player.id),
+        ctx,
+      );
+      return {};
+    },
     choices: {
       [program.familyChoiceId]: defineChoice<State, string>({
         input: gameInput.string({ min: 1, max: 128 }),
@@ -185,6 +200,8 @@ function target(
 ) {
   if (from >= arrival) return null;
   if (from < 0) return program.entryRolls.includes(roll) ? 0 : null;
+  if (from === program.trackLength - 1)
+    return roll === 1 ? program.trackLength : null;
   if (from >= program.trackLength) {
     const homeIndex = from - program.trackLength + 1;
     return homeIndex < program.homeLength &&
@@ -193,7 +210,7 @@ function target(
       : null;
   }
   const next = from + roll;
-  return next > arrival || next > program.trackLength ? null : next;
+  return next >= program.trackLength ? null : next;
 }
 
 function blocked(
@@ -232,7 +249,14 @@ function move(
       playerId,
       pawnLabel: pawnLabel(program, selected.pawnId),
       distance: selected.distance,
-      position: selected.to + 1,
+      ...(selected.to < program.trackLength
+        ? {
+            position:
+              ((playerOffset(program, playerId, ctx) + selected.to) %
+                program.trackLength) +
+              1,
+          }
+        : { residence: selected.to - program.trackLength + 1 }),
       enteredTrack: selected.from < 0 && selected.to >= 0,
       originLabel:
         program.families.find((family) =>
@@ -254,18 +278,22 @@ function teamPawnMoveNarration(
     program.families.find((family) =>
       selected.pawnId.startsWith(`${family.id}:`),
     )?.habitat ?? 'enclos';
-  const position = selected.to + 1;
+  const destination = destinationLabel(program, playerId, selected.to, ctx);
+  const finished =
+    selected.to === program.trackLength + program.homeLength - 1
+      ? ' Son tour complet est terminé ; le pion est mis de côté.'
+      : '';
   const name = playerName(ctx, playerId);
   const entered = selected.from < 0 && selected.to >= 0;
   const distance = Math.abs(selected.distance);
   return {
     default: entered
-      ? `${name} sort son ${pawn} de ${fromHabitat(origin)} et le place en case ${position}.`
-      : `${name} déplace son ${pawn} de ${distance} case${distance === 1 ? '' : 's'} et le place en case ${position}.`,
+      ? `${name} sort son ${pawn} de ${fromHabitat(origin)} et le place ${destination}.`
+      : `${name} déplace son ${pawn} de ${distance} case${distance === 1 ? '' : 's'} et le place ${destination}.${finished}`,
     byPlayerId: {
       [playerId]: entered
-        ? `Vous sortez votre ${pawn} de ${fromHabitat(origin)} et le placez en case ${position}.`
-        : `Vous déplacez votre ${pawn} de ${distance} case${distance === 1 ? '' : 's'} et le placez en case ${position}.`,
+        ? `Vous sortez votre ${pawn} de ${fromHabitat(origin)} et le placez ${destination}.`
+        : `Vous déplacez votre ${pawn} de ${distance} case${distance === 1 ? '' : 's'} et le placez ${destination}.${finished}`,
     },
   };
 }
@@ -307,6 +335,11 @@ function capture(
         const label = pawnLabel(program, pawn.pawnId) || 'pion';
         const attacker = playerName(ctx, playerId);
         const target = playerName(ctx, player.id);
+        const habitat =
+          program.families.find((family) =>
+            pawn.pawnId.startsWith(`${family.id}:`),
+          )?.habitat ?? 'enclos';
+        const home = `à ${withDefiniteArticle(habitat)}`;
         ctx.events.message(
           'game.team-pawn.captured',
           {
@@ -316,10 +349,10 @@ function capture(
             position: destination + 1,
           },
           {
-            default: `${attacker} capture le ${label} de ${target}, qui retourne dans sa réserve.`,
+            default: `${attacker} capture le ${label} de ${target}, qui retourne ${home}.`,
             byPlayerId: {
-              [playerId]: `Vous capturez le ${label} de ${target}, qui retourne dans sa réserve.`,
-              [player.id]: `Votre ${label} est capturé par ${attacker} et retourne dans votre réserve.`,
+              [playerId]: `Vous capturez le ${label} de ${target}, qui retourne ${home}.`,
+              [player.id]: `Votre ${label} est capturé par ${attacker} et retourne ${home}.`,
             },
           },
         );
@@ -365,9 +398,15 @@ function playerOffset(
 ) {
   const index = Math.max(
     0,
-    ctx.players.all().findIndex((player) => player.id === playerId),
+    seatedPlayers(ctx).findIndex((player) => player.id === playerId),
   );
   return program.startPositions[index];
+}
+
+function seatedPlayers(ctx: Context) {
+  return ctx.players
+    .all()
+    .sort((left, right) => (left.seatIndex ?? 0) - (right.seatIndex ?? 0));
 }
 
 function encode(move: PawnMove) {
@@ -384,7 +423,23 @@ function describe(
   const pawnIndex = Number(parts.at(-2));
   const progress = Number(parts.at(-1));
   const pawnId = ctx.pawns.assigned(program.setId, playerId)[pawnIndex];
-  return `${pawnLabel(program, pawnId) ?? `Pion ${pawnIndex + 1}`} vers la case ${progress + 1}`;
+  return `${pawnLabel(program, pawnId) ?? `Pion ${pawnIndex + 1}`} : ${destinationLabel(program, playerId, progress, ctx)}`;
+}
+
+function destinationLabel(
+  program: TeamPawnRaceOptions,
+  playerId: number,
+  progress: number,
+  ctx: Context,
+) {
+  if (progress >= program.trackLength) {
+    const index = progress - program.trackLength;
+    const ordinal =
+      ['première', 'seconde', 'troisième', 'quatrième'][index] ??
+      `${index + 1}e`;
+    return `dans la ${ordinal} résidence`;
+  }
+  return `en case ${((playerOffset(program, playerId, ctx) + progress) % program.trackLength) + 1}`;
 }
 
 function pawnLabel(program: TeamPawnRaceOptions, pawnId: string | undefined) {

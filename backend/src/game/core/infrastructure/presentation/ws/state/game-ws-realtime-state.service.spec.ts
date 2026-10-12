@@ -200,8 +200,8 @@ describe('GameWsRealtimeStateService run isolation', () => {
       const resolved = await service.resolve(4);
 
       expect(resolved.state.players).toEqual([
-        { id: 1, username: 'Owner', isBot: false },
-        { id: -9, username: 'Bot LAMA', isBot: true },
+        { id: 1, username: 'Owner', isBot: false, seatIndex: 0 },
+        { id: -9, username: 'Bot LAMA', isBot: true, seatIndex: 1 },
       ]);
       expect(resolved.commandRebaseFromVersion).toBe(1);
       expect(rooms.refreshPayload).toHaveBeenCalledWith(4);

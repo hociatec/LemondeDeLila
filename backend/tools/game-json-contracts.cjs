@@ -24,7 +24,10 @@ function gameDocuments(directory = gamesRoot) {
 }
 
 function digest(body) {
-  return crypto.createHash('sha256').update(body).digest('hex');
+  // Git may check out LF files as CRLF on Windows. Audit the same document
+  // across platforms without ignoring content, whitespace or version changes.
+  const normalized = body.toString('utf8').replace(/\r\n/g, '\n');
+  return crypto.createHash('sha256').update(normalized).digest('hex');
 }
 
 function inventory() {
@@ -91,9 +94,7 @@ function assertContracts() {
       failures.push(`${file}: hash modifié sans migration déclarée`);
       continue;
     }
-    usedMigrations.add(
-      migrationKey(file, oldEntry.sha256, newEntry.sha256),
-    );
+    usedMigrations.add(migrationKey(file, oldEntry.sha256, newEntry.sha256));
     if (!String(migration.justification ?? '').trim())
       failures.push(`${file}: justification de migration absente`);
     if (!Array.isArray(migration.tests) || migration.tests.length === 0) {

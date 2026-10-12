@@ -24,6 +24,8 @@ export type TurnState = {
 export type PlayerState = {
   id: number;
   username: string;
+  /** Stable room seat, independent of the randomized game turn order. */
+  seatIndex?: number;
   isBot?: boolean;
   /** Bot controlling this stable seat after its human player left the run. */
   replacementBotPlayerId?: number;
