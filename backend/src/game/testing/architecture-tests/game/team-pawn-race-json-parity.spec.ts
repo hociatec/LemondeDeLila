@@ -24,12 +24,16 @@ it('plays a complete deterministic team-pawn race', async () => {
   );
   expect(result.error).toBeUndefined();
   expect(result.status).toBe('finished');
-  expect(result.commands).toBe(412);
   const trace = result.events
     .filter((event) => event.type !== 'engine.state.committed')
     .map(({ type, data, visibility }) => ({ type, data, visibility }));
-  expect(trace).toHaveLength(1469);
-  expect(createHash('sha256').update(JSON.stringify(trace)).digest('hex')).toBe(
-    '744ce7e25fdbb76bcfcb52bb876a91c723c98e765c1c0da07b3d74b4c283b65e',
-  );
+  expect({
+    commands: result.commands,
+    length: trace.length,
+    hash: createHash('sha256').update(JSON.stringify(trace)).digest('hex'),
+  }).toEqual({
+    commands: 548,
+    length: 2095,
+    hash: '4cc75c2a0f8a17e6df6b6f6e52e5214bd57a7ba3e17e4eecb907f377d6b01992',
+  });
 });

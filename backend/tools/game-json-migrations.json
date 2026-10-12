@@ -34,11 +34,12 @@
     {
       "file": "src/game/games/les-quatre-vents/aventure-sauvage/game.json",
       "fromSha256": "01bd3efd2518d77f76f053e42ae979d695e97aacf6d19dbee860ad48a9337a48",
-      "toSha256": "09aec3a58e5ae12b6256f3ca20fcb71dcf12e41d2405874bdd9217d7bd7317d4",
-      "justification": "Le pattern event-card-race générique porte désormais sélection de pion, déplacement, pioche différée, résolution d'effets et reprise de landing depuis le JSON.",
+      "toSha256": "cfe68b221fe7b8289e1c0ccb5498330ed5b5d05c8105778b64565a4f2175817b",
+      "justification": "Le pattern event-card-race générique porte désormais sélection de pion, déplacement, pioche différée, résolution d'effets et reprise de landing depuis le JSON. Référence actualisée pour la version de contenu 3 et sa migration de sauvegarde déjà présentes sur main. Aucun changement des règles dans cette actualisation du contrôle.",
       "tests": [
         "src/game/testing/architecture-tests/game/event-race-json-parity.spec.ts",
-        "src/game/testing/architecture-tests/json/json-event-card-race.spec.ts"
+        "src/game/testing/architecture-tests/json/json-event-card-race.spec.ts",
+        "src/game/games/les-quatre-vents/aventure-sauvage/game.spec.ts"
       ]
     },
     {
@@ -54,11 +55,12 @@
     {
       "file": "src/game/games/vents-dansants/zig-et-zag/game.json",
       "fromSha256": "543afa0e3d9594d5a7faf2619fdf4db335ad181ec1122e8237deb9f8e6efcec8",
-      "toSha256": "e02210f9ce3432bb1996a10e2afabaf4408a60021fb0d2e51df0cd029f4aaaa6",
-      "justification": "Le pattern card-battle générique porte désormais l'état de manche, les égalités successives, les jokers, la capture des cartes, la vue dérivée et la victoire depuis le JSON.",
+      "toSha256": "60a5948b146152a5615807c7a21303ee330a0353f8392f77216ec351ee42cffe",
+      "justification": "Le pattern card-battle générique porte désormais l'état de manche, les égalités successives, les jokers, la capture des cartes, la vue dérivée et la victoire depuis le JSON. Référence actualisée pour le catalogue de cartes complet déjà présent sur main (83211dfc7). Aucun changement des règles dans cette actualisation du contrôle.",
       "tests": [
         "src/game/testing/architecture-tests/game/card-battle-json-parity.spec.ts",
-        "src/game/testing/architecture-tests/json/json-card-battle.spec.ts"
+        "src/game/testing/architecture-tests/json/json-card-battle.spec.ts",
+        "src/game/games/vents-dansants/zig-et-zag/game.spec.ts"
       ]
     },
     {
@@ -184,21 +186,23 @@
     {
       "file": "src/game/games/les-quatre-vents/en-attendant-minuit/game.json",
       "fromSha256": "02684835ad4bdfe0dfb2057750358a95410639ca3231e2253756c1d74e76c6ae",
-      "toSha256": "ffb3ba62e1ceae1726e29171baf6509a3caa15b87b219f1455dd7c7e3b207d9a",
-      "justification": "Le pattern bounce-quiz-race générique porte désormais pions, rebond, collisions, quiz privés, cartes, protections, bot et victoire depuis le JSON.",
+      "toSha256": "af0a3d86638b1b9de8b84d2035e12ea207cfe4f6bbdc99c660f9e6326601e36b",
+      "justification": "Le pattern bounce-quiz-race générique porte désormais pions, rebond, collisions, quiz privés, cartes, protections, bot et victoire depuis le JSON. Référence actualisée pour la pioche explicite et la migration de contenu déjà présentes sur main. Aucun changement des règles dans cette actualisation du contrôle.",
       "tests": [
         "src/game/testing/architecture-tests/game/bounce-quiz-race-json-parity.spec.ts",
-        "src/game/testing/architecture-tests/json/json-bounce-quiz-race.spec.ts"
+        "src/game/testing/architecture-tests/json/json-bounce-quiz-race.spec.ts",
+        "src/game/games/les-quatre-vents/en-attendant-minuit/game.spec.ts"
       ]
     },
     {
       "file": "src/game/games/les-quatre-vents/galopons-ensemble/game.json",
       "fromSha256": "14ab3e72055adb3b00cbd218ef1047b77ae89b0b95477f243ec93a6cf98421af",
-      "toSha256": "ee0702c164d0aefaf6b90760449360862d45693796650190eba513b0ed9be1c2",
-      "justification": "Le pattern bidirectional-collision-race générique porte désormais pions, aller-retour, collisions, cartes, pommes, dettes, bot et victoire depuis le JSON.",
+      "toSha256": "9aa26fc4d12862e7197af966d5cb9f85ecfaab6c2e0bf29376e6754d7a6c5a2e",
+      "justification": "Le pattern bidirectional-collision-race générique porte désormais pions, aller-retour, collisions, cartes, pommes, dettes, bot et victoire depuis le JSON. Référence actualisée pour la pioche explicite et les raccourcis des pommes déjà présents sur main. Aucun changement des règles dans cette actualisation du contrôle.",
       "tests": [
         "src/game/testing/architecture-tests/game/bidirectional-collision-race-json-parity.spec.ts",
-        "src/game/testing/architecture-tests/json/json-bidirectional-collision-race.spec.ts"
+        "src/game/testing/architecture-tests/json/json-bidirectional-collision-race.spec.ts",
+        "src/game/games/les-quatre-vents/galopons-ensemble/game.spec.ts"
       ]
     },
     {
@@ -214,9 +218,10 @@
     {
       "file": "src/game/games/vents-sacres/foulees-fantastiques/game.json",
       "fromSha256": "c4cd44892e2d90cca940d581b109132f9fae33523769195402832185009b2020",
-      "toSha256": "c1ba0a324dd89c10894cd19df0b9c2b28e2d3f7de8fb2719e8f7211726bbe90d",
-      "justification": "Le pattern team-pawn-race générique porte désormais familles de pions, entrée, maison, blocage, capture, choix, narration, bot et victoire depuis le JSON.",
+      "toSha256": "9815ad8a35f6a6a53113e2c857267297f6719eb47a23f215e620274b815e958e",
+      "justification": "Le pattern team-pawn-race porte les règles depuis le JSON. Correction des départs selon les places à la table, de l’entrée et des noms des résidences, des captures et des annonces du dé.",
       "tests": [
+        "src/game/testing/architecture-tests/game/team-pawn-race-reports.spec.ts",
         "src/game/testing/architecture-tests/game/team-pawn-race-json-parity.spec.ts",
         "src/game/testing/architecture-tests/json/json-team-pawn-race.spec.ts"
       ]
@@ -234,11 +239,12 @@
     {
       "file": "src/game/games/les-quatre-vents/frousse-party/game.json",
       "fromSha256": "4469cdc346e1d0b72bbd2b50c8971a25bfb9a0b7e5944820438238f33047dbb7",
-      "toSha256": "46054bdae3dadd590dbd461e46768ddb51882a119fe59f82be13b48300735ef2",
-      "justification": "Le pattern protected-haunted-race générique porte désormais piste, protections, cartes, blocages, déplacements conditionnels, choix, bot et victoire depuis le JSON.",
+      "toSha256": "4cfb36754086ca1442f74db9438c0061375e464c3b41f5d8c2ce362b8bc628d9",
+      "justification": "Le pattern protected-haunted-race générique porte désormais piste, protections, cartes, blocages, déplacements conditionnels, choix, bot et victoire depuis le JSON. Référence actualisée pour la pioche explicite et la migration de sauvegarde déjà présentes sur main. Aucun changement des règles dans cette actualisation du contrôle.",
       "tests": [
         "src/game/testing/architecture-tests/game/protected-haunted-race-json-parity.spec.ts",
-        "src/game/testing/architecture-tests/json/json-protected-haunted-race.spec.ts"
+        "src/game/testing/architecture-tests/json/json-protected-haunted-race.spec.ts",
+        "src/game/games/les-quatre-vents/frousse-party/game.spec.ts"
       ]
     },
     {
@@ -264,11 +270,12 @@
     {
       "file": "src/game/games/les-quatre-vents/a-fond-les-ballons/game.json",
       "fromSha256": "fbadf4aec058c82c44824fb12c0d385ba68044230adf58ceee5ec4c7a38a2f5d",
-      "toSha256": "eabce29120f5a76f18e56d3c73d8bcbf9ba2738bdfe4e21ea7369cc3ebb55f33",
-      "justification": "Le pattern chained-tile-race générique porte désormais pions, dé, cases chaînées, cartes, choix, protections, bot et victoire depuis le JSON.",
+      "toSha256": "8a2022a408bfb9d6532dc554b5d12f464959706f03bf770bd8d10a109e16f006",
+      "justification": "Le pattern chained-tile-race générique porte désormais pions, dé, cases chaînées, cartes, choix, protections, bot et victoire depuis le JSON. Référence actualisée pour la version de contenu 4 et sa migration de sauvegarde déjà présentes sur main. Aucun changement des règles dans cette actualisation du contrôle.",
       "tests": [
         "src/game/testing/architecture-tests/game/chained-tile-race-json-parity.spec.ts",
-        "src/game/testing/architecture-tests/json/json-chained-tile-race.spec.ts"
+        "src/game/testing/architecture-tests/json/json-chained-tile-race.spec.ts",
+        "src/game/games/les-quatre-vents/a-fond-les-ballons/game.spec.ts"
       ]
     },
     {
@@ -284,8 +291,8 @@
     {
       "file": "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.json",
       "fromSha256": "2cd7509bbd1822b3cde8511e5f7c715096b1a5b52f1ae2cc7b44c557a5165c98",
-      "toSha256": "cd22706a6bcd96d62013d0afb6abb6eeb946369ef27a68834da4d62cd8df89c4",
-      "justification": "Le pattern narratif natif remplace l'adaptateur effect-pack en conservant les choix, cartes, effets, projections et résolutions historiques.",
+      "toSha256": "57c17d5213e117c8a4fb172bf7bc5b40bfacf08d1520d0d0d9c1064d3e4d577e",
+      "justification": "Le pattern narratif natif remplace l'adaptateur effect-pack en conservant les choix, cartes, effets, projections et résolutions historiques. Référence actualisée pour les libellés des choix et la pioche explicite déjà présents sur main (1d12b9ae4, 16ac0d729). Aucun changement des règles dans cette actualisation du contrôle.",
       "tests": [
         "src/game/games/les-quatre-vents/contes-et-cacahuetes/game.spec.ts",
         "src/game/testing/architecture-tests/game/reference-replays.spec.ts"

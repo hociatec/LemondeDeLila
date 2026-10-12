@@ -416,6 +416,16 @@ export class GamePawnController {
           definition.overshoot ?? 'clamp',
         )
       : current + Math.trunc(distance);
+    return this.place(setId, pawnId, current, next, Math.trunc(distance));
+  }
+
+  private place(
+    setId: string,
+    pawnId: string,
+    current: number,
+    next: number,
+    distance: number,
+  ): number {
     (this.state.positions[setId] ??= {})[pawnId] = next;
     this.emit('pawn.moved', {
       setId,
@@ -423,12 +433,17 @@ export class GamePawnController {
       playerId: this.owner(setId, pawnId),
       from: current,
       to: next,
-      distance: Math.trunc(distance),
+      distance,
     });
     return next;
   }
 
   moveTo(setId: string, pawnId: string, position: number): number {
+    const definition = this.requireSet(setId);
+    if (position < 0 && position === definition.initialPosition) {
+      const current = this.position(setId, pawnId);
+      return this.place(setId, pawnId, current, position, position - current);
+    }
     return this.move(setId, pawnId, position - this.position(setId, pawnId));
   }
 

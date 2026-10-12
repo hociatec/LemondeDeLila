@@ -46,7 +46,17 @@ export class GameRoomStateFactory {
     };
     const rng = ensureSeededRng(metadata);
     metadata.rng = rng;
-    const basePlayers = this.players(payload);
+    const roomPlayers = this.players(payload);
+    const seats = [...roomPlayers]
+      .sort(
+        (left, right) =>
+          Number(right.id === roomOwnerId) - Number(left.id === roomOwnerId),
+      )
+      .map((player) => player.id);
+    const basePlayers = roomPlayers.map((player) => ({
+      ...player,
+      seatIndex: seats.indexOf(player.id),
+    }));
     const players =
       status.toLowerCase() === 'started'
         ? seededShuffle(basePlayers, rng.seed, 'game-runtime:starter')
