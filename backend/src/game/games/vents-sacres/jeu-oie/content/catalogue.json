@@ -116,7 +116,7 @@
     {
       "id": "case-19",
       "label": "Auberge",
-      "description": "Une auberge accueillante se dresse sur votre chemin. Vous décidez de faire une pause bien méritée, de reprendre des forces et de savourer un moment de repos.",
+      "description": "Une auberge accueillante se dresse sur votre chemin. Vous décidez de faire une pause bien méritée, de reprendre des forces et de savourer un moment de repos. Passez un tour.",
       "type": "inn",
       "turnsToSkip": 1
     },
