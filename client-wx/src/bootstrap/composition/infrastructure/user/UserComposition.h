@@ -4,6 +4,8 @@
 
 #include "bootstrap/composition/application/StepLogger.h"
 
+namespace lila::modules::shortcuts::application { class ShortcutStore; }
+
 namespace lila::modules::options::application
 {
 class OptionsStore;
@@ -40,6 +42,7 @@ struct UserComposition final
     ~UserComposition();
 
     void AssembleAuthentication(NetworkComposition& network, const StepLogger& setStep);
+    void AssembleShortcuts(NetworkComposition& network);
     void LoadLocalStores(const StepLogger& setStep);
 
     std::unique_ptr<lila::modules::user::infrastructure::remote::UserAuthRemoteDataSource>
@@ -49,5 +52,6 @@ struct UserComposition final
     std::unique_ptr<lila::modules::user::application::RegisterUseCase> registerUseCase;
     std::unique_ptr<lila::modules::session::application::SessionStore> sessionStore;
     std::unique_ptr<lila::modules::options::application::OptionsStore> optionsStore;
+    std::unique_ptr<lila::modules::shortcuts::application::ShortcutStore> shortcutStore;
 };
 }

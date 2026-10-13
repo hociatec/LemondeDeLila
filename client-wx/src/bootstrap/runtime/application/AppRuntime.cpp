@@ -14,6 +14,7 @@ void AppRuntime::Assemble(const StepLogger& setStep)
     network_.Assemble(setStep);
     user_.AssembleAuthentication(network_, setStep);
     user_.LoadLocalStores(setStep);
+    user_.AssembleShortcuts(network_);
     audio_.Assemble(*user_.optionsStore, setStep);
     game_.Assemble(network_, *user_.sessionStore, setStep);
     social_.Assemble(
@@ -62,7 +63,7 @@ void AppRuntime::CreateNavigator(const StepLogger& setStep)
         *user_.loginUseCase,
         *user_.registerUseCase,
         *user_.sessionStore,
-        *user_.optionsStore};
+        *user_.optionsStore, *user_.shortcutStore};
     app::navigation::GameNavigationDependencies game{
         *game_.catalogService,
         *game_.roomLobbyService,
@@ -78,7 +79,7 @@ void AppRuntime::CreateNavigator(const StepLogger& setStep)
         *social_.socialService,
         *social_.presenceMonitor};
     app::navigation::AudioNavigationDependencies audio{*audio_.audioService};
-    app::navigation::AdminNavigationDependencies admin{*admin_.service};
+    app::navigation::AdminNavigationDependencies admin{*admin_.service, *admin_.contactSender};
     navigator_ = std::make_unique<app::navigation::AppNavigator>(auth, game, social, audio, admin);
 }
 }

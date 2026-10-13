@@ -45,6 +45,8 @@ void AdminFrame::ApplyContextToPayload(
     CopyAlias(payload, contextItem_, "id", {"id", "userId", "reportId", "categoryId"});
     CopyAlias(payload, contextItem_, "userId", {"userId", "createdByUserId", "id"});
     CopyAlias(payload, contextItem_, "toUserId", {"userId", "createdByUserId", "authorId", "id"});
+    if (command.id == "contacts.reply")
+        payload["toUserId"] = AdminContactRecipient(contextItem_);
     CopyAlias(payload, contextItem_, "messageId", {"messageId", "id"});
     CopyAlias(payload, contextItem_, "reportId", {"reportId", "id"});
     CopyAlias(payload, contextItem_, "commentId", {"commentId", "id"});
@@ -59,8 +61,8 @@ bool AdminFrame::ContextCommandMutates(const domain::AdminCommand& command) cons
 {
     if (command.transport == domain::AdminTransport::LocalAction ||
         command.operation.starts_with("GET ")) return false;
-    constexpr std::array<std::string_view, 5> readOnly{
-        "bugs.get", "bugs.comments", "rooms.join", "mnemo.categories", "mnemo.questions"};
+    constexpr std::array<std::string_view, 6> readOnly{
+        "contacts.get", "bugs.get", "bugs.comments", "rooms.join", "mnemo.categories", "mnemo.questions"};
     for (const auto id : readOnly)
         if (command.id == id) return false;
     return true;

@@ -47,6 +47,7 @@ public:
         ExitRequestedHandler onExitRequested);
     ~MessagingFrame() override;
     void RefreshForNavigation();
+    void OpenInboxShortcut();
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:
@@ -63,6 +64,7 @@ private:
         bool readOnly = false);
     void SetBusyState(bool busy, const wxString& message = wxEmptyString);
     void SyncBusyState();
+    void SyncMessageActions();
     void SyncPanels();
     void SyncSelectionState();
     void ScheduleFocusCurrentScreen();

@@ -26,13 +26,14 @@ void AppNavigator::ShowCatalog(std::size_t selectedIndex)
     ReplaceView(ViewId::Catalog, view);
 }
 
-void AppNavigator::ShowJoinRooms()
+void AppNavigator::ShowJoinRooms(std::string gameId)
 {
     auto* view = GetOrCreateView(ViewId::JoinRooms);
     if (auto* panel = dynamic_cast<modules::rooms::presentation::JoinRoomsPanel*>(view))
     {
         focusTransition_.Forget(view);
         view->Hide();
+        panel->SetGameFilter(gameId);
         panel->ResetForNextPrepare();
         panel->Prepare({});
     }
@@ -142,6 +143,7 @@ void AppNavigator::ShowLeaderboard()
 
 void AppNavigator::ReturnToCatalogAfterRoomClose(bool resetVaultFocus, bool resetCatalogFocus)
 {
+    shortcutReturnView_ = ViewId::None;
     resetVaultFocusOnNextOpen_ = resetVaultFocus;
     auto* view = GetOrCreateView(ViewId::Catalog);
     if (resetCatalogFocus)

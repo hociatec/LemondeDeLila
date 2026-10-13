@@ -20,6 +20,7 @@ enum class ViewId
     About,
     Options,
     Admin,
+    Shortcuts,
     Count
 };
 }

@@ -27,6 +27,10 @@ int main()
     const auto adminMenu =
         lila::modules::main_menu::presentation::GetMainMenuEntries(true);
     assert(adminMenu.size() == regularMenu.size() + 1);
+    assert(regularMenu[regularMenu.size() - 2].action ==
+        lila::modules::main_menu::presentation::MainMenuAction::OpenShortcuts);
+    assert(adminMenu[adminMenu.size() - 2].action ==
+        lila::modules::main_menu::presentation::MainMenuAction::OpenShortcuts);
     assert(adminMenu[3].action ==
         lila::modules::main_menu::presentation::MainMenuAction::OpenAdmin);
 
@@ -106,6 +110,22 @@ int main()
     assert(messaging.currentScreen == MessagingNavigationState::Screen::Detail);
     assert(messaging.currentBox == MessagingBox::Deleted);
     assert(!messaging.GoBack());
+
+    for (const auto box : {MessagingBox::Inbox, MessagingBox::Outbox, MessagingBox::Deleted})
+    {
+        MessagingNavigationState mutated;
+        mutated.SelectBox(box);
+        mutated.PushCurrent();
+        mutated.Enter(MessagingNavigationState::Screen::List);
+        mutated.PushCurrent();
+        mutated.Enter(MessagingNavigationState::Screen::Detail);
+        mutated.ReturnToMailbox();
+        assert(mutated.currentBox == box);
+        assert(mutated.currentScreen == MessagingNavigationState::Screen::List);
+        assert(mutated.GoBack());
+        assert(mutated.currentScreen == MessagingNavigationState::Screen::Menu);
+        assert(!mutated.GoBack());
+    }
 
     // A rapid screen churn must never leak history across independent flows
     // or leave navigation in a state that cannot return to its menu.

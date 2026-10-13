@@ -20,6 +20,11 @@ constexpr int WindowHeight = 700;
 
 namespace lila::modules::about::presentation
 {
+void AboutFrame::OpenContactPage()
+{
+    pageCoordinator_->ShowPage(AboutPageCoordinator::Page::ContactAdmin);
+}
+
 AboutFrame::~AboutFrame() = default;
 
 lila::shared::accessibility::NavigationController::Scope AboutFrame::BuildTabScope() const
@@ -52,12 +57,14 @@ lila::shared::accessibility::NavigationController::Scope AboutFrame::BuildTabSco
 AboutFrame::AboutFrame(
     wxWindow* parent,
     lila::modules::session::application::SessionStore& sessionStore,
+    application::IAdminContactSender& contactSender,
     CloseRequestedHandler onCloseRequested,
     ExitRequestedHandler onExitRequested)
     : lila::shared::accessibility::NonFocusablePanel(
           parent,
           0),
       sessionStore_(sessionStore),
+      contactSender_(contactSender),
       onCloseRequested_(std::move(onCloseRequested)),
       onExitRequested_(std::move(onExitRequested))
 {

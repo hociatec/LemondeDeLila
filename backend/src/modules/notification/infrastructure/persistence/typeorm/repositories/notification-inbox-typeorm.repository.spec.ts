@@ -6,6 +6,34 @@ import {
 } from './notification-inbox-typeorm.repository';
 
 describe('NotificationInboxTypeormRepository ownership', () => {
+  it('filters contact history by owner before applying the message limit', async () => {
+    const builder = Object.fromEntries(
+      [
+        'innerJoin',
+        'select',
+        'addSelect',
+        'where',
+        'andWhere',
+        'orderBy',
+        'addOrderBy',
+        'limit',
+      ].map((method) => [method, jest.fn().mockReturnThis()]),
+    ) as Record<string, jest.Mock> & { getRawMany: jest.Mock };
+    builder.getRawMany = jest.fn().mockResolvedValue([]);
+    const repository = {
+      createQueryBuilder: () => builder,
+    } as unknown as Repository<NotificationInboxItemEntity>;
+    const inbox = new NotificationInboxTypeormRepository(repository, {
+      now: () => Date.now(),
+    });
+    await inbox.listByContactId('admin_contact', 'contact-1', 7);
+    expect(builder.andWhere).toHaveBeenCalledWith('u.id = :userId', {
+      userId: 7,
+    });
+    expect(builder.orderBy).toHaveBeenCalledWith('it.createdAt', 'DESC');
+    expect(builder.limit).toHaveBeenCalledWith(500);
+  });
+
   it('never deletes an inbox item without matching its owner', async () => {
     const execute = jest.fn().mockResolvedValue({ affected: 0 });
     const query = {

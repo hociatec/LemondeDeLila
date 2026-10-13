@@ -1,4 +1,8 @@
 #pragma once
+namespace lila::modules::shortcuts::application { class ShortcutStore; }
+
+
+namespace lila::modules::about::application { class IAdminContactSender; }
 
 namespace lila::modules::audio::application
 {
@@ -86,6 +90,7 @@ struct AuthNavigationDependencies final
     lila::modules::user::application::RegisterUseCase& registerUseCase;
     lila::modules::session::application::SessionStore& sessionStore;
     lila::modules::options::application::OptionsStore& optionsStore;
+    lila::modules::shortcuts::application::ShortcutStore& shortcutStore;
 };
 
 struct GameNavigationDependencies final
@@ -116,5 +121,6 @@ struct AudioNavigationDependencies final
 struct AdminNavigationDependencies final
 {
     lila::modules::admin::application::AdminService& adminService;
+    lila::modules::about::application::IAdminContactSender& contactSender;
 };
 }

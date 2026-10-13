@@ -15,6 +15,19 @@
 
 namespace lila::modules::messaging::presentation
 {
+void MessagingFrame::OpenInboxShortcut()
+{
+    if (isBusy_) { UpdateStatus(L"Une opération est en cours. Réessayez ensuite."); return; }
+    if (navigationState_.currentScreen == Screen::Compose)
+    {
+        UpdateStatus(L"Terminez ou fermez votre brouillon avant d'ouvrir la boîte de réception.");
+        return;
+    }
+    navigationState_.PushCurrent();
+    navigationState_.SelectBox(domain::MessagingBox::Inbox);
+    LoadBox(domain::MessagingBox::Inbox);
+}
+
 void MessagingFrame::SendComposedMessage()
 {
     const auto compose = view_->Compose();
@@ -46,6 +59,12 @@ void MessagingFrame::SendComposedMessage()
 
 void MessagingFrame::DeleteSelectedMessage()
 {
+    if (isBusy_) return;
+    if (navigationState_.currentBox == domain::MessagingBox::Deleted)
+    {
+        PurgeSelectedMessage();
+        return;
+    }
     const auto message = GetSelectedMessage();
     if (message.has_value())
     {
@@ -55,6 +74,7 @@ void MessagingFrame::DeleteSelectedMessage()
 
 void MessagingFrame::RestoreSelectedMessage()
 {
+    if (isBusy_ || navigationState_.currentBox != domain::MessagingBox::Deleted) return;
     const auto message = GetSelectedMessage();
     if (message.has_value())
     {
@@ -64,6 +84,7 @@ void MessagingFrame::RestoreSelectedMessage()
 
 void MessagingFrame::PurgeSelectedMessage()
 {
+    if (isBusy_ || navigationState_.currentBox != domain::MessagingBox::Deleted) return;
     const auto message = GetSelectedMessage();
     if (message.has_value())
     {
@@ -87,7 +108,8 @@ void MessagingFrame::ReplyToSelectedMessage()
 void MessagingFrame::MarkSelectedMessageRead()
 {
     const auto message = GetSelectedMessage();
-    if (!message.has_value() || message->isSent || message->id.empty())
+    if (!message.has_value() || message->isSent || message->id.empty() ||
+        navigationState_.currentBox == domain::MessagingBox::Deleted)
     {
         return;
     }

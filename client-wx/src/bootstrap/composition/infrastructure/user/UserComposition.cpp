@@ -1,6 +1,8 @@
 #include "bootstrap/composition/infrastructure/user/UserComposition.h"
 
 #include <memory>
+#include "modules/shortcuts/application/ShortcutStore.h"
+#include "modules/shortcuts/infrastructure/ShortcutGateway.h"
 
 #include "bootstrap/composition/infrastructure/network/NetworkComposition.h"
 #include "modules/options/application/OptionsStore.h"
@@ -17,6 +19,13 @@
 
 namespace lila::bootstrap
 {
+void UserComposition::AssembleShortcuts(NetworkComposition& network)
+{
+    shortcutStore = std::make_unique<modules::shortcuts::application::ShortcutStore>(
+        std::make_unique<modules::shortcuts::infrastructure::ShortcutGateway>(
+            *network.authenticatedRealtimeApiClient, *sessionStore));
+}
+
 UserComposition::UserComposition() = default;
 UserComposition::~UserComposition() = default;
 

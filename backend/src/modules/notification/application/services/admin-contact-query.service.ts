@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { NotificationContactNotFoundError } from '../../domain/errors/notification-domain.errors';
 import {
   serializeDate,
   serializeOptionalDate,
@@ -44,6 +45,27 @@ export class AdminContactQueryService {
       if (item.kind !== ADMIN_CONTACT_KIND) return base;
       return { ...base, ...normalizeAdminContactPayload(item.payload) };
     });
+  }
+
+  async getThread(userId: number, contactId: string) {
+    const rows = await this.inbox.listByContactId(
+      ADMIN_CONTACT_KIND,
+      contactId,
+      userId,
+    );
+    const ownRows = rows.filter((row) => row.userId === userId);
+    if (!ownRows.length) throw new NotificationContactNotFoundError();
+    return {
+      contactId,
+      messages: ownRows.reverse().map((row) => ({
+        createdAt: serializeDate(row.createdAt),
+        fromUsername: row.fromUsername,
+        fromUserId: row.fromUserId,
+        toUserId: row.toUserId,
+        message: row.message,
+        ...normalizeAdminContactPayload(row.payload),
+      })),
+    };
   }
 
   async listThreads(

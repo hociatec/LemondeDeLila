@@ -89,6 +89,17 @@ void MessagingEventBinder::Bind(
     };
     list.messagesList->Bind(wxEVT_CHAR_HOOK, listKeyHandler);
 
+    detail.detailCtrl->Bind(wxEVT_CHAR_HOOK, [&navigationState, handlers](wxKeyEvent& event)
+    {
+        if (event.GetKeyCode() == WXK_DELETE)
+        {
+            Invoke(navigationState.currentBox == domain::MessagingBox::Deleted
+                ? handlers.purgeMessage : handlers.deleteMessage);
+            return;
+        }
+        event.Skip();
+    });
+
     detail.replyButton->Bind(wxEVT_BUTTON, [reply = handlers.reply](wxCommandEvent&) { Invoke(reply); });
     detail.deleteButton->Bind(wxEVT_BUTTON, [deleteMessage = handlers.deleteMessage](wxCommandEvent&) { Invoke(deleteMessage); });
     detail.restoreButton->Bind(wxEVT_BUTTON, [restoreMessage = handlers.restoreMessage](wxCommandEvent&) { Invoke(restoreMessage); });

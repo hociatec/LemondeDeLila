@@ -29,6 +29,7 @@ AppNavigator::AppNavigator(
       registerUseCase_(auth.registerUseCase),
       sessionStore_(auth.sessionStore),
       optionsStore_(auth.optionsStore),
+      shortcutStore_(auth.shortcutStore),
       catalogService_(game.catalogService),
       roomLobbyService_(game.roomLobbyService),
       roomInvitationMonitor_(game.roomInvitationMonitor),
@@ -42,7 +43,8 @@ AppNavigator::AppNavigator(
       socialService_(social.socialService),
       presenceMonitor_(social.presenceMonitor),
       audioService_(audio.audioService),
-      adminService_(admin.adminService)
+      adminService_(admin.adminService),
+      contactSender_(admin.contactSender)
 {
     wxEvtHandler::AddFilter(this);
 }
@@ -50,6 +52,8 @@ AppNavigator::AppNavigator(
 AppNavigator::~AppNavigator()
 {
     lifetimeToken_.reset();
+    if (shortcutsTask_) shortcutsTask_->RequestCancel();
+    if (shortcutGameTask_) shortcutGameTask_->RequestCancel();
     wxEvtHandler::RemoveFilter(this);
     if (hostFrame_ != nullptr)
     {
@@ -87,6 +91,7 @@ int AppNavigator::FilterEvent(wxEvent& event)
         hostFrame_->ClearActivationFocusContext();
     if (userInteraction || event.GetEventType() == wxEVT_MOTION)
         presenceMonitor_.ReportInteraction();
+    if (HandleShortcutEvent(event)) return Event_Processed;
     return Event_Skip;
 }
 

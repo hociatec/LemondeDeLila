@@ -75,7 +75,7 @@ void AboutFrame::BuildLayout()
     auto* contactHint = new wxStaticText(
         contactPanel,
         wxID_ANY,
-        wxString(L"Le formulaire est préparé, mais l'envoi réseau du client wx n'est pas encore branché."));
+        wxString(L"Votre message sera transmis au staff. Maximum : 2 000 caract\u00E8res."));
     contactSizer->Add(contactLabel, 0, wxBOTTOM, 8);
     contactSizer->Add(contactHint, 0, wxBOTTOM, 10);
     contactSizer->Add(contactMessageCtrl_, 1, wxEXPAND | wxBOTTOM, 12);

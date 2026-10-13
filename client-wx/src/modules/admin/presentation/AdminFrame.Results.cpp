@@ -1,4 +1,5 @@
 #include "modules/admin/presentation/AdminFrame.h"
+#include "modules/admin/presentation/AdminContactPresentation.h"
 #include "modules/admin/presentation/AdminBugReportStatusMenu.h"
 
 #include <algorithm>
@@ -61,17 +62,22 @@ void AdminFrame::ShowResult(
         gameResult_ = result;
         gameResultPayload_ = activeRequestPayload_;
     }
-    const auto displayResult = command.id == "sounds.catalog"
+    const auto displayResult = command.id == "contacts.threads"
+        ? FlattenAdminContacts(result) : command.id == "sounds.catalog"
         ? FlattenSoundCatalog(result)
         : command.id == "bugs.comments" && result.is_object() && result.contains("items")
             ? nlohmann::json{{"comments", result["items"]}} : result;
     auto presentation = BuildAdminResultPresentation(displayResult);
-    if (command.id == "bugs.get")
+    if (command.id == "bugs.get" || command.id == "contacts.get")
     {
         resultText_->Show();
-        resultSummaryLabel_->SetLabel(wxString(L"Rapport consulté"));
+        resultSummaryLabel_->SetLabel(command.id == "contacts.get"
+            ? wxString(L"Historique de la demande (500 derniers messages maximum)")
+            : wxString(L"Rapport consulté"));
         resultSummaryLabel_->Show();
-        resultText_->SetValue(FormatAdminBugReport(result));
+        resultText_->SetValue(command.id == "contacts.get"
+            ? lila::shared::text::FromUtf8(FormatAdminResult(result))
+            : FormatAdminBugReport(result));
         resultText_->SetInsertionPoint(0);
         Layout();
         FocusResultDetails();

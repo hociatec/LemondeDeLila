@@ -116,7 +116,8 @@ void AdminFrame::ActivateCommand(std::size_t commandIndex)
             onJoinRoomRequested_(roomId, spectator);
         return;
     }
-    refreshAreaAfterCommand_ = showingItemActions_ && ContextCommandMutates(command);
+    refreshAreaAfterCommand_ = command.id == "contacts.create" ||
+        (showingItemActions_ && ContextCommandMutates(command));
     if (command.maintenanceToken && !EnsureMaintenanceToken())
     {
         refreshAreaAfterCommand_ = false;

@@ -51,11 +51,17 @@ public:
     void FocusCurrentView();
 
 private:
+    void ShowShortcuts(std::size_t selectedIndex);
+    void EnsureShortcutsLoaded();
+    bool HandleShortcutEvent(wxEvent& event);
+    void ExecuteShortcut(const std::string& target);
+    void OpenShortcutGame(const std::string& gameId);
+    bool ReturnFromShortcut();
     int FilterEvent(wxEvent& event) override;
     void ShowHome();
     void ShowSession(std::size_t selectedIndex = 0, bool resetInitialFocus = false);
     void ShowCatalog(std::size_t selectedIndex);
-    void ShowJoinRooms();
+    void ShowJoinRooms(std::string gameId = {});
     void ShowVault();
     void CreateRoom(const lila::modules::catalog::domain::CatalogGame& game);
     void JoinRoom(int roomId, bool spectator);
@@ -97,6 +103,13 @@ private:
     lila::modules::user::application::RegisterUseCase& registerUseCase_;
     lila::modules::session::application::SessionStore& sessionStore_;
     lila::modules::options::application::OptionsStore& optionsStore_;
+    lila::modules::shortcuts::application::ShortcutStore& shortcutStore_;
+    std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> shortcutGameTask_;
+    unsigned shortcutGameGeneration_ = 0;
+    int shortcutsUserId_ = 0;
+    int shortcutHeldKey_ = 0;
+    domain::ViewId shortcutReturnView_ = domain::ViewId::None;
+    std::shared_ptr<lila::shared::concurrency::BackgroundTaskHandle> shortcutsTask_;
     lila::modules::catalog::application::CatalogService& catalogService_;
     lila::modules::rooms::application::RoomLobbyService& roomLobbyService_;
     lila::modules::rooms::application::RoomInvitationMonitor& roomInvitationMonitor_;
@@ -111,6 +124,7 @@ private:
     lila::modules::presence::application::PresenceMonitor& presenceMonitor_;
     lila::modules::audio::application::IAudioService& audioService_;
     lila::modules::admin::application::AdminService& adminService_;
+    lila::modules::about::application::IAdminContactSender& contactSender_;
     HostFrame* hostFrame_ = nullptr;
     domain::ViewId currentViewId_ = domain::ViewId::None;
     wxWindow* currentView_ = nullptr;

@@ -22,6 +22,10 @@ export interface PrivateMessageRepository {
   findInbox(userId: number, limit: number): Promise<PrivateMessageRecord[]>;
   findOutbox(userId: number, limit: number): Promise<PrivateMessageRecord[]>;
   findDeleted(userId: number, limit: number): Promise<PrivateMessageRecord[]>;
-  remove(messageId: string): Promise<void>;
+  purgeForUser(
+    messageId: string,
+    userId: number,
+    purgedAt: Date,
+  ): Promise<boolean>;
   countUnreadForRecipient(userId: number): Promise<number>;
 }

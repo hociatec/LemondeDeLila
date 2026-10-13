@@ -101,6 +101,9 @@ void MainMenuFrame::OnMenuActivated(std::size_t index)
             onOpenChatRequested_(index);
         }
         return;
+    case MainMenuAction::OpenShortcuts:
+        if (onOpenShortcutsRequested_) onOpenShortcutsRequested_(index);
+        return;
     case MainMenuAction::Logout:
     {
         wxCommandEvent event;

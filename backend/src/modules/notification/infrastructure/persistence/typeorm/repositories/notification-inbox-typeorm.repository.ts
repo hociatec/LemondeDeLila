@@ -169,6 +169,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
   async listByContactId(
     kind: string,
     contactId: string,
+    userId?: number,
   ): Promise<NotificationInboxContactRow[]> {
     const cleanKind = String(kind || '').trim();
     const cid = String(contactId || '').trim();
@@ -183,7 +184,7 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
 
     let rows: NotificationInboxContactRawRow[];
     try {
-      rows = await this.repo
+      const query = this.repo
         .createQueryBuilder('it')
         .innerJoin('it.user', 'u')
         .select('it.id', 'id')
@@ -199,7 +200,13 @@ export class NotificationInboxTypeormRepository implements NotificationInboxRepo
         .addSelect('it.readAt', 'readAt')
         .where('it.kind = :kind', { kind: cleanKind })
         .andWhere('it.contactId = :contactId', { contactId: cid })
-        .andWhere('it.deletedAt IS NULL')
+        .andWhere('it.deletedAt IS NULL');
+      if (userId !== undefined)
+        query
+          .andWhere('u.id = :userId', { userId })
+          .orderBy('it.createdAt', 'DESC')
+          .addOrderBy('it.id', 'DESC');
+      rows = await query
         .limit(500)
         .getRawMany<NotificationInboxContactRawRow>();
     } catch (error) {

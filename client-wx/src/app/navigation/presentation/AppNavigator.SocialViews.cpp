@@ -33,6 +33,7 @@ wxWindow* AppNavigator::CreateSocialView(ViewId viewId)
             messagingService_,
             [this]()
             {
+                if (ReturnFromShortcut()) return;
                 if (messagingOpenedFromSocial_)
                 {
                     ShowSocial(lastMainMenuSelection_, lastSocialMenuSelection_);

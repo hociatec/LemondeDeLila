@@ -12,6 +12,7 @@ constexpr MainMenuEntry Social{MainMenuAction::OpenSocial, L"Social", L"Ouvrir l
 constexpr MainMenuEntry Admin{MainMenuAction::OpenAdmin, L"Administration", L"Ouvrir la console d'administration."};
 constexpr MainMenuEntry About{MainMenuAction::OpenAbout, L"À propos", L"Ouvrir l'écran d'informations du client natif."};
 constexpr MainMenuEntry Options{MainMenuAction::OpenOptions, L"Options", L"Ouvrir l'écran de configuration du client natif."};
+constexpr MainMenuEntry Shortcuts{MainMenuAction::OpenShortcuts, L"Gestionnaire de raccourcis", L"Configurer vos raccourcis personnels."};
 constexpr MainMenuEntry Logout{MainMenuAction::Logout, L"Se déconnecter", L"Quitter le menu principal et revenir à l'écran de connexion."};
 }
 
@@ -19,7 +20,7 @@ std::vector<MainMenuEntry> GetMainMenuEntries(bool includeAdmin)
 {
     std::vector<MainMenuEntry> entries{Catalog, Chat, Social};
     if (includeAdmin) entries.push_back(Admin);
-    entries.insert(entries.end(), {About, Options, Logout});
+    entries.insert(entries.end(), {About, Options, Shortcuts, Logout});
     return entries;
 }
 }

@@ -32,7 +32,7 @@ void AboutFrame::BindEvents()
         wxEVT_BUTTON,
         [this](wxCommandEvent&)
         {
-            UpdateStatus(wxString(L"L'envoi réseau du contact administrateur n'est pas encore disponible dans le client wx."));
+            SendContact();
         });
 
     cancelContactButton_->Bind(
