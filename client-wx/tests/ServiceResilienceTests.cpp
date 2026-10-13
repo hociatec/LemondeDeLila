@@ -73,6 +73,7 @@ int main()
         TestGameSessionServiceReconnectsAndRepublishesState();
         TestGameSessionServiceReportsRequiredClientUpdate();
         TestRoomSessionServiceSerializesOpenTransitions();
+        TestPresenceRestartAtHomeRejectsPreviousLocation();
         std::cout << "Service resilience tests passed.\n";
         return 0;
     }
