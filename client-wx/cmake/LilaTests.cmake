@@ -481,6 +481,7 @@ lila_add_test_executable(lemonde_de_lila_wx_grid_accessibility_text_tests
 )
 lila_add_test_executable(lemonde_de_lila_wx_realtime_deadline_tests
     tests/RealtimeRequestDeadlineTests.cpp
+    src/shared/network/application/realtime/RealtimeApiClient.cpp
     src/shared/config/domain/AppConfig.cpp
     src/shared/network/application/realtime/AuthenticatedRealtimeApiClient.cpp
     src/shared/network/application/realtime/RealtimeProtocol.cpp

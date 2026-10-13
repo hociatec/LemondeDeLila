@@ -46,6 +46,7 @@ public:
     ~AppNavigator();
 
     bool Start();
+    void CloseApplication(bool forUpdate = false);
     void PrepareInitialViewAnnouncement();
     void FocusInitialView();
     void FocusCurrentView();
@@ -76,7 +77,6 @@ private:
     void ShowAbout(std::size_t selectedIndex);
     void ShowOptions(std::size_t selectedIndex);
     void ShowAdmin(std::size_t selectedIndex);
-    void CloseApplication(bool forUpdate = false);
     void BindNotificationAudio();
     void FinishCloseApplication();
     void OnSessionRevocationFinished();

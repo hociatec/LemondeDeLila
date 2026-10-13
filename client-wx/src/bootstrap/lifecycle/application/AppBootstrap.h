@@ -13,6 +13,8 @@ public:
     ~AppBootstrap();
 
     bool Start();
+    void CheckServerConnection() const;
+    void Stop() const;
     void PrepareInitialViewAnnouncement() const;
     void FocusInitialView() const;
     void FocusCurrentView() const;

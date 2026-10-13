@@ -12,6 +12,16 @@ AppBootstrap::AppBootstrap() = default;
 
 AppBootstrap::~AppBootstrap() = default;
 
+void AppBootstrap::CheckServerConnection() const
+{
+    runtime_->CheckServerConnection();
+}
+
+void AppBootstrap::Stop() const
+{
+    runtime_->StopNavigator();
+}
+
 void AppBootstrap::PrepareInitialViewAnnouncement() const
 {
     if (runtime_ != nullptr)

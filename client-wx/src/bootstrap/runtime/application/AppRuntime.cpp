@@ -2,12 +2,23 @@
 
 #include "app/navigation/presentation/AppNavigator.h"
 #include "modules/audio/application/IAudioService.h"
+#include "shared/network/application/realtime/RealtimeApiClient.h"
 
 namespace lila::bootstrap
 {
 AppRuntime::AppRuntime() = default;
 
 AppRuntime::~AppRuntime() = default;
+
+void AppRuntime::CheckServerConnection() const
+{
+    network_.realtimeApiClient->WarmUp();
+}
+
+void AppRuntime::StopNavigator() const
+{
+    if (navigator_ != nullptr) navigator_->CloseApplication();
+}
 
 void AppRuntime::Assemble(const StepLogger& setStep)
 {
