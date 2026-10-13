@@ -70,6 +70,59 @@ class PresenceTickets final : public lila::shared::network::http::IWsTicketProvi
     std::string GetTicket(const std::string&, const std::string&) const override { return "test"; }
 };
 
+void TestPresenceRestartAtHomeRejectsPreviousLocation()
+{
+    lila::modules::session::application::SessionStore sessions(std::make_unique<InMemorySessionRepository>());
+    lila::modules::session::domain::Session session;
+    session.userId = lila::shared::domain::UserId{42};
+    session.username = "Alice";
+    session.token = "header.payload.signature";
+    session.expiresAt = 4102444800LL;
+    sessions.Open(session, false);
+    PresenceSocket socket;
+    PresenceTickets tickets;
+    CountingPresenceAudio audio;
+    lila::modules::presence::application::PresenceMonitor monitor(
+        "test", socket, tickets, sessions, audio, {});
+
+    // Closing from a table, then opening the session menu again.
+    monitor.SetContext("table", 7, "Previous table");
+    monitor.Start();
+    WaitUntil([&] { return socket.Sent("\"roomId\":7"); }, "Initial table context expected");
+    monitor.Stop();
+    monitor.Start();
+    monitor.SetContext("home");
+    WaitUntil([&] { return socket.Sent("\"context\":\"home\""); }, "Restart must publish home");
+
+    // A snapshot prepared before the server processes the new home context.
+    socket.Push(R"({"type":"presence-update","players":[{"id":42,"username":"Alice","availability":"available","activity":"table","location":"Previous table","currentRoom":{"id":7,"name":"Previous table"}}]})");
+    WaitUntil([&] { return monitor.HasSnapshot(); }, "Restart snapshot expected");
+    const auto player = monitor.Players().at(0);
+
+    // Verify whether a subsequent fresh server update resolves the stale display.
+    socket.Push(R"({"type":"presence-update","players":[{"id":42,"username":"Alice","availability":"available","activity":"home","location":"accueil"}]})");
+    WaitUntil([&] { return monitor.Players().at(0).location == "accueil"; },
+        "Fresh server confirmation must restore home");
+    Expect(player.activity == "home" && !player.currentRoomId.has_value()
+        && player.location != "Previous table",
+        "Restart at home must not expose the previous session location while awaiting confirmation");
+
+    // Once home has been confirmed, a transport reconnect must protect it again.
+    const auto sentBeforeReconnect = socket.Count();
+    socket.Close();
+    WaitUntil([&] { return socket.Connections() >= 3 && socket.Count() > sentBeforeReconnect; },
+        "Transport reconnect must republish the current screen");
+    socket.Push(R"({"type":"presence-update","players":[{"id":42,"username":"Alice reconnected","availability":"available","activity":"table","location":"Previous table","currentRoom":{"id":7,"name":"Previous table"}}]})");
+    WaitUntil([&] { return monitor.Players().at(0).username == "Alice reconnected"; },
+        "Reconnected snapshot expected");
+    const auto reconnected = monitor.Players().at(0);
+    monitor.Stop();
+    Expect(reconnected.activity == "home" && !reconnected.currentRoomId.has_value()
+        && reconnected.location != "Previous table",
+        "Transport reconnect must reject stale location after a previous confirmation");
+    std::cout << "[TEST PASSED] PresenceRestartAtHomeRejectsPreviousLocation\n";
+}
+
 void TestPresenceContextWithoutSession()
 {
     lila::modules::session::application::SessionStore sessions(std::make_unique<InMemorySessionRepository>());
