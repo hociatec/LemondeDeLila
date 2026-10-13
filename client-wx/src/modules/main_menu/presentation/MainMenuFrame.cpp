@@ -48,6 +48,7 @@ MainMenuFrame::MainMenuFrame(
     OpenSocialRequestedHandler onOpenSocialRequested,
     OpenOptionsRequestedHandler onOpenOptionsRequested,
     OpenAdminRequestedHandler onOpenAdminRequested,
+    OpenOptionsRequestedHandler onOpenShortcutsRequested,
     LogoutRequestedHandler onLogoutRequested,
     std::size_t initialSelectedIndex)
     : lila::shared::accessibility::NonFocusablePanel(parent, 0),
@@ -59,6 +60,7 @@ MainMenuFrame::MainMenuFrame(
       onOpenSocialRequested_(std::move(onOpenSocialRequested)),
       onOpenOptionsRequested_(std::move(onOpenOptionsRequested)),
       onOpenAdminRequested_(std::move(onOpenAdminRequested)),
+      onOpenShortcutsRequested_(std::move(onOpenShortcutsRequested)),
       onLogoutRequested_(std::move(onLogoutRequested))
 {
     entries_ = GetMainMenuEntries(sessionStore_.Current().IsAdmin());

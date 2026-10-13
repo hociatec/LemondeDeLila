@@ -33,6 +33,7 @@ public:
         CloseRequestedHandler onCloseRequested);
     ~JoinRoomsPanel() override;
 
+    void SetGameFilter(const std::string& gameId) { gameFilter_ = gameId; }
     void Prepare(PreparedHandler onPrepared);
     void ResetForNextPrepare();
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
@@ -50,6 +51,7 @@ private:
     void CancelRequest();
     void FocusMenuIfVisible();
 
+    std::string gameFilter_;
     application::RoomLobbyService& service_;
     JoinRequestedHandler onJoinRequested_;
     CloseRequestedHandler onCloseRequested_;

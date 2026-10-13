@@ -2,6 +2,7 @@
 #include "app/navigation/presentation/HostFrame.h"
 
 #include <utility>
+#include "modules/shortcuts/application/ShortcutStore.h"
 
 #include <wx/weakref.h>
 
@@ -165,6 +166,14 @@ void AppNavigator::OnSessionExpired()
 
 void AppNavigator::ResetSessionViews()
 {
+    if (shortcutsTask_) shortcutsTask_->RequestCancel();
+    shortcutsTask_.reset();
+    if (shortcutGameTask_) shortcutGameTask_->RequestCancel();
+    shortcutGameTask_.reset();
+    ++shortcutGameGeneration_;
+    shortcutsUserId_ = 0; shortcutHeldKey_ = 0;
+    shortcutReturnView_ = ViewId::None;
+    shortcutStore_.Activate(0);
     messagingOpenedFromSocial_ = false;
     sessionDataPrewarmed_ = false;
     if (catalogPrewarmTask_ != nullptr)
@@ -178,7 +187,7 @@ void AppNavigator::ResetSessionViews()
         ViewId::MainMenu, ViewId::Catalog, ViewId::JoinRooms, ViewId::Vault,
         ViewId::Room, ViewId::StoryBook, ViewId::Leaderboard, ViewId::Chat,
         ViewId::Messaging, ViewId::Social, ViewId::Presence, ViewId::About,
-        ViewId::Options, ViewId::Admin};
+        ViewId::Options, ViewId::Admin, ViewId::Shortcuts};
     for (const auto viewId : sessionViews)
     {
         ResetView(viewId);

@@ -57,7 +57,7 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.recipient', 'recipient')
       .where(
-        '(m.sender_id = :current AND m.recipient_id = :other AND m.deleted_by_sender_at IS NULL) OR (m.sender_id = :other AND m.recipient_id = :current AND m.deleted_by_recipient_at IS NULL)',
+        '(m.sender_id = :current AND m.recipient_id = :other AND m.deleted_by_sender_at IS NULL AND m.purged_by_sender_at IS NULL) OR (m.sender_id = :other AND m.recipient_id = :current AND m.deleted_by_recipient_at IS NULL AND m.purged_by_recipient_at IS NULL)',
       )
       .setParameters({ current: currentUserId, other: otherUserId })
       .orderBy('m.created_at', 'ASC')
@@ -75,9 +75,12 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.recipient', 'recipient')
-      .where('m.recipient_id = :userId AND m.deleted_by_recipient_at IS NULL', {
-        userId,
-      })
+      .where(
+        'm.recipient_id = :userId AND m.deleted_by_recipient_at IS NULL AND m.purged_by_recipient_at IS NULL',
+        {
+          userId,
+        },
+      )
       .orderBy('m.created_at', 'DESC')
       .addOrderBy('m.id', 'DESC')
       .limit(this.normalizeLimit(limit))
@@ -93,9 +96,12 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.recipient', 'recipient')
-      .where('m.sender_id = :userId AND m.deleted_by_sender_at IS NULL', {
-        userId,
-      })
+      .where(
+        'm.sender_id = :userId AND m.deleted_by_sender_at IS NULL AND m.purged_by_sender_at IS NULL',
+        {
+          userId,
+        },
+      )
       .orderBy('m.created_at', 'DESC')
       .addOrderBy('m.id', 'DESC')
       .limit(this.normalizeLimit(limit))
@@ -112,11 +118,11 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
       .leftJoinAndSelect('m.sender', 'sender')
       .leftJoinAndSelect('m.recipient', 'recipient')
       .addSelect(
-        'CASE WHEN m.deleted_by_sender_at IS NOT NULL THEN m.deleted_by_sender_at ELSE m.deleted_by_recipient_at END',
+        'CASE WHEN m.sender_id = :userId THEN m.deleted_by_sender_at ELSE m.deleted_by_recipient_at END',
         'deletionDate',
       )
       .where(
-        '(m.sender_id = :userId AND m.deleted_by_sender_at IS NOT NULL) OR (m.recipient_id = :userId AND m.deleted_by_recipient_at IS NOT NULL)',
+        '(m.sender_id = :userId AND m.deleted_by_sender_at IS NOT NULL AND m.purged_by_sender_at IS NULL) OR (m.recipient_id = :userId AND m.deleted_by_recipient_at IS NOT NULL AND m.purged_by_recipient_at IS NULL)',
         { userId },
       )
       .orderBy('deletionDate', 'DESC')
@@ -126,15 +132,45 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
     return items.map((item) => this.toModel(item));
   }
 
-  async remove(messageId: string): Promise<void> {
-    await this.messages.delete({ messageId });
+  async purgeForUser(
+    messageId: string,
+    userId: number,
+    purgedAt: Date,
+  ): Promise<boolean> {
+    const sender = await this.messages
+      .createQueryBuilder()
+      .update()
+      .set({ purgedBySenderAt: purgedAt })
+      .where('message_id = :messageId AND sender_id = :userId', {
+        messageId,
+        userId,
+      })
+      .andWhere(
+        'deleted_by_sender_at IS NOT NULL AND purged_by_sender_at IS NULL',
+      )
+      .execute();
+    const recipient = await this.messages
+      .createQueryBuilder()
+      .update()
+      .set({ purgedByRecipientAt: purgedAt })
+      .where('message_id = :messageId AND recipient_id = :userId', {
+        messageId,
+        userId,
+      })
+      .andWhere(
+        'deleted_by_recipient_at IS NOT NULL AND purged_by_recipient_at IS NULL',
+      )
+      .execute();
+    return (sender.affected ?? 0) + (recipient.affected ?? 0) > 0;
   }
 
   async countUnreadForRecipient(userId: number): Promise<number> {
     return this.messages
       .createQueryBuilder('m')
       .where('m.recipient_id = :userId', { userId })
-      .andWhere('m.deleted_by_recipient_at IS NULL')
+      .andWhere(
+        'm.deleted_by_recipient_at IS NULL AND m.purged_by_recipient_at IS NULL',
+      )
       .andWhere('m.read_by_recipient_at IS NULL')
       .getCount();
   }
@@ -155,6 +191,8 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
   }
 
   private toEntity(message: PrivateMessageRecord): PrivateMessageEntity {
+    // Purge markers are updated atomically by purgeForUser only. Saving a stale
+    // read/delete/restore snapshot must never resurrect a permanently removed copy.
     return this.messages.create({
       id: message.id,
       messageId: message.messageId,
@@ -187,6 +225,8 @@ export class PrivateMessageTypeormRepository implements PrivateMessageRepository
       deletedBySenderAt: message.deletedBySenderAt ?? null,
       deletedByRecipientAt: message.deletedByRecipientAt ?? null,
       readByRecipientAt: message.readByRecipientAt ?? null,
+      purgedBySenderAt: message.purgedBySenderAt ?? null,
+      purgedByRecipientAt: message.purgedByRecipientAt ?? null,
     };
   }
 }

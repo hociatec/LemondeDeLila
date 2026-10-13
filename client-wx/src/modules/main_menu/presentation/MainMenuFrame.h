@@ -45,6 +45,7 @@ public:
         OpenSocialRequestedHandler onOpenSocialRequested,
         OpenOptionsRequestedHandler onOpenOptionsRequested,
         OpenAdminRequestedHandler onOpenAdminRequested,
+        OpenOptionsRequestedHandler onOpenShortcutsRequested,
         LogoutRequestedHandler onLogoutRequested,
         std::size_t initialSelectedIndex = 0);
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
@@ -66,6 +67,7 @@ private:
     OpenSocialRequestedHandler onOpenSocialRequested_;
     OpenOptionsRequestedHandler onOpenOptionsRequested_;
     OpenAdminRequestedHandler onOpenAdminRequested_;
+    OpenOptionsRequestedHandler onOpenShortcutsRequested_;
     LogoutRequestedHandler onLogoutRequested_;
     wxStaticText* titleLabel_ = nullptr;
     wxStaticText* welcomeLabel_ = nullptr;

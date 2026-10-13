@@ -43,6 +43,8 @@ inline constexpr std::string_view RegisterOk = "auth.register.ok";
 
 namespace users
 {
+inline constexpr std::string_view ShortcutsGet = "users.shortcuts.get";
+inline constexpr std::string_view ShortcutsSet = "users.shortcuts.set";
 inline constexpr std::string_view List = "users.list";
 inline constexpr std::string_view Get = "users.get";
 }

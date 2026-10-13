@@ -51,6 +51,14 @@ public:
         PushCurrent();
     }
 
+    void ReturnToMailbox()
+    {
+        navigationHistory_.Clear();
+        currentScreen = Screen::Menu;
+        PushCurrent();
+        currentScreen = Screen::List;
+    }
+
     [[nodiscard]] bool CanGoBack() const noexcept
     {
         return !navigationHistory_.Empty();

@@ -14,6 +14,7 @@ enum class MainMenuAction
     OpenAbout,
     OpenOptions,
     OpenAdmin,
+    OpenShortcuts,
     Logout,
 };
 

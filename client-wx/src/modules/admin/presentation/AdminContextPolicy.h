@@ -12,7 +12,19 @@ namespace lila::modules::admin::presentation
 {
     // A report and a new comment both expose a field named "content", but
     // their values are unrelated. A comment must always start empty.
-    return commandId != "bugs.comment" || fieldName != "content";
+    return (commandId != "bugs.comment" || fieldName != "content") &&
+        (commandId != "contacts.reply" || fieldName != "message");
+}
+
+[[nodiscard]] inline int AdminContactRecipient(const nlohmann::json& item)
+{
+    for (const auto key : {"toUserId", "fromUserId"})
+    {
+        const auto value = item.find(key);
+        if (value != item.end() && value->is_number_integer() && value->get<int>() > 0)
+            return value->get<int>();
+    }
+    return 0;
 }
 
 [[nodiscard]] inline std::string AdminGameType(const nlohmann::json& item)

@@ -8,10 +8,25 @@
 #include "modules/admin/domain/AdminPagination.h"
 #include "modules/admin/infrastructure/AdminPayloadValidator.h"
 #include "modules/admin/presentation/AdminContextPolicy.h"
+#include "modules/admin/presentation/AdminContactPresentation.h"
 #include "modules/admin/presentation/AdminResultFormatter.h"
 #include "shared/network/infrastructure/http/AuthenticatedHttpClient.h"
 int main()
 {
+    using namespace lila::modules::admin::presentation;
+    const auto contacts = FlattenAdminContacts({{"sections", {
+        {{"title", "Ouvert"}, {"items", {
+            {{"contactId", "contact-1"}, {"fromUserId", 42}, {"toUserId", nullptr}, {"fromUsername", "Alice"}},
+            {{"contactId", "contact-2"}, {"fromUserId", 43}, {"toUserId", nullptr}, {"fromUsername", "Bob"}}
+        }}},
+        {{"title", "Traite"}, {"items", nlohmann::json::array()}}
+    }}});
+    assert(contacts["items"].size() == 2);
+    assert(contacts["items"][0]["contactId"] == "contact-1");
+    assert(AdminContactRecipient(contacts["items"][0]) == 42);
+    assert(AdminContactRecipient({{"fromUserId", 1}, {"toUserId", 42}}) == 42);
+    assert(AdminContactRecipient(nlohmann::json::object()) == 0);
+    assert(!ShouldCopyContextValue("contacts.reply", "message"));
     using lila::modules::admin::domain::GetAdminCommands;
     using lila::modules::admin::infrastructure::ValidateAndNormalizeAdminPayload;
     auto normalized = ValidateAndNormalizeAdminPayload({

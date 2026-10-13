@@ -3,6 +3,7 @@
 #include "bootstrap/composition/infrastructure/network/NetworkComposition.h"
 #include "modules/admin/application/AdminService.h"
 #include "modules/admin/infrastructure/AdminGateway.h"
+#include "modules/about/infrastructure/AdminContactSender.h"
 
 namespace lila::bootstrap
 {
@@ -19,6 +20,8 @@ void AdminComposition::Assemble(
         *network.authenticatedRealtimeApiClient,
         *network.notificationRealtimeApiClient,
         sessionStore);
+    contactSender = std::make_unique<lila::modules::about::infrastructure::AdminContactSender>(
+        *network.notificationRealtimeApiClient, sessionStore);
     service = std::make_unique<lila::modules::admin::application::AdminService>(*gateway);
 }
 }

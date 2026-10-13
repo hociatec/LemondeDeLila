@@ -15,6 +15,8 @@ namespace lila::modules::rooms::presentation
 {
 void JoinRoomsPanel::ApplyRooms(std::vector<domain::PublicRoom> rooms, PreparedHandler onPrepared)
 {
+    if (!gameFilter_.empty())
+        std::erase_if(rooms, [this](const auto& room) { return room.gameType != gameFilter_; });
     navigator_.Reset(std::move(rooms));
     state_ = State::Ready;
     ShowRooms();

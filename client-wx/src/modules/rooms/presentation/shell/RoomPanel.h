@@ -66,6 +66,7 @@ public:
         PreparedHandler onPrepared);
     void PrepareRestore(int roomId, PreparedHandler onPrepared);
     [[nodiscard]] int CurrentRoomId() const { return room_.id; }
+    [[nodiscard]] bool CanOpenShortcut() const { return state_ == State::Ready; }
     [[nodiscard]] const std::string& CurrentRoomName() const { return room_.name; }
     void SetRoomChangedHandler(std::function<void(int, const std::string&)> handler)
     { onRoomChanged_ = std::move(handler); }

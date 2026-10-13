@@ -112,7 +112,8 @@ MessagingFrame::MessagingFrame(
             },
             [this]()
             {
-                RefreshCurrentBox(false);
+                navigationState_.ReturnToMailbox();
+                RefreshCurrentBox(true);
             }});
     composeController_ = std::make_unique<MessagingComposeController>(
         mailboxController_,

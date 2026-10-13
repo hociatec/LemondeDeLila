@@ -1,4 +1,7 @@
 import { PASSWORD_HASHER } from '../application/ports/password-hasher.port';
+import { USER_SHORTCUTS_REPOSITORY } from '../application/ports/user-shortcuts.repository';
+import { UserShortcutsService } from '../application/use-cases/user-shortcuts.service';
+import { UserShortcutsTypeormRepository } from '../infrastructure/persistence/typeorm/repositories/user-shortcuts-typeorm.repository';
 import { USER_REPOSITORY } from '../application/ports/user.repository';
 import { STAFF_USERS_READER } from '../application/ports/staff-users-reader.port';
 import { StaffUsersTypeormReader } from '../infrastructure/persistence/typeorm/repositories/staff-users-typeorm.reader';
@@ -18,6 +21,11 @@ import { JwtUserTokenService } from '../infrastructure/security/jwt-user-token.s
 import { RedisRefreshTokenService } from '../infrastructure/security/redis-refresh-token.service';
 
 export const USER_CORE_PROVIDERS = [
+  UserShortcutsService,
+  {
+    provide: USER_SHORTCUTS_REPOSITORY,
+    useClass: UserShortcutsTypeormRepository,
+  },
   StaffUsersTypeormReader,
   { provide: STAFF_USERS_READER, useExisting: StaffUsersTypeormReader },
   UserTypeormRepository,

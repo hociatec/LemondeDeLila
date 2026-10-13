@@ -26,7 +26,9 @@ void AppendModerationCommands(std::vector<AdminCommand>& c)
         {"chat.settings.get", L"Lire les paramètres", L"Historique et fenêtre d'édition.", T::ApiWebSocket, std::string(ws::admin::chat::SettingsGet)},
         {"chat.settings.update", L"Modifier les paramètres", L"Bornes contrôlées par le serveur.", T::ApiWebSocket, std::string(ws::admin::chat::SettingsUpdate), {}, R"({"chatHistoryLimit":200,"editWindowSeconds":300})"},
 
-        {"contacts.threads", L"Lister les fils", L"Demandes ouvertes, en cours et traitées.", T::NotificationWebSocket, std::string(ws::notify::inbox::Threads), {}, R"({"limit":200})"},
+        {"contacts.create", L"Nouvelle demande", L"Créer une demande adressée au staff en votre nom.", T::NotificationWebSocket, std::string(ws::notify::inbox::Send), std::string(ws::notify::inbox::Sent), R"({"message":""})"},
+        {"contacts.get", L"Consulter les échanges", L"Afficher les 500 derniers messages de cette demande.", T::NotificationWebSocket, std::string(ws::notify::inbox::Threads), {}, R"({"contactId":""})"},
+        {"contacts.threads", L"Actualiser les demandes", L"Demandes ouvertes, en cours et traitées.", T::NotificationWebSocket, std::string(ws::notify::inbox::Threads), {}, R"({"limit":200})"},
         {"contacts.reply", L"Répondre", L"Réponse d'un membre du staff.", T::NotificationWebSocket, std::string(ws::notify::inbox::Reply), std::string(ws::notify::inbox::Sent), R"({"contactId":"","toUserId":1,"message":""})"},
         {"contacts.status", L"Changer le statut", L"open, in_progress ou handled.", T::NotificationWebSocket, std::string(ws::notify::inbox::SetStatus), {}, R"({"contactId":"","status":"in_progress"})"},
         {"contacts.cycle", L"Faire avancer le statut", L"Passer au prochain statut du workflow.", T::NotificationWebSocket, std::string(ws::notify::inbox::CycleStatus), {}, R"({"contactId":""})"},

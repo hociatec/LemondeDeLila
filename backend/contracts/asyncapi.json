@@ -173,7 +173,9 @@
             "social.relationship.get",
             "social.user.search",
             "users.get",
-            "users.list"
+            "users.list",
+            "users.shortcuts.get",
+            "users.shortcuts.set"
           ]
         }
       },
@@ -344,7 +346,9 @@
                   "social.relationship.get",
                   "social.user.search",
                   "users.get",
-                  "users.list"
+                  "users.list",
+                  "users.shortcuts.get",
+                  "users.shortcuts.set"
                 ]
               },
               "payload": {},

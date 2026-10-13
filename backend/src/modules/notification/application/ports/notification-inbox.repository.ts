@@ -27,6 +27,7 @@ export interface NotificationInboxRepository {
   listByContactId(
     kind: string,
     contactId: string,
+    userId?: number,
   ): Promise<NotificationInboxContactRow[]>;
   updatePayload(
     id: string,

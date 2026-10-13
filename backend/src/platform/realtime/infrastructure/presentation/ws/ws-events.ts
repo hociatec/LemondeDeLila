@@ -28,6 +28,8 @@ export const WS_EVENTS = {
     registerOk: 'auth.register.ok',
   },
   users: {
+    shortcutsGet: 'users.shortcuts.get',
+    shortcutsSet: 'users.shortcuts.set',
     list: 'users.list',
     get: 'users.get',
   },

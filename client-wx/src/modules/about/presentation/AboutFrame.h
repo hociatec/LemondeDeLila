@@ -2,6 +2,8 @@
 
 #include <functional>
 #include <memory>
+#include "modules/about/application/IAdminContactSender.h"
+#include "shared/concurrency/application/AsyncRequestSlot.h"
 
 #include "shared/accessibility/presentation/FocusPlanView.h"
 #include "shared/accessibility/presentation/NonFocusablePanel.h"
@@ -33,9 +35,11 @@ public:
     AboutFrame(
         wxWindow* parent,
         lila::modules::session::application::SessionStore& sessionStore,
+        application::IAdminContactSender& contactSender,
         CloseRequestedHandler onCloseRequested,
         ExitRequestedHandler onExitRequested);
     ~AboutFrame() override;
+    void OpenContactPage();
     [[nodiscard]] lila::shared::accessibility::FocusManager::Plan BuildFocusPlan() override;
 
 private:
@@ -44,9 +48,13 @@ private:
     void ApplyTheme();
     void BindEvents();
     void HandleEscape();
+    void SendContact();
     void UpdateStatus(const wxString& message);
 
     lila::modules::session::application::SessionStore& sessionStore_;
+    application::IAdminContactSender& contactSender_;
+    lila::shared::concurrency::AsyncRequestSlot contactRequest_;
+    bool sendingContact_ = false;
     CloseRequestedHandler onCloseRequested_;
     ExitRequestedHandler onExitRequested_;
     std::unique_ptr<AboutPageCoordinator> pageCoordinator_;

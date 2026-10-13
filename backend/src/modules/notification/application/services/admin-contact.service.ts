@@ -66,6 +66,10 @@ export class AdminContactService {
     return this.queries.listInbox(userId, limit);
   }
 
+  getThread(userId: number, contactId: string) {
+    return this.queries.getThread(userId, this.identifier(contactId));
+  }
+
   listThreads(
     userId: number,
     options: { maxItems?: number; limitThreads?: number } = {},

@@ -58,6 +58,7 @@ wxWindow* AppNavigator::CreateCoreView(ViewId viewId)
             [this](std::size_t menuIndex) { ShowSocial(menuIndex); },
             [this](std::size_t menuIndex) { ShowOptions(menuIndex); },
             [this](std::size_t menuIndex) { ShowAdmin(menuIndex); },
+            [this](std::size_t menuIndex) { ShowShortcuts(menuIndex); },
             [this](std::size_t menuIndex) { OnLogoutRequested(menuIndex); },
             lastMainMenuSelection_);
     case ViewId::About:
@@ -65,6 +66,7 @@ wxWindow* AppNavigator::CreateCoreView(ViewId viewId)
         return new modules::about::presentation::AboutFrame(
             hostFrame_->ContentParent(),
             sessionStore_,
+            contactSender_,
             [this]() { ShowSession(lastMainMenuSelection_); },
             [this]() { CloseApplication(); });
     case ViewId::Options:
@@ -75,7 +77,7 @@ wxWindow* AppNavigator::CreateCoreView(ViewId viewId)
             [this]()
             {
                 StopSessionChat();
-                ResetView(ViewId::Chat);
+                if (shortcutReturnView_ == ViewId::None) ResetView(ViewId::Chat);
                 ShowSession(lastMainMenuSelection_);
             });
     case ViewId::Admin:

@@ -89,6 +89,7 @@ void AdminFrame::OpenResultActions(std::size_t index)
     }
     else if (kind == domain::AdminItemKind::Contact)
     {
+        add("contacts.get", L"Consulter les échanges", {}, true);
         add("contacts.reply", L"Répondre"); add("contacts.status", L"Changer le statut");
         add("contacts.handled", L"Marquer traité", {{"handled", true}}, true);
         add("contacts.delete", L"Supprimer", {}, true);

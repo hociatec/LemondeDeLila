@@ -1,4 +1,5 @@
 import { User } from '../../modules/user/infrastructure/persistence/typeorm/public-api';
+import { UserShortcutsEntity } from '../../modules/user/infrastructure/persistence/typeorm/entities/user-shortcuts.entity';
 import { ChatMessage } from '../../modules/chat/infrastructure/persistence/typeorm/entities/chat-message.entity';
 import { ChatSettingsEntity } from '../../modules/chat/infrastructure/persistence/typeorm/entities/chat-settings.entity';
 import { PrivateMessageEntity } from '../../modules/messaging/infrastructure/persistence/typeorm/entities/private-message.entity';
@@ -28,6 +29,7 @@ import { GameSessionSnapshotEntity } from '../../game/core/infrastructure/persis
 
 /** Application composition registry shared by Nest and the TypeORM CLI. */
 export const ORM_ENTITIES = [
+  UserShortcutsEntity,
   User,
   ChatMessage,
   ChatSettingsEntity,

@@ -1,4 +1,8 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import type { PrivateMessageRecord } from '../models/private-message.model';
 import { MessageValidatorService } from './message-validator.service';
 import { PrivateMessagingService } from './private-messaging.service';
@@ -18,6 +22,8 @@ describe('PrivateMessagingService', () => {
       readByRecipientAt: null,
       deletedBySenderAt: null,
       deletedByRecipientAt: null,
+      purgedBySenderAt: null,
+      purgedByRecipientAt: null,
     }) as PrivateMessageRecord;
   const setup = () => {
     const messages = {
@@ -28,7 +34,7 @@ describe('PrivateMessagingService', () => {
       findInbox: jest.fn().mockResolvedValue([]),
       findOutbox: jest.fn().mockResolvedValue([]),
       findDeleted: jest.fn().mockResolvedValue([]),
-      remove: jest.fn(),
+      purgeForUser: jest.fn().mockResolvedValue(true),
       countUnreadForRecipient: jest.fn(),
     };
     const users = {
@@ -81,7 +87,62 @@ describe('PrivateMessagingService', () => {
 
     await service.delete(2, row.messageId);
     await service.purge(2, row.messageId);
-    expect(messages.remove).toHaveBeenCalledWith(row.messageId);
+    expect(messages.purgeForUser).toHaveBeenCalledWith(
+      row.messageId,
+      2,
+      expect.any(Date),
+    );
+    expect(row.purgedByRecipientAt).toBeInstanceOf(Date);
+    expect(row.purgedBySenderAt).toBeNull();
+    await service.restore(1, row.messageId);
+    expect(row.deletedBySenderAt).toBeNull();
+    await expect(service.restore(2, row.messageId)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(service.delete(2, row.messageId)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    await expect(service.markRead(2, row.messageId)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('restores a received message without changing the sender trash', async () => {
+    const { service, messages } = setup();
+    const row = message();
+    messages.findByMessageId.mockResolvedValue(row);
+    await service.delete(1, row.messageId);
+    await service.delete(2, row.messageId);
+    await service.restore(2, row.messageId);
+    expect(row.deletedByRecipientAt).toBeNull();
+    expect(row.deletedBySenderAt).toBeInstanceOf(Date);
+    await expect(service.purge(2, row.messageId)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(messages.purgeForUser).not.toHaveBeenCalled();
+  });
+
+  it('does not let a third party restore or purge a message', async () => {
+    const { service, messages } = setup();
+    await expect(service.restore(3, 'message-1')).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    await expect(service.purge(3, 'message-1')).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(messages.purgeForUser).not.toHaveBeenCalled();
+  });
+
+  it('rejects purge when the message was restored concurrently', async () => {
+    const { service, messages } = setup();
+    const row = message();
+    row.deletedByRecipientAt = new Date();
+    messages.findByMessageId.mockResolvedValue(row);
+    messages.purgeForUser.mockResolvedValue(false);
+    await expect(service.purge(2, row.messageId)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(row.purgedByRecipientAt).toBeNull();
   });
 
   it('does not overwrite read timestamps or save messages already read', async () => {

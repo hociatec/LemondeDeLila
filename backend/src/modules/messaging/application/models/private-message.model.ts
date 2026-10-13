@@ -11,4 +11,6 @@ export type PrivateMessageRecord = {
   deletedBySenderAt: Date | null;
   deletedByRecipientAt: Date | null;
   readByRecipientAt: Date | null;
+  purgedBySenderAt: Date | null;
+  purgedByRecipientAt: Date | null;
 };

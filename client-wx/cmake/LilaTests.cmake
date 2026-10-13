@@ -1,4 +1,10 @@
 include_guard(GLOBAL)
+lila_add_test_executable(lemonde_de_lila_wx_shortcut_tests
+    tests/ShortcutTests.cpp
+    src/modules/shortcuts/domain/Shortcut.cpp
+    src/modules/shortcuts/application/ShortcutStore.cpp
+    src/shared/logging/infrastructure/Logger.cpp
+)
 if(WIN32)
     add_executable(lemonde_de_lila_wx_realtime_performance_probe
         tests/RealtimePerformanceProbe.cpp

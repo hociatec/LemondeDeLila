@@ -32,7 +32,7 @@ void AppNavigator::ReplaceView(ViewId nextViewId, wxWindow* nextView)
     currentViewId_ = nextViewId;
     currentView_ = nextView;
     // Opening the presence overlay must not replace the underlying activity.
-    if (nextViewId != ViewId::Presence)
+    if (nextViewId != ViewId::Presence && shortcutReturnView_ != ViewId::Room)
     {
         std::string context = "home";
         switch (nextViewId)

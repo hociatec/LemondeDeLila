@@ -96,6 +96,7 @@ export class NotificationWsInboxThreadHandler {
       await this.contacts.deleteThreadForContact(actor, contactId);
       return { ok: true };
     }
+    if (contactId) return this.contacts.getThread(meta.userId, contactId);
     const limitThreads =
       typeof payload.limit === 'number' && Number.isSafeInteger(payload.limit)
         ? Math.min(Math.max(payload.limit, 1), 200)

@@ -92,20 +92,8 @@ void MessagingFrame::SetBusyState(bool busy, const wxString& message)
 void MessagingFrame::SyncBusyState()
 {
     const auto compose = view_->Compose();
-    const auto detail = view_->Detail();
     compose.sendComposeButton->Enable(!isBusy_);
-    lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
-        detail.replyButton,
-        detail.replyButton->IsShown() && !isBusy_);
-    lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
-        detail.deleteButton,
-        detail.deleteButton->IsShown() && !isBusy_);
-    lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
-        detail.restoreButton,
-        detail.restoreButton->IsShown() && !isBusy_);
-    lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
-        detail.purgeButton,
-        detail.purgeButton->IsShown() && !isBusy_);
+    SyncMessageActions();
 }
 
 void MessagingFrame::SyncPanels()
@@ -158,19 +146,25 @@ void MessagingFrame::SyncSelectionState()
     }
 
     detail.detailCtrl->SetValue(MessagingPresentationModel::BuildMessageDetail(*selected));
+    SyncMessageActions();
+}
+
+void MessagingFrame::SyncMessageActions()
+{
+    const auto detail = view_->Detail();
+    const bool selected = GetSelectedMessage().has_value();
     const bool deleted = navigationState_.currentBox == domain::MessagingBox::Deleted;
-    lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
-        detail.replyButton,
-        !deleted && !isBusy_);
-    lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
-        detail.deleteButton,
-        !deleted && !isBusy_);
-    lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
-        detail.restoreButton,
-        deleted && !isBusy_);
-    lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(
-        detail.purgeButton,
-        deleted && !isBusy_);
+    const auto apply = [this](wxButton* button, bool available)
+    {
+        // Busy operations disable buttons without losing mailbox visibility.
+        lila::shared::accessibility::AccessibilityUtils::SetSecondaryActionAvailability(button, available);
+        button->Enable(available && !isBusy_);
+    };
+    apply(detail.replyButton, selected && !deleted);
+    apply(detail.deleteButton, selected && !deleted);
+    apply(detail.restoreButton, selected && deleted);
+    apply(detail.purgeButton, selected && deleted);
+    view_->Layout();
 }
 
 void MessagingFrame::SetScreen(Screen screen, std::optional<Screen> previousScreen)

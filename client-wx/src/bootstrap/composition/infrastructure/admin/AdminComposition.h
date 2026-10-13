@@ -4,6 +4,7 @@
 
 #include "bootstrap/composition/application/StepLogger.h"
 
+namespace lila::modules::about::application { class IAdminContactSender; }
 namespace lila::bootstrap { struct NetworkComposition; }
 namespace lila::modules::session::application { class SessionStore; }
 namespace lila::modules::admin::application { class AdminService; }
@@ -20,6 +21,7 @@ struct AdminComposition final
         lila::modules::session::application::SessionStore& sessionStore,
         const StepLogger& setStep);
 
+    std::unique_ptr<lila::modules::about::application::IAdminContactSender> contactSender;
     std::unique_ptr<lila::modules::admin::infrastructure::AdminGateway> gateway;
     std::unique_ptr<lila::modules::admin::application::AdminService> service;
 };

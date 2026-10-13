@@ -260,6 +260,38 @@ void TestCorrelatedTypedErrorIsReturnedAsServerError()
     assert(response.errorMessage == "Conversation introuvable.");
 }
 
+void TestAdminContactSendAcknowledgement()
+{
+    namespace protocol = lila::shared::network::realtime::protocol;
+    const std::string requestType = "notify.admin_contact.send";
+    const std::string responseType = "notify.admin_contact.sent";
+    const std::string requestId = "contact-send-1";
+    const auto acknowledgement = nlohmann::json({
+        {"type", responseType}, {"requestId", requestId},
+        {"payload", {{"id", "message-1"}, {"contactId", "thread-1"}}},
+    }).dump();
+    assert(protocol::IsResponseForRequest(
+        acknowledgement, requestId, requestType, responseType));
+    assert(!protocol::IsResponseForRequest(
+        acknowledgement, "other-request", requestType, responseType));
+    const auto response = protocol::ParseResponse(
+        acknowledgement, requestId, requestType, responseType);
+    assert(response.success && response.payload.at("contactId") == "thread-1");
+
+    // Inbox delivery can precede the acknowledgement, but cannot replace it.
+    const auto notification = nlohmann::json({
+        {"type", "notify.inbox.item"}, {"payload", {{"id", "message-1"}}},
+    }).dump();
+    assert(!protocol::IsResponseForRequest(
+        notification, requestId, requestType, responseType));
+    const auto failure = nlohmann::json({
+        {"type", "notify.admin_contact.error"}, {"requestId", requestId},
+        {"payload", {{"message", "Message trop long."}}},
+    }).dump();
+    const auto error = protocol::ParseResponse(failure, requestId, requestType, responseType);
+    assert(!error.success && error.errorMessage == "Message trop long.");
+}
+
 void TestUnrelatedLateAndDuplicateResponsesAreIgnored()
 {
     SequencedWebSocketClient socket;
@@ -282,6 +314,7 @@ int main()
     TestCompletedRequestDisarmsDeadline();
     TestConnectionReuseAndCredentialChanges();
     TestCorrelatedTypedErrorIsReturnedAsServerError();
+    TestAdminContactSendAcknowledgement();
     TestUnrelatedLateAndDuplicateResponsesAreIgnored();
     return 0;
 }

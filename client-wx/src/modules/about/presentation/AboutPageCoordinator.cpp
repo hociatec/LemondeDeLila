@@ -166,7 +166,6 @@ void AboutPageCoordinator::ApplyPageContent(Page page, int restoreSelection)
         break;
     case Page::ContactAdmin:
         content = AboutPageContentBuilder::BuildContactAdmin();
-        frame_.contactMessageCtrl_->SetValue(wxEmptyString);
         break;
     }
 

@@ -133,6 +133,7 @@ export class PrivateMessagingService {
     if (!isSender && !isRecipient) {
       throw new ForbiddenException('Non autorise');
     }
+    this.assertNotPurged(message, userId);
     let changed = false;
     if (isSender && !message.deletedBySenderAt) {
       message.deletedBySenderAt = businessMsToDate(this.clock.now());
@@ -169,6 +170,7 @@ export class PrivateMessagingService {
     if (!isSender && !isRecipient) {
       throw new ForbiddenException('Non autorise');
     }
+    this.assertNotPurged(message, userId);
     let changed = false;
     if (isSender && message.deletedBySenderAt) {
       message.deletedBySenderAt = null;
@@ -206,13 +208,20 @@ export class PrivateMessagingService {
     if (!isSender && !isRecipient) {
       throw new ForbiddenException('Non autorise');
     }
+    this.assertNotPurged(message, userId);
     if (isSender && !message.deletedBySenderAt) {
       throw new BadRequestException('Message pas dans la corbeille');
     }
     if (isRecipient && !message.deletedByRecipientAt) {
       throw new BadRequestException('Message pas dans la corbeille');
     }
-    await this.messages.remove(message.messageId);
+    const purgedAt = businessMsToDate(this.clock.now());
+    if (
+      !(await this.messages.purgeForUser(message.messageId, userId, purgedAt))
+    )
+      throw new BadRequestException('Message pas dans la corbeille');
+    if (isSender) message.purgedBySenderAt = purgedAt;
+    if (isRecipient) message.purgedByRecipientAt = purgedAt;
     return message;
   }
 
@@ -228,6 +237,7 @@ export class PrivateMessagingService {
     if (message.recipient?.id !== userId) {
       throw new ForbiddenException('Non autorise');
     }
+    this.assertNotPurged(message, userId);
     if (message.deletedByRecipientAt) {
       return;
     }
@@ -245,6 +255,14 @@ export class PrivateMessagingService {
       return null;
     }
     return this.users.findByUsername(normalized);
+  }
+
+  private assertNotPurged(message: PrivateMessageRecord, userId: number): void {
+    if (
+      (message.sender.id === userId && message.purgedBySenderAt) ||
+      (message.recipient.id === userId && message.purgedByRecipientAt)
+    )
+      throw new NotFoundException('Message introuvable');
   }
 
   private async ensureUser(id: number): Promise<MessageUser> {

@@ -69,7 +69,7 @@ wxWindow* AppNavigator::CreateGameView(ViewId viewId)
             [this]() { ReturnToCatalogAfterRoomClose(true, true); });
         panel->SetRoomChangedHandler([this](int roomId, const std::string& roomName)
         {
-            if (currentViewId_ == ViewId::Room ||
+            if (currentViewId_ == ViewId::Room || shortcutReturnView_ == ViewId::Room ||
                 (currentViewId_ == ViewId::Presence && previousViewBeforePresence_ == ViewId::Room))
                 presenceMonitor_.SetContext("table", roomId, roomName);
         });

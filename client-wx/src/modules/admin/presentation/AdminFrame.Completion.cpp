@@ -138,7 +138,7 @@ void AdminFrame::CompleteCommand(
         }
         pendingAmbienceUploadPath_.reset();
     }
-    if (command.id == "contacts.reply")
+    if (command.id == "contacts.reply" || command.id == "contacts.create")
         audioService_.Play(lila::modules::audio::domain::SoundCue::AdminContactSent);
     if (ConfirmSoundChange(command))
     {
@@ -230,7 +230,7 @@ void AdminFrame::CompleteCommand(
     auto* previousFocus = wxWindow::FindFocus();
     const bool preserveFocus = !announceLifecycle && !resultItems_.empty();
     ShowResult(command, *result);
-    if (countsOnly || command.id == "bugs.get") return;
+    if (countsOnly || command.id == "bugs.get" || command.id == "contacts.get") return;
     if (preserveFocus && previousFocus == wxWindow::FindFocus() && previousFocus && previousFocus->IsShownOnScreen())
     { keepFocusAfterCommand_ = false; return; }
     if (announceLifecycle)
