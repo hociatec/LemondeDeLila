@@ -23,7 +23,10 @@ RealtimeApiClient::RealtimeApiClient(
 void RealtimeApiClient::WarmUp()
 {
     std::scoped_lock requestLock(requestMutex_);
+    detail::RealtimeRequestDeadline deadline(webSocketClient_, requestTimeout_);
     webSocketClient_.Connect(endpoint_, headers_);
+    if (deadline.TimedOut())
+        throw std::runtime_error(detail::OperationTimedOut);
 }
 
 RealtimeApiResponse RealtimeApiClient::Send(

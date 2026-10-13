@@ -55,7 +55,7 @@ void AppNavigator::OpenShortcutGame(const std::string& gameId)
                     !hostFrame_->IsEnabled() || !hostFrame_->IsActive()) return;
                 if (error || !game)
                 {
-                    wxMessageBox(error ? lila::shared::text::FromUtf8(error->UserMessage()) : L"Jeu indisponible.",
+                    wxMessageBox(error ? lila::shared::text::FromUtf8(error->UserMessage()) : wxString(L"Jeu indisponible."),
                         L"Raccourcis", wxOK | wxICON_INFORMATION, hostFrame_);
                     return;
                 }

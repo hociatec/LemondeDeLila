@@ -43,6 +43,12 @@ public:
         std::stop_token) override
     {
         ++connections;
+        if (blockConnect)
+        {
+            std::unique_lock lock(mutex_);
+            condition_.wait(lock, [this]() { return cancelled_.load(); });
+            throw std::runtime_error("connect cancelled");
+        }
         endpoint_ = endpoint;
         headers_ = headers;
         connected_ = true;
@@ -106,6 +112,7 @@ public:
     int connections = 0;
     int sends = 0;
     bool failNextReceive = false;
+    bool blockConnect = false;
 
 private:
     bool blockReceive_;
@@ -189,6 +196,35 @@ void TestHungRequestTimesOut()
     assert(response.errorMessage == "WebSocket request timed out.");
     assert(socket.WasCancelled());
     assert(elapsed < 1s);
+}
+
+void TestStartupConnectionTimeoutAndRetry()
+{
+    FakeWebSocketClient socket(false);
+    socket.blockConnect = true;
+    lila::shared::network::realtime::RealtimeApiClient client(
+        "wss://example.test/ws/api", {}, socket, 25ms);
+    const auto started = std::chrono::steady_clock::now();
+    bool failed = false;
+    try { client.WarmUp(); }
+    catch (const std::runtime_error&) { failed = true; }
+    assert(failed);
+    assert(socket.WasCancelled());
+    assert(std::chrono::steady_clock::now() - started < 1s);
+    socket.blockConnect = false;
+    client.WarmUp();
+    assert(socket.IsConnected());
+    assert(socket.connections == 2);
+}
+
+void TestStartupConnectionSuccess()
+{
+    FakeWebSocketClient socket(false);
+    lila::shared::network::realtime::RealtimeApiClient client(
+        "wss://example.test/ws/api", {}, socket, 250ms);
+    client.WarmUp();
+    assert(socket.IsConnected());
+    assert(!socket.WasCancelled());
 }
 
 void TestCompletedRequestDisarmsDeadline()
@@ -310,6 +346,8 @@ void TestUnrelatedLateAndDuplicateResponsesAreIgnored()
 
 int main()
 {
+    TestStartupConnectionTimeoutAndRetry();
+    TestStartupConnectionSuccess();
     TestHungRequestTimesOut();
     TestCompletedRequestDisarmsDeadline();
     TestConnectionReuseAndCredentialChanges();

@@ -1,9 +1,13 @@
 #include "app/lifecycle/presentation/Application.h"
 
 #include <string>
+#include <chrono>
+#include <future>
 
 #include <wx/msgdlg.h>
+#include <wx/progdlg.h>
 #include <wx/window.h>
+#include <wx/weakref.h>
 
 #ifdef __WXMSW__
 #include <windows.h>
@@ -22,6 +26,46 @@ namespace lila::app
 {
 namespace
 {
+bool WaitForServer(lila::bootstrap::AppBootstrap& bootstrap)
+{
+    for (;;)
+    {
+        std::string failure;
+        {
+            wxProgressDialog progress(
+                wxString(L"Connexion au serveur"),
+                wxString(L"Vérification de la connexion au serveur du Monde de Lila…"),
+                100, nullptr, wxPD_APP_MODAL);
+            auto attempt = std::async(std::launch::async, [&bootstrap]
+            {
+                bootstrap.CheckServerConnection();
+            });
+            while (attempt.wait_for(std::chrono::milliseconds(50)) != std::future_status::ready)
+                progress.Pulse();
+            try
+            {
+                attempt.get();
+            }
+            catch (const std::exception& error)
+            {
+                failure = error.what();
+                if (failure.empty()) failure = "Connection failed.";
+            }
+        }
+        if (failure.empty()) return true;
+        lila::shared::logging::LogWarning("Startup", "Serveur inaccessible : " + failure);
+        wxMessageDialog dialog(
+            nullptr,
+            wxString(L"Connexion impossible : le serveur du Monde de Lila est injoignable.\n\n"
+                     L"Vérifiez votre connexion Internet. Si vous êtes connecté, le serveur peut être "
+                     L"temporairement indisponible.\n\n"
+                     L"L'application a besoin du serveur pour fonctionner. Vous pouvez réessayer ou quitter."),
+            wxString(L"Connexion impossible"), wxYES_NO | wxICON_ERROR);
+        dialog.SetYesNoLabels(wxString(L"Réessayer"), wxString(L"Quitter"));
+        if (dialog.ShowModal() != wxID_YES) return false;
+    }
+}
+
 void ActivateMainWindow(wxWindow& window)
 {
     window.Show(true);
@@ -111,25 +155,36 @@ bool Application::OnInit()
             wxOK | wxICON_ERROR);
         return false;
     }
-    auto* mainWindow = GetTopWindow();
-#ifdef __WXMSW__
-    if (bootstrap_ != nullptr) bootstrap_->PrepareInitialViewAnnouncement();
-    if (mainWindow != nullptr)
-        for (auto* child : mainWindow->GetChildren()) child->Disable();
-#endif
-    mainWindow = RevealMainWindow(*this);
-    if (mainWindow != nullptr)
-    {
-#ifdef __WXMSW__
-        for (auto* child : mainWindow->GetChildren()) child->Enable();
-        if (bootstrap_ != nullptr) bootstrap_->FocusInitialView();
-        lila::shared::logging::LogInfo(
-            "Startup", "Focus du menu initial demandé sans attendre la parole NVDA.");
-#else
-        if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
-#endif
-    }
+    // The runtime has started successfully. A network outage must not trigger
+    // the launcher's 30-second startup timeout or a release rollback.
     healthySignal_ = lila::modules::update::CreateHealthySignal();
+    const wxWeakRef<wxWindow> startupWindow(GetTopWindow());
+    CallAfter([startupWindow, this]
+    {
+        if (!startupWindow || !WaitForServer(*bootstrap_) || !startupWindow)
+        {
+            bootstrap_->Stop();
+            return;
+        }
+        auto* mainWindow = GetTopWindow();
+#ifdef __WXMSW__
+        if (bootstrap_ != nullptr) bootstrap_->PrepareInitialViewAnnouncement();
+        if (mainWindow != nullptr)
+            for (auto* child : mainWindow->GetChildren()) child->Disable();
+#endif
+        mainWindow = RevealMainWindow(*this);
+        if (mainWindow != nullptr)
+        {
+#ifdef __WXMSW__
+            for (auto* child : mainWindow->GetChildren()) child->Enable();
+            if (bootstrap_ != nullptr) bootstrap_->FocusInitialView();
+            lila::shared::logging::LogInfo(
+                "Startup", "Focus du menu initial demandé sans attendre la parole NVDA.");
+#else
+            if (bootstrap_ != nullptr) bootstrap_->FocusCurrentView();
+#endif
+        }
+    });
     return true;
 }
 
