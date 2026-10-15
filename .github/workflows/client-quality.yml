@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Verify generated backend/client contracts
         shell: bash
         run: |
@@ -46,7 +46,7 @@ jobs:
       matrix:
         scope: [core, gameplay, services]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: ${{ matrix.scope }} checks with ASan and UBSan (maximum two minutes)
         env:
           CXX: clang++
@@ -70,7 +70,7 @@ jobs:
       matrix:
         preset: [windows-vcpkg-debug, windows-vcpkg-release]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Initialize MSVC and vcpkg
         shell: pwsh
         run: |
