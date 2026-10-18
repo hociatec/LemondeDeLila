@@ -1,11 +1,9 @@
 #include "app/lifecycle/presentation/Application.h"
 
 #include <string>
-#include <chrono>
 #include <future>
 
 #include <wx/msgdlg.h>
-#include <wx/progdlg.h>
 #include <wx/window.h>
 #include <wx/weakref.h>
 
@@ -31,17 +29,10 @@ bool WaitForServer(lila::bootstrap::AppBootstrap& bootstrap)
     for (;;)
     {
         std::string failure;
-        {
-            wxProgressDialog progress(
-                wxString(L"Connexion au serveur"),
-                wxString(L"Vérification de la connexion au serveur du Monde de Lila…"),
-                100, nullptr, wxPD_APP_MODAL);
-            auto attempt = std::async(std::launch::async, [&bootstrap]
+        auto attempt = std::async(std::launch::async, [&bootstrap]
             {
                 bootstrap.CheckServerConnection();
             });
-            while (attempt.wait_for(std::chrono::milliseconds(50)) != std::future_status::ready)
-                progress.Pulse();
             try
             {
                 attempt.get();
@@ -51,7 +42,6 @@ bool WaitForServer(lila::bootstrap::AppBootstrap& bootstrap)
                 failure = error.what();
                 if (failure.empty()) failure = "Connection failed.";
             }
-        }
         if (failure.empty()) return true;
         lila::shared::logging::LogWarning("Startup", "Serveur inaccessible : " + failure);
         wxMessageDialog dialog(
