@@ -22,6 +22,54 @@ describe('En Attendant Minuit declarative game', () => {
     });
   });
 
+  it('announces and applies the effect of a non-quiz Christmas card', async () => {
+    const game = await testGame(gameDefinition)
+      .players(['Lila', 'Mina'])
+      .seed(112)
+      .start();
+    await game.choose(1, 'lutin');
+    await game.choose(2, 'renne');
+    const state: any = game.state();
+    const actorId = state.turn.currentPlayerId;
+    state.engine.playerValues.statuses[actorId] = [
+      {
+        id: 'race-bounce-quiz.force-draw-next-turn',
+        remaining: null,
+        scope: 'until-used',
+        data: {},
+      },
+    ];
+    const deck = state.engine.kits.cards.decks.noel;
+    state.engine.kits.cards.decks.noel = [
+      9,
+      ...deck.filter((id: number) => id !== 9),
+    ];
+    const runtime = new DeclarativeGameRuntime(gameDefinition);
+    const awaitingDraw: any = runtime.applyActions(state, [
+      { type: 'roll', payload: {}, meta: { actorId } },
+    ]);
+    const resolved: any = runtime.applyActions(awaitingDraw, [
+      { type: 'draw_card', payload: {}, meta: { actorId } },
+    ]);
+
+    expect(resolved.engine.playerValues.statuses[actorId]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'race-bounce-quiz.ignore-next-skip' }),
+      ]),
+    );
+    const drawn = resolved.log.find(
+      (entry: any) =>
+        entry.key === 'game.card.drawn' && entry.params.cardId === 9,
+    );
+    expect(drawn?.params.effectDescription).not.toBe('');
+  });
+
+  it('keeps the description of the snowy path grammatically complete', () => {
+    expect(catalogue.tiles.find((tile) => tile.n === 35)?.description).toBe(
+      'Vous essayez de réparer le chemin avec soin.',
+    );
+  });
+
   it('waits for a manual draw and exposes a complete, separate quiz', async () => {
     const game = await testGame(gameDefinition)
       .players(['Lila', 'Mina'])

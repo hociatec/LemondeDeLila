@@ -170,6 +170,11 @@ void TestUnknownWorkflowHasAccessibleFallback()
     Expect(lila::modules::gameplay::application::GamePendingAccessibilityText::Build(
             labelledPending) == "Choisissez une relique",
         "Le texte explicite du serveur doit rester prioritaire sur le fallback.");
+
+    labelledPending.question = "Quelle réponse choisissez-vous ?";
+    Expect(lila::modules::gameplay::application::GamePendingAccessibilityText::Build(
+            labelledPending) == "Quelle réponse choisissez-vous ?",
+        "La question doit être annoncée avant le libellé lorsque les deux sont présents.");
 }
 
 void TestNumericNetworkKeysAreStrictlyValidated()

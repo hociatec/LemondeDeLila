@@ -67,4 +67,31 @@ void TestBoardPositionShortcuts()
     Expect(initialPositions.find("Lila : case 1.") != std::string::npos &&
             initialPositions.find("Mina : case 1.") != std::string::npos,
         "Maj+P doit annoncer tous les joueurs en case 1 au départ.");
+
+    auto horsePayload = BuildGameView({
+        {"roomId", 81},
+        {"viewerPlayerId", 7},
+        {"gameType", "foulees-fantastiques"}});
+    horsePayload["system"]["players"]["all"] = nlohmann::json::array({
+        {{"id", 7}, {"username", "Lila"}}});
+    auto& horseSet = horsePayload["kits"]["pawns"]["sets"]["teamPawn"];
+    horseSet["homeStretchFrom"] = 52;
+    horseSet["spaces"] = 56;
+    horseSet["positions"] = {
+        {"horse:0", -1}, {"horse:1", 52}, {"horse:2", 55}, {"horse:3", 13}};
+    horseSet["owners"] = {
+        {"horse:0", 7}, {"horse:1", 7}, {"horse:2", 7}, {"horse:3", 7}};
+    horseSet["definitions"] = nlohmann::json::array();
+    horseSet["definitions"].push_back({{"id", "horse:0"}, {"label", "Pur-sang"}});
+    horseSet["definitions"].push_back({{"id", "horse:1"}, {"label", "Frison"}});
+    horseSet["definitions"].push_back({{"id", "horse:2"}, {"label", "Akhal-teké"}});
+    horseSet["definitions"].push_back({{"id", "horse:3"}, {"label", "Anthias"}});
+    const auto horseState =
+        lila::modules::gameplay::infrastructure::GameStatePayloadCodec::DecodeState(horsePayload);
+    const auto horsePositions = GameCapabilityTextBuilder::Build(horseState, "position");
+    Expect(horsePositions.find("à l'écurie") != std::string::npos &&
+            horsePositions.find("dans la première résidence") != std::string::npos &&
+            horsePositions.find("case 14") != std::string::npos &&
+            horsePositions.find("case 56") == std::string::npos,
+        "P doit distinguer l'écurie, les résidences, la piste et les chevaux terminés.");
 }

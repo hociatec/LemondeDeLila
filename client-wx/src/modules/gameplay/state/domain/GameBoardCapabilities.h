@@ -22,6 +22,8 @@ struct GamePawnView final
     std::string label;
     std::optional<int> ownerId;
     int position = 0;
+    std::optional<int> homeStretchFrom;
+    std::optional<int> spaces;
 };
 struct GamePawnsView final { std::vector<GamePawnView> pawns; };
 struct GameGridCellView final

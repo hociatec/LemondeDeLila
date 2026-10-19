@@ -86,8 +86,6 @@ export function createStoryChallengeResolution(program: StoryChallengeProgram) {
     ctx.events.message('game.pawn.landed', { playerId, tileId: position });
     if (tile.type === 'finish')
       ctx.match.finish({ winners: [playerId], reason: program.finishReason });
-    else if (tile.type === program.deckRoles.story)
-      queueDraws(playerId, [program.deckRoles.story], ctx);
     else if (tile.type === program.deckRoles.reward) {
       if (!ctx.status.has(playerId, statuses.noBonus))
         queueDraws(playerId, [program.deckRoles.reward], ctx);

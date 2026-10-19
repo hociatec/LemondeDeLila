@@ -275,7 +275,7 @@
     {
       "n": 35,
       "title": "Chemin enneigé",
-      "description": "Vous essayez de la réparer avec soin.",
+      "description": "Vous essayez de réparer le chemin avec soin.",
       "type": "neutral",
       "delta": 0,
       "skipTurns": 0

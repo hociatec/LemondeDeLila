@@ -72,7 +72,7 @@ export function gooseRace(source: GooseRaceOptions) {
           ctx.events.message('game.dice.rolled', {
             playerId: actor.id,
             diceId: options.diceId,
-            value,
+            total: value,
           });
           if (ctx.status.has(actor.id, options.wellStatus)) {
             if (!options.escapeRolls.includes(value)) {

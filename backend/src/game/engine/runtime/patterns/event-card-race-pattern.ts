@@ -96,6 +96,9 @@ export function eventCardRace(source: EventCardRaceOptions) {
             automatic: false,
             recycle: true,
             discard: true,
+            // The card text already contains its effect. Do not append a
+            // second, generated effect summary to the announcement.
+            eventData: () => ({ effectDescription: '' }),
             resolve: (card) => ctx.effects.schedule(...card.effects),
           });
           finishTurn(ctx);

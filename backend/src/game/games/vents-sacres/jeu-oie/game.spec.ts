@@ -31,6 +31,16 @@ describe('Jeu de l’Oie declarative game', () => {
     const actor = game.state().turn?.currentPlayerId ?? 1;
     await game.as(actor).do('roll', {});
     expect(game.inspect.positions()[actor]).toBeGreaterThan(1);
+    const diceRoll = (await game.events()).find(
+      (event) =>
+        event.type === 'game.message' && event.data.key === 'game.dice.rolled',
+    );
+    expect(diceRoll?.data.params).toEqual(
+      expect.objectContaining({
+        playerId: actor,
+        total: expect.any(Number),
+      }),
+    );
     expect(await game.replay()).toEqual(game.state());
   });
 });

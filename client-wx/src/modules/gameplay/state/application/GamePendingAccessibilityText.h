@@ -12,8 +12,8 @@ class GamePendingAccessibilityText final
 public:
     [[nodiscard]] static std::string Build(const domain::GamePending& pending)
     {
-        if (!pending.label.empty()) return pending.label;
         if (!pending.question.empty()) return pending.question;
+        if (!pending.label.empty()) return pending.label;
 
         const auto& identifier = pending.workflowKind.empty()
             ? pending.type : pending.workflowKind;
