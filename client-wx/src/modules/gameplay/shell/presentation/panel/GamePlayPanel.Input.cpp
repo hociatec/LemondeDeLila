@@ -19,7 +19,12 @@ bool GamePlayPanel::HandleKey(wxKeyEvent& event)
     {
         const auto message = application::info::GameCapabilityTextBuilder::Build(
             state_, genericPanel);
-        if (!message.empty()) UpdateStatus(lila::shared::text::FromUtf8(message), false, true);
+        if (!message.empty())
+        {
+            const auto announcement = lila::shared::text::FromUtf8(message);
+            UpdateStatus(announcement, false, true);
+            if (onHistoryMessage_) onHistoryMessage_(announcement, false);
+        }
         return true;
     }
     if (inputSubmissionGuard_.RecoverIfExpired())

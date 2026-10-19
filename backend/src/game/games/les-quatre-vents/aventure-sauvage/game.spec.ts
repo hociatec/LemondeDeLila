@@ -44,7 +44,7 @@ describe('Aventure Sauvage declarative game', () => {
     expect(await game.replay()).toEqual(game.state());
   });
 
-  it('waits for Space before drawing and announces the resolved effect', async () => {
+  it('waits for Space before drawing without repeating the card effect', async () => {
     const game = testGame(gameDefinition).players(['Anne', 'Bob']).seed(52);
     await game.start();
     await game.choose(1, 'lion');
@@ -72,7 +72,7 @@ describe('Aventure Sauvage declarative game', () => {
         automatic: false,
         revealed: true,
         cardLabel: expect.any(String),
-        effectDescription: expect.any(String),
+        effectDescription: '',
       }),
     );
     expect(await game.replay()).toEqual(game.state());

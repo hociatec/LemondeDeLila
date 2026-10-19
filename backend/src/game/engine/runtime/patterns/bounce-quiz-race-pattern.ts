@@ -124,7 +124,9 @@ export function bounceQuizRace(source: BounceQuizRaceOptions) {
       deckId: program.deckId,
       playerId,
       automatic: false,
-      eventData: () => ({ effectDescription: '' }),
+      eventData: (card) => ({
+        effectDescription: card.quiz ? '' : card.description ?? '',
+      }),
       resolve: (card) => {
         if (!card.quiz) return ctx.effects.schedule(...card.effects);
         ctx.choice.one({

@@ -271,6 +271,28 @@ describe('projectGameKits', () => {
       projectGameKits(kits, null, 0, [definition]).pawns?.sets.racers.positions,
     ).not.toHaveProperty('waiting');
   });
+
+  it('keeps track position zero when the pawn set starts in the stable', () => {
+    const pawns = createPawnKitState();
+    pawns.positions.horses = { entered: 0, stable: -1 };
+    pawns.owners.horses = {};
+    pawns.assignments.horses = {};
+    const kits: EngineKitsState = { ...createKits(), pawns };
+    const definition = {
+      component: 'pawn.set',
+      id: 'horses',
+      perPlayer: 2,
+      pawns: [
+        { id: 'entered', label: 'Cheval sorti' },
+        { id: 'stable', label: 'Cheval à l’écurie' },
+      ],
+      initialPosition: -1,
+    } satisfies PawnSetDefinition;
+
+    expect(projectGameKits(kits, null, 0, [definition])).toMatchObject({
+      pawns: { sets: { horses: { positions: { entered: 0 } } } },
+    });
+  });
 });
 
 function createKits() {

@@ -257,12 +257,18 @@ function projectPawnKit(
             (candidate) => candidate.id === setId,
           );
           const projectedPositions = Object.fromEntries(
-            Object.entries(positions).filter(([, position]) => position !== 0),
+            Object.entries(positions).filter(
+              ([, position]) => position !== (definition?.initialPosition ?? 0),
+            ),
           );
           return [
             setId,
             {
               definitions: copyState(definition?.pawns ?? []),
+              ...(definition?.homeStretchFrom != null
+                ? { homeStretchFrom: definition.homeStretchFrom }
+                : {}),
+              ...(definition?.spaces != null ? { spaces: definition.spaces } : {}),
               owners: copyState(pawns.owners[setId] ?? {}),
               assignments: copyState(pawns.assignments[setId] ?? {}),
               byPlayer: copyState(pawns.assignments[setId] ?? {}),

@@ -91,6 +91,12 @@ std::optional<domain::GamePawnsView> GameBoardCapabilitiesDecoder::Pawns(
             pawn.id = pawnId;
             pawn.label = labels[pawnId].empty() ? pawnId : labels[pawnId];
             pawn.position = position;
+            if (set.value().contains("homeStretchFrom") &&
+                set.value()["homeStretchFrom"].is_number_integer())
+                pawn.homeStretchFrom = set.value()["homeStretchFrom"].get<int>();
+            if (set.value().contains("spaces") &&
+                set.value()["spaces"].is_number_integer())
+                pawn.spaces = set.value()["spaces"].get<int>();
             if (owners.is_object())
             {
                 const auto owner = owners.find(pawnId);

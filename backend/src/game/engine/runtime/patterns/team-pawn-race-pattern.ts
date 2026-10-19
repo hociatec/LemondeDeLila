@@ -89,9 +89,9 @@ export function teamPawnRace(source: TeamPawnRaceOptions) {
         'game.dice.rolled',
         { playerId, total },
         {
-          default: `${name} lance le dé et fait ${total}.${moves.length ? '' : ` ${name} ne peut pas avancer.`}${replay ? ` ${name} rejoue.` : ''}`,
+          default: `${name} lance le dé et fait ${total}.${moves.length ? '' : ' Aucun de ses chevaux ne peut avancer.'}${replay ? ` ${name} rejoue.` : ''}`,
           byPlayerId: {
-            [playerId]: `Vous lancez le dé et faites ${total}.${moves.length ? '' : ' Vous ne pouvez pas avancer.'}${replay ? ' Rejouez.' : ''}`,
+            [playerId]: `Vous lancez le dé et faites ${total}.${moves.length ? '' : ' Aucun de vos chevaux ne peut avancer.'}${replay ? ' Rejouez.' : ''}`,
           },
         },
       );
@@ -349,9 +349,9 @@ function capture(
             position: destination + 1,
           },
           {
-            default: `${attacker} capture le ${label} de ${target}, qui retourne ${home}.`,
+            default: `${attacker} capture ${withDefiniteArticle(label)} de ${target}, qui retourne ${home}.`,
             byPlayerId: {
-              [playerId]: `Vous capturez le ${label} de ${target}, qui retourne ${home}.`,
+              [playerId]: `Vous capturez ${withDefiniteArticle(label)} de ${target}, qui retourne ${home}.`,
               [player.id]: `Votre ${label} est capturé par ${attacker} et retourne ${home}.`,
             },
           },

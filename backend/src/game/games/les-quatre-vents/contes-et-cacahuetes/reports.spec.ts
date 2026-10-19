@@ -60,6 +60,22 @@ function drawPending(state: any) {
 }
 
 describe('Contes reports: chained cards and blocked turns', () => {
+  it('does not draw a story card when landing on a conte tile', async () => {
+    const state = await fixture();
+    state.engine.kits.movement.positions['story-road'] = {
+      '1': 4,
+      '2': 0,
+      '3': 0,
+    };
+    const conteDeckBefore = [...state.engine.kits.cards.decks.conte];
+
+    const afterRoll = act(state, 1, 'roll');
+
+    expect(afterRoll.engine.kits.movement.positions['story-road']['1']).toBe(5);
+    expect(afterRoll.engine.kits.cards.decks.conte).toEqual(conteDeckBefore);
+    expect(afterRoll.engine.kits.cards.discards.conte).toEqual([]);
+  });
+
   it('declares separate position and race-ranking shortcuts', () => {
     const shortcuts = runtime.getShortcuts();
     expect(shortcuts).toEqual(

@@ -21,6 +21,22 @@ int DisplayedBoardPosition(int position)
     return std::max(1, position);
 }
 
+std::optional<std::string> PawnPositionText(const domain::GamePawnView& pawn)
+{
+    if (pawn.spaces && pawn.position >= *pawn.spaces - 1) return std::nullopt;
+    if (pawn.position < 0) return "à l'écurie";
+    if (pawn.homeStretchFrom && pawn.position >= *pawn.homeStretchFrom)
+    {
+        const auto residence = pawn.position - *pawn.homeStretchFrom + 1;
+        const std::string ordinal = residence == 1 ? "première" :
+            residence == 2 ? "seconde" :
+            residence == 3 ? "troisième" :
+            residence == 4 ? "quatrième" : std::to_string(residence) + "e";
+        return "dans la " + ordinal + " résidence";
+    }
+    return "case " + std::to_string(pawn.position + 1);
+}
+
 void AppendPosition(
     std::ostringstream& out,
     const domain::GameState& state,
@@ -46,14 +62,16 @@ std::optional<std::string> BuildBoardCapabilityText(
     {
         if (state.viewerPlayerId)
         {
+            bool hasOwnedPawn = false;
             for (const auto& pawn : state.kits.pawns->pawns)
             {
                 if (pawn.ownerId != state.viewerPlayerId) continue;
-                out << pawn.label << " : ";
-                if (pawn.position < 0) out << "en réserve";
-                else out << "case " << pawn.position + 1;
-                out << ".\n";
+                hasOwnedPawn = true;
+                const auto position = PawnPositionText(pawn);
+                if (!position) continue;
+                out << pawn.label << " : " << *position << ".\n";
             }
+            if (hasOwnedPawn && out.str().empty()) return "Tous vos chevaux sont arrivés.\n";
         }
         // Some race games expose an empty pawn kit alongside their movement
         // track. Do not let that optional kit mask the authoritative track.
@@ -64,10 +82,10 @@ std::optional<std::string> BuildBoardCapabilityText(
         for (const auto& pawn : state.kits.pawns->pawns)
         {
             if (!pawn.ownerId) continue;
-            out << Player(state, *pawn.ownerId) << " — " << pawn.label << " : ";
-            if (pawn.position < 0) out << "en réserve";
-            else out << "case " << pawn.position + 1;
-            out << ".\n";
+            const auto position = PawnPositionText(pawn);
+            if (!position) continue;
+            out << Player(state, *pawn.ownerId) << " — " << pawn.label
+                << " : " << *position << ".\n";
         }
         // As above, fall back to the movement track when pawn ownership has
         // not been projected to this viewer.
