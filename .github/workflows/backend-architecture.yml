@@ -51,7 +51,7 @@ jobs:
         with: { fetch-depth: 0, persist-credentials: false }
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with: { node-version: '${{ env.NODE_VERSION }}', cache: npm, cache-dependency-path: backend/package-lock.json }
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: backend/.cache
           key: backend-test-${{ runner.os }}-${{ hashFiles('backend/package-lock.json', 'backend/tsconfig*.json') }}
@@ -75,7 +75,7 @@ jobs:
         with: { persist-credentials: false }
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with: { node-version: '${{ env.NODE_VERSION }}', cache: npm, cache-dependency-path: backend/package-lock.json }
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: backend/.cache
           key: backend-static-${{ runner.os }}-${{ hashFiles('backend/package-lock.json', 'backend/tsconfig*.json') }}
