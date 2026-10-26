@@ -193,7 +193,7 @@
     "@types/supertest": "^7.2.1",
     "@types/ws": "^8.18.1",
     "babel-jest": "^30.5.2",
-    "babel-plugin-transform-import-meta": "^2.3.3",
+    "babel-plugin-transform-import-meta": "^3.0.0",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
